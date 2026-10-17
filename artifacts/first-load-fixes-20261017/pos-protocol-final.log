@@ -1,0 +1,14 @@
+✔ large named reads remain read-only, require same origin, preserve 304 and explicit authority failures (87.3729ms)
+✔ POS tab intent paints before delayed route data, supersedes races, and preserves checkout and panel work (2468.878ms)
+✔ POS optimistic tabs preserve native link gestures, More links, and scoped legacy GET navigation (1877.7486ms)
+✔ real POS checkout retains exact money draft and one durable receipt across delayed tab navigation (2876.1384ms)
+✔ late offline preparation cannot navigate after leaving the POS workspace (1474.1648ms)
+✔ owner bootstrap reveals guarded navigation before desk reads, and checkout still waits for complete authorized data (34.6753ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9426.913

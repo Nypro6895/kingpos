@@ -1,0 +1,9 @@
+{
+  "before": {
+    "width": 112,
+    "animation": "app-local-orbit",
+    "hasLogo": true,
+    "overflow": false
+  },
+  "reducedMotion": "none"
+}

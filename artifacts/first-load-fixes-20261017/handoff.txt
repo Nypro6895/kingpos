@@ -1,0 +1,27 @@
+REYLUMI - FIRST LOAD, RELOAD RECOVERY AND R/LUMI
+Implementation only. User requested hold for a later deployment.
+
+Source baseline: dfbe432c417cc5e0740d7c6428359e4f8e885dfe, following shipped source eedd8524d8a261bad972b0364362cd75820da722 (27.1).
+Audit: artifacts/first-load-audit-20261017/report.txt.
+
+Changes:
+- Request-local business context deduplication for context/offline lease and named read APIs. Actual context route test proves two loads before, one now. No cross-request cache, no command authorization reuse, explicit credentials and Settings scope overrides remain separate.
+- A denied non-staff resource removes only its exact snapshot, rejects late hydration and asks for a fresh access check. Other page DOM and POS draft survive. Actual permission/scope/identity changes still reset. Staff relationship denial retains the original strict family revocation.
+- A partial lease-service 503 with unchanged viewer/scope/permission revision keeps the original valid lease without extending expiry or freshness. Fresh commands still fail closed. Unconfirmed or changed authority follows existing invalidation.
+- Restore centered R with orbiting Lumi in the pre-WebKit native view, static bundled boot HTML, web loading shell, and POS/owner data wait states. Remove the fake Explore/search/navigation shell. No minimum branding delay. Reduced-motion and retry remain supported.
+- No monetary formula, transaction handler, role menu, POS draft persistence or bonus/check-number autosave behavior was changed.
+
+Verification:
+- 66 regression cases covered authority, late response races, preserved DOM/drafts, cold startup, menu routing, payroll parity, autosave and action feedback. Two cases initially timed out under parallel browser load, then passed separately without increasing timeout.
+- 10 extra API/POS tests cover bounded read-only GET/POST, authorization failures, live check-in, process restart, real money draft and one explicit durable operation. A fixture was updated to accept the new server-only module, then rerun with no skips.
+- Final authority tests after preserving staff revocation: 13/13. Resource refresh retest: 6/6.
+- Visual: loading-phone.png, loading-visual.json. 390x844 CSS pixels, mark 112px, no horizontal overflow, reduced-motion disables the orbit.
+- Production build passed; Xcode 26.3 passed all 93 simulator tests and produced an unsigned device archive. Final run: https://github.com/Nypro6895/kingpos/actions/runs/38995444446. Source receipt hashes were checked against commit 7c75fbe5b967bbd74ebd1cd378dd828eace91cc3.
+
+No web deployment, TestFlight upload or Apple metadata/tester change is part of this task. A future coordinator must capture fresh production and last-uploaded native baselines, merge these exact frozen changes while preserving unrelated Explore/location/admin/support features, and validate the assembled release. Swift and bundled UI changed, so a new native build is required when releasing.
+
+Limits: controlled tests identify and remove unnecessary work and reproduced remount paths; they are not physical-iPhone startup timings. No evidence yet links occasional iPhone process termination to memory use. ETags still compute full DTOs, and first-time page data still needs network access. Next priority: remove independent POS/Payroll server waterfalls without changing formulas, access checks or totals.
+
+Xcode repair: the first run passed business/state tests but found launch geometry collapsed around the obsolete keyboard guide. Both native launch hosts now use safe-area bottom anchors; the full final run passed. Final frozen first-priority source is 7c75fbe. Snapshot 1ade935 is superseded by this tested source and must not be released on its own.
+
+Native source comparison: 390 receipt entries verified. 349 match exact bytes (including the entire signed local bundle); 41 text files match after CRLF-to-LF newline conversion in the macOS checkout. No other difference was accepted.

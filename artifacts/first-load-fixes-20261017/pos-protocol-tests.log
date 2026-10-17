@@ -1,0 +1,48 @@
+X [ERROR] Could not resolve "server-only"
+
+    lib/read-context-scope.ts:1:7:
+      1 │ import "server-only";
+        ╵        ~~~~~~~~~~~~~
+
+  You can mark the path "server-only" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+✖ large named reads remain read-only, require same origin, preserve 304 and explicit authority failures (88.867ms)
+✔ local owner tabs keep actual checkout/Check-in DOM usable before held reads; PIN action remains one explicit call (2832.1128ms)
+ℹ {"switchAndExplicitActionMs":595,"heldReads":2,"environment":"Local Chromium controlled authorized owner fixture; not iPhone timing"}
+✔ same-account durable Check-in data survives process restart while fresh reads are held and keeps money draft (3112.1438ms)
+ℹ {"cachedColdToRosterMs":1325,"environment":"Local Chromium restarted persistent profile with held GETs; not physical device"}
+✔ confirmed attendance invalidates an older held read and reconciles a later authoritative roster without replacing inputs (2123.5906ms)
+✔ previous-day cached reference retains catalog but never treats old attendance or turns as current (1927.5651ms)
+﹣ POS tab intent paints before delayed route data, supersedes races, and preserves checkout and panel work (1.2697ms) # SKIP
+﹣ POS optimistic tabs preserve native link gestures, More links, and scoped legacy GET navigation (0.2523ms) # SKIP
+﹣ real POS checkout retains exact money draft and one durable receipt across delayed tab navigation (0.1377ms) # SKIP
+﹣ late offline preparation cannot navigate after leaving the POS workspace (0.1152ms) # SKIP
+﹣ owner bootstrap reveals guarded navigation before desk reads, and checkout still waits for complete authorized data (1.4997ms) # SKIP
+ℹ tests 10
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 5
+ℹ todo 0
+ℹ duration_ms 10737.693
+
+✖ failing tests:
+
+test at tests\app-local-api.test.mjs:14:1
+✖ large named reads remain read-only, require same origin, preserve 304 and explicit authority failures (88.867ms)
+  Error: Build failed with 1 error:
+  lib/read-context-scope.ts:1:7: ERROR: Could not resolve "server-only"
+      at failureErrorWithLog (C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:1752:15)
+      at C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:1211:25
+      at runOnEndCallbacks (C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:1592:45)
+      at buildResponseToResult (C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:1209:7)
+      at C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:1236:16
+      at responseCallbacks.<computed> (C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:886:9)
+      at handleIncomingPacket (C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:941:12)
+      at Socket.readFromStdout (C:\Users\giuse\kingpos\node_modules\esbuild\lib\main.js:864:7)
+      at Socket.emit (node:events:509:28)
+      at addChunk (node:internal/streams/readable:563:12) {
+    errors: [ { detail: undefined, id: '', location: [Object], notes: [Array], pluginName: '', text: 'Could not resolve "server-only"' } ],
+    warnings: []
+  }

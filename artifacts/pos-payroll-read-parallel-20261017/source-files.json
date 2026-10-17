@@ -1,0 +1,11 @@
+[
+  "app/(app)/payroll/page.tsx",
+  "app/(app)/pos/(workspace)/layout.tsx",
+  "lib/app-local-owner-page-registry-server.ts",
+  "lib/app-local-owner-resources-server.ts",
+  "public/experience-build-assets.json",
+  "tests/app-local-owner-pages.test.mjs",
+  "tests/owner-check-in-readmodel.test.mjs",
+  "tests/owner-pos-instant-tabs-ui.test.mjs",
+  "tests/payroll-startup-reads.test.mjs"
+]

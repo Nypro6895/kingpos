@@ -1,0 +1,2 @@
+{"mode":"bundle","publicConfiguration":{"NEXT_PUBLIC_SUPABASE_URL":true,"NEXT_PUBLIC_SUPABASE_ANON_KEY":true,"NEXT_PUBLIC_MAPTILER_KEY":false,"NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY":false}}
+{"buildId":"09c272cd44180626ee70529ebeb3111d7e58bdc9903b2f6bb0003af4fd00429d","files":344,"routes":96,"commands":311,"productionReady":true,"missing":0}

@@ -1,0 +1,28 @@
+✔ original authorization and exact requested scope gate every owner page read (4.9635ms)
+✔ staff keeps original approval/reconfirmation DTO, permission gates and account lookup (4.4694ms)
+✔ customer DTOs use original salon-bound getters and never bypass edit permission (2.7056ms)
+✔ payroll preserves original recorded totals/status and strips only private request context (2.4524ms)
+✔ unknown resource, arbitrary arguments, secrets and malformed IDs cannot select a getter (2.222ms)
+✔ all original JSX and authority controls are preserved by the mechanical view extraction (181.5108ms)
+✔ Payroll starts independent download configuration while totals load and does not delay tax behind it (8.4384ms)
+✔ owner Check-in reads only roster/day/config and applies the exact IDs at both table queries (77.6418ms)
+✔ named owner Check-in returns stable versions, body-free no-change and explicit removed IDs (56.6624ms)
+✔ named owner reader rejects wrong authority, unknown names and malformed filters before data reads (27.5235ms)
+✔ POS settings no longer wait behind desk/timezone, and the complete authorized DTO is unchanged (114.1792ms)
+✔ POS tab intent paints before delayed route data, supersedes races, and preserves checkout and panel work (2399.0838ms)
+✔ POS optimistic tabs preserve native link gestures, More links, and scoped legacy GET navigation (1808.201ms)
+✔ real POS checkout retains exact money draft and one durable receipt across delayed tab navigation (1904.7298ms)
+✔ late offline preparation cannot navigate after leaving the POS workspace (1314.9744ms)
+✔ owner bootstrap reveals guarded navigation before desk reads, and checkout still waits for complete authorized data (49.5203ms)
+✔ payroll coalesces related changes, defers refresh until edits settle, and isolates hidden/salon scopes (2201.7661ms)
+✔ payroll results match uploaded baseline with commission, fixed pay, tips, bonus, tax and correction (owner) (750.931ms)
+✔ payroll results match uploaded baseline with commission, fixed pay, tips, bonus, tax and correction (staff) (332.1153ms)
+✔ presentation filters share a payroll read; period and analytics/tax requirements remain separate (9.5964ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8465.1967

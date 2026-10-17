@@ -1,0 +1,17 @@
+REYLUMI — GHI CHÚ SỬA VÀ KIỂM TRA, CHỜ DEPLOY
+
+Đã sửa phần đọc thông tin tài khoản bị lặp: bước mở phiên từ 2 lần đọc còn 1 lần trong cùng yêu cầu. Các yêu cầu khác, tài khoản khác và kiểm tra trước giao dịch vẫn được tách riêng.
+
+Đã sửa các đường gây tải lại toàn trang đã tái hiện: lỗi truy cập riêng của một trang và lỗi tạm thời khi xác nhận quyền dùng dữ liệu đã lưu. Dữ liệu bị từ chối được loại bỏ đúng phạm vi; đổi tài khoản, đổi quyền hoặc thu hồi quan hệ nhân viên vẫn khóa như trước. Không kéo dài hạn dữ liệu ngoại tuyến và không bỏ kiểm tra trước giao dịch.
+
+Đã khôi phục R với Lumi xoay trong màn hình chờ iPhone, giao diện đi kèm app và các trạng thái chờ web/POS/Payroll. Đã bỏ khung Explore giả. Xcode phát hiện điểm neo bàn phím cũ không còn phù hợp; đã sửa và kiểm tra lại.
+
+Đã làm tiếp phần tối ưu POS/Payroll: lấy cấu hình POS và múi giờ đồng thời với dữ liệu quầy; đọc cấu hình tải xuống Payroll đồng thời với số liệu lương. Tổng tiền, thuế, tip, bonus, điều chỉnh, phân quyền, menu và nháp POS được đối chiếu giữ nguyên. Bonus/check number vẫn tự lưu, không thêm lưu nháp lâu dài.
+
+Kết quả: build web đạt; các bộ kiểm tra web/API/POS/Payroll đạt sau khi xử lý các vấn đề của lượt kiểm tra đầu. Phần tối ưu tiếp theo đạt thêm 22 kiểm tra. Xcode 26.3 đạt 93/93 kiểm tra và tạo archive thiết bị không ký. Nguồn kiểm tra: 7c75fbe5b967bbd74ebd1cd378dd828eace91cc3. Chi tiết: https://github.com/Nypro6895/kingpos/actions/runs/38995444446
+
+Nguồn đã cố định và ghi nhật ký: phần đầu 7c75fbe; phần tối ưu tiếp 0d4b6f2. Ghi chú kỹ thuật và bằng chứng nằm tại artifacts/first-load-fixes-20261017 và artifacts/pos-payroll-read-parallel-20261017. Khi deploy phải lấy lại bản production và nguồn native đã upload mới nhất, ghép đúng hai phần, giữ các thay đổi khác, build lại và chọn số build iOS mới.
+
+CHƯA DEPLOY WEB, CHƯA UPLOAD TESTFLIGHT. Archive kiểm tra này chưa phải bản để cài trên iPhone. Tốc độ mở lần đầu trên iPhone thật cần đo khi thử bản mới. Chưa kết luận mọi trường hợp WebKit tự khởi động lại đã được xử lý.
+
+Ưu tiên còn lại: đo mốc dữ liệu chính/thao tác sẵn sàng trên iPhone; ưu tiên yêu cầu của trang đang dùng trước phần phụ; tải trước có giới hạn; tránh tính lại toàn bộ dữ liệu chỉ để kiểm tra có thay đổi hay không.

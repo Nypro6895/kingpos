@@ -1,0 +1,7 @@
+{
+  "testedNativeCommit": "7c75fbe5b967bbd74ebd1cd378dd828eace91cc3",
+  "followOnCommit": "0d4b6f2f9d250d9623afff89c9b139962d784183",
+  "identicalIosTree": "31b1860d3c822a19be9eed403cde51c1089c89ed",
+  "apiShapeChanged": false,
+  "nativeBundleChanged": false
+}

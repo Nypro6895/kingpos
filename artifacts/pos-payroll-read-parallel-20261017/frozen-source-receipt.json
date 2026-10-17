@@ -1,0 +1,19 @@
+{
+  "commit": "0d4b6f2f9d250d9623afff89c9b139962d784183",
+  "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-read-parallel-20261017\\frozen-source-0d4b6f2",
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "a9f3a45ba2c12626807e151c30f8c9ce7febdff62d6ee92be3b38e7b00d4b304",
+    "app/(app)/pos/(workspace)/layout.tsx": "2baa4a97b1a942f4ef03d3226d48104a5180a1983e129a0bf6c6be97f1fa9142",
+    "lib/app-local-owner-page-registry-server.ts": "a1d08b4d66622661c2e6a65e1b7b4b6e6039d38aae9a65a24705523acbe9c58c",
+    "lib/app-local-owner-resources-server.ts": "1747a0c1587109d2dff82ca52078c3e5f3976fdfe62fdf91126882b608a7ade2",
+    "public/experience-build-assets.json": "44ce49945ac55cc11cfb1c6a73579097d4b857515d185e978e157436784fbb3a",
+    "tests/app-local-owner-pages.test.mjs": "2f3826aa8492e5f542cd17a14dd77a21006fcdc83ef775af19a67d0758625109",
+    "tests/owner-check-in-readmodel.test.mjs": "91a9830e69442aa09d05f6edd29bc9c6f2b21ac709cb972dff8171808c32a30c",
+    "tests/owner-pos-instant-tabs-ui.test.mjs": "b02b0a76cc4e5700bf58b6f3742083c06d112e4098a3c0da158973905387fed3",
+    "tests/payroll-startup-reads.test.mjs": "41379a03dd1d6f5937956d140ad34cb169b08b68c5bdd5cc038dae1c399f29fd"
+  },
+  "nativeSourceCommit": "7c75fbe5b967bbd74ebd1cd378dd828eace91cc3",
+  "nativeDiff": [],
+  "webDeployed": false,
+  "testflightUploaded": false
+}

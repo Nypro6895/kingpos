@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "first-load-context-recovery-lumi-20261017",
+  "status": "ready",
+  "summary": "Request-local context reuse, targeted page-denial recovery and restored R/Lumi loading; web and Xcode validated, held for later deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/experience/offline-context/route.ts",
+    "app/local-app/app.css",
+    "app/local-app/entry.tsx",
+    "app/local-app/index.html",
+    "app/pos/owner-local-panels.tsx",
+    "components/app-startup-shell.tsx",
+    "components/loading-feedback.tsx",
+    "components/lumi-loading-mark.module.css",
+    "components/lumi-loading-status.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLaunchView.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "lib/app-local-owner-page-registry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/current-context.ts",
+    "lib/read-context-scope.ts",
+    "public/experience-build-assets.json",
+    "tests/app-local-api.test.mjs",
+    "tests/app-local-authority-navigation.test.mjs",
+    "tests/app-local-resource-races.test.mjs",
+    "tests/cold-startup-ui.test.mjs",
+    "tests/read-context-scope.test.mjs",
+    "tests/secondary-action-feedback-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "7c75fbe5b967bbd74ebd1cd378dd828eace91cc3",
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\first-load-fixes-20261017\\frozen-source-7c75fbe"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Web production build and 344-resource installed bundle integrity",
+      "result": "passed",
+      "evidence": "artifacts/first-load-fixes-20261017/build-final.log; artifacts/first-load-fixes-20261017/bundle.log"
+    },
+    {
+      "name": "76 web/API/POS/Payroll regression cases across suites, with timeout and fixture issues resolved by focused reruns",
+      "result": "passed",
+      "evidence": "artifacts/first-load-fixes-20261017/regression-tests.log; artifacts/first-load-fixes-20261017/resource-retest.log; artifacts/first-load-fixes-20261017/authority-final.log; artifacts/first-load-fixes-20261017/pos-protocol-tests.log; artifacts/first-load-fixes-20261017/pos-protocol-final.log"
+    },
+    {
+      "name": "Phone-sized loading visual and reduced-motion check",
+      "result": "passed",
+      "evidence": "artifacts/first-load-fixes-20261017/loading-visual.json; artifacts/first-load-fixes-20261017/loading-phone.png"
+    },
+    {
+      "name": "Xcode 26.3: 93 simulator tests and unsigned device archive; source hashes verified",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38995444446; artifacts/first-load-fixes-20261017/native-verification.json"
+    }
+  ],
+  "notes": "No deployment/upload. Initial Xcode run found the obsolete keyboard anchor in the removed search shell; safe-area anchoring fixed it and the full final run passed. No formula/menu/POS-draft changes. Bonus/check number remain autosave only. Future release must refresh production and actually-uploaded native baselines, preserve unrelated shipped features, choose a newer native build and validate the assembled source. Physical iPhone cold-start timing is not claimed."
+}

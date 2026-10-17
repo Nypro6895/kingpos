@@ -1,0 +1,21 @@
+✔ one rejected read forces fresh authority recovery and restores the saved money draft (1823.8337ms)
+✔ persistent read rejection stops after one fresh recovery and exposes retry instead of an infinite opening screen (1500.4807ms)
+✔ cold installed Help uses no context, account resource, cache or command scope (1115.732ms)
+✔ owner Help retains only presentation admission, never commands or background reads, and returning POS retains original money DOM (1687.9164ms)
+✔ staff Help presents the actual admitted staff family and expires its unleased chrome without fetching public Help (1015.9175ms)
+✔ staff Help chrome expiry keeps a separately admitted owner POS draft and single-writer lock intact (1036.6222ms)
+✔ Help presentation cannot survive reset, changed device generation or expired owner grant (3129.3721ms)
+✔ held staff-family context cannot send old-owner scoped reads or commands; original POS and Check-in DOM/lock survive (1215.1322ms)
+✔ portal/workday/account remain distinct; unadmitted Market paints static content and rapid late context cannot win (1163.1574ms)
+✔ scope validation from an old scope or hidden Activity cannot stamp the current provider as verified (897.0414ms)
+✔ one page denied access rechecks authority without remounting POS or unrelated unsaved fields (1172.5075ms)
+✔ confirmed 403 wins over a delayed disk read; a network timeout retains the last authorized view (909.1945ms)
+✔ confirmed 404 wins over a delayed disk read; a network timeout retains the last authorized view (878.229ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18750.1826

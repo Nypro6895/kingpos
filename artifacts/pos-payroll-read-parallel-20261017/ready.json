@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "pos-payroll-read-parallel-20261017",
+  "status": "ready",
+  "summary": "Overlap independent POS preferences/timezone and Payroll download configuration while preserving complete data and permission checks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/pos/(workspace)/layout.tsx",
+    "lib/app-local-owner-page-registry-server.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "public/experience-build-assets.json",
+    "tests/app-local-owner-pages.test.mjs",
+    "tests/owner-check-in-readmodel.test.mjs",
+    "tests/owner-pos-instant-tabs-ui.test.mjs",
+    "tests/payroll-startup-reads.test.mjs"
+  ],
+  "source": {
+    "commit": "0d4b6f2f9d250d9623afff89c9b139962d784183",
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-read-parallel-20261017\\frozen-source-0d4b6f2"
+  },
+  "dependencies": [
+    "first-load-context-recovery-lumi-20261017"
+  ],
+  "validation": [
+    {
+      "name": "22 read-ordering, output parity, permission/error, live refresh and money-draft tests",
+      "result": "passed",
+      "evidence": "artifacts/pos-payroll-read-parallel-20261017/tests.log; artifacts/pos-payroll-read-parallel-20261017/web-payroll-tests.log"
+    },
+    {
+      "name": "Production build of combined source",
+      "result": "passed",
+      "evidence": "artifacts/pos-payroll-read-parallel-20261017/build.log"
+    },
+    {
+      "name": "Entire native source tree identical to the Xcode-verified first-priority source",
+      "result": "passed",
+      "evidence": "artifacts/pos-payroll-read-parallel-20261017/native-compatibility.json; artifacts/first-load-fixes-20261017/native-verification.json"
+    }
+  ],
+  "notes": "Server-only follow-on, unpublished. Apply after the dependency; both overlays include a generated web asset manifest, which must be regenerated from the final assembled source. No formula/command/schema/API-shape/client changes. This follow-on alone does not require a separate native build."
+}

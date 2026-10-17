@@ -1,0 +1,14 @@
+✔ confirmed 403 wins over a delayed disk read; a network timeout retains the last authorized view (1850.9596ms)
+✔ confirmed 404 wins over a delayed disk read; a network timeout retains the last authorized view (1244.2713ms)
+✔ successful unchanged validation prevents repeated reads and keeps the original draft DOM (1543.4607ms)
+✔ attendance refreshes affected visible data and defers hidden data without fetching disabled or static shell cells (1349.4009ms)
+✔ older command notifications retain conservative active refresh but never run disabled hooks (1307.1115ms)
+✔ a pre-command read resolving while hidden cannot replace newer state or cancel the reveal reconciliation (1383.5891ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10025.7862

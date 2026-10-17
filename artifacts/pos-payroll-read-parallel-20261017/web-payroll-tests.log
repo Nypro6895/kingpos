@@ -1,0 +1,10 @@
+✔ web Payroll overlaps independent configuration and keeps the original payroll and tax result (218.3137ms)
+✔ web Payroll keeps authorization, original calculation errors and optional plugin failure handling (82.4878ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 689.3074
