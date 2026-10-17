@@ -96,7 +96,7 @@ final class LaunchAppearanceTests: XCTestCase {
         controller.loadViewIfNeeded()
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         let search = try XCTUnwrap(descendants(of: launch).compactMap { $0 as? UISearchTextField }.first)
-        XCTAssertEqual(controller.queuedStartupURL?.path, "/explore")
+        XCTAssertEqual(controller.queuedStartupURL, URL(string: "https://reylumi.com"), "Cold launch starts at role home before an explicit public intent")
         search.text = "  Nails & hair  "
         XCTAssertTrue(launch.textFieldShouldReturn(search))
         XCTAssertEqual(URLComponents(url: try XCTUnwrap(controller.queuedStartupURL), resolvingAgainstBaseURL: false)?.queryItems, [URLQueryItem(name: "q", value: "Nails & hair")])
