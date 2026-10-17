@@ -46,7 +46,7 @@ async function exactBuild(version, marketingVersion, appId, read) {
   return matches[0];
 }
 export async function checkAvailability({ build, baselineBuild = '19.1', marketingVersion = '1.0.1', baselineMarketingVersion = marketingVersion, appId, groupId, read, now = Date.now() }) {
-  if (!/^\d+\.\d+$/.test(build ?? '') || !/^\d+\.\d+$/.test(baselineBuild) || !/^\d+\.\d+\.\d+$/.test(marketingVersion) || !/^\d+$/.test(appId ?? '')) throw Error('Exact app, marketing version and build numbers are required.');
+  if (!/^\d+(?:\.\d+){0,2}$/.test(build ?? '') || !/^\d+(?:\.\d+){0,2}$/.test(baselineBuild) || !/^\d+\.\d+\.\d+$/.test(marketingVersion) || !/^\d+$/.test(appId ?? '')) throw Error('Exact app, marketing version and build numbers are required.');
   if (groupId && !/^[A-Za-z0-9_-]{1,200}$/.test(groupId)) throw Error('Invalid existing group ID.');
   if (!/^\d+\.\d+\.\d+$/.test(baselineMarketingVersion)) throw Error('Exact app, marketing version and build numbers are required.');
   const current = await exactBuild(build, marketingVersion, appId, read), baseline = await exactBuild(baselineBuild, baselineMarketingVersion, appId, read);
@@ -83,12 +83,12 @@ export async function main(env = process.env, { read = createAppleReader(env), n
     receipt = await checkAvailability({ build, baselineBuild, marketingVersion, baselineMarketingVersion: env.BASELINE_MARKETING_VERSION || marketingVersion, groupId: env.EXISTING_GROUP_ID || undefined, appId, read, now });
   } catch (error) {
     // Do not persist raw provider, crypto, or credential errors in public job artifacts.
-    const safeMessage = /^(?:Apple read request failed: \d{3}|Apple read credentials are not configured\.|Exact app\/marketing version\/build is not uniquely visible: \d+\.\d+|Exact app, marketing version and build numbers are required\.|Invalid existing group ID\.|Unsupported Apple read endpoint\.|Apple (?:read response exceeded the expected limit|list response was incomplete|list pagination exceeded the bounded audit)\.|Too many internal groups for a bounded status audit\.)$/.test(error?.message ?? '')
+    const safeMessage = /^(?:Apple read request failed: \d{3}|Apple read credentials are not configured\.|Exact app\/marketing version\/build is not uniquely visible: \d+(?:\.\d+){0,2}|Exact app, marketing version and build numbers are required\.|Invalid existing group ID\.|Unsupported Apple read endpoint\.|Apple (?:read response exceeded the expected limit|list response was incomplete|list pagination exceeded the bounded audit)\.|Too many internal groups for a bounded status audit\.)$/.test(error?.message ?? '')
       ? error.message : 'Apple availability could not be confirmed by this read-only audit.';
     const safeValue = (value, pattern) => pattern.test(value ?? '') ? value : null;
     receipt = { checkedAt: new Date(now).toISOString(), operation,
       appId: safeValue(appId, /^\d+$/), marketingVersion: safeValue(marketingVersion, /^\d+\.\d+\.\d+$/),
-      build: safeValue(build, /^\d+\.\d+$/), baselineBuild: safeValue(baselineBuild, /^\d+\.\d+$/),
+      build: safeValue(build, /^\d+(?:\.\d+){0,2}$/), baselineBuild: safeValue(baselineBuild, /^\d+(?:\.\d+){0,2}$/),
       availableToExistingInternalGroup: false, status: 'not-yet-confirmed', error: safeMessage,
       limitations: ['A failed or incomplete read does not prove that Apple has rejected the build.', 'No distribution settings were changed.'] };
   }

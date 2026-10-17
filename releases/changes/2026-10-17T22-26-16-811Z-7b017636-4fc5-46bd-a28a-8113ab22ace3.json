@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "ios-integer-status-20261017",
+  "status": "working",
+  "summary": "Accept integer iOS build identifiers in read-only processing and TestFlight availability checks; retain legacy dotted build support.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-build-status.mjs",
+    "ios/scripts/check-testflight-availability.mjs",
+    "ios/scripts/check-testflight-availability.test.mjs"
+  ],
+  "source": {
+    "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6"
+  },
+  "validation": [
+    {
+      "name": "Integer and legacy build status checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "7b017636-4fc5-46bd-a28a-8113ab22ace3",
+  "recordedAt": "2026-10-17T22:26:16.811Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
