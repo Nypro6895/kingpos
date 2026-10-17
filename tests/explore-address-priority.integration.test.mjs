@@ -133,6 +133,8 @@ test('address priority: old v3 session continuation retains its frozen ordering'
   const before=await search(f.db,input);assert.equal(before.rows[0].salon_id,id(1));
   await profile(f.db,2,{description:'Historic accessible retreat',phone:'414-555-7890',address_line1:'200 Legacy Avenue'});
   await f.db.exec(readFileSync('supabase/migrations/20261017020000_explore_address_priority.sql','utf8'));
+  await f.db.exec(readFileSync('supabase/migrations/20261017030000_explore_anywhere_search.sql','utf8'));
+  await f.db.exec(readFileSync('supabase/migrations/20261017040000_explore_unified_query_performance.sql','utf8'));
   const next=await search(f.db,{...input,cursor:before.nextCursor});assert.equal(next.rows[0].salon_id,id(5));assert.equal(next.canonical.locationPriority,false);
   const backfilled=await search(f.db,{query:'historic accessible',queryKind:'name',category:'',location:'Madison, WI'});assert.equal(backfilled.rows[0].salon_id,id(2));assert.equal(backfilled.rows[0].match_type,'profile');
   assert.equal((await address(f.db,'200 Legacy Ave Madison WI')).areaCandidates[0].label,'Madison, WI');

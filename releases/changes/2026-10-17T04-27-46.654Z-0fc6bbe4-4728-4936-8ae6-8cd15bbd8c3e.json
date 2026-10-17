@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "release-explore-query-performance-20261017",
+  "status": "ready",
+  "summary": "Preserve Anywhere selective probes and narrow ranking, revalidate profile terms through synchronously maintained current history to resolve measured full-directory query timeout.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261017040000_explore_unified_query_performance.sql",
+    "tests/explore-address-priority.integration.test.mjs",
+    "tests/explore-anywhere-search.integration.test.mjs",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source-v2"
+  },
+  "dependencies": [
+    "explore-anywhere-search-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Final assembled production build and offline assets",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/build-release-v2.log"
+    },
+    {
+      "name": "51 unique composed SQL regression checks; corrected historical migration fixture rerun passed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/search-final-sql-tests.log"
+    },
+    {
+      "name": "Historical v3 session continuation final rerun",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/search-old-cursor-final.log"
+    },
+    {
+      "name": "150 Anywhere browser/routing checks and preservation review",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/integrated-freeze-manifest.json"
+    },
+    {
+      "name": "Real production-scale query under existing 8 second timeout; transaction rolled back",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/search-db-diagnostic-combined.json"
+    },
+    {
+      "name": "Production-ready iPhone bundle regenerated with identical route and command coverage",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/native-bundle-v2.log"
+    }
+  ],
+  "id": "0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e",
+  "recordedAt": "2026-10-17T04:27:46.654Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261017040000_explore_unified_query_performance.sql": "a4243e7026b6a10006874900f020b3f95527172aff5298837c5aca4c57bbf53e",
+    "tests/explore-address-priority.integration.test.mjs": "478c6224ffdb230b8d2b0bc93c9ad6861003b5d75eab639db6148a928a675bfa",
+    "tests/explore-anywhere-search.integration.test.mjs": "b64cea7aa03d5b6ee2f7768cf970536af9e456cd6b327ec88d80e6aa7e3b072f",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs": "d02fc5a3dfd3857e9d0ae2dd64b6f88482b59011e47ed4ff4dbb0e35bc2d9357"
+  },
+  "filePath": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos\\releases\\changes\\2026-10-17T04-27-46-654Z-0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e.json"
+}

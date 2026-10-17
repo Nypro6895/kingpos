@@ -11,12 +11,12 @@ const empty={version:1,exactSalonName:false,exactOriginalSalonName:false,areaCan
 const productionEntities=JSON.parse(readFileSync('tests/fixtures/explore-query-production-entities-20261016.json','utf8'));
 function runner(data=empty){const calls=[];return {calls,rpc:async(name,args)=>{calls.push({name,args});return {data,error:null};}};}
 
-test('broad category requests use indexed category ordering only after exact brand verification; specific requirements survive',async()=>{
+test('broad category requests retain category ordering despite generic brand collisions; specific requirements survive',async()=>{
  for(const query of ['nails','Nail place','best nail salons','hair salons']){
   const result=await router.resolveExploreQueryRouting({query},runner());
   assert.equal(result.query,'');assert.equal(result.displayQuery,query);assert.ok(result.category);
   const exact=await router.resolveExploreQueryRouting({query},runner({...empty,exactSalonName:true}));
-  assert.equal(exact.query,query);assert.equal(exact.category,'');
+  assert.equal(exact.query,'');assert.equal(exact.category,result.category);assert.equal(exact.queryKind,'service');
  }
  for(const query of ['gel nails','acrylic nails','French nails','manicure','hair extensions','full set nails']){
   assert.equal((await router.resolveExploreQueryRouting({query},runner())).query,query);
@@ -102,7 +102,7 @@ test('combined service/state/ZIP/city uses one bounded entity proof and avoids t
 });
 
 test('complete brand proof wins combined-area heuristics while unknown cities and lookup failures never silently truncate names',async()=>{
- for(const query of ['Nails WI','Nails 53202','King Nails Milwaukee','King Nails WI','Design Nails Milwaukee']) {
+ for(const query of ['King Nails Milwaukee','King Nails WI','Design Nails Milwaukee']) {
   const api=runner({...empty,exactOriginalSalonName:true,areaCandidates:query.endsWith('Milwaukee')?[area('Milwaukee','WI')]:[]}),result=await router.resolveExploreQueryRouting({query},api);
   assert.equal(result.query,query);assert.equal(result.displayQuery,query);assert.equal(result.location,'');assert.equal(result.category,'');assert.equal(result.target,'salons');assert.equal(result.areaCandidates.length,0);assert.equal(api.calls.length,1);
  }
@@ -232,4 +232,33 @@ test('verified explicit areas and generic service-city combinations cannot be co
  const quoted=await router.resolveExploreQueryRouting({query:'"Nails Milwaukee"'},runner({...empty,exactSalonName:true}));assert.equal(quoted.query,'Nails Milwaukee');assert.equal(quoted.location,'');assert.equal(quoted.queryKind,'name');
  const named=await router.resolveExploreQueryRouting({query:'salon named Nails Milwaukee'},runner({...empty,exactSalonName:true}));assert.equal(named.query,'Nails Milwaukee');assert.equal(named.location,'');
  const unknown=await router.resolveExploreQueryRouting({query:'Designs in Motion'},runner({...empty,exactOriginalSalonName:true}));assert.equal(unknown.query,'Designs in Motion');assert.equal(unknown.queryKind,'name');assert.equal(unknown.location,'');
+});
+
+test('Anywhere searches keywords and typed ZIP/state/place without requiring device location',async()=>{
+ const inherited={fallbackLocation:'Chicago, IL',fallbackSource:'workspace'};
+ for(const [query,location,kind,content] of [['red nail','','style','red'],['red nails','','style','red'],['53222','53222','service',''],['nails near wa','WA','service',''],['Nails WI','WI','service',''],['Nails 53202','53202','service','']]) {
+  const result=await router.resolveExploreQueryRouting({query,locationSource:'none',latitude:43,longitude:-87,contextState:'IL'},{...inherited,...runner({...empty,exactSalonName:true,exactOriginalSalonName:true})});
+  assert.equal(result.location,location,query);assert.equal(result.queryKind,kind,query);assert.equal(result.contentQuery,content,query);assert.equal(result.requiresGps,false,query);
+  assert.equal(result.latitude,null);assert.equal(result.longitude,null);assert.equal(result.locationPriority,Boolean(location));
+ }
+ const city=await router.resolveExploreQueryRouting({query:'Milwaukee',locationSource:'none'},{...inherited,...runner({...empty,areaCandidates:[area('Milwaukee','WI')]})});
+ assert.equal(city.location,'Milwaukee, WI');assert.equal(city.requiresGps,false);
+ const near=await router.resolveExploreQueryRouting({query:'nails near me',locationSource:'none',location:'Chicago, IL',latitude:43,longitude:-87},{...inherited,...runner()});
+ assert.equal(near.location,'');assert.equal(near.requiresGps,true);assert.equal(near.latitude,null);
+ const ambiguous=await router.resolveExploreQueryRouting({query:'Springfield',locationSource:'none',contextState:'IL'},{...inherited,...runner({...empty,areaCandidates:[area('Springfield','IL'),area('Springfield','MA')]})});
+ assert.equal(ambiguous.location,'Springfield');assert.equal(ambiguous.areaAmbiguous,true,'Anywhere must not silently reuse an old state to disambiguate a typed place');
+});
+
+test('a matching salon name cannot consume literal style terms; explicit names remain available',async()=>{
+ const api=runner({...empty,exactSalonName:true,exactOriginalSalonName:true});
+ for(const query of ['red nail','Red Nails','Christmas Nails','French nail designs']) {
+  const result=await router.resolveExploreQueryRouting({query},api);
+  assert.equal(result.queryKind,'style',query);assert.equal(result.category,'Nails');assert.ok(result.contentQuery);assert.equal(result.requiresGps,false);
+ }
+ for(const query of ['"Red Nails"','salon named Red Nails','Design Nails','King Nails']) {
+  const result=await router.resolveExploreQueryRouting({query},api);
+  assert.equal(result.queryKind,'name',query);assert.equal(result.category,'');assert.equal(result.location,'');assert.equal(result.requiresGps,false);
+ }
+ const located=await router.resolveExploreQueryRouting({query:'red nails near WA'},api);
+ assert.equal(located.queryKind,'style');assert.equal(located.contentQuery,'red');assert.equal(located.category,'Nails');assert.equal(located.location,'WA');
 });

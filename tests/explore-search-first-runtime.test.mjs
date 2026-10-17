@@ -66,12 +66,14 @@ function declaration(name) {
 const actions = ts.transpileModule(['submitUnifiedSearch','cancelTypedSearch'].map(declaration).join('\n')+'\nglobalThis.actions={submitUnifiedSearch,cancelTypedSearch};', {compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
 function harness(gps = false) {
   const state={}, requests=[],urls=[],gpsCalls=[];
-  const context={AbortController,typedRequest:{current:null},gpsRequestVersion:{current:0},gpsRequest:{current:null},query:'nails',searchTarget:'salons',gpsCoordinates:gps?{latitude:43,longitude:-87}:null,
+  const rpc=module('lib/explore-search-rpc.ts');
+  const context={AbortController,typedRequest:{current:null},autoLocationChecked:{current:false},gpsRequestVersion:{current:0},gpsRequest:{current:null},query:'nails',searchTarget:'salons',gpsCoordinates:gps?{latitude:43,longitude:-87}:null,
+    ...rpc,
     activeResponse:{locationOrigin:'manual',scope:{policy:'fixed'}},location:'Milwaukee, WI',locationSource:'manual',initialResponse:{pageSize:12},
     prepareSearchTransition(){},rememberSearchUrl(...args){urls.push(args);},runGpsSearch(...args){gpsCalls.push(args);return Promise.resolve();},
     fetchExploreSearchPage(input,signal){return new Promise((resolve,reject)=>requests.push({input,signal,resolve,reject}));}
   };
-  for(const name of ['Query','Category','GpsStatus','GpsMessage','ActiveDiscoveryResult','SessionResponse','GpsResponse','CommittedGpsContext','NearYouSalons','ExplicitSearchMode','SearchOrderMode','Location','LocationSource']) context['set'+name]=value=>{state[name]=value;};
+  for(const name of ['Query','Category','GpsStatus','GpsMessage','TypedSearchFailure','ActiveDiscoveryResult','SessionResponse','GpsResponse','CommittedGpsContext','NearYouSalons','ExplicitSearchMode','SearchOrderMode','Location','LocationSource']) context['set'+name]=value=>{state[name]=value;};
   vm.runInNewContext(actions,context); return {...context.actions,state,requests,urls,gpsCalls};
 }
 const result = term => ({query:term,category:term==='hair'?'Hair':'Nails',location:'Milwaukee, WI',locationSource:'manual',sort:'relevance'});

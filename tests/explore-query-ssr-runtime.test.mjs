@@ -60,3 +60,17 @@ test('SSR forwards structured style filters to the same salon search for legacy 
  const api=page();await client(await api.render({searchParams:Promise.resolve({q:'red nails',type:'posts',shape:'stiletto',color:'red',maxPrice:'65',bookableOnly:'true'})}));
  const call=api.calls.find(call=>call.name==='search');assert.equal(call.input.target,'salons');assert.equal(call.input.filters.shape,'stiletto');assert.equal(call.input.filters.color,'red');assert.equal(call.input.filters.maxPrice,65);assert.equal(call.input.filters.bookableOnly,true);
 });
+
+test('SSR Anywhere remains global after reload and still accepts typed ZIP or place',async()=>{
+ for(const params of [{q:'red nail',locationSource:'none'},{q:'red nail',location:'',locationSource:'none'}]) {
+  const api=page();const result=await client(await api.render({searchParams:Promise.resolve(params)}));
+  assert.equal(result.props.initialResponse.location,'');assert.equal(result.props.initialResponse.locationOrigin,'none');
+  assert.equal(result.props.initialResponse.requiresGps,false);assert.equal(result.props.initialLocationSource,'none');
+ }
+ for(const [q,location] of [['53222','53222'],['nails near wa','WA'],['Milwaukee','Milwaukee, WI']]) {
+  const api=page();const result=await client(await api.render({searchParams:Promise.resolve({q,location:'',locationSource:'none'})}));
+  assert.equal(result.props.initialResponse.location,location);assert.equal(result.props.initialResponse.locationOrigin,'query');assert.equal(result.props.initialResponse.requiresGps,false);
+ }
+ const api=page();const result=await client(await api.render({searchParams:Promise.resolve({q:'nails near me',locationSource:'none'})}));
+ assert.equal(result.props.initialResponse.location,'');assert.equal(result.props.initialResponse.requiresGps,true,'the workspace must not undo an explicit Anywhere selection');
+});

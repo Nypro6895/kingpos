@@ -30,7 +30,7 @@ export async function searchFixture(db,input={}){
  const params=[input.query??'',input.category??'Nails',input.location??'',input.latitude??null,input.longitude??null,input.sort??'relevance',input.limit??12,input.cursor??null,input.scopePolicy??'expandable',input.intent??'search',input.contentQuery??input.query??'',input.queryKind??'service',input.locationPriority??false,input.filters??{},input.hydrateIds??null];
  return (await db.query('SELECT search_public_explore_session($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) AS result',params)).rows[0].result;
 }
-export async function createUnifiedExploreFixture({seed=true,scale=0,addressPriority=true,onStage=()=>{}}={}){
+export async function createUnifiedExploreFixture({seed=true,scale=0,addressPriority=true,anywhereSearch=true,onStage=()=>{}}={}){
  const db=new PGlite({extensions:{pg_trgm,cube,earthdistance}});
  try{
   await db.exec(readFileSync(new URL('./explore-social-bootstrap.sql',import.meta.url),'utf8'));
@@ -75,6 +75,10 @@ export async function createUnifiedExploreFixture({seed=true,scale=0,addressPrio
   onStage('unified migration and real backfill');
   await db.exec(migration('20261016010001_explore_unified_salon_search.sql'));
   if(addressPriority)await db.exec(migration('20261017020000_explore_address_priority.sql'));
+  if(addressPriority&&anywhereSearch){
+   await db.exec(migration('20261017030000_explore_anywhere_search.sql'));
+   await db.exec(migration('20261017040000_explore_unified_query_performance.sql'));
+  }
   onStage('unified migration complete');
   const ids={};
   if(seed){

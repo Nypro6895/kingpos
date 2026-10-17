@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "changeId": "payroll-release-help-alignment-20261016",
+  "files": [
+    "lib/help-guides.ts",
+    "app/help/help-copy.json",
+    "lib/vietnamese-help-copy.json"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Payroll release security gate now passes against current schema. EN/VI Help describes immutable originals, owner adjustments and recorded payments; obsolete payroll illustrations removed.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source",
+    "baselineDeploymentId": "dpl_Ejji8CkeAdsjudkYHVpgR9Ycdmoj"
+  },
+  "validation": [
+    {
+      "name": "Final assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/build-release.log"
+    },
+    {
+      "name": "Integrated SQL search, browser, permissions, ledger, native DTO and Help regression checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/validation-summary.json"
+    },
+    {
+      "name": "Isolated current schema staff/payroll security",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/evidence/staff-payroll-current/results.json"
+    }
+  ],
+  "id": "9b1233af-2c14-419a-bf7a-4b3d43316bd8",
+  "recordedAt": "2026-10-17T03:34:53.101Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/help-guides.ts": "746cca1cc1d1a3b5bf9b7876585c4ed5fb89065ef5a49e4e765a6abba73cebfb",
+    "app/help/help-copy.json": "261020de817e065701ca057aa6593c05bb49dafc6289e6fe2d2f684e2120725c",
+    "lib/vietnamese-help-copy.json": "428f62a0203d9b7822b65c4263cdc5e772d21a6a3aa0fee7a95a4a57cfc74960"
+  }
+}

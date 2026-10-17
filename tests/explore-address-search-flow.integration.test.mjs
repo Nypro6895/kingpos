@@ -134,3 +134,47 @@ test('approved search flow: routing, stored address region, content, suggestions
     });
   } finally { await fixture.close(); }
 });
+
+test('Anywhere resolves style, exact salon, ZIP, state and stored street independently of GPS', { timeout: 180000 }, async t => {
+ const fixture=await createUnifiedExploreFixture({seed:false});
+ const {db}=fixture;
+ try {
+  await seedSalon(db,951,{name:'Red Nails',city:'Chicago',state:'IL',latitude:null,longitude:null});
+  await seedSalon(db,952,{name:'Lumi Studio',city:'Milwaukee',state:'WI',latitude:null,longitude:null});
+  await seedSalon(db,953,{name:'Northwest Nails',city:'Seattle',state:'WA',latitude:null,longitude:null});
+  await seedSalon(db,954,{name:'Nails',city:'Tampa',state:'FL',latitude:null,longitude:null});
+  await seedPost(db,1952,952,{title:'Red nail design',caption:'Christmas red nails',media:true});
+  await db.query("UPDATE explore_salon_documents SET address_line1='8333 W Appleton Ave',postal_code='53222' WHERE salon_id=$1",[fixtureId(952)]);
+  const api=searchService(db);
+  const run=async(query)=>{
+   const result=await api.search({query,locationSource:'none',latitude:41.88,longitude:-87.63,pageSize:20});
+   assert.equal(result.error,null);assert.equal(result.target,'salons');assert.equal(result.requiresGps,false,query);
+   return result;
+  };
+  for(const query of ['red nail','red nails']) await t.test(query+' retains exact names and matching posts',async()=>{
+   const result=await run(query);
+   assert.equal(result.queryKind,'style');assert.equal(result.contentQuery,'red');assert.equal(result.location,'');assert.equal(result.locationPriority,false);
+   const primary=result.results.filter(row=>row.isPrimaryMatch);
+   assert.ok(primary.some(row=>row.id===fixtureId(951)),'exact or token salon names remain eligible');
+   assert.ok(primary.some(row=>row.id===fixtureId(952)),'real post content survives a colliding exact salon name');
+   assert.ok(primary.every(row=>row.name),'all images lead to a salon');
+  });
+  for(const [query,id,location] of [['53222',952,'53222'],['nails near wa',953,'WA'],['Milwaukee',952,'Milwaukee, WI'],['8333 W Appleton Ave',952,'8333 W Appleton Ave']]) await t.test(query+' establishes its own area',async()=>{
+   const result=await run(query);assert.equal(result.location,location);assert.equal(result.locationPriority,true);
+   const primary=result.results.filter(row=>row.isPrimaryMatch);
+   assert.ok(primary.some(row=>row.id===fixtureId(id)));assert.ok(primary.every(row=>row.id===fixtureId(id)));
+  });
+  await t.test('distinctive salon names still return the named salon',async()=>{
+   const result=await run('Lumi Studio');assert.equal(result.queryKind,'name');assert.equal(result.results[0].id,fixtureId(952));assert.equal(result.results[0].isPrimaryMatch,true);
+  });
+  await t.test('generic nails browses all nail salons even with an identical business name',async()=>{
+   const result=await run('nails');assert.equal(result.queryKind,'service');assert.equal(result.query,'');assert.equal(result.category,'Nails');
+   assert.equal(result.results.filter(row=>row.isPrimaryMatch).length,4);
+   const named=await run('salon named Nails');assert.equal(named.queryKind,'name');assert.equal(named.results[0].id,fixtureId(954));
+  });
+  await t.test('explicit near me alone asks for an area after location was cleared',async()=>{
+   const result=await api.search({query:'nails near me',locationSource:'none',latitude:43,longitude:-87,pageSize:20});
+   assert.equal(result.error,null);assert.equal(result.requiresGps,true);assert.equal(result.results.length,0);
+  });
+ } finally {await fixture.close();}
+});

@@ -20,7 +20,7 @@ const CONTENT_CATEGORY_WORDS = new Set(["nail", "nails", "hair", "lash", "lashes
 const CONTENT_ROUTING_WORDS = new Set(["salon", "salons", "service", "services", "shop", "shops", "place", "places", "studio", "studios", "and", "for", "a", "the", "best"]);
 const NAIL_STYLE_WORDS = new Set("red burgundy pink nude beige white black brown orange yellow green blue purple silver gold almond square squoval round oval coffin ballerina stiletto stilettos stilitle stilleto stilletto short medium long glossy matte sheer glazed chrome glitter french floral ombre marble neon pastel pearl cat eye 3d spring summer fall autumn winter holiday bridal christmas wedding lavender lilac ruby scarlet cherry chocolate cocoa emerald sage mint cobalt".split(" "));
 for (const word of "jelly glass aura airbrush tortoise shell tortoiseshell polka dot dots animal print fawn deer bambi cheetah leopard micro milky matcha olive velvet magnetic amber caramel plum chartreuse citron soap clean minimal liquid metal silver sculpture abstract accents knit sweater cable cashmere mixed mix match mismatched reverse soft vivid dark neutral metallic".split(" ")) NAIL_STYLE_WORDS.add(word);
-function nailStylePhrase(value: string) {
+export function exploreQueryNailStylePhrase(value: string) {
   const tokens = words(value);
   return tokens.some(token => NAIL_STYLE_WORDS.has(token)) && tokens.every(token => NAIL_STYLE_WORDS.has(token) || ["nail", "nails", "manicure", "color", "colour", "shape", "tone", "length", "season"].includes(token) || CONTENT_CUES.has(token) || ["and", "with", "for", "the"].includes(token));
 }
@@ -92,7 +92,7 @@ function combinedServiceArea(value: string) {
   if (lastService < 0 || lastService >= parts.length - 1) return null;
   const query = parts.slice(0, lastService + 1).join(" ").replace(/[,\s]+$/, "");
   const locationHint = parts.slice(lastService + 1).join(" ").replace(/[,.!?]+$/, "").trim();
-  if (nailStylePhrase(locationHint)) return null;
+  if (exploreQueryNailStylePhrase(locationHint)) return null;
   return query && locationHint ? { query, locationHint } : null;
 }
 
@@ -170,12 +170,12 @@ export function parseExploreQueryIntent(value: string, options: { target?: Explo
   const tokens = words(body);
   const serviceWords = tokens.filter(token => CATEGORY_WORDS[token]);
   const category = serviceWords.length ? CATEGORY_WORDS[serviceWords[0]] : "";
-  const hasContentCue = tokens.some(token => CONTENT_CUES.has(token)) || nailStylePhrase(body);
+  const hasContentCue = tokens.some(token => CONTENT_CUES.has(token)) || exploreQueryNailStylePhrase(body);
   const target = "salons" as const;
   const genericService = serviceWords.length > 0 && tokens.every(token => CATEGORY_WORDS[token] || GENERIC_SERVICE_WORDS.has(token));
   const categoryOnly = !explicitName && serviceWords.length > 0 && tokens.every(token => CONTENT_CATEGORY_WORDS.has(token) || CONTENT_ROUTING_WORDS.has(token));
   const queryKind: ExploreSearchQueryKind = explicitName ? "name" : hasContentCue ? "style" : genericService || !tokens.length ? "service" : "name";
-  const categoryHint = !explicitName && (hasContentCue || genericService) ? category || (nailStylePhrase(body) ? "Nails" : "") : "";
+  const categoryHint = !explicitName && (hasContentCue || genericService) ? category || (exploreQueryNailStylePhrase(body) ? "Nails" : "") : "";
   const theme = explicitName ? tokens : tokens.filter(token => !CONTENT_CATEGORY_WORDS.has(token) && !CONTENT_CUES.has(token) && !CONTENT_ROUTING_WORDS.has(token));
   const contentQuery = queryKind === "name" ? body : categoryOnly ? "" : (theme.join(" ") || tokens.find(token => CONTENT_CUES.has(token)) || tokens[0] || "");
   const locationArea = parseExploreQueryArea(locationHint);

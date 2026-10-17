@@ -3135,6 +3135,11 @@ export function ExploreClient({
   const [nearYouSalons, setNearYouSalons] = useState<ExploreHomeSalon[]>([]);
   const [gpsStatus, setGpsStatus] = useState<GpsStatus>("idle");
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
+  const [typedSearchFailure, setTypedSearchFailure] = useState<{
+    response: ExploreSearchResponse;
+    kind: ReturnType<typeof classifyExploreSearchError>;
+    message: string;
+  } | null>(null);
   const [searchAreaOpen, setSearchAreaOpen] = useState(false);
   const [searchResetVersion, setSearchResetVersion] = useState(0);
   const [pendingIdeasHeight, setPendingIdeasHeight] = useState<number | null>(null);
@@ -3207,8 +3212,11 @@ export function ExploreClient({
       void rememberExplorePreferenceAction({ location: initialLocationSource === "manual" ? initialResponse.location : undefined, category: initialResponse.category }).catch(() => {});
     }
   }, [commentViewer.isAuthenticated, hasUrlLocation, initialSearchMode, initialLocationSource, initialResponse.location, initialResponse.category]);
-  const searchUnavailable = Boolean(activeResponse.error || activeResponse.errorKind || activeResponse.lookupFailed);
-  const summaryText = searchUnavailable ? "Search is temporarily unavailable" : activeResponse.requiresGps ? "Choose a location to find salons near you" : !hasAnyResults && (isSearching || activeResponse.hasMore) ? "Loading results…" : resultSummary({
+  const activeSearchFailure = !isSearching && typedSearchFailure?.response === activeResponse ? typedSearchFailure : null;
+  const searchUnavailable = !isSearching && Boolean(activeSearchFailure || activeResponse.error || activeResponse.errorKind || activeResponse.lookupFailed);
+  const requiresGps = !isSearching && !searchUnavailable && Boolean(activeResponse.requiresGps);
+  const searchErrorKind = activeSearchFailure?.kind ?? activeResponse.errorKind;
+  const summaryText = searchUnavailable ? "Search is temporarily unavailable" : requiresGps ? "Choose a location to find salons near you" : !hasAnyResults && (isSearching || activeResponse.hasMore) ? "Loading results…" : resultSummary({
     bestCount: activeSections.bestMatches.length,
     category: committedSearch.category,
     hasAnyResults,
@@ -3223,7 +3231,7 @@ export function ExploreClient({
     if (autoLocationChecked.current) return;
     let active = true;
     const restore = async () => {
-      const chosenArea = initialResponse.locationOrigin === "manual" || initialResponse.locationOrigin === "query" || initialLocationSource === "manual";
+      const chosenArea = initialResponse.locationOrigin === "manual" || initialResponse.locationOrigin === "query" || initialLocationSource === "manual" || searchParams.get("locationSource") === "none";
       if (chosenArea) { autoLocationChecked.current = true; return; }
       let preference = "";
       try { preference = window.sessionStorage.getItem(GPS_PREFERENCE_KEY) ?? ""; } catch { /* Optional preference. */ }
@@ -3231,7 +3239,7 @@ export function ExploreClient({
       try { granted = (await navigator.permissions?.query({ name: "geolocation" }))?.state === "granted"; } catch { /* Safari can lack the permission query. */ }
       if (!active) return;
       autoLocationChecked.current = true;
-      if (initialResponse.requiresGps || preference !== "off" && (granted || preference === "on")) {
+      if (preference !== "off" && (initialResponse.requiresGps || granted || preference === "on")) {
         requestLocationRef.current();
         return;
       }
@@ -3271,7 +3279,7 @@ export function ExploreClient({
     if (response.location) {
       params.set("location", response.location);
       params.set("locationSource", response.locationOrigin === "query" ? "saved" : response.locationSource ?? locationSource);
-    } else { params.set("location", ""); params.delete("locationSource"); }
+    } else { params.set("location", ""); params.set("locationSource", response.locationSource === "gps" ? "gps" : "none"); }
     // Next's native history integration updates searchParams without replacing
     // the active cursor. GPS stays in memory and is reacquired after refresh.
     window.history.replaceState(null, "", pathname + (params.size ? "?" + params : ""));
@@ -3318,6 +3326,7 @@ export function ExploreClient({
   }
 
   function prepareSearchTransition() {
+    setTypedSearchFailure(null);
     if (typeof document === "undefined") return;
     const height = document.querySelector('[data-testid="explore-content-search"]')?.getBoundingClientRect().height;
     if (height !== undefined && Number.isFinite(height) && height > 0) setPendingIdeasHeight(height);
@@ -3442,6 +3451,7 @@ export function ExploreClient({
     prepareSearchTransition();
     const version = ++gpsRequestVersion.current;
     gpsRequest.current?.abort();
+    typedRequest.current = null;
     try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "on"); } catch { /* Optional preference. */ }
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGpsStatus("unsupported");
@@ -3505,9 +3515,14 @@ export function ExploreClient({
     try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "off"); } catch { /* Optional preference. */ }
     gpsRequestVersion.current += 1;
     gpsRequest.current?.abort();
+    typedRequest.current = null;
     appliedSavedLocation.current = true;
+    autoLocationChecked.current = true;
+    gpsArea.current = null;
     setGpsCoordinates(null);
     setGpsResponse(null);
+    setCommittedGpsContext(null);
+    setTypedSearchFailure(null);
     setNearYouSalons([]);
     setGpsStatus("idle");
     setGpsMessage(null);
@@ -3518,9 +3533,13 @@ export function ExploreClient({
     setQuery(searchQuery);
     setExplicitSearchMode(Boolean(searchQuery.trim() || normalizedCategory));
     try { window.localStorage.removeItem(SAVED_LOCATION_KEY); } catch { /* Storage may be unavailable. */ }
+    const params = new URLSearchParams(searchParams.toString());
+    for (const key of ["cursor", "lat", "lng", "latitude", "longitude", "locationSource"]) params.delete(key);
+    params.set("locationSource", "none");
+    params.set("scope", "expandable");
     startTransition(() => router.push(buildUrl({
       category: selectedCategory, location: "", page: 1, pathname, query: searchQuery,
-      searchParams: new URLSearchParams(searchParams.toString()),
+      searchParams: params,
     }), { scroll: false }));
   }
 
@@ -3576,6 +3595,9 @@ export function ExploreClient({
     if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ location: "" }).catch(() => {});
     gpsRequestVersion.current += 1;
     gpsRequest.current?.abort();
+    typedRequest.current = null;
+    setTypedSearchFailure(null);
+    setCommittedGpsContext(null);
     setGpsStatus("idle");
     setQuery("");
     setLocation("");
@@ -3600,6 +3622,7 @@ export function ExploreClient({
     if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ category: value }).catch(() => {});
     gpsRequestVersion.current += 1;
     gpsRequest.current?.abort();
+    typedRequest.current = null;
     setGpsStatus("idle");
     const nextCategory = cleanCategory(value);
     const nextSearchMode = Boolean(
@@ -3645,6 +3668,7 @@ export function ExploreClient({
     prepareSearchTransition();
     gpsRequestVersion.current += 1;
     gpsRequest.current?.abort();
+    typedRequest.current = null;
     setGpsStatus("idle");
     const nextCategory =
       input.category === undefined ? selectedCategory : input.category;
@@ -3664,6 +3688,13 @@ export function ExploreClient({
     if (input.location !== undefined) {
       setLocationSource(nextLocationSource);
       setGpsCoordinates(null);
+      setCommittedGpsContext(null);
+      gpsArea.current = null;
+      autoLocationChecked.current = true;
+      appliedSavedLocation.current = true;
+      if (!nextLocation.trim()) {
+        try { window.localStorage.removeItem(SAVED_LOCATION_KEY); } catch { /* Optional preference. */ }
+      }
     }
     setCategory(nextCategory);
     setGpsResponse(null);
@@ -3676,7 +3707,7 @@ export function ExploreClient({
     for (const key of ["browse", "sort", "page", "cursor", "lat", "lng", "latitude", "longitude"]) shortcutParams.delete(key);
     shortcutParams.set("type", "salons");
     if (input.location !== undefined) {
-      if (nextLocation.trim()) shortcutParams.set("locationSource", nextLocationSource); else shortcutParams.delete("locationSource");
+      shortcutParams.set("locationSource", nextLocation.trim() ? nextLocationSource : "none");
       shortcutParams.set("scope", input.scopePolicy ?? (nextLocation.trim() ? "fixed" : "expandable"));
     } else if (input.scopePolicy) {
       shortcutParams.set("scope", input.scopePolicy);
@@ -3719,6 +3750,7 @@ export function ExploreClient({
     }
     prepareSearchTransition();
     gpsRequestVersion.current += 1; gpsRequest.current?.abort();
+    typedRequest.current = null;
     setGpsStatus("idle");
     const params = new URLSearchParams(searchParams.toString());
     params.delete("page"); params.delete("cursor"); params.set("type", "salons");
@@ -3733,14 +3765,18 @@ export function ExploreClient({
     gpsRequestVersion.current += 1;
     gpsRequest.current?.abort();
     setGpsStatus("idle");
+    setTypedSearchFailure(null);
   }
 
   async function submitUnifiedSearch(searchQuery: string) {
     searchQuery = searchQuery.trim();
     if (typedRequest.current === searchQuery) return;
     typedRequest.current = searchQuery;
+    autoLocationChecked.current = true;
     const target = "salons";
     setQuery(searchQuery);
+    setExplicitSearchMode(true);
+    setTypedSearchFailure(null);
     // The text now chooses the field; an invisible old category must not narrow it.
     setCategory("All");
     if (gpsCoordinates) {
@@ -3755,11 +3791,11 @@ export function ExploreClient({
     gpsRequest.current = controller;
     setGpsStatus("searching"); setGpsMessage(null);
     setActiveDiscoveryResult(null);
-    const scope = activeResponse.scope?.policy ?? "expandable";
+    const scope = location.trim() ? activeResponse.scope?.policy ?? "expandable" : "expandable";
     try {
       const response = await fetchExploreSearchPage({
         query: searchQuery, category: "", target, location, filters: searchQuery === query ? activeResponse.filters : {},
-        locationSource: activeResponse.locationOrigin === "query" ? "saved" : locationSource,
+        locationSource: !location.trim() ? "none" : activeResponse.locationOrigin === "query" ? "saved" : locationSource,
         scopePolicy: scope, sort: "relevance", page: 1, pageSize: initialResponse.pageSize,
       }, controller.signal);
       if (version !== gpsRequestVersion.current) return;
@@ -3769,8 +3805,13 @@ export function ExploreClient({
       setLocation(response.location); setLocationSource(response.locationSource ?? locationSource);
       setCategory(response.category || "All");
       if (!response.error) rememberSearchUrl(response, searchQuery, target, scope);
-    } catch {
-      if (version === gpsRequestVersion.current) setGpsMessage("We couldn't update results. Please try again.");
+    } catch (cause) {
+      if (version === gpsRequestVersion.current) {
+        const kind = classifyExploreSearchError(cause);
+        const message = exploreSearchErrorMessage(kind);
+        setTypedSearchFailure({ response: activeResponse, kind, message });
+        setGpsMessage(message);
+      }
     } finally {
       if (version === gpsRequestVersion.current) { setGpsStatus("idle"); typedRequest.current = null; }
     }
@@ -3810,6 +3851,7 @@ export function ExploreClient({
     setSearchOrderMode(mode);
     gpsRequestVersion.current += 1;
     gpsRequest.current?.abort();
+    typedRequest.current = null;
     if (gpsActive && gpsCoordinates) {
       void runGpsSearch(gpsCoordinates, 1, query, mode);
       return;
@@ -3860,7 +3902,7 @@ export function ExploreClient({
               <ExploreSearchToolbar key={searchResetVersion} query={query} category={normalizedCategory} location={location}
                 initialDraftValue={readExploreStartupInteraction(commentViewer.userId)?.query}
                 restoreInitialFocus={readExploreStartupInteraction(commentViewer.userId)?.focused}
-                locationSource={activeResponse.locationOrigin === "query" ? "saved" : locationSource}
+                locationSource={!location.trim() && !gpsCoordinates ? "none" : activeResponse.locationOrigin === "query" ? "saved" : locationSource}
                 scopePolicy={activeResponse.scope?.policy ?? (locationSource === "manual" ? "fixed" : "expandable")}
                 locating={gpsStatus === "locating"} pending={isSearching}
                 message={gpsMessage} areaOpen={searchAreaOpen} onAreaOpenChange={setSearchAreaOpen}
@@ -3875,7 +3917,7 @@ export function ExploreClient({
             ) : null}
           </section>
 
-          {searchMode ? <ExploreSearchContext response={activeResponse} pending={isSearching}
+          {searchMode ? <ExploreSearchContext response={activeResponse} pending={isSearching || Boolean(activeSearchFailure)}
             onAreaSelect={area => applySearchShortcut({ location: area })}
             onEditLocation={() => setSearchAreaOpen(true)} /> : null}
           {homeMode ? (
@@ -3949,7 +3991,7 @@ export function ExploreClient({
               </section>
 
               <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
-                {searchMode ? (
+                {searchMode && !activeSearchFailure ? (
                   <SearchRefinementBar
                     category={committedSearch.category || "All"}
                     location={committedSearch.location}
@@ -3960,7 +4002,7 @@ export function ExploreClient({
                     query={committedSearch.displayQuery}
                     workspaceLocation={workspaceLocation}
                   >
-                    {!isSearching && !searchUnavailable && !activeResponse.requiresGps && hasAnyResults ? (
+                    {!isSearching && !searchUnavailable && !requiresGps && hasAnyResults ? (
                       <NailInspirationFilters
                         key={committedSearch.sessionKey}
                         filters={nailFilters}
@@ -3970,15 +4012,15 @@ export function ExploreClient({
                     ) : null}
                   </SearchRefinementBar>
                 ) : null}
-                {committedSearch.fallbackMessage && !isSearching ? <p className="text-sm text-text-secondary" role="status">{committedSearch.fallbackMessage}</p> : null}
+                {committedSearch.fallbackMessage && !isSearching && !searchUnavailable ? <p className="text-sm text-text-secondary" role="status">{committedSearch.fallbackMessage}</p> : null}
 
                 {searchUnavailable ? (
                   <ExploreNotice
-                    title={activeResponse.errorKind === "timeout" ? "Search took too long" : activeResponse.errorKind === "network" ? "Search connection interrupted" : activeResponse.errorKind === "cursor" ? "Search session expired" : "We couldn't load salons right now."}
+                    title={searchErrorKind === "timeout" ? "Search took too long" : searchErrorKind === "network" ? "Search connection interrupted" : searchErrorKind === "cursor" ? "Search session expired" : "We couldn't load salons right now."}
                     tone="warning"
                     action={<button type="button" onClick={() => void submitUnifiedSearch(query)} className="min-h-11 rounded-full bg-surface-muted px-4 font-semibold">Try again</button>}
                   >
-                    {activeResponse.error || "Please try again."}
+                    {activeSearchFailure?.message || activeResponse.error || "Please try again."}
                   </ExploreNotice>
                 ) : null}
 
@@ -4002,8 +4044,8 @@ export function ExploreClient({
                 ) : null}
 
 
-                {activeResponse.requiresGps && !searchUnavailable ? <><button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button><ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /></> : null}
-                {!searchUnavailable && !activeResponse.requiresGps ? (!hasAnyResults && !activeResponse.hasMore && !isSearching ? (
+                {requiresGps ? <><button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button><ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /></> : null}
+                {!searchUnavailable && !requiresGps ? (!hasAnyResults && !activeResponse.hasMore && !isSearching ? (
                   <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-8 text-center shadow-[var(--shadow-soft)]">
                     <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} />
                   </div>
@@ -4036,7 +4078,7 @@ export function ExploreClient({
                           ? `Salons in ${formatDisplayLocation(committedSearch.location)}`
                           : gpsActive && nearbyHasDistance
                             ? "Salons near you"
-                            : "Salons in this area"
+                            : "Salons"
                       }
                     />
                     <ResultSection
@@ -4052,9 +4094,9 @@ export function ExploreClient({
                   </div>
                 )) : null}
 
-                {hasAnyResults && !activeResponse.hasMore && !searchUnavailable && !activeResponse.requiresGps && !isSearching ? <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /> : null}
+                {hasAnyResults && !activeResponse.hasMore && !searchUnavailable && !requiresGps && !isSearching ? <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /> : null}
 
-                {(activeResponse.hasMore ?? activeResponse.totalCount > activeResponse.pageSize) && !searchUnavailable && !activeResponse.requiresGps && !isSearching ? (
+                {(activeResponse.hasMore ?? activeResponse.totalCount > activeResponse.pageSize) && !searchUnavailable && !requiresGps && !isSearching ? (
                   <SearchContinuationFeed
                     key={`${committedSearch.sessionKey}:${JSON.stringify(activeResponse.nextCursor)}`}
                     response={activeResponse}

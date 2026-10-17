@@ -11,19 +11,19 @@ const automaticEffect = effects.find(node => node.getText(ast).includes('const r
 const startupEffect = effects.find(node => node.getText(ast).includes('if (interaction.gps)'));
 assert.ok(automaticEffect);assert.ok(startupEffect);
 
-function harness({ origin, source = 'manual', startupGps = false } = {}) {
+function harness({ origin, source = 'manual', startupGps = false, requiresGps = false, preference = 'on', urlSource } = {}) {
   const calls = [], state = { current: false };
   const globals = {
     URLSearchParams, autoLocationChecked: state, appliedSavedLocation: { current: false },
-    initialResponse: { location: 'Milwaukee, WI', locationOrigin: origin, requiresGps: false },
+    initialResponse: { location: 'Milwaukee, WI', locationOrigin: origin, requiresGps },
     initialLocationSource: source, hasUrlLocation: true, initialSearchMode: true,
     location: 'Milwaukee, WI', pathname: '/explore', query: 'nails', selectedCategory: 'Nails',
     commentViewer: { userId: null }, GPS_PREFERENCE_KEY: 'gps', SAVED_LOCATION_KEY: 'saved',
-    searchParams: new URLSearchParams('location=Milwaukee%2C+WI'),
+    searchParams: new URLSearchParams(urlSource ? `location=&locationSource=${urlSource}` : 'location=Milwaukee%2C+WI'),
     requestLocationRef: { current: () => calls.push('request-gps') },
     readExploreStartupInteraction: () => startupGps ? { gps: true } : null,
     clearExploreStartupInteraction: () => calls.push('clear-startup'),
-    window: { sessionStorage: { getItem: () => 'on' }, localStorage: { getItem: () => 'Chicago, IL' } },
+    window: { sessionStorage: { getItem: () => preference }, localStorage: { getItem: () => 'Chicago, IL' } },
     navigator: { permissions: { query: async () => { calls.push('permission');return { state: 'granted' }; } } },
     startTransition: fn => fn(), router: { replace: () => calls.push('navigate') }, buildUrl: () => '/explore',
   };
@@ -45,6 +45,20 @@ test('an explicit startup Use current location click remains actionable even whe
   assert.deepEqual(api.calls, ['request-gps', 'clear-startup']);
 });
 
+test('an Anywhere preference never auto-requests GPS for a prior near-me response, but an explicit click still works', async () => {
+  const api = harness({ origin: 'none', source: 'none', requiresGps: true, preference: 'off', startupGps: true });
+  api.automatic();await new Promise(setImmediate);
+  assert.deepEqual(api.calls, ['permission']);assert.equal(api.state.current, true);
+  api.startup();assert.deepEqual(api.calls, ['permission', 'request-gps', 'clear-startup']);
+});
+
+test('an explicit Anywhere URL wins an older GPS-on preference while deliberate startup GPS remains actionable', async () => {
+  const api = harness({ origin: 'none', source: 'none', requiresGps: true, preference: 'on', urlSource: 'none', startupGps: true });
+  api.automatic();await new Promise(setImmediate);
+  assert.deepEqual(api.calls, []);assert.equal(api.state.current, true);
+  api.startup();assert.deepEqual(api.calls, ['request-gps', 'clear-startup']);
+});
+
 test('requesting a new GPS point keeps the chosen city and committed results until resolution, including permission denial', () => {
   const request = client.body.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'requestCurrentLocation');
   assert.ok(request);
@@ -56,7 +70,7 @@ test('requesting a new GPS point keeps the chosen city and committed results unt
     const globals = {
       document: { getElementById: () => ({ value: 'nails' }) }, query: 'nails', searchTarget: 'salons',
       activeResponse, committedGpsContext: { response: activeResponse, coordinates: previousPoint },
-      prepareSearchTransition() {}, gpsRequestVersion: { current: 0 }, gpsRequest: { current: null },
+      prepareSearchTransition() {}, typedRequest: { current: null }, gpsRequestVersion: { current: 0 }, gpsRequest: { current: null },
       GPS_PREFERENCE_KEY: 'gps', window: { sessionStorage: { setItem() {} } },
       explicitSearchMode: true, normalizedCategory: 'Nails', searchOrderMode: 'relevance',
       navigator: { geolocation: { getCurrentPosition: (ok, fail) => { success = ok;failure = fail; } } },

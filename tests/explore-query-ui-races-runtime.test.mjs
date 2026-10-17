@@ -10,11 +10,12 @@ function harness({source='saved',gps=false}={}){
  const events=[],state={};const version={current:4};let staleApplied=false;
  const context={URLSearchParams,commentViewer:{isAuthenticated:false},activeResponse:{locationOrigin:'context',filters:{shape:'square',maxPrice:70},scope:{policy:'fixed'}},committedSearch:{sessionKey:'search-a',coordinates:gps?{latitude:43,longitude:-87}:null,displayQuery:'King Nails near Chicago',category:'Nails',appliedSort:'relevance'},locationSource:source,selectedCategory:'Nails',normalizedCategory:'Nails',searchTarget:'auto',searchOrderMode:'relevance',query:'King Nails near Chicago',location:'Milwaukee, WI',pathname:'/explore',gpsActive:gps,gpsCoordinates:gps?{latitude:43,longitude:-87}:null,
   searchParams:new URLSearchParams(`q=King+Nails+near+Chicago&location=Milwaukee%2C+WI&locationSource=${source}&page=2&type=salons`),gpsRequestVersion:version,
+  typedRequest:{current:null},gpsArea:{current:null},autoLocationChecked:{current:false},appliedSavedLocation:{current:false},
   gpsRequest:{current:{abort(){events.push(['abort',version.current]);Promise.resolve().then(()=>{if(version.current===4)staleApplied=true;});}}},
   startTransition:fn=>{events.push(['transition']);fn();},router:{push:(url,options)=>events.push(['push',url,options])},
   runGpsSearch:(...args)=>{events.push(['gps',...args]);return Promise.resolve();},rememberExplorePreferenceAction:input=>{events.push(['remember',input]);return Promise.resolve();},
  };
- for(const name of ['NailFilterSelection','SearchOrderMode','GpsStatus','Query','Location','LocationSource','GpsCoordinates','Category','GpsResponse','NearYouSalons','ActiveDiscoveryResult','ExplicitSearchMode']){
+ for(const name of ['TypedSearchFailure','CommittedGpsContext','NailFilterSelection','SearchOrderMode','GpsStatus','Query','Location','LocationSource','GpsCoordinates','Category','GpsResponse','NearYouSalons','ActiveDiscoveryResult','ExplicitSearchMode']){
   context[`set${name}`]=value=>{state[name]=value;events.push([`set${name}`,value]);};
  }
  vm.runInNewContext(code,context);
@@ -36,7 +37,7 @@ test('explicit shortcut area becomes manual and clears GPS even when its URL sti
 });
 test('clearing a shortcut area removes its contextual source, while service-only shortcuts retain active GPS',()=>{
  const clear=harness({source:'activity',gps:true});clear.actions.applySearchShortcut({location:''});assert.equal(clear.state.LocationSource,'none');assert.equal(clear.state.GpsCoordinates,null);
- assert.equal(new URL(clear.events.find(event=>event[0]==='push')[1],'https://example.test').searchParams.get('locationSource'),null);
+ assert.equal(new URL(clear.events.find(event=>event[0]==='push')[1],'https://example.test').searchParams.get('locationSource'),'none');
  const contextual=harness({source:'gps',gps:true});contextual.actions.applySearchShortcut({category:'Hair',query:'haircuts'});
  assert.equal(contextual.state.LocationSource,undefined);assert.equal(contextual.state.GpsCoordinates,undefined);assert.ok(!contextual.events.some(event=>event[0]==='push'));
  assert.equal(contextual.events.find(event=>event[0]==='gps')[3],'haircuts');assert.equal(contextual.events.find(event=>event[0]==='gps')[5],'Hair');

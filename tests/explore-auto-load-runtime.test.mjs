@@ -56,7 +56,7 @@ test('Explore automatically advances short pages, retains the search and pauses 
           const results=new URLSearchParams(location.search).has('duplicates')?rows[input.page]:[];
           return {...input,results,error:null,hasMore:input.page<4,nextCursor:input.page<4?{after:input.page}:null};
         }`;
-      else contents = `const Empty=()=>null; export default Empty; export {Empty as FeedLoadingSkeleton, Empty as PostIdentity, Empty as PostActions, Empty as useHiddenPosts, Empty as postIdentity, Empty as PostCommentThread, Empty as SavePostButton, Empty as BeforeAfterCompare, Empty as InspirationAvailability, Empty as ExploreBookButton, Empty as ExploreSalonLove, Empty as OwnerSponsoredPost, Empty as ExploreAdSlot, Empty as SalonTrustLine, Empty as SalonVerifiedBadge, Empty as ReylumiIcon, Empty as useRouter, Empty as ExploreSalonFollow, Empty as ExploreSalonMenu, Empty as ExploreSocialActions, Empty as useSalonSocial};`;
+      else contents = `const Empty=()=>null; export default Empty; export {Empty as NailIllustrationCredit, Empty as FeedLoadingSkeleton, Empty as PostIdentity, Empty as PostActions, Empty as useHiddenPosts, Empty as postIdentity, Empty as PostCommentThread, Empty as SavePostButton, Empty as BeforeAfterCompare, Empty as InspirationAvailability, Empty as ExploreBookButton, Empty as ExploreSalonLove, Empty as OwnerSponsoredPost, Empty as ExploreAdSlot, Empty as SalonTrustLine, Empty as SalonVerifiedBadge, Empty as ReylumiIcon, Empty as useRouter, Empty as ExploreSalonFollow, Empty as ExploreSalonMenu, Empty as ExploreSocialActions, Empty as useSalonSocial};`;
       return { contents, loader: 'tsx', resolveDir: process.cwd() };
     });
   } }] });

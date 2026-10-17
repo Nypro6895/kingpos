@@ -1,5 +1,5 @@
 import "server-only";
-import { cleanExploreQueryText, exploreQueryAreaLabel, exploreQueryStateCode, exploreQueryStreetAddress, parseExploreQueryArea, parseExploreQueryIntent, type ExploreQueryTarget } from "@/lib/explore-query-intent";
+import { cleanExploreQueryText, exploreQueryAreaLabel, exploreQueryNailStylePhrase, exploreQueryStateCode, exploreQueryStreetAddress, parseExploreQueryArea, parseExploreQueryIntent, type ExploreQueryTarget } from "@/lib/explore-query-intent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ExploreSearchQueryKind } from "@/types/explore";
 
@@ -39,12 +39,13 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
   rpc?: ExploreQueryEntityRpc; signal?: AbortSignal; fallbackLocation?: string; fallbackSource?: LocationSource;
 } = {}): Promise<ExploreQueryRouting> {
   if (options.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-  const typedLocation = cleanExploreQueryText(input.location);
+  const anywhere = input.locationSource === "none";
+  const typedLocation = anywhere ? "" : cleanExploreQueryText(input.location);
   const manual = typedLocation && (!input.locationSource || input.locationSource === "manual") ? typedLocation : "";
-  const contextLocation = manual ? cleanExploreQueryText(options.fallbackLocation) : typedLocation || cleanExploreQueryText(options.fallbackLocation);
+  const contextLocation = anywhere ? "" : manual ? cleanExploreQueryText(options.fallbackLocation) : typedLocation || cleanExploreQueryText(options.fallbackLocation);
   const contextSource = input.locationSource && input.locationSource !== "manual" ? input.locationSource : options.fallbackSource ?? "none";
   const contextArea = parseExploreQueryArea(manual || contextLocation);
-  const preferredState = contextArea?.stateCode || exploreQueryStateCode(input.contextState);
+  const preferredState = contextArea?.stateCode || (anywhere ? "" : exploreQueryStateCode(input.contextState));
   let parsed = parseExploreQueryIntent(input.query ?? "", { target: input.target });
   async function publicLookup(name: string, args: Record<string, unknown>): Promise<{ data: Record<string, unknown>; failed: boolean }> {
     try {
@@ -82,19 +83,22 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
   // A verified explicit area, or a generic service followed by a verified city,
   // keeps its geographic meaning even when the whole phrase is a salon name.
   const possibleNameArea = !parsed.directArea || parsed.locationArea?.kind === "city" && !confirmedCity;
-  const preserveArea = parsed.explicitLocation && Boolean(parsed.locationArea || confirmedCity) || parsed.categoryOnly && confirmedCity;
+  const preserveArea = (parsed.explicitLocation || parsed.categoryOnly) && Boolean(parsed.locationArea || confirmedCity);
   if (lookup.exactOriginalSalonName === true && !clearCityLiteral && !preserveArea && possibleNameArea && parsed.locationHint) {
     parsed = parseExploreQueryIntent(parsed.displayQuery, { target: "salons", ignoreArea: true });
     candidates = []; areaAmbiguous = false;
   } else if (parsed.tentativeArea && !confirmedCity && !lookupFailed) parsed = parseExploreQueryIntent(parsed.displayQuery, { target: input.target, ignoreArea: true });
   const exactBrand = lookup.exactOriginalSalonName === true && (!parsed.locationHint || parsed.tentativeArea && !confirmedCity) || lookup.exactSalonName === true;
-  // A generic service plus location stays a category request even when a public
-  // salon has that generic name. Complete and quoted brands were kept above.
-  const broadLocatedService = parsed.categoryOnly && (parsed.nearMe || Boolean(parsed.locationHint || parsed.addressHint));
-  const brand = !broadLocatedService && exactBrand && (parsed.salonCue || parsed.explicitName || !confirmedCity && !parsed.directArea);
+  // Broad service words stay category requests even when a public salon shares
+  // that generic name. Quoted/named requests can still target that exact brand.
+  const broadService = parsed.categoryOnly;
+  // Literal styles remain content searches even if a salon happens to share the
+  // phrase. Their exact salon names still participate in the search ranking.
+  const literalStyle = !parsed.explicitName && exploreQueryNailStylePhrase(parsed.query);
+  const brand = !broadService && !literalStyle && exactBrand && (parsed.salonCue || parsed.explicitName || !confirmedCity && !parsed.directArea);
   if (brand) parsed = { ...parsed, queryKind: "name", contentQuery: parsed.query, categoryHint: "", cityQuery: "" };
-  // Confirm exact business names before reducing broad service words to a category.
-  // Specific styles and services must retain their keyword constraints.
+  // Specific styles and services retain their keyword constraints; generic
+  // service words alone browse the category, with or without a chosen area.
   else if (!lookupFailed && parsed.categoryOnly) parsed = { ...parsed, query: "", contentQuery: "" };
   let queryLocation = parsed.addressHint || parsed.locationHint;
   if (parsed.locationArea) queryLocation = exploreQueryAreaLabel(parsed.locationArea);
@@ -118,7 +122,7 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
     areaAmbiguous = candidates.length > 1 || result.data.moreAreaCandidates === true;
     addressStatus = areaAmbiguous ? "ambiguous" : candidates.length === 1 ? "resolved" : "unmatched";
   }
-  const rawLatitude = coordinate(input.latitude, 90), rawLongitude = coordinate(input.longitude, 180);
+  const rawLatitude = anywhere ? null : coordinate(input.latitude, 90), rawLongitude = anywhere ? null : coordinate(input.longitude, 180);
   const rawGps = rawLatitude !== null && rawLongitude !== null;
   const locationOrigin = manual ? "manual" : queryLocation ? "query" : contextLocation || rawGps ? "context" : "none";
   const location = manualAddress || manual || queryLocation || contextAddress || contextLocation;

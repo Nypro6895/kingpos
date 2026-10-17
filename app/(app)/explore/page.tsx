@@ -53,7 +53,7 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
   }) : runReadWithDeadline(getExploreUtilityContent(context), 10_000).catch(() => ({ bookingLoadError: false, notificationLoadError: false, notifications: [], unreadNotificationCount: 0, upcomingBooking: null }));
   const workspaceLocation = await workspaceLocationPromise;
   const urlSource = stringParam(params.locationSource);
-  const locationInputSource = urlSource === "gps" || urlSource === "activity" || urlSource === "saved" || urlSource === "workspace" ? urlSource : undefined;
+  const locationInputSource = urlSource === "gps" || urlSource === "activity" || urlSource === "saved" || urlSource === "workspace" || urlSource === "none" ? urlSource : undefined;
   const requestedScope = stringParam(params.scope);
   const routing = await runReadWithDeadline(resolveExploreQueryRouting({ query: rawQuery, category, location: requestedLocation, locationSource: locationInputSource,
     target: hasExplicitSearchParams ? target : "salons", scopePolicy: requestedScope === "fixed" || requestedScope === "expandable" ? requestedScope : undefined }, {

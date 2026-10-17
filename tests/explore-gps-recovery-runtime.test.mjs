@@ -18,7 +18,7 @@ function harness({sessionLocation='Madison, WI',source='activity',providerFails=
   fetchExploreSearchPage:async(input,signal)=>{calls.push({kind:'search',input,signal});if(searchFails)throw new TypeError('Failed to fetch');return {error:typedError?'Search took too long':null,location:area.label,locationSource:'gps',locationOrigin:'context',category:'Nails',results:[]};},
   rememberSearchUrl:(...args)=>calls.push({kind:'history',args}),startTransition:fn=>fn(),router:{push:(url,options)=>calls.push({kind:'navigate',url,options})},
  };
- for(const name of ['GpsCoordinates','GpsResponse','NearYouSalons','Location','LocationSource','GpsMessage','GpsStatus','ActiveDiscoveryResult','Category','ExplicitSearchMode','CommittedGpsContext','SearchOrderMode'])context[`set${name}`]=value=>{state[name]=value;};
+ for(const name of ['TypedSearchFailure','GpsCoordinates','GpsResponse','NearYouSalons','Location','LocationSource','GpsMessage','GpsStatus','ActiveDiscoveryResult','Category','ExplicitSearchMode','CommittedGpsContext','SearchOrderMode'])context[`set${name}`]=value=>{state[name]=value;};
  vm.runInNewContext(code,context);
  return {actions:context.actions,state,calls,frozen,activeResponse,cache:context.gpsArea};
 }
