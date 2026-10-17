@@ -1,0 +1,49 @@
+{
+  "kind": "release",
+  "releaseId": "ios-integer-status-20261017-active",
+  "summary": "Read-only integer-build verification tooling published to GitHub and successfully used to confirm existing TestFlight build 1.0.0 (33). This is a tooling-only release, not a replacement native binary.",
+  "changes": [
+    "73b3712b-15dd-4435-81b1-8a7b65bfe4a5"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "33",
+      "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+      "baselineVersion": "1.1.0",
+      "baselineBuild": "32.1",
+      "workflowRun": 39075167375,
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/tooling-release-verification.json",
+      "scope": "release-verification-tooling",
+      "verificationCommit": "bdd16ff7369537c81a49e531df10490f72d2dbf0"
+    }
+  },
+  "toolingSource": {
+    "commit": "bdd16ff7369537c81a49e531df10490f72d2dbf0",
+    "branch": "codex/ios-integer-status-20261017",
+    "files": [
+      {
+        "file": "ios/scripts/check-build-status.mjs",
+        "snapshotSha256": "063cbe609a6fc0ccc2f5626bc3c622f46dc9a0a58d8b8129a41b3f6c1a13ca6c",
+        "gitSha256": "f19a891c9730621251bf4fd5219db7f77beded1508a72018387c82ab43fbf1f9"
+      },
+      {
+        "file": "ios/scripts/check-testflight-availability.mjs",
+        "snapshotSha256": "0aa034ffb724b63e0e56dc3a5b54244b0becef93c849f6a02f3591b9d9d3353d",
+        "gitSha256": "6830303544777f6222245edeb13354079bec78a5d61759d81c8d4ef8bed0528e"
+      },
+      {
+        "file": "ios/scripts/check-testflight-availability.test.mjs",
+        "snapshotSha256": "31259621ef0a0685e1227e2d9424babaa0c089fb9ccd01743a9bd0bf4356d404",
+        "gitSha256": "9941970107ed0a410c0c77f0ede23b05dab924ccba260edb582764be10ca101a"
+      }
+    ]
+  },
+  "nativeRuntimeUnchanged": true,
+  "preserveToolingForNextRelease": true,
+  "id": "fb500057-e0d9-4a3a-9f94-95d94bb923d5",
+  "recordedAt": "2026-10-17T22:30:51.992Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

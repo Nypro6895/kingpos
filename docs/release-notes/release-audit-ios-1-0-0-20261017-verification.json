@@ -1,0 +1,207 @@
+{
+  "releaseId": "release-audit-ios-1-0-0-20261017",
+  "at": "2026-10-17T22:30:04.858Z",
+  "web": {
+    "at": "2026-10-17T22:28:42.949Z",
+    "deploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+    "label": "live",
+    "url": "kingpos-noaxhpqn0-kingpos.vercel.app",
+    "readyState": "READY",
+    "aliasDeploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+    "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+    "sourceSha256": "cdf0c73b3de5a124057c0afd1c6e2cbb8bccb568269eec6e9b0e830fe37e1191",
+    "deploySourceSha256": "d6fcfa9f5281d8fcc0dc4d7127916655e5a08538bc17b7df76f8960db05c2473",
+    "overlaySha256": "c224a42bb67ebbc4f1d535ff968e74f7fd9aeb9ba5909efe18476075dc734677",
+    "sourceFiles": 2928,
+    "allHashesMatch": true
+  },
+  "native": {
+    "at": "2026-10-17T22:28:58.054Z",
+    "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+    "ciCommit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+    "sourceFiles": 392,
+    "sourcePassed": true,
+    "sourceMismatches": [],
+    "tests": {
+      "expected": 97,
+      "count": 97,
+      "failures": 0,
+      "passed": true
+    },
+    "bundle": {
+      "buildId": "3a0a29a3b3b391c2e602a0391eec0e3d3d9a60b3b989ad55b6d555a4843cb972",
+      "files": 344,
+      "passed": true
+    },
+    "unsignedArchive": true,
+    "signedArchive": true,
+    "signedSourcePassed": true,
+    "exported": true,
+    "uploadAccepted": true,
+    "version": "1.0.0",
+    "build": "33",
+    "versionSource": "Signed archive Info.plist attested by testflight.sh CI receipt",
+    "baselineVersion": "1.1.0",
+    "baselineBuild": "32.1",
+    "newerThan32": true,
+    "apple": {
+      "build": "33",
+      "buildId": "724004b8-8c9c-4998-b52a-f64cce84a726",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "checkedAt": "2026-10-17T22:28:00.255Z",
+      "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+      "source": "Independent read-only recovery workflow 39075167375; original upload workflow failed after successful upload in legacy build-number parser"
+    },
+    "uploadVerified": true,
+    "availabilityVerified": true,
+    "passed": true,
+    "workflow": {
+      "uploadRun": 39073771504,
+      "uploadRunConclusion": "failure",
+      "failureStage": "Post-upload read-only build-number parser; archive/export/upload succeeded",
+      "recoveryRun": 39075167375,
+      "recoveryCommit": "bdd16ff7369537c81a49e531df10490f72d2dbf0",
+      "statusRecoveryVerified": true
+    },
+    "testFlight": {
+      "checkedAt": "2026-10-17T22:28:00.255Z",
+      "status": "available-to-existing-internal-group",
+      "build": "33",
+      "marketingVersion": "1.0.0",
+      "availableToExistingInternalGroup": true,
+      "confirmedExistingGroupIds": [
+        "afe80011-9371-4a4c-afda-025b624f3275",
+        "d94e3e47-4837-485a-abbd-3681b6dfe3bc"
+      ]
+    },
+    "appStorePublicationClaimed": false
+  },
+  "database": {
+    "status": "read-only-verified",
+    "migrations": [
+      {
+        "version": "20261017210000",
+        "name": "owner_campaign_workspace",
+        "file": "supabase/migrations/20261017210000_owner_campaign_workspace.sql",
+        "sha256": "74ecb57bb27afcf4e302e2d5645ee2b702b4e14b05470077279018659aa762f3"
+      },
+      {
+        "version": "20261017220000",
+        "name": "service_owned_addon_groups",
+        "file": "supabase/migrations/20261017220000_service_owned_addon_groups.sql",
+        "sha256": "09527616821f204fdd7780ef23c3d1fcd2d7bc05b33608193ae291374a2daaf5"
+      }
+    ]
+  },
+  "validation": {
+    "distinctIntegrationAndVersionChecks": 281,
+    "nativeTests": {
+      "expected": 97,
+      "count": 97,
+      "failures": 0,
+      "passed": true
+    },
+    "productionBuild": "Local and Vercel READY passed",
+    "liveHttpChecks": 16,
+    "mobileBrowserChecks": [
+      "Help defaults to English",
+      "English/Vietnamese toggle updates URL and rendered language",
+      "Report/Contact guest entry remains usable",
+      "No horizontal overflow on mobile",
+      "No browser runtime exceptions"
+    ],
+    "migrations": [
+      {
+        "version": "20261017210000",
+        "name": "owner_campaign_workspace",
+        "file": "supabase/migrations/20261017210000_owner_campaign_workspace.sql",
+        "sha256": "74ecb57bb27afcf4e302e2d5645ee2b702b4e14b05470077279018659aa762f3"
+      },
+      {
+        "version": "20261017220000",
+        "name": "service_owned_addon_groups",
+        "file": "supabase/migrations/20261017220000_service_owned_addon_groups.sql",
+        "sha256": "09527616821f204fdd7780ef23c3d1fcd2d7bc05b33608193ae291374a2daaf5"
+      }
+    ],
+    "sqlFunctionsVerified": 16,
+    "unrelatedSqlAuthoritiesPreserved": 7,
+    "sourceHashesVerified": true,
+    "paymentWebhook": {
+      "at": "2026-10-17T22:02:41.820Z",
+      "readOnly": true,
+      "configurationCount": 1,
+      "endpoints": [
+        {
+          "kind": "shared",
+          "id": "we_1UPD5FLju6kBRMfk2HhXRacK",
+          "url": "https://reylumi.com/api/payments/webhook",
+          "status": "enabled",
+          "livemode": true,
+          "events": [
+            "checkout.session.completed",
+            "checkout.session.expired",
+            "invoice.paid",
+            "invoice.payment_failed",
+            "customer.subscription.updated",
+            "customer.subscription.deleted",
+            "charge.refunded",
+            "payment_intent.succeeded",
+            "credit_note.created",
+            "credit_note.voided"
+          ],
+          "cardSetupEventEnabled": true
+        }
+      ]
+    },
+    "releaseStatusHelperTests": {
+      "passed": 16,
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/integer-status-tests.log"
+    }
+  },
+  "verificationTool": {
+    "commit": "bdd16ff7369537c81a49e531df10490f72d2dbf0",
+    "branch": "codex/ios-integer-status-20261017",
+    "workflowRun": 39075167375,
+    "scope": "Read-only release tooling; not installed app code"
+  },
+  "pending": [
+    {
+      "eventId": "63485a4d-e396-460a-b3e4-46c7029c84dc",
+      "changeId": "phone-claim-conflicts-20261015",
+      "status": "blocked",
+      "reason": "Awaiting separate owner decision on stored/shared phone ownership policy"
+    },
+    {
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "status": "blocked",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "status": "blocked",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "status": "ready",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "status": "ready",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "changeId": "explore-preview-logos-20261017",
+      "status": "ready",
+      "reason": "Local verification harness only, no production product changes"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+REYLUMI — KẾT QUẢ RÀ SOÁT VÀ PHÁT HÀNH
+17/10/2026
+
+Web: https://reylumi.com — đã phát hành, đối chiếu đủ 2928 tệp nguồn.
+iOS: 1.0.0 (33) — Apple VALID, sẵn sàng cho nhóm TestFlight hiện có. Chưa phát hành công khai App Store.
+
+Đã rà soát 22 worktree, nhật ký và mã ngoài ghi chú; ghép 9 nhóm hoàn tất: phục hồi Explore, sửa biên lai Ticket, thanh công cụ Ticket, Customers gọn hơn, add-ons theo dịch vụ, kiểm tra Customer/Service, Help tách Report/Contact, My Place gọn hơn, Campaigns mới. Đồng bộ phần đóng gói iOS và mặc định Help tiếng Anh, giữ chuyển tiếng Việt.
+
+281 kiểm tra tích hợp/phiên bản đạt; 97/97 kiểm tra native đạt. Build local và Vercel đạt, kiểm tra live HTTP và giao diện 390px đạt. Hai migration đã áp dụng và kiểm tra lại; dữ liệu kinh doanh giữ nguyên. Không tạo giao dịch hoặc tin nhắn thử trên production. Chưa kiểm tra trên iPhone thật.
+
+Nguồn phát hành local đã chốt khớp web và nguồn binary iOS:
+Commit: 64540a474fc2b0afe001437dda3c71c0e1f313a6
+Local: C:/Users/giuse/kingpos/work/release-audit-ios-1-0-0-20261017
+Snapshot: C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/frozen-source
+Baseline: dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ
+Live: dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi
+Source SHA256: cdf0c73b3de5a124057c0afd1c6e2cbb8bccb568269eec6e9b0e830fe37e1191
+Overlay SHA256: c224a42bb67ebbc4f1d535ff968e74f7fd9aeb9ba5909efe18476075dc734677
+
+Còn giữ lại: quy tắc xác minh/claim số điện thoại dùng chung đang chờ quyết định riêng; Facebook plugin là sản phẩm khác; harness preview chỉ phục vụ kiểm tra local. Các checkout cũ/đang sửa được giữ nguyên, không được coi là nguồn live.
+
+Receipt: C:\Users\giuse\kingpos\releases\history\2026-10-17T22-30-02-897Z-08ae896b-381d-4d8c-80d5-53b8ac3e82cb.json
+
+Công cụ đọc trạng thái cũ đã từ chối số build nguyên sau khi upload thành công. Đã sửa và xác minh độc lập: workflow 39075167375, source bdd16ff7369537c81a49e531df10490f72d2dbf0. Workflow upload ban đầu báo failure ở bước đọc trạng thái; signed archive/export/upload đều thành công. Bản cài đặt vẫn từ commit 64540a474fc2b0afe001437dda3c71c0e1f313a6. Giữ bản sửa công cụ tại branch codex/ios-integer-status-20261017 cho các lượt phát hành sau.

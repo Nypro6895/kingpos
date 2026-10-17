@@ -1,0 +1,38 @@
+{
+  "kind": "release",
+  "releaseId": "release-audit-ios-1-0-0-20261017-equivalent-explore-record",
+  "summary": "Reconcile the duplicate ready Explore event created during interrupted freeze: every source file hash equals the exact selected and verified shipped event.",
+  "changes": [
+    "1e38bfbd-de73-45c8-8558-a4c75047da87"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+      "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+      "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+      "sourceSha256": "cdf0c73b3de5a124057c0afd1c6e2cbb8bccb568269eec6e9b0e830fe37e1191",
+      "deploySourceSha256": "d6fcfa9f5281d8fcc0dc4d7127916655e5a08538bc17b7df76f8960db05c2473",
+      "overlaySha256": "c224a42bb67ebbc4f1d535ff968e74f7fd9aeb9ba5909efe18476075dc734677",
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "33",
+      "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+      "baselineVersion": "1.1.0",
+      "baselineBuild": "32.1",
+      "workflowRun": 39073771504,
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/native-final-verification.json"
+    }
+  },
+  "equivalentSelectedEvent": "ea383ffb-2353-49a6-8791-9603f82f4570",
+  "evidence": "artifacts/release-audit-ios-1-0-0-20261017/final-receipt.json",
+  "id": "70f51a6d-88e9-48df-9318-6a4f97c6e8ce",
+  "recordedAt": "2026-10-17T22:30:49.999Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

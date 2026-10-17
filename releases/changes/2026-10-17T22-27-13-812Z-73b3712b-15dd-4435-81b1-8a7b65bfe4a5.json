@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "ios-integer-status-20261017",
+  "status": "ready",
+  "summary": "Accept integer iOS build identifiers in read-only processing and TestFlight availability checks; retain legacy dotted build support.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-build-status.mjs",
+    "ios/scripts/check-testflight-availability.mjs",
+    "ios/scripts/check-testflight-availability.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\integer-status-source",
+    "baseCommit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+    "nativeAssessment": "Release verification scripts only; does not change installed native product or require a replacement binary."
+  },
+  "validation": [
+    {
+      "name": "Integer/legacy build status, GET-only reader and version preflight: 16 tests",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/integer-status-tests.log"
+    }
+  ],
+  "dependencies": [],
+  "id": "73b3712b-15dd-4435-81b1-8a7b65bfe4a5",
+  "recordedAt": "2026-10-17T22:27:13.812Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/scripts/check-build-status.mjs": "063cbe609a6fc0ccc2f5626bc3c622f46dc9a0a58d8b8129a41b3f6c1a13ca6c",
+    "ios/scripts/check-testflight-availability.mjs": "0aa034ffb724b63e0e56dc3a5b54244b0becef93c849f6a02f3591b9d9d3353d",
+    "ios/scripts/check-testflight-availability.test.mjs": "31259621ef0a0685e1227e2d9424babaa0c089fb9ccd01743a9bd0bf4356d404"
+  }
+}

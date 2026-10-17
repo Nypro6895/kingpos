@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-17T22:30:51.645Z",
+  "scope": "Release verification tooling executed in CI; no installed runtime change or replacement binary",
+  "workflow": {
+    "conclusion": "success",
+    "databaseId": 39075167375,
+    "headSha": "bdd16ff7369537c81a49e531df10490f72d2dbf0",
+    "status": "completed",
+    "url": "https://github.com/Nypro6895/kingpos/actions/runs/39075167375"
+  },
+  "files": [
+    {
+      "file": "ios/scripts/check-build-status.mjs",
+      "snapshotSha256": "063cbe609a6fc0ccc2f5626bc3c622f46dc9a0a58d8b8129a41b3f6c1a13ca6c",
+      "gitSha256": "f19a891c9730621251bf4fd5219db7f77beded1508a72018387c82ab43fbf1f9"
+    },
+    {
+      "file": "ios/scripts/check-testflight-availability.mjs",
+      "snapshotSha256": "0aa034ffb724b63e0e56dc3a5b54244b0becef93c849f6a02f3591b9d9d3353d",
+      "gitSha256": "6830303544777f6222245edeb13354079bec78a5d61759d81c8d4ef8bed0528e"
+    },
+    {
+      "file": "ios/scripts/check-testflight-availability.test.mjs",
+      "snapshotSha256": "31259621ef0a0685e1227e2d9424babaa0c089fb9ccd01743a9bd0bf4356d404",
+      "gitSha256": "9941970107ed0a410c0c77f0ede23b05dab924ccba260edb582764be10ca101a"
+    }
+  ],
+  "validation": {
+    "tests": 16,
+    "passed": true
+  },
+  "binaryCommit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+  "version": "1.0.0",
+  "build": "33",
+  "appleVerification": {
+    "checkedAt": "2026-10-17T22:28:00.255Z",
+    "status": "available-to-existing-internal-group",
+    "build": "33",
+    "marketingVersion": "1.0.0",
+    "availableToExistingInternalGroup": true,
+    "confirmedExistingGroupIds": [
+      "afe80011-9371-4a4c-afda-025b624f3275",
+      "d94e3e47-4837-485a-abbd-3681b6dfe3bc"
+    ]
+  },
+  "maintenanceBranch": "codex/ios-integer-status-20261017",
+  "preserveForNextRelease": true
+}
