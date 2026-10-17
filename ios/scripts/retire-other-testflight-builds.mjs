@@ -11,7 +11,7 @@ const check=(condition,message)=>{if(!condition)throw Error(message);};
 const identity=b=>({id:b.id,version:b.version,build:b.build,uploadedDate:b.uploadedDate});
 const identities=rows=>JSON.stringify(rows.map(identity).sort((a,b)=>a.id.localeCompare(b.id)));
 export async function inventory(read){
-  const query=new URLSearchParams({'filter[app]':appId,include:'preReleaseVersion','fields[builds]':'version,uploadedDate,expirationDate,expired,processingState,preReleaseVersion,app','fields[preReleaseVersions]':'version,platform',limit:'200'});
+  const query=new URLSearchParams({'filter[app]':appId,include:'preReleaseVersion,app','fields[apps]':'bundleId','fields[builds]':'version,uploadedDate,expirationDate,expired,processingState,preReleaseVersion,app','fields[preReleaseVersions]':'version,platform',limit:'200'});
   const data=[],included=[];let next='builds?'+query;
   for(let page=0;next&&page<10;page++){
     check(apiURL(next).pathname==='/v1/builds','Unsupported inventory pagination');
