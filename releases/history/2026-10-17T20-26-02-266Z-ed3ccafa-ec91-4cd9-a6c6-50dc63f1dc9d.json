@@ -1,0 +1,158 @@
+{
+  "kind": "release",
+  "releaseId": "ads-post-actions-release-20261017",
+  "summary": "Advertising performance and unified PostActions published on preserved production source; six existing ad images optimized with originals retained; matching bundled iOS verified on existing TestFlight distribution.",
+  "changes": [
+    "64dd9470-3cbe-4b36-b265-86ef21f5e5d1",
+    "98211539-1068-4ef4-bef3-1148227f77dc",
+    "43cebe3b-7e0f-4eea-b12c-565ed5242c28"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+      "baselineDeploymentId": "dpl_Gheha59JRQyJT19pwwqrHEXgogbC",
+      "sourceSha256": "a4de85bbbd7ea4079adbcc08bfd4626a33c9f6f5c5f2b1586218e14c2abacd24",
+      "deploySourceSha256": "3810e506a28c4ed5bfcecacc5496b13ebf2d702cabbd650855763a27b2b67d39",
+      "overlaySha256": "2757dabf56638d690eb0f52392d6c32c08777c6e854be03babda84914912c527",
+      "commit": "c71e0e4ad3869b17dd6adc225bfd365f3051284d",
+      "evidence": "artifacts/ads-post-actions-release-20261017/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.1.0",
+      "build": "32.1",
+      "commit": "c71e0e4ad3869b17dd6adc225bfd365f3051284d",
+      "baselineVersion": "1.1.0",
+      "baselineBuild": "31.1",
+      "workflowRun": 39065772007,
+      "evidence": "artifacts/ads-post-actions-release-20261017/native-final-verification.json"
+    }
+  },
+  "selectedOriginalEvents": [
+    "e67274f1-4541-40a4-8d8e-26e1906f592f",
+    "5cfc5228-c4f8-43dc-81a3-78450ae0363a"
+  ],
+  "baseline": {
+    "deploymentId": "dpl_Gheha59JRQyJT19pwwqrHEXgogbC",
+    "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+    "sourceSha256": "818003ea9b34dee4eee3036cae455df957f03b0da1449d8d3220f75c945b327f"
+  },
+  "source": {
+    "commit": "c71e0e4ad3869b17dd6adc225bfd365f3051284d",
+    "branch": "codex/ads-post-actions-release-20261017",
+    "files": 3065,
+    "deployedFiles": 2892,
+    "sourceSha256": "a4de85bbbd7ea4079adbcc08bfd4626a33c9f6f5c5f2b1586218e14c2abacd24",
+    "deploySourceSha256": "3810e506a28c4ed5bfcecacc5496b13ebf2d702cabbd650855763a27b2b67d39",
+    "overlaySha256": "2757dabf56638d690eb0f52392d6c32c08777c6e854be03babda84914912c527",
+    "manifest": "artifacts/ads-post-actions-release-20261017/assembled-source.json",
+    "snapshotSha256": "521c6b7b72ce6c8d0419cd969fe24143d1bf8dacd56ecd140fef19d1ea81fb9c"
+  },
+  "preservation": {
+    "unrelatedCapturedBaselineBytesPreserved": true,
+    "requiredExploreFiles": [
+      "app/api/explore/area/route.ts",
+      "app/api/explore/feed/route.ts",
+      "app/api/explore/search/route.ts",
+      "app/explore/explore-discovery-feed.tsx",
+      "lib/explore-feed-client.ts",
+      "lib/explore-feed-discovery.ts",
+      "lib/explore-query-intent.ts",
+      "lib/explore-query-routing.ts",
+      "lib/explore-search-client.ts",
+      "lib/explore-search-rpc.ts",
+      "lib/explore-search.ts",
+      "lib/explore-social-feed-ranking.ts",
+      "lib/explore-social-feed.ts",
+      "lib/explore-visitor.ts",
+      "lib/location/address.ts",
+      "lib/location/area-provider-request.ts",
+      "lib/location/census-address-match.ts",
+      "lib/location/coordinate-validity.ts",
+      "lib/location/directory-geocode-worker.ts",
+      "lib/location/distance.ts",
+      "lib/location/explore-gps-area-client.ts",
+      "lib/location/explore-gps-area-data.ts",
+      "lib/location/explore-gps-area.ts",
+      "lib/location/geocoding-backfill.ts",
+      "lib/location/geocoding-service.ts",
+      "lib/location/providers/census-address-geocoder.ts",
+      "lib/location/providers/census-area-reverse.ts",
+      "lib/location/providers/maptiler-area-reverse.ts",
+      "lib/location/providers/maptiler-geocoder.ts",
+      "lib/location/salon-map-location.ts"
+    ],
+    "locationProvidersPreserved": true,
+    "nativeFilesUnchanged": 392,
+    "nativeGeneratedFilesChanged": 3,
+    "oldClientServerAdaptersPreserved": true,
+    "salonRevalidationPreserved": true,
+    "noDatabaseTablesDropped": true,
+    "noOriginalMediaDeleted": true
+  },
+  "validation": {
+    "mergedCases": 110,
+    "advertisingCases": 48,
+    "postActionCases": 62,
+    "nativeTests": 94,
+    "productionCloudBuild": "READY and source verified",
+    "localProductionBuild": "Cancelled due host resource pressure; authoritative exact-source Vercel production build passed",
+    "typecheck": "passed",
+    "databaseMigrations": [
+      {
+        "version": "202610170001",
+        "name": "advertising_display_reservations",
+        "file": "supabase/migrations/202610170001_advertising_display_reservations.sql",
+        "sha256": "c1f775e5e1662e1984de769b23cd9c2b7951ef6aaa8c310036fca285ebf150a6"
+      },
+      {
+        "version": "20261017194500",
+        "name": "post_actions_canonical_caption",
+        "file": "supabase/migrations/20261017194500_post_actions_canonical_caption.sql",
+        "sha256": "6d930ed87564aaf5a61887ae19a1a0430d66ef63f7c5bdefa7366e685b82df29"
+      }
+    ],
+    "financialAndAdvertisingGuardsPreserved": 27,
+    "livePages": 6,
+    "evidence": [
+      "artifacts/ads-post-actions-release-20261017/independent-merged-final-checks.json",
+      "artifacts/ads-post-actions-release-20261017/database-migration-verification.json",
+      "artifacts/ads-post-actions-release-20261017/live-smoke.json",
+      "artifacts/ads-post-actions-release-20261017/native-final-verification.json"
+    ]
+  },
+  "imageMaintenance": {
+    "approvedByOwner": true,
+    "changed": 6,
+    "originalsRetained": true,
+    "originalBytes": 11476116,
+    "optimizedBytes": 795062,
+    "mainImageReductionPercent": 93.07,
+    "publicAssetsVerified": 18,
+    "viewOrCreditRpcCalled": false,
+    "evidence": "artifacts/ads-post-actions-release-20261017/image-maintenance-apply.json"
+  },
+  "pendingDisposition": {
+    "scope": "Only advertising and PostActions; other unpublished changes deferred by owner",
+    "evidence": "artifacts/ads-post-actions-release-20261017/pending-disposition.json"
+  },
+  "rollback": {
+    "webDeploymentId": "dpl_Gheha59JRQyJT19pwwqrHEXgogbC",
+    "nativePreviousBuild": "31.1",
+    "originalImageObjectsRetained": true,
+    "policy": "Do not overwrite a later external release or concurrent image edit. Database changes preserve data and old clients; do not delete live reservations or ledger data."
+  },
+  "limitations": [
+    "Desktop Chrome and mobile WebKit coverage; no physical iPhone check",
+    "No production view/credit/post/booking/payment transactions were fabricated",
+    "TestFlight availability verified; App Store publication not performed"
+  ],
+  "appStorePublication": "Not performed; existing TestFlight channel only",
+  "id": "ed3ccafa-ec91-4cd9-a6c6-50dc63f1dc9d",
+  "recordedAt": "2026-10-17T20:26:02.266Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

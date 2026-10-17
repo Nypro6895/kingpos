@@ -1,0 +1,21 @@
+REYLUMI — KẾT QUẢ PHÁT HÀNH QUẢNG CÁO VÀ POST ACTIONS
+Ngày: 17/10/2026
+
+Web đã phát hành: https://reylumi.com
+- Tự nén ảnh cho khách hàng/admin, bỏ nền mờ và khóa trang của popup, giới hạn luồng chờ máy chủ.
+- Post actions dùng chung đầu mối sửa/lưu trữ/xóa, giữ cập nhật Salon và tương thích app cũ. Không xóa các bảng dữ liệu còn liên kết.
+- Tối ưu 6 ảnh quảng cáo cũ, giảm tổng 93.07% dung lượng ảnh chính; giữ ảnh gốc. Kiểm tra đủ 18 file chính/480/960 qua URL công khai.
+
+iOS: 1.1.0 (32.1) đã được Apple xử lý VALID và có sẵn cho nhóm TestFlight hiện có. Chưa phát hành App Store.
+
+Kiểm tra: 110/110 trường hợp quảng cáo/Post actions đạt (Chrome và WebKit di động); 94/94 kiểm tra native đạt. Build production và TypeScript đạt; kiểm tra lại 27 hàm bảo vệ quảng cáo/credits giữ nguyên; 6 trang live đạt. Không tạo lượt xem hay giao dịch tiền/credits thử trên production. Chưa kiểm tra trên iPhone thật.
+
+Nguồn phát hành: c71e0e4ad3869b17dd6adc225bfd365f3051284d
+Baseline web: dpl_Gheha59JRQyJT19pwwqrHEXgogbC
+Deployment live: dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ
+Source SHA256: a4de85bbbd7ea4079adbcc08bfd4626a33c9f6f5c5f2b1586218e14c2abacd24
+Overlay SHA256: 2757dabf56638d690eb0f52392d6c32c08777c6e854be03babda84914912c527
+Receipt: releases/history/2026-10-17T20-26-02-266Z-ed3ccafa-ec91-4cd9-a6c6-50dc63f1dc9d.json
+Chi tiết: artifacts/ads-post-actions-release-20261017/final-receipt.json
+
+Các chỉnh sửa chưa phát hành khác được giữ cho đợt sau.
