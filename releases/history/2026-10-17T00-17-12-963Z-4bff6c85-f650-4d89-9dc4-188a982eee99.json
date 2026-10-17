@@ -1,0 +1,64 @@
+{
+  "kind": "release",
+  "summary": "Original Reylumi iPhone icons and launch logo restored on uploaded build 24.1 source, tested and available through existing TestFlight groups.",
+  "changes": [
+    "f21da5fc-166b-4ae8-8e4f-55270501240b"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "25.1",
+      "commit": "cd3885f09abd07ad1251bbe0d298d246de74602e",
+      "baselineCommit": "e26bf766e3bd072421340adfa022a7652ebb6243",
+      "baselineBuild": "24.1",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/restore-original-logo-20261016/native-final-verification.json"
+    }
+  },
+  "verification": {
+    "tests": {
+      "expectedCount": 90,
+      "count": 90,
+      "failures": 0,
+      "failedCases": 0,
+      "reportedPassed": true,
+      "executionSucceeded": true,
+      "passed": true
+    },
+    "archives": {
+      "unsignedPassed": true,
+      "signedPassed": true,
+      "exportPassed": true
+    },
+    "apple": {
+      "checkedAt": "2026-10-17T00:15:38.645Z",
+      "build": "25.1",
+      "buildId": "48a551fd-9b2e-4c1b-a173-10e6f90ca195",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "matched": true,
+      "valid": true
+    },
+    "testFlight": {
+      "checkedAt": "2026-10-17T00:16:00.781Z",
+      "availableToExistingInternalGroup": true,
+      "status": "available-to-existing-internal-group",
+      "groups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal",
+          "associationConfirmed": true
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support",
+          "associationConfirmed": true
+        }
+      ]
+    }
+  },
+  "id": "4bff6c85-f650-4d89-9dc4-188a982eee99",
+  "recordedAt": "2026-10-17T00:17:12.963Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\reylumi-glass-logo\\kingpos"
+}

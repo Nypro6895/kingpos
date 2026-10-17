@@ -1,0 +1,26 @@
+{
+  "kind": "release",
+  "summary": "Original Reylumi web logos restored and verified byte-for-byte on the live domain; all unrelated production source preserved.",
+  "changes": [
+    "3eb74a03-d88d-4b40-832a-081d9477fc32"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_AZySuHVMKVf3QpANrwZ5Yv24vB4y",
+      "baselineDeploymentId": "dpl_GFYtc7Ju9PijSyxe4EyXwwyGSTwF",
+      "baselineSourceSha256": "47401bb87c03ce7dc30c58a3bdcf65c93909e1be6d8f8a36f70ba3a0c6aeec92",
+      "sourceSha256": "81b95aeeb576c93993f8beefa7e6c3a022ae486b2d4044173f7ef08c80579428",
+      "overlaySha256": "73a08921a5905e11794d791bf856b8662f749460e1284991439aa50f90a56ff4",
+      "commit": "de7f057c061a1f81f904b7cc72606a64139e5f77",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/restore-original-logo-20261016/live-source-verification.json",
+      "httpEvidence": "C:/Users/giuse/kingpos/artifacts/restore-original-logo-20261016/live-http-smoke.json"
+    }
+  },
+  "pendingDisposition": "C:/Users/giuse/kingpos/artifacts/restore-original-logo-20261016/pending-disposition.json",
+  "id": "c15474c4-fd47-480a-a8c7-bc82eeff8461",
+  "recordedAt": "2026-10-17T00:13:11.178Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\reylumi-glass-logo\\kingpos"
+}
