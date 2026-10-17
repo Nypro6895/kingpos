@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "89ee297e95d2a080a49fb3be61f7fc155e5df847d1a01097696d157d29627001",
+  "buildId": "536d289d9370bfe177dfbe996e1bc065818ec80bb12c3874044b1bd02cc3265e",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -29,20 +29,20 @@
     },
     {
       "path": "brand/reylumi-app-192.png",
-      "bytes": 87724,
-      "sha256": "affae267c226c80f087c20e137a92471c111e2bbd5dcc307a9dd4f38e40b7843",
+      "bytes": 16110,
+      "sha256": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
       "mime": "image/png"
     },
     {
       "path": "brand/reylumi-app-512.png",
-      "bytes": 541521,
-      "sha256": "812acf9e4257ae833fb3d093e5ff19a63f2c78db565a8efaffb485e4b472b397",
+      "bytes": 51798,
+      "sha256": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
       "mime": "image/png"
     },
     {
       "path": "brand/reylumi-favicon.png",
-      "bytes": 288765,
-      "sha256": "5b0e664fd83473b099ee9bb6f8e8f6547afa31209e1ea0ae2ea798c6184d4a71",
+      "bytes": 17900,
+      "sha256": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
       "mime": "image/png"
     },
     {
