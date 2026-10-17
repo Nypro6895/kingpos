@@ -50,6 +50,14 @@ Khi phát hành cần ghép cả phần web notification action và gói native 
 này; nguồn đã được giữ riêng và đăng ký ready trong release journal,
 event 2dc8ccc9-a6cc-4939-bb18-5c64fd42e1f0. Chưa kênh nào được đánh dấu published.
 
+LƯU Ý TÍCH HỢP PHÁT HÀNH
+Bản ghi ready của task đã commit và 19 hash snapshot đã kiểm tra lại. Tuy nhiên,
+đọc toàn bộ journal giữa các worktree hiện báo xung đột hai bản sao của event
+Explore cũ 0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e (một bản kế thừa nguyên từ baseline,
+một bản trong full-release-1-1-0). Task này không sửa hoặc ghi đè event cũ đó.
+Coordinator cần đối chiếu bản sao trước khi chạy pending/phát hành. Chi tiết:
+existing-journal-conflict.json. Không phải lỗi test vai trò hoặc lỗi product mới.
+
 GIỚI HẠN
 Chưa kiểm thử bằng tài khoản thật và iPhone của người dùng. Lỗi Campaigns riêng lẻ
 chưa có authenticated request/log để kết luận nguyên nhân; không tuyên bố đã sửa

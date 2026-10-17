@@ -1,0 +1,25 @@
+{
+  "id": "0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e",
+  "unrelatedToRoleChange": true,
+  "changedByThisTask": false,
+  "copies": [
+    {
+      "path": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos\\releases\\changes\\2026-10-17T04-27-46-654Z-0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e.json",
+      "id": "0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source-v2"
+      },
+      "summary": "Preserve Anywhere selective probes and narrow ranking, revalidate profile terms through synchronously maintained current history to resolve measured full-directory query timeout.",
+      "changeId": "release-explore-query-performance-20261017"
+    },
+    {
+      "path": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-recovery\\kingpos\\releases\\changes\\2026-10-17T04-27-46.654Z-0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e.json",
+      "id": "0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source-v2"
+      },
+      "summary": "Preserve Anywhere selective probes and narrow ranking, revalidate profile terms through synchronously maintained current history to resolve measured full-directory query timeout.",
+      "changeId": "release-explore-query-performance-20261017"
+    }
+  ]
+}
