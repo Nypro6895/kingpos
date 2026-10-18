@@ -45,7 +45,9 @@ export async function createOwnerCampaignAction(input: {
     const { data: wallet, error: walletError } = await client.from("campaign_wallets").select("auto_topup_enabled,payment_blocked").eq("salon_id", salonId).single();
     if (walletError) throw new Error("Your credit settings could not load. Please retry.");
     const { data, error } = await client.rpc("campaign_create_versioned", {
-      p_expected:input.settingsVersion??null,
+      // Existing installed clients submit an explicit ceiling but no revision.
+      // Keep that ceiling unchanged; the server still quotes and validates current terms.
+      p_expected:input.settingsVersion ?? (Number.isSafeInteger(input.creditLimit) && (input.creditLimit ?? 0)>0 ? settings.version : null),
       p_id: input.id, p_salon: salonId, p_user: userId,
       p_type: input.target.sourceType, p_source: input.target.sourceId,
       p_area: input.area, p_location: input.location.trim(), p_country: input.country.trim(),

@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {build} from 'esbuild';
+const compiled=await build({stdin:{contents:`export{createOwnerCampaignAction}from'./app/campaigns/actions';export{DEFAULT_OWNER_CAMPAIGN_SETTINGS}from'./types/owner-campaign';`,resolveDir:process.cwd(),loader:'ts'},bundle:true,write:false,format:'esm',platform:'node',alias:{'@':process.cwd()},plugins:[{name:'fixture',setup(b){b.onResolve({filter:/^(next\/cache|@\/lib\/owner-campaigns)$/},a=>({path:a.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='next/cache'?'export function revalidatePath(){}':'export async function requireCampaignOwner(){return globalThis.compatOwner};export async function ownerCampaignSettings(){return globalThis.compatSettings}'}));}}]});
+const api=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].text).toString('base64'));
+test('installed clients retain an explicit credit ceiling; modern clients keep stale-version protection',async()=>{
+ const calls=[];globalThis.compatSettings={...api.DEFAULT_OWNER_CAMPAIGN_SETTINGS,dailyPriceCents:200,version:2};
+ globalThis.compatOwner={salonId:'10000000-0000-0000-0000-000000000001',userId:'00000000-0000-0000-0000-000000000001',client:{from(){return{select(){return this},eq(){return this},single:async()=>({data:{auto_topup_enabled:false,payment_blocked:false},error:null})}},async rpc(name,args){calls.push({name,args});if(name==='campaign_create_versioned')return args.p_expected===2?{data:args.p_id,error:null}:{data:null,error:{message:'Campaign options changed. Refresh and review the new credit estimate.'}};return{data:'pending_review',error:null};}}};
+ const input={id:'30000000-0000-0000-0000-000000000001',target:{sourceType:'custom',sourceId:'20000000-0000-0000-0000-000000000001'},area:'city',location:'Chicago',country:'United States',state:'Illinois',city:'Chicago',dailyViews:500,days:3,creditLimit:300};
+ try{
+  assert.equal((await api.createOwnerCampaignAction(input)).ok,true);assert.equal(calls[0].args.p_expected,2);assert.equal(calls[0].args.p_limit,300,'never increases the installed client ceiling');
+  calls.length=0;assert.equal((await api.createOwnerCampaignAction({...input,settingsVersion:1})).ok,false);assert.equal(calls.length,1,'stale modern form never funds an ad');assert.equal(calls[0].args.p_expected,1);
+  calls.length=0;assert.equal((await api.createOwnerCampaignAction({...input,settingsVersion:2})).ok,true);
+  calls.length=0;assert.equal((await api.createOwnerCampaignAction({...input,creditLimit:undefined})).ok,false);assert.equal(calls[0].args.p_expected,null,'legacy input without a ceiling cannot silently accept a new quote');
+ }finally{delete globalThis.compatOwner;delete globalThis.compatSettings;}
+});
