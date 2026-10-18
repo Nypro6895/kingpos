@@ -22,6 +22,7 @@ import { roleNavigationKindForContext } from "@/app/role-navigation";
 import { campaignWalletAction } from "@/app/campaigns/credit-actions";
 import { getCustomerBookingDetail } from "./customer-bookings";
 import { runReadWithDeadline } from "./bounded-get";
+import { runWithReadContext } from "./read-context-scope";
 import { APP_LOCAL_PLATFORM_READS, type AppLocalBookingsData, type AppLocalSettingsData } from "./app-local-platform-types";
 import { readAppLocalRoleResource, AppLocalRoleReadError, type AppLocalRoleReadResponse } from "./app-local-role-resources-server";
 
@@ -39,12 +40,26 @@ function parse(name: keyof typeof APP_LOCAL_PLATFORM_READS, input: unknown) {
   return args;
 }
 function reply(name: string, scope: string, data: unknown, etag?: string): AppLocalRoleReadResponse {
-  const revision = '"' + createHash("sha256").update(JSON.stringify({ schemaVersion: 1, name, scope, data })).digest("hex") + '"';
+  // The Today wrapper keeps the original timestamp for display, but a fresh
+  // clock stamp alone must not invalidate unchanged authorized section data.
+  let stableData = data;
+  if (name === "page.owner-today" && data && typeof data === "object" && !Array.isArray(data)) {
+    const wrapper = data as Record<string, unknown>;
+    const dashboard = wrapper.dashboard;
+    if (dashboard && typeof dashboard === "object" && !Array.isArray(dashboard)) {
+      stableData = { ...wrapper, dashboard: Object.fromEntries(Object.entries(dashboard).filter(([key]) => key !== "generatedAt")) };
+    }
+  }
+  const revision = '"' + createHash("sha256").update(JSON.stringify({ schemaVersion: 1, name, scope, data: stableData })).digest("hex") + '"';
   return { schemaVersion: 1, status: etag === revision ? 304 : 200, scope, etag: revision, updatedAt: Date.now(), ...(etag === revision ? {} : { data }) };
 }
 
 /** Exact existing page props; no commands, payment confirmation or security credentials are read here. */
 export async function readAppLocalPlatformResource(name: string, input: unknown, options: Options): Promise<AppLocalRoleReadResponse | null> {
+  return runWithReadContext(() => readAppLocalPlatformResourceInContext(name, input, options));
+}
+
+async function readAppLocalPlatformResourceInContext(name: string, input: unknown, options: Options): Promise<AppLocalRoleReadResponse | null> {
   if (!Object.hasOwn(APP_LOCAL_PLATFORM_READS, name)) return null;
   const args = parse(name as keyof typeof APP_LOCAL_PLATFORM_READS, input ?? {});
   if (!options.scope || options.scope.length > 8192) throw new AppLocalRoleReadError(400, "Invalid scope");

@@ -1,0 +1,37 @@
+{
+  "summary": "Optimize duplicate read authentication and progressively render Owner Today on web and iOS; preserve authorization and accounting; no deployment",
+  "kind": "change",
+  "source": {
+    "baselineDeploymentId": "dpl_Hh9EsxaNtoBheMDaWra3B9p7ULKm",
+    "commit": "ea618840b71e35fbd54bd31532f2676d6fd895a6"
+  },
+  "changeId": "owner-today-auth-progressive-20261018",
+  "dependencies": [],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "working",
+  "files": [
+    "lib/supabase/server.ts",
+    "lib/read-context-scope.ts",
+    "lib/today-dashboard.ts",
+    "app/staff/today/today-dashboard-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/(app)/staff/today/page.tsx",
+    "app/api/experience/today/route.ts",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-role-resources-server.ts"
+  ],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "implementation and revisit/duplicate/weak-network checks"
+    }
+  ],
+  "id": "35915cf3-45ab-4728-945b-105cd6600ed4",
+  "recordedAt": "2026-10-18T22:21:10.499Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

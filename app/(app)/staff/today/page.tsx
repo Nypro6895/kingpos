@@ -8,15 +8,20 @@ import { getTodayDashboard } from "@/lib/today-dashboard";
 import { Suspense } from "react";
 import { PageLoadingSkeleton } from "@/components/loading-feedback";
 import { runReadWithDeadline } from "@/lib/bounded-get";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 type StaffTodayPageProps = {
   searchParams: Promise<{ date?: string | string[] }>;
 };
 
-async function TodayContent({ searchParams }: StaffTodayPageProps) {
+async function TodayContent(props: StaffTodayPageProps) {
+  return runWithReadContext(() => loadTodayContent(props));
+}
+
+async function loadTodayContent({ searchParams }: StaffTodayPageProps) {
   const context = await requireSalonManagePageContext("/staff/today");
   const params = await searchParams;
-  const dashboard = await runReadWithDeadline(getTodayDashboard(context, { date: params.date, phase: "core" }), 12000);
+  const dashboard = await runReadWithDeadline(getTodayDashboard(context, { date: params.date, phase: "shell" }), 12000);
   return <TodayDashboardClient
     initialSnapshot={createLiveResourceSnapshot(dashboard, ["generatedAt"])}
     scope={getExperienceContext(context).scope}

@@ -21,6 +21,11 @@ import {
 } from "@/lib/today-dashboard";
 
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
+import type { TodayDashboardSection } from "@/lib/today-dashboard-sections";
+
+function sectionPending(dashboard: TodayDashboard, section: TodayDashboardSection) {
+  return dashboard.pendingSections?.sections?.includes(section) ?? false;
+}
 
 function classNames(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -219,7 +224,8 @@ function formatCheckIn(member: TodayTeamMember, timeZone: string) {
   return formatTime(member.checkInAt, timeZone);
 }
 
-function TurnPair({ member }: { member: TodayTeamMember }) {
+function TurnPair({ member, pending = false }: { member: TodayTeamMember; pending?: boolean }) {
+  if (pending || member.financialAttribution?.services === "unavailable") return <span aria-label="Turns unavailable">—</span>;
   if (!hasTeamActivity(member) && member.turns.total === 0) {
     return (
       <WorkspaceElement as="span"
@@ -974,6 +980,17 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
     <ScheduleTextLink href={dashboard.rightNow.scheduleHref} />
   ) : null;
 
+  if (canViewBookings && (sectionPending(dashboard, "bookings") || isCurrentDate && sectionPending(dashboard, "waiting"))) {
+    return <section className="grid gap-4" aria-label="Appointments and waiting">
+      {isCurrentDate && (sectionPending(dashboard, "waiting") ? <PendingPanel title="Waiting" /> : <RightNowSection title="Waiting" count={dashboard.rightNow.waitingClients.length}>
+        {hasWaiting ? dashboard.rightNow.waitingClients.map(client => <WaitingClientRow client={client} key={client.id} generatedAt={dashboard.generatedAt} timeZone={dashboard.timezone} />) : <EmptyLine label="No clients waiting right now." />}
+      </RightNowSection>)}
+      {sectionPending(dashboard, "bookings") ? <PendingPanel title="Appointments" /> : <RightNowSection title={isCurrentDate ? "Upcoming" : "Appointments"} count={dashboard.rightNow.upcomingBookings.length} action={scheduleAction}>
+        {hasUpcoming ? dashboard.rightNow.upcomingBookings.map(booking => <UpcomingBookingRow booking={booking} key={booking.id} timeZone={dashboard.timezone} />) : <EmptyLine label="No appointments recorded." />}
+      </RightNowSection>}
+    </section>;
+  }
+
   return (
     <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="px-4 py-4 sm:px-5">
@@ -1058,7 +1075,7 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
   );
 }
 
-function AttentionPanel({ items }: { items: TodayAttentionItem[] }) {
+function AttentionPanel({ items, pending = false }: { items: TodayAttentionItem[]; pending?: boolean }) {
   const count = items.reduce(
     (sum, item) => sum + (item.tone === "good" ? 0 : (item.count ?? 1)),
     0,
@@ -1079,7 +1096,9 @@ function AttentionPanel({ items }: { items: TodayAttentionItem[] }) {
         >
           <WorkspaceText text={count
             ? `${count} to review`
-            : incomplete
+            : pending
+              ? "Checking…"
+              : incomplete
               ? "Check unavailable"
               : "All clear"} />
         </span>
@@ -1158,10 +1177,12 @@ function StaffStatusBadge({
 
 function TeamMobileRow({
   canViewFinancials,
+  pendingTurns,
   member,
   timeZone,
 }: {
   canViewFinancials: boolean;
+  pendingTurns?: boolean;
   member: TodayTeamMember;
   timeZone: string;
 }) {
@@ -1195,7 +1216,7 @@ function TeamMobileRow({
             </div>
             <StaffStatusBadge status={member.status} />
             <span className="shrink-0 text-sm text-zinc-800">
-              <TurnPair member={member} />
+              <TurnPair member={member} pending={pendingTurns} />
             </span>
           </div>
           <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
@@ -1240,6 +1261,7 @@ function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
             {dashboard.team.map((member) => (
               <TeamMobileRow
                 canViewFinancials={dashboard.permissions.canViewStaffFinancials}
+                pendingTurns={sectionPending(dashboard, "financials")}
                 key={member.id}
                 member={member}
                 timeZone={dashboard.timezone}
@@ -1291,7 +1313,7 @@ function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
                       <WorkspaceText text={formatCheckIn(member, dashboard.timezone)} />
                     </td>
                     <td className="whitespace-nowrap py-3 pr-3 text-zinc-700">
-                      <TurnPair member={member} />
+                      <TurnPair member={member} pending={sectionPending(dashboard, "financials")} />
                     </td>
                     {dashboard.permissions.canViewStaffFinancials ? (
                       <>
@@ -1772,6 +1794,14 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
     return <RestrictedDashboard dashboard={dashboard} />;
   }
 
+  const progressive = Boolean(dashboard.pendingSections?.sections);
+  const financePending = sectionPending(dashboard, "financials");
+  const attentionPending = dashboard.pendingSections?.sections?.some(section => section !== "staff");
+  const attention = attentionPending ? [...dashboard.attention.filter(item => item.id !== "all-good" && item.id !== "incomplete-attention"), {
+    id: "incomplete-attention", label: "Still checking", detail: "Other Today sections are still loading.", tone: "notice" as const, href: null, count: 0,
+  }] : dashboard.attention;
+  const teamDashboard = financePending ? { ...dashboard, permissions: { ...dashboard.permissions, canViewStaffFinancials: false } } : dashboard;
+
   return (
     <main
       className="min-h-screen bg-[#fbfaf8] px-4 py-6 sm:px-6 lg:px-8"
@@ -1812,13 +1842,13 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
           <RightNowPanel dashboard={dashboard} />
-          {dashboard.pendingSections?.details ? <PendingPanel title="Needs attention" /> : <AttentionPanel items={dashboard.attention} />}
+          {!progressive && dashboard.pendingSections?.details ? <PendingPanel title="Needs attention" /> : <AttentionPanel items={attention} pending={Boolean(attentionPending)} />}
         </section>
 
-        {dashboard.pendingSections?.details ? <PendingPanel title="Team" /> : <TeamPanel dashboard={dashboard} />}
-        {dashboard.pendingSections?.details ? <PendingPanel title="Performance" /> : <PerformancePanel dashboard={dashboard} />}
+        {(progressive ? sectionPending(dashboard, "staff") : dashboard.pendingSections?.details) ? <PendingPanel title="Team" /> : <TeamPanel dashboard={teamDashboard} />}
+        {(progressive ? financePending : dashboard.pendingSections?.details) ? <PendingPanel title="Performance" /> : <PerformancePanel dashboard={dashboard} />}
 
-        {dashboard.pendingSections?.details ? <PendingPanel title="Quick access" /> : <QuickAccessPanel
+        {(progressive ? sectionPending(dashboard, "extras") : dashboard.pendingSections?.details) ? <PendingPanel title="Quick access" /> : <QuickAccessPanel
           configuration={dashboard.quickAccesses}
           key={dashboard.quickAccesses.selected
             .map((shortcut) => shortcut.id)

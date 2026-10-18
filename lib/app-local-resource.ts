@@ -14,7 +14,7 @@ import { recordReadRequest, readResourceCategory } from "./read-request-metrics"
 // access. Native resets still cancel every retained local request below.
 export const appLocalResourceCache = createExperienceResourceCache({ canUse: () => typeof window !== "undefined" });
 
-export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; loading: boolean; refreshing: boolean; error?: string };
+export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; loading: boolean; refreshing: boolean; error?: string; accessDenied?: boolean };
 // Cells contain React view state only. Request ownership, freshness, conditional
 // responses and failure cooldown belong to the shared scoped read cache.
 type Cell = { context: ExperienceResourceContext; state: AppLocalResourceState<unknown>; listeners: Set<() => void>; active: number; validatedAt: number; invalidated?: boolean; epoch: number; revision: number; revalidate?: boolean; hydrated?: Promise<void>; pending?: Promise<void> };
@@ -91,7 +91,7 @@ export async function hydrateAppLocalResource<T>(scope: string, name: string, ar
       const snapshot: AppLocalRead<T> = { schemaVersion: 1, status: 200, scope, data: saved.data, etag: saved.revision ?? "", updatedAt: saved.updatedAt, offline: true };
       appLocalResourceCache.seed(cell.context, snapshot, {}, saved.updatedAt, saved.revision);
       cell.validatedAt = Math.max(cell.validatedAt, saved.updatedAt);
-      emit(cell, { data: saved.data, etag: saved.revision, updatedAt: saved.updatedAt, loading: false });
+      emit(cell, { data: saved.data, etag: saved.revision, updatedAt: saved.updatedAt, loading: false, accessDenied: false });
     }
   })().catch(() => {}).finally(() => { if (epoch === started && cells.get(key) === cell && cell.state.data === undefined) emit(cell, { loading: false }); });
   return cell.hydrated;
@@ -103,7 +103,7 @@ export function seedAppLocalResource<T>(scope: string, name: string, args: Recor
     appLocalResourceCache.seed(cell.context, snapshot, {}, snapshot.offline ? snapshot.updatedAt : Date.now(), snapshot.etag);
     cell.validatedAt = snapshot.offline ? snapshot.updatedAt : Date.now();
     cell.invalidated = false;
-    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false });
+    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
   }
 }
 export async function refreshAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}, options: { force?: boolean; freshForMs?: number } = {}): Promise<void> {
@@ -153,7 +153,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (epoch !== started || cell.revision !== revision || cells.get(key) !== cell || !appLocalResourceCache.isAvailable(cell.context)) return;
     cell.invalidated = false;
     cell.validatedAt = appLocalResourceCache.get(cell.context)?.updatedAt ?? transportValidatedAt ?? cell.validatedAt;
-    if (snapshot.updatedAt >= cell.state.updatedAt) emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false });
+    if (snapshot.updatedAt >= cell.state.updatedAt) emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
     // Native retains only envelopes it fetched and authorized itself. JavaScript
     // cannot manufacture a private native snapshot through a cache-write bridge.
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });
@@ -165,7 +165,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
       appLocalResourceCache.forget(cell.context);
       // A confirmed deletion or revoked relationship cannot keep its old DTO
       // visible. A timeout leaves the last authorized snapshot available.
-      emit(cell, { data: undefined, etag: undefined, updatedAt: 0, error: "This page is no longer available.", loading: false, refreshing: false });
+      emit(cell, { data: undefined, etag: undefined, updatedAt: 0, error: "This page is no longer available.", loading: false, refreshing: false, accessDenied: true });
       if (host.isNative) void host.cache("remove", { name, args, scope }).catch(() => {});
       else void removeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args });
       // Check whether the account's permissions changed, without remounting
@@ -201,5 +201,5 @@ export function useAppLocalResource<T>(scope: string | undefined, name: string, 
     const unsubscribe = subscribeReadRefresh(ensureFresh);
     return () => { alive = false; release(); unsubscribe(); };
   }, [actualScope, name, signature, options.enabled, options.refreshAfterMs, cell, refresh, available]);
-  return { ...state, data: available ? state.data : undefined, refresh };
+  return { ...state, data: available ? state.data : undefined, refresh, available };
 }

@@ -1,5 +1,10 @@
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
+import {
+  TODAY_DASHBOARD_SECTIONS,
+  isTodayDashboardSection,
+  type TodayDashboardSection,
+} from "@/lib/today-dashboard-sections";
 import "server-only";
 
 import { getCurrentAppNotifications } from "@/lib/app-notifications";
@@ -65,8 +70,12 @@ export type TodayClientPresence = {
 };
 
 export type TodayDashboard = {
-  /** Only the first server frame may omit these reads; the live endpoint clears them. */
-  pendingSections?: { metrics: Array<keyof TodayDashboard["summary"]>; details: boolean };
+  /** Missing groups remain pending; a failed group is settled with loadErrors. */
+  pendingSections?: {
+    metrics: Array<keyof TodayDashboard["summary"]>;
+    details: boolean;
+    sections?: TodayDashboardSection[];
+  };
   attention: TodayAttentionItem[];
   businessHours: SalonBusinessHoursWindow;
   date: string;
@@ -103,6 +112,7 @@ export type TodayDashboardPermissions = {
 };
 
 export type TodayLoadError = {
+  section?: TodayDashboardSection;
   area:
     | "bookings"
     | "business_hours"
@@ -268,9 +278,9 @@ type BusinessClock = {
   timezone: string;
 };
 
-type TodayDashboardOptions = {
+export type TodayDashboardOptions = {
   date?: string | string[];
-  phase?: "core" | "full";
+  phase?: "core" | "full" | "shell" | TodayDashboardSection;
 };
 
 type DashboardData<T> =
@@ -429,24 +439,19 @@ async function loadBusinessClock(
     return fallback;
   }
 
-  const [timezoneResult, dateResult] = await Promise.all([
-    supabase.rpc("get_salon_business_timezone", { p_salon_id: salonId }),
-    supabase.rpc("get_salon_business_date", { p_salon_id: salonId }),
-  ]);
+  // getContextBusinessTimezone already resolves and validates the salon timezone.
+  // Retain the authoritative business-date RPC without requesting timezone twice.
+  const dateResult = await supabase.rpc("get_salon_business_date", { p_salon_id: salonId });
 
-  if (timezoneResult.error || dateResult.error) {
+  if (dateResult.error) {
     console.error("Supabase load Today salon business clock failed", {
       dateError: dateResult.error?.message,
       salonId,
-      timezoneError: timezoneResult.error?.message,
     });
     return fallback;
   }
 
-  const timezone =
-    typeof timezoneResult.data === "string" && timezoneResult.data.trim()
-      ? timezoneResult.data
-      : fallback.timezone;
+  const timezone = fallback.timezone;
   const date =
     typeof dateResult.data === "string" && dateResult.data
       ? dateResult.data.slice(0, 10)
@@ -1614,6 +1619,14 @@ export async function getTodayDashboard(
   options: TodayDashboardOptions = {},
 ): Promise<TodayDashboard> {
   const core = options.phase === "core";
+  const section = isTodayDashboardSection(options.phase) ? options.phase : null;
+  const progressive = options.phase === "shell" || section !== null;
+  const readStaff = !progressive || section === "staff" || section === "financials";
+  const readBookings = !progressive || section === "bookings";
+  const readWaiting = !progressive || section === "waiting";
+  const readFinancials = !core && (!progressive || section === "financials");
+  const readExtras = !core && (!progressive || section === "extras");
+  const readHours = !core && (!progressive || section === "staff" || section === "bookings" || section === "financials");
   const currentClock = await loadBusinessClock(context);
   const dayView = buildDayView({
     currentDate: currentClock.date,
@@ -1658,12 +1671,16 @@ export async function getTodayDashboard(
     });
   }
 
-  const businessHoursResult = core ? { data: unavailableBusinessHours, error: null } : await loadBusinessHoursDashboardData({
+  const businessHoursRead: Promise<DashboardData<SalonBusinessHoursWindow>> = !readHours ? Promise.resolve({ data: unavailableBusinessHours, error: null }) : loadBusinessHoursDashboardData({
     context,
     date: clock.date,
     timezone: clock.timezone,
   });
-  const businessHours =
+  // Operations do not need business hours until their chart is assembled. Start
+  // both reads together; the financial loader still receives resolved hours.
+  let businessHoursResult: DashboardData<SalonBusinessHoursWindow> = readFinancials
+    ? await businessHoursRead : { data: unavailableBusinessHours, error: null };
+  let businessHours =
     businessHoursResult.data ??
     unavailableSalonBusinessHours({
       date: clock.date,
@@ -1680,19 +1697,19 @@ export async function getTodayDashboard(
     notificationsResult,
     quickAccessResult,
   ] = await Promise.all([
-    loadStaffDashboardData({
-      canViewFinancials: !core && permissions.canViewStaffFinancials,
+    readStaff && (section !== "financials" || permissions.canViewStaffFinancials) ? loadStaffDashboardData({
+      canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
       context,
       date: clock.date,
-    }),
-    permissions.canViewBookings
+    }) : Promise.resolve({ data: null, error: null }),
+    readBookings && permissions.canViewBookings
       ? loadBookingDashboardData({
           context,
           date: clock.date,
           timezone: clock.timezone,
         })
       : Promise.resolve({ data: [] as TodayBookingRow[], error: null }),
-    permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
+    readWaiting && permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
       ? (async () => {
           const supabase = await createAuthenticatedSupabaseServerClient();
 
@@ -1732,10 +1749,10 @@ export async function getTodayDashboard(
           data: [] as CustomerVisitQueueItem[],
           error: null,
         }),
-    !core && permissions.canViewReports
+    readFinancials && permissions.canViewReports
       ? loadReportDashboardData({ context, date: clock.date })
       : Promise.resolve({ data: null, error: null }),
-    !core && permissions.canViewStaffFinancials
+    readFinancials && permissions.canViewStaffFinancials
       ? loadFinancialDashboardData({
           businessHours,
           context,
@@ -1743,11 +1760,19 @@ export async function getTodayDashboard(
           timezone: clock.timezone,
         })
       : Promise.resolve({ data: null, error: null }),
-    !core && dayView.isCurrentDate
+    readExtras && dayView.isCurrentDate
       ? loadNotificationAttentionItems(context)
       : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
-    core ? Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }) : loadQuickAccessDashboardData(context),
+    readExtras ? loadQuickAccessDashboardData(context) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
   ]);
+  if (!readFinancials && readHours) {
+    businessHoursResult = await businessHoursRead;
+    businessHours = businessHoursResult.data ?? unavailableSalonBusinessHours({
+      date: clock.date,
+      fallbackReason: "Salon business hours could not be resolved.",
+      timeZone: clock.timezone,
+    });
+  }
   const loadErrors = [
     businessHoursResult.error,
     staffResult.error,
@@ -1757,22 +1782,24 @@ export async function getTodayDashboard(
     financialResult.error,
     notificationsResult.error,
     quickAccessResult.error,
-  ].filter((error): error is TodayLoadError => Boolean(error));
+  ].filter((error): error is TodayLoadError => Boolean(error)).map((error) =>
+    section ? { ...error, section } : error,
+  );
   const financialData = financialResult.data;
   const team = staffResult.data
     ? buildTeam({
         activityByStaffId: staffResult.data.activityByStaffId,
-        canViewFinancials: !core && permissions.canViewStaffFinancials,
+        canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
         financialData,
         staff: staffResult.data.staff,
       })
     : [];
   const bookings = bookingsResult.data ?? [];
   const nowIso = new Date().toISOString();
-  const bookingSummary = permissions.canViewBookings
+  const bookingSummary = readBookings && permissions.canViewBookings
     ? summarizeBookings(bookings, nowIso, dayView.isCurrentDate)
     : null;
-  const bookingChart = !core && permissions.canViewBookings
+  const bookingChart = !core && readBookings && permissions.canViewBookings
     ? buildBookingMetricChart({
         businessHours,
         bookings,
@@ -1780,7 +1807,7 @@ export async function getTodayDashboard(
         timeZone: clock.timezone,
       })
     : null;
-  const staffChart = core ? null : buildStaffMetricChart({
+  const staffChart = core || !readStaff ? null : buildStaffMetricChart({
     businessHours,
     date: clock.date,
     team,
@@ -1906,6 +1933,31 @@ export async function getTodayDashboard(
       tone: "notice",
       count: 0,
     });
+  }
+  if (progressive) {
+    const pending = TODAY_DASHBOARD_SECTIONS.filter((item) => {
+      if (item === section) return false;
+      if (item === "bookings") return permissions.canViewBookings;
+      if (item === "waiting") return permissions.canViewBookings && dayView.isCurrentDate;
+      if (item === "financials") return permissions.canViewReports || permissions.canViewStaffFinancials;
+      return true;
+    });
+    const metrics: Array<keyof TodayDashboard["summary"]> = [];
+    if (pending.includes("staff")) metrics.push("staff");
+    if (pending.includes("waiting")) metrics.push("waiting");
+    if (pending.includes("bookings") || (!permissions.canViewBookings && permissions.canViewReports && pending.includes("financials"))) metrics.push("customers");
+    if (permissions.canViewReports && pending.includes("financials")) metrics.push("sales");
+    dashboard.pendingSections = { sections: [...pending], metrics, details: pending.length > 0 };
+    for (const metric of metrics) {
+      dashboard.summary[metric] = {
+        ...unavailable(dashboard.summary[metric]),
+        detail: "Loading…",
+        restricted: false,
+      };
+    }
+    // An unread source is unknown, never an empty/zero or an "All good" result.
+    dashboard.attention = dashboard.attention.filter((item) => item.id !== "all-good");
+    if (!readFinancials) dashboard.performance.emptyLabel = null;
   }
   return dashboard;
 }
