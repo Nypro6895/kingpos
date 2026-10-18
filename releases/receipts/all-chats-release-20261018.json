@@ -1,0 +1,70 @@
+{
+  "releaseId": "all-chats-release-20261018",
+  "completedAt": "2026-10-18T19:14:59.263Z",
+  "source": {
+    "commit": "ea618840b71e35fbd54bd31532f2676d6fd895a6",
+    "branch": "codex/all-chats-release-20261018",
+    "baselineDeploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+    "baselineCommit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "sourceSha256": "c1276c921865f36668a422b5964b6c4fef479cc80c3057d8e41f43296ddd77a8",
+    "overlaySha256": "f9a246dca863312db2b10e795c6abd2b969253e9738815aaeed9d71de4994112",
+    "deploySourceSha256": "e55ab7acbd8afe823e9fba527cde146b63109d281a8f3e0edb9f594720150afa"
+  },
+  "changes": [
+    "cc26a072-17b4-4834-af6e-74000a2c1d0c",
+    "51244959-4d8e-424a-8dc9-701cc10c91fb"
+  ],
+  "web": {
+    "deploymentId": "dpl_Hh9EsxaNtoBheMDaWra3B9p7ULKm",
+    "url": "https://reylumi.com",
+    "verified": true,
+    "record": "2071dd1b-82a8-4044-9a29-bbf22ee7b58d",
+    "checks": {
+      "regressions": 73,
+      "webkit": 6,
+      "localNavigation": 2,
+      "liveNavigation": 2,
+      "liveRoutes": 12
+    }
+  },
+  "ios": {
+    "version": "1.0.0",
+    "build": "37",
+    "commit": "ea618840b71e35fbd54bd31532f2676d6fd895a6",
+    "testflightAvailable": true,
+    "appleProcessing": "VALID",
+    "tests": 97,
+    "record": "ec23226b-dcc0-40fe-80b0-bfdcfdebf2d2",
+    "workflow": {
+      "uploadRun": 39156625054,
+      "uploadRunConclusion": "success",
+      "workflowPassed": true
+    },
+    "appStorePublished": false
+  },
+  "discovery": {
+    "worktrees": 28,
+    "historicalGroupsReconciled": 13,
+    "historicalHashesVerified": 135,
+    "unrelatedBaselineFilesPreserved": 2938,
+    "evidence": "C:\\Users\\giuse\\kingpos/artifacts/all-chats-release-20261018/other-chats-discovery-matrix.json",
+    "ticket": "C:\\Users\\giuse\\kingpos/artifacts/all-chats-release-20261018/ticket-reconciliation.json"
+  },
+  "noDatabaseMigration": true,
+  "formattingException": "Selected ready source contains one harmless extra EOF blank line in metrics module; lint is clean and frozen commit retained.",
+  "limitations": [
+    "Private business routes validated with isolated fixtures; live checks used guest access.",
+    "No physical iPhone test or proof of update installation on a particular device.",
+    "No live financial/booking/ad-credit transaction or tester invitation created."
+  ],
+  "excluded": [
+    "Phone-claim ownership policy remains blocked pending a specific owner decision.",
+    "Independent Nails Page Pilot Site/plugin and local-only Explore-logo harness are outside Reylumi web/iOS release."
+  ],
+  "evidence": "C:\\Users\\giuse\\kingpos/artifacts/all-chats-release-20261018",
+  "rollback": {
+    "webDeploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+    "previousNativeBuild": "36",
+    "policy": "Do not overwrite an unrelated newer release; preserve business data and current access controls."
+  }
+}

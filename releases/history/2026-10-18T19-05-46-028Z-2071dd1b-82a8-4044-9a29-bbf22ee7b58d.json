@@ -1,0 +1,52 @@
+{
+  "kind": "release",
+  "releaseId": "all-chats-release-20261018-web",
+  "summary": "Completed chat/note changes reconciled and new data-loading optimization published; existing Ticket/MyPlace/Staff/Services/Plugins/Campaign features preserved",
+  "changes": [
+    "cc26a072-17b4-4834-af6e-74000a2c1d0c",
+    "51244959-4d8e-424a-8dc9-701cc10c91fb"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Hh9EsxaNtoBheMDaWra3B9p7ULKm",
+      "baselineDeploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+      "commit": "ea618840b71e35fbd54bd31532f2676d6fd895a6",
+      "sourceSha256": "c1276c921865f36668a422b5964b6c4fef479cc80c3057d8e41f43296ddd77a8",
+      "overlaySha256": "f9a246dca863312db2b10e795c6abd2b969253e9738815aaeed9d71de4994112",
+      "deploySourceSha256": "e55ab7acbd8afe823e9fba527cde146b63109d281a8f3e0edb9f594720150afa",
+      "evidence": "C:\\Users\\giuse\\kingpos/artifacts/all-chats-release-20261018"
+    }
+  },
+  "verification": {
+    "productionBuild": "passed",
+    "regressions": 73,
+    "webkit": 6,
+    "productionModeNavigation": 2,
+    "liveNavigation": 2,
+    "liveRoutes": 12,
+    "publicSalon": "200, bounded content, unchanged304, stale-scope409",
+    "permissionsAndFinancialWritesPreserved": true,
+    "databaseMigration": false
+  },
+  "native": {
+    "status": "in-progress",
+    "baselineBuild": "36",
+    "baselineCommit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53"
+  },
+  "limitations": [
+    "Private authenticated routes verified with isolated fixtures; live tests use guest access.",
+    "No physical iPhone test or fabricated financial/booking/ad-credit transaction.",
+    "Blocked phone-claim ownership policy, independent Nails Site/plugin and local logo harness excluded."
+  ],
+  "discoveryEvidence": "C:\\Users\\giuse\\kingpos/artifacts/all-chats-release-20261018/other-chats-discovery-matrix.json",
+  "ticketReconciliation": "C:\\Users\\giuse\\kingpos/artifacts/all-chats-release-20261018/ticket-reconciliation.json",
+  "rollback": {
+    "deploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+    "policy": "Only revert this release if current alias still identifies it; preserve unrelated newer releases."
+  },
+  "id": "2071dd1b-82a8-4044-9a29-bbf22ee7b58d",
+  "recordedAt": "2026-10-18T19:05:46.028Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
