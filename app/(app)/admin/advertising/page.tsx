@@ -1,7 +1,4 @@
 import { withExperiencePage } from "@/components/experience-page";
-import { OwnerCampaignSettingsPanel } from "./owner-campaign-settings";
-import { ownerCampaignSettings } from "@/lib/owner-campaigns";
-import { DEFAULT_OWNER_CAMPAIGN_SETTINGS } from "@/types/owner-campaign";
 import { DEFAULT_ADVERTISING_LIMITS } from "@/types/advertising-report";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
@@ -36,8 +33,6 @@ async function AdvertisingPage() {
         (result.reason instanceof Error
           ? result.reason.message
           : "Insights unavailable.");
-  let ownerSettings=DEFAULT_OWNER_CAMPAIGN_SETTINGS,ownerError="";
-  try{ownerSettings=await ownerCampaignSettings();}catch{ownerError="Campaign settings could not load. Refresh before saving.";}
   return (
     <>
     <CampaignManager
@@ -46,7 +41,6 @@ async function AdvertisingPage() {
       report={report}
       limits={limits}
     />
-    <OwnerCampaignSettingsPanel initial={ownerSettings} error={ownerError} />
     </>
   );
 }

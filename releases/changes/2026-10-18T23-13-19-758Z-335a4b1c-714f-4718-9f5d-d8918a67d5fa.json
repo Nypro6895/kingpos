@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "admin-sidebar-20261018",
+  "status": "ready",
+  "summary": "Group admin menu into Platform, Support, Review & safety, Plugins & content and Administration; use existing web logo; merge duplicate Settings entry into System.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/(app)/admin/_components/admin-navigation.tsx",
+    "app/(app)/admin/admin.css",
+    "app/(app)/admin/settings/page.tsx",
+    "tests/admin-sidebar-groups-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\admin-sidebar-20261018\\snapshot",
+    "baseCommit": "cb032a636a7a73d5e36362366d40608704d1f4fb",
+    "branch": "codex/admin-campaign-plugin-20261018"
+  },
+  "dependencies": [
+    "admin-campaign-plugin-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-sidebar-20261018/lint.log"
+    },
+    {
+      "name": "Actual AdminShell desktop/mobile render, visible groups, logo image loading, current Plugins route, counts and mobile collapse",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-sidebar-20261018/ui-tests.log"
+    }
+  ],
+  "notes": {
+    "publication": "Not deployed; no billing, data or permission changes",
+    "logo": "Existing public/brand/reylumi-logo-horizontal.png reused unchanged"
+  },
+  "occurredAt": "2026-10-18T23:13:19.384Z",
+  "id": "335a4b1c-714f-4718-9f5d-d8918a67d5fa",
+  "recordedAt": "2026-10-18T23:13:19.758Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\admin-campaign-plugin-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/_components/admin-ui.tsx": "63cf52e75f54ef8ea56975b0e175c9a8e0554b8c85b5ec3f7f2ef2a4d04326ce",
+    "app/(app)/admin/_components/admin-navigation.tsx": "b167b085d5dd49237366e1751800ab475b08e3256c6e37641d9a86f9a8a8232d",
+    "app/(app)/admin/admin.css": "13907d0d5908753dfdfae62e566dd7fae559994d37ff11ecfa9e2382d3a9aa22",
+    "app/(app)/admin/settings/page.tsx": "e005031ba67a29102e464375ec2d167f4cc48993de8bcc2cad1dd03a62ee9fac",
+    "tests/admin-sidebar-groups-ui.test.mjs": "a3bcc9a87a4b2d1df96e463b5f584cc2bd2f738e97ad9084ac3f43c4cf0f777a"
+  }
+}

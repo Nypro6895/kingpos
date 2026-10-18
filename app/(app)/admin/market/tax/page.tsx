@@ -19,7 +19,7 @@ async function MarketTaxPage({ searchParams }: {
   const state = await loadMarketTaxAdminState(invalidDates ? {} : { from, to });
   return <div className="space-y-6">
     <header className="space-y-2">
-      <Link href="/admin/market" className="text-sm font-medium text-zinc-600 hover:text-zinc-950">← Market & System</Link>
+      <Link href="/admin/system" className="text-sm font-medium text-zinc-600 hover:text-zinc-950">← System</Link>
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl">Automatic tax</h1>
       <p className="max-w-3xl text-sm leading-6 text-zinc-600">Configure product classifications, review collection readiness and reconcile tax from paid invoices and refunds.</p>
     </header>

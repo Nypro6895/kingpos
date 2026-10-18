@@ -38,7 +38,7 @@ async function AdminPage({ searchParams }: { searchParams: Promise<Record<string
   </div>;
   return <DashboardSurface loadedAt={loadedAt} initialSelection={initialSelection}><div className="admin-dashboard">
     <header className="dashboard-page-heading"><div><h1>Dashboard</h1><p>Your platform, ready for action</p></div><DashboardRefresh loadedAt={loadedAt} /></header>
-    {adReviews?.error?<SectionError message="Campaign reviews could not load. Open Advertising to retry."/>:adReviews?.data?<p role="status"><Link className="dashboard-link" href="/admin/advertising/reviews">{adReviews.data} owner ads awaiting review →</Link></p>:null}
+    {adReviews?.error?<SectionError message="Campaign reviews could not load. Open Advertising to retry."/>:adReviews?.data?<p role="status"><Link className="dashboard-link" href="/admin/plugins/campaigns">{adReviews.data} owner ads awaiting review →</Link></p>:null}
     {overview.error && <SectionError message={overview.error} />}
     <div className="dashboard-overview-layout">
       <DashboardNewAccounts permissions={actor.permissions} />

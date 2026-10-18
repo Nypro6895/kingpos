@@ -373,8 +373,8 @@
 .admin-workspace .admin-global-search { max-width: 720px; }
 .admin-search-shortcut { position: absolute; right: 12px; padding: 0 4px; border: 1px solid #cbd4e0; border-radius: 3px; font: 11px Arial,sans-serif; color: #73829b; }
 .admin-global-search > input { padding-right: 65px; }
-.admin-workspace .admin-navigation > div > p { display: none; }
-.admin-workspace .admin-navigation { gap: 4px; margin-top: 22px; }
+.admin-workspace .admin-navigation .admin-nav-group { display: block; margin: 0 0 5px; padding: 0 12px; font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--admin-muted); }
+.admin-workspace .admin-navigation { gap: 15px; margin-top: 20px; }
 .admin-workspace .admin-nav-link { min-height: 39px; font-size: 12px; }
 .admin-workspace .admin-nav-link[aria-current=page] { background: #fff3eb; color: #f36615; }
 .admin-workspace .admin-nav-count { border-radius: 50%; color: white; background: #ff7018; min-width: 20px; height: 20px; line-height: 16px; font-weight: 650; }
@@ -690,3 +690,7 @@
 .admin-support-chat > footer { flex-shrink:0;padding:8px 12px;font-size:11px; }
 .admin-support-chat.is-minimized { height:auto; }
 .admin-support-chat.is-minimized > .admin-support-chat-body,.admin-support-chat.is-minimized > footer { display:none; }
+
+.admin-brand-logo { width: 176px; height: auto; max-width: 100%; object-fit: contain; }
+
+@media(min-width:1024px){.admin-workspace .admin-sidebar .admin-navigation{gap:14px}.admin-workspace .admin-sidebar .admin-nav-link{min-height:34px;padding-top:7px;padding-bottom:7px}}

@@ -14,7 +14,7 @@ export async function saveOwnerCampaignSettingsAction(raw: OwnerCampaignSettings
   let version: number;
   try { version=await callPlatformAdminRpc<number>("admin_save_campaign_settings",{p_config:config,p_expected:raw.version??null}); }
   catch(error){return {ok:false,message:error instanceof Error?error.message:"Settings could not be saved. Please try again."};}
-  revalidatePath("/admin/advertising"); revalidatePath("/campaigns"); revalidatePath("/", "layout");
+  revalidatePath("/admin/advertising"); revalidatePath("/campaigns"); revalidatePath("/admin/plugins/campaigns"); revalidatePath("/", "layout");
   revalidatePath("/admin/market");
   return { ok: true, version, message: "Saved for campaigns created from now on. Existing campaigns keep their agreed rules." };
 }
@@ -24,7 +24,7 @@ export async function reviewOwnerCampaignAction(id: string, approve: boolean, re
   try{await callPlatformAdminRpc("admin_review_campaign",{p_id:id,p_approve:approve,p_reason:reason.trim()});}
   catch(error){return{ok:false,message:error instanceof Error?error.message:"Review could not save."};}
   revalidatePath("/admin/advertising/reviews");revalidatePath("/admin");
-  revalidatePath("/admin/advertising"); revalidatePath("/campaigns");
+  revalidatePath("/admin/advertising"); revalidatePath("/campaigns"); revalidatePath("/admin/plugins/campaigns");
   return { ok: true, message: approve ? "Campaign approved." : "Campaign not approved. Unused credits have been returned to the owner." };
 }
 

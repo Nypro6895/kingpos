@@ -14,7 +14,7 @@ export async function campaignCreditAdminAction(form:FormData):Promise<AdminActi
   if(!/^[0-9a-f-]{36}$/i.test(id)||!["reconcile","cancel","stop"].includes(action)||reason.length<3||reason.length>1000)throw new Error("Choose a record and add a reason (3–1000 characters).");
   if(action==="stop"){
    await callPlatformAdminRpc("admin_stop_campaign_purchases",{p_salon:id,p_reason:reason});
-   revalidatePath("/admin/market/credits");revalidatePath("/campaigns");
+   revalidatePath("/admin/market/credits");revalidatePath("/admin/plugins/campaigns");revalidatePath("/campaigns");
    return{ok:true,message:"Future automatic purchases stopped. A payment already processing may still complete. Funded ads keep their credits."};
   }
   const client=advertisingClient();
@@ -31,7 +31,7 @@ export async function campaignCreditAdminAction(form:FormData):Promise<AdminActi
    message="Unpaid checkout cancelled. No refund or new charge was created.";
   }
   const {error:receiptError}=await client.from("market_system_audit").insert({actor_id:actor.userId,action:`campaign.credit.${action}.completed`,details:{order_id:id,request_id:audit.id,reason}});
-  revalidatePath("/admin/market/credits");revalidatePath("/campaigns");
+  revalidatePath("/admin/market/credits");revalidatePath("/admin/plugins/campaigns");revalidatePath("/campaigns");
   return{ok:true,message:receiptError?`${message} The completion receipt needs attention; the request is recorded.`:message};
  }catch(error){return{ok:false,message:error instanceof Error?error.message:"Credit operation could not finish."};}
 }

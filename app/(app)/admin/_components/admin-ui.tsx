@@ -31,59 +31,22 @@ type AdminNavItem = {
 };
 
 const ADMIN_NAV_ITEMS: AdminNavItem[] = [
-  { href: "/admin/market", label: "Market & System", permission: PLATFORM_ADMIN_PERMISSIONS.access, group: "Platform management", icon: "▦" },
-  { href: "/admin/attention", label: "Attention list", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Review & support", icon: "△" },
-  {
-    href: "/admin",
-    label: "Dashboard",
-    permission: PLATFORM_ADMIN_PERMISSIONS.dashboardRead,
-    group: "Platform management", icon: "⌂",
-  },
-  {
-    href: "/admin/users",
-    label: "Users",
-    permission: PLATFORM_ADMIN_PERMISSIONS.usersRead,
-    group: "Platform management", icon: "♙",
-  },
-  {
-    href: "/admin/locations",
-    label: "Businesses",
-    permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead,
-    group: "Platform management", icon: "▦",
-  },
-
-  { href: "/admin/post-safety", label: "Post safety", permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead, group: "Review & support", icon: "☷" },
-  {
-    href: "/admin/reports",
-    label: "Support cases",
-    permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead,
-    group: "Review & support", icon: "☷",
-  },
-  {
-    href: "/admin/recovery",
-    label: "Recovery",
-    permission: PLATFORM_ADMIN_PERMISSIONS.recoveryRead,
-    group: "Review & support", icon: "↺",
-  },
-  {href: "/admin/claims", label: "Ownership claims", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & support", icon: "◇"},
-  {href: "/admin/verification", label: "Business verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & support", icon: "✓"},
-  {href: "/admin/notifications", label: "Notifications", permission: PLATFORM_ADMIN_PERMISSIONS.notificationsRead, group: "Communication", icon: "♧"},
-  {href: "/admin/inbox", label: "Support inbox", permission: PLATFORM_ADMIN_PERMISSIONS.inboxRead, group: "Review & support", icon: "✉"},
-  {href: "/admin/advertising/reviews", label: "Ad reviews", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingReview, group: "Review & support", icon: "◈"},
-  {href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Communication", icon: "◈"},
-  {
-    href: "/admin/audit",
-    label: "Audit log",
-    permission: PLATFORM_ADMIN_PERMISSIONS.auditRead,
-    group: "System", icon: "◷",
-  },
-  {
-    href: "/admin/team",
-    label: "Admin team",
-    permission: PLATFORM_ADMIN_PERMISSIONS.teamRead,
-    group: "System", icon: "♙",
-  },
-  {href: "/admin/settings", label: "Settings", permission: PLATFORM_ADMIN_PERMISSIONS.access, group: "System", icon: "⚙"},
+  { href: "/admin", label: "Dashboard", permission: PLATFORM_ADMIN_PERMISSIONS.dashboardRead, group: "Platform", icon: "⌂" },
+  { href: "/admin/users", label: "Users", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Platform", icon: "♙" },
+  { href: "/admin/locations", label: "Businesses", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Platform", icon: "▦" },
+  { href: "/admin/attention", label: "Attention list", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Support", icon: "△" },
+  { href: "/admin/inbox", label: "Support inbox", permission: PLATFORM_ADMIN_PERMISSIONS.inboxRead, group: "Support", icon: "✉" },
+  { href: "/admin/reports", label: "Support cases", permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead, group: "Support", icon: "☷" },
+  { href: "/admin/claims", label: "Ownership claims", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & safety", icon: "◇" },
+  { href: "/admin/verification", label: "Business verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & safety", icon: "✓" },
+  { href: "/admin/post-safety", label: "Post safety", permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead, group: "Review & safety", icon: "☷" },
+  { href: "/admin/recovery", label: "Recovery", permission: PLATFORM_ADMIN_PERMISSIONS.recoveryRead, group: "Review & safety", icon: "↺" },
+  { href: "/admin/plugins", label: "Plugins", permission: PLATFORM_ADMIN_PERMISSIONS.access, group: "Plugins & content", icon: "▦" },
+  { href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Plugins & content", icon: "◈" },
+  { href: "/admin/notifications", label: "Notifications", permission: PLATFORM_ADMIN_PERMISSIONS.notificationsRead, group: "Plugins & content", icon: "♧" },
+  { href: "/admin/system", label: "System", permission: PLATFORM_ADMIN_PERMISSIONS.teamManage, group: "Administration", icon: "⚙" },
+  { href: "/admin/team", label: "Admin team", permission: PLATFORM_ADMIN_PERMISSIONS.teamRead, group: "Administration", icon: "♙" },
+  { href: "/admin/audit", label: "Audit log", permission: PLATFORM_ADMIN_PERMISSIONS.auditRead, group: "Administration", icon: "◷" },
 ];
 
 function AdminBrandLogo({ className }: { className: string }) {
@@ -109,11 +72,7 @@ export function hasAdminPermission(
 export function AdminShell({ children, context, counts = {} }: AdminShellProps) {
   const navItems = ADMIN_NAV_ITEMS.filter((item) =>
     hasAdminPermission(context, item.permission) && (item.href!=="/admin/settings/twilio" || context.roleSlug==="platform_owner"),
-  ).map(item => ({ ...item, count: counts[item.href] })).sort((a, b) => {
-    const order = ["/admin", "/admin/users", "/admin/businesses", "/admin/locations", "/admin/attention", "/admin/inbox", "/admin/claims", "/admin/verification", "/admin/reports", "/admin/post-safety", "/admin/recovery", "/admin/notifications", "/admin/advertising/reviews", "/admin/advertising", "/admin/audit", "/admin/team", "/admin/settings"];
-    order.splice(order.indexOf("/admin/attention"), 0, "/admin/market");
-    return order.indexOf(a.href) - order.indexOf(b.href);
-  });
+  ).map(item => ({ ...item, count: counts[item.href] }));
 
   return (
     <div className="admin-workspace min-h-screen bg-white text-zinc-950">
@@ -123,7 +82,7 @@ export function AdminShell({ children, context, counts = {} }: AdminShellProps) 
           className="flex min-h-14 flex-col items-start justify-center rounded-lg px-2 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           href="/admin"
         >
-          <span className="admin-brand-wordmark">REYLUMI</span>
+          <AdminBrandLogo className="admin-brand-logo w-44 max-w-full" />
           <span className="mt-1 block text-xs font-semibold text-zinc-500">
             Admin Control Center
           </span>

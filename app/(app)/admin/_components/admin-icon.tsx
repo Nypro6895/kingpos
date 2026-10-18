@@ -12,6 +12,7 @@ export const ADMIN_ICON_PATHS = {
   flag: "M5 21V3M5 4h15l-3 5 3 5H5",
   history: "M3 10a9 9 0 1 1 2 8M3 4v6h6M12 7v5l3 2",
   next: "m9 5 7 7-7 7", previous: "m15 5-7 7 7 7",
+  calendar: "M3 5h18v16H3ZM7 3v4M17 3v4M3 10h18",
   search: "M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
   refresh: "M20 7a9 9 0 1 0 1 10M21 2v6h-6",
   close: "m5 5 14 14M19 5 5 19",
