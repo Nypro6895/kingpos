@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "service-save-scoped-search-refresh",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Bound Explore content-history anti-joins to affected salons to resolve the reproduced live Services Save timeout; booking behavior preserved.",
+  "files": [
+    "supabase/migrations/20261018234500_service_save_scoped_search_refresh.sql",
+    "tests/service-save-scoped-search.integration.test.mjs",
+    "docs/services-live-save-verification-2026-10-18.md"
+  ],
+  "dependencies": [
+    "20261017235500_service_save_refresh_batch"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\services-live-20261018\\frozen",
+    "sha256": "1adc033b6edacda427971f1897f63e961d8fd978b602236f242307781db87b25"
+  },
+  "validation": [
+    {
+      "name": "Original failure reproduced with rollback",
+      "result": "passed"
+    },
+    {
+      "name": "Candidate live Save and booking occupancy rollback test",
+      "result": "passed",
+      "evidence": "artifacts/services-live-20261018/candidate-full-rollback.log"
+    },
+    {
+      "name": "Six booking/owned-add-on regressions",
+      "result": "passed",
+      "evidence": "artifacts/services-live-20261018/regression.log"
+    },
+    {
+      "name": "Search history old/new equivalence",
+      "result": "passed",
+      "evidence": "artifacts/services-live-20261018/scoped-search-test.log"
+    }
+  ],
+  "id": "4ee214ba-e01c-4101-a7e8-b69709ae38d6",
+  "recordedAt": "2026-10-18T23:27:52.395Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261018234500_service_save_scoped_search_refresh.sql": "8d03a43f02065df808e567a7d41e8eb957ce2f3677dbab45740f645c5315d955",
+    "tests/service-save-scoped-search.integration.test.mjs": "6d97cdfe70ef6e8350b18970eb10b79a677260be5eb0c816938796c71dc32be3",
+    "docs/services-live-save-verification-2026-10-18.md": "2dfbffee0b8ec5a91b51bd6a44c4293a9489a6b3633453ce9a5f0075e9392fcc"
+  }
+}

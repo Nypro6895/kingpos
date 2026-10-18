@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "service-save-scoped-search-refresh",
+  "status": "working",
+  "channels": [
+    "web"
+  ],
+  "summary": "Fix live Services Save timeout in Explore content-history anti-join; preserve booking and search semantics.",
+  "files": [
+    "supabase/migrations/20261018234500_service_save_scoped_search_refresh.sql"
+  ],
+  "dependencies": [
+    "20261017235500_service_save_refresh_batch"
+  ],
+  "validation": [],
+  "source": {
+    "snapshot": "artifacts/services-live-20261018/observed-source"
+  },
+  "id": "5165b2ea-2d35-4fa8-bc37-71cfc4ad09fe",
+  "recordedAt": "2026-10-18T23:25:04.783Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
