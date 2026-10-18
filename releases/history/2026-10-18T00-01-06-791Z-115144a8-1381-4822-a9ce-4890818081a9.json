@@ -1,0 +1,51 @@
+{
+  "kind": "release",
+  "releaseId": "help-report-live-20261017-web",
+  "summary": "Requested Help/Report fixes published to reylumi.com. Both languages and mobile catalog verified live; required native package is running in TestFlight CI.",
+  "changes": [
+    "98468ce3-61ab-447c-85a8-8787bb747474",
+    "663442c2-ec65-45bd-bce4-1a33bc294f20"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_32vQBEU3rzi1gPEgTJBgvRAMMv4L",
+      "baselineDeploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+      "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+      "sourceSha256": "55f3834a875f25f8f5a0f802859414114dde76b9871525ef03b3c14aa8714122",
+      "deploySourceSha256": "fdd08439a7c6e1356d97473c9bb424973713df8ad80038b6053cf6a4a7a9de35",
+      "overlaySha256": "76b1f598a88dbe2b0217a10f76fb0108be8f6fbbc8d4686d383796c13fe46660",
+      "evidence": "artifacts/help-report-live-20261017/live-source-verification.json"
+    }
+  },
+  "source": {
+    "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+    "branch": "codex/help-report-live-20261017",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/frozen-source"
+  },
+  "preservation": {
+    "requiredExploreAndLocationHashesUnchanged": true,
+    "baselineFilesDeleted": 0,
+    "productionDataMutations": 0,
+    "nativeBaselineCommit": "64540a474fc2b0afe001437dda3c71c0e1f313a6"
+  },
+  "validation": {
+    "productionBuild": "passed",
+    "focusedTests": 38,
+    "httpChecks": 16,
+    "browserEvidence": "artifacts/help-report-live-20261017/live-browser-verification.json"
+  },
+  "pending": {
+    "ios": {
+      "workflowRun": 39080932382,
+      "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+      "state": "simulator-and-archive-running"
+    }
+  },
+  "appStorePublicationClaimed": false,
+  "id": "115144a8-1381-4822-a9ce-4890818081a9",
+  "recordedAt": "2026-10-18T00:01:06.791Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

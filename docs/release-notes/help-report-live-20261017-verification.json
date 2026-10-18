@@ -1,0 +1,77 @@
+{
+  "releaseId": "help-report-live-20261017",
+  "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+  "web": {
+    "at": "2026-10-18T00:06:10.801Z",
+    "deploymentId": "dpl_32vQBEU3rzi1gPEgTJBgvRAMMv4L",
+    "label": "live",
+    "url": "kingpos-fcsjtgugx-kingpos.vercel.app",
+    "readyState": "READY",
+    "aliasDeploymentId": "dpl_32vQBEU3rzi1gPEgTJBgvRAMMv4L",
+    "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+    "sourceSha256": "55f3834a875f25f8f5a0f802859414114dde76b9871525ef03b3c14aa8714122",
+    "deploySourceSha256": "fdd08439a7c6e1356d97473c9bb424973713df8ad80038b6053cf6a4a7a9de35",
+    "overlaySha256": "76b1f598a88dbe2b0217a10f76fb0108be8f6fbbc8d4686d383796c13fe46660",
+    "sourceFiles": 2932,
+    "allHashesMatch": true
+  },
+  "native": {
+    "at": "2026-10-18T00:05:37.320Z",
+    "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+    "ciCommit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+    "sourceFiles": 392,
+    "sourcePassed": true,
+    "sourceMismatches": [],
+    "tests": {
+      "expected": 97,
+      "count": 97,
+      "failures": 0,
+      "passed": true
+    },
+    "bundle": {
+      "buildId": "522665a3bf2beee55c1eb257dd8c49bddfd9bc93d340890b020705670dfdd667",
+      "files": 344,
+      "passed": true
+    },
+    "unsignedArchive": true,
+    "signedArchive": true,
+    "signedSourcePassed": true,
+    "exported": true,
+    "uploadAccepted": true,
+    "version": "1.0.0",
+    "build": "34",
+    "versionSource": "Signed archive Info.plist attested by testflight.sh CI receipt",
+    "baselineVersion": "1.0.0",
+    "baselineBuild": "33",
+    "newerThanBaseline": true,
+    "apple": {
+      "build": "34",
+      "buildId": "7d77ef73-8c2a-4b71-a6f4-1f6198ec42d3",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "checkedAt": "2026-10-18T00:03:58.692Z",
+      "operation": "Read-only; no tester invitations or group changes"
+    },
+    "uploadVerified": true,
+    "availabilityVerified": true,
+    "passed": true,
+    "workflow": {
+      "uploadRun": 39080932382,
+      "uploadRunConclusion": "success"
+    },
+    "testFlight": {
+      "checkedAt": "2026-10-18T00:05:17.908Z",
+      "status": "available-to-existing-internal-group",
+      "build": "34",
+      "marketingVersion": "1.0.0",
+      "availableToExistingInternalGroup": true,
+      "confirmedExistingGroupIds": [
+        "afe80011-9371-4a4c-afda-025b624f3275",
+        "d94e3e47-4837-485a-abbd-3681b6dfe3bc"
+      ]
+    },
+    "appStorePublicationClaimed": false
+  },
+  "focusedTests": 38,
+  "physicalIPhoneVerified": false
+}

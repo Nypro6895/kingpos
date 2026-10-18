@@ -1,0 +1,119 @@
+{
+  "kind": "release",
+  "releaseId": "help-report-live-20261017",
+  "summary": "Requested Help/Report release completed: web verified live in EN/VI; exact same corrected iPhone package signed, uploaded, Apple VALID and available to existing TestFlight groups.",
+  "changes": [
+    "98468ce3-61ab-447c-85a8-8787bb747474",
+    "663442c2-ec65-45bd-bce4-1a33bc294f20"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_32vQBEU3rzi1gPEgTJBgvRAMMv4L",
+      "baselineDeploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+      "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+      "sourceSha256": "55f3834a875f25f8f5a0f802859414114dde76b9871525ef03b3c14aa8714122",
+      "deploySourceSha256": "fdd08439a7c6e1356d97473c9bb424973713df8ad80038b6053cf6a4a7a9de35",
+      "overlaySha256": "76b1f598a88dbe2b0217a10f76fb0108be8f6fbbc8d4686d383796c13fe46660",
+      "evidence": "artifacts/help-report-live-20261017/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "34",
+      "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+      "baselineVersion": "1.0.0",
+      "baselineBuild": "33",
+      "workflowRun": 39080932382,
+      "evidence": "artifacts/help-report-live-20261017/native-final-verification.json"
+    }
+  },
+  "baseline": {
+    "deploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+    "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+    "sourceSha256": "d6fcfa9f5281d8fcc0dc4d7127916655e5a08538bc17b7df76f8960db05c2473"
+  },
+  "source": {
+    "commit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+    "branch": "codex/help-report-live-20261017",
+    "sourceSha256": "55f3834a875f25f8f5a0f802859414114dde76b9871525ef03b3c14aa8714122",
+    "overlaySha256": "76b1f598a88dbe2b0217a10f76fb0108be8f6fbbc8d4686d383796c13fe46660",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/frozen-source",
+    "manifest": "artifacts/help-report-live-20261017/assembled-source.json"
+  },
+  "preservation": {
+    "requiredExploreAndLocationFiles": [
+      "app/api/explore/search/route.ts",
+      "app/api/explore/feed/route.ts",
+      "app/api/explore/area/route.ts",
+      "app/explore/explore-discovery-feed.tsx",
+      "lib/explore-search.ts",
+      "lib/explore-search-rpc.ts",
+      "lib/explore-search-client.ts",
+      "lib/explore-feed-client.ts",
+      "lib/explore-visitor.ts",
+      "lib/explore-feed-discovery.ts",
+      "lib/explore-social-feed.ts",
+      "lib/explore-social-feed-ranking.ts",
+      "lib/explore-query-intent.ts",
+      "lib/explore-query-routing.ts",
+      "lib/location/address.ts",
+      "lib/location/area-provider-request.ts",
+      "lib/location/census-address-match.ts",
+      "lib/location/coordinate-validity.ts",
+      "lib/location/directory-geocode-worker.ts",
+      "lib/location/distance.ts",
+      "lib/location/explore-gps-area-client.ts",
+      "lib/location/explore-gps-area-data.ts",
+      "lib/location/explore-gps-area.ts",
+      "lib/location/geocoding-backfill.ts",
+      "lib/location/geocoding-service.ts",
+      "lib/location/providers/census-address-geocoder.ts",
+      "lib/location/providers/census-area-reverse.ts",
+      "lib/location/providers/maptiler-area-reverse.ts",
+      "lib/location/providers/maptiler-geocoder.ts",
+      "lib/location/salon-map-location.ts"
+    ],
+    "baselineFilesDeleted": 0,
+    "nativeAndWebSameFrozenCommit": true,
+    "existingSecurityPrivacySigningAndPermissionsUnchanged": true
+  },
+  "validation": {
+    "focusedTests": 38,
+    "nativeTests": {
+      "expected": 97,
+      "count": 97,
+      "failures": 0,
+      "passed": true
+    },
+    "productionBuild": "Local and Vercel READY passed",
+    "liveHttpChecks": 16,
+    "mobileWidths": [
+      320,
+      390,
+      430
+    ],
+    "liveBilingualBrowser": "passed",
+    "allDeployedSourceHashesVerified": true
+  },
+  "rollback": {
+    "webDeploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+    "nativePreviousVersion": "1.0.0",
+    "nativePreviousBuild": "33",
+    "policy": "Verify the current alias before any rollback; never overwrite a newer external release."
+  },
+  "scope": "Only requested Help/Report fixes and necessary native package. All unrelated deferred, working or blocked changes preserved.",
+  "limitations": [
+    "No physical iPhone verification",
+    "Authenticated private cases checked only with synthetic fixtures; no real support requests sent",
+    "No business/schema/payment/advertising data mutations",
+    "TestFlight availability is not App Store publication or proof of update on a specific phone"
+  ],
+  "appStorePublicationClaimed": false,
+  "id": "866f7d14-69a8-4c4f-b33f-2e173851a81f",
+  "recordedAt": "2026-10-18T00:06:11.817Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
