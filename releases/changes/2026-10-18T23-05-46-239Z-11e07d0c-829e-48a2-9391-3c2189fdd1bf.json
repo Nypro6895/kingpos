@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "ios-today-startup-recovery-20261018",
+  "status": "working",
+  "summary": "Investigate build 37 cold-open context failure and add bounded read-only context recovery without weakening admission; no deployment",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-context-recovery.ts",
+    "tests/app-local-context-recovery.test.mjs",
+    "tests/app-local-entry-recovery-ui.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "commit": "8c65ce7a2bc262e8bcafe292304b72642134f377"
+  },
+  "dependencies": [
+    "owner-today-auth-progressive-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Actual entry cold-open/transient/denial/navigation recovery",
+      "result": "pending"
+    }
+  ],
+  "id": "11e07d0c-829e-48a2-9391-3c2189fdd1bf",
+  "recordedAt": "2026-10-18T23:05:46.239Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

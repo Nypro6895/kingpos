@@ -43,6 +43,7 @@ import { installAppLocalLinkNavigation } from "@/lib/app-local-link-navigation";
 import { APP_LOCAL_REFERENCE_ASSETS } from "@/lib/app-local-reference-content";
 import { installAppLocalBrowserCompatibility } from "@/lib/app-local-browser-compat";
 import { getExperienceOfflinePath, isExperienceOfflineGrant } from "@/lib/experience-offline-policy";
+import { classifyAppLocalContextFailure, runAppLocalContextRead, type AppLocalContextFailure } from "@/lib/app-local-context-recovery";
 
 if (typeof crypto.randomUUID !== "function") Object.defineProperty(crypto, "randomUUID", { value: appLocalRequestId });
 installAppLocalBrowserCompatibility();
@@ -75,6 +76,14 @@ function isPublic(path: string) { const pathname = path.split("?")[0]; return pa
 function isHelp(path: string) { const pathname = path.split("?")[0]; return pathname === "/help" || pathname.startsWith("/help/"); }
 type AuthorityFamily = "account" | "staff.portal" | "staff.workday" | "portable" | "display";
 type Admission = { value: AppLocalContext; generation?: string };
+type ContextCheck = { path: string; controller: AbortController; requireFresh: boolean; promise?: Promise<void> };
+const contextFailureMessages: Record<AppLocalContextFailure, string> = {
+  timeout: "Checking your account took too long. Please try again.",
+  network: "Please check your connection and try again.",
+  unavailable: "We couldn't check your account. Please try again.",
+  access: "Your access needs to be checked again. Please try again.",
+  invalid: "App access could not be checked. Please try again.",
+};
 /** Mirror the context endpoint's original staff/portable resolution, not a permission rule. */
 function authorityFamily(path: string): AuthorityFamily {
   const pathname = path.split("?")[0];
@@ -92,6 +101,13 @@ function usable(admission?: Admission): admission is Admission {
   const value = admission.value;
   return Boolean(value.grant && isExperienceOfflineGrant(value.grant, { scope: value.context.scope, ...(generation ? { generation } : {}) }))
     || Boolean(!value.offline && navigator.onLine && Date.now() - value.onlineValidatedAt < 30_000);
+}
+function expiredCachedContext(value: AppLocalContext) {
+  const grant = value?.grant, generation = window.__reylumiAppLocalContext?.generation;
+  return value?.schemaVersion === 1 && value.offline === true && isAppLocalScopeId(value.context?.scope)
+    && value.offlineState !== "unconfirmed" && ![401, 403, 409].includes(value.grantStatus ?? 0)
+    && Boolean(grant && grant.expiresAt <= Date.now() && value.context.viewerId === grant.viewerId
+      && isExperienceOfflineGrant(grant, { scope: value.context.scope, ...(generation ? { generation } : {}) }, grant.expiresAt - 1));
 }
 function OwnerPages({ context, path, navigate, active }: { context: AppLocalContext; path: string; navigate: (href: string) => void; active: boolean }) {
   const checkout = useRef<HTMLDivElement>(null);
@@ -122,9 +138,9 @@ class PageBoundary extends Component<{ children: ReactNode; recover(): void }, {
 }
 function App() {
   const [path, setPath] = useState(() => appLocalPath(location.pathname === "/index.html" ? "/help" : location.pathname + location.search));
-  const [admissions, setAdmissions] = useState<Partial<Record<AuthorityFamily, Admission>>>({}), [error, setError] = useState(false), [visited, setVisited] = useState<string[]>([]);
+  const [admissions, setAdmissions] = useState<Partial<Record<AuthorityFamily, Admission>>>({}), [error, setError] = useState<false | AppLocalContextFailure>(false), [visited, setVisited] = useState<string[]>([]);
   const [helpPresentation, setHelpPresentation] = useState<Admission | null>(null);
-  const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<AbortController | null>(null);
+  const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<ContextCheck | null>(null);
   const recoveryAttempts = useRef(new Set<string>());
   const handoffPath = useRef<string | null>(null), acceptedHostEpoch = useRef(-1);
   const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
@@ -153,17 +169,46 @@ function App() {
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
     return true;
   }, []);
-  const verify = useCallback(async (options?: { fresh?: boolean }) => {
-    if (isPublic(current.current)) return;
-    const requestedPath = current.current, started = ++contextEpoch.current; request.current?.abort(); const controller = new AbortController(); request.current = controller;
-    setError(false);
-    try {
-      const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: options?.fresh || Boolean(handoffPath.current) });
-      if (!controller.signal.aborted && started === contextEpoch.current && !accept(value, requestedPath, true)) throw new Error("The application context must be checked again");
+  const verify = useCallback((options?: { fresh?: boolean }): Promise<void> => {
+    if (isPublic(current.current)) return Promise.resolve();
+    const requestedPath = current.current, fresh = Boolean(options?.fresh || handoffPath.current);
+    const previous = request.current;
+    if (previous?.path === requestedPath && !previous.controller.signal.aborted) {
+      // Foreground/online events join the current check. If it can return a
+      // display lease, follow it with one fresh check without cancelling it.
+      previous.requireFresh ||= fresh;
+      return previous.promise!;
     }
-    catch { if (!controller.signal.aborted && started === contextEpoch.current) { setError(true); setSwitchingWorkspace(false); } }
-    finally { if (request.current === controller) request.current = null; }
+    const started = ++contextEpoch.current;
+    previous?.controller.abort();
+    const controller = new AbortController();
+    const check: ContextCheck = { path: requestedPath, controller, requireFresh: fresh };
+    request.current = check;
+    setError(false);
+    check.promise = Promise.resolve().then(async () => {
+      let forceFresh = fresh;
+      try {
+        while (!controller.signal.aborted && started === contextEpoch.current) {
+          const read = () => getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: forceFresh });
+          // Retry only a cold read with a known transient transport failure.
+          // Admission rejection, permission checks and commands are not retried.
+          const value = usable(admitted.current[authorityFamily(requestedPath)])
+            ? await read() : await runAppLocalContextRead(read, controller.signal);
+          if (controller.signal.aborted || started !== contextEpoch.current) return;
+          // A lease may expire while its bridge callback is paused in background.
+          // Never admit it; honor the fresh check already requested on resume.
+          if (check.requireFresh && !forceFresh && expiredCachedContext(value)) { forceFresh = true; continue; }
+          if (!accept(value, requestedPath, true)) throw new Error("The application context must be checked again");
+          if (check.requireFresh && !forceFresh) { forceFresh = true; continue; }
+          return;
+        }
+      } catch (cause) {
+        if (!controller.signal.aborted && started === contextEpoch.current) { setError(classifyAppLocalContextFailure(cause)); setSwitchingWorkspace(false); }
+      } finally { if (request.current === check) request.current = null; }
+    });
+    return check.promise;
   }, [accept]);
+  useEffect(() => () => { contextEpoch.current++; request.current?.controller.abort(); }, []);
   const transition = useCallback((destination: string) => {
     const previous = current.current;
     if (handoffPath.current && handoffPath.current !== destination) { handoffPath.current = null; setSwitchingWorkspace(false); }
@@ -174,7 +219,7 @@ function App() {
           && authorityFamily(previous) !== "portable" && authorityFamily(previous) !== "display" ? outgoing : null);
       }
     } else setHelpPresentation(null);
-    if (previous !== destination) { contextEpoch.current++; request.current?.abort(); recoveryAttempts.current.clear(); setError(false); }
+    if (previous !== destination) { contextEpoch.current++; request.current?.controller.abort(); recoveryAttempts.current.clear(); setError(false); }
     current.current = destination;
     const target = admitted.current[authorityFamily(destination)];
     setAppLocalCommandScope(!isPublic(destination) && usable(target) ? target.value.context.scope : undefined);
@@ -209,8 +254,8 @@ function App() {
       // A fresh authority result rotates native delivery metadata. Do not abort
       // the very context read producing it, or clear an already accepted reply.
       if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
-      if (detail?.reason !== "context") { contextEpoch.current++; request.current?.abort(); }
-      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason !== "context");
+      if (detail?.reason !== "context") { contextEpoch.current++; request.current?.controller.abort(); }
+      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" ? false : "access");
       const key = `${authorityFamily(current.current)}:${detail?.scope ?? ""}`;
       // One fresh authority recovery per user navigation. Context rejection or
       // a second failing read stops at an actionable retry, never a retry loop.
@@ -271,7 +316,7 @@ function App() {
   return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">Please check your connection and try again.</p><button className="mt-4 rounded border px-4 py-2" onClick={() => { recoveryAttempts.current.clear(); void verify({ fresh: true }); }}>Try again</button></> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
+      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => { recoveryAttempts.current.clear(); void verify({ fresh: true }); }}>Try again</button></> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
