@@ -1,0 +1,41 @@
+{
+  "kind": "release",
+  "releaseId": "navigation-cache-release-20261018-ios",
+  "summary": "Matching installed iOS navigation/cache, Salon progressive pages, Services and Staff update verified available in existing TestFlight groups; web already live",
+  "changes": [
+    "9eb72b0c-76e1-4bed-9df9-de25c55d0147"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "36",
+      "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+      "sourceSha256": "8750c1db66a945fb9e8cd467278ae08910b8dd119b1b01ab27051c11a10dce9f",
+      "evidence": "artifacts/navigation-cache-release-20261018/native-final-verification.json",
+      "baselineVersion": "1.0.0",
+      "baselineBuild": "35"
+    }
+  },
+  "webReleaseEvent": "74a1105b-6dee-47e1-93b8-ffbc1865a3b2",
+  "verification": {
+    "tests": {
+      "expected": 97,
+      "count": 97,
+      "failures": 0,
+      "passed": true
+    },
+    "sourceFiles": 392,
+    "appleProcessing": "VALID",
+    "existingGroupsVerified": true,
+    "appStorePublished": false
+  },
+  "limitations": [
+    "No physical iPhone validation",
+    "No App Store publication performed"
+  ],
+  "id": "28892912-ecc2-4de9-bf35-07bddfa63359",
+  "recordedAt": "2026-10-18T07:24:53.687Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

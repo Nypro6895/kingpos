@@ -1,0 +1,54 @@
+{
+  "kind": "release",
+  "releaseId": "navigation-cache-release-20261018-web",
+  "summary": "Navigation/cache reliability, bounded Salon content, completed Services and Staff changes published on exact current production baseline; matching native build in progress",
+  "changes": [
+    "e038c317-8366-43f6-94e4-2318f02a8bc9",
+    "6e736005-74ec-4a5b-8bf7-a4af74309b54",
+    "8074ebda-9baa-4a2f-8fa3-a725f1eb3fc6",
+    "9eb72b0c-76e1-4bed-9df9-de25c55d0147"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+      "baselineDeploymentId": "dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+      "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+      "sourceSha256": "8750c1db66a945fb9e8cd467278ae08910b8dd119b1b01ab27051c11a10dce9f",
+      "overlaySha256": "984c8cb230296bd8eb38b672fdaad021f82ffb169a92677d84cf8ecd6dc3c2f9",
+      "deploySourceSha256": "2e4d8c3bcd68165c393573ee3b70cda0f6157cfa89e3007a8dfee96be4ed5866",
+      "evidence": "artifacts/navigation-cache-release-20261018"
+    }
+  },
+  "verification": {
+    "productionBuild": "passed",
+    "regressions": 77,
+    "webkit": 4,
+    "productionModeNavigation": 2,
+    "liveNavigation": 2,
+    "liveRoutes": 12,
+    "publicSalon": "200, bounded content, unchanged 304, stale scope 409",
+    "permissionsPreserved": true,
+    "databaseMigration": "20261017235500"
+  },
+  "native": {
+    "status": "in-progress",
+    "run": 39106629026,
+    "baselineBuild": "35",
+    "baselineCommit": "f9df047a59393d1af2fcee7e93d9c2f8ca16fa68"
+  },
+  "rollback": {
+    "deploymentId": "dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+    "database": "Compatible function-only migration; preserve data and original access controls"
+  },
+  "limitations": [
+    "Private authenticated routes tested with isolated fixtures; live checks used guest session",
+    "No physical iPhone validation",
+    "No production payments, bookings, ad credit claims or invitations created"
+  ],
+  "pendingDisposition": "artifacts/navigation-cache-release-20261018/pending-disposition.json",
+  "id": "74a1105b-6dee-47e1-93b8-ffbc1865a3b2",
+  "recordedAt": "2026-10-18T07:16:30.927Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

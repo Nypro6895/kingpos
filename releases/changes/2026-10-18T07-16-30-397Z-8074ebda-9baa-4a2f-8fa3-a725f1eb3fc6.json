@@ -1,0 +1,97 @@
+{
+  "kind": "change",
+  "changeId": "navigation-cache-reliability-20261018",
+  "status": "ready",
+  "summary": "Completed shared web/iOS web navigation and scoped cache repair; 74 regressions, 4 WebKit checks and isolated production-mode build passed; NOT DEPLOYED. Integrate task-only patch against current production source. Integrated and verified against live baseline dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/explore/salons/[salonId]/page.tsx",
+    "app/(app)/salon-profile/page.tsx",
+    "app/api/pos/owner/bookings/route.ts",
+    "app/api/pos/owner/reports/route.ts",
+    "app/api/salon-profile/content/route.ts",
+    "app/bookings/owner-live-booking-workspace.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/experience-page-boundary.tsx",
+    "components/experience-scope.tsx",
+    "lib/experience-resource-cache.ts",
+    "lib/experience-route-policies.ts",
+    "lib/fetch-workspace-resource.ts",
+    "lib/pos-workspace-sync.ts",
+    "lib/salon-profile-preview.ts",
+    "lib/salon-profile.ts",
+    "lib/salon-publication-readiness.ts",
+    "lib/use-experience-resource.ts",
+    "lib/use-salon-profile-pages.ts",
+    "lib/workspace-refresh-queue.ts",
+    "lib/workspace-resource-response.ts",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/experience-reload-loop-ui.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/page-revisit-reliability-ui.test.mjs",
+    "tests/salon-profile-owner-route.test.mjs",
+    "tests/salon-profile-progressive-ui.test.mjs",
+    "types/salon-profile.ts"
+  ],
+  "dependencies": [
+    "whole-site-progressive-cache",
+    "experience-reload-loop-fix-20261015"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\navigation-cache-release-20261018\\frozen-source",
+    "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "sourceSha256": "8750c1db66a945fb9e8cd467278ae08910b8dd119b1b01ab27051c11a10dce9f",
+    "overlaySha256": "984c8cb230296bd8eb38b672fdaad021f82ffb169a92677d84cf8ecd6dc3c2f9",
+    "integratedFromEvent": "77f034ab-3c4a-4f21-a204-75158cba6d23"
+  },
+  "validation": [
+    {
+      "name": "Assembled source regressions 77/77 and build/TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-release-20261018/tests-completion.log"
+    },
+    {
+      "name": "WebKit 4/4 and production navigation 2/2",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-release-20261018/webkit-final.log"
+    }
+  ],
+  "id": "8074ebda-9baa-4a2f-8fa3-a725f1eb3fc6",
+  "recordedAt": "2026-10-18T07:16:30.397Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/explore/salons/[salonId]/page.tsx": "517205d2a2a6ee5f3b4bca5aba675d3b7b0fffe6ce61ccf428bc92ac840a13af",
+    "app/(app)/salon-profile/page.tsx": "e17271c27bc6bb9f01931bf533a641f1f9bc6d31a6f1d93385976bde789a39b2",
+    "app/api/pos/owner/bookings/route.ts": "8d006b45fee53a1ee00456868b8ea31f911a05594099aaeb01881b9bc84be955",
+    "app/api/pos/owner/reports/route.ts": "6a65cc09c2430078231016480d498c5eba5f02b6b34731073f5d3b960fb4914f",
+    "app/api/salon-profile/content/route.ts": "3b8419682df81f80c98858f1cf08be375e8aa1713f2a51c995d40932abde2855",
+    "app/bookings/owner-live-booking-workspace.tsx": "ea5aee718bb5e0ac30024f57022650297201973914be6754ff6efefdcae7e52f",
+    "app/reports/owner-live-reports.tsx": "42751b63c8ef0022fb8f0476dc333d99a5f4db585175290c5fe240f910321cf1",
+    "app/salon-profile/salon-profile-view.tsx": "da7b0bf931769148fbad2b093389d24616967fd1be5e416b315b992bf546c561",
+    "components/experience-page-boundary.tsx": "05d7bf5fbae4fb86030ae7b96a1b29586225ff6c38eecc220ded9f4d81214665",
+    "components/experience-scope.tsx": "e51c07efaf526d4ac188830eafea0acbca1206977ce602b15c0fabfcea220615",
+    "lib/experience-resource-cache.ts": "3ff97194b8367749f750cf5c8a837dc1c4b123e924bd508d02176c31aa3c847c",
+    "lib/experience-route-policies.ts": "7166816fa3103d6f096bcfb50890063d7852adf9e408c5d90c5907cca3cf7a26",
+    "lib/fetch-workspace-resource.ts": "71055e0606414e1958bb60daecda9a5a290256262bbbac05c872fbe38ea63bef",
+    "lib/pos-workspace-sync.ts": "d44e71c791c3f4661bf8f372f920be1c9e597f3587779cc9be182bd83675f7c3",
+    "lib/salon-profile-preview.ts": "a6de15c6b4f04e937d9ee8b3a9811a2f877522437a204e2529e1fd4879c114a7",
+    "lib/salon-profile.ts": "917723c44b6de6bc945c4dbb6db16f3ea18208896e44d8644d477e35b313a739",
+    "lib/salon-publication-readiness.ts": "c7661e52e1796f6dedd8f2437efd7030f559b51753d2a1c70603c4199cecf65c",
+    "lib/use-experience-resource.ts": "24958fd2d728aca2e18803e18077d955ab08f6e180b14a43fbf351959b0e2c1c",
+    "lib/use-salon-profile-pages.ts": "8b57a7b19ec0a190cf334277b960df33b7ddda097313951c2e94b4c0e15571a9",
+    "lib/workspace-refresh-queue.ts": "cd25a4e75fd14bba1c04bb1e1cbd382d22cb857afbc69d0169b63b101b029a21",
+    "lib/workspace-resource-response.ts": "923a192a61887aab4981ba7fc303225344624ca45c063f52719884dab602809d",
+    "tests/experience-auth-availability.test.mjs": "0a9e4cca439a8c801b5893aabf906a21dc7e75a3ac98a97fa29694457d9fb13a",
+    "tests/experience-reload-loop-ui.test.mjs": "6b40cb8c0e0717b393bc94e35c1828c9217a16825011f7bf1484892d024872e2",
+    "tests/navigation-cache-reliability.test.mjs": "a7b014e3fab0d5f617c2f86e729727cc0f48e83792da1ccb81cd78e20011c9da",
+    "tests/page-revisit-reliability-ui.test.mjs": "b636b8eb3d4f8f34c2681cda445fa67cca7bfcca7bde5089c6c8b311dbdd3c71",
+    "tests/salon-profile-owner-route.test.mjs": "10a4a1010e6942a95134809e1cf8582c6ed302c0c539c455b551a314185f34f8",
+    "tests/salon-profile-progressive-ui.test.mjs": "d9c1910725a80c0d4ad28aefca714c0d0c5297c78d86832a072cea1858943b9a",
+    "types/salon-profile.ts": "a228fb68a7fab1bb7d3f4114bfe3bf801db0d52d785ae237a3aadbfc49d6351a"
+  }
+}

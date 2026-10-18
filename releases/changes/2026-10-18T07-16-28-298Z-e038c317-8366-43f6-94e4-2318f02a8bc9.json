@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "service-save-timeout-inputs",
+  "status": "ready",
+  "summary": "Coalesce service-save search projection work atomically, preserve booking logic; fix add-on focus, placeholders and numeric drafts. Not deployed; live Save must be verified after migration release. Integrated and verified against live baseline dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/services/service-addon-groups.tsx",
+    "app/services/services.css",
+    "tests/service-owned-addons-ui.test.mjs",
+    "tests/service-owned-addons.integration.test.mjs",
+    "supabase/migrations/20261017235500_service_save_refresh_batch.sql",
+    "docs/service-save-input-fix-2026-10-17.md"
+  ],
+  "dependencies": [
+    "service-owned-addon-groups"
+  ],
+  "supersedesEvents": [
+    "31db1002-05ff-4eef-be71-6081344deec0"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\navigation-cache-release-20261018\\frozen-source",
+    "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "sourceSha256": "8750c1db66a945fb9e8cd467278ae08910b8dd119b1b01ab27051c11a10dce9f",
+    "overlaySha256": "984c8cb230296bd8eb38b672fdaad021f82ffb169a92677d84cf8ecd6dc3c2f9",
+    "integratedFromEvent": "31db1002-05ff-4eef-be71-6081344deec0"
+  },
+  "validation": [
+    {
+      "name": "Assembled source regressions 77/77 and build/TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-release-20261018/tests-completion.log"
+    },
+    {
+      "name": "WebKit 4/4 and production navigation 2/2",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-release-20261018/webkit-final.log"
+    }
+  ],
+  "id": "e038c317-8366-43f6-94e4-2318f02a8bc9",
+  "recordedAt": "2026-10-18T07:16:28.298Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/services/service-addon-groups.tsx": "ed412482a8012a3cb25008af6f142a05fdef0830c1ff9e1528bb5842e9b7c2ce",
+    "app/services/services.css": "4e5da26414f879f837b4a9bad490f4b6bb002c5c5cd103e36de9fdb86a203409",
+    "tests/service-owned-addons-ui.test.mjs": "8136889dc2286f9c0192c5cf394a22b3b157a397aa0d1f422717770e7fcde4f5",
+    "tests/service-owned-addons.integration.test.mjs": "7aa38489701b372c914c00c9c28e3fb9114049c469995ae7fdeabb00fe3d02f0",
+    "supabase/migrations/20261017235500_service_save_refresh_batch.sql": "87ca2ca2de7d767ad704ffd56106e514529f567176e164519a9e7c24a74961dd",
+    "docs/service-save-input-fix-2026-10-17.md": "42878aa2f3d3c3498747d31a5e273e05fba978f0b657168e117aeb2424d07173"
+  }
+}

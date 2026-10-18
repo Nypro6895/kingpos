@@ -1,0 +1,77 @@
+{
+  "releaseId": "navigation-cache-release-20261018",
+  "completedAt": "2026-10-18T07:24:54.630Z",
+  "source": {
+    "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "branch": "codex/navigation-cache-release-20261018",
+    "baselineDeploymentId": "dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+    "baselineCommit": "f9df047a59393d1af2fcee7e93d9c2f8ca16fa68",
+    "sourceSha256": "8750c1db66a945fb9e8cd467278ae08910b8dd119b1b01ab27051c11a10dce9f",
+    "overlaySha256": "984c8cb230296bd8eb38b672fdaad021f82ffb169a92677d84cf8ecd6dc3c2f9",
+    "deploySourceSha256": "2e4d8c3bcd68165c393573ee3b70cda0f6157cfa89e3007a8dfee96be4ed5866"
+  },
+  "web": {
+    "deploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+    "url": "https://reylumi.com",
+    "verified": true,
+    "record": "74a1105b-6dee-47e1-93b8-ffbc1865a3b2",
+    "checks": {
+      "regressions": 77,
+      "webkit": 4,
+      "localNavigation": 2,
+      "liveNavigation": 2,
+      "liveRoutes": 12,
+      "publicProfile": "200; bounded content; 304 unchanged; 409 stale scope"
+    }
+  },
+  "ios": {
+    "version": "1.0.0",
+    "build": "36",
+    "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "testflightAvailable": true,
+    "appleProcessing": "VALID",
+    "tests": 97,
+    "record": "28892912-ecc2-4de9-bf35-07bddfa63359",
+    "run": 39106629026,
+    "appStorePublished": false
+  },
+  "changeEvents": [
+    "e038c317-8366-43f6-94e4-2318f02a8bc9",
+    "6e736005-74ec-4a5b-8bf7-a4af74309b54",
+    "8074ebda-9baa-4a2f-8fa3-a725f1eb3fc6",
+    "9eb72b0c-76e1-4bed-9df9-de25c55d0147"
+  ],
+  "migration": {
+    "at": "2026-10-18T07:06:50.743Z",
+    "version": "20261017235500",
+    "sha256": "87ca2ca2de7d767ad704ffd56106e514529f567176e164519a9e7c24a74961dd",
+    "applied": true,
+    "permissionsPreserved": true,
+    "noBusinessRowsWritten": true,
+    "routines": [
+      {
+        "routine": "save_owned_service_config_batch(uuid,jsonb)",
+        "sha256": "7f138d3374809e9a941e1a6af37ac316281cb6807d4f53729b237a682589b06f"
+      },
+      {
+        "routine": "sync_explore_salon_documents()",
+        "sha256": "c8eca23e20f4c88f817cef163bd46d29c91f1bff1de04e73f43ffb6ed6ce0e20"
+      },
+      {
+        "routine": "sync_explore_social_salons()",
+        "sha256": "5da2a291faed8001908332ed7e65c32784a97ae2a2cd209642b5d0d0ab67cb5d"
+      }
+    ]
+  },
+  "limitations": [
+    "Authenticated business pages validated through isolated fixtures; guest navigation and public profile verified live",
+    "No physical iPhone test",
+    "No financial transaction or production booking/ad claim fabricated"
+  ],
+  "evidence": "artifacts/navigation-cache-release-20261018",
+  "rollback": {
+    "webDeploymentId": "dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+    "previousNativeBuild": "35",
+    "policy": "Preserve compatible database function changes and business records; do not overwrite external newer release"
+  }
+}

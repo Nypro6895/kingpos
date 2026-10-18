@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "staff-inline-compact-20261017",
+  "status": "ready",
+  "summary": "Completed approved compact single-open staff editor: per-staff Save, Cancel restores/collapses, Role input removed with old data retained; frozen patch pending production baseline integration Integrated and verified against live baseline dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/staff-directory-editor.tsx",
+    "app/staff/actions.ts",
+    "app/(app)/staff/page.tsx",
+    "tests/staff-local-search-ui.test.mjs"
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\navigation-cache-release-20261018\\frozen-source",
+    "commit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "sourceSha256": "8750c1db66a945fb9e8cd467278ae08910b8dd119b1b01ab27051c11a10dce9f",
+    "overlaySha256": "984c8cb230296bd8eb38b672fdaad021f82ffb169a92677d84cf8ecd6dc3c2f9",
+    "integratedFromEvent": "a41905d7-b502-46d8-9b1e-746f9d6c0034"
+  },
+  "validation": [
+    {
+      "name": "Assembled source regressions 77/77 and build/TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-release-20261018/tests-completion.log"
+    },
+    {
+      "name": "WebKit 4/4 and production navigation 2/2",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-release-20261018/webkit-final.log"
+    }
+  ],
+  "id": "6e736005-74ec-4a5b-8bf7-a4af74309b54",
+  "recordedAt": "2026-10-18T07:16:30.062Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/staff/staff-directory-editor.tsx": "ead85ff65b6f6aa7405eb295ef39fca89481b6d2c09152c558395b21f75c3d5c",
+    "app/staff/actions.ts": "4803291d1f749d3982423fd7ae152d7eeb28e40f8479b73435d2510958a1cdcc",
+    "app/(app)/staff/page.tsx": "e503686c35dd9f6bde11a581ea0c96b292bfdf366beeb173b628ce2f06fc4970",
+    "tests/staff-local-search-ui.test.mjs": "f1d3a71981863874d454fb9493c738cc24070cd38b09359a70bf52e02ff3f7e2"
+  }
+}
