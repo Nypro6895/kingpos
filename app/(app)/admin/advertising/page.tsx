@@ -1,8 +1,7 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { OwnerCampaignSettingsPanel } from "./owner-campaign-settings";
 import { ownerCampaignSettings } from "@/lib/owner-campaigns";
-import { advertisingClient } from "@/lib/explore-advertising";
-import { DEFAULT_OWNER_CAMPAIGN_SETTINGS, type OwnerCampaign } from "@/types/owner-campaign";
+import { DEFAULT_OWNER_CAMPAIGN_SETTINGS } from "@/types/owner-campaign";
 import { DEFAULT_ADVERTISING_LIMITS } from "@/types/advertising-report";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
@@ -37,10 +36,8 @@ async function AdvertisingPage() {
         (result.reason instanceof Error
           ? result.reason.message
           : "Insights unavailable.");
-  const ownerResults = await Promise.allSettled([ownerCampaignSettings(), advertisingClient().from("owner_campaigns").select("*").order("created_at", {ascending:false}).limit(100)]);
-  const ownerSettings = ownerResults[0].status === "fulfilled" ? ownerResults[0].value : DEFAULT_OWNER_CAMPAIGN_SETTINGS;
-  const ownerRows = ownerResults[1].status === "fulfilled" && !ownerResults[1].value.error ? ownerResults[1].value.data ?? [] : [];
-  const ownerError = ownerResults.some(r => r.status === "rejected") || (ownerResults[1].status === "fulfilled" && ownerResults[1].value.error) ? "Owner campaigns are being prepared. This section is not available yet." : "";
+  let ownerSettings=DEFAULT_OWNER_CAMPAIGN_SETTINGS,ownerError="";
+  try{ownerSettings=await ownerCampaignSettings();}catch{ownerError="Campaign settings could not load. Refresh before saving.";}
   return (
     <>
     <CampaignManager
@@ -49,7 +46,7 @@ async function AdvertisingPage() {
       report={report}
       limits={limits}
     />
-    <OwnerCampaignSettingsPanel initial={ownerSettings} campaigns={ownerRows as OwnerCampaign[]} error={ownerError} />
+    <OwnerCampaignSettingsPanel initial={ownerSettings} error={ownerError} />
     </>
   );
 }

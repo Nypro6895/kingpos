@@ -30,7 +30,7 @@ export async function dismissCampaignPromptAction(id: string) {
   await client.from("owner_campaign_prompts").update({ dismissed_at: new Date().toISOString() }).eq("id", id).eq("salon_id", salonId);
 }
 export async function createOwnerCampaignAction(input: {
-  id: string; target: CampaignCreativeTarget; keepRunning?: boolean; area: CampaignArea; location: string;
+  id: string; settingsVersion?: number; target: CampaignCreativeTarget; keepRunning?: boolean; area: CampaignArea; location: string;
   country: string; state: string; city: string; dailyViews: number; days: number; creditLimit?: number;
 }) {
   try {
@@ -44,7 +44,8 @@ export async function createOwnerCampaignAction(input: {
     if (!/^[0-9a-f-]{36}$/i.test(input.id) || !/^[0-9a-f-]{36}$/i.test(input.target.sourceId)) throw new Error("Reopen this post and try again.");
     const { data: wallet, error: walletError } = await client.from("campaign_wallets").select("auto_topup_enabled,payment_blocked").eq("salon_id", salonId).single();
     if (walletError) throw new Error("Your credit settings could not load. Please retry.");
-    const { data, error } = await client.rpc("campaign_create_with_limit", {
+    const { data, error } = await client.rpc("campaign_create_versioned", {
+      p_expected:input.settingsVersion??null,
       p_id: input.id, p_salon: salonId, p_user: userId,
       p_type: input.target.sourceType, p_source: input.target.sourceId,
       p_area: input.area, p_location: input.location.trim(), p_country: input.country.trim(),
@@ -111,9 +112,11 @@ export async function saveCampaignLimitAction(id: string, limit: number, keepRun
 export async function loadCampaignPostsAction() {
   const { client, salonId } = await requireCampaignOwner();
   const results = await Promise.all((["salon_profile_looks", "salon_profile_updates"] as const).map(async (table) => {
-    const { data, error } = await client.from(table).select("id,title").eq("salon_id", salonId).eq("status", "published").is("deleted_at", null).eq("safety_hold", false).order("created_at", { ascending: false }).limit(50);
+    // These post tables predate soft deletion; optional moderation fields are
+    // checked from the row, as in owner_campaign_post, rather than queried as columns.
+    const { data, error } = await client.from(table).select("*").eq("salon_id", salonId).eq("status", "published").order("created_at", { ascending: false }).limit(50);
     if (error) throw new Error("Published posts could not load. Please retry.");
-    return (data ?? []).map(row => ({ sourceId: row.id, sourceType: table === "salon_profile_looks" ? "salon_profile_look" as const : "salon_profile_update" as const, salonId, title: row.title || "Salon post" }));
+    return (data ?? []).filter(row => row.deleted_at == null && row.safety_hold !== true).map(row => ({ sourceId: row.id, sourceType: table === "salon_profile_looks" ? "salon_profile_look" as const : "salon_profile_update" as const, salonId, title: row.title || "Salon post" }));
   }));
   return results.flat();
 }

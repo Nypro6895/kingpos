@@ -14,7 +14,7 @@ export async function requireCampaignOwner(requireInstalled = true) {
   return { context, client, salonId: context.currentSalon.id, userId: context.user.id };
 }
 export async function ownerCampaignSettings() {
-  const { data, error } = await advertisingClient().from("owner_campaign_settings").select("config").eq("id", true).single();
+  const { data, error } = await advertisingClient().from("owner_campaign_settings").select("config,version").eq("id", true).single();
   if (error) throw new Error("Campaigns are being prepared. Please try again later.");
-  return normalizeOwnerCampaignSettings(data.config);
+  return {...normalizeOwnerCampaignSettings(data.config),version:Number(data.version)};
 }

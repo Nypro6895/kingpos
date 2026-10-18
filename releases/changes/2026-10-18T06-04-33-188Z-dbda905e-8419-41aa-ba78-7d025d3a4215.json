@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "campaign-production-integration-20261018",
+  "status": "ready",
+  "summary": "Integrate Campaign review navigation while retaining production FeedbackSearchForm/SearchSubmitButton and feedback links on exact baseline dpl_32vQBEU3rzi1gPEgTJBgvRAMMv4L",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/(app)/admin/_components/admin-navigation.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-live-20261018\\frozen-source",
+    "baselineDeploymentId": "dpl_32vQBEU3rzi1gPEgTJBgvRAMMv4L"
+  },
+  "dependencies": [
+    "campaign-followup-20261017",
+    "campaign-admin-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build, TypeScript, scoped lint, 9 rule/integration checks and 3 browser checks",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos/artifacts/campaign-live-20261018"
+    }
+  ],
+  "id": "dbda905e-8419-41aa-ba78-7d025d3a4215",
+  "recordedAt": "2026-10-18T06:04:33.188Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/_components/admin-ui.tsx": "0fc88f27b5febb36c201643c4933d8110493c5c302f1f0d1c75b452f088bb973",
+    "app/(app)/admin/_components/admin-navigation.tsx": "1fa6a972298a0f3ffad83489d51eb8e94c2753aaebe5c7d025e389217d9c8d1a"
+  }
+}

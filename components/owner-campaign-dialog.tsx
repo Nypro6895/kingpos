@@ -11,8 +11,8 @@ import styles from "./owner-campaign.module.css";
 import { creditUnits, displayCredits, formatCredits } from "@/lib/campaign-credit-display";
 import type { OwnerCampaign } from "@/types/owner-campaign";
 
-export function OwnerCampaignDialog({ target, settings, initialLocation, onClose, onSaved, availableCredits = 0, initialStep = "intro", previous, automaticPurchases = false }: {
-  target: CampaignCreativeTarget; availableCredits?: number; initialStep?: "intro" | "setup"; settings: OwnerCampaignSettings;
+export function OwnerCampaignDialog({ target, settings, initialLocation, onClose, onSaved, availableCredits = 0, initialStep = "intro", previous, automaticPurchases = false, prepareCreative }: {
+  target: CampaignCreativeTarget; prepareCreative?: () => Promise<CampaignCreativeTarget>; availableCredits?: number; initialStep?: "intro" | "setup"; settings: OwnerCampaignSettings;
   initialLocation?: { city: string; state: string; country: string };
   onClose: () => void; onSaved?: (result?: { status?: string; id?: string }) => void; previous?: OwnerCampaign; automaticPurchases?: boolean;
 }) {
@@ -32,6 +32,8 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
   const [savedMessage,setSavedMessage] = useState("Your campaign is saved.");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [photoState,setPhotoState]=useState<"preparing"|"ready"|"failed">(prepareCreative?"preparing":"ready");
+  useEffect(()=>{if(!prepareCreative)return;let active=true;void prepareCreative().then(()=>{if(active)setPhotoState("ready");},()=>{if(active)setPhotoState("failed");});return()=>{active=false;};},[prepareCreative]);
   const ref = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const exampleViews = baseViews * Math.min(7, settings.maxDays);
@@ -47,7 +49,10 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
   async function save() {
     setBusy(true); setError("");
     try {
-      const result = await createOwnerCampaignAction({ id, target, area, location, country: area === "country" ? location : country, state: region, city, dailyViews: views, days, keepRunning, creditLimit });
+      if(prepareCreative)setPhotoState("preparing");
+      const readyTarget = prepareCreative ? await prepareCreative().catch(error=>{setPhotoState("failed");throw error;}) : target;
+      setPhotoState("ready");
+      const result = await createOwnerCampaignAction({ id, settingsVersion:settings.version, target:readyTarget, area, location, country: area === "country" ? location : country, state: region, city, dailyViews: views, days, keepRunning, creditLimit });
       if (!result.ok) setError(result.message);
       else { setSavedMessage(result.message); setStep("saved"); onSaved?.({status:result.status,id:result.id}); }
     } catch { setError("Please try again. Your choices are still here."); }
@@ -55,6 +60,7 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
   }
   return createPortal(<dialog ref={ref} className={styles.dialog} aria-labelledby="campaign-title" onCancel={event => { event.preventDefault(); if (!busy) onClose(); }} onClick={event => { if (event.target === event.currentTarget && !busy) onClose(); }}>
     <div className={styles.modal}>
+      {prepareCreative?<p className={styles.note} role="status" aria-live="polite"><WorkspaceText text={photoState==="ready"?"Photo ready":photoState==="failed"?"Photo upload needs a retry. Save again when you are ready.":"Preparing your photo… You can keep choosing your audience."}/></p>:null}
       <header className={styles.modalHeader}><span className={styles.eyebrow}><WorkspaceText text="REYLUMI · GROW YOUR BUSINESS" /></span><button className={styles.close} aria-label={__vt("Close campaign")} disabled={busy} onClick={onClose}>×</button></header>
       {step === "intro" ? <>
         <div className={styles.spark}>↗</div><h2 id="campaign-title"><WorkspaceText text="Your next customer" /><br /><WorkspaceText text="could love this post." /></h2>
@@ -71,7 +77,7 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
           {area === "neighborhood" ? <label className={styles.label}><WorkspaceText text="City" /><input required maxLength={120} value={city} onChange={event => setCity(event.target.value)} /></label> : null}
           <fieldset className={styles.fieldset}><legend><WorkspaceText text="Daily view limit" /></legend><div className={styles.choices}>{[...new Set([baseViews, Math.min(baseViews * 3, settings.maxDailyViews), Math.min(baseViews * 6, settings.maxDailyViews)])].map(value => <button type="button" key={value} aria-pressed={views === value} onClick={() => setViews(value)}><strong>{value.toLocaleString()}</strong><small>{formatCredits(campaignQuote(settings, value, days, area).dailyCents)} <WorkspaceText text="credits / day" /></small></button>)}</div><details className={styles.customChoice}><summary><WorkspaceText text="Choose a different daily limit" /></summary><label className={styles.label}><WorkspaceText text="Daily view limit" /><input type="number" required min={100} max={settings.maxDailyViews} step={1} value={views} onChange={event => setViews(Math.max(100, Math.min(settings.maxDailyViews, Math.round(Number(event.target.value)) || 100)))} /></label></details><small className={styles.muted}><WorkspaceText text="A maximum, not a guarantee. A smaller area may get fewer views." /></small></fieldset>
           <fieldset className={styles.fieldset}><legend><WorkspaceText text="How many days?" /></legend><div className={styles.choices}>{[...new Set([Math.min(3, settings.maxDays), Math.min(7, settings.maxDays), Math.min(14, settings.maxDays)])].map(value => <button type="button" key={value} aria-pressed={days === value} onClick={() => setDays(value)}>{value} <WorkspaceText text="days" /></button>)}</div><details className={styles.customChoice}><summary><WorkspaceText text="Choose a different duration" /></summary><label className={styles.label}><WorkspaceText text="Number of days" /><input type="number" required min={1} max={settings.maxDays} value={days} onChange={event => setDays(Math.max(1, Math.min(settings.maxDays, Math.round(Number(event.target.value)) || 1)))} /></label></details></fieldset>
-          <label className={styles.label}><WorkspaceText text="Maximum credits for this campaign" /><input type="number" min="0.12" max={displayCredits(quote.totalCents)} step="0.12" required value={displayCredits(creditLimit)} onChange={event => { try {setLimit(creditUnits(Number(event.target.value))); setError("");} catch {setError("Choose a credit amount in steps of 0.12.");} }} /></label><p className={styles.note}><WorkspaceText text="The campaign stops at this limit, even if your salon still has credits. A smaller limit may end the ad sooner." /></p>{error?<p role="alert" className={styles.error}><WorkspaceText text={error}/></p>:null}
+          <label className={styles.label}><WorkspaceText text="Maximum credits for this campaign" /><input type="number" min="1.2" max={displayCredits(quote.totalCents)} step="1.2" required value={displayCredits(creditLimit)} onChange={event => { try {setLimit(creditUnits(Number(event.target.value))); setError("");} catch {setError("Choose a credit amount in steps of 1.2.");} }} /></label><p className={styles.note}><WorkspaceText text="The campaign stops at this limit, even if your salon still has credits. A smaller limit may end the ad sooner." /></p>{error?<p role="alert" className={styles.error}><WorkspaceText text={error}/></p>:null}
           <div className={styles.total}><span><WorkspaceText text="Credit limit ·" /> {days} <WorkspaceText text="days" /></span><strong>{formatCredits(creditLimit)} <WorkspaceText text="credits" /></strong></div><p className={styles.note}><WorkspaceText text="Use credits only for delivered views. Cancel anytime; unused credits return to your balance." /></p>
           <div className={styles.actions}><button type="button" className={styles.secondary} onClick={() => setStep("intro")}><WorkspaceText text="Back" /></button><button className={styles.primary}><WorkspaceText text="Continue →" /></button></div>
         </form>

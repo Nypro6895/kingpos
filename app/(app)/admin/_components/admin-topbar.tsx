@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { openDashboardRecord } from "@/lib/admin-record-navigation";
+import { CampaignReviewAlerts } from "./campaign-review-alerts";
 import { AdminSupportHub } from "./admin-support-hub";
 
 type SearchGroup = { label: string; items: Array<{ id: string; label: string; detail: string; href: string }>; unavailable: boolean };
@@ -59,9 +60,9 @@ export function AdminGlobalSearch() {
   </form>;
 }
 
-export function AdminTopbar({ roleName, canNotifications }: { roleName: string; canNotifications: boolean }) {
+export function AdminTopbar({ roleName, canNotifications, canReviewAds=false }: { roleName: string; canNotifications: boolean; canReviewAds?:boolean }) {
   const pathname = usePathname();
   const section = pathname.split("/")[2];
   const labels: Record<string, string> = { users: "Users", businesses: "Shared access", locations: "Businesses", claims: "Ownership claims", verification: "Salon verification", reports: "Support cases", "post-safety": "Post safety", inbox: "Support inbox", notifications: "Notifications", audit: "Audit log", recovery: "Recovery", team: "Admin team", settings: "Settings", advertising: "Advertising", search: "Search" };
-  return <div className="admin-topbar"><nav aria-label="Admin breadcrumb"><Link href="/admin">Platform</Link><span>/</span><span>{labels[section] || "Dashboard"}</span></nav><AdminGlobalSearch /><div className="admin-topbar-account"><AdminSupportHub /><details className="admin-account-menu"><summary><span className="admin-avatar" aria-hidden="true">{roleName.split(" ").map(word => word[0]).slice(0, 2).join("")}</span><span>{roleName}</span><span aria-hidden="true">⌄</span></summary><div><Link href="/account">My account</Link>{canNotifications && <Link href="/admin/notifications">Notification delivery history</Link>}<Link href="/admin/settings">Admin settings</Link></div></details></div></div>;
+  return <div className="admin-topbar"><nav aria-label="Admin breadcrumb"><Link href="/admin">Platform</Link><span>/</span><span>{labels[section] || "Dashboard"}</span></nav><AdminGlobalSearch /><div className="admin-topbar-account"><AdminSupportHub />{canReviewAds?<CampaignReviewAlerts/>:null}<details className="admin-account-menu"><summary><span className="admin-avatar" aria-hidden="true">{roleName.split(" ").map(word => word[0]).slice(0, 2).join("")}</span><span>{roleName}</span><span aria-hidden="true">⌄</span></summary><div><Link href="/account">My account</Link>{canNotifications && <Link href="/admin/notifications">Notification delivery history</Link>}<Link href="/admin/settings">Admin settings</Link></div></details></div></div>;
 }

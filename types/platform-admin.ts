@@ -52,6 +52,7 @@ export const PLATFORM_ADMIN_PERMISSIONS = {
   inboxRead: "admin.inbox.read",
   inboxManage: "admin.inbox.manage",
   inboxReply: "admin.inbox.reply",
+  advertisingReview: "admin.advertising.review",
   advertisingManage: "admin.advertising.manage",
 } as const;
 

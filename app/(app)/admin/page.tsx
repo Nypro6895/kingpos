@@ -1,4 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { advertisingClient } from "@/lib/explore-advertising";
 import { DashboardIcon } from "./dashboard/dashboard-icons";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -26,6 +27,7 @@ async function AdminPage({ searchParams }: { searchParams: Promise<Record<string
     loadOptionalAdminSection(getPlatformAdminDashboard), loadAdminDashboardWorkspace(),
     can(P.auditRead) ? loadOptionalAdminSection(() => searchPlatformAdminAuditLogs({ pageSize: "8" })) : null,
   ]);
+  const adReviews=can(P.advertisingReview)?await loadOptionalAdminSection(async()=>{const {count,error}=await advertisingClient().from("owner_campaigns").select("id",{count:"exact",head:true}).eq("status","pending_review");if(error)throw error;return count??0;}):null;
   const loadedAt = new Date().toISOString();
   const queue = filterDashboardQueue(sources, filters, actor.userId, Date.parse(loadedAt));
   const totalQueue = filterDashboardQueue(sources, { ...filters, q: "", kind: "all", view: "all" }, actor.userId, Date.parse(loadedAt));
@@ -36,6 +38,7 @@ async function AdminPage({ searchParams }: { searchParams: Promise<Record<string
   </div>;
   return <DashboardSurface loadedAt={loadedAt} initialSelection={initialSelection}><div className="admin-dashboard">
     <header className="dashboard-page-heading"><div><h1>Dashboard</h1><p>Your platform, ready for action</p></div><DashboardRefresh loadedAt={loadedAt} /></header>
+    {adReviews?.error?<SectionError message="Campaign reviews could not load. Open Advertising to retry."/>:adReviews?.data?<p role="status"><Link className="dashboard-link" href="/admin/advertising/reviews">{adReviews.data} owner ads awaiting review →</Link></p>:null}
     {overview.error && <SectionError message={overview.error} />}
     <div className="dashboard-overview-layout">
       <DashboardNewAccounts permissions={actor.permissions} />

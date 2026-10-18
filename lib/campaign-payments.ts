@@ -45,7 +45,7 @@ export async function confirmCampaignCheckout(owner: Awaited<ReturnType<typeof r
  if(session.status!=="complete"||session.payment_status!=="paid"||typeof session.payment_intent!=="string")return false;
  await fulfillCreditPayment(session.payment_intent);return true;
 }
-export async function cancelCampaignCheckout(owner: Awaited<ReturnType<typeof requireCampaignOwner>>,orderId: string) {
+export async function cancelCampaignCheckout(owner: Pick<Awaited<ReturnType<typeof requireCampaignOwner>>, "client" | "salonId" | "userId">,orderId: string) {
  if(!/^[0-9a-f-]{36}$/i.test(orderId))throw new Error("Payment could not be cancelled.");
  const {data,error}=await owner.client.from("campaign_credit_orders").select("checkout_session_id,status,automatic").eq("id",orderId).eq("owner_id",owner.userId).eq("salon_id",owner.salonId).single();
  if(error||!data||data.automatic)throw new Error("Payment could not be cancelled.");
@@ -59,6 +59,29 @@ export async function cancelCampaignCheckout(owner: Awaited<ReturnType<typeof re
  const {error:update}=await owner.client.from("campaign_credit_orders").update({status:"cancelled"}).eq("id",orderId).eq("status","pending");
  if(update)throw new Error("Payment cancellation needs retry.");return true;
 }
+/** Admin reconciliation only reads a provider payment and replays verified fulfillment.
+ * It never creates or confirms a new charge, including unknown automatic outcomes. */
+export async function reconcileCampaignCreditOrder(orderId:string,reference?:string){
+ if(!/^[0-9a-f-]{36}$/i.test(orderId))throw new Error("Choose a valid credit order.");
+ const client=advertisingClient();
+ const {data:order,error}=await client.from("campaign_credit_orders").select("id,status,checkout_session_id,provider_reference").eq("id",orderId).single();
+ if(error||!order)throw new Error("Credit order could not load.");
+ let intent=reference?.trim()||order.provider_reference;
+ if(intent&&!/^pi_[a-zA-Z0-9]+$/.test(intent))throw new Error("Use the payment reference from your payment provider.");
+ if(!intent&&order.checkout_session_id){
+  if(!/^cs_[a-zA-Z0-9_]+$/.test(order.checkout_session_id))throw new Error("Credit checkout reference is invalid.");
+  const session=await stripe(`checkout/sessions/${order.checkout_session_id}`);
+  if((session.metadata as Record<string,string>|undefined)?.campaign_credit_order!==orderId)throw new Error("Payment does not belong to this order.");
+  if(session.status!=="complete"||session.payment_status!=="paid"||typeof session.payment_intent!=="string")throw new Error("Payment is not complete. No credits were added.");
+  intent=session.payment_intent;
+ }
+ if(!intent)throw new Error("Check the payment provider and supply its payment reference. No new charge was sent.");
+ if(!/^pi_[a-zA-Z0-9]+$/.test(intent))throw new Error("Credit payment reference is invalid.");
+ const payment=await stripe(`payment_intents/${intent}`);
+ if((payment.metadata as Record<string,string>|undefined)?.campaign_credit_order!==orderId)throw new Error("Payment does not belong to this order.");
+ await fulfillCreditPayment(intent,orderId);
+ return "Verified payment and credits synchronized. No new charge was created.";
+}
 export function verifyCampaignWebhook(payload:string,signature:string){
   const secret=process.env.CAMPAIGN_STRIPE_WEBHOOK_SECRET;if(!secret)return false;
   const parts=signature.split(",");const timestamp=parts.find(v=>v.startsWith("t="))?.slice(2);
@@ -66,10 +89,11 @@ export function verifyCampaignWebhook(payload:string,signature:string){
   const expected=createHmac("sha256",secret).update(`${timestamp}.${payload}`).digest();
   return parts.filter(v=>v.startsWith("v1=")).some(v=>{const actual=Buffer.from(v.slice(3),"hex");return actual.length===expected.length&&timingSafeEqual(actual,expected);});
 }
-export async function fulfillCreditPayment(intentId:string){
+export async function fulfillCreditPayment(intentId:string,expectedOrderId?:string){
   if(!/^pi_[a-zA-Z0-9]+$/.test(intentId))throw new Error("Invalid payment.");
   const intent=await stripe(`payment_intents/${intentId}`);
   const metadata=intent.metadata as Record<string,string>|undefined;
+  if(expectedOrderId&&metadata?.campaign_credit_order!==expectedOrderId)throw new Error("Payment does not belong to this order.");
   if(intent.status!=="succeeded"||intent.currency!=="usd"||!metadata?.campaign_credit_order)throw new Error("Payment is not complete.");
   const client=advertisingClient();
   const {error}=await client.rpc("campaign_credit_paid",{p_order:metadata.campaign_credit_order,p_reference:intentId,p_amount:intent.amount_received,p_customer:typeof intent.customer==="string"?intent.customer:null,p_method:intent.setup_future_usage==="off_session"&&typeof intent.payment_method==="string"?intent.payment_method:null});

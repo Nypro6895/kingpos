@@ -69,6 +69,7 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   {href: "/admin/verification", label: "Business verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & support", icon: "✓"},
   {href: "/admin/notifications", label: "Notifications", permission: PLATFORM_ADMIN_PERMISSIONS.notificationsRead, group: "Communication", icon: "♧"},
   {href: "/admin/inbox", label: "Support inbox", permission: PLATFORM_ADMIN_PERMISSIONS.inboxRead, group: "Review & support", icon: "✉"},
+  {href: "/admin/advertising/reviews", label: "Ad reviews", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingReview, group: "Review & support", icon: "◈"},
   {href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Communication", icon: "◈"},
   {
     href: "/admin/audit",
@@ -109,7 +110,7 @@ export function AdminShell({ children, context, counts = {} }: AdminShellProps) 
   const navItems = ADMIN_NAV_ITEMS.filter((item) =>
     hasAdminPermission(context, item.permission) && (item.href!=="/admin/settings/twilio" || context.roleSlug==="platform_owner"),
   ).map(item => ({ ...item, count: counts[item.href] })).sort((a, b) => {
-    const order = ["/admin", "/admin/users", "/admin/businesses", "/admin/locations", "/admin/attention", "/admin/inbox", "/admin/claims", "/admin/verification", "/admin/reports", "/admin/post-safety", "/admin/recovery", "/admin/notifications", "/admin/advertising", "/admin/audit", "/admin/team", "/admin/settings"];
+    const order = ["/admin", "/admin/users", "/admin/businesses", "/admin/locations", "/admin/attention", "/admin/inbox", "/admin/claims", "/admin/verification", "/admin/reports", "/admin/post-safety", "/admin/recovery", "/admin/notifications", "/admin/advertising/reviews", "/admin/advertising", "/admin/audit", "/admin/team", "/admin/settings"];
     order.splice(order.indexOf("/admin/attention"), 0, "/admin/market");
     return order.indexOf(a.href) - order.indexOf(b.href);
   });
@@ -151,7 +152,7 @@ export function AdminShell({ children, context, counts = {} }: AdminShellProps) 
           </div>
           <AdminNavigation items={navItems} mobile />
         </header>
-        <AdminTopbar roleName={context.roleName} canNotifications={hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.notificationsRead)} />
+        <AdminTopbar roleName={context.roleName} canReviewAds={hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.advertisingReview)} canNotifications={hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.notificationsRead)} />
         <main className="admin-content mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {children}
         </main>

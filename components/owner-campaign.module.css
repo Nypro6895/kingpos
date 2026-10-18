@@ -10,3 +10,6 @@
 @media(max-width:600px){.pageHeader{flex-wrap:wrap;gap:12px}.pageHeader>div{width:100%}.pageHeader>a,.pageHeader>button{flex:1!important;text-align:center}.creditBanner{flex-wrap:wrap;gap:12px}}
 
 @media(max-width:600px){.pageHeader{flex-wrap:wrap;gap:12px}.pageHeader>div{width:100%}.pageHeader>a,.pageHeader>button{flex:1!important;text-align:center}.creditBanner{flex-wrap:wrap;gap:12px}}
+
+/* Restore native modal centering after the shared CSS reset. */
+.dialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;max-height:calc(100dvh - 32px);max-width:calc(100vw - 24px)}

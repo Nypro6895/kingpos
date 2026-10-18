@@ -20,7 +20,7 @@ function AdminNavIcon({ href }: { href:string }) {
 export function AdminNavigation({ items, mobile = false }: { items: AdminNavigationItem[]; mobile?: boolean }) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(false);
-  const current = items.find(item => item.href === "/admin" ? pathname === item.href : pathname.startsWith(item.href));
+  const current = items.filter(item => pathname === item.href || (item.href !== "/admin" && pathname.startsWith(`${item.href}/`))).sort((a,b)=>b.href.length-a.href.length)[0];
   const groups = [...new Set(items.map(item => item.group))];
   return <div>
     {mobile && <button type="button" aria-expanded={expanded} aria-controls="admin-mobile-menu" className="mt-3 flex w-full items-center justify-between rounded-lg border border-zinc-200 px-3 py-2 text-sm font-semibold" onClick={() => setExpanded(!expanded)}><span>{current?.label ?? "Admin navigation"}</span><span>{expanded ? "Close menu ×" : "Menu ☰"}</span></button>}
@@ -28,7 +28,7 @@ export function AdminNavigation({ items, mobile = false }: { items: AdminNavigat
       {groups.map(group => <div key={group}>
         {group && <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.13em] text-zinc-400">{group}</p>}
         <div className="grid gap-1">{items.filter(item => item.group === group).map(item => {
-          const active = item.href === "/admin" ? pathname === item.href : pathname.startsWith(item.href);
+          const active = current?.href === item.href;
           return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} onClick={() => setExpanded(false)} className={`admin-nav-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-orange-600 ${active ? "bg-orange-50 text-orange-700" : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"}`}><AdminNavIcon href={item.href}/><span>{item.label}</span>{item.count != null && item.count > 0 && <span className="admin-nav-count" aria-label={`${item.count} pending`}>{item.count > 99 ? "99+" : item.count}</span>}</Link>;
         })}</div>
       </div>)}

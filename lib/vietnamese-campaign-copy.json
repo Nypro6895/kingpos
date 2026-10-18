@@ -70,5 +70,12 @@
   "Daily operations": "Vận hành hằng ngày",
   "Business management": "Quản lý kinh doanh",
   "Grow your salon": "Phát triển tiệm",
-  "Settings & support": "Cài đặt và hỗ trợ"
+  "Settings & support": "Cài đặt và hỗ trợ",
+  "Photo ready": "Ảnh đã sẵn sàng",
+  "Preparing your photo… You can keep choosing your audience.": "Đang chuẩn bị ảnh… Bạn có thể tiếp tục chọn khách hàng muốn tiếp cận.",
+  "Photo upload needs a retry. Save again when you are ready.": "Ảnh chưa tải xong. Hãy bấm lưu lại để thử lại.",
+  "$1 = 120 credits": "$1 = 120 credits",
+  "Payment method · $1 = 120 credits. Existing balances and ad prices keep their value.": "Phương thức thanh toán · $1 = 120 credits. Số dư và giá trị quảng cáo hiện có được giữ nguyên.",
+  "Choose a credit amount in steps of 1.2.": "Chọn số credits theo bước 1,2.",
+  "Campaign options changed. Refresh and review the new credit estimate.": "Cài đặt quảng cáo đã thay đổi. Hãy tải lại và xem hạn mức credits mới."
 }

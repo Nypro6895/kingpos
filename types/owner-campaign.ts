@@ -2,6 +2,8 @@ import type { PostCommentTarget } from "./post-comments";
 
 export type CampaignArea = "city" | "neighborhood" | "zipcode" | "state" | "country";
 export type OwnerCampaignSettings = {
+  /** Read-only configuration revision, not part of the stored config. */
+  version?: number;
   enabled: boolean;
   promptsEnabled: boolean;
   dailyPriceCents: number;
@@ -38,8 +40,10 @@ export type OwnerCampaign = {
   daily_price_cents: number; total_price_cents: number;
   status: "awaiting_payment" | "pending_review" | "running" | "paused" | "cancelled" | "completed" | "rejected";
   views: number; clicks: number; likes: number; comments: number; bookings: number;
-  spent_cents: number; created_at: string; starts_at: string | null; ends_at: string | null;
+  spent_cents: number; created_at: string; updated_at?:string; starts_at: string | null; ends_at: string | null;
   reserved_credits?: number; released_credits?: number; keep_running?: boolean;
+  review_note?:string|null;reviewed_at?:string|null;
+  settings_version?: number; settings_snapshot?: OwnerCampaignSettings;
   cycle_credit_limit?: number | null; auto_fund?: boolean;
 };
 export type CampaignPrompt = { id: string; target: PostCommentTarget };
