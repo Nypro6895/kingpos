@@ -9,6 +9,7 @@ import {
 } from "@/lib/experience-resource-cache";
 import { EXPERIENCE_OFFLINE_AUTHORIZATION_EVENT, isExperienceSnapshotContextAuthorized, readExperienceSnapshot, writeExperienceSnapshot } from "./experience-persistent-cache";
 import { subscribeExperienceNativeReadModel } from "./experience-native-readmodels";
+import { canAutomaticallyRefreshRead, subscribeReadRefresh } from "./read-refresh-scheduler";
 
 export type UseExperienceResourceOptions<T> = {
   scope: string;
@@ -65,7 +66,7 @@ export function useExperienceResource<T>(options: UseExperienceResourceOptions<T
   // Focus, visibility and Activity reveal often arrive in the same frame.
   // Automatic reads respect freshness; explicit refresh still forces a read.
   const ensureFresh = useCallback(async () => {
-    if (!enabled || !experienceResourceCache.isAvailable(context)) return;
+    if (!enabled || !canAutomaticallyRefreshRead() || !experienceResourceCache.isAvailable(context)) return;
     if (experienceResourceCache.get<T>(context)?.fresh) return;
     setRequestState(previous => ({ ...(previous.identity === identity ? previous : {}), identity, refreshing: true, error: undefined }));
     try {
@@ -155,22 +156,11 @@ export function useExperienceResource<T>(options: UseExperienceResourceOptions<T
   useEffect(() => {
     if (!enabled) return;
     const check = () => {
-      if (!navigator.onLine || document.visibilityState !== "visible") return;
       if (!experienceResourceCache.isAvailable(context)) return;
       if (!experienceResourceCache.get<T>(context)?.fresh) void ensureFresh();
     };
-    const onVisibility = () => { if (document.visibilityState === "visible") check(); };
-    window.addEventListener("focus", check);
-    window.addEventListener("online", check);
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("reylumi:foreground", check);
-    return () => {
-      window.removeEventListener("focus", check);
-      window.removeEventListener("online", check);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("reylumi:foreground", check);
-    };
+    return subscribeReadRefresh(check);
   }, [context, enabled, ensureFresh]);
 
-  return { data, available, refreshing: available && (request?.refreshing ?? false), error: available ? request?.error : undefined, refresh };
+  return { data, available, refreshing: available && (request?.refreshing ?? false), error: available ? request?.error : undefined, refresh, ensureFresh };
 }

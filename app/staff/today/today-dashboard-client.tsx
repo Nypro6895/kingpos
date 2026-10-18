@@ -18,7 +18,7 @@ export function TodayDashboardClient({ initialSnapshot, scope, salonId, requeste
   if (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) query.set("date", requestedDate);
   const endpoint = `/api/experience/today${query.size ? `?${query}` : ""}`;
   const resourceKey = `today:${initialSnapshot.data.date}:${initialSnapshot.data.dayView.currentDate}:${endpoint}`;
-  const { data, available, refresh, error, refreshing } = useExperienceResource({
+  const { data, available, refresh, ensureFresh, error, refreshing } = useExperienceResource({
     scope, key: resourceKey, tags: resources, initialData: initialSnapshot,
     // A partial first frame must never replace a retained complete dashboard.
     initialUpdatedAt: initialSnapshot.data.pendingSections?.details ? 0 : Date.parse(initialSnapshot.updatedAt), initialEtag: `"${initialSnapshot.revision}"`,
@@ -26,7 +26,7 @@ export function TodayDashboardClient({ initialSnapshot, scope, salonId, requeste
     persistence: { domain: "owner-today", endpoint, params: { date: initialSnapshot.data.date }, retainForMs: 24 * 60 * 60 * 1000 },
     fetcher: fetchLiveExperienceResource<TodayDashboard>(endpoint, scope),
   });
-  useLiveExperienceRefresh(salonId, resources, refresh, available && !initialSnapshot.data.noAccess);
+  useLiveExperienceRefresh(salonId, resources, refresh, available && !initialSnapshot.data.noAccess, { automaticRefresh: ensureFresh });
   if (!available || !data) return <PageLoadingSkeleton />;
   return <TodayDashboardView dashboard={data.data} isOwner={isOwner} retry={data.data.pendingSections?.details && error && !refreshing ? () => { void refresh(); } : undefined} />;
 }

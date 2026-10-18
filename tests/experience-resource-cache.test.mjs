@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const api = {};
-vm.runInNewContext(compiled, { exports: api, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController }, { filename });
+vm.runInNewContext(compiled, { require: name => { if(name === "./read-request-metrics") return { recordReadRequest() {}, readResourceCategory: () => "other" }; throw new Error("Unexpected cache dependency "+name); }, exports: api, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController }, { filename });
 const { createExperienceResourceCache, ExperienceResourceInvalidatedError, ExperienceResourceAccessError } = api;
 const ctx = (scope = "account-a/salon-a/grants-v1", key = "today?date=2026-10-11") => ({ scope, key });
 const turn = () => new Promise(resolve => setImmediate(resolve));
@@ -221,13 +221,50 @@ test("the browser singleton never shares authorized server-render snapshots", as
   await assert.rejects(api.experienceResourceCache.load(ctx(), async () => ({ data: {} })), ExperienceResourceInvalidatedError);
 });
 
+test("one relationship removal cancels only its own request and preserves other authorized resources", async () => {
+  const cache = createExperienceResourceCache();
+  const a = ctx("same-owner", "app-local:" + JSON.stringify(["page.support-case", { query: "a?b=c&d=1" }]));
+  const b = ctx("same-owner", "app-local:" + JSON.stringify(["page.support-case", { query: "a?d=1&b=c" }]));
+  cache.seed(b, { unrelated: true });
+  const pending = deferred();
+  const request = cache.load(a, () => pending.promise);
+  await turn(); cache.forget(a);
+  await assert.rejects(request, ExperienceResourceInvalidatedError);
+  pending.resolve({ data: { removed: true } }); await turn();
+  assert.equal(cache.get(a), undefined);
+  assert.equal(cache.get(b).data.unrelated, true);
+  assert.equal(cache.isAvailable(b), true);
+});
+
+test("offline transport hydration cannot renew freshness and shorter observer freshness is honored", async () => {
+  let now = 10000, calls = 0;
+  const cache = createExperienceResourceCache({ now: () => now });
+  await cache.load(ctx(), async () => ({ data: { saved: true }, validatedAt: 1000 }), { freshForMs: 3000 });
+  assert.equal(cache.get(ctx()).fresh, false);
+  assert.equal(cache.get(ctx()).updatedAt, 1000);
+  cache.seed(ctx(), { online: true }, { freshForMs: 30000 }, now);
+  now += 1000;
+  await cache.load(ctx(), async () => { calls++; return { notModified: true }; }, { freshForMs: 500 });
+  assert.equal(calls, 1, "a shorter caller freshness cannot reuse a longer observer's validation budget");
+  assert.equal(cache.get(ctx()).data.online, true);
+  await assert.rejects(cache.load(ctx(), async () => ({ data: {}, validatedAt: now + 1 }), { force: true }), /validation time/);
+});
+
+test("long native filters retain exact canonical identity without changing ordinary URL key bounds", () => {
+  const cache = createExperienceResourceCache();
+  const long = ctx("owner", "app-local:" + JSON.stringify(["page.explore", { text: "a?b=c".repeat(2000) }]));
+  assert.equal(cache.seed(long, { value: 1 }), true);
+  assert.equal(cache.get(long).data.value, 1);
+  assert.throws(() => cache.get(ctx("owner", "ordinary?" + "a".repeat(5000))), /Invalid resource context/);
+});
+
 test("access-change browser events are emitted only for the current authorized request, never a late response", async () => {
   const exports = {}, events = [];
   class CustomEvent {
     constructor(type, options) { this.type = type; this.detail = options.detail; }
   }
   vm.runInNewContext(compiled, {
-    exports, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController,
+    require: () => ({ recordReadRequest() {}, readResourceCategory: () => "other" }), exports, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController,
     CustomEvent, window: { dispatchEvent: event => { events.push(event); return true; } },
   }, { filename });
   const cache = exports.createExperienceResourceCache();
@@ -245,4 +282,17 @@ test("access-change browser events are emitted only for the current authorized r
   assert.equal(events[0].detail.scope, ctx().scope);
   assert.equal(events[0].detail.status, 409);
   assert.equal(cache.isAvailable(ctx()), false);
+});
+
+
+test("a seed uses the requesting observer freshness while explicit invalidation always requires validation", async () => {
+  let now = 1000, calls = 0;
+  const cache = createExperienceResourceCache({ now: () => now });
+  cache.seed(ctx(), { config: true });
+  now += 31000;
+  await cache.load(ctx(), async () => { calls++; return { notModified: true }; }, { freshForMs: 60000 });
+  assert.equal(calls, 0, "configuration seed remains fresh for its 60 second observer policy");
+  cache.invalidate({ scope: ctx().scope });
+  await cache.load(ctx(), async () => { calls++; return { notModified: true }; }, { freshForMs: 60000 });
+  assert.equal(calls, 1, "authoritative invalidation beats every observer freshness policy");
 });

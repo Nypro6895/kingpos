@@ -1,3 +1,5 @@
+import { recordReadRequest, readResourceCategory } from "./read-request-metrics";
+
 /** Authorized read models only. This cache stays in the current browser's memory. */
 export const EXPERIENCE_RESOURCE_MAX_ENTRIES = 30;
 export const EXPERIENCE_RESOURCE_MAX_BYTES = 5 * 1024 * 1024;
@@ -25,7 +27,7 @@ export type ExperienceResourceFetchContext<T> = {
   etag?: string;
   cached?: T;
 };
-export type ExperienceResourceResult<T> = { data: T; etag?: string } | { notModified: true };
+export type ExperienceResourceResult<T> = { data: T; etag?: string; validatedAt?: number } | { notModified: true };
 export type ExperienceResourceFetcher<T> = (context: ExperienceResourceFetchContext<T>) => Promise<ExperienceResourceResult<T>>;
 export type ExperienceResourceInvalidation = { scope?: string; tags?: readonly string[] };
 export type ExperienceResourceEvent = "updated" | "invalidated" | "reset" | "availability";
@@ -60,6 +62,9 @@ type Listener = (event: ExperienceResourceEvent) => void;
 /** Sort query names, preserving repeated-value order and the caller's domain/date key. */
 export function normalizeExperienceResourceKey(key: string): string {
   const trimmed = key.trim();
+  // Installed-app filters use canonical JSON, not a URL query. In particular,
+  // '?' inside a search value must not change that read's identity.
+  if (trimmed.startsWith("app-local:")) return trimmed;
   const question = trimmed.indexOf("?");
   if (question < 0) return trimmed;
   const query = new URLSearchParams(trimmed.slice(question + 1));
@@ -71,7 +76,8 @@ function normalizeContext(context: ExperienceResourceContext): ExperienceResourc
   if (!context || typeof context.scope !== "string" || typeof context.key !== "string") throw new TypeError("Resource scope and key are required");
   const scope = context.scope.trim();
   const key = normalizeExperienceResourceKey(context.key);
-  if (!scope || scope.length > 8192 || !key || key.length > 4096) throw new TypeError("Invalid resource context");
+  const keyLimit = key.startsWith("app-local:") ? 262144 : 4096;
+  if (!scope || scope.length > 8192 || !key || key.length > keyLimit) throw new TypeError("Invalid resource context");
   return { scope, key };
 }
 
@@ -199,6 +205,14 @@ export function createExperienceResourceCache(options: {
     // Even without listeners, change the store revision for a new subscriber.
     revision += 1;
   }
+  /** A removed relationship discards only its DTO, not other authorized views. */
+  function forget(rawContext: ExperienceResourceContext) {
+    const id = getExperienceResourceIdentity(rawContext);
+    abort(id);
+    failures.delete(id);
+    remove(id);
+    notify(id, "reset");
+  }
   function revokeScope(scope: string) {
     revokedScopes.add(scope);
     if (revokedScopes.size > maxEntries) { suspended = true; revokedScopes.clear(); reset(); }
@@ -211,12 +225,24 @@ export function createExperienceResourceCache(options: {
     const cached = get<T>(context);
     const running = pending.get(id);
     if (running) {
+      recordReadRequest(readResourceCategory(context.key), "joined");
       for (const tag of tagsFor(policy.tags)) running.tags.add(tag);
       return running.promise as Promise<T>;
     }
-    if (!policy.force && cached?.fresh) return Promise.resolve(cached.data);
+    // An explicit observer policy may be longer or shorter than the seed's.
+    // Without an override preserve the admitted TTL. Zero-TTL seeds and explicit
+    // invalidation always require a read, even for a longer-lived observer.
+    const fresh = cached && (policy.freshForMs === undefined ? cached.fresh
+      : cached.freshUntil !== 0 && cached.freshUntil > cached.updatedAt && now() - cached.updatedAt < times(policy).freshForMs);
+    if (!policy.force && fresh) {
+      recordReadRequest(readResourceCategory(context.key), "cache-hit");
+      return Promise.resolve(cached.data);
+    }
     const failure = failures.get(id);
-    if (!policy.force && failure && failure.until > now()) return Promise.reject(failure.error);
+    if (!policy.force && failure && failure.until > now()) {
+      recordReadRequest(readResourceCategory(context.key), "cooldown");
+      return Promise.reject(failure.error);
+    }
     failures.delete(id);
     while (pending.size >= maxEntries) {
       const oldest = pending.keys().next().value;
@@ -241,7 +267,9 @@ export function createExperienceResourceCache(options: {
         write(context, cached.data, { ...policy, tags: Array.from(request.tags) }, now(), cached.etag);
         return cached.data;
       }
-      write(context, result.data, { ...policy, tags: Array.from(request.tags) }, now(), result.etag);
+      const validatedAt = result.validatedAt ?? now();
+      if (!Number.isFinite(validatedAt) || validatedAt < 0 || validatedAt > now()) throw new Error("Invalid read validation time");
+      write(context, result.data, { ...policy, tags: Array.from(request.tags) }, validatedAt, result.etag);
       return result.data;
     }).catch(error => {
       if (!(error instanceof ExperienceResourceAccessError) && pending.get(id) === request && !controller.signal.aborted) {
@@ -291,7 +319,7 @@ export function createExperienceResourceCache(options: {
   }
 
   return {
-    get, seed, load, reset, invalidate, suspend, resume, subscribe,
+    get, seed, load, reset, forget, invalidate, suspend, resume, subscribe,
     isLoading: (context: ExperienceResourceContext) => pending.has(getExperienceResourceIdentity(context)),
     isAvailable: (context: ExperienceResourceContext) => available(normalizeContext(context)),
     getRevision: () => revision,

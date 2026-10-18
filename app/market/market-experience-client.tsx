@@ -22,7 +22,7 @@ function CachedMarketExperience({ context, initial, initialBrowse }: { context: 
     initialUpdatedAt: Date.parse(initial.updatedAt), initialEtag: `"${initial.revision}"`, freshForMs: 60_000, retainForMs: 30 * 60_000,
     tags: ["catalog", "settings", "market"], fetcher });
   const { refresh } = resource;
-  useLiveExperienceRefresh(context.salonId ?? "", MARKET_RESOURCES, resource.refresh, Boolean(context.salonId) && resource.available);
+  useLiveExperienceRefresh(context.salonId ?? "", MARKET_RESOURCES, resource.refresh, Boolean(context.salonId) && resource.available, { automaticRefresh: resource.ensureFresh });
   useEffect(() => {
     const changed = () => { void refresh().catch(() => {}); };
     window.addEventListener("reylumi:market-changed", changed);

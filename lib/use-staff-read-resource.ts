@@ -17,6 +17,6 @@ export function useStaffReadResource<T extends StaffScheduleResource | StaffWork
     persistence: { domain: `staff-${initialSnapshot.data.kind}`, endpoint, params: { staffId: initialSnapshot.data.staffId, query: params.toString() }, retainForMs: 24 * 60 * 60 * 1000 },
     fetcher: fetchLiveExperienceResource<T>(endpoint, scope),
   });
-  useLiveExperienceRefresh(initialSnapshot.data.salonId, resources, result.refresh, result.available && Boolean(initialSnapshot.data.staffId));
+  useLiveExperienceRefresh(initialSnapshot.data.salonId, resources, result.refresh, result.available && Boolean(initialSnapshot.data.staffId), { automaticRefresh: result.ensureFresh });
   return result;
 }

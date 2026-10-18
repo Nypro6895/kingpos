@@ -8,6 +8,7 @@ function load(file, dependencies = {}) {
   const exports = {};
   const source = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   new Function('require', 'exports', source)(name => {
+    if (name === './read-request-metrics') return load('lib/read-request-metrics.ts');
     assert.ok(name in dependencies, `Unexpected dependency ${name}`);
     return dependencies[name];
   }, exports);

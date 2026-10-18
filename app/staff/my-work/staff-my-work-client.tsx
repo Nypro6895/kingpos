@@ -18,14 +18,14 @@ export function StaffMyWorkClient({ initialSnapshot, scope, params }: {
   const period = staffMyWorkStringParam(params.payPeriodStart);
   if (period) query.set("payPeriodStart", period);
   const endpoint = `/api/experience/my-work?${query}`;
-  const { data, available, refresh } = useExperienceResource({
+  const { data, available, refresh, ensureFresh } = useExperienceResource({
     scope, key: endpoint, tags: resources, initialData: initialSnapshot,
     initialUpdatedAt: Date.parse(initialSnapshot.updatedAt), initialEtag: `"${initialSnapshot.revision}"`,
     freshForMs: 10000, retainForMs: 5 * 60 * 1000,
     persistence: { domain: "staff-my-work", endpoint, params: { staffId: initialSnapshot.data.staff.id, tab: query.get("tab"), period: period ?? null, date: initialSnapshot.data.today }, retainForMs: 24 * 60 * 60 * 1000 },
     fetcher: fetchLiveExperienceResource<StaffMyWorkResource>(endpoint, scope),
   });
-  useLiveExperienceRefresh(initialSnapshot.data.salonId, resources, refresh, available);
+  useLiveExperienceRefresh(initialSnapshot.data.salonId, resources, refresh, available, { automaticRefresh: ensureFresh });
   if (!available || !data) return <PageLoadingSkeleton />;
   return <StaffMyWorkView resource={data.data} params={params} scope={scope} />;
 }

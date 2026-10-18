@@ -790,6 +790,7 @@ async function buildSalesComparison(input: {
         throw new Error("Sales comparison is temporarily unavailable.");
       return loadLiveDailyPosReport(date, input.auth, {
         includeActivityPoints: false,
+        includeClosing: false,
         timeZone: input.timeZone,
         closedBefore: cutoff
           ? new Date(
@@ -1025,6 +1026,7 @@ async function loadLiveDailyPosReport(
   options: {
     businessHours?: SalonBusinessHoursWindow | null;
     includeActivityPoints?: boolean;
+    includeClosing?: boolean;
     closedBefore?: string;
     timeZone?: string;
   } = {},
@@ -1039,12 +1041,17 @@ async function loadLiveDailyPosReport(
     { data: closing, error: closingError },
     { data: tickets, error: ticketsError },
   ] = await Promise.all([
-    supabase
-      .from("pos_daily_closings")
-      .select(POS_DAILY_CLOSING_SELECT)
-      .eq("salon_id", salon.id)
-      .eq("report_date", reportDate)
-      .maybeSingle<PosDailyClosing>(),
+    // Historical sales comparison uses expected totals from tickets/earnings.
+    // Actual closing inputs are not consumed, and must remain live reads for
+    // the full report and every financial write/lock path.
+    options.includeClosing === false
+      ? Promise.resolve({ data: null, error: null })
+      : supabase
+          .from("pos_daily_closings")
+          .select(POS_DAILY_CLOSING_SELECT)
+          .eq("salon_id", salon.id)
+          .eq("report_date", reportDate)
+          .maybeSingle<PosDailyClosing>(),
     supabase
       .from("pos_tickets")
       .select(
