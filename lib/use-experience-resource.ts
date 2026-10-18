@@ -46,7 +46,8 @@ export function useExperienceResource<T>(options: UseExperienceResourceOptions<T
   // Do not carry a former account's local state into the first render of a new scope.
   const request = requestState.identity === identity ? requestState : undefined;
   const snapshotWins = snapshot && snapshot.updatedAt >= (request?.updatedAt ?? 0) && (request?.discardInitial || snapshot.updatedAt >= seedTimestamp);
-  const data = available ? (snapshotWins ? snapshot.data : request?.data ?? (request?.discardInitial ? undefined : initialData)) : undefined;
+  const requestWins = request?.data !== undefined && (request.discardInitial || (request.updatedAt ?? 0) >= seedTimestamp);
+  const data = available ? (snapshotWins ? snapshot.data : requestWins ? request.data : request?.discardInitial ? undefined : initialData) : undefined;
 
   const refresh = useCallback(async () => {
     if (!enabled || !experienceResourceCache.isAvailable(context)) return undefined;
@@ -58,6 +59,23 @@ export function useExperienceResource<T>(options: UseExperienceResourceOptions<T
     } catch (error) {
       setRequestState(previous => previous.identity === identity ? { ...previous, refreshing: false, error: error instanceof ExperienceResourceInvalidatedError ? undefined : error } : previous);
       return undefined;
+    }
+  }, [enabled, context, identity, policy]);
+
+  // Focus, visibility and Activity reveal often arrive in the same frame.
+  // Automatic reads respect freshness; explicit refresh still forces a read.
+  const ensureFresh = useCallback(async () => {
+    if (!enabled || !experienceResourceCache.isAvailable(context)) return;
+    if (experienceResourceCache.get<T>(context)?.fresh) return;
+    setRequestState(previous => ({ ...(previous.identity === identity ? previous : {}), identity, refreshing: true, error: undefined }));
+    try {
+      const result = await experienceResourceCache.load(context, fetcherRef.current, policy);
+      setRequestState(previous => previous.identity === identity ? { ...previous, refreshing: false, error: undefined, data: result,
+        updatedAt: experienceResourceCache.get<T>(context)?.updatedAt ?? Date.now() } : previous);
+    } catch (error) {
+      setRequestState(previous => previous.identity === identity
+        ? { ...previous, refreshing: false, error: error instanceof ExperienceResourceInvalidatedError ? undefined : error }
+        : previous);
     }
   }, [enabled, context, identity, policy]);
 
@@ -117,34 +135,42 @@ export function useExperienceResource<T>(options: UseExperienceResourceOptions<T
   useEffect(() => {
     if (!enabled || !available || !experienceResourceCache.isAvailable(context)) return;
     const current = experienceResourceCache.get<T>(context);
-    if (!current?.fresh) void refresh();
-  }, [available, context, enabled, refresh]);
+    if (!current?.fresh) void ensureFresh();
+  }, [available, context, enabled, ensureFresh]);
 
   useEffect(() => experienceResourceCache.subscribe(context, event => {
+    if (event === "updated") {
+      const next = experienceResourceCache.get<T>(context);
+      if (next) setRequestState(previous => previous.identity === identity
+        ? { ...previous, data: next.data, updatedAt: next.updatedAt } : previous);
+    }
     if (event === "reset") {
       setRequestState(previous => previous.identity === identity ? { identity, refreshing: false, error: undefined, discardInitial: true } : previous);
     }
     if ((event === "invalidated" || event === "availability") && enabled && experienceResourceCache.isAvailable(context)) {
-      if (!experienceResourceCache.get<T>(context)?.fresh) void refresh();
+      if (!experienceResourceCache.get<T>(context)?.fresh) void ensureFresh();
     }
-  }), [context, enabled, identity, refresh]);
+  }), [context, enabled, identity, ensureFresh]);
 
   useEffect(() => {
     if (!enabled) return;
     const check = () => {
+      if (!navigator.onLine || document.visibilityState !== "visible") return;
       if (!experienceResourceCache.isAvailable(context)) return;
-      if (!experienceResourceCache.get<T>(context)?.fresh) void refresh();
+      if (!experienceResourceCache.get<T>(context)?.fresh) void ensureFresh();
     };
     const onVisibility = () => { if (document.visibilityState === "visible") check(); };
     window.addEventListener("focus", check);
     window.addEventListener("online", check);
     document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("reylumi:foreground", check);
     return () => {
       window.removeEventListener("focus", check);
       window.removeEventListener("online", check);
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("reylumi:foreground", check);
     };
-  }, [context, enabled, refresh]);
+  }, [context, enabled, ensureFresh]);
 
   return { data, available, refreshing: available && (request?.refreshing ?? false), error: available ? request?.error : undefined, refresh };
 }

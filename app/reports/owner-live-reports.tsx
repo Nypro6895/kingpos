@@ -3,9 +3,13 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { CompactFilters } from "@/components/compact-filters";
 import { toolbarStyles } from "@/components/workspace-toolbar";
 import { ReportRangeFilter } from "./report-controls";
-import {useState,useEffect,useRef,useCallback,useMemo} from 'react';
+import {useState,useEffect,useLayoutEffect,useRef,useCallback,useMemo} from 'react';
 import {useSearchParams,usePathname} from 'next/navigation';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
+import {useExperienceScope} from '@/components/experience-scope';
+import {experienceResourceCache} from '@/lib/experience-resource-cache';
+import {fetchWorkspaceResource} from '@/lib/fetch-workspace-resource';
+import {useExperienceResource} from '@/lib/use-experience-resource';
 import {ClosingDateForm,ReportTabs} from './report-controls';
 import {DailyClosingForm} from './daily-closing-form';
 import {OperationalReportDashboard} from './operational-report-dashboard';
@@ -150,9 +154,18 @@ type Props={viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolea
 export function OwnerLiveReports(initial:Props){
   const __vt = useWorkspaceTranslation();
 
- const [live,setLive]=useState<{base:Props;data:Props}|null>(null);const routeParams=useSearchParams();
+ const routeParams=useSearchParams();
  const params=useMemo(()=>initial.query===undefined?routeParams:new URLSearchParams(initial.query),[initial.query,routeParams]);
- const data=live?.base===initial?live.data:initial;
+ const scope=useExperienceScope()?.context.scope;
+ const snapshotKey='owner-reports?'+params.toString();
+ const [mountedAt]=useState(()=>Date.now());
+ const [oversize,setOversize]=useState<{base:Props;data:Props}|null>(null);
+ const retained=useExperienceResource({scope:scope??'unavailable',key:snapshotKey,initialData:initial,
+   initialUpdatedAt:initial.snapshotAt??mountedAt,tags:['report'],freshForMs:30000,retainForMs:30*60000,
+   enabled:false,fetcher:async()=>({data:initial})});
+ const data=oversize?.base===initial?oversize.data:retained.data??initial;
+ const latest=useRef(data);
+ useLayoutEffect(()=>{latest.current=data;},[data]);
  const generation=useRef(0);
  useEffect(()=>{generation.current++;},[initial]);
  const {salonId,salonName,today,report,reportOverview,canEdit,canApplyCorrection,canRequestCorrection}=data;
@@ -160,6 +173,7 @@ export function OwnerLiveReports(initial:Props){
  const dirtyViews=useRef({overview:false,closing:false});
  const running=useRef(false);
  const queued=useRef(false);
+ const runQueued=useRef<()=>Promise<void>>(async()=>{});
  const refreshView=useCallback(async()=>{
    if(running.current){queued.current=true;return;}
    running.current=true;
@@ -171,23 +185,32 @@ export function OwnerLiveReports(initial:Props){
    query.set('end',initial.reportOverview.range.endDate);
    query.set('view',view);
    try {
-     const response=await fetch('/api/pos/owner/reports?'+query.toString(),{cache:'no-store',signal:AbortSignal.timeout(15000)});
-     if(response.ok){const next=await response.json();if(next.closingScope===`${salonId}:${initial.viewerId}`&&snapshotGeneration===generation.current){
-       setLive(previous=>({base:initial,data:{...(previous?.base===initial?previous.data:initial),...next}}));dirtyViews.current[view]=false;
-     }}
-   } finally {running.current=false;}
- },[params,initial,salonId]);
+     if(!scope)return;
+     const url='/api/pos/owner/reports?'+query.toString();
+     const policy={tags:['report'],freshForMs:30000,retainForMs:30*60000};
+     const next=await experienceResourceCache.load({scope,key:url},fetchWorkspaceResource<Partial<Props>&{salonId:string;closingScope:string}>(url,scope),{...policy,force:true});
+     if(next.salonId===salonId&&next.closingScope===`${salonId}:${initial.viewerId}`&&snapshotGeneration===generation.current&&experienceResourceCache.isAvailable({scope,key:snapshotKey})){
+       const previous=experienceResourceCache.get<Props>({scope,key:snapshotKey})?.data??latest.current;
+       const merged={...previous,...next};
+       if(experienceResourceCache.seed({scope,key:snapshotKey},merged,policy))setOversize(null);
+       else setOversize({base:initial,data:merged});
+       dirtyViews.current[view]=false;
+     }
+   } finally {
+     running.current=false;
+     if(queued.current){queued.current=false;queueMicrotask(()=>{void runQueued.current().catch(()=>{});});}
+   }
+ },[params,initial,salonId,scope,snapshotKey]);
  const onViewChange=useCallback((view:"overview"|"closing")=>{
    activeView.current=view;
    if(dirtyViews.current[view])void refreshView().catch(()=>{});
  },[refreshView]);
- useEffect(()=>{
-   if(queued.current){queued.current=false;void refreshView().catch(()=>{});}
- },[data,refreshView]);
+ useLayoutEffect(()=>{runQueued.current=refreshView;},[refreshView]);
  usePosResourceRefresh(salonId,'report',async()=>{
    dirtyViews.current.overview=true;dirtyViews.current.closing=true;
    await refreshView();
- },{enabled:!initial.managedRead,initialReconcile:false,snapshotAt:initial.snapshotAt});
+ },{enabled:!initial.managedRead,initialReconcile:false,freshForMs:30000,snapshotAt:Math.max(initial.snapshotAt??0,scope?experienceResourceCache.get({scope,key:snapshotKey})?.updatedAt??0:0)||initial.snapshotAt});
+ if(!retained.available)return null;
   return (
     <main className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4 text-zinc-950 sm:px-6">
       <ReportTabs

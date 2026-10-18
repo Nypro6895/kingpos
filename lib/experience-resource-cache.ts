@@ -107,6 +107,7 @@ export function createExperienceResourceCache(options: {
   const canUse = options.canUse ?? (() => true);
   const entries = new Map<string, Entry>();
   const pending = new Map<string, Pending>();
+  const failures = new Map<string, { context: ExperienceResourceContext; tags: Set<string>; until: number; error: unknown }>();
   const listeners = new Map<string, { context: ExperienceResourceContext; callbacks: Set<Listener> }>();
   const revokedScopes = new Set<string>();
   let suspended = false;
@@ -158,7 +159,12 @@ export function createExperienceResourceCache(options: {
     // UTF-16 accounting is conservative for serialized JSON; also count keys and metadata.
     const entryBytes = (encoded.length + id.length + Array.from(tags).join("").length + (etag?.length ?? 0)) * 2 + 128;
     const { retainForMs, freshForMs } = times(policy);
-    if (entryBytes > maxBytes || retainForMs === 0) { remove(id); notify(id, "updated"); return false; }
+    if (entryBytes > maxBytes || retainForMs === 0) {
+      const existed = entries.has(id);
+      remove(id);
+      if (existed) notify(id, "updated");
+      return false;
+    }
     prune();
     remove(id);
     while (entries.size >= maxEntries || bytes + entryBytes > maxBytes) {
@@ -186,6 +192,7 @@ export function createExperienceResourceCache(options: {
   }
   function reset(scope?: string) {
     const normalizedScope = scope?.trim();
+    for (const [id, failure] of failures) if (!normalizedScope || failure.context.scope === normalizedScope) failures.delete(id);
     for (const [id, entry] of entries) if (!normalizedScope || entry.context.scope === normalizedScope) remove(id);
     for (const [id, request] of pending) if (!normalizedScope || request.context.scope === normalizedScope) abort(id);
     for (const [id, subscription] of listeners) if (!normalizedScope || subscription.context.scope === normalizedScope) notify(id, "reset");
@@ -208,6 +215,9 @@ export function createExperienceResourceCache(options: {
       return running.promise as Promise<T>;
     }
     if (!policy.force && cached?.fresh) return Promise.resolve(cached.data);
+    const failure = failures.get(id);
+    if (!policy.force && failure && failure.until > now()) return Promise.reject(failure.error);
+    failures.delete(id);
     while (pending.size >= maxEntries) {
       const oldest = pending.keys().next().value;
       if (oldest === undefined) break;
@@ -234,6 +244,10 @@ export function createExperienceResourceCache(options: {
       write(context, result.data, { ...policy, tags: Array.from(request.tags) }, now(), result.etag);
       return result.data;
     }).catch(error => {
+      if (!(error instanceof ExperienceResourceAccessError) && pending.get(id) === request && !controller.signal.aborted) {
+        while (failures.size >= maxEntries) failures.delete(failures.keys().next().value!);
+        failures.set(id, { context, tags: request.tags, until: now() + 3_000, error });
+      }
       // An old response must never revoke a newly validated session after reset/resume.
       if (error instanceof ExperienceResourceAccessError && pending.get(id) === request && !controller.signal.aborted) {
         revokeScope(context.scope);
@@ -252,6 +266,7 @@ export function createExperienceResourceCache(options: {
     return request.promise as Promise<T>;
   }
   function invalidate(filter: ExperienceResourceInvalidation = {}) {
+    for (const [id, failure] of failures) if (matches(failure.context, failure.tags, filter)) failures.delete(id);
     const changed = new Set<string>();
     for (const [id, request] of pending) if (matches(request.context, request.tags, filter)) { abort(id); changed.add(id); }
     for (const [id, entry] of entries) if (matches(entry.context, entry.tags, filter)) { entry.freshUntil = 0; changed.add(id); }

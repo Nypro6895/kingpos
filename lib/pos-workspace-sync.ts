@@ -68,13 +68,13 @@ export function subscribePosChanges(salonId: string, listener: Listener) {
   return () => { broker.listeners.delete(listener); if (!broker.listeners.size) { broker.close(); brokers.delete(salonId); } };
 }
 
-export function usePosResourceRefresh(salonId: string | null | undefined, resource: PosResource, refresh: (ids?: string[]) => Promise<void>, { initialReconcile = true, enabled = true, snapshotAt }: {initialReconcile?: boolean; enabled?: boolean; snapshotAt?:number} = {}) {
+export function usePosResourceRefresh(salonId: string | null | undefined, resource: PosResource, refresh: (ids?: string[]) => Promise<void>, { initialReconcile = true, enabled = true, snapshotAt, freshForMs = 10000 }: {initialReconcile?: boolean; enabled?: boolean; snapshotAt?:number;freshForMs?:number} = {}) {
   const current = useRef(refresh);
   useEffect(() => { current.current = refresh; }, [refresh]);
   useEffect(() => {
     if (!salonId || !enabled) return;
     let alive = true, running = false, pending = false, full = false;
-    const reconcileInitial=initialReconcile || (snapshotAt!==undefined && Date.now()-snapshotAt>=10000);
+    const reconcileInitial=initialReconcile || (snapshotAt!==undefined && Date.now()-snapshotAt>=freshForMs);
     let lastRefresh = reconcileInitial ? 0 : snapshotAt ?? Date.now();
     const ids = new Set<string>(); let timer: ReturnType<typeof setTimeout> | undefined;
     async function run() {
@@ -87,7 +87,7 @@ export function usePosResourceRefresh(salonId: string | null | undefined, resour
     }
     const unsubscribe = subscribePosChanges(salonId, change => {
       if (change.resource !== resource) return;
-      if (change.reason && !["reconnect", "foreground"].includes(change.reason) && Date.now() - lastRefresh < 10000) return;
+      if (change.reason && !["reconnect", "foreground"].includes(change.reason) && Date.now() - lastRefresh < freshForMs) return;
       pending = true;
       if (!change.ids?.length) full = true; else change.ids.forEach(id => ids.add(id));
       if (!running && !timer) timer = setTimeout(run, 100);
@@ -98,5 +98,5 @@ export function usePosResourceRefresh(salonId: string | null | undefined, resour
     // rendered owner views wait for a change or the fallback poll.
     if (reconcileInitial) { full = true; pending = true; timer = setTimeout(run, 0); }
     return () => { alive = false; unsubscribe(); if (timer) clearTimeout(timer); document.removeEventListener("visibilitychange",resume); };
-  }, [salonId, resource, initialReconcile, enabled, snapshotAt]);
+  }, [salonId, resource, initialReconcile, enabled, snapshotAt, freshForMs]);
 }

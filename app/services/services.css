@@ -1137,6 +1137,9 @@
 .service-addon-group { margin-top: 20px; }
 .service-addon-group + .service-addon-group { border-top: 1px solid #e4e4e7; padding-top: 20px; }
 .service-addon-item { padding-block: 10px; border-bottom: 1px solid #eeeeef; }
+.service-addon-item .services-field > input,
+.service-addon-item .services-number-field { border-bottom: 1px dashed #b8c4bf; }
+.service-addon-item input::placeholder { color: #7b827f; opacity: 1; }
 .service-addon-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .service-addon-summary > div { display: grid; min-width: 0; overflow-wrap: anywhere; }
 .service-addon-summary span { color: #71717a; font-size: 13px; }

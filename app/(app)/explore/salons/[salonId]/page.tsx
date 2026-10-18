@@ -15,7 +15,7 @@ export async function generateMetadata({
   params,
 }: PublicSalonProfilePageProps): Promise<Metadata> {
   const { salonId } = await params;
-  const data = await getPublicSalonProfileData(salonId);
+  const data = await getPublicSalonProfileData(salonId, 0);
 
   if (!data) {
     return {
@@ -37,7 +37,7 @@ async function PublicSalonProfilePage({
 }: PublicSalonProfilePageProps) {
   const { salonId } = await params;
   const [data, context] = await Promise.all([
-    getPublicSalonProfileData(salonId),
+    getPublicSalonProfileData(salonId, 0),
     getCurrentBusinessContext(),
   ]);
 

@@ -1911,7 +1911,7 @@ async function StaffPage({ searchParams }: StaffPageProps) {
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <main className="flex w-full min-w-0 flex-col gap-4 py-4">
 
 
         {connectionNotice ? (

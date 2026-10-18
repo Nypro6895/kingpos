@@ -97,6 +97,7 @@ export const SALON_PROFILE_UPDATE_SELECT =
   "id, salon_id, author_user_id, created_by_user_id, author_staff_id, author_display_name, author_avatar_path, service_id, staff_id, update_type, title, caption, summary, media_path, starts_at, ends_at, cta_label, status, published_at, created_at, updated_at";
 
 type ProfileManageData = {
+  contentPage?: PublicSalonProfileData["contentPage"];
   canCreateContent: boolean;
   canManageContent: boolean;
   canManageIdentity: boolean;
@@ -110,6 +111,10 @@ type ProfileManageData = {
   staffPresentations: Map<string, StaffPresentation>;
   updates: SalonProfileUpdate[];
 };
+
+function profileContentRange<T extends { range(from: number, to: number): T }>(query: T, page?: number): T {
+  return page === undefined ? query : query.range(page * 24, page * 24 + 24);
+}
 
 type RpcError = {
   code?: string;
@@ -910,6 +915,8 @@ export function isValidSalonProfileId(value: string) {
 
 export async function getCurrentSalonProfileManageData(
   context?: CurrentBusinessContext,
+  contentPage?: number,
+  includeContent = true,
 ): Promise<ProfileManageData> {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
   const canViewProfile =
@@ -965,6 +972,7 @@ export async function getCurrentSalonProfileManageData(
     staffResult,
     looksResult,
     updatesResult,
+    publishedCountResult,
   ] = await Promise.all([
     getExistingSalonProfileSetting(resolvedContext),
     supabase
@@ -974,19 +982,25 @@ export async function getCurrentSalonProfileManageData(
       .order("name", { ascending: true })
       .returns<Service[]>(),
     loadSalonProfileStaff(supabase, salon.id),
-    supabase
+    includeContent ? profileContentRange(supabase
       .from("salon_profile_looks")
       .select(SALON_PROFILE_LOOK_SELECT)
       .eq("salon_id", salon.id)
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
-      .returns<SalonProfileLook[]>(),
-    supabase
+      .order("id", { ascending: false }), contentPage)
+      .returns<SalonProfileLook[]>() : Promise.resolve({ data: [] as SalonProfileLook[], error: null }),
+    includeContent ? profileContentRange(supabase
       .from("salon_profile_updates")
       .select(SALON_PROFILE_UPDATE_SELECT)
       .eq("salon_id", salon.id)
       .order("created_at", { ascending: false })
-      .returns<SalonProfileUpdate[]>(),
+      .order("id", { ascending: false }), contentPage)
+      .returns<SalonProfileUpdate[]>() : Promise.resolve({ data: [] as SalonProfileUpdate[], error: null }),
+    contentPage === undefined ? Promise.resolve(null) : supabase.from("salon_profile_looks")
+      // Readiness only asks for >0 and >=3 published photos. A bounded probe
+      // preserves both conditions without counting an entire growing history.
+      .select("id").eq("salon_id", salon.id).eq("status", "published").limit(3),
   ]);
 
   for (const result of [servicesResult, staffResult, looksResult, updatesResult]) {
@@ -1002,6 +1016,7 @@ export async function getCurrentSalonProfileManageData(
       throw new Error(result.error.message);
     }
   }
+  if (publishedCountResult?.error) throw new Error("Salon publication status could not be verified.");
 
   const services = (servicesResult.data ?? []).filter(service => !service.booking_parent_service_id);
   const staff = staffResult.data ?? [];
@@ -1013,8 +1028,9 @@ export async function getCurrentSalonProfileManageData(
     setting ?? fallbackSetting(resolvedContext),
     resolvedContext,
   );
-  const looks = mapLookRelations(looksResult.data ?? [], services, staff);
-  const updates = mapUpdateRelations(updatesResult.data ?? [], services, staff);
+  const hasMore = contentPage !== undefined && ((looksResult.data?.length ?? 0) > 24 || (updatesResult.data?.length ?? 0) > 24);
+  const looks = mapLookRelations(contentPage === undefined ? looksResult.data ?? [] : (looksResult.data ?? []).slice(0, 24), services, staff);
+  const updates = mapUpdateRelations(contentPage === undefined ? updatesResult.data ?? [] : (updatesResult.data ?? []).slice(0, 24), services, staff);
 
   return {
     canCreateContent,
@@ -1023,8 +1039,10 @@ export async function getCurrentSalonProfileManageData(
     canViewProfile,
     context: resolvedContext,
     looks,
+    contentPage: contentPage === undefined ? undefined : { nextPage: hasMore ? contentPage + 1 : null, managed: true },
     readiness: getSalonProfileReadiness({
       looks,
+      publishedLookCount: publishedCountResult?.data?.length ?? undefined,
       services,
       setting: settingOrFallback,
       staff,
@@ -1435,7 +1453,32 @@ export function buildSalonProfileFeed(input: {
 
 export const getPublicSalonProfileData = cache(loadPublicSalonProfileData);
 
-async function loadPublicSalonProfileData(salonId: string): Promise<PublicSalonProfileData | null> {
+/** Continuations read only new post rows, never reload services/reviews/team. */
+export async function getPublicSalonProfileContentPage(salonId: string, page: number) {
+  if (!isValidSalonProfileId(salonId) || !Number.isInteger(page) || page < 0 || page > 1000) return null;
+  const supabase = await getPublicProfileClient();
+  if (!supabase) throw new Error("Salon posts are temporarily unavailable.");
+  const [profile, lookResult, updateResult, directoryListing] = await Promise.all([
+    supabase.rpc("get_public_salon_profile", { target_salon_id: salonId }),
+    supabase.rpc("get_public_salon_profile_looks", { target_salon_id: salonId })
+      .order("is_pinned", { ascending: false }).order("published_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).range(page * 24, page * 24 + 24),
+    supabase.rpc("get_public_salon_profile_updates", { target_salon_id: salonId })
+      .order("published_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).range(page * 24, page * 24 + 24),
+    getPublicSalonDirectoryListing(salonId),
+  ]);
+  if (profile.error || lookResult.error || updateResult.error) throw new Error("Salon posts could not load.");
+  const owner = (profile.data as PublicProfileRow[] | null)?.[0];
+  if (!owner) return null;
+  const lookRows = (lookResult.data ?? []) as PublicLookRow[];
+  const updateRows = (updateResult.data ?? []) as PublicUpdateRow[];
+  const nextPage = lookRows.length > 24 || updateRows.length > 24 ? page + 1 : null;
+  const attribution = await loadSalonPostAttribution([...lookRows.slice(0, 24), ...updateRows.slice(0, 24)].map(row => row.id));
+  const looks = lookRows.slice(0, 24).map(row => ({ ...mapPublicLook(row), authorRole: attribution.get(row.id)?.role ?? "salon" as const }));
+  const updates = visibleSalonPosts(updateRows.slice(0, 24).map(row => ({ ...mapPublicUpdate(row), authorRole: attribution.get(row.id)?.role ?? "salon" as const })), directoryListing);
+  return { looks, updates, feed: buildSalonProfileFeed({ looks, updates, salonId, profileName: owner.salon_name }), contentPage: { nextPage } };
+}
+
+async function loadPublicSalonProfileData(salonId: string, contentPage?: number): Promise<PublicSalonProfileData | null> {
   if (!isValidSalonProfileId(salonId)) {
     return null;
   }
@@ -1468,8 +1511,10 @@ async function loadPublicSalonProfileData(salonId: string): Promise<PublicSalonP
     rpc("get_public_salon_profile", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_services", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_staff", { target_salon_id: salonId }),
-    rpc("get_public_salon_profile_looks", { target_salon_id: salonId }),
-    rpc("get_public_salon_profile_updates", { target_salon_id: salonId }),
+    contentPage === undefined ? rpc("get_public_salon_profile_looks", { target_salon_id: salonId })
+      : supabase.rpc("get_public_salon_profile_looks", { target_salon_id: salonId }).order("is_pinned", { ascending: false }).order("published_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).range(contentPage * 24, contentPage * 24 + 24),
+    contentPage === undefined ? rpc("get_public_salon_profile_updates", { target_salon_id: salonId })
+      : supabase.rpc("get_public_salon_profile_updates", { target_salon_id: salonId }).order("published_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).range(contentPage * 24, contentPage * 24 + 24),
     rpc("get_public_salon_profile_beauty_posts", {
       p_limit: 6,
       target_salon_id: salonId,
@@ -1535,11 +1580,12 @@ async function loadPublicSalonProfileData(salonId: string): Promise<PublicSalonP
   const staffRows = Array.isArray(staffResult.data)
     ? (staffResult.data as PublicStaffRow[])
     : [];
+  const hasMoreContent = contentPage !== undefined && ((looksResult.data?.length ?? 0) > 24 || (updatesResult.data?.length ?? 0) > 24);
   const lookRows = Array.isArray(looksResult.data)
-    ? (looksResult.data as PublicLookRow[])
+    ? (contentPage === undefined ? looksResult.data : looksResult.data.slice(0, 24)) as PublicLookRow[]
     : [];
   const updateRows = Array.isArray(updatesResult.data)
-    ? (updatesResult.data as PublicUpdateRow[])
+    ? (contentPage === undefined ? updatesResult.data : updatesResult.data.slice(0, 24)) as PublicUpdateRow[]
     : [];
   const beautyPostRows = Array.isArray(beautyPostsResult.data)
     ? (beautyPostsResult.data as PublicBeautyPostRow[])
@@ -1600,6 +1646,7 @@ async function loadPublicSalonProfileData(salonId: string): Promise<PublicSalonP
   );
 
   return {
+    contentPage: contentPage === undefined ? undefined : { nextPage: hasMoreContent ? contentPage + 1 : null },
     beautyPosts: beautyPosts.map((post) => ({
       ...post,
       booking: post.booking

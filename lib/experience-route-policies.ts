@@ -61,13 +61,15 @@ export function getExperienceRoutePolicy(href: string, kind: "page" | "handler" 
   if (PAYMENT_PATH.test(path)) return none("sensitive", true);
   if (/^\/book(?:\/|$)/.test(path)) return none("booking");
   if (ACTIVE_PATH.test(path)) return none("form", true);
-  if (/^\/(?:terms|privacy|legal|community|business-terms)$/.test(path)) return browse("legal", false, 60 * 60_000, 24 * 60 * 60_000);
+  if (/^\/(?:terms|privacy|legal|community|business-terms|help)$/.test(path)) return browse("legal", false, 60 * 60_000, 24 * 60 * 60_000);
   if (path === "/contact-support") return none("support-form");
+  if (path.startsWith("/help/")) return browse("legal", false, 60 * 60_000, 24 * 60 * 60_000);
   if (path === "/") return browse("home", true);
   if (/^\/explore\/favorites(?:\/|$)/.test(path)) return browse("favorites", true);
   if (/^\/explore\/beauty(?:\/|$)/.test(path) && url.searchParams.has("customerId")) return browse("beauty-relationship", true);
   if (/^\/explore(?:\/|$)/.test(path)) return browse("explore", false, 30_000, 30 * 60_000);
   if (path === "/market" || path === "/market/booking-deposit") return browse("market", false, 60_000, 30 * 60_000);
+  if (path.startsWith("/market/")) return none("market-detail", true);
   if (/^\/admin(?:\/|$)/.test(path)) return browse("admin", true, 5_000, 5 * 60_000);
   if (/^\/notifications(?:\/|$)/.test(path)) return browse("notifications", true, 15_000, 10 * 60_000);
   if (/^\/activity(?:\/|$)/.test(path)) return browse("activity", true);

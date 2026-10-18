@@ -373,7 +373,7 @@ function getStaffDirectoryRedirectHref(
   return `/staff?${params.toString()}`;
 }
 
-export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
+async function saveStaffDirectoryBatch(formData: FormData) {
   const staffIds = Array.from(
     new Set(
       formData
@@ -417,13 +417,7 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
   try {
     await updateStaffDirectoryBatchInService({ changes });
   } catch (error) {
-    redirect(
-      getStaffDirectoryRedirectHref(
-        formData,
-        "connection_error",
-        error instanceof Error ? error.message : "Staff changes could not be saved.",
-      ),
-    );
+    return { ok: false as const, message: error instanceof Error ? error.message : "Staff changes could not be saved." };
   }
 
   const context = await getCurrentBusinessContext();
@@ -446,13 +440,18 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
     await broadcastPosStaffChange(context.currentSalon.id, "staff");
   }
 
-  redirect(
-    getStaffDirectoryRedirectHref(
-      formData,
-      "connection_notice",
-      "Staff changes saved.",
-    ),
-  );
+  return { ok: true as const };
+}
+
+export async function saveStaffDirectoryEntryAction(formData: FormData) {
+  return saveStaffDirectoryBatch(formData);
+}
+
+export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
+  const result = await saveStaffDirectoryBatch(formData);
+  redirect(getStaffDirectoryRedirectHref(formData,
+    result.ok ? "connection_notice" : "connection_error",
+    result.ok ? "Staff changes saved." : result.message));
 }
 
 export async function resetStaffPasscodeFormAction(formData: FormData) {

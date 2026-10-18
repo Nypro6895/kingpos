@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "service-save-timeout-inputs",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/services/service-addon-groups.tsx",
+    "app/services/services.css",
+    "tests/service-owned-addons-ui.test.mjs",
+    "tests/service-owned-addons.integration.test.mjs",
+    "supabase/migrations/20261017235500_service_save_refresh_batch.sql",
+    "docs/service-save-input-fix-2026-10-17.md"
+  ],
+  "summary": "Coalesce service-save search projection work atomically, preserve booking logic; fix add-on focus, placeholders and numeric drafts. Not deployed; live Save must be verified after migration release.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\service-save-input-fix-20261017\\frozen",
+    "sourceSha256": "3115113ac20c50fd3781e4f57a6a2a198e7c4c33f45a3e6231105a535e0dc204",
+    "overlaySha256": "725244ea76a99d5afa07efd9d00a9cc9b24b9a5d1a437cab0834f54570ceee3b"
+  },
+  "dependencies": [
+    "service-owned-addon-groups"
+  ],
+  "validation": [
+    {
+      "name": "Synthetic SQL with projection triggers, Save all and projection rollback; unchanged booking timing regressions",
+      "result": "passed",
+      "evidence": "artifacts/service-save-input-fix-20261017/sql-and-timing-complete.log"
+    },
+    {
+      "name": "Browser focus, placeholders, zero/decimal editing, validation and Save/Cancel",
+      "result": "passed",
+      "evidence": "artifacts/service-save-input-fix-20261017/input-ui-final.log"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/service-save-input-fix-20261017/typecheck.log"
+    },
+    {
+      "name": "Lint",
+      "result": "passed",
+      "evidence": "artifacts/service-save-input-fix-20261017/lint.log"
+    },
+    {
+      "name": "Task overlay applies to captured before-source",
+      "result": "passed",
+      "evidence": "git apply --check --directory=artifacts/service-save-input-fix-20261017/before artifacts/service-save-input-fix-20261017/task-only.patch"
+    }
+  ],
+  "id": "31db1002-05ff-4eef-be71-6081344deec0",
+  "recordedAt": "2026-10-17T23:49:56.237Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/services/service-addon-groups.tsx": "ed412482a8012a3cb25008af6f142a05fdef0830c1ff9e1528bb5842e9b7c2ce",
+    "app/services/services.css": "7a88b962e4fc50d503e80f5efb7950d7af37f909e2480178a73fc3170f8ecb33",
+    "tests/service-owned-addons-ui.test.mjs": "8136889dc2286f9c0192c5cf394a22b3b157a397aa0d1f422717770e7fcde4f5",
+    "tests/service-owned-addons.integration.test.mjs": "7eb30b70059d9eb0656d0ee7f0052d0549bbb4d392e0bd9bd61e53eba9d7e652",
+    "supabase/migrations/20261017235500_service_save_refresh_batch.sql": "87ca2ca2de7d767ad704ffd56106e514529f567176e164519a9e7c24a74961dd",
+    "docs/service-save-input-fix-2026-10-17.md": "42878aa2f3d3c3498747d31a5e273e05fba978f0b657168e117aeb2424d07173"
+  }
+}

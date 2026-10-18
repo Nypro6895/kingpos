@@ -117,11 +117,12 @@ export function getSalonDiscoveryReadiness(input: {
 
 export function getSalonProfileReadiness(input: {
   looks: SalonProfileLook[];
+  publishedLookCount?: number;
   services: Service[];
   setting: SalonProfileSetting;
   staff: Staff[];
 }): SalonProfileReadiness {
-  const publishedLookCount = input.looks.filter(
+  const publishedLookCount = input.publishedLookCount ?? input.looks.filter(
     (look) => look.status === "published",
   ).length;
   const activeServiceCount = input.services.filter(

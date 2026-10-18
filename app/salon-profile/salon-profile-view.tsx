@@ -1,5 +1,6 @@
 "use client";
 import { compressImageCanvas } from "@/lib/image-upload-client";
+import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
 import { PublicationPanel } from "./publication-panel";
 import { ContentViewer } from "@/components/content-viewer";
 import { ActionFeedback } from "@/components/action-feedback";
@@ -3261,11 +3262,13 @@ function PublicationDrawer({ onClose, publicHref, readiness, setting }: {
 
 export function SalonProfileView({
   capabilities = EMPTY_CAPABILITIES,
-  data,
+  data: initialData,
   error,
   manageData,
   notice,
 }: SalonProfileViewProps) {
+  const pagination = useSalonProfilePages(initialData);
+  const data = pagination.data;
   const __vt = useWorkspaceTranslation();
 
   const router = useRouter();
@@ -3997,7 +4000,7 @@ export function SalonProfileView({
             >
               <WorkspaceText text={visibleTimelineCount < timelineItems.length
                 ? "Loading older posts"
-                : "End of timeline"} />
+                : pagination.hasMore ? "More posts available" : "End of timeline"} />
             </div>
           </section>
         )}
@@ -4335,6 +4338,12 @@ export function SalonProfileView({
   }
 
   const effectiveTab = visibleTabs.some((tab) => tab.id === selectedTab) ? selectedTab : "discover";
+  const contentPagination = pagination.hasMore ? <div className="grid justify-items-center gap-2 py-4">
+    {pagination.error ? <p role="status" className="text-sm text-red-700">{pagination.error}</p> : null}
+    <button type="button" disabled={pagination.loading} onClick={() => { void pagination.loadMore(); }} className="min-h-11 rounded-full border px-5 py-2 text-sm font-semibold">
+      <WorkspaceText text={pagination.loading ? "Loading older posts" : pagination.error ? "Try again" : "Load older posts"} />
+    </button>
+  </div> : null;
   const tabPanel =
     effectiveTab === "discover"
       ? renderDiscover()
@@ -4457,6 +4466,7 @@ export function SalonProfileView({
         role="tabpanel"
       >
         {tabPanel}
+        {effectiveTab === "discover" || effectiveTab === "gallery" ? contentPagination : null}
       </section>
 
       {salonReportOpen ? <SalonReportDialog salon={{ id: profile.salonId, name: profile.name }} onClose={() => setSalonReportOpen(false)} /> : null}
@@ -4563,7 +4573,7 @@ export function SalonProfileView({
       </Modal> : null}
       {operatingHoursOpen ? <Modal title={__vt("Operating hours")} onClose={() => setOperatingHoursOpen(false)}><OperatingHoursQuick salonId={profile.salonId} /></Modal> : null}
       {hoursInfoOpen ? <Modal title={__vt("Operating hours")} onClose={() => setHoursInfoOpen(false)}><OperatingHoursDisplay salonId={profile.salonId} initialSettings={data.operatingHours} /></Modal> : null}
-      {contentManagerOpen ? <Modal title={__vt("Featured photo & salon posts")} onClose={() => setContentManagerOpen(false)}>{renderDiscover(true)}</Modal> : null}
+      {contentManagerOpen ? <Modal title={__vt("Featured photo & salon posts")} onClose={() => setContentManagerOpen(false)}>{renderDiscover(true)}{contentPagination}</Modal> : null}
       {profileEditorOpen && manageData ? (
         <ProfileEditor
           onClose={() => setProfileEditorOpen(false)}

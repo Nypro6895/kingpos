@@ -122,7 +122,8 @@
       "revokeSalonStaffInviteFormAction",
       "updateOwnStaffPasscodeAction",
       "updateStaffDirectoryBatchFormAction",
-      "updateStaffPublicProfileAction"
+      "updateStaffPublicProfileAction",
+      "saveStaffDirectoryEntryAction"
     ],
     "app/staff/workday/actions.ts": [
       "checkInStaffWorkday",

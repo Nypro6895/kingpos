@@ -48,6 +48,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
   const currentRequest = useRef<AbortController | null>(null);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryCount = useRef(0);
+  const retryDue = useRef(0);
   const reloadAfterValidation = useRef(false);
   const recovering = useRef(false);
   const blocking = useRef(false);
@@ -72,6 +73,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
     if (retryTimer.current !== null) clearTimeout(retryTimer.current);
     retryTimer.current = null;
     retryCount.current = 0;
+    retryDue.current = 0;
     pending.current = null;
     checked.current = 0;
   }, []);
@@ -89,6 +91,9 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       if (context.authenticated) setBlocked(true);
     }
     if (pending.current) return pending.current;
+    // Several retained views can request authorization together. A failed
+    // attempt owns its retry window; focus/reveal must not restart that budget.
+    if (retryDue.current > Date.now()) return Promise.resolve(false);
     const epoch = validationEpoch.current;
     if (retryTimer.current !== null) clearTimeout(retryTimer.current);
     retryTimer.current = null;
@@ -116,11 +121,13 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       const delay = RETRY_DELAYS[retryCount.current++];
       if (delay !== undefined && navigator.onLine && document.visibilityState === "visible") {
         setConnectionState("waiting");
+        retryDue.current = Date.now() + delay;
         retryTimer.current = setTimeout(() => {
           retryTimer.current = null;
+          retryDue.current = 0;
           if (alive.current && epoch === validationEpoch.current) void runValidation.current(true);
         }, delay);
-      } else setConnectionState("failed");
+      } else { retryDue.current = Date.now() + 30_000; setConnectionState("failed"); }
       return false;
     };
     const request = fetchBoundedGet(`/api/experience/context${context.admin ? "?admin=1" : ""}`, { signal: controller.signal, cache: "no-store", credentials: "same-origin" }, { timeoutMs: 8_000, totalTimeoutMs: 8_000, maxAttempts: 1 })
@@ -148,6 +155,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
         checked.current = Date.now();
         markExperienceScopeOnlineValidated(context.scope);
         retryCount.current = 0;
+        retryDue.current = 0;
         setConnectionState("idle");
         setValidationRevision(++revision.current);
         if (reloadAfterValidation.current) {
@@ -195,6 +203,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
   useLayoutEffect(() => { if (blocked || recoveryRequired) releaseExperienceOfflineBootGuard(); }, [blocked, recoveryRequired]);
 
   const retryConnection = useCallback(() => {
+    if (pending.current) return pending.current;
     invalidateValidation();
     return validate(true);
   }, [invalidateValidation, validate]);
@@ -227,7 +236,6 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
     };
     const resume = () => {
       if (document.visibilityState !== "visible" || !navigator.onLine) return;
-      if (!pending.current) { retryCount.current = 0; }
       void validate();
     };
     window.addEventListener("reylumi:experience-reset", reset);
@@ -293,7 +301,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       <p role="status" className="text-sm text-zinc-600"><WorkspaceText text={connectionState === "waiting" ? "Reconnecting…" : "Please check your connection and try again."} /></p>
       <button type="button" onClick={() => { void retryConnection(); }} className="rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white"><WorkspaceText text="Try again" /></button>
     </div> : blocked ? <PageLoadingSkeleton /> : null}
-    <Activity mode={blocked ? "hidden" : "visible"}>{children}</Activity>
+    <Activity mode={blocked || recoveryRequired ? "hidden" : "visible"}>{children}</Activity>
   </ScopeContext>;
 }
 

@@ -436,6 +436,7 @@ export type PublicSalonProfileBookingRequest = {
 };
 
 export type PublicSalonProfileData = {
+  contentPage?: { nextPage: number | null; managed?: boolean };
   directoryListing?: import("@/lib/salon-directory").SalonDirectoryListing | null;
   websiteFeaturedLookId?: string | null;
   operatingHours?: import("@/types/salon-operating-status").SalonOperatingHoursSettings | null;

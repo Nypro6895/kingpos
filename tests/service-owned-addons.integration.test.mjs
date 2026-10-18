@@ -25,6 +25,24 @@ test('owned add-ons save atomically, preserve history/overrides, inherit staff, 
       insert into staff_service_assignments values('${salon}','${staff}','${parent}',true,true,42,50,'2026-01-01','2027-12-31'),('${salon}','${staff}','${legacy}',true,true,16,17,null,null);`);
     await db.exec(oldSave);
     await db.exec(migration);
+    // Include statement-level projection hooks: the earlier fixture omitted
+    // the production refresh chain and missed its per-write amplification.
+    await db.exec(`create table test_refresh_audit(kind text,children integer);
+      create function public.sync_explore_salon_documents() returns trigger language plpgsql as $$
+BEGIN
+ insert into test_refresh_audit select 'document',count(*) from services where booking_parent_service_id is not null;
+ return null;
+END
+$$;
+      create function public.sync_explore_social_salons() returns trigger language plpgsql as $$
+BEGIN
+ insert into test_refresh_audit select 'social',count(*) from services where booking_parent_service_id is not null;
+ return null;
+END
+$$;
+      create function public.explore_rank_enqueue(uuid[]) returns void language sql as $$select$$;
+      create trigger test_document_refresh after insert or update or delete on services for each statement execute function sync_explore_salon_documents();
+      create trigger test_social_refresh after insert or update or delete on services for each statement execute function sync_explore_social_salons();`);
     const config={service_id:parent,name:'Spa pedi',category:'pedicure',base_price:40,duration_minutes:45,is_active:true,online_booking_enabled:true,booking_staff_ids:[staff],add_on_service_ids:[],booking_add_ons:[
       {service_id:legacy,name:'Gel polish',selection_group:'one',base_price:15,duration_minutes:15},
       {name:'French polish',selection_group:'one',base_price:10,duration_minutes:10},
@@ -32,7 +50,15 @@ test('owned add-ons save atomically, preserve history/overrides, inherit staff, 
       {name:'Paraffin',selection_group:'many',base_price:12,duration_minutes:10},
     ]};
     const save=async value=>(await db.query('select save_owned_service_config_batch($1,$2) as result',[salon,JSON.stringify([value])])).rows[0].result;
+    await db.exec('begin');
+    await save(config);
+    const oldRefreshes=(await db.query('select count(*)::int n from test_refresh_audit')).rows[0].n;
+    await db.exec('rollback');
+    await db.exec(readFileSync('supabase/migrations/20261017235500_service_save_refresh_batch.sql','utf8'));
     assert.equal((await save(config)).ok,true);
+    const refreshed=(await db.query('select kind,children from test_refresh_audit order by kind')).rows;
+    assert.deepEqual(refreshed,[{kind:'document',children:4},{kind:'social',children:4}],'both real trigger paths flush once and see all final children');
+    assert.ok(oldRefreshes>refreshed.length,'old save amplified projection refresh per intermediate write');
     let children=(await db.query('select * from services where booking_parent_service_id=$1 order by name',[parent])).rows;
     assert.equal(children.length,4);
     const gel=children.find(x=>x.name==='Gel polish'),french=children.find(x=>x.name==='French polish'),massage=children.find(x=>x.name==='Massage'),paraffin=children.find(x=>x.name==='Paraffin');
@@ -78,13 +104,34 @@ test('owned add-ons save atomically, preserve history/overrides, inherit staff, 
     assert.equal(await available(cursor),true,'SQL permits next booking exactly at occupied end');
     const invalid={...config,name:'Should rollback',booking_add_ons:[{name:'Bad',selection_group:'bad',base_price:1,duration_minutes:10}]};
     await assert.rejects(save(invalid),/Invalid add-on/);
+    assert.notEqual((await db.query("select current_setting('app.owned_service_refresh_deferred',true) flag")).rows[0].flag,'on','rollback restores projection mode');
+    const auditBefore=(await db.query('select count(*)::int n from test_refresh_audit')).rows[0].n;
+    await db.query('update services set name=name where id=$1',[parent]);
+    assert.equal((await db.query('select count(*)::int n from test_refresh_audit')).rows[0].n,auditBefore+2,'ordinary service writes still synchronize projections');
     assert.equal((await db.query('select name from services where id=$1',[parent])).rows[0].name,'Spa pedi','failed batch rolls back parent and links');
     const savedItems=children.map(x=>({service_id:x.id,name:x.name,base_price:Number(x.base_price),duration_minutes:x.duration_minutes,selection_group:x.booking_add_on_group}));
+    await db.exec(`create or replace function public.sync_explore_social_salons() returns trigger language plpgsql as $$
+BEGIN
+ if TG_TABLE_NAME='services' and current_setting('app.owned_service_refresh_deferred',true)='on' then return null; end if;
+ if current_setting('test.fail_refresh',true)='on' then raise exception 'Synthetic projection failure'; end if;
+ insert into test_refresh_audit select 'social',count(*) from services where booking_parent_service_id is not null;
+ return null;
+END
+$$; select set_config('test.fail_refresh','on',false);`);
+    await assert.rejects(save({...config,name:'Must rollback after flush',booking_add_ons:savedItems}),/Synthetic projection failure/);
+    assert.equal((await db.query('select name from services where id=$1',[parent])).rows[0].name,'Spa pedi','projection failure rolls back the full catalog transaction');
+    await db.exec("select set_config('test.fail_refresh','off',false)");
     await save({...config,booking_add_ons:savedItems.filter(x=>x.service_id!==gel.id)});
     assert.equal((await db.query('select is_active from services where id=$1',[gel.id])).rows[0].is_active,false,'removed extras retire without deleting history');
     assert.equal((await db.query('select count(*)::int n from booking_lines where service_id=$1',[gel.id])).rows[0].n,1);
     const parent2=id(9);await db.query('insert into services(id,salon_id,name) values($1,$2,$3)',[parent2,salon,'Other']);
     await assert.rejects(save({...config,service_id:parent2,booking_add_ons:[savedItems[0]]}),/does not belong/);
+    await db.exec('truncate test_refresh_audit');
+    await db.query('select save_owned_service_config_batch($1,$2)',[salon,JSON.stringify([
+      {...config,booking_add_ons:savedItems.filter(x=>x.service_id!==gel.id)},
+      {...config,service_id:parent2,name:'Other',booking_add_ons:[]},
+    ])]);
+    assert.equal((await db.query('select count(*)::int n from test_refresh_audit')).rows[0].n,2,'Save all coalesces multiple parent services into one refresh per projection');
     await db.exec('create or replace function user_has_salon_permission(uuid,text[]) returns boolean language sql as $$select false$$;');
     await assert.rejects(save(config),/Not allowed/);
     await db.exec('set role anon');
