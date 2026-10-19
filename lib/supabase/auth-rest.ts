@@ -1,4 +1,5 @@
 import { fetchWithDeadline, ReadConnectionError } from "@/lib/bounded-get";
+import { getReadRequestTiming } from "@/lib/read-context-scope";
 
 export class AuthAvailabilityError extends Error {
   readonly status = 503;
@@ -30,6 +31,17 @@ export const supabaseDeadlineFetch: typeof fetch = (input, init) => {
   const url = input instanceof Request ? input.url : String(input);
   // Large Storage downloads/uploads and transactional writes keep their existing
   // transport. A read timeout cannot tell a caller whether a mutation committed.
-  if (!["GET", "HEAD"].includes(method) || !/\/(?:auth|rest)\/v1(?:\/|$)/.test(url)) return fetch(input, init);
-  return fetchWithDeadline(input, init, { timeoutMs: 5_000, totalTimeoutMs: 10_250, maxAttempts: 2, retryDelayMs: 250 });
+  const read = () => !["GET", "HEAD"].includes(method) || !/\/(?:auth|rest)\/v1(?:\/|$)/.test(url)
+    ? fetch(input, init)
+    : fetchWithDeadline(input, init, { timeoutMs: 5_000, totalTimeoutMs: 10_250, maxAttempts: 2, retryDelayMs: 250 });
+  const timing = getReadRequestTiming();
+  if (!timing) return read();
+  // Keep only fixed service categories. URLs, record keys, filters, credentials,
+  // headers and response bodies never enter the request-local diagnostic data.
+  let pathname: string;
+  try { pathname = new URL(url).pathname; } catch { return read(); }
+  const kind = /^\/auth\/v1(?:\/|$)/.test(pathname) ? "auth"
+    : /^\/rest\/v1\/rpc(?:\/|$)/.test(pathname) ? "rpc"
+    : /^\/rest\/v1(?:\/|$)/.test(pathname) ? "rest" : null;
+  return kind ? timing.measureBackend(kind, read) : read();
 };

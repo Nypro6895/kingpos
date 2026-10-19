@@ -10,7 +10,7 @@ import { CustomerActivityView } from "@/app/activity/customer-activity-view";
 import { StaffMyWorkView } from "@/app/staff/my-work/staff-my-work-view";
 import { StaffScheduleView } from "@/app/staff/appointments/staff-schedule-view";
 import { StaffWorkdayView } from "@/app/staff/workday/staff-workday-view";
-import { TodayDashboardView } from "@/app/staff/today/today-dashboard-view";
+import { AppLocalTodayClient } from "@/app/staff/today/today-progressive-client";
 import { MarketClient } from "@/app/market/market-client";
 import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
 import { SettingsHubClient } from "@/app/settings/settings-hub-client";
@@ -24,7 +24,6 @@ import { getAppLocalHelpGuide } from "./app-local-reference-content";
 import type { CustomerActivityResource } from "@/app/activity/customer-activity-client";
 import type { StaffMyWorkResource, StaffMyWorkSearchParams } from "./staff-my-work-experience";
 import type { StaffScheduleResource, StaffWorkdayResource } from "./staff-read-view";
-import type { TodayDashboard } from "./today-dashboard";
 import type { MarketExperienceData } from "@/types/market-experience";
 import type { AppLocalBookingsData, AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData, AppLocalFavoritesData, AppLocalSettingsData, AppLocalStaffIdentityData, AppLocalMyPlaceData, AppLocalServicesData, AppLocalMoreData, AppLocalSupportData, AppLocalSupportCaseData } from "./app-local-platform-types";
 
@@ -114,7 +113,7 @@ function StaffPage(props: AppLocalPageProps) {
   const schedule = state.data as StaffScheduleResource;
   return <StaffScheduleView data={schedule.result} salonId={schedule.salonId} params={params} />;
 }
-function TodayPage(props: AppLocalPageProps) { return <ReadView<{ dashboard: TodayDashboard; isOwner: boolean }> {...props} name="page.owner-today" args={queryFor(props.path, ["date"])} title="Today">{(data, refresh) => <TodayDashboardView {...data} retry={() => void refresh()} />}</ReadView>; }
+function TodayPage(props: AppLocalPageProps) { return <AppLocalTodayClient scope={props.context!.context.scope} requestedDate={queryFor(props.path, ["date"]).date} />; }
 
 const definitions = [
   { id: "help.home", title: "Help", requiresContext: false, Component: HelpPage, features: ["complete-guides", "search", "role-filters", "illustrations", "en-vi"] },

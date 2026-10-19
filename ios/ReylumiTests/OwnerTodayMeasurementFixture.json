@@ -1,0 +1,1213 @@
+{
+  "synthetic": true,
+  "phases": {
+    "shell": {
+      "pendingSections": {
+        "sections": [
+          "staff",
+          "bookings",
+          "waiting",
+          "financials",
+          "extras"
+        ],
+        "metrics": [
+          "staff",
+          "waiting",
+          "customers",
+          "sales"
+        ],
+        "details": true
+      },
+      "attention": [],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": "Today dashboard access is unavailable.",
+        "isClosed": false,
+        "isFallback": true,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:26.738Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 0,
+          "completed": 0,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [],
+        "sales": null,
+        "staffBars": []
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": false,
+        "loadError": null,
+        "maxSelected": 0,
+        "selected": []
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": []
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": null,
+          "label": "Appointments",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "sales": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/reports",
+          "label": "Sales Today",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "staff": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        }
+      },
+      "team": [],
+      "timezone": "UTC"
+    },
+    "staff": {
+      "pendingSections": {
+        "sections": [
+          "bookings",
+          "waiting",
+          "financials",
+          "extras"
+        ],
+        "metrics": [
+          "waiting",
+          "customers",
+          "sales"
+        ],
+        "details": true
+      },
+      "attention": [],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": null,
+        "isClosed": false,
+        "isFallback": false,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:26.819Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 0,
+          "completed": 0,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [],
+        "sales": null,
+        "staffBars": []
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": false,
+        "loadError": null,
+        "maxSelected": 0,
+        "selected": []
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": []
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": null,
+          "label": "Appointments",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "sales": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/reports",
+          "label": "Sales Today",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "staff": {
+          "chart": {
+            "ariaLabel": "Staff check-ins by hour for the selected day",
+            "kind": "bars",
+            "points": [
+              {
+                "afterHours": false,
+                "highlight": true,
+                "label": "9",
+                "value": 1
+              }
+            ]
+          },
+          "detail": "1 checked in now",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "good",
+          "assessment": "Staff checked in",
+          "value": "1"
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        }
+      },
+      "team": [
+        {
+          "checkInAt": "2026-10-18T09:00:00.000Z",
+          "checkOutAt": null,
+          "displayName": "Staff A",
+          "id": "staff-a",
+          "jobTitle": null,
+          "status": "checked_in",
+          "statusLabel": "Checked in",
+          "turns": {
+            "large": 3,
+            "small": 0,
+            "total": 3
+          }
+        }
+      ],
+      "timezone": "UTC"
+    },
+    "bookings": {
+      "pendingSections": {
+        "sections": [
+          "staff",
+          "waiting",
+          "financials",
+          "extras"
+        ],
+        "metrics": [
+          "staff",
+          "waiting",
+          "sales"
+        ],
+        "details": true
+      },
+      "attention": [
+        {
+          "actionLabel": "Review",
+          "detail": "Review pending or requested appointments for today.",
+          "href": "/bookings?date=2026-10-18&range=day&status=pending",
+          "id": "pending-bookings",
+          "count": 1,
+          "label": "1 booking need review",
+          "tone": "notice"
+        }
+      ],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": null,
+        "isClosed": false,
+        "isFallback": false,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:26.875Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 1,
+          "completed": 0,
+          "inService": 0,
+          "pending": 1,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [],
+        "sales": null,
+        "staffBars": []
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": false,
+        "loadError": null,
+        "maxSelected": 0,
+        "selected": []
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": []
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": {
+            "ariaLabel": "Appointments by scheduled hour for the selected day",
+            "kind": "sparkline",
+            "points": [
+              {
+                "afterHours": false,
+                "highlight": true,
+                "label": "23",
+                "value": 1
+              }
+            ]
+          },
+          "detail": "0 completed / 0 upcoming",
+          "href": "/bookings?date=2026-10-18&range=day",
+          "label": "Appointments",
+          "tone": "warning",
+          "assessment": "1 awaiting review",
+          "value": "1"
+        },
+        "sales": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/reports",
+          "label": "Sales Today",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "staff": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        }
+      },
+      "team": [],
+      "timezone": "UTC"
+    },
+    "waiting": {
+      "pendingSections": {
+        "sections": [
+          "staff",
+          "bookings",
+          "financials",
+          "extras"
+        ],
+        "metrics": [
+          "staff",
+          "customers",
+          "sales"
+        ],
+        "details": true
+      },
+      "attention": [
+        {
+          "actionLabel": "Review",
+          "detail": "Appointment arrivals are marked checked in and have not started service.",
+          "href": "/bookings",
+          "id": "waiting-clients",
+          "count": 1,
+          "label": "1 waiting client",
+          "tone": "warning"
+        }
+      ],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": "Today dashboard access is unavailable.",
+        "isClosed": false,
+        "isFallback": true,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:26.924Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 0,
+          "completed": 0,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [],
+        "sales": null,
+        "staffBars": []
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": false,
+        "loadError": null,
+        "maxSelected": 0,
+        "selected": []
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": [
+          {
+            "assignedStaff": null,
+            "checkedInAt": "2026-10-18T10:00:00.000Z",
+            "customerId": "customer-a",
+            "displayName": "Waiting client",
+            "href": null,
+            "id": "visit:visit-a",
+            "serviceLabel": "Service",
+            "source": "walk_in",
+            "status": "waiting"
+          }
+        ]
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": null,
+          "label": "Appointments",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "sales": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/reports",
+          "label": "Sales Today",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "staff": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Appointment arrivals waiting for service",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "warning",
+          "assessment": "Clients waiting",
+          "value": "1"
+        }
+      },
+      "team": [],
+      "timezone": "UTC"
+    },
+    "financials": {
+      "pendingSections": {
+        "sections": [
+          "staff",
+          "bookings",
+          "waiting",
+          "extras"
+        ],
+        "metrics": [
+          "staff",
+          "waiting",
+          "customers"
+        ],
+        "details": true
+      },
+      "attention": [
+        {
+          "actionLabel": "View",
+          "detail": "Open tickets are excluded from daily closing totals until completed.",
+          "href": "/pos-tickets?date=2026-10-18",
+          "id": "open-pos-tickets",
+          "count": 1,
+          "label": "1 open POS ticket",
+          "tone": "notice"
+        }
+      ],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": null,
+        "isClosed": false,
+        "isFallback": false,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:26.970Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 0,
+          "completed": 0,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [
+          {
+            "afterHours": false,
+            "label": "9 AM",
+            "latest": true,
+            "service": 120,
+            "ticketCount": 2,
+            "tip": 20,
+            "total": 145
+          }
+        ],
+        "sales": {
+          "comparison": {
+            "direction": "up",
+            "label": "Up from previous days"
+          },
+          "discount": 5,
+          "service": 120,
+          "ticketCount": 2,
+          "tip": 20,
+          "total": 145
+        },
+        "staffBars": [
+          {
+            "label": "Staff A",
+            "staffId": "staff-a",
+            "value": 120
+          }
+        ]
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": false,
+        "loadError": null,
+        "maxSelected": 0,
+        "selected": []
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": []
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/reports?date=2026-10-18",
+          "label": "Tickets",
+          "value": "--",
+          "tone": "default",
+          "trend": null,
+          "restricted": false
+        },
+        "sales": {
+          "detail": "2 closed tickets",
+          "chart": {
+            "ariaLabel": "Hourly sales from finalized tickets for the selected day",
+            "kind": "sparkline",
+            "points": [
+              {
+                "afterHours": false,
+                "highlight": true,
+                "label": "9 AM",
+                "value": 145
+              }
+            ]
+          },
+          "href": "/reports?date=2026-10-18",
+          "label": "Sales Today",
+          "tone": "good",
+          "trend": {
+            "direction": "up",
+            "label": "Up from previous days"
+          },
+          "value": "$145.00"
+        },
+        "staff": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        }
+      },
+      "team": [
+        {
+          "earnings": 140,
+          "financialAttribution": {
+            "services": "earnings",
+            "tips": "earnings"
+          },
+          "serviceSales": 120,
+          "tips": 20,
+          "checkInAt": "2026-10-18T09:00:00.000Z",
+          "checkOutAt": null,
+          "displayName": "Staff A",
+          "id": "staff-a",
+          "jobTitle": null,
+          "status": "checked_in",
+          "statusLabel": "Checked in",
+          "turns": {
+            "large": 3,
+            "small": 1,
+            "total": 4
+          }
+        }
+      ],
+      "timezone": "UTC"
+    },
+    "extras": {
+      "pendingSections": {
+        "sections": [
+          "staff",
+          "bookings",
+          "waiting",
+          "financials"
+        ],
+        "metrics": [
+          "staff",
+          "waiting",
+          "customers",
+          "sales"
+        ],
+        "details": true
+      },
+      "attention": [
+        {
+          "detail": "Review update",
+          "href": "/notifications",
+          "id": "notification:notice-a",
+          "label": "Update",
+          "tone": "notice",
+          "actionLabel": "View"
+        }
+      ],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": "Today dashboard access is unavailable.",
+        "isClosed": false,
+        "isFallback": true,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:27.021Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 0,
+          "completed": 0,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [],
+        "sales": null,
+        "staffBars": []
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": true,
+        "loadError": null,
+        "maxSelected": 8,
+        "selected": [
+          {
+            "id": "staff",
+            "label": "Staff",
+            "href": "/staff",
+            "icon": "staff",
+            "description": "Staff"
+          }
+        ]
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": []
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": null,
+          "label": "Appointments",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "sales": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/reports",
+          "label": "Sales Today",
+          "restricted": false,
+          "value": "--",
+          "tone": "default",
+          "trend": null
+        },
+        "staff": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Loading…",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "default",
+          "value": "--",
+          "trend": null,
+          "restricted": false
+        }
+      },
+      "team": [],
+      "timezone": "UTC"
+    },
+    "full": {
+      "pendingSections": {
+        "metrics": [],
+        "details": false
+      },
+      "attention": [
+        {
+          "actionLabel": "Review",
+          "detail": "Appointment arrivals are marked checked in and have not started service.",
+          "href": "/bookings",
+          "id": "waiting-clients",
+          "count": 1,
+          "label": "1 waiting client",
+          "tone": "warning"
+        },
+        {
+          "actionLabel": "Review",
+          "detail": "Review pending or requested appointments for today.",
+          "href": "/bookings?date=2026-10-18&range=day&status=pending",
+          "id": "pending-bookings",
+          "count": 1,
+          "label": "1 booking need review",
+          "tone": "notice"
+        },
+        {
+          "actionLabel": "View",
+          "detail": "Open tickets are excluded from daily closing totals until completed.",
+          "href": "/pos-tickets?date=2026-10-18",
+          "id": "open-pos-tickets",
+          "count": 1,
+          "label": "1 open POS ticket",
+          "tone": "notice"
+        },
+        {
+          "detail": "Review update",
+          "href": "/notifications",
+          "id": "notification:notice-a",
+          "label": "Update",
+          "tone": "notice",
+          "actionLabel": "View"
+        }
+      ],
+      "businessHours": {
+        "buckets": [],
+        "closesAtLocal": "18:00",
+        "date": "2026-10-18",
+        "fallbackReason": null,
+        "isClosed": false,
+        "isFallback": false,
+        "opensAtLocal": "09:00",
+        "source": "staff_availability_rules",
+        "spansOvernight": false,
+        "timeZone": "UTC"
+      },
+      "date": "2026-10-18",
+      "dayView": {
+        "currentDate": "2026-10-18",
+        "invalidDate": null,
+        "isCurrentDate": true,
+        "maxDate": "2026-10-18",
+        "nextDate": null,
+        "previousDate": "2026-10-17",
+        "selectedDate": "2026-10-18",
+        "todayHref": "/staff/today"
+      },
+      "generatedAt": "2026-10-19T00:14:27.067Z",
+      "greetingName": "Owner",
+      "loadErrors": [],
+      "noAccess": false,
+      "performance": {
+        "bookingStatus": {
+          "active": 1,
+          "completed": 0,
+          "inService": 0,
+          "pending": 1,
+          "upcoming": 0
+        },
+        "emptyLabel": null,
+        "salesTrend": [
+          {
+            "afterHours": false,
+            "label": "9 AM",
+            "latest": true,
+            "service": 120,
+            "ticketCount": 2,
+            "tip": 20,
+            "total": 145
+          }
+        ],
+        "sales": {
+          "comparison": {
+            "direction": "up",
+            "label": "Up from previous days"
+          },
+          "discount": 5,
+          "service": 120,
+          "ticketCount": 2,
+          "tip": 20,
+          "total": 145
+        },
+        "staffBars": [
+          {
+            "label": "Staff A",
+            "staffId": "staff-a",
+            "value": 120
+          }
+        ]
+      },
+      "permissions": {
+        "canViewBookings": true,
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewStaffFinancials": true,
+        "canViewTickets": true
+      },
+      "quickAccesses": {
+        "available": [],
+        "canCustomize": true,
+        "loadError": null,
+        "maxSelected": 8,
+        "selected": [
+          {
+            "id": "staff",
+            "label": "Staff",
+            "href": "/staff",
+            "icon": "staff",
+            "description": "Staff"
+          }
+        ]
+      },
+      "rightNow": {
+        "scheduleHref": "/bookings?date=2026-10-18&range=day",
+        "upcomingBookings": [],
+        "waitingClients": [
+          {
+            "assignedStaff": null,
+            "checkedInAt": "2026-10-18T10:00:00.000Z",
+            "customerId": "customer-a",
+            "displayName": "Waiting client",
+            "href": null,
+            "id": "visit:visit-a",
+            "serviceLabel": "Service",
+            "source": "walk_in",
+            "status": "waiting"
+          }
+        ]
+      },
+      "salonName": "Salon A",
+      "summary": {
+        "customers": {
+          "chart": {
+            "ariaLabel": "Appointments by scheduled hour for the selected day",
+            "kind": "sparkline",
+            "points": [
+              {
+                "afterHours": false,
+                "highlight": true,
+                "label": "23",
+                "value": 1
+              }
+            ]
+          },
+          "detail": "0 completed / 0 upcoming",
+          "href": "/bookings?date=2026-10-18&range=day",
+          "label": "Appointments",
+          "tone": "warning",
+          "assessment": "1 awaiting review",
+          "value": "1"
+        },
+        "sales": {
+          "detail": "2 closed tickets",
+          "chart": {
+            "ariaLabel": "Hourly sales from finalized tickets for the selected day",
+            "kind": "sparkline",
+            "points": [
+              {
+                "afterHours": false,
+                "highlight": true,
+                "label": "9 AM",
+                "value": 145
+              }
+            ]
+          },
+          "href": "/reports?date=2026-10-18",
+          "label": "Sales Today",
+          "tone": "good",
+          "trend": {
+            "direction": "up",
+            "label": "Up from previous days"
+          },
+          "value": "$145.00"
+        },
+        "staff": {
+          "chart": {
+            "ariaLabel": "Staff check-ins by hour for the selected day",
+            "kind": "bars",
+            "points": [
+              {
+                "afterHours": false,
+                "highlight": true,
+                "label": "9",
+                "value": 1
+              }
+            ]
+          },
+          "detail": "1 checked in now",
+          "href": "/staff",
+          "label": "Staff Working",
+          "tone": "good",
+          "assessment": "Staff checked in",
+          "value": "1"
+        },
+        "waiting": {
+          "chart": null,
+          "detail": "Appointment arrivals waiting for service",
+          "href": "/bookings",
+          "label": "Waiting",
+          "tone": "warning",
+          "assessment": "Clients waiting",
+          "value": "1"
+        }
+      },
+      "team": [
+        {
+          "earnings": 140,
+          "financialAttribution": {
+            "services": "earnings",
+            "tips": "earnings"
+          },
+          "serviceSales": 120,
+          "tips": 20,
+          "checkInAt": "2026-10-18T09:00:00.000Z",
+          "checkOutAt": null,
+          "displayName": "Staff A",
+          "id": "staff-a",
+          "jobTitle": null,
+          "status": "checked_in",
+          "statusLabel": "Checked in",
+          "turns": {
+            "large": 3,
+            "small": 1,
+            "total": 4
+          }
+        }
+      ],
+      "timezone": "UTC"
+    }
+  },
+  "navigation": {
+    "accountAvatarUrl": null,
+    "accountEmail": null,
+    "accountLabel": "Synthetic owner",
+    "canManageStaff": true,
+    "canSwitchManageSalon": false,
+    "currentManageSalonId": "00000000-0000-4000-8000-000000000002",
+    "currentManageSalonName": "Salon A",
+    "currentAccountName": "Synthetic account",
+    "currentUserId": "00000000-0000-4000-8000-000000000001",
+    "currentStaffSalonId": null,
+    "currentStaffSalonName": null,
+    "currentWorkspace": {
+      "accountId": "00000000-0000-4000-8000-000000000005",
+      "accountName": "Synthetic account",
+      "avatarUrl": null,
+      "businessId": "00000000-0000-4000-8000-000000000002",
+      "businessMode": "manage",
+      "businessName": "Salon A",
+      "defaultHref": "/staff/today",
+      "description": null,
+      "id": "synthetic-owner-workspace",
+      "label": "Salon A",
+      "menuActions": [],
+      "primaryAction": null,
+      "quickActions": [],
+      "roleCode": "OWNER",
+      "roleLabel": "Owner",
+      "salonCount": 1,
+      "salonId": "00000000-0000-4000-8000-000000000002",
+      "salonMode": "manage",
+      "salonName": "Salon A",
+      "secondaryAction": null,
+      "type": "salon"
+    },
+    "manageSalons": [],
+    "notificationSummary": {
+      "items": [],
+      "beautyPublicationRequests": 0,
+      "bookingNotifications": 0,
+      "managerApplications": 0,
+      "previewItems": [],
+      "reviewHref": "/notifications",
+      "staffApplications": 0,
+      "staffInvites": 0,
+      "total": 0
+    },
+    "salonMode": "manage",
+    "staffSalons": [],
+    "workspaceOptions": [
+      {
+        "accountId": "00000000-0000-4000-8000-000000000005",
+        "accountName": "Synthetic account",
+        "avatarUrl": null,
+        "businessId": "00000000-0000-4000-8000-000000000002",
+        "businessMode": "manage",
+        "businessName": "Salon A",
+        "defaultHref": "/staff/today",
+        "description": null,
+        "id": "synthetic-owner-workspace",
+        "label": "Salon A",
+        "menuActions": [],
+        "primaryAction": null,
+        "quickActions": [],
+        "roleCode": "OWNER",
+        "roleLabel": "Owner",
+        "salonCount": 1,
+        "salonId": "00000000-0000-4000-8000-000000000002",
+        "salonMode": "manage",
+        "salonName": "Salon A",
+        "secondaryAction": null,
+        "type": "salon"
+      }
+    ],
+    "workspaceSections": [],
+    "workspaceType": "salon"
+  },
+  "summary": {
+    "items": [],
+    "beautyPublicationRequests": 0,
+    "bookingNotifications": 0,
+    "managerApplications": 0,
+    "previewItems": [],
+    "reviewHref": "/notifications",
+    "staffApplications": 0,
+    "staffInvites": 0,
+    "total": 0
+  }
+}

@@ -9,7 +9,7 @@ export const APP_LOCAL_READ_RESOURCES = {
   "staff.schedule": { endpoint: "/api/experience/staff", kind: "schedule", domain: "staff-schedule", scope: "staff-binding", params: ["staffId", "range", "status", "bookingId", "date", "quickId", "view"] },
   "staff.workday": { endpoint: "/api/experience/staff", kind: "workday", domain: "staff-workday", scope: "staff-binding", params: ["staffId"] },
   "staff.my-work": { endpoint: "/api/experience/my-work", kind: "my-work", domain: "staff-my-work", scope: "staff-binding", params: ["staffId", "tab", "payPeriodStart"] },
-  "owner.today": { endpoint: "/api/experience/today", kind: "today", domain: "owner-today", scope: "workspace", params: ["date"] },
+  "owner.today": { endpoint: "/api/experience/today", kind: "today", domain: "owner-today", scope: "workspace", params: ["date", "phase"] },
   "market.catalog": { endpoint: "/api/experience/market", kind: "market", domain: "market-catalog", scope: "viewer", params: [] },
 } as const;
 export type AppLocalRoleResourceName = keyof typeof APP_LOCAL_READ_RESOURCES;

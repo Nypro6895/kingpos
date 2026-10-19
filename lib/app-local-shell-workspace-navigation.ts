@@ -7,6 +7,10 @@ let pending = false;
 export function completeWorkspaceHandoff(path: string) {
   window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-handoff", { detail: { path: appLocalPath(path) } }));
 }
+/** Resolve an uncertain write through a fresh account read, never another write. */
+export function requestWorkspaceResolution(generation = window.__reylumiAppLocalContext?.generation, workspaceId?: string) {
+  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-resolve", { detail: { generation, ...(workspaceId ? { workspaceId } : {}) } }));
+}
 /** Installed-build alias only. Web keeps its original document handoff. */
 export function navigateToWorkspace(workspaceId: string, destinationHref?: string) {
   const host = getAppLocalHost();
@@ -19,16 +23,19 @@ export function navigateToWorkspace(workspaceId: string, destinationHref?: strin
   if (!scope || !navigator.onLine) throw new Error("Connect to open a different workspace.");
   if (pending) return;
   pending = true;
+  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-start", { detail: { generation, scope, workspaceId } }));
   void (async () => {
     const result = await host.command<{ path: string }>("shell.switch-workspace", { workspaceId, ...(destinationHref ? { destination: destinationHref } : {}) }, { scope });
-    if (scope !== getAppLocalCommandScope()) return;
+    if (window.__reylumiAppLocalContext?.generation !== generation || scope !== getAppLocalCommandScope()) return;
     completeWorkspaceHandoff(result.path);
   })().catch(() => {
     const activeScope = getAppLocalCommandScope();
     if (window.__reylumiAppLocalContext?.generation !== generation || activeScope && activeScope !== scope) return;
-    window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-error", { detail: "Workspace context could not be updated. Try again." }));
-    // The write may already have committed. Recovery checks the current role;
-    // it must not blindly submit the workspace-changing command a second time.
-    completeWorkspaceHandoff(location.pathname + location.search);
-  }).finally(() => { pending = false; });
+    // Cookies may already select the requested workspace. The old Staff path
+    // would resolve Staff identity even after a committed Owner selection.
+    requestWorkspaceResolution(generation, workspaceId);
+  }).finally(() => {
+    window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-finish", { detail: { generation, scope } }));
+    pending = false;
+  });
 }

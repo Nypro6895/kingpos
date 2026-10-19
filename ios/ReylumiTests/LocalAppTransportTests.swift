@@ -187,7 +187,7 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
 
 final class LocalAppTransportTests: XCTestCase {
     @MainActor
-    func testActualInstalledExploreRecoversContextTimeoutAnd503OnlyAfterUserRetry() async throws {
+    func testActualInstalledExploreBoundsTransientContextRecoveryBeforeUserRetry() async throws {
         let bundle = try ReylumiLocalBundle.installed()
         XCTAssertEqual(bundle.manifest.productionReady, true); XCTAssertTrue(bundle.routeExists("/explore"))
         let blockerID = "reylumi.tests.explore-no-network." + UUID().uuidString
@@ -228,10 +228,10 @@ final class LocalAppTransportTests: XCTestCase {
             controller.initializeWebContentIfNeeded()
             let web = try XCTUnwrap(controller.webView)
             let retry = "[...document.querySelectorAll('.app-local-body button')].find(x=>x.textContent.trim()==='Try again'&&x.getClientRects().length)"
-            try await waitForInstalledExplore("Boolean(\(retry)) && document.body.innerText.includes('Please check your connection')", in: web)
+            try await waitForInstalledExplore("Boolean(\(retry)) && Boolean(document.querySelector('[data-context-failure]'))", in: web)
             try await Task.sleep(nanoseconds: 300_000_000)
             let failedAttempts = await http.contextRequests, beforeReads = await http.reads
-            XCTAssertEqual(failedAttempts, 1, "A failed cold context must stop at user recovery, not loop")
+            XCTAssertEqual(failedAttempts, 2, "A transient cold context gets one automatic retry, then stops at user recovery")
             XCTAssertFalse(beforeReads.contains("page.explore"), "Explore data requires an admitted scope")
             await http.allowContext()
             if timeout {
@@ -244,7 +244,7 @@ final class LocalAppTransportTests: XCTestCase {
             }
             try await waitForInstalledExplore("!document.querySelector('[data-explore-startup]') && [...document.querySelectorAll('input')].some(x=>x.value==='fixture-recovery'&&x.getClientRects().length) && !document.body.innerText.includes('Please open this page again')", in: web)
             let reads = await http.reads, attempts = await http.contextRequests, commands = await http.commands
-            XCTAssertEqual(attempts, 2); XCTAssertEqual(reads.filter { $0 == "page.explore" }.count, 1)
+            XCTAssertEqual(attempts, 3); XCTAssertEqual(reads.filter { $0 == "page.explore" }.count, 1)
             XCTAssertEqual(commands, 0, "Recovery must never replay a business command")
             let blank = try await web.evaluateJavaScript("!document.querySelector('.app-local-body')?.innerText.trim()") as? Bool
             XCTAssertEqual(blank, false)

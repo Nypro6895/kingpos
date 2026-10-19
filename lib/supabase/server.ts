@@ -10,6 +10,8 @@ import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
 import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
 import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
+import { coalesceReadInFlight } from "@/lib/read-context-scope";
+import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
@@ -45,6 +47,37 @@ type PublicUserStatusRow = {
 type AccountLoginSessionStatusRow = {
   revoked_at: string | null;
 };
+
+const authUserReadKey = Symbol("read-auth-user");
+const accountStatusReadKey = Symbol("read-account-status");
+const loginSessionReadKey = Symbol("read-login-session-status");
+const authenticatedReadAuthorities = new WeakMap<
+  NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  string
+>();
+
+// Only gated clients receive metadata. The opaque value is for pending read
+// equality, never an authorization decision or a cache of a successful gate.
+export function getAuthenticatedReadAuthority(
+  client: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+): string | undefined {
+  return authenticatedReadAuthorities.get(client);
+}
+
+// Keys live only while the raw read is pending inside an explicit read request.
+// Caller-specific strict/optional handling stays outside the shared transport.
+function authReadAuthority(config: SupabaseConfig, accessToken: string, ...parts: string[]) {
+  return JSON.stringify([config.supabaseUrl, config.supabaseAnonKey, accessToken, ...parts]);
+}
+
+function readAuthUser(
+  supabase: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  accessToken: string,
+  config: SupabaseConfig | null,
+) {
+  const read = () => supabase.auth.getUser(accessToken);
+  return config ? coalesceReadInFlight(authUserReadKey, authReadAuthority(config, accessToken), read) : read();
+}
 
 type SupabaseCookieWriter = {
   delete: (name: string) => unknown;
@@ -188,7 +221,11 @@ export async function createAuthenticatedSupabaseServerClient(options: { throwOn
     return null;
   }
 
-  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+  const requestHeaders = {
+    Authorization: `Bearer ${accessToken}`,
+    ...await safetyRequestHeaders(),
+  };
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -196,12 +233,26 @@ export async function createAuthenticatedSupabaseServerClient(options: { throwOn
     },
     global: {
       fetch: supabaseDeadlineFetch,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        ...await safetyRequestHeaders(),
-      },
+      headers: requestHeaders,
     },
   });
+
+  try {
+    const loginSessionId = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value ?? null;
+    const authority = createHash("sha256").update(JSON.stringify([
+      config.supabaseUrl,
+      config.supabaseAnonKey,
+      accessToken,
+      loginSessionId,
+      Object.entries(requestHeaders).sort(([left], [right]) => left.localeCompare(right)),
+    ])).digest("hex");
+    authenticatedReadAuthorities.set(supabase, authority);
+  } catch {
+    // Metadata is optional: failure preserves the authenticated client and
+    // simply prevents any raw read from joining another client's request.
+  }
+
+  return supabase;
 }
 
 export async function createAuthenticatedSupabaseAuthSessionServerClient() {
@@ -293,9 +344,7 @@ async function isAccessTokenAllowedForAppSession(
     },
   });
 
-  const { data: authData, error: authError } = await supabase.auth.getUser(
-    accessToken,
-  );
+  const { data: authData, error: authError } = await readAuthUser(supabase, accessToken, config);
 
   if (authError || !authData.user) {
     if (throwOnUnavailable) assertAuthAvailable(authError, authError?.status, "Authentication");
@@ -303,11 +352,15 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   const [{ data: userStatus, error: userStatusError }, sessionAllowed] = await Promise.all([
-    supabase
-      .from("users")
-      .select("status")
-      .eq("auth_user_id", authData.user.id)
-      .maybeSingle<PublicUserStatusRow>(),
+    coalesceReadInFlight(
+      accountStatusReadKey,
+      authReadAuthority(config, accessToken, authData.user.id),
+      async () => await supabase
+        .from("users")
+        .select("status")
+        .eq("auth_user_id", authData.user.id)
+        .maybeSingle<PublicUserStatusRow>(),
+    ),
     isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable),
   ]);
 
@@ -404,12 +457,16 @@ async function isAppLoginSessionCookieAllowed(
       },
     },
   });
-  const { data, error } = await supabase
-    .from("account_login_sessions")
-    .select("revoked_at")
-    .eq("id", loginSessionId)
-    .eq("auth_user_id", authUserId)
-    .maybeSingle<AccountLoginSessionStatusRow>();
+  const { data, error } = await coalesceReadInFlight(
+    loginSessionReadKey,
+    authReadAuthority(config, accessToken, authUserId, loginSessionId),
+    async () => await supabase
+      .from("account_login_sessions")
+      .select("revoked_at")
+      .eq("id", loginSessionId)
+      .eq("auth_user_id", authUserId)
+      .maybeSingle<AccountLoginSessionStatusRow>(),
+  );
 
   if (error) {
     if (isAccountLoginSecuritySchemaMissing(error)) {
@@ -513,7 +570,7 @@ export async function getSupabaseAuthUser(options: { throwOnUnavailable?: boolea
     return null;
   }
 
-  const { data, error } = await supabase.auth.getUser(accessToken);
+  const { data, error } = await readAuthUser(supabase, accessToken, getSupabaseConfig());
 
   if (error || !data.user) {
     if (options.throwOnUnavailable !== false) assertAuthAvailable(error, error?.status, "Authentication");

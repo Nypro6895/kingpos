@@ -1,4 +1,5 @@
 "use client";
+import { recordExperienceTrace } from "./experience-trace";
 
 export type ReadRefreshReason = "focus" | "online" | "visible" | "foreground";
 type Listener = (reason: ReadRefreshReason) => void;
@@ -17,6 +18,7 @@ function flush() {
   timer = undefined;
   if (!pending || !canAutomaticallyRefreshRead()) return;
   const reason = pending;
+  recordExperienceTrace("timer.fire", { source: "scheduler", trigger: reason });
   pending = undefined;
   // A route may detach while an earlier callback runs. Do not wake hidden routes.
   for (const listener of [...listeners]) if (listeners.has(listener)) listener(reason);
@@ -25,7 +27,7 @@ function flush() {
 function schedule(reason: ReadRefreshReason) {
   // Keep the native foreground reason when WebKit sends accompanying focus events.
   if (pending !== "foreground") pending = reason;
-  if (!timer && canAutomaticallyRefreshRead()) timer = setTimeout(flush, 100);
+  if (!timer && canAutomaticallyRefreshRead()) { recordExperienceTrace("timer.schedule", { source: "scheduler", trigger: reason, durationMs: 100 }); timer = setTimeout(flush, 100); }
 }
 
 /** One browser/native lifecycle subscription, shared by every active read provider. */
@@ -51,7 +53,7 @@ export function subscribeReadRefresh(listener: Listener) {
     listeners.delete(listener);
     if (listeners.size) return;
     detach?.(); detach = undefined;
-    if (timer) clearTimeout(timer);
+    if (timer) { recordExperienceTrace("timer.cancel", { source: "scheduler", trigger: pending }); clearTimeout(timer); }
     timer = undefined; pending = undefined;
   };
 }

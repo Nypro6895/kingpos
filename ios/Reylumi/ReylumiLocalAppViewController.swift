@@ -40,6 +40,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         self.bundle = bundle; self.origin = origin; self.startPath = bundle.routeExists(startPath) ? startPath : "/explore"
         self.transport = transport ?? ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest)
         super.init(nibName: nil, bundle: nil)
+        self.transport.diagnostics.record(.controllerCreate)
     }
     required init?(coder: NSCoder) { fatalError("Use init(bundle:)") }
     override func viewDidLoad() {
@@ -68,6 +69,8 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     func initializeWebContentIfNeeded() {
         loadViewIfNeeded()
         guard webView == nil else { return }
+        let creationStarted = ProcessInfo.processInfo.systemUptime
+        transport.diagnostics.record(.webViewCreateStart, outcome: .started)
         startupFrameLink?.invalidate(); startupFrameLink = nil
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
@@ -78,6 +81,9 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         configuration.userContentController.add(ReylumiWeakLocalUIHandler(self), name: "reylumi")
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
+        #if DEBUG
+        if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
+        #endif
         for name in ["AppViewport", "AppLocalBridge"] {
             if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" }
         }
@@ -104,12 +110,14 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         resetObserver = NotificationCenter.default.addObserver(forName: ReylumiLocalAppTransport.sessionResetNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in await self?.transport.reset() }
         }
+        transport.diagnostics.record(.webViewCreateEnd, durationMs: (ProcessInfo.processInfo.systemUptime - creationStarted) * 1000)
         loadBundle()
     }
     private func loadBundle(path: String? = nil) {
         let destination = path ?? startPath
         guard let url = URL(string: "\(ReylumiLocalBundle.scheme)://\(ReylumiLocalBundle.host)\(destination)"), bundle.owns(url), bundle.routeExists(url.path) else { return }
         expectedDocumentNavigation = url; documentCommitted = false
+        transport.diagnostics.record(.bundleLoad, category: ReylumiLocalDiagnostics.category(path: destination), outcome: .started)
         webView.load(URLRequest(url: url))
     }
     func navigate(_ path: String) {
@@ -120,6 +128,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     }
     func foreground() {
         guard webView != nil else { return }
+        transport.diagnostics.record(.foreground)
         emit("reylumi:foreground", [:])
         let path = webView.url?.path ?? startPath
         Task { @MainActor [weak self] in _ = try? await self?.transport.freshContext(path: path) }
@@ -177,7 +186,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             guard let token = args["token"] as? String, token == hostedReturnToken, hostedReturnEpoch == transport.scopeEpoch else { replyHandler(["ok": false], nil); return }
             hostedReturnToken = nil; hostedReturnEpoch = nil; launchPanel.finishLoading(); replyHandler(["ok": true], nil); return
         }
-        if kind == "cache", name == "ready" { launchPanel.finishLoading(); reportReady(); replyHandler(["ok": true], nil); return }
+        if kind == "cache", name == "ready" { transport.diagnostics.record(.surfaceReady); launchPanel.finishLoading(); reportReady(); replyHandler(["ok": true], nil); return }
         if kind == "cache", name == "cancel", let target = args["requestId"] as? String {
             if let operation = pending[target], operation.kind == "read" || operation.kind == "context" { operation.task.cancel() }
             replyHandler(["ok": true], nil); return
@@ -271,22 +280,27 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         else if policy.isSafariPayment(url) || url.scheme != "https" { UIApplication.shared.open(url) }
         else { present(SFSafariViewController(url: url), animated: true) }
     }
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { documentCommitted = true }
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { transport.diagnostics.record(.documentCommit); documentCommitted = true }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        transport.diagnostics.record(.documentFinish)
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         launchPanel.finishLoading()
         reportReady()
         if let path = pendingNavigation { pendingNavigation = nil; navigate(path) }
     }
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { if (error as NSError).code != NSURLErrorCancelled { launchPanel.showError() } }
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { if (error as NSError).code != NSURLErrorCancelled { transport.diagnostics.record(.navigationFailure, outcome: .failed, status: (error as NSError).code); launchPanel.showError() } }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { self.webView(webView, didFail: navigation, withError: error) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        transport.diagnostics.record(.processTermination, outcome: .invalidated)
         let path = webView.url.map { $0.path + ($0.query.map { "?" + $0 } ?? "") } ?? startPath
         for operation in pending.values where operation.kind != "command" { operation.task.cancel() }
         transport.invalidatePage()
         webView.configuration.userContentController.removeAllUserScripts()
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
+        #if DEBUG
+        if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
+        #endif
         for name in ["AppViewport", "AppLocalBridge"] { if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" } }
         webView.configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         guard lastProcessRecovery.map({ Date().timeIntervalSince($0) >= 60 }) ?? true else { launchPanel.showError(); return }

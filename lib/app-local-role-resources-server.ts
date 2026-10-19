@@ -12,8 +12,11 @@ import { loadStaffExperienceResource } from "./staff-experience-resource-server"
 import { getStaffPortalIdentity } from "./staff-portal-identity";
 import { loadStaffMyWorkResource } from "./staff-my-work-resource-server";
 import { getTodayDashboard } from "./today-dashboard";
+import { isTodayDashboardSection } from "./today-dashboard-sections";
 import { referenceFavoriteCursor, resolveReferenceFavorites, encodeReferenceFavoriteCursor } from "./explore-reference-favorites";
 import { runReadWithDeadline } from "./bounded-get";
+import { runWithReadContext } from "./read-context-scope";
+import type { ReadRequestTiming } from "./read-request-timing";
 import { APP_LOCAL_READ_RESOURCES, isAppLocalRoleResourceName, type AppLocalRoleResourceName } from "./app-local-role-resources";
 
 export class AppLocalRoleReadError extends Error {
@@ -22,7 +25,7 @@ export class AppLocalRoleReadError extends Error {
 export type AppLocalRoleReadResponse = {
   schemaVersion: 1; status: 200 | 304; scope: string; etag: string; updatedAt: number; data?: unknown;
 };
-type ReadOptions = { scope: string; etag?: string; signal?: AbortSignal };
+type ReadOptions = { scope: string; etag?: string; signal?: AbortSignal; timing?: ReadRequestTiming };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function cancelled(signal?: AbortSignal) { if (signal?.aborted) throw signal.reason ?? new DOMException("Cancelled", "AbortError"); }
 function parseArgs(name: AppLocalRoleResourceName, raw: unknown): URLSearchParams {
@@ -56,6 +59,10 @@ function envelope(name: string, scope: string, data: unknown, etag?: string): Ap
 
 /** Named, read-only adapters reuse existing server identity and ownership checks. */
 export async function readAppLocalRoleResource(name: string, args: unknown, options: ReadOptions): Promise<AppLocalRoleReadResponse | null> {
+  return runWithReadContext(() => readAppLocalRoleResourceInContext(name, args, options));
+}
+
+async function readAppLocalRoleResourceInContext(name: string, args: unknown, options: ReadOptions): Promise<AppLocalRoleReadResponse | null> {
   if (!isAppLocalRoleResourceName(name) || name === "market.catalog") return null;
   if (!options.scope || options.scope.length > 8192) throw new AppLocalRoleReadError(400, "Invalid scope");
   const query = parseArgs(name, args ?? {}); cancelled(options.signal);
@@ -75,7 +82,8 @@ export async function readAppLocalRoleResource(name: string, args: unknown, opti
     if (tab === "payroll" && !result.payrollData || tab === "analysis" && !result.analysisData) throw new AppLocalRoleReadError(503, "Please try again");
     data = result;
   } else {
-    const context = await runReadWithDeadline(getRequestBusinessContext(), 12000);
+    const readContext = () => runReadWithDeadline(getRequestBusinessContext(), 12000);
+    const context = await (options.timing?.measure("auth", readContext) ?? readContext());
     if (!context.user) throw new AppLocalRoleReadError(401, "Sign in required");
     if (getExperienceContext(context).scope !== options.scope) throw new AppLocalRoleReadError(409, "Workspace changed");
     cancelled(options.signal);
@@ -83,7 +91,10 @@ export async function readAppLocalRoleResource(name: string, args: unknown, opti
       if (!isSalonManageContext(context) || !context.currentBusiness || !context.currentAccount || !context.currentSalon) throw new AppLocalRoleReadError(403, "Owner access required");
       const date = query.get("date") ?? undefined;
       if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new AppLocalRoleReadError(400, "Invalid date");
-      const result = await runReadWithDeadline(getTodayDashboard(context, { date }), 12000);
+      const phase = query.get("phase") ?? undefined;
+      if (phase !== undefined && phase !== "shell" && !isTodayDashboardSection(phase)) throw new AppLocalRoleReadError(400, "Invalid Today phase");
+      const readToday = () => runReadWithDeadline(getTodayDashboard(context, { date, ...(phase === undefined ? {} : { phase }) }), 12000);
+      const result = await (options.timing?.measureToday(phase, readToday) ?? readToday());
       if (result.noAccess) throw new AppLocalRoleReadError(403, "Owner access changed");
       if (result.loadErrors.length) throw new AppLocalRoleReadError(503, "Please try again");
       data = result;

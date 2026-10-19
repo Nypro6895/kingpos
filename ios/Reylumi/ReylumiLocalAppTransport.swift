@@ -42,6 +42,7 @@ private final class ReylumiLocalURLClient: ReylumiLocalHTTPClient {
 
 @MainActor
 final class ReylumiLocalAppTransport {
+    let diagnostics: ReylumiLocalDiagnostics
     static let sessionResetNotification = Notification.Name("ReylumiLocalAppSessionReset")
     private let origin: URL
     private let manifest: ReylumiLocalBundle.Manifest
@@ -62,6 +63,7 @@ final class ReylumiLocalAppTransport {
     private var freshContextID: UUID?
     private var freshContextPath: String?
     private var commandIDs = Set<String>()
+    private var workspaceCommandID: String?
     private var cookieCommitTask: Task<[HTTPCookie], Error>?
     private var cookieCommitID: UUID?
     private var workspaceCookieRevision = 0
@@ -70,7 +72,9 @@ final class ReylumiLocalAppTransport {
 
     init(origin: URL, manifest: ReylumiLocalBundle.Manifest, store: ReylumiLocalReadStore? = nil,
          client: ReylumiLocalHTTPClient? = nil, defaults: UserDefaults = .standard,
-         cookies: (() async -> [HTTPCookie])? = nil, setCookie: ((HTTPCookie) async -> Void)? = nil) {
+         cookies: (() async -> [HTTPCookie])? = nil, setCookie: ((HTTPCookie) async -> Void)? = nil,
+         diagnostics: ReylumiLocalDiagnostics? = nil) {
+        self.diagnostics = diagnostics ?? ReylumiLocalDiagnostics()
         self.origin = origin; self.manifest = manifest; self.store = store ?? ReylumiLocalReadStore(origin: origin)
         self.client = client ?? ReylumiLocalURLClient(); self.defaults = defaults
         self.generationKey = "reylumi.local-app.generation." + SHA256.hash(data: Data(origin.absoluteString.utf8)).map { String(format: "%02x", $0) }.joined()
@@ -157,6 +161,7 @@ final class ReylumiLocalAppTransport {
         session = cached
     }
     func reset(rotateGeneration: Bool = true) async {
+        diagnostics.record(.scopeReset, category: .cache, outcome: .invalidated)
         scopeEpoch += 1; nonce = UUID().uuidString
         if rotateGeneration { generation = UUID().uuidString; defaults.set(generation, forKey: generationKey) }
         freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
@@ -167,6 +172,7 @@ final class ReylumiLocalAppTransport {
     }
     func lockPortable() async {
         if session?.authority == "portable" {
+            diagnostics.record(.portableLock, category: .context, outcome: .invalidated)
             scopeEpoch += 1; nonce = UUID().uuidString
             freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
             session = nil; onlineContext = nil; onlineCheckedAt = .distantPast
@@ -208,9 +214,10 @@ final class ReylumiLocalAppTransport {
         try Task.checkCancellation()
     }
     func matchesCachedScope(_ scope: String) async -> Bool { await store.session(generation: generation, scope: scope) != nil }
-    func invalidatePage() { scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
+    func invalidatePage() { diagnostics.record(.pageInvalidate, category: .context, outcome: .invalidated); scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
     private func revokeDisplay(scope: String?, staffFamily: Bool = false) async {
         if (staffFamily && session?.authority == "staff") || (scope != nil && session?.scope == scope) {
+            diagnostics.record(.displayRevoke, category: .context, outcome: .invalidated)
             scopeEpoch += 1; nonce = UUID().uuidString; session = nil; onlineContext = nil; onlineCheckedAt = .distantPast
             ReylumiBackgroundSync.shared.clear()
             onEvent?("reylumi:app-local-reset", metadata)
@@ -238,7 +245,18 @@ final class ReylumiLocalAppTransport {
             return url.host?.lowercased() == domain.lowercased() && url.path.hasPrefix(cookie.path) && (!cookie.isSecure || url.scheme == "https") && (cookie.expiresDate ?? .distantFuture) > Date()
         }
         HTTPCookie.requestHeaderFields(with: applicable).forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
-        let (data, response) = try await client.send(request)
+        let timingCategory: ReylumiLocalDiagnostics.Category = path == "/api/app-local/context" ? .context : path == "/api/app-local/read" ? .read : .command
+        let began = ProcessInfo.processInfo.systemUptime
+        diagnostics.record(.httpStart, category: timingCategory, outcome: .started)
+        let data: Data, response: HTTPURLResponse
+        do {
+            (data, response) = try await client.send(request)
+            diagnostics.record(.httpEnd, category: timingCategory, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
+            diagnostics.serverTiming(response.value(forHTTPHeaderField: "Server-Timing"), category: timingCategory)
+        } catch {
+            diagnostics.record(.httpFailure, category: timingCategory, outcome: Task.isCancelled ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
+            throw error
+        }
         try ensureCurrent(epoch)
         guard response.url == url, data.count <= 4 * 1024 * 1024 else { throw failure(502, "Couldn't read this page. Please try again.") }
         let fields = response.allHeaderFields.reduce(into: [String: String]()) { result, entry in if let key = entry.key as? String, let value = entry.value as? String { result[key] = value } }
@@ -254,7 +272,11 @@ final class ReylumiLocalAppTransport {
         return object
     }
     func freshContext(path: String) async throws -> [String: Any] {
-        if let task = freshContextTask, freshContextPath == path { return try await task.value }
+        if let task = freshContextTask, freshContextPath == path {
+            diagnostics.record(.contextJoin, category: ReylumiLocalDiagnostics.category(path: path), outcome: .joined)
+            return try await task.value
+        }
+        diagnostics.record(.contextRequest, category: ReylumiLocalDiagnostics.category(path: path), outcome: .started)
         // One in-flight context is authoritative for the current route family.
         // A staff request must never receive an unrelated owner context result.
         freshContextTask?.cancel()
@@ -272,6 +294,7 @@ final class ReylumiLocalAppTransport {
             object["contextPath"] = path
             await self.loadSession(); try self.ensureCurrent(epoch)
             let next = ReylumiLocalSession.verified(object, generation: expectedGeneration)
+            self.diagnostics.record(.contextEnvelope, category: ReylumiLocalDiagnostics.category(path: path), outcome: next == nil ? .missing : .available, status: object["grantStatus"] as? Int)
             let stored = await self.store.session(generation: expectedGeneration)
             try self.ensureCurrent(epoch)
             let previous = self.session ?? stored
@@ -293,6 +316,7 @@ final class ReylumiLocalAppTransport {
             let authorityChanged = next != nil && priorAuthority != nil && next?.grantRevision != priorAuthority?.grantRevision
             let additive = previous != nil && next != nil && self.additiveAuthority(previous!, next!) && !authorityChanged
             if let previous, !additive && (viewerChanged || previous.scope != scope || next?.grantRevision != previous.grantRevision || previous.authority != next?.authority) || authorityChanged {
+                self.diagnostics.record(.authorityRotate, category: .context, outcome: .invalidated)
                 // Invalidate deliveries for the old visible authority, while
                 // retaining other unexpired same-viewer display leases.
                 self.scopeEpoch += 1; self.nonce = UUID().uuidString
@@ -309,18 +333,28 @@ final class ReylumiLocalAppTransport {
             try self.ensureCurrent(acceptedEpoch)
             object["host"] = self.metadata; object["offline"] = false
             self.onEvent?("reylumi:app-local-context", object)
+            // Delivery is not the React entry's admission decision. The
+            // separate JS context.accept trace records that later boundary.
+            self.diagnostics.record(.contextDelivered, category: ReylumiLocalDiagnostics.category(path: path))
             return object
         }
         freshContextTask = task
         defer { if freshContextID == requestID { freshContextTask = nil; freshContextID = nil; freshContextPath = nil } }
-        return try await task.value
+        do { return try await task.value }
+        catch {
+            diagnostics.record(.contextFailure, category: ReylumiLocalDiagnostics.category(path: path), outcome: Task.isCancelled || error is CancellationError ? .cancelled : .failed, status: (error as NSError).code)
+            throw error
+        }
     }
     func context(path: String) async throws -> [String: Any] {
         let epoch = scopeEpoch, expectedGeneration = generation
+        let began = ProcessInfo.processInfo.systemUptime
         let cached = await store.session(generation: expectedGeneration, path: path)
         try ensureCurrent(epoch)
+        diagnostics.record(cached == nil ? .contextCacheMiss : .contextCacheHit, category: ReylumiLocalDiagnostics.category(path: path), outcome: cached == nil ? .miss : .hit, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
         if let cached {
             if let previous = session, previous.key != cached.key, !additiveAuthority(previous, cached) {
+                diagnostics.record(.authorityRotate, category: .context, outcome: .invalidated)
                 scopeEpoch += 1; nonce = UUID().uuidString; onlineContext = nil; onlineCheckedAt = .distantPast
                 // This context read is delivering the selected cached lease.
                 // Rotate old deliveries without cancelling its own admission.
@@ -351,9 +385,13 @@ final class ReylumiLocalAppTransport {
         let epoch = scopeEpoch
         guard let session = await readLease(name: name, scope: requestedScope ?? session?.scope, privateOnly: rule.access != "public"),
               let data = await store.get(try cacheKey(name: name, args: args), session: session),
-              var object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+              var object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            diagnostics.record(.readCacheMiss, category: ReylumiLocalDiagnostics.category(resource: name), outcome: .miss)
+            return nil
+        }
         try ensureCurrent(epoch)
         guard object["scope"] as? String == session.scope else { return nil }
+        diagnostics.record(.readCacheHit, category: ReylumiLocalDiagnostics.category(resource: name), outcome: .hit)
         object["offline"] = true; return object
     }
     func removeCached(name: String, args: [String: Any], requestedScope: String? = nil) async throws {
@@ -445,12 +483,15 @@ final class ReylumiLocalAppTransport {
     }
     private func awaitReadContext(scope: String, epoch: Int) async throws {
         if scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) { return }
+        let began = ProcessInfo.processInfo.systemUptime
+        diagnostics.record(.contextBarrierStart, category: .read, outcome: .started)
         // A cold cached lease is delivered before its background authorization
         // GET completes. The data GET can finish first; keep the original fresh
         // context barrier rather than treating that ordinary ordering as a 409.
         if let pending = freshContextTask {
             do { _ = try await pending.value }
             catch {
+                diagnostics.record(.contextBarrierEnd, category: .read, outcome: .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
                 try ensureCurrent(epoch)
                 if error is CancellationError { throw error }
                 throw failure(503, "Please reconnect to update this page.")
@@ -458,25 +499,56 @@ final class ReylumiLocalAppTransport {
         }
         try ensureCurrent(epoch)
         guard scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) else {
+            diagnostics.record(.contextBarrierEnd, category: .read, outcome: .failed, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
             // A response for a page left behind must not clear a newer view.
             if onlineContext != nil { throw CancellationError() }
             throw failure(503, "Please reconnect to update this page.")
         }
+        diagnostics.record(.contextBarrierEnd, category: .read, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
     }
     private static func validUpdatedAt(_ value: Any?) -> Bool {
         if let milliseconds = value as? Double { return milliseconds.isFinite && milliseconds > 0 && milliseconds <= Date().timeIntervalSince1970 * 1000 + 60000 }
         if let stamp = value as? String, let date = ReylumiOfflineRoute.expiry(from: stamp) { return date <= Date().addingTimeInterval(60) }
         return false
     }
+    private func workspaceCommandContext(scope requestedScope: String?, epoch: Int) async throws -> [String: Any] {
+        await loadSession(); try ensureCurrent(epoch)
+        // Bind this gesture to the currently displayed account and scope. A
+        // retained lease for another role cannot authorize an arbitrary caller.
+        let displayed = (onlineContext?["context"] as? [String: Any]) ?? (session?.object["context"] as? [String: Any])
+        guard let requestedScope, requestedScope == displayed?["scope"] as? String,
+              displayed?["authenticated"] as? Bool == true,
+              let viewer = displayed?["viewerId"] as? String, !viewer.isEmpty else { throw failure(409, "Your access has changed. Please try again.") }
+        let (data, response) = try await send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: "/"), URLQueryItem(name: "generation", value: generation)], epoch: epoch)
+        let value = try decode(data, response: response)
+        try ensureCurrent(epoch)
+        guard value["schemaVersion"] as? Int == 1, value["offline"] as? Bool != true,
+              let context = value["context"] as? [String: Any], context["authenticated"] as? Bool == true,
+              let nextViewer = context["viewerId"] as? String,
+              let scope = context["scope"] as? String, scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil else { throw failure(403, "Please sign in to continue.") }
+        guard nextViewer == viewer else { await reset(); throw failure(409, "Your account has changed. Please open the page again.") }
+        // This fresh account identity is a command preflight, not a display
+        // admission. Do not adopt its neutral lease, rotate epochs or emit a
+        // context event. Target membership is checked again by the command.
+        return value
+    }
     func command(name: String, args raw: [String: Any], requestID: String, path: String, requestedScope: String? = nil) async throws -> [String: Any] {
         guard let rule = manifest.commands.first(where: { $0.name == name }), UUID(uuidString: requestID) != nil, !commandIDs.contains(requestID), commandIDs.count < 100 else { throw failure(400, "Unsupported app request.") }
         let args = try arguments(raw, keys: rule.argumentKeys)
         commandIDs.insert(requestID); defer { commandIDs.remove(requestID) }
+        let workspaceSwitch = name == "shell.switch-workspace"
+        if workspaceSwitch {
+            guard workspaceCommandID == nil else { throw failure(409, "A workspace change is already being checked.") }
+            workspaceCommandID = requestID
+        }
+        defer { if workspaceCommandID == requestID { workspaceCommandID = nil } }
         let expectedEpoch = scopeEpoch
-        let context = try await freshContext(path: path)
+        let context: [String: Any]
+        if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
+        else { context = try await freshContext(path: path) }
         try ensureCurrent(expectedEpoch)
         guard let scope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
-        guard requestedScope == nil || scope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
+        guard workspaceSwitch || requestedScope == nil || scope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
         let epoch = scopeEpoch
         let (data, response) = try await send(path: rule.path, body: ["name": name, "args": args, "requestId": requestID, "scope": scope], epoch: epoch)
         if [403, 409].contains(response.statusCode) {

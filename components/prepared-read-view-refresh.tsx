@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { readExperienceOfflineBootGrant } from "@/lib/experience-offline-client";
 import { getExperienceOfflinePath } from "@/lib/experience-offline-policy";
+import { recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
 
 const REFRESH_INTERVAL = 30_000;
 const READ_VIEWS = new Set(["/my-bookings", "/explore/favorites", "/more/saved-post", "/more/following"]);
@@ -24,7 +25,7 @@ function editing() {
 /** Merge fresh read-only RSC into an already usable view after online authority. */
 export function PreparedReadViewRefresh({ scope, validate }: {
   scope: string;
-  validate: (force?: boolean, background?: boolean) => Promise<boolean>;
+  validate: (force?: boolean, background?: boolean, trigger?: ExperienceTraceTrigger) => Promise<boolean>;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -45,12 +46,15 @@ export function PreparedReadViewRefresh({ scope, validate }: {
     // fresh read, while ordinary initial focus must not duplicate the SSR read.
     if (!cachedBoot && !attempts.current.has(key(initialPath))) attempts.current.set(key(initialPath), Date.now());
 
-    const refresh = () => {
+    const refresh = (trigger: ExperienceTraceTrigger = "unknown") => {
       const href = path();
       if (!active || running || refreshPending.current || !navigator.onLine || document.visibilityState !== "visible"
-        || location.pathname !== pathname || !isPreparedReadViewPath(href) || editing()) return;
+        || location.pathname !== pathname || !isPreparedReadViewPath(href) || editing()) {
+        recordExperienceTrace("auth.skip", { source: "web", area: "other", trigger, offline: !navigator.onLine });
+        return;
+      }
       const now = Date.now(), identity = key(href);
-      if (now - (attempts.current.get(identity) ?? 0) < REFRESH_INTERVAL) return;
+      if (now - (attempts.current.get(identity) ?? 0) < REFRESH_INTERVAL) { recordExperienceTrace("cache.hit", { source: "web", area: "other", trigger, fresh: true }); return; }
       attempts.current.set(identity, now);
       if (attempts.current.size > 16) attempts.current.delete(attempts.current.keys().next().value!);
       running = true;
@@ -61,9 +65,10 @@ export function PreparedReadViewRefresh({ scope, validate }: {
       window.addEventListener("reylumi:experience-online-authorized", authorized);
       // validate may allow a bounded offline lease after a failed GET. Only its
       // fresh matching online-authorized event permits a server view refresh.
-      void validate(true, true).then(valid => {
+      void validate(true, true, trigger).then(valid => {
         if (valid && freshlyValidated && active && navigator.onLine && document.visibilityState === "visible"
           && path() === href && location.pathname === pathname && !editing()) {
+          recordExperienceTrace("cache.refresh", { source: "web", area: "other", trigger, fresh: true });
           startTransition(() => router.refresh());
         }
       }).catch(() => {}).finally(() => {
@@ -71,17 +76,18 @@ export function PreparedReadViewRefresh({ scope, validate }: {
         window.removeEventListener("reylumi:experience-online-authorized", authorized);
       });
     };
-    const visible = () => { if (document.visibilityState === "visible") refresh(); };
-    window.addEventListener("focus", refresh);
-    window.addEventListener("online", refresh);
-    window.addEventListener("reylumi:foreground", refresh);
+    const visible = () => { if (document.visibilityState === "visible") refresh("visible"); };
+    const focus = () => refresh("focus"), online = () => refresh("online"), foreground = () => refresh("foreground");
+    window.addEventListener("focus", focus);
+    window.addEventListener("online", online);
+    window.addEventListener("reylumi:foreground", foreground);
     document.addEventListener("visibilitychange", visible);
-    if (cachedBoot) refresh();
+    if (cachedBoot) refresh("mount");
     return () => {
       active = false;
-      window.removeEventListener("focus", refresh);
-      window.removeEventListener("online", refresh);
-      window.removeEventListener("reylumi:foreground", refresh);
+      window.removeEventListener("focus", focus);
+      window.removeEventListener("online", online);
+      window.removeEventListener("reylumi:foreground", foreground);
       document.removeEventListener("visibilitychange", visible);
     };
   }, [pathname, scope, validate, router]);

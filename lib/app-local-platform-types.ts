@@ -31,7 +31,7 @@ export const APP_LOCAL_PLATFORM_READS = {
   "page.market": { argumentKeys: [], retention: "scoped" },
   "page.market-deposit": { argumentKeys: [], retention: "scoped" },
   "page.settings": { argumentKeys: [], retention: "scoped" },
-  "page.owner-today": { argumentKeys: ["date"], retention: "scoped" },
+  "page.owner-today": { argumentKeys: ["date", "phase"], retention: "scoped" },
   "page.customer-bookings": { argumentKeys: ["tab", "details", "bookingId"], retention: "scoped" },
   "page.customer-receipt": { argumentKeys: ["ticketId"], retention: "scoped" },
   "page.staff-identity": { argumentKeys: ["view"], retention: "none" },

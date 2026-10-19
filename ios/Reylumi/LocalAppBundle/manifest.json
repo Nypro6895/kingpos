@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "223416108de6e2a7edc3109ce792f34cc742f94012eb4c98487f72a0d13b8d4c",
+  "buildId": "390bfb419c8023029c97fb697a0e1b5d4cd46b5163e259a2edbf53bc278b96fc",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 603820,
-      "sha256": "d80d603b80ae1825e8efaeff8b2e6cd9c799ebfe7325708fa90056734f1b3b4a",
+      "bytes": 566131,
+      "sha256": "c3bfbf3c7dc31f45c3f533e5c404a94182d0ae096d3220a539cfcf1f282c580a",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4196386,
-      "sha256": "c9ab7b554a10617a940d434a0aaf5578e1a560e7aa917f2d6f9a44f00b112e49",
+      "bytes": 4223456,
+      "sha256": "f2237e8584ba38fa8fdd1ccabeac98f2ce712e9cbf9ff7235005ed2298a2dea9",
       "mime": "text/javascript"
     },
     {
@@ -2655,7 +2655,8 @@
       "name": "owner.today",
       "path": "/api/app-local/read",
       "argumentKeys": [
-        "date"
+        "date",
+        "phase"
       ],
       "access": "scoped",
       "cacheable": true
@@ -2685,7 +2686,8 @@
       "name": "page.owner-today",
       "path": "/api/app-local/read",
       "argumentKeys": [
-        "date"
+        "date",
+        "phase"
       ],
       "access": "scoped",
       "cacheable": true

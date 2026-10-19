@@ -1,6 +1,13 @@
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
+import {
+  TODAY_DASHBOARD_SECTIONS,
+  isTodayDashboardSection,
+  type TodayDashboardSection,
+} from "@/lib/today-dashboard-sections";
 import "server-only";
+import { getReadRequestTiming } from "@/lib/read-context-scope";
+import type { ReadStage } from "@/lib/read-request-timing";
 
 import { getCurrentAppNotifications } from "@/lib/app-notifications";
 import {
@@ -10,11 +17,13 @@ import {
 } from "@/lib/bookings";
 import {
   DAILY_POS_REPORT_PERMISSIONS,
+  createDailyPosReadContext,
   getDailyPosTodayFinancialData,
   getDailyPosReport,
   type DailyPosStaffAttributionSource,
   type DailyPosTipAttributionSource,
   type DailyPosTodayFinancialData,
+  type DailyPosReadContext,
 } from "@/lib/daily-pos-report";
 import type { DailyPosSalesComparison } from "@/lib/daily-pos-sales-comparison";
 import {
@@ -50,6 +59,11 @@ import type { CustomerVisitQueueItem } from "@/types/customer-visit";
 import type { DailyPosReport } from "@/types/pos-daily-closing";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
+function measureTodayRead<T>(stage: ReadStage, read: () => Promise<T>): Promise<T> {
+  const timing = getReadRequestTiming();
+  return timing ? timing.measure(stage, read) : read();
+}
+
 export type TodayClientPresence = {
   appointmentAt?: string;
   appointmentId?: string;
@@ -65,8 +79,12 @@ export type TodayClientPresence = {
 };
 
 export type TodayDashboard = {
-  /** Only the first server frame may omit these reads; the live endpoint clears them. */
-  pendingSections?: { metrics: Array<keyof TodayDashboard["summary"]>; details: boolean };
+  /** Missing groups remain pending; a failed group is settled with loadErrors. */
+  pendingSections?: {
+    metrics: Array<keyof TodayDashboard["summary"]>;
+    details: boolean;
+    sections?: TodayDashboardSection[];
+  };
   attention: TodayAttentionItem[];
   businessHours: SalonBusinessHoursWindow;
   date: string;
@@ -103,6 +121,7 @@ export type TodayDashboardPermissions = {
 };
 
 export type TodayLoadError = {
+  section?: TodayDashboardSection;
   area:
     | "bookings"
     | "business_hours"
@@ -268,9 +287,9 @@ type BusinessClock = {
   timezone: string;
 };
 
-type TodayDashboardOptions = {
+export type TodayDashboardOptions = {
   date?: string | string[];
-  phase?: "core" | "full";
+  phase?: "core" | "full" | "shell" | TodayDashboardSection;
 };
 
 type DashboardData<T> =
@@ -412,41 +431,33 @@ function getDayBounds(date: string, timeZone: string) {
 async function loadBusinessClock(
   context: CurrentBusinessContext,
 ): Promise<BusinessClock> {
-  const fallbackTimezone = await getContextBusinessTimezone(context);
+  const salonId = context.currentSalon?.id;
+  // Both RPCs authorize independently and take only the already selected salon.
+  // The business-date RPC resolves its own timezone; it need not wait for the
+  // display timezone. Concurrent factories can join existing in-flight auth.
+  const [fallbackTimezone, dateResult] = await Promise.all([
+    getContextBusinessTimezone(context),
+    (async () => {
+      if (!salonId) return null;
+      const supabase = await createAuthenticatedSupabaseServerClient();
+      return supabase ? await supabase.rpc("get_salon_business_date", { p_salon_id: salonId }) : null;
+    })(),
+  ]);
   const fallback: BusinessClock = {
     date: fallbackDateInTimeZone(fallbackTimezone),
     timezone: fallbackTimezone,
   };
-  const salonId = context.currentSalon?.id;
+  if (!dateResult) return fallback;
 
-  if (!salonId) {
-    return fallback;
-  }
-
-  const supabase = await createAuthenticatedSupabaseServerClient();
-
-  if (!supabase) {
-    return fallback;
-  }
-
-  const [timezoneResult, dateResult] = await Promise.all([
-    supabase.rpc("get_salon_business_timezone", { p_salon_id: salonId }),
-    supabase.rpc("get_salon_business_date", { p_salon_id: salonId }),
-  ]);
-
-  if (timezoneResult.error || dateResult.error) {
+  if (dateResult.error) {
     console.error("Supabase load Today salon business clock failed", {
       dateError: dateResult.error?.message,
       salonId,
-      timezoneError: timezoneResult.error?.message,
     });
     return fallback;
   }
 
-  const timezone =
-    typeof timezoneResult.data === "string" && timezoneResult.data.trim()
-      ? timezoneResult.data
-      : fallback.timezone;
+  const timezone = fallback.timezone;
   const date =
     typeof dateResult.data === "string" && dateResult.data
       ? dateResult.data.slice(0, 10)
@@ -552,14 +563,14 @@ async function loadStaffDashboardData(input: {
   }>
 > {
   try {
-    const board = await getCurrentSalonStaffTodayBoard(input.context, {
+    const board = await measureTodayRead("staff_board", () => getCurrentSalonStaffTodayBoard(input.context, {
       workDate: input.date,
-    });
+    }));
     const staffIds = board.staff.map((member) => member.id);
     const activityByStaffId = input.canViewFinancials
-      ? await getCurrentSalonStaffActivitySummaries(staffIds, input.context, {
+      ? await measureTodayRead("staff_activity", () => getCurrentSalonStaffActivitySummaries(staffIds, input.context, {
           workDate: input.date,
-        })
+        }))
       : new Map<string, StaffDailyActivitySummary>();
 
     return {
@@ -593,7 +604,7 @@ async function loadBookingDashboardData(input: {
 }): Promise<DashboardData<TodayBookingRow[]>> {
   try {
     return {
-      data: await loadTodayBookings(input),
+      data: await measureTodayRead("bookings", () => loadTodayBookings(input)),
       error: null,
     };
   } catch (error) {
@@ -610,10 +621,11 @@ async function loadBookingDashboardData(input: {
 async function loadReportDashboardData(input: {
   context: CurrentBusinessContext;
   date: string;
+  readContext?: DailyPosReadContext;
 }): Promise<DashboardData<DailyPosReport>> {
   try {
     return {
-      data: await getDailyPosReport(input.date, input.context),
+      data: await measureTodayRead("financial_report", () => getDailyPosReport(input.date, input.context, input.readContext)),
       error: null,
     };
   } catch (error) {
@@ -638,15 +650,17 @@ async function loadFinancialDashboardData(input: {
   context: CurrentBusinessContext;
   date: string;
   timezone: string;
+  readContext?: DailyPosReadContext;
 }): Promise<DashboardData<DailyPosTodayFinancialData>> {
   try {
     return {
-      data: await getDailyPosTodayFinancialData({
+      data: await measureTodayRead("financial_compare", () => getDailyPosTodayFinancialData({
         businessHours: input.businessHours,
         context: input.context,
         reportDate: input.date,
         timeZone: input.timezone,
-      }),
+        readContext: input.readContext,
+      })),
       error: null,
     };
   } catch (error) {
@@ -1614,7 +1628,15 @@ export async function getTodayDashboard(
   options: TodayDashboardOptions = {},
 ): Promise<TodayDashboard> {
   const core = options.phase === "core";
-  const currentClock = await loadBusinessClock(context);
+  const section = isTodayDashboardSection(options.phase) ? options.phase : null;
+  const progressive = options.phase === "shell" || section !== null;
+  const readStaff = !progressive || section === "staff" || section === "financials";
+  const readBookings = !progressive || section === "bookings";
+  const readWaiting = !progressive || section === "waiting";
+  const readFinancials = !core && (!progressive || section === "financials");
+  const readExtras = !core && (!progressive || section === "extras");
+  const readHours = !core && (!progressive || section === "staff" || section === "bookings" || section === "financials");
+  const currentClock = await measureTodayRead("clock", () => loadBusinessClock(context));
   const dayView = buildDayView({
     currentDate: currentClock.date,
     selectedDateInput: options.date,
@@ -1658,12 +1680,16 @@ export async function getTodayDashboard(
     });
   }
 
-  const businessHoursResult = core ? { data: unavailableBusinessHours, error: null } : await loadBusinessHoursDashboardData({
+  const businessHoursRead: Promise<DashboardData<SalonBusinessHoursWindow>> = !readHours ? Promise.resolve({ data: unavailableBusinessHours, error: null }) : measureTodayRead("hours", () => loadBusinessHoursDashboardData({
     context,
     date: clock.date,
     timezone: clock.timezone,
-  });
-  const businessHours =
+  }));
+  // Operations do not need business hours until their chart is assembled. Start
+  // both reads together; the financial loader still receives resolved hours.
+  let businessHoursResult: DashboardData<SalonBusinessHoursWindow> = readFinancials
+    ? await businessHoursRead : { data: unavailableBusinessHours, error: null };
+  let businessHours =
     businessHoursResult.data ??
     unavailableSalonBusinessHours({
       date: clock.date,
@@ -1671,6 +1697,8 @@ export async function getTodayDashboard(
       timeZone: clock.timezone,
     });
   const waitingSalonId = context.currentSalon?.id ?? null;
+  const financialReads = readFinancials && permissions.canViewReports && permissions.canViewStaffFinancials
+    ? createDailyPosReadContext(context) : undefined;
   const [
     staffResult,
     bookingsResult,
@@ -1680,19 +1708,19 @@ export async function getTodayDashboard(
     notificationsResult,
     quickAccessResult,
   ] = await Promise.all([
-    loadStaffDashboardData({
-      canViewFinancials: !core && permissions.canViewStaffFinancials,
+    readStaff && (section !== "financials" || permissions.canViewStaffFinancials) ? loadStaffDashboardData({
+      canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
       context,
       date: clock.date,
-    }),
-    permissions.canViewBookings
+    }) : Promise.resolve({ data: null, error: null }),
+    readBookings && permissions.canViewBookings
       ? loadBookingDashboardData({
           context,
           date: clock.date,
           timezone: clock.timezone,
         })
       : Promise.resolve({ data: [] as TodayBookingRow[], error: null }),
-    permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
+    readWaiting && permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
       ? (async () => {
           const supabase = await createAuthenticatedSupabaseServerClient();
 
@@ -1708,11 +1736,11 @@ export async function getTodayDashboard(
 
           try {
             return {
-              data: await getCustomerVisitQueueForSalon({
+              data: await measureTodayRead("waiting", () => getCustomerVisitQueueForSalon({
                 limit: 25,
                 salonId: waitingSalonId,
                 supabase,
-              }),
+              })),
               error: null,
             };
           } catch (error) {
@@ -1732,22 +1760,31 @@ export async function getTodayDashboard(
           data: [] as CustomerVisitQueueItem[],
           error: null,
         }),
-    !core && permissions.canViewReports
-      ? loadReportDashboardData({ context, date: clock.date })
+    readFinancials && permissions.canViewReports
+      ? loadReportDashboardData({ context, date: clock.date, readContext: financialReads })
       : Promise.resolve({ data: null, error: null }),
-    !core && permissions.canViewStaffFinancials
+    readFinancials && permissions.canViewStaffFinancials
       ? loadFinancialDashboardData({
           businessHours,
           context,
           date: clock.date,
           timezone: clock.timezone,
+          readContext: financialReads,
         })
       : Promise.resolve({ data: null, error: null }),
-    !core && dayView.isCurrentDate
-      ? loadNotificationAttentionItems(context)
+    readExtras && dayView.isCurrentDate
+      ? measureTodayRead("extras", () => loadNotificationAttentionItems(context))
       : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
-    core ? Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }) : loadQuickAccessDashboardData(context),
+    readExtras ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context)) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
   ]);
+  if (!readFinancials && readHours) {
+    businessHoursResult = await businessHoursRead;
+    businessHours = businessHoursResult.data ?? unavailableSalonBusinessHours({
+      date: clock.date,
+      fallbackReason: "Salon business hours could not be resolved.",
+      timeZone: clock.timezone,
+    });
+  }
   const loadErrors = [
     businessHoursResult.error,
     staffResult.error,
@@ -1757,22 +1794,24 @@ export async function getTodayDashboard(
     financialResult.error,
     notificationsResult.error,
     quickAccessResult.error,
-  ].filter((error): error is TodayLoadError => Boolean(error));
+  ].filter((error): error is TodayLoadError => Boolean(error)).map((error) =>
+    section ? { ...error, section } : error,
+  );
   const financialData = financialResult.data;
   const team = staffResult.data
     ? buildTeam({
         activityByStaffId: staffResult.data.activityByStaffId,
-        canViewFinancials: !core && permissions.canViewStaffFinancials,
+        canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
         financialData,
         staff: staffResult.data.staff,
       })
     : [];
   const bookings = bookingsResult.data ?? [];
   const nowIso = new Date().toISOString();
-  const bookingSummary = permissions.canViewBookings
+  const bookingSummary = readBookings && permissions.canViewBookings
     ? summarizeBookings(bookings, nowIso, dayView.isCurrentDate)
     : null;
-  const bookingChart = !core && permissions.canViewBookings
+  const bookingChart = !core && readBookings && permissions.canViewBookings
     ? buildBookingMetricChart({
         businessHours,
         bookings,
@@ -1780,7 +1819,7 @@ export async function getTodayDashboard(
         timeZone: clock.timezone,
       })
     : null;
-  const staffChart = core ? null : buildStaffMetricChart({
+  const staffChart = core || !readStaff ? null : buildStaffMetricChart({
     businessHours,
     date: clock.date,
     team,
@@ -1906,6 +1945,31 @@ export async function getTodayDashboard(
       tone: "notice",
       count: 0,
     });
+  }
+  if (progressive) {
+    const pending = TODAY_DASHBOARD_SECTIONS.filter((item) => {
+      if (item === section) return false;
+      if (item === "bookings") return permissions.canViewBookings;
+      if (item === "waiting") return permissions.canViewBookings && dayView.isCurrentDate;
+      if (item === "financials") return permissions.canViewReports || permissions.canViewStaffFinancials;
+      return true;
+    });
+    const metrics: Array<keyof TodayDashboard["summary"]> = [];
+    if (pending.includes("staff")) metrics.push("staff");
+    if (pending.includes("waiting")) metrics.push("waiting");
+    if (pending.includes("bookings") || (!permissions.canViewBookings && permissions.canViewReports && pending.includes("financials"))) metrics.push("customers");
+    if (permissions.canViewReports && pending.includes("financials")) metrics.push("sales");
+    dashboard.pendingSections = { sections: [...pending], metrics, details: pending.length > 0 };
+    for (const metric of metrics) {
+      dashboard.summary[metric] = {
+        ...unavailable(dashboard.summary[metric]),
+        detail: "Loading…",
+        restricted: false,
+      };
+    }
+    // An unread source is unknown, never an empty/zero or an "All good" result.
+    dashboard.attention = dashboard.attention.filter((item) => item.id !== "all-good");
+    if (!readFinancials) dashboard.performance.emptyLabel = null;
   }
   return dashboard;
 }
