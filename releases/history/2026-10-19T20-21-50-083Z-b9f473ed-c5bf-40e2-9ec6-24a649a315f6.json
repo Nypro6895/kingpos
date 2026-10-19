@@ -1,0 +1,89 @@
+{
+  "kind": "release",
+  "releaseId": "ios-trace-release-20261019",
+  "summary": "Verified web and TestFlight release of pending guest/Owner navigation handoff fixes plus private-safe iPhone/proxy/server503 tracing; physical iPhone reproduction remains to be checked by owner.",
+  "changes": [
+    "86cf513c-aa88-4b79-86de-5eee4fae3964",
+    "a85c2024-549d-48f2-a4c4-7a1f42f2414e"
+  ],
+  "source": {
+    "commit": "1647461cd8e820f07da2dcc3048c665fbad32842",
+    "validatedFunctionalCommit": "5d58255fc1c80e5807bc30e95248a4feec0cb828",
+    "baselineCommit": "eab825088f71ff0a5d4ac0951c2aa633cc29ab10",
+    "baselineDeploymentId": "dpl_cMPbdECybwJ3PZHpuBun1Vu4f4Hf",
+    "sourceSha256": "a1dcb563601738c6c4ad700ed0a8450f2a796a31aef37d5a5b24c0b8a99cd045",
+    "deploySourceSha256": "1ec945ca297ac07989347371b339cef6e83f8e64838ab680102b88be31930832",
+    "overlaySha256": "064bca62d7ed723894a28da85565ed445a05a9df0531e8c5c4dcee2e6d455151",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/frozen-1647461",
+    "assembly": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/assembled-source.json"
+  },
+  "verification": {
+    "local": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/local-verification.json",
+    "webSource": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-source-verification.json",
+    "native": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/native-release-verification.json",
+    "http": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-http-smoke.json",
+    "browser": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-browser-smoke.json",
+    "browserAssessment": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-browser-release-assessment.json",
+    "trace": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-trace-smoke.json",
+    "serverCorrelation": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-server-trace-verification.json",
+    "physicalIPhone": false,
+    "businessSecurityPreserved": true
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_PSPG2rQUTEvvyPJhuL82Wqwc3qUQ",
+      "baselineDeploymentId": "dpl_cMPbdECybwJ3PZHpuBun1Vu4f4Hf",
+      "sourceSha256": "a1dcb563601738c6c4ad700ed0a8450f2a796a31aef37d5a5b24c0b8a99cd045",
+      "overlaySha256": "064bca62d7ed723894a28da85565ed445a05a9df0531e8c5c4dcee2e6d455151",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "41",
+      "commit": "1647461cd8e820f07da2dcc3048c665fbad32842",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/native-release-verification.json",
+      "uploadWorkflow": "https://github.com/Nypro6895/kingpos/actions/runs/39315711616"
+    }
+  },
+  "knownIssues": [
+    {
+      "name": "Guest hidden-post read fails on existing production and candidate",
+      "status": "unresolved-existing",
+      "webServerActionStatus": 500,
+      "appLocalCommandStatus": 503,
+      "serverDigest": "3086927446",
+      "verifiedStage": "handler → one backend RPC HTTP500; observed Auth0.6ms and backend RPC3148.6ms",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/candidate-guest-read-trace.json",
+      "comparison": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/candidate-browser-release-assessment.json",
+      "rootCause": "BackendRPC failure confirmed; database cause and relationship to historical OwnerToday503 not established. No fallback, bypass or SQL changes."
+    },
+    {
+      "name": "Single unclassified WebKit pageerror in pre-release full smoke",
+      "status": "unresolved-observation",
+      "count": 1,
+      "evidence": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/candidate-browser-release-assessment.json",
+      "notes": "All functional checks passed; focused candidate/baseline run had zero pageerrors. Original message unavailable; cancellation hypothesis unproven. Strict failed smoke retained, no clean-JS claim."
+    }
+  ],
+  "limitations": [
+    "Historical503 root cause remains unconfirmed until a new correlated phone/server reproduction.",
+    "Simulator/browser tests do not prove physical iPhone cold start, role switch, weak network or suspend/resume.",
+    "No App Store publication, tester invitation, distribution-group mutation, business transaction or database migration."
+  ],
+  "rollback": {
+    "webBaselineDeploymentId": "dpl_cMPbdECybwJ3PZHpuBun1Vu4f4Hf",
+    "nativeBaselineVersion": "1.0.0",
+    "nativeBaselineBuild": "40"
+  },
+  "remaining": [
+    "Owner physical-iPhone test on1.0.0(41): cold guest Explore, sign in, Personal→Owner or Staff→Owner, idle/resume, revisit and weak network; save diagnosticJSON if failure recurs.",
+    "Separate Campaign, saved Ticket, Nails/preview/blocked tasks remain outside this targeted release."
+  ],
+  "id": "b9f473ed-c5bf-40e2-9ec6-24a649a315f6",
+  "recordedAt": "2026-10-19T20:21:50.083Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-trace-live-20261019"
+}
