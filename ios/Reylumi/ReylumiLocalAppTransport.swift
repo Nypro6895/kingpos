@@ -370,6 +370,16 @@ final class ReylumiLocalAppTransport {
         freshContextID = requestID; freshContextPath = path
         let task = Task { @MainActor [weak self] () throws -> [String: Any] in
             guard let self else { throw CancellationError() }
+            // Every joiner observes task completion independently. Release this
+            // flight before its value/error becomes observable, so an immediate
+            // retry cannot join the completed cancelled task. An older flight
+            // must never clear the replacement flight's metadata.
+            defer {
+                if self.freshContextID == requestID {
+                    self.freshContextTask = nil; self.freshContextID = nil; self.freshContextPath = nil
+                    self.pendingScopeConflicts.removeAll()
+                }
+            }
             let (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch)
             if [403, 409].contains(response.statusCode) {
                 let visibleScope = self.session?.scope ?? ((self.onlineContext?["context"] as? [String: Any])?["scope"] as? String)
@@ -451,7 +461,6 @@ final class ReylumiLocalAppTransport {
             return object
         }
         freshContextTask = task
-        defer { if freshContextID == requestID { freshContextTask = nil; freshContextID = nil; freshContextPath = nil; pendingScopeConflicts.removeAll() } }
         do { return try await task.value }
         catch {
             diagnostics.record(.contextFailure, category: ReylumiLocalDiagnostics.category(path: path), outcome: Task.isCancelled || error is CancellationError ? .cancelled : .failed, status: (error as NSError).code)

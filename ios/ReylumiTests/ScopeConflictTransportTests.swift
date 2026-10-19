@@ -100,7 +100,7 @@ final class ScopeConflictTransportTests: XCTestCase {
         let bundle = try ReylumiLocalBundle(directory: directory), origin = URL(string: "https://reylumi.com")!
         let id = "reylumi.tests.scope-conflict." + UUID().uuidString, http = ScopeConflictHTTP(), jar = ScopeConflictCookieJar()
         let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: id)
-        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: id)!, cookies: { await jar.all() }, setCookie: { await jar.put($0) })
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: id)!, cookies: { await jar.all() }, setCookie: { await jar.put($0) }, diagnostics: ReylumiLocalDiagnostics(enabled: true))
         return Fixture(transport: transport, store: store, http: http, directory: directory)
     }
     private func seedCachedScope(_ f: Fixture) async throws {
@@ -158,15 +158,31 @@ final class ScopeConflictTransportTests: XCTestCase {
         try await seedCachedScope(f)
         await f.http.configureContext(scope: AppLocalTestFixture.scope, hold: true)
         await f.http.configureReadStatus(409)
-        _ = try await f.transport.context(path: "/help"); try await waitForHeld(f, context: true)
-        let authority = Task { @MainActor in try await f.transport.freshContext(path: "/help") }
-        try await expectConflict(f); await f.http.releaseContext()
-        do { _ = try await authority.value; XCTFail("The pre-conflict same-scope snapshot must not restore withdrawn authority") }
-        catch { XCTAssertTrue(error is CancellationError) }
+        // Higher-priority joiners may resume before the background creator's
+        // outer method. Each must be able to start/join the new GET immediately
+        // after cancellation, rather than rejoining the completed old task.
+        let launch = Task(priority: .background) { @MainActor in try await f.transport.context(path: "/help") }
+        _ = try await launch.value; try await waitForHeld(f, context: true)
+        let joiners = (0..<4).map { _ in
+            Task(priority: .userInitiated) { @MainActor in
+                do { _ = try await f.transport.freshContext(path: "/help"); XCTFail("The pre-conflict same-scope snapshot must not restore withdrawn authority") }
+                catch { XCTAssertTrue(error is CancellationError) }
+                return try await f.transport.freshContext(path: "/help")
+            }
+        }
+        for _ in 0..<200 {
+            if f.transport.diagnostics.snapshot().filter({ $0.event == .contextJoin }).count == joiners.count { break }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertEqual(f.transport.diagnostics.snapshot().filter({ $0.event == .contextJoin }).count, joiners.count)
+        try await expectConflict(f)
         let quarantinedLease = await f.store.session(generation: f.transport.generation, scope: AppLocalTestFixture.scope)
         XCTAssertNil(quarantinedLease)
-        let current = try await f.transport.freshContext(path: "/help")
-        XCTAssertEqual((current["context"] as? [String: Any])?["scope"] as? String, AppLocalTestFixture.scope)
+        await f.http.releaseContext()
+        for joiner in joiners {
+            let current = try await joiner.value
+            XCTAssertEqual((current["context"] as? [String: Any])?["scope"] as? String, AppLocalTestFixture.scope)
+        }
         let oldData = try await f.transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope)
         XCTAssertNil(oldData, "A newly verified lease cannot revive the withdrawn old payload")
         await f.http.configureReadStatus(nil)
