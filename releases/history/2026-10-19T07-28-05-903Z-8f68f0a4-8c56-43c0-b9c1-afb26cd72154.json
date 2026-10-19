@@ -1,0 +1,585 @@
+{
+  "kind": "release",
+  "releaseId": "video2-fix-release-20261019",
+  "summary": "Publish verified native cookie authority/resource lifecycle fixes, Auth/workspace/Today recovery and Admin Active defaults; preserve the exact current Campaign/Explore production source.",
+  "changes": [
+    "3d5c7a23-664f-4d4d-b498-2491674c1a2c",
+    "d63c9a66-80ea-4b1b-8af9-2b7363a0d8cf"
+  ],
+  "channelChanges": {
+    "web": [
+      "3d5c7a23-664f-4d4d-b498-2491674c1a2c",
+      "d63c9a66-80ea-4b1b-8af9-2b7363a0d8cf"
+    ],
+    "ios": [
+      "3d5c7a23-664f-4d4d-b498-2491674c1a2c"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "changes": [
+        "3d5c7a23-664f-4d4d-b498-2491674c1a2c",
+        "d63c9a66-80ea-4b1b-8af9-2b7363a0d8cf"
+      ],
+      "deploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+      "baselineDeploymentId": "dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy",
+      "sourceSha256": "b35e48c0224eee888bfe16f2466323c0bdae94591dc9942029b5f03c82195a97",
+      "overlaySha256": "092370cfa5c76d704112c2d5bc3f00309adea0193e878f85718c849f1139cdd4",
+      "deploySourceSha256": "6621652f96d56d35a1dd4370a6caa396f16b7fa64713a77e7b8c9749c96eabf6",
+      "commit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\video2-fix-release-20261019\\live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "changes": [
+        "3d5c7a23-664f-4d4d-b498-2491674c1a2c"
+      ],
+      "version": "1.0.0",
+      "build": "39",
+      "commit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\video2-fix-release-20261019\\native-verification-final.json"
+    }
+  },
+  "baseline": {
+    "deploymentId": "dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy",
+    "commit": "effe174969ca2523e24845156c9d70dce34bc1c4",
+    "sourceSha256": "69c2c0a1d98fb96e9ff0091c9de5849ec1e31149638ff70dc4851991191a1510",
+    "nativeCommit": "1c2628c4df2069de0722874ce8972231945e7146",
+    "nativeVersion": "1.0.0",
+    "nativeBuild": "38"
+  },
+  "source": {
+    "commit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+    "sourceSha256": "b35e48c0224eee888bfe16f2466323c0bdae94591dc9942029b5f03c82195a97",
+    "overlaySha256": "092370cfa5c76d704112c2d5bc3f00309adea0193e878f85718c849f1139cdd4",
+    "deploySourceSha256": "6621652f96d56d35a1dd4370a6caa396f16b7fa64713a77e7b8c9749c96eabf6",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/frozen-source",
+    "inputEvents": [
+      "41223353-491b-476c-ae11-d61d9a74713b",
+      "8f8a3094-96b5-4271-80a4-e3458bf956a8"
+    ],
+    "selectedEvents": [
+      "3d5c7a23-664f-4d4d-b498-2491674c1a2c",
+      "d63c9a66-80ea-4b1b-8af9-2b7363a0d8cf"
+    ],
+    "fileHashes": {
+      "app/(app)/workspace/open/route.ts": "e8873e543df39acaf0dd72eebdb96b7007e8ee9a206bc578ceea2d5ddecd2600",
+      "app/api/app-local/command/route.ts": "450fd3c86539d07a86961f7e1bac8f6d44444f3ad028bfcf5f32382edc526b86",
+      "app/local-app/entry.tsx": "5aadc95f336805cf74fff07139f0b42c0130717ff10c55919499c99cc075bc67",
+      "app/local-app/scope.tsx": "72e1f0d0265461417d740061691274c49819727aa8a5a51bac5cc077bc88c908",
+      "app/staff/today/today-progressive-client.tsx": "bd5683635f08c59939e3daee3e4a4356e1fc0598d73cd0d920684b6fc2bccd74",
+      "docs/video2-auth-workspace-cache-rca-20261019.md": "38f913d365f1bb6f5d813221765a275e644545f3435b2f33aa7aca6810e6e283",
+      "ios/Reylumi/LocalAppBundle/app.css": "feb923bbbfc30a6951b559af9b976cbc8955a7b4dab8e9b8de07ac071cd35104",
+      "ios/Reylumi/LocalAppBundle/app.js": "c0af4411481c6439dabd1685343af72a684997e8a1664b89a75645df975f8e87",
+      "ios/Reylumi/LocalAppBundle/brand/reylumi-admin-favicon.svg": "18f6dc326f40dfebbd4e76dd624848122a9f0dac99bdd1b940bb34fe769d463c",
+      "ios/Reylumi/LocalAppBundle/manifest.json": "065940e5c65d5c35435e7ac188cc8e80826749ea763eb65c2c04c49a2dbf5ad5",
+      "ios/Reylumi/ReylumiBackgroundSync.swift": "d6afe9a853eb6e88de6debc8be4e959bc9d6795cc938e54f694db6caa3f400ed",
+      "ios/Reylumi/ReylumiCookieAuthority.swift": "0cae483857d40e0a2221411161d09dfb57a794e29d4f1a040bd4924a46dd8721",
+      "ios/Reylumi/ReylumiLocalAppTransport.swift": "9bc8e3a765d5d7ec5ac32706b7cbd20b1909082a7141f7c7409ac970286bcaef",
+      "ios/Reylumi/ReylumiLocalReadStore.swift": "d4dabb59d334a06d6f6ae6a191ba892bd547640343693e6e9f0562395e6e044d",
+      "ios/ReylumiTests/LocalReadStoreTests.swift": "ce48a39bed26f24dda36b1e01c62469432a3fb39ece9ca7faa6dd4d01938e952",
+      "ios/ReylumiTests/NativeCookieAuthorityTests.swift": "3e1eb728636e50895ed5a17aa2d43b14d058d263edf1773a21e160f33d6d11b2",
+      "lib/app-local-page-admission.ts": "0585579d5aee0bb8b1c8a3729201754f242245b961d05e46e5e7935c4e5b217e",
+      "lib/app-local-resource.ts": "727d363c3ce80968143bb06d5222424423b595c6848ac65124e5523c0be031f3",
+      "lib/app-local-shell-server.ts": "1a7f1617cf0cf59f00a0c13767600fc7027046f25a3723058d6e1deee55b87a3",
+      "lib/workspace-selection.ts": "f8e99560e28f93aa6e15f176ad5718a570290389b0204ba322cc7ea86086861b",
+      "releases/evidence/video2-root-cause-20261019/verification.json": "41f62dddebca78e21b4ccbfaed55e0d6ac7aba5e4fb2ac85d6a6a50b318df92d",
+      "tests/app-local-entry-recovery-ui.test.mjs": "10b148f1cded679041a3425aab03d932fb20c6fa45e1d6d1bc2955f7792576ec",
+      "tests/app-local-page-admission-ui.test.mjs": "828b43df24e95032d1425215cbcee2150eb029c0a83d7c1583cdb61fcad449cd",
+      "tests/app-local-scope-admission.test.mjs": "02e4b8a04e90b268c9f25cf2c3cfac07923bf15ad8e7748424015a047d7bd35e",
+      "tests/app-local-workspace-recovery-ui.test.mjs": "aac41fb2ef82ebfc83f341ef14d9f3ca52dbc7c18f5c437a114a2f323eaa6f86",
+      "tests/owner-today-progressive-ui.test.mjs": "578219257ea34c8c86f332f8fc9ca8e9b61be01d68ffe6e188b12f21558af13b",
+      "tests/workspace-selection-contract.test.mjs": "99eb7763d0cae886c534a5763ce338c70095720be3699050c7e59f30094902b1",
+      "app/(app)/admin/users/page.tsx": "aa2f5bf4c48935c54bcf5bded9c1dda478c11229159db3ebeffcd3ae0ec8fed7",
+      "app/(app)/admin/users/users-workspace.tsx": "245890df8afa3f4de4e8dc4194c09b1e32db799de28c4acfbd03b4dc9a2d1ee8",
+      "app/(app)/admin/locations/page.tsx": "ce5df1b85c8e1927ae92742f48d5a90d8f97ebbd8f497cfd3919dd3313acbb9d",
+      "app/(app)/admin/locations/businesses-workspace.tsx": "acd007ed8bef50c16378d07dd060b00c2a376d39a6cbd9bab42e2c5fc6902ba1"
+    },
+    "evidenceHashes": {
+      "assembled-source.json": "0bb5d3cf6d44463d00767cf8524dc276be1ed9037def03123ca7a8d6da4cacb5",
+      "selected.json": "4bfd66f56f93cf7387e58d9fca0b74443794b8fed52df9eceb22d60d38c067f4",
+      "baseline-manifest.json": "21e4adc2600c1b37fadef7876c9141a856467ec0d5db30eb5cc685aaa5fab0c5",
+      "deployable-source.json": "c4d289af4debec896500fae255d0f8c1afd4289859526c28f8d4bb2399d4f203",
+      "candidate-source-verification.json": "716b8309dd20ad1b5bb9e7242f55076d79b1d9d6873e19d20b06b09af34138cc",
+      "live-source-verification.json": "1a3c53395096ad058817b998d4d6ccbc6bc2c90b77d35f2c5868d5e944bb31d4",
+      "live-http-smoke.json": "1a9b8ee20d891dfcb489c6beac3eb8d578b6a95135f4587211980d3dd37e1098",
+      "live-browser-verification.json": "1c3ec4f3abea8b7ed737b211f45f2de2cf26ce968dcfa2949fcecaa950f55460",
+      "native-verification-final.json": "9fffc152effc5bbafc40d23fe44d07e1019cde277f21758ea8f04baad6dd74e3",
+      "local-verification.json": "8e0c30b0571556256e9f52f03c4a68cd7d05737afae0ef7e57a5893a16517c21",
+      "production-build.json": "be649d3ad0649718257f8d8752bed2877833082c3d7a8ebaf30d3d80ffc133a7",
+      "lint.json": "14109bc8f2c60b35549162490631219d5e7ba215e29dc4c2b04ceab29bc9cb46",
+      "preservation.json": "7e08aa8a24d301a5356044ca61ecc5ce4dd32b33e47e7c3f3af039eb2d48dfc8",
+      "integration-review.json": "ef30fcf3176b71021d95e78b72533409fc929b4d58c548c19b14248edad61405",
+      "admin-integration-verification.json": "1b40f0f933e61b89ca302adfbd5e40f0b73ae58e30716562a91ed3699fede87e"
+    }
+  },
+  "nativeAssessment": {
+    "required": true,
+    "baselineCommit": "1c2628c4df2069de0722874ce8972231945e7146",
+    "baselineVersion": "1.0.0",
+    "baselineBuild": "38",
+    "reason": "Swift transport and bundled application changed; preserve all actually uploaded native source.",
+    "signedVersionBuildFromActualArchiveInfoPlist": true
+  },
+  "verification": {
+    "productionBuild": "passed",
+    "lint": "passed",
+    "independentIntegrationReview": "passed",
+    "local": {
+      "passed": true,
+      "checkedAt": "2026-10-19T07:08:25.822Z",
+      "results": [
+        {
+          "name": "core-tests.log",
+          "tests": 135,
+          "pass": 135,
+          "fail": 0,
+          "skipped": 0,
+          "cancelled": 0,
+          "sha256": "ebd41ff33a19ea8e8018b9034311edd5adf22f711bf998a3062667a83f7428ea"
+        },
+        {
+          "name": "browser-chrome-final.log",
+          "tests": 41,
+          "pass": 41,
+          "fail": 0,
+          "skipped": 0,
+          "cancelled": 0,
+          "sha256": "7cd97204e145b4fe96aeb34f25e86832f2505afac5d52a64d6216bcc3e3fea78"
+        },
+        {
+          "name": "browser-webkit-final.log",
+          "tests": 40,
+          "pass": 40,
+          "fail": 0,
+          "skipped": 0,
+          "cancelled": 0,
+          "sha256": "e4479aa11102f5de6db4efcbde622ae237775a15b6e3a8d374b2cefb4fef4fc6"
+        }
+      ],
+      "adminCheckGroups": 7,
+      "totalTests": 216,
+      "firstChromeAttempt": {
+        "passed": false,
+        "reason": "Browser control RPC arrived after real 300ms retry had already started; deterministic cancellation fixture now holds/delivers cancelled callback without changing normal production retry timers",
+        "evidence": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/reset-timing-proof.json"
+      },
+      "limitations": [
+        "Controlled network/Auth/database fixtures; not physical iPhone or real mobile network evidence.",
+        "Authenticated live browser check and signed native CI are separate evidence."
+      ]
+    },
+    "liveSource": {
+      "at": "2026-10-19T07:24:51.432Z",
+      "deploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+      "label": "live",
+      "url": "kingpos-ph8yyzjko-kingpos.vercel.app",
+      "readyState": "READY",
+      "aliasDeploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+      "commit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+      "sourceSha256": "b35e48c0224eee888bfe16f2466323c0bdae94591dc9942029b5f03c82195a97",
+      "deploySourceSha256": "6621652f96d56d35a1dd4370a6caa396f16b7fa64713a77e7b8c9749c96eabf6",
+      "overlaySha256": "092370cfa5c76d704112c2d5bc3f00309adea0193e878f85718c849f1139cdd4",
+      "sourceFiles": 3012,
+      "allHashesMatch": true
+    },
+    "http": {
+      "at": "2026-10-19T07:25:02.047Z",
+      "label": "live",
+      "origin": "https://reylumi.com",
+      "passed": true,
+      "checks": [
+        {
+          "path": "/staff/today",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/staff",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/pos",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/my-place",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/account",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/help",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/explore",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/admin/plugins",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/admin/plugins/campaigns",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/brand/reylumi-admin-favicon.svg",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/api/experience/context?path=%2Fstaff%2Ftoday",
+          "status": 200,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "private, no-store",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/api/app-local/context?path=%2Fstaff%2Ftoday",
+          "status": 400,
+          "passed": true,
+          "location": null,
+          "serverTiming": "auth;dur=0.1, validate;dur=0.0, serialize;dur=0.2, total;dur=0.8",
+          "privateCache": "private, no-store",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/api/app-local/read?resource=today",
+          "status": 400,
+          "passed": true,
+          "location": null,
+          "serverTiming": "auth;dur=0.0, serialize;dur=0.3, total;dur=0.9",
+          "privateCache": "private, no-store",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/api/internal/campaign-credits",
+          "status": 401,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        },
+        {
+          "path": "/api/campaigns/payment-webhook",
+          "status": 405,
+          "passed": true,
+          "location": null,
+          "serverTiming": null,
+          "privateCache": "public, max-age=0, must-revalidate",
+          "containsFrameworkCrash": false
+        }
+      ],
+      "method": "GET only; unauthenticated route/access guards; no financial records, business writes or charges"
+    },
+    "authenticatedWeb": {
+      "passed": true,
+      "checkedAt": "2026-10-19T07:27:41.231Z",
+      "deploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+      "commit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+      "method": "Actual Chrome session through Cua; owner-authorized page navigation only, no booking/service/payment/permission form submitted",
+      "checks": [
+        {
+          "name": "Deliberate reload of published Owner Today retained authorized Owner scope and progressively loaded all four summary metrics, Team Today and Today Performance without Try again",
+          "passed": true
+        },
+        {
+          "name": "Clicked Book navigation and observed the real salon booking workspace and empty-day schedule",
+          "passed": true
+        },
+        {
+          "name": "Clicked Today navigation and observed all summary/team/performance sections again, without error or role change",
+          "passed": true
+        },
+        {
+          "name": "After leaving the page idle, opened and closed Day view; loaded Today content and selected date remained visible without Try again",
+          "passed": true
+        }
+      ],
+      "screenshot": {
+        "file": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/live-today.png",
+        "sha256": "0ec01eb3f8aaa85f92c53d3c95591af9e8a198d236fd8ee23989cee4bfef5ff2"
+      },
+      "limitations": [
+        "This account has Owner and Personal workspaces, with Staff 0; a real Staff-to-Owner transition was not available for this authenticated live session. Controlled Chrome/WebKit/native tests cover that transition.",
+        "Privileged Admin session had expired and /admin/users redirected to the existing admin login guard; live Active-filter interaction was not verified. Seven assembled Admin test groups, lint and the full typecheck/build passed.",
+        "Live browser observations do not measure request duplication, document reload count, cache hit count or exact latency. Those checks use the controlled regression/native test evidence.",
+        "Actual weak mobile networks, physical iPhone installation and OS suspend/resume remain unverified.",
+        "Native sponsored Campaign transport has a separately verified pre-existing limitation, recorded in integration-review.json."
+      ]
+    },
+    "native": {
+      "checkedAt": "2026-10-19T07:23:56.770Z",
+      "passed": true,
+      "status": "testflight-available",
+      "commit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+      "version": "1.0.0",
+      "build": "39",
+      "baselineVersion": "1.0.0",
+      "baselineBuild": "38",
+      "uploadWorkflow": {
+        "runId": "39214178987",
+        "url": "https://github.com/Nypro6895/kingpos/actions/runs/39214178987",
+        "conclusion": "success",
+        "headSha": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+        "headShaVerified": true,
+        "evidenceSha256": "8895d1aaa617780e9cccd8430466b105ae06a2399bc7dd621206638048f71035"
+      },
+      "availabilityWorkflow": {
+        "runId": "39215569783",
+        "url": "https://github.com/Nypro6895/kingpos/actions/runs/39215569783",
+        "conclusion": "success",
+        "headSha": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+        "headShaVerified": true,
+        "evidenceSha256": "bb8b8212b5493fe575ab95c2637180d08e66a93bc612ee15485e8998b6be35d0"
+      },
+      "tests": {
+        "count": 126,
+        "failures": 0,
+        "skipped": 0,
+        "successMarker": true,
+        "cookieAuthorityAndTransportCases": 12,
+        "resourceFenceCases": 2
+      },
+      "nativeSource": {
+        "sourceFiles": 400,
+        "matches": 400,
+        "mismatches": [],
+        "mapSha256": "ca2c20c739cde5dc3ff376f303faaa280a69c49c51e65244006f366e5e16976c"
+      },
+      "signedSource": {
+        "sourceFiles": 371,
+        "matches": 371,
+        "mismatches": [],
+        "mapSha256": "01c365001b9d34fecd13cdc48554e551fab25d0286f26f4a4d0c5a946084317c"
+      },
+      "bundle": {
+        "buildId": "25ab3562a3cc77a7f5331450f766f112133a13458f62e95d67508975f83058fa",
+        "resourceFiles": 345,
+        "hashFailures": [],
+        "copiedBundleAttestations": 3,
+        "copiedBundleAttestationsPassed": true,
+        "attestedLocations": [
+          "source",
+          "Simulator application",
+          "unsigned device archive"
+        ],
+        "manifestSha256": "065940e5c65d5c35435e7ac188cc8e80826749ea763eb65c2c04c49a2dbf5ad5"
+      },
+      "archives": {
+        "unsignedPassed": true,
+        "signedPassed": true,
+        "exportPassed": true,
+        "signedVersionBuildFromActualArchiveInfoPlist": true,
+        "codeSignatureCheckRequiredByExactWorkflowSource": true,
+        "unsignedArchive": {
+          "independentlyInspected": false,
+          "reason": "Workflow artifacts contain receipts/logs, not the archive resource directory."
+        },
+        "signedArchive": {
+          "independentlyInspected": false,
+          "reason": "Workflow artifacts contain receipts/logs, not the archive resource directory."
+        }
+      },
+      "uploadAccepted": true,
+      "apple": {
+        "processingState": "VALID",
+        "internalBuildState": "IN_BETA_TESTING",
+        "checkedAt": "2026-10-19T07:20:54.605Z",
+        "buildId": "930171d3-d683-4012-9541-ff83bc87d992"
+      },
+      "testFlight": {
+        "status": "available-to-existing-internal-group",
+        "availableToExistingInternalGroup": true,
+        "confirmedExistingGroupCount": 2,
+        "groups": [
+          {
+            "id": "afe80011-9371-4a4c-afda-025b624f3275",
+            "name": "Reylumi Internal",
+            "associationConfirmed": true,
+            "existingDistributionGroup": true
+          },
+          {
+            "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+            "name": "Reylumi support",
+            "associationConfirmed": true,
+            "existingDistributionGroup": true
+          }
+        ],
+        "checkedAt": "2026-10-19T07:22:43.694Z",
+        "receiptSha256": "129d29c86e3f7601fea5c79d965186462764bd3e5ef485a595422f610985b3ea"
+      },
+      "versionPreflight": {
+        "eligibleForUpload": true,
+        "nextBuild": "39",
+        "highestUploadedBuild": "38",
+        "checkedAt": "2026-10-19T07:16:57.146Z"
+      },
+      "operation": "Offline verification of read-only receipts and exact committed source; no provider or product mutations",
+      "limitations": [
+        "Physical iPhone installation and behavior remain unverified.",
+        "Simulator scenarios do not prove actual weak mobile network or OS suspend/resume behavior.",
+        "The signed source inventory and archive logs do not independently expose signed archive resource bytes unless signedArchive.independentlyInspected is true.",
+        "No App Store publication, tester invitations, tester/group changes or distribution changes are performed by this helper."
+      ]
+    },
+    "evidenceHashes": {
+      "assembled-source.json": "0bb5d3cf6d44463d00767cf8524dc276be1ed9037def03123ca7a8d6da4cacb5",
+      "selected.json": "4bfd66f56f93cf7387e58d9fca0b74443794b8fed52df9eceb22d60d38c067f4",
+      "baseline-manifest.json": "21e4adc2600c1b37fadef7876c9141a856467ec0d5db30eb5cc685aaa5fab0c5",
+      "deployable-source.json": "c4d289af4debec896500fae255d0f8c1afd4289859526c28f8d4bb2399d4f203",
+      "candidate-source-verification.json": "716b8309dd20ad1b5bb9e7242f55076d79b1d9d6873e19d20b06b09af34138cc",
+      "live-source-verification.json": "1a3c53395096ad058817b998d4d6ccbc6bc2c90b77d35f2c5868d5e944bb31d4",
+      "live-http-smoke.json": "1a9b8ee20d891dfcb489c6beac3eb8d578b6a95135f4587211980d3dd37e1098",
+      "live-browser-verification.json": "1c3ec4f3abea8b7ed737b211f45f2de2cf26ce968dcfa2949fcecaa950f55460",
+      "native-verification-final.json": "9fffc152effc5bbafc40d23fe44d07e1019cde277f21758ea8f04baad6dd74e3",
+      "local-verification.json": "8e0c30b0571556256e9f52f03c4a68cd7d05737afae0ef7e57a5893a16517c21",
+      "production-build.json": "be649d3ad0649718257f8d8752bed2877833082c3d7a8ebaf30d3d80ffc133a7",
+      "lint.json": "14109bc8f2c60b35549162490631219d5e7ba215e29dc4c2b04ceab29bc9cb46",
+      "preservation.json": "7e08aa8a24d301a5356044ca61ecc5ce4dd32b33e47e7c3f3af039eb2d48dfc8",
+      "integration-review.json": "ef30fcf3176b71021d95e78b72533409fc929b4d58c548c19b14248edad61405",
+      "admin-integration-verification.json": "1b40f0f933e61b89ca302adfbd5e40f0b73ae58e30716562a91ed3699fede87e"
+    }
+  },
+  "physicalDeviceVerified": false,
+  "appStorePublication": false,
+  "preExistingNativeCampaignGap": {
+    "productReleaseBlocker": false,
+    "resolvedByThisRelease": false,
+    "findings": [
+      {
+        "severity": "limitation",
+        "preExistingInBuild38": true,
+        "blocksAuthRelease": false,
+        "area": "Pre-existing campaign delivery in bundled native app",
+        "evidence": "campaign-installed-fetch-chain.json executes all9 actual installed fetch adapters in entry order plus actual browser compatibility and adRequest for build38 and assembled source. Positive-control advertising uses its native bridge. Campaign GET and POST select/view/click bypass that chain and resolve to original custom-scheme API fetch, which native resource resolver does not expose.",
+        "action": "Preserve current server/client baseline; no generic proxy, write retry or billing change in this release. Do not claim native sponsored-delivery parity from preserved/rebuilt source alone."
+      }
+    ],
+    "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\video2-fix-release-20261019\\campaign-installed-fetch-chain.json"
+  },
+  "limitations": [
+    "Physical iPhone installation, the reported video sequence, actual weak mobile network and real OS suspend/resume remain unverified.",
+    "Native sponsored Campaign delivery has a verified pre-existing custom-scheme transport gap; preserving/rebuilding the source does not establish native Campaign parity. It is separate from this Auth/workspace recovery release.",
+    "TestFlight availability does not mean App Store publication or installation on the user's iPhone.",
+    "Physical iPhone installation and behavior remain unverified.",
+    "Simulator scenarios do not prove actual weak mobile network or OS suspend/resume behavior.",
+    "The signed source inventory and archive logs do not independently expose signed archive resource bytes unless signedArchive.independentlyInspected is true.",
+    "No App Store publication, tester invitations, tester/group changes or distribution changes are performed by this helper.",
+    "This account has Owner and Personal workspaces, with Staff 0; a real Staff-to-Owner transition was not available for this authenticated live session. Controlled Chrome/WebKit/native tests cover that transition.",
+    "Privileged Admin session had expired and /admin/users redirected to the existing admin login guard; live Active-filter interaction was not verified. Seven assembled Admin test groups, lint and the full typecheck/build passed.",
+    "Live browser observations do not measure request duplication, document reload count, cache hit count or exact latency. Those checks use the controlled regression/native test evidence.",
+    "Actual weak mobile networks, physical iPhone installation and OS suspend/resume remain unverified.",
+    "Native sponsored Campaign transport has a separately verified pre-existing limitation, recorded in integration-review.json."
+  ],
+  "excluded": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "eventId": "63485a4d-e396-460a-b3e4-46c7029c84dc",
+      "status": "blocked",
+      "reason": "Blocked or held; preserve current baseline"
+    },
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "status": "blocked",
+      "reason": "Separate Nails Site or blocked plugin work"
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "status": "blocked",
+      "reason": "Separate Nails Site or blocked plugin work"
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "status": "ready",
+      "reason": "Separate Nails Site or blocked plugin work"
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "status": "ready",
+      "reason": "Separate Nails Site or blocked plugin work"
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "status": "ready",
+      "reason": "Local preview utility; not product release"
+    }
+  ],
+  "rollback": {
+    "webDeploymentId": "dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy",
+    "nativeBaseline": {
+      "commit": "1c2628c4df2069de0722874ce8972231945e7146",
+      "version": "1.0.0",
+      "build": "38"
+    },
+    "schema": "No schema or business-data changes in the selected overlay",
+    "requiresFreshAliasGuardBeforeWebRollback": true
+  },
+  "distributionChangesPerformedByRecorder": false,
+  "id": "8f68f0a4-8c56-43c0-b9c1-afb26cd72154",
+  "recordedAt": "2026-10-19T07:28:05.903Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\video2-fix-release-20261019"
+}
