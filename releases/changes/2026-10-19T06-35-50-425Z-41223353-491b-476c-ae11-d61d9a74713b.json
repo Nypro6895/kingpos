@@ -1,0 +1,121 @@
+{
+  "kind": "change",
+  "changeId": "video2-native-authority-boundaries-20261019",
+  "status": "ready",
+  "summary": "Verified build-38 root-cause corrections: native cookie authority, explicit page admission and safe selected-home recovery, structured workspace selection with one fresh prewrite context, targeted Today recovery, atomic native read withdrawal. Implementation ready for coordinated release; no production or TestFlight publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/workspace/open/route.ts",
+    "app/api/app-local/command/route.ts",
+    "app/local-app/entry.tsx",
+    "app/local-app/scope.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "docs/video2-auth-workspace-cache-rca-20261019.md",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-admin-favicon.svg",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/Reylumi/ReylumiCookieAuthority.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityTests.swift",
+    "lib/app-local-page-admission.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/workspace-selection.ts",
+    "releases/evidence/video2-root-cause-20261019/verification.json",
+    "tests/app-local-entry-recovery-ui.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/app-local-scope-admission.test.mjs",
+    "tests/app-local-workspace-recovery-ui.test.mjs",
+    "tests/owner-today-progressive-ui.test.mjs",
+    "tests/workspace-selection-contract.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\video2-root-cause-20261019\\ready-snapshot",
+    "commit": "6d71f07ba579ac34d64ba822d2447053db50435a",
+    "productCommit": "9eebc09fb1fbf48ab4c99bef86a79dbad771053d",
+    "baselineCommit": "48b56d29a819a519c636253ba9e2ca2ddaf895bc",
+    "baselineShippedProductCommit": "1c2628c4df2069de0722874ce8972231945e7146",
+    "overlaySha256": "5dd3dbaaa1a82b0a6481dd8a9e7041b467316b8f597964791210b140c92d970c",
+    "snapshotSha256": "60c4bd19c154134aeffa48f43fa1d5b561c245cb6596dc91f9edd40ed6b21dbb"
+  },
+  "validation": [
+    {
+      "name": "116 related regressions + 40 Chrome UI + 40 WebKit UI",
+      "result": "passed",
+      "evidence": "releases/evidence/video2-root-cause-20261019/verification.json"
+    },
+    {
+      "name": "Full TypeScript and focused ESLint",
+      "result": "passed",
+      "evidence": "releases/evidence/video2-root-cause-20261019/verification.json"
+    },
+    {
+      "name": "Production web build and asset budget",
+      "result": "passed",
+      "evidence": "releases/evidence/video2-root-cause-20261019/verification.json"
+    },
+    {
+      "name": "126 iOS tests and unsigned device archive on exact product source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/39209692361"
+    },
+    {
+      "name": "400 native source blobs, 25 overlay files, 345 bundle assets and 3 bridges match CI/archive",
+      "result": "passed",
+      "evidence": "releases/evidence/video2-root-cause-20261019/verification.json"
+    }
+  ],
+  "limitations": [
+    "HTTP/Auth/database boundaries use controlled fixtures; these are not production latency measurements.",
+    "iOS Simulator synthetic touch and foreground invocation are not physical-iPhone OS suspend/resume.",
+    "Build 38 video has no release trace to attribute every observed frame or timeout to a single cause.",
+    "Auth cross-writer rotation and production SQL/RLS/context latency remain unmeasured; no timeout extension or speculative SQL change."
+  ],
+  "physicalDeviceVerified": false,
+  "nativeBuildRequiredForRelease": true,
+  "productionDeploymentPerformed": false,
+  "testflightUploadPerformed": false,
+  "startEventId": "32ae804a-c34e-4ac7-997d-daa082b1bb6f",
+  "id": "41223353-491b-476c-ae11-d61d9a74713b",
+  "recordedAt": "2026-10-19T06:35:50.425Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\video2-root-cause-20261019",
+  "fileHashes": {
+    "app/(app)/workspace/open/route.ts": "e8873e543df39acaf0dd72eebdb96b7007e8ee9a206bc578ceea2d5ddecd2600",
+    "app/api/app-local/command/route.ts": "450fd3c86539d07a86961f7e1bac8f6d44444f3ad028bfcf5f32382edc526b86",
+    "app/local-app/entry.tsx": "5aadc95f336805cf74fff07139f0b42c0130717ff10c55919499c99cc075bc67",
+    "app/local-app/scope.tsx": "72e1f0d0265461417d740061691274c49819727aa8a5a51bac5cc077bc88c908",
+    "app/staff/today/today-progressive-client.tsx": "bd5683635f08c59939e3daee3e4a4356e1fc0598d73cd0d920684b6fc2bccd74",
+    "docs/video2-auth-workspace-cache-rca-20261019.md": "38f913d365f1bb6f5d813221765a275e644545f3435b2f33aa7aca6810e6e283",
+    "ios/Reylumi/LocalAppBundle/app.css": "b36418614170eb9ea19b54d60aba435987da23a9130fc80f20415f606155cce7",
+    "ios/Reylumi/LocalAppBundle/app.js": "9a42685a99ed84299ba1311a66f01ecd33a63904b21cfe38ae2c17ebe70f9911",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-admin-favicon.svg": "18f6dc326f40dfebbd4e76dd624848122a9f0dac99bdd1b940bb34fe769d463c",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "1552f6c65054e3439895e34053220cb01dd8fed263c3d92cdc64b449b9d041e9",
+    "ios/Reylumi/ReylumiBackgroundSync.swift": "d6afe9a853eb6e88de6debc8be4e959bc9d6795cc938e54f694db6caa3f400ed",
+    "ios/Reylumi/ReylumiCookieAuthority.swift": "0cae483857d40e0a2221411161d09dfb57a794e29d4f1a040bd4924a46dd8721",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "9bc8e3a765d5d7ec5ac32706b7cbd20b1909082a7141f7c7409ac970286bcaef",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "d4dabb59d334a06d6f6ae6a191ba892bd547640343693e6e9f0562395e6e044d",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "ce48a39bed26f24dda36b1e01c62469432a3fb39ece9ca7faa6dd4d01938e952",
+    "ios/ReylumiTests/NativeCookieAuthorityTests.swift": "3e1eb728636e50895ed5a17aa2d43b14d058d263edf1773a21e160f33d6d11b2",
+    "lib/app-local-page-admission.ts": "0585579d5aee0bb8b1c8a3729201754f242245b961d05e46e5e7935c4e5b217e",
+    "lib/app-local-resource.ts": "727d363c3ce80968143bb06d5222424423b595c6848ac65124e5523c0be031f3",
+    "lib/app-local-shell-server.ts": "1a7f1617cf0cf59f00a0c13767600fc7027046f25a3723058d6e1deee55b87a3",
+    "lib/workspace-selection.ts": "f8e99560e28f93aa6e15f176ad5718a570290389b0204ba322cc7ea86086861b",
+    "releases/evidence/video2-root-cause-20261019/verification.json": "41f62dddebca78e21b4ccbfaed55e0d6ac7aba5e4fb2ac85d6a6a50b318df92d",
+    "tests/app-local-entry-recovery-ui.test.mjs": "cb71e868121fd642f342f30d046222883e4be6fba338cd640026e521be906cdd",
+    "tests/app-local-page-admission-ui.test.mjs": "828b43df24e95032d1425215cbcee2150eb029c0a83d7c1583cdb61fcad449cd",
+    "tests/app-local-scope-admission.test.mjs": "02e4b8a04e90b268c9f25cf2c3cfac07923bf15ad8e7748424015a047d7bd35e",
+    "tests/app-local-workspace-recovery-ui.test.mjs": "aac41fb2ef82ebfc83f341ef14d9f3ca52dbc7c18f5c437a114a2f323eaa6f86",
+    "tests/owner-today-progressive-ui.test.mjs": "578219257ea34c8c86f332f8fc9ca8e9b61be01d68ffe6e188b12f21558af13b",
+    "tests/workspace-selection-contract.test.mjs": "99eb7763d0cae886c534a5763ce338c70095720be3699050c7e59f30094902b1"
+  }
+}
