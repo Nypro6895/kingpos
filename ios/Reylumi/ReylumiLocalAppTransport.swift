@@ -64,17 +64,21 @@ final class ReylumiLocalAppTransport {
     private var freshContextPath: String?
     private var commandIDs = Set<String>()
     private var workspaceCommandID: String?
-    private var cookieCommitTask: Task<[HTTPCookie], Error>?
+    private struct CookieSnapshot {
+        let values: [HTTPCookie]
+        let revision: Int
+    }
+    private var cookieCommitTask: Task<CookieSnapshot, Error>?
     private var cookieCommitID: UUID?
-    private var workspaceCookieRevision = 0
-    private let workspaceCookieNames: Set<String> = ["kingpos-selected-workspace", "kingpos-current-account-id", "kingpos-current-salon-id", "kingpos-current-manage-salon-id", "kingpos-current-staff-salon-id"]
+    private var cookieAuthorityRevision = 0
+    private var lastCommittedCookieIdentity: [String]?
     var onEvent: ((String, [String: Any]) -> Void)?
 
     init(origin: URL, manifest: ReylumiLocalBundle.Manifest, store: ReylumiLocalReadStore? = nil,
          client: ReylumiLocalHTTPClient? = nil, defaults: UserDefaults = .standard,
          cookies: (() async -> [HTTPCookie])? = nil, setCookie: ((HTTPCookie) async -> Void)? = nil,
          diagnostics: ReylumiLocalDiagnostics? = nil) {
-        self.diagnostics = diagnostics ?? ReylumiLocalDiagnostics()
+        self.diagnostics = diagnostics ?? ReylumiLocalDiagnostics(enabled: true)
         self.origin = origin; self.manifest = manifest; self.store = store ?? ReylumiLocalReadStore(origin: origin)
         self.client = client ?? ReylumiLocalURLClient(); self.defaults = defaults
         self.generationKey = "reylumi.local-app.generation." + SHA256.hash(data: Data(origin.absoluteString.utf8)).map { String(format: "%02x", $0) }.joined()
@@ -110,10 +114,10 @@ final class ReylumiLocalAppTransport {
         }
         return candidate
     }
-    private func reconcileCookies(original: [HTTPCookie]?, updates: [HTTPCookie], epoch: Int, workspaceRevision: Int? = nil) async throws -> [HTTPCookie] {
+    private func reconcileCookies(original: CookieSnapshot?, updates: [HTTPCookie], epoch: Int, responseDeniesDisplay: Bool = false) async throws -> CookieSnapshot {
         let previous = cookieCommitTask, id = UUID()
         cookieCommitID = id
-        let task = Task { @MainActor [weak self] () throws -> [HTTPCookie] in
+        let task = Task { @MainActor [weak self] () throws -> CookieSnapshot in
             guard let self else { throw CancellationError() }
             // Only cookie delivery is serialized. Reads still run in parallel;
             // no observer sees half of another response's auth rotation.
@@ -123,31 +127,44 @@ final class ReylumiLocalAppTransport {
             try self.ensureCurrent(epoch)
             // Capture outgoing headers through the same short queue, so a new
             // request cannot start from half of a multi-cookie refresh.
-            guard let original else { return currentCookies }
-            let expected = self.cookieIdentity(self.responseCookieSet(original, updates: updates))
+            guard let original else {
+                self.diagnostics.record(.cookieCapture, category: .context, operation: self.cookieAuthorityRevision)
+                return CookieSnapshot(values: currentCookies, revision: self.cookieAuthorityRevision)
+            }
+            let expected = self.cookieIdentity(self.responseCookieSet(original.values, updates: updates))
             let current = self.cookieIdentity(currentCookies)
-            guard current == self.cookieIdentity(original) || current == expected else {
-                // A response launched before our own confirmed workspace write
-                // cannot overwrite its cookies or revoke the new authority.
-                // Account/token changes still take the full revocation path.
-                if let workspaceRevision, workspaceRevision != self.workspaceCookieRevision,
-                   self.cookieIdentity(currentCookies.filter { !self.workspaceCookieNames.contains($0.name) }) == self.cookieIdentity(original.filter { !self.workspaceCookieNames.contains($0.name) }) {
+            guard current == self.cookieIdentity(original.values) || current == expected else {
+                // The complete jar must still match our last internal commit.
+                // An external workspace/token edit after that commit cannot
+                // borrow its revision as proof of a harmless late response.
+                let ownCookieCommit = original.revision < self.cookieAuthorityRevision && current == self.lastCommittedCookieIdentity
+                if ownCookieCommit {
+                    self.diagnostics.record(.cookieStale, category: .context, outcome: .cancelled, reason: .staleCookies, operation: original.revision)
+                    // A genuine denied response retains its original handling.
+                    // Never replay a command or allow stale cookies to replace
+                    // the newer complete cookie transaction.
+                    if responseDeniesDisplay {
+                        return CookieSnapshot(values: currentCookies, revision: self.cookieAuthorityRevision)
+                    }
                     throw CancellationError()
                 }
-                await self.reset(); throw self.failure(409, "Your access has changed. Please try again.")
+                self.diagnostics.record(.cookieMismatch, category: .context, outcome: .invalidated, reason: .externalCookies, operation: original.revision)
+                await self.reset(reason: .externalCookies); throw self.failure(409, "Your access has changed. Please try again.")
             }
             for cookie in updates { await self.setCookie(cookie); try self.ensureCurrent(epoch) }
             let committedCookies = await self.cookies(), committed = self.cookieIdentity(committedCookies)
             try self.ensureCurrent(epoch)
             guard committed == expected else {
-                await self.reset(); throw self.failure(409, "Your access has changed. Please try again.")
+                self.diagnostics.record(.cookieMismatch, category: .context, outcome: .invalidated, reason: .externalCookies, operation: original.revision)
+                await self.reset(reason: .externalCookies); throw self.failure(409, "Your access has changed. Please try again.")
             }
-            if updates.contains(where: { self.workspaceCookieNames.contains($0.name) }),
-               self.cookieIdentity(original.filter { self.workspaceCookieNames.contains($0.name) }) != self.cookieIdentity(committedCookies.filter { self.workspaceCookieNames.contains($0.name) }) {
-                self.workspaceCookieRevision += 1
+            if committed != current {
+                self.cookieAuthorityRevision += 1
+                self.lastCommittedCookieIdentity = committed
+                self.diagnostics.record(.cookieCommit, category: .context, outcome: .accepted, operation: self.cookieAuthorityRevision)
             }
             try self.ensureCurrent(epoch)
-            return committedCookies
+            return CookieSnapshot(values: committedCookies, revision: self.cookieAuthorityRevision)
         }
         cookieCommitTask = task
         defer { if cookieCommitID == id { cookieCommitTask = nil; cookieCommitID = nil } }
@@ -160,14 +177,18 @@ final class ReylumiLocalAppTransport {
         guard scopeEpoch == epoch, generation == expectedGeneration else { return }
         session = cached
     }
-    func reset(rotateGeneration: Bool = true) async {
-        diagnostics.record(.scopeReset, category: .cache, outcome: .invalidated)
+    func reset(rotateGeneration: Bool = true, reason: ReylumiLocalDiagnostics.Reason = .explicitReset) async {
+        diagnostics.record(.scopeReset, category: .cache, outcome: .invalidated, reason: reason)
+        cookieAuthorityRevision += 1; lastCommittedCookieIdentity = nil
         scopeEpoch += 1; nonce = UUID().uuidString
         if rotateGeneration { generation = UUID().uuidString; defaults.set(generation, forKey: generationKey) }
         freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
         session = nil; loadedSession = true; onlineContext = nil; onlineCheckedAt = .distantPast
         ReylumiBackgroundSync.shared.clear()
-        onEvent?("reylumi:app-local-reset", metadata)
+        var detail = metadata
+        detail["reason"] = reason == .signOut ? "logout" : reason.rawValue
+        if reason == .unauthenticated { detail["status"] = 401 }
+        onEvent?("reylumi:app-local-reset", detail)
         await store.clear()
     }
     func lockPortable() async {
@@ -208,6 +229,19 @@ final class ReylumiLocalAppTransport {
         }
         return nil
     }
+    private func onlineLease(scope: String) -> ReylumiLocalSession? {
+        guard let value = onlineContext, value["offline"] as? Bool != true,
+              ![401, 403, 409, 503].contains(value["grantStatus"] as? Int ?? 0),
+              value["offlineState"] as? String != "unconfirmed",
+              let lease = ReylumiLocalSession.verified(value, generation: generation), lease.scope == scope else { return nil }
+        return lease
+    }
+    private func requireCommandGrant(_ value: [String: Any]) throws {
+        let status = value["grantStatus"] as? Int ?? 0
+        if [401, 403, 409, 503].contains(status) { throw failure(status, "Please reconnect and check your access.") }
+        guard value["offline"] as? Bool != true, value["offlineState"] as? String != "unconfirmed",
+              ReylumiLocalSession.verified(value, generation: generation) != nil else { throw failure(403, "Please reconnect and check your access.") }
+    }
     private func ensureCurrent(_ epoch: Int) throws {
         guard scopeEpoch == epoch else { throw failure(409, "Your access has changed. Please try again.") }
         // Leaving a page cancels a read; it does not revoke the account.
@@ -215,12 +249,14 @@ final class ReylumiLocalAppTransport {
     }
     func matchesCachedScope(_ scope: String) async -> Bool { await store.session(generation: generation, scope: scope) != nil }
     func invalidatePage() { diagnostics.record(.pageInvalidate, category: .context, outcome: .invalidated); scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
-    private func revokeDisplay(scope: String?, staffFamily: Bool = false) async {
-        if (staffFamily && session?.authority == "staff") || (scope != nil && session?.scope == scope) {
-            diagnostics.record(.displayRevoke, category: .context, outcome: .invalidated)
+    private func revokeDisplay(scope: String?, staffFamily: Bool = false, status: Int = 403) async {
+        let onlineScope = (onlineContext?["context"] as? [String: Any])?["scope"] as? String
+        let reason: ReylumiLocalDiagnostics.Reason = status == 409 ? .workspaceChanged : .displayDenied
+        if (staffFamily && session?.authority == "staff") || (scope != nil && (session?.scope == scope || onlineScope == scope)) {
+            diagnostics.record(.displayRevoke, category: .context, outcome: .invalidated, status: status, reason: reason)
             scopeEpoch += 1; nonce = UUID().uuidString; session = nil; onlineContext = nil; onlineCheckedAt = .distantPast
             ReylumiBackgroundSync.shared.clear()
-            onEvent?("reylumi:app-local-reset", metadata)
+            onEvent?("reylumi:app-local-reset", metadata.merging(["reason": reason.rawValue, "status": status]) { _, new in new })
         }
         if staffFamily { await store.revoke(scope: nil, authority: "staff") }
         else if let scope { await store.revoke(scope: scope) }
@@ -230,8 +266,8 @@ final class ReylumiLocalAppTransport {
         var components = URLComponents(url: origin, resolvingAgainstBaseURL: false)!
         components.path = path; components.queryItems = query.isEmpty ? nil : query; components.fragment = nil
         guard let url = components.url, NavigationPolicy(origin: origin).isInternal(url), path.hasPrefix("/api/app-local/") else { throw failure(400, "Unsupported app request.") }
-        let originalCookies = try await reconcileCookies(original: nil, updates: [], epoch: epoch); try ensureCurrent(epoch)
-        let outgoingWorkspaceRevision = workspaceCookieRevision
+        let snapshot = try await reconcileCookies(original: nil, updates: [], epoch: epoch); try ensureCurrent(epoch)
+        let originalCookies = snapshot.values
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 12)
         request.httpMethod = body == nil ? "GET" : "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -261,10 +297,28 @@ final class ReylumiLocalAppTransport {
         guard response.url == url, data.count <= 4 * 1024 * 1024 else { throw failure(502, "Couldn't read this page. Please try again.") }
         let fields = response.allHeaderFields.reduce(into: [String: String]()) { result, entry in if let key = entry.key as? String, let value = entry.value as? String { result[key] = value } }
         let updates = HTTPCookie.cookies(withResponseHeaderFields: fields, for: url).filter { $0.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == origin.host?.lowercased() }
-        _ = try await reconcileCookies(original: originalCookies, updates: updates, epoch: epoch, workspaceRevision: outgoingWorkspaceRevision)
+        // A context denial is often an HTTP200 envelope. Preserve only that
+        // validated denial through the stale-cookie path; no stale cookies or
+        // successful context authority are installed by this classification.
+        let deniesDisplay = [401, 403, 409].contains(response.statusCode)
+            || contextDeniesDisplay(data, response: response, path: path)
+        _ = try await reconcileCookies(original: snapshot, updates: updates, epoch: epoch, responseDeniesDisplay: deniesDisplay)
         try ensureCurrent(epoch)
-        if response.statusCode == 401 { await reset(); throw failure(401, "Please reconnect and check your access.") }
+        if response.statusCode == 401 { await reset(reason: .unauthenticated); throw failure(401, "Please reconnect and check your access.") }
         return (data, response)
+    }
+    private func contextDeniesDisplay(_ data: Data, response: HTTPURLResponse, path: String) -> Bool {
+        guard path == "/api/app-local/context", response.statusCode == 200,
+              response.mimeType?.lowercased() == "application/json",
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              object["schemaVersion"] as? Int == 1, object["grant"] is NSNull,
+              let context = object["context"] as? [String: Any],
+              let scope = context["scope"] as? String,
+              scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil,
+              context["authenticated"] is Bool, context["permissionRevision"] is String,
+              ReylumiLocalReadStore.isSafeJSON(object) else { return false }
+        return [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0)
+            || object["offlineState"] as? String == "unconfirmed"
     }
     private func decode(_ data: Data, response: HTTPURLResponse) throws -> [String: Any] {
         guard response.statusCode == 200, response.mimeType?.lowercased() == "application/json",
@@ -286,37 +340,44 @@ final class ReylumiLocalAppTransport {
             guard let self else { throw CancellationError() }
             let (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch)
             if [403, 409].contains(response.statusCode) {
-                await self.revokeDisplay(scope: self.session?.scope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today")
+                let visibleScope = self.session?.scope ?? ((self.onlineContext?["context"] as? [String: Any])?["scope"] as? String)
+                await self.revokeDisplay(scope: visibleScope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
                 throw self.failure(response.statusCode, "Please reconnect and check your access.")
             }
             var object = try self.decode(data, response: response)
             guard object["schemaVersion"] as? Int == 1, let context = object["context"] as? [String: Any], let scope = context["scope"] as? String else { throw self.failure(502, "App access could not be checked.") }
             object["contextPath"] = path
             await self.loadSession(); try self.ensureCurrent(epoch)
-            let next = ReylumiLocalSession.verified(object, generation: expectedGeneration)
+            let denied = [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0) || object["offlineState"] as? String == "unconfirmed"
+            let next = denied ? nil : ReylumiLocalSession.verified(object, generation: expectedGeneration)
             self.diagnostics.record(.contextEnvelope, category: ReylumiLocalDiagnostics.category(path: path), outcome: next == nil ? .missing : .available, status: object["grantStatus"] as? Int)
             let stored = await self.store.session(generation: expectedGeneration)
             try self.ensureCurrent(epoch)
             let previous = self.session ?? stored
+            let reference = (previous?.object["context"] as? [String: Any]) ?? (self.onlineContext?["context"] as? [String: Any])
             let viewer = context["viewerId"] as? String
-            let viewerChanged = previous != nil && previous?.viewerId != viewer
-            let priorPermissions = (previous?.object["context"] as? [String: Any])?["permissionRevision"] as? String
-            // A temporary lease-service failure does not prove that an unchanged
-            // viewer lost access. Keep the existing lease's ORIGINAL expiry and
-            // freshness; commands still require a successful fresh context.
-            if next == nil, object["grantStatus"] as? Int == 503,
-               object["offlineState"] as? String != "unconfirmed",
-               previous == nil || (!viewerChanged && previous?.scope == scope && priorPermissions == context["permissionRevision"] as? String) {
-                throw self.failure(503, "Please reconnect to update this page.")
-            }
+            let viewerChanged = reference != nil && reference?["viewerId"] as? String != viewer
+            let unchanged = reference != nil && !viewerChanged && reference?["scope"] as? String == scope
+                && reference?["permissionRevision"] as? String == context["permissionRevision"] as? String
+            // Fresh HTTPS Auth and the offline display lease are separate. This
+            // envelope can authorize online presentation through the JS page
+            // guard, but never creates/extends a native lease or command grant.
+            let onlineOnly = !denied && next == nil && object["grantStatus"] as? Int == 503 && object["grant"] is NSNull
+                && scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil
+                && context["authenticated"] is Bool && context["permissionRevision"] is String
+                && Self.validUpdatedAt(object["onlineValidatedAt"]) && ReylumiLocalReadStore.isSafeJSON(object)
+            guard next != nil || onlineOnly || denied else { throw self.failure(502, "App access could not be checked.") }
+            if onlineOnly { self.diagnostics.record(.contextEnvelope, category: .context, outcome: .available, status: 503, reason: .leaseUnavailable) }
             let priorAuthority: ReylumiLocalSession?
             if let next { priorAuthority = await self.store.session(generation: expectedGeneration, scope: scope, authority: next.authority) }
             else { priorAuthority = nil }
             try self.ensureCurrent(epoch)
             let authorityChanged = next != nil && priorAuthority != nil && next?.grantRevision != priorAuthority?.grantRevision
             let additive = previous != nil && next != nil && self.additiveAuthority(previous!, next!) && !authorityChanged
-            if let previous, !additive && (viewerChanged || previous.scope != scope || next?.grantRevision != previous.grantRevision || previous.authority != next?.authority) || authorityChanged {
-                self.diagnostics.record(.authorityRotate, category: .context, outcome: .invalidated)
+            let leaseChanged = previous != nil && !additive && (viewerChanged || previous?.scope != scope || next?.grantRevision != previous?.grantRevision || previous?.authority != next?.authority)
+            let rotate = authorityChanged || (onlineOnly ? reference != nil && !unchanged : leaseChanged || previous == nil && reference != nil && !unchanged)
+            if rotate {
+                self.diagnostics.record(.authorityRotate, category: .context, outcome: .invalidated, reason: .contextChanged)
                 // Invalidate deliveries for the old visible authority, while
                 // retaining other unexpired same-viewer display leases.
                 self.scopeEpoch += 1; self.nonce = UUID().uuidString
@@ -326,10 +387,24 @@ final class ReylumiLocalAppTransport {
             let acceptedEpoch = self.scopeEpoch
             if viewerChanged { await self.store.clear(); ReylumiBackgroundSync.shared.clear() }
             try self.ensureCurrent(acceptedEpoch)
-            self.session = next; self.onlineContext = object
-            self.onlineCheckedAt = Date()
+            self.session = next ?? (onlineOnly && unchanged && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
+            self.onlineContext = denied ? nil : object
+            self.onlineCheckedAt = denied ? .distantPast : Date()
             if let next { await self.store.accept(next) }
-            else if ([401, 403, 409].contains(object["grantStatus"] as? Int ?? 0) || object["offlineState"] as? String == "unconfirmed"), path.hasPrefix("/staff/"), path != "/staff/today" { await self.store.revoke(scope: nil, authority: "staff"); ReylumiBackgroundSync.shared.clear() }
+            else if denied {
+                let status = object["grantStatus"] as? Int ?? 403
+                self.diagnostics.record(.displayRevoke, category: .context, outcome: .invalidated, status: status, reason: status == 409 ? .workspaceChanged : .displayDenied)
+                if path.hasPrefix("/staff/"), path != "/staff/today" { await self.store.revoke(scope: nil, authority: "staff") }
+                else { await self.store.revoke(scope: scope) }
+                ReylumiBackgroundSync.shared.clear()
+            }
+            // Mirror store.accept's authority replacement without fabricating
+            // a lease when a changed same-workspace context has no display grant.
+            if next == nil, !unchanged, let reference, let oldScope = reference["scope"] as? String,
+               reference["workspaceId"] as? String == context["workspaceId"] as? String,
+               reference["salonId"] as? String == context["salonId"] as? String {
+                await self.store.revoke(scope: oldScope)
+            }
             try self.ensureCurrent(acceptedEpoch)
             object["host"] = self.metadata; object["offline"] = false
             self.onEvent?("reylumi:app-local-context", object)
@@ -425,6 +500,7 @@ final class ReylumiLocalAppTransport {
         guard let scope = args["scope"] as? String, let key = args["key"] as? String, let endpoint = args["endpoint"] as? String,
               let expiry = args["expiresAt"] as? String, let requestedExpiry = ReylumiOfflineRoute.expiry(from: expiry),
               let session, session.scope == scope, session.valid(generation: generation), session.permitsPrivateReads,
+              onlineLease(scope: scope) != nil,
               Date().timeIntervalSince(onlineCheckedAt) < 30,
               let value = try? JSONSerialization.jsonObject(with: session.envelope) as? [String: Any], let grant = value["grant"] as? [String: Any],
               grant["scope"] as? String == scope,
@@ -438,6 +514,7 @@ final class ReylumiLocalAppTransport {
     }
     func backgroundDrainAllowed(_ scope: String) -> Bool {
         guard let session, session.scope == scope, session.valid(generation: generation), session.permitsPrivateReads,
+              onlineLease(scope: scope) != nil,
               Date().timeIntervalSince(onlineCheckedAt) < 30,
               let value = try? JSONSerialization.jsonObject(with: session.envelope) as? [String: Any], let grant = value["grant"] as? [String: Any],
               grant["scope"] as? String == scope else { return false }
@@ -480,7 +557,7 @@ final class ReylumiLocalAppTransport {
                 throw failure(403, "This view is no longer available. Please check your access.")
             }
             if response.statusCode == 409 {
-                await revokeDisplay(scope: requestedScope ?? session?.scope, staffFamily: name.hasPrefix("staff."))
+                await revokeDisplay(scope: requestedScope ?? session?.scope, staffFamily: name.hasPrefix("staff."), status: response.statusCode)
                 throw failure(response.statusCode, "Please reconnect and check your access.")
             }
             if response.statusCode == 304 {
@@ -495,13 +572,17 @@ final class ReylumiLocalAppTransport {
                   Self.validUpdatedAt(object["updatedAt"]), requestedScope == nil || requestedScope == scope else { throw failure(409, "App access could not be checked.") }
             if rule.access != "public" { try await awaitReadContext(scope: scope, epoch: epoch) }
             try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
-            if rule.cacheable, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") {
+            if rule.cacheable, onlineLease(scope: scope) != nil, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") {
                 try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
                 await store.put(key, payload: data, session: lease, resourceName: name, permit: permit)
             }
             try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch); object["offline"] = false
             return object
         } catch {
+            // Revocation can advance the epoch itself. Preserve that server
+            // denial rather than relabeling an actual401/403 as a local409.
+            let status = error as NSError
+            if status.domain == "ReylumiLocalApp", [401, 403, 404, 409].contains(status.code) { throw error }
             try ensureCurrent(epoch)
             // Confirmed 403/404 retain their original meaning even though their
             // own removal invalidated this permit. Only an offline fallback
@@ -563,6 +644,7 @@ final class ReylumiLocalAppTransport {
               let nextViewer = context["viewerId"] as? String,
               let scope = context["scope"] as? String, scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil else { throw failure(403, "Please sign in to continue.") }
         guard nextViewer == viewer else { await reset(); throw failure(409, "Your account has changed. Please open the page again.") }
+        try requireCommandGrant(value)
         // This fresh account identity is a command preflight, not a display
         // admission. Do not adopt its neutral lease, rotate epochs or emit a
         // context event. Target membership is checked again by the command.
@@ -582,13 +664,14 @@ final class ReylumiLocalAppTransport {
         let context: [String: Any]
         if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
         else { context = try await freshContext(path: path) }
+        try requireCommandGrant(context)
         try ensureCurrent(expectedEpoch)
         guard let scope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
         guard workspaceSwitch || requestedScope == nil || scope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
         let epoch = scopeEpoch
         let (data, response) = try await send(path: rule.path, body: ["name": name, "args": args, "requestId": requestID, "scope": scope], epoch: epoch)
         if [403, 409].contains(response.statusCode) {
-            await revokeDisplay(scope: scope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today")
+            await revokeDisplay(scope: scope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
             throw failure(response.statusCode, "Please reconnect and check your access.")
         }
         let result = try decode(data, response: response)

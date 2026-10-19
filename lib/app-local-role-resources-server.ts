@@ -15,7 +15,7 @@ import { getTodayDashboard } from "./today-dashboard";
 import { isTodayDashboardSection } from "./today-dashboard-sections";
 import { referenceFavoriteCursor, resolveReferenceFavorites, encodeReferenceFavoriteCursor } from "./explore-reference-favorites";
 import { runReadWithDeadline } from "./bounded-get";
-import { runWithReadContext } from "./read-context-scope";
+import { runWithReadAbortSignal, runWithReadContext } from "./read-context-scope";
 import type { ReadRequestTiming } from "./read-request-timing";
 import { APP_LOCAL_READ_RESOURCES, isAppLocalRoleResourceName, type AppLocalRoleResourceName } from "./app-local-role-resources";
 
@@ -93,7 +93,7 @@ async function readAppLocalRoleResourceInContext(name: string, args: unknown, op
       if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new AppLocalRoleReadError(400, "Invalid date");
       const phase = query.get("phase") ?? undefined;
       if (phase !== undefined && phase !== "shell" && !isTodayDashboardSection(phase)) throw new AppLocalRoleReadError(400, "Invalid Today phase");
-      const readToday = () => runReadWithDeadline(getTodayDashboard(context, { date, ...(phase === undefined ? {} : { phase }) }), 12000);
+      const readToday = () => runReadWithDeadline(signal => runWithReadAbortSignal(signal, () => getTodayDashboard(context, { date, ...(phase === undefined ? {} : { phase }) })), 12000);
       const result = await (options.timing?.measureToday(phase, readToday) ?? readToday());
       if (result.noAccess) throw new AppLocalRoleReadError(403, "Owner access changed");
       if (result.loadErrors.length) throw new AppLocalRoleReadError(503, "Please try again");

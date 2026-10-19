@@ -12,6 +12,10 @@
     if (reply?.__hostError) {
       const error = new Error(reply.__hostError.message || 'Please try again.');
       error.status = reply.__hostError.status;
+      if (reply.__hostError.reason === 'cancelled' || reply.__hostError.reason === 'staleCookies') {
+        error.reason = reply.__hostError.reason;
+        error.name = 'AbortError';
+      }
       throw error;
     }
     // Adopt native metadata before resolving a context promise. The parallel
@@ -38,6 +42,12 @@
   });
   const nativeUI = window.webkit?.messageHandlers?.reylumi;
   if (nativeUI) {
+    if (window.__reylumiDiagnosticsEnabled === true) {
+      Object.defineProperty(window, '__reylumiExportDiagnostics', { value: () => {
+        const entries = window.__reylumiDiagnostics?.snapshot() ?? [];
+        nativeUI.postMessage({ action: 'diagnostics-export', entries });
+      } });
+    }
     Object.defineProperty(window, '__reylumiNativePayments', { value: 1 });
     window.print = () => nativeUI.postMessage({ action: 'print' });
     if (typeof navigator.share !== 'function') navigator.share = async ({ title, text, url }) => nativeUI.postMessage({ action: 'share', text: [title, text, url].filter(Boolean).join('\n') });

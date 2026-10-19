@@ -1,3 +1,5 @@
+import { APP_LOCAL_CONTEXT_REASONS, type AppLocalContextReason } from "./app-local-context-recovery";
+
 /** Explicitly enabled local diagnostics. No payloads, identifiers, persistence or network export. */
 export const EXPERIENCE_TRACE_EVENTS = [
   "boot.start", "boot.ready", "data.visible", "route.reveal",
@@ -17,6 +19,7 @@ export type ExperienceTraceFields = {
   source?: "web" | "app-local" | "cache" | "scheduler";
   trigger?: ExperienceTraceTrigger;
   reason?: ExperienceTraceReason;
+  contextReason?: AppLocalContextReason;
   area?: "today" | "shell" | "other";
   phase?: "shell" | "staff" | "bookings" | "waiting" | "financials" | "extras" | "full" | "none";
   status?: number;
@@ -41,6 +44,7 @@ let installed = false;
 declare global {
   interface Window {
     __reylumiDiagnosticsEnabled?: boolean;
+    __reylumiExportDiagnostics?: () => void;
     __reylumiBundleParseStartedAt?: number;
     __reylumiDiagnostics?: { snapshot(): ExperienceTraceEntry[]; clear(): void };
   }
@@ -60,6 +64,7 @@ export function recordExperienceTrace(event: ExperienceTraceEvent, fields: Exper
   if (member(["web", "app-local", "cache", "scheduler"] as const, fields.source)) entry.source = fields.source;
   if (member(EXPERIENCE_TRACE_TRIGGERS, fields.trigger)) entry.trigger = fields.trigger;
   if (member(EXPERIENCE_TRACE_REASONS, fields.reason)) entry.reason = fields.reason;
+  if (member(APP_LOCAL_CONTEXT_REASONS, fields.contextReason)) entry.contextReason = fields.contextReason;
   if (member(["today", "shell", "other"] as const, fields.area)) entry.area = fields.area;
   if (member(["shell", "staff", "bookings", "waiting", "financials", "extras", "full", "none"] as const, fields.phase)) entry.phase = fields.phase;
   for (const key of ["blocked", "offline", "fresh", "changed", "scopeChanged", "permissionChanged", "generationChanged", "grantChanged", "identityChanged"] as const) if (typeof fields[key] === "boolean") entry[key] = fields[key];

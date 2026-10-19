@@ -35,4 +35,33 @@ final class LocalDiagnosticsTests: XCTestCase {
         XCTAssertFalse(encoded.contains("private-person")); XCTAssertFalse(encoded.contains("private-token"))
         XCTAssertEqual(trace.snapshot().map(\.category), [.other, .other])
     }
+    @MainActor
+    func testUserExportRevalidatesJavaScriptAndOmitsIdentifiersAndPayloads() throws {
+        let trace = ReylumiLocalDiagnostics(enabled: true)
+        trace.record(.cookieStale, category: .context, outcome: .cancelled, reason: .staleCookies, operation: 4)
+        let secret = "private-cookie-person-account-token"
+        let rows: [[String: Any]] = [
+            ["event": "context.reject", "contextReason": "workspace-changed", "source": "app-local", "status": 409, "atMs": 12.5, "blocked": true, "cookie": secret, "scope": secret, "url": secret, "payload": ["name": secret]],
+            ["event": "cache.reset", "reason": secret, "contextReason": secret, "status": "private-status", "atMs": Double.infinity, "blocked": 123],
+            ["event": secret, "status": 200]
+        ]
+        let data = try trace.report(javascript: rows, appVersion: "1.0.0", appBuild: "40", bundleBuild: String(repeating: "a", count: 64))
+        let encoded = String(decoding: data, as: UTF8.self)
+        XCTAssertFalse(encoded.contains(secret)); XCTAssertFalse(encoded.contains("cookie\":")); XCTAssertFalse(encoded.contains("Infinity"))
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let js = try XCTUnwrap(report["javascript"] as? [[String: Any]])
+        XCTAssertEqual(js.count, 2); XCTAssertEqual(js.first?["contextReason"] as? String, "workspace-changed")
+        XCTAssertEqual(js.first?["blocked"] as? Bool, true); XCTAssertNil(js.last?["blocked"])
+        XCTAssertEqual((report["native"] as? [[String: Any]])?.first?["reason"] as? String, "staleCookies")
+    }
+    @MainActor
+    func testUserExportIsBoundedAndDoesNotAcceptMetadataFromPage() throws {
+        let trace = ReylumiLocalDiagnostics(enabled: true)
+        let rows = Array(repeating: ["event": "cache.hit"], count: 257)
+        let data = try trace.report(javascript: rows, appVersion: "private-person", appBuild: "private-token", bundleBuild: "private-payload")
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual((report["javascript"] as? [[String: Any]])?.count, 0)
+        XCTAssertEqual(report["appVersion"] as? String, "unknown"); XCTAssertEqual(report["appBuild"] as? String, "unknown")
+        XCTAssertEqual(report["bundleBuild"] as? String, "unknown")
+    }
 }

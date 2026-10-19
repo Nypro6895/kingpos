@@ -51,7 +51,7 @@ function fixture({ timed = true, realDelays = false } = {}) {
     './request-business-context':{getRequestBusinessContext:getContext},
     './experience-context':{getExperienceContext:value => ({scope:value.scope})},
     './current-context':{isSalonManageContext:value => value.manage !== false,isOwnerMembership:() => true},
-    './bounded-get':{runReadWithDeadline:async value => value},'./staff-portal-identity':{},'./customer-bookings':{},'./permissions':{},
+    './bounded-get':load('lib/bounded-get.ts',{},now),'./staff-portal-identity':{},'./customer-bookings':{},'./permissions':{},
   };
   const role = load('lib/app-local-role-resources-server.ts',{
     ...commonAdapter,'./app-local-role-resources':load('lib/app-local-role-resources.ts',{},now),'./today-dashboard-sections':sections,

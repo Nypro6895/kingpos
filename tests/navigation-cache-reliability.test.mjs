@@ -9,6 +9,7 @@ function load(file, deps = {}) {
   new Function('require', 'exports', code)(name => {
     if (name === './read-request-metrics') return load('lib/read-request-metrics.ts');
     if (name === './experience-trace') return load('lib/experience-trace.ts');
+    if (name === './app-local-context-recovery') return load('lib/app-local-context-recovery.ts');
     if (name === '@/lib/read-request-timing') return load('lib/read-request-timing.ts');
     assert.ok(name in deps, `Unexpected dependency ${name}`); return deps[name];
   }, exports);

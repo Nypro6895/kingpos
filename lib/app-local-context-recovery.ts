@@ -1,4 +1,40 @@
-export type AppLocalContextFailure = "timeout" | "network" | "unavailable" | "access" | "invalid";
+export type AppLocalContextFailure = "timeout" | "network" | "unavailable" | "sign-in" | "access" | "workspace" | "verification" | "reset" | "invalid";
+
+/** Local diagnostics accept fixed codes only; never server text or identifiers. */
+export const APP_LOCAL_CONTEXT_REASONS = [
+  "schema", "scope", "generation", "lease-expired", "lease-invalid", "unconfirmed", "online-stale",
+  "sign-in", "permission-denied", "workspace-changed", "page-authority", "portable-authority", "authority-family",
+  "workspace-home", "reset", "logout", "lease-unavailable", "transport-timeout", "transport-network",
+  "transport-unavailable", "transport-invalid", "handoff", "late-reply", "lease-valid", "online-valid",
+] as const;
+export type AppLocalContextReason = typeof APP_LOCAL_CONTEXT_REASONS[number];
+
+/** A rejected DTO is not an invented HTTP403. Preserve only an explicit denial. */
+export function appLocalAdmissionError(reason: AppLocalContextReason, status?: number): Error {
+  return Object.assign(new Error("Application page admission was not confirmed"), {
+    contextReason: reason,
+    ...([401, 403, 409].includes(status ?? 0) ? { status } : {}),
+  });
+}
+
+export function appLocalContextFailureReason(error: unknown): AppLocalContextReason {
+  const value = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  if (value.status === 401) return "sign-in";
+  if (value.status === 403) return "permission-denied";
+  if (value.status === 409) return "workspace-changed";
+  if (isAppLocalContextCancellation(error)) return "late-reply";
+  if (APP_LOCAL_CONTEXT_REASONS.includes(value.contextReason as AppLocalContextReason)) return value.contextReason as AppLocalContextReason;
+  const failure = classifyAppLocalContextFailure(error);
+  return failure === "timeout" ? "transport-timeout" : failure === "network" ? "transport-network"
+    : failure === "unavailable" ? "transport-unavailable" : "transport-invalid";
+}
+
+/** Native discarded an older read; it did not deny this user's access. */
+export function isAppLocalContextCancellation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const value = error as Record<string, unknown>;
+  return value.status === -999 || value.code === -999;
+}
 
 // Native also reports invalid context/schema as 502. Keep every 502 manual-only
 // until the bridge distinguishes a malformed response from an HTTP gateway error.
@@ -9,9 +45,16 @@ const transientNativeCodes = new Set([-1001, -1003, -1004, -1005, -1006, -1009])
 export function classifyAppLocalContextFailure(error: unknown): AppLocalContextFailure {
   if (!error || typeof error !== "object") return "invalid";
   const value = error as Record<string, unknown>;
-  if (value.name === "AbortError") return "invalid";
   const status = typeof value.status === "number" ? value.status : undefined;
-  if (status === 401 || status === 403 || status === 409) return "access";
+  if (status === 401) return "sign-in";
+  if (status === 403) return "access";
+  if (status === 409) return "workspace";
+  if (isAppLocalContextCancellation(error)) return "verification";
+  if (value.name === "AbortError") return "invalid";
+  if (value.contextReason === "reset") return "reset";
+  if (value.contextReason === "logout" || value.contextReason === "sign-in") return "sign-in";
+  if (value.contextReason === "workspace-changed") return "workspace";
+  if (typeof value.contextReason === "string" && ["generation", "lease-expired", "lease-invalid", "unconfirmed", "online-stale", "page-authority", "portable-authority", "authority-family", "workspace-home", "lease-unavailable"].includes(value.contextReason)) return "verification";
   // ReadConnectionError also carries HTTP 503. Its size guard is not a network failure.
   if (value.kind === "body-limit") return "invalid";
   if (status !== undefined && status >= 400 && status <= 599 && !transientHttpStatuses.has(status)) return "invalid";
@@ -80,7 +123,7 @@ export async function runAppLocalContextRead<T>(read: () => Promise<T>, signal: 
     } catch (error) {
       if (signal.aborted) throw cancelled(signal);
       const failure = classifyAppLocalContextFailure(error);
-      if (attempt !== 0 || failure === "access" || failure === "invalid" || elapsedClock() >= retryUntil) throw error;
+      if (attempt !== 0 || !["timeout", "network", "unavailable"].includes(failure) || elapsedClock() >= retryUntil) throw error;
       await waitForRetry(signal);
       if (elapsedClock() >= retryUntil) throw error;
     }

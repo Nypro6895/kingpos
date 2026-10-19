@@ -23,7 +23,10 @@ const nativeError = status => Object.assign(new Error('Synthetic native failure'
 
 test('classification uses only known status, error name and kind; it never exposes raw error text', () => {
   const { classifyAppLocalContextFailure: classify } = fixture();
-  for (const status of [401,403,409]) assert.equal(classify(httpError(status)), 'access');
+  assert.equal(classify(httpError(401)), 'sign-in');
+  assert.equal(classify(httpError(403)), 'access');
+  assert.equal(classify(httpError(409)), 'workspace');
+  for (const [status, category] of [[401,'sign-in'],[403,'access'],[409,'workspace']]) assert.equal(classify(Object.assign(httpError(status), { name: 'AbortError' })), category, 'explicit HTTP denial wins over a misleading error name');
   for (const status of [408,504]) assert.equal(classify(httpError(status)), 'timeout');
   for (const status of [500,503]) assert.equal(classify(httpError(status)), 'unavailable');
   assert.equal(classify(httpError(502)), 'invalid');
@@ -32,9 +35,10 @@ test('classification uses only known status, error name and kind; it never expos
   assert.equal(classify(connectionError('body-limit')), 'invalid');
   assert.equal(classify(new DOMException('Synthetic timeout', 'TimeoutError')), 'timeout');
   assert.equal(classify(nativeError(-1001)), 'timeout');
+  assert.equal(classify(nativeError(-999)), 'verification');
   for (const status of [-1003,-1004,-1005,-1006,-1009]) assert.equal(classify(nativeError(status)), 'network');
   assert.equal(classify({ code: -1005 }), 'network');
-  for (const error of [undefined,null,'503',503,new Error('network timeout: secret fixture value'),new TypeError('Failed to fetch'),{status:'503'},nativeError(-999),connectionError('other')]) assert.equal(classify(error), 'invalid');
+  for (const error of [undefined,null,'503',503,new Error('network timeout: secret fixture value'),new TypeError('Failed to fetch'),{status:'503'},connectionError('other')]) assert.equal(classify(error), 'invalid');
 });
 
 test('known transient context failures get exactly one cancellable 300ms retry and return the original result', async () => {

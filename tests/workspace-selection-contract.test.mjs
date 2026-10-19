@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import * as crypto from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import test from 'node:test';
 import * as React from 'react';
 import ts from 'typescript';
@@ -59,7 +60,10 @@ function fixture({ revoked = false, cookieFailure = false, cookieFailureAfter = 
     'next/cache': revalidate, 'next/server': { NextResponse: nextResponse },
   });
   const nextHeaders = { headers: async () => new Headers(state.authUnavailable ? { 'x-reylumi-auth-unavailable': '1' } : {}), cookies: async () => cookies };
-  const requestContext = load('lib/request-business-context.ts', { 'server-only': {}, react: React, '@/lib/current-context': currentModule, '@/lib/bounded-get': { runReadWithDeadline: value => value } });
+  const requestContext = load('lib/request-business-context.ts', { 'server-only': {}, react: React, '@/lib/current-context': currentModule,
+    '@/lib/read-context-scope': load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': { AsyncLocalStorage } }),
+    '@/lib/bounded-get': load('lib/bounded-get.ts', {}),
+  });
   const staffIdentity = { getStaffPortalIdentity: async () => ({ context: state.staffContext ?? { ...state.context, scope: 'v3:' + 'b'.repeat(64) }, staff: state.staffContext ? { id: 'fixture-staff' } : null }) };
   const experience = { getExperienceContext: value => ({ scope: value.scope }) };
   const shell = load('lib/app-local-shell-server.ts', {

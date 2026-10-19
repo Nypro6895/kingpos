@@ -636,8 +636,9 @@ final class LocalAppTransportTests: XCTestCase {
             var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
             if scenario == "scope-change" { await http.configureContext(path: "/help", scope: "v3:" + String(repeating: "b", count: 64), kind: "owner") }
             await http.configurePartialGrant(unconfirmed: scenario == "unconfirmed", permissionsChanged: scenario == "permission-change")
-            do { _ = try await transport.freshContext(path: "/help"); XCTAssertNotEqual(scenario, "temporary") }
-            catch { XCTAssertEqual(scenario, "temporary"); XCTAssertEqual((error as NSError).code, 503) }
+            let fresh = try await transport.freshContext(path: "/help")
+            XCTAssertEqual(fresh["grantStatus"] as? Int, 503)
+            XCTAssertEqual(fresh["offline"] as? Bool, false)
             if scenario == "temporary" {
                 let cached = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope)
                 let retained = await store.session(generation: transport.generation)

@@ -58,7 +58,7 @@ function contextHandler(options = {}) {
   return original.GET;
 }
 
-const entry = process.env.TEST_ENTRY_BASELINE === '1' ? execFileSync('git', ['show', '1c2628c4df2069de0722874ce8972231945e7146:app/local-app/entry.tsx'], { encoding: 'utf8' }) : readFileSync('app/local-app/entry.tsx', 'utf8');
+const entry = process.env.TEST_ENTRY_BASELINE ? execFileSync('git', ['show', (process.env.TEST_ENTRY_BASELINE === '39' ? '62f22d20c5fe9e048a679f9ba6c648d2115cd632' : '1c2628c4df2069de0722874ce8972231945e7146') + ':app/local-app/entry.tsx'], { encoding: 'utf8' }) : readFileSync('app/local-app/entry.tsx', 'utf8');
 const parsed = ts.createSourceFile('entry.tsx', entry, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX), imports = new Map();
 const real = ['react', 'react-dom/client', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission', '@/lib/experience-offline-policy'];
 for (const item of parsed.statements) {
@@ -81,6 +81,7 @@ const replacements = {
 let compiled;
 async function compile() {
   compiled ??= build({ stdin: { contents: entry, loader: 'tsx', resolveDir: process.cwd() }, bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' }, alias: { '@': process.cwd() }, plugins: [{ name: 'admission-boundaries', setup(b) {
+    if (process.env.TEST_ENTRY_BASELINE === '39') b.onLoad({ filter: /[\\/]lib[\\/](?:app-local-context-recovery|app-local-page-admission)\.ts$/ }, args => ({ contents: execFileSync('git', ['show', '62f22d20c5fe9e048a679f9ba6c648d2115cd632:lib/' + args.path.split(/[\\/]/).at(-1)], { encoding: 'utf8' }), loader: 'ts', resolveDir: process.cwd() + '/lib' }));
     for (const [path] of imports) b.onResolve({ filter: new RegExp('^' + path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }, () => ({ path, namespace: 'fixture' }));
     b.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ contents: replacements[path] ?? (imports.get(path) ?? []).map(name => `export const ${name}=${name.startsWith('getAppLocal') ? '()=>null' : ['clearExperienceSnapshots', 'acceptExperienceOfflineGrant'].includes(name) ? 'async()=>{}' : name.startsWith('install') ? '()=>()=>{}' : '()=>null'};`).join('\n'), loader: 'tsx', resolveDir: process.cwd() }));
   } }] });
@@ -89,7 +90,36 @@ async function compile() {
 async function fixture(options = {}) {
   const built = await compile(), handler = contextHandler(options), calls = [];
   const cached = options.cachedOwner ? await (await contextHandler({ role: 'owner' })(new Request('https://reylumi.com/api/app-local/context?' + new URLSearchParams({ path: '/staff/today', generation })))).json() : null;
-  const setup = `window.fixtureStats={rendered:[],commands:0};window.fixtureCached=${JSON.stringify(cached)};window.__reylumiAppLocalContext={generation:'${generation}',scopeEpoch:1,nonce:'fixture'};window.fixtureNavigate=path=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path}}));const read=async(path,signal)=>{const r=await fetch('/fixture-context?'+new URLSearchParams({path,generation:'${generation}'}),{signal});if(!r.ok)throw Object.assign(Error('Fixture denied'),{status:r.status});return {...await r.json(),offline:false};};window.fixtureHost={isNative:true,cache:async()=>null,command:async()=>{window.fixtureStats.commands++;throw Error('Writes forbidden');},openOnline:async()=>{throw Error('External navigation forbidden');},context:async(path,options)=>{if(window.fixtureCached&&!options.fresh){const value=window.fixtureCached;window.fixtureCached=null;setTimeout(async()=>{const fresh=await read(path);window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{...window.__reylumiAppLocalContext,reason:'context'}}));window.dispatchEvent(new CustomEvent('reylumi:app-local-context',{detail:{...fresh,contextPath:path}}));},80);return {...value,offline:true};}return read(path,options.signal);}};`;
+  const setup = `
+    window.fixtureStats={rendered:[],commands:0,contextRequests:[],hosted:[],diagnosticExports:[]};
+    window.fixtureOptions=${JSON.stringify(options)};
+    window.fixtureCached=${JSON.stringify(cached)};
+    window.__reylumiAppLocalContext={generation:'${generation}',scopeEpoch:1,nonce:'fixture'};
+    if(window.fixtureOptions.diagnostics)window.__reylumiExportDiagnostics=(...args)=>window.fixtureStats.diagnosticExports.push(args.length);
+    window.fixtureNavigate=path=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path}}));
+    const read=async(path,signal)=>{
+      const r=await fetch('/fixture-context?'+new URLSearchParams({path,generation:'${generation}'}),{signal});
+      if(!r.ok)throw Object.assign(Error('Fixture denied'),{status:r.status});
+      return {...await r.json(),offline:false};
+    };
+    window.fixtureHost={isNative:true,cache:async()=>null,
+      command:async()=>{window.fixtureStats.commands++;throw Error('Writes forbidden');},
+      openOnline:async path=>{window.fixtureStats.hosted.push(path);if(window.fixtureOptions.hostedUnavailable)throw Error('Synthetic secure handoff unavailable');},
+      context:async(path,options)=>{
+        window.fixtureStats.contextRequests.push({path,fresh:Boolean(options.fresh)});
+        if(window.fixtureStats.contextRequests.length<=(window.fixtureOptions.cancelContextReads??0))throw Object.assign(Error('Discarded fixture response'),{name:'AbortError',status:-999,reason:'cancelled'});
+        if(window.fixtureCached&&!options.fresh){
+          const value=window.fixtureCached;window.fixtureCached=null;
+          setTimeout(async()=>{
+            const fresh=await read(path);window.__reylumiAppLocalContext.scopeEpoch++;
+            window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{...window.__reylumiAppLocalContext,reason:'context'}}));
+            window.dispatchEvent(new CustomEvent('reylumi:app-local-context',{detail:{...fresh,contextPath:path}}));
+          },80);
+          return {...value,offline:true};
+        }
+        return read(path,options.signal);
+      }
+    };`;
   const server = createServer(async (req, res) => {
     try {
       if (req.url.startsWith('/fixture-context?')) {
@@ -161,6 +191,65 @@ test('generic Explore still opens in selected Staff workspace without requiring 
     await f.page.locator('[data-private-page][data-path="/explore"][data-role="staff"]:visible').waitFor({ timeout: 4000 });
     assert.deepEqual(f.calls, ['/explore']);
   } finally { await f.close(); }
+});
+
+test('typed401 offers existing HTTPS sign-in while403 and409 stay distinct and never render a denied private page', { skip, timeout: 20000 }, async () => {
+  for (const [status, category] of [[401, 'sign-in'], [403, 'access'], [409, 'workspace']]) {
+    const f = await fixture({ role: 'owner', explicitStatus: status }); try {
+      await f.page.locator(`[data-context-failure="${category}"]`).waitFor({ timeout: 4000 });
+      assert.equal(await f.page.locator('[data-private-page]:visible').count(), 0);
+      if (status === 401) {
+        await f.page.getByRole('button', { name: 'Sign in', exact: true }).click();
+        assert.deepEqual(await f.page.evaluate(() => window.fixtureStats.hosted), ['/login?next=%2Fstaff%2Ftoday']);
+      } else assert.equal(await f.page.getByRole('button', { name: 'Sign in', exact: true }).count(), 0);
+      assert.equal(await f.page.evaluate(() => window.fixtureStats.commands), 0);
+    } finally { await f.close(); }
+  }
+});
+
+test('failed secure sign-in handoff remains actionable and never exposes a private page', { skip, timeout: 10000 }, async () => {
+  const f = await fixture({ role: 'owner', explicitStatus: 401, hostedUnavailable: true }); try {
+    await f.page.locator('[data-context-failure="sign-in"]').waitFor({ timeout: 4000 });
+    await f.page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await f.page.getByRole('alert').filter({ hasText: 'Sign-in could not be opened' }).waitFor({ timeout: 2000 });
+    assert.equal(await f.page.getByRole('button', { name: 'Sign in', exact: true }).isEnabled(), true);
+    assert.equal(await f.page.locator('[data-private-page]:visible').count(), 0);
+    assert.equal(await f.page.evaluate(() => window.fixtureStats.commands), 0);
+  } finally { await f.close(); }
+});
+
+test('generic native reset withdraws a real authorized page without claiming denied access and exposes only user-clicked local diagnostics', { skip, timeout: 10000 }, async () => {
+  const f = await fixture({ role: 'owner', diagnostics: true }); try {
+    await f.page.locator('[data-private-page]:visible').waitFor({ timeout: 4000 });
+    await f.page.evaluate(() => window.dispatchEvent(new Event('reylumi:app-local-reset')));
+    await f.page.locator('[data-context-failure="reset"]').waitFor({ timeout: 2000 });
+    assert.equal(await f.page.locator('[data-private-page]:visible').count(), 0);
+    assert.equal(await f.page.evaluate(() => window.fixtureStats.contextRequests.length), 1);
+    assert.deepEqual(await f.page.evaluate(() => window.fixtureStats.diagnosticExports), []);
+    await f.page.getByRole('button', { name: 'Save diagnostic report', exact: true }).click();
+    assert.deepEqual(await f.page.evaluate(() => window.fixtureStats.diagnosticExports), [0]);
+    await f.page.getByRole('button', { name: 'Try again', exact: true }).click();
+    await f.page.locator('[data-private-page]:visible').waitFor({ timeout: 4000 });
+    assert.equal(await f.page.evaluate(() => window.fixtureStats.contextRequests.length), 2);
+    assert.equal(await f.page.evaluate(() => window.fixtureStats.commands), 0);
+  } finally { await f.close(); }
+});
+
+test('native cancellation joins one fresh current-path GET; repeated cancellation settles with verification instead of endless Opening', { skip, timeout: 15000 }, async () => {
+  for (const cancelContextReads of [1, 2]) {
+    const f = await fixture({ role: 'owner', cancelContextReads }); try {
+      if (cancelContextReads === 1) await f.page.locator('[data-private-page]:visible').waitFor({ timeout: 4000 });
+      else {
+        await f.page.locator('[data-context-failure="verification"]').waitFor({ timeout: 4000 });
+        assert.equal(await f.page.locator('[data-private-page]:visible').count(), 0);
+        assert.equal(await f.page.getByRole('button', { name: 'Try again', exact: true }).count(), 1);
+        assert.equal(await f.page.getByRole('button', { name: 'Save diagnostic report', exact: true }).count(), 0);
+      }
+      await f.page.waitForTimeout(150);
+      assert.deepEqual(await f.page.evaluate(() => window.fixtureStats.contextRequests), [{ path: '/staff/today', fresh: false }, { path: '/staff/today', fresh: true }]);
+      assert.equal(await f.page.evaluate(() => window.fixtureStats.commands), 0);
+    } finally { await f.close(); }
+  }
 });
 
 test('Staff Post salon-profile keeps its shared salon workspace contract with the actual context handler', { skip, timeout: 10000 }, async () => {

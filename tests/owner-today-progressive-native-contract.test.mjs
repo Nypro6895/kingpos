@@ -32,7 +32,7 @@ function fixture() {
     './request-business-context': { getRequestBusinessContext: () => reads.memoizeReadContext(contextKey, async () => { contextReads++; return context; }) },
     './experience-context': { getExperienceContext: value => ({ scope: value.scope }) },
     './current-context': { isSalonManageContext: value => value.manage !== false, isOwnerMembership: () => true },
-    './bounded-get': { runReadWithDeadline: async value => value },
+    './bounded-get': load('lib/bounded-get.ts'),
     './staff-portal-identity': {}, './customer-bookings': {}, './permissions': {},
   };
   const role = load('lib/app-local-role-resources-server.ts', {

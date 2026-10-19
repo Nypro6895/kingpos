@@ -1,5 +1,5 @@
 import { fetchWithDeadline, ReadConnectionError } from "@/lib/bounded-get";
-import { getReadRequestTiming } from "@/lib/read-context-scope";
+import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
 
 export class AuthAvailabilityError extends Error {
   readonly status = 503;
@@ -31,9 +31,29 @@ export const supabaseDeadlineFetch: typeof fetch = (input, init) => {
   const url = input instanceof Request ? input.url : String(input);
   // Large Storage downloads/uploads and transactional writes keep their existing
   // transport. A read timeout cannot tell a caller whether a mutation committed.
-  const read = () => !["GET", "HEAD"].includes(method) || !/\/(?:auth|rest)\/v1(?:\/|$)/.test(url)
-    ? fetch(input, init)
-    : fetchWithDeadline(input, init, { timeoutMs: 5_000, totalTimeoutMs: 10_250, maxAttempts: 2, retryDelayMs: 250 });
+  const read = async () => {
+    if (!["GET", "HEAD"].includes(method) || !/\/(?:auth|rest)\/v1(?:\/|$)/.test(url)) return fetch(input, init);
+    const parent = getReadAbortSignal();
+    const caller = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+    const signal = parent && caller ? AbortSignal.any([parent, caller]) : parent ?? caller;
+    try {
+      const response = await fetchWithDeadline(input, parent ? { ...init, signal } : init, { timeoutMs: 5_000, totalTimeoutMs: 10_250, maxAttempts: 2, retryDelayMs: 250 });
+      if ([408, 429, 500, 502, 503, 504].includes(response.status)) throw new ReadConnectionError("network");
+      return response;
+    } catch (error) {
+      // This transport owns the complete safe-read budget. PostgREST recognizes
+      // AbortError as terminal; leaving a timeout/network/last503 retryable would
+      // start its independent four-attempt loop after ours. Keep typed503 and
+      // the original error identity; confirmed401/403 responses pass unchanged.
+      if (error instanceof ReadConnectionError) error.name = "AbortError";
+      else if (signal?.aborted && (!(error instanceof Error) || error.name !== "AbortError")) {
+        const stopped = new ReadConnectionError("timeout");
+        stopped.name = "AbortError";
+        throw stopped;
+      }
+      throw error;
+    }
+  };
   const timing = getReadRequestTiming();
   if (!timing) return read();
   // Keep only fixed service categories. URLs, record keys, filters, credentials,

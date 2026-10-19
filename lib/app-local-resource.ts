@@ -9,6 +9,7 @@ import { createExperienceResourceCache, ExperienceResourceInvalidatedError, type
 import { subscribeReadRefresh, canAutomaticallyRefreshRead } from "./read-refresh-scheduler";
 import { recordReadRequest, readResourceCategory } from "./read-request-metrics";
 import { nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceFields } from "./experience-trace";
+import { appLocalContextFailureReason, isAppLocalContextCancellation } from "./app-local-context-recovery";
 
 function traceResource(name: string, args: Record<string, unknown>): Pick<ExperienceTraceFields, "area" | "phase"> {
   const phase = ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].includes(String(args.phase)) ? args.phase as ExperienceTraceFields["phase"] : "none";
@@ -156,6 +157,17 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     return;
   }
   const started = epoch, revision = cell.revision, host = getAppLocalHost();
+  const pathname = typeof location === "undefined" ? undefined : location.pathname + location.search;
+  const generation = typeof window === "undefined" ? undefined : window.__reylumiAppLocalContext?.generation;
+  const hostEpoch = typeof window === "undefined" ? undefined : window.__reylumiAppLocalContext?.scopeEpoch;
+  const wasActive = cell.active > 0;
+  const currentCancellationRead = (signal: AbortSignal) => !signal.aborted && epoch === started && cell.epoch === started && cell.revision === revision && cells.get(key) === cell
+    && (!wasActive || cell.active > 0) && (typeof location === "undefined" ? pathname === undefined : location.pathname + location.search === pathname)
+    && (typeof window === "undefined" || window.__reylumiAppLocalContext?.generation === generation && window.__reylumiAppLocalContext?.scopeEpoch === hostEpoch);
+  // Only small named reads fit the native GET transport with ample URL margin.
+  // Long reads use POST bodies and must not be automatically replayed here.
+  const cancellationGet = JSON.stringify(args).length <= 256 && scope.length <= 128
+    && new URLSearchParams({ name, args: JSON.stringify(stable(args)), scope }).toString().length <= 1000;
   recordExperienceTrace("cache.refresh", { source: "app-local", fresh: Boolean(retained?.fresh), trigger: options.force === false ? "unknown" : "manual", ...traceResource(name, args) });
   emit(cell, { refreshing: true, error: undefined });
   cell.pending = (async () => {
@@ -170,7 +182,17 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
       const operation = nextExperienceTraceOperation();
       recordExperienceTrace("cache.read.start", { source: "app-local", operation, ...traceResource(name, args) });
       try {
-        const next = await host.read<T>(name, args, { scope, etag: etag ?? cell.state.etag, signal });
+        let revalidatedCancellation = false;
+        const read = () => host.read<T>(name, args, { scope, etag: etag ?? cell.state.etag, signal });
+        const next = await read().catch(error => {
+          if (!isAppLocalContextCancellation(error)) throw error;
+          if (!currentCancellationRead(signal)) throw new ExperienceResourceInvalidatedError();
+          if (!host.isNative || !cancellationGet) throw error;
+          revalidatedCancellation = true;
+          recordExperienceTrace("cache.join", { source: "app-local", status: -999, contextReason: "late-reply", ...traceResource(name, args) });
+          return read();
+        });
+        if (revalidatedCancellation && !currentCancellationRead(signal)) throw new ExperienceResourceInvalidatedError();
         recordExperienceTrace("cache.read.end", { source: "app-local", operation, status: next.status, offline: Boolean(next.offline), durationMs: Date.now() - began, ...traceResource(name, args) });
         if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cells.get(key) !== cell || next.scope !== scope) throw new ExperienceResourceInvalidatedError();
         transportValidatedAt = next.offline ? next.updatedAt : Date.now();
@@ -187,7 +209,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
         return { data: accepted, etag: accepted.etag, validatedAt: transportValidatedAt };
       } catch (error) {
         const status = (error as { status?: number })?.status;
-        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status, reason: signal.aborted ? "reset" : "transient", durationMs: Date.now() - began, ...traceResource(name, args) });
+        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status, contextReason: appLocalContextFailureReason(error), reason: signal.aborted ? "reset" : status === 401 ? "identity" : status === 403 ? "permissions" : status === 409 ? "scope" : "transient", durationMs: Date.now() - began, ...traceResource(name, args) });
         recordReadRequest(category, signal.aborted ? "aborted" : [401,403,409].includes(status ?? 0) ? "access-denied" : "error", Date.now() - began);
         throw error;
       }
@@ -215,7 +237,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
       if (error.status === 403) window.dispatchEvent(new CustomEvent("reylumi:app-local-revalidate-access", { detail: { scope } }));
       return;
     }
-    emit(cell, { error: error instanceof Error ? error.message : "Could not update this page", loading: false, refreshing: false });
+    emit(cell, { error: isAppLocalContextCancellation(error) ? "The app changed while loading. Please try again." : error instanceof Error ? error.message : "Could not update this page", loading: false, refreshing: false });
   }).finally(() => { if (epoch === started && cells.get(key) === cell) { cell.pending = undefined; if (cell.state.refreshing) emit(cell, { refreshing: false }); if (cell.revalidate) { cell.revalidate = false; if (cell.active) void refreshAppLocalResource(scope, name, args); } } });
   return cell.pending;
 }

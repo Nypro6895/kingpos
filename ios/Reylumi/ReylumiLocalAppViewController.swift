@@ -81,9 +81,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         configuration.userContentController.add(ReylumiWeakLocalUIHandler(self), name: "reylumi")
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
-        #if DEBUG
         if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
-        #endif
         for name in ["AppViewport", "AppLocalBridge"] {
             if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" }
         }
@@ -215,7 +213,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                         // Clear encrypted display authority before delivering a
                         // successful logout, even if the next context GET fails.
                         // Existing JS receipt drafts/outbox are never touched.
-                        await self.transport.reset()
+                        await self.transport.reset(reason: .signOut)
                         wire["signedOut"] = true; wire["host"] = self.transport.metadata
                         result = wire; acknowledgedLogout = true
                     } else { result = reply["data"] ?? NSNull() }
@@ -245,7 +243,11 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                 }
                 guard kind == "context" || acknowledgedLogout || kind == "cache" && name == "portable.lock" || self.transport.scopeEpoch == epoch, !Task.isCancelled else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
                 replyHandler(result, nil)
-            } catch { replyHandler(["__hostError": ["status": (error as NSError).code, "message": error.localizedDescription]], nil) }
+            } catch {
+                let cancelled = error is CancellationError || (error as NSError).code == NSURLErrorCancelled
+                let message = cancelled ? (kind == "command" ? "The result could not be confirmed. Check the latest record before making another change." : "This request was superseded. Please try again.") : error.localizedDescription
+                replyHandler(["__hostError": ["status": cancelled ? NSURLErrorCancelled : (error as NSError).code, "message": message, "reason": cancelled ? "cancelled" : "unknown"]], nil)
+            }
         }
         pending[id] = (kind, task)
     }
@@ -298,9 +300,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         webView.configuration.userContentController.removeAllUserScripts()
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
-        #if DEBUG
         if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
-        #endif
         for name in ["AppViewport", "AppLocalBridge"] { if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" } }
         webView.configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         guard lastProcessRecovery.map({ Date().timeIntervalSince($0) >= 60 }) ?? true else { launchPanel.showError(); return }
@@ -311,6 +311,8 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url, bundle.owns(url),
               let value = message.body as? [String: Any], presentedViewController == nil else { return }
         switch value["action"] as? String {
+        case "diagnostics-export":
+            shareDiagnosticReport(javascript: value["entries"])
         case "print":
             let controller = UIPrintInteractionController.shared
             controller.printFormatter = webView.viewPrintFormatter(); controller.present(animated: true, completionHandler: nil)
@@ -326,6 +328,29 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         case "open-market-website": UIApplication.shared.open(origin.appendingPathComponent("market"))
         case "offline-clear": Task { @MainActor in await transport.reset() }
         default: break
+        }
+    }
+    private func shareDiagnosticReport(javascript: Any?) {
+        guard transport.diagnostics.isEnabled, presentedViewController == nil else { return }
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("Reylumi-diagnostics-" + UUID().uuidString, isDirectory: true)
+        do {
+            let report = try transport.diagnostics.report(javascript: javascript,
+                appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
+                appBuild: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "", bundleBuild: bundle.manifest.buildId)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+            let file = directory.appendingPathComponent("Reylumi-diagnostics.json")
+            try report.write(to: file, options: [.atomic, .completeFileProtection])
+            let controller = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+            controller.popoverPresentationController?.sourceView = view
+            controller.popoverPresentationController?.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+            controller.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: directory) }
+            // No automatic upload: the user chooses Save to Files or a share target.
+            present(controller, animated: true)
+        } catch {
+            try? FileManager.default.removeItem(at: directory)
+            let notice = UIAlertController(title: "Reylumi", message: "The diagnostic report could not be saved. Please try again.", preferredStyle: .alert)
+            notice.addAction(UIAlertAction(title: "OK", style: .default))
+            present(notice, animated: true)
         }
     }
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {

@@ -163,7 +163,9 @@ test('bounded transport options and timeout rejection are unchanged by profiling
     '@/lib/bounded-get': {
       ReadConnectionError: bounded.ReadConnectionError,
       fetchWithDeadline(input, options, policy) {
-        calls++; assert.equal(input, 'https://fixture.invalid/rest/v1/users'); assert.equal(options, init);
+        calls++; assert.equal(input, 'https://fixture.invalid/rest/v1/users');
+        assert.equal(options.method, init.method); assert.equal(options.headers, init.headers);
+        assert.ok(options.signal instanceof AbortSignal); assert.equal(init.signal, undefined, 'Caller input is not mutated');
         assert.deepEqual(policy, { timeoutMs: 5000, totalTimeoutMs: 10250, maxAttempts: 2, retryDelayMs: 250 });
         return Promise.reject(cause);
       },

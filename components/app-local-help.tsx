@@ -38,6 +38,8 @@ export function AppLocalHelp({ slug, language = "en", support = false, experienc
     return () => { for (const event of browseResetEvents) window.removeEventListener(event, reset); };
   }, [scope]);
   const t = (text: string) => translateHelp(text, language);
+  const diagnosticExport = typeof window !== "undefined" && typeof window.__reylumiExportDiagnostics === "function"
+    ? <p><button type="button" onClick={() => window.__reylumiExportDiagnostics?.()}>{language === "vi" ? "Lưu báo cáo chẩn đoán" : "Save diagnostic report"}</button></p> : null;
   const link = (href: string, children: ReactNode, className?: string) => <a href={helpHref(href, language)} className={className} onClick={(event: MouseEvent<HTMLAnchorElement>) => {
     if (event.button || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || href.startsWith("#")) return;
     event.preventDefault(); navigate(helpHref(href, language));
@@ -52,7 +54,7 @@ export function AppLocalHelp({ slug, language = "en", support = false, experienc
         <div className={styles.filters} role="group" aria-label={t("Filter by role")}>{(["all", "customer", "owner", "staff"] as const).map(value => <button key={value} type="button" aria-pressed={role === value} onClick={() => setRole(value)}>{t(({ all: "All roles", customer: "Customers", owner: "Salon owners", staff: "Staff members" })[value])}</button>)}</div>
         <p role="status">{t("Guides found")}: {matches.length}</p><ol className={styles.catalog} id="help-results">{matches.map((item, index) => { const guide = getAppLocalHelpGuide(item.slug, language)!; return <li key={guide.slug}>{link(`/help/${guide.slug}`, <><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div className={styles.guideCopy}><strong className={styles.guideTitle}>{guide.title}</strong><span className={styles.summary}>{guide.summary}</span></div><span aria-hidden="true">→</span></>, styles.catalogLink)}</li>; })}</ol>
         {!matches.length ? <p>{t("No matching guides. Try a shorter phrase or another role.")}</p> : null}{query || role !== "all" ? <button type="button" onClick={() => { setQuery(""); setRole("all"); }}>{t("Reset search")}</button> : null}
-      </section><p>{link("/support", t("Contact support"))}</p></main>;
+      </section><p>{link("/support", t("Contact support"))}</p>{diagnosticExport}</main>;
   }
   const guide = getAppLocalHelpGuide(slug, language);
   if (!guide) return <main lang={language} className={styles.shell}><h1>{t("Reylumi Help")}</h1>{link("/help", t("Back to all guides"))}</main>;

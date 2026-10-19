@@ -110,12 +110,20 @@ export function fetchBoundedGet(input: RequestInfo | URL, init: RequestInit = {}
   return fetchWithDeadline(input, init, options);
 }
 
-/** Bounds a read-model wait without replaying the work or pretending it was cancelled. */
-export async function runReadWithDeadline<T>(read: Promise<T>, timeoutMs = 12_000): Promise<T> {
+/** Lazy reads can pass the owned signal to their transport. Existing promises
+ * keep their wait-only contract; no mutation is cancelled or replayed here. */
+export async function runReadWithDeadline<T>(read: Promise<T> | ((signal: AbortSignal) => Promise<T>), timeoutMs = 12_000): Promise<T> {
+  const controller = typeof read === "function" ? new AbortController() : undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    return await Promise.race([read, new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new ReadConnectionError("timeout")), Math.max(1, Math.min(30_000, timeoutMs)));
-    })]);
+    const expired = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new ReadConnectionError("timeout");
+        controller?.abort(error);
+        reject(error);
+      }, Math.max(1, Math.min(30_000, timeoutMs)));
+    });
+    const pending = typeof read === "function" ? read(controller!.signal) : read;
+    return await Promise.race([pending, expired]);
   } finally { if (timer !== undefined) clearTimeout(timer); }
 }

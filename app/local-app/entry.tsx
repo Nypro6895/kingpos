@@ -43,8 +43,8 @@ import { installAppLocalLinkNavigation } from "@/lib/app-local-link-navigation";
 import { APP_LOCAL_REFERENCE_ASSETS } from "@/lib/app-local-reference-content";
 import { installAppLocalBrowserCompatibility } from "@/lib/app-local-browser-compat";
 import { getExperienceOfflinePath, isExperienceOfflineGrant } from "@/lib/experience-offline-policy";
-import { classifyAppLocalContextFailure, runAppLocalContextRead, type AppLocalContextFailure } from "@/lib/app-local-context-recovery";
-import { canAdmitAppLocalPage } from "@/lib/app-local-page-admission";
+import { appLocalAdmissionError, appLocalContextFailureReason, classifyAppLocalContextFailure, isAppLocalContextCancellation, runAppLocalContextRead, type AppLocalContextFailure, type AppLocalContextReason } from "@/lib/app-local-context-recovery";
+import { appLocalPageAdmissionReason, canAdmitAppLocalPage } from "@/lib/app-local-page-admission";
 import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
 
 installExperienceTraceLifecycle();
@@ -90,7 +90,11 @@ const contextFailureMessages: Record<AppLocalContextFailure, string> = {
   timeout: "Checking your account took too long. Please try again.",
   network: "Please check your connection and try again.",
   unavailable: "We couldn't check your account. Please try again.",
-  access: "Your access needs to be checked again. Please try again.",
+  "sign-in": "Please sign in again to open this page.",
+  access: "You don't have access to this page. Check your workspace and try again.",
+  workspace: "Your workspace changed. Please verify it before opening this page.",
+  verification: "App access needs to be verified. Please try again.",
+  reset: "Your app session changed. Please verify it to reopen this page.",
   invalid: "App access could not be checked. Please try again.",
 };
 /** Mirror the context endpoint's original staff/portable resolution, not a permission rule. */
@@ -154,6 +158,14 @@ function App() {
   const workspaceGesture = useRef<WorkspaceGesture | null>(null);
   const pageRecovery = useRef<PageRecovery | null>(null);
   const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
+  const [openingSignIn, setOpeningSignIn] = useState(false), [signInError, setSignInError] = useState(false);
+  const openSignIn = async () => {
+    if (openingSignIn) return;
+    setOpeningSignIn(true); setSignInError(false);
+    try { await getAppLocalHost().openOnline(`/login?${new URLSearchParams({ next: current.current })}`); }
+    catch { setSignInError(true); }
+    finally { setOpeningSignIn(false); }
+  };
   useLayoutEffect(() => { current.current = path; }, [path]);
   const recoverPage = useCallback((value: AppLocalContext, requestedPath: string) => {
     const generation = window.__reylumiAppLocalContext?.generation;
@@ -165,24 +177,26 @@ function App() {
     return true;
   }, []);
   const accept = useCallback((value: AppLocalContext, requestedPath: string, requested = false) => {
+    const reject = (contextReason: AppLocalContextReason) => { recordExperienceTrace("context.reject", { source: "app-local", contextReason, offline: Boolean(value?.offline) }); return false; };
     // A neutral workspace read resolves the selected home; it never admits the
     // former Staff route or the destination's private page by itself.
-    if (workspaceRecovery.current) return false;
+    if (workspaceRecovery.current) return reject("handoff");
     // Native context events from a command preflight may arrive after its reply.
     // During a role handoff only our destination request may admit a page.
-    if (handoffPath.current && (!requested || requestedPath !== handoffPath.current)) return false;
+    if (handoffPath.current && (!requested || requestedPath !== handoffPath.current)) return reject("handoff");
     // A cancelled native neutral read may still emit its background result.
     // It cannot authorize a page navigated to after that read was cancelled.
-    if (!requested && requestedPath === "/" && current.current !== "/") return false;
-    if (!value || value.schemaVersion !== 1 || !isAppLocalScopeId(value.context?.scope)) return false;
+    if (!requested && requestedPath === "/" && current.current !== "/") return reject("late-reply");
+    if (!value || value.schemaVersion !== 1 || !value.context) return reject("schema");
+    if (!isAppLocalScopeId(value.context.scope)) return reject("scope");
     const family = authorityFamily(requestedPath);
-    if (family !== authorityFamily(current.current) || isPublic(current.current)) return false;
-    if(isAppLocalPortableScopeId(value.context.scope)&&(value.grant?.kind!=="portable"||value.grant.scope!==value.context.scope||value.grant.salonId!==value.context.salonId||value.grant.workspaceId!==value.context.workspaceId))return false;
-    if (family === "portable" && !isAppLocalPortableScopeId(value.context.scope)) return false;
-    if (family !== "portable" && family !== "display" && isAppLocalPortableScopeId(value.context.scope)) return false;
+    if (family !== authorityFamily(current.current) || isPublic(current.current)) return reject("authority-family");
+    if(isAppLocalPortableScopeId(value.context.scope)&&(value.grant?.kind!=="portable"||value.grant.scope!==value.context.scope||value.grant.salonId!==value.context.salonId||value.grant.workspaceId!==value.context.workspaceId))return reject("portable-authority");
+    if (family === "portable" && !isAppLocalPortableScopeId(value.context.scope)) return reject("portable-authority");
+    if (family !== "portable" && family !== "display" && isAppLocalPortableScopeId(value.context.scope)) return reject("portable-authority");
     const generation = window.__reylumiAppLocalContext?.generation;
     const next = { value, generation };
-    if (!usable(next, current.current)) { recordExperienceTrace("context.reject", { source: "app-local", reason: value.grant?.generation !== undefined && value.grant.generation !== generation ? "generation" : value.grant && value.grant.expiresAt <= Date.now() ? "expired" : "grant", offline: Boolean(value.offline) }); return false; }
+    if (!usable(next, current.current)) return reject(appLocalPageAdmissionReason(value, current.current, { generation, online: navigator.onLine }) ?? "generation");
     const previous = admitted.current[family];
     // A cached bridge reply can arrive after its background online result.
     // Keep the newer verified authority instead of downgrading it to offline
@@ -204,7 +218,7 @@ function App() {
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
     handoffPath.current = null; setSwitchingWorkspace(false);
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
-    recordExperienceTrace("context.accept", { source: "app-local", offline: Boolean(value.offline), changed: Boolean(identityChanged || authorityChanged), identityChanged, generationChanged: all.some(item => item && item.generation !== generation), scopeChanged: Boolean(previous && previous.value.context.scope !== value.context.scope), permissionChanged: Boolean(previous && previous.value.context.permissionRevision !== value.context.permissionRevision), grantChanged: Boolean(previous?.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision) });
+    recordExperienceTrace("context.accept", { source: "app-local", contextReason: value.grant && isExperienceOfflineGrant(value.grant, { scope: value.context.scope, ...(generation ? { generation } : {}) }) ? "lease-valid" : "online-valid", offline: Boolean(value.offline), changed: Boolean(identityChanged || authorityChanged), identityChanged, generationChanged: all.some(item => item && item.generation !== generation), scopeChanged: Boolean(previous && previous.value.context.scope !== value.context.scope), permissionChanged: Boolean(previous && previous.value.context.permissionRevision !== value.context.permissionRevision), grantChanged: Boolean(previous?.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision) });
     return true;
   }, []);
   const verify = useCallback((options?: { fresh?: boolean; trigger?: ExperienceTraceTrigger }): Promise<void> => {
@@ -231,7 +245,7 @@ function App() {
     recordExperienceTrace("auth.start", { source: "app-local", trigger: options?.trigger ?? "unknown", fresh, operation });
     setError(false);
     check.promise = Promise.resolve().then(async () => {
-      let forceFresh = fresh;
+      let forceFresh = fresh, cancellationRevalidated = false;
       try {
         while (!controller.signal.aborted && started === contextEpoch.current) {
           const read = async () => {
@@ -248,25 +262,39 @@ function App() {
           };
           // Retry only a cold read with a known transient transport failure.
           // Admission rejection, permission checks and commands are not retried.
-          const value = usable(admitted.current[authorityFamily(requestedPath)])
-            ? await read() : await runAppLocalContextRead(read, controller.signal);
+          let value: AppLocalContext;
+          try {
+            value = usable(admitted.current[authorityFamily(requestedPath)])
+              ? await read() : await runAppLocalContextRead(read, controller.signal);
+          } catch (cause) {
+            // A native stale-cookie response is discarded with cancellation.
+            // Rejoin current authority once through a fresh GET, never replay a
+            // command or keep retrying a repeated native cancellation.
+            if (isAppLocalContextCancellation(cause) && !cancellationRevalidated && !controller.signal.aborted && started === contextEpoch.current && current.current === requestedPath) {
+              cancellationRevalidated = true; forceFresh = true;
+              recordExperienceTrace("auth.join", { source: "app-local", status: -999, contextReason: "late-reply", fresh: true, operation });
+              continue;
+            }
+            throw cause;
+          }
           if (controller.signal.aborted || started !== contextEpoch.current) return;
           // A lease may expire while its bridge callback is paused in background.
           // Never admit it; honor the fresh check already requested on resume.
           if (check.requireFresh && !forceFresh && expiredCachedContext(value)) { forceFresh = true; continue; }
           if (!accept(value, requestedPath, true)) {
-            recordExperienceTrace("context.reject", { source: "app-local", reason: "unknown", operation });
+            const contextReason = !value || value.schemaVersion !== 1 || !value.context ? "schema" : !isAppLocalScopeId(value.context.scope) ? "scope" : appLocalPageAdmissionReason(value, requestedPath, { generation: window.__reylumiAppLocalContext?.generation, online: navigator.onLine }) ?? "authority-family";
+            recordExperienceTrace("context.reject", { source: "app-local", contextReason, operation });
             // A saved Owner route may outlive the server-selected Staff role.
             // Resolve the current server home once; never submit a role change
             // or admit this denied DTO merely because the HTTP read succeeded.
             if (recoverPage(value, requestedPath)) return;
-            throw Object.assign(new Error("The application context must be checked again"), { status: [401, 403, 409].includes(value.grantStatus ?? 0) ? value.grantStatus : 403 });
+            throw appLocalAdmissionError(contextReason, value.grantStatus);
           }
           if (check.requireFresh && !forceFresh) { forceFresh = true; continue; }
           return;
         }
       } catch (cause) {
-        recordExperienceTrace(controller.signal.aborted ? "auth.abort" : "auth.reject", { source: "app-local", operation, status: (cause as { status?: number })?.status });
+        recordExperienceTrace(controller.signal.aborted ? "auth.abort" : "auth.reject", { source: "app-local", operation, status: (cause as { status?: number })?.status, contextReason: appLocalContextFailureReason(cause) });
         if (!controller.signal.aborted && started === contextEpoch.current) { setError(classifyAppLocalContextFailure(cause)); setSwitchingWorkspace(false); }
       } finally { recordExperienceTrace("auth.end", { source: "app-local", operation, durationMs: operation ? performance.now() - began : 0 }); if (request.current === check) request.current = null; }
     });
@@ -315,13 +343,14 @@ function App() {
     const nav = (event: Event) => { const value = (event as CustomEvent<{ path?: string }>).detail?.path; if (value) navigate(value); };
     const fresh = (event: Event) => { const value = (event as CustomEvent<AppLocalContext & { contextPath?: string }>).detail; if (typeof value?.contextPath === "string" && !accept(value, value.contextPath)) recoverPage(value, value.contextPath); };
     const reset = (event: Event) => {
-      const detail = (event as CustomEvent<{ reason?: string; scope?: string; scopeEpoch?: number }>).detail;
+      const detail = (event as CustomEvent<{ reason?: string; status?: number; scope?: string; scopeEpoch?: number }>).detail;
       // A fresh authority result rotates native delivery metadata. Do not abort
       // the very context read producing it, or clear an already accepted reply.
       if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
-      recordExperienceTrace("cache.reset", { source: "app-local", trigger: "reset", reason: detail?.reason === "context" ? "grant" : detail?.reason === "resource" ? "resource" : "reset" });
+      const contextReason = detail?.reason === "logout" ? "logout" : appLocalContextFailureReason({ status: detail?.status, contextReason: "reset" });
+      recordExperienceTrace("cache.reset", { source: "app-local", trigger: "reset", reason: detail?.reason === "context" ? "grant" : detail?.reason === "resource" ? "resource" : "reset", contextReason, status: detail?.status });
       if (detail?.reason !== "context") { contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; pageRecovery.current = null; handoffPath.current = null; setSwitchingWorkspace(false); }
-      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" ? false : "access");
+      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" ? false : classifyAppLocalContextFailure({ status: detail?.status, contextReason }));
       const key = `${authorityFamily(current.current)}:${detail?.scope ?? ""}`;
       // One fresh authority recovery per user navigation. Context rejection or
       // a second failing read stops at an actionable retry, never a retry loop.
@@ -381,14 +410,14 @@ function App() {
           if (controller.signal.aborted || workspaceResolution.current !== resolution || contextEpoch.current !== started
             || window.__reylumiAppLocalContext?.generation !== identity.generation) return;
           if (!value.context?.authenticated || value.context.viewerId !== identity.viewerId || [401, 403, 409].includes(value.grantStatus ?? 0)) {
-            throw Object.assign(new Error("Workspace identity changed"), { status: 409 });
+            throw appLocalAdmissionError(value.context?.authenticated ? "workspace-changed" : "sign-in", value.grantStatus);
           }
           if (value.offline || value.offlineState === "unconfirmed" || !value.home || !usable({ value, generation: identity.generation }, "/")) {
             throw Object.assign(new Error("Workspace access could not be confirmed"), { status: 503 });
           }
           const destination = appLocalPath(value.home);
           if (destination === "/" || (!isPublic(destination) && !ownerPaths.has(destination.split("?")[0]) && !getAppLocalPage(destination))
-            || pageAttempt && destination === pageAttempt.path) throw Object.assign(new Error("Workspace home could not be admitted"), { status: 403 });
+            || pageAttempt && destination === pageAttempt.path) throw appLocalAdmissionError("workspace-home");
           if (pageAttempt) pageAttempt.target = destination;
           // Only the server-selected home is used, then its existing fresh
           // route authorization runs. A neutral context is never a page grant.
@@ -406,6 +435,7 @@ function App() {
             window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-error", { detail: "Your workspace did not change. Please select the workspace again." }));
           }
         } catch (cause) {
+          recordExperienceTrace("auth.reject", { source: "app-local", contextReason: appLocalContextFailureReason(cause), status: (cause as { status?: number })?.status });
           if (!controller.signal.aborted && workspaceResolution.current === resolution && contextEpoch.current === started) {
             setSwitchingWorkspace(false); setError(classifyAppLocalContextFailure(cause));
           }
@@ -460,7 +490,7 @@ function App() {
   return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => { recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>Try again</button></> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
+      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}{typeof window.__reylumiExportDiagnostics === "function" ? <button type="button" className="mt-4 block rounded border px-4 py-2" onClick={() => window.__reylumiExportDiagnostics?.()}>Save diagnostic report</button> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
