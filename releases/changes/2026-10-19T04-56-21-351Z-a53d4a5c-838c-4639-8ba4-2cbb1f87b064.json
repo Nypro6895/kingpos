@@ -1,0 +1,97 @@
+{
+  "kind": "change",
+  "changeId": "today-backend-measure-20261018",
+  "status": "ready",
+  "summary": "Measure current Today production aggregates/read-only SQL; reduce pending duplicate authorized financial SELECTs and historical projection size; parallelize independent clock RPCs and add private fixed-stage backend timings; web/iOS-compatible server overlay, no release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/experience/today/route.ts",
+    "lib/daily-pos-report.ts",
+    "lib/read-context-scope.ts",
+    "lib/read-request-timing.ts",
+    "lib/supabase/auth-rest.ts",
+    "lib/supabase/server.ts",
+    "lib/today-dashboard.ts",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/today-dashboard-progressive.test.mjs",
+    "tests/today-financial-read-reuse.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\today-backend-measure-20261018\\artifacts\\today-backend-measure-20261018\\frozen-source",
+    "commit": "3d0bdb7515f591fb06c524f46dc6e238ac2d2be1",
+    "baseCommit": "5b8b2b82d171f446385d9b2497a52137082d4dba",
+    "overlaySha256": "d7d4b03c5a051840c357ebe7f9db2abef25a6776e59983582fe858d666c9022c"
+  },
+  "dependencies": [
+    "auth-workspace-cache-repair-20261018"
+  ],
+  "validation": [
+    {
+      "name": "15 read-only provider metric queries and27 administrative read-only SQL checks with privacy/provenance limits",
+      "result": "passed",
+      "evidence": "artifacts/today-backend-measure-20261018/provider-database-verification.json"
+    },
+    {
+      "name": "79 core tests including10 baseline differential financial/security/mutation parity cases",
+      "result": "passed",
+      "evidence": "artifacts/today-backend-measure-20261018/core-regression-final.log"
+    },
+    {
+      "name": "26 Chrome/WebKit progressive web/native-client regression cases, no skips",
+      "result": "passed",
+      "evidence": "artifacts/today-backend-measure-20261018/browser-regression-report.json"
+    },
+    {
+      "name": "Production web build, TypeScript, ESLint and427 offline assets within budget",
+      "result": "passed",
+      "evidence": "artifacts/today-backend-measure-20261018/production-build.json"
+    },
+    {
+      "name": "Rebuilt native bundle unchanged across344 files; API body/status/ETag/security compatibility preserved",
+      "result": "passed",
+      "evidence": "artifacts/today-backend-measure-20261018/native-compatibility.json"
+    },
+    {
+      "name": "14 exact frozen source files match Git and independent integration review",
+      "result": "passed",
+      "evidence": "artifacts/today-backend-measure-20261018/implementation-verification.json"
+    }
+  ],
+  "releaseNotes": {
+    "webProductionPublished": false,
+    "testflightUploaded": false,
+    "nativeBuildRequiredForThisOverlay": false,
+    "dependencyAuthRepairStillRequiresNativeBuild": true,
+    "physicalIPhoneValidated": false,
+    "productionAuthChildTimingMeasured": false,
+    "productionSpeedGainEstablished": false
+  },
+  "id": "a53d4a5c-838c-4639-8ba4-2cbb1f87b064",
+  "recordedAt": "2026-10-19T04:56:21.351Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\today-backend-measure-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/context/route.ts": "9c2f480516d95ce1eb50a125d1aaab06bdd0cd59501734148507dafda199b2d7",
+    "app/api/app-local/read/route.ts": "2743cf9fb33355cad6ee173155baca08d70b68f6160cf98c78efeaeb3d5925e6",
+    "app/api/experience/today/route.ts": "e3ded97e1d3cc9fd670d359ff38e81b2344d89d86c34649ad068911b7dc3e8ac",
+    "lib/daily-pos-report.ts": "5a71b3da7045a3f2630524e2144ce86e2008613ecd3631678ebd73b398ec00f5",
+    "lib/read-context-scope.ts": "6853ac46613cee681e7b1ad628f4d3c4290bdedf07e5661fd6db4392268708f0",
+    "lib/read-request-timing.ts": "c0b7351393472cfd85e9a323a0735eb24ad5e72d6c9529fc779d871578297f28",
+    "lib/supabase/auth-rest.ts": "abd26771a6b940987ae0290b82dc51843a4f435f1ea7f7228f136bdd8f724406",
+    "lib/supabase/server.ts": "bc7844df449ded7d9006b4947cfe4100dee6274b24e64660243b6f9eee2290fb",
+    "lib/today-dashboard.ts": "b697308f5751306621655b67caaf52ec1c965e63e8e078ac1b76dc1cc840045c",
+    "tests/experience-auth-availability.test.mjs": "9e6038553ca4f1ee3173d9db534265264d16b30d6b19bec539da44864f557081",
+    "tests/read-auth-coalescing.test.mjs": "5e0a577e13256873f936ded5a8c5262b8dff4c4c14b75f55115866597eae6de0",
+    "tests/read-backend-profile.test.mjs": "b80b6220213cd6f3d7c784969a836642e81d215c0e84f2f28bdc198778b559f4",
+    "tests/today-dashboard-progressive.test.mjs": "1e9a79c3fb50e4d6cf3aa243a2d8e66fefed1e6f616c289558455ba63d37e4af",
+    "tests/today-financial-read-reuse.test.mjs": "93f093e257cf951aeb39917c3d134d568285d02874b2a557fd1cc3b63c874d7d"
+  }
+}
