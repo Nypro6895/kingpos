@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-lifecycle-observability-20261019",
+  "status": "needs-integration",
+  "summary": "Canonical Auth lifecycle revision with strict explicit-reset wire contract assertion; 137 web regressions, production build/typecheck and targeted lint passed. Native compiler and15 new Auth tests passed twice; obsolete full-reset expectation repaired and full143 native suite/archive awaiting rerun.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-help.tsx",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "lib/app-local-context-recovery.ts",
+    "lib/app-local-page-admission.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-resources-server.ts",
+    "lib/bounded-get.ts",
+    "lib/experience-trace.ts",
+    "lib/read-context-scope.ts",
+    "lib/request-business-context.ts",
+    "lib/supabase/auth-rest.ts",
+    "tests/app-local-context-recovery.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/context-today-timing.test.mjs",
+    "tests/experience-trace.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/owner-today-progressive-native-contract.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/workspace-selection-contract.test.mjs",
+    "ios/ReylumiTests/AuthCookieProtocolFixture.json",
+    "ios/ReylumiTests/AuthLifecycleContextFixture.json",
+    "ios/ReylumiTests/AuthLifecycleGuestContextFixture.json",
+    "ios/ReylumiTests/AuthLifecycleTransportTests.swift",
+    "releases/changes/2026-10-19T15-29-41-660Z-2d2d9427-1d77-49e9-816b-fe567ce79fb5.json",
+    "tests/app-local-admission-reasons.test.mjs",
+    "tests/app-local-device-diagnostics.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "artifacts/ios-auth-lifecycle-20261019/implementation-notes.md"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/frozen-source-99156cf",
+    "commit": "99156cfea11a23ebebdef18d262034519e166000"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "canonical-web-production-build-typecheck-lint",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/local-verification.json"
+    },
+    {
+      "name": "node-regression",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/regression-tests.log"
+    },
+    {
+      "name": "native-tests-archive-after-reset-contract-test-correction",
+      "result": "pending",
+      "evidence": "Original and retry143tests:142passed;15newAuth regressionspassed; obsolete nilreason assertion repaired in99156cf. Archive not executed on failed runs."
+    }
+  ],
+  "limitations": [
+    "Physical iPhone owner-account root trigger and behavior remain unverified; release is for direct device validation."
+  ],
+  "parentEvent": "b4167b66-1ed5-4504-bac9-6ea18cdb7d1c",
+  "id": "f77704b8-136c-4422-aa0d-35c3805fc865",
+  "recordedAt": "2026-10-19T16:22:59.328Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\auth-lifecycle-live-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
