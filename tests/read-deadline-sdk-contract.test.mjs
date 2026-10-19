@@ -18,7 +18,7 @@ function load(file, dependencies = {}, fetcher) {
 function fixture(fetcher) {
   const scope = load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': { AsyncLocalStorage } });
   const bounded = load('lib/bounded-get.ts', {}, fetcher);
-  const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': bounded, '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation() } }, fetcher);
+  const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': bounded, '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} } }, fetcher);
   const client = createClient('https://synthetic.invalid', 'synthetic-public-key', { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }, global: { fetch: auth.supabaseDeadlineFetch } });
   return { scope, bounded, auth, client };
 }

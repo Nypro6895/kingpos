@@ -74,6 +74,9 @@ test('command-only scope measures an unchanged RPC POST once without activating 
   assert.equal(body.locked, false); assert.equal(response.bodyUsed, false);
   const observed = metrics(trace);
   assert.ok(Object.hasOwn(observed.values, 'backend_rpc'), 'Command RPC elapsed span must be present outside read scope');
+  const resultLog = f.logs.find(entry => entry.state === 'result');
+  assert.deepEqual(resultLog.backendStatuses, { rpc: { 503: 1 } }, 'Record the observed upstream HTTP status without consuming its body');
+  assert.equal(resultLog.status, 200, 'An upstream failure cannot change the handler response chosen by the caller');
   assert.equal(/private|Bearer|cookie|arguments|function/i.test(JSON.stringify(f.logs) + observed.header), false);
   assert.equal(f.scope.getReadAbortSignal(), undefined);
   await body.cancel();
@@ -92,6 +95,20 @@ test('command observation retains the existing safe GET retry budget and confirm
   assert.equal((await deniedTrace.run(() => denied.supabaseDeadlineFetch('https://fixture.invalid/rest/v1/memberships'))).status, 403);
   assert.equal(deniedAttempts, 1);
   assert.ok(Object.hasOwn(metrics(deniedTrace).values, 'backend_rest'));
+});
+
+test('terminal safe-GET HTTP503 remains observable after the existing transport converts it to a typed unavailable error', async () => {
+  let attempts = 0;
+  const f = await fixture(async () => { attempts++; return new Response(null, { status: 503 }); });
+  const trace = f.trace();
+  await assert.rejects(trace.run(() => f.supabaseDeadlineFetch('https://fixture.invalid/auth/v1/user')), error => {
+    assert.ok(error instanceof f.bounded.ReadConnectionError);
+    assert.equal(error.kind, 'network'); assert.equal(error.status, 503); assert.equal(error.name, 'AbortError');
+    return true;
+  });
+  trace.finish(new Response(null, { status: 503 }));
+  assert.equal(attempts, 2, 'The original two-attempt safe-read budget is unchanged');
+  assert.deepEqual(f.logs.find(entry => entry.state === 'result').backendStatuses, { auth: { 503: 1 } });
 });
 
 test('overlapping command collectors retain their own correlation and backend kind without leaking to later work', async () => {

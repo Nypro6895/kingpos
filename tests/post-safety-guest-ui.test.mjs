@@ -166,6 +166,8 @@ test('cold guest hook restores server hidden posts without 401 and joins simulta
   try {
     await f.page.waitForFunction(() => window.fixtureStatuses.length > 0);
     assert.deepEqual(await f.page.evaluate(() => window.fixtureStatuses), [200]);
+    // The fetch status is recorded before JSON parsing and React state delivery.
+    await f.page.waitForFunction(expected => Array.from(document.querySelectorAll("[data-hook]")).every(node => node.textContent === expected), guestHidden);
     assert.deepEqual(await f.page.locator('[data-hook]').allTextContents(), [guestHidden, guestHidden]);
     assert.equal(f.requests.length, 1);
     assert.equal(f.api.calls[0].kind, 'signed-safety-device');

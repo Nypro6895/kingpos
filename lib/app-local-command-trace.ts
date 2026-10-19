@@ -8,6 +8,7 @@ import { APP_LOCAL_TRACE_REQUEST_ID, APP_LOCAL_TRACE_FAILURE_CODE, APP_LOCAL_TRA
 
 type Phase = "validate" | "auth" | "workspace" | "handler";
 type Backend = "auth" | "rest" | "rpc";
+type BackendStatuses = Partial<Record<Backend, Record<number, number>>>;
 type Stage = "proxy_refresh" | "auth" | "workspace" | "handler" | "backend_auth" | "backend_rest" | "backend_rpc" | "total";
 type ErrorClass = "auth_unavailable" | "read_timeout" | "read_network" | "read_body_limit" | "upload_error" | "unknown";
 export type AppLocalCommandTraceRecord = {
@@ -15,6 +16,7 @@ export type AppLocalCommandTraceRecord = {
   requestId: string; commandId: string; status?: number; failureCode?: AppLocalCommandFailureCode;
   failurePhase?: Phase | "proxy_refresh"; errorClass?: ErrorClass;
   durationsMs: Partial<Record<Stage, number>>; backendCalls: Partial<Record<Backend, number>>;
+  backendStatuses: BackendStatuses;
 };
 type Options = { clock?: () => number; utc?: () => string; log?: (record: AppLocalCommandTraceRecord) => void };
 export interface AppLocalCommandTrace {
@@ -28,7 +30,8 @@ export interface AppLocalCommandTrace {
   finish<T extends Response>(response: T): T;
   thrown(error: unknown): void;
   backendNow(): number;
-  observeBackend(kind: Backend, duration: number): void;
+  observeBackend(kind: Backend, duration: number, status?: number): void;
+  observeBackendStatus(kind: Backend, status?: number): void;
   rememberBackendFailure(error: unknown, phase: Phase): void;
 }
 type Observation = { trace: AppLocalCommandTrace; phase: Phase };
@@ -58,6 +61,7 @@ export function createAppLocalCommandTrace(requestHeaders: Headers, options: Opt
   const now = () => { try { const value = (options.clock ?? (() => performance.now()))(); return Number.isFinite(value) ? value : 0; } catch { return 0; } };
   const started = now(), requestId = appLocalTraceRequestId(requestHeaders.get(APP_LOCAL_TRACE_REQUEST_ID)) ?? randomUUID();
   const durations: Partial<Record<Stage, number>> = {}, backendCalls: Partial<Record<Backend, number>> = {};
+  const backendStatuses: BackendStatuses = {};
   const failedPhases = new Map<unknown, Phase>();
   let commandId = "unknown", code: AppLocalCommandFailureCode | undefined, failurePhase: Phase | "proxy_refresh" | undefined, errorClass: ErrorClass | undefined;
   let finished = false;
@@ -68,7 +72,9 @@ export function createAppLocalCommandTrace(requestHeaders: Headers, options: Opt
   function record(state: "dispatch" | "result", status?: number) {
     quietly(() => {
       const utc = (options.utc ?? (() => new Date().toISOString()))();
-      const row: AppLocalCommandTraceRecord = { event: "app_local_command_trace", state, utc: /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(utc) ? utc : "unknown", requestId, commandId, durationsMs: { ...durations }, backendCalls: { ...backendCalls }, ...(status !== undefined ? { status } : {}), ...(code ? { failureCode: code } : {}), ...(failurePhase ? { failurePhase } : {}), ...(errorClass ? { errorClass } : {}) };
+      const statuses: BackendStatuses = {};
+      for (const kind of ["auth", "rest", "rpc"] as const) if (backendStatuses[kind]) statuses[kind] = { ...backendStatuses[kind] };
+      const row: AppLocalCommandTraceRecord = { event: "app_local_command_trace", state, utc: /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(utc) ? utc : "unknown", requestId, commandId, durationsMs: { ...durations }, backendCalls: { ...backendCalls }, backendStatuses: statuses, ...(status !== undefined ? { status } : {}), ...(code ? { failureCode: code } : {}), ...(failurePhase ? { failurePhase } : {}), ...(errorClass ? { errorClass } : {}) };
       (options.log ?? (value => console.info(JSON.stringify(value))))(row);
     });
   }
@@ -93,7 +99,18 @@ export function createAppLocalCommandTrace(requestHeaders: Headers, options: Opt
     },
     proxyUnavailable,
     backendNow: now,
-    observeBackend(kind: Backend, duration: number) { add(`backend_${kind}`, duration); backendCalls[kind] = Math.min(1_000_000, (backendCalls[kind] ?? 0) + 1); },
+    observeBackend(kind: Backend, duration: number, status?: number) {
+      if (!["auth", "rest", "rpc"].includes(kind)) return;
+      add(`backend_${kind}`, duration); backendCalls[kind] = Math.min(1_000_000, (backendCalls[kind] ?? 0) + 1);
+      trace.observeBackendStatus(kind, status);
+    },
+    observeBackendStatus(kind: Backend, status?: number) {
+      if (!["auth", "rest", "rpc"].includes(kind)) return;
+      // HTTP response codes only, never database result codes or body content.
+      if (typeof status !== "number" || !Number.isInteger(status) || status < 100 || status > 599) return;
+      const counts = backendStatuses[kind] ?? (backendStatuses[kind] = {});
+      if (counts[status] !== undefined || Object.keys(counts).length < 16) counts[status] = Math.min(1_000_000, (counts[status] ?? 0) + 1);
+    },
     rememberBackendFailure(error: unknown, phase: Phase) { if (failedPhases.size < 64 && !failedPhases.has(error)) failedPhases.set(error, phase); },
     finish<T extends Response>(response: T): T {
       if (finished) return response;
@@ -110,9 +127,14 @@ export function createAppLocalCommandTrace(requestHeaders: Headers, options: Opt
       record("result", response.status);
       return response;
     },
-    thrown(error: unknown) { quietly(() => { trace.error(error); durations.total = bounded(now() - started); record("result", 500); }); },
+    thrown(error: unknown) { quietly(() => { trace.error(error); durations.total = bounded(now() - started); record("result"); }); },
   };
   return trace;
+}
+
+/** Preserve a known terminal HTTP status before transport converts its response to an error. */
+export function observeAppLocalCommandBackendStatus(kind: Backend, status: number): void {
+  quietly(() => { observation.getStore()?.trace.observeBackendStatus(kind, status); });
 }
 
 /** Observe the existing logical fetch exactly once; never read/clone its body. */
@@ -122,8 +144,13 @@ export async function measureAppLocalCommandBackend<T>(kind: Backend, operation:
   if (!scope || !["auth", "rest", "rpc"].includes(kind)) return operation();
   const current = scope;
   let started = 0;
+  let observedStatus: number | undefined;
   quietly(() => { started = current.trace.backendNow(); });
-  try { return await operation(); }
+  try {
+    const result = await operation();
+    quietly(() => { if (result instanceof Response) observedStatus = result.status; });
+    return result;
+  }
   catch (error) { quietly(() => current.trace.rememberBackendFailure(error, current.phase)); throw error; }
-  finally { quietly(() => current.trace.observeBackend(kind, current.trace.backendNow() - started)); }
+  finally { quietly(() => current.trace.observeBackend(kind, current.trace.backendNow() - started, observedStatus)); }
 }

@@ -11,12 +11,13 @@ const hiddenRead = 'action.' + createHash('sha256').update('app/post-moderation/
 
 function routeFixture(options = {}) {
   const logs = [], calls = [];
+  let connectionCalls = 0;
   class UploadError extends Error {}
   const untouched = async () => ({ handled: false });
   const business = { user: options.guest ? null : { id: 'private-viewer-never-log' } };
   const route = load('app/api/app-local/command/route.ts', {
     ...commandTraceRouteDependencies({ log: row => { logs.push(row); if (options.loggerFailure) throw Error('logger unavailable'); } }),
-    'next/server': { connection: async () => {} },
+    'next/server': { connection: async () => { connectionCalls++; if (options.connectionError) throw options.connectionError; } },
     'next/headers': { headers: async () => new Headers(options.proxyUnavailable ? { 'x-reylumi-auth-unavailable': '1' } : {}) },
     '@/lib/request-business-context': { getRequestBusinessContext: async () => { calls.push('auth'); if (options.authError) throw options.authError; return business; } },
     '@/lib/experience-context': { getExperienceContext: () => ({ scope }) },
@@ -38,7 +39,7 @@ function routeFixture(options = {}) {
     '@/lib/app-local-guest-read-policy': { APP_LOCAL_GUEST_HIDDEN_POSTS_READ: hiddenRead },
   });
   return {
-    logs, calls,
+    logs, calls, get connectionCalls() { return connectionCalls; },
     send(overrides = {}) {
       return route.POST(new Request('https://reylumi.com/api/app-local/command', {
         method: 'POST', headers: { origin: overrides.origin ?? 'https://reylumi.com', 'content-type': 'application/json', [protocol.APP_LOCAL_TRACE_REQUEST_ID]: overrides.traceId ?? requestId, ...overrides.headers },
@@ -137,6 +138,89 @@ test('diagnostic clock/header/log failures never replace a committed response or
   assert.equal(trace.finish(actual), response); assert.equal(writes, 1); assert.equal(await response.text(), 'unchanged');
   const original = Error('original');
   await assert.rejects(trace.run(() => trace.measure('handler', async () => { throw original; })), received => received === original);
+});
+
+test('escaping connection error keeps its identity and logs no unobserved HTTP status', async () => {
+  const original = Error('private connection detail'), f = routeFixture({ connectionError: original });
+  await assert.rejects(f.send(), error => error === original);
+  assert.equal(f.connectionCalls, 1); assert.deepEqual(f.calls, []);
+  const result = f.logs.at(-1);
+  assert.equal(result.state, 'result'); assert.equal(result.requestId, requestId);
+  assert.equal(Object.hasOwn(result, 'status'), false);
+  assert.equal(result.failureCode, 'handler_exception');
+  assert.doesNotMatch(JSON.stringify(f.logs), /private connection detail|stack/);
+});
+
+test('backend HTTP status observation leaves Response/body and successful business result untouched', async () => {
+  const logs = [], trace = tracing.createAppLocalCommandTrace(new Headers(), { clock: () => 0, log: row => logs.push(row) });
+  const backend = new Response('private backend body', { status: 503 });
+  backend.clone = () => { assert.fail('Status observation must not clone a body'); };
+  let attempts = 0;
+  const observed = await trace.run(() => tracing.measureAppLocalCommandBackend('rpc', async () => { attempts++; return backend; }));
+  assert.equal(observed, backend); assert.equal(backend.bodyUsed, false); assert.equal(attempts, 1);
+  const business = trace.finish(new Response('unchanged', { status: 200 }));
+  assert.equal(business.status, 200); assert.equal(business.headers.get(protocol.APP_LOCAL_TRACE_FAILURE_CODE), null);
+  assert.deepEqual(logs.at(-1).backendStatuses, { rpc: { 503: 1 } });
+  assert.deepEqual(logs[0].backendStatuses, {}, 'Dispatch record must remain an immutable observation snapshot');
+  assert.equal(logs.at(-1).failureCode, undefined);
+  assert.doesNotMatch(business.headers.get('Server-Timing'), /status|503/);
+  assert.doesNotMatch(JSON.stringify(logs), /private backend body/);
+});
+
+test('status telemetry accepts only real HTTP responses and ignores a failing diagnostic status getter', async () => {
+  const rows = [], trace = tracing.createAppLocalCommandTrace(new Headers(), { log: row => rows.push(row) });
+  const data = { status: 503, private: 'never log this data' };
+  const response = new Response('unread');
+  Object.defineProperty(response, 'status', { get() { throw Error('diagnostic status failed'); } });
+  assert.equal(await trace.run(() => tracing.measureAppLocalCommandBackend('rpc', async () => data)), data);
+  assert.equal(await trace.run(() => tracing.measureAppLocalCommandBackend('rest', async () => response)), response);
+  assert.equal(response.bodyUsed, false);
+  trace.finish(new Response());
+  assert.deepEqual(rows.at(-1).backendStatuses, {});
+  assert.deepEqual(rows.at(-1).backendCalls, { rpc: 1, rest: 1 });
+  assert.doesNotMatch(JSON.stringify(rows), /never log this data|diagnostic status failed/);
+});
+
+test('status-only backend observation stays scoped and never increments calls or duration', async () => {
+  const rows = [], otherRows = [];
+  const trace = tracing.createAppLocalCommandTrace(new Headers(), { log: row => rows.push(row) });
+  const other = tracing.createAppLocalCommandTrace(new Headers(), { log: row => otherRows.push(row) });
+  tracing.observeAppLocalCommandBackendStatus('rest', 502);
+  await Promise.all([
+    trace.run(async () => {
+      await Promise.resolve();
+      tracing.observeAppLocalCommandBackendStatus('rest', 503);
+      for (const status of [99, 600, 503.5, NaN, Infinity, 'private-code']) tracing.observeAppLocalCommandBackendStatus('rest', status);
+      tracing.observeAppLocalCommandBackendStatus('private-kind', 503);
+      trace.observeBackendStatus('rpc', 429);
+    }),
+    other.run(async () => { await Promise.resolve(); tracing.observeAppLocalCommandBackendStatus('auth', 401); }),
+  ]);
+  tracing.observeAppLocalCommandBackendStatus('rpc', 504);
+  trace.finish(new Response()); other.finish(new Response());
+  assert.deepEqual(rows.at(-1).backendStatuses, { rest: { 503: 1 }, rpc: { 429: 1 } });
+  assert.deepEqual(otherRows.at(-1).backendStatuses, { auth: { 401: 1 } });
+  for (const result of [rows.at(-1), otherRows.at(-1)]) {
+    assert.deepEqual(result.backendCalls, {});
+    assert.equal(Object.keys(result.durationsMs).some(stage => stage.startsWith('backend_')), false);
+    assert.equal(result.failureCode, undefined);
+  }
+  assert.doesNotMatch(JSON.stringify(rows), /private-code|private-kind/);
+});
+
+test('backend HTTP status counts and kind cardinality are bounded without arbitrary strings', () => {
+  const rows = [], trace = tracing.createAppLocalCommandTrace(new Headers(), { log: row => rows.push(row) });
+  for (let status = 100; status < 120; status++) trace.observeBackend('rpc', 1, status);
+  for (const status of [99, 600, 503.5, NaN, Infinity, 'private-code']) trace.observeBackend('rpc', 1, status);
+  trace.observeBackend('private-kind', 1, 503);
+  for (let count = 0; count < 1_000_005; count++) trace.observeBackend('rpc', 1, 100);
+  trace.finish(new Response());
+  const result = rows[0];
+  assert.equal(Object.keys(result.backendStatuses.rpc).length, 16);
+  assert.deepEqual(Object.keys(result.backendStatuses.rpc), Array.from({ length: 16 }, (_, index) => String(index + 100)));
+  assert.equal(result.backendStatuses.rpc[100], 1_000_000);
+  assert.equal(result.backendCalls.rpc, 1_000_000); assert.equal(result.durationsMs.backend_rpc, 300_000);
+  assert.doesNotMatch(JSON.stringify(result), /private/);
 });
 
 function proxyFixture(unavailable = false) {

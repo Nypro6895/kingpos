@@ -20,7 +20,7 @@ function fixture(fetcher) {
   const scope = load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': { AsyncLocalStorage } });
   const timing = load('lib/read-request-timing.ts');
   const bounded = load('lib/bounded-get.ts', {}, fetcher);
-  const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': bounded, '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation() } }, fetcher);
+  const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': bounded, '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} } }, fetcher);
   return { ...timing, ...auth, scope, bounded };
 }
 
@@ -159,7 +159,7 @@ test('bounded transport options and timeout rejection are unchanged by profiling
   const init = { method: 'HEAD', headers: { authorization: 'private-token' } };
   let calls = 0;
   const auth = load('lib/supabase/auth-rest.ts', {
-    '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation() },
+    '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} },
     '@/lib/bounded-get': {
       ReadConnectionError: bounded.ReadConnectionError,
       fetchWithDeadline(input, options, policy) {

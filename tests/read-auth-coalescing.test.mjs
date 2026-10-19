@@ -42,7 +42,7 @@ function fixture() {
   const clientOptions = [];
   const accountStatus = load('lib/users/account-status.ts');
   const auth = load('lib/supabase/auth-rest.ts', {
-    '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation() },
+    '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} },
     '@/lib/read-context-scope': scope,
     '@/lib/bounded-get': {
       ReadConnectionError: class extends Error {},

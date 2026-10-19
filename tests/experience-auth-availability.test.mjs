@@ -16,7 +16,7 @@ function load(file, dependencies = {}) {
   return exports;
 }
 const reads = load('lib/bounded-get.ts');
-const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': reads, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation() } });
+const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': reads, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} } });
 const adminRow = { user_id: 'admin', membership_id: 'member', role_id: 'role', role_name: 'Admin', role_slug: 'admin', permissions: ['platform.access'] };
 
 function adminFixture({ error = null, status = 200, row = adminRow, unavailableClient = false, validSession = true } = {}) {
