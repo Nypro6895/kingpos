@@ -492,13 +492,16 @@ final class LocalAppTransportTests: XCTestCase {
         let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.cached-generation." + UUID().uuidString)
         let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.cached-generation." + UUID().uuidString)!, cookies: { [] })
         let original = try await transport.freshContext(path: "/explore")
-        let oldGeneration = transport.generation, oldLease = try XCTUnwrap(ReylumiLocalSession.verified(original, generation: oldGeneration))
+        let oldGeneration = transport.generation, oldEpoch = transport.scopeEpoch, oldNonce = transport.nonce
+        let oldLease = try XCTUnwrap(ReylumiLocalSession.verified(original, generation: oldGeneration))
         var resetDetail: [String: Any]?
         transport.onEvent = { name, detail in if name == "reylumi:app-local-reset" { resetDetail = detail } }
         await transport.reset()
         XCTAssertNotEqual(transport.generation, oldGeneration)
+        XCTAssertEqual(transport.scopeEpoch, oldEpoch + 1); XCTAssertNotEqual(transport.nonce, oldNonce)
         XCTAssertNotNil(resetDetail); XCTAssertEqual(resetDetail?["generation"] as? String, transport.generation)
-        XCTAssertNil(resetDetail?["reason"], "A real account/session revocation must still cancel outstanding admission")
+        XCTAssertEqual(resetDetail?["reason"] as? String, "explicitReset", "A full reset must retain its typed non-context reason so outstanding admission is cancelled")
+        XCTAssertNil(resetDetail?["status"], "An explicit local reset must not fabricate an HTTP authorization status")
         let cleared = await store.session(generation: oldGeneration); XCTAssertNil(cleared)
         // Even a leftover encrypted lease cannot admit the previous generation.
         await store.accept(oldLease)
