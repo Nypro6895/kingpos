@@ -1,0 +1,111 @@
+{
+  "kind": "release",
+  "summary": "Web published: coordinated Auth/workspace/cache recovery and progressive Today/read optimization. Native build/upload remains in progress; physical iPhone verification pending.",
+  "changes": [
+    "c69ac413-b7f2-4651-8ff2-8e76248298ab",
+    "dd1af9e6-7c50-4eed-b402-0073d1dcef2c",
+    "d660ef09-c110-4a90-98e9-ba6e0ac34eeb",
+    "7a36a601-ed65-4899-96b1-2aaab10b9b4a",
+    "a53d4a5c-838c-4639-8ba4-2cbb1f87b064"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7Paw34bwwPfj4PM1r9hPXLFvKJzh",
+      "baselineDeploymentId": "dpl_GLLtr5V1Jnc72PKoEEGe2yeinfkK",
+      "sourceSha256": "b96ff8d1551a15ef1afa5fb5342ebc7aae3bd8351da163575a3366f0c91da9f9",
+      "overlaySha256": "24a6c69b688ebfd3ef4c19d79741e73cc67b7939eab9dd898e3fbc8c31efcc2c",
+      "deploySourceSha256": "675957d384faae34e1bea88a7f13db4164fd1bf69b6a6292632f68519f6eec47",
+      "commit": "1c2628c4df2069de0722874ce8972231945e7146",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/auth-today-iphone-validation-20261019/live-source-verification.json"
+    }
+  },
+  "baseline": {
+    "commit": "c8b0b852ce807b6283631113e24c988010ab7319",
+    "sourceSha256": "b5c97d88f110e610c639cc9927b746f3ad07e6c44ba3beed63d8bec9ba415410"
+  },
+  "webVerifiedAt": "2026-10-19T05:21:44.800Z",
+  "verification": {
+    "localTests": {
+      "tests": 242,
+      "passed": 242,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "productionBuild": "passed",
+    "lint": "passed",
+    "candidateGetChecks": 15,
+    "liveGetChecks": 15,
+    "authenticatedFunctionalReadiness": true
+  },
+  "limitations": [
+    "Functional success does not establish retained DOM identity, no duplicate requests or immediate warm navigation",
+    "Transient whole-workspace pending states remain visible on some navigation attempts",
+    "No authenticated browser HTTP timings or request counts extracted",
+    "No real mobile-network interruption or OS suspend/resume performed",
+    "No physical iPhone result yet; Staff to Owner still requires an eligible real phone account",
+    "No claim that all original timeouts or apparent reloads are fixed"
+  ],
+  "native": {
+    "status": "tests-and-archive-running",
+    "run": "https://github.com/Nypro6895/kingpos/actions/runs/39203792459",
+    "commit": "1c2628c4df2069de0722874ce8972231945e7146",
+    "notYetTestflightAvailable": true
+  },
+  "physicalIPhone": {
+    "status": "pending"
+  },
+  "rollback": {
+    "deploymentId": "dpl_GLLtr5V1Jnc72PKoEEGe2yeinfkK",
+    "noSchemaChanges": true
+  },
+  "excluded": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "eventId": "63485a4d-e396-460a-b3e4-46c7029c84dc",
+      "status": "blocked",
+      "reason": "Blocked or outside authorized target"
+    },
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "status": "blocked",
+      "reason": "Separate Nails Site, not Reylumi app"
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "status": "blocked",
+      "reason": "Separate Nails Site, not Reylumi app"
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "status": "ready",
+      "reason": "Separate Nails Site, not Reylumi app"
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "status": "ready",
+      "reason": "Separate Nails Site, not Reylumi app"
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "status": "ready",
+      "reason": "Local preview harness only"
+    },
+    {
+      "changeId": "admin-default-active-20261018",
+      "eventId": "8f8a3094-96b5-4271-80a4-e3458bf956a8",
+      "status": "ready",
+      "reason": "Outside targeted Auth/Today iPhone verification release"
+    }
+  ],
+  "id": "ead24246-d96b-47b2-8b73-f57e4c301541",
+  "recordedAt": "2026-10-19T05:26:24.351Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
