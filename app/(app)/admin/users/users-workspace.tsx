@@ -58,7 +58,7 @@ export function UsersWorkspace({users,context,query,initialUserId,initialTab='pr
  function changeTab(next:UserDrawerTab){if(next===tab)return;if(!guard())return;setDirty(false);setTab(next);setCaseId(null);}
  function result(r:UserOperationResult){setNotice(r);if(r.ok||r.requestStatus){setDirty(false);if(mode&&r.userId){setMode(null);setCurrent(r.userId);}router.refresh();}if(current&&(r.ok||r.requestStatus))setRevision(v=>v+1);}
  function newUser(next:'invite'|'create'){if(!guard())return;opener.current=document.activeElement as HTMLElement;setMode(next);setCurrent(null);setData(null);setDirty(false);setNotice(null);}
- const filterParams=new URLSearchParams();for(const [k,v] of Object.entries(query))if(v&&k!=='user'&&k!=='tab')filterParams.set(k,v);
+ const filterParams=new URLSearchParams();for(const [k,v] of Object.entries(query))if(typeof v==='string'&&(v||k==='status')&&k!=='user'&&k!=='tab')filterParams.set(k,v);
  const pageHref=(page:number)=>{const q=new URLSearchParams(filterParams);q.set('page',String(page));q.set('pageSize',String(users.page_size));return `/admin/users?${q}`;};
  return <div className={styles.workspace} data-user-workspace>
   <div className={`${styles.body} ${open?styles.withDrawer:''}`}>

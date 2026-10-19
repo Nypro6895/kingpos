@@ -59,6 +59,32 @@ export function resetAppLocalResources() {
   for (const cell of cells.values()) { cell.epoch = epoch; emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined }); }
   cells.clear();
 }
+/** Withdraw only these DTOs before an explicitly reauthorized page recovery. */
+export async function discardAppLocalResources(scope: string, name: string, argsList: readonly Record<string, unknown>[]): Promise<boolean> {
+  const started = epoch, host = getAppLocalHost();
+  const targets = argsList.map(args => ({ ...cellFor(scope, name, args), args }));
+  for (const { cell } of targets) {
+    cell.revision++;
+    cell.invalidated = true;
+    appLocalResourceCache.forget(cell.context);
+  }
+  // Remove durable copies before new readers can mount. A failed removal keeps
+  // the page withdrawn; it must not restore a snapshot rejected by the server.
+  await Promise.all(targets.map(({ args }) => host.isNative
+    ? host.cache("remove", { name, args, scope })
+    : removeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args })));
+  if (epoch !== started || targets.some(({ key, cell }) => cells.get(key) !== cell)) return false;
+  for (const { key, cell, args } of targets) {
+    cells.delete(key);
+    const replacement = cellFor(scope, name, args).cell;
+    replacement.invalidated = true;
+    // Do not race a late old durable writer during this recovery. Fresh reads
+    // repopulate their own authorized snapshots through the existing transport.
+    replacement.hydrated = Promise.resolve();
+    emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined, accessDenied: false });
+  }
+  return true;
+}
 if (typeof window !== "undefined") {
   for (const event of ["reylumi:app-local-reset", "reylumi:experience-reset", "reylumi:offline-clear", "reylumi:offline-grant-invalidated", "reylumi:experience-access-changed"]) window.addEventListener(event, value => {
     // Entry sequences context rotations against the accepted native epoch.

@@ -10,7 +10,7 @@ async function AdminLocationsPage({
 }) {
   const actor = await requirePlatformAdmin(P.locationsRead);
   const params = await searchParams;
-  const data = await getBusinessWorkspace(params);
+  const data = await getBusinessWorkspace({ ...params, status: params.status ?? "active" });
   return (
     <BusinessesWorkspace
       data={data}

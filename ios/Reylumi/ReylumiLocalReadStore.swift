@@ -91,6 +91,9 @@ actor ReylumiLocalReadStore {
     static let maximumSnapshots = 100
     static let maximumBytes = 16 * 1024 * 1024
     struct Row: Codable { let key: String; let sessionKey: String; let revision: String; let payload: Data; let receivedAt: Date }
+    /// Transient lifecycle fence, never a credential or part of the disk schema.
+    struct ReadPermit: Sendable { fileprivate let id: UUID }
+    private struct PendingRead { let key: String; let scope: String?; var invalidated = false }
     private struct State: Codable { let version: Int; var sessions: [ReylumiLocalSession]; var rows: [Row] }
     private let file: URL
     private let service: String
@@ -99,6 +102,7 @@ actor ReylumiLocalReadStore {
     private var loaded = false
     private var pendingSave: Task<Void, Never>?
     private var pendingSaveID: UUID?
+    private var pendingReads: [UUID: PendingRead] = [:]
     private(set) var successfulSaves = 0
 
     init(origin: URL, directory: URL? = nil, service: String = "com.reylumi.local-app-reads.v1") {
@@ -160,14 +164,40 @@ actor ReylumiLocalReadStore {
             candidate.valid(generation: generation, at: now) && (scope == nil || candidate.scope == scope) && (path == nil || candidate.compatible(path: path!)) && (!privateOnly || candidate.permitsPrivateReads) && (authority == nil || candidate.authority == authority)
         }
     }
+    func beginRead(_ key: String, scope: String?) -> ReadPermit {
+        let permit = ReadPermit(id: UUID())
+        pendingReads[permit.id] = PendingRead(key: key, scope: scope)
+        return permit
+    }
+    func finishRead(_ permit: ReadPermit) { pendingReads[permit.id] = nil }
+    func permitsRead(_ permit: ReadPermit, key: String, scope: String?) -> Bool {
+        guard let read = pendingReads[permit.id], !read.invalidated, read.key == key else { return false }
+        return read.scope == nil || scope == nil || read.scope == scope
+    }
+    func invalidatePendingReads(_ key: String, scope: String?) {
+        for (id, read) in pendingReads where read.key == key && (scope == nil || read.scope == nil || read.scope == scope) {
+            pendingReads[id]?.invalidated = true
+        }
+    }
+    private func invalidatePendingScopes(_ scopes: Set<String>) {
+        guard !scopes.isEmpty else { return }
+        for (id, read) in pendingReads where read.scope.map({ scopes.contains($0) }) ?? true { pendingReads[id]?.invalidated = true }
+    }
     func accept(_ session: ReylumiLocalSession) async {
         load()
         guard session.valid(generation: session.generation) else { return }
         if state?.sessions.contains(where: { $0.key == session.key && $0.envelope == session.envelope }) == true {
             if let pendingSave { await pendingSave.value }; return
         }
-        if state == nil || state?.sessions.contains(where: { $0.viewerId != session.viewerId || $0.generation != session.generation }) == true { state = State(version: 2, sessions: [], rows: []) }
+        if state == nil || state?.sessions.contains(where: { $0.viewerId != session.viewerId || $0.generation != session.generation }) == true {
+            if state != nil { pendingReads.removeAll() }
+            state = State(version: 2, sessions: [], rows: [])
+        }
         let replaced = Set((state?.sessions ?? []).filter { $0.group == session.group && $0.grantRevision != session.grantRevision }.map(\.key))
+        let revokedScopes = Set((state?.sessions ?? []).filter {
+            replaced.contains($0.key) || (!$0.valid(generation: session.generation) && ($0.key != session.key || $0.grantRevision != session.grantRevision))
+        }.map(\.scope))
+        invalidatePendingScopes(revokedScopes)
         state?.rows.removeAll { replaced.contains($0.sessionKey) }
         state?.sessions.removeAll { replaced.contains($0.key) || $0.key == session.key || !$0.valid(generation: session.generation) }
         state?.sessions.append(session)
@@ -185,9 +215,13 @@ actor ReylumiLocalReadStore {
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; state?.rows.append(row)
         return row.payload
     }
-    func put(_ key: String, payload: Data, session: ReylumiLocalSession, resourceName: String? = nil, now: Date = Date()) async {
+    // Network-backed callers must carry the permit acquired before networking.
+    // Direct, already-available trusted seeds may omit it; the session and safe
+    // payload guards still apply. The sole production network caller passes it.
+    func put(_ key: String, payload: Data, session: ReylumiLocalSession, resourceName: String? = nil, now: Date = Date(), permit: ReadPermit? = nil) async {
         load()
-        guard key.utf8.count <= 16384, payload.count <= 4 * 1024 * 1024, session.valid(generation: session.generation, at: now),
+        if let permit, !permitsRead(permit, key: key, scope: session.scope) { return }
+        guard !Task.isCancelled, key.utf8.count <= 16384, payload.count <= 4 * 1024 * 1024, session.valid(generation: session.generation, at: now),
               state?.sessions.contains(where: { $0.key == session.key && $0.grantRevision == session.grantRevision && $0.generation == session.generation }) == true,
               let object = try? JSONSerialization.jsonObject(with: payload), Self.isSafeReadPayload(object, resourceName: resourceName, session: session) else { return }
         if state?.rows.contains(where: { $0.key == key && $0.sessionKey == session.key && $0.revision == session.grantRevision && $0.payload == payload }) == true {
@@ -198,14 +232,18 @@ actor ReylumiLocalReadStore {
         while (state?.rows.count ?? 0) > Self.maximumSnapshots || (state?.rows.reduce(0, { $0 + $1.payload.count }) ?? 0) > Self.maximumBytes { state?.rows.removeFirst() }
         await saveTogether()
     }
-    func clear() { cancelPendingSave(); loaded = true; state = nil; try? FileManager.default.removeItem(at: file); SecItemDelete(query as CFDictionary) }
+    func clear() { pendingReads.removeAll(); cancelPendingSave(); loaded = true; state = nil; try? FileManager.default.removeItem(at: file); SecItemDelete(query as CFDictionary) }
     func remove(_ key: String, session: ReylumiLocalSession) {
         load()
+        invalidatePendingReads(key, scope: session.scope)
         guard state?.sessions.contains(where: { $0.key == session.key && $0.grantRevision == session.grantRevision && $0.generation == session.generation }) == true else { return }
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; cancelPendingSave(); save()
     }
     func revoke(scope: String?, authority: String? = nil) {
         load()
+        let revokedScopes = Set((state?.sessions ?? []).filter { (scope == nil || $0.scope == scope) && (authority == nil || $0.authority == authority) }.map(\.scope))
+        if scope == nil && authority == nil { pendingReads.removeAll() }
+        else { invalidatePendingScopes(revokedScopes.union(scope.map { Set([$0]) } ?? [])) }
         let removed = Set((state?.sessions ?? []).filter { (scope == nil || $0.scope == scope) && (authority == nil || $0.authority == authority) }.map(\.key))
         state?.sessions.removeAll { removed.contains($0.key) }; state?.rows.removeAll { removed.contains($0.sessionKey) }; cancelPendingSave(); save()
     }

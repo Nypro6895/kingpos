@@ -95,7 +95,7 @@ final class ReylumiLocalAppTransport {
         [cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased(), cookie.path, cookie.name].joined(separator: "\u{0}")
     }
     private func cookieIdentity(_ values: [HTTPCookie]) -> [String] {
-        values.filter { $0.name.hasPrefix("sb-") || $0.name.hasPrefix("reylumi") || $0.name.hasPrefix("kingpos") }.map { cookieKey($0) + "\u{0}" + $0.value }.sorted()
+        ReylumiCookieAuthority.identity(values, origin: origin)
     }
     private static func removesCookie(_ cookie: HTTPCookie) -> Bool {
         if let expiry = cookie.expiresDate, expiry <= Date() { return true }
@@ -396,8 +396,29 @@ final class ReylumiLocalAppTransport {
     }
     func removeCached(name: String, args: [String: Any], requestedScope: String? = nil) async throws {
         guard let rule = manifest.reads.first(where: { $0.name == name }), rule.cacheable else { return }
-        let args = try arguments(args, keys: rule.argumentKeys)
-        if let session = await readLease(name: name, scope: requestedScope ?? session?.scope, privateOnly: rule.access != "public") { await store.remove(try cacheKey(name: name, args: args), session: session) }
+        let args = try arguments(args, keys: rule.argumentKeys), key = try cacheKey(name: name, args: args)
+        let scope = requestedScope ?? session?.scope
+        // Withdraw in-flight deliveries before yielding for lease lookup. The
+        // store repeats this fence atomically with deletion, so a late put can
+        // neither repopulate the durable key nor become an offline fallback.
+        await store.invalidatePendingReads(key, scope: scope)
+        if let session = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") { await store.remove(key, session: session) }
+    }
+    private func withResourceReadPermit<T>(key: String, scope: String?, operation: @MainActor (ReylumiLocalReadStore.ReadPermit) async throws -> T) async throws -> T {
+        let permit = await store.beginRead(key, scope: scope)
+        do {
+            let value = try await operation(permit)
+            await store.finishRead(permit)
+            return value
+        } catch {
+            await store.finishRead(permit)
+            throw error
+        }
+    }
+    private func ensureResourceReadCurrent(_ permit: ReylumiLocalReadStore.ReadPermit, key: String, scope: String?, epoch: Int) async throws {
+        try ensureCurrent(epoch)
+        guard await store.permitsRead(permit, key: key, scope: scope) else { throw CancellationError() }
+        try ensureCurrent(epoch)
     }
     func backgroundRegistration(_ args: [String: Any]) async throws -> ReylumiSyncRegistration {
         await loadSession()
@@ -427,6 +448,7 @@ final class ReylumiLocalAppTransport {
         let args = try arguments(raw, keys: rule.argumentKeys), key = try cacheKey(name: name, args: args), epoch = scopeEpoch
         let json = String(decoding: try JSONSerialization.data(withJSONObject: args, options: [.sortedKeys]), as: UTF8.self)
         guard json.utf8.count <= 32768 else { throw failure(400, "Unsupported page filters.") }
+        return try await withResourceReadPermit(key: key, scope: requestedScope ?? session?.scope) { permit in
         do {
             var query = [URLQueryItem(name: "name", value: name), URLQueryItem(name: "args", value: json)]
             if let requestedScope { query.append(URLQueryItem(name: "scope", value: requestedScope)) }
@@ -464,6 +486,7 @@ final class ReylumiLocalAppTransport {
             if response.statusCode == 304 {
                 let scope = response.value(forHTTPHeaderField: "x-reylumi-scope") ?? requestedScope ?? session?.scope ?? ""
                 guard requestedScope == nil || requestedScope == scope else { throw failure(409, "App access could not be checked.") }
+                try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
                 return ["status": 304, "schemaVersion": 1, "etag": response.value(forHTTPHeaderField: "ETag") ?? etag ?? "", "scope": scope, "updatedAt": Date().timeIntervalSince1970 * 1000]
             }
             var object = try decode(data, response: response)
@@ -471,14 +494,27 @@ final class ReylumiLocalAppTransport {
                   let scope = object["scope"] as? String, object["data"] != nil,
                   Self.validUpdatedAt(object["updatedAt"]), requestedScope == nil || requestedScope == scope else { throw failure(409, "App access could not be checked.") }
             if rule.access != "public" { try await awaitReadContext(scope: scope, epoch: epoch) }
-            try ensureCurrent(epoch)
-            if rule.cacheable, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") { await store.put(key, payload: data, session: lease, resourceName: name) }
-            try ensureCurrent(epoch); object["offline"] = false
+            try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
+            if rule.cacheable, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") {
+                try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
+                await store.put(key, payload: data, session: lease, resourceName: name, permit: permit)
+            }
+            try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch); object["offline"] = false
             return object
         } catch {
             try ensureCurrent(epoch)
-            if error is URLError, let cached = try await cached(name: name, args: args, requestedScope: requestedScope) { return cached }
+            // Confirmed 403/404 retain their original meaning even though their
+            // own removal invalidated this permit. Only an offline fallback
+            // needs the extra resource check here.
+            if error is URLError {
+                try await ensureResourceReadCurrent(permit, key: key, scope: requestedScope, epoch: epoch)
+                if let cached = try await cached(name: name, args: args, requestedScope: requestedScope) {
+                    try await ensureResourceReadCurrent(permit, key: key, scope: cached["scope"] as? String, epoch: epoch)
+                    return cached
+                }
+            }
             throw error
+        }
         }
     }
     private func awaitReadContext(scope: String, epoch: Int) async throws {

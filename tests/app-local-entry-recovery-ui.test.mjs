@@ -17,7 +17,7 @@ for (const declaration of parsed.statements) {
   const path = declaration.moduleSpecifier.text;
   // The actual recovery implementation stays in the bundle. These mocks only
   // isolate the existing host, shell, page registry and business adapters.
-  if (['react', 'react-dom/client', '@/lib/app-local-context-recovery'].includes(path)) continue;
+  if (['react', 'react-dom/client', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission'].includes(path)) continue;
   const names = declaration.importClause?.namedBindings?.elements?.map(element => element.propertyName?.text ?? element.name.text) ?? [];
   imports.set(path, names);
 }
@@ -50,6 +50,7 @@ function compile() {
     define: { 'process.env.NODE_ENV': '"production"' },
     plugins: [{ name: 'entry-fixture-boundaries', setup(builder) {
       for (const [path] of imports) builder.onResolve({ filter: new RegExp('^' + path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }, () => ({ path, namespace: 'fixture' }));
+      builder.onResolve({ filter: /^\.\/experience-offline-policy$/ }, () => ({ path: '@/lib/experience-offline-policy', namespace: 'fixture' }));
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ contents: mock(path, imports.get(path)), loader: 'tsx', resolveDir: process.cwd() }));
     } }],
   });
@@ -60,11 +61,22 @@ async function fixture(options = {}) {
   const output = await compile();
   const setup = `
     window.fixtureOptions=${JSON.stringify(options)};
-    window.fixtureStats={attempts:0,aborted:0,pageRenders:0,commands:0,rejected:0,calls:[]};window.fixtureHeld=new Map();
+    window.fixtureStats={attempts:0,aborted:0,pageRenders:0,commands:0,rejected:0,calls:[],retryQueued:0,retryCancelled:0};window.fixtureHeld=new Map();
+    // Only cancellation tests hold the real recovery's 300ms retry boundary.
+    // Separate browser-control calls may arrive after 300ms on a busy build host.
+    // Keep every other timer real, and retain cancelled callbacks to prove a
+    // late delivery cannot resurrect the cancelled read.
+    window.fixtureRetryTimers=new Map();window.fixtureCancelledRetries=[];
+    const fixtureSetTimeout=window.setTimeout.bind(window),fixtureClearTimeout=window.clearTimeout.bind(window);
+    if(window.fixtureOptions.holdRetry){
+      window.setTimeout=(callback,delay,...args)=>{if(delay!==300)return fixtureSetTimeout(callback,delay,...args);const id=fixtureSetTimeout(()=>{},60000);window.fixtureRetryTimers.set(id,()=>callback(...args));window.fixtureStats.retryQueued++;return id;};
+      window.clearTimeout=id=>{const callback=window.fixtureRetryTimers.get(id);if(callback){window.fixtureRetryTimers.delete(id);window.fixtureCancelledRetries.push(callback);window.fixtureStats.retryCancelled++;}fixtureClearTimeout(id);};
+    }
+    window.fixtureDeliverCancelledRetries=()=>window.fixtureCancelledRetries.splice(0).forEach(callback=>callback());
     window.__reylumiAppLocalContext={generation:'fixture-generation-20261018',scopeEpoch:1,nonce:'fixture-nonce'};
     const makeContext=(path,extra={})=>{
       const scope='v3:'+(path==='/settings'?'b':'a').repeat(64),generation=window.__reylumiAppLocalContext.generation;
-      return{schemaVersion:1,context:{scope,authenticated:true,viewerId:'synthetic-viewer',workspaceId:'synthetic-workspace',salonId:'synthetic-salon',permissionRevision:'synthetic-permission'},grant:{scope,generation,viewerId:'synthetic-viewer',expiresAt:Date.now()+3600000},onlineValidatedAt:Date.now(),offline:false,access:{ownerWorkspace:true},...extra};
+      return{schemaVersion:1,context:{scope,authenticated:true,viewerId:'synthetic-viewer',workspaceId:'synthetic-workspace',salonId:'synthetic-salon',permissionRevision:'synthetic-permission'},grant:{scope,generation,kind:'owner',viewerId:'synthetic-viewer',expiresAt:Date.now()+3600000},onlineValidatedAt:Date.now(),offline:false,access:{ownerWorkspace:true},...extra};
     };
     window.resolveContext=(id,extra={})=>window.fixtureHeld.get(id)?.resolve(extra);
     window.fixtureNavigate=path=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path}}));
@@ -163,10 +175,15 @@ test('same-path foreground joins pending admission; cached authority paints befo
 
 test('navigation cancels backoff or pending admission and cannot admit a late former scope', { skip, timeout: 25000 }, async () => {
   for (const delayed of [false, true]) {
-    const app = await fixture(delayed ? { hold: [1], ignoreAbort: [1] } : { statuses: [503, 200] });
+    const app = await fixture(delayed ? { hold: [1], ignoreAbort: [1] } : { statuses: [503, 200], holdRetry: true });
     try {
-      await app.page.waitForFunction(delayed ? () => window.fixtureStats.attempts === 1 : () => window.fixtureStats.rejected === 1);
+      await app.page.waitForFunction(delayed ? () => window.fixtureStats.attempts === 1 : () => window.fixtureRetryTimers.size === 1);
       await app.page.evaluate(() => window.fixtureNavigate('/settings'));
+      if (!delayed) {
+        assert.equal(await app.page.evaluate(() => window.fixtureStats.retryCancelled), 1);
+        assert.equal(await app.page.evaluate(() => window.fixtureRetryTimers.size), 0);
+        await app.page.evaluate(() => window.fixtureDeliverCancelledRetries());
+      }
       await app.page.locator('[data-private-page][data-private-path="/settings"][data-private-scope="v3:' + 'b'.repeat(64) + '"]:visible').waitFor();
       if (delayed) await app.page.evaluate(() => window.resolveContext(1));
       await app.page.waitForTimeout(1100);
@@ -179,10 +196,15 @@ test('navigation cancels backoff or pending admission and cannot admit a late fo
 
 test('reset cancels cold backoff and a late cancelled context cannot restore its old authority', { skip, timeout: 20000 }, async () => {
   for (const delayed of [false, true]) {
-    const app = await fixture(delayed ? { hold: [1], ignoreAbort: [1] } : { statuses: [503, 200] });
+    const app = await fixture(delayed ? { hold: [1], ignoreAbort: [1] } : { statuses: [503, 200], holdRetry: true });
     try {
-      await app.page.waitForFunction(delayed ? () => window.fixtureStats.attempts === 1 : () => window.fixtureStats.rejected === 1);
+      await app.page.waitForFunction(delayed ? () => window.fixtureStats.attempts === 1 : () => window.fixtureRetryTimers.size === 1);
       await app.page.evaluate(() => window.fixtureReset());
+      if (!delayed) {
+        assert.equal(await app.page.evaluate(() => window.fixtureStats.retryCancelled), 1);
+        assert.equal(await app.page.evaluate(() => window.fixtureRetryTimers.size), 0);
+        await app.page.evaluate(() => window.fixtureDeliverCancelledRetries());
+      }
       if (delayed) await app.page.evaluate(() => window.resolveContext(1));
       await app.page.waitForTimeout(1100);
       assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);

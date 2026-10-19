@@ -108,7 +108,7 @@ export function BusinessesWorkspace({
   function query(changes: Record<string, string>) {
     const next = new URLSearchParams(params.toString());
     for (const [k, v] of Object.entries(changes)) {
-      if (v) next.set(k, v);
+      if (v || k === "status") next.set(k, v);
       else next.delete(k);
     }
     if (!("page" in changes)) next.delete("page");
@@ -319,7 +319,7 @@ export function BusinessesWorkspace({
               <div className={s.selects}>
                 <select
                   aria-label="Status"
-                  value={params.get("status") || ""}
+                  value={params.get("status") ?? "active"}
                   onChange={(e) => query({ status: e.target.value })}
                 >
                   <option value="">Status: All</option>

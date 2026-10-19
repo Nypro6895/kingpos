@@ -240,22 +240,25 @@ final class ReylumiBackgroundSync {
     }
 
     private func cookieIdentity(_ values: [HTTPCookie]) -> [String] {
-        values.filter { $0.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == origin.host?.lowercased() }
-            .map { [$0.domain, $0.path, $0.name, $0.value].joined(separator: "\u{0}") }.sorted()
+        ReylumiCookieAuthority.identity(values, origin: origin)
     }
 
     private func read(_ url: URL, cookies sessionCookies: [HTTPCookie], expectedEpoch: Int) async throws -> (Data, HTTPURLResponse, [HTTPCookie]) {
         let reader = transport ?? ReylumiURLTransport()
         transport = reader
         let (data, response) = try await reader.get(url, cookies: sessionCookies)
-        guard !Task.isCancelled, epoch == expectedEpoch, cookieIdentity(await cookies()) == cookieIdentity(sessionCookies) else { throw URLError(.cancelled) }
+        let currentCookies = await cookies()
+        guard !Task.isCancelled, epoch == expectedEpoch, cookieIdentity(currentCookies) == cookieIdentity(sessionCookies) else { throw URLError(.cancelled) }
         let headers = response.allHeaderFields.reduce(into: [String: String]()) { result, pair in
             if let key = pair.key as? String { result[key] = String(describing: pair.value) }
         }
         let updates = HTTPCookie.cookies(withResponseHeaderFields: headers, for: url).filter {
             $0.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == origin.host?.lowercased()
         }
-        if updates.isEmpty { return (data, response, sessionCookies) }
+        // Benign markers may have changed while networking. Keep forwarding the
+        // current full jar after its authority matched; projection never drops
+        // cookies from storage or subsequent requests.
+        if updates.isEmpty { return (data, response, currentCookies) }
         guard epoch == expectedEpoch, !Task.isCancelled else { throw URLError(.cancelled) }
         await setCookies(updates)
         guard epoch == expectedEpoch, !Task.isCancelled else { throw URLError(.cancelled) }

@@ -2,6 +2,57 @@ import XCTest
 @testable import Reylumi
 
 final class LocalReadStoreTests: XCTestCase {
+    func testResourceRemovalAtomicallyFencesBothWriteOrdersAndPreservesOtherKeysAndScopes() async throws {
+        let origin = URL(string: "https://reylumi.com")!, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString), generation = UUID().uuidString
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.resource-fence." + UUID().uuidString)
+        let a = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation), generation: generation))
+        let b = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation, scope: "v3:" + String(repeating: "b", count: 64), workspace: "second-workspace"), generation: generation))
+        await store.accept(a); await store.accept(b)
+        let old = await store.beginRead("today", scope: a.scope), otherKey = await store.beginRead("book", scope: a.scope), otherScope = await store.beginRead("today", scope: b.scope)
+        let payload = Data("{\"fixture\":true}".utf8)
+        // Removal wins when the old put is still queued or networking.
+        await store.remove("today", session: a)
+        await store.put("today", payload: payload, session: a, permit: old)
+        let withdrawn = await store.get("today", session: a), oldValid = await store.permitsRead(old, key: "today", scope: a.scope)
+        XCTAssertNil(withdrawn); XCTAssertFalse(oldValid)
+        await store.put("book", payload: payload, session: a, permit: otherKey)
+        await store.put("today", payload: payload, session: b, permit: otherScope)
+        let retainedKey = await store.get("book", session: a), retainedScope = await store.get("today", session: b)
+        XCTAssertEqual(retainedKey, payload); XCTAssertEqual(retainedScope, payload)
+        // A genuinely new request after withdrawal can store its fresh result.
+        let fresh = await store.beginRead("today", scope: a.scope)
+        await store.put("today", payload: payload, session: a, permit: fresh)
+        let refreshed = await store.get("today", session: a); XCTAssertEqual(refreshed, payload)
+        // Removal also wins when the old put completed first.
+        await store.remove("today", session: a)
+        let removedAgain = await store.get("today", session: a); XCTAssertNil(removedAgain)
+        for permit in [old, otherKey, otherScope, fresh] { await store.finishRead(permit) }
+        let released = await store.permitsRead(otherKey, key: "book", scope: a.scope); XCTAssertFalse(released)
+        await store.clear()
+    }
+
+    func testScopeRevocationPermissionReplacementAndClearInvalidateTheirPendingPermits() async throws {
+        let origin = URL(string: "https://reylumi.com")!, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString), generation = UUID().uuidString
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.scope-fence." + UUID().uuidString)
+        let a = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation), generation: generation))
+        let b = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation, scope: "v3:" + String(repeating: "b", count: 64), workspace: "second-workspace"), generation: generation))
+        await store.accept(a); await store.accept(b)
+        let revoked = await store.beginRead("today", scope: a.scope), unrelated = await store.beginRead("today", scope: b.scope)
+        await store.revoke(scope: a.scope)
+        let revokedValid = await store.permitsRead(revoked, key: "today", scope: a.scope), unrelatedValid = await store.permitsRead(unrelated, key: "today", scope: b.scope)
+        XCTAssertFalse(revokedValid); XCTAssertTrue(unrelatedValid)
+        await store.accept(a)
+        let oldRevision = await store.beginRead("today", scope: a.scope)
+        let replacement = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation, scope: "v3:" + String(repeating: "c", count: 64), revision: "permission-b"), generation: generation))
+        await store.accept(replacement)
+        let oldRevisionValid = await store.permitsRead(oldRevision, key: "today", scope: a.scope), stillUnrelated = await store.permitsRead(unrelated, key: "today", scope: b.scope)
+        XCTAssertFalse(oldRevisionValid); XCTAssertTrue(stillUnrelated)
+        await store.clear()
+        let cleared = await store.permitsRead(unrelated, key: "today", scope: b.scope); XCTAssertFalse(cleared)
+    }
+
     func testNeutralHomeAdmitsAccountLeasesWithoutGrantingAnotherRoleOrDeviceAuthority() throws {
         let generation = UUID().uuidString
         for kind in ["owner", "staff", "customer"] {

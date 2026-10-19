@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       }
     }
     const originalHTTP = await runAppLocalHttpCommand(input.name, input.args, request, input.scope);
-    const shell=await runAppLocalShellCommand(input.name,input.args,request,input.scope);
+    const shell=await runAppLocalShellCommand(input.name,input.args,request,input.scope,input.name==="shell.switch-workspace"?business:undefined);
     if(shell.handled)return Response.json({ok:true,data:shell.data},{headers:responseHeaders});
     if (originalHTTP.handled) return Response.json({ ok: true, data: originalHTTP.data }, { headers: responseHeaders });
     const roleHTTP = await runAppLocalRoleHttpCommand(input.name, input.args, request, input.scope);

@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "admin-default-active-20261018",
+  "status": "ready",
+  "summary": "Default Users and Businesses status filters to active while retaining explicit All selection.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/users/page.tsx",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/locations/page.tsx",
+    "app/(app)/admin/locations/businesses-workspace.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\admin-default-active-20261018\\source"
+  },
+  "validation": [
+    {
+      "name": "TypeScript syntax verification for all four files",
+      "result": "passed"
+    },
+    {
+      "name": "Default Active and explicit All/status URL persistence checks",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint on changed files",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "id": "8f8a3094-96b5-4271-80a4-e3458bf956a8",
+  "recordedAt": "2026-10-19T00:40:47.846Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/users/page.tsx": "889a41314262fc7aafea08343b93d8132c81f1e859e08e9f79de330545a86dc7",
+    "app/(app)/admin/users/users-workspace.tsx": "f67e9db6a4a7e75eb42a39db908c891a46b5cab26284abe5674837d9552c5529",
+    "app/(app)/admin/locations/page.tsx": "9ccfd412dac1ac4db255990271acb10a2f9258840bc5c89bd788e3386b04cb59",
+    "app/(app)/admin/locations/businesses-workspace.tsx": "b451320acf88faafe467f5379ec95e9f4be0db8c7d48aeeff543404bb3d6adc9"
+  }
+}
