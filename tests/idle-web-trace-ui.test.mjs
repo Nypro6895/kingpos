@@ -24,16 +24,23 @@ function compile() {
     stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
       import React,{Activity,useEffect,useLayoutEffect,useState}from'react';import{createRoot}from'react-dom/client';
       import{ExperienceScopeProvider,useExperienceScope}from'./components/experience-scope';
-      import{acceptExperienceOfflineGrant,getExperienceDeviceGeneration}from'./lib/experience-persistent-cache';
+      import{acceptExperienceOfflineGrant,getExperienceDeviceGeneration,getExperienceOfflineGrantForPath}from'./lib/experience-persistent-cache';
+      import{refreshExperienceOfflineAuthorization,restoreExperienceOfflineAuthorization,lockExperienceOffline}from'./lib/experience-offline-client';
       import{experienceResourceCache}from'./lib/experience-resource-cache';
       import{getExperienceTraceSnapshot,recordExperienceTrace}from'./lib/experience-trace';
       const options=window.fixtureOptions,current={scope:'synthetic-scope',viewerId:'synthetic-viewer',workspaceId:'synthetic-workspace',salonId:'synthetic-salon',permissionRevision:'synthetic-permission',authenticated:true};
-      const originalNow=Date.now.bind(Date);let idle=0;Date.now=()=>originalNow()+idle;window.advanceIdle=ms=>{idle+=ms};
       window.fixture={requests:[],reloads:0,routeRefreshes:0,instances:0,documentIdentity:crypto.randomUUID()};
       const makeGrant=(path=location.pathname,expiresIn=3600000)=>({version:1,scope:current.scope,scopes:[current.scope],viewerId:current.viewerId,workspaceId:current.workspaceId,salonId:current.salonId,grantRevision:'synthetic-revision',generation:getExperienceDeviceGeneration(),issuedAt:Date.now(),expiresAt:Date.now()+expiresIn,path,kind:'owner'});
       window.otherPathGrant=()=>acceptExperienceOfflineGrant(makeGrant('/market'));
+      window.pathGrant=path=>getExperienceOfflineGrantForPath(current.scope,path);
+      window.deviceGeneration=getExperienceDeviceGeneration;
+      window.acceptGrant=extra=>acceptExperienceOfflineGrant({...makeGrant(),...extra});
+      window.restoreLease=()=>restoreExperienceOfflineAuthorization(current.scope);
+      window.lockLease=()=>lockExperienceOffline({rotateGeneration:false});
+      window.startLeasePair=()=>{window.leaseControllers=[new AbortController(),new AbortController()];window.leaseResults=window.leaseControllers.map(controller=>refreshExperienceOfflineAuthorization(location.pathname,current.scope,controller.signal));};
+      window.readLease=()=>refreshExperienceOfflineAuthorization(location.pathname,current.scope);
       window.fixtureSnapshot=()=>({trace:getExperienceTraceSnapshot(),requests:window.fixture.requests.map(({kind,trigger,status,aborted,durationMs})=>({kind,trigger,status,aborted,durationMs})),reloads:window.fixture.reloads,routeRefreshes:window.fixture.routeRefreshes,instances:window.fixture.instances,cache:experienceResourceCache.stats()});
-      window.fireLifecycle=async name=>{window.fixtureCause=name==='reylumi:foreground'?'foreground':name;window.dispatchEvent(new Event(name));await Promise.resolve();window.fixtureCause=undefined};
+      window.fireLifecycle=async name=>{window.fixtureCause=name==='reylumi:foreground'?'foreground':name;window.dispatchEvent(new Event(name));await Promise.resolve();await Promise.resolve();window.fixtureCause=undefined};
       window.captureReload=()=>{window.fixture.reloads++};
       Object.defineProperty(navigator,'serviceWorker',{configurable:true,value:{controller:null,getRegistrations:async()=>[],register:async()=>{throw Error('Fixture worker unavailable')},addEventListener(){}}});
       window.fetch=(input,init={})=>{
@@ -85,7 +92,7 @@ async function fixture(options = {}) {
   const output = await compile();
   const server = createServer((request, response) => {
     response.setHeader('Content-Type', request.url === '/app.js' ? 'text/javascript' : 'text/html');
-    response.end(request.url === '/app.js' ? output.outputFiles[0].text : `<!doctype html><html><head></head><body><div id="app"></div><script>window.__reylumiDiagnosticsEnabled=${options.enabled !== false};window.fixtureOptions=${JSON.stringify(options)};</script><script src="/app.js"></script></body></html>`);
+    response.end(request.url === '/app.js' ? output.outputFiles[0].text : `<!doctype html><html><head></head><body><div id="app"></div><script>window.__reylumiDiagnosticsEnabled=${options.enabled !== false};window.fixtureOptions=${JSON.stringify(options)};const originalNow=Date.now.bind(Date);let idle=0;Date.now=()=>originalNow()+idle;window.advanceIdle=ms=>{idle+=ms};</script><script src="/app.js"></script></body></html>`);
   });
   await new Promise(done => server.listen(0, '127.0.0.1', done));
   server.unref();
@@ -196,7 +203,7 @@ test('a valid cached document paints while its cold launch performs context and 
   } finally { await app.close(); }
 });
 
-test('a newer other-path lease can gate the same retained view despite its durable prior lease', { timeout: 20000 }, async () => {
+test('a newer other-path lease never hides a retained page with its own valid display lease', { timeout: 20000 }, async () => {
   const app = await fixture({ leaseStatus: 200 });
   try {
     await retainDraft(app.page);
@@ -205,14 +212,13 @@ test('a newer other-path lease can gate the same retained view despite its durab
     // grant before the context check makes its independent gate decision.
     await app.page.evaluate(() => { window.fixtureOptions.leaseStatus = 503; });
     await idleFocus(app.page);
-    await app.page.locator('[data-guard]').waitFor();
-    assert.equal(await app.page.locator('[data-private]').isVisible(), false);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), true);
     await app.page.waitForTimeout(220);
     await app.page.evaluate(() => window.finishContext());
     await app.page.locator('[data-private]').waitFor({ state: 'visible' });
     await assertRetained(app.page);
     const data = await record('idle-focus-other-path-lease', app.page, { logicalIdleMs: 31000, controlledHoldMs: 220 });
-    assert.ok(data.trace.some(entry => entry.event === 'cache.miss' && entry.reason === 'grant'));
+    assert.equal(data.trace.some(entry => entry.event === 'gate.hide'), false);
     assert.equal(data.cache.entries, 1);
     assert.equal(data.reloads, 0);
   } finally { await app.close(); }
@@ -234,6 +240,112 @@ test('a transient 503 uses the real retry timer without resetting cached data or
     assert.equal(data.trace.some(entry => entry.event === 'cache.reset'), false);
     assert.ok(data.trace.some(entry => entry.event === 'timer.schedule' && entry.reason === 'transient' && entry.durationMs === 1000));
     assert.ok(data.trace.some(entry => entry.event === 'timer.fire' && entry.reason === 'transient'));
+  } finally { await app.close(); }
+});
+
+test('an actual context timeout leaves the current exact-path lease and retained view usable after another path was admitted', { timeout: 20000 }, async () => {
+  const app = await fixture({ leaseStatus: 200 });
+  try {
+    await retainDraft(app.page);
+    await app.page.evaluate(async () => { await window.otherPathGrant(); window.fixtureOptions.leaseStatus = 503; });
+    await idleFocus(app.page);
+    await app.page.waitForFunction(() => window.fixture.requests.some(request => request.kind === 'context' && request.aborted), undefined, { timeout: 11000 });
+    await app.page.waitForTimeout(50);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), true);
+    await assertRetained(app.page);
+    const data = await record('valid-other-path-context-timeout', app.page, { logicalIdleMs: 31000, configuredContextDeadlineMs: 8000 });
+    assert.equal(data.requests.filter(request => request.kind === 'context').length, 1);
+    assert.equal(data.trace.some(entry => entry.event === 'gate.hide' || entry.event === 'cache.reset'), false);
+    assert.equal(data.cache.entries, 1); assert.equal(data.reloads, 0);
+  } finally { await app.close(); }
+});
+
+test('one cancelled lease subscriber cannot abort another; all cancelled subscribers abort and allow a fresh subsequent read', { timeout: 20000 }, async () => {
+  const app = await fixture({ leaseStatus: 200 });
+  try {
+    await app.page.evaluate(async () => { await window.readLease(); window.leaseBaseline = window.fixture.requests.filter(request => request.kind === 'lease').length; });
+    await app.page.evaluate(() => { window.fixtureOptions.leaseDelay = 250; window.startLeasePair(); });
+    await app.page.waitForFunction(() => window.fixture.requests.filter(request => request.kind === 'lease').length === window.leaseBaseline + 1);
+    await app.page.evaluate(() => window.leaseControllers[0].abort());
+    assert.deepEqual(await app.page.evaluate(async () => (await Promise.all(window.leaseResults)).map(Boolean)), [false, true]);
+    assert.equal(await app.page.evaluate(() => window.fixture.requests.filter(request => request.kind === 'lease' && request.aborted).length), 0);
+    await app.page.evaluate(() => window.startLeasePair());
+    await app.page.waitForFunction(() => window.fixture.requests.filter(request => request.kind === 'lease').length === window.leaseBaseline + 2);
+    await app.page.evaluate(() => window.leaseControllers.forEach(controller => controller.abort()));
+    assert.deepEqual(await app.page.evaluate(async () => (await Promise.all(window.leaseResults)).map(Boolean)), [false, false]);
+    assert.equal(await app.page.evaluate(() => window.fixture.requests.filter(request => request.kind === 'lease' && request.aborted).length), 1);
+    assert.equal(await app.page.evaluate(async () => Boolean(await window.readLease())), true);
+    assert.equal(await app.page.evaluate(() => window.fixture.requests.filter(request => request.kind === 'lease').length - window.leaseBaseline), 3);
+    await record('lease-subscriber-cancellation', app.page);
+  } finally { await app.close(); }
+});
+
+test('a denied lease settles one replacement context check after synchronous lock and access notifications', { timeout: 20000 }, async () => {
+  const app = await fixture({ leaseStatus: 200 });
+  try {
+    // Await the real serialized grant write, so this denial is a new request
+    // rather than legitimately joining the still-settling initial admission.
+    await app.page.evaluate(() => window.otherPathGrant());
+    await app.page.evaluate(() => { window.fixtureOptions.leaseStatus = 403; });
+    await idleFocus(app.page);
+    await app.page.waitForFunction(() => window.fixture.requests.some(request => request.kind === 'lease' && request.status === 403));
+    await app.page.waitForTimeout(60);
+    const data = await record('lease-denial-reset-coalescing', app.page, { logicalIdleMs: 31000 });
+    assert.equal(data.requests.filter(request => request.kind === 'context').length, 2, 'initial foreground read plus one replacement; lock and access notifications must coalesce');
+    assert.equal(await app.page.locator('[data-private]').isVisible(), false);
+    assert.equal(await app.page.evaluate(() => Boolean(window.pathGrant('/staff/today'))), false);
+    await app.page.evaluate(() => window.finishContext(1));
+    await app.page.waitForFunction(() => window.fixture.reloads === 1);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), false, 'a root context cannot revive markup whose path admission was rejected');
+  } finally { await app.close(); }
+});
+
+test('lock fences a delayed lease read and clears all path authority without accepting its late response', { timeout: 20000 }, async () => {
+  const app = await fixture({ leaseStatus: 200 });
+  try {
+    await app.page.evaluate(async () => { await window.otherPathGrant(); window.fixtureOptions.leaseDelay = 250; window.startLeasePair(); });
+    await app.page.waitForFunction(() => window.fixture.requests.filter(request => request.kind === 'lease').length === 2);
+    await app.page.evaluate(() => window.lockLease());
+    assert.deepEqual(await app.page.evaluate(async () => (await Promise.all(window.leaseResults)).map(Boolean)), [false, false]);
+    await app.page.waitForTimeout(300);
+    assert.equal(await app.page.evaluate(() => Boolean(window.pathGrant('/staff/today') || window.pathGrant('/market'))), false);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), false);
+    const data = await record('lease-lock-cancellation', app.page);
+    assert.equal(data.requests.filter(request => request.kind === 'lease' && request.aborted).length, 1);
+  } finally { await app.close(); }
+});
+
+test('grant revision changes revoke every retained path; path storage never broadens scope or expiry', { timeout: 20000 }, async () => {
+  const app = await fixture({ leaseStatus: 200 });
+  try {
+    await app.page.evaluate(() => window.otherPathGrant());
+    assert.equal(await app.page.evaluate(() => Boolean(window.pathGrant('/staff/today') && window.pathGrant('/market'))), true);
+    assert.equal(await app.page.evaluate(() => window.pathGrant('/customers')), null);
+    assert.equal(await app.page.evaluate(() => window.acceptGrant({ grantRevision: 'changed-revision' })), false);
+    assert.equal(await app.page.evaluate(() => Boolean(window.pathGrant('/staff/today') || window.pathGrant('/market'))), false);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), false);
+    await record('path-lease-revision-revocation', app.page);
+  } finally { await app.close(); }
+});
+
+test('a lock without generation rotation rejects the old DOM boot proof while a fresh endpoint grant can recover', { timeout: 20000 }, async () => {
+  const app = await fixture({ boot: 'valid' });
+  try {
+    await app.page.evaluate(() => window.restoreLease());
+    const generation = await app.page.evaluate(() => window.deviceGeneration());
+    await app.page.evaluate(() => window.lockLease());
+    assert.equal(await app.page.evaluate(() => window.deviceGeneration()), generation);
+    assert.equal(await app.page.evaluate(() => window.restoreLease()), null);
+    assert.equal(await app.page.evaluate(() => window.pathGrant('/staff/today')), null);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), false);
+    await app.page.evaluate(() => { window.fixtureOptions.leaseStatus = 200; });
+    assert.equal(await app.page.evaluate(async () => Boolean(await window.readLease())), true);
+    assert.equal(await app.page.evaluate(async () => Boolean(await window.restoreLease())), true);
+    await app.page.waitForFunction(() => window.fixture.requests.filter(request => request.kind === 'context').length === 2);
+    await app.page.evaluate(() => window.finishContext(1));
+    await app.page.locator('[data-private]').waitFor({ state: 'visible' });
+    const data = await record('boot-lock-proof-fence', app.page);
+    assert.equal(data.reloads, 0);
   } finally { await app.close(); }
 });
 
@@ -266,15 +378,17 @@ test('confirmed changed scope and denial produce an explicit fail-closed reset a
       assert.equal(await app.page.locator('[data-private]').isVisible(), false);
       const data = await record(`confirmed-${scenario}`, app.page, { logicalIdleMs: 31000 });
       assert.equal(data.cache.entries, 0);
+      assert.equal(data.requests.filter(request => request.kind === 'context').length, 1, 'confirmed denial must not start a reentrant context request while locking');
       assert.ok(data.trace.some(entry => entry.event === 'cache.reset'));
       assert.ok(data.trace.some(entry => entry.event === 'document.reload.request' && entry.reason === (scenario === 'scope' ? 'identity' : 'permissions')));
     } finally { await app.close(); }
   }
 });
 
-test('real lease-expiry timer explains reset and subsequent reload without any user touch', { timeout: 20000 }, async () => {
+test('current-path lease expires and remains fail-closed even when another path has a longer lease', { timeout: 20000 }, async () => {
   const app = await fixture({ leaseStatus: 200, leaseExpiresIn: 1000 });
   try {
+    await app.page.evaluate(() => window.otherPathGrant());
     await app.page.waitForFunction(() => window.fixture.requests.some(request => request.kind === 'context'));
     await app.page.evaluate(() => window.finishContext());
     await app.page.waitForFunction(() => window.fixture.reloads === 1);
@@ -286,19 +400,38 @@ test('real lease-expiry timer explains reset and subsequent reload without any u
   } finally { await app.close(); }
 });
 
-test('lifecycle burst joins context validation but exposes independent concurrent lease reads', { timeout: 20000 }, async () => {
+test('a former path expiry timer cannot lock the current path with a valid longer lease', { timeout: 20000 }, async () => {
+  const app = await fixture({ leaseStatus: 200, leaseExpiresIn: 1000 });
+  try {
+    await retainDraft(app.page);
+    await app.page.evaluate(async () => { await window.otherPathGrant(); history.replaceState(null, '', '/market'); });
+    await app.page.waitForTimeout(1200);
+    assert.equal(await app.page.evaluate(() => window.pathGrant('/staff/today')), null);
+    assert.equal(await app.page.evaluate(() => Boolean(window.pathGrant('/market'))), true);
+    assert.equal(await app.page.locator('[data-private]').isVisible(), true);
+    await assertRetained(app.page);
+    const data = await record('former-path-expiry-current-valid', app.page, { configuredFormerLeaseMs: 1000, controlledWaitMs: 1200 });
+    assert.ok(data.trace.some(entry => entry.event === 'timer.fire' && entry.reason === 'expired'));
+    assert.equal(data.trace.some(entry => entry.event === 'cache.reset' || entry.event === 'gate.hide'), false);
+    assert.equal(data.requests.filter(request => request.kind === 'context').length, 0);
+    assert.equal(data.reloads, 0);
+  } finally { await app.close(); }
+});
+
+test('lifecycle burst joins both context validation and equivalent pending lease reads', { timeout: 20000 }, async () => {
   const app = await fixture();
   try {
     await app.page.evaluate(async () => { window.advanceIdle(31_000); for (const name of ['focus', 'online', 'reylumi:foreground']) await window.fireLifecycle(name); });
-    await app.page.waitForFunction(() => window.fixture.requests.filter(request => request.kind === 'lease' && request.status !== null).length >= 4);
+    await app.page.waitForFunction(() => window.fixture.requests.filter(request => request.kind === 'lease' && request.status !== null).length === 2);
     assert.equal(await app.page.evaluate(() => window.fixture.requests.filter(request => request.kind === 'context').length), 1);
     await app.page.evaluate(() => window.finishContext());
     await app.page.locator('[data-private]').waitFor({ state: 'visible' });
     const data = await record('lifecycle-burst', app.page, { logicalIdleMs: 31000 });
     assert.equal(data.requests.filter(request => request.aborted).length, 0);
     assert.ok(data.trace.some(entry => entry.event === 'auth.join'));
-    assert.equal(data.requests.filter(request => request.kind === 'lease').length, 4);
-    assert.deepEqual(data.requests.filter(request => request.kind === 'lease').map(request => request.trigger), ['mount', 'focus', 'online', 'foreground']);
+    assert.equal(data.requests.filter(request => request.kind === 'lease').length, 2);
+    assert.deepEqual(data.requests.filter(request => request.kind === 'lease').map(request => request.trigger), ['mount', 'focus']);
+    assert.ok(data.trace.filter(entry => entry.event === 'cache.join' && entry.reason === 'grant').length >= 2);
   } finally { await app.close(); }
 });
 

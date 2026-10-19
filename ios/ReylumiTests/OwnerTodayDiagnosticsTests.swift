@@ -236,13 +236,13 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         let native = try JSONSerialization.jsonObject(with: JSONEncoder().encode(run.trace.snapshot()))
         let firstVisible = js.first { $0["event"] as? String == "data.visible" && $0["area"] as? String == "today" }
         let bootStart = js.first { $0["event"] as? String == "boot.start" }
-        let report: [String: Any] = ["schemaVersion": 1, "scenario": name, "candidateBaseCommit": "866d8c6c08d0fd21d6a734de0207b93af26ed9cf", "bundleBuildId": run.controller.bundle.manifest.buildId, "passed": passed, "actualInstalledBundle": true, "newColdWebView": true, "nativeProcessColdStart": false, "syntheticTransport": true, "syntheticServerTiming": true, "physicalDeviceEvidence": false, "nativeTrace": native, "javascriptTrace": js, "checkpoints": checkpoints, "counts": await run.http.counts()]
+        let report: [String: Any] = ["schemaVersion": 1, "scenario": name, "candidateBaseCommit": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0", "bundleBuildId": run.controller.bundle.manifest.buildId, "passed": passed, "actualInstalledBundle": true, "newColdWebView": true, "nativeProcessColdStart": false, "syntheticTransport": true, "syntheticServerTiming": true, "physicalDeviceEvidence": false, "nativeTrace": native, "javascriptTrace": js, "checkpoints": checkpoints, "counts": await run.http.counts()]
         let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
         let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
         attachment.name = "owner-today-" + name + ".json"; attachment.lifetime = .keepAlways; add(attachment)
         // The bridge mark precedes app.js resource loading and evaluation;
         // this interval deliberately does not claim pure parser CPU time.
-        let metrics: [String: Any] = ["scenario": name, "passed": passed, "candidateBase": "866d8c6", "syntheticTransport": true, "firstVisibleAtMs": firstVisible?["atMs"] ?? NSNull(), "bridgeToEntryStartMs": bootStart?["durationMs"] ?? NSNull(), "nativeDocuments": run.trace.snapshot().filter { $0.event == .bundleLoad }.count]
+        let metrics: [String: Any] = ["scenario": name, "passed": passed, "candidateBase": "2ef993b", "syntheticTransport": true, "firstVisibleAtMs": firstVisible?["atMs"] ?? NSNull(), "bridgeToEntryStartMs": bootStart?["durationMs"] ?? NSNull(), "nativeDocuments": run.trace.snapshot().filter { $0.event == .bundleLoad }.count]
         print("REYLUMI_STARTUP_MEASUREMENT " + String(decoding: try JSONSerialization.data(withJSONObject: metrics, options: [.sortedKeys]), as: UTF8.self))
     }
 }

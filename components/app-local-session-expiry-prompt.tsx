@@ -7,7 +7,7 @@ import { nextExperienceTraceOperation, recordExperienceTrace } from "@/lib/exper
 
 /** The installed application signs in on the original HTTPS origin, where its
  * cookie, CAPTCHA and MFA controls already run. No auth form runs on its scheme. */
-export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = true }: { authenticated: boolean | null; scope?: string; enabled?: boolean }) {
+export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = true, checkContext }: { authenticated: boolean | null; scope?: string; enabled?: boolean; checkContext?: () => Promise<void> }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const openingRef = useRef(false);
   const [session, setSession] = useState({ authenticated, scope, hadSession: authenticated === true, expired: false });
@@ -28,6 +28,10 @@ export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = tr
       const operation = nextExperienceTraceOperation(), began = operation ? performance.now() : 0;
       recordExperienceTrace("auth.start", { source: "app-local", trigger: "interval", operation });
       try {
+        // The installed entry owns the same pending check used by foreground,
+        // navigation and workspace recovery. Its accepted result updates the
+        // authenticated prop; do not issue a separate transport read here.
+        if (checkContext) { await checkContext(); return; }
         const value = await getAppLocalHost().context(location.pathname + location.search, { signal: controller.signal, fresh: true });
         if (!alive || controller.signal.aborted || value.offline) return;
         window.dispatchEvent(new CustomEvent("reylumi:app-local-context", { detail: value }));
@@ -40,7 +44,7 @@ export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = tr
     recordExperienceTrace("timer.schedule", { source: "app-local", trigger: "interval", durationMs: 60_000 });
     const timer = setInterval(() => { recordExperienceTrace("timer.fire", { source: "app-local", trigger: "interval" }); void check(); }, 60_000);
     return () => { recordExperienceTrace("timer.cancel", { source: "app-local", trigger: "interval" }); alive = false; controller.abort(); clearInterval(timer); };
-  }, [authenticated, scope, enabled]);
+  }, [authenticated, scope, enabled, checkContext]);
   useEffect(() => {
     if (!expired) return;
     const element = dialog.current, previous = document.activeElement;

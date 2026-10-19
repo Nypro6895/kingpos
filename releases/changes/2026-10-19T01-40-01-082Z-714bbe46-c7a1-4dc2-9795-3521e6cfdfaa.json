@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "auth-workspace-cache-repair-20261018",
+  "status": "working",
+  "summary": "Compare pre/post cache and repair shared Auth/workspace/cache coordination; prioritize Staff to Owner and first load; preserve security/business logic; no deploy",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-workspace-navigation.ts",
+    "app/local-app/entry.tsx",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "app/api/app-local/context/route.ts",
+    "components/experience-scope.tsx",
+    "lib/experience-offline-client.ts"
+  ],
+  "source": {
+    "commit": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0"
+  },
+  "dependencies": [
+    "idle-cold-start-trace-20261018",
+    "owner-today-auth-progressive-20261018",
+    "ios-today-startup-recovery-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Controlled before/after cache; Staff Owner round trips, weak-network, duplicate-load and cold-start tests web/native",
+      "result": "pending"
+    }
+  ],
+  "id": "714bbe46-c7a1-4dc2-9795-3521e6cfdfaa",
+  "recordedAt": "2026-10-19T01:40:01.082Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\auth-workspace-cache-repair-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

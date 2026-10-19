@@ -10,18 +10,20 @@ import { fetchBoundedGet } from "@/lib/bounded-get";
 import { WorkspaceText } from "@/components/workspace-language";
 import { allowExperienceReload, type ExperienceReloadReason } from "@/lib/experience-reload";
 import { getExperienceOfflineAuthorizationPath, installExperienceOfflineNavigation, lockExperienceOffline, prepareExperienceOfflinePath, readExperienceOfflineBootGrant, refreshExperienceOfflineAuthorization, releaseExperienceOfflineBootGuard, restoreExperienceOfflineAuthorization, waitForExperienceOfflineLock } from "@/lib/experience-offline-client";
-import { EXPERIENCE_OFFLINE_AUTHORIZATION_EVENT, getExperienceOfflineGrant, markExperienceScopeOnlineValidated } from "@/lib/experience-persistent-cache";
+import { EXPERIENCE_OFFLINE_AUTHORIZATION_EVENT, getExperienceOfflineGrantForPath, markExperienceScopeOnlineValidated } from "@/lib/experience-persistent-cache";
 import { OfflineNetworkFormGuard } from "@/components/offline-network-form-guard";
 import { PreparedReadViewRefresh } from "@/components/prepared-read-view-refresh";
 import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
 
-function ExperienceOfflineRuntime({ scope, check }: { scope: string; check: (force?: boolean, background?: boolean, trigger?: ExperienceTraceTrigger) => Promise<boolean> }) {
+function ExperienceOfflineRuntime({ scope }: { scope: string }) {
   const pathname = usePathname();
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
     const currentPath = () => location.pathname + location.search;
-    void restoreExperienceOfflineAuthorization(scope).then(grant => { if (active && grant && readExperienceOfflineBootGrant(scope).present) void check(true, false, "mount"); });
+    // The provider owns context admission; restoring its boot lease must not
+    // start a second forced context read after that admission has completed.
+    void restoreExperienceOfflineAuthorization(scope, controller.signal);
     void refreshExperienceOfflineAuthorization(currentPath(), scope, controller.signal);
     const prepare = () => { if (active && document.visibilityState === "visible" && navigator.onLine) void prepareExperienceOfflinePath(currentPath(), { scope }); };
     recordExperienceTrace("timer.schedule", { source: "web", trigger: "interval", reason: "grant", durationMs: 3500 });
@@ -31,7 +33,7 @@ function ExperienceOfflineRuntime({ scope, check }: { scope: string; check: (for
     window.addEventListener("online", prepare);
     window.addEventListener("online", authorize); window.addEventListener("focus", authorize); window.addEventListener("reylumi:foreground", authorize);
     return () => { active = false; controller.abort(); if (!preparationFired) recordExperienceTrace("timer.cancel", { source: "web", trigger: "interval", reason: "grant" }); clearTimeout(timer); window.removeEventListener("online", prepare); window.removeEventListener("online", authorize); window.removeEventListener("focus", authorize); window.removeEventListener("reylumi:foreground", authorize); };
-  }, [scope, pathname, check]);
+  }, [scope, pathname]);
   return <span hidden data-experience-offline-scope={scope} />;
 }
 
@@ -86,12 +88,12 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
   const validate = useCallback((force = false, background = false, trigger: ExperienceTraceTrigger = "unknown"): Promise<boolean> => {
     if (recovering.current) { recordExperienceTrace("auth.skip", { source: "web", trigger, reason: "resource" }); return Promise.resolve(false); }
     if (!force && checked.current && Date.now() - checked.current < 30_000) { recordExperienceTrace("auth.skip", { source: "web", trigger, fresh: true }); return Promise.resolve(true); }
-    const lease = getExperienceOfflineGrant(context.scope);
     const localPath = getExperienceOfflineAuthorizationPath();
-    if (lease?.path === localPath && localPath) {
+    const lease = localPath ? getExperienceOfflineGrantForPath(context.scope, localPath) : null;
+    if (lease && !reloadAfterValidation.current) {
       background = true; blocking.current = false; setBlocked(false);
     }
-    recordExperienceTrace(lease?.path === localPath && localPath ? "cache.hit" : "cache.miss", { source: "web", trigger, reason: "grant", offline: !navigator.onLine });
+    recordExperienceTrace(lease ? "cache.hit" : "cache.miss", { source: "web", trigger, reason: "grant", offline: !navigator.onLine });
     if (!background) {
       blocking.current = true;
       if (context.authenticated) setBlocked(true);
@@ -106,9 +108,9 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
     const allowOffline = async () => {
       const path = getExperienceOfflineAuthorizationPath();
       if (!path) return false;
-      const existing = getExperienceOfflineGrant(context.scope);
-      const grant = existing?.path === path ? existing : await restoreExperienceOfflineAuthorization(context.scope);
-      if (!grant || !alive.current || epoch !== validationEpoch.current || recovering.current) return false;
+      const existing = getExperienceOfflineGrantForPath(context.scope, path);
+      const grant = existing ?? await restoreExperienceOfflineAuthorization(context.scope);
+      if (!grant || !getExperienceOfflineGrantForPath(context.scope, path) || getExperienceOfflineAuthorizationPath() !== path || !alive.current || epoch !== validationEpoch.current || recovering.current || reloadAfterValidation.current) return false;
       checked.current = Date.now(); retryCount.current = 0; blocking.current = false;
       recordExperienceTrace("auth.end", { source: "web", trigger, offline: true, reason: "grant", blocked: false });
       resumeExperienceResources(context.scope); setBlocked(false); setConnectionState("idle");
@@ -148,6 +150,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
         if (!alive.current || epoch !== validationEpoch.current) return false;
         if (response.status === 401 || response.status === 403) {
           setConnectionState("idle");
+          recovering.current = true;
           resetExperienceCaches({ suspend: true, reason: "permissions", notify: false });
           setBlocked(true);
           recover("permissions");
@@ -160,6 +163,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
           || !(next.viewerId === null || typeof next.viewerId === "string") || !(next.salonId === null || typeof next.salonId === "string")) return unavailable();
         if (next.scope !== context.scope || next.viewerId !== context.viewerId || next.workspaceId !== context.workspaceId || next.authenticated !== context.authenticated || next.permissionRevision !== context.permissionRevision || next.salonId !== context.salonId) {
           recordExperienceTrace("auth.reject", { source: "web", trigger, reason: "identity", changed: true, operation: traceOperation });
+          recovering.current = true;
           resetExperienceCaches({ suspend: true, reason: "identity", notify: false });
           setBlocked(true);
           // A document reload also drops Next's retained DOM and router cache.
@@ -206,13 +210,18 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
     let timer: ReturnType<typeof setTimeout> | undefined, fired = false;
     const expiry = () => {
       if (timer) { if (!fired) recordExperienceTrace("timer.cancel", { source: "web", trigger: "lease-expiry", reason: "expired" }); clearTimeout(timer); }
-      const grant = getExperienceOfflineGrant(context.scope);
+      const path = getExperienceOfflineAuthorizationPath();
+      const grant = path ? getExperienceOfflineGrantForPath(context.scope, path) : null;
       if (grant) {
         fired = false;
         recordExperienceTrace("timer.schedule", { source: "web", trigger: "lease-expiry", reason: "expired", durationMs: Math.max(1, grant.expiresAt - Date.now()) });
         timer = setTimeout(() => {
         fired = true;
         recordExperienceTrace("timer.fire", { source: "web", trigger: "lease-expiry", reason: "expired" });
+        const currentPath = getExperienceOfflineAuthorizationPath();
+        // Navigation or renewal may have won after this timer was scheduled.
+        // Re-arm only from the actual current path's still-valid authority.
+        if (currentPath !== path || currentPath && getExperienceOfflineGrantForPath(context.scope, currentPath)) { expiry(); return; }
         // Once a display lease expires, only a fresh server document can
         // replace its protected markup; a root context alone is insufficient.
         reloadAfterValidation.current = true;
@@ -258,11 +267,17 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       }
     }
     else void validate(true, false, "mount");
+    const recheckAfterNotification = (trigger: ExperienceTraceTrigger) => {
+      const epoch = validationEpoch.current;
+      // A single denial can synchronously emit lock/reset and access-changed.
+      // Revoke immediately, then read once for the last admitted notification.
+      queueMicrotask(() => { if (alive.current && epoch === validationEpoch.current && !recovering.current) void validate(true, false, trigger); });
+    };
     const reset = () => {
       recordExperienceTrace("cache.reset", { source: "web", trigger: "reset", reason: "reset" });
       invalidateValidation();
       setBlocked(true);
-      void validate(true, false, "reset");
+      recheckAfterNotification("reset");
     };
     const resume = (event: Event) => {
       if (document.visibilityState !== "visible" || !navigator.onLine) return;
@@ -298,7 +313,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       invalidateValidation();
       setBlocked(true);
       reloadAfterValidation.current = true;
-      void validate(true, false, "resource");
+      recheckAfterNotification("resource");
     };
     window.addEventListener("reylumi:experience-access-changed", accessChanged);
     document.addEventListener("visibilitychange", resume);
@@ -324,7 +339,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
   const value = useMemo(() => ({ context, validate, checkedAt, validationRevision, getValidationRevision, connectionState, retryConnection }), [context, validate, checkedAt, validationRevision, getValidationRevision, connectionState, retryConnection]);
   return <ScopeContext value={value}>
     <OfflineNetworkFormGuard />
-    <ExperienceOfflineRuntime scope={context.scope} check={validate} />
+    <ExperienceOfflineRuntime scope={context.scope} />
     <PreparedReadViewRefresh scope={context.scope} validate={validate} />
     {offlineNavigationMessage ? <div role="status" className="fixed inset-x-4 bottom-20 z-50 mx-auto flex max-w-md items-center justify-between gap-4 rounded-xl border bg-white p-4 text-sm shadow-lg"><WorkspaceText text="Please connect to open this page." /><button type="button" aria-label="Close" onClick={() => setOfflineNavigationMessage(false)}>×</button></div> : null}
     {recoveryRequired ? <div className="mx-auto flex min-h-48 max-w-lg flex-col items-center justify-center gap-4 px-6 py-10 text-center">

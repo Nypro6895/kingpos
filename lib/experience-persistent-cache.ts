@@ -66,6 +66,15 @@ function safeJson(value: unknown) {
 }
 
 function authority(grant: ExperienceOfflineGrant): string { return grant.kind === "staff" ? "staff" : grant.kind === "portable" ? "portable" : "base"; }
+function grantKey(grant: ExperienceOfflineGrant): string { return JSON.stringify([authority(grant), grant.path]); }
+function rememberGrant(grant: ExperienceOfflineGrant): void {
+  for (const scope of grant.scopes) {
+    const allowed = grants.get(scope) ?? new Map<string, ExperienceOfflineGrant>();
+    allowed.set(grantKey(grant), grant);
+    const retained = [...allowed.entries()].sort(([, a], [, b]) => b.issuedAt - a.issuedAt).slice(0, MAX_GRANTS);
+    grants.set(scope, new Map(retained));
+  }
+}
 function activeGrants(scope: string): ExperienceOfflineGrant[] {
   const allowed = grants.get(scope); if (!allowed) return [];
   const generation = getExperienceDeviceGeneration();
@@ -79,6 +88,10 @@ export function getExperienceOfflineGrant(scope: string, kind?: "staff" | "porta
   if (kind) return allowed.find(grant => authority(grant) === kind) ?? null;
   const currentPath = typeof location !== "undefined" ? (location.pathname === "/pos/customer-display" ? "/pos/portable" : location.pathname + location.search) : "";
   return allowed.find(grant => grant.path === currentPath) ?? allowed[0] ?? null;
+}
+/** A display lease authorizes only its exact canonical path, never another cached page. */
+export function getExperienceOfflineGrantForPath(scope: string, path: string): ExperienceOfflineGrant | null {
+  return activeGrants(scope).find(grant => grant.path === path) ?? null;
 }
 function snapshotGrant({ scope, domain, params }: ExperienceSnapshotContext): ExperienceOfflineGrant | undefined {
   return activeGrants(scope).find(grant => {
@@ -102,7 +115,7 @@ export function isExperienceScopeOnlineValidated(scope: string): boolean { retur
 /** Accept only the grant returned by a fresh authorized GET or a worker-verified boot. */
 export async function acceptExperienceOfflineGrant(grant: ExperienceOfflineGrant): Promise<boolean> {
   if (!isExperienceOfflineGrant(grant, { generation: getExperienceDeviceGeneration() })) return false;
-  const key = authority(grant), previous = grants.get(grant.scope)?.get(key);
+  const previous = [...(grants.get(grant.scope)?.values() ?? [])].find(value => authority(value) === authority(grant) && value.scope === grant.scope);
   if (previous?.scope === grant.scope && previous.grantRevision !== grant.grantRevision) {
     void clearExperienceSnapshots();
     if (typeof window !== "undefined") {
@@ -112,7 +125,7 @@ export async function acceptExperienceOfflineGrant(grant: ExperienceOfflineGrant
     return false;
   }
   const started = epoch;
-  for (const scope of grant.scopes) { const allowed = grants.get(scope) ?? new Map(); allowed.set(key, grant); grants.set(scope, allowed); }
+  rememberGrant(grant);
   event();
   try {
     await serialized(async () => {
@@ -129,16 +142,18 @@ export async function acceptExperienceOfflineGrant(grant: ExperienceOfflineGrant
   } catch { /* The active view remains usable when durable storage is unavailable. */ }
   return started === epoch;
 }
-export async function loadExperienceOfflineGrant(scope: string, path?: string): Promise<ExperienceOfflineGrant | null> {
-  if (clearingEpoch) return null;
+export async function loadExperienceOfflineGrant(scope: string, path?: string, signal?: AbortSignal): Promise<ExperienceOfflineGrant | null> {
+  if (clearingEpoch || signal?.aborted) return null;
   const started = epoch;
   try {
     const all = await rows();
-    if (started !== epoch) return null;
+    if (started !== epoch || signal?.aborted) return null;
     const candidates = all.filter((row): row is GrantRow => "grant" in row && isExperienceOfflineGrant(row.grant, { scope, path, generation: getExperienceDeviceGeneration() })).sort((a, b) => b.grant.issuedAt - a.grant.issuedAt);
     const grant = candidates[0]?.grant;
     if (!grant) return null;
-    for (const allowed of grant.scopes) { const scoped = grants.get(allowed) ?? new Map(); scoped.set(authority(grant), grant); grants.set(allowed, scoped); }
+    // A delayed older disk lease cannot replace a newer online admission.
+    if ([...(grants.get(grant.scope)?.values() ?? [])].some(value => authority(value) === authority(grant) && value.scope === grant.scope && value.grantRevision !== grant.grantRevision)) return null;
+    rememberGrant(grant);
     event(); return grant;
   } catch { return null; }
 }

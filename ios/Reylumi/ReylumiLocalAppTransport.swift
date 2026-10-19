@@ -63,6 +63,7 @@ final class ReylumiLocalAppTransport {
     private var freshContextID: UUID?
     private var freshContextPath: String?
     private var commandIDs = Set<String>()
+    private var workspaceCommandID: String?
     private var cookieCommitTask: Task<[HTTPCookie], Error>?
     private var cookieCommitID: UUID?
     private var workspaceCookieRevision = 0
@@ -510,15 +511,44 @@ final class ReylumiLocalAppTransport {
         if let stamp = value as? String, let date = ReylumiOfflineRoute.expiry(from: stamp) { return date <= Date().addingTimeInterval(60) }
         return false
     }
+    private func workspaceCommandContext(scope requestedScope: String?, epoch: Int) async throws -> [String: Any] {
+        await loadSession(); try ensureCurrent(epoch)
+        // Bind this gesture to the currently displayed account and scope. A
+        // retained lease for another role cannot authorize an arbitrary caller.
+        let displayed = (onlineContext?["context"] as? [String: Any]) ?? (session?.object["context"] as? [String: Any])
+        guard let requestedScope, requestedScope == displayed?["scope"] as? String,
+              displayed?["authenticated"] as? Bool == true,
+              let viewer = displayed?["viewerId"] as? String, !viewer.isEmpty else { throw failure(409, "Your access has changed. Please try again.") }
+        let (data, response) = try await send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: "/"), URLQueryItem(name: "generation", value: generation)], epoch: epoch)
+        let value = try decode(data, response: response)
+        try ensureCurrent(epoch)
+        guard value["schemaVersion"] as? Int == 1, value["offline"] as? Bool != true,
+              let context = value["context"] as? [String: Any], context["authenticated"] as? Bool == true,
+              let nextViewer = context["viewerId"] as? String,
+              let scope = context["scope"] as? String, scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil else { throw failure(403, "Please sign in to continue.") }
+        guard nextViewer == viewer else { await reset(); throw failure(409, "Your account has changed. Please open the page again.") }
+        // This fresh account identity is a command preflight, not a display
+        // admission. Do not adopt its neutral lease, rotate epochs or emit a
+        // context event. Target membership is checked again by the command.
+        return value
+    }
     func command(name: String, args raw: [String: Any], requestID: String, path: String, requestedScope: String? = nil) async throws -> [String: Any] {
         guard let rule = manifest.commands.first(where: { $0.name == name }), UUID(uuidString: requestID) != nil, !commandIDs.contains(requestID), commandIDs.count < 100 else { throw failure(400, "Unsupported app request.") }
         let args = try arguments(raw, keys: rule.argumentKeys)
         commandIDs.insert(requestID); defer { commandIDs.remove(requestID) }
+        let workspaceSwitch = name == "shell.switch-workspace"
+        if workspaceSwitch {
+            guard workspaceCommandID == nil else { throw failure(409, "A workspace change is already being checked.") }
+            workspaceCommandID = requestID
+        }
+        defer { if workspaceCommandID == requestID { workspaceCommandID = nil } }
         let expectedEpoch = scopeEpoch
-        let context = try await freshContext(path: path)
+        let context: [String: Any]
+        if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
+        else { context = try await freshContext(path: path) }
         try ensureCurrent(expectedEpoch)
         guard let scope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
-        guard requestedScope == nil || scope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
+        guard workspaceSwitch || requestedScope == nil || scope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
         let epoch = scopeEpoch
         let (data, response) = try await send(path: rule.path, body: ["name": name, "args": args, "requestId": requestID, "scope": scope], epoch: epoch)
         if [403, 409].contains(response.statusCode) {

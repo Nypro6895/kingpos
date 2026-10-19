@@ -21,7 +21,7 @@ import type { AppLocalContext } from "@/lib/app-local-host";
 import type { AppLocalShellNavigation, AppLocalShellConfiguration, AppLocalShellSummary, AppLocalShellNotice } from "@/lib/app-local-shell-metadata";
 
 /** One shell around the retained page registry, never a shell per hidden page. */
-export function AppLocalShell({ context, presentationContext, children, path }: { context: AppLocalContext | null; presentationContext?: AppLocalContext | null; children: ReactNode; path?: string }) {
+export function AppLocalShell({ context, presentationContext, children, path, checkContext }: { context: AppLocalContext | null; presentationContext?: AppLocalContext | null; children: ReactNode; path?: string; checkContext?: () => Promise<void> }) {
   const pathname = usePathname();
   const router = useRouter();
   const route = (path ?? pathname).split("?")[0];
@@ -54,7 +54,7 @@ export function AppLocalShell({ context, presentationContext, children, path }: 
   return <WorkspaceLanguageProvider scope={scope ?? ""} enabled={config?.language.enabled ?? false} portableEnabled={config?.language.portableEnabled ?? false} expiresAt={config?.language.expiresAt ?? null}>
     <CampaignPluginProvider scope={scope ?? ""} installed={config?.campaign.installed ?? false}>
       <OverlayDismissal />
-      <AppLocalSessionExpiryPrompt authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} />
+      <AppLocalSessionExpiryPrompt authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} checkContext={checkContext} />
       {!publicInitial && menu ? <OwnerQueueRuntime scope={menu.ownerQueueScope} /> : null}
       {!publicInitial && menu && pendingSummary ? <WorkspaceSummarySeed scope={pendingSummary.notificationScope} summary={pendingSummary.summary} /> : null}
       {notice.data?.scope === scope ? <AbuseNoticeView mode={notice.data?.mode ?? null} /> : null}
