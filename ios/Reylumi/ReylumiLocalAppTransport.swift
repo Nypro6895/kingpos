@@ -95,7 +95,7 @@ final class ReylumiLocalAppTransport {
         [cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased(), cookie.path, cookie.name].joined(separator: "\u{0}")
     }
     private func cookieIdentity(_ values: [HTTPCookie]) -> [String] {
-        values.filter { $0.name.hasPrefix("sb-") || $0.name.hasPrefix("reylumi") || $0.name.hasPrefix("kingpos") }.map { cookieKey($0) + "\u{0}" + $0.value }.sorted()
+        ReylumiCookieAuthority.identity(values, origin: origin)
     }
     private static func removesCookie(_ cookie: HTTPCookie) -> Bool {
         if let expiry = cookie.expiresDate, expiry <= Date() { return true }

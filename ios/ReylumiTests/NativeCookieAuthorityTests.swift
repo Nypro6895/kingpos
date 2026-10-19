@@ -19,8 +19,10 @@ private actor AuthorityCookieJar {
 private actor AuthorityCookieHTTP: ReylumiLocalHTTPClient {
     private var held: [String: (URL, CheckedContinuation<(Data, HTTPURLResponse), Error>)] = [:]
     private var sentCookies: [String: String] = [:]
+    private var failNextTags = Set<String>()
     func heldCount() -> Int { held.count }
     func cookieHeader(for tag: String) -> String { sentCookies[tag] ?? "" }
+    func failNextRead(_ tag: String) { failNextTags.insert(tag) }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let url = try XCTUnwrap(request.url)
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -33,6 +35,7 @@ private actor AuthorityCookieHTTP: ReylumiLocalHTTPClient {
         let args = try XCTUnwrap(try JSONSerialization.jsonObject(with: Data(raw.utf8)) as? [String: String])
         let tag = try XCTUnwrap(args["date"])
         sentCookies[tag] = request.value(forHTTPHeaderField: "Cookie") ?? ""
+        if failNextTags.remove(tag) != nil { throw URLError(.timedOut) }
         if tag == "after" { return try response(url: url) }
         return try await withCheckedThrowingContinuation { held[tag] = (url, $0) }
     }
@@ -216,5 +219,62 @@ final class NativeCookieAuthorityTests: XCTestCase {
             let (refreshed, snapshots) = try await backgroundOverlap(mutation: cookie(name, "external-change"))
             XCTAssertFalse(refreshed, name); XCTAssertEqual(snapshots, 0, name)
         }
+    }
+
+    func testAuthorityProjectionUsesOriginAndDomainLabelBoundaries() {
+        let nested = URL(string: "https://portal.reylumi.com")!
+        let hostOnly = cookie("sb-access-token", "host", domain: "portal.reylumi.com")
+        let parent = cookie("kingpos-login-session-id", "parent", domain: ".reylumi.com")
+        let irrelevant = [cookie("sb-refresh-token", "sibling", domain: "other.reylumi.com"), cookie("sb-refresh-token", "child", domain: "child.portal.reylumi.com"), cookie("sb-refresh-token", "lookalike", domain: ".evilreylumi.com"), cookie("sb-refresh-token", "suffix", domain: ".com")]
+        let expected = ReylumiCookieAuthority.identity([hostOnly, parent], origin: nested)
+        XCTAssertEqual(expected.count, 2)
+        XCTAssertEqual(ReylumiCookieAuthority.identity([hostOnly, parent] + irrelevant, origin: nested), expected)
+        XCTAssertEqual(ReylumiCookieAuthority.identity([parent], origin: origin).count, 1)
+        XCTAssertEqual(ReylumiCookieAuthority.identity([cookie("kingpos-login-session-id", "parent", domain: "reylumi.com")], origin: nested).count, 1, "A parent-domain authority must not depend on Foundation preserving its leading dot")
+        XCTAssertEqual(ReylumiCookieAuthority.identity([hostOnly], origin: origin).count, 0)
+    }
+
+    func testExactMarkerNamesCannotExcludeUnknownOrDifferentlyCasedAuthority() {
+        XCTAssertEqual(ReylumiCookieAuthority.identity(presentationNames.map { cookie($0, "one") }, origin: origin), [])
+        let protectedNames = ["Reylumi-ad-session", "reylumi-ad-session-extra", "kingpos-portable-pos-remembered-id-extra", "unclassified-origin-authority"]
+        XCTAssertEqual(ReylumiCookieAuthority.identity(protectedNames.map { cookie($0, "one") }, origin: origin).count, protectedNames.count)
+        XCTAssertNotEqual(ReylumiCookieAuthority.identity([cookie("unclassified-origin-authority", "one")], origin: origin), ReylumiCookieAuthority.identity([cookie("unclassified-origin-authority", "two")], origin: origin))
+    }
+
+    @MainActor
+    func testExplicitResourceRemovalFencesPendingReadAndItsOfflineFallback() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let http = AuthorityCookieHTTP()
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.resource-removal." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.resource-removal." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        let generation = transport.generation
+        var resets = 0
+        transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+        // A different argument key represents an unrelated authorized view.
+        _ = try await transport.read(name: "fixture.roster", args: ["date": "after"], etag: nil, requestedScope: AppLocalTestFixture.scope)
+        let old = Task { @MainActor () -> Result<[String: Any], Error> in
+            do { return .success(try await transport.read(name: "fixture.roster", args: ["date": "first"], etag: nil, requestedScope: AppLocalTestFixture.scope)) }
+            catch { return .failure(error) }
+        }
+        for _ in 0..<150 { if await http.heldCount() == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let held = await http.heldCount(); XCTAssertEqual(held, 1)
+        try await transport.removeCached(name: "fixture.roster", args: ["date": "first"], requestedScope: AppLocalTestFixture.scope)
+        try await http.release("first")
+        switch await old.value {
+        case .success: XCTFail("A response started before explicit withdrawal must not be delivered or recached")
+        case .failure(let error): XCTAssertTrue(error is CancellationError, "Resource withdrawal is cancellation, not a global account revocation")
+        }
+        let withdrawn = try await transport.cached(name: "fixture.roster", args: ["date": "first"], requestedScope: AppLocalTestFixture.scope)
+        XCTAssertNil(withdrawn, "A late successful response must not repopulate the withdrawn durable key")
+        await http.failNextRead("first")
+        do {
+            _ = try await transport.read(name: "fixture.roster", args: ["date": "first"], etag: nil, requestedScope: AppLocalTestFixture.scope)
+            XCTFail("A subsequent network failure must not revive a withdrawn DTO through native offline fallback")
+        } catch { XCTAssertTrue(error is URLError) }
+        let unrelated = try await transport.cached(name: "fixture.roster", args: ["date": "after"], requestedScope: AppLocalTestFixture.scope)
+        XCTAssertNotNil(unrelated, "Withdrawal is scoped to exact resource arguments")
+        XCTAssertEqual(transport.generation, generation); XCTAssertEqual(resets, 0)
+        await transport.reset()
     }
 }
