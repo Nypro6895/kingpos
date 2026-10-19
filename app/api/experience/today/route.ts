@@ -10,7 +10,7 @@ import { createReadRequestTiming, type ReadRequestTiming } from "@/lib/read-requ
 
 export async function GET(request: Request) {
   const timing = createReadRequestTiming();
-  return runWithReadContext(() => readToday(request, timing));
+  return runWithReadContext(() => readToday(request, timing), timing);
 }
 
 async function readToday(request: Request, timing: ReadRequestTiming) {

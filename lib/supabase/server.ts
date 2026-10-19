@@ -11,6 +11,7 @@ import { cookies, headers } from "next/headers";
 import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
 import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
 import { coalesceReadInFlight } from "@/lib/read-context-scope";
+import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
@@ -50,6 +51,18 @@ type AccountLoginSessionStatusRow = {
 const authUserReadKey = Symbol("read-auth-user");
 const accountStatusReadKey = Symbol("read-account-status");
 const loginSessionReadKey = Symbol("read-login-session-status");
+const authenticatedReadAuthorities = new WeakMap<
+  NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  string
+>();
+
+// Only gated clients receive metadata. The opaque value is for pending read
+// equality, never an authorization decision or a cache of a successful gate.
+export function getAuthenticatedReadAuthority(
+  client: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+): string | undefined {
+  return authenticatedReadAuthorities.get(client);
+}
 
 // Keys live only while the raw read is pending inside an explicit read request.
 // Caller-specific strict/optional handling stays outside the shared transport.
@@ -208,7 +221,11 @@ export async function createAuthenticatedSupabaseServerClient(options: { throwOn
     return null;
   }
 
-  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+  const requestHeaders = {
+    Authorization: `Bearer ${accessToken}`,
+    ...await safetyRequestHeaders(),
+  };
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -216,12 +233,26 @@ export async function createAuthenticatedSupabaseServerClient(options: { throwOn
     },
     global: {
       fetch: supabaseDeadlineFetch,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        ...await safetyRequestHeaders(),
-      },
+      headers: requestHeaders,
     },
   });
+
+  try {
+    const loginSessionId = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value ?? null;
+    const authority = createHash("sha256").update(JSON.stringify([
+      config.supabaseUrl,
+      config.supabaseAnonKey,
+      accessToken,
+      loginSessionId,
+      Object.entries(requestHeaders).sort(([left], [right]) => left.localeCompare(right)),
+    ])).digest("hex");
+    authenticatedReadAuthorities.set(supabase, authority);
+  } catch {
+    // Metadata is optional: failure preserves the authenticated client and
+    // simply prevents any raw read from joining another client's request.
+  }
+
+  return supabase;
 }
 
 export async function createAuthenticatedSupabaseAuthSessionServerClient() {

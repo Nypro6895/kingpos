@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 function load(file, deps = {}) {
   const exports = {};
@@ -32,7 +33,7 @@ const financialData = {
   staffAttributionSource: 'earnings', tipAttributionSource: 'earnings',
   staffRows: [{ staffId: 'staff-a', staffName: 'Staff A', totalEarned: 120, tipAmount: 20, bigTurnCount: 2, smallTurnCount: 1, totalTurns: 3 }],
 };
-function fixture({ permissions = ['*'], fail = new Set(), reportWait, hoursWait } = {}) {
+function fixture({ permissions = ['*'], fail = new Set(), reportWait, hoursWait, timing, timezoneWait, clockAuth } = {}) {
   const reads = [];
   const context = { user: { id: 'user-a', first_name: 'Owner' }, currentAccount: { id: 'account-a' }, currentSalon: { id: 'salon-a', name: 'Salon A' }, permissionCodes: permissions };
   const call = async (name, value) => {
@@ -58,12 +59,13 @@ function fixture({ permissions = ['*'], fail = new Set(), reportWait, hoursWait 
   };
   const server = load('lib/today-dashboard.ts', {
     'server-only': {},
+    '@/lib/read-context-scope': { getReadRequestTiming: () => timing },
     '@/lib/today-dashboard-sections': sections,
-    '@/lib/salon-business-clock': { getContextBusinessTimezone: async () => { reads.push('timezone'); return 'UTC'; } },
+    '@/lib/salon-business-clock': { getContextBusinessTimezone: async () => { reads.push('timezone'); if (clockAuth) await clockAuth(); if (timezoneWait) await timezoneWait; return 'UTC'; } },
     '@/lib/today-metric-assessment': { backlogTone: count => count > 0 ? 'warning' : 'default', waitingAssessment: timestamps => ({ tone: timestamps.length ? 'warning' : 'default', label: timestamps.length ? 'Clients waiting' : 'No clients waiting' }) },
     '@/lib/app-notifications': { getCurrentAppNotifications: () => call('notifications', [{ id: 'notice-a', title: 'Update', body: 'Review update', href: '/notifications' }]) },
     '@/lib/bookings': { BOOKING_LINE_SELECT: 'id', BOOKING_SELECT: 'id', zonedDateTimeToUtcIso: ({ date, time }) => `${date}T${time}:00.000Z` },
-    '@/lib/daily-pos-report': { DAILY_POS_REPORT_PERMISSIONS: { view: 'reports.view' }, getDailyPosReport: () => call('report', report), getDailyPosTodayFinancialData: () => call('financials', financialData) },
+    '@/lib/daily-pos-report': { DAILY_POS_REPORT_PERMISSIONS: { view: 'reports.view' }, createDailyPosReadContext: () => ({}), getDailyPosReport: () => call('report', report), getDailyPosTodayFinancialData: () => call('financials', financialData) },
     '@/lib/current-context': { isOwnerMembership: () => false },
     '@/lib/salon-business-hours': {
       getSalonBusinessHoursForDate: () => call('hours', hours),
@@ -76,7 +78,7 @@ function fixture({ permissions = ['*'], fail = new Set(), reportWait, hoursWait 
       getCurrentSalonStaffActivitySummaries: async () => new Map((await call('activity', [['staff-a', { assignedServiceAmount: 120, bigTurns: 2, smallTurns: 1, tipAmount: 20 }]]))),
       STAFF_WORKDAY_STATUS_LABELS: { checked_in: 'Checked in' },
     },
-    '@/lib/supabase/server': { createAuthenticatedSupabaseServerClient: async () => db },
+    '@/lib/supabase/server': { createAuthenticatedSupabaseServerClient: async () => { if (clockAuth) await clockAuth(); return db; } },
     '@/lib/customer-visits': { getCustomerVisitQueueForSalon: () => call('waiting', [{ id: 'visit-a', customerId: 'customer-a', customerName: 'Waiting client', checkedInAt: `${day}T10:00:00.000Z`, serviceLabel: 'Service', source: 'walk_in' }]) },
     '@/lib/today-quick-accesses': { getTodayQuickAccessConfiguration: () => call('quick', quick) },
     '@/types/booking': { normalizeBookingStatus: status => status === 'scheduled' ? 'confirmed' : status },
@@ -92,6 +94,39 @@ test('shell resolves only authoritative clock and leaves unread values unknown',
   assert.deepEqual(Object.values(shell.summary).map(metric => metric.value), ['--', '--', '--', '--']);
   assert.deepEqual(shell.attention, []);
   assert.equal(shell.performance.emptyLabel, null);
+});
+
+test('the authoritative date read starts while display timezone is pending', async () => {
+  let release;
+  const timezoneWait = new Promise(resolve => { release = resolve; });
+  const f = fixture({ timezoneWait });
+  const pending = f.getTodayDashboard(f.context, { phase: 'shell' });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(f.reads.includes('get_salon_business_date'), 'independent date RPC must not wait for the display timezone');
+  release();
+  const result = await pending;
+  assert.equal(result.date, day);
+  assert.equal(result.timezone, 'UTC');
+  assert.deepEqual(f.reads, ['timezone', 'get_salon_business_date']);
+});
+
+test('parallel clock factories join pending raw authorization without caching a settled result', async () => {
+  const reads = load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': { AsyncLocalStorage } });
+  let release, calls = 0;
+  const held = new Promise(resolve => { release = resolve; });
+  const key = Symbol('controlled-clock-authorization');
+  const clockAuth = () => reads.coalesceReadInFlight(key, 'same-private-request-authority', async () => { calls++; await held; });
+  await reads.runWithReadContext(async () => {
+    const f = fixture({ clockAuth });
+    const pending = f.getTodayDashboard(f.context, { phase: 'shell' });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls, 1, 'both independently authorized clock readers share only their pending raw check');
+    release();
+    await pending;
+    assert.equal(calls, 1);
+    await clockAuth();
+    assert.equal(calls, 2, 'a subsequent authorization still performs a fresh read');
+  });
 });
 
 test('each operational source avoids report, earnings, other operations and extras reads', async () => {
@@ -253,4 +288,27 @@ test('legacy core still omits financial/extras reads and keeps existing pending 
   assert.deepEqual(core.pendingSections, { metrics: ['sales'], details: true });
   assert.deepEqual([...f.reads].sort(), ['timezone', 'get_salon_business_date', 'staff', 'bookings', 'waiting'].sort());
   assert.equal(core.team[0].earnings, undefined);
+});
+
+test('request profiling attributes only loaded Today sources and preserves their results', async () => {
+  const expected = {
+    shell: ['clock'],
+    staff: ['clock', 'hours', 'staff_board'],
+    bookings: ['clock', 'hours', 'bookings'],
+    waiting: ['clock', 'waiting'],
+    financials: ['clock', 'hours', 'staff_board', 'staff_activity', 'financial_report', 'financial_compare'],
+    extras: ['clock', 'extras', 'extras'],
+  };
+  for (const [phase, names] of Object.entries(expected)) {
+    const recorded = [];
+    const profiled = fixture({ timing: { measure(stage, read) { recorded.push(stage); return read(); } } });
+    const baseline = fixture();
+    const actual = await profiled.getTodayDashboard(profiled.context, { phase });
+    const before = await baseline.getTodayDashboard(baseline.context, { phase });
+    assert.deepEqual(recorded.sort(), [...names].sort(), phase);
+    assert.deepEqual(profiled.reads, baseline.reads, phase + ' must not add backend work');
+    const actualData = Object.fromEntries(Object.entries(actual).filter(([key]) => key !== 'generatedAt'));
+    const beforeData = Object.fromEntries(Object.entries(before).filter(([key]) => key !== 'generatedAt'));
+    assert.deepEqual(actualData, beforeData, phase + ' must preserve dashboard data');
+  }
 });

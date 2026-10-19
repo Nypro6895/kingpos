@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import * as crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test, { after } from 'node:test';
 import ts from 'typescript';
@@ -41,6 +42,7 @@ function fixture() {
   const clientOptions = [];
   const accountStatus = load('lib/users/account-status.ts');
   const auth = load('lib/supabase/auth-rest.ts', {
+    '@/lib/read-context-scope': scope,
     '@/lib/bounded-get': {
       ReadConnectionError: class extends Error {},
       fetchWithDeadline() { throw new Error('Unexpected real transport'); },
@@ -92,6 +94,7 @@ function fixture() {
     },
   };
   const server = load('lib/supabase/server.ts', {
+    'node:crypto': crypto,
     '@/lib/abuse-context': { safetyRequestHeaders: async () => ({ 'x-safety-fixture': 'retained' }) },
     '@supabase/supabase-js': sdk,
     '@/lib/account-security-shared': {

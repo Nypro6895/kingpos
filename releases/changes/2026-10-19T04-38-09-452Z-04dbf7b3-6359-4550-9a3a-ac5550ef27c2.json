@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "today-backend-measure-20261018",
+  "status": "working",
+  "summary": "Measure real Today backend Auth/workspace/source reads and optimize proven duplicate or expensive reads while preserving security and business rules; no deployment",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/today-dashboard.ts",
+    "lib/read-request-timing.ts",
+    "lib/request-business-context.ts",
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/live/owner-today/route.ts"
+  ],
+  "source": {
+    "commit": "5b8b2b82d171f446385d9b2497a52137082d4dba"
+  },
+  "dependencies": [
+    "auth-workspace-cache-repair-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Real read-only backend timing, query/row/payload analysis; web/native compatibility; safe security/business regression checks",
+      "result": "pending"
+    }
+  ],
+  "id": "04dbf7b3-6359-4550-9a3a-ac5550ef27c2",
+  "recordedAt": "2026-10-19T04:38:09.452Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\today-backend-measure-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
