@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "32ad4a49232c519bd622e55c13cdb1d004883778c06db2a1ebe79a0c7627219e",
+  "buildId": "148f53dba33625ff1e46259964e0308c45fac843a89127a028b42dc8dac3a6d9",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 573012,
-      "sha256": "5c1ba056b88d566f3192448cf62e82a15d8783c1ee7ea41951dd5101e10b880d",
+      "bytes": 566098,
+      "sha256": "334cdfe2a95ebb4b0e072d3a3cc93b5befc47ef1c1ae7866b0c40c41f6ffbea0",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4233854,
-      "sha256": "ec907dc0e91fee12a55b29218e49953a11eb43dbb2efd5dacebdab835a215881",
+      "bytes": 4233875,
+      "sha256": "c923083ad62cbffadabc4aea51f7a072d819993f80778061e79fe501bba33cf4",
       "mime": "text/javascript"
     },
     {
@@ -1481,8 +1481,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 4508,
-      "sha256": "104e04c6ddefa5229e241469ec0543f285dc6b2a7dd70d78c3210dfc997632b5",
+      "bytes": 4509,
+      "sha256": "d5d25fa0c096d5e1824ae72cd997a41fd2d0720e01daf22b3ecd805231313b83",
       "mime": "text/html"
     },
     {
@@ -1805,20 +1805,20 @@
     },
     {
       "path": "market/features/booking-deposit.svg",
-      "bytes": 1262,
-      "sha256": "d2cce8b1313c68a595c6f4ad824139893ce70f50559f4bc3f9588129e89b57c8",
+      "bytes": 1263,
+      "sha256": "fd4420aa76362835330e8a4ecfd81f585373337071dd2c72acfcae4c57dd8b32",
       "mime": "image/svg+xml"
     },
     {
       "path": "market/features/booking-policy.svg",
-      "bytes": 953,
-      "sha256": "04a687a9ed08ed358433e820069879c781558c2cd36365f49f94e6d56909ac22",
+      "bytes": 954,
+      "sha256": "05575ff532858a48d7f5730ab8c0851d3a0b3ce08d2e4c74c074c54b06ab7c37",
       "mime": "image/svg+xml"
     },
     {
       "path": "market/features/campaigns.svg",
-      "bytes": 1281,
-      "sha256": "52d9baa88b224f5f34291b4b5a841e50188589e5cfbae527c2184e070dae55a5",
+      "bytes": 1282,
+      "sha256": "e6bd5e220a769adbb25f69df79adb2876063ff3afebd32c1e74515a39fb39394",
       "mime": "image/svg+xml"
     },
     {
@@ -1841,8 +1841,8 @@
     },
     {
       "path": "market/features/checkin-receipt.svg",
-      "bytes": 1119,
-      "sha256": "59c4867c4e8655fac5dc31251221dfd1a12b2b045f8b6260897330e3f9cec7b2",
+      "bytes": 1120,
+      "sha256": "2003812370592af87f8af27ec852e6d65e2d9a855a96d6dd53b7f97be1ed09a1",
       "mime": "image/svg+xml"
     },
     {
@@ -1895,8 +1895,8 @@
     },
     {
       "path": "market/features/payroll-data-download.svg",
-      "bytes": 2461,
-      "sha256": "dd2b6b567735d9dff4e4684fdfda4c7e19793d36f50bd58f70c495b4df872651",
+      "bytes": 2486,
+      "sha256": "67fedbff77fff537b9450d667b09320d8d447baf7ff2ae57168401e480c937cc",
       "mime": "image/svg+xml"
     },
     {
@@ -1949,8 +1949,8 @@
     },
     {
       "path": "market/features/service-relay.svg",
-      "bytes": 1631,
-      "sha256": "51737fcbb9d5e1a8d07664e5264c927f2cfe3d2c91d171039d168139b98a1301",
+      "bytes": 1632,
+      "sha256": "41f321ddb74af23046f9c199764ba2438991d7c272633dbe071db1d05ab51e7f",
       "mime": "image/svg+xml"
     },
     {
