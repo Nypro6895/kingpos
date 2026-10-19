@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "admin-red-favicon-20261018",
+  "status": "ready",
+  "summary": "Red Reylumi favicon scoped to admin layout; preserve public favicon and logo shape",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/layout.tsx",
+    "public/brand/reylumi-admin-favicon.svg"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\admin-red-favicon-20261018\\snapshot"
+  },
+  "validation": [
+    {
+      "name": "Red icon rendering and transparency preservation",
+      "result": "passed",
+      "evidence": "artifacts/admin-red-favicon-20261018/verification.json"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    }
+  ],
+  "id": "56d84427-b95e-4744-afb1-f7d3897ded27",
+  "recordedAt": "2026-10-19T00:37:45.706Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/layout.tsx": "981c3b01c1c0771893aa848e92cb1a9006a60fa040a25682ff63fec8502d265f",
+    "public/brand/reylumi-admin-favicon.svg": "18f6dc326f40dfebbd4e76dd624848122a9f0dac99bdd1b940bb34fe769d463c"
+  }
+}

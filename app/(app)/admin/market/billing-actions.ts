@@ -97,7 +97,7 @@ async function mutation(
     if (!client) return { ok: false, message: "Sign in again to manage Market payments." };
     const { error } = await client.rpc(rpc, values);
     if (error) return { ok: false, message: friendlyFailure(error) };
-    revalidatePath("/admin/market"); revalidatePath("/admin/settings");
+    revalidatePath("/admin/market"); revalidatePath("/admin/settings"); revalidatePath("/admin/plugins"); revalidatePath("/admin/plugins/[pluginId]", "page");
     revalidatePath("/market");
     revalidatePath("/settings/plugins");
     return { ok: true, message: success };

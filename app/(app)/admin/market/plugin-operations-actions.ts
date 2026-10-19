@@ -16,7 +16,7 @@ export async function saveMarketPluginOperations(form: FormData): Promise<AdminA
     const { error } = await client.from("market_payment_settings").update({ booking_deposit_test_enabled, updated_at: new Date().toISOString() }).eq("id", true);
     if (error) throw new Error("The testing setting could not be saved.");
     const { error: auditError } = await client.from("platform_admin_audit_logs").insert({ actor_user_id: actor.userId, action: "market.booking_testing.update", target_type: "system", before_data: { booking_deposit_test_enabled: previous.booking_deposit_test_enabled }, after_data: { booking_deposit_test_enabled } });
-    revalidatePath("/admin/market"); revalidatePath("/admin/settings"); revalidatePath("/market");
+    revalidatePath("/admin/market"); revalidatePath("/admin/settings"); revalidatePath("/admin/plugins"); revalidatePath("/admin/plugins/[pluginId]", "page"); revalidatePath("/market");
     return { ok: true, message: auditError ? "Testing setting saved; audit recording needs attention." : "Booking Deposit testing setting saved." };
   } catch (cause) { return { ok: false, message: cause instanceof Error ? cause.message : "The setting could not be saved. Please retry." }; }
 }
