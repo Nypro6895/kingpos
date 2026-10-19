@@ -14,7 +14,7 @@ const parsed=ts.createSourceFile('entry.tsx',entry,ts.ScriptTarget.Latest,true,t
 for(const item of parsed.statements){
  if(!ts.isImportDeclaration(item))continue;
  const path=item.moduleSpecifier.text;
- if(['react','react-dom/client','@/lib/app-local-context-recovery'].includes(path))continue;
+ if(['react','react-dom/client','@/lib/app-local-context-recovery','@/lib/app-local-page-admission'].includes(path))continue;
  imports.set(path,item.importClause?.namedBindings?.elements?.map(x=>x.propertyName?.text??x.name.text)??[]);
 }
 const commandModule=`let scope;export const getAppLocalCommandScope=()=>scope;export const setAppLocalCommandScope=value=>scope=value;`;
@@ -39,6 +39,7 @@ async function compile(){
   for(const[path]of imports)b.onResolve({filter:new RegExp('^'+path.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$')},()=>({path,namespace:'fixture'}));
   b.onResolve({filter:/^\.\/app-local-host$/},()=>({path:'@/lib/app-local-host',namespace:'fixture'}));
   b.onResolve({filter:/^\.\/app-local-command-client$/},()=>({path:'@/lib/app-local-command-client',namespace:'fixture'}));
+  b.onResolve({filter:/^\.\/experience-offline-policy$/},()=>({path:'@/lib/experience-offline-policy',namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({contents:mock(path,imports.get(path)??[]),loader:'tsx',resolveDir:process.cwd()}));
  }}]});return compiled;
 }

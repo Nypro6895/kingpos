@@ -16,7 +16,7 @@ import { getWorkspaceTranslation } from "./workspace-language-server";
 import { runReadWithDeadline } from "./bounded-get";
 import { GET as sessionGET } from "@/app/(app)/api/auth/session/route";
 import { POST as logoutPOST } from "@/app/(app)/api/auth/logout/route";
-import { GET as workspaceGET } from "@/app/(app)/workspace/open/route";
+import { selectWorkspaceContext } from "@/lib/workspace-selection";
 import { GET as bookingGET } from "@/app/api/public-booking/context/route";
 import { GET as advertisingGET, POST as advertisingPOST } from "@/app/api/explore/advertising/route";
 import { APP_LOCAL_SHELL_READS } from "./app-local-shell-metadata";
@@ -25,12 +25,12 @@ import type { AppLocalRead } from "./app-local-host";
 import type { AppLocalHttpResponse } from "./app-local-http-client";
 
 const fail = (status: number, message: string): never => { throw Object.assign(new Error(message), { status }); };
-async function authorized(scope?: string) {
+async function authorized(scope?: string, prewriteBusiness?: Awaited<ReturnType<typeof getRequestBusinessContext>>) {
   const current = await headers();
   if (current.get("x-reylumi-auth-unavailable") === "1") fail(503, "Please reconnect and try again.");
-  const business = await getRequestBusinessContext();
+  const business = prewriteBusiness ?? await getRequestBusinessContext();
   if (!scope) fail(409, "Your workspace has changed.");
-  if (getExperienceContext(business).scope === scope) return { context: business, current };
+  if (getExperienceContext(business).scope === scope) return { context: business, business, current };
   if (!business.user) fail(409, "Your workspace has changed.");
   // The context endpoint deliberately preserves the original MyWork/schedule
   // and workday staff fallbacks. A selected root workspace is not their scope.
@@ -38,7 +38,7 @@ async function authorized(scope?: string) {
     runReadWithDeadline(getStaffPortalIdentity().then(identity => identity.context), 12_000),
     runReadWithDeadline(getCurrentStaffBusinessContext(), 12_000),
   ]);
-  for (const result of alternatives) if (result.status === "fulfilled" && result.value.user?.id === business.user!.id && getExperienceContext(result.value).scope === scope) return { context: result.value, current };
+  for (const result of alternatives) if (result.status === "fulfilled" && result.value.user?.id === business.user!.id && getExperienceContext(result.value).scope === scope) return { context: result.value, business, current };
   if (alternatives.some(result => result.status === "rejected")) fail(503, "Please reconnect and try again.");
   return fail(409, "Your workspace has changed.");
 }
@@ -113,17 +113,19 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
 }
 
 /** Explicit original handlers only. No generic URL, method, cookie or action is supplied by the caller. */
-export async function runAppLocalShellCommand(name: string, args: Record<string, unknown>, request: Request, scope: string): Promise<{ handled: boolean; data?: unknown }> {
+export async function runAppLocalShellCommand(name: string, args: Record<string, unknown>, request: Request, scope: string, prewriteBusiness?: Awaited<ReturnType<typeof getRequestBusinessContext>>): Promise<{ handled: boolean; data?: unknown }> {
   if (!["shell.switch-workspace", "shell.logout", "http.shell.advertising-event"].includes(name)) return { handled: false };
-  const { context, current } = await authorized(scope), origin = new URL(request.url).origin;
+  // Only the workspace selector can reuse the command route's fresh prewrite
+  // context. Never retain it or let another command borrow it after a write.
+  const { context, business, current } = await authorized(scope, name === "shell.switch-workspace" ? prewriteBusiness : undefined), origin = new URL(request.url).origin;
   if (request.headers.get("origin") !== origin) fail(403, "Please open this page again.");
   if (name === "shell.switch-workspace") {
     if (!context.user) fail(401, "Please sign in again.");
     if (Object.keys(args).some(key => !["workspaceId", "destination"].includes(key)) || typeof args.workspaceId !== "string" || args.workspaceId.length > 160 || args.destination !== undefined && (typeof args.destination !== "string" || args.destination.length > 2048)) fail(400, "Choose a workspace.");
     const url = new URL("/workspace/open", origin); url.searchParams.set("workspace_id", String(args.workspaceId)); if (args.destination) url.searchParams.set("destination", String(args.destination));
-    const response = await workspaceGET(new Request(url, { headers: forwarded(current) })); await applyCookies(response);
-    const location = response.headers.get("location"); if (!location || ![302, 303, 307, 308].includes(response.status)) fail(503, "Workspace could not be opened.");
-    const target = new URL(location!, origin); if (target.origin !== origin) fail(503, "Workspace could not be opened.");
+    const result = await selectWorkspaceContext(business, url);
+    if (!result.ok) return fail(result.status, result.error);
+    const target = result.destination;
     return { handled: true, data: { path: target.pathname + target.search + target.hash } };
   }
   if (name === "shell.logout") {

@@ -16,7 +16,10 @@ async function fixture(transport, duplicates = 1, { realRealtime = false, staleP
     import{AppLocalTodayClient,TodayProgressiveClient}from'./app/staff/today/today-progressive-client';
     import{refreshAppLocalResource,seedAppLocalResource}from'./lib/app-local-resource';
     import{experienceResourceCache}from'./lib/experience-resource-cache';
-    window.reads=[];window.holds=new Set(['financials']);window.failures=new Map([['extras',503]]);window.pending=[];window.versions=new Map();window.salonNames=new Map();window.cacheLoads=[];
+    window.reads=[];window.holds=new Set(['financials']);window.failures=new Map([['extras',503]]);window.pending=[];window.versions=new Map();window.salonNames=new Map();window.cacheLoads=[];window.validationResult=true;window.validationCalls=[];window.removed=[];
+    // Native navigation retains this same route. A same-path anchor cannot
+    // manufacture a document reload or a new authority admission in this fixture.
+    document.addEventListener('click',event=>{if(event.target.closest('a[href="/staff/today"]'))event.preventDefault();});
     const load=experienceResourceCache.load;experienceResourceCache.load=(context,fetcher,options)=>{window.cacheLoads.push({key:context.key,force:options?.force});return load(context,fetcher,options);};
     window.release=(phase)=>{window.holds.delete(phase);for(const item of window.pending.filter(item=>item.phase===phase))item.resolve();};
     const all=['staff','bookings','waiting','financials','extras'];
@@ -58,6 +61,7 @@ async function fixture(transport, duplicates = 1, { realRealtime = false, staleP
   ` }, bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic', alias: { '@': process.cwd() }, define: { 'process.env.NODE_ENV': '"production"' }, plugins: [{ name: 'today-fixture-boundaries', setup(builder) {
     const replacements = [
       [/(?:^|\/)app-local-host$/, 'host'],
+      [/(?:^|\/)experience-scope$/, 'scope'],
       [/(?:^|\/)experience-persistent-cache$/, 'storage'],
       [/(?:^|\/)app-local-data-policy$/, 'policy'],
       [/(?:^|\/)experience-native-readmodels$/, 'native-readmodels'],
@@ -66,7 +70,8 @@ async function fixture(transport, duplicates = 1, { realRealtime = false, staleP
     ];
     for (const [filter, path] of replacements) builder.onResolve({ filter }, () => ({ path, namespace: 'fixture' }));
     builder.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ resolveDir: process.cwd(), loader: path === 'view' ? 'tsx' : 'js', contents: ({
-      host: `export const getAppLocalHost=()=>({isNative:true,cache:async()=>null,read:async(name,args,options)=>({schemaVersion:1,status:200,scope:options.scope,etag:'fixture',updatedAt:Date.now(),data:{dashboard:await window.read(args.phase,options.scope,args.date||'2026-10-18'),isOwner:true}})});`,
+      host: `export const getAppLocalHost=()=>({isNative:true,cache:async(op,args)=>{if(op==='remove'){window.removed.push(args);if(window.removalFailure)throw Error('Synthetic removal failure');}return null;},read:async(name,args,options)=>({schemaVersion:1,status:200,scope:options.scope,etag:'fixture',updatedAt:Date.now(),data:{dashboard:await window.read(args.phase,options.scope,args.date||'2026-10-18'),isOwner:true}})});`,
+      scope: `export const useExperienceScope=()=>({validate:async fresh=>{window.validationCalls.push(fresh);if(window.holdValidation)await new Promise(resolve=>window.releaseValidation=resolve);return window.validationResult;}});`,
       storage: `export const EXPERIENCE_OFFLINE_AUTHORIZATION_EVENT='fixture:offline';export const getExperienceOfflineGrant=()=>null;export const isExperienceSnapshotAuthorized=()=>false;export const isExperienceSnapshotContextAuthorized=()=>false;export const readExperienceSnapshot=async()=>null;export const writeExperienceSnapshot=async()=>{};export const removeExperienceSnapshot=async()=>{};`,
       policy: `export const appLocalReadIsDurable=()=>true;`,
       'native-readmodels': `export const subscribeExperienceNativeReadModel=()=>()=>{};`,
@@ -230,4 +235,77 @@ test('native: offline with no saved shell settles to an actionable connection me
     assert.equal(await page.getByRole('button', { name: 'Try again', exact: true }).count(), 1);
     assert.equal(await page.evaluate(() => window.reads.length), 0);
   } finally { await app.close(); }
+});
+
+test('native: Open Today requires fresh admission and a fresh shell, then resumes progressive reads once without reviving the denied snapshot', { skip, timeout: 30000 }, async () => {
+  const app = await fixture('native'), { page } = app;
+  try {
+    await page.evaluate(() => { window.failures.clear(); window.release('financials'); });
+    await page.waitForFunction(() => document.querySelector('[data-metric="sales"]')?.textContent === 'scope-a 2026-10-18 sales');
+    await page.evaluate(async () => { window.failures.set('financials',403); await window.refreshPhase('financials'); });
+    await page.getByText('Your workspace access must be checked again.', { exact: true }).waitFor();
+    const before = await page.evaluate(() => window.reads.length);
+    await page.evaluate(() => window.validationResult = false);
+    await page.getByText('Open Today', { exact: true }).click();
+    await settle(page);
+    assert.deepEqual(await page.evaluate(() => window.validationCalls), [true]);
+    assert.equal(await page.evaluate(() => window.reads.length), before, 'a denied admission must not start private reads');
+    assert.equal(await page.locator('[data-fixture-view]').count(), 0);
+    await page.evaluate(() => { window.validationResult=true;window.failures.clear();window.holds.add('shell');window.versions.set('financials',' recovered'); });
+    await page.getByText('Open Today', { exact: true }).click();
+    await page.waitForFunction(() => window.reads.filter(read => read.phase === 'shell').length === 2);
+    assert.equal(await page.locator('[data-fixture-view]').count(), 0, 'old merged sections stay withdrawn while a fresh shell is pending');
+    await page.evaluate(() => { window.holds.add('financials');window.release('shell'); });
+    await page.waitForFunction(() => document.querySelector('[data-metric="staff"]')?.textContent === '3');
+    assert.equal(await page.locator('[data-metric="sales"]').textContent(), '--', 'a denied former snapshot is not reused');
+    await page.evaluate(() => window.release('financials'));
+    await page.waitForFunction(() => document.querySelector('[data-metric="sales"]')?.textContent === 'scope-a 2026-10-18 sales recovered');
+    const reads=await page.evaluate(() => window.reads);
+    for(const phase of ['shell','staff','bookings','waiting','extras'])assert.equal(reads.filter(read=>read.phase===phase).length,2,phase+' recovers once');
+    assert.equal(reads.filter(read=>read.phase==='financials').length,3,'initial, denied, and one fresh recovery');
+    assert.equal(await page.evaluate(() => window.removed.length), 7, 'one denied snapshot and only this Today shell/five phases are discarded');
+  } finally { await app.close(); }
+});
+
+test('native: recovery with failed snapshot removal or a weak-network shell stays withdrawn and an explicit retry can recover', { skip, timeout: 30000 }, async () => {
+  const app = await fixture('native'), { page } = app;
+  try {
+    await page.evaluate(() => { window.failures.clear();window.release('financials'); });
+    await page.waitForFunction(() => document.querySelector('[data-metric="sales"]')?.textContent === 'scope-a 2026-10-18 sales');
+    await page.evaluate(async () => { window.failures.set('financials',403);await window.refreshPhase('financials');window.removalFailure=true; });
+    await page.getByText('Open Today', { exact: true }).click();
+    await page.getByText('Access could not be confirmed. Please try again.', { exact: true }).waitFor();
+    assert.equal(await page.locator('[data-fixture-view]').count(), 0);
+    assert.equal(await page.evaluate(() => window.reads.filter(x=>x.phase==='shell').length), 1, 'storage failure cannot restore the rejected page');
+    await page.evaluate(() => { window.removalFailure=false;window.failures.clear();window.failures.set('shell',503); });
+    await page.getByText('Open Today', { exact: true }).click();
+    await page.getByRole('button', { name: 'Try again', exact: true }).waitFor();
+    assert.equal(await page.locator('[data-fixture-view]').count(), 0);
+    assert.equal(await page.getByText('scope-a 2026-10-18 sales', { exact: true }).count(), 0);
+    await page.evaluate(() => window.failures.clear());
+    await page.getByRole('button', { name: 'Try again', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('[data-metric="sales"]')?.textContent === 'scope-a 2026-10-18 sales');
+    assert.deepEqual(await page.evaluate(() => window.validationCalls), [true,true,true]);
+    assert.equal(await page.evaluate(() => window.reads.filter(x=>x.phase==='shell').length), 3, 'one initial, one failed, and one explicit recovery');
+  } finally { await app.close(); }
+});
+
+test('native: leaving during a held access check cannot resurrect Today or leave its recovery disabled on return', { skip, timeout: 30000 }, async () => {
+  const app=await fixture('native'),{page}=app;
+  try{
+    await page.evaluate(()=>{window.failures.clear();window.release('financials');});
+    await page.waitForFunction(()=>document.querySelector('[data-metric="sales"]')?.textContent==='scope-a 2026-10-18 sales');
+    await page.evaluate(async()=>{window.failures.set('financials',403);await window.refreshPhase('financials');window.holdValidation=true;});
+    await page.getByText('Open Today',{exact:true}).click();
+    await page.waitForFunction(()=>typeof window.releaseValidation==='function');
+    const before=await page.evaluate(()=>window.reads.length);
+    await page.evaluate(()=>window.show(false));await settle(page);
+    await page.evaluate(()=>window.releaseValidation());await settle(page);
+    assert.equal(await page.evaluate(()=>window.reads.length),before,'a hidden page cannot start recovery reads after a delayed auth result');
+    await page.evaluate(()=>{window.holdValidation=false;window.failures.clear();window.show(true);});await settle(page);
+    assert.equal(await page.getByRole('button',{name:'Open Today',exact:true}).isEnabled(),true);
+    await page.getByRole('button',{name:'Open Today',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('[data-metric="sales"]')?.textContent==='scope-a 2026-10-18 sales');
+    assert.deepEqual(await page.evaluate(()=>window.validationCalls),[true,true]);
+  }finally{await app.close();}
 });
