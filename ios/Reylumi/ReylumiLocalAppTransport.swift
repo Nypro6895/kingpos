@@ -261,7 +261,7 @@ final class ReylumiLocalAppTransport {
         if staffFamily { await store.revoke(scope: nil, authority: "staff") }
         else if let scope { await store.revoke(scope: scope) }
     }
-    private func send(path: String, query: [URLQueryItem] = [], body: [String: Any]? = nil, etag: String? = nil, epoch: Int) async throws -> (Data, HTTPURLResponse) {
+    private func send(path: String, query: [URLQueryItem] = [], body: [String: Any]? = nil, etag: String? = nil, epoch: Int, trace: ReylumiLocalDiagnostics.RequestTrace? = nil) async throws -> (Data, HTTPURLResponse) {
         try ensureCurrent(epoch)
         var components = URLComponents(url: origin, resolvingAgainstBaseURL: false)!
         components.path = path; components.queryItems = query.isEmpty ? nil : query; components.fragment = nil
@@ -274,6 +274,7 @@ final class ReylumiLocalAppTransport {
         request.setValue("ReylumiIOS/1.0", forHTTPHeaderField: "User-Agent")
         request.setValue(origin.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/")), forHTTPHeaderField: "Origin")
         request.setValue("1", forHTTPHeaderField: "X-Reylumi-App-Local")
+        if let trace { request.setValue(trace.requestId, forHTTPHeaderField: "X-Reylumi-Request-Id") }
         if let etag, etag.utf8.count <= 512, !etag.contains("\r"), !etag.contains("\n") { request.setValue(etag, forHTTPHeaderField: "If-None-Match") }
         if let body { request.httpBody = try JSONSerialization.data(withJSONObject: body); request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
         let applicable = originalCookies.filter { cookie in
@@ -283,14 +284,16 @@ final class ReylumiLocalAppTransport {
         HTTPCookie.requestHeaderFields(with: applicable).forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         let timingCategory: ReylumiLocalDiagnostics.Category = path == "/api/app-local/context" ? .context : path == "/api/app-local/read" ? .read : .command
         let began = ProcessInfo.processInfo.systemUptime
-        diagnostics.record(.httpStart, category: timingCategory, outcome: .started)
+        diagnostics.record(.httpStart, category: timingCategory, outcome: .started, trace: trace)
         let data: Data, response: HTTPURLResponse
         do {
             (data, response) = try await client.send(request)
-            diagnostics.record(.httpEnd, category: timingCategory, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
-            diagnostics.serverTiming(response.value(forHTTPHeaderField: "Server-Timing"), category: timingCategory)
+            let trustedMetadata = response.url == url && (trace?.acceptsResponse(response) ?? true)
+            let failureCode = trustedMetadata && (400...599).contains(response.statusCode) ? response.value(forHTTPHeaderField: "X-Reylumi-Failure-Code").flatMap(ReylumiLocalDiagnostics.FailureCode.init(rawValue:)) : nil
+            diagnostics.record(.httpEnd, category: timingCategory, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000, trace: trace, failureCode: failureCode)
+            if trustedMetadata { diagnostics.serverTiming(response.value(forHTTPHeaderField: "Server-Timing"), category: timingCategory, trace: trace) }
         } catch {
-            diagnostics.record(.httpFailure, category: timingCategory, outcome: Task.isCancelled ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
+            diagnostics.record(.httpFailure, category: timingCategory, outcome: Task.isCancelled ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000, trace: trace)
             throw error
         }
         try ensureCurrent(epoch)
@@ -653,29 +656,46 @@ final class ReylumiLocalAppTransport {
     func command(name: String, args raw: [String: Any], requestID: String, path: String, requestedScope: String? = nil) async throws -> [String: Any] {
         guard let rule = manifest.commands.first(where: { $0.name == name }), UUID(uuidString: requestID) != nil, !commandIDs.contains(requestID), commandIDs.count < 100 else { throw failure(400, "Unsupported app request.") }
         let args = try arguments(raw, keys: rule.argumentKeys)
+        let trace = ReylumiLocalDiagnostics.RequestTrace(command: rule, manifest: manifest, requestID: requestID)
+        let commandBegan = ProcessInfo.processInfo.systemUptime
+        diagnostics.record(.commandStart, category: .command, outcome: .started, trace: trace)
         commandIDs.insert(requestID); defer { commandIDs.remove(requestID) }
-        let workspaceSwitch = name == "shell.switch-workspace"
-        if workspaceSwitch {
-            guard workspaceCommandID == nil else { throw failure(409, "A workspace change is already being checked.") }
-            workspaceCommandID = requestID
+        do {
+            let workspaceSwitch = name == "shell.switch-workspace"
+            if workspaceSwitch {
+                guard workspaceCommandID == nil else { throw failure(409, "A workspace change is already being checked.") }
+                workspaceCommandID = requestID
+            }
+            defer { if workspaceCommandID == requestID { workspaceCommandID = nil } }
+            let expectedEpoch = scopeEpoch
+            let context: [String: Any], scope: String
+            let preflightBegan = ProcessInfo.processInfo.systemUptime
+            do {
+                if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
+                else { context = try await freshContext(path: path) }
+                try requireCommandGrant(context)
+                try ensureCurrent(expectedEpoch)
+                guard let currentScope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
+                guard workspaceSwitch || requestedScope == nil || currentScope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
+                scope = currentScope
+                diagnostics.record(.commandPreflight, category: .command, durationMs: (ProcessInfo.processInfo.systemUptime - preflightBegan) * 1000, trace: trace)
+            } catch {
+                diagnostics.record(.commandPreflight, category: .command, outcome: Task.isCancelled || error is CancellationError ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - preflightBegan) * 1000, trace: trace)
+                throw error
+            }
+            let epoch = scopeEpoch
+            let (data, response) = try await send(path: rule.path, body: ["name": name, "args": args, "requestId": requestID, "scope": scope], epoch: epoch, trace: trace)
+            if [403, 409].contains(response.statusCode) {
+                await revokeDisplay(scope: scope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
+                throw failure(response.statusCode, "Please reconnect and check your access.")
+            }
+            let result = try decode(data, response: response)
+            try ensureCurrent(epoch)
+            diagnostics.record(.commandEnd, category: .command, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - commandBegan) * 1000, trace: trace)
+            return result
+        } catch {
+            diagnostics.record(.commandFailure, category: .command, outcome: Task.isCancelled || error is CancellationError ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - commandBegan) * 1000, trace: trace)
+            throw error
         }
-        defer { if workspaceCommandID == requestID { workspaceCommandID = nil } }
-        let expectedEpoch = scopeEpoch
-        let context: [String: Any]
-        if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
-        else { context = try await freshContext(path: path) }
-        try requireCommandGrant(context)
-        try ensureCurrent(expectedEpoch)
-        guard let scope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
-        guard workspaceSwitch || requestedScope == nil || scope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
-        let epoch = scopeEpoch
-        let (data, response) = try await send(path: rule.path, body: ["name": name, "args": args, "requestId": requestID, "scope": scope], epoch: epoch)
-        if [403, 409].contains(response.statusCode) {
-            await revokeDisplay(scope: scope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
-            throw failure(response.statusCode, "Please reconnect and check your access.")
-        }
-        let result = try decode(data, response: response)
-        try ensureCurrent(epoch)
-        return result
     }
 }

@@ -108,6 +108,7 @@ for(const rule of meta.APP_LOCAL_HTTP_COMMANDS)commands.push({name:rule.name,pat
 for(const[name,rule]of Object.entries(meta.ROLE_COMMANDS))commands.push({name,path:'/api/app-local/command',argumentKeys:rule.argumentKeys});
 for(const[name,rule]of Object.entries({...meta.APP_LOCAL_PERSONAL_COMMANDS,...meta.APP_LOCAL_UPLOAD_COMMANDS,...meta.APP_LOCAL_PORTABLE_HTTP_COMMANDS}))commands.push({name,path:'/api/app-local/command',argumentKeys:rule.argumentKeys});
 for(const rule of [...meta.APP_LOCAL_EXPLORE_COMMANDS,...meta.APP_LOCAL_PUBLIC_COMMANDS,...meta.APP_LOCAL_SHELL_COMMANDS])commands.push({name:rule.name,path:'/api/app-local/command',argumentKeys:rule.argumentKeys});
+await fs.writeFile(path.join(root,'lib/app-local-command-trace-names.generated.json'),JSON.stringify({schemaVersion:1,names:[...new Set(commands.map(rule=>rule.name).filter(name=>!name.startsWith('action.')))].sort()},null,2)+'\n');
 const registrySource=await fs.readFile(path.join(root,'lib/app-local-page-registry.tsx'),'utf8');
 // Every route is explicitly registered by its renderer; inventory-only routes cannot pass the activation gate.
 const routeRegistry=JSON.parse(await fs.readFile(path.join(root,'lib/app-local-page-paths.json'),'utf8'));

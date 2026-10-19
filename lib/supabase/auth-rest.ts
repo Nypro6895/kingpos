@@ -1,4 +1,5 @@
 import { fetchWithDeadline, ReadConnectionError } from "@/lib/bounded-get";
+import { measureAppLocalCommandBackend } from "@/lib/app-local-command-trace";
 import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
 
 export class AuthAvailabilityError extends Error {
@@ -55,7 +56,6 @@ export const supabaseDeadlineFetch: typeof fetch = (input, init) => {
     }
   };
   const timing = getReadRequestTiming();
-  if (!timing) return read();
   // Keep only fixed service categories. URLs, record keys, filters, credentials,
   // headers and response bodies never enter the request-local diagnostic data.
   let pathname: string;
@@ -63,5 +63,9 @@ export const supabaseDeadlineFetch: typeof fetch = (input, init) => {
   const kind = /^\/auth\/v1(?:\/|$)/.test(pathname) ? "auth"
     : /^\/rest\/v1\/rpc(?:\/|$)/.test(pathname) ? "rpc"
     : /^\/rest\/v1(?:\/|$)/.test(pathname) ? "rest" : null;
-  return kind ? timing.measureBackend(kind, read) : read();
+  if (!kind) return read();
+  // A command observer records elapsed transport only. It never installs a read
+  // scope, changes retry/cancellation policy, or inspects a mutation response.
+  const operation = timing ? () => timing.measureBackend(kind, read) : read;
+  return measureAppLocalCommandBackend(kind, operation);
 };

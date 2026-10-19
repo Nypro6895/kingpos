@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "names": [
+    "http.explore.feed-events",
+    "http.notifications.preferences",
+    "http.notifications.viewed",
+    "http.public-booking.confirm",
+    "http.shell.advertising-event",
+    "http.staff.booking-preferences",
+    "http.staff.confirm-booking",
+    "http.staff.create-appointment",
+    "http.staff.report-no-show",
+    "owner.receipt-operation",
+    "portable.http.draft",
+    "portable.http.operations",
+    "portable.http.prepare-device",
+    "shell.logout",
+    "shell.switch-workspace",
+    "upload.cancel",
+    "upload.finalize",
+    "upload.prepare",
+    "upload.status"
+  ]
+}

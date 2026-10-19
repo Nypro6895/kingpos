@@ -5,6 +5,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import test from 'node:test';
 import * as React from 'react';
 import ts from 'typescript';
+import { commandTraceRouteDependencies } from './fixtures/app-local-command-trace.mjs';
 
 // Actual route/adapters, in-memory cookies and synthetic authority only. This
 // test never contacts a server or creates/changes a business record.
@@ -77,6 +78,7 @@ function fixture({ revoked = false, cookieFailure = false, cookieFailureAfter = 
   });
   const noopHTTP = async () => ({ handled: false });
   const route = load('app/api/app-local/command/route.ts', {
+    ...commandTraceRouteDependencies(),
     'next/server': { connection: async () => {} }, 'next/headers': nextHeaders,
     '@/lib/request-business-context': requestContext, '@/lib/experience-context': experience,
     '@/lib/staff-portal-identity': staffIdentity, '@/lib/current-context': currentModule,

@@ -6,6 +6,7 @@ import test from 'node:test';
 import { build } from 'esbuild';
 import ts from 'typescript';
 import { chromium, webkit } from 'playwright-core';
+import { commandTraceRouteDependencies } from './fixtures/app-local-command-trace.mjs';
 
 // Real useHiddenPosts + real command route + original hidden-post action.
 // Identity/database clients and native HTTP delivery are local fixtures only.
@@ -61,6 +62,7 @@ function commandFixture() {
     '@/lib/users/current-user': {}, '@/lib/beauty': {}, 'next/headers': {},
   });
   const route = load('app/api/app-local/command/route.ts', {
+    ...commandTraceRouteDependencies(),
     'next/server': { connection: async () => {} }, 'next/headers': { headers: async () => new Headers() },
     '@/lib/request-business-context': { getRequestBusinessContext: async () => ({ user: viewerId ? { id: viewerId } : null }) },
     '@/lib/experience-context': { getExperienceContext: () => ({ scope: scopeFor(viewerId), authenticated: Boolean(viewerId) }) },

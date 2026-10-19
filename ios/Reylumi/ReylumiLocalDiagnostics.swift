@@ -2,7 +2,8 @@ import Foundation
 import CoreFoundation
 
 /// Local, bounded diagnostics. The app opts in for device troubleshooting.
-/// No caller can add strings, URLs, identifiers, payloads or error messages.
+/// Only signed-manifest command names and random per-request UUIDs may cross
+/// the typed trace boundary. No account/device IDs, URLs, payloads or errors.
 @MainActor
 final class ReylumiLocalDiagnostics {
     enum Event: String, Codable {
@@ -12,6 +13,7 @@ final class ReylumiLocalDiagnostics {
         case contextBarrierStart, contextBarrierEnd, scopeReset, authorityRotate, pageInvalidate, displayRevoke, portableLock
         case readCacheHit, readCacheMiss, httpStart, httpEnd, httpFailure, serverTiming
         case cookieCapture, cookieCommit, cookieStale, cookieMismatch
+        case commandStart, commandPreflight, commandEnd, commandFailure
     }
     enum Category: String, Codable {
         case view, context, read, command, cache, launch, today, shell, owner, staff, publicContent, other
@@ -23,9 +25,33 @@ final class ReylumiLocalDiagnostics {
     }
     enum Stage: String, Codable, CaseIterable {
         case auth, validate, lease, load, serialize, total
+        case proxyRefresh = "proxy_refresh", workspace, handler
+        case backendAuth = "backend_auth", backendRest = "backend_rest", backendRPC = "backend_rpc"
         case todayFull = "today_full", todayShell = "today_shell", todayStaff = "today_staff"
         case todayBookings = "today_bookings", todayWaiting = "today_waiting"
         case todayFinancials = "today_financials", todayExtras = "today_extras"
+    }
+    enum FailureCode: String, Codable, CaseIterable {
+        case proxyRefreshUnavailable = "proxy_refresh_unavailable", authUnavailable = "auth_unavailable"
+        case handlerTimeout = "handler_timeout", handlerUpstream = "handler_upstream", handlerException = "handler_exception"
+        case invalidRequest = "invalid_request", accessDenied = "access_denied", workspaceChanged = "workspace_changed", unsupportedCommand = "unsupported_command"
+    }
+    struct RequestTrace {
+        let requestId: String
+        let commandName: String
+        init?(command: ReylumiLocalBundle.Command, manifest: ReylumiLocalBundle.Manifest, requestID: String) {
+            guard Self.validRequestID(requestID), ReylumiLocalBundle.safeName(command.name), command.name.utf8.count <= 128,
+                  !command.name.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }), command.path == "/api/app-local/command",
+                  manifest.commands.contains(where: { $0.name == command.name && $0.path == command.path && $0.argumentKeys == command.argumentKeys }) else { return nil }
+            requestId = requestID; commandName = command.name
+        }
+        private static func validRequestID(_ value: String) -> Bool {
+            value.utf8.count == 36 && value.range(of: "^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$", options: .regularExpression) != nil && UUID(uuidString: value) != nil
+        }
+        func acceptsResponse(_ response: HTTPURLResponse) -> Bool {
+            guard let value = response.value(forHTTPHeaderField: "X-Reylumi-Request-Id"), Self.validRequestID(value) else { return false }
+            return UUID(uuidString: value) == UUID(uuidString: requestId)
+        }
     }
     struct Entry: Codable {
         let sequence: Int
@@ -38,38 +64,52 @@ final class ReylumiLocalDiagnostics {
         let stage: Stage?
         let reason: Reason?
         let operation: Int?
+        let requestId: String?
+        let commandName: String?
+        let failureCode: FailureCode?
     }
     private let capacity: Int
     private let now: () -> TimeInterval
     private let origin: TimeInterval
+    private let wallOrigin: Date
+    private let wallNow: () -> Date
     private(set) var isEnabled: Bool
     private var sequence = 0
     private var entries: [Entry] = []
 
-    init(enabled: Bool = false, capacity: Int = 512, now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
-        self.capacity = min(512, max(1, capacity)); self.now = now; origin = now()
+    init(enabled: Bool = false, capacity: Int = 512, now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }, wallNow: @escaping () -> Date = Date.init) {
+        self.capacity = min(512, max(1, capacity)); self.now = now; origin = now(); self.wallNow = wallNow; wallOrigin = wallNow()
         isEnabled = enabled
     }
-    func record(_ event: Event, category: Category = .view, outcome: Outcome = .completed, status: Int? = nil, durationMs: Double? = nil, stage: Stage? = nil, reason: Reason? = nil, operation: Int? = nil) {
+    func record(_ event: Event, category: Category = .view, outcome: Outcome = .completed, status: Int? = nil, durationMs: Double? = nil, stage: Stage? = nil, reason: Reason? = nil, operation: Int? = nil, trace: RequestTrace? = nil, failureCode: FailureCode? = nil) {
         guard isEnabled else { return }
         let duration = durationMs.flatMap { $0.isFinite && $0 >= 0 && $0 <= 300_000 ? $0 : nil }
         let code = status.flatMap { (-1100...599).contains($0) ? $0 : nil }
         sequence += 1
         let operation = operation.flatMap { (0...1_000_000_000).contains($0) ? $0 : nil }
-        entries.append(Entry(sequence: sequence, elapsedMs: max(0, (now() - origin) * 1000), event: event, category: category, outcome: outcome, status: code, durationMs: duration, stage: stage, reason: reason, operation: operation))
+        let elapsed = (now() - origin) * 1000
+        let traceEvents: [Event] = [.httpStart, .httpEnd, .httpFailure, .serverTiming, .commandStart, .commandPreflight, .commandEnd, .commandFailure]
+        let traceAllowed = traceEvents.contains(event)
+        entries.append(Entry(sequence: sequence, elapsedMs: elapsed.isFinite ? min(604_800_000, max(0, elapsed)) : 0, event: event, category: category, outcome: outcome, status: code, durationMs: duration, stage: stage, reason: reason, operation: operation, requestId: traceAllowed ? trace?.requestId : nil, commandName: traceAllowed ? trace?.commandName : nil, failureCode: event == .httpEnd && trace != nil ? failureCode : nil))
         if entries.count > capacity { entries.removeFirst(entries.count - capacity) }
     }
     func snapshot() -> [Entry] { entries }
 
     /// A second allowlist at the native boundary. Never trust page-supplied
-    /// trace rows to have passed the JavaScript filter. No URLs, IDs, cookies,
+    /// trace rows to have passed the JavaScript filter. Native request IDs and
+    /// command names cannot be supplied by JS. No URLs, account IDs, cookies,
     /// free-form errors, device identifiers or business payloads are exported.
     func report(javascript: Any?, appVersion: String, appBuild: String, bundleBuild: String) throws -> Data {
         let native = try JSONSerialization.jsonObject(with: JSONEncoder().encode(snapshot()))
         let version = appVersion.range(of: "^[0-9]{1,6}(\\.[0-9]{1,6}){0,3}$", options: .regularExpression) != nil ? appVersion : "unknown"
         let build = appBuild.range(of: "^[0-9]{1,10}(\\.[0-9]{1,6}){0,2}$", options: .regularExpression) != nil ? appBuild : "unknown"
         let bundled = bundleBuild.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil ? bundleBuild : "unknown"
-        return try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "appVersion": version, "appBuild": build, "bundleBuild": bundled, "native": native, "javascript": Self.sanitizedJavaScript(javascript)], options: [.sortedKeys])
+        return try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "appVersion": version, "appBuild": build, "bundleBuild": bundled, "nativeTimeOriginUTC": Self.utc(wallOrigin), "exportedAtUTC": Self.utc(wallNow()), "native": native, "javascript": Self.sanitizedJavaScript(javascript)], options: [.sortedKeys])
+    }
+    private static func utc(_ date: Date) -> String {
+        guard date.timeIntervalSince1970.isFinite, (0...4_102_444_800).contains(date.timeIntervalSince1970) else { return "unknown" }
+        let formatter = ISO8601DateFormatter(); formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.string(from: date)
     }
 
     private static func sanitizedJavaScript(_ value: Any?) -> [[String: Any]] {
@@ -97,7 +137,7 @@ final class ReylumiLocalDiagnostics {
             return result
         }
     }
-    func serverTiming(_ header: String?, category: Category) {
+    func serverTiming(_ header: String?, category: Category, trace: RequestTrace? = nil) {
         guard isEnabled, let header, header.utf8.count <= 8192 else { return }
         for value in header.split(separator: ",").prefix(32) {
             let parts = value.split(separator: ";")
@@ -105,7 +145,7 @@ final class ReylumiLocalDiagnostics {
             for parameter in parts.dropFirst() {
                 let pair = parameter.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
                 if pair.count == 2, pair[0] == "dur", let duration = Double(pair[1]), duration.isFinite, duration >= 0, duration <= 300_000 {
-                    record(.serverTiming, category: category, durationMs: duration, stage: stage)
+                    record(.serverTiming, category: category, durationMs: duration, stage: stage, trace: trace)
                     break
                 }
             }

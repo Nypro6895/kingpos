@@ -6,6 +6,7 @@ import test from 'node:test';
 import { build } from 'esbuild';
 import ts from 'typescript';
 import { chromium, webkit } from 'playwright-core';
+import { commandTraceRouteDependencies } from './fixtures/app-local-command-trace.mjs';
 
 // Exercise the real component and command-route authentication boundary. Only
 // database authority, original action results and presentation helpers are fake.
@@ -60,6 +61,7 @@ function commandRoute() {
   const exports = {}, untouched = async () => ({ handled: false });
   let authenticated = false;
   const dependencies = {
+    ...commandTraceRouteDependencies(),
     'next/server': { connection: async () => {} },
     'next/headers': { headers: async () => new Headers() },
     '@/lib/request-business-context': { getRequestBusinessContext: async () => ({ user: authenticated ? { id: 'synthetic-viewer' } : null }) },

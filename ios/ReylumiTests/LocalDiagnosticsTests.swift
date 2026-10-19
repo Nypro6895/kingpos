@@ -64,4 +64,74 @@ final class LocalDiagnosticsTests: XCTestCase {
         XCTAssertEqual(report["appVersion"] as? String, "unknown"); XCTAssertEqual(report["appBuild"] as? String, "unknown")
         XCTAssertEqual(report["bundleBuild"] as? String, "unknown")
     }
+
+    @MainActor
+    func testCommandTraceRequiresManifestRuleAndStrictRandomRequestID() throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let rule = try XCTUnwrap(bundle.manifest.commands.first { $0.name == "fixture.save" })
+        let id = UUID().uuidString
+        let request = try XCTUnwrap(ReylumiLocalDiagnostics.RequestTrace(command: rule, manifest: bundle.manifest, requestID: id))
+        XCTAssertEqual(request.requestId, id); XCTAssertEqual(request.commandName, "fixture.save")
+        for malformed in ["private-token", id + "\r\nCookie: private-secret", " " + id, "{" + id + "}"] {
+            XCTAssertNil(ReylumiLocalDiagnostics.RequestTrace(command: rule, manifest: bundle.manifest, requestID: malformed))
+        }
+        let arbitrary = ReylumiLocalBundle.Command(name: "private-person-secret", path: "/api/app-local/command", argumentKeys: [])
+        XCTAssertNil(ReylumiLocalDiagnostics.RequestTrace(command: arbitrary, manifest: bundle.manifest, requestID: id))
+        let wrongEndpoint = ReylumiLocalBundle.Command(name: rule.name, path: "/private-secret", argumentKeys: rule.argumentKeys)
+        XCTAssertNil(ReylumiLocalDiagnostics.RequestTrace(command: wrongEndpoint, manifest: bundle.manifest, requestID: id))
+        let url = URL(string: "https://reylumi.com/api/app-local/command")!
+        XCTAssertTrue(request.acceptsResponse(HTTPURLResponse(url: url, statusCode: 503, httpVersion: nil, headerFields: ["X-Reylumi-Request-Id": id.lowercased()])!))
+        for value in [UUID().uuidString, "private-token", id + "," + id] {
+            XCTAssertFalse(request.acceptsResponse(HTTPURLResponse(url: url, statusCode: 503, httpVersion: nil, headerFields: ["X-Reylumi-Request-Id": value])!))
+        }
+    }
+
+    @MainActor
+    func testNativeCommandMetadataCannotBeInjectedThroughJavaScriptExport() throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let rule = try XCTUnwrap(bundle.manifest.commands.first)
+        let request = try XCTUnwrap(ReylumiLocalDiagnostics.RequestTrace(command: rule, manifest: bundle.manifest, requestID: UUID().uuidString))
+        let trace = ReylumiLocalDiagnostics(enabled: true)
+        trace.record(.httpEnd, category: .command, status: 503, trace: request, failureCode: .handlerTimeout)
+        trace.record(.scopeReset, trace: request, failureCode: .handlerException)
+        trace.serverTiming("proxy_refresh;dur=1, workspace;dur=2, handler;dur=3, backend_auth;dur=4, backend_rest;dur=5, backend_rpc;dur=6, private-secret;dur=7, total;dur=8", category: .command, trace: request)
+        let injectedID = UUID().uuidString
+        let js = [["event": "auth.end", "requestId": injectedID, "commandName": rule.name, "failureCode": "handler_timeout", "nativeTimeOriginUTC": "private-secret"]]
+        let data = try trace.report(javascript: js, appVersion: "1.0.0", appBuild: "40", bundleBuild: String(repeating: "a", count: 64))
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let native = try XCTUnwrap(report["native"] as? [[String: Any]])
+        XCTAssertEqual(native.first?["requestId"] as? String, request.requestId)
+        XCTAssertEqual(native.first?["commandName"] as? String, rule.name)
+        XCTAssertEqual(native.first?["failureCode"] as? String, "handler_timeout")
+        XCTAssertNil(native[1]["requestId"]); XCTAssertNil(native[1]["commandName"]); XCTAssertNil(native[1]["failureCode"])
+        XCTAssertEqual(trace.snapshot().filter { $0.event == .serverTiming }.count, 7)
+        XCTAssertTrue(trace.snapshot().filter { $0.event == .serverTiming }.allSatisfy { $0.requestId == request.requestId })
+        let rows = try XCTUnwrap(report["javascript"] as? [[String: Any]])
+        XCTAssertEqual(rows.count, 1); XCTAssertEqual(Set(rows[0].keys), ["event"])
+        XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("private-secret"))
+        XCTAssertFalse(String(decoding: data, as: UTF8.self).contains(injectedID))
+    }
+
+    @MainActor
+    func testUTCAnchorAndBothReportRingsRemainBoundedWithValidatedNumbers() throws {
+        var monotonic: TimeInterval = 10
+        var wall = Date(timeIntervalSince1970: 1_792_425_600)
+        let trace = ReylumiLocalDiagnostics(enabled: true, capacity: 900, now: { monotonic }, wallNow: { wall })
+        for _ in 0..<600 { monotonic += 0.01; trace.record(.httpEnd, category: .command, status: 503) }
+        wall = wall.addingTimeInterval(6)
+        let data = try trace.report(javascript: Array(repeating: ["event": "auth.end"], count: 256), appVersion: "1.0.0", appBuild: "40", bundleBuild: String(repeating: "a", count: 64))
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual((report["native"] as? [[String: Any]])?.count, 512)
+        XCTAssertEqual((report["javascript"] as? [[String: Any]])?.count, 256)
+        let formatter = ISO8601DateFormatter(); formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let began = try XCTUnwrap((report["nativeTimeOriginUTC"] as? String).flatMap(formatter.date(from:)))
+        let exported = try XCTUnwrap((report["exportedAtUTC"] as? String).flatMap(formatter.date(from:)))
+        XCTAssertEqual(exported.timeIntervalSince(began), 6, accuracy: 0.001)
+        XCTAssertEqual(trace.snapshot().last?.elapsedMs ?? 0, 6000, accuracy: 0.001)
+        monotonic = .infinity; trace.record(.httpEnd, durationMs: .nan)
+        XCTAssertEqual(trace.snapshot().last?.elapsedMs, 0); XCTAssertNil(trace.snapshot().last?.durationMs)
+        wall = Date(timeIntervalSince1970: .infinity)
+        let invalid = try XCTUnwrap(JSONSerialization.jsonObject(with: trace.report(javascript: nil, appVersion: "1", appBuild: "1", bundleBuild: "invalid")) as? [String: Any])
+        XCTAssertEqual(invalid["exportedAtUTC"] as? String, "unknown")
+    }
 }
