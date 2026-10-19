@@ -44,7 +44,7 @@ async function compile(){
 }
 async function fixture(options={}){
  const built=await compile();
- const setup=`window.fixtureOptions=${JSON.stringify(options)};window.fixtureStats={calls:[],commands:0,resets:0,errors:[]};window.fixtureServerRole='staff';window.fixtureHeld=[];
+ const setup=`window.fixtureOptions=${JSON.stringify(options)};window.fixtureStats={calls:[],commands:0,resets:0,aborted:0,errors:[]};window.fixtureServerRole='staff';window.fixtureHeld=[];
  window.__reylumiAppLocalContext={generation:'synthetic-generation-20261018',scopeEpoch:1,nonce:'fixture'};
  window.addEventListener('reylumi:app-local-workspace-error',e=>window.fixtureStats.errors.push(e.detail));
  window.fixtureDispatchResolve=(detail={})=>window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-resolve',{detail:{generation:window.__reylumiAppLocalContext.generation,...detail}}));
@@ -54,7 +54,7 @@ async function fixture(options={}){
  const role=path==='/'?window.fixtureServerRole:path==='/staff/today'?'owner':'staff',scope='v3:'+(role==='owner'?'a':'b').repeat(64),generation=window.__reylumiAppLocalContext.generation;
  const make=()=>({schemaVersion:1,context:{scope,authenticated:true,viewerId:window.fixtureOptions.otherViewer&&path==='/'?'other-viewer':'fixture-viewer',workspaceId:role+'-space',salonId:'fixture-salon',permissionRevision:role},grant:{scope,generation,expiresAt:Date.now()+3600000,grantRevision:role,kind:role},onlineValidatedAt:Date.now(),offline:false,home:window.fixtureOptions.unsafeHome&&path==='/'?'https://outside.invalid/':role==='owner'?'/staff/today':'/staff/my-work',display:{role},access:{ownerWorkspace:role==='owner',staffWorkspace:role==='staff'}});
  if(path==='/'&&window.fixtureOptions.neutralFailures>0){window.fixtureOptions.neutralFailures--;throw Object.assign(Error('Synthetic context unavailable'),{status:503});}
- return new Promise((resolve,reject)=>{let done=false;const abort=()=>{done=true;reject(new DOMException('Cancelled','AbortError'))};request.signal.addEventListener('abort',abort,{once:true});const finish=()=>{if(done)return;done=true;request.signal.removeEventListener('abort',abort);resolve(make());};if(window.fixtureOptions.holdPath===path)window.fixtureHeld.push(finish);else setTimeout(finish,20);});
+ return new Promise((resolve,reject)=>{let done=false;const abort=()=>{if(done)return;done=true;window.fixtureStats.aborted++;reject(new DOMException('Cancelled','AbortError'))};request.signal.addEventListener('abort',abort,{once:true});const finish=()=>{if(done)return;done=true;request.signal.removeEventListener('abort',abort);resolve(make());};if(window.fixtureOptions.holdPath===path)window.fixtureHeld.push(finish);else setTimeout(finish,20);});
  }};`;
  const server=createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/app.js'?'text/javascript':'text/html');res.end(req.url==='/app.js'?built.outputFiles[0].text:'<div id="app"></div><script>'+setup+'</script><script src="/app.js"></script>')});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));server.unref();let browser;
@@ -125,4 +125,33 @@ test('a same-generation authority reset during the gesture retains only its orig
  const denied=await fixture({resetBeforeReply:true,otherViewer:true});try{
   await denied.page.evaluate(()=>window.fixtureSwitch('owner'));await denied.page.locator('[data-context-failure]').waitFor();assert.equal(await denied.page.locator('[data-private-page]:visible').count(),0);assert.equal(await denied.page.evaluate(()=>window.fixtureStats.commands),1);
  }finally{await denied.close();}
+});
+
+test('a non-context reset cancels neutral handoff and lets manual or resource recovery admit the current Staff route without another write',{skip,timeout:25000},async()=>{
+ for(const reason of ['manual','resource']){
+  const a=await fixture({holdPath:'/'});try{
+   await a.page.evaluate(()=>window.fixtureSwitch('owner'));
+   await a.page.waitForFunction(()=>window.fixtureHeld.length===1);
+   await a.page.evaluate(reason=>{
+    window.fixtureOptions.holdPath=undefined;
+    window.__reylumiAppLocalContext.scopeEpoch++;
+    window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason,scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}}));
+    window.fixtureHeld.forEach(f=>f());
+    const generation=window.__reylumiAppLocalContext.generation,scope='v3:'+'a'.repeat(64);
+    window.dispatchEvent(new CustomEvent('reylumi:app-local-context',{detail:{schemaVersion:1,contextPath:'/',context:{scope,authenticated:true,viewerId:'fixture-viewer',workspaceId:'owner-space',salonId:'fixture-salon',permissionRevision:'owner'},grant:{scope,generation,expiresAt:Date.now()+3600000,grantRevision:'owner',kind:'owner'},onlineValidatedAt:Date.now(),offline:false,display:{role:'owner'},home:'/staff/today'}}));
+   },reason);
+   if(reason==='manual'){
+    await a.page.locator('[data-context-failure]').waitFor();
+    assert.equal(await a.page.locator('[data-private-page]:visible').count(),0);
+    await a.page.getByRole('button',{name:'Try again',exact:true}).click();
+   }
+   await a.page.locator('[data-private-page][data-path="/staff/my-work"][data-role="staff"]:visible').waitFor();
+   await a.page.waitForTimeout(100);
+   const stats=await a.page.evaluate(()=>window.fixtureStats);
+   assert.equal(stats.aborted,1,'the old neutral read was cancelled');
+   assert.equal(stats.commands,1,'a reset or retry must never replay the workspace command');
+   assert.deepEqual(stats.calls.map(call=>call.path),['/staff/my-work','/','/staff/my-work']);
+   assert.equal(await a.page.locator('[data-private-page][data-role="owner"]:visible').count(),0,'late neutral events are not page admission');
+  }finally{await a.close();}
+ }
 });
