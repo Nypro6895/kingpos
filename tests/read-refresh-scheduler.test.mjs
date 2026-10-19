@@ -15,7 +15,7 @@ function scheduler() {
   }
   const exports = {};
   const source = ts.transpileModule(readFileSync('lib/read-refresh-scheduler.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  new Function('exports', 'window', 'document', 'navigator', 'setTimeout', 'clearTimeout', source)(exports, window, document, navigator,
+  new Function('require', 'exports', 'window', 'document', 'navigator', 'setTimeout', 'clearTimeout', source)(() => ({recordExperienceTrace(){}}), exports, window, document, navigator,
     callback => { timers.set(++timerId, callback); return timerId; }, id => timers.delete(id));
   return { ...exports, counts, document, navigator, timers, emit: (event, target = window) => target.dispatchEvent(new Event(event)),
     flush: () => { for (const [id, callback] of [...timers]) { timers.delete(id); callback(); } } };

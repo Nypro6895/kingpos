@@ -3,6 +3,9 @@
   if (location.protocol !== 'reylumi-app:' || location.hostname !== 'bundle' || window.top !== window) return;
   const handler = window.webkit?.messageHandlers?.appLocal;
   if (!handler || !window.__reylumiAppLocalContext) return;
+  // Set only for an explicitly enabled local diagnostic run. This script runs
+  // before app.js; no identifier or bridge metadata enters the numeric mark.
+  if (window.__reylumiDiagnosticsEnabled === true) window.__reylumiBundleParseStartedAt = performance.now();
   const request = async (input) => {
     const context = window.__reylumiAppLocalContext;
     const reply = await handler.postMessage({ ...input, version: 1, nonce: context.nonce, scopeEpoch: context.scopeEpoch });

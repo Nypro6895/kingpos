@@ -3,12 +3,17 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 function load(file, dependencies = {}) {
   const exports = {};
   const source = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   new Function('require', 'exports', source)(name => {
     if (name === './read-request-metrics') return load('lib/read-request-metrics.ts');
+    if (name === './experience-trace') return load('lib/experience-trace.ts');
+    if (name === '@/lib/read-request-timing') return load('lib/read-request-timing.ts');
+    if (name === '@/lib/today-dashboard-sections') return load('lib/today-dashboard-sections.ts');
+    if (name === '@/lib/read-context-scope') return load('lib/read-context-scope.ts', {'server-only':{}, 'node:async_hooks':{AsyncLocalStorage}});
     assert.ok(name in dependencies, `Unexpected dependency ${name}`);
     return dependencies[name];
   }, exports);

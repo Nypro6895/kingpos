@@ -44,6 +44,10 @@ import { APP_LOCAL_REFERENCE_ASSETS } from "@/lib/app-local-reference-content";
 import { installAppLocalBrowserCompatibility } from "@/lib/app-local-browser-compat";
 import { getExperienceOfflinePath, isExperienceOfflineGrant } from "@/lib/experience-offline-policy";
 import { classifyAppLocalContextFailure, runAppLocalContextRead, type AppLocalContextFailure } from "@/lib/app-local-context-recovery";
+import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
+
+installExperienceTraceLifecycle();
+recordExperienceTrace("boot.start", { source: "app-local", durationMs: typeof window.__reylumiBundleParseStartedAt === "number" ? performance.now() - window.__reylumiBundleParseStartedAt : undefined });
 
 if (typeof crypto.randomUUID !== "function") Object.defineProperty(crypto, "randomUUID", { value: appLocalRequestId });
 installAppLocalBrowserCompatibility();
@@ -157,39 +161,55 @@ function App() {
     if (family !== "portable" && family !== "display" && isAppLocalPortableScopeId(value.context.scope)) return false;
     const generation = window.__reylumiAppLocalContext?.generation;
     const next = { value, generation };
-    if (!usable(next)) return false;
+    if (!usable(next)) { recordExperienceTrace("context.reject", { source: "app-local", reason: value.grant?.generation !== undefined && value.grant.generation !== generation ? "generation" : value.grant && value.grant.expiresAt <= Date.now() ? "expired" : "grant", offline: Boolean(value.offline) }); return false; }
     if (getAppLocalHost().isNative && value.grant) { alignDeviceGeneration(); void acceptExperienceOfflineGrant(value.grant); }
     const previous = admitted.current[family], all = Object.values(admitted.current);
     const identityChanged = all.some(item => item && (item.value.context.viewerId !== value.context.viewerId || item.generation !== generation));
     const authorityChanged = previous && (previous.value.context.scope !== value.context.scope || previous.value.context.permissionRevision !== value.context.permissionRevision || previous.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision);
-    if (identityChanged || authorityChanged) { resetAppLocalResources(); clearExperienceState(); setVisited([]); admitted.current = {}; }
+    if (identityChanged || authorityChanged) { recordExperienceTrace("cache.reset", { source: "app-local", reason: identityChanged ? "identity" : previous?.value.context.scope !== value.context.scope ? "scope" : "grant", changed: true }); resetAppLocalResources(); clearExperienceState(); setVisited([]); admitted.current = {}; }
     admitted.current = { ...admitted.current, [family]: next }; setAdmissions(admitted.current);
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
     handoffPath.current = null; setSwitchingWorkspace(false);
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
+    recordExperienceTrace("context.accept", { source: "app-local", offline: Boolean(value.offline), changed: Boolean(identityChanged || authorityChanged), identityChanged, generationChanged: all.some(item => item && item.generation !== generation), scopeChanged: Boolean(previous && previous.value.context.scope !== value.context.scope), permissionChanged: Boolean(previous && previous.value.context.permissionRevision !== value.context.permissionRevision), grantChanged: Boolean(previous?.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision) });
     return true;
   }, []);
-  const verify = useCallback((options?: { fresh?: boolean }): Promise<void> => {
+  const verify = useCallback((options?: { fresh?: boolean; trigger?: ExperienceTraceTrigger }): Promise<void> => {
     if (isPublic(current.current)) return Promise.resolve();
     const requestedPath = current.current, fresh = Boolean(options?.fresh || handoffPath.current);
     const previous = request.current;
     if (previous?.path === requestedPath && !previous.controller.signal.aborted) {
+      recordExperienceTrace("auth.join", { source: "app-local", trigger: options?.trigger ?? "unknown", fresh });
       // Foreground/online events join the current check. If it can return a
       // display lease, follow it with one fresh check without cancelling it.
       previous.requireFresh ||= fresh;
       return previous.promise!;
     }
     const started = ++contextEpoch.current;
+    if (previous) recordExperienceTrace("auth.abort", { source: "app-local", trigger: options?.trigger ?? "unknown" });
     previous?.controller.abort();
     const controller = new AbortController();
     const check: ContextCheck = { path: requestedPath, controller, requireFresh: fresh };
     request.current = check;
+    const operation = nextExperienceTraceOperation(), began = operation ? performance.now() : 0;
+    recordExperienceTrace("auth.start", { source: "app-local", trigger: options?.trigger ?? "unknown", fresh, operation });
     setError(false);
     check.promise = Promise.resolve().then(async () => {
       let forceFresh = fresh;
       try {
         while (!controller.signal.aborted && started === contextEpoch.current) {
-          const read = () => getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: forceFresh });
+          const read = async () => {
+            const readOperation = nextExperienceTraceOperation(), readStarted = readOperation ? performance.now() : 0;
+            recordExperienceTrace("context.read.start", { source: "app-local", operation: readOperation, fresh: forceFresh });
+            try {
+              const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: forceFresh });
+              recordExperienceTrace("context.read.end", { source: "app-local", operation: readOperation, status: 200, offline: Boolean(value.offline), durationMs: readOperation ? performance.now() - readStarted : 0 });
+              return value;
+            } catch (cause) {
+              recordExperienceTrace("context.read.end", { source: "app-local", operation: readOperation, status: (cause as { status?: number })?.status, durationMs: readOperation ? performance.now() - readStarted : 0 });
+              throw cause;
+            }
+          };
           // Retry only a cold read with a known transient transport failure.
           // Admission rejection, permission checks and commands are not retried.
           const value = usable(admitted.current[authorityFamily(requestedPath)])
@@ -198,13 +218,14 @@ function App() {
           // A lease may expire while its bridge callback is paused in background.
           // Never admit it; honor the fresh check already requested on resume.
           if (check.requireFresh && !forceFresh && expiredCachedContext(value)) { forceFresh = true; continue; }
-          if (!accept(value, requestedPath, true)) throw new Error("The application context must be checked again");
+          if (!accept(value, requestedPath, true)) { recordExperienceTrace("context.reject", { source: "app-local", reason: "unknown", operation }); throw new Error("The application context must be checked again"); }
           if (check.requireFresh && !forceFresh) { forceFresh = true; continue; }
           return;
         }
       } catch (cause) {
+        recordExperienceTrace(controller.signal.aborted ? "auth.abort" : "auth.reject", { source: "app-local", operation, status: (cause as { status?: number })?.status });
         if (!controller.signal.aborted && started === contextEpoch.current) { setError(classifyAppLocalContextFailure(cause)); setSwitchingWorkspace(false); }
-      } finally { if (request.current === check) request.current = null; }
+      } finally { recordExperienceTrace("auth.end", { source: "app-local", operation, durationMs: operation ? performance.now() - began : 0 }); if (request.current === check) request.current = null; }
     });
     return check.promise;
   }, [accept]);
@@ -244,7 +265,7 @@ function App() {
     // A recent online admission already verified this family. Commands still
     // authorize on the server; foreground and access failures force rechecking.
     const recent = usable(saved) && !saved.value.offline && Date.now() - saved.value.onlineValidatedAt < 30_000;
-    if (!isPublic(path) && !recent && !handoffPath.current) void verify();
+    if (!isPublic(path) && !recent && !handoffPath.current) void verify({ trigger: "mount" });
   }, [path, verify]);
   useEffect(() => {
     const nav = (event: Event) => { const value = (event as CustomEvent<{ path?: string }>).detail?.path; if (value) navigate(value); };
@@ -254,6 +275,7 @@ function App() {
       // A fresh authority result rotates native delivery metadata. Do not abort
       // the very context read producing it, or clear an already accepted reply.
       if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
+      recordExperienceTrace("cache.reset", { source: "app-local", trigger: "reset", reason: detail?.reason === "context" ? "grant" : detail?.reason === "resource" ? "resource" : "reset" });
       if (detail?.reason !== "context") { contextEpoch.current++; request.current?.controller.abort(); }
       alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" ? false : "access");
       const key = `${authorityFamily(current.current)}:${detail?.scope ?? ""}`;
@@ -275,7 +297,7 @@ function App() {
       if (!isPublic(current.current)) void verify({ fresh: true });
     };
     const retryWorkspace = () => { recoveryAttempts.current.clear(); setSwitchingWorkspace(true); void verify({ fresh: true }); };
-    const resume = () => { void verify({ fresh: true }); };
+    const resume = (event: Event) => { void verify({ fresh: true, trigger: event.type === "online" ? "online" : "foreground" }); };
     let accessCheck: ReturnType<typeof setTimeout> | undefined;
     const revalidateAccess = (event: Event) => {
       const scope = (event as CustomEvent<{ scope?: string }>).detail?.scope;
@@ -290,14 +312,18 @@ function App() {
     return () => { clearTimeout(accessCheck); window.removeEventListener("reylumi:app-local-workspace-handoff", handoff); window.removeEventListener("reylumi:app-local-workspace-retry", retryWorkspace); window.removeEventListener("reylumi:app-local-revalidate-access", revalidateAccess); window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
   }, [navigate, accept, verify, transition]);
   const activeAdmission = admissions[authorityFamily(path)], context = !isPublic(path) && usable(activeAdmission) ? activeAdmission.value : null;
+  const diagnosticBlocked = !isPublic(path) && !context;
+  useLayoutEffect(() => { recordExperienceTrace(diagnosticBlocked ? "gate.hide" : "gate.show", { source: "app-local", blocked: diagnosticBlocked }); }, [diagnosticBlocked]);
   // Help can display the already admitted role chrome, but receives no account
   // context or command scope. A cold public launch never manufactures one.
   const presentationContext = isHelp(path) && usable(helpPresentation ?? undefined) ? helpPresentation!.value : null;
   useEffect(() => {
     if (!context?.grant) return;
     const remaining = context.grant.expiresAt - Date.now();
-    const timer = setTimeout(() => { window.dispatchEvent(new Event("reylumi:app-local-access-changed")); void verify({ fresh: true }); }, Math.max(0, Math.min(remaining, 2147483647)));
-    return () => clearTimeout(timer);
+    recordExperienceTrace("timer.schedule", { source: "app-local", trigger: "lease-expiry", durationMs: remaining });
+    let fired = false;
+    const timer = setTimeout(() => { fired = true; recordExperienceTrace("timer.fire", { source: "app-local", trigger: "lease-expiry" }); window.dispatchEvent(new Event("reylumi:app-local-access-changed")); void verify({ fresh: true, trigger: "lease-expiry" }); }, Math.max(0, Math.min(remaining, 2147483647)));
+    return () => { if (!fired) recordExperienceTrace("timer.cancel", { source: "app-local", trigger: "lease-expiry" }); clearTimeout(timer); };
   }, [context, verify]);
   useEffect(() => {
     if (!presentationContext || !helpPresentation) return;
@@ -308,7 +334,8 @@ function App() {
     const timer = setTimeout(() => setHelpPresentation(previous => previous === captured ? null : previous), Math.max(0, Math.min(remaining, 2147483647)));
     return () => clearTimeout(timer);
   }, [presentationContext, helpPresentation]);
-  useLayoutEffect(() => { window.dispatchEvent(new Event("reylumi:screen-ready")); }, [path]);
+  useLayoutEffect(() => { recordExperienceTrace("route.reveal", { source: "app-local" }); window.dispatchEvent(new Event("reylumi:screen-ready")); }, [path]);
+  useLayoutEffect(() => { recordExperienceTrace("boot.ready", { source: "app-local" }); }, []);
   const ownerAdmission = admissions.account, ownerContext = ownerAdmission?.value;
   const owner = ownerContext?.grant?.kind === "owner" || Boolean(ownerContext && !ownerContext.offline && ownerContext.access?.ownerWorkspace);
   const windows=new Map<string,string>();for(const href of [...visited,path])if(!isPublic(href)&&getAppLocalPage(href))windows.set(pageKey(href),href);

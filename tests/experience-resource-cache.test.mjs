@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const api = {};
-vm.runInNewContext(compiled, { require: name => { if(name === "./read-request-metrics") return { recordReadRequest() {}, readResourceCategory: () => "other" }; throw new Error("Unexpected cache dependency "+name); }, exports: api, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController }, { filename });
+vm.runInNewContext(compiled, { require: name => { if(name === "./read-request-metrics") return { recordReadRequest() {}, readResourceCategory: () => "other" }; if(name === "./experience-trace") return {recordExperienceTrace(){},nextExperienceTraceOperation:()=>0}; throw new Error("Unexpected cache dependency "+name); }, exports: api, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController }, { filename });
 const { createExperienceResourceCache, ExperienceResourceInvalidatedError, ExperienceResourceAccessError } = api;
 const ctx = (scope = "account-a/salon-a/grants-v1", key = "today?date=2026-10-11") => ({ scope, key });
 const turn = () => new Promise(resolve => setImmediate(resolve));
@@ -264,7 +264,7 @@ test("access-change browser events are emitted only for the current authorized r
     constructor(type, options) { this.type = type; this.detail = options.detail; }
   }
   vm.runInNewContext(compiled, {
-    require: () => ({ recordReadRequest() {}, readResourceCategory: () => "other" }), exports, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController,
+    require: () => ({ recordReadRequest() {}, readResourceCategory: () => "other", recordExperienceTrace() {}, nextExperienceTraceOperation: () => 0 }), exports, Date, Map, Set, Promise, Error, TypeError, JSON, Object, Array, Math, Number, URLSearchParams, AbortController,
     CustomEvent, window: { dispatchEvent: event => { events.push(event); return true; } },
   }, { filename });
   const cache = exports.createExperienceResourceCache();

@@ -6,17 +6,18 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { runWithReadContext } from "@/lib/read-context-scope";
 import { isTodayDashboardSection } from "@/lib/today-dashboard-sections";
-
-const failure = (error: string, status: number) => Response.json({ error }, { status, headers: { "Cache-Control": "private, no-store" } });
+import { createReadRequestTiming, type ReadRequestTiming } from "@/lib/read-request-timing";
 
 export async function GET(request: Request) {
-  return runWithReadContext(() => readToday(request));
+  const timing = createReadRequestTiming();
+  return runWithReadContext(() => readToday(request, timing));
 }
 
-async function readToday(request: Request) {
+async function readToday(request: Request, timing: ReadRequestTiming) {
   await connection();
-  if ((await headers()).get("x-reylumi-auth-unavailable") === "1") return failure("Authentication temporarily unavailable", 503);
-  const context = await getCurrentBusinessContext();
+  const failure = (error: string, status: number) => timing.finish(timing.measureSync("serialize", () => Response.json({ error }, { status, headers: { "Cache-Control": "private, no-store" } })));
+  if ((await timing.measure("auth", () => headers())).get("x-reylumi-auth-unavailable") === "1") return failure("Authentication temporarily unavailable", 503);
+  const context = await timing.measure("auth", () => getCurrentBusinessContext());
   if (!context.user) return failure("Unauthorized", 401);
   if (!isSalonManageContext(context) || !context.currentBusiness || !context.currentAccount || !context.currentSalon) {
     return failure("Forbidden", 403);
@@ -32,12 +33,12 @@ async function readToday(request: Request) {
     return failure("Invalid date", 400);
   }
   try {
-    const dashboard = await getTodayDashboard(context, { date, ...(phase ? { phase: phase as "shell" | import("@/lib/today-dashboard-sections").TodayDashboardSection } : {}) });
+    const dashboard = await timing.measure("load", () => timing.measureToday(phase, () => getTodayDashboard(context, { date, ...(phase ? { phase: phase as "shell" | import("@/lib/today-dashboard-sections").TodayDashboardSection } : {}) })));
     if (dashboard.noAccess) return failure("Forbidden", 403);
     // An upstream failure must not replace a retained section with an empty
     // fallback. A subsequent workspace event or poll retries silently.
     if (dashboard.loadErrors.length) return failure("Temporarily unavailable", 503);
-    return liveResourceResponse(request, createLiveResourceSnapshot(dashboard, ["generatedAt"]));
+    return timing.finish(timing.measureSync("serialize", () => liveResourceResponse(request, createLiveResourceSnapshot(dashboard, ["generatedAt"]))));
   } catch (error) {
     console.error("Today resource load failed", error);
     return failure("Temporarily unavailable", 503);

@@ -1,4 +1,5 @@
 import { recordReadRequest, readResourceCategory } from "./read-request-metrics";
+import { nextExperienceTraceOperation, recordExperienceTrace } from "./experience-trace";
 
 /** Authorized read models only. This cache stays in the current browser's memory. */
 export const EXPERIENCE_RESOURCE_MAX_ENTRIES = 30;
@@ -197,6 +198,7 @@ export function createExperienceResourceCache(options: {
     return write(context, data, policy, updatedAt, etag);
   }
   function reset(scope?: string) {
+    recordExperienceTrace("cache.reset", { source: "cache", trigger: "reset", changed: Boolean(scope) });
     const normalizedScope = scope?.trim();
     for (const [id, failure] of failures) if (!normalizedScope || failure.context.scope === normalizedScope) failures.delete(id);
     for (const [id, entry] of entries) if (!normalizedScope || entry.context.scope === normalizedScope) remove(id);
@@ -225,6 +227,7 @@ export function createExperienceResourceCache(options: {
     const cached = get<T>(context);
     const running = pending.get(id);
     if (running) {
+      recordExperienceTrace("cache.join", { source: "cache" });
       recordReadRequest(readResourceCategory(context.key), "joined");
       for (const tag of tagsFor(policy.tags)) running.tags.add(tag);
       return running.promise as Promise<T>;
@@ -235,6 +238,7 @@ export function createExperienceResourceCache(options: {
     const fresh = cached && (policy.freshForMs === undefined ? cached.fresh
       : cached.freshUntil !== 0 && cached.freshUntil > cached.updatedAt && now() - cached.updatedAt < times(policy).freshForMs);
     if (!policy.force && fresh) {
+      recordExperienceTrace("cache.hit", { source: "cache", fresh: true });
       recordReadRequest(readResourceCategory(context.key), "cache-hit");
       return Promise.resolve(cached.data);
     }
@@ -250,6 +254,8 @@ export function createExperienceResourceCache(options: {
       abort(oldest);
     }
     const controller = new AbortController();
+    const traceOperation = nextExperienceTraceOperation(), traceStarted = traceOperation ? performance.now() : 0;
+    recordExperienceTrace("cache.read.start", { source: "cache", operation: traceOperation, fresh: Boolean(cached?.fresh), area: context.key.startsWith("today") || context.key.startsWith('app-local:["page.owner-today"') ? "today" : "other" });
     const request: Pending = { context, tags: tagsFor(policy.tags), startedAt: now(), controller, promise: Promise.resolve(undefined) };
     let rejectAborted: (error: Error) => void = () => {};
     const aborted = new Promise<never>((_, reject) => { rejectAborted = reject; });
@@ -286,6 +292,7 @@ export function createExperienceResourceCache(options: {
       throw error;
     });
     request.promise = Promise.race([fetched, aborted]).finally(() => {
+      recordExperienceTrace("cache.read.end", { source: "cache", operation: traceOperation, durationMs: traceOperation ? performance.now() - traceStarted : 0 });
       controller.signal.removeEventListener("abort", onAbort);
       if (pending.get(id) === request) pending.delete(id);
     });
@@ -294,6 +301,7 @@ export function createExperienceResourceCache(options: {
     return request.promise as Promise<T>;
   }
   function invalidate(filter: ExperienceResourceInvalidation = {}) {
+    recordExperienceTrace("cache.invalidate", { source: "cache", reason: "mutation" });
     for (const [id, failure] of failures) if (matches(failure.context, failure.tags, filter)) failures.delete(id);
     const changed = new Set<string>();
     for (const [id, request] of pending) if (matches(request.context, request.tags, filter)) { abort(id); changed.add(id); }

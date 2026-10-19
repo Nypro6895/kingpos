@@ -25,8 +25,8 @@ import { readAppLocalDisplayResource } from "@/lib/app-local-display-server";
 import { createReadRequestTiming } from "@/lib/read-request-timing";
 
 async function readPage(request: Request) {
-  await connection();
   const timing = createReadRequestTiming();
+  await connection();
   const responseHeaders = { "Cache-Control": "private, no-store", Vary: "Cookie, If-None-Match" };
   const json = (data: unknown, init: ResponseInit) => timing.finish(timing.measureSync("serialize", () => Response.json(data, init)));
   if ((await timing.measure("auth", () => headers())).get("x-reylumi-auth-unavailable") === "1") return json({ error: "Please reconnect and try again" }, { status: 503, headers: responseHeaders });
@@ -49,7 +49,7 @@ async function readPage(request: Request) {
     }
     if (typeof name!=="string"||!/^[a-z][a-z0-9.-]{0,79}$/.test(name) || !isAppLocalScopeId(scope)) return json({ error: "Invalid page request" }, { status: 400, headers: responseHeaders });
     if (!args || typeof args !== "object" || Array.isArray(args)) return json({ error: "Invalid page filters" }, { status: 400, headers: responseHeaders });
-    const options = { scope, etag: request.headers.get("if-none-match") ?? undefined, signal: request.signal };
+    const options = { scope, etag: request.headers.get("if-none-match") ?? undefined, signal: request.signal, timing };
     // The readers include their own authorization; load measures that complete wait.
     const value = await timing.measure("load", async () => await readAppLocalOwnerResource(name, args as Record<string, unknown>, options)
       ?? await readAppLocalRoleResource(name, args, options)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAppLocalResource } from "@/lib/app-local-resource";
 import { experienceResourceCache } from "@/lib/experience-resource-cache";
 import { fetchLiveExperienceResource } from "@/lib/fetch-live-experience-resource";
@@ -11,6 +11,7 @@ import { getTodayDashboardSections, mergeTodayDashboardSection, type TodayDashbo
 import { useExperienceResource } from "@/lib/use-experience-resource";
 import { useLiveExperienceRefresh } from "@/lib/use-live-experience-refresh";
 import { TodayDashboardView } from "./today-dashboard-view";
+import { recordExperienceTrace } from "@/lib/experience-trace";
 
 const tags: Record<TodayDashboardSection, readonly PosResource[]> = {
   staff: ["staff", "settings"], bookings: ["booking", "catalog", "settings"],
@@ -62,6 +63,14 @@ function NativeSectionReader({ scope, date, section, accept, deny }: ReaderProps
 function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean }) {
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [blocked, setBlocked] = useState(false);
+  const tracedSections = useRef<readonly TodayDashboardSection[] | null>(null);
+  useLayoutEffect(() => {
+    if (blocked || dashboard.noAccess) return;
+    const pending = dashboard.pendingSections?.sections ?? [];
+    if (tracedSections.current === null) recordExperienceTrace("data.visible", { source: native ? "app-local" : "web", area: "today", phase: pending.length ? "shell" : "full" });
+    else for (const section of tracedSections.current) if (!pending.includes(section)) recordExperienceTrace("data.visible", { source: native ? "app-local" : "web", area: "today", phase: section });
+    tracedSections.current = pending;
+  }, [dashboard, blocked, native]);
   const [clockChanged, setClockChanged] = useState(false);
   const deny = useCallback(() => setBlocked(true), []);
   const accept = useCallback((section: TodayDashboardSection, next: TodayDashboard) => {

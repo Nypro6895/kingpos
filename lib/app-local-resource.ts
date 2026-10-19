@@ -8,6 +8,12 @@ import { appLocalCommandAffectsResource } from "./app-local-resource-invalidatio
 import { createExperienceResourceCache, ExperienceResourceInvalidatedError, type ExperienceResourceContext } from "./experience-resource-cache";
 import { subscribeReadRefresh, canAutomaticallyRefreshRead } from "./read-refresh-scheduler";
 import { recordReadRequest, readResourceCategory } from "./read-request-metrics";
+import { nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceFields } from "./experience-trace";
+
+function traceResource(name: string, args: Record<string, unknown>): Pick<ExperienceTraceFields, "area" | "phase"> {
+  const phase = ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].includes(String(args.phase)) ? args.phase as ExperienceTraceFields["phase"] : "none";
+  return { area: name === "page.owner-today" || name === "owner.today" ? "today" : name.startsWith("shell.") ? "shell" : "other", phase };
+}
 
 // Native admission owns its authority epoch. Reuse the web read engine without
 // allowing an unrelated hosted scope suspension/resume to grant or block native
@@ -47,6 +53,7 @@ function resourceDomain(name: string) {
   return domain;
 }
 export function resetAppLocalResources() {
+  recordExperienceTrace("cache.reset", { source: "app-local", reason: "reset" });
   epoch++;
   appLocalResourceCache.reset();
   for (const cell of cells.values()) { cell.epoch = epoch; emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined }); }
@@ -81,11 +88,15 @@ if (typeof window !== "undefined") {
 export async function hydrateAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}): Promise<void> {
   const { key, cell } = cellFor(scope, name, args); if (cell.hydrated) return cell.hydrated;
   const started = epoch, revision = cell.revision, host = getAppLocalHost();
+  let traceOperation = 0, traceStarted = 0;
   cell.hydrated = (async () => {
     if (!appLocalReadIsDurable(name)) return;
+    traceOperation = nextExperienceTraceOperation(); traceStarted = traceOperation ? performance.now() : 0;
+    recordExperienceTrace("cache.restore.start", { source: "app-local", operation: traceOperation, ...traceResource(name, args) });
     const saved = host.isNative
       ? await host.cache<{ data: T; revision?: string; updatedAt: number }>("get", { name, args, scope })
       : await readExperienceSnapshot<T>({ scope, domain: resourceDomain(name), params: args });
+    recordExperienceTrace(saved ? "cache.hit" : "cache.miss", { source: "app-local", operation: traceOperation, offline: true, ...traceResource(name, args) });
     if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cells.get(key) !== cell) return;
     if (saved && !cell.invalidated && saved.updatedAt >= cell.state.updatedAt && appLocalResourceCache.isAvailable(cell.context)) {
       const snapshot: AppLocalRead<T> = { schemaVersion: 1, status: 200, scope, data: saved.data, etag: saved.revision ?? "", updatedAt: saved.updatedAt, offline: true };
@@ -93,7 +104,7 @@ export async function hydrateAppLocalResource<T>(scope: string, name: string, ar
       cell.validatedAt = Math.max(cell.validatedAt, saved.updatedAt);
       emit(cell, { data: saved.data, etag: saved.revision, updatedAt: saved.updatedAt, loading: false, accessDenied: false });
     }
-  })().catch(() => {}).finally(() => { if (epoch === started && cells.get(key) === cell && cell.state.data === undefined) emit(cell, { loading: false }); });
+  })().catch(() => {}).finally(() => { if (traceOperation) recordExperienceTrace("cache.restore.end", { source: "app-local", operation: traceOperation, durationMs: performance.now() - traceStarted, ...traceResource(name, args) }); if (epoch === started && cells.get(key) === cell && cell.state.data === undefined) emit(cell, { loading: false }); });
   return cell.hydrated;
 }
 export function seedAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown>, snapshot: AppLocalRead<T>) {
@@ -119,6 +130,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     return;
   }
   const started = epoch, revision = cell.revision, host = getAppLocalHost();
+  recordExperienceTrace("cache.refresh", { source: "app-local", fresh: Boolean(retained?.fresh), trigger: options.force === false ? "unknown" : "manual", ...traceResource(name, args) });
   emit(cell, { refreshing: true, error: undefined });
   cell.pending = (async () => {
     // Oversize/evicted data can remain in a mounted view. Supply that snapshot
@@ -129,8 +141,11 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     let transportValidatedAt: number | undefined;
     const snapshot = await appLocalResourceCache.load<AppLocalRead<T>>(cell.context, async ({ signal, etag, cached }) => {
       const category = readResourceCategory(cell.context.key), began = Date.now();
+      const operation = nextExperienceTraceOperation();
+      recordExperienceTrace("cache.read.start", { source: "app-local", operation, ...traceResource(name, args) });
       try {
         const next = await host.read<T>(name, args, { scope, etag: etag ?? cell.state.etag, signal });
+        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status: next.status, offline: Boolean(next.offline), durationMs: Date.now() - began, ...traceResource(name, args) });
         if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cells.get(key) !== cell || next.scope !== scope) throw new ExperienceResourceInvalidatedError();
         transportValidatedAt = next.offline ? next.updatedAt : Date.now();
         const previous = cached ?? (cell.state.data === undefined ? undefined : { schemaVersion: 1, status: 200, scope, data: cell.state.data as T, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt } as AppLocalRead<T>);
@@ -146,6 +161,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
         return { data: accepted, etag: accepted.etag, validatedAt: transportValidatedAt };
       } catch (error) {
         const status = (error as { status?: number })?.status;
+        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status, reason: signal.aborted ? "reset" : "transient", durationMs: Date.now() - began, ...traceResource(name, args) });
         recordReadRequest(category, signal.aborted ? "aborted" : [401,403,409].includes(status ?? 0) ? "access-denied" : "error", Date.now() - began);
         throw error;
       }

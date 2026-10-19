@@ -23,10 +23,11 @@ import { campaignWalletAction } from "@/app/campaigns/credit-actions";
 import { getCustomerBookingDetail } from "./customer-bookings";
 import { runReadWithDeadline } from "./bounded-get";
 import { runWithReadContext } from "./read-context-scope";
+import type { ReadRequestTiming } from "./read-request-timing";
 import { APP_LOCAL_PLATFORM_READS, type AppLocalBookingsData, type AppLocalSettingsData } from "./app-local-platform-types";
 import { readAppLocalRoleResource, AppLocalRoleReadError, type AppLocalRoleReadResponse } from "./app-local-role-resources-server";
 
-type Options = { scope: string; etag?: string; signal?: AbortSignal };
+type Options = { scope: string; etag?: string; signal?: AbortSignal; timing?: ReadRequestTiming };
 function cancelled(signal?: AbortSignal) { if (signal?.aborted) throw signal.reason ?? new DOMException("Cancelled", "AbortError"); }
 function parse(name: keyof typeof APP_LOCAL_PLATFORM_READS, input: unknown) {
   if (!input || typeof input !== "object" || Array.isArray(input) || Object.getPrototypeOf(input) !== Object.prototype || JSON.stringify(input).length > 8192) throw new AppLocalRoleReadError(400, "Invalid page arguments");
@@ -64,7 +65,8 @@ async function readAppLocalPlatformResourceInContext(name: string, input: unknow
   const args = parse(name as keyof typeof APP_LOCAL_PLATFORM_READS, input ?? {});
   if (!options.scope || options.scope.length > 8192) throw new AppLocalRoleReadError(400, "Invalid scope");
   cancelled(options.signal);
-  const context = await runReadWithDeadline(getRequestBusinessContext(), 12000);
+  const readContext = () => runReadWithDeadline(getRequestBusinessContext(), 12000);
+  const context = await (options.timing?.measure("auth", readContext) ?? readContext());
   let resolvedIdentity: Awaited<ReturnType<typeof getStaffPortalIdentity>> | Awaited<ReturnType<typeof getTodaysStaffWorkday>> | undefined;
   if (getExperienceContext(context).scope !== options.scope) {
     if (name !== "page.staff-identity" || !context.user) throw new AppLocalRoleReadError(409, "Workspace changed");

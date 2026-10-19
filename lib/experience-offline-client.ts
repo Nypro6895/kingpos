@@ -3,6 +3,7 @@
 import { getExperienceOfflinePath, isExperienceOfflineGrant, type ExperienceOfflineGrant } from "./experience-offline-policy";
 import { acceptExperienceOfflineGrant, clearExperienceSnapshots, getExperienceDeviceGeneration, getExperienceOfflineGrant, loadExperienceOfflineGrant, markExperienceScopeOnlineValidated } from "./experience-persistent-cache";
 import { fetchBoundedGet } from "./bounded-get";
+import { nextExperienceTraceOperation, recordExperienceTrace } from "./experience-trace";
 
 const preparing = new Map<string, Promise<ExperienceOfflineGrant | null>>();
 let epoch = 0;
@@ -65,8 +66,10 @@ export async function hasPreparedExperiencePath(href: string): Promise<boolean> 
 export function prepareExperienceOfflinePath(href: string, options: { scope?: string } = {}): Promise<ExperienceOfflineGrant | null> {
   const path = getExperienceOfflinePath(href, location.origin); if (!path || !navigator.onLine) return Promise.resolve(null);
   const key = JSON.stringify([path, options.scope, getExperienceDeviceGeneration()]);
-  if (preparing.has(key)) return preparing.get(key)!;
+  if (preparing.has(key)) { recordExperienceTrace("cache.join", { source: "web", reason: "grant" }); return preparing.get(key)!; }
   const started = epoch;
+  const traceOperation = nextExperienceTraceOperation(), traceStarted = performance.now();
+  recordExperienceTrace("cache.read.start", { source: "web", reason: "grant", operation: traceOperation });
   const run = (async () => {
     try {
       installListener();
@@ -80,7 +83,7 @@ export function prepareExperienceOfflinePath(href: string, options: { scope?: st
       if (!new URL(path, location.origin).search) window.dispatchEvent(new CustomEvent("reylumi:offline-ready", { detail: { path, version: 1, expiresAt: new Date(result.grant.expiresAt).toISOString() } }));
       return result.grant;
     } catch { return null; }
-  })().finally(() => { if (preparing.get(key) === run) preparing.delete(key); });
+  })().finally(() => { recordExperienceTrace("cache.read.end", { source: "web", reason: "grant", operation: traceOperation, durationMs: performance.now() - traceStarted }); if (preparing.get(key) === run) preparing.delete(key); });
   preparing.set(key, run); return run;
 }
 
@@ -88,8 +91,13 @@ export function prepareExperienceOfflinePath(href: string, options: { scope?: st
 export async function refreshExperienceOfflineAuthorization(href: string, scope: string, signal?: AbortSignal): Promise<ExperienceOfflineGrant | null> {
   const path = getExperienceOfflinePath(href, location.origin) ?? (href === location.pathname + location.search ? getExperienceOfflineAuthorizationPath() : null); if (!path || !navigator.onLine) return null;
   const started = epoch;
+  const traceOperation = nextExperienceTraceOperation(), traceStarted = performance.now();
+  let received = false;
+  recordExperienceTrace("auth.start", { source: "web", reason: "grant", operation: traceOperation });
   try {
     const response = await fetchBoundedGet(`/api/experience/offline-context?path=${encodeURIComponent(path)}&generation=${encodeURIComponent(getExperienceDeviceGeneration())}`, { cache: "no-store", credentials: "same-origin", signal }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
+    received = true;
+    recordExperienceTrace("auth.end", { source: "web", reason: "grant", status: response.status, operation: traceOperation, durationMs: performance.now() - traceStarted });
     if (started !== epoch || signal?.aborted) return null;
     if (response.status === 401 || response.status === 403) { lockExperienceOffline({ status: response.status }); accessChanged(scope, response.status); return null; }
     if (!response.ok) {
@@ -105,15 +113,21 @@ export async function refreshExperienceOfflineAuthorization(href: string, scope:
     if (!await acceptExperienceOfflineGrant(grant)) return null;
     if (started !== epoch) return null;
     markExperienceScopeOnlineValidated(grant.scope); return grant;
-  } catch { return null; }
+  } catch { if (!received) recordExperienceTrace(signal?.aborted ? "auth.abort" : "auth.end", { source: "web", reason: "grant", operation: traceOperation, durationMs: performance.now() - traceStarted }); return null; }
 }
 export async function restoreExperienceOfflineAuthorization(scope: string): Promise<ExperienceOfflineGrant | null> {
+  const traceOperation = nextExperienceTraceOperation(), traceStarted = performance.now();
+  recordExperienceTrace("cache.restore.start", { source: "web", reason: "grant", operation: traceOperation });
+  let restored = false;
+  try {
   installListener();
   const path = getExperienceOfflineAuthorizationPath();
   if (!path) return null;
   const boot = readExperienceOfflineBootGrant(scope);
-  if (boot.present) return boot.grant && await acceptExperienceOfflineGrant(boot.grant) ? boot.grant : null;
-  return loadExperienceOfflineGrant(scope, path);
+  const grant = boot.present ? boot.grant && await acceptExperienceOfflineGrant(boot.grant) ? boot.grant : null : await loadExperienceOfflineGrant(scope, path);
+  restored = Boolean(grant);
+  return grant;
+  } finally { recordExperienceTrace("cache.restore.end", { source: "web", reason: "grant", operation: traceOperation, changed: restored, durationMs: performance.now() - traceStarted }); }
 }
 export function readExperienceOfflineBootGrant(scope: string): { present: boolean; grant: ExperienceOfflineGrant | null } {
   const boot = document.getElementById("reylumi-offline-boot");
@@ -126,6 +140,7 @@ export function readExperienceOfflineBootGrant(scope: string): { present: boolea
 export function releaseExperienceOfflineBootGuard(): void { const style = document.getElementById("reylumi-offline-guard") as HTMLStyleElement | null; if (style) style.media = "not all"; }
 /** Called directly by every reset, including resets that intentionally suppress DOM events. */
 export function lockExperienceOffline(options: { scope?: string; rotateGeneration?: boolean; status?: number } = {}): Promise<boolean> {
+  recordExperienceTrace("cache.reset", { source: "web", reason: "grant", status: options.status });
   epoch++; preparing.clear();
   void clearExperienceSnapshots({ scope: options.scope, rotateGeneration: options.rotateGeneration });
   if (typeof window === "undefined") return lastLock = Promise.resolve(true);

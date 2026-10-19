@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "idle-cold-start-trace-20261018",
+  "status": "working",
+  "summary": "Measure Auth/timer/cache-reset and cold-start causes with bounded local web/iOS diagnostics; preserve security/business behavior; no deployment",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/experience-trace.ts",
+    "components/experience-scope.tsx",
+    "app/local-app/entry.tsx",
+    "lib/read-refresh-scheduler.ts",
+    "lib/app-local-resource.ts",
+    "lib/experience-resource-cache.ts",
+    "lib/read-request-timing.ts",
+    "app/api/app-local/context/route.ts",
+    "app/api/experience/today/route.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift"
+  ],
+  "source": {
+    "commit": "866d8c6c08d0fd21d6a734de0207b93af26ed9cf"
+  },
+  "dependencies": [
+    "owner-today-auth-progressive-20261018",
+    "ios-today-startup-recovery-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Cold/warm/idle/foreground/weak-network trace with authority fencing",
+      "result": "pending"
+    }
+  ],
+  "id": "63b0cd92-f2b3-41fb-aa0d-a4a8ae7cc2f1",
+  "recordedAt": "2026-10-19T00:10:18.495Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\idle-cold-start-trace-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
