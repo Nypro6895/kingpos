@@ -94,6 +94,10 @@ test('user navigation away cancels ownership of a late workspace acknowledgment,
    await a.page.waitForFunction(()=>typeof window.fixtureReleaseCommand==='function');
    await a.page.evaluate(()=>window.fixtureNavigate('/help'));
    await a.page.waitForFunction(()=>location.pathname==='/help');
+   // History changes before React commits the Help route. Observe that commit
+   // before checking private visibility or releasing the deliberately held ACK.
+   await a.page.locator('[data-opening]').waitFor();
+   await a.page.locator('[data-private-page]:visible').waitFor({state:'hidden'});
    assert.equal(await a.page.locator('[data-private-page]:visible').count(),0);
    if(returnToOrigin){
     await a.page.evaluate(path=>window.fixtureNavigate(path),origin);
