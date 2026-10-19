@@ -1,3 +1,5 @@
+import { resolveCampaignDeliveryArea } from "@/lib/campaign-delivery-area";
+import { resolveExploreGpsArea } from "@/lib/location/explore-gps-area";
 import { cookies } from "next/headers";
 import { advertisingClient } from "@/lib/explore-advertising";
 import { getCurrentBusinessContext } from "@/lib/current-context";
@@ -7,40 +9,20 @@ import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 const COOKIE = "reylumi-owner-ad-visitor";
 const noStore = { "Cache-Control": "private, no-store" };
 
-export async function GET(request: Request) {
+async function selectCampaign(request: Request,input:{location?:string;latitude?:number|null;longitude?:number|null}) {
   try {
     const [settings, context] = await Promise.all([ownerCampaignSettings(), getCurrentBusinessContext()]);
     if (!settings.enabled) return Response.json(null,{headers:noStore});
-    const params = new URL(request.url).searchParams;
-    const location = (params.get("location") ?? "").trim();
-    if (!location || location.length > 160) return Response.json(null,{headers:noStore});
     const client = advertisingClient();
-    // Match a user-selected place to a known place. Ambiguous or unknown places never broaden targeting.
-    const parts = location.split(",").map(part => part.trim());
-    const query = client.from("locations").select("city,state,postal_code,country").eq("status","active");
-    const neighborhood = parts.length === 4 ? parts[0] : "";
-    const cityInput = neighborhood ? parts[1] : parts[0];
-    const stateInput = neighborhood ? parts[2] : parts[1];
-    const countryInput = neighborhood ? parts[3] : parts[2];
-    const postal = !neighborhood && /^[a-z0-9 -]{3,12}$/i.test(cityInput) && /\d/.test(cityInput);
-    const { data: places, error: placeError } = await (postal ? query.eq("postal_code",cityInput) : query.ilike("city",cityInput.replace(/[%_]/g,""))).limit(100);
-    if (placeError) return Response.json(null,{headers:noStore});
-    let level: "city" | "state" | "country" = "city";
-    let eligible = (places ?? []).filter(place => (!stateInput || place.state?.toLowerCase() === stateInput.toLowerCase()) && (!countryInput || place.country?.toLowerCase() === countryInput.toLowerCase()));
-    if (!eligible.length && !postal && !neighborhood && parts.length <= 2) {
-      const { data: states, error } = await client.from("locations").select("city,state,postal_code,country").eq("status","active").ilike("state",cityInput.replace(/[%_]/g,"")).limit(100);
-      if (error) return Response.json(null,{headers:noStore});
-      eligible = (states ?? []).filter(place => !parts[1] || place.country?.toLowerCase() === parts[1].toLowerCase()); level = "state";
-      if (!eligible.length && parts.length === 1) {
-        const {data:countries,error} = await client.from("locations").select("city,state,postal_code,country").eq("status","active").ilike("country",cityInput.replace(/[%_]/g,"")).limit(100);
-        if (error) return Response.json(null,{headers:noStore});
-        eligible = countries ?? []; level = "country";
-      }
-    }
-    const unique = new Map(eligible.map(place => [level === "country" ? place.country : level === "state" ? `${place.state}:${place.country}` : `${place.city}:${place.state}:${place.country}`,place]));
-    if (unique.size !== 1) return Response.json(null,{headers:noStore});
-    const place = [...unique.values()][0];
-    const area = { country:place.country ?? "",state:level === "country" ? "" : place.state ?? "",city:level === "city" ? place.city ?? "" : "",zipcode:postal ? cityInput : "",neighborhood };
+    const area = await resolveCampaignDeliveryArea(input,{
+      lookup: async (field,value) => {
+        const query=client.from("locations").select("city,state,postal_code,country").eq("status","active");
+        const {data,error}=await (field==='postal_code'?query.eq(field,value):query.ilike(field,value.replace(/[%_]/g,""))).limit(1000);
+        return error||!data?[]:data;
+      },
+      reverse:async point => (await resolveExploreGpsArea(point,request.signal)).area,
+    });
+    if (!area || request.signal.aborted) return Response.json(null,{headers:noStore});
     const jar = await cookies();
     let visitor = jar.get(COOKIE)?.value;
     if (!visitor || !/^[0-9a-f-]{36}$/i.test(visitor)) { visitor = crypto.randomUUID(); jar.set(COOKIE,visitor,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:86400*365}); }
@@ -69,6 +51,9 @@ export async function GET(request: Request) {
     return Response.json(null,{headers:noStore});
   } catch { return Response.json(null,{headers:noStore}); }
 }
+export async function GET(request: Request) {
+  return selectCampaign(request,{location:new URL(request.url).searchParams.get("location")??""});
+}
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin || origin !== new URL(request.url).origin) return Response.json({ok:false},{status:403,headers:noStore});
@@ -77,6 +62,10 @@ export async function POST(request: Request) {
     const raw = await request.text();
     if (raw.length > 8192) return Response.json({ok:false},{status:413,headers:noStore});
     const body = JSON.parse(raw);
+    if (body?.kind === "select") {
+      if (typeof body.location !== "string" || typeof body.latitude !== "number" || typeof body.longitude !== "number" || !Number.isFinite(body.latitude) || !Number.isFinite(body.longitude) || Math.abs(body.latitude)>90 || Math.abs(body.longitude)>180) return Response.json(null,{status:400,headers:noStore});
+      return selectCampaign(request,{location:body.location,latitude:body.latitude,longitude:body.longitude});
+    }
     if (typeof body.ticket !== "string" || !["view","click"].includes(body.kind)) return Response.json({ok:false},{status:400});
     const ticket = readCampaignTicket(body.ticket);
     const visitor = (await cookies()).get(COOKIE)?.value;

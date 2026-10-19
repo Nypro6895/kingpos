@@ -1,26 +1,29 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { campaignDeliveryRequest } from "@/lib/campaign-delivery-area";
 import { adRequest, prepareAdImage } from "@/lib/advertising-client";
 import styles from "./owner-campaign.module.css";
 type Ad = { title: string; caption: string; image: string | null; href: string; ticket: string };
-export function OwnerSponsoredPost({ location }: { location?: string }) {
-  const [delivery, setDelivery] = useState<{ location: string; ad: Ad } | null>(null);
+export function OwnerSponsoredPost({ location, latitude, longitude }: { location?: string; latitude?:number|null; longitude?:number|null }) {
+  const selection = useMemo(() => campaignDeliveryRequest(location,latitude,longitude),[location,latitude,longitude]);
+  const requestKey = selection?.key ?? null;
+  const [delivery, setDelivery] = useState<{ key: string; ad: Ad } | null>(null);
   const [admittedTicket, setAdmittedTicket] = useState<string | null>(null);
   const [dismissedTicket, setDismissedTicket] = useState<string | null>(null);
   const ref = useRef<HTMLElement>(null);
-  const ad = delivery && delivery.location === location ? delivery.ad : null;
+  const ad = delivery && delivery.key === requestKey ? delivery.ad : null;
   const claims = useRef(new Map<string, Promise<boolean>>());
   useEffect(() => {
-    if (!location) return;
+    if (!selection) return;
     const abort = new AbortController();
-    void adRequest(`/api/campaigns/delivery?location=${encodeURIComponent(location)}`, { signal: abort.signal })
+    void adRequest(selection.url, { signal: abort.signal, ...(selection.body ? {method:"POST",headers:{"Content-Type":"application/json"},body:selection.body}: {}) }, selection.body ? 10000 : 4000)
       .then(async (value: Ad | null) => {
         if (!value?.ticket || !value.href || !await prepareAdImage(value.image ?? "", abort.signal)) return;
-        if (!abort.signal.aborted) { setDelivery({ location, ad: value }); setAdmittedTicket(null); setDismissedTicket(null); }
+        if (!abort.signal.aborted) { setDelivery({ key:selection.key, ad: value }); setAdmittedTicket(null); setDismissedTicket(null); }
       }).catch(() => {});
     return () => abort.abort();
-  }, [location]);
+  }, [selection]);
   useEffect(() => {
     const element = ref.current;
     if (!ad || !element || dismissedTicket === ad.ticket) return;

@@ -1,5 +1,6 @@
 "use client";
 
+import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
 import { Suspense, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { exploreFeedErrorMessage, requestExploreFeed } from "@/lib/explore-feed-client";
 import { recordExploreLoadDuration, useExplorePrefetchDistance, useExploreVisibleAfterFirstContent } from "@/lib/explore-viewport-priority";
@@ -35,8 +36,12 @@ type ExploreDiscoveryFeedProps = {
 };
 
 export function ExploreDiscoveryFeed(props: ExploreDiscoveryFeedProps) {
-  if (props.initialPagePromise) return <Suspense fallback={<ExploreFeedSkeleton />}><ExploreSeededDiscoveryFeed {...props} initialPagePromise={props.initialPagePromise} /></Suspense>;
-  return <ExploreDiscoveryFeedReady {...props} />;
+  return <>
+    <div className="mx-auto w-full max-w-[40rem]" data-testid="owner-campaign-placement">
+      <OwnerSponsoredPost location={props.discovery.location} latitude={props.discovery.latitude} longitude={props.discovery.longitude}/>
+    </div>
+    {props.initialPagePromise ? <Suspense fallback={<ExploreFeedSkeleton />}><ExploreSeededDiscoveryFeed {...props} initialPagePromise={props.initialPagePromise} /></Suspense> : <ExploreDiscoveryFeedReady {...props} />}
+  </>;
 }
 function ExploreSeededDiscoveryFeed(props: ExploreDiscoveryFeedProps & { initialPagePromise: Promise<ExploreFeedPage | null> }) {
   const seed = use(props.initialPagePromise);

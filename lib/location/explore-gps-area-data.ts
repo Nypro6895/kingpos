@@ -65,9 +65,14 @@ export function parseCensusGpsArea(payload: unknown): ExploreGpsArea | null {
       break;
     }
   }
+  // Only accept a single containing ZIP polygon. Centroids and nearest salons
+  // never supply a ZIP, and an ambiguous boundary remains city/state only.
+  const zipRows = geographies["2020 Census ZIP Code Tabulation Areas"];
+  const postalCode = Array.isArray(zipRows) && zipRows.length === 1
+    && /^\d{5}$/.test(text(record(zipRows[0]).ZCTA5)) ? text(record(zipRows[0]).ZCTA5) : null;
   return {
-    label: city ? `${city}, ${state}` : state, city, state, postalCode: null,
-    country: "US", source: "gps", provider: "us_census", precision: city ? "city" : "state",
+    label: city ? `${city}, ${state}` : postalCode ?? state, city, state, postalCode,
+    country: "US", source: "gps", provider: "us_census", precision: city ? "city" : postalCode ? "postal" : "state",
     attribution: { label: "U.S. Census Bureau", url: "https://www.census.gov/" },
   };
 }

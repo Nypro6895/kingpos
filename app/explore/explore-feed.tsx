@@ -24,7 +24,6 @@ import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import { InspirationAvailability } from "@/components/inspiration-availability";
 import { ExploreBookButton, ExploreSalonLove } from "@/components/explore-account-actions";
-import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
 import { ExploreAdSlot } from "@/components/explore-advertising";
 import { SalonTrustLine, SalonVerifiedBadge } from "@/components/salon-trust-line";
 import {
@@ -1904,7 +1903,6 @@ function ExploreFeedContent({
               />
               </div>
               {(index + 1) % 4 === 0 ? <ExploreAdSlot slotIndex={Math.floor(index / 4)} /> : null}
-              {index === 0 ? <OwnerSponsoredPost key={discovery?.location ?? "anywhere"} location={discovery?.location} /> : null}
               {!matchingPostsFirst && (index + 1) % 4 === 0 ? supplementaryPosts[Math.floor((index + 1) / 4) - 1] : null}
               {shortcut ? (
                 <FeedDiscoveryModule

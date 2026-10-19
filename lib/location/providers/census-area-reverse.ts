@@ -10,7 +10,7 @@ export async function reverseAreaWithCensus(point: ExploreGpsPoint, fetcher: typ
   url.searchParams.set("benchmark", "Public_AR_Current");
   url.searchParams.set("vintage", "Current_Current");
   // Request containing administrative polygons only; do not use centroid proximity.
-  url.searchParams.set("layers", "States,Incorporated Places,Census Designated Places");
+  url.searchParams.set("layers", "States,Incorporated Places,Census Designated Places,2020 Census ZIP Code Tabulation Areas");
   url.searchParams.set("format", "json");
   const result = await requestAreaProvider(url, fetcher, timeoutMs);
   const area = result.errorKind ? null : parseCensusGpsArea(result.payload);
