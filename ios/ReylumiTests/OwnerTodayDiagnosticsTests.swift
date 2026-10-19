@@ -11,11 +11,13 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
     private let fixture: [String: Any]
     private var failures: Int
     private var contextCount = 0
+    private var requestedContextPaths: [String] = []
     private var commandCount = 0
     private var reads: [String: Int] = [:]
     init(fixture: [String: Any], failures: Int = 0) { self.fixture = fixture; self.failures = failures }
     func counts() -> [String: Any] { ["context": contextCount, "commands": commandCount, "reads": reads] }
-    func clearCounts() { contextCount = 0; commandCount = 0; reads = [:] }
+    func contextPaths() -> [String] { requestedContextPaths }
+    func clearCounts() { contextCount = 0; commandCount = 0; reads = [:]; requestedContextPaths = [] }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let url = try XCTUnwrap(request.url)
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -23,6 +25,7 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
         var headers = ["Content-Type": "application/json", "Server-Timing": "auth;dur=1,load;dur=2,total;dur=3"]
         if url.path == "/api/app-local/context" {
             contextCount += 1
+            requestedContextPaths.append(query.first { $0.name == "path" }?.value ?? "/")
             if failures > 0 {
                 failures -= 1; status = 503; object = ["error": "Synthetic temporary context failure"]
             } else {
@@ -148,6 +151,41 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
             XCTAssertTrue(run.trace.snapshot().contains { $0.event == .httpEnd && $0.category == .context && $0.status == 503 })
             XCTAssertFalse(run.trace.snapshot().contains { $0.event == .scopeReset })
             return ["ready": counts]
+        }
+    }
+
+    func testInstalledOwnerTodaySameRouteHandoffAcceptsNativeEventAndRequestedReply() async throws {
+        try await scenario("same_route_owner_handoff", startPath: "/staff/today") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            let before = await run.http.contextPaths()
+            let delivered = run.trace.snapshot().filter { $0.event == .contextDelivered }.count
+            // Observe the real installed bridge without replacing its handler,
+            // transport, context events, request promises or admission rules.
+            _ = try await run.web.evaluateJavaScript("""
+            window.__handoffContextEvents=[];
+            window.addEventListener('reylumi:app-local-context',e=>window.__handoffContextEvents.push(e.detail.contextPath));
+            window.__handoffTraceStart=window.__reylumiDiagnostics.snapshot().length;
+            window.__handoffAccepts=window.__reylumiDiagnostics.snapshot().filter(e=>e.event==='context.accept').length;
+            window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/today'}}));true
+            """)
+            try await self.wait("window.__reylumiDiagnostics.snapshot().filter(e=>e.event==='context.accept').length>window.__handoffAccepts && " + self.fullReady + " && !document.querySelector('[data-context-failure]')", in: run.web)
+            try await Task.sleep(nanoseconds: 250_000_000)
+            let after = await run.http.contextPaths()
+            XCTAssertEqual(Array(after.dropFirst(before.count)), ["/staff/today"], "The requested valid Today context must not be aborted for a neutral home lookup")
+            let events = try await run.web.evaluateJavaScript("window.__handoffContextEvents") as? [String]
+            XCTAssertEqual(events, ["/staff/today"], "The installed native emitter must deliver the requested context")
+            let handoffTrace = try await run.web.evaluateJavaScript("window.__reylumiDiagnostics.snapshot().slice(window.__handoffTraceStart)") as? [[String: Any]] ?? []
+            let earlyEvent = handoffTrace.firstIndex { $0["event"] as? String == "context.reject" && $0["contextReason"] as? String == "handoff" }
+            let requestedReply = handoffTrace.firstIndex { $0["event"] as? String == "context.accept" }
+            XCTAssertNotNil(earlyEvent, "Exercise an actual native event arriving while the requested handoff is pending")
+            XCTAssertNotNil(requestedReply)
+            if let earlyEvent, let requestedReply { XCTAssertLessThan(earlyEvent, requestedReply, "The event precedes the requested bridge reply admission") }
+            XCTAssertFalse(handoffTrace.contains { $0["event"] as? String == "auth.reject" }, "An available same-workspace handoff must not become workspace-home or an access error")
+            XCTAssertEqual(run.trace.snapshot().filter { $0.event == .contextDelivered }.count, delivered + 1)
+            let counts = await run.http.counts()
+            XCTAssertEqual(counts["commands"] as? Int, 0, "Login/page handoff cannot replay a workspace command")
+            let eventBeforeAdmission = earlyEvent.flatMap { event in requestedReply.map { event < $0 } } ?? false
+            return ["requestedContextPaths": Array(after.dropFirst(before.count)), "nativeContextEvents": events ?? [], "nativeEventBeforeRequestedAdmission": eventBeforeAdmission, "ready": counts]
         }
     }
 

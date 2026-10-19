@@ -169,7 +169,9 @@ function App() {
   useLayoutEffect(() => { current.current = path; }, [path]);
   const recoverPage = useCallback((value: AppLocalContext, requestedPath: string) => {
     const generation = window.__reylumiAppLocalContext?.generation;
-    if (requestedPath.split("?")[0] !== current.current.split("?")[0] || workspaceRecovery.current || pageRecovery.current
+    // Native publishes its context event before the pending handoff callback.
+    // Let that destination read finish; its event is not a denied page grant.
+    if (requestedPath.split("?")[0] !== current.current.split("?")[0] || workspaceRecovery.current || pageRecovery.current || handoffPath.current
       || !value || value.schemaVersion !== 1 || value.offline || !value.context?.authenticated || !value.context.viewerId
       || !isAppLocalScopeId(value.context.scope) || !generation || value.grantStatus === 401) return false;
     pageRecovery.current = { path: current.current, viewerId: value.context.viewerId, generation };

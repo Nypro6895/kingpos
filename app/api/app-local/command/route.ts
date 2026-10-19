@@ -18,6 +18,7 @@ import { requireAppLocalPortableScope } from "@/lib/app-local-portable-context-s
 import { isAppLocalScopeId, isAppLocalPortableScopeId } from "@/lib/app-local-scope-id";
 import portableActions from "@/lib/app-local-portable-actions.generated.json";
 import { authorizeAppLocalDisplayCommand } from "@/lib/app-local-display-server";
+import { APP_LOCAL_GUEST_HIDDEN_POSTS_READ } from "@/lib/app-local-guest-read-policy";
 
 export async function POST(request: Request) {
   await connection();
@@ -34,6 +35,10 @@ export async function POST(request: Request) {
     const bytes = new Uint8Array(length); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
     const input = JSON.parse(new TextDecoder().decode(bytes));
     if (!input || typeof input.name !== "string" || !/^[a-z][a-z0-9.-]{0,79}$/.test(input.name) || !/^[a-f0-9-]{36}$/i.test(input.requestId ?? "") || !isAppLocalScopeId(input.scope) || !input.args || typeof input.args !== "object" || Array.isArray(input.args)) return failure(400, "Invalid form.");
+    if (input.name === APP_LOCAL_GUEST_HIDDEN_POSTS_READ &&
+      (Object.keys(input.args).length !== 1 || !Array.isArray(input.args.values) || input.args.values.length !== 0)) {
+      return failure(400, "Invalid hidden-post read.");
+    }
     if(/^action\.[a-f0-9]{24}$/.test(input.name)&&Object.keys(input.args).every(key=>key==="values")){
       const values=decodeAppLocalValue(input.args.values);
       if(!Array.isArray(values)||values.length>20)return failure(400,"Invalid form.");
@@ -50,6 +55,12 @@ export async function POST(request: Request) {
     const business = await getRequestBusinessContext();
     const upload=await runAppLocalUploadCommand(input.name,input.args,input.scope);
     if(upload.handled)return Response.json({ok:true,data:upload.data},{headers:responseHeaders});
+    if (!business.user && input.name === APP_LOCAL_GUEST_HIDDEN_POSTS_READ) {
+      if (getExperienceContext(business).scope !== input.scope) return failure(409, "Your account has changed.");
+      // The unchanged original handler binds this read to the abuse-signed
+      // guest device. It accepts no supplied identity or moderation operation.
+      return Response.json({ ok: true, data: { value: await runAppLocalCommand(input.name, []) } }, { headers: responseHeaders });
+    }
     if(input.name==="http.explore.feed-events"&&getExperienceContext(business).scope===input.scope){const events=await runAppLocalExploreHttpCommand(input.name,input.args,request,input.scope);if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
     if(input.name==="http.public-booking.confirm"&&getExperienceContext(business).scope===input.scope){const booking=await runAppLocalPublicHttpCommand(input.name,input.args,request,input.scope);if(booking.handled)return Response.json({ok:true,data:booking.data},{headers:responseHeaders});}
     if(input.name==="http.shell.advertising-event"&&getExperienceContext(business).scope===input.scope){const events=await runAppLocalShellCommand(input.name,input.args,request,input.scope);if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}

@@ -21,7 +21,7 @@ const commandModule=`let scope;export const getAppLocalCommandScope=()=>scope;ex
 const replacements={
  '@/lib/app-local-host':`export const getAppLocalHost=()=>window.fixtureHost;export const appLocalRequestId=()=>crypto.randomUUID();export function appLocalPath(value){if(!value.startsWith('/')||value.startsWith('//')||/[\\\\\\u0000-\\u001f]/.test(value))throw Error('Invalid route');const u=new URL(value,'https://reylumi.com');if(u.origin!=='https://reylumi.com')throw Error('Invalid origin');return u.pathname+u.search+u.hash;}`,
  '@/lib/app-local-command-client':commandModule,
- '@/lib/app-local-page-registry':`import React from'react';const Page=({context,path})=><main data-private-page data-path={path} data-role={context.display.role} data-scope={context.context.scope}><input aria-label="Draft" defaultValue={context.display.role}/></main>;export const getAppLocalPage=p=>['/staff/today','/staff/my-work','/staff/appointments','/settings'].includes(p)?{id:p,title:'Workspace',requiresContext:true,Component:Page}:null;`,
+ '@/lib/app-local-page-registry':`import React from'react';const Page=({context,path})=><main data-private-page data-path={path} data-role={context.display.role} data-scope={context.context.scope}><input aria-label="Draft" defaultValue={context.display.role}/></main>;export const getAppLocalPage=p=>['/staff/today','/staff/my-work','/staff/appointments','/settings','/my-place'].includes(p)?{id:p,title:'Workspace',requiresContext:true,Component:Page}:null;`,
  '@/components/app-local-shell':`import React from'react';export function AppLocalShell({context,children,checkContext}){window.fixtureMinuteCheck=checkContext;return <>{context?<nav data-role-nav={context.display.role}>{context.display.role}</nav>:<header data-opening>Opening</header>}{children}</>}`,
  './navigation':`export function AppLocalNavigationProvider({children}){return children}`,
  './scope':`export function ExperienceScopeProvider({children}){return children}`,
@@ -33,29 +33,29 @@ const replacements={
  '@/lib/app-local-secondary-registry':`export const getAppLocalSecondaryPage=()=>null;export const appLocalRouteAlias=()=>null`,
 };
 const mock=(path,names)=>replacements[path]??names.map(name=>`export const ${name}=${name.startsWith('getAppLocal')?'()=>null':['clearExperienceSnapshots','acceptExperienceOfflineGrant'].includes(name)?'async()=>{}':name.startsWith('install')?'()=>()=>{}':'()=>null'};`).join('\n');
-let compiled;
-async function compile(){
- compiled??=build({stdin:{contents:entry+`\nimport{navigateToWorkspace}from'./lib/app-local-shell-workspace-navigation';window.fixtureSwitch=role=>navigateToWorkspace(role+'-space');`,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',define:{'process.env.NODE_ENV':'"production"'},alias:{'@':process.cwd()},plugins:[{name:'workspace-fixture-boundaries',setup(b){
-  for(const[path]of imports)b.onResolve({filter:new RegExp('^'+path.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$')},()=>({path,namespace:'fixture'}));
+const compiled=new Map();
+async function compile(realPolicy=false){
+ if(!compiled.has(realPolicy))compiled.set(realPolicy,build({stdin:{contents:entry+`\nimport{navigateToWorkspace,completeWorkspaceHandoff}from'./lib/app-local-shell-workspace-navigation';window.fixtureSwitch=role=>navigateToWorkspace(role+'-space');window.fixtureHandoff=completeWorkspaceHandoff;`,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',define:{'process.env.NODE_ENV':'"production"'},alias:{'@':process.cwd()},plugins:[{name:'workspace-fixture-boundaries',setup(b){
+  for(const[path]of imports){if(realPolicy&&path==='@/lib/experience-offline-policy')continue;b.onResolve({filter:new RegExp('^'+path.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$')},()=>({path,namespace:'fixture'}));}
   b.onResolve({filter:/^\.\/app-local-host$/},()=>({path:'@/lib/app-local-host',namespace:'fixture'}));
   b.onResolve({filter:/^\.\/app-local-command-client$/},()=>({path:'@/lib/app-local-command-client',namespace:'fixture'}));
-  b.onResolve({filter:/^\.\/experience-offline-policy$/},()=>({path:'@/lib/experience-offline-policy',namespace:'fixture'}));
+  if(!realPolicy)b.onResolve({filter:/^\.\/experience-offline-policy$/},()=>({path:'@/lib/experience-offline-policy',namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({contents:mock(path,imports.get(path)??[]),loader:'tsx',resolveDir:process.cwd()}));
- }}]});return compiled;
+ }}]}));return compiled.get(realPolicy);
 }
 async function fixture(options={}){
- const built=await compile();
- const setup=`window.fixtureOptions=${JSON.stringify(options)};window.fixtureStats={calls:[],commands:0,resets:0,aborted:0,errors:[]};window.fixtureServerRole='staff';window.fixtureHeld=[];
+ const built=await compile(Boolean(options.realPolicy));
+ const setup=`window.fixtureOptions=${JSON.stringify(options)};window.fixtureStats={calls:[],commands:0,resets:0,aborted:0,errors:[],activeReads:0,contextEvents:0,replyPaths:[],ordering:[]};window.fixtureServerRole=window.fixtureOptions.initialRole||'staff';window.fixtureHeld=[];
  window.__reylumiAppLocalContext={generation:'synthetic-generation-20261018',scopeEpoch:1,nonce:'fixture'};
  window.addEventListener('reylumi:app-local-workspace-error',e=>window.fixtureStats.errors.push(e.detail));
  window.fixtureDispatchResolve=(detail={})=>window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-resolve',{detail:{generation:window.__reylumiAppLocalContext.generation,...detail}}));
  window.fixtureNavigate=p=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path:p}}));
- window.fixtureHost={isNative:true,cache:async()=>null,openOnline:async()=>{throw Error('External navigation blocked')},command:async(name,args)=>{window.fixtureStats.commands++;if(!window.fixtureOptions.failBeforeWrite)window.fixtureServerRole=args.workspaceId.startsWith('owner')?'owner':'staff';if(window.fixtureOptions.resetBeforeReply){window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'context',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}}));}throw Object.assign(Error('Synthetic unconfirmed reply'),{status:503});},context:async(path,request)=>{
+ window.fixtureHost={isNative:true,cache:async()=>null,openOnline:async()=>{throw Error('External navigation blocked')},command:async(name,args)=>{window.fixtureStats.commands++;if(!window.fixtureOptions.failBeforeWrite)window.fixtureServerRole=args.workspaceId.startsWith('owner')?'owner':'staff';if(window.fixtureOptions.resetBeforeReply){window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'context',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}}));}if(window.fixtureOptions.acknowledgedSwitch)return{path:window.fixtureServerRole==='owner'?'/staff/today':'/staff/my-work'};throw Object.assign(Error('Synthetic unconfirmed reply'),{status:503});},context:async(path,request)=>{
  window.fixtureStats.calls.push({path,fresh:Boolean(request.fresh)});
- const role=path==='/'?window.fixtureServerRole:path==='/staff/today'?'owner':'staff',scope='v3:'+(role==='owner'?'a':'b').repeat(64),generation=window.__reylumiAppLocalContext.generation;
- const make=()=>({schemaVersion:1,context:{scope,authenticated:true,viewerId:window.fixtureOptions.otherViewer&&path==='/'?'other-viewer':'fixture-viewer',workspaceId:role+'-space',salonId:'fixture-salon',permissionRevision:role},grant:{scope,generation,expiresAt:Date.now()+3600000,grantRevision:role,kind:role},onlineValidatedAt:Date.now(),offline:false,home:window.fixtureOptions.unsafeHome&&path==='/'?'https://outside.invalid/':role==='owner'?'/staff/today':'/staff/my-work',display:{role},access:{ownerWorkspace:role==='owner',staffWorkspace:role==='staff'}});
+ const role=path==='/'?window.fixtureServerRole:path==='/staff/today'?'owner':path==='/my-place'?'customer':'staff',scope='v3:'+(role==='owner'?'a':'b').repeat(64),generation=window.__reylumiAppLocalContext.generation;
+ const make=()=>{const now=Date.now(),viewer=window.fixtureOptions.realPolicy?'00000000-0000-4000-8000-000000000001':'fixture-viewer',salon=window.fixtureOptions.realPolicy?'00000000-0000-4000-8000-000000000002':'fixture-salon';return{schemaVersion:1,contextPath:path,host:{...window.__reylumiAppLocalContext},context:{scope,authenticated:true,viewerId:window.fixtureOptions.otherViewer&&path==='/'?'other-viewer':viewer,workspaceId:role+'-space',salonId:salon,permissionRevision:role},grant:window.fixtureOptions.explicitGrantStatus?null:{version:1,scope,scopes:[scope],viewerId:viewer,workspaceId:role+'-space',salonId:salon,generation,issuedAt:now-1000,expiresAt:now+3600000,path:role==='owner'?'/staff/today':role==='customer'?'/my-place':'/staff/my-work',grantRevision:role,kind:role,...(role==='staff'?{staffBinding:{version:1,staffId:'00000000-0000-4000-8000-000000000003',viewerId:viewer,salonId:salon,revision:'00000000-0000-4000-8000-000000000004',approvedAt:new Date(now-10000).toISOString()}}:{})},grantStatus:window.fixtureOptions.explicitGrantStatus||200,onlineValidatedAt:now,offline:false,home:window.fixtureOptions.unsafeHome&&path==='/'?'https://outside.invalid/':role==='owner'?'/staff/today':role==='customer'?'/my-place':'/staff/my-work',display:{role},access:{ownerWorkspace:role==='owner',staffWorkspace:role==='staff'}};};
  if(path==='/'&&window.fixtureOptions.neutralFailures>0){window.fixtureOptions.neutralFailures--;throw Object.assign(Error('Synthetic context unavailable'),{status:503});}
- return new Promise((resolve,reject)=>{let done=false;const abort=()=>{if(done)return;done=true;window.fixtureStats.aborted++;reject(new DOMException('Cancelled','AbortError'))};request.signal.addEventListener('abort',abort,{once:true});const finish=()=>{if(done)return;done=true;request.signal.removeEventListener('abort',abort);resolve(make());};if(window.fixtureOptions.holdPath===path)window.fixtureHeld.push(finish);else setTimeout(finish,20);});
+ return new Promise((resolve,reject)=>{let done=false;window.fixtureStats.activeReads++;const abort=()=>{if(done)return;done=true;window.fixtureStats.activeReads--;window.fixtureStats.aborted++;window.fixtureStats.ordering.push({type:'abort',path});reject(new DOMException('Cancelled','AbortError'))};request.signal.addEventListener('abort',abort,{once:true});const finish=()=>{if(done)return;if(window.fixtureOptions.rotateOnNextContext){window.fixtureOptions.rotateOnNextContext=false;window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{...window.__reylumiAppLocalContext,reason:'context'}}));}const value=make();if(window.fixtureOptions.nativeEventBeforeReply){window.fixtureStats.contextEvents++;window.fixtureStats.ordering.push({type:'event',path});window.dispatchEvent(new CustomEvent('reylumi:app-local-context',{detail:value}));}const deliver=()=>{if(done)return;done=true;window.fixtureStats.activeReads--;request.signal.removeEventListener('abort',abort);window.fixtureStats.replyPaths.push(path);window.fixtureStats.ordering.push({type:'reply',path});resolve(value);};if(window.fixtureOptions.nativeEventBeforeReply)setTimeout(deliver,5);else deliver();};if(window.fixtureOptions.holdPath===path)window.fixtureHeld.push(finish);else setTimeout(finish,20);});
  }};`;
  const server=createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/app.js'?'text/javascript':'text/html');res.end(req.url==='/app.js'?built.outputFiles[0].text:'<div id="app"></div><script>'+setup+'</script><script src="/app.js"></script>')});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));server.unref();let browser;
@@ -63,8 +63,9 @@ async function fixture(options={}){
   browser=await(engine==='webkit'?webkit.launch({headless:true}):chromium.launch({executablePath:browserPath,headless:true}));
   const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:')?r.continue():r.abort());
-  await page.goto('http://127.0.0.1:'+server.address().port+'/staff/my-work');
-  await page.locator('[data-private-page][data-role="staff"]:visible').waitFor();
+  await page.goto('http://127.0.0.1:'+server.address().port+(options.startPath||'/staff/my-work'));
+  await page.locator('[data-private-page][data-role="'+(options.initialRole||'staff')+'"]:visible').waitFor();
+  await page.waitForFunction(()=>window.fixtureStats.activeReads===0);
   return{page,async close(){await browser.close();await new Promise(resolve=>server.close(resolve));assert.deepEqual(errors,[]);}};
  }catch(e){await browser?.close();await new Promise(resolve=>server.close(resolve));throw e;}
 }
@@ -80,6 +81,74 @@ test('lost workspace acknowledgments recover through neutral state for twenty ro
    assert.equal(await a.page.locator('[data-private-page][data-role="'+(role==='owner'?'staff':'owner')+'"]:visible').count(),0);
   }
  }finally{await a.close();}
+});
+
+// Native freshContext emits the DOM context event before its bridge reply.
+// These cases use the actual complete lease/Staff-binding/page validators;
+// only HTTP/native delivery and page/shell rendering are controlled fixtures.
+async function settleContextReads(page,before){
+ await page.waitForFunction(before=>window.fixtureStats.calls.length>before&&window.fixtureStats.activeReads===0,before,{timeout:4000});
+ await page.waitForTimeout(50);
+}
+
+test('native event before reply preserves same-route Owner Today handoff after login instead of starting neutral recovery',{skip,timeout:20000},async()=>{
+ for(const nativeEventBeforeReply of [false,true]){
+  const a=await fixture({realPolicy:true,initialRole:'owner',startPath:'/staff/today',nativeEventBeforeReply});try{
+   const before=await a.page.evaluate(()=>window.fixtureStats.calls.length);
+   await a.page.evaluate(()=>{window.fixtureOptions.rotateOnNextContext=true;window.fixtureHandoff('/staff/today');});
+   await settleContextReads(a.page,before);
+   const stats=await a.page.evaluate(()=>window.fixtureStats);
+   assert.equal(await a.page.locator('[data-context-failure]').count(),0,JSON.stringify({nativeEventBeforeReply,calls:stats.calls,ordering:stats.ordering}));
+   assert.equal(await a.page.locator('[data-private-page][data-path="/staff/today"][data-role="owner"]:visible').count(),1);
+   assert.deepEqual(stats.calls.slice(before).map(x=>x.path),['/staff/today'],'a successful requested page must not recurse through neutral /');
+   assert.equal(stats.aborted,0,'native context event must not cancel its own successful request');
+   assert.equal(stats.commands,0,'login/page handoff must not synthesize a business write');
+   if(nativeEventBeforeReply)assert.deepEqual(stats.ordering.slice(-2).map(x=>x.type),['event','reply']);
+  }finally{await a.close();}
+ }
+});
+
+test('native event before reply preserves acknowledged Staff to Owner and reverse handoffs with one write each',{skip,timeout:20000},async()=>{
+ const a=await fixture({realPolicy:true,nativeEventBeforeReply:true,acknowledgedSwitch:true});try{
+  for(const role of ['owner','staff']){
+   const before=await a.page.evaluate(()=>window.fixtureStats.calls.length);
+   await a.page.evaluate(role=>{window.fixtureOptions.rotateOnNextContext=true;window.fixtureSwitch(role);},role);
+   await settleContextReads(a.page,before);
+   const stats=await a.page.evaluate(()=>window.fixtureStats);
+   assert.equal(await a.page.locator('[data-context-failure]').count(),0,JSON.stringify({role,calls:stats.calls,ordering:stats.ordering}));
+   assert.equal(await a.page.locator('[data-private-page][data-role="'+role+'"]:visible').count(),1);
+   assert.deepEqual(stats.calls.slice(before).map(x=>x.path),[role==='owner'?'/staff/today':'/staff/my-work']);
+   assert.equal(stats.aborted,0);
+   assert.equal(stats.commands,role==='owner'?1:2,'a native event/foreground recovery must never replay a workspace write');
+  }
+ }finally{await a.close();}
+});
+
+test('native event before reply preserves Personal to Owner handoff with the actual customer lease policy',{skip,timeout:15000},async()=>{
+ const a=await fixture({realPolicy:true,initialRole:'customer',startPath:'/my-place',nativeEventBeforeReply:true,acknowledgedSwitch:true});try{
+  const before=await a.page.evaluate(()=>window.fixtureStats.calls.length);
+  await a.page.evaluate(()=>{window.fixtureOptions.rotateOnNextContext=true;window.fixtureSwitch('owner');});
+  await settleContextReads(a.page,before);
+  const stats=await a.page.evaluate(()=>window.fixtureStats);
+  assert.equal(await a.page.locator('[data-context-failure]').count(),0,JSON.stringify({calls:stats.calls,ordering:stats.ordering}));
+  assert.equal(await a.page.locator('[data-private-page][data-path="/staff/today"][data-role="owner"]:visible').count(),1);
+  assert.deepEqual(stats.calls.slice(before).map(x=>x.path),['/staff/today']);
+  assert.equal(stats.aborted,0);
+  assert.equal(stats.commands,1,'Personal to Owner issues the requested workspace switch exactly once');
+ }finally{await a.close();}
+});
+
+test('native event before reply keeps explicit401403409 denial fail-closed during Owner handoff',{skip,timeout:20000},async()=>{
+ for(const [status,category]of [[401,'sign-in'],[403,'access'],[409,'workspace']]){
+  const a=await fixture({realPolicy:true,initialRole:'owner',startPath:'/staff/today',nativeEventBeforeReply:true});try{
+   const before=await a.page.evaluate(()=>window.fixtureStats.calls.length);
+   await a.page.evaluate(status=>{window.fixtureOptions.explicitGrantStatus=status;window.fixtureOptions.rotateOnNextContext=true;window.fixtureHandoff('/staff/today');},status);
+   await settleContextReads(a.page,before);
+   await a.page.locator('[data-context-failure="'+category+'"]').waitFor({timeout:3000});
+   assert.equal(await a.page.locator('[data-private-page]:visible').count(),0,'neither an event nor reply may override real denial');
+   assert.equal(await a.page.evaluate(()=>window.fixtureStats.commands),0);
+  }finally{await a.close();}
+ }
 });
 test('an uncommitted switch recovers its actual Staff workspace and reports that the requested Owner workspace did not open',{skip,timeout:20000},async()=>{
  const a=await fixture({failBeforeWrite:true});try{await a.page.evaluate(()=>window.fixtureSwitch('owner'));await a.page.waitForFunction(()=>window.fixtureStats.errors.length===1);await a.page.locator('[data-private-page][data-role="staff"]:visible').waitFor();const s=await a.page.evaluate(()=>window.fixtureStats);assert.equal(s.commands,1);assert.match(s.errors[0],/did not change/);}finally{await a.close();}

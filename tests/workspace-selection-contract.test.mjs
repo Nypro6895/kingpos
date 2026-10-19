@@ -88,6 +88,7 @@ function fixture({ revoked = false, cookieFailure = false, cookieFailureAfter = 
     '@/lib/app-local-portable-http-server': {}, '@/lib/app-local-portable-context-server': {},
     '@/lib/app-local-scope-id': { isAppLocalScopeId: s => /^v3:[a-f0-9]{64}$/.test(s), isAppLocalPortableScopeId: () => false },
     '@/lib/app-local-portable-actions.generated.json': {}, '@/lib/app-local-display-server': {},
+    '@/lib/app-local-guest-read-policy': { APP_LOCAL_GUEST_HIDDEN_POSTS_READ: 'action.' + crypto.createHash('sha256').update('app/post-moderation/actions.ts#loadHiddenPostIdentitiesAction').digest('hex').slice(0, 24) },
   });
   const command = async (args = { workspaceId: owner.id }, origin = 'https://reylumi.com', requestedScope = scope) => {
     const request = new Request('https://reylumi.com/api/app-local/command', { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'shell.switch-workspace', args, requestId: crypto.randomUUID(), scope: requestedScope }) });

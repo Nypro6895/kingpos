@@ -177,7 +177,7 @@ function SavePostButtonInner({
   const isToolbar = size === "toolbar";
 
   useEffect(() => {
-    if (initialSaved !== undefined) {
+    if (isAuthenticated === false || initialSaved !== undefined) {
       return;
     }
 
@@ -216,6 +216,7 @@ function SavePostButtonInner({
     };
   }, [
     initialSaved,
+    isAuthenticated,
     stableSalonId,
     stableSourceId,
     stableSourceType,
