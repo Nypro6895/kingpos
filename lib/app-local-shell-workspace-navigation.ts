@@ -4,12 +4,12 @@ import { getAppLocalCommandScope } from "./app-local-command-client";
 
 let pending = false;
 /** Entry owns the fresh admission and its retry. Never repeat a committed command. */
-export function completeWorkspaceHandoff(path: string) {
-  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-handoff", { detail: { path: appLocalPath(path) } }));
+export function completeWorkspaceHandoff(path: string, gesture?: { generation?: string; scope: string; workspaceId: string }) {
+  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-handoff", { detail: { path: appLocalPath(path), ...(gesture ? { gesture } : {}) } }));
 }
 /** Resolve an uncertain write through a fresh account read, never another write. */
-export function requestWorkspaceResolution(generation = window.__reylumiAppLocalContext?.generation, workspaceId?: string) {
-  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-resolve", { detail: { generation, ...(workspaceId ? { workspaceId } : {}) } }));
+export function requestWorkspaceResolution(generation = window.__reylumiAppLocalContext?.generation, workspaceId?: string, gesture?: { generation?: string; scope: string; workspaceId: string }) {
+  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-resolve", { detail: { generation, ...(workspaceId ? { workspaceId } : {}), ...(gesture ? { gesture } : {}) } }));
 }
 /** Installed-build alias only. Web keeps its original document handoff. */
 export function navigateToWorkspace(workspaceId: string, destinationHref?: string) {
@@ -26,14 +26,18 @@ export function navigateToWorkspace(workspaceId: string, destinationHref?: strin
   window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-start", { detail: { generation, scope, workspaceId } }));
   void (async () => {
     const result = await host.command<{ path: string }>("shell.switch-workspace", { workspaceId, ...(destinationHref ? { destination: destinationHref } : {}) }, { scope });
-    if (window.__reylumiAppLocalContext?.generation !== generation || scope !== getAppLocalCommandScope()) return;
-    completeWorkspaceHandoff(result.path);
+    const activeScope = getAppLocalCommandScope();
+    // A stale read can withdraw the old scope while this authorized gesture
+    // commits. Undefined means checking again, not a different accepted user.
+    // Destination admission still requires a fresh server context.
+    if (window.__reylumiAppLocalContext?.generation !== generation || activeScope && scope !== activeScope) return;
+    completeWorkspaceHandoff(result.path, { generation, scope, workspaceId });
   })().catch(() => {
     const activeScope = getAppLocalCommandScope();
     if (window.__reylumiAppLocalContext?.generation !== generation || activeScope && activeScope !== scope) return;
     // Cookies may already select the requested workspace. The old Staff path
     // would resolve Staff identity even after a committed Owner selection.
-    requestWorkspaceResolution(generation, workspaceId);
+    requestWorkspaceResolution(generation, workspaceId, { generation, scope, workspaceId });
   }).finally(() => {
     window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-finish", { detail: { generation, scope } }));
     pending = false;

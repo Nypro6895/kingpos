@@ -21,6 +21,88 @@ for (const declaration of parsed.statements) {
   const names = declaration.importClause?.namedBindings?.elements?.map(element => element.propertyName?.text ?? element.name.text) ?? [];
   imports.set(path, names);
 }
+
+test('scope conflict withdraws cached private UI without cancelling the pending current context', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ hold: [1, 2] });
+  try {
+    await app.page.waitForFunction(() => window.fixtureStats.attempts === 1);
+    await app.page.evaluate(() => window.resolveContext(1, { offline: true }));
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await app.page.evaluate(() => window.dispatchEvent(new Event('reylumi:foreground')));
+    await app.page.waitForFunction(() => window.fixtureStats.attempts === 2);
+    await app.page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:app-local-scope-conflict', { detail: { scope: 'v3:' + 'a'.repeat(64), status: 409, reason: 'stale-scope' } })));
+    await app.page.waitForFunction(() => !document.querySelector('[data-private-page]'));
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.aborted), 0);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 2);
+    await app.page.evaluate(() => {
+      const scope = 'v3:' + 'b'.repeat(64);
+      window.resolveContext(2, { context: { scope, authenticated: true, viewerId: 'synthetic-viewer', workspaceId: 'current-workspace', salonId: 'synthetic-salon', permissionRevision: 'current-permission' }, grant: { scope, generation: window.__reylumiAppLocalContext.generation, kind: 'owner', viewerId: 'synthetic-viewer', expiresAt: Date.now() + 3600000 } });
+    });
+    await app.page.locator('[data-private-scope="v3:' + 'b'.repeat(64) + '"]:visible').waitFor();
+    assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+    // A late read from the discarded scope cannot destroy the new workspace.
+    await app.page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:app-local-scope-conflict', { detail: { scope: 'v3:' + 'a'.repeat(64), status: 409 } })));
+    assert.equal(await app.page.locator('[data-private-scope="v3:' + 'b'.repeat(64) + '"]:visible').count(), 1);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 2);
+  } finally { await app.close(); }
+});
+
+test('scope conflict starts one fresh recovery and repeated same-scope conflicts settle at manual retry', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ hold: [2] });
+  try {
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    const conflict = () => app.page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:app-local-scope-conflict', { detail: { scope: 'v3:' + 'a'.repeat(64), status: 409 } })));
+    await conflict();
+    await app.page.waitForFunction(() => window.fixtureStats.attempts === 2);
+    assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+    await app.page.evaluate(() => window.resolveContext(2));
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await conflict();
+    await app.page.locator('[data-context-failure="workspace"]').waitFor();
+    assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 2);
+    await app.page.getByRole('button', { name: 'Try again', exact: true }).click();
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 3);
+  } finally { await app.close(); }
+});
+
+test('fresh confirmed expiry withdraws a warm private lease and exposes a guest route', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ hold: [2] });
+  try {
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await app.page.evaluate(() => window.dispatchEvent(new Event('reylumi:foreground')));
+    await app.page.waitForFunction(() => window.fixtureStats.attempts === 2);
+    await app.page.evaluate(() => window.resolveContext(2, { grant: null, grantStatus: 401, context: { scope: 'v3:' + 'b'.repeat(64), authenticated: false, viewerId: null, workspaceId: 'public', salonId: null, permissionRevision: '' } }));
+    await app.page.locator('[data-context-failure="sign-in"]').waitFor();
+    assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+    assert.equal(await app.page.locator('[data-owner-nav]').count(), 0);
+    await app.page.getByRole('button', { name: 'Continue as guest', exact: true }).waitFor();
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.commands), 0);
+  } finally { await app.close(); }
+});
+
+test('an online same-scope context captured before conflict cannot revive private UI before a new verification', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ hold: [2, 3] });
+  try {
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await app.page.evaluate(() => window.dispatchEvent(new Event('reylumi:foreground')));
+    await app.page.waitForFunction(() => window.fixtureStats.attempts === 2);
+    await app.page.evaluate(() => {
+      const scope = 'v3:' + 'a'.repeat(64);
+      window.dispatchEvent(new CustomEvent('reylumi:app-local-scope-conflict', { detail: { scope, status: 409 } }));
+      // Native events may precede the bridge reply. This is still the old read.
+      window.dispatchEvent(new CustomEvent('reylumi:app-local-context', { detail: { schemaVersion: 1, contextPath: '/staff/today', context: { scope, authenticated: true, viewerId: 'synthetic-viewer', workspaceId: 'synthetic-workspace', salonId: 'synthetic-salon', permissionRevision: 'synthetic-permission' }, grant: { scope, generation: window.__reylumiAppLocalContext.generation, kind: 'owner', viewerId: 'synthetic-viewer', expiresAt: Date.now() + 3600000 }, onlineValidatedAt: Date.now(), offline: false, access: { ownerWorkspace: true } } }));
+      window.resolveContext(2);
+    });
+    await app.page.waitForFunction(() => window.fixtureStats.attempts === 3);
+    assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.aborted), 0);
+    await app.page.evaluate(() => window.resolveContext(3));
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 3);
+  } finally { await app.close(); }
+});
 const replacements = {
   '@/lib/app-local-host': `export const getAppLocalHost=()=>window.fixtureHost;export const appLocalPath=value=>value;export const appLocalRequestId=()=>crypto.randomUUID();`,
   '@/lib/app-local-page-registry': `

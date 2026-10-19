@@ -48,6 +48,19 @@ test('actual denial remains denial instead of being mislabeled cancellation', as
   });
   assert.equal(f.requests.length, 1);
 });
+test('scope conflicts preserve their bounded recovery reason without becoming cancellation or replaying a request', async () => {
+  const f = fixture(true, undefined, { __hostError: { status: 409, reason: 'stale-scope', message: 'Verify the current workspace' } });
+  await assert.rejects(f.window.__reylumiAppLocalTransport.request({ id: 'test', kind: 'read', name: 'owner.today', args: {} }), error => {
+    assert.equal(error.name, 'Error'); assert.equal(error.status, 409); assert.equal(error.reason, 'stale-scope'); return true;
+  });
+  assert.equal(f.requests.length, 1);
+});
+test('host errors cannot expose arbitrary reason strings', async () => {
+  const f = fixture(true, undefined, { __hostError: { status: 409, reason: 'private-workspace-detail', message: 'Verify access' } });
+  await assert.rejects(f.window.__reylumiAppLocalTransport.request({ id: 'test', kind: 'read', args: {} }), error => {
+    assert.equal(error.name, 'Error'); assert.equal(error.reason, undefined); return true;
+  });
+});
 test('native export recognizes every typed JS admission reason without allowing free-form input', () => {
   const exports = {};
   const code = ts.transpileModule(readFileSync('lib/app-local-context-recovery.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;

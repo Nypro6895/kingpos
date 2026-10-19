@@ -29,14 +29,24 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
       if (scope === options.scope() && error && typeof error === "object" && "status" in error && [401, 403, 409].includes(Number(error.status))) window.dispatchEvent(new Event("reylumi:app-local-access-changed"));
       throw error;
     }
-    if (scope !== options.scope()) throw new Error("Your account has changed.");
-    if (name === "shell.logout" && data.status >= 200 && data.status < 300) {
-      window.dispatchEvent(new Event("reylumi:app-local-reset"));
-      // A display lease is never reused after confirmed server logout.
-      try { const fresh = await options.host().context("/market", { fresh: true }); window.dispatchEvent(new CustomEvent("reylumi:app-local-context", { detail: fresh })); } catch { /* The confirmed logout remains complete; the entry stays locked. */ }
+    const loggedOut = name === "shell.logout" && data.status >= 200 && data.status < 300;
+    // nativeRequest validates this acknowledgement against the new native host
+    // metadata. Sign-out intentionally withdraws the request's former scope.
+    const nativeLogout = loggedOut && (data as AppLocalHttpResponse & { signedOut?: boolean }).signedOut === true;
+    if (scope !== options.scope() && !nativeLogout) throw new Error("Your account has changed.");
+    let responseBody = data.body;
+    if (loggedOut) {
+      if (!nativeLogout) window.dispatchEvent(new CustomEvent("reylumi:app-local-reset", { detail: { reason: "logout" } }));
+      // Return to public browsing only for the original logout DTO. Entry owns
+      // Explore's fresh admission; do not revive the former page or repeat the
+      // committed command when that later context read is unavailable.
+      try {
+        const result = JSON.parse(data.body);
+        if (result && Object.keys(result).length === 1 && result.redirectTo === "/login?message=You have been logged out.") responseBody = JSON.stringify({ redirectTo: "/explore" });
+      } catch { /* Preserve an unrecognized original response. */ }
     }
     if (signal?.aborted) throw signal.reason;
-    return new Response([204, 205, 304].includes(data.status) ? null : data.body, { status: data.status, headers: data.headers });
+    return new Response([204, 205, 304].includes(data.status) ? null : responseBody, { status: data.status, headers: data.headers });
   };
 }
 export function installAppLocalShellHttpTransport(scope = getAppLocalCommandScope) {

@@ -53,12 +53,17 @@ function resourceDomain(name: string) {
   if (!/^[a-z][a-z0-9:-]{0,79}$/.test(domain)) throw new Error("Invalid application resource");
   return domain;
 }
-export function resetAppLocalResources() {
+export function resetAppLocalResources(scope?: string) {
   recordExperienceTrace("cache.reset", { source: "app-local", reason: "reset" });
-  epoch++;
-  appLocalResourceCache.reset();
-  for (const cell of cells.values()) { cell.epoch = epoch; emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined }); }
-  cells.clear();
+  if (!scope) epoch++;
+  appLocalResourceCache.reset(scope);
+  for (const [key, cell] of cells) {
+    if (scope && cell.context.scope !== scope) continue;
+    cell.revision++;
+    cell.epoch = epoch;
+    emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined });
+    cells.delete(key);
+  }
 }
 /** Withdraw only these DTOs before an explicitly reauthorized page recovery. */
 export async function discardAppLocalResources(scope: string, name: string, argsList: readonly Record<string, unknown>[]): Promise<boolean> {
@@ -223,7 +228,15 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });
   })().catch(error => {
     if (epoch !== started || cell.revision !== revision || error instanceof ExperienceResourceInvalidatedError || cells.get(key) !== cell) return;
-    if (error?.status === 401 || error?.status === 409 || error?.status === 403 && name.startsWith("staff.")) { resetAppLocalResources(); window.dispatchEvent(new CustomEvent("reylumi:app-local-access-changed", { detail: { reason: "resource", status: error.status, scope } })); return; }
+    if (error?.status === 409) {
+      // A stale request scope is not proof that the account expired. Withdraw
+      // its DTOs, then let entry join the current authority read without
+      // cancelling that read or another workspace's resources.
+      resetAppLocalResources(scope);
+      window.dispatchEvent(new CustomEvent("reylumi:app-local-scope-conflict", { detail: { reason: "stale-scope", status: 409, scope } }));
+      return;
+    }
+    if (error?.status === 401 || error?.status === 403 && name.startsWith("staff.")) { resetAppLocalResources(); window.dispatchEvent(new CustomEvent("reylumi:app-local-access-changed", { detail: { reason: "resource", status: error.status, scope } })); return; }
     if (error?.status === 403 || error?.status === 404) {
       cell.revision++;
       appLocalResourceCache.forget(cell.context);

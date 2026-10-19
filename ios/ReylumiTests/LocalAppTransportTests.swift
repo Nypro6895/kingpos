@@ -296,7 +296,7 @@ final class LocalAppTransportTests: XCTestCase {
             for _ in 0..<200 { if await http.reads == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
             try await http.releaseContext(status: status)
             do { _ = try await read.value; XCTFail("Unconfirmed or revoked authority cannot deliver a fresh private payload") }
-            catch { XCTAssertEqual((error as NSError).code, status == 503 ? 503 : 409) }
+            catch { XCTAssertEqual((error as NSError).code, status) }
             let saved = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: lease.scope)
             if status == 503 { XCTAssertNotNil(saved); XCTAssertEqual(resets, 0) }
             else { XCTAssertNil(saved); XCTAssertEqual(resets, 1) }
@@ -477,7 +477,7 @@ final class LocalAppTransportTests: XCTestCase {
         XCTAssertEqual(host?["scopeEpoch"] as? Int, transport.scopeEpoch)
         XCTAssertEqual(host?["nonce"] as? String, transport.nonce); XCTAssertEqual(host?["generation"] as? String, generation)
         do { _ = try previousDelivery.get(); XCTFail("A context rotation must still reject deliveries for the previous authority") }
-        catch { XCTAssertEqual((error as NSError).code, 409) }
+        catch { XCTAssertTrue(error is CancellationError) }
         let owner = await store.session(generation: generation, scope: AppLocalTestFixture.scope, authority: "owner")
         let staff = await store.session(generation: generation, scope: staffScope, authority: "staff")
         XCTAssertNotNil(owner); XCTAssertNotNil(staff)

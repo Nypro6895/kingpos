@@ -228,7 +228,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                         _ = try await self.transport.freshContext(path: self.webView.url?.path ?? self.startPath)
                         guard self.transport.backgroundDrainAllowed(scope) else { throw NSError(domain: "ReylumiLocalApp", code: 403) }
                         let snapshots = await ReylumiBackgroundSync.shared.drain(scope: scope)
-                        guard self.transport.scopeEpoch == epoch else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
+                        guard self.transport.scopeEpoch == epoch else { throw CancellationError() }
                         self.emit("reylumi:native-snapshots", ["scope": scope, "snapshots": snapshots]); result = ["ok": true]; break
                     }
                     if let scope = args["scope"] as? String, !scope.isEmpty, !(await self.transport.matchesCachedScope(scope)) { throw NSError(domain: "ReylumiLocalApp", code: 403) }
@@ -241,12 +241,13 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                     self.onOpenOnline?(path); result = ["ok": true]
                 default: throw NSError(domain: "ReylumiLocalApp", code: 400)
                 }
-                guard kind == "context" || acknowledgedLogout || kind == "cache" && name == "portable.lock" || self.transport.scopeEpoch == epoch, !Task.isCancelled else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
+                guard kind == "context" || acknowledgedLogout || kind == "cache" && name == "portable.lock" || self.transport.scopeEpoch == epoch, !Task.isCancelled else { throw CancellationError() }
                 replyHandler(result, nil)
             } catch {
                 let cancelled = error is CancellationError || (error as NSError).code == NSURLErrorCancelled
                 let message = cancelled ? (kind == "command" ? "The result could not be confirmed. Check the latest record before making another change." : "This request was superseded. Please try again.") : error.localizedDescription
-                replyHandler(["__hostError": ["status": cancelled ? NSURLErrorCancelled : (error as NSError).code, "message": message, "reason": cancelled ? "cancelled" : "unknown"]], nil)
+                let reason = (error as NSError).userInfo["reason"] as? String
+                replyHandler(["__hostError": ["status": cancelled ? NSURLErrorCancelled : (error as NSError).code, "message": message, "reason": cancelled ? "cancelled" : reason == "stale-scope" ? "stale-scope" : "unknown"]], nil)
             }
         }
         pending[id] = (kind, task)

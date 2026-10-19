@@ -34,6 +34,20 @@ const replacements={
 };
 const mock=(path,names)=>replacements[path]??names.map(name=>`export const ${name}=${name.startsWith('getAppLocal')?'()=>null':['clearExperienceSnapshots','acceptExperienceOfflineGrant'].includes(name)?'async()=>{}':name.startsWith('install')?'()=>()=>{}':'()=>null'};`).join('\n');
 const compiled=new Map();
+
+test('a stale Staff read during a committed Owner gesture cannot restart Staff or cancel destination admission', { skip, timeout: 20000 }, async () => {
+ const app=await fixture({acknowledgedSwitch:true,scopeConflictBeforeReply:true,nativeEventBeforeReply:true});
+ try{
+  await app.page.locator('[data-private-page][data-role="staff"]:visible').waitFor();
+  await app.page.evaluate(()=>window.fixtureSwitch('owner'));
+  await app.page.locator('[data-private-page][data-role="owner"]:visible').waitFor();
+  const observed=await app.page.evaluate(()=>window.fixtureStats);
+  assert.equal(observed.commands,1);
+  assert.deepEqual(observed.calls.map(x=>x.path),['/staff/my-work','/staff/today']);
+  assert.equal(observed.aborted,0);
+  assert.equal(await app.page.locator('[data-context-failure]').count(),0);
+ }finally{await app.close();}
+});
 async function compile(realPolicy=false){
  if(!compiled.has(realPolicy))compiled.set(realPolicy,build({stdin:{contents:entry+`\nimport{navigateToWorkspace,completeWorkspaceHandoff}from'./lib/app-local-shell-workspace-navigation';window.fixtureSwitch=role=>navigateToWorkspace(role+'-space');window.fixtureHandoff=completeWorkspaceHandoff;`,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',define:{'process.env.NODE_ENV':'"production"'},alias:{'@':process.cwd()},plugins:[{name:'workspace-fixture-boundaries',setup(b){
   for(const[path]of imports){if(realPolicy&&path==='@/lib/experience-offline-policy')continue;b.onResolve({filter:new RegExp('^'+path.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$')},()=>({path,namespace:'fixture'}));}
@@ -45,12 +59,12 @@ async function compile(realPolicy=false){
 }
 async function fixture(options={}){
  const built=await compile(Boolean(options.realPolicy));
- const setup=`window.fixtureOptions=${JSON.stringify(options)};window.fixtureStats={calls:[],commands:0,resets:0,aborted:0,errors:[],activeReads:0,contextEvents:0,replyPaths:[],ordering:[]};window.fixtureServerRole=window.fixtureOptions.initialRole||'staff';window.fixtureHeld=[];
+ const setup=`window.fixtureOptions=${JSON.stringify(options)};window.fixtureStats={calls:[],commands:0,commandReplies:0,resets:0,aborted:0,errors:[],activeReads:0,contextEvents:0,replyPaths:[],ordering:[]};window.fixtureServerRole=window.fixtureOptions.initialRole||'staff';window.fixtureHeld=[];
  window.__reylumiAppLocalContext={generation:'synthetic-generation-20261018',scopeEpoch:1,nonce:'fixture'};
  window.addEventListener('reylumi:app-local-workspace-error',e=>window.fixtureStats.errors.push(e.detail));
  window.fixtureDispatchResolve=(detail={})=>window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-resolve',{detail:{generation:window.__reylumiAppLocalContext.generation,...detail}}));
  window.fixtureNavigate=p=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path:p}}));
- window.fixtureHost={isNative:true,cache:async()=>null,openOnline:async()=>{throw Error('External navigation blocked')},command:async(name,args)=>{window.fixtureStats.commands++;if(!window.fixtureOptions.failBeforeWrite)window.fixtureServerRole=args.workspaceId.startsWith('owner')?'owner':'staff';if(window.fixtureOptions.resetBeforeReply){window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'context',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}}));}if(window.fixtureOptions.acknowledgedSwitch)return{path:window.fixtureServerRole==='owner'?'/staff/today':'/staff/my-work'};throw Object.assign(Error('Synthetic unconfirmed reply'),{status:503});},context:async(path,request)=>{
+ window.fixtureHost={isNative:true,cache:async()=>null,openOnline:async()=>{throw Error('External navigation blocked')},command:async(name,args)=>{window.fixtureStats.commands++;if(!window.fixtureOptions.failBeforeWrite)window.fixtureServerRole=args.workspaceId.startsWith('owner')?'owner':'staff';if(window.fixtureOptions.scopeConflictBeforeReply)window.dispatchEvent(new CustomEvent('reylumi:app-local-scope-conflict',{detail:{scope:'v3:'+'b'.repeat(64),status:409,reason:'stale-scope'}}));if(window.fixtureOptions.resetBeforeReply){window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'context',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}}));}if(window.fixtureOptions.holdCommandReply)await new Promise(resolve=>{window.fixtureReleaseCommand=resolve;});window.fixtureStats.commandReplies++;if(window.fixtureOptions.acknowledgedSwitch)return{path:window.fixtureServerRole==='owner'?'/staff/today':'/staff/my-work'};throw Object.assign(Error('Synthetic unconfirmed reply'),{status:503});},context:async(path,request)=>{
  window.fixtureStats.calls.push({path,fresh:Boolean(request.fresh)});
  const role=path==='/'?window.fixtureServerRole:path==='/staff/today'?'owner':path==='/my-place'?'customer':'staff',scope='v3:'+(role==='owner'?'a':'b').repeat(64),generation=window.__reylumiAppLocalContext.generation;
  const make=()=>{const now=Date.now(),viewer=window.fixtureOptions.realPolicy?'00000000-0000-4000-8000-000000000001':'fixture-viewer',salon=window.fixtureOptions.realPolicy?'00000000-0000-4000-8000-000000000002':'fixture-salon';return{schemaVersion:1,contextPath:path,host:{...window.__reylumiAppLocalContext},context:{scope,authenticated:true,viewerId:window.fixtureOptions.otherViewer&&path==='/'?'other-viewer':viewer,workspaceId:role+'-space',salonId:salon,permissionRevision:role},grant:window.fixtureOptions.explicitGrantStatus?null:{version:1,scope,scopes:[scope],viewerId:viewer,workspaceId:role+'-space',salonId:salon,generation,issuedAt:now-1000,expiresAt:now+3600000,path:role==='owner'?'/staff/today':role==='customer'?'/my-place':'/staff/my-work',grantRevision:role,kind:role,...(role==='staff'?{staffBinding:{version:1,staffId:'00000000-0000-4000-8000-000000000003',viewerId:viewer,salonId:salon,revision:'00000000-0000-4000-8000-000000000004',approvedAt:new Date(now-10000).toISOString()}}:{})},grantStatus:window.fixtureOptions.explicitGrantStatus||200,onlineValidatedAt:now,offline:false,home:window.fixtureOptions.unsafeHome&&path==='/'?'https://outside.invalid/':role==='owner'?'/staff/today':role==='customer'?'/my-place':'/staff/my-work',display:{role},access:{ownerWorkspace:role==='owner',staffWorkspace:role==='staff'}};};
@@ -69,6 +83,34 @@ async function fixture(options={}){
   return{page,async close(){await browser.close();await new Promise(resolve=>server.close(resolve));assert.deepEqual(errors,[]);}};
  }catch(e){await browser?.close();await new Promise(resolve=>server.close(resolve));throw e;}
 }
+
+test('user navigation away cancels ownership of a late workspace acknowledgment, including navigation back to the same route',{skip,timeout:45000},async()=>{
+ for(const initialRole of ['staff','owner'])for(const acknowledgedSwitch of [true,false])for(const returnToOrigin of [false,true]){
+  const origin=initialRole==='owner'?'/staff/today':'/staff/my-work';
+  const targetRole=initialRole==='owner'?'staff':'owner';
+  const scenario=JSON.stringify({initialRole,acknowledgedSwitch,returnToOrigin});
+  const a=await fixture({initialRole,startPath:origin,acknowledgedSwitch,holdCommandReply:true,realPolicy:true});try{
+   await a.page.evaluate(role=>window.fixtureSwitch(role),targetRole);
+   await a.page.waitForFunction(()=>typeof window.fixtureReleaseCommand==='function');
+   await a.page.evaluate(()=>window.fixtureNavigate('/help'));
+   await a.page.waitForFunction(()=>location.pathname==='/help');
+   assert.equal(await a.page.locator('[data-private-page]:visible').count(),0);
+   if(returnToOrigin){
+    await a.page.evaluate(path=>window.fixtureNavigate(path),origin);
+    await a.page.locator('[data-private-page][data-role="'+initialRole+'"]:visible').waitFor();
+    await a.page.waitForFunction(()=>window.fixtureStats.activeReads===0);
+   }
+   const before=await a.page.evaluate(()=>window.fixtureStats.calls.length);
+   await a.page.evaluate(async()=>{window.fixtureReleaseCommand();for(let i=0;i<12;i++)await Promise.resolve();});
+   await a.page.waitForFunction(()=>window.fixtureStats.commandReplies===1&&window.fixtureStats.activeReads===0);
+   assert.equal(await a.page.evaluate(()=>location.pathname),returnToOrigin?origin:'/help',scenario);
+   assert.equal(await a.page.locator('[data-private-page][data-role="'+targetRole+'"]:visible').count(),0,scenario);
+   const stats=await a.page.evaluate(()=>window.fixtureStats);
+   assert.equal(stats.commands,1,'navigation cancellation cannot replay a committed workspace write');
+   assert.equal(stats.calls.length,before,'late ACK cannot start destination admission after its gesture was cancelled: '+scenario);
+  }finally{await a.close();}
+ }
+});
 
 test('lost workspace acknowledgments recover through neutral state for twenty round trips in each direction, one write each',{skip,timeout:60000},async()=>{
  const a=await fixture();try{

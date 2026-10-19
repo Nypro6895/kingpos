@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "148f53dba33625ff1e46259964e0308c45fac843a89127a028b42dc8dac3a6d9",
+  "buildId": "19dfbb58057a32979ba9da638f28cfbcf6d7c2215587617b288edefabf22c4a0",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -23,8 +23,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 4233875,
-      "sha256": "c923083ad62cbffadabc4aea51f7a072d819993f80778061e79fe501bba33cf4",
+      "bytes": 4237400,
+      "sha256": "369809f13c5e02f4821563c3f5c99ec4c3638db680b72e08cd2f7b0cbb93e645",
       "mime": "text/javascript"
     },
     {

@@ -16,6 +16,7 @@
         error.reason = reply.__hostError.reason;
         error.name = 'AbortError';
       }
+      if (reply.__hostError.reason === 'stale-scope') error.reason = 'stale-scope';
       throw error;
     }
     // Adopt native metadata before resolving a context promise. The parallel

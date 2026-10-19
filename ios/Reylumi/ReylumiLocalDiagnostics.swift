@@ -21,7 +21,7 @@ final class ReylumiLocalDiagnostics {
     enum Outcome: String, Codable { case started, completed, hit, miss, joined, accepted, failed, cancelled, invalidated, available, missing }
     enum Reason: String, Codable {
         case externalCookies, staleCookies, unauthenticated, displayDenied, workspaceChanged, contextChanged
-        case leaseUnavailable, signOut, explicitReset, cancelled, invalidEnvelope, unknown
+        case leaseUnavailable, signOut, explicitReset, cancelled, invalidEnvelope, unknown, scopeConflict
     }
     enum Stage: String, Codable, CaseIterable {
         case auth, validate, lease, load, serialize, total

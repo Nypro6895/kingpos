@@ -62,6 +62,8 @@ final class ReylumiLocalAppTransport {
     private var freshContextTask: Task<[String: Any], Error>?
     private var freshContextID: UUID?
     private var freshContextPath: String?
+    private var scopeConflictRevision = 0
+    private var pendingScopeConflicts: [String: Int] = [:]
     private var commandIDs = Set<String>()
     private var workspaceCommandID: String?
     private struct CookieSnapshot {
@@ -94,7 +96,11 @@ final class ReylumiLocalAppTransport {
         }
     }
     var metadata: [String: Any] { ["version": 1, "nonce": nonce, "scopeEpoch": scopeEpoch, "generation": generation] }
-    private func failure(_ status: Int, _ message: String) -> NSError { NSError(domain: "ReylumiLocalApp", code: status, userInfo: [NSLocalizedDescriptionKey: message]) }
+    private func failure(_ status: Int, _ message: String, reason: String? = nil) -> NSError {
+        var detail: [String: Any] = [NSLocalizedDescriptionKey: message]
+        if let reason { detail["reason"] = reason }
+        return NSError(domain: "ReylumiLocalApp", code: status, userInfo: detail)
+    }
     private func cookieKey(_ cookie: HTTPCookie) -> String {
         [cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased(), cookie.path, cookie.name].joined(separator: "\u{0}")
     }
@@ -183,6 +189,7 @@ final class ReylumiLocalAppTransport {
         scopeEpoch += 1; nonce = UUID().uuidString
         if rotateGeneration { generation = UUID().uuidString; defaults.set(generation, forKey: generationKey) }
         freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
+        pendingScopeConflicts.removeAll()
         session = nil; loadedSession = true; onlineContext = nil; onlineCheckedAt = .distantPast
         ReylumiBackgroundSync.shared.clear()
         var detail = metadata
@@ -243,9 +250,9 @@ final class ReylumiLocalAppTransport {
               ReylumiLocalSession.verified(value, generation: generation) != nil else { throw failure(403, "Please reconnect and check your access.") }
     }
     private func ensureCurrent(_ epoch: Int) throws {
-        guard scopeEpoch == epoch else { throw failure(409, "Your access has changed. Please try again.") }
         // Leaving a page cancels a read; it does not revoke the account.
         try Task.checkCancellation()
+        guard scopeEpoch == epoch else { throw CancellationError() }
     }
     func matchesCachedScope(_ scope: String) async -> Bool { await store.session(generation: generation, scope: scope) != nil }
     func invalidatePage() { diagnostics.record(.pageInvalidate, category: .context, outcome: .invalidated); scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
@@ -260,6 +267,24 @@ final class ReylumiLocalAppTransport {
         }
         if staffFamily { await store.revoke(scope: nil, authority: "staff") }
         else if let scope { await store.revoke(scope: scope) }
+    }
+    private func withdrawConflictingScope(_ scope: String?, epoch: Int) async throws {
+        try ensureCurrent(epoch)
+        guard let scope else { return }
+        scopeConflictRevision += 1
+        if freshContextID != nil { pendingScopeConflicts[scope] = scopeConflictRevision }
+        // A read used an obsolete fingerprint. Withdraw that display/cache, but
+        // keep the in-flight current-route authority check alive. Rotating its
+        // epoch here would turn the following valid context response into a
+        // second, locally invented workspace denial.
+        if session?.scope == scope { session = nil }
+        if ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) == scope {
+            onlineContext = nil; onlineCheckedAt = .distantPast
+        }
+        await store.revoke(scope: scope)
+        try ensureCurrent(epoch)
+        diagnostics.record(.displayRevoke, category: .context, outcome: .invalidated, status: 409, reason: .scopeConflict)
+        onEvent?("reylumi:app-local-scope-conflict", metadata.merging(["scope": scope, "status": 409, "reason": "stale-scope"]) { _, new in new })
     }
     private func send(path: String, query: [URLQueryItem] = [], body: [String: Any]? = nil, etag: String? = nil, epoch: Int, trace: ReylumiLocalDiagnostics.RequestTrace? = nil) async throws -> (Data, HTTPURLResponse) {
         try ensureCurrent(epoch)
@@ -323,6 +348,10 @@ final class ReylumiLocalAppTransport {
         return [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0)
             || object["offlineState"] as? String == "unconfirmed"
     }
+    private func ensureContextCurrent(epoch: Int, scope: String, conflictRevision: Int) throws {
+        try ensureCurrent(epoch)
+        guard (pendingScopeConflicts[scope] ?? 0) <= conflictRevision else { throw CancellationError() }
+    }
     private func decode(_ data: Data, response: HTTPURLResponse) throws -> [String: Any] {
         guard response.statusCode == 200, response.mimeType?.lowercased() == "application/json",
               let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw failure(response.statusCode, "Couldn't read this page. Please try again.") }
@@ -337,7 +366,7 @@ final class ReylumiLocalAppTransport {
         // One in-flight context is authoritative for the current route family.
         // A staff request must never receive an unrelated owner context result.
         freshContextTask?.cancel()
-        let epoch = scopeEpoch, expectedGeneration = generation, requestID = UUID()
+        let epoch = scopeEpoch, expectedGeneration = generation, requestID = UUID(), conflictRevision = scopeConflictRevision
         freshContextID = requestID; freshContextPath = path
         let task = Task { @MainActor [weak self] () throws -> [String: Any] in
             guard let self else { throw CancellationError() }
@@ -349,13 +378,18 @@ final class ReylumiLocalAppTransport {
             }
             var object = try self.decode(data, response: response)
             guard object["schemaVersion"] as? Int == 1, let context = object["context"] as? [String: Any], let scope = context["scope"] as? String else { throw self.failure(502, "App access could not be checked.") }
+            // This flight can outlive a read's discovery that its exact scope
+            // was obsolete. Its pre-conflict snapshot cannot reauthorize that
+            // scope; only a GET started after withdrawal can do so. A different
+            // current scope remains eligible for normal authority validation.
+            try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             object["contextPath"] = path
-            await self.loadSession(); try self.ensureCurrent(epoch)
+            await self.loadSession(); try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             let denied = [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0) || object["offlineState"] as? String == "unconfirmed"
             let next = denied ? nil : ReylumiLocalSession.verified(object, generation: expectedGeneration)
             self.diagnostics.record(.contextEnvelope, category: ReylumiLocalDiagnostics.category(path: path), outcome: next == nil ? .missing : .available, status: object["grantStatus"] as? Int)
             let stored = await self.store.session(generation: expectedGeneration)
-            try self.ensureCurrent(epoch)
+            try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             let previous = self.session ?? stored
             let reference = (previous?.object["context"] as? [String: Any]) ?? (self.onlineContext?["context"] as? [String: Any])
             let viewer = context["viewerId"] as? String
@@ -374,7 +408,7 @@ final class ReylumiLocalAppTransport {
             let priorAuthority: ReylumiLocalSession?
             if let next { priorAuthority = await self.store.session(generation: expectedGeneration, scope: scope, authority: next.authority) }
             else { priorAuthority = nil }
-            try self.ensureCurrent(epoch)
+            try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             let authorityChanged = next != nil && priorAuthority != nil && next?.grantRevision != priorAuthority?.grantRevision
             let additive = previous != nil && next != nil && self.additiveAuthority(previous!, next!) && !authorityChanged
             let leaseChanged = previous != nil && !additive && (viewerChanged || previous?.scope != scope || next?.grantRevision != previous?.grantRevision || previous?.authority != next?.authority)
@@ -389,7 +423,7 @@ final class ReylumiLocalAppTransport {
             }
             let acceptedEpoch = self.scopeEpoch
             if viewerChanged { await self.store.clear(); ReylumiBackgroundSync.shared.clear() }
-            try self.ensureCurrent(acceptedEpoch)
+            try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
             self.session = next ?? (onlineOnly && unchanged && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
             self.onlineContext = denied ? nil : object
             self.onlineCheckedAt = denied ? .distantPast : Date()
@@ -408,7 +442,7 @@ final class ReylumiLocalAppTransport {
                reference["salonId"] as? String == context["salonId"] as? String {
                 await self.store.revoke(scope: oldScope)
             }
-            try self.ensureCurrent(acceptedEpoch)
+            try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
             object["host"] = self.metadata; object["offline"] = false
             self.onEvent?("reylumi:app-local-context", object)
             // Delivery is not the React entry's admission decision. The
@@ -417,7 +451,7 @@ final class ReylumiLocalAppTransport {
             return object
         }
         freshContextTask = task
-        defer { if freshContextID == requestID { freshContextTask = nil; freshContextID = nil; freshContextPath = nil } }
+        defer { if freshContextID == requestID { freshContextTask = nil; freshContextID = nil; freshContextPath = nil; pendingScopeConflicts.removeAll() } }
         do { return try await task.value }
         catch {
             diagnostics.record(.contextFailure, category: ReylumiLocalDiagnostics.category(path: path), outcome: Task.isCancelled || error is CancellationError ? .cancelled : .failed, status: (error as NSError).code)
@@ -560,8 +594,8 @@ final class ReylumiLocalAppTransport {
                 throw failure(403, "This view is no longer available. Please check your access.")
             }
             if response.statusCode == 409 {
-                await revokeDisplay(scope: requestedScope ?? session?.scope, staffFamily: name.hasPrefix("staff."), status: response.statusCode)
-                throw failure(response.statusCode, "Please reconnect and check your access.")
+                try await withdrawConflictingScope(requestedScope ?? session?.scope, epoch: epoch)
+                throw failure(409, "Your workspace needs to be checked again.", reason: "stale-scope")
             }
             if response.statusCode == 304 {
                 let scope = response.value(forHTTPHeaderField: "x-reylumi-scope") ?? requestedScope ?? session?.scope ?? ""
@@ -612,6 +646,8 @@ final class ReylumiLocalAppTransport {
             do { _ = try await pending.value }
             catch {
                 diagnostics.record(.contextBarrierEnd, category: .read, outcome: .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
+                let denied = error as NSError
+                if denied.domain == "ReylumiLocalApp", [401, 403, 409].contains(denied.code) { throw error }
                 try ensureCurrent(epoch)
                 if error is CancellationError { throw error }
                 throw failure(503, "Please reconnect to update this page.")

@@ -75,6 +75,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Salon Settings": "Cài đặt tiệm", "Point of sale": "Bán hàng", "POS Tickets": "Phiếu bán hàng",
   "POS settings": "Cài đặt bán hàng", "POS Settings": "Cài đặt bán hàng",
   "Sign out": "Đăng xuất", "Switch workspace": "Chuyển không gian làm việc",
+  "Continue as guest": "Tiếp tục với chế độ khách",
   Save: "Lưu", "Save changes": "Lưu thay đổi", Cancel: "Hủy", Close: "Đóng",
   Edit: "Chỉnh sửa", Delete: "Xóa", Remove: "Gỡ bỏ", Add: "Thêm", Search: "Tìm kiếm",
   "Search customers": "Tìm khách hàng", "Search staff": "Tìm nhân viên",

@@ -10,7 +10,7 @@ const deferred = () => { let resolve, reject; const promise = new Promise((yes, 
 function fixture(plan) {
   const window = new EventTarget(), location = { pathname: '/staff/today', search: '' }, events = [], calls = [];
   window.__reylumiAppLocalContext = { generation: 'read-cancellation-fixture', scopeEpoch: 1 };
-  for (const name of ['reylumi:app-local-reset', 'reylumi:app-local-access-changed']) window.addEventListener(name, () => events.push(name));
+  for (const name of ['reylumi:app-local-reset', 'reylumi:app-local-access-changed', 'reylumi:app-local-scope-conflict']) window.addEventListener(name, () => events.push(name));
   const load = (file, dependencies = {}, source = readFileSync(file, 'utf8')) => {
     const exports = {}, code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
     new Function('require', 'exports', 'window', 'navigator', 'document', 'location', code)(name => { assert.ok(name in dependencies, file + ': ' + name); return dependencies[name]; }, exports, window, { onLine: true }, { visibilityState: 'visible' }, location);
@@ -76,4 +76,31 @@ test('confirmed feature403 still withdraws its old DTO and is never treated as c
   const f = fixture(() => Promise.reject(Object.assign(new Error('Denied'), { status: 403 })));
   f.seedAppLocalResource(scope, f.name, f.args, reply({ staff: ['old'] })); await f.refresh();
   assert.equal(f.calls.length, 1); assert.equal(f.state().data, undefined); assert.equal(f.state().accessDenied, true);
+});
+
+test('stale409 withdraws only its scope and requests context reconciliation without resetting another scope', async () => {
+  const f = fixture(() => Promise.reject(Object.assign(new Error('Stale scope'), { status: 409 })));
+  const other = 'v3:' + 'b'.repeat(64);
+  f.seedAppLocalResource(scope, f.name, f.args, reply({ staff: ['old'] }));
+  f.seedAppLocalResource(other, 'shell.navigation', {}, { ...reply({ menu: ['current'] }), scope: other });
+  await f.refresh();
+  assert.equal(f.state().data, undefined);
+  assert.deepEqual(f.useAppLocalResource(other, 'shell.navigation', {}).data, { menu: ['current'] });
+  assert.deepEqual(f.events, ['reylumi:app-local-scope-conflict']);
+  assert.equal(f.calls.length, 1, 'scope recovery belongs to entry, not an automatic data retry');
+});
+
+test('scoped withdrawal fences a delayed old writer without aborting another scope read', async () => {
+  const old = deferred(), otherRead = deferred(), f = fixture(n => n === 1 ? old.promise : otherRead.promise);
+  const other = 'v3:' + 'b'.repeat(64);
+  const first = f.refresh(), second = f.refreshAppLocalResource(other, 'shell.navigation', {});
+  await tick();
+  f.resetAppLocalResources(scope);
+  assert.equal(f.calls[0].options.signal.aborted, true);
+  assert.equal(f.calls[1].options.signal.aborted, false);
+  old.resolve(reply({ staff: ['must-not-return'] }));
+  otherRead.resolve({ ...reply({ menu: ['current'] }), scope: other });
+  await Promise.all([first, second]);
+  assert.equal(f.state().data, undefined);
+  assert.deepEqual(f.useAppLocalResource(other, 'shell.navigation', {}).data, { menu: ['current'] });
 });
