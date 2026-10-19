@@ -5,9 +5,8 @@ import { CompactFilters } from "@/components/compact-filters";
 
 import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import { SubmitButton as PendingSubmitButton } from "@/components/submit-button";
-import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { AdminNavigation } from "./admin-navigation";
 import { AdminTopbar } from "./admin-topbar";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
@@ -50,15 +49,17 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 ];
 
 function AdminBrandLogo({ className }: { className: string }) {
+  const filterId = useId().replaceAll(":", "");
   return (
-    <Image
-      aria-hidden="true"
-      alt=""
-      className={["h-auto object-contain", className].join(" ")}
-      height={419}
-      src="/brand/reylumi-logo-horizontal.png"
-      width={1527}
-    />
+    <svg aria-hidden="true" className={["h-auto object-contain", className].join(" ")} viewBox="0 0 1527 419" width={1527} height={419}>
+      <defs>
+        <filter id={filterId} colorInterpolationFilters="sRGB">
+          {/* Recolor the existing artwork, preserving its white detail and alpha. */}
+          <feColorMatrix type="matrix" values="1.26502674 -0.95561497 0.69058824 0 0 1.18716578 -2.80481283 2.61764706 0 0 1.18716578 -2.80481283 2.61764706 0 0 0 0 0 1 0" />
+        </filter>
+      </defs>
+      <image href="/brand/reylumi-logo-horizontal.png" width={1527} height={419} filter={`url(#${filterId})`} />
+    </svg>
   );
 }
 

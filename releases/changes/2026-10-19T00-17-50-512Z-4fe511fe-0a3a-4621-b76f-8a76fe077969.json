@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "admin-logo-colors-20261018",
+  "status": "working",
+  "summary": "Preserve shipped admin logo artwork and recolor REY red, LUMI black on desktop/mobile",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-ui.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos/artifacts/admin-logo-live-20261018/frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Production baseline integration",
+      "result": "pending"
+    }
+  ],
+  "id": "4fe511fe-0a3a-4621-b76f-8a76fe077969",
+  "recordedAt": "2026-10-19T00:17:50.512Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "admin-logo-colors-20261018",
+  "status": "ready",
+  "summary": "Preserve shipped admin logo artwork and recolor REY red, LUMI black on desktop/mobile",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-ui.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\admin-logo-live-20261018\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "ESLint admin component",
+      "result": "passed"
+    },
+    {
+      "name": "Browser logo preview preserves artwork with red REY and black LUMI",
+      "result": "passed",
+      "evidence": "artifacts/admin-logo-live-20261018/logo-preview.png"
+    }
+  ],
+  "supersedesEvents": [
+    "2e4e5e20-ea98-4274-9bdf-8374ccfb0630"
+  ],
+  "id": "b50b1694-077f-4feb-92c1-a86f200d28e0",
+  "recordedAt": "2026-10-19T00:20:12.913Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/admin/_components/admin-ui.tsx": "6f19b278d713cf5871130ab7f99406640093c5d4be5b58e0b5e710695eb5374f"
+  }
+}
