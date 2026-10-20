@@ -312,7 +312,8 @@ final class StaffOnlineAccessTransportTests: XCTestCase {
             try await Task.sleep(nanoseconds: 50_000_000)
         }
         let ready = try await web.evaluateJavaScript("window.fixtureLocal===true") as? Bool; XCTAssertEqual(ready, true)
-        let result = try await web.callAsyncJavaScript("""
+        let result = try await evaluateAsync("""
+            (async () => {
             let calls=0;
             const request = (op, scope) => window.__reylumiAppLocalTransport.request({id:'00000000-0000-4000-8000-'+String(++calls).padStart(12,'0'),kind:'cache',name:'staff.my-work',args:{op,scope,arguments:{date:'today'}}});
             let getDenied=false, wrongDenied=false;
@@ -320,11 +321,31 @@ final class StaffOnlineAccessTransportTests: XCTestCase {
             const removal=await request('remove', '\(scope)');
             try { await request('remove', '\(otherScope)'); } catch (error) { wrongDenied=error.status===403; }
             return getDenied && removal.ok===true && wrongDenied;
-            """, arguments: [:], in: nil, in: .page) as? Bool
+            })()
+            """, in: web) as? Bool
         XCTAssertEqual(result, true)
         let reads = await http.reads, commands = await http.commands
         XCTAssertEqual(reads, 0, "Cache eviction never issues a named read"); XCTAssertTrue(commands.isEmpty)
         await transport.reset()
+    }
+
+    @MainActor
+    private func evaluateAsync(_ source: String, in web: WKWebView) async throws -> Any? {
+        // Match the installed-app tests: await the actual bridge Promise through
+        // an Objective-C result slot, without the Swift WebKit overlay that is
+        // absent from the supported iOS 18 Simulator runtime.
+        let key = "__staffOnlineTestResult" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        let operation = "Promise.race([(\(source)),new Promise((_,reject)=>setTimeout(()=>reject(Error('Staff cache bridge timed out')),12000))])"
+        _ = try await web.evaluateJavaScript("window.\(key)={done:false};Promise.resolve().then(()=>\(operation)).then(value=>window.\(key)={done:true,value},error=>window.\(key)={done:true,error:String(error?.message??error)});true")
+        defer { web.evaluateJavaScript("delete window.\(key)", completionHandler: nil) }
+        for _ in 0..<700 {
+            if let result = try await web.evaluateJavaScript("window.\(key)") as? [String: Any], result["done"] as? Bool == true {
+                if let message = result["error"] as? String { throw NSError(domain: "StaffOnlineCacheBridge", code: 1, userInfo: [NSLocalizedDescriptionKey: message]) }
+                return result["value"]
+            }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        throw URLError(.timedOut)
     }
 
     func testPinnedStaffActionIDsExistInActuallyInstalledManifest() throws {
