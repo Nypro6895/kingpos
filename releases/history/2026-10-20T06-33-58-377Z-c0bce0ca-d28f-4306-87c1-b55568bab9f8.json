@@ -1,0 +1,69 @@
+{
+  "kind": "release",
+  "summary": "Restore strictly verified Staff online access without offline approval; publish validated web source and matching application runtime in an iOS build with its test-only compatibility correction.",
+  "changes": [
+    "a43f5a86-ab3f-46d1-95f4-8b75d470ada4"
+  ],
+  "source": {
+    "commit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020\\frozen-3b7704b-raw",
+    "validatedFunctionalCommit": "e2fa5a6b79fb858676b122288ab02a48933520d9",
+    "sourceSha256": "af2348f393d25670908280ff996a263cef4a2ec56eda0737aa1f4ded33eadd1d",
+    "overlaySha256": "1a249e4dac3f9a9d22f2598ada382b521be0842741b2102502ecdef48ae9e9a8",
+    "selectedEvent": "a43f5a86-ab3f-46d1-95f4-8b75d470ada4",
+    "supersededEvents": [
+      "cf8e5b16-48af-460f-a334-4f540b20c1a5"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+      "baselineDeploymentId": "dpl_8WAtkiDcwFY2tx9q3wNJMtK97YdJ",
+      "sourceSha256": "af2348f393d25670908280ff996a263cef4a2ec56eda0737aa1f4ded33eadd1d",
+      "overlaySha256": "1a249e4dac3f9a9d22f2598ada382b521be0842741b2102502ecdef48ae9e9a8",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/release-manifest.json"
+    }
+  },
+  "baseline": {
+    "webDeploymentId": "dpl_8WAtkiDcwFY2tx9q3wNJMtK97YdJ",
+    "webCommit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+    "native": {
+      "version": "1.0.0",
+      "build": "43",
+      "commit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/native-release-verification.json"
+    }
+  },
+  "verification": {
+    "canonical": {
+      "total": 306,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "unit": 130,
+      "chromium": 88,
+      "webkit": 88
+    },
+    "candidateReadyAndEverySourceHashMatched": true,
+    "liveAliasAndEverySourceHashMatched": true,
+    "authenticatedOwnerReadNavigationPassed": false,
+    "authenticatedOwnerReadNavigationStatus": "not-run-no-existing-authenticated-browser"
+  },
+  "limitations": [
+    "Physical-iPhone Staff behavior after installing this build is not yet verified; authenticated live Staff data was not exercised by guest smoke.",
+    "Existing authenticated Owner live read navigation was not exercised: after-promotion CUA and Windows inventory showed no available existing browser. No login, credential entry, role change, account creation or business action was attempted. Guest/canonical/native evidence does not substitute for this unrun check.",
+    "Missing attestation alone can permit only fresh strictly verified online Staff presentation; revoked/mismatched/malformed/ambiguous identity remains denied. No historical link was approved or backfilled.",
+    "The initial nested-worktree production build failed and is retained separately; it is not counted as success. The exact cause was not proven; the canonical isolated raw-source build passed.",
+    "The separate generic503/no-lease Owner cache-removal edge remains outside this Staff-specific correction.",
+    "Native archive/resource receipts and three package-copy attestations are verified; unavailable archive folders were not independently inspected.",
+    "Two native attempts remain failed evidence: the first could not load its test bundle because of an unavailable Swift WebKit overlay (zero tests); the second executed167 tests with166 passed methods and one method/two failed assertions because its negative fixture used an explicitly allowed read action. Neither attempt signed/uploaded. Only test helpers/fixtures changed for the subsequent successful native source; web/native application runtime stayed byte-identical.",
+    "TestFlight availability is verified; this receipt does not claim App Store publication.",
+    "Candidate initial strict smoke remains failed (mobile cold Explore timeout and two hidden-post500s). Its sole full recheck remains failed due to one unclassified WebKit pageerror despite21 functional checks. Two strict Chromium contexts and three exact-fullflow WebKit diagnostic samples supplied bounded positive observations. The error causes remain unresolved; diagnostics retain healthVerdict:false and no historical attempt was relabeled passed."
+  ],
+  "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/release-manifest.json",
+  "id": "c0bce0ca-d28f-4306-87c1-b55568bab9f8",
+  "recordedAt": "2026-10-20T06:33:58.377Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020"
+}

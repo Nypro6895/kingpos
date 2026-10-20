@@ -1,0 +1,99 @@
+{
+  "kind": "release",
+  "summary": "Restore strictly verified Staff online access without offline approval; publish validated web source and matching application runtime in an iOS build with its test-only compatibility correction.",
+  "changes": [
+    "296c7cba-b111-4027-8dfc-9ff8c812c0ce"
+  ],
+  "source": {
+    "commit": "28def930df7719e07eec412cd501acc479df66ea",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020\\native-fixture-r2/frozen-28def93-raw",
+    "validatedFunctionalCommit": "67c6fdb2c8732f08d554c0adf6037ffe10d746e6",
+    "sourceSha256": "7dd3d494ac902e9bc10b51bd4860f190af4a1fa1e057a45193359bb239f1669a",
+    "overlaySha256": "3171aaebf1c082bed97fd59d7ac6448632b390fff53cb9bd20eeb927d77abade",
+    "selectedEvent": "296c7cba-b111-4027-8dfc-9ff8c812c0ce",
+    "supersededEvents": [
+      "77029247-00eb-4156-895f-ecd0e3374a0c"
+    ]
+  },
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "44",
+      "commit": "28def930df7719e07eec412cd501acc479df66ea",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/native-release-verification.json"
+    }
+  },
+  "baseline": {
+    "native": {
+      "version": "1.0.0",
+      "build": "43",
+      "commit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/native-release-verification.json"
+    }
+  },
+  "verification": {
+    "nativeTests": {
+      "total": 167,
+      "failed": 0,
+      "count": 167,
+      "failures": 0,
+      "skipped": 0,
+      "authLifecycleCases": 15,
+      "scopeConflictCases": 6,
+      "staffOnlineAccessCases": 9,
+      "commandDiagnosticTransportCases": 5,
+      "localDiagnosticCases": 8,
+      "cookieAuthorityCases": 12,
+      "fullResetContractCasePassed": true
+    },
+    "nativeSource": {
+      "sourceFiles": 407,
+      "matches": 407,
+      "mismatches": [],
+      "mapSha256": "4dddfe537064cb4ab1658fe13ad0dac01e4134bd047f3ed4a1073eb998d5247f"
+    },
+    "signedSource": {
+      "sourceFiles": 371,
+      "matches": 371,
+      "mismatches": [],
+      "mapSha256": "0298ffa0db6d24c21c104d125ba31d29e991654cfcc5bccd3992c74886d25c35"
+    },
+    "nativeBundle": {
+      "buildId": "66dcaabfa39ea2a2f2ad03d0680025d7084d4bab8058ceb2e4ba5a75c7e83f6e",
+      "resourceFiles": 345,
+      "hashFailures": [],
+      "copiedBundleAttestations": 3,
+      "copiedBundleAttestationsPassed": true,
+      "manifestSha256": "d423217e1af458f6457786f8c9c141efc91e3321d6d0ce2ad16b46a912bd239d"
+    },
+    "webApplicationRuntimeByteParity": true
+  },
+  "limitations": [
+    "Physical-iPhone Staff behavior after installing this build is not yet verified; authenticated live Staff data was not exercised by guest smoke.",
+    "Existing authenticated Owner live read navigation was not exercised: after-promotion CUA and Windows inventory showed no available existing browser. No login, credential entry, role change, account creation or business action was attempted. Guest/canonical/native evidence does not substitute for this unrun check.",
+    "Missing attestation alone can permit only fresh strictly verified online Staff presentation; revoked/mismatched/malformed/ambiguous identity remains denied. No historical link was approved or backfilled.",
+    "The initial nested-worktree production build failed and is retained separately; it is not counted as success. The exact cause was not proven; the canonical isolated raw-source build passed.",
+    "The separate generic503/no-lease Owner cache-removal edge remains outside this Staff-specific correction.",
+    "Native archive/resource receipts and three package-copy attestations are verified; unavailable archive folders were not independently inspected.",
+    "Two native attempts remain failed evidence: the first could not load its test bundle because of an unavailable Swift WebKit overlay (zero tests); the second executed167 tests with166 passed methods and one method/two failed assertions because its negative fixture used an explicitly allowed read action. Neither attempt signed/uploaded. Only test helpers/fixtures changed for the subsequent successful native source; web/native application runtime stayed byte-identical.",
+    "TestFlight availability is verified; this receipt does not claim App Store publication.",
+    "Candidate initial strict smoke remains failed (mobile cold Explore timeout and two hidden-post500s). Its sole full recheck remains failed due to one unclassified WebKit pageerror despite21 functional checks. Two strict Chromium contexts and three exact-fullflow WebKit diagnostic samples supplied bounded positive observations. The error causes remain unresolved; diagnostics retain healthVerdict:false and no historical attempt was relabeled passed."
+  ],
+  "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/release-manifest.json",
+  "linkedWebRelease": {
+    "eventId": "c0bce0ca-d28f-4306-87c1-b55568bab9f8",
+    "changes": [
+      "a43f5a86-ab3f-46d1-95f4-8b75d470ada4"
+    ],
+    "sourceCommit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+    "deploymentId": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+    "sourceSha256": "af2348f393d25670908280ff996a263cef4a2ec56eda0737aa1f4ded33eadd1d",
+    "receiptEvidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/web-release-receipt.json",
+    "receiptSha256": "cb40926bcaf3bf0dfe01393dab58af7d9f82f1318722b195f15ea680c51fedb3"
+  },
+  "id": "01358f99-831f-4c54-8292-31542f7b2564",
+  "recordedAt": "2026-10-20T06:34:03.265Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020"
+}

@@ -1,0 +1,474 @@
+{
+  "kind": "combined-release-receipt",
+  "releaseId": "staff-online-access-release-20261020",
+  "summary": "Restore strictly verified Staff online access without offline approval; publish validated web source and matching application runtime in an iOS build with its test-only compatibility correction.",
+  "channelEvents": {
+    "web": [
+      "a43f5a86-ab3f-46d1-95f4-8b75d470ada4"
+    ],
+    "ios": [
+      "296c7cba-b111-4027-8dfc-9ff8c812c0ce"
+    ]
+  },
+  "sources": {
+    "web": {
+      "commit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+      "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020\\frozen-3b7704b-raw",
+      "validatedFunctionalCommit": "e2fa5a6b79fb858676b122288ab02a48933520d9",
+      "sourceSha256": "af2348f393d25670908280ff996a263cef4a2ec56eda0737aa1f4ded33eadd1d",
+      "overlaySha256": "1a249e4dac3f9a9d22f2598ada382b521be0842741b2102502ecdef48ae9e9a8",
+      "selectedEvent": "a43f5a86-ab3f-46d1-95f4-8b75d470ada4",
+      "supersededEvents": [
+        "cf8e5b16-48af-460f-a334-4f540b20c1a5"
+      ]
+    },
+    "ios": {
+      "commit": "28def930df7719e07eec412cd501acc479df66ea",
+      "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020\\native-fixture-r2/frozen-28def93-raw",
+      "validatedFunctionalCommit": "67c6fdb2c8732f08d554c0adf6037ffe10d746e6",
+      "sourceSha256": "7dd3d494ac902e9bc10b51bd4860f190af4a1fa1e057a45193359bb239f1669a",
+      "overlaySha256": "3171aaebf1c082bed97fd59d7ac6448632b390fff53cb9bd20eeb927d77abade",
+      "selectedEvent": "296c7cba-b111-4027-8dfc-9ff8c812c0ce",
+      "supersededEvents": [
+        "77029247-00eb-4156-895f-ecd0e3374a0c"
+      ]
+    }
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+      "baselineDeploymentId": "dpl_8WAtkiDcwFY2tx9q3wNJMtK97YdJ",
+      "sourceSha256": "af2348f393d25670908280ff996a263cef4a2ec56eda0737aa1f4ded33eadd1d",
+      "overlaySha256": "1a249e4dac3f9a9d22f2598ada382b521be0842741b2102502ecdef48ae9e9a8",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/release-manifest.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "44",
+      "commit": "28def930df7719e07eec412cd501acc479df66ea",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/native-release-verification.json"
+    }
+  },
+  "baseline": {
+    "webDeploymentId": "dpl_8WAtkiDcwFY2tx9q3wNJMtK97YdJ",
+    "webCommit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+    "native": {
+      "version": "1.0.0",
+      "build": "43",
+      "commit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/native-release-verification.json"
+    }
+  },
+  "verification": {
+    "canonical": {
+      "total": 306,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "unit": 130,
+      "chromium": 88,
+      "webkit": 88
+    },
+    "canonicalSourceCommit": "e2fa5a6b79fb858676b122288ab02a48933520d9",
+    "canonicalRawSourcePassed": true,
+    "productionBuild": {
+      "startedAt": "2026-10-20T05:31:37.309Z",
+      "endedAt": "2026-10-20T05:37:23.808Z",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/with-app-local-public-config.mjs",
+        "production-check",
+        "C:/Users/giuse/kingpos"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "spawnError": false,
+      "passed": true,
+      "evidence": "canonical-production-build.log",
+      "sourceCommit": "e2fa5a6b79fb858676b122288ab02a48933520d9",
+      "sourceSha256": "f7e3c35a3af936935f0038ca57023aa315fe3c64e3c8686c2572da65e04bd0aa",
+      "inputBytesMatchRaw": true,
+      "inputFiles": 3107,
+      "mode": "production-check",
+      "typescriptPassed": true,
+      "staticPages": 238,
+      "inputEvidence": "canonical-source-before.json",
+      "generatedOutputRestoration": "canonical-generated-output-restoration.json",
+      "allRawFilesMatchAfterRestoration": true
+    },
+    "nativeRevisionCanonicalValidationInheritedByExactRuntimeParity": true,
+    "nativeRevisionWebAndApplicationRuntimeUnchanged": true,
+    "nativeRevisionOnlyChangedExistingFile": "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift",
+    "candidateReadyAndEverySourceHashMatched": true,
+    "liveAliasAndEverySourceHashMatched": true,
+    "actualObservedTodayAssetsAvailable": true,
+    "guestHTTPChecks": 15,
+    "guestBrowserContexts": null,
+    "guestBrowserAssessment": "bounded-composite-browser-assessment-v1",
+    "candidateBrowserEvidenceAssessment": {
+      "at": "2026-10-20T06:06:23.337Z",
+      "type": "bounded-composite-browser-assessment-v1",
+      "label": "candidate",
+      "origin": "https://kingpos-6og00ynon-kingpos.vercel.app",
+      "commit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+      "deploymentId": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+      "readyEvent": "a43f5a86-ab3f-46d1-95f4-8b75d470ada4",
+      "releaseGateAccepted": true,
+      "coordinatorAcceptedBoundedComposite": true,
+      "allBrowserAttemptsPassed": false,
+      "initialStrictPassed": false,
+      "fullRecheckStrictPassed": false,
+      "unclassifiedPageErrorCauseKnown": false,
+      "diagnosticHealthVerdictsReclassified": false,
+      "currentPositiveEvidence": {
+        "strictChromiumRecheckContexts": 2,
+        "checksPerContext": 7,
+        "exactFullflowWebKitDiagnosticSamples": 3,
+        "fullflowFunctionalObservations": 21,
+        "allSelectedPositiveObservationsNoPageErrorsOr500": true,
+        "fullflowPathsTimeoutsWaitsAndPassivePolicyExact": true,
+        "targetedWebKitSupportingSamples": 3
+      },
+      "retainedHistoricalObservations": {
+        "initial": {
+          "passed": false,
+          "mobileColdExploreTimeout": true,
+          "hiddenPost500Count": 2,
+          "hiddenReadDigest": "3086927446"
+        },
+        "fullRecheck": {
+          "passed": false,
+          "functionalChecksTrue": 21,
+          "unclassifiedWebkitPageError": {
+            "at": "2026-10-20T05:49:00.093Z",
+            "operation": "private-today-guest-guard",
+            "class": "browser-error",
+            "category": "unclassified",
+            "messageSha256": "de2f8211ba00dfbbb80945e725eb7117dd5005395ac4f28fe0237b70a43cc402",
+            "knownHiddenReadDigest": false,
+            "stackFrames": []
+          }
+        },
+        "causalConclusion": "Cause of the initial timeout/server errors and the singleton unclassified WebKit error is unresolved; no pre-existing classification or blanket browser-health pass is claimed."
+      },
+      "pinnedReports": {
+        "initial": {
+          "file": "candidate-browser-smoke-initial.json",
+          "sha256": "1285bf82e9a2d36fc956049ed50212f778a6a20d40a43f2f6fdf4ce56ffffb51"
+        },
+        "recheck": {
+          "file": "candidate-browser-smoke-after-baseline-comparison.json",
+          "sha256": "a87e3b02e7bc7c3805ba13d2c8c4daf81a2ac5c2de2e55fc3f62939b7c32a44c"
+        },
+        "fullflow": {
+          "file": "candidate-private-today-fullflow-webkit-error-diagnostic.json",
+          "sha256": "dfc11b4096309add537aba7aba491fad9884a846c96732a23a457cdfcae05bd8"
+        },
+        "targeted": {
+          "file": "candidate-private-today-webkit-error-diagnostic.json",
+          "sha256": "a4d36e496d76c4c036abbd689c84ed509915fd9b3b0c9c140eeda101d481b268"
+        },
+        "baseline": {
+          "file": "baseline-browser-smoke-compare.json",
+          "sha256": "6d9448fc581545002f8d09f95638486b5572161061ba7788362c77fe08e72d8f"
+        },
+        "comparison": {
+          "file": "baseline-candidate-browser-comparison.json",
+          "sha256": "dfff1f558d3fb8f379eecd8f36487924ae982e37bbbfad55b0e77064b668c3d7"
+        },
+        "staticClassification": {
+          "file": "static-browser-error-classification.json",
+          "sha256": "7ed6b235ef6d0677a85caaadfba88b7e4a661b39c16ffca3293e61912ef4c7de"
+        },
+        "source": {
+          "file": "candidate-source-verification.json",
+          "sha256": "afed1c4ce9979521fc65f6e29b438a3c2ae1d3f15d11863ceca084913722bd6f"
+        },
+        "originalHelper": {
+          "file": "browser-smoke-before-live-instrumentation.mjs",
+          "sha256": "a7ace46019f0d5db4681a4098a2cd8c62c65158be25ba33dafb1469c8d44a0c1"
+        },
+        "fullflowHelper": {
+          "file": "fullflow-webkit-error-diagnostic.mjs",
+          "sha256": "fcef6e9a8c08b9e53db7d84658d120dd1054969c817a8712fce6760dfbcc5b80"
+        }
+      },
+      "limitations": [
+        "This is a bounded release assessment using actual positive observations, not a successful initial or full strict browser run.",
+        "The diagnostic reports retain diagnosticOnly:true/candidateHealthVerdict:false and are not relabeled passed.",
+        "Anonymous browser evidence does not prove authenticated Staff/Owner or physical-iPhone behavior.",
+        "All source, canonical306, guest capability, business authorization and actual native167 release gates remain mandatory."
+      ]
+    },
+    "allCandidateBrowserAttemptsPassed": false,
+    "liveBrowserStrictPassed": true,
+    "guestCapabilityChecks": 4,
+    "authenticatedOwnerReadNavigationPassed": false,
+    "authenticatedOwnerReadNavigationStatus": "not-run-no-existing-authenticated-browser",
+    "nativeTests": {
+      "total": 167,
+      "failed": 0,
+      "count": 167,
+      "failures": 0,
+      "skipped": 0,
+      "authLifecycleCases": 15,
+      "scopeConflictCases": 6,
+      "staffOnlineAccessCases": 9,
+      "commandDiagnosticTransportCases": 5,
+      "localDiagnosticCases": 8,
+      "cookieAuthorityCases": 12,
+      "fullResetContractCasePassed": true
+    },
+    "nativeSource": {
+      "sourceFiles": 407,
+      "matches": 407,
+      "mismatches": [],
+      "mapSha256": "4dddfe537064cb4ab1658fe13ad0dac01e4134bd047f3ed4a1073eb998d5247f"
+    },
+    "signedSource": {
+      "sourceFiles": 371,
+      "matches": 371,
+      "mismatches": [],
+      "mapSha256": "0298ffa0db6d24c21c104d125ba31d29e991654cfcc5bccd3992c74886d25c35"
+    },
+    "nativeBundle": {
+      "buildId": "66dcaabfa39ea2a2f2ad03d0680025d7084d4bab8058ceb2e4ba5a75c7e83f6e",
+      "resourceFiles": 345,
+      "hashFailures": [],
+      "copiedBundleAttestations": 3,
+      "copiedBundleAttestationsPassed": true,
+      "manifestSha256": "d423217e1af458f6457786f8c9c141efc91e3321d6d0ce2ad16b46a912bd239d"
+    },
+    "nativeSourceProvenance": {
+      "uploadCommit": "28def930df7719e07eec412cd501acc479df66ea",
+      "frozenReadyCommit": "67c6fdb2c8732f08d554c0adf6037ffe10d746e6",
+      "nativeTree": "6760db27a39ef773fa278332a7c2443c2212d57f",
+      "appTree": "9b4aee1349a5f4c367ccb372fb067005b6b6c8c7",
+      "readyEvent": "296c7cba-b111-4027-8dfc-9ff8c812c0ce",
+      "webSourceCommit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+      "webReadyEvent": "a43f5a86-ab3f-46d1-95f4-8b75d470ada4",
+      "nativeApplicationRuntimeMatchesWeb": true,
+      "nativeTestOnlyRevisionFromWeb": true,
+      "baselineCommit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+      "baselineBuild": "43",
+      "nativeDelta": [
+        "ios/Reylumi/LocalAppBundle/app.css",
+        "ios/Reylumi/LocalAppBundle/app.js",
+        "ios/Reylumi/LocalAppBundle/manifest.json",
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "ios/Reylumi/ReylumiLocalAppViewController.swift",
+        "ios/Reylumi/ReylumiLocalReadStore.swift",
+        "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift"
+      ],
+      "unchangedBundleResources": 343,
+      "changedBundleResources": [
+        "app.css",
+        "app.js"
+      ],
+      "nativeCodeAndBridgeUnchanged": false,
+      "nativeBridgeUnchanged": true,
+      "nativeCodeChangedFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "ios/Reylumi/ReylumiLocalAppViewController.swift",
+        "ios/Reylumi/ReylumiLocalReadStore.swift"
+      ],
+      "note": "All407 frozen native file hashes independently compared with raw upload-commit Git blobs;371 signed app inputs verified again from actual upload receipt."
+    }
+  },
+  "migration": {
+    "file": "supabase/migrations/20261020050000_staff_online_access_proof.sql",
+    "version": "20261020050000",
+    "sha256": "8602f87827e7dedf5ee9655522c291602ab0847158fc769fb052defc8d02ce67",
+    "committed": true,
+    "existingDataPreserved": true,
+    "noApprovalOrAccountWrites": true,
+    "existingOfflineFunctionUnchanged": true,
+    "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/migration-apply.json"
+  },
+  "compatibility": {
+    "capabilityHeader": "X-Reylumi-Staff-Online-Access: 1",
+    "olderClientUnconfirmedPreserved": true,
+    "offlineAuthorityUnchanged": true,
+    "originalBusinessHandlersUnchanged": true,
+    "actualJSBridgeUnchanged": true
+  },
+  "retainedInitialBuildFailure": {
+    "file": "production-build.log",
+    "sha256": "5f1d6651a73dd13b9043a0836fe75681a56149e42410c115efa7e2e97990812d",
+    "countedAsSuccessfulBuild": false,
+    "reason": "Retained superseded-attempt build failure, not counted as a successful canonical build."
+  },
+  "supersededAttempt": {
+    "at": "2026-10-20T05:27:57.128Z",
+    "previousArtifactRoot": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-20261020",
+    "previousSource": "c94ddafac05e28616abfaee7243dafbd1e72449b",
+    "previousReady": "cf8e5b16-48af-460f-a334-4f540b20c1a5",
+    "previousCandidate": "dpl_2vpHBNUCyGwoiTAzt7ctf3dshvsQ",
+    "previousNativeRun": "39374913255",
+    "published": false,
+    "reason": "Optional online-proof failure must preserve known unconfirmed revocation; prior attempt held before promotion/upload.",
+    "immutablePriorEvidenceRetained": true,
+    "releaseLockPreserved": true
+  },
+  "retainedNativeTestBundleFailure": {
+    "checkedAt": "2026-10-20T05:49:11.0481431Z",
+    "passed": false,
+    "status": "test-bundle-load-failed-before-tests",
+    "commit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+    "workflow": {
+      "id": 39376023027,
+      "url": "https://github.com/Nypro6895/kingpos/actions/runs/39376023027",
+      "conclusion": "failure"
+    },
+    "failure": {
+      "stage": "Test simulator and unsigned archive",
+      "code": 65,
+      "simulatorOS": "iOS 18.5",
+      "message": "ReylumiTests.xctest cannot load /usr/lib/swift/libswiftWebKit.dylib",
+      "testsExecuted": 0,
+      "classification": "new-test Swift WebKit overlay linkage incompatible with supported simulator runtime",
+      "testSource": "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift:315",
+      "existingCompatiblePattern": "ios/ReylumiTests/LocalAppWebViewTests.swift:437",
+      "productAssertionFailure": false
+    },
+    "signingAndUploadSkipped": true,
+    "nativeArchivePassed": false,
+    "actualVersion": null,
+    "actualBuild": null,
+    "evidence": {
+      "workflowMetadata": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-r2-20261020/native/upload-run-rest.json",
+      "workflowLog": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-r2-20261020/native/upload-job.log",
+      "actualTestLog": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-r2-20261020/native/upload-artifacts/reylumi-testflight-46-1/test.log"
+    }
+  },
+  "retainedNativeNegativeFixtureFailure": {
+    "checkedAt": "2026-10-20T06:11:41.8048270Z",
+    "passed": false,
+    "status": "native-negative-fixture-identity-error",
+    "commit": "757846dc86135eb28e2dbce0b8f5bfae4d26bf09",
+    "workflow": {
+      "id": 39378176558,
+      "url": "https://github.com/Nypro6895/kingpos/actions/runs/39378176558",
+      "conclusion": "failure"
+    },
+    "tests": {
+      "executed": 167,
+      "passedMethods": 166,
+      "failedMethods": 1,
+      "assertionFailures": 2,
+      "skipped": 0
+    },
+    "failure": {
+      "method": "StaffOnlineAccessTransportTests.testOnlineOnlyCommandsUseFreshBoundedStaffPreflightAndNeverReplayServerDenial",
+      "lines": [
+        206,
+        213
+      ],
+      "unexpectedAllowedFixtureID": "action.5290c94f98ce780e04f5d9ad",
+      "actualActionModule": "app/service-relay/actions.ts",
+      "actualActionExport": "loadServiceRelay",
+      "actualActionExplicitlyAuthorized": true,
+      "classification": "Negative test fixture incorrectly uses an expressly allowed action ID",
+      "productAllowlistChangeRequired": false,
+      "proposedNegativeAction": "app/service-relay/actions.ts#setServiceRelayPlugin",
+      "proposedNegativeID": "action.f65c8c8d814e8b9d4c3aa9e5"
+    },
+    "overlayCompatibilityAndRealCacheBridgeCasePassed": true,
+    "signingAndUploadSkipped": true,
+    "archivesPassed": false,
+    "evidence": {
+      "workflowMetadata": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-r2-20261020/native/failed-run-39378176558/upload-run-rest.json",
+      "workflowLog": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-r2-20261020/native/failed-run-39378176558/upload-job.log",
+      "testLog": "C:/Users/giuse/kingpos/artifacts/staff-online-access-release-r2-20261020/native/failed-run-39378176558/upload-artifacts/reylumi-testflight-47-1/test.log"
+    }
+  },
+  "nativeOnlyReadySupersessionChain": [
+    "296c7cba-b111-4027-8dfc-9ff8c812c0ce",
+    "77029247-00eb-4156-895f-ecd0e3374a0c",
+    "a43f5a86-ab3f-46d1-95f4-8b75d470ada4"
+  ],
+  "limitations": [
+    "Physical-iPhone Staff behavior after installing this build is not yet verified; authenticated live Staff data was not exercised by guest smoke.",
+    "Existing authenticated Owner live read navigation was not exercised: after-promotion CUA and Windows inventory showed no available existing browser. No login, credential entry, role change, account creation or business action was attempted. Guest/canonical/native evidence does not substitute for this unrun check.",
+    "Missing attestation alone can permit only fresh strictly verified online Staff presentation; revoked/mismatched/malformed/ambiguous identity remains denied. No historical link was approved or backfilled.",
+    "The initial nested-worktree production build failed and is retained separately; it is not counted as success. The exact cause was not proven; the canonical isolated raw-source build passed.",
+    "The separate generic503/no-lease Owner cache-removal edge remains outside this Staff-specific correction.",
+    "Native archive/resource receipts and three package-copy attestations are verified; unavailable archive folders were not independently inspected.",
+    "Two native attempts remain failed evidence: the first could not load its test bundle because of an unavailable Swift WebKit overlay (zero tests); the second executed167 tests with166 passed methods and one method/two failed assertions because its negative fixture used an explicitly allowed read action. Neither attempt signed/uploaded. Only test helpers/fixtures changed for the subsequent successful native source; web/native application runtime stayed byte-identical.",
+    "TestFlight availability is verified; this receipt does not claim App Store publication.",
+    "Candidate initial strict smoke remains failed (mobile cold Explore timeout and two hidden-post500s). Its sole full recheck remains failed due to one unclassified WebKit pageerror despite21 functional checks. Two strict Chromium contexts and three exact-fullflow WebKit diagnostic samples supplied bounded positive observations. The error causes remain unresolved; diagnostics retain healthVerdict:false and no historical attempt was relabeled passed."
+  ],
+  "evidenceHashes": {
+    "assembled-source.json": "318d6e49b23e5c858dcbfda2cd3943e75772c680373b9c943b26a4e28c2677f5",
+    "baseline.json": "83c26300ead2cb868b1d04f722c51d24cdd02029a74e3acac809bf3ae2bb5291",
+    "raw-source-verification.json": "79e56d5332558f8862d51ebf6169b655745ab5512bdabfd161b6b5d2f62e7211",
+    "raw-validation-worktree.json": "bf14b335c3b7b976f2a88306694b457af2b81b7a566894c87fa33db48efe6754",
+    "selected-ready-event.json": "5943e6308555d4da36e8db116c1e649d7e33cc81b611e856a10b35e42e1ea82e",
+    "superseded-attempt.json": "b072adab3b691421eb01342d023566d9502191098e39a74ecc696a87720145cc",
+    "canonical-validation.json": "7508b9a7eac5365cfb5f4c1e820f0caa29ff27e2e241a029867b7f77d8d8f5eb",
+    "local-verification.json": "2e788a35d53fbe52bb12d98490eba16284037583668f44dc16b964c864b71b76",
+    "candidate-source-verification.json": "afed1c4ce9979521fc65f6e29b438a3c2ae1d3f15d11863ceca084913722bd6f",
+    "live-source-verification.json": "963bf261a9075a2cd067ef54013ab883625d76233545cfc98264fbad02eaade8",
+    "live-source-verification-final-1792478026750-d2e6fb48.json": "92816fac06ca0205fdff2f64766ded5059cdeaf9515a7ed932d37a9a0696e3ab",
+    "migration-apply.json": "968921d131e45e4d3275e25dcc19aa0d8754f231fedab9e70187cdf6cf426a92",
+    "web-check-selection.json": "74536c6336406c7ed58cb1e61876ecdde1b65949bae32595d1b0f53865a4aeeb",
+    "live-check-selection.json": "a3bc3bf3600e8d4dd3dde08ee39a553da04d72789a3906695446cc4a613c0620",
+    "web-promotion-decision.json": "379bdb7cf865446a8b1533fc381969ca75a4f535f88d994e5e9d547806a01dae",
+    "native-release-verification.json": "cb22a162d1642a69d7c38f2e43f69a51a1aab8415b41c39a7e3c8ee975c0db9b",
+    "live-owner-smoke.json": "be9b8e39d61990b61f9fc7564dfcd815ffa968bee14c7195b3e5a945ef924d9e",
+    "production-build.log": "5f1d6651a73dd13b9043a0836fe75681a56149e42410c115efa7e2e97990812d",
+    "candidate-http-smoke-initial.json": "76466599523e383dd7f3497fed87f404f10ad7ece1dec911c8fa127704c1fac6",
+    "candidate-browser-release-assessment.json": "8f130804273a49ba533741adb4056ddd0d3f9a251f4f61448493140be1a924f7",
+    "candidate-today-client-asset-observed.json": "fc93edcbb45a208bdd145ded1125e6a2c6e25c7f692e4088c831ba7ec8bbeb3e",
+    "candidate-guest-context-capability-initial.json": "5a027c0717fd3a8c5569da427cfbf0204c59a24ecbfb1ffa46d746ceac1959fb",
+    "live-http-smoke-initial.json": "af9ae98e2521c61e37af23b761cd86b349691d05db7e165ebd30b29d38047d87",
+    "live-browser-smoke-initial.json": "7a1fc47e97873a530544d1674b8f708e00d2556abb6c029c0df051e5ec9b59a9",
+    "live-today-client-asset-observed.json": "886a8d2396259db0d9e4e9fa4a453b147dee6c0417009a6d167835196cf92918",
+    "live-guest-context-capability-initial.json": "1c3cce7022e5f7abd5bd55194316c26e741b29099ee2f90f3349d29c91a01732",
+    "native-fixture-r2/native-source.json": "9c81ca6e6b50e653368642fefbad894493c187316db53a4e6be978d85893e889",
+    "native-fixture-r2/native-functional-source.json": "4cb5249cbf54133481bba60093746e9bd60698ff02a08fa8492d2566a3556c2a",
+    "native-fixture-r2/native-ready-event.json": "7d51c168332a42140b10499f1e7f1e9df9dee3479639480a189d71e3fc92b2b8",
+    "native-fixture-r2/compatibility-validation.json": "e89ab56b1b1c5e063cd2181c075f648d7b3f7c9facd0199dfd15daa3ba968d83",
+    "native/native-source.json": "596e73755d91572fc47100a4857e808a4f3460f85c26c8631c86ec8cd38f25ec",
+    "native/native-ready-event.json": "e8b44764b310e0c2ef2235675b9dc411c92588bbf9db30535e848fe96f53a076",
+    "native/failure-39376023027.json": "04e8cc5a0620ef2123ae5cab77f209d8fb25c34c2ab5203a99943d71a1402388",
+    "native/failed-run-39378176558/failure-verification.json": "64ae8c7e771bf0833a31df86bac1c6c1de2a4a369f35003387b5d796d2686e91",
+    "candidate-browser-smoke-initial.json": "1285bf82e9a2d36fc956049ed50212f778a6a20d40a43f2f6fdf4ce56ffffb51",
+    "candidate-browser-smoke-after-baseline-comparison.json": "a87e3b02e7bc7c3805ba13d2c8c4daf81a2ac5c2de2e55fc3f62939b7c32a44c",
+    "candidate-private-today-fullflow-webkit-error-diagnostic.json": "dfc11b4096309add537aba7aba491fad9884a846c96732a23a457cdfcae05bd8",
+    "candidate-private-today-webkit-error-diagnostic.json": "a4d36e496d76c4c036abbd689c84ed509915fd9b3b0c9c140eeda101d481b268",
+    "baseline-browser-smoke-compare.json": "6d9448fc581545002f8d09f95638486b5572161061ba7788362c77fe08e72d8f",
+    "baseline-candidate-browser-comparison.json": "dfff1f558d3fb8f379eecd8f36487924ae982e37bbbfad55b0e77064b668c3d7",
+    "static-browser-error-classification.json": "7ed6b235ef6d0677a85caaadfba88b7e4a661b39c16ffca3293e61912ef4c7de",
+    "browser-smoke-before-live-instrumentation.mjs": "a7ace46019f0d5db4681a4098a2cd8c62c65158be25ba33dafb1469c8d44a0c1",
+    "fullflow-webkit-error-diagnostic.mjs": "fcef6e9a8c08b9e53db7d84658d120dd1054969c817a8712fce6760dfbcc5b80",
+    "live-owner-inventory.json": "028927c75e1e5fb3f5e1c7cb2b2d300600572bdbb535327c176dc095924d8b80"
+  },
+  "recordedAt": "2026-10-20T06:34:07.630Z",
+  "journalRecords": {
+    "web": {
+      "eventId": "c0bce0ca-d28f-4306-87c1-b55568bab9f8",
+      "changes": [
+        "a43f5a86-ab3f-46d1-95f4-8b75d470ada4"
+      ],
+      "targets": [
+        "web"
+      ],
+      "receipt": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/web-release-receipt.json"
+    },
+    "ios": {
+      "eventId": "01358f99-831f-4c54-8292-31542f7b2564",
+      "changes": [
+        "296c7cba-b111-4027-8dfc-9ff8c812c0ce"
+      ],
+      "targets": [
+        "ios"
+      ],
+      "receipt": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020/ios-release-receipt.json"
+    }
+  }
+}
