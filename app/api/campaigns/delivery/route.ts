@@ -9,7 +9,7 @@ import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 const COOKIE = "reylumi-owner-ad-visitor";
 const noStore = { "Cache-Control": "private, no-store" };
 
-async function selectCampaign(request: Request,input:{location?:string;latitude?:number|null;longitude?:number|null}) {
+async function selectCampaign(request: Request,input:{location?:string;latitude?:number|null;longitude?:number|null;batch?:boolean}) {
   try {
     const [settings, context] = await Promise.all([ownerCampaignSettings(), getCurrentBusinessContext()]);
     if (!settings.enabled) return Response.json(null,{headers:noStore});
@@ -29,30 +29,40 @@ async function selectCampaign(request: Request,input:{location?:string;latitude?
     const visitorHash = campaignVisitorHash(campaignVisitorIdentity(request.headers,visitor,context.user?.id ?? null));
     const { data, error } = await client.rpc("owner_campaign_candidates", { p_area:area,p_visitor:visitorHash,p_viewer:context.user?.id ?? null });
     if (error || !data?.length) return Response.json(null,{headers:noStore});
-    for (const candidate of data) {
+    const materialize = async (candidate: (typeof data)[number]) => {
       const { data: post } = await client.rpc("owner_campaign_post", {p_type:candidate.source_type,p_source:candidate.source_id,p_salon:candidate.salon_id});
-      if (!post) continue;
+      if (!post) return null;
       const href = candidate.source_type === "custom" ? `/explore/campaigns/${candidate.id}` : candidate.source_type === "salon_profile_look" ? `/explore/looks/${candidate.source_id}` : candidate.source_type === "beauty_post" ? `/explore/beauty/${post.profile_id}/posts/${candidate.source_id}` : `/explore/salons/${candidate.salon_id}#update-${candidate.source_id}`;
       let image = getSalonProfileMediaUrl(post.media_path);
       if (candidate.source_type === "custom") {
         const {data:asset}=await client.storage.from("campaign-creatives").createSignedUrl(post.media_path.endsWith("/v1/main.webp") ? post.media_path.replace(/main\.webp$/, "w960.webp") : post.media_path,3600);
-        if (!asset?.signedUrl) continue;
+        if (!asset?.signedUrl) return null;
         image=asset.signedUrl;
       }
       if (candidate.source_type === "beauty_post") {
         const {data:media} = await client.from("beauty_post_media").select("object_path").eq("post_id",candidate.source_id).neq("role","before").order("display_order").limit(1).maybeSingle();
-        if (!media?.object_path) continue;
+        if (!media?.object_path) return null;
         image = client.storage.from("beauty-profile-media").getPublicUrl(media.object_path).data.publicUrl;
       }
-      if (candidate.source_type === "salon_profile_look" && !image) continue;
+      if (candidate.source_type === "salon_profile_look" && !image) return null;
       const ticket = signCampaignTicket({id:candidate.id,visitor:visitorHash,viewer:context.user?.id ?? null,area,expires:Date.now()+600000,nonce:crypto.randomUUID()});
-      return Response.json({ title:candidate.title,caption:post.caption ?? post.summary ?? "",image,href,ticket },{headers:noStore});
+      return { title:candidate.title,caption:post.caption ?? post.summary ?? "",image,href,ticket };
+    };
+    const ads = [];
+    if (input.batch) {
+      const results = await Promise.all(data.map(materialize));
+      ads.push(...results.filter((ad): ad is NonNullable<typeof ad> => ad !== null).slice(0,5));
+    } else {
+      for (const candidate of data) {
+        const ad = await materialize(candidate);
+        if (ad) { ads.push(ad); break; }
+      }
     }
-    return Response.json(null,{headers:noStore});
+    return Response.json(input.batch ? ads : ads[0] ?? null,{headers:noStore});
   } catch { return Response.json(null,{headers:noStore}); }
 }
 export async function GET(request: Request) {
-  return selectCampaign(request,{location:new URL(request.url).searchParams.get("location")??""});
+  return selectCampaign(request,{location:new URL(request.url).searchParams.get("location")??"",batch:new URL(request.url).searchParams.get("batch")==="1"});
 }
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
@@ -64,7 +74,7 @@ export async function POST(request: Request) {
     const body = JSON.parse(raw);
     if (body?.kind === "select") {
       if (typeof body.location !== "string" || typeof body.latitude !== "number" || typeof body.longitude !== "number" || !Number.isFinite(body.latitude) || !Number.isFinite(body.longitude) || Math.abs(body.latitude)>90 || Math.abs(body.longitude)>180) return Response.json(null,{status:400,headers:noStore});
-      return selectCampaign(request,{location:body.location,latitude:body.latitude,longitude:body.longitude});
+      return selectCampaign(request,{location:body.location,latitude:body.latitude,longitude:body.longitude,batch:body.batch===true});
     }
     if (typeof body.ticket !== "string" || !["view","click"].includes(body.kind)) return Response.json({ok:false},{status:400});
     const ticket = readCampaignTicket(body.ticket);

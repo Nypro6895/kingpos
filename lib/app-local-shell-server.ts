@@ -19,6 +19,7 @@ import { POST as logoutPOST } from "@/app/(app)/api/auth/logout/route";
 import { selectWorkspaceContext } from "@/lib/workspace-selection";
 import { GET as bookingGET } from "@/app/api/public-booking/context/route";
 import { GET as advertisingGET, POST as advertisingPOST } from "@/app/api/explore/advertising/route";
+import { GET as campaignGET, POST as campaignPOST } from "@/app/api/campaigns/delivery/route";
 import { APP_LOCAL_SHELL_READS } from "./app-local-shell-metadata";
 import type { AppLocalShellConfiguration, AppLocalShellNavigation, AppLocalShellSummary, AppLocalShellNotice } from "./app-local-shell-metadata";
 import type { AppLocalRead } from "./app-local-host";
@@ -102,6 +103,18 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
     data = { scope, notificationScope: `${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`, summary: translate(summary) };
   }
   else if (name === "shell.notice") data = { scope, mode: await runReadWithDeadline(getAbuseNoticeData(context.user?.id ?? null), 6_000) };
+  else if (name === "http.shell.campaigns") {
+    const origin = "https://reylumi.com", url = new URL("/api/campaigns/delivery",origin);
+    if (args.batch !== undefined && !["0","1"].includes(String(args.batch))) fail(400,"Invalid advertising request.");
+    if (args.latitude !== undefined || args.longitude !== undefined) {
+      if (typeof args.latitude !== "string" || !args.latitude.trim() || typeof args.longitude !== "string" || !args.longitude.trim()) fail(400,"Choose a valid location.");
+      const next = new NextRequest(url,{method:"POST",headers:forwarded(current,origin),signal:options.signal,body:JSON.stringify({kind:"select",location:args.location ?? "",latitude:Number(args.latitude),longitude:Number(args.longitude),batch:args.batch === "1"})});
+      data = await wire(await campaignPOST(next));
+    } else {
+      url.search = new URLSearchParams(args as Record<string,string>).toString();
+      data = await wire(await campaignGET(new NextRequest(url,{headers:forwarded(current),signal:options.signal})));
+    }
+  }
   else {
     const path = name === "http.shell.session" ? "/api/auth/session" : name === "http.shell.quick-booking" ? "/api/public-booking/context" : "/api/explore/advertising";
     const url = new URL(path, "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
@@ -114,7 +127,7 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
 
 /** Explicit original handlers only. No generic URL, method, cookie or action is supplied by the caller. */
 export async function runAppLocalShellCommand(name: string, args: Record<string, unknown>, request: Request, scope: string, prewriteBusiness?: Awaited<ReturnType<typeof getRequestBusinessContext>>): Promise<{ handled: boolean; data?: unknown }> {
-  if (!["shell.switch-workspace", "shell.logout", "http.shell.advertising-event"].includes(name)) return { handled: false };
+  if (!["shell.switch-workspace", "shell.logout", "http.shell.advertising-event", "http.shell.campaign-event"].includes(name)) return { handled: false };
   // Only the workspace selector can reuse the command route's fresh prewrite
   // context. Never retain it or let another command borrow it after a write.
   const { context, business, current } = await authorized(scope, name === "shell.switch-workspace" ? prewriteBusiness : undefined), origin = new URL(request.url).origin;
@@ -133,6 +146,12 @@ export async function runAppLocalShellCommand(name: string, args: Record<string,
     return { handled: true, data: await wire(await logoutPOST()) };
   }
   if (Object.keys(args).some(key => key !== "input") || !args.input || typeof args.input !== "object" || Array.isArray(args.input) || JSON.stringify(args.input).length > 2048) fail(400, "Invalid advertising event.");
+  if (name === "http.shell.campaign-event") {
+    const input = args.input as Record<string,unknown>;
+    if (!["view","click"].includes(String(input.kind)) || typeof input.ticket !== "string" || Object.keys(input).some(key => !["kind","ticket"].includes(key))) fail(400,"Invalid advertising event.");
+    const next = new NextRequest(new URL("/api/campaigns/delivery",origin),{method:"POST",headers:forwarded(current,origin),body:JSON.stringify(input)});
+    return {handled:true,data:await wire(await campaignPOST(next))};
+  }
   const next = new NextRequest(new URL("/api/explore/advertising", origin), { method: "POST", headers: forwarded(current, origin), body: JSON.stringify(args.input) });
   return { handled: true, data: await wire(await advertisingPOST(next)) };
 }

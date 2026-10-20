@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "campaign-top-local-20261019",
+  "status": "ready",
+  "summary": "Top local campaign placements in Explore and search, maximum five with admitted-view rotation; preserves legacy credits and admission",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/campaigns/delivery/route.ts",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-discovery-feed.tsx",
+    "components/owner-sponsored-post.tsx",
+    "supabase/migrations/20261019170000_campaign_local_rotation.sql",
+    "tests/campaign-local-rotation.test.mjs",
+    "tests/campaign-delivery-placement-ui.test.mjs",
+    "tests/campaign-delivery-route.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-top-local-20261019\\snapshot"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Admission, credits, location helpers and SQL eligibility unchanged from live baseline",
+      "result": "passed"
+    },
+    {
+      "name": "22 local SQL, delivery, GPS and responsive browser tests",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped ESLint (existing unused-code warnings only)",
+      "result": "passed"
+    },
+    {
+      "name": "Production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-top-local-20261019/web-build.log"
+    },
+    {
+      "name": "Read-only production SQL baseline unchanged",
+      "result": "passed"
+    }
+  ],
+  "id": "8ebab3e6-126e-4396-ab8c-a199abbdf24b",
+  "recordedAt": "2026-10-19T16:55:18.316Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\campaign-top-local-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/campaigns/delivery/route.ts": "e61130cf7e918e02919e667710779b08afa2e4593f87d7120d5c60ba20b10f0f",
+    "app/explore/explore-client.tsx": "4a317d2f84a9e663d16d9c693a54577b93c6d7be6c1d199afc69f4f995010755",
+    "app/explore/explore-discovery-feed.tsx": "17aca00f331a92227986fb18a7b8ef251c274fea90be89c8500f611c439b9438",
+    "components/owner-sponsored-post.tsx": "686e91f1115a3efb7d065e489d5f95a8a7cb1de74eb4ca90515cd9a23e28c6e6",
+    "supabase/migrations/20261019170000_campaign_local_rotation.sql": "ad8e1909665b21212bf35b22ca1727bcd173a665e7c6aeff1c9db34b2946ce0f",
+    "tests/campaign-local-rotation.test.mjs": "0292825c72e1174875efd16ff83d3f62f3340e8a8a13fdf857b700faf833e6d8",
+    "tests/campaign-delivery-placement-ui.test.mjs": "90f8361dc43c7a617aeeb8b2b52dde98c92a1ccba1b71d7368f7045750db5c40",
+    "tests/campaign-delivery-route.test.mjs": "a9de36b4888d2fcd5ea890d2d88eb648b18acd3db1a060bff7ab542213b05bdb"
+  }
+}

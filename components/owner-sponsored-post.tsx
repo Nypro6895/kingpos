@@ -8,22 +8,29 @@ type Ad = { title: string; caption: string; image: string | null; href: string; 
 export function OwnerSponsoredPost({ location, latitude, longitude }: { location?: string; latitude?:number|null; longitude?:number|null }) {
   const selection = useMemo(() => campaignDeliveryRequest(location,latitude,longitude),[location,latitude,longitude]);
   const requestKey = selection?.key ?? null;
-  const [delivery, setDelivery] = useState<{ key: string; ad: Ad } | null>(null);
-  const [admittedTicket, setAdmittedTicket] = useState<string | null>(null);
-  const [dismissedTicket, setDismissedTicket] = useState<string | null>(null);
-  const ref = useRef<HTMLElement>(null);
-  const ad = delivery && delivery.key === requestKey ? delivery.ad : null;
-  const claims = useRef(new Map<string, Promise<boolean>>());
+  const [delivery, setDelivery] = useState<{ key: string; ads: Ad[] } | null>(null);
   useEffect(() => {
     if (!selection) return;
     const abort = new AbortController();
-    void adRequest(selection.url, { signal: abort.signal, ...(selection.body ? {method:"POST",headers:{"Content-Type":"application/json"},body:selection.body}: {}) }, selection.body ? 10000 : 4000)
-      .then(async (value: Ad | null) => {
-        if (!value?.ticket || !value.href || !await prepareAdImage(value.image ?? "", abort.signal)) return;
-        if (!abort.signal.aborted) { setDelivery({ key:selection.key, ad: value }); setAdmittedTicket(null); setDismissedTicket(null); }
+    void adRequest(selection.body ? selection.url : `${selection.url}&batch=1`, { signal: abort.signal, ...(selection.body ? {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...JSON.parse(selection.body),batch:true})}: {}) }, selection.body ? 10000 : 4000)
+      .then(async (value: Ad | Ad[] | null) => {
+        const ads = (Array.isArray(value) ? value : value ? [value] : []).filter(ad => ad?.ticket && ad.href).slice(0,5);
+        const ready = await Promise.all(ads.map(async ad => await prepareAdImage(ad.image ?? "", abort.signal) ? ad : null));
+        if (!abort.signal.aborted) setDelivery({ key:selection.key, ads: ready.filter((ad): ad is Ad => ad !== null) });
       }).catch(() => {});
     return () => abort.abort();
   }, [selection]);
+  const ads = delivery?.key === requestKey ? delivery.ads : [];
+  if (!ads.length) return null;
+  return <section aria-label="Sponsored posts" style={{display:"flex",gap:16,overflowX:"auto",scrollSnapType:"x mandatory",paddingBlock:12}}>
+    {ads.map(ad => <div key={ad.ticket} className="empty:hidden" style={{flex:ads.length === 1 ? "1 0 100%" : "0 0 min(88%, 400px)",minWidth:0,scrollSnapAlign:"start"}}><SponsoredCard ad={ad}/></div>)}
+  </section>;
+}
+function SponsoredCard({ad}:{ad:Ad}) {
+  const [admittedTicket, setAdmittedTicket] = useState<string | null>(null);
+  const [dismissedTicket, setDismissedTicket] = useState<string | null>(null);
+  const ref = useRef<HTMLElement>(null);
+  const claims = useRef(new Map<string, Promise<boolean>>());
   useEffect(() => {
     const element = ref.current;
     if (!ad || !element || dismissedTicket === ad.ticket) return;
