@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "today-native-admission-20261019",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Today permission-order repair revalidated on exact raw Git source:88 checks, no failures/skips; replaces Windows CRLF snapshot byte evidence without product semantic changes.",
+  "files": [
+    "app/staff/today/today-progressive-client.tsx",
+    "lib/today-dashboard-sections.ts",
+    "tests/owner-today-progressive-ui.test.mjs",
+    "tests/today-dashboard-progressive.test.mjs",
+    "tests/owner-today-native-recovery-ui.test.mjs",
+    "docs/today-native-permission-order-20261019.txt",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "92406a2a-3330-433e-b4bf-5f8f886a6971"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\today-native-release-20261019\\frozen-b3a745f-raw",
+    "commit": "b3a745f61731ed9b292c1cf930654166f87675f4",
+    "sourceSha256": "cfa2b88858c31e04209b8d95db119115bb6653e04c9148fa8b613ffba6753168",
+    "overlaySha256": "d9f463a28fa1bb19ca79f068e7ed62304f712792d1ba4cb02595d5e3f3d7f790"
+  },
+  "validation": [
+    {
+      "name": "88 exact raw-source contract/browser cases and scoped lint; real native admission/recovery remains protected",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/canonical-validation.json"
+    },
+    {
+      "name": "3093 exact Git blobs, unchanged semantic inputs to prior successful production build, all unrelated current web/native baseline preserved",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/raw-source-verification.json"
+    },
+    {
+      "name": "Only packaged Today app.js/manifest changed from uploaded42;345 resource hashes and unchanged Swift/bridge verified",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-admission-20261019/bundle-verification.json"
+    }
+  ],
+  "limitations": [
+    "Identical-permission ordering defect is reproduced and fixed in real component/provider tests; current physical-phone payload ordering is not directly captured, so sole-cause attribution is unproven.",
+    "A separate online-only503/no-lease cache-removal conditional edge remains outside this patch and is documented; no cache authority was widened.",
+    "No new signed native build/archive/upload or web deployment was performed; installed42 still contains the old JS bundle.",
+    "Initial fixture still had an unrelated503 phase enabled; its failed run is retained separately from corrected all200 RED/GREEN checks."
+  ],
+  "releaseRequirements": {
+    "nativeBuildRequired": true,
+    "candidateProductionBuildRequired": true,
+    "physicalIPhoneTestRequired": true
+  },
+  "id": "32e42041-44bd-4c27-8af6-172f7ec2df8f",
+  "recordedAt": "2026-10-20T01:49:06.244Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\today-native-admission-20261019",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/staff/today/today-progressive-client.tsx": "50ac32433d50e4a7151757dac0725b5ace61ccbe8e8a8a7a6ecf2a8898d1b04a",
+    "lib/today-dashboard-sections.ts": "d95bda2701accf1b51058f797daaffcf58e4818e9e6f118740797667f5867c14",
+    "tests/owner-today-progressive-ui.test.mjs": "26ffdcd904ca15b543068f718095aa1ff9921d7afdc8b2087aef20fac84758f4",
+    "tests/today-dashboard-progressive.test.mjs": "d42bc6adccf52a29255fbbdb3fc8c69c340a20c82deaaf1d19688a3964bd1fe5",
+    "tests/owner-today-native-recovery-ui.test.mjs": "c223b3b82fd37f00f177cef5e976aacf7123763b3b37a861c679429e96d0edd2",
+    "docs/today-native-permission-order-20261019.txt": "7109d38eadb773ba902932a78498c7d375354b6268d533b3ae18d021a523befc",
+    "ios/Reylumi/LocalAppBundle/app.js": "1f26187fff42faf7574c196dcd2b1edbc65bdbb104c9a68ab66294e399b3e1c6",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "dd6aad8cbdb6a0db7a9efef619bd878c2c3d287a80dae09098294259a0296b45"
+  }
+}
