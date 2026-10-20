@@ -79,7 +79,7 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
     }
     if(input.name==="http.explore.feed-events"&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalExploreHttpCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
     if(input.name==="http.public-booking.confirm"&&getExperienceContext(business).scope===input.scope){const booking=await trace.measure("handler", () => runAppLocalPublicHttpCommand(input.name,input.args,request,input.scope));if(booking.handled)return Response.json({ok:true,data:booking.data},{headers:responseHeaders});}
-    if(input.name==="http.shell.advertising-event"&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalShellCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
+    if(["http.shell.advertising-event","http.shell.campaign-event"].includes(input.name)&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalShellCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
     if (!business.user) return failure(401, "Please sign in again.", "access_denied", "auth");
     if (getExperienceContext(business).scope !== input.scope) {
       const staff = await trace.measure("workspace", () => getStaffPortalIdentity());
