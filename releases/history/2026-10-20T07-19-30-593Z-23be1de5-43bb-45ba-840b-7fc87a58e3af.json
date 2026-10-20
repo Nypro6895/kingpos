@@ -1,0 +1,85 @@
+{
+  "kind": "release",
+  "releaseId": "campaign-top-local-live-20261020-final",
+  "summary": "Complete Campaigns release on live web and TestFlight 1.0.0 (45): top local Explore/search placements, up to five rotating campaigns, scoped native selection and public signed-ticket event path. Preserve existing credits, approvals, historical campaigns and uploaded build44 native authority.",
+  "changes": [
+    "c3f7170d-bf1c-46d6-9d50-086e63799e33",
+    "b3288f1d-7cd9-4ab3-a3ce-3b00f41dab86",
+    "1f11bfab-7f49-4b86-b72f-a4564833872e"
+  ],
+  "channelChanges": {
+    "web": [
+      "c3f7170d-bf1c-46d6-9d50-086e63799e33"
+    ],
+    "ios": [
+      "b3288f1d-7cd9-4ab3-a3ce-3b00f41dab86",
+      "1f11bfab-7f49-4b86-b72f-a4564833872e"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Cn4WBJyXoUai3VLuhQGu7uPf76Lv",
+      "baselineDeploymentId": "dpl_FoHXyq2HxT24h5DcJDG3dJwPvRPu",
+      "sourceSha256": "7347b388d1d188c29cb1e3ce37609ef079917b2af5ffe8bb66f59735840c8d40",
+      "deploySourceSha256": "e62b401785b1cf9411c0dd8dd29aad60c5b3b5fcac109a03f4863516c1612bcd",
+      "overlaySha256": "07e564046933b8b0ecb674663c3fda5980b80f2495732592ac51cf4c471072f3",
+      "commit": "f07dfe2e4bd711d25a46db4952b487059c39d83e",
+      "evidence": "artifacts/campaign-native-events-live-20261020"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "45",
+      "commit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+      "evidence": "artifacts/campaign-top-local-live-20261020/native-release-verification.json",
+      "workflow": "https://github.com/Nypro6895/kingpos/actions/runs/39383598363",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "existingInternalGroupConfirmed": true
+    }
+  },
+  "priorWebRelease": {
+    "eventId": "714f83e0-c474-4f14-8182-0056a68477b2",
+    "deploymentId": "dpl_FoHXyq2HxT24h5DcJDG3dJwPvRPu",
+    "changes": [
+      "8ebab3e6-126e-4396-ab8c-a199abbdf24b",
+      "b3288f1d-7cd9-4ab3-a3ce-3b00f41dab86"
+    ],
+    "originalBaseline": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN"
+  },
+  "nativeBaseline": {
+    "commit": "28def930df7719e07eec412cd501acc479df66ea",
+    "build": "44",
+    "sourcePreservationEvidence": "artifacts/campaign-top-local-live-20261020/native-baseline-preservation.json"
+  },
+  "verification": {
+    "webBuild": "passed",
+    "originalDeliveryAndGpsTests": 22,
+    "nativeBridgeAndFullEntrypointTests": 6,
+    "nativeSimulatorTests": 168,
+    "nativeUploadedSourceFilesVerified": 371,
+    "liveHttpChecks": 14,
+    "signedTicketForgeryRejected": true,
+    "financialHistoryAdmissionAndPermissionsUnchanged": true,
+    "rankingMigration": "20261019170000",
+    "existingInternalTestFlightGroupReadOnly": true
+  },
+  "limitations": [
+    "No valid paid impression, click or credit purchase was generated during verification.",
+    "Responsive fixtures and native Simulator tests passed; physical iPhone installation has not been verified.",
+    "TestFlight availability is confirmed; App Store submission/publication is separate."
+  ],
+  "rollback": {
+    "webDeploymentId": "dpl_FoHXyq2HxT24h5DcJDG3dJwPvRPu",
+    "initialBaseline": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+    "rankingSql": "artifacts/campaign-top-local-live-20261020/database-candidate-baseline.sql",
+    "nativePreviousBuild": "44",
+    "onlyRollbackIfCurrentAliasAndFunctionStillMatchThisRelease": true
+  },
+  "id": "23be1de5-43bb-45ba-840b-7fc87a58e3af",
+  "recordedAt": "2026-10-20T07:19:30.593Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

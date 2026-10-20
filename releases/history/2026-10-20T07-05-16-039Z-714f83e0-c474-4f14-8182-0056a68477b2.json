@@ -1,0 +1,102 @@
+{
+  "kind": "release",
+  "releaseId": "campaign-top-local-live-20261020-web",
+  "summary": "Publish top local Campaign placements on Explore/search, max five, unseen/least-recent rotation and scoped native delivery bridge. Preserve credits, approval, targeting and historical campaigns.",
+  "changes": [
+    "8ebab3e6-126e-4396-ab8c-a199abbdf24b",
+    "b3288f1d-7cd9-4ab3-a3ce-3b00f41dab86"
+  ],
+  "channelChanges": {
+    "web": [
+      "8ebab3e6-126e-4396-ab8c-a199abbdf24b",
+      "b3288f1d-7cd9-4ab3-a3ce-3b00f41dab86"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_FoHXyq2HxT24h5DcJDG3dJwPvRPu",
+      "baselineDeploymentId": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+      "sourceSha256": "846f8c356d7bb8547a62fd789ab4035fe8353c3d7494c620d1998a2099a8cb12",
+      "overlaySha256": "07238e58f80c929c18a60c3f9c63314a4d18a292d2b28bdfc2c79ed48f79cc89",
+      "deploySourceSha256": "e1794718cbc4352ed9d728e56836edfe6568346eca6ec5b4bb2c08d19c2d8d07",
+      "commit": "06707f0fa4cb435dead9f55c7c45635cdc71a1ed",
+      "evidence": "artifacts/campaign-top-local-live-20261020"
+    }
+  },
+  "baseline": {
+    "commit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd",
+    "sourceSha256": "abdc6ec87cc4eac85a0cc18220c9b9e270b28f34f2fad09ece43d2af194e9a6e"
+  },
+  "verification": {
+    "productionBuild": "passed",
+    "tests": 27,
+    "httpChecks": 13,
+    "readOnlyNoPaidViewsOrPurchases": true,
+    "nativeReadEndpoint": "passed",
+    "accountingHistoryAdmissionAndPermissionsUnchanged": true,
+    "migration": "20261019170000"
+  },
+  "nativeAssessment": {
+    "required": true,
+    "status": "simulator-and-archive-running",
+    "baseline": {
+      "build": "44",
+      "commit": "28def930df7719e07eec412cd501acc479df66ea"
+    },
+    "source": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+    "workflow": "https://github.com/Nypro6895/kingpos/actions/runs/39383598363",
+    "reason": "Explore UI is bundled in iOS; new scoped read uses private POST to keep GPS out of URLs"
+  },
+  "limitations": [
+    "Responsive rendering and visibility were verified with isolated source fixtures at 320, 390 and 1280px; no real paid impression was generated.",
+    "iPhone physical-device validation has not been performed."
+  ],
+  "excluded": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "eventId": "63485a4d-e396-460a-b3e4-46c7029c84dc",
+      "selected": false,
+      "reason": "Blocked, separate product or preview-only; excluded"
+    },
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "selected": false,
+      "reason": "Blocked, separate product or preview-only; excluded"
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "selected": false,
+      "reason": "Blocked, separate product or preview-only; excluded"
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "selected": false,
+      "reason": "Blocked, separate product or preview-only; excluded"
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "selected": false,
+      "reason": "Blocked, separate product or preview-only; excluded"
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "selected": false,
+      "reason": "Blocked, separate product or preview-only; excluded"
+    }
+  ],
+  "rollback": {
+    "deploymentId": "dpl_HswcWpqzSWG9bWSW2DDT3mDeJYTN",
+    "rankingSql": "artifacts/campaign-top-local-live-20261020/database-candidate-baseline.sql",
+    "onlyIfCurrentAliasAndFunctionStillMatchThisRelease": true
+  },
+  "id": "714f83e0-c474-4f14-8182-0056a68477b2",
+  "recordedAt": "2026-10-20T07:05:16.039Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

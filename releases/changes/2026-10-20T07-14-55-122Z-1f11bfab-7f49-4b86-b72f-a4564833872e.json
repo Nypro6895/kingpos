@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "campaign-top-local-ios-20261020",
+  "status": "ready",
+  "summary": "iOS Campaigns top placement and local rotation with scoped read/event bridge and private GPS POST; preserve uploaded build44 authority and Staff fixes",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-discovery-feed.tsx",
+    "components/owner-sponsored-post.tsx",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "tests/campaign-native-delivery.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/CampaignReadTransportTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-top-local-live-20261020\\native-frozen",
+    "commit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89"
+  },
+  "dependencies": [
+    "campaign-top-local-20261019",
+    "campaign-native-delivery-bridge-20261020",
+    "campaign-native-event-admission-20261020"
+  ],
+  "validation": [
+    {
+      "name": "Native bundle manifest and uploaded source hashes: 371 files",
+      "result": "passed"
+    },
+    {
+      "name": "168 native simulator tests including private Campaign GPS transport",
+      "result": "passed"
+    },
+    {
+      "name": "Unsigned/signed archives, upload and Apple processing",
+      "result": "passed"
+    },
+    {
+      "name": "TestFlight 1.0.0 (45) available to existing internal group",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos/artifacts/campaign-top-local-live-20261020/native-release-verification.json"
+    }
+  ],
+  "id": "1f11bfab-7f49-4b86-b72f-a4564833872e",
+  "recordedAt": "2026-10-20T07:14:55.122Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/explore/explore-client.tsx": "4a317d2f84a9e663d16d9c693a54577b93c6d7be6c1d199afc69f4f995010755",
+    "app/explore/explore-discovery-feed.tsx": "17aca00f331a92227986fb18a7b8ef251c274fea90be89c8500f611c439b9438",
+    "components/owner-sponsored-post.tsx": "686e91f1115a3efb7d065e489d5f95a8a7cb1de74eb4ca90515cd9a23e28c6e6",
+    "lib/app-local-shell-http-client.ts": "c7f77519d2eca32d35c06d8913df6ad93a4a7e7161b674087da9ca07ccfd3e0b",
+    "lib/app-local-shell-metadata.ts": "a8698177d1fe67cd50d781cb9a9b798268911dc380aba667423d657553efd9de",
+    "lib/app-local-shell-server.ts": "a327cece301720879475a3c5f67bc69c99dc506492a10d0660de1376c0153831",
+    "lib/app-local-command-trace-names.generated.json": "33c52d36457623441e907df16d6f101f7b0ade8daf0f372dc9236cae11bcfab6",
+    "tests/campaign-native-delivery.test.mjs": "0628ac27c3141094e85c4f5ccff4eb5ca3c5b5bcb85ac3590f72deb75869a09e",
+    "ios/Reylumi/LocalAppBundle/app.js": "05e5979892e460866fb0c09f45db8fdb4c50692a3157019fb1fec489b706925d",
+    "ios/Reylumi/LocalAppBundle/app.css": "829b5c61b20e693c3716ebfcc976350fc3f6fb9fbf4054107b3660a506c83b83",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "aad557a7fba606ef03c4922cc3bf02862df598f032288444802ec6433b6e4442",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "e89879e66a657a7abaa2a14d29fd806a2b26b46bf33612729604bcbca8f904b0",
+    "ios/ReylumiTests/CampaignReadTransportTests.swift": "2682ee4f3c7bd41ae86ae7230c95e88c9b99a5b9282bffc58c0c1d74fcffece9"
+  }
+}
