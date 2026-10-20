@@ -8,7 +8,7 @@ import { fetchLiveExperienceResource } from "@/lib/fetch-live-experience-resourc
 import type { LiveResourceSnapshot } from "@/lib/experience-live-resource";
 import type { PosResource } from "@/lib/pos-workspace-sync";
 import type { TodayDashboard } from "@/lib/today-dashboard";
-import { TODAY_DASHBOARD_SECTIONS, getTodayDashboardSections, mergeTodayDashboardSection, type TodayDashboardSection } from "@/lib/today-dashboard-sections";
+import { TODAY_DASHBOARD_SECTIONS, getTodayDashboardPermissionsIdentity, getTodayDashboardSections, mergeTodayDashboardSection, type TodayDashboardSection } from "@/lib/today-dashboard-sections";
 import { useExperienceResource } from "@/lib/use-experience-resource";
 import { useLiveExperienceRefresh } from "@/lib/use-live-experience-refresh";
 import { TodayDashboardView } from "./today-dashboard-view";
@@ -74,10 +74,11 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
     tracedSections.current = pending;
   }, [dashboard, blocked, native]);
   const [clockChanged, setClockChanged] = useState(false);
+  const permissionsIdentity = getTodayDashboardPermissionsIdentity(initialDashboard.permissions);
   const deny = useCallback(() => setBlocked(true), []);
   const accept = useCallback((section: TodayDashboardSection, next: TodayDashboard) => {
     const olderThanShell = Date.parse(next.generatedAt) < Date.parse(initialDashboard.generatedAt);
-    if (next.noAccess || JSON.stringify(next.permissions) !== JSON.stringify(initialDashboard.permissions)) {
+    if (next.noAccess || getTodayDashboardPermissionsIdentity(next.permissions) !== permissionsIdentity) {
       // A prior authorized snapshot can predate the shell's permission set.
       // Ignore it; a newly validated permission change withdraws the view.
       if (!olderThanShell) deny();
@@ -91,7 +92,7 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
     }
     if (!olderThanShell) setClockChanged(false);
     setDashboard(previous => mergeTodayDashboardSection(previous, next, section));
-  }, [initialDashboard.permissions, initialDashboard.timezone, initialDashboard.date, initialDashboard.dayView.currentDate, initialDashboard.dayView.isCurrentDate, initialDashboard.generatedAt, deny]);
+  }, [permissionsIdentity, initialDashboard.timezone, initialDashboard.date, initialDashboard.dayView.currentDate, initialDashboard.dayView.isCurrentDate, initialDashboard.generatedAt, deny]);
   useEffect(() => {
     const block = (event?: Event) => {
       const eventScope = (event as CustomEvent<{ scope?: string }> | undefined)?.detail?.scope;
@@ -114,7 +115,7 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
 }
 
 export function TodayProgressiveClient(props: { initialDashboard: TodayDashboard; scope: string; salonId: string; requestedDate?: string; isOwner: boolean; native?: boolean; recovery?: Recovery }) {
-  const identity = `${props.scope}:${props.initialDashboard.date}:${props.initialDashboard.dayView.currentDate}:${props.initialDashboard.timezone}:${props.initialDashboard.salonName}:${JSON.stringify(props.initialDashboard.permissions)}:${props.initialDashboard.noAccess}`;
+  const identity = `${props.scope}:${props.initialDashboard.date}:${props.initialDashboard.dayView.currentDate}:${props.initialDashboard.timezone}:${props.initialDashboard.salonName}:${getTodayDashboardPermissionsIdentity(props.initialDashboard.permissions)}:${props.initialDashboard.noAccess}`;
   return <TodaySections key={identity} {...props} />;
 }
 

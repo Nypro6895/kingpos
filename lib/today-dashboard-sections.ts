@@ -4,6 +4,11 @@ import type { TodayDashboard, TodayLoadError, TodayTeamMember } from "./today-da
 export const TODAY_DASHBOARD_SECTIONS = ["staff", "bookings", "waiting", "financials", "extras"] as const;
 export type TodayDashboardSection = typeof TODAY_DASHBOARD_SECTIONS[number];
 
+/** Native replies and persisted JSON may reorder keys without changing access. */
+export function getTodayDashboardPermissionsIdentity(permissions: TodayDashboard["permissions"]): string {
+  return JSON.stringify(Object.keys(permissions).sort().map(key => [key, permissions[key as keyof typeof permissions]]));
+}
+
 export function isTodayDashboardSection(value: unknown): value is TodayDashboardSection {
   return typeof value === "string" && (TODAY_DASHBOARD_SECTIONS as readonly string[]).includes(value);
 }
@@ -67,7 +72,7 @@ export function mergeTodayDashboardSection(
 ): TodayDashboard {
   if (base.noAccess || patch.noAccess || base.date !== patch.date || base.timezone !== patch.timezone ||
     base.dayView.currentDate !== patch.dayView.currentDate || base.dayView.isCurrentDate !== patch.dayView.isCurrentDate ||
-    Object.keys(base.permissions).some((key) => base.permissions[key as keyof typeof base.permissions] !== patch.permissions[key as keyof typeof patch.permissions])) {
+    getTodayDashboardPermissionsIdentity(base.permissions) !== getTodayDashboardPermissionsIdentity(patch.permissions)) {
     return base;
   }
   const errors = patch.loadErrors.filter((error) => ownsError(error, section));

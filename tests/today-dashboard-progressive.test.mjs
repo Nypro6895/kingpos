@@ -271,6 +271,28 @@ test('foreign date, timezone and changed permission patches are not merged', asy
   for (const altered of [{ ...patch, date: '2026-10-17' }, { ...patch, timezone: 'America/Chicago' }, { ...patch, dayView: { ...patch.dayView, currentDate: '2026-10-19', isCurrentDate: false } }, { ...patch, permissions: { ...patch.permissions, canViewReports: false } }, { ...patch, noAccess: true }]) assert.equal(sections.mergeTodayDashboardSection(base, altered, 'financials'), base);
 });
 
+test('native permission key order preserves sections but every actual permission change still rejects them', async () => {
+  const f = fixture();
+  const shell = await f.getTodayDashboard(f.context, { phase: 'shell' });
+  const patch = await f.getTodayDashboard(f.context, { phase: 'financials' });
+  const reordered = { ...patch, permissions: Object.fromEntries(Object.entries(patch.permissions).reverse()) };
+  assert.notEqual(JSON.stringify(shell.permissions), JSON.stringify(reordered.permissions));
+  assert.equal(sections.getTodayDashboardPermissionsIdentity(shell.permissions), sections.getTodayDashboardPermissionsIdentity(reordered.permissions));
+  const merged = sections.mergeTodayDashboardSection(shell, reordered, 'financials');
+  assert.notEqual(merged, shell);
+  assert.deepEqual(merged.summary.sales, patch.summary.sales);
+  for (const key of Object.keys(patch.permissions)) {
+    const changed = { ...reordered, permissions: { ...reordered.permissions, [key]: !patch.permissions[key] } };
+    assert.notEqual(sections.getTodayDashboardPermissionsIdentity(shell.permissions), sections.getTodayDashboardPermissionsIdentity(changed.permissions), key);
+    assert.equal(sections.mergeTodayDashboardSection(shell, changed, 'financials'), shell, key);
+  }
+  const missing = { ...patch.permissions }; delete missing.canViewReports;
+  for (const permissions of [missing, { ...patch.permissions, unexpectedPermission: true }]) {
+    assert.notEqual(sections.getTodayDashboardPermissionsIdentity(shell.permissions), sections.getTodayDashboardPermissionsIdentity(permissions));
+    assert.equal(sections.mergeTodayDashboardSection(shell, { ...patch, permissions }, 'financials'), shell);
+  }
+});
+
 test('same admitted resource scope accepts a renamed salon display label and keeps the shell header', async () => {
   const f = fixture();
   const shell = await f.getTodayDashboard(f.context, { phase: 'shell' });

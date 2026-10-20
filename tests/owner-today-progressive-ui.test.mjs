@@ -10,13 +10,13 @@ const browserPath = process.env.TEST_BROWSER_PATH || 'C:/Program Files/Google/Ch
 const skip = engine === 'chromium' && !existsSync(browserPath);
 const sections = ['staff', 'bookings', 'waiting', 'financials', 'extras'];
 
-async function fixture(transport, duplicates = 1, { realRealtime = false, stalePhaseSeed = false, offline = false } = {}) {
+async function fixture(transport, duplicates = 1, { realRealtime = false, stalePhaseSeed = false, offline = false, reorderedPermissions = false } = {}) {
   const output = await build({ stdin: { loader: 'tsx', resolveDir: process.cwd(), contents: `
     import React,{Activity,useState} from 'react';import{createRoot}from'react-dom/client';
     import{AppLocalTodayClient,TodayProgressiveClient}from'./app/staff/today/today-progressive-client';
     import{refreshAppLocalResource,seedAppLocalResource}from'./lib/app-local-resource';
     import{experienceResourceCache}from'./lib/experience-resource-cache';
-    window.reads=[];window.holds=new Set(['financials']);window.failures=new Map([['extras',503]]);window.pending=[];window.versions=new Map();window.salonNames=new Map();window.cacheLoads=[];window.validationResult=true;window.validationCalls=[];window.removed=[];
+    window.reads=[];window.holds=new Set(['financials']);window.failures=new Map(window.fixture.reorderedPermissions?[]:[['extras',503]]);window.pending=[];window.versions=new Map();window.salonNames=new Map();window.cacheLoads=[];window.validationResult=true;window.validationCalls=[];window.removed=[];
     // Native navigation retains this same route. A same-path anchor cannot
     // manufacture a document reload or a new authority admission in this fixture.
     document.addEventListener('click',event=>{if(event.target.closest('a[href="/staff/today"]'))event.preventDefault();});
@@ -26,7 +26,7 @@ async function fixture(transport, duplicates = 1, { realRealtime = false, staleP
     function dashboard(scope,date,phase){
       const metric=value=>({label:'Synthetic fixture',value,href:null,chart:null,detail:null});
       return{date,timezone:'UTC',salonName:window.salonNames.get(scope)||scope,generatedAt:new Date().toISOString(),noAccess:false,
-        permissions:{canViewBookings:true,canViewDashboard:true,canViewReports:true,canViewStaffFinancials:true,canViewTickets:true},
+        permissions:Object.fromEntries(Object.entries({canViewBookings:true,canViewDashboard:true,canViewReports:true,canViewStaffFinancials:true,canViewTickets:true})[window.fixture.reorderedPermissions&&phase!=='shell'?'reverse':'slice']()),
         dayView:{isCurrentDate:true,currentDate:date,selectedDate:date},loadErrors:[],attention:[],businessHours:{},
         summary:{staff:metric(phase==='staff'?'3':'--'),customers:metric(phase==='bookings'?'4':'--'),waiting:metric(phase==='waiting'?'2':'--'),sales:metric(phase==='financials'?scope+' '+date+' sales'+(window.versions.get(phase)||''):'--')},
         rightNow:{scheduleHref:null,upcomingBookings:[],waitingClients:[]},performance:{bookingStatus:[]},team:[],
@@ -80,7 +80,7 @@ async function fixture(transport, duplicates = 1, { realRealtime = false, staleP
       view: `import React from'react';export function TodayDashboardView({dashboard}){return <main data-fixture-view><p data-date>{dashboard.date}</p><p data-scope>{dashboard.salonName}</p>{['staff','customers','waiting','sales'].map(key=><p key={key} data-metric={key}>{dashboard.summary[key].value}</p>)}<p data-pending>{dashboard.pendingSections?.sections?.join(',')}</p><input aria-label='retained draft' defaultValue='draft'/></main>;}`,
     })[path] }));
   } }] });
-  const server = createServer((req, res) => { res.setHeader('Content-Type', req.url === '/app.js' ? 'text/javascript' : 'text/html'); res.end(req.url === '/app.js' ? output.outputFiles[0].text : `<div id="root"></div><script>window.fixture=${JSON.stringify({ transport, duplicates, stalePhaseSeed })}</script><script src="/app.js"></script>`); });
+  const server = createServer((req, res) => { res.setHeader('Content-Type', req.url === '/app.js' ? 'text/javascript' : 'text/html'); res.end(req.url === '/app.js' ? output.outputFiles[0].text : `<div id="root"></div><script>window.fixture=${JSON.stringify({ transport, duplicates, stalePhaseSeed, reorderedPermissions })}</script><script src="/app.js"></script>`); });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   server.unref();
   let browser;
@@ -103,6 +103,19 @@ const settle = page => page.evaluate(() => new Promise(resolve => requestAnimati
 const firstView = page => page.locator('[data-consumer="0"]');
 
 for (const transport of ['web', 'native']) {
+  test(transport + ': permission property order cannot withdraw successful Today sections', { skip, timeout: 30000 }, async () => {
+    const app = await fixture(transport, 1, { reorderedPermissions: true }), { page } = app;
+    try {
+      await page.evaluate(() => { window.failures.clear(); window.release('financials'); });
+      await page.waitForFunction(() => document.querySelector('[data-metric="sales"]')?.textContent === 'scope-a 2026-10-18 sales' && document.querySelector('[data-pending]')?.textContent === '');
+      assert.equal(await page.getByText('Your workspace access must be checked again.', { exact: true }).count(), 0);
+      assert.equal(await page.locator('[data-fixture-view]').count(), 1);
+      assert.equal(await page.locator('[data-metric="staff"]').textContent(), '3');
+      assert.equal(await page.locator('[data-metric="customers"]').textContent(), '4');
+      assert.equal(await page.locator('[data-metric="waiting"]').textContent(), '2');
+    } finally { await app.close(); }
+  });
+
   test(transport + ': slow and failed sections leave useful content visible, retry only the failed source, and share reads across consumers/revisit', { skip, timeout: 30000 }, async () => {
     const app = await fixture(transport, 2), { page } = app;
     try {
