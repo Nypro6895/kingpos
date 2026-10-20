@@ -50,9 +50,17 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
     if (/^\/staff\/(?:my-work|workday|appointments)(?:\?|$)/.test(path)
       && response.status === 503 && lease?.offlineState === "unconfirmed"
       && request.headers.get("X-Reylumi-Staff-Online-Access") === "1") {
-      const identity = await timing.measure("auth", () => getStaffPortalIdentity(selected));
-      if (getExperienceContext(identity.context).scope === context.scope) {
-        staffOnlineAccess = await timing.measure("auth", () => getStaffOnlineOnlyAccess({ context: selected, staff: identity.staff }));
+      try {
+        const identity = await timing.measure("auth", () => getStaffPortalIdentity(selected));
+        if (getExperienceContext(identity.context).scope === context.scope) {
+          staffOnlineAccess = await timing.measure("auth", () => getStaffOnlineOnlyAccess({ context: selected, staff: identity.staff }));
+        }
+      } catch (error) {
+        const status = error && typeof error === "object" && "status" in error ? Number(error.status) : 0;
+        if ([401, 403, 409].includes(status)) throw error;
+        // This optional proof must not erase an already verified offline denial.
+        // A generic outage retains unconfirmed so old Staff disk authority is
+        // withdrawn instead of being treated as an ordinary lease-service503.
       }
     }
     return json({ schemaVersion: 1, context, home:selected.user?selected.defaultRouteForCurrentContext:"/explore", grant, grantStatus: response.status, ...(staffOnlineAccess ? { offlineState: "online-only", staffOnlineAccess } : lease?.offlineState === "unconfirmed" ? { offlineState: "unconfirmed" } : {}), display: { name: selected.user?.display_name ?? "", language: selected.user?.language ?? "en", role: selected.activeRole?.code ?? selected.salonRole ?? selected.accountRole ?? "guest" }, access: { ownerWorkspace: Boolean(selected.user && selected.currentSalon && isSalonManageContext(selected)), staffWorkspace: Boolean(selected.user && selected.currentSalon && selected.salonMode === "staff") }, onlineValidatedAt: Date.now() }, { headers: responseHeaders });

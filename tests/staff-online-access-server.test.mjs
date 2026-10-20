@@ -14,6 +14,7 @@ const generation='staff-online-access-fixture-20261020';
 const experience=load('lib/experience-context.ts',{'server-only':{},'node:crypto':crypto});
 const shape=load('lib/staff-offline-binding.ts');
 const policy=load('lib/experience-offline-policy.ts',{'./staff-offline-binding':shape});
+const admission=load('lib/app-local-page-admission.ts',{'./experience-offline-policy':policy,'./app-local-staff-online-access':load('lib/app-local-staff-online-access.ts')});
 const approved={version:1,staffId:id(30),viewerId:id(1),salonId:id(20),revision:id(50),approvedAt:'2026-01-01T00:00:00Z',revoked:false};
 function fixture(options={}){
   const context={user:{id:id(1),auth_user_id:id(101),status:'active',language:'en'},accountId:id(10),currentSalon:{id:id(20),account_id:id(10),status:'active'},currentStaffSalon:{id:id(20)},currentAccount:{id:id(10),status:'active'},currentWorkspace:{id:`staff:${id(20)}`,type:'salon',salonMode:'staff',salonId:id(20),accountId:id(10)},salonMode:'staff',workspaceType:'salon',activeRole:{code:'STAFF'},permissionCodes:[],permissions:[],defaultRouteForCurrentContext:'/staff/my-work'};
@@ -28,20 +29,21 @@ function fixture(options={}){
     if(options.rpcThrows)throw Error('Synthetic transport failure');
     return{data:Object.hasOwn(options,'proof')?options.proof:proof,error:options.onlineError?{code:'SYNTHETIC'}:null};
   }};
-  const supabase={'@/lib/supabase/server':{createAuthenticatedSupabaseServerClient:async()=>client}};
-  const deadline={'@/lib/bounded-get':{runReadWithDeadline:async(promise,ms)=>{assert.equal(ms,8000);if(options.timeout)throw Object.assign(Error('Synthetic deadline'),{status:503});return promise;}}};
+  let clientRequests=0;
+  const supabase={'@/lib/supabase/server':{createAuthenticatedSupabaseServerClient:async()=>++clientRequests>1&&options.onlineNoClient?null:client}};
+  const deadline={'@/lib/bounded-get':{runReadWithDeadline:async(promise,ms)=>{assert.equal(ms,8000);if(options.timeout||options.onlineTimeout&&calls.at(-1)?.name==='get_my_staff_online_access')throw Object.assign(Error('Synthetic deadline'),{status:503});return promise;}}};
   const online=load('lib/staff-online-access-server.ts',{'server-only':{},...supabase,...deadline,'@/lib/experience-context':experience});
   const binding=load('lib/staff-offline-binding-server.ts',{'server-only':{},...supabase,...deadline,'./staff-offline-binding':shape});
   const headers={'next/headers':{headers:async()=>new Headers(options.authUnavailable?{'x-reylumi-auth-unavailable':'1'}:{}),cookies:async()=>({get:()=>undefined})},'next/server':{connection:async()=>{}}};
   const scope={'@/lib/read-context-scope':{runWithReadContext:read=>read()}};
   const request={'@/lib/request-business-context':{getRequestBusinessContext:async()=>options.otherRootViewer?{...context,user:{...context.user,id:id(2)}}:context}};
   const current={'@/lib/current-context':{getCurrentStaffBusinessContext:async()=>context,isSalonManageContext:()=>false}};
-  const identity={'@/lib/staff-portal-identity':{getStaffPortalIdentity:async()=>({context,staff})}};
+  const identity={'@/lib/staff-portal-identity':{getStaffPortalIdentity:async target=>{if(target&&options.proofIdentityError)throw options.proofIdentityError;return{context,staff};}}};
   const offline=load('app/api/experience/offline-context/route.ts',{'node:crypto':crypto,...headers,...scope,...request,...current,...identity,...deadline,'@/lib/experience-context':experience,'@/lib/experience-offline-policy':policy,'@/lib/supabase/server':{},'@/lib/staff-workdays':{getCurrentStaffForSalon:async()=>staff},'@/lib/staff-account':{},'@/lib/staff-offline-binding-server':binding});
   const timing={measure:async(_name,read)=>read(),measureSync:(_name,read)=>read(),finish:response=>response};
   const route=load('app/api/app-local/context/route.ts',{...headers,...scope,...request,...current,...identity,'@/lib/experience-context':experience,'@/lib/experience-offline-policy':policy,'@/app/api/experience/offline-context/route':offline,'@/lib/staff-online-access-server':online,'@/lib/app-local-portable-context-server':{readAppLocalPortableContext:async()=>null},'@/lib/app-local-display-server':{readAppLocalDisplayContext:async()=>null},'@/lib/read-request-timing':{createReadRequestTiming:()=>timing}});
-  const makeRequest=path=>new Request('https://fixture.invalid/api/app-local/context?'+new URLSearchParams({path,generation}),{headers:options.capabilityHeader===null?{}:{'X-Reylumi-Staff-Online-Access':options.capabilityHeader??'1'}});
-  return{context,staff,proof,calls,online,async read(path='/staff/my-work'){const response=await route.GET(makeRequest(path));return{response,body:await response.json()};},async offlineRead(path='/staff/my-work'){const response=await offline.GET(makeRequest(path));return{response,body:await response.json()};}};
+  const makeRequest=(path,requestGeneration=generation)=>new Request('https://fixture.invalid/api/app-local/context?'+new URLSearchParams({path,generation:requestGeneration}),{headers:options.capabilityHeader===null?{}:{'X-Reylumi-Staff-Online-Access':options.capabilityHeader??'1'}});
+  return{context,staff,proof,calls,online,async read(path='/staff/my-work',requestGeneration=generation){const response=await route.GET(makeRequest(path,requestGeneration));return{response,body:await response.json()};},async offlineRead(path='/staff/my-work'){const response=await offline.GET(makeRequest(path));return{response,body:await response.json()};}};
 }
 
 test('real context and offline handlers distinguish fresh eligible missing approval from protected offline access',async()=>{
@@ -78,13 +80,20 @@ test('unconfirmed cannot become online-only from invalid, absent, mismatched or 
   }
 });
 
-test('proof RPC failure cannot erase unconfirmed into a successful generic online503 envelope',async()=>{
-  for(const options of [{onlineError:true},{rpcThrows:true}]){
-    const f=fixture(options),{response,body}=await f.read();assert.equal(response.status,503);assert.deepEqual(body,{error:'Connect to verify your account'});assert.equal('onlineValidatedAt'in body,false);assert.equal('staffOnlineAccess'in body,false);
+test('optional proof RPC, deadline and identity outages retain the known unconfirmed denial for warm cache revocation',async()=>{
+  for(const options of [{onlineError:true},{rpcThrows:true},{onlineTimeout:true},{onlineNoClient:true},{proofIdentityError:Error('Synthetic identity outage')},...[400,404,500,503,504].map(status=>({proofIdentityError:Object.assign(Error('Synthetic optional lookup failure'),{status})}))]){
+    const f=fixture(options),{response,body}=await f.read();assert.equal(response.status,200);assert.equal(body.grantStatus,503);assert.equal(body.grant,null);assert.equal(body.offlineState,'unconfirmed');assert.equal('staffOnlineAccess'in body,false);assert.equal(admission.canAdmitAppLocalPage(body,'/staff/my-work',{generation,online:true}),false,'A fresh timestamp/capability must not mask the known denial');
   }
   for(const options of [{noClient:true},{timeout:true}]){
     const f=fixture(options);await assert.rejects(f.online.getStaffOnlineOnlyAccess({context:f.context,staff:f.staff}));
   }
+});
+
+test('explicit auth, permission and scope denials propagate while original request400 remains unchanged',async()=>{
+  for(const status of [401,403,409]){
+    const f=fixture({proofIdentityError:Object.assign(Error('Synthetic explicit rejection'),{status})}),{response,body}=await f.read();assert.equal(response.status,status);assert.deepEqual(body,{error:'Connect to verify your account'});assert.equal('staffOnlineAccess'in body,false);assert.equal('onlineValidatedAt'in body,false);
+  }
+  const invalid=fixture(),{response,body}=await invalid.read('/staff/my-work','bad');assert.equal(response.status,400);assert.deepEqual(body,{error:'Invalid device generation'});assert.deepEqual(invalid.calls,[]);
 });
 
 test('helper requires exact active selected Staff account/salon/workspace before querying new proof',async()=>{
