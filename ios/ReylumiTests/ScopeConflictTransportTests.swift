@@ -167,7 +167,7 @@ final class ScopeConflictTransportTests: XCTestCase {
         try await seedCachedScope(f)
         await f.http.configureContext(scope: AppLocalTestFixture.scope, hold: true)
         await f.http.configureReadStatus(409)
-        // Higher-priority joiners may resume before the background creator's
+        // Higher-priority joiners may resume before the lower-priority creator's
         // outer method. Each must be able to start/join the new GET immediately
         // after cancellation, rather than rejoining the completed old task.
         // Observe the actual HTTP suspension before starting the producer. A
@@ -175,7 +175,9 @@ final class ScopeConflictTransportTests: XCTestCase {
         // refresh can fail before this regression's conflict is exercised.
         let initialHeld = expectation(description: "The initial authority GET is suspended at the fixture boundary")
         await f.http.observeHeldContext { initialHeld.fulfill() }
-        let creator = Task(priority: .background) { @MainActor in try await f.transport.freshContext(path: "/help") }
+        // Medium priority retains the joiner/creator priority difference without
+        // making OS background QoS scheduling a prerequisite of this contract.
+        let creator = Task(priority: .medium) { @MainActor in try await f.transport.freshContext(path: "/help") }
         await fulfillment(of: [initialHeld], timeout: 10)
         guard await f.http.contextHeld() else {
             let events = f.transport.diagnostics.snapshot().map { "\($0.event.rawValue):\($0.outcome.rawValue):\($0.status.map(String.init) ?? "-")" }.joined(separator: ",")
