@@ -12,6 +12,7 @@ private actor ScopeConflictHTTP: ReylumiLocalHTTPClient {
     private var grantStatus: Int?
     private var unconfirmed = false, holdContext = false, networkDown = false
     private var readStatus: Int?
+    private var contextHeldObserver: (@Sendable () -> Void)?
     private var pendingContext: (Data, HTTPURLResponse, CheckedContinuation<(Data, HTTPURLResponse), Error>)?
     private var pendingRead: (URLRequest, CheckedContinuation<(Data, HTTPURLResponse), Error>)?
     private(set) var commands = 0, contexts = 0, reads = 0
@@ -22,6 +23,9 @@ private actor ScopeConflictHTTP: ReylumiLocalHTTPClient {
     }
     func configureReadStatus(_ status: Int?) { readStatus = status }
     func configureNetworkDown() { networkDown = true }
+    func observeHeldContext(_ observer: @escaping @Sendable () -> Void) {
+        if pendingContext != nil { observer() } else { contextHeldObserver = observer }
+    }
     func contextHeld() -> Bool { pendingContext != nil }
     func readHeld() -> Bool { pendingRead != nil }
     private func response(_ request: URLRequest, object: [String: Any], status: Int = 200, headers: [String: String] = [:]) throws -> (Data, HTTPURLResponse) {
@@ -41,7 +45,11 @@ private actor ScopeConflictHTTP: ReylumiLocalHTTPClient {
             let reply = try response(request, object: contextStatus == 200 ? object : ["error": "Synthetic context failure"], status: contextStatus)
             if holdContext {
                 holdContext = false
-                return try await withCheckedThrowingContinuation { pendingContext = (reply.0, reply.1, $0) }
+                return try await withCheckedThrowingContinuation {
+                    pendingContext = (reply.0, reply.1, $0)
+                    let observer = contextHeldObserver; contextHeldObserver = nil
+                    observer?()
+                }
             }
             return reply
         }
@@ -64,6 +72,7 @@ private actor ScopeConflictHTTP: ReylumiLocalHTTPClient {
         return try response(request, object: object, status: status)
     }
     func releaseContext() {
+        holdContext = false
         guard let (data, response, continuation) = pendingContext else { return }; pendingContext = nil
         continuation.resume(returning: (data, response))
     }
@@ -161,8 +170,23 @@ final class ScopeConflictTransportTests: XCTestCase {
         // Higher-priority joiners may resume before the background creator's
         // outer method. Each must be able to start/join the new GET immediately
         // after cancellation, rather than rejoining the completed old task.
-        let launch = Task(priority: .background) { @MainActor in try await f.transport.context(path: "/help") }
-        _ = try await launch.value; try await waitForHeld(f, context: true)
+        // Observe the actual HTTP suspension before starting the producer. A
+        // short polling deadline around context()'s unobserved try? background
+        // refresh can fail before this regression's conflict is exercised.
+        let initialHeld = expectation(description: "The initial authority GET is suspended at the fixture boundary")
+        await f.http.observeHeldContext { initialHeld.fulfill() }
+        let creator = Task(priority: .background) { @MainActor in try await f.transport.freshContext(path: "/help") }
+        await fulfillment(of: [initialHeld], timeout: 10)
+        guard await f.http.contextHeld() else {
+            let events = f.transport.diagnostics.snapshot().map { "\($0.event.rawValue):\($0.outcome.rawValue):\($0.status.map(String.init) ?? "-")" }.joined(separator: ",")
+            let contexts = await f.http.contexts
+            creator.cancel(); await f.http.releaseContext()
+            let producerOutcome: String
+            do { _ = try await creator.value; producerOutcome = "unexpected success" }
+            catch { producerOutcome = "error code \((error as NSError).code), cancellation \(error is CancellationError)" }
+            XCTFail("Initial authority GET was not held; contexts=\(contexts), producer=\(producerOutcome), diagnostics=\(events)")
+            throw URLError(.timedOut)
+        }
         let joiners = (0..<4).map { _ in
             Task(priority: .userInitiated) { @MainActor in
                 do { _ = try await f.transport.freshContext(path: "/help"); XCTFail("The pre-conflict same-scope snapshot must not restore withdrawn authority") }
@@ -183,6 +207,10 @@ final class ScopeConflictTransportTests: XCTestCase {
             let current = try await joiner.value
             XCTAssertEqual((current["context"] as? [String: Any])?["scope"] as? String, AppLocalTestFixture.scope)
         }
+        // Await the low-priority creator after its high-priority joiners, so
+        // waiting on it cannot promote the old outer cleanup ahead of them.
+        do { _ = try await creator.value; XCTFail("The pre-conflict creator must also observe cancellation") }
+        catch { XCTAssertTrue(error is CancellationError) }
         let oldData = try await f.transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope)
         XCTAssertNil(oldData, "A newly verified lease cannot revive the withdrawn old payload")
         await f.http.configureReadStatus(nil)

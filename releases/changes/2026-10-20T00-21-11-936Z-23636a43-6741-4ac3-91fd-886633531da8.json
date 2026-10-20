@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "ios-session-role-stability-20261019",
+  "status": "working",
+  "summary": "Make native concurrency regression setup observable and deterministic after simulator precondition timeout; product source unchanged",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/ScopeConflictTransportTests.swift"
+  ],
+  "source": {
+    "commit": "d7500fafb22c3a5bb8f5149db496999058c2b036",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/frozen-d7500fa"
+  },
+  "validation": [
+    {
+      "name": "Observable native creator/held-boundary test and release simulator suite",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "23636a43-6741-4ac3-91fd-886633531da8",
+  "recordedAt": "2026-10-20T00:21:11.936Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-session-role-stability-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
