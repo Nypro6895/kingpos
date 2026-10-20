@@ -6,6 +6,7 @@
     "http.notifications.viewed",
     "http.public-booking.confirm",
     "http.shell.advertising-event",
+    "http.shell.campaign-event",
     "http.staff.booking-preferences",
     "http.staff.confirm-booking",
     "http.staff.create-appointment",

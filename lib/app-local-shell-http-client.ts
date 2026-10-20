@@ -10,7 +10,7 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
     const local = url.protocol === base.protocol && url.hostname === base.hostname && url.port === base.port;
     if (!options.host().isNative || url.username || url.password || url.hash || !(local || url.origin === "https://reylumi.com") || raw.startsWith("//") && !local) return options.fetch(input, init);
     const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
-    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event" } as Record<string, string>)[url.pathname] : undefined;
+    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising", "/api/campaigns/delivery": "http.shell.campaigns" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event", "/api/campaigns/delivery": "http.shell.campaign-event" } as Record<string, string>)[url.pathname] : undefined;
     if (!name) return options.fetch(input, init);
     const scope = options.scope(), signal = init?.signal ?? request?.signal; if (!scope) throw new Error("Connect to verify your account."); if (signal?.aborted) throw signal.reason;
     let data: AppLocalHttpResponse;
@@ -23,7 +23,15 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
       } else {
         const body = typeof init?.body === "string" ? init.body : request ? await request.clone().text() : "";
         if (body.length > 2048) throw new Error("The request could not be sent.");
-        data = await options.host().command<AppLocalHttpResponse>(name, name === "shell.logout" ? {} : { input: JSON.parse(body) }, { scope });
+        const parsed = body ? JSON.parse(body) : {};
+        if (name === "http.shell.campaign-event" && parsed?.kind === "select") {
+          if (Object.keys(parsed).some(key => !["kind","location","latitude","longitude","batch"].includes(key)) || typeof parsed.location !== "string" || typeof parsed.latitude !== "number" || typeof parsed.longitude !== "number" || !Number.isFinite(parsed.latitude) || !Number.isFinite(parsed.longitude) || Math.abs(parsed.latitude)>90 || Math.abs(parsed.longitude)>180) throw new Error("Choose a valid location.");
+          const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {location:parsed.location,latitude:String(parsed.latitude),longitude:String(parsed.longitude),...(parsed.batch === true ? {batch:"1"} : {})}, {scope,signal:signal ?? undefined});
+          if (!result.data) throw new Error("Could not load advertising.");
+          data = result.data;
+        } else {
+          data = await options.host().command<AppLocalHttpResponse>(name, name === "shell.logout" ? {} : { input: parsed }, { scope });
+        }
       }
     } catch (error) {
       if (scope === options.scope() && error && typeof error === "object" && "status" in error && [401, 403, 409].includes(Number(error.status))) window.dispatchEvent(new Event("reylumi:app-local-access-changed"));

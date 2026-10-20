@@ -1,4 +1,5 @@
 "use client";
+import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
 import { useExploreEditorialFeed } from "./use-explore-editorial-feed";
 import { selectExploreEditorialPosts } from "@/lib/explore-post-presentation";
 import { SalonPostPreview } from "@/components/salon-post-preview";
@@ -3903,6 +3904,12 @@ export function ExploreClient({
                 message={gpsMessage} areaOpen={searchAreaOpen} onAreaOpenChange={setSearchAreaOpen}
                 onSearch={submitUnifiedSearch} onDraftChange={cancelTypedSearch} onCurrentLocation={requestCurrentLocation} onAreaApply={applySearchArea}
                 onSuggestionSelect={suggestion => selectSearchSuggestion(suggestion, activeResponse.scope?.policy ?? "expandable", location)} />
+            </div>
+            <div className="mx-auto w-full max-w-[92rem] px-4 sm:px-6 lg:px-3" data-testid="owner-campaign-placement">
+              <OwnerSponsoredPost key={`${commentViewer.userId ?? "guest"}:${searchMode ? committedSearch.sessionKey : "home"}`}
+                location={searchMode ? committedSearch.location : location}
+                latitude={(searchMode ? committedSearch.coordinates : gpsCoordinates)?.latitude}
+                longitude={(searchMode ? committedSearch.coordinates : gpsCoordinates)?.longitude} />
             </div>
             {homeMode ? (
               <DesktopExploreLanding

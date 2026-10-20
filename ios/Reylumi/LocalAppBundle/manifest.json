@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "66dcaabfa39ea2a2f2ad03d0680025d7084d4bab8058ceb2e4ba5a75c7e83f6e",
+  "buildId": "920408cb73517c99a1966e571034f091eda11ecb496195fbe7ffb965b90114c7",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 566171,
-      "sha256": "a5431d3701d40ea5287ed0af8b810a9abe878c9b8bb394dc796147585074cf9e",
+      "bytes": 564861,
+      "sha256": "829b5c61b20e693c3716ebfcc976350fc3f6fb9fbf4054107b3660a506c83b83",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4239406,
-      "sha256": "cce8969ddeecd86e34b5aae2a91d81e820060523f7792a45930942fc09f3e51d",
+      "bytes": 4240917,
+      "sha256": "05e5979892e460866fb0c09f45db8fdb4c50692a3157019fb1fec489b706925d",
       "mime": "text/javascript"
     },
     {
@@ -3305,6 +3305,18 @@
       "cacheable": false
     },
     {
+      "name": "http.shell.campaigns",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "location",
+        "latitude",
+        "longitude",
+        "batch"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "http.shell.advertising",
       "path": "/api/app-local/read",
       "argumentKeys": [
@@ -5678,6 +5690,13 @@
       "name": "shell.logout",
       "path": "/api/app-local/command",
       "argumentKeys": []
+    },
+    {
+      "name": "http.shell.campaign-event",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
     },
     {
       "name": "http.shell.advertising-event",

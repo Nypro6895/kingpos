@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "campaign-native-delivery-bridge-20261020",
+  "status": "ready",
+  "summary": "Scoped native Campaigns read/event adapter delegates to existing handlers; GPS selection remains read-only and signed view/click admission preserved",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "tests/campaign-native-delivery.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-top-local-live-20261020\\bridge-snapshot"
+  },
+  "dependencies": [
+    "campaign-top-local-20261019"
+  ],
+  "validation": [
+    {
+      "name": "Five native/client-server transport authority and privacy contracts",
+      "result": "passed"
+    },
+    {
+      "name": "Native local bundle production-ready, all declared capabilities complete",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-top-local-live-20261020/web-build.log"
+    }
+  ],
+  "id": "b3288f1d-7cd9-4ab3-a3ce-3b00f41dab86",
+  "recordedAt": "2026-10-20T06:58:16.267Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\campaign-top-local-live-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-shell-http-client.ts": "c7f77519d2eca32d35c06d8913df6ad93a4a7e7161b674087da9ca07ccfd3e0b",
+    "lib/app-local-shell-metadata.ts": "a8698177d1fe67cd50d781cb9a9b798268911dc380aba667423d657553efd9de",
+    "lib/app-local-shell-server.ts": "a327cece301720879475a3c5f67bc69c99dc506492a10d0660de1376c0153831",
+    "lib/app-local-command-trace-names.generated.json": "33c52d36457623441e907df16d6f101f7b0ade8daf0f372dc9236cae11bcfab6",
+    "tests/campaign-native-delivery.test.mjs": "0628ac27c3141094e85c4f5ccff4eb5ca3c5b5bcb85ac3590f72deb75869a09e"
+  }
+}

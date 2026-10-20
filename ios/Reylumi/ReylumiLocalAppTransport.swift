@@ -658,7 +658,7 @@ final class ReylumiLocalAppTransport {
             if let requestedScope { query.append(URLQueryItem(name: "scope", value: requestedScope)) }
             var candidate = URLComponents(url: origin, resolvingAgainstBaseURL: false)!
             candidate.path = rule.path; candidate.queryItems = query
-            let useBody = (candidate.url?.absoluteString.utf8.count ?? Int.max) > 1800
+            let useBody = name == "http.shell.campaigns" || (candidate.url?.absoluteString.utf8.count ?? Int.max) > 1800
             // This POST is the same compile-pinned read, never a command or
             // outbox operation. Avoid truncating filters in a long GET URL.
             let body: [String: Any]? = useBody ? ["name": name, "args": args, "scope": requestedScope ?? ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) ?? session?.scope ?? ""] : nil
