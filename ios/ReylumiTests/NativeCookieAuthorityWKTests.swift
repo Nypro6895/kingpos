@@ -136,10 +136,19 @@ final class NativeCookieAuthorityWKTests: XCTestCase {
         if mixedAliasesAndOtherKeys {
             try await seed(cookie(NativeWKCookieFixture.selectedName, "old-host-alias", domain: "reylumi.com"), into: jar)
             try await seed(cookie(NativeWKCookieFixture.selectedName, "other-path", domain: domain, path: "/other"), into: jar)
-            try await seed(cookie(NativeWKCookieFixture.selectedName, "other-domain", domain: "unrelated.example"), into: jar)
+            try await seed(cookie(NativeWKCookieFixture.selectedName, "other-domain", domain: "other.reylumi.com"), into: jar)
             try await seed(cookie("contract-other-name", "unrelated-value", domain: domain), into: jar)
         }
         let seeded = await cookies(jar)
+        if mixedAliasesAndOtherKeys {
+            // App-bound WK APIs filter unrelated registrable domains. This
+            // subdomain is permitted by the existing app-bound configuration,
+            // while remaining a different canonical cookie domain/key.
+            _ = try XCTUnwrap(seeded.first {
+                $0.name == NativeWKCookieFixture.selectedName && canonicalDomain($0) == "other.reylumi.com"
+                    && $0.path == "/" && $0.value == "other-domain"
+            }, "The distinct-domain cookie must actually exist before production-helper preservation is tested")
+        }
         XCTAssertEqual(seeded.count, mixedAliasesAndOtherKeys ? 9 : 5)
         if mixedAliasesAndOtherKeys {
             XCTAssertEqual(seeded.filter { $0.name == NativeWKCookieFixture.selectedName && $0.path == "/" && canonicalDomain($0) == "reylumi.com" }.count, 2,
@@ -158,7 +167,30 @@ final class NativeCookieAuthorityWKTests: XCTestCase {
                 try? await self.seed(self.cookie(NativeWKCookieFixture.selectedName, "untrusted-external-workspace", domain: domain), into: jar)
             } else if disturbance == .authorityExpiry || disturbance == .nonAuthorityExpiry {
                 try? await Task.sleep(nanoseconds: 2_200_000_000)
-                _ = await self.cookies(jar)
+                // WK may retain an expired object in its API jar until later
+                // collection. Explicitly collect only this expired synthetic
+                // marker so disappearance precedes the response's first fence;
+                // this test does not claim WK always purges it automatically.
+                let name = disturbance == .authorityExpiry ? "contract-expiring-authority" : "reylumi-ad-session"
+                let pending = await self.cookies(jar)
+                for marker in pending where marker.name == name && marker.path == "/"
+                    && self.canonicalDomain(marker) == domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased()
+                    && marker.value == "synthetic-expiring" {
+                    let expiry = marker.expiresDate
+                    XCTAssertNotNil(expiry, "Only an explicitly expired synthetic cookie may be collected")
+                    if let expiry {
+                        XCTAssertLessThanOrEqual(expiry, Date(), "The marker must expire before explicit collection")
+                        if expiry <= Date() {
+                            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                                jar.delete(marker) { continuation.resume() }
+                            }
+                        }
+                    }
+                }
+                let collected = await self.cookies(jar)
+                XCTAssertFalse(collected.contains { $0.name == name && $0.path == "/"
+                    && self.canonicalDomain($0) == domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased()
+                    && $0.value == "synthetic-expiring" }, "The expired marker must be absent before returning synthetic HTTP")
             }
         })
         var setterCalls = 0
@@ -202,7 +234,7 @@ final class NativeCookieAuthorityWKTests: XCTestCase {
             XCTAssertEqual(after.count, mixedAliasesAndOtherKeys ? 4 : 1)
             if mixedAliasesAndOtherKeys {
                 XCTAssertTrue(after.contains { $0.name == NativeWKCookieFixture.selectedName && $0.path == "/other" && $0.value == "other-path" })
-                XCTAssertTrue(after.contains { $0.name == NativeWKCookieFixture.selectedName && canonicalDomain($0) == "unrelated.example" && $0.value == "other-domain" })
+                XCTAssertTrue(after.contains { $0.name == NativeWKCookieFixture.selectedName && canonicalDomain($0) == "other.reylumi.com" && $0.value == "other-domain" })
                 XCTAssertTrue(after.contains { $0.name == "contract-other-name" && $0.value == "unrelated-value" })
             }
         }
