@@ -1,0 +1,159 @@
+{
+  "releaseId": "today-native-release-20261019",
+  "journalEventId": "477f3e13-0549-48e9-bb84-80f6813f89a6",
+  "recordedAt": "2026-10-20T02:10:47.330Z",
+  "changes": [
+    "32e42041-44bd-4c27-8af6-172f7ec2df8f"
+  ],
+  "channelChanges": {
+    "web": [
+      "32e42041-44bd-4c27-8af6-172f7ec2df8f"
+    ],
+    "ios": [
+      "32e42041-44bd-4c27-8af6-172f7ec2df8f"
+    ]
+  },
+  "source": {
+    "commit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+    "validatedFunctionalCommit": "b3a745f61731ed9b292c1cf930654166f87675f4",
+    "baselineCommit": "d7500fafb22c3a5bb8f5149db496999058c2b036",
+    "baselineDeploymentId": "dpl_8zvbNL9LePEukw2jUYGd56KYtjFj",
+    "sourceSha256": "4b962de741da346f1180f33389fe8fc43ef583543ecfa3a87b9ab272c08feb7c",
+    "deploySourceSha256": "1c4de23e810592af32a54247fff10f1d6703f070e3e38e051a96891bfe290bef",
+    "overlaySha256": "d9f463a28fa1bb19ca79f068e7ed62304f712792d1ba4cb02595d5e3f3d7f790",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/frozen-c8e3deb-raw",
+    "assembly": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/assembled-source.json"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_8WAtkiDcwFY2tx9q3wNJMtK97YdJ",
+      "baselineDeploymentId": "dpl_8zvbNL9LePEukw2jUYGd56KYtjFj",
+      "sourceSha256": "4b962de741da346f1180f33389fe8fc43ef583543ecfa3a87b9ab272c08feb7c",
+      "overlaySha256": "d9f463a28fa1bb19ca79f068e7ed62304f712792d1ba4cb02595d5e3f3d7f790",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "43",
+      "commit": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/native-release-verification.json",
+      "uploadWorkflow": {
+        "runId": "39355615397",
+        "url": "https://github.com/Nypro6895/kingpos/actions/runs/39355615397",
+        "headSha": "c8e3debc11742cd8bf93407968449fe1ffcf5b76",
+        "headShaVerified": true,
+        "reportedAPIStatus": "completed",
+        "reportedAPIConclusion": "success",
+        "APIStateMatchesCompletedEvidence": true,
+        "executionProof": "Required receipts and job-log assertions below; API status alone is insufficient",
+        "metadataSha256": "e791846b51f93fbfa69bfa7f7ad56925bc0dcfb9359c388ac05842805b54221e",
+        "jobLogSha256": "c4422f630894fc17b9a29e88084c412a70c955da0d81af030fe66d92bc20b86d"
+      }
+    }
+  },
+  "rawReadyCorrection": {
+    "readyEvent": "32e42041-44bd-4c27-8af6-172f7ec2df8f",
+    "supersedesEvents": [
+      "92406a2a-3330-433e-b4bf-5f8f886a6971"
+    ],
+    "channels": [
+      "web",
+      "ios"
+    ],
+    "exactRawBytesTested": true,
+    "rawValidationCommit": "b3a745f61731ed9b292c1cf930654166f87675f4",
+    "rawValidationCases": 88,
+    "oldReadySnapshotNotMutated": true,
+    "eolEvidence": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/raw-source-verification.json"
+  },
+  "retainedBaseline": {
+    "webDeploymentId": "dpl_8zvbNL9LePEukw2jUYGd56KYtjFj",
+    "webCommit": "d7500fafb22c3a5bb8f5149db496999058c2b036",
+    "unrelatedProductionPreserved": true,
+    "exploreLocationTicketAndAuthPreserved": true,
+    "native": {
+      "commit": "7ac8ced3d36ba724ebcdac8bccf06ce74a3e3972",
+      "version": "1.0.0",
+      "build": "42",
+      "receiptId": "49556fa9-b581-4103-b668-c30dc1e914de",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/native-release-verification.json"
+    },
+    "nativeBaselineCarryForward": [
+      {
+        "file": "ios/ReylumiTests/ScopeConflictTransportTests.swift",
+        "commit": "7ac8ced3d36ba724ebcdac8bccf06ce74a3e3972",
+        "sha256": "46abe34fc59f3a2d7ee2accb9a8020b24e679f1edb5f8b5757c451cfb122c748",
+        "receiptId": "49556fa9-b581-4103-b668-c30dc1e914de",
+        "version": "1.0.0",
+        "build": "42",
+        "uploadRunId": "39349822046",
+        "evidence": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/native-release-verification.json",
+        "evidenceSha256": "8b6ddf730f9fc91abe889d97d81ab8e643fc86f0bd83c0b240e611a0d12652c6",
+        "reason": "Preserve the exact test fixture already included in uploaded native42; not a selected Today delta."
+      }
+    ],
+    "nativeCodeAndBridgeUnchanged": true,
+    "otherBundleResourcesPreserved": 344
+  },
+  "verification": {
+    "canonical": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/canonical-validation.json",
+    "local": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/local-verification.json",
+    "webSource": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/live-source-verification.json",
+    "webCheckSelection": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/web-check-selection.json",
+    "candidateBrowser": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/candidate-browser-smoke-initial.json",
+    "candidateTodayAsset": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/candidate-today-client-asset-observed-proof.json",
+    "retainedInitialAssetClassification": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/candidate-today-client-asset-classification.json",
+    "liveBrowser": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/live-browser-smoke-initial.json",
+    "liveTodayAsset": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/live-today-client-asset-observed-proof.json",
+    "existingOwner": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/live-owner-smoke.json",
+    "native": "C:/Users/giuse/kingpos/artifacts/today-native-release-20261019/native-release-verification.json",
+    "rawCases": 88,
+    "contracts": 28,
+    "chromiumCases": 30,
+    "webkitCases": 30,
+    "nativeTests": 158,
+    "sourceFiles": 3046,
+    "physicalIPhone": false
+  },
+  "limitations": [
+    "Physical iPhone installation, Today behavior, persisted sessions, role switching, weak network and actual suspend/resume remain for owner validation on the new build.",
+    "The deterministic permission-order defect is reproduced and repaired; the affected physical-phone payload ordering was not directly captured, so sole-cause attribution is unproven.",
+    "The separate valid online-only503/no-lease cache-removal recovery edge remains unchanged; no cache authority was widened.",
+    "Cold-start speed optimization remains deferred.",
+    "Initial synthetic fixture503 and CRLF snapshot evidence are retained; the superseding raw-source revision was recorded only after88 direct raw-source cases passed.",
+    "The initial Today asset probe used a local-build hashed path and returned404. It is retained separately from the successful GET of the canonical Today script actually referenced by candidate HTML. Strict initial HTTP/browser results were not replaced.",
+    "An existing Owner tab initially retained the previous deployment client after reload; this observation is preserved separately. A unique document GET then positively established the new client for the complete Owner navigation smoke. Service worker causation is not established.",
+    "No App Store submission/publication, tester invitations or new distribution groups are claimed. Native archive resource folders were not exported by the workflow; direct signed-archive resource inspection is not claimed.",
+    "Owner smoke is read navigation only; it does not assert absence of unrelated concurrent production/background activity."
+  ],
+  "evidenceHashes": {
+    "assembled-source.json": "a6a2a2bd1ff388006bbc46e1ac2a2945b9165c7690cf2621cb8aef99ac6fc7f3",
+    "baseline.json": "6deadc8be39864382b4f0fc9eef0aba0f490241f79ef80e6a89c4de53202bda4",
+    "raw-source-verification.json": "3ed56b88a270dd2cd8ef2852a78c808615aeb8d4ec2532c2f2a76215590ec9ee",
+    "raw-worktree-verification.json": "46c24f0001f301c5fe4e6b219919e3ea0f19d9aaadf4936a98aca8280e0260c3",
+    "raw-ready-event.json": "a422b3086eeabfaf6862b2c053f489558765db6562e997183580beca77f7a985",
+    "selected-ready-event.json": "a422b3086eeabfaf6862b2c053f489558765db6562e997183580beca77f7a985",
+    "canonical-validation.json": "d7d4470165a703065f267c1149eb2be3dc51497e9e4ded984ed73c624aa67251",
+    "local-verification.json": "56b8d563c1f68f9a8395376e0e722c5496cf46f892b28f19744e4ea4dead6f0b",
+    "candidate-source-verification.json": "9cc633b77b53b50ea0187240374bac54e3811925ca07049fc8cd861ef1aa4311",
+    "live-source-verification.json": "3ba4335ef2b052fed11e49319a200ef6af231cb810599edbf9dfede41a1c3527",
+    "web-check-selection.json": "6e03486087a5809ad0c8cb80bcd1cb7801429af1a0a1e55c3a4bcffa8e25616f",
+    "candidate-http-smoke-initial.json": "d8bc8d13750f425ef2c7cf500a48e293532314734d99deeccf84fdf99c6a08bc",
+    "candidate-browser-smoke-initial.json": "cd60e5df38d147df790f4068cfc9d063a37727ed13123c570a55b2ae3826e448",
+    "candidate-today-client-asset-observed-proof.json": "5dfe282e03a9ee1ca35a8251682f074f61223512fc809e5ffbc14c423aa950b1",
+    "candidate-today-client-asset-initial.json": "c8711b314fca1ba8f9696ef186c24c0054a3dae8d410b1286eaba44004f1f4b4",
+    "candidate-today-client-asset-classification.json": "f3ffc644ac31f41831f73a98df4d9c943410735f95e5366a8284e5ae304db058",
+    "live-http-smoke-initial.json": "0575140b2055b22e199a2798fb1f34b2ee729be62185704e349f5002511e2c02",
+    "live-browser-smoke-initial.json": "d7a083ba6b22283d021a7f15252a4483a2a65e0369c2f1d85c5adf0ec7765983",
+    "live-today-client-asset-observed-proof.json": "25ae473451a31b3de071081509f7d6d987f26c4f4b38e59b9afdcb8614a3e6bd",
+    "live-owner-smoke.json": "178554c20219fc7adb26d44dbc8c426676e38cbf563b5d04d225a47eb44b95ae",
+    "live-owner-initial-old-client-observation.json": "350cbb25a74ce4ad11296eca9e1c177736defd3994e4808d2acd24b50dd6be26",
+    "native-release-verification.json": "541f1f8bd313edda32b21e70c86577516ba45d395076949fb495941d4387b00f",
+    "web-promotion-decision.json": "525886aaa78785084af0d61a2263236c46a59a20b8bdf77a5628bacc9727f393",
+    "final-selection-verification.json": "d08235ca5bc07794db98e698ccd00850035ff6de6ab64d6a82bbeae307657ef2"
+  }
+}
