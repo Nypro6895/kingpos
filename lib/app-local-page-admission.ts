@@ -1,6 +1,7 @@
 import type { AppLocalContext } from "./app-local-host";
 import { isExperienceOfflineGrant } from "./experience-offline-policy";
 import type { AppLocalContextReason } from "./app-local-context-recovery";
+import { isAppLocalStaffOnlineAccess } from "./app-local-staff-online-access";
 
 /** Presentation families mirror the registered workspace pages. Per-feature
  * permissions and all writes remain authoritative in their original handlers. */
@@ -23,6 +24,7 @@ export function appLocalPageAdmissionReason(value: AppLocalContext, path: string
   if (value.grantStatus === 403) return "permission-denied";
   if (value.grantStatus === 409) return "workspace-changed";
   if (value.offlineState === "unconfirmed") return "unconfirmed";
+  if (value.offlineState === "online-only" && !isAppLocalStaffOnlineAccess(value, { path, online: options.online, now: options.now })) return "unconfirmed";
   const now = options.now ?? Date.now();
   const leased = Boolean(value.grant && isExperienceOfflineGrant(value.grant, { scope: value.context.scope, ...(options.generation ? { generation: options.generation } : {}) }, now));
   const online = !value.offline && options.online && Number.isFinite(value.onlineValidatedAt) && now - value.onlineValidatedAt < 30_000;

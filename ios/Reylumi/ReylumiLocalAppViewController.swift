@@ -231,7 +231,12 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                         guard self.transport.scopeEpoch == epoch else { throw CancellationError() }
                         self.emit("reylumi:native-snapshots", ["scope": scope, "snapshots": snapshots]); result = ["ok": true]; break
                     }
-                    if let scope = args["scope"] as? String, !scope.isEmpty, !(await self.transport.matchesCachedScope(scope)) { throw NSError(domain: "ReylumiLocalApp", code: 403) }
+                    if let scope = args["scope"] as? String, !scope.isEmpty {
+                        let allowed: Bool
+                        if args["op"] as? String == "remove" { allowed = await self.transport.matchesCacheRemovalScope(scope) }
+                        else { allowed = await self.transport.matchesCachedScope(scope) }
+                        guard allowed else { throw NSError(domain: "ReylumiLocalApp", code: 403) }
+                    }
                     let original = args["arguments"] as? [String: Any] ?? [:]
                     if args["op"] as? String == "get" { result = (try await self.transport.cached(name: name, args: original, requestedScope: args["scope"] as? String)) as Any? ?? NSNull() }
                     else if args["op"] as? String == "remove" { try await self.transport.removeCached(name: name, args: original, requestedScope: args["scope"] as? String); result = ["ok": true] }

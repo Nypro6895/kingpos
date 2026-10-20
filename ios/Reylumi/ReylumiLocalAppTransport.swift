@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 import WebKit
 import CryptoKit
 
@@ -243,7 +244,60 @@ final class ReylumiLocalAppTransport {
               let lease = ReylumiLocalSession.verified(value, generation: generation), lease.scope == scope else { return nil }
         return lease
     }
-    private func requireCommandGrant(_ value: [String: Any]) throws {
+    private static let staffOnlinePaths: Set<String> = ["/staff/my-work", "/staff/workday", "/staff/appointments"]
+    private static let staffOnlineCommands: Set<String> = {
+        let actions = [
+            ("app/staff/workday/actions.ts", "checkInStaffWorkday"),
+            ("app/staff/workday/actions.ts", "checkOutStaffWorkday"),
+            ("app/staff/workday/actions.ts", "updateStaffWorkdayStatus"),
+            ("app/staff/actions.ts", "updateOwnStaffPasscodeAction"),
+            ("app/staff/actions.ts", "updateStaffPublicProfileAction"),
+            ("app/staff/actions.ts", "getStaffProfileAvatarUploadSessionAction"),
+            ("app/staff/appointments/staff-preferences-actions.ts", "staffBookingPreferencesAction"),
+            ("app/service-relay/actions.ts", "loadServiceRelay"),
+            ("app/service-relay/actions.ts", "respondServiceRelay"),
+            ("app/service-relay/actions.ts", "saveServiceRelay"),
+            ("app/service-relay/actions.ts", "findServiceRelay")
+        ]
+        let names = actions.map { module, name in
+            "action." + String(SHA256.hash(data: Data((module + "#" + name).utf8)).map { String(format: "%02x", $0) }.joined().prefix(24))
+        }
+        return Set(names + ["http.staff.create-appointment", "http.staff.report-no-show", "http.staff.confirm-booking", "http.staff.booking-preferences"])
+    }()
+    // This proof is fresh HTTPS identity authority only. It cannot be decoded
+    // as an offline grant, persisted, or used by another page/command family.
+    private func verifiedStaffOnlineAccess(_ value: [String: Any], path: String, now: Date = Date()) -> Bool {
+        func number(_ value: Any?) -> NSNumber? {
+            guard let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() else { return nil }
+            return number
+        }
+        func uuid(_ value: Any?) -> String? {
+            guard let text = value as? String, text.utf8.count == 36, UUID(uuidString: text) != nil else { return nil }
+            return text
+        }
+        func isTrue(_ value: Any?) -> Bool {
+            guard let number = value as? NSNumber, CFGetTypeID(number) == CFBooleanGetTypeID() else { return false }
+            return number.boolValue
+        }
+        guard origin.scheme == "https", Self.staffOnlinePaths.contains(path),
+              number(value["schemaVersion"])?.doubleValue == 1,
+              value["offlineState"] as? String == "online-only", value["offline"] as? Bool != true,
+              number(value["grantStatus"])?.doubleValue == 503, value["grant"] is NSNull,
+              let context = value["context"] as? [String: Any], isTrue(context["authenticated"]),
+              let viewer = uuid(context["viewerId"]), let salon = uuid(context["salonId"]),
+              let workspace = context["workspaceId"] as? String, !workspace.isEmpty,
+              let revision = context["permissionRevision"] as? String, !revision.isEmpty,
+              let scope = context["scope"] as? String, scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil,
+              let access = value["access"] as? [String: Any], isTrue(access["staffWorkspace"]),
+              let proof = value["staffOnlineAccess"] as? [String: Any], number(proof["version"])?.doubleValue == 1,
+              uuid(proof["staffId"]) != nil, uuid(proof["viewerId"]) == viewer, uuid(proof["salonId"]) == salon,
+              proof["scope"] as? String == scope, let stamp = number(value["onlineValidatedAt"])?.doubleValue,
+              stamp.isFinite, stamp > now.timeIntervalSince1970 * 1000 - 30_000, stamp <= now.timeIntervalSince1970 * 1000 + 60_000,
+              ReylumiLocalReadStore.isSafeJSON(value) else { return false }
+        return true
+    }
+    private func requireCommandGrant(_ value: [String: Any], name: String? = nil, path: String? = nil) throws {
+        if let name, let path, Self.staffOnlineCommands.contains(name), verifiedStaffOnlineAccess(value, path: path) { return }
         let status = value["grantStatus"] as? Int ?? 0
         if [401, 403, 409, 503].contains(status) { throw failure(status, "Please reconnect and check your access.") }
         guard value["offline"] as? Bool != true, value["offlineState"] as? String != "unconfirmed",
@@ -255,6 +309,15 @@ final class ReylumiLocalAppTransport {
         guard scopeEpoch == epoch else { throw CancellationError() }
     }
     func matchesCachedScope(_ scope: String) async -> Bool { await store.session(generation: generation, scope: scope) != nil }
+    private func matchesStaffOnlineScope(_ scope: String) -> Bool {
+        guard let value = onlineContext, let path = value["contextPath"] as? String,
+              (value["context"] as? [String: Any])?["scope"] as? String == scope else { return false }
+        return verifiedStaffOnlineAccess(value, path: path)
+    }
+    func matchesCacheRemovalScope(_ scope: String) async -> Bool {
+        if await matchesCachedScope(scope) { return true }
+        return matchesStaffOnlineScope(scope)
+    }
     func invalidatePage() { diagnostics.record(.pageInvalidate, category: .context, outcome: .invalidated); scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
     private func revokeDisplay(scope: String?, staffFamily: Bool = false, status: Int = 403) async {
         let onlineScope = (onlineContext?["context"] as? [String: Any])?["scope"] as? String
@@ -296,6 +359,9 @@ final class ReylumiLocalAppTransport {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 12)
         request.httpMethod = body == nil ? "GET" : "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        // Protocol negotiation only; the server still proves the current
+        // Staff identity. Older binaries keep the explicit unconfirmed result.
+        if path == "/api/app-local/context" { request.setValue("1", forHTTPHeaderField: "X-Reylumi-Staff-Online-Access") }
         request.setValue("ReylumiIOS/1.0", forHTTPHeaderField: "User-Agent")
         request.setValue(origin.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/")), forHTTPHeaderField: "Origin")
         request.setValue("1", forHTTPHeaderField: "X-Reylumi-App-Local")
@@ -395,7 +461,9 @@ final class ReylumiLocalAppTransport {
             try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             object["contextPath"] = path
             await self.loadSession(); try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
-            let denied = [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0) || object["offlineState"] as? String == "unconfirmed"
+            let explicitStaffOnline = object["offlineState"] as? String == "online-only"
+            let staffOnline = explicitStaffOnline && self.verifiedStaffOnlineAccess(object, path: path)
+            let denied = [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0) || object["offlineState"] as? String == "unconfirmed" || explicitStaffOnline && !staffOnline
             let next = denied ? nil : ReylumiLocalSession.verified(object, generation: expectedGeneration)
             self.diagnostics.record(.contextEnvelope, category: ReylumiLocalDiagnostics.category(path: path), outcome: next == nil ? .missing : .available, status: object["grantStatus"] as? Int)
             let stored = await self.store.session(generation: expectedGeneration)
@@ -422,7 +490,7 @@ final class ReylumiLocalAppTransport {
             let authorityChanged = next != nil && priorAuthority != nil && next?.grantRevision != priorAuthority?.grantRevision
             let additive = previous != nil && next != nil && self.additiveAuthority(previous!, next!) && !authorityChanged
             let leaseChanged = previous != nil && !additive && (viewerChanged || previous?.scope != scope || next?.grantRevision != previous?.grantRevision || previous?.authority != next?.authority)
-            let rotate = authorityChanged || (onlineOnly ? reference != nil && !unchanged : leaseChanged || previous == nil && reference != nil && !unchanged)
+            let rotate = explicitStaffOnline && !staffOnline || authorityChanged || (onlineOnly ? reference != nil && !unchanged : leaseChanged || previous == nil && reference != nil && !unchanged)
             if rotate {
                 self.diagnostics.record(.authorityRotate, category: .context, outcome: .invalidated, reason: .contextChanged)
                 // Invalidate deliveries for the old visible authority, while
@@ -434,7 +502,14 @@ final class ReylumiLocalAppTransport {
             let acceptedEpoch = self.scopeEpoch
             if viewerChanged { await self.store.clear(); ReylumiBackgroundSync.shared.clear() }
             try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
-            self.session = next ?? (onlineOnly && unchanged && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
+            if explicitStaffOnline {
+                // Missing offline approval is never a temporary lease outage.
+                // Remove all prior Staff bindings even for an unchanged scope.
+                await self.store.revoke(scope: nil, authority: "staff")
+                ReylumiBackgroundSync.shared.clear()
+            }
+            try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
+            self.session = next ?? (onlineOnly && !explicitStaffOnline && unchanged && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
             self.onlineContext = denied ? nil : object
             self.onlineCheckedAt = denied ? .distantPast : Date()
             if let next { await self.store.accept(next) }
@@ -523,7 +598,13 @@ final class ReylumiLocalAppTransport {
         // store repeats this fence atomically with deletion, so a late put can
         // neither repopulate the durable key nor become an offline fallback.
         await store.invalidatePendingReads(key, scope: scope)
-        if let session = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") { await store.remove(key, session: session) }
+        if let scope, onlineContext?["offlineState"] as? String == "online-only",
+           (onlineContext?["context"] as? [String: Any])?["scope"] as? String == scope {
+            // Eviction needs no display lease. This exact fresh Staff proof
+            // permits only deletion of this key's stored scope/generation.
+            guard matchesStaffOnlineScope(scope) else { throw failure(503, "Please reconnect to update this page.") }
+            await store.remove(key, generation: generation, scope: scope)
+        } else if let session = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") { await store.remove(key, session: session) }
     }
     private func withResourceReadPermit<T>(key: String, scope: String?, operation: @MainActor (ReylumiLocalReadStore.ReadPermit) async throws -> T) async throws -> T {
         let permit = await store.beginRead(key, scope: scope)
@@ -718,9 +799,12 @@ final class ReylumiLocalAppTransport {
             do {
                 if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
                 else { context = try await freshContext(path: path) }
-                try requireCommandGrant(context)
+                try requireCommandGrant(context, name: name, path: path)
                 try ensureCurrent(expectedEpoch)
                 guard let currentScope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
+                if context["offlineState"] as? String == "online-only" {
+                    guard requestedScope == currentScope else { throw failure(409, "Your access has changed. Please try again.") }
+                }
                 guard workspaceSwitch || requestedScope == nil || currentScope == requestedScope else { throw failure(409, "Your access has changed. Please try again.") }
                 scope = currentScope
                 diagnostics.record(.commandPreflight, category: .command, durationMs: (ProcessInfo.processInfo.systemUptime - preflightBegan) * 1000, trace: trace)

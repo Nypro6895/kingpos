@@ -12,7 +12,7 @@ function load(file, dependencies = {}) {
 // Actual complete lease and Staff binding validators, not an admission-shaped mock.
 const binding = load('lib/staff-offline-binding.ts');
 const policy = load('lib/experience-offline-policy.ts', { './staff-offline-binding': binding });
-const admission = load('lib/app-local-page-admission.ts', { './experience-offline-policy': policy });
+const admission = load('lib/app-local-page-admission.ts', { './experience-offline-policy': policy, './app-local-staff-online-access': load('lib/app-local-staff-online-access.ts') });
 const recovery = load('lib/app-local-context-recovery.ts');
 const now = Date.now(), generation = 'typed-admission-device-20261019', scope = 'v3:' + 'a'.repeat(64);
 const viewerId = '11111111-1111-4111-8111-111111111111', salonId = '22222222-2222-4222-8222-222222222222';

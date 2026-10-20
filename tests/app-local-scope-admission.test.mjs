@@ -10,7 +10,7 @@ function load(file, dependencies = {}, source = readFileSync(file, 'utf8')) {
   return exports;
 }
 const policy = load('lib/experience-offline-policy.ts', { './staff-offline-binding': load('lib/staff-offline-binding.ts') });
-const admission = load('lib/app-local-page-admission.ts', { './experience-offline-policy': policy });
+const admission = load('lib/app-local-page-admission.ts', { './experience-offline-policy': policy, './app-local-staff-online-access': load('lib/app-local-staff-online-access.ts') });
 const scope = 'v3:' + 'a'.repeat(64), generation = 'scope-fixture-generation-20261019';
 const online = { schemaVersion: 1, context: { scope, viewerId: 'fixture-viewer', salonId: 'fixture-salon', authenticated: true }, grant: null, grantStatus: 503, access: { ownerWorkspace: true }, onlineValidatedAt: Date.now(), offline: false };
 const source = process.env.TEST_SCOPE_BASELINE === '1' ? execFileSync('git', ['show', '1c2628c4df2069de0722874ce8972231945e7146:app/local-app/scope.tsx'], { encoding: 'utf8' }) : readFileSync('app/local-app/scope.tsx', 'utf8');

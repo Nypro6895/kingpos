@@ -10,7 +10,8 @@ export type AppLocalContext = {
   context: ExperienceContext;
   grant: ExperienceOfflineGrant | null;
   grantStatus?: number;
-  offlineState?: "unconfirmed";
+  offlineState?: "unconfirmed" | "online-only";
+  staffOnlineAccess?: { version: 1; staffId: string; viewerId: string; salonId: string; scope: string };
   display: { name: string; language: string; role: string };
   home?: string;
   access?: { ownerWorkspace: boolean; staffWorkspace: boolean; portableWorkspace?: boolean };
@@ -99,15 +100,15 @@ async function nativeRequest<T>(kind: AppLocalBridgeRequest["kind"], name: strin
 const webHost: AppLocalHost = {
   isNative: false,
   async context(path = "/market", options = {}) {
-    const response = await fetchBoundedGet("/api/app-local/context?" + new URLSearchParams({ path: appLocalPath(path), generation: getExperienceDeviceGeneration() }), { credentials: "same-origin", cache: "no-store", signal: options.signal }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
+    const response = await fetchBoundedGet("/api/app-local/context?" + new URLSearchParams({ path: appLocalPath(path), generation: getExperienceDeviceGeneration() }), { credentials: "same-origin", cache: "no-store", headers: { "X-Reylumi-Staff-Online-Access": "1" }, signal: options.signal }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
     if (!response.ok) {
       if([401,403,409].includes(response.status)){await clearExperienceSnapshots();window.dispatchEvent(new Event("reylumi:app-local-access-changed"));}
       throw Object.assign(new Error("Connect to verify your account"),{status:response.status});
     }
     const value = await response.json() as AppLocalContext;
     if (value.schemaVersion !== 1 || !value.context?.scope) throw new Error("Invalid application context");
-    if (value.offlineState === "unconfirmed" || [401,403,409].includes(value.grantStatus ?? 0)) await clearExperienceSnapshots();
-    if (value.grant) await acceptExperienceOfflineGrant(value.grant);
+    if (value.offlineState === "unconfirmed" || value.offlineState === "online-only" || [401,403,409].includes(value.grantStatus ?? 0)) await clearExperienceSnapshots();
+    if (value.grant && value.offlineState !== "unconfirmed" && value.offlineState !== "online-only" && ![401,403,409].includes(value.grantStatus ?? 0)) await acceptExperienceOfflineGrant(value.grant);
     return value;
   },
   async read<T>(name: string, args: Record<string, unknown> = {}, options: AppLocalRequestOptions = {}) {

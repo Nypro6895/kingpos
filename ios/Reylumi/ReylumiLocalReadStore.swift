@@ -239,6 +239,16 @@ actor ReylumiLocalReadStore {
         guard state?.sessions.contains(where: { $0.key == session.key && $0.grantRevision == session.grantRevision && $0.generation == session.generation }) == true else { return }
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; cancelPendingSave(); save()
     }
+    // Deletion only: an online authority can withdraw its exact stored DTO
+    // without turning an expired or absent display lease into read authority.
+    func remove(_ key: String, generation: String, scope: String) {
+        load()
+        invalidatePendingReads(key, scope: scope)
+        let owned = Set((state?.sessions ?? []).filter { $0.generation == generation && $0.scope == scope }.map(\.key))
+        guard !owned.isEmpty else { return }
+        state?.rows.removeAll { $0.key == key && owned.contains($0.sessionKey) }
+        cancelPendingSave(); save()
+    }
     func revoke(scope: String?, authority: String? = nil) {
         load()
         let revokedScopes = Set((state?.sessions ?? []).filter { (scope == nil || $0.scope == scope) && (authority == nil || $0.authority == authority) }.map(\.scope))

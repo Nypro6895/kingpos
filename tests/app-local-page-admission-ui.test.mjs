@@ -51,6 +51,7 @@ function contextHandler(options = {}) {
     '@/lib/experience-offline-policy': policy,
     '@/app/api/experience/offline-context/route': { GET: async request => options.leaseUnavailable ? Response.json({ error: 'Synthetic lease outage' }, { status: 503 }) : offline.GET(request) },
     '@/lib/staff-portal-identity': identity, '@/lib/current-context': current,
+    '@/lib/staff-online-access-server': { getStaffOnlineOnlyAccess: async () => null },
     '@/lib/app-local-portable-context-server': { readAppLocalPortableContext: async () => null },
     '@/lib/app-local-display-server': { readAppLocalDisplayContext: async () => null },
     '@/lib/read-context-scope': scope, '@/lib/read-request-timing': { createReadRequestTiming: () => timing },

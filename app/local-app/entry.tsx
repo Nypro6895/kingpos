@@ -204,7 +204,7 @@ function App() {
     if (!usable(next, current.current)) {
       // A fresh explicit denial cannot leave an older, still-unexpired private
       // lease visible while its error UI waits for the native reset event.
-      if (!value.offline && ([401, 403, 409].includes(value.grantStatus ?? 0) || value.offlineState === "unconfirmed")) {
+      if (!value.offline && ([401, 403, 409].includes(value.grantStatus ?? 0) || value.offlineState === "unconfirmed" || value.offlineState === "online-only")) {
         const denied = Object.entries(admitted.current).filter(([key]) => !value.context.authenticated || key === family);
         for (const [, admission] of denied) if (admission) resetAppLocalResources(admission.value.context.scope);
         admitted.current = Object.fromEntries(Object.entries(admitted.current).filter(([key]) => !denied.some(([deniedKey]) => deniedKey === key)));
@@ -512,6 +512,28 @@ function App() {
   const checkSession = useCallback(() => verify({ fresh: true, trigger: "interval" }), [verify]);
   const diagnosticBlocked = !isPublic(path) && !context;
   useLayoutEffect(() => { recordExperienceTrace(diagnosticBlocked ? "gate.hide" : "gate.show", { source: "app-local", blocked: diagnosticBlocked }); }, [diagnosticBlocked]);
+  useEffect(() => {
+    if (activeAdmission?.value.offlineState !== "online-only") return;
+    const captured = activeAdmission, family = authorityFamily(path);
+    const remaining = captured.value.onlineValidatedAt + 30_000 - Date.now();
+    const withdraw = (disconnected: boolean) => {
+      if (admitted.current[family] !== captured || authorityFamily(current.current) !== family) return;
+      contextEpoch.current++; request.current?.controller.abort();
+      resetAppLocalResources(captured.value.context.scope);
+      admitted.current = Object.fromEntries(Object.entries(admitted.current).filter(([key]) => key !== family));
+      setAdmissions(admitted.current); setAppLocalCommandScope(undefined);
+      setError(disconnected ? "network" : "verification");
+      if (!disconnected && navigator.onLine) void verify({ fresh: true, trigger: "interval" });
+    };
+    const offline = () => withdraw(true);
+    window.addEventListener("offline", offline);
+    // Recheck quietly before the proof ends. Failure never extends its lifetime.
+    const renew = setTimeout(() => {
+      if (navigator.onLine && admitted.current[family] === captured && authorityFamily(current.current) === family) void verify({ fresh: true, trigger: "interval" });
+    }, Math.max(0, remaining - 10_000));
+    const expiry = setTimeout(() => withdraw(!navigator.onLine), Math.max(0, remaining));
+    return () => { clearTimeout(renew); clearTimeout(expiry); window.removeEventListener("offline", offline); };
+  }, [activeAdmission, path, verify]);
   // Help can display the already admitted role chrome, but receives no account
   // context or command scope. A cold public launch never manufactures one.
   const presentationContext = isHelp(path) && usable(helpPresentation ?? undefined) ? helpPresentation!.value : null;

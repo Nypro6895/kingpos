@@ -75,6 +75,7 @@ function fixture({ timed = true, realDelays = false } = {}) {
   },now);
   const context = load('app/api/app-local/context/route.ts',{
     ...commonRoute,'@/lib/experience-offline-policy':{getExperienceOfflinePath:value => value},
+    '@/lib/staff-online-access-server':{getStaffOnlineOnlyAccess:async () => null},
     '@/lib/current-context':{getCurrentStaffBusinessContext:async () => { await step(state().staffDelay); return state().selectedContext ?? state().context; },isSalonManageContext:value => value.manage !== false},
     '@/lib/staff-portal-identity':{getStaffPortalIdentity:async () => { await step(state().staffDelay); return {context:state().selectedContext ?? state().context}; }},
     '@/lib/app-local-display-server':{readAppLocalDisplayContext:async () => { await step(state().displayDelay); return state().display; }},

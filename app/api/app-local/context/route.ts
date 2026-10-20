@@ -10,6 +10,7 @@ import { readAppLocalPortableContext } from "@/lib/app-local-portable-context-se
 import { readAppLocalDisplayContext } from "@/lib/app-local-display-server";
 import { runWithReadContext } from "@/lib/read-context-scope";
 import { createReadRequestTiming, type ReadRequestTiming } from "@/lib/read-request-timing";
+import { getStaffOnlineOnlyAccess } from "@/lib/staff-online-access-server";
 
 export async function GET(request: Request) {
   const timing = createReadRequestTiming();
@@ -45,6 +46,15 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
       return { response, lease: await response.json().catch(() => null) };
     });
     const grant = response.ok ? lease : null;
-    return json({ schemaVersion: 1, context, home:selected.user?selected.defaultRouteForCurrentContext:"/explore", grant, grantStatus: response.status, ...(lease?.offlineState === "unconfirmed" ? { offlineState: "unconfirmed" } : {}), display: { name: selected.user?.display_name ?? "", language: selected.user?.language ?? "en", role: selected.activeRole?.code ?? selected.salonRole ?? selected.accountRole ?? "guest" }, access: { ownerWorkspace: Boolean(selected.user && selected.currentSalon && isSalonManageContext(selected)), staffWorkspace: Boolean(selected.user && selected.currentSalon && selected.salonMode === "staff") }, onlineValidatedAt: Date.now() }, { headers: responseHeaders });
+    let staffOnlineAccess: Awaited<ReturnType<typeof getStaffOnlineOnlyAccess>> = null;
+    if (/^\/staff\/(?:my-work|workday|appointments)(?:\?|$)/.test(path)
+      && response.status === 503 && lease?.offlineState === "unconfirmed"
+      && request.headers.get("X-Reylumi-Staff-Online-Access") === "1") {
+      const identity = await timing.measure("auth", () => getStaffPortalIdentity(selected));
+      if (getExperienceContext(identity.context).scope === context.scope) {
+        staffOnlineAccess = await timing.measure("auth", () => getStaffOnlineOnlyAccess({ context: selected, staff: identity.staff }));
+      }
+    }
+    return json({ schemaVersion: 1, context, home:selected.user?selected.defaultRouteForCurrentContext:"/explore", grant, grantStatus: response.status, ...(staffOnlineAccess ? { offlineState: "online-only", staffOnlineAccess } : lease?.offlineState === "unconfirmed" ? { offlineState: "unconfirmed" } : {}), display: { name: selected.user?.display_name ?? "", language: selected.user?.language ?? "en", role: selected.activeRole?.code ?? selected.salonRole ?? selected.accountRole ?? "guest" }, access: { ownerWorkspace: Boolean(selected.user && selected.currentSalon && isSalonManageContext(selected)), staffWorkspace: Boolean(selected.user && selected.currentSalon && selected.salonMode === "staff") }, onlineValidatedAt: Date.now() }, { headers: responseHeaders });
   } catch(error) { const status=error&&typeof error==="object"&&"status"in error&&[400,401,403,409].includes(Number(error.status))?Number(error.status):503;return json({ error: "Connect to verify your account" }, { status, headers: responseHeaders }); }
 }

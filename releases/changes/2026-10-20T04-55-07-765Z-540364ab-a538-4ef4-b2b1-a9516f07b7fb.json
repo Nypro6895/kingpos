@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "staff-online-access-20261020",
+  "status": "working",
+  "summary": "Restore fresh verified Staff online presentation independently of protected offline approval, without accepting missing, conflicting or revoked identity; verify role switching and release web/TestFlight.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "f90575a6b9f67e8d1d79bd3cfdc3704b9c5e9914"
+  },
+  "validation": [
+    {
+      "name": "Implementation and security/role regression checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "540364ab-a538-4ef4-b2b1-a9516f07b7fb",
+  "recordedAt": "2026-10-20T04:55:07.765Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
