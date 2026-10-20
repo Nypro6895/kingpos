@@ -96,7 +96,7 @@ final class StaffOnlineAccessTransportTests: XCTestCase {
         manifest["routes"] = routes
         manifest["reads"] = ["staff.my-work", "fixture.roster"].map { ["name": $0, "path": "/api/app-local/read", "argumentKeys": ["date"], "access": "scoped", "cacheable": true] as [String: Any] }
         var commands = manifest["commands"] as! [[String: Any]]
-        for name in ["http.staff.confirm-booking", action("app/staff/workday/actions.ts", "checkInStaffWorkday"), "shell.switch-workspace", "http.owner.save", "action.5290c94f98ce780e04f5d9ad"] {
+        for name in ["http.staff.confirm-booking", action("app/staff/workday/actions.ts", "checkInStaffWorkday"), "shell.switch-workspace", "http.owner.save", action("app/service-relay/actions.ts", "setServiceRelayPlugin")] {
             commands.append(["name": name, "path": "/api/app-local/command", "argumentKeys": []])
         }
         manifest["commands"] = commands
@@ -202,7 +202,7 @@ final class StaffOnlineAccessTransportTests: XCTestCase {
         _ = try await transport.command(name: action("app/staff/workday/actions.ts", "checkInStaffWorkday"), args: [:], requestID: UUID().uuidString, path: "/staff/workday", requestedScope: scope)
         let after = await http.contexts
         XCTAssertEqual(after, before + 2, "Every command requires its own fresh read")
-        for name in ["fixture.save", "http.owner.save", "action.5290c94f98ce780e04f5d9ad"] {
+        for name in ["fixture.save", "http.owner.save", action("app/service-relay/actions.ts", "setServiceRelayPlugin")] {
             do { _ = try await transport.command(name: name, args: name == "fixture.save" ? ["id": "never"] : [:], requestID: UUID().uuidString, path: path, requestedScope: scope); XCTFail("Other command acquired Staff proof: \(name)") } catch { XCTAssertEqual((error as NSError).code, 503) }
         }
         do { _ = try await transport.command(name: "http.staff.confirm-booking", args: [:], requestID: UUID().uuidString, path: path, requestedScope: otherScope); XCTFail("Wrong scope") } catch { XCTAssertEqual((error as NSError).code, 409) }
@@ -358,5 +358,11 @@ final class StaffOnlineAccessTransportTests: XCTestCase {
         ]
         for (module, name) in actions { XCTAssertTrue(names.contains(action(module, name)), "Pinned Staff action missing from signed manifest: \(name)") }
         for name in ["http.staff.create-appointment", "http.staff.report-no-show", "http.staff.confirm-booking", "http.staff.booking-preferences"] { XCTAssertTrue(names.contains(name)) }
+        // The denied fixture must be a registered configuration action outside
+        // the Staff list; loadServiceRelay is an expressly allowed Staff read.
+        let excluded = action("app/service-relay/actions.ts", "setServiceRelayPlugin")
+        XCTAssertTrue(names.contains(excluded), "The negative fixture must exercise a registered action")
+        XCTAssertNotEqual(excluded, action("app/service-relay/actions.ts", "loadServiceRelay"))
+        XCTAssertFalse(Set(actions.map { action($0.0, $0.1) }).contains(excluded), "The negative fixture must remain outside the Staff action list")
     }
 }
