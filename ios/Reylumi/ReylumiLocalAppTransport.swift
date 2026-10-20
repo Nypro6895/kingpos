@@ -89,11 +89,7 @@ final class ReylumiLocalAppTransport {
         defaults.set(generation, forKey: generationKey)
         self.cookies = cookies ?? { await withCheckedContinuation { continuation in WKWebsiteDataStore.default().httpCookieStore.getAllCookies { continuation.resume(returning: $0) } } }
         self.setCookie = setCookie ?? { cookie in
-            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                let store = WKWebsiteDataStore.default().httpCookieStore
-                if Self.removesCookie(cookie) { store.delete(cookie) { continuation.resume() } }
-                else { store.setCookie(cookie) { continuation.resume() } }
-            }
+            await Self.applyResponseCookie(cookie, to: WKWebsiteDataStore.default().httpCookieStore)
         }
     }
     var metadata: [String: Any] { ["version": 1, "nonce": nonce, "scopeEpoch": scopeEpoch, "generation": generation] }
@@ -102,8 +98,26 @@ final class ReylumiLocalAppTransport {
         if let reason { detail["reason"] = reason }
         return NSError(domain: "ReylumiLocalApp", code: status, userInfo: detail)
     }
-    private func cookieKey(_ cookie: HTTPCookie) -> String {
+    private static func cookieKey(_ cookie: HTTPCookie) -> String {
         [cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased(), cookie.path, cookie.name].joined(separator: "\u{0}")
+    }
+    @MainActor static func applyResponseCookie(_ cookie: HTTPCookie, to store: WKHTTPCookieStore) async {
+        let existing: [HTTPCookie] = await withCheckedContinuation { continuation in
+            store.getAllCookies { continuation.resume(returning: $0) }
+        }
+        // The expected response jar replaces this canonical key for every
+        // update. WK can retain both host-only and parent-domain aliases, and
+        // deleting a response cookie does not reliably delete stored aliases.
+        for stored in existing where cookieKey(stored) == cookieKey(cookie) {
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                store.delete(stored) { continuation.resume() }
+            }
+        }
+        if !removesCookie(cookie) {
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                store.setCookie(cookie) { continuation.resume() }
+            }
+        }
     }
     private func cookieIdentity(_ values: [HTTPCookie]) -> [String] {
         ReylumiCookieAuthority.identity(values, origin: origin)
@@ -116,7 +130,7 @@ final class ReylumiLocalAppTransport {
     private func responseCookieSet(_ original: [HTTPCookie], updates: [HTTPCookie]) -> [HTTPCookie] {
         var candidate = original
         for cookie in updates {
-            candidate.removeAll { cookieKey($0) == cookieKey(cookie) }
+            candidate.removeAll { Self.cookieKey($0) == Self.cookieKey(cookie) }
             if !Self.removesCookie(cookie) { candidate.append(cookie) }
         }
         return candidate
