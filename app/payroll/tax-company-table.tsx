@@ -133,7 +133,7 @@ export function TaxCompanyLinesTable({
 }) {
   if (lines.length === 0) {
     return (
-      <p className="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
+      <p className="min-w-0 bg-zinc-50 p-6 text-sm text-zinc-600">
         <WorkspaceText text="No reportable staff lines for this period." />
       </p>
     );
@@ -161,7 +161,7 @@ export function TaxCompanyLinesTable({
           </dl></details>
         </article>)}
       </div>
-      <div className={`${styles.desktopOnly} overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm`} role="region" aria-label="Tax payroll by staff" tabIndex={0}>
+      <div className={`${styles.desktopOnly} min-w-0 overflow-x-auto border-y border-zinc-200 bg-white`} role="region" aria-label="Tax payroll by staff" tabIndex={0}>
         <table className="min-w-full divide-y divide-zinc-200 whitespace-nowrap text-sm">
           <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
             <tr>
@@ -255,7 +255,7 @@ export function TaxCompanyLinesTable({
 
 export function TaxCompanyCalculationGuide() {
   return (
-    <details className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <details className="min-w-0 border-t border-zinc-200 bg-white py-4">
       <summary className="cursor-pointer text-sm font-semibold text-zinc-950">
         <WorkspaceText text="How these numbers are calculated" />
       </summary>

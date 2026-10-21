@@ -10,7 +10,7 @@ export function DataDownloadPanel({ startDate, endDate }: { startDate: string; e
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [files, setFiles] = useState<{ name: string; csv: string }[]>([]);
-  return <section id="download" className="rounded-xl border border-zinc-200 bg-white p-5" aria-labelledby="download-title">
+  return <section id="download" className="min-w-0 border-t border-zinc-200 bg-white py-5" aria-labelledby="download-title">
     <h2 id="download-title" className="text-lg font-semibold"><WorkspaceText text="Download" /></h2>
     <form className="mt-4 flex flex-wrap items-end gap-4" onSubmit={async event => {
       event.preventDefault(); setBusy(true); setMessage(""); setFiles([]);

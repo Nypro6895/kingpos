@@ -921,7 +921,7 @@ function CorrectionEventList({ events }: { events: CorrectionEvent[] }) {
     <ul className="grid gap-2">
       {events.map((event) => (
         <li
-          className="grid gap-2 rounded-md border border-amber-100 bg-white px-3 py-2 text-xs shadow-sm md:grid-cols-[11rem_1fr_auto] md:items-start"
+          className="grid min-w-0 gap-2 border-b border-amber-100 bg-white px-3 py-2 text-xs md:grid-cols-[11rem_1fr_auto] md:items-start"
           key={event.id}
         >
           <div className="whitespace-nowrap text-zinc-600">{event.correctedAt}</div>
@@ -1017,7 +1017,7 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+    <div className="min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
         <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Daily Shop Income" /></h2>
         <label className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600">

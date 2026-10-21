@@ -193,7 +193,7 @@ function PeriodSelector({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <div className="min-w-0 bg-zinc-50 p-4">
       <p className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text={label} /></p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
     </div>
@@ -219,7 +219,7 @@ export function AppLocalPayrollTax({data,params}:{data:AppLocalPayrollTaxData;pa
   );
 
   return (
-    <main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8`}>
+    <main className={`${styles.page} flex min-w-0 w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8`}>
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0"><h1 className="mb-2 text-xl font-semibold"><WorkspaceText text="Tax payroll report" /></h1>

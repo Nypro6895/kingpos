@@ -1209,7 +1209,7 @@ function BusinessSnapshotCards({ analytics }: { analytics: PayrollOverviewAnalyt
     <section className={styles.snapshot}>
       {cards.map((card) => (
         <div
-          className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
+          className="min-w-0 border-t border-zinc-200 bg-white py-4"
           key={card.label}
           data-metric={card.label}
         >
@@ -1319,7 +1319,7 @@ function AnalyticsPanel({
 }) {
   return (
     <section
-      className={`rounded-lg border border-zinc-200 bg-white p-4 shadow-sm ${className}`}
+      className={`min-w-0 border-t border-zinc-200 bg-white py-4 ${className}`}
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
@@ -1434,7 +1434,7 @@ function RevenuePayrollProfitChart({
       title="Revenue, Payroll & Shop Net Trend"
     >
       {analytics.trend.length === 0 ? (
-        <div className="flex h-64 items-center justify-center rounded-md border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-500">
+        <div className="flex h-64 min-w-0 items-center justify-center bg-zinc-50 px-4 text-center text-sm text-zinc-500">
           <WorkspaceText text="No trend data for this filter." />
         </div>
       ) : (
@@ -1604,7 +1604,7 @@ async function StaffPerformancePanel({
       title="Staff Performance"
     >
       {analytics.staffPerformance.length === 0 ? (
-        <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+        <p className="min-w-0 bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-500">
           <WorkspaceText text="No staff income for this period." />
         </p>
       ) : (
@@ -1724,7 +1724,7 @@ function ServiceAnalyticsPanel({
       title="Service Analytics"
     >
       {analytics.servicePerformance.length === 0 ? (
-        <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+        <p className="min-w-0 bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-500">
           <WorkspaceText text="No service analytics for this period." />
         </p>
       ) : (
@@ -1763,12 +1763,12 @@ function ServiceAnalyticsPanel({
 
 function BusinessHealthCards({ analytics }: { analytics: PayrollOverviewAnalytics }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="min-w-0 border-t border-zinc-200 bg-white py-4">
       <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Business Health" /></h2>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         {analytics.health.map((metric) => (
           <div
-            className="rounded-md border border-zinc-200 bg-zinc-50 p-3"
+            className="min-w-0 bg-zinc-50 p-3"
             key={metric.label}
           >
             <p className="text-xs font-medium text-zinc-500"><WorkspaceText text={metric.label} /></p>
@@ -1805,7 +1805,7 @@ async function SummaryTable({
   return (
     <AnalyticsPanel title={title}>
       {rows.length === 0 ? (
-        <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center text-sm text-zinc-500">
+        <p className="min-w-0 bg-zinc-50 px-4 py-5 text-center text-sm text-zinc-500">
           <WorkspaceText text={emptyLabel} />
         </p>
       ) : (
@@ -1889,16 +1889,16 @@ function WeeklyMonthlySummary({ analytics }: { analytics: PayrollOverviewAnalyti
 
 function KeyInsightsPanel({ analytics }: { analytics: PayrollOverviewAnalytics }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="min-w-0 border-t border-zinc-200 bg-white py-4">
       <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Key Insights" /></h2>
       {analytics.insights.length === 0 ? (
-        <p className="mt-3 rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-500">
+        <p className="mt-3 min-w-0 bg-zinc-50 p-4 text-sm text-zinc-500">
           <WorkspaceText text="No reliable insights yet." />
         </p>
       ) : (
         <ul className="mt-3 grid gap-2 text-sm text-zinc-700">
           {analytics.insights.map((insight) => (
-            <li className="rounded-md bg-zinc-50 px-3 py-2" key={insight}>
+            <li className="bg-zinc-50 px-3 py-2" key={insight}>
               {insight}
             </li>
           ))}
@@ -1948,7 +1948,7 @@ function OverviewTab({
         serviceAnalytics={serviceAnalytics}
       />
       {!analytics.hasPayrollData ? (
-        <p className="rounded-lg border border-zinc-200 bg-white p-8 text-center text-sm text-zinc-500 shadow-sm">
+        <p className="min-w-0 border-t border-zinc-200 bg-white px-4 py-8 text-center text-sm text-zinc-500">
           <WorkspaceText text="No payroll data for this period." />
         </p>
       ) : (
@@ -2021,7 +2021,7 @@ function StaffIncomeTab({ canManage, lines, period }: {
         <section className={styles.staffSection}><h3><WorkspaceText text="Period adjustments" /></h3><StaffIncomeAutosaveInputs bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /></section>
       </div>
       <details className="border-t p-4"><summary className="text-sm font-medium"><WorkspaceText text="Breakdown" /></summary>
-        {line.dailyTotals.length ? <div className="grid gap-3">{line.dailyTotals.map(day => <div key={day.id} className="rounded-lg bg-zinc-50 p-3"><p className="mb-2 text-sm font-medium"><WorkspaceText text={formatDate(day.business_date)} /></p><dl className={styles.ledger}><div><dt><WorkspaceText text="Shop Gross" /></dt><dd>{formatMoney(day.gross_sales)}</dd></div><div><dt><WorkspaceText text="Comm Gross" /></dt><dd>{formatMoney(dailyCommissionGross(day))}</dd></div><div><dt><WorkspaceText text="Tip" /></dt><dd>{formatMoney(day.tip_amount)}</dd></div></dl></div>)}</div> : <p className="text-sm text-zinc-500"><WorkspaceText text="No daily rows for this staff member." /></p>}
+        {line.dailyTotals.length ? <div className="grid gap-3">{line.dailyTotals.map(day => <div key={day.id} className="bg-zinc-50 p-3"><p className="mb-2 text-sm font-medium"><WorkspaceText text={formatDate(day.business_date)} /></p><dl className={styles.ledger}><div><dt><WorkspaceText text="Shop Gross" /></dt><dd>{formatMoney(day.gross_sales)}</dd></div><div><dt><WorkspaceText text="Comm Gross" /></dt><dd>{formatMoney(dailyCommissionGross(day))}</dd></div><div><dt><WorkspaceText text="Tip" /></dt><dd>{formatMoney(day.tip_amount)}</dd></div></dl></div>)}</div> : <p className="text-sm text-zinc-500"><WorkspaceText text="No daily rows for this staff member." /></p>}
         {Boolean(line.inputHistory?.length) && <details className="mt-3 border-t pt-2"><summary className="text-sm font-medium"><WorkspaceText text="Input history" /></summary><ul className="grid gap-2 text-sm">{line.inputHistory?.map(history => <li key={history.id}><WorkspaceText text={inputHistoryLabel(history.change_type)} /> · {inputHistoryFields(history.field_changes)}<p className="text-xs text-zinc-500"><WorkspaceText text={formatDateTime(history.created_at)} /></p></li>)}</ul></details>}
       </details>
     </PayrollDisclosure>)}
@@ -2189,7 +2189,7 @@ function SettingsHistory({ history }: { history: StaffPayrollSetting[] }) {
 
             return (
               <div
-                className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded bg-zinc-50 px-3 py-2 text-xs text-zinc-700"
+                className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-zinc-50 px-3 py-2 text-xs text-zinc-700"
                 key={version.id || version.effective_from}
               >
                 <span className="font-medium text-zinc-900">
@@ -2456,7 +2456,7 @@ function SettingsStaffCard({
 
 function SettingsExplanationNote() {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
+    <section className="min-w-0 border-t border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
       <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Setting notes" /></h3>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <div>
@@ -2508,7 +2508,7 @@ function SettingsTab({
 }) {
   return (
     <section className="grid gap-6" id="payroll-settings">
-      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className="min-w-0 border-t border-zinc-200 bg-white py-4">
         <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Shop Payroll Schedule" /></h2>
         <fieldset disabled={!canManage}><PayrollScheduleForm
           action={saveSalonPayrollScheduleAction}
@@ -2613,7 +2613,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
       : params.payroll_error;
 
   return (
-    <PayrollEditBoundary><PayrollLiveRefresh salonId={pageContext.currentSalon.id} /><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
+    <PayrollEditBoundary><PayrollLiveRefresh salonId={pageContext.currentSalon.id} /><main className={`${styles.page} flex w-full min-w-0 flex-col gap-6 py-4`}>
       <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{pageContext.currentSalon.name}</p></div>{data.ledger.state !== "legacy_review" && <span className={styles.status}><WorkspaceText text={data.ledger.state === "closed" ? "Closed" : data.ledger.state === "open" ? "Current calculation" : "Needs review"} /></span>}</header>
       <Tabs
         activeTab={activeTab}
