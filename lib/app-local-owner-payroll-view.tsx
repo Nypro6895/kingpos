@@ -2571,7 +2571,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
 
   return (
     <PayrollEditBoundary><PayrollLiveRefresh salonId={salonId} /><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
-      <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{salonName}</p></div><span className={styles.status}><WorkspaceText text={data.ledger.state === "closed" ? (data.ledger.adjustments.length ? "Adjusted" : "Closed") : data.ledger.state === "open" ? "Current calculation" : "Needs review"} /></span></header>
+      <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{salonName}</p></div>{data.ledger.state !== "legacy_review" && <span className={styles.status}><WorkspaceText text={data.ledger.state === "closed" ? "Closed" : data.ledger.state === "open" ? "Current calculation" : "Needs review"} /></span>}</header>
       <Tabs
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}

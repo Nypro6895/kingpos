@@ -233,7 +233,7 @@ export function TaxCompanyLinesTable({
                   ) : null}
                 </td>
                 <td className="px-4 py-3">
-                  {line.ledger?<details className="whitespace-normal min-w-56 max-w-sm"><summary><WorkspaceText text={line.ledger.adjusted?"Adjusted":"Original"}/></summary><PayrollAdjustmentHistory ledger={line.ledger}/></details>:<WorkspaceText text="Historical statement"/>}
+                  {line.ledger?<details className="whitespace-normal min-w-56 max-w-sm"><summary><WorkspaceText text={line.ledger.adjusted?"Payroll record":"Original"}/></summary><PayrollAdjustmentHistory ledger={line.ledger}/></details>:<WorkspaceText text="Historical statement"/>}
                 </td>
                 <td className="px-4 py-3">
                   <PaystubCell

@@ -39,8 +39,10 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
   const dailyTotal = rows.reduce((sum, row) => sum + row.commissionGross + row.tipAmount, 0);
   const estimated = data.status.kind === "live";
   const paidAt = data.latestStatement?.run.paid_at;
+  const statusLabel = data.status.label === "Adjusted" || data.status.label === "Historical payroll needs review"
+    ? null : data.status.label;
   return <section className={styles.portal}><Period data={data} tab="payroll" />
-    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={estimated ? "Estimated take-home" : "Take-home pay"} /></p><small><WorkspaceText text={data.status.label} /><WorkspaceText text={paidAt ? ` · ${date(paidAt)}` : ""} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
+    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={estimated ? "Estimated take-home" : "Take-home pay"} /></p>{(statusLabel || paidAt) && <small>{statusLabel && <WorkspaceText text={statusLabel} />}<WorkspaceText text={paidAt ? `${statusLabel ? " · " : ""}${date(paidAt)}` : ""} /></small>}</div><strong>{money(line.final_staff_income)}</strong></div>
       <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
     {line?.ledger && <PayrollAdjustmentHistory ledger={line.ledger} />}
     <div className={styles.columns}>{line && <section><h2><WorkspaceText text="Pay breakdown" /></h2><dl>
