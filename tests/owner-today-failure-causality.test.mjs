@@ -75,11 +75,12 @@ function fixture({ fail = {}, hold = {}, timers = false, capacity = Infinity, ho
   const timingModule = load('lib/read-request-timing.ts', {}, {
     console: { warn(_label, value) { failures.push({ phase: request.getStore()?.phase, ...value }); } },
   });
+  const rejection = load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
   const auth = load('lib/supabase/auth-rest.ts', {
     '@/lib/bounded-get': bounded,
     '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, read) => read(), observeAppLocalCommandBackendStatus() {} },
     '@/lib/read-context-scope': reads,
-    './auth-rejection': load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } }),
+    './auth-rejection': rejection,
   }, { fetch: backend });
 
   function operation(url) {
@@ -151,6 +152,7 @@ function fixture({ fail = {}, hold = {}, timers = false, capacity = Infinity, ho
     }) },
     './session-policy': { ADMIN_SESSION_COOKIE: 'admin', REMEMBER_LOGIN_COOKIE: 'remember', sessionCookieOptions: () => ({}) },
     './auth-rest': auth,
+    './auth-rejection': rejection,
   });
   const context = {
     scope: scopeId, user: { id: '00000000-0000-4000-8000-000000000002', first_name: 'Fixture' },

@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r7-auth-integration-20261021",
+  "status": "working",
+  "summary": "Integrate reviewed frozen confirmed-auth-rejection delta onto immutable R6 in a separate auth-only candidate. Repair only the admission UI fixture module interface if required; preserve assertions. Pilot excluded. Local checks only; external native/staging release gates held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/experience/my-work/route.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/supabase/auth-rejection.ts",
+    "lib/supabase/server.ts",
+    "tests/app-local-read-auth-rejection.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/session-restart-credential-contract.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "595392d7eae4c5aa3f9b2eee0afaa497439dfb3d",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth"
+  },
+  "dependencies": [
+    "reylumi-final-r6-integration-20261021",
+    "r6-confirmed-auth-rejection-20261021"
+  ],
+  "validation": [
+    {
+      "name": "integrated-auth-role-cache-request-reuse-admission-build",
+      "result": "pending"
+    }
+  ],
+  "id": "2b0eb37d-ca49-406c-b79f-c5b046cc288d",
+  "recordedAt": "2026-10-21T23:43:30.777Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

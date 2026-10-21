@@ -10,6 +10,7 @@ import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
 import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
 import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
+import { AuthRejectionError, isConfirmedAuthRejection } from "./auth-rejection";
 import { coalesceReadInFlight } from "@/lib/read-context-scope";
 import { createHash } from "node:crypto";
 
@@ -203,7 +204,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
   });
 }
 
-export async function createAuthenticatedSupabaseServerClient(options: { throwOnUnavailable?: boolean } = {}) {
+export async function createAuthenticatedSupabaseServerClient(options: { throwOnUnavailable?: boolean; throwOnRejected?: boolean } = {}) {
   const config = getSupabaseConfig();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -215,6 +216,7 @@ export async function createAuthenticatedSupabaseServerClient(options: { throwOn
     config,
     accessToken,
     options.throwOnUnavailable,
+    options.throwOnRejected,
   );
 
   if (!accessTokenAllowed) {
@@ -329,6 +331,7 @@ async function isAccessTokenAllowedForAppSession(
   config: SupabaseConfig,
   accessToken: string,
   throwOnUnavailable = false,
+  throwOnRejected = false,
 ) {
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
@@ -347,22 +350,41 @@ async function isAccessTokenAllowedForAppSession(
   const { data: authData, error: authError } = await readAuthUser(supabase, accessToken, config);
 
   if (authError || !authData.user) {
+    if (throwOnRejected && authError && isConfirmedAuthRejection(authError, authError.status)) throw new AuthRejectionError(401);
     if (throwOnUnavailable) assertAuthAvailable(authError, authError?.status, "Authentication");
     return false;
   }
 
-  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = await Promise.all([
-    coalesceReadInFlight(
-      accountStatusReadKey,
-      authReadAuthority(config, accessToken, authData.user.id),
-      async () => await supabase
-        .from("users")
-        .select("status")
-        .eq("auth_user_id", authData.user.id)
-        .maybeSingle<PublicUserStatusRow>(),
-    ),
-    isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable),
-  ]);
+  const statusRead = coalesceReadInFlight(
+    accountStatusReadKey,
+    authReadAuthority(config, accessToken, authData.user.id),
+    async () => await supabase
+      .from("users")
+      .select("status")
+      .eq("auth_user_id", authData.user.id)
+      .maybeSingle<PublicUserStatusRow>(),
+  );
+  const sessionRead = isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable, throwOnRejected);
+  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = throwOnRejected ? await (async () => {
+    // An unavailable sibling must not hide a successful, conclusive denial.
+    // A proven denial need not wait for that sibling's remaining read budget.
+    const denial = new Promise<never>((_resolve, reject) => {
+      void statusRead.then(({ data, error }) => {
+        if (!error && data?.status && isDeniedKingUserStatus(data.status)) reject(new AuthRejectionError(403));
+      }, () => {});
+      void sessionRead.catch(error => { if (error instanceof AuthRejectionError) reject(error); });
+    });
+    const settled = Promise.allSettled([statusRead, sessionRead]).then(([status, session]) => {
+      if (session.status === "rejected" && session.reason instanceof AuthRejectionError) throw session.reason;
+      if (status.status === "fulfilled" && !status.value.error && status.value.data?.status && isDeniedKingUserStatus(status.value.data.status)) throw new AuthRejectionError(403);
+      if (status.status === "rejected") throw status.reason;
+      if (session.status === "rejected") throw session.reason;
+      return [status.value, session.value] as const;
+    });
+    // Both promises retain handlers after the race; a late unknown failure is
+    // consumed without another decision, replay, or cancelling another reader.
+    return Promise.race([denial, settled]);
+  })() : await Promise.all([statusRead, sessionRead]);
 
   if (userStatusError) {
     if (throwOnUnavailable) throw new AuthAvailabilityError("Account status");
@@ -378,6 +400,7 @@ async function isAccessTokenAllowedForAppSession(
 
   if (userStatus?.status) {
     if (isDeniedKingUserStatus(userStatus.status)) {
+      if (throwOnRejected) throw new AuthRejectionError(403);
       return false;
     }
 
@@ -410,6 +433,7 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   if (authIdentityDeleted === true) {
+    if (throwOnRejected) throw new AuthRejectionError(401);
     return false;
   }
 
@@ -435,6 +459,7 @@ async function isAppLoginSessionCookieAllowed(
   accessToken: string,
   authUserId: string,
   throwOnUnavailable = false,
+  throwOnRejected = false,
 ) {
   const loginSessionId = (await cookies()).get(
     ACCOUNT_LOGIN_SESSION_COOKIE,
@@ -483,6 +508,7 @@ async function isAppLoginSessionCookieAllowed(
     return false;
   }
 
+  if (data?.revoked_at && throwOnRejected) throw new AuthRejectionError(401);
   return data?.revoked_at ? false : true;
 }
 

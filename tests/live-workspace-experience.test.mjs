@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { isAuthSessionMissingError } from '@supabase/supabase-js';
 
 function load(file, dependencies = {}) {
   const exports = {};
@@ -15,6 +16,7 @@ function load(file, dependencies = {}) {
     if (name === '@/lib/read-request-timing') return load('lib/read-request-timing.ts');
     if (name === '@/lib/today-dashboard-sections') return load('lib/today-dashboard-sections.ts');
     if (name === '@/lib/read-context-scope') return load('lib/read-context-scope.ts', {'server-only':{}, 'node:async_hooks':{AsyncLocalStorage}});
+    if (name === '@/lib/supabase/auth-rejection') return authRejection;
     if (name === '@/lib/staff-portal-identity' && !(name in dependencies)) return load('lib/staff-portal-identity.ts', {
       'server-only': {}, react: { cache: read => read },
       '@/lib/current-context': { getCurrentStaffBusinessContext: () => assert.fail('Legacy unminted identity must not resolve a new context') },
@@ -30,6 +32,7 @@ function load(file, dependencies = {}) {
   }, exports);
   return exports;
 }
+const authRejection = load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
 const live = load('lib/experience-live-resource.ts');
 const server = load('lib/experience-live-resource-server.ts', { 'server-only': {}, 'node:crypto': { createHash } });
 const cache = load('lib/experience-resource-cache.ts');
@@ -186,4 +189,30 @@ test('My Work read model emits only its own authorized display data and preserve
   assert.doesNotMatch(JSON.stringify(result), /never-send|otherStaffLines|other_secret|other_metadata|"context"/);
   payroll.staff = { id: 'another-staff' };
   await assert.rejects(model(identity, { tab: 'payroll' }), /identity could not be verified/);
+});
+
+
+test('legacy My Work GET preserves only typed confirmed rejection and keeps unknown failures503', async () => {
+  let boundary = 'identity', failure, loads = 0;
+  const identity = { context: { user: {}, currentSalon: {}, currentAccount: {}, scope: 'staff-scope' }, staff: { id: 'staff' } };
+  const GET = load('app/api/experience/my-work/route.ts', {
+    'next/headers': { headers: async () => new Headers() }, 'next/server': { connection: async () => {} },
+    '@/lib/experience-context': { getExperienceContext: value => ({ scope: value.scope }) },
+    '@/lib/experience-live-resource-server': server,
+    '@/lib/staff-portal-identity': { getStaffPortalIdentity: async () => { if (boundary === 'identity') throw failure; return identity; } },
+    '@/lib/staff-offline-binding-server': {},
+    '@/lib/staff-my-work-resource-server': { loadStaffMyWorkResource: async () => { loads++; throw failure; } },
+  }).GET;
+  for (boundary of ['identity', 'loader']) {
+    for (const status of [401, 403]) {
+      failure = new authRejection.AuthRejectionError(status);
+      const response = await GET(new Request('https://example.test/api?scope=staff-scope&staffId=staff'));
+      assert.equal(response.status, status); assert.equal(response.headers.get('cache-control'), 'private, no-store');
+      assert.deepEqual(await response.json(), { error: 'Your access has changed. Please sign in again.' });
+    }
+    for (failure of [new Error('Synthetic unavailable'), Object.assign(new Error('Untrusted status property'), { status: 401 }), Object.assign(new Error('Unknown SDK error'), { status: 400 })]) {
+      assert.equal((await GET(new Request('https://example.test/api?scope=staff-scope&staffId=staff'))).status, 503);
+    }
+  }
+  assert.equal(loads, 5, 'Identity rejection cannot reach data loading');
 });

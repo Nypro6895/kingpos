@@ -155,6 +155,7 @@ function fixture({ hold = {}, fail = {}, snapshotDate = '2026-10-21', missingUse
     } }) },
     './session-policy': { ADMIN_SESSION_COOKIE: 'admin', REMEMBER_LOGIN_COOKIE: 'remember', sessionCookieOptions: () => ({}) },
     './auth-rest': auth,
+    './auth-rejection': load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } }),
   });
   const current = {
     getCurrentStaffBusinessContext: async () => contextFor(request.getStore().suffix),

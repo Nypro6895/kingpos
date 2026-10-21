@@ -8,7 +8,7 @@ function load(file, dependencies = {}) {
   const exports = {};
   const code = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   new Function('require', 'exports', 'console', code)(name => {
-    if (name === './auth-rejection') return load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
+    if (name === './auth-rejection' || name === '@/lib/supabase/auth-rejection') return authRejection;
     if (name === '@supabase/supabase-js' && !(name in dependencies)) return { isAuthSessionMissingError };
     if (name === '@/lib/read-request-timing') return load('lib/read-request-timing.ts');
     if (name === '@/lib/read-context-scope') return { runWithReadContext: fn => fn(), getReadRequestTiming: () => undefined };
@@ -18,6 +18,7 @@ function load(file, dependencies = {}) {
   }, exports, { error() {} });
   return exports;
 }
+const authRejection = load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
 const reads = load('lib/bounded-get.ts');
 const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': reads, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} } });
 const adminRow = { user_id: 'admin', membership_id: 'member', role_id: 'role', role_name: 'Admin', role_slug: 'admin', permissions: ['platform.access'] };

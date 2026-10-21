@@ -5,6 +5,7 @@ import { loadStaffMyWorkResource } from "@/lib/staff-my-work-resource-server";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { getTrustedStaffOfflineBinding } from "@/lib/staff-offline-binding-server";
+import { AuthRejectionError } from "@/lib/supabase/auth-rejection";
 
 const failure = (error: string, status: number) => Response.json({ error }, { status, headers: { "Cache-Control": "private, no-store" } });
 
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
     if ((tab === "payroll" && !data.payrollData) || (tab === "analysis" && !data.analysisData)) return failure("Temporarily unavailable", 503);
     return liveResourceResponse(request, createLiveResourceSnapshot(data, ["generatedAt"]));
   } catch (error) {
+    if (error instanceof AuthRejectionError) return failure("Your access has changed. Please sign in again.", error.status);
     console.error("My Work resource load failed", error);
     return failure("Temporarily unavailable", 503);
   }

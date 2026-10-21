@@ -39,7 +39,7 @@ function fixture() {
   const counts = { identity: 0, status: 0, session: 0, profile: 0, tombstone: 0, insert: 0 };
   const state = {
     authError: null, statusError: null, sessionError: null,
-    status: 'active', revoked: false, missingProfile: false, tombstone: false,
+    status: 'active', revoked: false, missingProfile: false, tombstone: false, gateHolds: {},
   };
   const clientOptions = [];
   const accountStatus = load('lib/users/account-status.ts');
@@ -77,6 +77,7 @@ function fixture() {
               const stage = inserted ? 'insert' : table === 'account_login_sessions' ? 'session' : selected === 'status' ? 'status' : 'profile';
               counts[stage]++;
               await tick();
+              if (state.gateHolds[stage]) await state.gateHolds[stage];
               if (stage === 'session') {
                 const revoked = typeof state.revoked === 'function' ? state.revoked(filters.id) : state.revoked;
                 return { data: { revoked_at: revoked ? '2026-10-18T20:00:00Z' : null }, error: state.sessionError };
@@ -360,4 +361,63 @@ test('pending helper clears rejected or synchronously throwing reads and preserv
     assert.equal(await f.scope.runWithReadContext(context), 1);
     assert.equal(contextCalls, 1);
   });
+});
+
+
+test('rejection opt-in preserves confirmed session/auth/account meaning while legacy callers still return null', async () => {
+  for (const denied of ['session', 'account', 'tombstone', 'sdk']) {
+    const f = fixture();
+    if (denied === 'session') f.state.revoked = true;
+    if (denied === 'account') f.state.status = 'suspended';
+    if (denied === 'tombstone') { f.state.status = null; f.state.tombstone = true; }
+    if (denied === 'sdk') f.state.authError = await actualSDKAuthError('session_not_found', 400);
+    assert.equal(await f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true })), null, 'Legacy strict availability option still returns null on known denial');
+    for (const strict of [false, true]) {
+      await assert.rejects(f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true, throwOnUnavailable: strict })), {
+        name: 'AuthRejectionError', status: denied === 'account' ? 403 : 401,
+      });
+    }
+  }
+});
+
+test('rejection opt-in cannot convert unknown auth/status/session failures or missing credentials into rejection', async () => {
+  for (const area of ['auth', 'status', 'session']) {
+    const f = fixture(); f.state[area + 'Error'] = { code: 'synthetic_unknown', status: 400, message: 'Unknown synthetic validation failure' };
+    await assert.rejects(f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true, throwOnUnavailable: true })), { name: 'AuthAvailabilityError', status: 503 });
+    assert.equal(await f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true })), null);
+  }
+  const f = fixture();
+  assert.equal(await f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true, throwOnUnavailable: true }), { token: undefined, session: 'login-one' }), null);
+});
+
+for (const strict of [false, true]) for (const known of ['session', 'account']) for (const first of ['known', 'unknown']) test((strict ? 'strict final' : 'initial optional') + ' proven ' + known + ' denial outranks unavailable sibling when ' + first + ' settles first', async () => {
+  const f = fixture(), releases = {};
+  for (const area of ['status', 'session']) f.state.gateHolds[area] = new Promise(resolve => { releases[area] = resolve; });
+  if (known === 'session') { f.state.revoked = true; f.state.statusError = { code: 'synthetic_unavailable', status: 503 }; }
+  else { f.state.status = 'suspended'; f.state.sessionError = { code: 'synthetic_unavailable', status: 503 }; }
+  let settled = false;
+  const pending = f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true, throwOnUnavailable: strict })).finally(() => { settled = true; });
+  const result = assert.rejects(pending, { name: 'AuthRejectionError', status: known === 'session' ? 401 : 403 });
+  while (!f.counts.status || !f.counts.session) await tick();
+  const knownGate = known === 'session' ? 'session' : 'status', unknownGate = known === 'session' ? 'status' : 'session';
+  try {
+    releases[first === 'known' ? knownGate : unknownGate](); await tick(); await tick();
+    assert.equal(settled, first === 'known', first === 'known' ? 'A conclusive denial must settle before releasing the held unavailable sibling' : 'Do not emit premature503 before a possible conclusive sibling settles');
+  } finally { releases.status(); releases.session(); }
+  await result;
+  assert.equal(f.counts.identity, 1); assert.equal(f.counts.status, 1); assert.equal(f.counts.session, 1);
+});
+
+test('two unavailable critical gates remain503 without a proven denial', async () => {
+  const f = fixture(); f.state.statusError = { code: 'unknown_status', status: 503 }; f.state.sessionError = { code: 'unknown_session', status: 503 };
+  await assert.rejects(f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true, throwOnUnavailable: true })), { name: 'AuthAvailabilityError', status: 503 });
+});
+
+
+test('status/session RLS403 and SQL42501 errors remain unavailable rather than confirmed account rejection', async () => {
+  for (const area of ['status', 'session']) {
+    const f = fixture(); f.state[area + 'Error'] = { code: '42501', status: 403, message: 'Synthetic RLS query refusal' };
+    await assert.rejects(f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true, throwOnUnavailable: true })), { name: 'AuthAvailabilityError', status: 503 });
+    assert.equal(await f.withRead(() => f.server.createAuthenticatedSupabaseServerClient({ throwOnRejected: true })), null);
+  }
 });

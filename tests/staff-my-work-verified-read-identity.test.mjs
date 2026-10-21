@@ -60,7 +60,7 @@ test('late session revocation after snapshot starts prevents any completed priva
   const f = fixture({ hold: { snapshot }, hooks: { data: (kind, data) => kind === 'session' && revoked ? { revoked_at: '2000-01-01T00:00:00Z' } : data } });
   const pending = f.run(); await until(() => f.count('snapshot') === 1);
   revoked = true; snapshot.resolve(); const response = await pending;
-  assert.equal(response.status, 503); assert.equal((await response.json()).data, undefined);
+  assert.equal(response.status, 401); assert.equal((await response.json()).data, undefined);
   assert.ok(f.count('session') >= 2, 'Final verification must perform a new settled session read');
 });
 
@@ -76,7 +76,7 @@ test('late suspension, missing Staff or duplicate Staff never exports a private 
     } } });
     const pending = f.run(); await until(() => f.count('snapshot') === 1);
     late = true; snapshot.resolve(); const response = await pending;
-    assert.equal(response.status, 503, failure); assert.equal((await response.json()).data, undefined);
+    assert.equal(response.status, failure === 'suspended' ? 403 : 503, failure); assert.equal((await response.json()).data, undefined);
   }
 });
 

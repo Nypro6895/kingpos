@@ -143,6 +143,7 @@ function pipeline(options = {}) {
       '@supabase/supabase-js': fakeSdk, '@/lib/account-security-shared': account,
       '@/lib/users/account-status': accountStatus, 'next/headers': readers,
       './session-policy': policy, './auth-rest': authRest,
+      './auth-rejection': rejection,
       '@/lib/read-context-scope': scope, 'node:crypto': crypto,
     });
     const route = load('app/(app)/api/auth/session/route.ts', {

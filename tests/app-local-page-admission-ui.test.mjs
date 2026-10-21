@@ -75,7 +75,8 @@ const replacements = {
   './scope': `export function ExperienceScopeProvider({children}){return children;}`,
   '@/lib/app-local-scope-id': `export const isAppLocalScopeId=v=>/^v3:[a-f0-9]{64}$/.test(v);export const isAppLocalPortableScopeId=()=>false;`,
   '@/lib/legal-policies': `export const legalDocuments={};`,
-  '@/lib/app-local-resource': `export const resetAppLocalResources=()=>{};export const useAppLocalResource=()=>({loading:false,refreshing:false,refresh:async()=>{}});`,
+  // Keep shell reads synthetic while exercising the real role DTO boundary methods.
+  '@/lib/app-local-resource': `export {rememberAppLocalRoleResources,reconcileAppLocalRoleResources,clearAppLocalRoleResources} from './lib/app-local-resource';export const resetAppLocalResources=()=>{};export const useAppLocalResource=()=>({loading:false,refreshing:false,refresh:async()=>{}});`,
   '@/lib/app-local-reference-content': `export const APP_LOCAL_REFERENCE_ASSETS=[];`,
   '@/lib/app-local-secondary-registry': `export const getAppLocalSecondaryPage=p=>p==='/'?{id:'root',title:'Root',requiresContext:true,Component:()=>null}:null;export const appLocalRouteAlias=()=>null;`,
 };

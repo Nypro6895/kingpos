@@ -20,7 +20,7 @@ function fingerprint(identity: StaffPortalIdentity) {
 async function readStaffPortalIdentity(targetContext?: CurrentBusinessContext, strict = false) {
   const context = targetContext ?? await getCurrentStaffBusinessContext();
   if (!context.user || !context.currentSalon || !context.currentAccount) return { context, staff: null, supabase: null };
-  const supabase = await createAuthenticatedSupabaseServerClient(strict ? { throwOnUnavailable: true } : undefined);
+  const supabase = await createAuthenticatedSupabaseServerClient({ throwOnRejected: true, ...(strict ? { throwOnUnavailable: true } : {}) });
   if (!supabase) throw new Error("Staff session unavailable.");
   const resolved = await resolveStaffAccountForSalon({ context, supabase });
   if (resolved.status === "multiple") throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);

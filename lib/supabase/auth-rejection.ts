@@ -1,5 +1,13 @@
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 
+/** A server-observed denial, distinct from an unavailable validation service. */
+export class AuthRejectionError extends Error {
+  constructor(readonly status: 401 | 403) {
+    super("Your access has changed. Please sign in again.");
+    this.name = "AuthRejectionError";
+  }
+}
+
 /** Only a confirmed rejection may turn an authenticated request into a guest.
  * Unknown validation failures and service outages leave authority unverified.
  * Keep this helper free of request storage so proxy refresh and server reads
