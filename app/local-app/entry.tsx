@@ -5,7 +5,7 @@ import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 import { LegalDocumentPage, LegalHub } from "@/app/legal/legal-components";
 import { legalDocuments } from "@/lib/legal-policies";
 import { getAppLocalHost, appLocalPath, appLocalRequestId, type AppLocalContext } from "@/lib/app-local-host";
-import { resetAppLocalResources, useAppLocalResource } from "@/lib/app-local-resource";
+import { resetAppLocalResources, useAppLocalResource, rememberAppLocalRoleResources, reconcileAppLocalRoleResources, clearAppLocalRoleResources } from "@/lib/app-local-resource";
 import { getAppLocalCommandScope, setAppLocalCommandScope } from "@/lib/app-local-command-client";
 import { getAppLocalPage as getGeneralAppLocalPage } from "@/lib/app-local-page-registry";
 import { getAppLocalPersonalPage } from "@/lib/app-local-personal-registry";
@@ -163,6 +163,7 @@ function App() {
   const handoffPath = useRef<string | null>(null), acceptedHostEpoch = useRef(-1);
   const workspaceRecovery = useRef<WorkspaceRecovery | null>(null), workspaceResolution = useRef<WorkspaceResolution | null>(null);
   const workspaceGesture = useRef<WorkspaceGesture | null>(null);
+  const roleReturn = useRef<{ viewerId: string; generation: string } | null>(null);
   const pageRecovery = useRef<PageRecovery | null>(null);
   const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
   const [openingSignIn, setOpeningSignIn] = useState(false), [signInError, setSignInError] = useState(false);
@@ -186,7 +187,7 @@ function App() {
     window.dispatchEvent(new Event("reylumi:app-local-page-resolve"));
     return true;
   }, []);
-  const accept = useCallback((value: AppLocalContext, requestedPath: string, requested = false, readRevision = -1) => {
+  const accept = useCallback((value: AppLocalContext, requestedPath: string, requested = false, readRevision = -1, fresh = false) => {
     const reject = (contextReason: AppLocalContextReason) => { recordExperienceTrace("context.reject", { source: "app-local", contextReason, offline: Boolean(value?.offline) }); return false; };
     // A neutral workspace read resolves the selected home; it never admits the
     // former Staff route or the destination's private page by itself.
@@ -212,6 +213,7 @@ function App() {
       // A fresh explicit denial cannot leave an older, still-unexpired private
       // lease visible while its error UI waits for the native reset event.
       if (!value.offline && ([401, 403, 409].includes(value.grantStatus ?? 0) || value.offlineState === "unconfirmed" || value.offlineState === "online-only")) {
+        clearAppLocalRoleResources(); roleReturn.current = null;
         const denied = Object.entries(admitted.current).filter(([key]) => !value.context.authenticated || key === family);
         for (const [, admission] of denied) if (admission) resetAppLocalResources(admission.value.context.scope);
         admitted.current = Object.fromEntries(Object.entries(admitted.current).filter(([key]) => !denied.some(([deniedKey]) => deniedKey === key)));
@@ -237,6 +239,9 @@ function App() {
     const identityChanged = all.some(item => item && (item.value.context.viewerId !== value.context.viewerId || item.generation !== generation));
     const authorityChanged = previous && (previous.value.context.scope !== value.context.scope || previous.value.context.permissionRevision !== value.context.permissionRevision || previous.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision);
     if (identityChanged || authorityChanged) { recordExperienceTrace("cache.reset", { source: "app-local", reason: identityChanged ? "identity" : previous?.value.context.scope !== value.context.scope ? "scope" : "grant", changed: true }); resetAppLocalResources(); clearExperienceState(); setVisited([]); admitted.current = {}; }
+    const restoreRole = requested && fresh && handoffPath.current === requestedPath && roleReturn.current?.viewerId === value.context.viewerId && roleReturn.current?.generation === generation;
+    reconcileAppLocalRoleResources(value, generation, restoreRole);
+    if (!value.offline && (restoreRole || !workspaceGesture.current && !handoffPath.current)) roleReturn.current = null;
     admitted.current = { ...admitted.current, [family]: next }; setAdmissions(admitted.current);
     if (!value.offline) staleScopes.current.delete(value.context.scope);
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
@@ -308,7 +313,7 @@ function App() {
           if (!forceFresh && (check.requireFresh && expiredCachedContext(value) || value.offline && staleScopes.current.has(value.context.scope))) { forceFresh = true; continue; }
           const withdrawnAt = staleScopes.current.get(value.context.scope);
           if (!value.offline && withdrawnAt !== undefined && readRevision < withdrawnAt) { forceFresh = true; continue; }
-          if (!accept(value, requestedPath, true, readRevision)) {
+          if (!accept(value, requestedPath, true, readRevision, forceFresh)) {
             const contextReason = !value || value.schemaVersion !== 1 || !value.context ? "schema" : !isAppLocalScopeId(value.context.scope) ? "scope" : appLocalPageAdmissionReason(value, requestedPath, { generation: window.__reylumiAppLocalContext?.generation, online: navigator.onLine }) ?? "authority-family";
             recordExperienceTrace("context.reject", { source: "app-local", contextReason, operation });
             // A saved Owner route may outlive the server-selected Staff role.
@@ -382,6 +387,7 @@ function App() {
       const affected = Object.entries(admitted.current).filter(([, admission]) => admission?.value.context.scope === scope);
       // An old page's reply cannot withdraw a newer accepted workspace.
       if (!affected.length) return;
+      clearAppLocalRoleResources(); roleReturn.current = null;
       const activeAffected = affected.some(([family]) => family === currentFamily);
       staleScopes.current.set(scope, ++conflictRevision.current);
       resetAppLocalResources(scope);
@@ -400,11 +406,15 @@ function App() {
       setError(false);
       void verify({ fresh: true });
     };
-    const reset = (event: Event) => {
+    const reset = (event: Event, roleHandoff = false) => {
       const detail = (event as CustomEvent<{ reason?: string; status?: number; scope?: string; scopeEpoch?: number }>).detail;
       // A fresh authority result rotates native delivery metadata. Do not abort
       // the very context read producing it, or clear an already accepted reply.
       if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
+      // A validated gesture may rotate native delivery metadata before its
+      // command reply arrives. Keep only quarantined DTOs, never old admission.
+      const preserveRoleReads = roleHandoff || detail?.reason === "context" && roleReturn.current?.generation === window.__reylumiAppLocalContext?.generation;
+      if (!preserveRoleReads) { clearAppLocalRoleResources(); roleReturn.current = null; }
       const contextReason = detail?.reason === "logout" ? "logout" : appLocalContextFailureReason({ status: detail?.status, contextReason: "reset" });
       recordExperienceTrace("cache.reset", { source: "app-local", trigger: "reset", reason: detail?.reason === "context" ? "grant" : detail?.reason === "resource" ? "resource" : "reset", contextReason, status: detail?.status });
       if (detail?.reason !== "context") { contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; pageRecovery.current = null; handoffPath.current = null; setSwitchingWorkspace(false); }
@@ -425,7 +435,7 @@ function App() {
       let destination: string; try { destination = appLocalPath(value); } catch { return; }
       // Clear the old authority before any destination can render. Commands
       // have already finished; retry only the fresh read, never the write.
-      reset(new Event("reylumi:app-local-reset"));
+      reset(new Event("reylumi:app-local-reset"), Boolean(roleReturn.current));
       handoffPath.current = destination; setSwitchingWorkspace(true); setError(false);
       navigate(destination);
       if (!isPublic(current.current)) void verify({ fresh: true });
@@ -441,10 +451,13 @@ function App() {
       // an uncertain reply arrives; recovery must still bind the original user.
       workspaceGesture.current = { viewerId: former.value.context.viewerId, generation: detail.generation, scope: detail.scope,
         ...(typeof detail.workspaceId === "string" ? { workspaceId: detail.workspaceId } : {}) };
+      rememberAppLocalRoleResources(former.value, detail.generation);
+      roleReturn.current = { viewerId: former.value.context.viewerId, generation: detail.generation };
     };
     const finishWorkspace = (event: Event) => {
       const detail = (event as CustomEvent<{ generation?: string; scope?: string }>).detail;
       if (detail?.generation === workspaceGesture.current?.generation && detail?.scope === workspaceGesture.current?.scope) workspaceGesture.current = null;
+      if (!handoffPath.current && !workspaceRecovery.current) roleReturn.current = null;
     };
     const resolveWorkspace = (event?: Event) => {
       const detail = (event as CustomEvent<{ generation?: string; workspaceId?: string; gesture?: WorkspaceGesture }> | undefined)?.detail;
@@ -460,7 +473,7 @@ function App() {
       const viewerId = saved?.viewerId ?? former?.value.context.viewerId;
       if (!viewerId || saved && saved.generation !== generation) return;
       const identity: WorkspaceRecovery = saved ?? { viewerId, generation, ...(typeof detail?.workspaceId === "string" ? { workspaceId: detail.workspaceId } : {}) };
-      reset(new Event("reylumi:app-local-reset"));
+      reset(new Event("reylumi:app-local-reset"), !pageAttempt && Boolean(roleReturn.current));
       if (pageAttempt) pageRecovery.current = pageAttempt;
       workspaceRecovery.current = identity;
       handoffPath.current = "/"; setSwitchingWorkspace(true); setError(false);

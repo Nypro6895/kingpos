@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { ReadRequestTiming } from "./read-request-timing";
 
 type ReadScope = {
+  token: object;
   controller: AbortController;
   memoized: Map<symbol, Promise<unknown>>;
   pending: Map<symbol, Map<string, Promise<unknown>>>;
@@ -10,6 +11,17 @@ type ReadScope = {
 };
 const reads = new AsyncLocalStorage<ReadScope>();
 const readAborts = new AsyncLocalStorage<AbortSignal>();
+const freshValidation = new AsyncLocalStorage<boolean>();
+
+/** Opaque request identity; never an authorization decision or cross-request cache. */
+export function getReadContextToken(): object | undefined {
+  return reads.getStore()?.token;
+}
+
+/** Final read validation must not join another caller's pending identity gate. */
+export function runWithFreshReadValidation<T>(read: () => Promise<T>): Promise<T> {
+  return freshValidation.run(true, read);
+}
 
 /** Transport cancellation is request-local and separate from identity memoization.
  * Nested stages inherit the earliest deadline; writes never consume this signal. */
@@ -33,7 +45,7 @@ export function getReadAbortSignal(): AbortSignal | undefined {
 
 /** Opt in only around a read request. Never retain identity across requests or writes. */
 export function runWithReadContext<T>(read: () => Promise<T>, timing?: ReadRequestTiming): Promise<T> {
-  return reads.getStore() ? read() : reads.run({ controller: new AbortController(), memoized: new Map(), pending: new Map(), timing }, read);
+  return reads.getStore() ? read() : reads.run({ token: Object.freeze({}), controller: new AbortController(), memoized: new Map(), pending: new Map(), timing }, read);
 }
 
 /** Diagnostic owner only; nested readers keep the outer request's authority. */
@@ -54,7 +66,7 @@ export function memoizeReadContext<T>(key: symbol, read: () => Promise<T>): Prom
 /** Join concurrent raw reads only. Settled results never authorize a later read. */
 export function coalesceReadInFlight<T>(key: symbol, authority: string, read: () => Promise<T>): Promise<T> {
   const scope = reads.getStore();
-  if (!scope) return read();
+  if (!scope || freshValidation.getStore()) return read();
   let requests = scope.pending.get(key);
   if (!requests) {
     requests = new Map();

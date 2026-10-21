@@ -71,14 +71,15 @@ async function readAppLocalRoleResourceInContext(name: string, args: unknown, op
     query.set("kind", APP_LOCAL_READ_RESOURCES[name].kind); query.set("scope", options.scope);
     data = await runReadWithDeadline(loadStaffExperienceResource(query), 12000);
   } else if (name === "staff.my-work") {
-    const identity = await runReadWithDeadline(getStaffPortalIdentity(), 12000);
+    const readIdentity = () => runReadWithDeadline(getStaffPortalIdentity(), 12000);
+    const identity = await (options.timing?.measure("staff_identity", readIdentity) ?? readIdentity());
     if (!identity.context.user) throw new AppLocalRoleReadError(401, "Sign in required");
     if (!identity.context.currentSalon || !identity.context.currentAccount || !identity.staff) throw new AppLocalRoleReadError(403, "Staff access changed");
     if (getExperienceContext(identity.context).scope !== options.scope || query.get("staffId") !== identity.staff.id) throw new AppLocalRoleReadError(409, "Staff workspace changed");
     const tab = oneOf(query.get("tab"), ["daily", "payroll", "analysis"], "daily");
     const payPeriodStart = query.get("payPeriodStart") ?? undefined;
     if (payPeriodStart && !/^\d{4}-\d{2}-\d{2}(?::\d{4}-\d{2}-\d{2})?$/.test(payPeriodStart)) throw new AppLocalRoleReadError(400, "Invalid pay period");
-    const result = await runReadWithDeadline(loadStaffMyWorkResource(identity, { tab, payPeriodStart }), 12000);
+    const result = await runReadWithDeadline(loadStaffMyWorkResource(identity, { tab, payPeriodStart }, options.timing), 12000);
     if (tab === "payroll" && !result.payrollData || tab === "analysis" && !result.analysisData) throw new AppLocalRoleReadError(503, "Please try again");
     data = result;
   } else {

@@ -22,7 +22,7 @@ for (const statement of parsed.statements) if (ts.isImportDeclaration(statement)
 const mocks = {
   '@/lib/app-local-page-registry': `import React,{useRef} from 'react';import{useAppLocalResource}from'@/lib/app-local-resource';import{useExperienceScope}from'./app/local-app/scope';import{ContactSupportForm}from'./app/(legal)/contact-support/contact-form';
     function Page({context,path}){const id=useRef(crypto.randomUUID()),provider=useExperienceScope(),actual=context?.context??provider.context,resource=useAppLocalResource(context?.context.scope,'page.settings',{panel:'fixed'},{enabled:Boolean(context?.context.authenticated)});return <main data-private-page data-path={path} data-scope={actual.scope} data-provider-scope={provider.context.scope} data-node={id.current}><input aria-label="retained draft" defaultValue="initial"/><output data-private-dto>{actual.authenticated?resource.data?.value||'':'PUBLIC_SYNTHETIC'}</output>{path==='/market'?<ContactSupportForm/>:null}</main>}
-    export const getAppLocalPage=p=>['/staff/today','/my-place','/market','/explore'].includes(p)?{id:p==='/explore'?'explore':p==='/market'?'market':p,title:'Fixture',requiresContext:!['/market','/explore'].includes(p),Component:Page}:null;`,
+    export const getAppLocalPage=p=>['/staff/today','/staff/my-work','/my-place','/market','/explore'].includes(p)?{id:p==='/explore'?'explore':p==='/market'?'market':p,title:'Fixture',requiresContext:!['/market','/explore'].includes(p),Component:Page}:null;`,
   '@/components/app-local-shell': `import React from 'react';export function AppLocalShell({context,children}){return <>{context?<nav data-role={context.display.role}/>:<header data-checking/>}{children}</>}`,
   '@/components/app-local-help': `import React from 'react';export function AppLocalHelp(){return <main data-public-help>Public Help</main>}`,
   '@/app/pos/owner-local-workspace': `import React from 'react';export function OwnerLocalWorkspace({children}){return <section data-owner-workspace>{children}</section>}`,
@@ -40,10 +40,11 @@ async function compile() {
   if (compiled) return compiled;
   compiled = await build({ stdin: { contents: entry + `
     import{navigateToWorkspace}from'./lib/app-local-shell-workspace-navigation';
-    import{appLocalResourceCache,refreshAppLocalResource,seedAppLocalResource}from'./lib/app-local-resource';
-    window.fixtureSwitch=role=>navigateToWorkspace(role==='owner'?'owner-space':'personal');
+    import{appLocalResourceCache,refreshAppLocalResource,seedAppLocalResource,discardAppLocalResources}from'./lib/app-local-resource';
+    window.fixtureSwitch=role=>navigateToWorkspace(role==='owner'?'owner-space':role==='staff'?'staff-space':'personal');
     window.fixtureNavigate=path=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path}}));
     window.fixtureRefresh=()=>refreshAppLocalResource(window.fixtureScope(),'page.settings',{panel:'fixed'});
+    window.fixtureDiscard=()=>discardAppLocalResources(window.fixtureScope(),'page.settings',[{panel:'fixed'}]);
     window.fixtureCachePresent=scope=>Boolean(appLocalResourceCache.get({scope,key:'app-local:'+JSON.stringify(['page.settings',{panel:'fixed'}])}));
     window.fixtureSeedOther=()=>seedAppLocalResource(window.fixtureOtherScope,'page.settings',{panel:'fixed'},{schemaVersion:1,status:200,scope:window.fixtureOtherScope,etag:'other',updatedAt:Date.now(),data:{value:'OTHER_SYNTHETIC'}});
     window.fixtureCommandScope=getAppLocalCommandScope;
@@ -66,9 +67,9 @@ function setup(options) {
   window.fixtureOtherScope = other;
   window.fixtureScope = () => state.guest ? 'v3:' + 'd'.repeat(64) : state.otherViewer || state.otherWorkspace ? other : state.role === 'owner' ? owner : personal;
   window.fixtureEnvelope = (requestedPath = location.pathname) => {
-    const scope = window.fixtureScope(), now = Date.now(), isOwner = !state.guest && state.role === 'owner', id = state.guest ? null : state.otherViewer ? '00000000-0000-4000-8000-000000000099' : viewer;
-    const workspaceId = state.guest ? 'guest' : state.otherWorkspace ? 'other-owner-space' : isOwner ? 'owner-space' : 'personal', salonId = state.guest ? null : state.otherWorkspace ? '00000000-0000-4000-8000-000000000004' : isOwner ? salon : null;
-    return { schemaVersion: 1, contextPath: requestedPath, host: { ...window.__reylumiAppLocalContext }, context: { scope, authenticated: !state.guest, viewerId: id, workspaceId, salonId, permissionRevision: isOwner ? 'owner-v1' : 'personal-v1' }, grant: state.denied ? null : { version: 1, scope, scopes: [scope], viewerId: id, workspaceId, salonId, grantRevision: isOwner ? 'owner-v1' : 'personal-v1', generation: window.__reylumiAppLocalContext.generation, issuedAt: now - 1000, expiresAt: now + 3600000, path: state.guest ? '/market' : isOwner ? '/staff/today' : '/my-place', kind: state.guest ? 'public' : isOwner ? 'owner' : 'customer' }, grantStatus: state.denied ? 403 : 200, access: { ownerWorkspace: isOwner && !state.denied, staffWorkspace: false }, home: state.guest ? '/market' : isOwner ? '/staff/today' : '/my-place', display: { role: isOwner ? 'owner' : 'customer' }, onlineValidatedAt: now, offline: false };
+    const scope = window.fixtureScope(), now = Date.now(), isOwner = !state.guest && state.role === 'owner', isStaff = !state.guest && state.role === 'staff', id = state.guest ? null : state.otherViewer ? '00000000-0000-4000-8000-000000000099' : viewer;
+    const workspaceId = state.guest ? 'guest' : state.otherWorkspace ? 'other-owner-space' : isOwner ? 'owner-space' : isStaff ? 'staff-space' : 'personal', salonId = state.guest ? null : state.otherWorkspace ? '00000000-0000-4000-8000-000000000004' : isOwner || isStaff ? salon : null;
+    return { schemaVersion: 1, contextPath: requestedPath, host: { ...window.__reylumiAppLocalContext }, context: { scope, authenticated: !state.guest, viewerId: id, workspaceId, salonId, permissionRevision: isOwner ? 'owner-v1' : 'personal-v1' }, grant: state.denied ? null : { version: 1, scope, scopes: [scope], viewerId: id, workspaceId, salonId, grantRevision: isOwner ? 'owner-v1' : 'personal-v1', generation: window.__reylumiAppLocalContext.generation, issuedAt: now - 1000, expiresAt: now + 3600000, path: state.guest ? '/market' : isOwner ? '/staff/today' : isStaff ? '/staff/my-work' : '/my-place', kind: state.guest ? 'public' : isOwner ? 'owner' : isStaff ? 'staff' : 'customer' }, grantStatus: state.denied ? 403 : 200, access: { ownerWorkspace: isOwner && !state.denied, staffWorkspace: isStaff && !state.denied }, home: state.guest ? '/market' : isOwner ? '/staff/today' : isStaff ? '/staff/my-work' : '/my-place', display: { role: isOwner ? 'owner' : 'customer' }, onlineValidatedAt: now, offline: false };
   };
   window.fixtureRelease = kind => { for (const held of state.holds.filter(item => item.kind === kind)) held.resolve(); state.holds = state.holds.filter(item => item.kind !== kind); };
   const hold = async kind => new Promise(resolve => state.holds.push({ kind, resolve }));
@@ -83,8 +84,8 @@ function setup(options) {
     if (kind === 'command') {
       if (name !== 'shell.switch-workspace') throw Error('Synthetic command forbidden');
       state.commands.push({ name, scope: args.scope, workspaceId: args.workspaceId });
-      state.role = args.workspaceId === 'owner-space' ? 'owner' : 'customer';
-      return { path: state.role === 'owner' ? '/staff/today' : '/my-place' };
+      state.role = args.workspaceId === 'owner-space' ? 'owner' : args.workspaceId === 'staff-space' ? 'staff' : 'customer';
+      return { path: state.role === 'owner' ? '/staff/today' : state.role === 'staff' ? '/staff/my-work' : '/my-place' };
     }
     if (kind === 'cache') {
       if (name === 'cancel') { state.cache.push({ op: 'cancel' }); return null; }
@@ -103,7 +104,7 @@ function setup(options) {
       if (!['page.settings', 'owner.workspace'].includes(name) || args.scope !== window.fixtureScope() || state.denied) throw Object.assign(Error('Synthetic denied read'), { status: 403 });
       const row = { scope: args.scope, version: state.version, settled: false }; state.reads.push(row);
       if (state.readStatus !== 200) { row.settled = true; throw Object.assign(Error('Synthetic fresh resource denied'), { status: state.readStatus }); }
-      const value = { schemaVersion: 1, status: 200, scope: args.scope, etag: 'fixture-' + state.version, updatedAt: Date.now(), data: name === 'owner.workspace' ? { view: 'workspace', props: { salonName: 'Synthetic fixture', preferences: {} } } : { value: (state.role === 'owner' ? 'OWNER' : 'PERSONAL') + '_SYNTHETIC_' + state.version } };
+      const value = { schemaVersion: 1, status: 200, scope: args.scope, etag: 'fixture-' + state.version, updatedAt: Date.now(), data: name === 'owner.workspace' ? { view: 'workspace', props: { salonName: 'Synthetic fixture', preferences: {} } } : { value: (state.role === 'owner' ? 'OWNER' : state.role === 'staff' ? 'STAFF' : 'PERSONAL') + '_SYNTHETIC_' + state.version } };
       if (state.holdRead) await hold('read');
       if (options.durable) disk.set(JSON.stringify([args.scope, name, { panel: 'fixed' }]), value);
       row.settled = true; return value;
@@ -310,6 +311,106 @@ test('fresh401 withdraws actual entry authority before a late initial durable-ca
   return { ...stats, oldPrivateCacheRevealed: false, authorityManufacturedByFixture: false };
 }, { holdInitialCache: true }));
 
+test('same-account same-salon role return restores only DTO after fresh admission then revalidates without old DOM or draft', { timeout: 20000 }, () => scenario('same-tenant-role-dto-return', async page => {
+  const node = await visible(page).getAttribute('data-node');
+  await page.getByLabel('retained draft').fill('owner unsaved draft');
+  await page.evaluate(() => window.fixtureSwitch('staff'));
+  await page.locator('[data-private-page]:visible [data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
+  assert.equal(await page.evaluate(() => window.fixtureCachePresent('v3:' + 'a'.repeat(64))), false, 'Old role live cells were withdrawn');
+  await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdContext = true; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'context'));
+  assert.equal(await visible(page).count(), 0); assert.equal(await page.evaluate(() => window.fixtureCommandScope()), undefined);
+  await page.evaluate(() => { window.fixtureState.holdContext = false; window.fixtureRelease('context'); });
+  await page.locator('[data-private-page]:visible [data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_1' }).waitFor();
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  assert.notEqual(await visible(page).getAttribute('data-node'), node);
+  assert.equal(await visible(page).getByLabel('retained draft').inputValue(), 'initial');
+  await page.evaluate(() => { window.fixtureState.holdRead = false; window.fixtureRelease('read'); });
+  await page.locator('[data-private-page]:visible [data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_2' }).waitFor();
+  assert.equal(await page.evaluate(() => window.fixtureState.commands.length), 2);
+  return { freshAdmissionBeforeDTO: true, backgroundRevalidationObserved: true, oldDomAndDraftWithdrawn: true, realCommandsTransmitted: 0 };
+}));
+
+test('a business mutation in role B purges inactive role A DTO before a fresh authorized return', { timeout: 20000 }, () => scenario('cross-role-mutation-purge', async page => {
+  await page.evaluate(() => window.fixtureSwitch('staff'));
+  await page.locator('[data-private-page]:visible [data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:app-local-command-complete', { detail: { scope: window.fixtureScope(), source: 'fixture/unknown-business-command' } })));
+  await settle(page);
+  await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  assert.equal(await page.locator('[data-private-page]:visible [data-private-dto]').innerText(), '', 'A business write must not resurrect inactive role DTO');
+  await page.evaluate(() => { window.fixtureState.holdRead = false; window.fixtureRelease('read'); });
+  await page.locator('[data-private-page]:visible [data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_2' }).waitFor();
+  return { inactiveRolePurgedByBusinessMutation: true, freshDataRequired: true };
+}));
+
+test('explicit DTO discard prevents the previously quarantined role copy returning while its replacement is pending', { timeout: 20000 }, () => scenario('discard-purges-previous-role-copy', async page => {
+  await page.evaluate(() => window.fixtureSwitch('staff'));
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
+  await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_1' }).waitFor();
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  assert.equal(await page.evaluate(() => window.fixtureDiscard()), true);
+  await page.evaluate(() => { window.fixtureState.version = 3; window.fixtureState.holdRead = false; window.fixtureSwitch('staff'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_3' }).waitFor();
+  await page.evaluate(() => window.fixtureRelease('read')); await settle(page);
+  await page.evaluate(() => { window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  assert.equal(await visible(page).locator('[data-private-dto]').innerText(), '');
+  assert.equal(await page.getByText('OWNER_SYNTHETIC_1', { exact: true }).count(), 0);
+  await page.evaluate(() => { window.fixtureState.holdRead = false; window.fixtureRelease('read'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_3' }).waitFor();
+  return { actualDiscardExecuted: true, quarantinedRejectedDtoRestored: false, lateReplacementFromFormerScopeIgnored: true };
+}));
+
+test('an external conflict for the admitted role purges an inactive role copy before bounded fresh recovery', { timeout: 20000 }, () => scenario('external-scope-conflict-purges-vault', async page => {
+  await page.evaluate(() => window.fixtureSwitch('staff'));
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
+  await page.evaluate(() => {
+    window.fixtureState.holdContext = true;
+    window.dispatchEvent(new CustomEvent('reylumi:app-local-scope-conflict', { detail: { scope: window.fixtureScope(), generation: window.__reylumiAppLocalContext.generation } }));
+  });
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'context'));
+  assert.equal(await visible(page).count(), 0); assert.equal(await page.evaluate(() => window.fixtureCommandScope()), undefined);
+  await page.evaluate(() => { window.fixtureState.holdContext = false; window.fixtureRelease('context'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
+  await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  assert.equal(await visible(page).locator('[data-private-dto]').innerText(), '');
+  await page.evaluate(() => { window.fixtureState.holdRead = false; window.fixtureRelease('read'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_2' }).waitFor();
+  assert.ok(await page.evaluate(() => window.fixtureState.contexts.length) <= 5, 'Conflict recovery must remain bounded');
+  return { externalCurrentScopeConflict: true, inactiveRoleCopyWithdrawn: true, freshRecoveryBounded: true };
+}));
+
+test('accepted offline authority from another principal purges the former principal role vault', { timeout: 20000 }, () => scenario('offline-principal-change-purges-vault', async page => {
+  await page.evaluate(() => window.fixtureSwitch('staff'));
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
+  await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_1' }).waitFor();
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  await page.evaluate(() => {
+    window.fixtureState.otherViewer = true;
+    const value = window.fixtureEnvelope(); value.offline = true;
+    window.dispatchEvent(new CustomEvent('reylumi:app-local-context', { detail: value }));
+  });
+  await page.locator('[data-private-page]:visible[data-scope="v3:' + 'c'.repeat(64) + '"]').waitFor();
+  assert.equal(await page.evaluate(() => window.fixtureCommandScope()), 'v3:' + 'c'.repeat(64));
+  await page.evaluate(() => {
+    window.fixtureState.holdRead = false; window.fixtureState.otherViewer = false; window.fixtureState.role = 'staff';
+    window.fixtureNavigate('/staff/my-work');
+  });
+  await page.locator('[data-private-page]:visible[data-scope="v3:' + 'b'.repeat(64) + '"] [data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_2' }).waitFor();
+  await page.evaluate(() => window.fixtureRelease('read')); await settle(page);
+  await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
+  await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
+  assert.equal(await visible(page).locator('[data-private-dto]').innerText(), '');
+  assert.equal(await page.getByText('OWNER_SYNTHETIC_1', { exact: true }).count(), 0);
+  await page.evaluate(() => { window.fixtureState.holdRead = false; window.fixtureRelease('read'); });
+  await visible(page).locator('[data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_2' }).waitFor();
+  return { acceptedOfflinePrincipalChange: true, formerPrincipalDtoRestored: false, offlineNativeStoreExecuted: false };
+}));
+
 after(async () => {
   await browser?.close();
   if (!compiled) return;
@@ -317,6 +418,6 @@ after(async () => {
   const folder = process.env.ROLE_CACHE_ARTIFACT_DIR;
   if (folder) {
     mkdirSync(folder, { recursive: true });
-    writeFileSync(path.join(folder, engine + '-role-cache-observations.json'), JSON.stringify({ at: new Date().toISOString(), passed: observations.length === 17 && observations.every(row => row.passed), sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sourceInputs: compiled.inputHashes, testSha256: hash(readFileSync('tests/app-local-role-return-cache.test.mjs')), observations, boundaries: { actualEntryProviderHostResourceAndAdmission: true, syntheticVisualsAndNativeEndpoint: true, nativeSwiftExecuted: false, appSpeedMeasured: false, externalRequestsAllowed: false, realCommandsTransmitted: 0 } }, null, 2) + '\n', { flag: 'wx' });
+    writeFileSync(path.join(folder, engine + '-role-cache-observations.json'), JSON.stringify({ at: new Date().toISOString(), passed: observations.length === 22 && observations.every(row => row.passed), sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sourceInputs: compiled.inputHashes, testSha256: hash(readFileSync('tests/app-local-role-return-cache.test.mjs')), observations, boundaries: { actualEntryProviderHostResourceAndAdmission: true, syntheticVisualsAndNativeEndpoint: true, nativeSwiftExecuted: false, appSpeedMeasured: false, externalRequestsAllowed: false, realCommandsTransmitted: 0 } }, null, 2) + '\n', { flag: 'wx' });
   }
 });

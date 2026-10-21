@@ -11,9 +11,20 @@ function load(file, dependencies = {}) {
   new Function('require', 'exports', source)(name => {
     if (name === './read-request-metrics') return load('lib/read-request-metrics.ts');
     if (name === './experience-trace') return load('lib/experience-trace.ts');
+    if (name === './app-local-context-recovery') return load('lib/app-local-context-recovery.ts');
     if (name === '@/lib/read-request-timing') return load('lib/read-request-timing.ts');
     if (name === '@/lib/today-dashboard-sections') return load('lib/today-dashboard-sections.ts');
     if (name === '@/lib/read-context-scope') return load('lib/read-context-scope.ts', {'server-only':{}, 'node:async_hooks':{AsyncLocalStorage}});
+    if (name === '@/lib/staff-portal-identity' && !(name in dependencies)) return load('lib/staff-portal-identity.ts', {
+      'server-only': {}, react: { cache: read => read },
+      '@/lib/current-context': { getCurrentStaffBusinessContext: () => assert.fail('Legacy unminted identity must not resolve a new context') },
+      '@/lib/experience-context': { getExperienceContext: value => ({ scope: value.scope }) },
+      '@/lib/supabase/server': {
+        createAuthenticatedSupabaseServerClient: () => assert.fail('Legacy unminted identity must not run fresh verification'),
+        getAuthenticatedReadAuthority: () => assert.fail('Legacy unminted identity must not receive a capability'),
+      },
+      '@/lib/staff-account': { resolveStaffAccountForSalon: () => assert.fail('Legacy unminted identity must retain its existing resolver boundary') },
+    });
     assert.ok(name in dependencies, `Unexpected dependency ${name}`);
     return dependencies[name];
   }, exports);

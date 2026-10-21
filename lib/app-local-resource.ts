@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { getAppLocalHost, type AppLocalRead } from "./app-local-host";
+import { getAppLocalHost, type AppLocalRead, type AppLocalContext } from "./app-local-host";
+import { createAppLocalRoleReadCache, type AppLocalRoleReadAuthority } from "./app-local-role-read-cache";
 import { getExperienceOfflineGrant, isExperienceSnapshotAuthorized, readExperienceSnapshot, writeExperienceSnapshot, removeExperienceSnapshot } from "./experience-persistent-cache";
 import { appLocalReadIsDurable } from "./app-local-data-policy";
 import { appLocalCommandAffectsResource } from "./app-local-resource-invalidation";
@@ -26,6 +27,7 @@ export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: num
 // responses and failure cooldown belong to the shared scoped read cache.
 type Cell = { context: ExperienceResourceContext; state: AppLocalResourceState<unknown>; listeners: Set<() => void>; active: number; validatedAt: number; invalidated?: boolean; epoch: number; revision: number; deliveryRevision: number; revalidate?: boolean; hydrated?: Promise<void>; pending?: Promise<void> };
 const cells = new Map<string, Cell>();
+const roleReads = createAppLocalRoleReadCache();
 let epoch = 0;
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
@@ -45,6 +47,42 @@ function cellFor(scope: string, name: string, args: unknown) {
 }
 function emit(cell: Cell, patch: Partial<AppLocalResourceState<unknown>>) { cell.state = { ...cell.state, ...patch }; for (const listener of cell.listeners) listener(); }
 function retainActiveResource(cell: Cell) { cell.active++; return () => { cell.active--; }; }
+function roleReadAuthority(value: AppLocalContext, generation?: string): AppLocalRoleReadAuthority | null {
+  const context = value.context;
+  // Personal/unknown tenants do not establish a same-salon cache boundary.
+  if (value.offline || !context.authenticated || !context.viewerId || !context.salonId || !generation) return null;
+  return { viewerId: context.viewerId, salonId: context.salonId, generation, workspaceId: context.workspaceId,
+    scope: context.scope, permissionRevision: context.permissionRevision, grantRevision: value.grant?.grantRevision ?? "",
+    proof: JSON.stringify([value.grant?.kind ?? null, value.offlineState ?? null, Boolean(value.access?.ownerWorkspace), Boolean(value.access?.staffWorkspace), value.staffOnlineAccess?.staffId ?? null]) };
+}
+export function clearAppLocalRoleResources() { roleReads.clear(); }
+/** Capture settled online DTOs before the original workspace command runs. */
+export function rememberAppLocalRoleResources(value: AppLocalContext, generation?: string) {
+  const authority = roleReadAuthority(value, generation);
+  if (!authority) { roleReads.clear(); return; }
+  const rows = [];
+  for (const [key, cell] of cells) {
+    const [scope, name, args] = JSON.parse(key) as [string, string, Record<string, unknown>];
+    if (scope !== authority.scope || cell.pending || cell.invalidated || cell.state.accessDenied || !appLocalReadIsDurable(name)) continue;
+    const snapshot = appLocalResourceCache.get<AppLocalRead>(cell.context)?.data;
+    if (snapshot) rows.push({ name, args, snapshot });
+  }
+  roleReads.remember(authority, rows);
+}
+/** Called only after entry accepts fresh destination authority, never as admission. */
+export function reconcileAppLocalRoleResources(value: AppLocalContext, generation?: string, restore = false) {
+  if (value.offline) { roleReads.clear(); return; }
+  const authority = roleReadAuthority(value, generation);
+  if (!roleReads.observe(authority) || !authority || !restore) return;
+  for (const { name, args, snapshot } of roleReads.restore(authority)) {
+    const { cell } = cellFor(authority.scope, name, args);
+    if (!appLocalResourceCache.seed(cell.context, snapshot, { freshForMs: 0 }, snapshot.updatedAt, snapshot.etag)) continue;
+    // Fresh context proves access, not DTO freshness. Revalidate in background;
+    // skip an older durable hydration and preserve the original DTO timestamp.
+    cell.invalidated = true; cell.validatedAt = 0; cell.hydrated = Promise.resolve(); cell.deliveryRevision++;
+    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+  }
+}
 function resourceDomain(name: string) {
   const aliases: Record<string, string> = { "page.market": "market-catalog", "page.market-deposit": "market-deposit", "page.customer-bookings": "customer-bookings", "page.customer-receipt": "customer-receipt", "page.owner-today": "owner-today", "page.settings": "customer-settings", "page.my-place": "customer-my-place", "page.more": "customer-more", "page.support": "customer-support", "page.support-case": "customer-support-case", "page.services": "owner-services" };
   const personal: Record<string,string> = { "page.beauty":"customer-beauty", "page.notifications":"notifications-center", "page.explore":"public-explore", "page.owner-staff":"owner-staff", "page.owner-customers":"owner-customers", "page.owner-customer-detail":"owner-customer-detail", "page.owner-payroll":"owner-payroll" };
@@ -67,6 +105,7 @@ export function resetAppLocalResources(scope?: string) {
 }
 /** Withdraw only these DTOs before an explicitly reauthorized page recovery. */
 export async function discardAppLocalResources(scope: string, name: string, argsList: readonly Record<string, unknown>[]): Promise<boolean> {
+  clearAppLocalRoleResources();
   const started = epoch, host = getAppLocalHost();
   const targets = argsList.map(args => ({ ...cellFor(scope, name, args), args }));
   for (const { cell } of targets) {
@@ -96,9 +135,13 @@ if (typeof window !== "undefined") {
     // Entry sequences context rotations against the accepted native epoch.
     // A queued reset must not independently erase the destination's new cells.
     if (event === "reylumi:app-local-reset" && (value as CustomEvent<{ reason?: string }>).detail?.reason === "context") return;
+    clearAppLocalRoleResources();
     resetAppLocalResources();
   });
   window.addEventListener("reylumi:app-local-command-complete", event => {
+    // A business write can affect another role in this salon. Conservatively
+    // withdraw quarantined DTOs as well as invalidating the visible resources.
+    clearAppLocalRoleResources();
     const { scope, source } = (event as CustomEvent<{ scope?: string; source?: string }>).detail ?? {};
     for (const [key, cell] of cells) {
       const [owner, name, args] = JSON.parse(key) as [string, string, Record<string, unknown>];
@@ -235,6 +278,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });
   })().catch(error => {
     if (epoch !== started || cell.revision !== revision || error instanceof ExperienceResourceInvalidatedError || cells.get(key) !== cell) return;
+    if ([401, 403, 404, 409].includes(error?.status)) clearAppLocalRoleResources();
     if (error?.status === 409) {
       // A stale request scope is not proof that the account expired. Withdraw
       // its DTOs, then let entry join the current authority read without

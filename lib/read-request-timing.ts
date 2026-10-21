@@ -3,7 +3,7 @@
  * total is wall time; adding the individual spans does not produce wall time.
  */
 import type { ReadFailureProvenance } from "./bounded-get";
-export const READ_REQUEST_TIMING_STAGES = ["auth", "validate", "lease", "load", "serialize", "today_full", "today_shell", "today_staff", "today_bookings", "today_waiting", "today_financials", "today_extras", "clock", "hours", "staff_board", "staff_activity", "bookings", "waiting", "financial_report", "financial_compare", "extras"] as const;
+export const READ_REQUEST_TIMING_STAGES = ["auth", "validate", "lease", "load", "serialize", "today_full", "today_shell", "today_staff", "today_bookings", "today_waiting", "today_financials", "today_extras", "clock", "hours", "staff_board", "staff_activity", "bookings", "waiting", "financial_report", "financial_compare", "extras", "staff_identity", "staff_assigned", "staff_attendance", "staff_timezone", "staff_greeting", "staff_pay_tab"] as const;
 const STAGES = READ_REQUEST_TIMING_STAGES;
 export type ReadStage = typeof STAGES[number];
 export type ReadBackendKind = "auth" | "rest" | "rpc";
