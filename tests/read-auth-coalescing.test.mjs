@@ -4,6 +4,7 @@ import * as crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test, { after } from 'node:test';
 import ts from 'typescript';
+import { createClient, isAuthSessionMissingError } from '@supabase/supabase-js';
 
 function load(file, dependencies = {}) {
   const exports = {};
@@ -42,6 +43,7 @@ function fixture() {
   const clientOptions = [];
   const accountStatus = load('lib/users/account-status.ts');
   const auth = load('lib/supabase/auth-rest.ts', {
+    '@supabase/supabase-js': { isAuthSessionMissingError },
     '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} },
     '@/lib/read-context-scope': scope,
     '@/lib/bounded-get': {
@@ -126,6 +128,96 @@ function fixture() {
   const withRead = (read, values) => withRequest(() => scope.runWithReadContext(read), values);
   return { scope, server, users, auth, counts, state, clientOptions, withRequest, withRead };
 }
+
+async function actualSDKAuthError(code, status) {
+  let requests = 0;
+  const client = createClient('https://synthetic-auth.invalid', 'synthetic-public-key', {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: async (input, init) => {
+      requests++;
+      assert.equal(new URL(String(input)).origin, 'https://synthetic-auth.invalid');
+      assert.equal(new URL(String(input)).pathname, '/auth/v1/user');
+      assert.equal(init?.method, 'GET');
+      return Response.json({ code, message: 'Synthetic authentication response' }, {
+        status, headers: { 'X-Supabase-Api-Version': '2024-01-01' },
+      });
+    } },
+  });
+  const result = await client.auth.getUser('synthetic-access-token');
+  assert.equal(requests, 1, 'Only the injected synthetic transport may run');
+  assert.equal(result.data.user, null);
+  assert.ok(result.error);
+  return result.error;
+}
+
+test('real SDK missing-session response remains a confirmed rejection after its status and code are normalized', async () => {
+  for (const status of [400, 401]) {
+    const error = await actualSDKAuthError('session_not_found', status);
+    assert.equal(isAuthSessionMissingError(error), true);
+    assert.equal(error.status, 400);
+    assert.equal(error.code, undefined, 'The SDK replaces the original server error');
+    const f = fixture();
+    assert.doesNotThrow(() => f.auth.assertAuthAvailable(error, error.status));
+    assert.equal(f.auth.isAuthTemporarilyUnavailable(error, error.status), false);
+  }
+});
+
+test('real SDK missing-session error leaves real account getters and session GET unauthenticated without private reads', async () => {
+  const f = fixture();
+  f.state.authError = await actualSDKAuthError('session_not_found', 401);
+  const session = load('app/(app)/api/auth/session/route.ts', {
+    '@/lib/supabase/server': f.server,
+    'next/headers': { headers: async () => new Headers(), cookies: async () => { throw new Error('No admin cookie read expected'); } },
+    '@/lib/supabase/session-policy': { ADMIN_SESSION_COOKIE: 'admin', readAdminSession() { throw new Error('No admin gate expected'); } },
+  });
+  const results = await f.withRead(() => Promise.all([
+    f.server.createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true }),
+    f.server.getSupabaseAuthUser(),
+    f.users.getCurrentKingUser(),
+    session.GET(new Request('https://synthetic-auth.invalid/api/auth/session')),
+  ]));
+  assert.deepEqual(results.slice(0, 3), [null, null, null]);
+  assert.equal(results[3].status, 200);
+  assert.deepEqual(await results[3].json(), { authenticated: false, adminExpired: false });
+  assert.equal(results[3].headers.get('cache-control'), 'no-store');
+  assert.deepEqual(f.counts, { identity: 1, status: 0, session: 0, profile: 0, tombstone: 0, insert: 0 });
+});
+
+test('real SDK unknown400 and unavailable503 stay unavailable and never admit an account or turn session GET into guest success', async () => {
+  for (const [code, status] of [['validation_failed', 400], ['unexpected_failure', 503]]) {
+    const f = fixture();
+    f.state.authError = await actualSDKAuthError(code, status);
+    assert.equal(isAuthSessionMissingError(f.state.authError), false);
+    const session = load('app/(app)/api/auth/session/route.ts', {
+      '@/lib/supabase/server': f.server,
+      'next/headers': { headers: async () => new Headers(), cookies: async () => { throw new Error('No cookie inspection expected'); } },
+      '@/lib/supabase/session-policy': {},
+    });
+    const results = await f.withRead(() => Promise.allSettled([
+      f.server.createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true }),
+      f.server.getSupabaseAuthUser(),
+      f.users.getCurrentKingUser(),
+      session.GET(new Request('https://synthetic-auth.invalid/api/auth/session')),
+    ]));
+    for (const result of results.slice(0, 3)) {
+      assert.equal(result.status, 'rejected');
+      assert.ok(result.reason instanceof f.auth.AuthAvailabilityError);
+      assert.equal(result.reason.status, 503);
+    }
+    assert.equal(results[3].status, 'fulfilled');
+    assert.equal(results[3].value.status, 503);
+    assert.deepEqual(await results[3].value.json(), { error: 'Authentication temporarily unavailable' });
+    assert.deepEqual(f.counts, { identity: 1, status: 0, session: 0, profile: 0, tombstone: 0, insert: 0 });
+  }
+});
+
+test('a matching plain error name without SDK error identity is not a confirmed missing session', () => {
+  const f = fixture();
+  const error = Object.assign(new Error('Synthetic unknown error'), { name: 'AuthSessionMissingError', status: 400 });
+  assert.equal(isAuthSessionMissingError(error), false);
+  assert.throws(() => f.auth.assertAuthAvailable(error, error.status), f.auth.AuthAvailabilityError);
+  assert.equal(f.auth.isAuthTemporarilyUnavailable(error, error.status), false, 'Preserve the existing retry classifier for an unknown400');
+});
 
 test('parallel authenticated clients and the actual current-user branch join pending raw reads', async () => {
   for (const wrapped of [false, true]) {

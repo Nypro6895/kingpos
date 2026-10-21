@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
+import { isAuthSessionMissingError } from '@supabase/supabase-js';
 
 function load(file, dependencies = {}, fetcher = () => { throw new Error('Unexpected transport'); }) {
   const exports = {};
@@ -10,6 +11,7 @@ function load(file, dependencies = {}, fetcher = () => { throw new Error('Unexpe
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   new Function('require', 'exports', 'fetch', code)(name => {
+    if (name === '@supabase/supabase-js' && !Object.hasOwn(dependencies, name)) return { isAuthSessionMissingError };
     assert.ok(Object.hasOwn(dependencies, name), `Unexpected dependency ${name}`);
     return dependencies[name];
   }, exports, fetcher);

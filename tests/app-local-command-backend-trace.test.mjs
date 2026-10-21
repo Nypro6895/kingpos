@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import { build } from 'esbuild';
 import ts from 'typescript';
+import { isAuthSessionMissingError } from '@supabase/supabase-js';
 
 const require = createRequire(import.meta.url);
 const firstId = '8c311302-7765-4f91-8d2b-4bfb4f7e773a';
@@ -28,6 +29,7 @@ function load(file, dependencies = {}, fetcher) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   new Function('require', 'exports', 'fetch', code)(name => {
+    if (name === '@supabase/supabase-js' && !Object.hasOwn(dependencies, name)) return { isAuthSessionMissingError };
     assert.ok(Object.hasOwn(dependencies, name), `Unexpected ${file} dependency ${name}`);
     return dependencies[name];
   }, exports, fetcher);

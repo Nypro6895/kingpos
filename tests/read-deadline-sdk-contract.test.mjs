@@ -4,12 +4,13 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import * as React from 'react';
 import ts from 'typescript';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, isAuthSessionMissingError } from '@supabase/supabase-js';
 
 function load(file, dependencies = {}, fetcher) {
   const exports = {};
   const code = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   new Function('require', 'exports', 'fetch', code)(name => {
+    if (name === '@supabase/supabase-js' && !(name in dependencies)) return { isAuthSessionMissingError };
     assert.ok(name in dependencies, `Unexpected dependency ${name}`);
     return dependencies[name];
   }, exports, fetcher);

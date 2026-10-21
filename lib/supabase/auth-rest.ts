@@ -1,6 +1,7 @@
 import { fetchWithDeadline, ReadConnectionError } from "@/lib/bounded-get";
 import { measureAppLocalCommandBackend, observeAppLocalCommandBackendStatus } from "@/lib/app-local-command-trace";
 import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
+import { isAuthSessionMissingError } from "@supabase/supabase-js";
 
 export class AuthAvailabilityError extends Error {
   readonly status = 503;
@@ -10,7 +11,9 @@ export class AuthAvailabilityError extends Error {
 function rejection(error: unknown, status?: number) {
   const value = error as { status?: number; code?: string } | null;
   const code = value?.code ?? "";
-  return [401, 403].includes(status ?? value?.status ?? 0)
+  // The SDK converts session_not_found into this typed400 without a code.
+  // It is a confirmed missing session, unlike an unknown400 or service outage.
+  return isAuthSessionMissingError(error) || [401, 403].includes(status ?? value?.status ?? 0)
     || ["bad_jwt", "session_not_found", "refresh_token_not_found", "refresh_token_already_used", "user_not_found", "PGRST301", "PGRST302", "PGRST303"].includes(code);
 }
 
