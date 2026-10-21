@@ -8,6 +8,7 @@ function load(file, dependencies = {}) {
   const exports = {};
   const code = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   new Function('require', 'exports', 'console', code)(name => {
+    if (name === './auth-rejection') return load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
     if (name === '@supabase/supabase-js' && !(name in dependencies)) return { isAuthSessionMissingError };
     if (name === '@/lib/read-request-timing') return load('lib/read-request-timing.ts');
     if (name === '@/lib/read-context-scope') return { runWithReadContext: fn => fn(), getReadRequestTiming: () => undefined };

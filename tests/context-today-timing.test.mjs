@@ -36,6 +36,7 @@ function fixture({ timed = true, realDelays = false } = {}) {
   const getDashboard = async (_context,options) => {
     const s = state(), phase = options.phase ?? 'full'; s.dashboardReads.push(phase);
     await step(s.phaseDelay ?? phaseDelays[phase]);
+    if (s.readFailure) reads.getReadRequestTiming()?.observeBackendFailure('rest',s.readFailure);
     if (s.loadError) throw s.loadError;
     return { date:options.date ?? '2026-10-19',generatedAt:'2026-10-19T00:00:00.000Z',noAccess:s.noAccess,loadErrors:s.incomplete ? [{area:'financials',message:'Synthetic unavailable source'}] : [],summary:{sales:{value:25}},phase };
   };
@@ -230,4 +231,20 @@ test('controlled real-delay handler samples separate context lease/auth and full
     const target = path.resolve(process.env.CONTEXT_TODAY_TIMING_EVIDENCE); mkdirSync(path.dirname(target),{recursive:true});
     writeFileSync(target,JSON.stringify({at:new Date().toISOString(),mode:'Actual handlers with synthetic upstream delays; no live backend, owner requests, cookies or financial writes',samples,limitations:['These local controlled durations validate timing attribution, not production latency or device behavior','Today model itself is mocked; original calculations and permissions are covered by separate differential/authorization tests']},null,2));
   }
+});
+
+test('Today503 retains safe transport counters while concurrent healthy phases and denials stay isolated', async () => {
+  const f = fixture();
+  const failure = {kind:'network',attempts:2,ownedTimerFired:false,parentAborted:false};
+  const [failed,healthy,denied] = await Promise.all([
+    f.native('bookings',{incomplete:true,readFailure:failure}),
+    f.native('extras'),
+    f.native('waiting',{context:{scope,user:null},readFailure:failure}),
+  ]);
+  assert.equal(failed.response.status,503);
+  assert.match(failed.response.headers.get('server-timing'),/backend_rest_failure;count=1;attempts=2;http=0;network=1;timeout=0;body_limit=0;parent_abort=0;owned_timers=0/);
+  assert.equal(healthy.response.status,200); assert.equal(denied.response.status,401);
+  for (const value of [healthy,denied]) assert.equal(value.response.headers.get('server-timing').includes('_failure;'),false);
+  assert.equal((await failed.response.text()).includes('network'),false,'Response body and503 policy remain unchanged');
+  assert.deepEqual(denied.state.dashboardReads,[]);
 });

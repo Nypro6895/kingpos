@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
 import { ACCOUNT_LOGIN_SESSION_COOKIE } from "@/lib/account-security-shared";
 import { REMEMBER_LOGIN_COOKIE, sessionCookieOptions, tokenNeedsRefresh } from "./session-policy";
+import { isConfirmedAuthRejection } from "./auth-rejection";
 
 type CookieUpdate = { name: string; value: string; options: ReturnType<typeof sessionCookieOptions> };
 
@@ -32,7 +33,10 @@ export async function refreshRequestSession(request: NextRequest): Promise<{ upd
   try {
     const { data, error } = await operation;
     if (error || !data.session) {
-      const unavailable = !error || !error.status || error.status >= 500 || error.status === 429;
+      // A refresh failure does not establish that the account signed out.
+      // Unknown400/408 must stop strict readers before an expired access token
+      // can be mistaken for confirmed loss of the user's session.
+      const unavailable = !error || !isConfirmedAuthRejection(error);
       return { updates, unavailable };
     }
     // Persist only an explicit Remember choice; legacy sessions never opt in silently.

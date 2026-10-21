@@ -7,6 +7,17 @@ export class ReadConnectionError extends Error {
   }
 }
 
+/** Fixed transport facts only. Names/messages/URLs and abort reasons are excluded. */
+export type ReadFailureProvenance = {
+  kind: "http" | "timeout" | "network" | "body-limit" | "parent-abort";
+  attempts: number;
+  /** Status received on the last wire attempt, including before a body failure. */
+  upstreamStatus?: number;
+  /** Any owned attempt timer actually fired; this alone does not establish cause. */
+  ownedTimerFired: boolean;
+  parentAborted: boolean;
+};
+
 export type BoundedGetOptions = {
   timeoutMs?: number;
   totalTimeoutMs?: number;
@@ -14,6 +25,7 @@ export type BoundedGetOptions = {
   retryDelayMs?: number;
   maxBodyBytes?: number;
   fetcher?: typeof fetch;
+  onFailure?: (value: ReadFailureProvenance) => void;
 };
 
 function abortError(signal?: AbortSignal | null) {
@@ -29,7 +41,8 @@ function wait(delay: number, signal?: AbortSignal | null): Promise<void> {
   });
 }
 
-async function fetchOnce(input: RequestInfo | URL, init: RequestInit, options: Required<Omit<BoundedGetOptions, "fetcher">>, fetcher: typeof fetch): Promise<Response> {
+type AttemptFacts = { upstreamStatus?: number; ownedTimerFired: boolean };
+async function fetchOnce(input: RequestInfo | URL, init: RequestInit, options: Required<Omit<BoundedGetOptions, "fetcher" | "onFailure">>, fetcher: typeof fetch, facts: AttemptFacts): Promise<Response> {
   const external = init.signal ?? (input instanceof Request ? input.signal : undefined);
   if (external?.aborted) throw abortError(external);
   const controller = new AbortController();
@@ -38,6 +51,7 @@ async function fetchOnce(input: RequestInfo | URL, init: RequestInit, options: R
   const cancel = () => { controller.abort(external?.reason); rejectAbort(abortError(external)); };
   external?.addEventListener("abort", cancel, { once: true });
   const timer = setTimeout(() => {
+    facts.ownedTimerFired = true;
     const error = new ReadConnectionError("timeout");
     controller.abort(error);
     rejectAbort(error);
@@ -45,6 +59,7 @@ async function fetchOnce(input: RequestInfo | URL, init: RequestInit, options: R
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
     const response = await Promise.race([Promise.resolve().then(() => fetcher(input, { ...init, signal: controller.signal })), aborted]);
+    if (Number.isInteger(response.status) && response.status >= 100 && response.status <= 599) facts.upstreamStatus = response.status;
     // Include the body in the deadline: headers can arrive while JSON never finishes.
     if (!response.body || response.status === 204 || response.status === 205 || response.status === 304 || init.method === "HEAD") return response;
     reader = response.body.getReader();
@@ -85,23 +100,45 @@ export async function fetchWithDeadline(input: RequestInfo | URL, init: RequestI
   const signal = init.signal ?? (input instanceof Request ? input.signal : undefined);
   const deadline = Date.now() + totalTimeoutMs;
   let lastError: unknown;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (signal?.aborted) throw abortError(signal);
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) throw new ReadConnectionError("timeout");
-    try {
-      const response = await fetchOnce(input, { ...init, method, cache: init.cache ?? "no-store" }, {
-        timeoutMs: Math.min(timeoutMs, remaining), totalTimeoutMs, maxAttempts, retryDelayMs, maxBodyBytes,
-      }, options.fetcher ?? fetch);
-      if (!safeRead || ![408, 429, 500, 502, 503, 504].includes(response.status) || attempt + 1 === maxAttempts) return response;
-    } catch (error) {
-      if (signal?.aborted || !safeRead || attempt + 1 === maxAttempts || error instanceof ReadConnectionError && error.kind === "body-limit") throw error;
-      lastError = error;
+  let attempts = 0, upstreamStatus: number | undefined, ownedTimerFired = false;
+  const observe = (kind: ReadFailureProvenance["kind"]) => {
+    if (!safeRead) return;
+    try { options.onFailure?.({ kind, attempts, ...(upstreamStatus !== undefined ? { upstreamStatus } : {}), ownedTimerFired, parentAborted: Boolean(signal?.aborted) }); }
+    catch { /* Diagnostics cannot change a response, cancellation or retry. */ }
+  };
+  try {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (signal?.aborted) throw abortError(signal);
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new ReadConnectionError("timeout");
+      const facts: AttemptFacts = { ownedTimerFired: false };
+      attempts++;
+      try {
+        const response = await fetchOnce(input, { ...init, method, cache: init.cache ?? "no-store" }, {
+          timeoutMs: Math.min(timeoutMs, remaining), totalTimeoutMs, maxAttempts, retryDelayMs, maxBodyBytes,
+        }, options.fetcher ?? fetch, facts);
+        upstreamStatus = facts.upstreamStatus;
+        ownedTimerFired ||= facts.ownedTimerFired;
+        if (!safeRead || ![408, 429, 500, 502, 503, 504].includes(response.status) || attempt + 1 === maxAttempts) {
+          if (response.status >= 400) observe("http");
+          return response;
+        }
+      } catch (error) {
+        if (signal?.aborted || !safeRead || attempt + 1 === maxAttempts || error instanceof ReadConnectionError && error.kind === "body-limit") throw error;
+        lastError = error;
+      } finally {
+        // A failed later attempt cannot inherit an earlier attempt's HTTP status.
+        upstreamStatus = facts.upstreamStatus;
+        ownedTimerFired ||= facts.ownedTimerFired;
+      }
+      const delay = Math.min(retryDelayMs * (attempt + 1), Math.max(0, deadline - Date.now()));
+      await wait(delay, signal);
     }
-    const delay = Math.min(retryDelayMs * (attempt + 1), Math.max(0, deadline - Date.now()));
-    await wait(delay, signal);
+    throw lastError ?? new ReadConnectionError("timeout");
+  } catch (error) {
+    observe(signal?.aborted ? "parent-abort" : error instanceof ReadConnectionError ? error.kind : "network");
+    throw error;
   }
-  throw lastError ?? new ReadConnectionError("timeout");
 }
 
 export function fetchBoundedGet(input: RequestInfo | URL, init: RequestInit = {}, options: BoundedGetOptions = {}) {

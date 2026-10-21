@@ -6,20 +6,21 @@ import * as React from 'react';
 import ts from 'typescript';
 import { createClient, isAuthSessionMissingError } from '@supabase/supabase-js';
 
-function load(file, dependencies = {}, fetcher) {
+function load(file, dependencies = {}, fetcher, logger = console) {
   const exports = {};
   const code = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  new Function('require', 'exports', 'fetch', code)(name => {
+  new Function('require', 'exports', 'fetch', 'console', code)(name => {
     if (name === '@supabase/supabase-js' && !(name in dependencies)) return { isAuthSessionMissingError };
     assert.ok(name in dependencies, `Unexpected dependency ${name}`);
     return dependencies[name];
-  }, exports, fetcher);
+  }, exports, fetcher, logger);
   return exports;
 }
 function fixture(fetcher) {
   const scope = load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': { AsyncLocalStorage } });
   const bounded = load('lib/bounded-get.ts', {}, fetcher);
-  const auth = load('lib/supabase/auth-rest.ts', { '@/lib/bounded-get': bounded, '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} } }, fetcher);
+  const rejection = load('lib/supabase/auth-rejection.ts');
+  const auth = load('lib/supabase/auth-rest.ts', { './auth-rejection': rejection, '@/lib/bounded-get': bounded, '@/lib/read-context-scope': scope, '@/lib/app-local-command-trace': { measureAppLocalCommandBackend: (_kind, operation) => operation(), observeAppLocalCommandBackendStatus() {} } }, fetcher);
   const client = createClient('https://synthetic.invalid', 'synthetic-public-key', { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }, global: { fetch: auth.supabaseDeadlineFetch } });
   return { scope, bounded, auth, client };
 }
@@ -195,4 +196,30 @@ test('caller abort and an earlier parent deadline terminate nested reads without
   }), 20), error => error.status === 503);
   await child.catch(() => {}); await wait(40);
   assert.equal(calls, 2);
+});
+
+test('real SDK flattening retains independent request-local HTTP and network failure provenance', async () => {
+  for (const httpFailure of [true, false]) {
+    let calls = 0; const events = [];
+    const timing = load('lib/read-request-timing.ts', {}, undefined, { warn(_label, event) { events.push(event); } }).createReadRequestTiming();
+    const f = fixture(async () => { calls++; if (httpFailure) return unavailable(); throw TypeError('private connection information'); });
+    const result = await f.scope.runWithReadContext(async () => await f.client.from('users').select('status'), timing);
+    assert.ok(result.error); assert.equal(calls, 2); assert.equal(events.length, 1);
+    assert.deepEqual(events[0], { version: 1, backend: 'rest', failureKind: httpFailure ? 'http' : 'network', attempts: 2, upstreamStatus: httpFailure ? 503 : null, ownedTimerFired: false, parentAborted: false });
+    assert.equal(JSON.stringify(events).includes('private'), false);
+    assert.match(timing.finish(new Response()).headers.get('server-timing'), /backend_rest_failure;count=1;attempts=2/);
+    assert.equal(result.error.message.startsWith('AbortError:'), true, 'SDK terminal-error policy is unchanged; subtype is separate evidence');
+  }
+});
+
+test('real SDK parent cancellation with an unknown reason is not recorded as an owned timeout', async () => {
+  const events = [], controller = new AbortController(); let started, calls = 0;
+  const ready = new Promise(resolve => { started = resolve; });
+  const timing = load('lib/read-request-timing.ts', {}, undefined, { warn(_label, event) { events.push(event); } }).createReadRequestTiming();
+  const f = fixture(async (_input, init) => { calls++; started(); return new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true })); });
+  const pending = f.scope.runWithReadContext(async () => await f.client.from('users').select('status').abortSignal(controller.signal), timing);
+  await ready; controller.abort(new Error('private cancellation reason'));
+  const result = await pending;
+  assert.ok(result.error); assert.equal(calls, 1);
+  assert.deepEqual(events, [{ version: 1, backend: 'rest', failureKind: 'parent-abort', attempts: 1, upstreamStatus: null, ownedTimerFired: false, parentAborted: true }]);
 });

@@ -1,20 +1,11 @@
 import { fetchWithDeadline, ReadConnectionError } from "@/lib/bounded-get";
 import { measureAppLocalCommandBackend, observeAppLocalCommandBackendStatus } from "@/lib/app-local-command-trace";
 import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
-import { isAuthSessionMissingError } from "@supabase/supabase-js";
+import { isConfirmedAuthRejection as rejection } from "./auth-rejection";
 
 export class AuthAvailabilityError extends Error {
   readonly status = 503;
   constructor(area = "Authentication") { super(`${area} temporarily unavailable`); this.name = "AuthAvailabilityError"; }
-}
-
-function rejection(error: unknown, status?: number) {
-  const value = error as { status?: number; code?: string } | null;
-  const code = value?.code ?? "";
-  // The SDK converts session_not_found into this typed400 without a code.
-  // It is a confirmed missing session, unlike an unknown400 or service outage.
-  return isAuthSessionMissingError(error) || [401, 403].includes(status ?? value?.status ?? 0)
-    || ["bad_jwt", "session_not_found", "refresh_token_not_found", "refresh_token_already_used", "user_not_found", "PGRST301", "PGRST302", "PGRST303"].includes(code);
 }
 
 export function isAuthTemporarilyUnavailable(error: unknown, status?: number): boolean {
@@ -51,7 +42,9 @@ export const supabaseDeadlineFetch: typeof fetch = (input, init) => {
     const caller = init?.signal ?? (input instanceof Request ? input.signal : undefined);
     const signal = parent && caller ? AbortSignal.any([parent, caller]) : parent ?? caller;
     try {
-      const response = await fetchWithDeadline(input, parent ? { ...init, signal } : init, { timeoutMs: 5_000, totalTimeoutMs: 10_250, maxAttempts: 2, retryDelayMs: 250 });
+      const response = await fetchWithDeadline(input, parent ? { ...init, signal } : init, { timeoutMs: 5_000, totalTimeoutMs: 10_250, maxAttempts: 2, retryDelayMs: 250,
+        onFailure: value => { if (kind) timing?.observeBackendFailure(kind, value); },
+      });
       if ([408, 429, 500, 502, 503, 504].includes(response.status)) {
         // Retain the known final HTTP code before the existing typed error.
         // This records one logical result, not the transport retry attempts.

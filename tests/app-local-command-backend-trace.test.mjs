@@ -29,6 +29,7 @@ function load(file, dependencies = {}, fetcher) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   new Function('require', 'exports', 'fetch', code)(name => {
+    if (name === './auth-rejection') return load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
     if (name === '@supabase/supabase-js' && !Object.hasOwn(dependencies, name)) return { isAuthSessionMissingError };
     assert.ok(Object.hasOwn(dependencies, name), `Unexpected ${file} dependency ${name}`);
     return dependencies[name];

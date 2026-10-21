@@ -11,6 +11,7 @@ function load(file, dependencies = {}, fetcher = () => { throw new Error('Unexpe
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   new Function('require', 'exports', 'fetch', code)(name => {
+    if (name === './auth-rejection') return load('lib/supabase/auth-rejection.ts', { '@supabase/supabase-js': { isAuthSessionMissingError } });
     if (name === '@supabase/supabase-js' && !Object.hasOwn(dependencies, name)) return { isAuthSessionMissingError };
     assert.ok(Object.hasOwn(dependencies, name), `Unexpected dependency ${name}`);
     return dependencies[name];
@@ -33,7 +34,7 @@ function metrics(timing) {
     const [name, ...params] = metric.split(';');
     assert.match(name, /^(?:[a-z_]+)$/);
     result[name] = Object.fromEntries(params.map(value => {
-      const match = /^(dur|calls|bytes|sized)=(\d+(?:\.\d+)?)$/.exec(value);
+      const match = /^(dur|calls|bytes|sized|count|attempts|http|network|timeout|body_limit|parent_abort|owned_timers)=(\d+(?:\.\d+)?)$/.exec(value);
       assert.ok(match, `Only fixed numeric parameters: ${value}`);
       return [match[1], Number(match[2])];
     }));
@@ -168,7 +169,9 @@ test('bounded transport options and timeout rejection are unchanged by profiling
         calls++; assert.equal(input, 'https://fixture.invalid/rest/v1/users');
         assert.equal(options.method, init.method); assert.equal(options.headers, init.headers);
         assert.ok(options.signal instanceof AbortSignal); assert.equal(init.signal, undefined, 'Caller input is not mutated');
-        assert.deepEqual(policy, { timeoutMs: 5000, totalTimeoutMs: 10250, maxAttempts: 2, retryDelayMs: 250 });
+        const { onFailure, ...transportPolicy } = policy;
+        assert.equal(typeof onFailure, 'function');
+        assert.deepEqual(transportPolicy, { timeoutMs: 5000, totalTimeoutMs: 10250, maxAttempts: 2, retryDelayMs: 250 });
         return Promise.reject(cause);
       },
     },

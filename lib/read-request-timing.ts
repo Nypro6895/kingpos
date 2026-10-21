@@ -2,6 +2,7 @@
  * Stages may overlap (adapter auth and Today phases are inside native load).
  * total is wall time; adding the individual spans does not produce wall time.
  */
+import type { ReadFailureProvenance } from "./bounded-get";
 export const READ_REQUEST_TIMING_STAGES = ["auth", "validate", "lease", "load", "serialize", "today_full", "today_shell", "today_staff", "today_bookings", "today_waiting", "today_financials", "today_extras", "clock", "hours", "staff_board", "staff_activity", "bookings", "waiting", "financial_report", "financial_compare", "extras"] as const;
 const STAGES = READ_REQUEST_TIMING_STAGES;
 export type ReadStage = typeof STAGES[number];
@@ -15,6 +16,8 @@ export function createReadRequestTiming(now: () => number = clock) {
   const started = now();
   const durations = new Map<ReadStage, number>();
   const backends = new Map<ReadBackendKind, { calls: number; duration: number; bytes: number; sized: number }>();
+  const failures = new Map<ReadBackendKind, { count: number; attempts: number; http: number; network: number; timeout: number; body_limit: number; parent_abort: number; owned_timers: number }>();
+  let loggedFailures = 0;
   function add(stage: ReadStage, duration: number) {
     if (STAGES.includes(stage)) durations.set(stage, finiteDuration((durations.get(stage) ?? 0) + finiteDuration(duration)));
   }
@@ -24,6 +27,23 @@ export function createReadRequestTiming(now: () => number = clock) {
   }
   return {
     measure,
+    observeBackendFailure(kind: ReadBackendKind, input: ReadFailureProvenance) {
+      if (!BACKENDS.includes(kind) || !["http", "network", "timeout", "body-limit", "parent-abort"].includes(input.kind)
+        || !Number.isInteger(input.attempts) || input.attempts < 0 || input.attempts > 2
+        || typeof input.ownedTimerFired !== "boolean" || typeof input.parentAborted !== "boolean") return;
+      let counts = failures.get(kind);
+      if (!counts) { counts = { count: 0, attempts: 0, http: 0, network: 0, timeout: 0, body_limit: 0, parent_abort: 0, owned_timers: 0 }; failures.set(kind, counts); }
+      counts.count = addCount(counts.count); counts.attempts = addCount(counts.attempts, input.attempts);
+      const key = input.kind === "body-limit" ? "body_limit" : input.kind === "parent-abort" ? "parent_abort" : input.kind;
+      counts[key] = addCount(counts[key]);
+      if (input.ownedTimerFired) counts.owned_timers = addCount(counts.owned_timers);
+      if (loggedFailures >= 8) return;
+      loggedFailures++;
+      // Build a fresh allowlisted object; never spread an error or caller data.
+      const upstreamStatus = Number.isInteger(input.upstreamStatus) && input.upstreamStatus! >= 100 && input.upstreamStatus! <= 599 ? input.upstreamStatus : null;
+      try { console.warn("Reylumi read backend failure", { version: 1, backend: kind, failureKind: input.kind, attempts: input.attempts, upstreamStatus, ownedTimerFired: input.ownedTimerFired, parentAborted: input.parentAborted }); }
+      catch { /* A logger failure cannot change read admission or its result. */ }
+    },
     /** One logical transport call, including its existing retries/body policy.
      * This is not a database query/attempt count. Content-Length, when present,
      * describes only the returned response, not every attempt or decoded JSON.
@@ -69,6 +89,8 @@ export function createReadRequestTiming(now: () => number = clock) {
       for (const kind of BACKENDS) {
         const metrics = backends.get(kind);
         if (metrics) values.push(`backend_${kind};dur=${metrics.duration.toFixed(1)};calls=${metrics.calls}${metrics.sized ? `;bytes=${metrics.bytes};sized=${metrics.sized}` : ""}`);
+        const failure = failures.get(kind);
+        if (failure) values.push(`backend_${kind}_failure;count=${failure.count};attempts=${failure.attempts};http=${failure.http};network=${failure.network};timeout=${failure.timeout};body_limit=${failure.body_limit};parent_abort=${failure.parent_abort};owned_timers=${failure.owned_timers}`);
       }
       values.push(`total;dur=${finiteDuration(now() - started).toFixed(1)}`);
       const existing = response.headers.get("Server-Timing");
