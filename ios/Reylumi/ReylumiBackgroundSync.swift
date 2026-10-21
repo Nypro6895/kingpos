@@ -174,15 +174,16 @@ final class ReylumiBackgroundSync {
         self.transport = transport
         self.cookies = cookies ?? { await withCheckedContinuation { continuation in WKWebsiteDataStore.default().httpCookieStore.getAllCookies { continuation.resume(returning: $0) } } }
         self.setCookies = setCookies ?? { values in
-            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                let group = DispatchGroup()
-                let store = WKWebsiteDataStore.default().httpCookieStore
-                for value in values { group.enter(); store.setCookie(value) { group.leave() } }
-                group.notify(queue: .main) { continuation.resume() }
-            }
+            await Self.applyResponseCookies(values, to: WKWebsiteDataStore.default().httpCookieStore)
         }
         // Registration runs during app launch. Defer disk/Keychain/decryption
         // until web registration or a background task, after the first frame.
+    }
+
+    @MainActor static func applyResponseCookies(_ values: [HTTPCookie], to store: WKHTTPCookieStore) async {
+        for value in values {
+            await ReylumiLocalAppTransport.applyResponseCookie(value, to: store)
+        }
     }
 
     func registerScheduler() {
