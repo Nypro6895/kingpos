@@ -923,6 +923,7 @@ function CustomerContextSheet({
             </div>
             <button
               aria-label={__vt("Close account switcher")}
+              data-app-local-dismiss="account-switcher"
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               onClick={closeAndFocus}
               ref={closeButtonRef}
@@ -1009,8 +1010,8 @@ function CustomerContextSheet({
               <Icon name="gear" />
               <span><WorkspaceText text="All Settings" /></span>
             </Link>
-            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
-        <Link href="/help" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
+            <Link href="/support" onClick={closeAndFocus} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
+        <Link href="/help" onClick={closeAndFocus} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
             <LogoutButton className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
               <span><WorkspaceText text="Log out" /></span>
@@ -1548,8 +1549,8 @@ function CustomerDesktopWorkspaceSwitcher({
               <Icon name="gear" />
               <span><WorkspaceText text="All Settings" /></span>
             </Link>
-            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
-        <Link href="/help" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
+            <Link href="/support" onClick={closeMenu} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
+        <Link href="/help" onClick={closeMenu} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
             <LogoutButton className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
               <span><WorkspaceText text="Log out" /></span>

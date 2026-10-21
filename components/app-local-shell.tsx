@@ -65,6 +65,10 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
             if (!presentationOnly || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !(event.target instanceof Element) || bodyHost?.contains(event.target)) return;
             const control = event.target.closest("button,summary,input[type=submit]");
             if (!control || control.hasAttribute("data-more-menu-target")) return;
+            // Closing a retained drawer is only a local UI action. It must
+            // not become account navigation while Help has display-only chrome.
+            if (control.matches('button[type="button"][data-app-local-dismiss="account-switcher"]')
+              && control.closest("#customer-context-sheet")) return;
             const notification = control.closest("details")?.querySelector("summary[data-app-notification-trigger]");
             const account = control.matches('[aria-controls="customer-context-sheet"],[aria-controls="customer-desktop-account-menu"],[data-testid="customer-desktop-account-trigger"]')
               || control.closest("#customer-context-sheet,#customer-desktop-account-menu");
