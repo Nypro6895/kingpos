@@ -1,0 +1,224 @@
+{
+  "kind": "change",
+  "changeId": "unified-windows-portable-integration-20261021",
+  "status": "needs-integration",
+  "summary": "Integrate frozen Windows optional POS offline admission into Campaign common candidate; preserve auth/401/403/revocation and all Campaign product changes. Correct SQL assertion newline portability. Local regression/typecheck/lint/build passed; real PostgreSQL and final authenticated POS/iOS acceptance remain open.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/portable/portable-offline-shell.tsx",
+    "components/experience-scope.tsx",
+    "lib/portable-offline-admission.ts",
+    "releases/changes/2026-10-21T18-08-52-739Z-db2d03fc-764e-45d8-a8f5-65c99c65c687.json",
+    "tests/campaign-pending-claim-demand.test.mjs",
+    "tests/portable-offline-admission-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\source",
+    "commit": "0276a9e3aa6fc2def4d1bd9689bd364867fcc56e",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\manifest.json",
+    "sha256": "d4ef182786752c17fac406f56445c2f9397ed6933d1b0a6ff830200b76718d25"
+  },
+  "dependencies": [
+    "campaign-pending-claim-demand-20261021",
+    "windows-portable-startup-offline-admission-20261021"
+  ],
+  "validation": [
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "testsPassed": 8,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\portable-admission.json",
+      "sha256": "9bb76e914c7ccceb0ffda7e42585327c7d9c22d1c11c9d372b95558bd99b4810"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "testsPassed": 29,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\experience-regression.json",
+      "sha256": "c3396bb7ced693dac77044c5c23b1202911bca7f4431fefbefbb2c8277f12cf5"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "testsPassed": 2,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\experience-webkit.json",
+      "sha256": "ab664e666fd3b35218c1f64a1943ef62c168946ecaf0adc5fd790592b9205d80"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "testsPassed": 115,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\scope-regression.json",
+      "sha256": "556f3852bf5c5f787890e44369e009790caed0e280c99f4bb700446439a6b396"
+    },
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "testsPassed": 153,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\campaign-logic.json",
+      "sha256": "846bf0829f0fb38f0c931a7b1f00262f4fa0c5500488605343c149ca4dc7d6eb"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "testsPassed": 7,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\campaign-browser.json",
+      "sha256": "f2c50160f0d4c102fd4c729b35b74fa4ed7501b2549ca2e6fea8e423b73ccc52"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "testsPassed": 3,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\campaign-webkit.json",
+      "sha256": "2845e32dead3084302c9ff1c7b778913216d473005582f7653ad260095275d63"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\lint.json",
+      "sha256": "2c3a0d030f0a61061389688f3fba6019d804f7743b094b01a1e6126551751e05"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\typecheck.json",
+      "sha256": "7af6ab4b14dc4cb75625c626047e78e580b2471cdc5311cdffa08edeb6fa0378"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\build.json",
+      "sha256": "db24120698d9251018202a5a3e4ee5c00771d2ce2bf78efc59f8487c0f9620bf"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r3\\offline-assets.json",
+      "sha256": "7cf971e58c3bbf4d228fd9eabd53c55580aad5f2b4aaf11eba5437ba9670f104"
+    },
+    {
+      "name": "real-postgresql-race",
+      "result": "pending",
+      "evidence": "No usable local PostgreSQL runtime; psql/postgres/initdb still absent from current PATH. Prior Docker normal startup failed and later engine probe timed out; no install/reset/security/network changes."
+    },
+    {
+      "name": "retained-pending-manual-checkout",
+      "result": "pending",
+      "evidence": "No-demand pending order is preserved for same-order retry as approved. It can block a new manual order until valid demand returns or owner explicitly chooses existing Stop automatic payments (which cancels pending and disables auto-topup). Processing/paid are never cancelled by this fix."
+    },
+    {
+      "name": "unified-ios-auth-staging",
+      "result": "pending",
+      "evidence": "Local fixture passes do not prove live role transitions, Today/restart or multi-process DB behavior; native QA held candidate was not overwritten."
+    },
+    {
+      "name": "single-release",
+      "result": "pending",
+      "evidence": "No deployment/push/upload or production migration/payment/notification in this task."
+    },
+    {
+      "name": "authenticated-windows-pos",
+      "result": "pending",
+      "evidence": "8 local browser fixtures passed; original Windows handoff has a30-second unauthenticated real-host check. No authenticated POS session was tested on this common candidate."
+    },
+    {
+      "name": "shared-web-ios-lifecycle",
+      "result": "pending",
+      "evidence": "New Windows scheduling changes experience-scope; earlier Simulator QA on old shared file bytes cannot certify this revision. Native4 files preserved; no Mac access or duplicate QA task."
+    },
+    {
+      "name": "production-baseline-refresh",
+      "result": "pending",
+      "evidence": "Read-only captured baseline from15:50 is historical; this integration did not deploy or refresh the production alias."
+    }
+  ],
+  "sourceWindows": {
+    "at": "2026-10-21T18:08:52.412838+00:00",
+    "candidate": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\unified-candidate-r3",
+    "base": "59940d1c92f13f1c69e34e33be98f132683785ac",
+    "source": "a63f6f9b1a88cb76db846913cff2c82bfcae32c9",
+    "sourceMetadata": "a7c1eac15401972fadf95159b58b69ab9990682b",
+    "sourceBase": "016178247ba97e15b210e1090cce4bb4f2c8972d",
+    "files": [
+      "app/pos/portable/portable-offline-shell.tsx",
+      "components/experience-scope.tsx",
+      "lib/portable-offline-admission.ts",
+      "tests/portable-offline-admission-ui.test.mjs"
+    ],
+    "sourceHashes": {
+      "lib/portable-offline-admission.ts": "43a9ce60bb688175c554e37e1c32d7d3fdf99fc6b8b0999febbe9df5c0fc0b45",
+      "components/experience-scope.tsx": "4e17bcc7f844de477f67c713ae5d68dded4f89513a83eca305b61271db9f7e31",
+      "app/pos/portable/portable-offline-shell.tsx": "55142e84bec13aa982d727515c1a381c20d5760708f1c2bd2f0b447f01db2dbc",
+      "tests/portable-offline-admission-ui.test.mjs": "9ef6ec63fd2fa6693260ee173d11f6c1ce49b70b67e2cf1bb9de9af2b07293f3"
+    },
+    "suppliedPatchSha256": "4aee85c9ab1ddd218606a7fac4dd68f0a64676631821a2028ee8479cd4b2299b",
+    "rawPatchSha256": "47bd269aad8e9fb4db8ee1e964e3f6b637622947802e3a0d78e5ea445256c34f",
+    "backupManifestSha256": "2bc4cdcaa1909fa787a9e07e209367df0252012ebcb57efd3c96e0680c3a597c",
+    "applyCheck": "PASS without relaxed whitespace/context",
+    "sourceMutation": "NONE; checkpoint before apply",
+    "reconciliation": "Both existing shared files byte-identical to source base and separately reviewed frozen iOS Project; 2 added files absent. Original supplied patch line endings damaged; raw Git export verified."
+  },
+  "gates": [
+    {
+      "id": "real-postgresql-race",
+      "status": "NOT_RUN",
+      "action": "Execute20 multi-connection cases against an authorized disposable loopback PostgreSQL cluster",
+      "target": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\postgres-race\\run.mjs",
+      "reason": "No usable local PostgreSQL runtime; psql/postgres/initdb still absent from current PATH. Prior Docker normal startup failed and later engine probe timed out; no install/reset/security/network changes.",
+      "denied": false,
+      "uncertainOutcome": false,
+      "completed": "20cases/18sourceinputs/12safetyguards prepared and verified offline",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\postgres-race\\STATUS-FINAL.json"
+    },
+    {
+      "id": "retained-pending-manual-checkout",
+      "status": "OPEN_FINDING_WITH_EXISTING_RECOVERY",
+      "action": "Parent triages retained pending-order slot before release; no silent cancellation or consent change added",
+      "target": "Existing one-pending-order unique index and manual checkout guard",
+      "reason": "No-demand pending order is preserved for same-order retry as approved. It can block a new manual order until valid demand returns or owner explicitly chooses existing Stop automatic payments (which cancels pending and disables auto-topup). Processing/paid are never cancelled by this fix.",
+      "scopeDecision": "Retain order/key as authorized; automatic cancellation or a new manual replacement flow would be an additional policy/UX decision."
+    },
+    {
+      "id": "unified-ios-auth-staging",
+      "status": "PENDING",
+      "action": "Existing iOS coordinator integrates frozen revisions and validates final common version; validate real PostgREST ACL/auth/cache/scheduler in staging",
+      "reason": "Local fixture passes do not prove live role transitions, Today/restart or multi-process DB behavior; native QA held candidate was not overwritten."
+    },
+    {
+      "id": "single-release",
+      "status": "HELD_BY_USER",
+      "action": "Parent verifies final baseline and code/database/iOS fallback before one release",
+      "reason": "No deployment/push/upload or production migration/payment/notification in this task."
+    },
+    {
+      "id": "authenticated-windows-pos",
+      "status": "PENDING",
+      "action": "Validate login/unlock/offline lease and revocation on final common source with existing Windows host, without a real financial transaction",
+      "reason": "8 local browser fixtures passed; original Windows handoff has a30-second unauthenticated real-host check. No authenticated POS session was tested on this common candidate."
+    },
+    {
+      "id": "shared-web-ios-lifecycle",
+      "status": "PENDING",
+      "action": "Existing iOS coordinator validates final common revision and any newer iOS delta, including role return/restart/Today/offline fallback",
+      "reason": "New Windows scheduling changes experience-scope; earlier Simulator QA on old shared file bytes cannot certify this revision. Native4 files preserved; no Mac access or duplicate QA task."
+    },
+    {
+      "id": "production-baseline-refresh",
+      "status": "PENDING_BEFORE_RELEASE",
+      "action": "Parent refreshes exact deployed web/native baseline, integrates any newer authorized work and verifies one version plus code/database/iOS fallback",
+      "reason": "Read-only captured baseline from15:50 is historical; this integration did not deploy or refresh the production alias."
+    }
+  ],
+  "id": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+  "recordedAt": "2026-10-21T18:28:48.208Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\unified-candidate-r3",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
