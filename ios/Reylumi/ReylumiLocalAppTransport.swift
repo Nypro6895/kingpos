@@ -483,7 +483,11 @@ final class ReylumiLocalAppTransport {
             let stored = await self.store.session(generation: expectedGeneration)
             try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             let previous = self.session ?? stored
-            let reference = (previous?.object["context"] as? [String: Any]) ?? (self.onlineContext?["context"] as? [String: Any])
+            // Compare a fresh display envelope with the currently selected
+            // online authority, not an unrelated retained offline lease. An
+            // identical periodic Staff check must not invalidate a pending
+            // workspace preflight merely because Staff has no offline grant.
+            let reference = (self.onlineContext?["context"] as? [String: Any]) ?? (previous?.object["context"] as? [String: Any])
             let viewer = context["viewerId"] as? String
             let viewerChanged = reference != nil && reference?["viewerId"] as? String != viewer
             let unchanged = reference != nil && !viewerChanged && reference?["scope"] as? String == scope
@@ -504,7 +508,9 @@ final class ReylumiLocalAppTransport {
             let authorityChanged = next != nil && priorAuthority != nil && next?.grantRevision != priorAuthority?.grantRevision
             let additive = previous != nil && next != nil && self.additiveAuthority(previous!, next!) && !authorityChanged
             let leaseChanged = previous != nil && !additive && (viewerChanged || previous?.scope != scope || next?.grantRevision != previous?.grantRevision || previous?.authority != next?.authority)
-            let rotate = explicitStaffOnline && !staffOnline || authorityChanged || (onlineOnly ? reference != nil && !unchanged : leaseChanged || previous == nil && reference != nil && !unchanged)
+            // Withdrawing an established online identity must also invalidate
+            // gestures already awaiting neutral preflight, even with no lease.
+            let rotate = denied && reference != nil || explicitStaffOnline && !staffOnline || authorityChanged || (onlineOnly ? reference != nil && !unchanged : leaseChanged || previous == nil && reference != nil && !unchanged)
             if rotate {
                 self.diagnostics.record(.authorityRotate, category: .context, outcome: .invalidated, reason: .contextChanged)
                 // Invalidate deliveries for the old visible authority, while
@@ -523,7 +529,17 @@ final class ReylumiLocalAppTransport {
                 ReylumiBackgroundSync.shared.clear()
             }
             try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
-            self.session = next ?? (onlineOnly && !explicitStaffOnline && unchanged && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
+            // Online equality does not authorize borrowing a different stored
+            // lease. A temporary lease outage may retain only that lease's own
+            // unchanged identity, route family, generation and expiry.
+            let previousContext = previous?.object["context"] as? [String: Any]
+            let previousUnchanged = previousContext != nil
+                && previousContext?["viewerId"] as? String == viewer && previous?.scope == scope
+                && previousContext?["permissionRevision"] as? String == context["permissionRevision"] as? String
+                && previousContext?["workspaceId"] as? String == context["workspaceId"] as? String
+                && previousContext?["salonId"] as? String == context["salonId"] as? String
+            self.session = next ?? (onlineOnly && !explicitStaffOnline && previousUnchanged
+                && previous?.compatible(path: path) == true && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
             self.onlineContext = denied ? nil : object
             self.onlineCheckedAt = denied ? .distantPast : Date()
             if let next { await self.store.accept(next) }
