@@ -1,0 +1,335 @@
+{
+  "kind": "change",
+  "changeId": "unified-owner-guest-integration-20261021",
+  "status": "needs-integration",
+  "summary": "Integrate frozen Windows Owner startup55c34d and explicit iOS Guest continuation4d6c100 onto common Campaign/UI/iOS source. Preserve previous Portable and Campaign product changes. Final351local tests, lint/typecheck/build/offline checked; PostgreSQL result recorded separately. Confirmed monthly-cap defect, manual checkout decision and final native/host acceptance keep release held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "components/experience-scope.tsx",
+    "releases/changes/2026-10-21T18-45-11-637Z-0d2a2874-3ac6-4d91-a12e-458d46f60bc5.json",
+    "tests/app-local-expiry-guest-continuation-ui.test.mjs",
+    "tests/owner-offline-admission-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\source",
+    "commit": "f22db9c688db2ec8ebb54420725a35eea5d70cac",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\manifest.json",
+    "sha256": "9091be884574d7e8bf4cd5404bec90eed4a4cdf5b835066c74f04b8b037968dc"
+  },
+  "dependencies": [
+    "unified-windows-portable-integration-20261021",
+    "windows-portable-owner-startup-20261021",
+    "pc-ios-explicit-guest-continuation-20261021"
+  ],
+  "validation": [
+    {
+      "name": "owner-admission",
+      "result": "passed",
+      "testsPassed": 7,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\owner-admission.json",
+      "sha256": "83de727f07f158f3790d6f42433d485e15896172da0bd3ac3febeb9837af68f5"
+    },
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "testsPassed": 8,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\portable-admission.json",
+      "sha256": "2b7b005a0af2566ea547796b01342886384dd8b222fd77b1ac6583ba5bcb7627"
+    },
+    {
+      "name": "guest-continuation",
+      "result": "passed",
+      "testsPassed": 4,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\guest-continuation.json",
+      "sha256": "c4fdc78ebc4dbc8bd7f8e6dfe0e42275c6fd307125cc1e8be7df7e3441b83bd6"
+    },
+    {
+      "name": "guest-webkit",
+      "result": "passed",
+      "testsPassed": 4,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\guest-webkit.json",
+      "sha256": "13c6628e6de289bd2edfd3b8fd712eca51712e1d62bfa13f39a6cfc17ff3c3a8"
+    },
+    {
+      "name": "idle-web",
+      "result": "passed",
+      "testsPassed": 19,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\idle-web.json",
+      "sha256": "94ebd7f69ab66d3b08b185d0f4195cf454f350b95f8e6b0930444216313d2007"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "testsPassed": 29,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\experience-regression.json",
+      "sha256": "c188ad507dcaa63f3f1520c4b33d1b61fe92c1c2bc1e7147256887619150e3e0"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "testsPassed": 2,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\experience-webkit.json",
+      "sha256": "0d1f1b0ea15cdcbf85544d76082fcad8e98899b627f1fcd47f3ccf4ee0577db8"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "testsPassed": 115,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\scope-regression.json",
+      "sha256": "d540014b03e6576df8745eb5beb472855cd3e0e03857d270b0b6e3f826e08a3b"
+    },
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "testsPassed": 153,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\campaign-logic.json",
+      "sha256": "23b2180a71fc9cbf39b8a4d5f84c1450669cbf629df360ce93b60981d8253d9f"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "testsPassed": 7,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\campaign-browser.json",
+      "sha256": "b9cd1fc7ea490ee3d69af6c41799754946e5d74476ce51fac494531d47bb41f8"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "testsPassed": 3,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\campaign-webkit.json",
+      "sha256": "dd771e67a38daffa2abe2fc32abe9a488fa10d8202779b2ea9fda095513a06a8"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\lint.json",
+      "sha256": "69f5d2da140515fdb5ecbc6c727fed44b4fe9e27531ffb0ae9d0dbea4cac73df"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\typecheck.json",
+      "sha256": "9e0956515408c5196bb763b44600ccfdc58586851142182c0f1029b5903af75d"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\build.json",
+      "sha256": "b519e004807556d155613161c330d050c4facd231e7cd8b96ede0f793d133914"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\offline-assets.json",
+      "sha256": "6f28b45fb4f3bac574db739921deadbba62457769ef2eab20351ae0c544a3383"
+    },
+    {
+      "name": "real-postgresql-20-races",
+      "result": "passed",
+      "testsPassed": 20,
+      "testsFailed": 0,
+      "testsNotRun": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\postgres-race\\DELIVERY.json",
+      "sha256": "8a2c79ef49b7494e21207addf160d10dd8d19b7e080999eb36694e1d209f554c"
+    },
+    {
+      "name": "manual-checkout-retained-pending",
+      "result": "pending",
+      "evidence": "No provider request, charge, credit grant or wallet/ledger mutation from the rejected manual attempt or no-demand claim. A later valid global/other-campaign demand may claim the same order. Existing Stop cancels pending automatic orders but disables wallet consent and every campaign auto_fund; not a neutral recovery."
+    },
+    {
+      "name": "monthly-cap-old-pending",
+      "result": "failed",
+      "evidence": "Current formula filters orders by intent created_at within America/Chicago month; old-month pending amount is excluded while claim tests current sum>limit. Source formula predates090; longer retained pending lifetime increases exposure."
+    },
+    {
+      "name": "authenticated-windows-pos",
+      "result": "pending",
+      "evidence": "Owner7 and Portable8 fixture cases passed on R4. Task5 host0.6.4/source55c acceptance is historical isolated-source evidence, not a final R4 authenticated POS session. Real localhost3107 configuration and profiles untouched."
+    },
+    {
+      "name": "final-ios-simulator",
+      "result": "pending",
+      "evidence": "Guest4d6c product/test delta is integrated and8browser cases passed. Native4files unchanged; no Mac access, bundle regeneration, duplicate native QA task or release build. Old Simulator results cannot certify R4."
+    },
+    {
+      "name": "real-auth-scheduler-staging",
+      "result": "pending",
+      "evidence": "Local mocked UI/provider and isolated SQL do not prove production wiring or job rollout."
+    },
+    {
+      "name": "release-baseline-fallback",
+      "result": "pending",
+      "evidence": "No push, deployment, upload, production migration or financial transaction authorized/performed. Historical production baseline receipt is not a current release baseline."
+    }
+  ],
+  "sourceHandoffs": {
+    "at": "2026-10-21T18:45:11.286141+00:00",
+    "candidate": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\unified-candidate-r4",
+    "base": "81c8e312ef09b0e539ca4a9db09627d8d01f5dd8",
+    "patches": [
+      {
+        "label": "owner",
+        "source": "55c34d8762d711de501fdc8332d788344e049d02",
+        "parent": "a7c1eac15401972fadf95159b58b69ab9990682b",
+        "files": [
+          "components/experience-scope.tsx",
+          "tests/owner-offline-admission-ui.test.mjs"
+        ],
+        "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\owner-guest-integration\\owner-raw.patch",
+        "sha256": "096cd7784af2621cf2d515f4be2532fe474db8fbb94341aecb95df3a44b51f75"
+      },
+      {
+        "label": "guest",
+        "source": "4d6c100c4545034230808ff794dbaf66321d51bd",
+        "parent": "2ce3f67c4579f3712347fff7b53d4d73713cb56c",
+        "files": [
+          "app/local-app/entry.tsx",
+          "components/app-local-shell.tsx",
+          "tests/app-local-expiry-guest-continuation-ui.test.mjs"
+        ],
+        "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\owner-guest-integration\\guest-raw.patch",
+        "sha256": "ef25bbcd06aa8efd60a6939daa766078102bb8ce68c5933707615d36e7772ddf"
+      }
+    ],
+    "files": [
+      {
+        "path": "components/experience-scope.tsx",
+        "exists": true,
+        "source": "55c34d8762d711de501fdc8332d788344e049d02",
+        "sourceBlobSha256": "8fb8f61f52c3c2876b68f2724a49aa9d49964097bd1b83524c2359c8cac46fb0",
+        "sha256": "4e17bcc7f844de477f67c713ae5d68dded4f89513a83eca305b61271db9f7e31",
+        "bytes": 26163,
+        "sourceBaseBlobSha256": "4e17bcc7f844de477f67c713ae5d68dded4f89513a83eca305b61271db9f7e31"
+      },
+      {
+        "path": "tests/owner-offline-admission-ui.test.mjs",
+        "exists": false,
+        "source": "55c34d8762d711de501fdc8332d788344e049d02",
+        "sourceBlobSha256": "4e3f85f6e9af7ffce446e109cf53ad993a01ad83fccc397673b9b4bce19b05b5"
+      },
+      {
+        "path": "app/local-app/entry.tsx",
+        "exists": true,
+        "source": "4d6c100c4545034230808ff794dbaf66321d51bd",
+        "sourceBlobSha256": "b6e0b61f33a5f6ea96648a133a48f299130490063743b68ab2f7a0a4107b0058",
+        "sha256": "a21d1fc6c7f13ff4a10176cf29fa9ef5d8955c215fb3452d54611f5405a750e3",
+        "bytes": 55860,
+        "sourceBaseBlobSha256": "e6535e8d68b9364bd816858da91bc6b26c629131b2765445e8b0fd6b454a73a0"
+      },
+      {
+        "path": "components/app-local-shell.tsx",
+        "exists": true,
+        "source": "4d6c100c4545034230808ff794dbaf66321d51bd",
+        "sourceBlobSha256": "780b59e64caea758ff563c9ac6337ae1a855c62459080a5fd53a64986790b563",
+        "sha256": "3fc38f6a1a1ffaf38979a43b0f65764f98aff6cac74d46ee41470368d5892d5c",
+        "bytes": 8297,
+        "sourceBaseBlobSha256": "3fc38f6a1a1ffaf38979a43b0f65764f98aff6cac74d46ee41470368d5892d5c"
+      },
+      {
+        "path": "tests/app-local-expiry-guest-continuation-ui.test.mjs",
+        "exists": false,
+        "source": "4d6c100c4545034230808ff794dbaf66321d51bd",
+        "sourceBlobSha256": "8abcdb82cf19f744dff397adc8b06c3b72ea481ca57fedec1446f457590604e4"
+      }
+    ],
+    "backupManifestSha256": "02b7f7e89d383dc2a70cf526b872f067fddd241194ee8e056881821f15620f28",
+    "suppliedWindowsPatchSha256": "0d625db7ff1387bfadc272eb62681354351bcc2e393f9fa2201fbad1b0ae0b81",
+    "windowsMetadata": "1ceced89f1ba8235b8fe5e3afcdf4f142934f46e",
+    "guestMetadata": "ab4e60eb93f113a586de913dcc900adf8d6e486b",
+    "conflicts": "NONE: all existing files match respective fixed source parents; patches have disjoint paths and each apply-check passed.",
+    "earlierPortable": "Already inherited fromR3; no duplicate patch applied.",
+    "productMutation": "NONE; checkpoint beforeapply",
+    "gatesInherited": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\integration-gates-review\\INTEGRATION-GATES.json"
+  },
+  "gates": [
+    {
+      "id": "manual-checkout-retained-pending",
+      "status": "DECISION_PENDING_NO_IMPLEMENTATION",
+      "mechanism": "One pending/processing order per salon. Manual RPC reuses automatic pending; createCreditCheckout rejects automatic mode before Stripe.090 returnsnull for no-demand pending and preserves that order/key.",
+      "impact": "No provider request, charge, credit grant or wallet/ledger mutation from the rejected manual attempt or no-demand claim. A later valid global/other-campaign demand may claim the same order. Existing Stop cancels pending automatic orders but disables wallet consent and every campaign auto_fund; not a neutral recovery.",
+      "decisionNeeded": "Whether an explicit owner manual-purchase action may atomically supersede only a proven never-claimed automatic pending order with no current automatic demand, preserving automatic consent and other campaigns. No blanket Pause cancellation or automatic expiry policy is implied.",
+      "proposal": "Keep the one-order constraint and checkout mode guard. Under wallet→order locks, revalidate owner, order state, never-started evidence and current demand; cancel/audit only that stale pending intent, then create a separate manual order for exactly the selected pack. Refuse processing/paid/unknown-provider-outcome or valid other-demand orders; preserve retry/settlement and consent/auto_fund.",
+      "implementation": "NOT_STARTED; proposal only"
+    },
+    {
+      "id": "monthly-cap-old-pending",
+      "status": "MAJOR_CONFIRMED_RELEASE_GATE",
+      "mechanism": "Current formula filters orders by intent created_at within America/Chicago month; old-month pending amount is excluded while claim tests current sum>limit. Source formula predates090; longer retained pending lifetime increases exposure.",
+      "observed": [
+        {
+          "version": "pre090",
+          "monthlyLimitCents": 500,
+          "currentMonthPaidCents": 500,
+          "additionalClaimCents": 500,
+          "projectedPaidCentsIfClaimSettles": 1000,
+          "providerRequests": 0,
+          "walletAndLedgerUnchangedAtClaim": true
+        },
+        {
+          "version": "post090",
+          "monthlyLimitCents": 500,
+          "currentMonthPaidCents": 500,
+          "additionalClaimCents": 500,
+          "projectedPaidCentsIfClaimSettles": 1000,
+          "providerRequests": 0,
+          "walletAndLedgerUnchangedAtClaim": true
+        }
+      ],
+      "limits": "No real provider charge occurred. PGlite confirms sequential SQL behavior only;317 previous checks did not cover this rollover case.",
+      "decisionNeeded": "Define the applicable monthly purchase/reservation period at claim and across in-flight month rollover, preserving existing cap value and exactly-once settlement; do not silently change billing periods or historic paid records.",
+      "proposal": "Design durable per-order monthly budget attribution under the existing wallet lock, shared by order/claim/paid accounting, with idempotent reservation and settlement. A one-off +amount predicate alone is insufficient if future sums still omit the paid old-created order. Confirm policy boundary, then implement fail→fix tests and real PostgreSQL races.",
+      "implementation": "NOT_STARTED; source frozen"
+    },
+    {
+      "id": "real-postgresql-race",
+      "status": "PASSED",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-unified-r4\\postgres-race\\DELIVERY.json",
+      "sha256": "8a2c79ef49b7494e21207addf160d10dd8d19b7e080999eb36694e1d209f554c",
+      "counts": {
+        "testsPassed": 20,
+        "testsFailed": 0,
+        "testsNotRun": 0
+      },
+      "limit": "20 existing race cases are separate from the confirmed monthly rollover cap defect and unapproved manual replacement policy. Their pass cannot close those findings."
+    },
+    {
+      "id": "authenticated-windows-pos",
+      "status": "PENDING_FINAL_R4_HOST_QA",
+      "action": "Validate authorized login/unlock/offline lease and revocation on final common source with the existing Windows host, without a financial transaction.",
+      "reason": "Owner7 and Portable8 fixture cases passed on R4. Task5 host0.6.4/source55c acceptance is historical isolated-source evidence, not a final R4 authenticated POS session. Real localhost3107 configuration and profiles untouched."
+    },
+    {
+      "id": "final-ios-simulator",
+      "status": "PENDING_EXISTING_COORDINATOR",
+      "action": "Existing iOS coordinator validates this pinned common revision, including Guest/role-return/restart/Today and native fallback; reconcile newer handoffs first.",
+      "reason": "Guest4d6c product/test delta is integrated and8browser cases passed. Native4files unchanged; no Mac access, bundle regeneration, duplicate native QA task or release build. Old Simulator results cannot certify R4."
+    },
+    {
+      "id": "real-auth-scheduler-staging",
+      "status": "PENDING",
+      "action": "Validate actual PostgREST ACL, owner-only reminder delivery/dedupe, jobs, cache role transitions and payment-provider integration in authorized staging without real charges.",
+      "reason": "Local mocked UI/provider and isolated SQL do not prove production wiring or job rollout."
+    },
+    {
+      "id": "release-baseline-fallback",
+      "status": "HELD_BY_USER",
+      "action": "Parent refreshes exact deployed web and uploaded native source, reconciles all changes and validates code/database/iOS fallback before a single release.",
+      "reason": "No push, deployment, upload, production migration or financial transaction authorized/performed. Historical production baseline receipt is not a current release baseline."
+    }
+  ],
+  "id": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+  "recordedAt": "2026-10-21T19:15:15.505Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\unified-candidate-r4",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
