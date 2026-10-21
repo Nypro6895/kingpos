@@ -12,7 +12,7 @@ export async function campaignOwnerStatusFixture() {
 
       {...base,id:'expired-running',title:'Expired running',status:'running',ends_at:'2000-01-01T00:00:00Z'},
 
-      {...base,id:'expired-paused',title:'Expired paused',status:'paused',ends_at:'2000-01-01T00:00:00Z',owner_paused_at:'2000-01-01T00:00:00Z',pause_episode_id:'33333333-3333-4333-8333-000000000001',pause_origin:'owner'},
+      {...base,id:'expired-paused',title:'Expired paused',status:'paused',starts_at:'1999-12-01T00:00:00Z',ends_at:'2000-01-01T00:00:00Z',owner_paused_at:'1999-12-31T00:00:00Z',pause_episode_id:'33333333-3333-4333-8333-000000000001',pause_origin:'owner'},
 
       {...base,id:'expired-renew',title:'Expired renewal',status:'running',ends_at:'2000-01-01T00:00:00Z',keep_running:true},
 
@@ -24,7 +24,7 @@ export async function campaignOwnerStatusFixture() {
 
       {...base,id:'scheduled',title:'Scheduled campaign',status:'running',starts_at:'2098-01-01T00:00:00Z'},
 
-      {...base,id:'settled-paused',title:'Settled paused',status:'completed',ends_at:'2000-01-01T00:00:00Z',owner_paused_at:'2000-01-01T00:00:00Z',pause_episode_id:'33333333-3333-4333-8333-000000000003',pause_origin:'owner'},
+      {...base,id:'settled-paused',title:'Settled paused',status:'completed',released_credits:80,ends_at:'2000-01-01T00:00:00Z',owner_paused_at:'2000-01-01T00:00:00Z',pause_episode_id:'33333333-3333-4333-8333-000000000003',pause_origin:'owner'},
 
       {...base,id:'completed',title:'Completed campaign',status:'completed',ends_at:'2000-01-01T00:00:00Z'}
 

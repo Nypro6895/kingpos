@@ -13,10 +13,10 @@ test('expired campaigns disclose pending reconciliation instead of settled succe
   assert.equal(campaignStatus({...base,status:'completed'},now).label,'Finished');
   assert.equal(campaignIsActive({...base,status:'completed'}),false);
 });
-test('owner pause survives settlement and explicit Resume has a new-period meaning',()=>{
+test('legacy settled pause requires a new period; retained pause resumes its existing reserve',()=>{
   const paused={...base,status:'completed',owner_paused_at:'2026-10-20T12:00:00Z',pause_episode_id:episode};
   const s=campaignStatus(paused,now);assert.equal(s.label,'Paused · period ended');assert.equal(s.canPause,false);assert.equal(s.canResume,true);assert.equal(s.resumeNewPeriod,true);assert.equal(campaignIsActive(paused),true);
-  assert.equal(campaignStatus({...paused,status:'paused'},now).label,'Paused · period ended — awaiting reconciliation');
+  const held=campaignStatus({...paused,status:'paused'},now);assert.equal(held.label,'Paused');assert.equal(held.awaitingReconciliation,false);assert.equal(held.resumeNewPeriod,false);assert.equal(held.canResume,true);
 });
 test('current-period Resume needs an exact episode and does not become a new-period request',()=>{
   const paused={...base,status:'paused',ends_at:'2026-10-22T00:00:00Z',owner_paused_at:'2026-10-21T11:00:00Z',pause_episode_id:episode};

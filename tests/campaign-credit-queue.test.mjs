@@ -101,7 +101,7 @@ test('real cumulative SQL queue progresses beyond 100 persistent failures and pr
  }finally{await db.close();}
 });
 
-test('unknown provider outcome retains the pending order and exact idempotency key across an explicit retry',async()=>{
+test('unknown provider outcome retains processing and automatic preference with the same idempotency key on retry',async()=>{
  const orderId=randomUUID(),requests=[],seenRuns=new Set();let enabled=true,status='pending',paid=0;
  globalThis.queuePaymentConfig={enabled:true,mode:'live',webhookSecret:'fixture',secretKey:'fixture-only'};
  const previousFetch=globalThis.fetch;globalThis.fetch=async(url,options)=>{assert.ok(options.signal instanceof AbortSignal);requests.push({url,key:options.headers['Idempotency-Key'],body:options.body});throw Error('fixture unknown outcome')};
@@ -122,7 +122,7 @@ test('unknown provider outcome retains the pending order and exact idempotency k
   return{data:{id:orderId,automatic:true,status,owner_id:ids.owner,credits:100}};
  }).then(resolve,reject)}};return builder}};
  try{
-  for(let attempt=0;attempt<2;attempt++){enabled=true;const result=await processCampaignCreditQueue();assert.equal(result.ok,false);assert.equal(result.attempted.topup,1);assert.equal(enabled,false);}
+  for(let attempt=0;attempt<2;attempt++){const result=await processCampaignCreditQueue();assert.equal(result.ok,false);assert.equal(result.attempted.topup,1);assert.equal(enabled,true,'an unknown payment never changes owner consent');}
   assert.equal(status,'processing');assert.equal(paid,0);assert.equal(requests.length,2);
   assert.deepEqual(requests.map(r=>r.key),[`campaign-topup:${orderId}`,`campaign-topup:${orderId}`]);
   assert.equal(new URLSearchParams(requests[0].body).get('amount'),'123');

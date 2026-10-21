@@ -60,12 +60,12 @@ export async function cancelCampaignCheckout(owner: Pick<Awaited<ReturnType<type
  const {error:update}=await owner.client.from("campaign_credit_orders").update({status:"cancelled"}).eq("id",orderId).eq("status","pending");
  if(update)throw new Error("Payment cancellation needs retry.");return true;
 }
-/** Admin reconciliation only reads a provider payment and replays verified fulfillment.
+/** Admin reconciliation only reads a provider payment and replays verified settlement.
  * It never creates or confirms a new charge, including unknown automatic outcomes. */
 export async function reconcileCampaignCreditOrder(orderId:string,reference?:string){
  if(!/^[0-9a-f-]{36}$/i.test(orderId))throw new Error("Choose a valid credit order.");
  const client=advertisingClient();
- const {data:order,error}=await client.from("campaign_credit_orders").select("id,status,checkout_session_id,provider_reference").eq("id",orderId).single();
+ const {data:order,error}=await client.from("campaign_credit_orders").select("id,status,automatic,checkout_session_id,provider_reference").eq("id",orderId).single();
  if(error||!order)throw new Error("Credit order could not load.");
  let intent=reference?.trim()||order.provider_reference;
  if(intent&&!/^pi_[a-zA-Z0-9]+$/.test(intent))throw new Error("Use the payment reference from your payment provider.");
@@ -80,6 +80,13 @@ export async function reconcileCampaignCreditOrder(orderId:string,reference?:str
  if(!/^pi_[a-zA-Z0-9]+$/.test(intent))throw new Error("Credit payment reference is invalid.");
  const payment=await stripe(`payment_intents/${intent}`);
  if((payment.metadata as Record<string,string>|undefined)?.campaign_credit_order!==orderId)throw new Error("Payment does not belong to this order.");
+ if(payment.id!==intent)throw new Error("Payment reference could not be verified.");
+ if(payment.status==="canceled"){
+  if(!order.automatic||(order.provider_reference&&order.provider_reference!==intent))throw new Error("Verified automatic payment reference required.");
+  const {data:cancelled,error:cancelError}=await client.rpc("campaign_credit_cancelled",{p_order:orderId,p_reference:intent});
+  if(cancelError)throw new Error("Payment cancellation needs reconciliation.");
+  return cancelled?"Verified canceled payment. No credits were added and no new charge was created.":"Payment was already recorded. No credits were changed.";
+ }
  await fulfillCreditPayment(intent,orderId);
  return "Verified payment and credits synchronized. No new charge was created.";
 }
@@ -132,28 +139,36 @@ export async function processCampaignCreditQueue(){
     if(!id)return;
     const {data:order,error:orderError}=await client.from("campaign_credit_orders").select("*").eq("id",id).abortSignal(timeout()).single();
     if(orderError)throw new Error("Campaign credit order could not load.");
-    if(!order?.automatic||order.status==="paid"||order.owner_id!==wallet.payment_owner||order.credits!==wallet.topup_credits)return;
+    if(!order?.automatic||order.status==="paid"||order.owner_id!==wallet.payment_owner||(order.status!=="processing"&&order.credits!==wallet.topup_credits))return;
     const {data:claim,error:claimError}=await client.rpc("campaign_credit_claim",{p_order:id}).abortSignal(timeout());
     if(claimError)throw new Error("Campaign payment claim failed.");
     if(!claim)return;
-    const disable=async()=>{
-      const {error:saveError}=await client.from("campaign_wallets").update({auto_topup_enabled:false}).eq("salon_id",wallet.salon_id).abortSignal(timeout());
-      if(saveError)throw new Error("Campaign payment choice needs retry.");
-    };
     try{
-      const intent=await queueStripe("payment_intents",new URLSearchParams({amount:String(claim.amount),currency:"usd",customer:claim.customer,payment_method:claim.method,confirm:"true",off_session:"true","metadata[campaign_credit_order]":String(id)}),`campaign-topup:${id}`);
+      // Once a provider reference is known, only read that intent. A pending or
+      // unknown result is not proof of failure and must not free the order slot
+      // for another charge. The claim RPC also bounds unknown retries to the
+      // provider's idempotency retention window and freezes their payload.
+      const reference=typeof claim.provider_reference==="string"?claim.provider_reference:null;
+      if(reference&&!/^pi_[a-zA-Z0-9]+$/.test(reference))throw new Error("Campaign payment requires reconciliation.");
+      const intent=reference?await queueStripe(`payment_intents/${reference}`)
+        :await queueStripe("payment_intents",new URLSearchParams({amount:String(claim.amount),currency:"usd",customer:claim.customer,payment_method:claim.method,confirm:"true",off_session:"true","metadata[campaign_credit_order]":String(id)}),`campaign-topup:${id}`);
+      if(typeof intent.id!=="string"||!/^pi_[a-zA-Z0-9]+$/.test(intent.id)||(reference&&intent.id!==reference))throw new Error("Campaign payment requires reconciliation.");
+      if((intent.metadata as Record<string,string>|undefined)?.campaign_credit_order!==String(id))throw new Error("Payment does not belong to this order.");
+      const {error:referenceError}=await client.from("campaign_credit_orders").update({provider_reference:intent.id}).eq("id",id).eq("status","processing").abortSignal(timeout());
+      if(referenceError)throw new Error("Campaign payment reference needs reconciliation.");
       if(intent.status==="succeeded")await recordCreditPayment(String(intent.id),String(id),queueStripe,client,deadline);
-      else {
-        const {error:saveError}=await client.from("campaign_credit_orders").update({status:"failed",error:"Your card needs confirmation."}).eq("id",id).neq("status","paid").abortSignal(timeout());
-        await disable();
-        if(saveError)throw new Error("Campaign payment outcome needs retry.");
-        throw new Error("Campaign payment requires confirmation.");
+      else if(intent.status==="canceled"){
+        const {error:cancelError}=await client.rpc("campaign_credit_cancelled",{p_order:id,p_reference:intent.id}).abortSignal(timeout());
+        if(cancelError)throw new Error("Campaign payment cancellation needs reconciliation.");
+        throw new Error("Campaign payment was canceled by the payment provider.");
+      }else {
+        throw new Error("Campaign payment is awaiting confirmation or reconciliation.");
       }
     }catch{
-      // Preserve the pending order and its Stripe idempotency key after an
-      // unknown outcome. A queue retry must never manufacture another charge.
-      const {error:saveError}=await client.from("campaign_credit_orders").update({error:"Payment needs attention. Check your payment method."}).eq("id",id).neq("status","paid").abortSignal(timeout());
-      await disable();
+      // Keep any unresolved processing reservation, same request key and owner's
+      // preference. Verified fulfillment can still arrive after Pause or a
+      // timeout. The queue reports this failure instead of hiding it as done.
+      const {error:saveError}=await client.from("campaign_credit_orders").update({error:"Payment needs confirmation or reconciliation. Check its status before starting another purchase."}).eq("id",id).eq("status","processing").abortSignal(timeout());
       if(saveError)throw new Error("Campaign payment outcome needs retry.");
       throw new Error("Campaign payment needs attention.");
     }

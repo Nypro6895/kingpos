@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r5-integration-20261021",
+  "status": "working",
+  "summary": "Integrate parent-authorized frozen Campaign R5 delta onto verified R4 in an independent local candidate; preserve UI/payroll/Daily/Windows/Guest/native and test exact common source. Release held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-panel.tsx",
+    "lib/campaign-payments.ts",
+    "lib/campaign-status.ts",
+    "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+    "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+    "tests/campaign-credit-demand-budget.test.mjs",
+    "tests/campaign-credit-queue.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs",
+    "tests/campaign-pending-claim-worker.test.mjs",
+    "tests/campaign-status-presentation.test.mjs",
+    "tests/fixtures/campaign-owner-status-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs"
+  ],
+  "source": {
+    "commit": "a9d05ae6ee52baed9e31dce1b6a5fa1e07501cfb",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r5"
+  },
+  "dependencies": [
+    "unified-owner-guest-integration-20261021",
+    "campaign-credit-lifecycle-r5-20261021"
+  ],
+  "validation": [
+    {
+      "name": "final-integrated-regressions-build-and-compatibility",
+      "result": "pending"
+    }
+  ],
+  "id": "c3acbfaa-9869-42c2-bb2f-81d0b7ef320b",
+  "recordedAt": "2026-10-21T20:12:42.943Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r5",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

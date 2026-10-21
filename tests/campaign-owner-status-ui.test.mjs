@@ -10,7 +10,7 @@ import {chromium,webkit} from 'playwright-core';
 
 import {campaignOwnerStatusFixture} from './fixtures/campaign-owner-status-ui.mjs';
 
-test('actual owner workspace exposes reconciliation and keeps only valid period controls',async()=>{
+test('actual owner workspace distinguishes retained Pause reserve from expired and legacy settled periods',async()=>{
 
   const fixture=await campaignOwnerStatusFixture(),engine=process.env.TEST_BROWSER_ENGINE==='webkit'?'webkit':'chromium';let browser;
 
@@ -30,15 +30,20 @@ test('actual owner workspace exposes reconciliation and keeps only valid period 
 
         await page.goto(fixture.url);await page.getByRole('heading',{name:'Expired running',exact:true}).waitFor();
 
-        for(const title of ['Expired running','Expired paused','Expired renewal']){
+        for(const title of ['Expired running','Expired renewal']){
 
-          assert.ok((await article(title).textContent()).includes(title==='Expired paused'?'Paused · period ended — awaiting reconciliation':'Period ended — awaiting reconciliation'),title+' shows pending reconciliation');
+          assert.ok((await article(title).textContent()).includes('Period ended — awaiting reconciliation'),title+' shows pending reconciliation');
 
           assert.equal(await article(title).getByRole('button',{name:/^(Pause|Resume)$/,exact:true}).count(),0,title+' has no invalid period action');
 
           assert.equal(await article(title).getByRole('button',{name:'Settings',exact:true}).count(),1,title+' retains settings and cancellation access');checks.push(title+' pending with valid controls');
 
         }
+
+        assert.ok((await article('Expired paused').textContent()).includes('Paused'));
+        assert.ok(!(await article('Expired paused').textContent()).includes('reconciliation'),'held pause is not waiting for a refund');
+        assert.equal(await article('Expired paused').getByRole('button',{name:'Resume',exact:true}).count(),1,'old end time does not require a new paid period');
+        assert.equal(await article('Expired paused').getByRole('button',{name:'Resume in new period',exact:true}).count(),0);
 
         assert.ok((await article('Settled paused').textContent()).includes('Paused · period ended'));
 
@@ -75,6 +80,12 @@ test('actual owner workspace exposes reconciliation and keeps only valid period 
         assert.equal(await page.locator('dialog input[type="checkbox"]').isChecked(),true,'existing renewal choice unchanged');
 
         await page.getByRole('button',{name:'Close dialog',exact:true}).click();checks.push('no pause/auto-renew policy rewrite');
+
+        await article('Expired paused').getByRole('button',{name:'Resume',exact:true}).click();
+        await article('Expired paused').getByRole('button',{name:'Pause',exact:true}).waitFor();
+        assert.equal(await page.locator('dialog').count(),0,'retained period resumes without a new-purchase confirmation');
+        assert.equal((await page.evaluate(()=>window.ownerCampaignActions)).at(-1).episode,'33333333-3333-4333-8333-000000000001');
+        checks.push('retained paused reserve continues with the displayed episode');
 
         await article('Current running').getByRole('button',{name:'Pause',exact:true}).click();
 
@@ -126,7 +137,7 @@ test('actual owner workspace exposes reconciliation and keeps only valid period 
 
         assert.equal(await article('Expired paused').getByRole('button',{name:'Run again',exact:true}).count(),1,'settled terminal campaign retains Run again');checks.push('history reflects pending versus terminal status');
 
-        const actions=await page.evaluate(()=>window.ownerCampaignActions);assert.deepEqual(actions.map(({id,action})=>({id,action})),[{id:'current-running',action:'pause'},{id:'current-running',action:'resume'},{id:'admin-paused',action:'resume'},{id:'settled-paused',action:'resume'},{id:'expired-paused',action:'cancel'}]);assert.equal(actions[1].episode,'33333333-3333-4333-8333-000000000004','same-period resume keeps the current pause episode');
+        const actions=await page.evaluate(()=>window.ownerCampaignActions);assert.deepEqual(actions.map(({id,action})=>({id,action})),[{id:'expired-paused',action:'resume'},{id:'current-running',action:'pause'},{id:'current-running',action:'resume'},{id:'admin-paused',action:'resume'},{id:'settled-paused',action:'resume'},{id:'expired-paused',action:'cancel'}]);assert.equal(actions[2].episode,'33333333-3333-4333-8333-000000000004','same-period resume keeps the current pause episode');
 
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'workspace has no horizontal overflow');assert.deepEqual(errors,[]);
 

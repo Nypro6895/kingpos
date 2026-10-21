@@ -8,8 +8,9 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function campaignStatus(c: CampaignState, now = Date.now()) {
   const ended = Boolean(c.ends_at && Date.parse(c.ends_at) <= now);
   const ownerPaused = Boolean(c.owner_paused_at) && ["running","paused","completed"].includes(c.status);
-  const awaitingReconciliation = ended && ["running","paused"].includes(c.status);
-  const resumeNewPeriod = ownerPaused && (ended || c.status === "completed");
+  const awaitingReconciliation = ended && !ownerPaused && ["running","paused"].includes(c.status);
+  // Only legacy periods already settled before reserve-hold need new funding.
+  const resumeNewPeriod = ownerPaused && c.status === "completed";
   let label = labels[c.status];
   if (ownerPaused && resumeNewPeriod) label = awaitingReconciliation ? "Paused · period ended — awaiting reconciliation" : "Paused · period ended";
   else if (ownerPaused) label = "Paused";
