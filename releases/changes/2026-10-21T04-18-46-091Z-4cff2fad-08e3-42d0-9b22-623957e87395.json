@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "help-context-dismiss-20261020",
+  "status": "needs-integration",
+  "summary": "Validated Help/Report account-menu dismissal on mobile and desktop; preserve fresh-authority redirects for every workspace/write action. Native rebundle, assembled production build and real candidate UI QA remain pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "components/app-local-shell.tsx",
+    "tests/app-local-help-dismiss-ui.test.mjs"
+  ],
+  "dependencies": [
+    "ios-workspace-cookie-deletion-20261020",
+    "auth-session-missing-rejection-20261020"
+  ],
+  "source": {
+    "commit": "8ed23dd8623a3713e344ea6d6d26c07a02dc5393",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/frozen-8ed23dd-raw-selected",
+    "snapshotKind": "selected-raw-git-patch",
+    "baseCommit": "d73afd529b6b5b3c0ba3437efcb6e225d5f1269c"
+  },
+  "validation": [
+    {
+      "name": "Raw Git selected-source parity",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/source-verification.json"
+    },
+    {
+      "name": "DOM red regression: five functional failures, four authority controls passed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/red/chromium-help-dismiss-ui.json"
+    },
+    {
+      "name": "Raw source Chromium and WebKit UI: nine tests each, zero failures/skips",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/verification.json"
+    },
+    {
+      "name": "Existing navigation/workspace contracts: sixteen passed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/navigation-workspace-contracts.log"
+    },
+    {
+      "name": "Targeted ESLint",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/targeted-eslint.log"
+    },
+    {
+      "name": "Independent source and test review",
+      "result": "passed",
+      "evidence": "web_auth_audit: no concrete blocker; fixture boundaries and actual-device attribution limits retained"
+    },
+    {
+      "name": "Native bundled JS regeneration and assembled production build",
+      "result": "pending"
+    },
+    {
+      "name": "Real candidate role and Help UI QA",
+      "result": "pending"
+    }
+  ],
+  "id": "4cff2fad-08e3-42d0-9b22-623957e87395",
+  "recordedAt": "2026-10-21T04:18:46.091Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-help-dismiss-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
