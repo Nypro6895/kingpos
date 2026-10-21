@@ -1,0 +1,132 @@
+{
+  "kind": "change",
+  "changeId": "campaign-pending-claim-demand-20261021",
+  "status": "needs-integration",
+  "summary": "Revalidate pending automatic top-up demand under existing wallet/order lock; paused-only pending claim returnsnull before provider call. Preserve processing/paid/order/key/amount/consent/caps.153 Campaign tests, lint, typecheck, build/offline passed; PostgreSQL race and unified QA remain pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "releases/changes/2026-10-21T17-51-44-487Z-94cd933c-6910-405c-8975-56eb77a4778a.json",
+    "supabase/migrations/20261021090000_campaign_pending_claim_demand.sql",
+    "tests/campaign-pending-claim-demand.test.mjs",
+    "tests/campaign-pending-claim-worker.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\source",
+    "commit": "5f3834866617331292ed5f34ee11919d76a571c1",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\manifest.json",
+    "sha256": "c27d6bb1c0ff5a29928a11077fa25a2e29908fa2b84543c92a524cac0f83586b"
+  },
+  "dependencies": [
+    "campaign-causal-settlement-reporting-20261021"
+  ],
+  "validation": [
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "tests": 153,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\campaign-logic.json",
+      "sha256": "3baa04e1d9a4b3e7681949a997f04fa3aa50585f11319449a8021654ff2a5ace"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\lint.json",
+      "sha256": "77f4a58286cb02df639ebe6ea4b1a57a2fa0931f72bfabc08d5eeb0728220efc"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\typecheck.json",
+      "sha256": "b5c990503364b48af412eb05a2e5fb5c1e985754fcd4106d8a3de476b3764489"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\build.json",
+      "sha256": "ffdaa563bc312f620ea690b57202a0a56f363f992461ecf098bad9161f4159c6"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\offline-assets.json",
+      "sha256": "cd53723965c5377251a9fb8c6e6fcecf94cb2c878b9d8286218c306d663ce17f"
+    },
+    {
+      "name": "real-postgresql-race",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\postgres-race\\STATUS-FINAL.json"
+    },
+    {
+      "name": "retained-pending-manual-checkout",
+      "result": "pending",
+      "evidence": "No-demand pending order is preserved for same-order retry as approved. It can block a new manual order until valid demand returns or owner explicitly chooses existing Stop automatic payments (which cancels pending and disables auto-topup). Processing/paid are never cancelled by this fix."
+    },
+    {
+      "name": "unified-ios-auth-staging",
+      "result": "pending",
+      "evidence": "Local fixture passes do not prove live role transitions, Today/restart or multi-process DB behavior; native QA held candidate was not overwritten."
+    },
+    {
+      "name": "single-release",
+      "result": "pending",
+      "evidence": "No deployment/push/upload or production migration/payment/notification in this task."
+    }
+  ],
+  "resolvesPriorGate": {
+    "priorEventId": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+    "gate": "pre-pause-pending-auto-order",
+    "authorization": "Parent approved demand revalidation under the owner sticky Pause instruction",
+    "resolution": "Implemented locally with migration090 and SQL/worker tests; real PostgreSQL race still pending."
+  },
+  "limits": [
+    "Processing is the durable claim boundary before HTTP provider submission. Pause winning wallet lock blocks pending claim; claim winning first remains processing even if HTTP has not yet been sent, because an unknown outcome cannot safely be treated as unstarted.",
+    "Global low-balance threshold consent still qualifies independently; other campaigns use existing awaiting-payment/expired keep-running demand predicates.",
+    "Existing renewal-demand estimate daily_price_cents*days and absence of source-validity checks in that predicate remain unchanged; no new pricing, amounts, limits or renewal eligibility policy introduced.",
+    "New positive other-campaign tests use actual published sources. PGlite is single-connection; provider is a stub with zero external network."
+  ],
+  "gates": [
+    {
+      "id": "real-postgresql-race",
+      "status": "NOT_RUN",
+      "action": "Execute20 multi-connection cases against an authorized disposable loopback PostgreSQL cluster",
+      "target": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\postgres-race\\run.mjs",
+      "reason": "No usable local PostgreSQL runtime; psql/postgres/initdb still absent from current PATH. Prior Docker normal startup failed and later engine probe timed out; no install/reset/security/network changes.",
+      "denied": false,
+      "uncertainOutcome": false,
+      "completed": "20cases/18sourceinputs/12safetyguards prepared and verified offline",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-pending-claim\\postgres-race\\STATUS-FINAL.json"
+    },
+    {
+      "id": "retained-pending-manual-checkout",
+      "status": "OPEN_FINDING_WITH_EXISTING_RECOVERY",
+      "action": "Parent triages retained pending-order slot before release; no silent cancellation or consent change added",
+      "target": "Existing one-pending-order unique index and manual checkout guard",
+      "reason": "No-demand pending order is preserved for same-order retry as approved. It can block a new manual order until valid demand returns or owner explicitly chooses existing Stop automatic payments (which cancels pending and disables auto-topup). Processing/paid are never cancelled by this fix.",
+      "scopeDecision": "Retain order/key as authorized; automatic cancellation or a new manual replacement flow would be an additional policy/UX decision."
+    },
+    {
+      "id": "unified-ios-auth-staging",
+      "status": "PENDING",
+      "action": "Existing iOS coordinator integrates frozen revisions and validates final common version; validate real PostgREST ACL/auth/cache/scheduler in staging",
+      "reason": "Local fixture passes do not prove live role transitions, Today/restart or multi-process DB behavior; native QA held candidate was not overwritten."
+    },
+    {
+      "id": "single-release",
+      "status": "HELD_BY_USER",
+      "action": "Parent verifies final baseline and code/database/iOS fallback before one release",
+      "reason": "No deployment/push/upload or production migration/payment/notification in this task."
+    }
+  ],
+  "id": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+  "recordedAt": "2026-10-21T18:06:15.646Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-causal-candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
