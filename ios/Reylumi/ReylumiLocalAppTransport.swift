@@ -556,11 +556,61 @@ final class ReylumiLocalAppTransport {
             throw error
         }
     }
+    private func selectedBusinessCacheIdentity(path: String) -> [String]? {
+        let object: [String: Any]
+        // An online-only Staff selection intentionally has no native lease.
+        // It must still fence unrelated retained Owner/Personal cache entries.
+        if let onlineContext { object = onlineContext }
+        else if let session, session.valid(generation: generation) { object = session.object }
+        else { return nil }
+        guard let context = object["context"] as? [String: Any],
+              context["authenticated"] as? Bool == true,
+              let scope = context["scope"] as? String,
+              let viewer = context["viewerId"] as? String, !viewer.isEmpty else { return nil }
+        let access = object["access"] as? [String: Any]
+        if let selected = ReylumiLocalSession.verified(object, generation: generation) {
+            guard selected.compatible(path: path) else { return nil }
+        } else {
+            // Preserve the existing generic display-lease outage only when its
+            // known current identity/capability still matches a valid lease.
+            // Explicit online-only Staff authority never borrows an Owner or
+            // customer display lease, even for an identical synthetic scope.
+            guard object["offlineState"] as? String != "online-only",
+                  object["offlineState"] as? String != "unconfirmed",
+                  object["grantStatus"] as? Int == 503, object["grant"] is NSNull,
+                  let session, session.valid(generation: generation), session.compatible(path: path),
+                  session.scope == scope,
+                  let previous = session.object["context"] as? [String: Any],
+                  previous["viewerId"] as? String == viewer,
+                  previous["workspaceId"] as? String == context["workspaceId"] as? String,
+                  previous["salonId"] as? String == context["salonId"] as? String,
+                  previous["permissionRevision"] as? String == context["permissionRevision"] as? String,
+                  (ReylumiLocalSession.businessAuthority(path: path) == "owner"
+                    ? access?["ownerWorkspace"] as? Bool == true
+                    : access?["ownerWorkspace"] as? Bool == true || access?["staffWorkspace"] as? Bool == true) else { return nil }
+        }
+        return [scope, viewer, context["workspaceId"] as? String ?? "", context["salonId"] as? String ?? "",
+                context["permissionRevision"] as? String ?? "", (object["grant"] as? [String: Any])?["kind"] as? String ?? "",
+                (object["grant"] as? [String: Any])?["grantRevision"] as? String ?? "",
+                String(access?["ownerWorkspace"] as? Bool ?? false), String(access?["staffWorkspace"] as? Bool ?? false),
+                object["offlineState"] as? String ?? "", String(object["grantStatus"] as? Int ?? 0)]
+    }
     func context(path: String) async throws -> [String: Any] {
         let epoch = scopeEpoch, expectedGeneration = generation
         let began = ProcessInfo.processInfo.systemUptime
-        let cached = await store.session(generation: expectedGeneration, path: path)
+        let business = ReylumiLocalSession.businessAuthority(path: path) != nil
+        let selected = business ? selectedBusinessCacheIdentity(path: path) : nil
+        var cached: ReylumiLocalSession?
+        if !business || selected != nil {
+            cached = await store.session(generation: expectedGeneration, scope: selected?.first, path: path)
+        }
         try ensureCurrent(epoch)
+        guard generation == expectedGeneration else { throw CancellationError() }
+        // The actor lookup can interleave a same-epoch additive authority or an
+        // online-only selection. Recheck the full selected identity before a
+        // cached DTO can become visible. Unknown/private cold routes use HTTPS;
+        // the neutral '/' route still restores the account's own cached home.
+        if business && selected != selectedBusinessCacheIdentity(path: path) { cached = nil }
         diagnostics.record(cached == nil ? .contextCacheMiss : .contextCacheHit, category: ReylumiLocalDiagnostics.category(path: path), outcome: cached == nil ? .miss : .hit, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
         if let cached {
             if let previous = session, previous.key != cached.key, !additiveAuthority(previous, cached) {

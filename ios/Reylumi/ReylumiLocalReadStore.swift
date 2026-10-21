@@ -73,7 +73,37 @@ struct ReylumiLocalSession: Codable {
         let context = object["context"] as? [String: Any] ?? [:]
         return authority + "|" + (context["workspaceId"] as? String ?? "") + "|" + (context["salonId"] as? String ?? "")
     }
+    // Mirror the existing JS page families for display-cache selection only.
+    // Shared account routes and the Staff/Portable read families stay separate.
+    static func businessAuthority(path: String) -> String? {
+        let path = normalizedPath(path)
+        if path == "/salon-profile" { return "salon" }
+        if path == "/pos/customer-display" || path == "/pos/portable" || path.hasPrefix("/pos/portable/") { return nil }
+        let exact = ["/staff", "/staff/today", "/pos", "/pos-tickets", "/customers", "/payroll", "/services", "/salon-settings", "/bookings", "/reports"]
+        let descendants = ["/pos/", "/pos-tickets/", "/customers/", "/payroll/", "/salon-profile/"]
+        return exact.contains(path) || descendants.contains(where: { path.hasPrefix($0) }) ? "owner" : nil
+    }
+    private static func normalizedPath(_ path: String) -> String {
+        var value = String(path.split(separator: "?", maxSplits: 1, omittingEmptySubsequences: false).first ?? "")
+        if value.hasSuffix("/") { value.removeLast() }
+        return value.isEmpty ? "/" : value
+    }
     func compatible(path: String) -> Bool {
+        if let family = Self.businessAuthority(path: path) {
+            guard permitsPrivateReads,
+                  ![401, 403, 409].contains(object["grantStatus"] as? Int ?? 0),
+                  object["offlineState"] as? String != "unconfirmed",
+                  object["offlineState"] as? String != "online-only" else { return false }
+            if family == "owner" { return authority == "owner" }
+            guard ["owner", "customer"].contains(authority),
+                  let context = object["context"] as? [String: Any],
+                  let salon = context["salonId"] as? String, !salon.isEmpty,
+                  let grant = object["grant"] as? [String: Any], grant["salonId"] as? String == salon else { return false }
+            let access = object["access"] as? [String: Any]
+            // Staff's Post page uses the original selected-salon customer root
+            // lease. Its Staff binding is never borrowed for account resources.
+            return authority == "owner" || access?["ownerWorkspace"] as? Bool == true || access?["staffWorkspace"] as? Bool == true
+        }
         // The neutral launch route only resolves an account's own home. Device
         // PIN authority remains separate and cannot become an account session.
         if path == "/" { return authority != "portable" }
