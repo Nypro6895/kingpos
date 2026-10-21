@@ -16,15 +16,19 @@ import { PreparedReadViewRefresh } from "@/components/prepared-read-view-refresh
 import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
 import { getPortableOfflineAdmission, getServerPortableOfflineAdmission, subscribePortableOfflineAdmission } from "@/lib/portable-offline-admission";
 
-function ExperienceOfflineRuntime({ scope }: { scope: string }) {
+function ExperienceOfflineRuntime({ scope, authenticated }: { scope: string; authenticated: boolean }) {
   const pathname = usePathname();
   const admission = useSyncExternalStore(subscribePortableOfflineAdmission, getPortableOfflineAdmission, getServerPortableOfflineAdmission);
   // The root account can remain a guest after POS sign-in. The explicit POS
   // boundary owns preparation; a login screen or public display token does not.
   // Required context validation and cached-document boot guards remain below.
   const portableAdmission = pathname === "/pos/portable" || pathname.startsWith("/pos/portable/") || pathname === "/pos/customer-display" ? admission : null;
+  // Owner POS redirects anonymous accounts to login. This is only eligibility
+  // for optional reads; authenticated 401/403 still revoke through the lease.
+  const ownerPos = !portableAdmission && (pathname === "/pos" || pathname.startsWith("/pos/"));
   useEffect(() => {
     if (portableAdmission && !portableAdmission.active) return;
+    if (ownerPos && !authenticated) return;
     let active = true;
     const controller = new AbortController();
     const currentPath = () => location.pathname + location.search;
@@ -40,7 +44,7 @@ function ExperienceOfflineRuntime({ scope }: { scope: string }) {
     window.addEventListener("online", prepare);
     window.addEventListener("online", authorize); window.addEventListener("focus", authorize); window.addEventListener("reylumi:foreground", authorize);
     return () => { active = false; controller.abort(); if (!preparationFired) recordExperienceTrace("timer.cancel", { source: "web", trigger: "interval", reason: "grant" }); clearTimeout(timer); window.removeEventListener("online", prepare); window.removeEventListener("online", authorize); window.removeEventListener("focus", authorize); window.removeEventListener("reylumi:foreground", authorize); };
-  }, [scope, pathname, portableAdmission]);
+  }, [scope, pathname, portableAdmission, ownerPos, authenticated]);
   return <span hidden data-experience-offline-scope={scope} />;
 }
 
@@ -346,7 +350,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
   const value = useMemo(() => ({ context, validate, checkedAt, validationRevision, getValidationRevision, connectionState, retryConnection }), [context, validate, checkedAt, validationRevision, getValidationRevision, connectionState, retryConnection]);
   return <ScopeContext value={value}>
     <OfflineNetworkFormGuard />
-    <ExperienceOfflineRuntime scope={context.scope} />
+    <ExperienceOfflineRuntime scope={context.scope} authenticated={context.authenticated} />
     <PreparedReadViewRefresh scope={context.scope} validate={validate} />
     {offlineNavigationMessage ? <div role="status" className="fixed inset-x-4 bottom-20 z-50 mx-auto flex max-w-md items-center justify-between gap-4 rounded-xl border bg-white p-4 text-sm shadow-lg"><WorkspaceText text="Please connect to open this page." /><button type="button" aria-label="Close" onClick={() => setOfflineNavigationMessage(false)}>×</button></div> : null}
     {recoveryRequired ? <div className="mx-auto flex min-h-48 max-w-lg flex-col items-center justify-center gap-4 px-6 py-10 text-center">
