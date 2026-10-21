@@ -464,6 +464,9 @@
       "saveBookingRulesSettingsAction",
       "loadBookSmsSettingsAction",
       "saveBookSmsSettingsAction"
+    ],
+    "app/campaigns/preview-actions.ts": [
+      "loadCampaignPreviewAction"
     ]
   }
 }

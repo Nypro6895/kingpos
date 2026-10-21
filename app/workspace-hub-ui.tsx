@@ -664,7 +664,7 @@ export function CurrentWorkspaceCard({
   return (
     <section
       aria-labelledby="current-workspace-title"
-      className="grid min-w-0 gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3"
+      className="grid min-w-0 gap-3 bg-zinc-50 p-3"
     >
       <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
         <span className={iconTileClass("panel")}>

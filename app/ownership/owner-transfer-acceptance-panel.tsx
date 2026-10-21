@@ -34,7 +34,7 @@ export function OwnerTransferAcceptancePanel({
   }
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-soft)]">
+    <section className="min-w-0 bg-surface py-5">
       <h1 className="text-2xl font-extrabold text-text-primary">
         <WorkspaceText text="Owner invitation" />
       </h1>

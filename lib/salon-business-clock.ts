@@ -1,13 +1,16 @@
 import "server-only";
 import { cache } from "react";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import { getReadAbortSignal } from "@/lib/read-context-scope";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 
 // Request-scoped: never cache one salon's clock across accounts or requests.
 export const getSalonBusinessTimezone = cache(async (salonId: string): Promise<string> => {
   const supabase = await createAuthenticatedSupabaseServerClient();
   if (!supabase) throw new Error("Salon clock is unavailable. Please retry.");
-  const { data, error } = await supabase.rpc("get_salon_business_timezone", { p_salon_id: salonId });
+  const read = supabase.rpc("get_salon_business_timezone", { p_salon_id: salonId });
+  const signal = getReadAbortSignal();
+  const { data, error } = await (signal ? read.abortSignal(signal) : read);
   if (error || typeof data !== "string" || !data.trim()) throw new Error("Salon clock is unavailable. Please retry.");
   new Intl.DateTimeFormat("en-US", { timeZone: data }).format();
   return data;

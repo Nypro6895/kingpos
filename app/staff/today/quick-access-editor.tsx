@@ -274,7 +274,7 @@ export function QuickAccessPanel({
   }
 
   return (
-    <div className="settings-style"><section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
+    <div className="settings-style"><section className="border-y border-zinc-200 bg-white">
       <div className="flex items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3.5 sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-700">
@@ -344,7 +344,7 @@ export function QuickAccessPanel({
                 <ul className="space-y-2">
                   {draft.map((shortcut, index) => (
                     <li
-                      className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-white px-2 py-2 shadow-sm"
+                      className="flex min-w-0 flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-2 py-2"
                       key={shortcut.id}
                     >
                       <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 px-1">

@@ -7,6 +7,7 @@ test('local campaign SQL rotates admitted views, respects area/status/budget/fre
  create function lifecycle_user_is_salon_owner(uuid,uuid,boolean) returns boolean language sql as $$select true$$;
  insert into owner_campaigns select ('00000000-0000-0000-0000-'||lpad(i::text,12,'0'))::uuid,('10000000-0000-0000-0000-'||lpad(i::text,12,'0'))::uuid,'20000000-0000-0000-0000-000000000001','custom','30000000-0000-0000-0000-000000000001','running',now()-interval '1 day'+i*interval '1 minute',now()+interval '1 day','paid',now(),0,1000,0,100,'US','city','Milwaukee','WI','Milwaukee',500,'{"dailyFrequency":2}',now()-interval '2 days'+i*interval '1 minute' from generate_series(1,8) i;`);
  await db.exec(fs.readFileSync('supabase/migrations/20261019170000_campaign_local_rotation.sql','utf8'));
+ await db.exec(fs.readFileSync('supabase/migrations/20261021010000_campaign_selection_daily_cap.sql','utf8'));
  const area={country:'US',state:'WI',city:'Milwaukee',zipcode:'53218',neighborhood:''};
  const select=async(a=area)=> (await db.query('select id from owner_campaign_candidates($1,$2)',[a,'visitor'])).rows.map(r=>Number(r.id.slice(-12)));
  assert.deepEqual(await select(),[1,2,3,4,5,6]);

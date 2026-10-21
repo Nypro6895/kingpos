@@ -4,6 +4,15 @@ const {resolveCampaignDeliveryArea:resolve,campaignDeliveryRequest:request}=awai
 const salon={country:'US',state:'WI',city:'Milwaukee',postal_code:'53218'};
 const gps={country:'US',state:'WI',city:'Milwaukee',postalCode:'53218'};
 const options=(rows=[salon],area=gps)=>({lookup:async()=>rows,reverse:async()=>area});
+test('US state aliases never rewrite a state in another explicit country',async()=>{
+ const row={country:'Canada',state:'Washington',city:'Example',postal_code:'A1A 1A1'};
+ const expected={country:'CA',state:'Washington',city:'Example',zipcode:'',neighborhood:''};
+ assert.deepEqual(await resolve({location:'Example, Washington, Canada'},options([row],null)),expected);
+ assert.equal(await resolve({location:'Example, WA, Canada'},options([row],null)),null);
+ const reverse={country:'CA',state:'Washington',city:'Example',postalCode:'A1A 1A1'};
+ assert.deepEqual(await resolve({latitude:49,longitude:-123},options([],reverse)),{...expected,zipcode:'A1A 1A1'});
+ assert.deepEqual(await resolve({location:'Washington, Canada'},options([row],null)),{...expected,city:''});
+});
 test('full state/country names and ZIP+4 normalize; a city never inherits a salon ZIP',async()=>{
  assert.deepEqual(await resolve({location:'53218-1234, Wisconsin, United States'},options()),{country:'US',state:'WI',city:'Milwaukee',zipcode:'53218',neighborhood:''});
  assert.equal((await resolve({location:'Milwaukee, Wisconsin, United States of America'},options())).zipcode,'');

@@ -59,7 +59,7 @@ function fixture({ permissions = ['*'], fail = new Set(), reportWait, hoursWait,
   };
   const server = load('lib/today-dashboard.ts', {
     'server-only': {},
-    '@/lib/read-context-scope': { getReadRequestTiming: () => timing },
+    '@/lib/read-context-scope': { getReadRequestTiming: () => timing, getReadAbortSignal: () => undefined },
     '@/lib/today-dashboard-sections': sections,
     '@/lib/salon-business-clock': { getContextBusinessTimezone: async () => { reads.push('timezone'); if (clockAuth) await clockAuth(); if (timezoneWait) await timezoneWait; return 'UTC'; } },
     '@/lib/today-metric-assessment': { backlogTone: count => count > 0 ? 'warning' : 'default', waitingAssessment: timestamps => ({ tone: timestamps.length ? 'warning' : 'default', label: timestamps.length ? 'Clients waiting' : 'No clients waiting' }) },

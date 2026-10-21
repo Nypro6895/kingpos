@@ -249,7 +249,7 @@ const result:{ok:true;data:CustomerBookingSummary[]}={ok:true,data:bookings};
 const error=messageFromSearch(initialError),message=messageFromSearch(initialMessage);
   return (
     <main className={classNames(styles.bookingSurface, "min-h-screen overflow-x-hidden bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
-      <div className="mx-auto grid w-full max-w-6xl gap-5">
+      <div className="grid w-full min-w-0 gap-5">
         {message ? (
           <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
             {message}

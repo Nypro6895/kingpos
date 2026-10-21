@@ -81,6 +81,12 @@ function isPublic(path: string) { const pathname = path.split("?")[0]; return pa
 function isHelp(path: string) { const pathname = path.split("?")[0]; return pathname === "/help" || pathname.startsWith("/help/"); }
 type AuthorityFamily = "account" | "staff.portal" | "staff.workday" | "portable" | "display";
 type Admission = { value: AppLocalContext; generation?: string };
+// Cached route DOM belongs to its own accepted identity. Clearing resource
+// caches alone cannot clear an uncontrolled private draft on the current path.
+// Lease renewal timestamps deliberately do not remount an unchanged identity.
+function privateAdmissionKey(admission?: Admission) {
+  return JSON.stringify([admission?.generation, admission?.value.context.viewerId, admission?.value.context.scope]);
+}
 type ContextCheck = { path: string; controller: AbortController; requireFresh: boolean; promise?: Promise<void> };
 type WorkspaceRecovery = { viewerId: string; generation: string; workspaceId?: string };
 type WorkspaceGesture = WorkspaceRecovery & { scope: string };
@@ -466,8 +472,7 @@ function App() {
             throw Object.assign(new Error("Workspace access could not be confirmed"), { status: 503 });
           }
           const destination = appLocalPath(value.home);
-          if (destination === "/" || (!isPublic(destination) && !ownerPaths.has(destination.split("?")[0]) && !getAppLocalPage(destination))
-            || pageAttempt && destination === pageAttempt.path) throw appLocalAdmissionError("workspace-home");
+          if (destination === "/" || (!isPublic(destination) && !ownerPaths.has(destination.split("?")[0]) && !getAppLocalPage(destination))) throw appLocalAdmissionError("workspace-home");
           if (pageAttempt) pageAttempt.target = destination;
           // Only the server-selected home is used, then its existing fresh
           // route authorization runs. A neutral context is never a page grant.
@@ -565,12 +570,12 @@ function App() {
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
       {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={() => navigate("/explore")}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}{typeof window.__reylumiExportDiagnostics === "function" ? <button type="button" className="mt-4 block rounded border px-4 py-2" onClick={() => window.__reylumiExportDiagnostics?.()}>Save diagnostic report</button> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
-        {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
+        {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" key={"owner:" + privateAdmissionKey(ownerAdmission)} hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
         {[...windows].map(([key,href]) => {
           const page = getAppLocalPage(href), admission = admissions[authorityFamily(href)], ownContext = admission?.value ?? null;
           const active = key === pageKey(path) && (usable(admission) || !admission && !page?.requiresContext);
-          return page && (ownContext || !page.requiresContext) ? <Activity mode={active ? "visible" : "hidden"} key={key}><div className="app-local-page"><AppLocalNavigationProvider value={{path:href,navigate,refresh:()=>void verify()}}><ExperienceScopeProvider context={ownContext?.context ?? publicExperience} guardForms={false}><PageBoundary recover={() => void verify()}><page.Component context={ownContext} path={href} navigate={navigate} /></PageBoundary></ExperienceScopeProvider></AppLocalNavigationProvider></div></Activity> : null;
+          return page && (ownContext || !page.requiresContext) ? <Activity mode={active ? "visible" : "hidden"} key={page.requiresContext || ownContext?.context.authenticated ? key + ":" + privateAdmissionKey(admission) : key}><div className="app-local-page"><AppLocalNavigationProvider value={{path:href,navigate,refresh:()=>void verify()}}><ExperienceScopeProvider context={ownContext?.context ?? publicExperience} guardForms={false}><PageBoundary recover={() => void verify()}><page.Component context={ownContext} path={href} navigate={navigate} /></PageBoundary></ExperienceScopeProvider></AppLocalNavigationProvider></div></Activity> : null;
         })}
     </div>
   </AppLocalShell></ExperienceScopeProvider></AppLocalNavigationProvider>;

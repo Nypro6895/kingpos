@@ -76,7 +76,7 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
   const actions = salon ? <div className="flex flex-wrap items-center gap-2">
     <ExploreBookButton href={salon.bookingEnabled ? salon.bookingHref : null} name={salon.name} contactHref={nailSalonHref(salon)} phoneHref={phone} className="!min-h-11 !px-5 !text-sm" />
   </div> : <Link href={nailSalonSearchHref(location)} prefetch={false} className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white">Browse nail salons{location ? " in this area" : " nearby"}</Link>;
-  return <article className="overflow-hidden rounded-2xl border border-divider-subtle bg-white" data-testid="nail-inspiration-post" data-nail-look={look.id} data-salon-id={salon?.id}>
+  return <article className="overflow-hidden border-divider-subtle bg-white rounded-none border-0 shadow-none" data-testid="nail-inspiration-post" data-nail-look={look.id} data-salon-id={salon?.id}>
     <div className="relative">
       {salon ? <Link href={nailSalonHref(salon)} prefetch={false} onClick={onOpen} aria-label={`View ${salon.name}`} className="relative block aspect-[4/5] w-full bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange">
         <Image src={look.imageUrl} alt={`Suggested image for ${salon.name}; not actual salon work`} fill sizes="(max-width: 640px) 92vw, 600px" className="object-cover" />

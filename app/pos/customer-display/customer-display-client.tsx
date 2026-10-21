@@ -708,7 +708,7 @@ function PhoneEntryPanel({
 
   return (
     <section
-      className="flex h-full min-h-0 flex-col rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 shadow-2xl"
+      className="flex h-full min-h-0 flex-col bg-stone-50/95 p-5"
       data-customer-display-interaction-panel
       data-customer-display-phone
     >
@@ -838,7 +838,7 @@ function ProfileCreationPanel({
 
   return (
     <section
-      className="grid h-full min-h-0 gap-4 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 shadow-2xl"
+      className="grid h-full min-h-0 gap-4 bg-stone-50/95 p-5"
       data-customer-display-create-profile
       data-customer-display-interaction-panel
       style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
@@ -1005,7 +1005,7 @@ function TipPanel({
 
   return (
     <section
-      className="grid h-full min-h-0 gap-4 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 shadow-2xl"
+      className="grid h-full min-h-0 gap-4 bg-stone-50/95 p-5"
       data-customer-display-interaction-panel
       data-customer-display-tip
       style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
@@ -1153,7 +1153,7 @@ function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string })
 
   return (
     <aside
-      className="grid w-[clamp(132px,13vw,156px)] justify-items-center gap-1.5 rounded-2xl border border-stone-200 bg-white/86 p-2.5 text-center shadow-inner"
+      className="grid w-[clamp(132px,13vw,156px)] justify-items-center gap-1.5 bg-white/86 p-2.5 text-center"
       data-customer-display-download-card
       data-customer-display-download-url={appDownloadUrl}
     >
@@ -1223,7 +1223,7 @@ function TransactionSummary({
 
   return (
     <section
-      className="grid h-full min-h-0 rounded-2xl border border-stone-200/80 bg-stone-50/95 shadow-2xl"
+      className="grid h-full min-h-0 bg-stone-50/95"
       data-customer-display-summary
       style={RECEIPT_PANEL_STYLE}
     >
@@ -1647,7 +1647,7 @@ function CheckInConfirmationPanel({
 
   return (
     <section
-      className="grid h-full min-h-0 content-center gap-5 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 text-center shadow-2xl"
+      className="grid h-full min-h-0 content-center gap-5 bg-stone-50/95 p-5 text-center"
       data-customer-display-checkin
     >
       <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-teal-700 text-white shadow-lg">
@@ -1698,7 +1698,7 @@ function ServiceSelectionPanel({
 
   return (
     <section
-      className="grid h-full min-h-0 gap-3 rounded-lg border border-white/70 bg-stone-50/90 p-4 shadow-2xl backdrop-blur"
+      className="grid h-full min-h-0 gap-3 bg-stone-50/90 p-4"
       data-customer-display-service-select
       style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
     >

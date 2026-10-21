@@ -18,7 +18,7 @@ async function OwnerTransferInvitePage({
   if (!user) {
     return (
       <main className="mx-auto min-h-screen w-full max-w-xl px-4 py-12">
-        <section className="rounded-2xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-soft)]">
+        <section className="min-w-0 bg-surface py-5">
           <h1 className="text-2xl font-extrabold text-text-primary">
             <WorkspaceText text="Owner invitation" />
           </h1>
@@ -45,7 +45,7 @@ async function OwnerTransferInvitePage({
   }
 
   return (
-    <main className="min-h-screen bg-surface-muted px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-surface px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-xl">
         <OwnerTransferAcceptancePanel token={token} />
       </div>

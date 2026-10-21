@@ -240,7 +240,7 @@ function WorkflowActionForm({
   ticketId: string;
 }) {
   return (
-    <form action={action} className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4">
+    <form action={action} className="grid min-w-0 gap-3 bg-white p-4">
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
       <label className="block">
@@ -477,7 +477,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
   const timeline = getTicketTimeline(ticket);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="min-w-0 w-full px-4 py-6 sm:px-6">
       <div className="border-b border-zinc-200 pb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-medium text-zinc-950 underline" href="/pos-tickets">
@@ -512,7 +512,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
       ) : null}
 
       {ticket.source_booking_id ? (
-        <section className="mt-8 rounded-lg border border-sky-200 bg-sky-50 p-5">
+        <section className="mt-8 min-w-0 bg-sky-50 p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase text-sky-800">
@@ -563,7 +563,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
         </div>
 
         {(ticket.ticket_items ?? []).length === 0 ? (
-          <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+          <p className="mt-4 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
             <WorkspaceText text="No services added yet." />
           </p>
         ) : (
@@ -889,7 +889,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
         </div>
 
         {(ticket.payments ?? []).length === 0 ? (
-          <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+          <p className="mt-4 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
             <WorkspaceText text="No payments recorded yet." />
           </p>
         ) : (
@@ -1097,7 +1097,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
       </section>
 
       {canWorkTicket || canVoidOrReopenTicket ? (
-        <section className="mt-8 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+        <section className="mt-8 min-w-0 border-t border-zinc-200 bg-white pt-5">
           <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Actions" /></h2>
           {canWorkTicket && !checkoutAvailable ? (
             <p className="mt-3 text-sm text-zinc-600">
@@ -1108,7 +1108,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
             {canWorkTicket ? (
               <>
                 {checkoutAvailable ? (
-                  <form action={closePosTicket} className="rounded-md border border-zinc-200 bg-white p-4">
+                  <form action={closePosTicket} className="min-w-0 bg-white p-4">
                     <input name="ticket_id" type="hidden" value={ticket.id} />
                     <input name="return_to" type="hidden" value={returnPath} />
                     <SubmitButton pendingLabel="Processing…"
@@ -1150,7 +1150,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Activity Timeline" /></h2>
         {timeline.length === 0 ? (
-          <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+          <p className="mt-4 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
             <WorkspaceText text="No activity yet." />
           </p>
         ) : (
@@ -1158,7 +1158,7 @@ export function AppLocalTicketDetail({data,error}:{data:AppLocalTicketDetailData
             {timeline.map((item) => (
               <li className="relative pb-5 pl-5" key={item.id}>
                 <span className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full border border-zinc-300 bg-white" />
-                <div className="rounded-lg border border-zinc-200 bg-white p-4">
+                <div className="min-w-0 bg-white py-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-zinc-950">
                       <WorkspaceText text={item.label} />

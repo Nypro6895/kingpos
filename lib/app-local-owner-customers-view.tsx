@@ -281,7 +281,7 @@ export function AppLocalOwnerCustomersView({ data, params }: { data: AppLocalOwn
   const { error, q } = params;
   const { customers, pagination, canManageCustomers } = data;
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
+    <main className="min-w-0 w-full px-4 py-4 sm:px-6 sm:py-6">
       {error ? (
         <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 rounded-none border-y shadow-none">
           <WorkspaceText text={error} />

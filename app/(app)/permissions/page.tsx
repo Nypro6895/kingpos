@@ -71,8 +71,8 @@ function displayCategory(category: string) {
 
 function EmptyBusinessState() {
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+    <main className="mx-auto w-full max-w-none px-6 py-12">
+      <div className="min-w-0 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Choose a salon first" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
           <WorkspaceText text="Permissions are assigned to roles for the current Account and salon." />
@@ -93,7 +93,7 @@ function PermissionCatalog({ permissions }: { permissions: Permission[] }) {
 
   if (permissions.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 min-w-0 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No permissions found" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
           <WorkspaceText text="System permissions will appear here once the permission foundation is seeded." />
@@ -106,7 +106,7 @@ function PermissionCatalog({ permissions }: { permissions: Permission[] }) {
     <div className="mt-4 grid gap-4 md:grid-cols-2">
       {groupedPermissions.map(([category, categoryPermissions]) => (
         <section
-          className="rounded-lg border border-zinc-200 bg-white p-5"
+          className="min-w-0 border-t border-zinc-200 bg-white py-5"
           key={category}
         >
           <h3 className="text-sm font-semibold uppercase tracking-normal text-zinc-500">
@@ -133,7 +133,7 @@ function RolePermissionList({
 }) {
   if (roles.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 min-w-0 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No roles found" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
           <WorkspaceText text="Default roles need to be seeded before permissions can be shown by role." />
@@ -145,7 +145,7 @@ function RolePermissionList({
   return (
     <div className="mt-4 grid gap-4 lg:grid-cols-2">
       {roles.map((role) => (
-        <section className="rounded-lg border border-zinc-200 bg-white p-5" key={role.id}>
+        <section className="min-w-0 border-t border-zinc-200 bg-white py-5" key={role.id}>
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-100 pb-4">
             <div>
               <h3 className="text-lg font-semibold text-zinc-950">{role.name}</h3>
@@ -221,7 +221,7 @@ async function PermissionsPage() {
   const permissionSet = await getAccountPermissionSet(account.id, roles ?? []);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-none px-6 py-10">
       <div className="flex flex-wrap justify-end gap-3">
         <div className="flex flex-wrap gap-3">
           <Link

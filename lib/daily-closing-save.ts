@@ -7,7 +7,7 @@ export type ClosingRow = { cashAmount: number; creditCardAmount: number; otherAm
 type SavedRead<T> = { closingInputs: T; readOnly: boolean };
 type Intent<T> = { values: ClosingFormValues; expectedClosing: T };
 type Phase = "loading" | "idle" | "saving" | "checking" | "unknown" | "review" | "saved" | "matched" | "error";
-type State<T> = { values: ClosingFormValues; baseline: T; latest: T; pending: Intent<T> | null; phase: Phase; message: string | null; explicitSave: boolean; readOnly: boolean; storageWarning: boolean };
+type State<T> = { storageKey: string; values: ClosingFormValues; baseline: T; latest: T; pending: Intent<T> | null; phase: Phase; message: string | null; explicitSave: boolean; readOnly: boolean; storageWarning: boolean };
 type Options<T extends ClosingRow> = {
   initial: T;
   storageKey: string;
@@ -20,9 +20,30 @@ type Options<T extends ClosingRow> = {
 
 export const CLOSING_SAVE_WAIT_MS = 15_000;
 const unknownMessage = "Save not confirmed. Your entries are kept. Check the saved result before saving again.";
-const same = (a: ClosingRow, b: ClosingRow) => JSON.stringify(a) === JSON.stringify(b);
+const same = (a: ClosingRow, b: ClosingRow) => closingSnapshot(closingValues(a)) === closingSnapshot(closingValues(b));
 const matches = (row: ClosingRow, values: ClosingFormValues) => closingSnapshot(closingValues(row)) === closingSnapshot(values);
 const emptyClosing = (row: ClosingRow) => row.cashAmount === 0 && row.creditCardAmount === 0 && row.otherAmount === 0 && !row.note;
+const conflictMessage = "Saved amounts changed. Choose which amounts to keep.";
+
+function initialState<T extends ClosingRow>(options: Options<T>): State<T> {
+  return { storageKey: options.storageKey, values: closingValues(options.initial), baseline: options.initial, latest: options.initial, pending: null, phase: "loading", message: null, explicitSave: false, readOnly: options.readOnly, storageWarning: false };
+}
+
+function reconcile<T extends ClosingRow>(now: State<T>, latest: T): State<T> {
+  // A refresh is not a receipt for an outstanding write.
+  if (now.pending) return { ...now, latest };
+  const clean = now.phase !== "review" && matches(now.baseline, now.values);
+  if (matches(latest, now.values) || clean) {
+    return { ...now, latest, baseline: latest, values: clean ? closingValues(latest) : now.values,
+      phase: now.phase === "saved" ? "saved" : "idle", message: null, explicitSave: false };
+  }
+  // Metadata changes still update the full optimistic-lock baseline, but do
+  // not turn unchanged amounts (or null/empty notes) into an edit conflict.
+  if (same(now.baseline, latest)) {
+    return { ...now, latest, baseline: latest, ...(now.phase === "review" ? { phase: "idle" as const, message: null } : {}) };
+  }
+  return { ...now, latest, phase: "review", explicitSave: true, message: conflictMessage };
+}
 function validValues(value: unknown): value is ClosingFormValues {
   return Boolean(value && typeof value === "object" && ["cashAmount", "creditCardAmount", "otherAmount", "note"].every(key => typeof (value as Record<string, unknown>)[key] === "string"));
 }
@@ -36,7 +57,7 @@ export function validClosingRow(value: unknown): value is ClosingRow {
 // Reuse the existing actions and reads. This controller has no write queue,
 // request receipt or retry: a readback establishes current values only.
 export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
-  const [state, setState] = useState<State<T>>(() => ({ values: closingValues(options.initial), baseline: options.initial, latest: options.initial, pending: null, phase: "loading", message: null, explicitSave: false, readOnly: options.readOnly, storageWarning: false }));
+  const [state, setState] = useState<State<T>>(() => initialState(options));
   const current = useRef(state);
   const callbacks = useRef(options);
   const active = useRef(false);
@@ -52,7 +73,7 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
       try {
         const { storage, storageKey } = callbacks.current;
         if (!next.pending && matches(next.baseline, next.values) && next.phase !== "review") storage.removeItem(storageKey);
-        else storage.setItem(storageKey, JSON.stringify({ version: 1, values: next.values, baseline: next.baseline, pending: next.pending, explicitSave: next.explicitSave }));
+        else storage.setItem(storageKey, JSON.stringify({ version: 1, values: next.values, baseline: next.baseline, pending: next.pending, explicitSave: next.explicitSave, review: next.phase === "review" }));
       } catch { next = { ...next, storageWarning: true }; }
     }
     current.current = next;
@@ -62,24 +83,29 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
   useEffect(() => {
     active.current = true;
     const lifecycle = generation;
+    lifecycle.current++;
+    acknowledged.current = false;
+    editRevision.current = 0;
+    current.current = initialState(callbacks.current);
+    observed.current = JSON.stringify(callbacks.current.initial);
     const timer = setTimeout(() => {
       let next = { ...current.current, phase: "idle" as Phase };
       try {
         const draft = JSON.parse(callbacks.current.storage.getItem(callbacks.current.storageKey) ?? "null");
         // Keep Portable drafts created by the previous form as well.
         if (validValues(draft?.values ?? draft)) {
-          const values = draft.values ?? draft;
+          const values = editRevision.current ? next.values : draft.values ?? draft;
           const baseline = validClosingRow(draft.baseline) ? draft.baseline as T : next.baseline;
           const pending = validValues(draft.pending?.values) && validClosingRow(draft.pending?.expectedClosing) ? draft.pending as Intent<T> : null;
           next = { ...next, values, baseline, pending, explicitSave: true,
-            phase: pending ? "unknown" : !same(baseline, next.latest) ? "review" : "idle",
-            message: pending ? unknownMessage : "Draft restored. Review your entries, then press Save." };
+            phase: pending ? "unknown" : draft.review === true ? "review" : "idle", message: pending ? unknownMessage : null };
+          if (!pending) next = reconcile(next, next.latest);
         }
       } catch { next = { ...next, storageWarning: true }; }
-      publish(next, false);
+      publish(next);
     }, 0);
     return () => { clearTimeout(timer); active.current = false; lifecycle.current++; };
-  }, [publish]);
+  }, [options.storageKey, publish]);
 
   const incoming = JSON.stringify(options.initial);
   useEffect(() => {
@@ -89,24 +115,26 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
       const now = current.current;
       if (!changed && now.readOnly === options.readOnly) return;
       const latest = changed ? JSON.parse(incoming) as T : now.latest;
-      // A live refresh never replaces typing or resolves an uncertain save.
-      const conflict = changed && !same(now.baseline, latest) && !now.pending;
-      publish({ ...now, latest, readOnly: options.readOnly, ...(conflict ? { phase: "review" as const, explicitSave: true, message: "Closing amounts changed on another screen. Your entries are kept." } : {}) });
+      publish({ ...reconcile(now, latest), readOnly: options.readOnly });
     }, 0);
     return () => clearTimeout(timer);
-  }, [incoming, options.readOnly, publish]);
+  }, [incoming, options.readOnly, options.storageKey, publish]);
 
   function updateValue(key: keyof ClosingFormValues, value: string) {
     const now = current.current;
+    if (now.storageKey !== options.storageKey) return;
     if (now.values[key] !== value) editRevision.current++;
-    publish({ ...now, values: { ...now.values, [key]: value },
+    const next = { ...now, values: { ...now.values, [key]: value },
       phase: ["saved", "matched", "error"].includes(now.phase) ? "idle" : now.phase,
-      message: ["saved", "matched", "error"].includes(now.phase) ? null : now.message });
+      message: ["saved", "matched", "error"].includes(now.phase) ? null : now.message } as State<T>;
+    // Typing the old baseline during a conflict is still a deliberate edit;
+    // only dismiss review here when the inputs match the current saved row.
+    publish(now.phase === "review" && !now.pending && matches(now.latest, next.values) ? reconcile(next, now.latest) : next);
   }
 
   async function save(explicit = false) {
     let now = current.current;
-    if (now.readOnly || options.readOnly || now.pending || ["loading", "saving", "checking", "review", "unknown"].includes(now.phase) || (!explicit && now.explicitSave)) return;
+    if (now.storageKey !== options.storageKey || now.readOnly || options.readOnly || now.pending || ["loading", "saving", "checking", "review", "unknown"].includes(now.phase) || (!explicit && now.explicitSave)) return;
     let values: ClosingFormValues;
     try {
       const payload = closingPayload(now.values);
@@ -117,10 +145,9 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
     // distinguish a recorded zero from no closing input. Never repeat it after
     // this form has received an acknowledgement.
     const recordZero = explicit && !acknowledged.current && emptyClosing(now.baseline);
-    if (matches(now.baseline, values) && !recordZero) { publish({ ...now, values, phase: "idle", message: "No changes to save." }); return; }
+    if (matches(now.baseline, values) && !recordZero) { publish({ ...now, values, phase: "idle", message: null }); return; }
     if (!navigator.onLine) { publish({ ...now, phase: "error", explicitSave: true, message: "You are offline. Your entries are kept. Connect, then press Save." }); return; }
     const intent = { values, expectedClosing: now.baseline };
-    const submittedEditRevision = editRevision.current;
     const token = ++generation.current;
     now = { ...now, values, pending: intent, phase: "saving", message: null };
     publish(now);
@@ -136,11 +163,15 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
         publish({ ...latest, latest: saved, phase: "review", explicitSave: true, message: "Saved amounts differ from your submission. Review them before saving again." });
         return;
       }
-      const unchanged = editRevision.current === submittedEditRevision;
+      const unchanged = matches(saved, latest.values);
       acknowledged.current = true;
-      publish({ ...latest, baseline: saved, latest: saved, pending: null, values: unchanged ? closingValues(saved) : latest.values,
+      const next: State<T> = { ...latest, baseline: saved, latest: saved, pending: null, values: unchanged ? closingValues(saved) : latest.values,
         phase: unchanged ? "saved" : "idle", explicitSave: !unchanged,
-        message: unchanged ? null : "The earlier values were saved. Your newer edits are not saved yet." });
+        message: unchanged ? null : "The earlier values were saved. Your newer edits are not saved yet." };
+      // A newer report can arrive before this write's delayed acknowledgement.
+      // Do not roll it back to the older response or discard newer local edits.
+      const refreshed = !same(latest.latest, intent.expectedClosing) && !matches(latest.latest, values);
+      publish(refreshed ? reconcile(next, latest.latest) : next);
       try { callbacks.current.onSaved?.(); } catch { /* The write was acknowledged; a refresh failure does not undo it. */ }
     } catch (error) {
       if (active.current && token === generation.current) publish({ ...current.current, phase: "unknown", explicitSave: true,
@@ -154,6 +185,7 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
   }
 
   async function checkSaved() {
+    if (current.current.storageKey !== options.storageKey) return;
     if (["loading", "saving", "checking"].includes(current.current.phase)) return;
     const token = ++generation.current;
     const before = current.current;
@@ -164,10 +196,14 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
       if (!active.current || token !== generation.current) return;
       if (!validClosingRow(result.closingInputs)) throw new Error("Saved amounts are unavailable.");
       const now = current.current;
+      if (!now.pending) {
+        publish({ ...reconcile({ ...now, phase: before.phase === "review" ? "review" : "idle", message: null }, result.closingInputs), readOnly: result.readOnly });
+        return;
+      }
       const target = now.pending?.values ?? now.values;
       if (matches(result.closingInputs, target) && !emptyClosing(result.closingInputs)) {
         publish({ ...now, baseline: result.closingInputs, latest: result.closingInputs, readOnly: result.readOnly, pending: null, phase: "matched", explicitSave: true,
-          message: "Saved amounts match the last submission. Review any newer edits before pressing Save." });
+          message: matches(result.closingInputs, now.values) ? null : "Saved amounts match your submission. Your newer edits are not saved yet." });
       } else {
         publish({ ...now, latest: result.closingInputs, readOnly: result.readOnly, phase: "review", explicitSave: true,
           message: matches(result.closingInputs, target)
@@ -180,15 +216,16 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
   }
 
   function review(useSaved: boolean) {
-    if (current.current.phase !== "review") return;
+    if (current.current.storageKey !== options.storageKey || current.current.phase !== "review") return;
     generation.current++;
     const now = current.current;
     publish({ ...now, baseline: now.latest, pending: null, values: useSaved ? closingValues(now.latest) : now.values,
       phase: "idle", explicitSave: true,
-      message: useSaved ? "Saved amounts loaded." : "Your entries are kept for review. Press Save only when ready to replace the displayed saved amounts." });
+      message: useSaved ? null : "Your entries are kept. Press Save to replace the saved amounts." });
   }
 
-  return { ...state, busy: state.phase === "saving" || state.phase === "checking", blocked: state.readOnly || options.readOnly || Boolean(state.pending) || ["loading", "saving", "checking", "review", "unknown"].includes(state.phase), updateValue, blurMoney, save, checkSaved, review };
+  const visible = state.storageKey === options.storageKey ? state : initialState(options);
+  return { ...visible, busy: visible.phase === "saving" || visible.phase === "checking", blocked: visible.readOnly || options.readOnly || Boolean(visible.pending) || ["loading", "saving", "checking", "review", "unknown"].includes(visible.phase), updateValue, blurMoney, save, checkSaved, review };
 }
 
 export const closingSessionStorage = {

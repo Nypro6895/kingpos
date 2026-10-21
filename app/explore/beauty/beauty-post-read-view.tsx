@@ -258,7 +258,7 @@ function LookStat({
   value: string;
 }) {
   return (
-    <div className="grid min-w-0 justify-items-center gap-1 rounded-[0.8rem] bg-white px-3 py-2 text-center ring-1 ring-divider-subtle/70">
+    <div className="grid min-w-0 justify-items-center gap-1 bg-white px-3 py-2 text-center rounded-none border-0 shadow-none">
       <ReylumiIcon className="h-4 w-4 text-text-secondary" name={icon} />
       <p className="text-sm font-semibold text-text-primary">{value}</p>
       <p className="text-[11px] font-semibold text-text-muted">{label}</p>
@@ -317,10 +317,10 @@ export function BeautyPostReadView({ item, commentViewer, profileId, postId }: {
   return (
     <main className="min-h-screen bg-[#fffaf7] px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
       <article
-        className="mx-auto grid max-w-[82rem] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,26rem)]"
+        className="mx-auto grid max-w-none gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,26rem)]"
         id={`post-${item.id}`}
       >
-        <section className="grid gap-3 rounded-[1.1rem] bg-white p-2 shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80 sm:p-3">
+        <section className="grid gap-3 bg-white p-2 sm:p-3 rounded-none border-0 shadow-none">
           <LookMediaStage item={item} />
           <div className="grid grid-cols-4 gap-2">
             <LookStat
@@ -344,7 +344,7 @@ export function BeautyPostReadView({ item, commentViewer, profileId, postId }: {
               value={String(item.commentCount)}
             />
           </div>
-          <section className="rounded-[0.9rem] bg-white p-3 ring-1 ring-divider-subtle/70">
+          <section className="bg-white p-3 rounded-none border-0 shadow-none">
             <h2 className="text-sm font-semibold text-text-primary">
               About this look
             </h2>
@@ -362,7 +362,7 @@ export function BeautyPostReadView({ item, commentViewer, profileId, postId }: {
         </section>
 
         <aside className="grid content-start gap-3">
-          <section className="grid gap-4 rounded-[1.1rem] bg-white p-4 shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80">
+          <section className="grid gap-4 bg-white p-4 rounded-none border-0 shadow-none">
             <div className="flex min-w-0 items-center gap-3">
               <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-text-primary text-sm font-semibold text-white">
                 {item.author.avatarUrl ? (
@@ -435,7 +435,7 @@ export function BeautyPostReadView({ item, commentViewer, profileId, postId }: {
               </Link>
             ) : null}
 
-            <div className="rounded-[0.9rem] bg-brand-orange-soft/45 p-3 text-sm leading-6 text-text-secondary ring-1 ring-brand-orange/12">
+            <div className="bg-brand-orange-soft/45 p-3 text-sm leading-6 text-text-secondary rounded-none border-0 shadow-none">
               <span className="font-semibold text-brand-orange">
                 Create an account
               </span>{" "}
@@ -447,7 +447,7 @@ export function BeautyPostReadView({ item, commentViewer, profileId, postId }: {
       </article>
 
       <section
-        className="mx-auto mt-4 max-w-[82rem] rounded-[1.1rem] bg-white p-4 shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80"
+        className="mx-auto mt-4 max-w-none bg-white p-4 rounded-none border-0 shadow-none"
         id="comments"
       >
           <PostCommentThread

@@ -51,7 +51,7 @@ export function StaffWorkdayView({ data, error }: { data: StaffWorkdayReadData; 
   const status = workday?.status ?? "not_checked_in";
   const activity = data.activity ?? { assignedServiceAmount: 0, assignedServices: 0, completedServices: 0 };
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    <main className="w-full min-w-0 px-4 py-6 sm:px-6">
       {error ? (
         <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 rounded-none border-y shadow-none">
           <WorkspaceText text={error} />

@@ -359,7 +359,7 @@ function StaffForm({
 }) {
   if (!canManageStaff) {
     return (
-      <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+      <p className="min-w-0 bg-zinc-50 p-5 text-sm text-zinc-600">
         <WorkspaceText text="You do not have permission to manage staff." />
       </p>
     );
@@ -368,7 +368,7 @@ function StaffForm({
   return (
     <form
       action={createStaff}
-      className="grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
+      className="grid min-w-0 gap-5 bg-white p-5 sm:grid-cols-2"
     >
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-2">
@@ -471,7 +471,7 @@ function AddStaffConnectionPanel({
   );
 
   return (
-    <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <section className="grid gap-4 border-y border-zinc-200 bg-white p-5">
       <div>
         <h3 className="text-base font-semibold text-zinc-950">
           <WorkspaceText text="Invite staff account" />
@@ -534,7 +534,7 @@ function AddStaffConnectionPanel({
       {searched && lookupResult?.status === "found" ? (
         <RequestForm
           action={createSalonStaffInviteFormAction}
-          className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+          className="grid min-w-0 gap-4 bg-zinc-50 p-4"
         >
           <input name="mode" type="hidden" value="existing_account" />
           <input
@@ -607,7 +607,7 @@ function AddStaffConnectionPanel({
       {searched && lookupResult?.status === "not_found" ? (
         <RequestForm
           action={createSalonStaffInviteFormAction}
-          className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+          className="grid min-w-0 gap-4 bg-zinc-50 p-4"
         >
           <input name="mode" type="hidden" value="new_account" />
           <input name="email" type="hidden" value={inviteEmail} />
@@ -807,7 +807,7 @@ function StaffDirectoryTableSection({
   query: string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
+    <div className="overflow-x-auto border-y border-zinc-200 bg-white">
       <table className="w-full min-w-[760px] divide-y divide-zinc-200 text-left text-sm">
         <thead className="bg-zinc-50 text-xs font-medium uppercase text-zinc-500">
           <tr>
@@ -960,7 +960,7 @@ function StaffDirectoryEmptyState({
       : "Create your first staff member for this salon.");
 
   return (
-    <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+    <div className="mt-4 min-w-0 bg-zinc-50 p-6">
       <h2 className="text-lg font-semibold text-zinc-950">{resolvedTitle}</h2>
       <p className="mt-2 text-sm text-zinc-600">{resolvedDescription}</p>
       {!hasAnyStaff && canManageStaff ? (
@@ -1030,7 +1030,7 @@ function StaffDirectoryManager({
         />
       )}
 
-      <details className="rounded-lg border border-zinc-200 bg-white">
+      <details className="border-y border-zinc-200 bg-white">
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-950">
           <WorkspaceText text="Hidden staff list (" />{hiddenStaff.length})
         </summary>
@@ -1042,7 +1042,7 @@ function StaffDirectoryManager({
               query={query}
             />
           ) : (
-            <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+            <p className="min-w-0 bg-zinc-50 p-4 text-sm text-zinc-600">
               <WorkspaceText text="No hidden staff." />
             </p>
           )}
@@ -1080,7 +1080,7 @@ function DetailSection({
   title: string;
 }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4">
+    <section className="border-y border-zinc-200 bg-white p-4">
       <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text={title} /></h3>
       <dl className="mt-4 grid gap-4 sm:grid-cols-2">{children}</dl>
     </section>
@@ -1244,7 +1244,7 @@ function StaffDetailDrawer({
         />
       </DetailSection>
 
-      <section className="rounded-lg border border-zinc-200 bg-white p-4">
+      <section className="border-y border-zinc-200 bg-white p-4">
         <div>
           <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Staff Profile" /></h3>
           <p className="mt-1 text-sm text-zinc-600">
@@ -1455,7 +1455,7 @@ function requestContact(request: SalonStaffConnectionRequestWithDetails) {
 
 function EmptyConnectionState({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+    <p className="min-w-0 bg-zinc-50 p-4 text-sm text-zinc-600">
       {children}
     </p>
   );
@@ -1476,7 +1476,7 @@ function IncomingApplicationsSection({
     <div className="grid gap-3">
       {requests.map((request) => (
         <article
-          className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4"
+          className="grid gap-4 border-b border-zinc-200 bg-white p-4"
           key={request.id}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1580,7 +1580,7 @@ function OutgoingInvitationsSection({
 
         return (
           <article
-            className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4"
+            className="grid gap-3 border-b border-zinc-200 bg-white p-4"
             key={request.id}
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1663,7 +1663,7 @@ function ConnectionHistorySection({
     <div className="grid gap-3">
       {requests.map((request) => (
         <article
-          className="rounded-lg border border-zinc-200 bg-white p-4"
+          className="border-b border-zinc-200 bg-white p-4"
           key={request.id}
         >
           <div className="flex items-start justify-between gap-3">
@@ -1815,7 +1815,7 @@ async function StaffPage({ searchParams }: StaffPageProps) {
   if (!canViewStaff) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="min-w-0 bg-zinc-50 p-5 text-sm text-zinc-600">
           <WorkspaceText text="You do not have permission to view staff." />
         </p>
       </main>

@@ -88,7 +88,7 @@ export function RequestsWorkspace({
   const entry = entries.find((item) => item.id === selected);
   const visible = entries.filter((item) => item.group === tab);
   return (
-    <section className="grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 md:gap-4 md:rounded-none md:border-0 md:p-0">
+    <section className="grid min-w-0 gap-3 bg-white py-3 md:gap-4 md:p-0">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold md:text-xl"><WorkspaceText text="Requests" /></h2>

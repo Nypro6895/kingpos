@@ -716,7 +716,7 @@ export function SalonMediaUploader({
       </div>
 
       {file && state !== "uploaded" ? (
-        <div className="grid gap-3 rounded-lg border border-zinc-200 p-3">
+        <div className="grid gap-3 border-zinc-200 p-3 rounded-none border-0 shadow-none">
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <span className="font-medium text-zinc-950">{file.name}</span>
             {processedFile ? (
@@ -829,7 +829,7 @@ export function SalonMediaUploader({
 
 function ReadinessPanel({ readiness }: { readiness: SalonProfileReadiness }) {
   return (
-    <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <section className="grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-0 shadow-none">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
@@ -1090,7 +1090,7 @@ function LookDrawer({
           />
         </select>
       </label>
-      <details className="rounded-lg border border-zinc-200 p-4">
+      <details className="border-zinc-200 p-4 rounded-none border-0 shadow-none">
         <summary className="cursor-pointer text-sm font-semibold text-zinc-950">
           <WorkspaceText text="Advanced options" />
         </summary>
@@ -1324,7 +1324,7 @@ export function SalonProfileStudio({
 
   return (
     <main className="min-w-0 overflow-x-hidden bg-zinc-50">
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="grid w-full min-w-0 gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700">
@@ -1372,7 +1372,7 @@ export function SalonProfileStudio({
         ) : null}
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
-          <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+          <section className="overflow-hidden border-zinc-200 bg-white rounded-none border-0 shadow-none">
             <div className="relative h-48 bg-zinc-100">
               {coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -1499,7 +1499,7 @@ export function SalonProfileStudio({
             </div>
           </div>
           {filteredLooks.length === 0 && updates.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
+            <div className="border-dashed border-zinc-300 bg-white p-8 text-center rounded-none border-0 shadow-none">
               <h3 className="text-lg font-semibold text-zinc-950">
                 <WorkspaceText text="No content in this view" />
               </h3>
@@ -1621,7 +1621,7 @@ export function SalonProfileStudio({
           )}
         </section>
 
-        <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-5">
+        <section className="grid gap-3 border-zinc-200 bg-white p-5 rounded-none border-0 shadow-none">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Publish" /></h2>

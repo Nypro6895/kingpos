@@ -1798,7 +1798,7 @@ export function BeautyProfileClient({
 
   return (
     <main className="beauty-profile-page min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-3xl gap-4">
+      <div className="grid w-full min-w-0 gap-4">
         <section className="beauty-identity">
           <div className="beauty-cover">{profile.coverImageUrl ? <NextImage alt={`${profile.displayName} Beauty cover`} src={profile.coverImageUrl} fill sizes="(min-width: 1024px) 960px, 100vw" /> : null}
             {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null}
@@ -1855,7 +1855,7 @@ export function BeautyProfileClient({
           </div>
 
           {posts.length === 0 ? (
-            <div className="overflow-hidden rounded-[1.35rem] bg-surface p-5 text-center shadow-[0_18px_52px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80">
+            <div className="overflow-hidden bg-surface p-5 text-center rounded-none border-0 shadow-none">
               <div className="mx-auto flex h-24 w-36 items-center justify-center">
                 <span className="grid h-20 w-20 place-items-center rounded-full bg-brand-orange-soft text-xs font-extrabold uppercase text-brand-orange ring-1 ring-brand-orange/15">
                   Before
@@ -1890,7 +1890,7 @@ export function BeautyProfileClient({
               ) : null}
             </div>
           ) : section === "posts" && visiblePosts.length === 0 ? (
-            <div className="rounded-[1.35rem] bg-surface p-5 text-center shadow-sm ring-1 ring-divider-subtle/80">
+            <div className="bg-surface p-5 text-center">
               <h3 className="text-lg font-extrabold text-text-primary">
                 No Before & After posts yet
               </h3>
@@ -1932,8 +1932,8 @@ export function BeautyProfileClient({
 
           {loadingMore ? (
             <div className="grid gap-4" aria-label="Loading more Beauty posts">
-              <div className="h-[26rem] animate-pulse rounded-[1.35rem] bg-white shadow-sm ring-1 ring-divider-subtle/70" />
-              <div className="h-32 animate-pulse rounded-[1.35rem] bg-white shadow-sm ring-1 ring-divider-subtle/70" />
+              <div className="h-[26rem] animate-pulse bg-surface-muted" />
+              <div className="h-32 animate-pulse bg-surface-muted" />
             </div>
           ) : null}
 

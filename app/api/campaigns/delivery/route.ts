@@ -1,3 +1,4 @@
+import { campaignSearchIntent } from "@/lib/campaign-search-intent";
 import { resolveCampaignDeliveryArea } from "@/lib/campaign-delivery-area";
 import { resolveExploreGpsArea } from "@/lib/location/explore-gps-area";
 import { cookies } from "next/headers";
@@ -9,12 +10,18 @@ import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 const COOKIE = "reylumi-owner-ad-visitor";
 const noStore = { "Cache-Control": "private, no-store" };
 
-async function selectCampaign(request: Request,input:{location?:string;latitude?:number|null;longitude?:number|null;batch?:boolean}) {
+async function selectCampaign(request: Request,input:{location?:string;latitude?:number|null;longitude?:number|null;batch?:boolean;query?:string}) {
   try {
+    if (input.query !== undefined && (typeof input.query !== "string" || input.query.length > 160 || /[\x00-\x1f\x7f]/.test(input.query))) return Response.json(null,{status:400,headers:noStore});
     const [settings, context] = await Promise.all([ownerCampaignSettings(), getCurrentBusinessContext()]);
     if (!settings.enabled) return Response.json(null,{headers:noStore});
     const client = advertisingClient();
-    const area = await resolveCampaignDeliveryArea(input,{
+    const query = input.query?.trim() ?? "";
+    const intent = query ? await campaignSearchIntent(query,input.location ?? "",async (name,args) => await client.rpc(name,args),request.signal) : undefined;
+    if (query && !intent || request.signal.aborted) return Response.json(null,{headers:noStore});
+    // Explore keeps an explicit selected area first, then a place from the query.
+    // GPS may enrich that area only when it agrees with the chosen location.
+    const area = await resolveCampaignDeliveryArea({...input,location:intent?.location || input.location},{
       lookup: async (field,value) => {
         const query=client.from("locations").select("city,state,postal_code,country").eq("status","active");
         const {data,error}=await (field==='postal_code'?query.eq(field,value):query.ilike(field,value.replace(/[%_]/g,""))).limit(1000);
@@ -27,7 +34,7 @@ async function selectCampaign(request: Request,input:{location?:string;latitude?
     let visitor = jar.get(COOKIE)?.value;
     if (!visitor || !/^[0-9a-f-]{36}$/i.test(visitor)) { visitor = crypto.randomUUID(); jar.set(COOKIE,visitor,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:86400*365}); }
     const visitorHash = campaignVisitorHash(campaignVisitorIdentity(request.headers,visitor,context.user?.id ?? null));
-    const { data, error } = await client.rpc("owner_campaign_candidates", { p_area:area,p_visitor:visitorHash,p_viewer:context.user?.id ?? null });
+    const { data, error } = await client.rpc(intent ? "owner_campaign_search_candidates" : "owner_campaign_candidates", { p_area:area,p_visitor:visitorHash,p_viewer:context.user?.id ?? null,...(intent ? {p_terms:intent.terms,p_kind:intent.kind,p_category:intent.category} : {}) });
     if (error || !data?.length) return Response.json(null,{headers:noStore});
     const materialize = async (candidate: (typeof data)[number]) => {
       const { data: post } = await client.rpc("owner_campaign_post", {p_type:candidate.source_type,p_source:candidate.source_id,p_salon:candidate.salon_id});
@@ -62,7 +69,7 @@ async function selectCampaign(request: Request,input:{location?:string;latitude?
   } catch { return Response.json(null,{headers:noStore}); }
 }
 export async function GET(request: Request) {
-  return selectCampaign(request,{location:new URL(request.url).searchParams.get("location")??"",batch:new URL(request.url).searchParams.get("batch")==="1"});
+  return selectCampaign(request,{location:new URL(request.url).searchParams.get("location")??"",query:new URL(request.url).searchParams.get("query")??undefined,batch:new URL(request.url).searchParams.get("batch")==="1"});
 }
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
@@ -74,7 +81,7 @@ export async function POST(request: Request) {
     const body = JSON.parse(raw);
     if (body?.kind === "select") {
       if (typeof body.location !== "string" || typeof body.latitude !== "number" || typeof body.longitude !== "number" || !Number.isFinite(body.latitude) || !Number.isFinite(body.longitude) || Math.abs(body.latitude)>90 || Math.abs(body.longitude)>180) return Response.json(null,{status:400,headers:noStore});
-      return selectCampaign(request,{location:body.location,latitude:body.latitude,longitude:body.longitude,batch:body.batch===true});
+      return selectCampaign(request,{location:body.location,latitude:body.latitude,longitude:body.longitude,batch:body.batch===true,query:body.query});
     }
     if (typeof body.ticket !== "string" || !["view","click"].includes(body.kind)) return Response.json({ok:false},{status:400});
     const ticket = readCampaignTicket(body.ticket);

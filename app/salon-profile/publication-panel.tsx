@@ -21,7 +21,7 @@ export function PublicationPanel({ publicHref, readiness, setting, action }: {
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${readiness.completionPercent}%` }} /></div>
     </div>
     <div className="grid gap-2 sm:grid-cols-2">
-      {readiness.items.map(item => <div className="rounded-lg border border-zinc-200 bg-white p-3" key={item.id}>
+      {readiness.items.map(item => <div className="border-zinc-200 bg-white p-3 rounded-none border-0 shadow-none" key={item.id}>
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text={item.label} /></p>
           <span className={`rounded-md px-2 py-1 text-xs font-semibold ${item.complete ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span>

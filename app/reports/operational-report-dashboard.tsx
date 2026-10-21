@@ -103,7 +103,7 @@ function MetricCard({
   value: string;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-4">
+    <section className="min-w-0 bg-zinc-50 p-4">
       <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
         <WorkspaceText text={label} />
       </p>
@@ -131,7 +131,7 @@ function EmptyState({ report }: { report: OperationalReportData }) {
   }
 
   return (
-    <section className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-5">
+    <section className="min-w-0 bg-zinc-50 p-5">
       <h2 className="text-base font-semibold text-zinc-950">
         <WorkspaceText text="No operational activity in this range." />
       </h2>
@@ -175,7 +175,7 @@ function SummaryCards({ report }: { report: OperationalReportData }) {
 
 function MoneyBreakdownCards({ report }: { report: OperationalReportData }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-2xl bg-zinc-50 px-5 py-4 sm:grid-cols-4">
+    <dl className="grid min-w-0 grid-cols-2 gap-x-6 gap-y-4 border-y border-zinc-200 py-4 sm:grid-cols-4">
       {[
         ["Collected", report.totals.collectedTotal],
         ["Tips", report.totals.tipTotal],
@@ -206,7 +206,7 @@ function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
   const baseline = y(0);
   const step = (width - 66) / Math.max(1, points.length);
   return (
-    <section className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5">
+    <section className="min-w-0 bg-white py-4 sm:py-5">
       <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Daily revenue" /></h2>
       <p className="mt-1 text-sm text-zinc-500">
         <WorkspaceText text="Closed-ticket revenue by business date." />
@@ -328,14 +328,14 @@ function PaymentBreakdown({ rows }: { rows: OperationalReportPaymentRow[] }) {
         </p>
       </div>
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+        <p className="bg-zinc-50 p-4 text-sm text-zinc-600">
           <WorkspaceText text="No payments recorded for this range." />
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {rows.map((row) => (
             <section
-              className="rounded-2xl border border-zinc-200 bg-white p-4"
+              className="min-w-0 bg-zinc-50 p-4"
               key={row.method}
             >
               <p className="text-sm font-semibold text-zinc-950">
@@ -365,11 +365,11 @@ function ServiceBreakdown({ rows }: { rows: OperationalReportServiceRow[] }) {
         </p>
       </div>
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+        <p className="bg-zinc-50 p-4 text-sm text-zinc-600">
           <WorkspaceText text="No service lines found on closed tickets for this range." />
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        <div className="min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
           <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
             <div className="col-span-6"><WorkspaceText text="Service" /></div>
             <div className="col-span-2 text-right"><WorkspaceText text="Items" /></div>
@@ -426,14 +426,14 @@ function StaffPerformance({
         </p>
       </div>
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+        <p className="bg-zinc-50 p-4 text-sm text-zinc-600">
           <WorkspaceText text="No staff-attributed sales found for this range." />
         </p>
       ) : (
         <div>
-          <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200 sm:hidden">
+          <ul className="divide-y divide-zinc-100 border-y border-zinc-200 sm:hidden">
             {rows.map((row) => (
-              <li key={row.staffId} className="p-4">
+              <li key={row.staffId} className="py-4">
                 <p className="break-words font-semibold">{row.staffName}</p>
                 <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
                   {[
@@ -451,7 +451,7 @@ function StaffPerformance({
               </li>
             ))}
           </ul>
-          <div className="hidden overflow-hidden rounded-lg border border-zinc-200 bg-white sm:block">
+          <div className="hidden min-w-0 overflow-hidden border-y border-zinc-200 bg-white sm:block">
             <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
               <div className="col-span-5 lg:col-span-3"><WorkspaceText text="Staff" /></div>
               <div className="col-span-3 text-right"><WorkspaceText text="Service Sales" /></div>
@@ -580,7 +580,7 @@ function BookingCustomerSection({ report }: { report: OperationalReportData }) {
               value={formatPercent(report.bookingMetrics.completionRate)}
             />
           </div>
-          <section className="rounded-2xl border border-zinc-200 bg-white p-4">
+          <section className="min-w-0 border-y border-zinc-200 bg-white py-4">
             <BookingStatusBar metrics={report.bookingMetrics} />
           </section>
         </div>
@@ -620,11 +620,11 @@ function RecentTickets({
         </p>
       </div>
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+        <p className="bg-zinc-50 p-4 text-sm text-zinc-600">
           <WorkspaceText text="No closed tickets to show." />
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        <div className="min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
           <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
             <div className="col-span-4"><WorkspaceText text="Ticket" /></div>
             <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Customer" /></div>
@@ -671,7 +671,7 @@ function DataNotes({ report }: { report: OperationalReportData }) {
   }
 
   return (
-    <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+    <section className="min-w-0 bg-amber-50 p-4">
       <h2 className="text-base font-semibold text-amber-950"><WorkspaceText text="Data Notes" /></h2>
       <ul className="mt-3 grid gap-2 text-sm text-amber-900">
         {uniqueGaps.map((gap) => (

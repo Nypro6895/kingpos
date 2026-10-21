@@ -30,7 +30,7 @@ async function ExploreFavoritesPage({ searchParams }: {
   const last = shown.at(-1);
   const next = rows.length > 20 && last ? encodeReferenceFavoriteCursor({ createdAt: last.created_at, itemKey: last.item_key }) : null;
   return (
-    <main className="mx-auto max-w-3xl space-y-5 p-6">
+    <main className="w-full min-w-0 space-y-5 p-6">
       <Link href="/explore" className="text-brand-orange">
         ← Explore
       </Link>
@@ -53,7 +53,7 @@ async function ExploreFavoritesPage({ searchParams }: {
         favorites.map((item) => item.nailLookId && nailLookById(item.nailLookId) ? <NailInspirationCard key={item.key} look={nailLookById(item.nailLookId)!} initialSaved /> : (
           <article
             key={item.key}
-            className="flex items-center justify-between rounded-2xl border p-4"
+            className="flex min-w-0 items-center justify-between gap-4 border-b border-divider-subtle py-4"
           >
             <Link href={item.href} className="font-semibold">
               {item.name}
@@ -62,7 +62,7 @@ async function ExploreFavoritesPage({ searchParams }: {
           </article>
         ))
       ) : (
-        <p className="rounded-2xl bg-orange-50 p-5">
+        <p className="bg-orange-50 p-5">
           Find something you love on Explore and tap the heart to keep it here.
         </p>
       )}

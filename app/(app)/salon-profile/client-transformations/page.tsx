@@ -305,7 +305,7 @@ function RequestCard({
   const postedTime = formatPostedTime(request.postCreatedAt);
 
   return (
-    <article className="overflow-hidden rounded-lg bg-white ring-1 ring-zinc-200">
+    <article className="overflow-hidden border-b border-zinc-200 bg-white">
       <div className="grid grid-cols-2 gap-px bg-zinc-200">
         <TransformationImage
           authorName={request.authorDisplayName}
@@ -384,7 +384,7 @@ function RequestCard({
 
 function EmptyQueue() {
   return (
-    <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-5 py-8 text-center">
+    <div className="border-dashed border-zinc-300 bg-white px-5 py-8 text-center rounded-none border-0 shadow-none">
       <h2 className="text-lg font-semibold text-zinc-950">
         <WorkspaceText text="You&apos;re all caught up" />
       </h2>
@@ -425,7 +425,7 @@ async function ClientTransformationsPage({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-zinc-50 px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <section className="mx-auto grid max-w-3xl gap-4 sm:gap-5">
+      <section className="grid w-full min-w-0 gap-4 sm:gap-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="w-fit rounded-full bg-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-700">
             <WorkspaceText text={pendingCountLabel(requests.length)} />

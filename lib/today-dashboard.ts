@@ -6,7 +6,7 @@ import {
   type TodayDashboardSection,
 } from "@/lib/today-dashboard-sections";
 import "server-only";
-import { getReadRequestTiming } from "@/lib/read-context-scope";
+import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
 import type { ReadStage } from "@/lib/read-request-timing";
 
 import { getCurrentAppNotifications } from "@/lib/app-notifications";
@@ -440,7 +440,10 @@ async function loadBusinessClock(
     (async () => {
       if (!salonId) return null;
       const supabase = await createAuthenticatedSupabaseServerClient();
-      return supabase ? await supabase.rpc("get_salon_business_date", { p_salon_id: salonId }) : null;
+      if (!supabase) return null;
+      const read = supabase.rpc("get_salon_business_date", { p_salon_id: salonId });
+      const signal = getReadAbortSignal();
+      return await (signal ? read.abortSignal(signal) : read);
     })(),
   ]);
   const fallback: BusinessClock = {

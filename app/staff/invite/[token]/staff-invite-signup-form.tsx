@@ -95,7 +95,7 @@ export function StaffInviteSignupForm({
         </p>
       ) : null}
 
-      <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3">
+      <div className="border-y border-zinc-200 bg-zinc-50 px-4 py-3">
         <p className="text-sm font-medium text-zinc-950"><WorkspaceText text="Invited email" /></p>
         <p className="mt-1 text-sm text-zinc-600">{maskedEmail}</p>
       </div>

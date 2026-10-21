@@ -25,8 +25,8 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
         if (body.length > 2048) throw new Error("The request could not be sent.");
         const parsed = body ? JSON.parse(body) : {};
         if (name === "http.shell.campaign-event" && parsed?.kind === "select") {
-          if (Object.keys(parsed).some(key => !["kind","location","latitude","longitude","batch"].includes(key)) || typeof parsed.location !== "string" || typeof parsed.latitude !== "number" || typeof parsed.longitude !== "number" || !Number.isFinite(parsed.latitude) || !Number.isFinite(parsed.longitude) || Math.abs(parsed.latitude)>90 || Math.abs(parsed.longitude)>180) throw new Error("Choose a valid location.");
-          const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {location:parsed.location,latitude:String(parsed.latitude),longitude:String(parsed.longitude),...(parsed.batch === true ? {batch:"1"} : {})}, {scope,signal:signal ?? undefined});
+          if (Object.keys(parsed).some(key => !["kind","location","latitude","longitude","batch","query"].includes(key)) || typeof parsed.location !== "string" || (parsed.query !== undefined && (typeof parsed.query !== "string" || parsed.query.length > 160)) || typeof parsed.latitude !== "number" || typeof parsed.longitude !== "number" || !Number.isFinite(parsed.latitude) || !Number.isFinite(parsed.longitude) || Math.abs(parsed.latitude)>90 || Math.abs(parsed.longitude)>180) throw new Error("Choose a valid location.");
+          const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {location:parsed.location,latitude:String(parsed.latitude),longitude:String(parsed.longitude),...(parsed.batch === true ? {batch:"1"} : {}),...(parsed.query ? {query:parsed.query} : {})}, {scope,signal:signal ?? undefined});
           if (!result.data) throw new Error("Could not load advertising.");
           data = result.data;
         } else {

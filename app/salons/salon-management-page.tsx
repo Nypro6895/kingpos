@@ -87,7 +87,7 @@ function SalonForm({ createRequestKey, draft }: { createRequestKey: string; draf
     <ClaimSuggestions>
     <form
       action={createSalonAction}
-      className="mt-4 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
+      className="mt-4 grid min-w-0 gap-5 border-y border-zinc-200 bg-white py-5 sm:grid-cols-2"
     >
       <input name="create_request_key" type="hidden" value={createRequestKey} />
       <input name="duplicate_acknowledged" type="hidden" defaultValue="no" />
@@ -150,7 +150,7 @@ function SalonCreationUnavailable({
   title: string;
 }) {
   return (
-    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-5">
+    <div className="mt-4 border-y border-amber-200 bg-amber-50 p-5">
       <h2 className="text-sm font-semibold text-amber-950"><WorkspaceText text={title} /></h2>
       <p className="mt-2 text-sm text-amber-900">{description}</p>
       <Link
@@ -176,7 +176,7 @@ function SalonList({
 }) {
   if (salons.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 border-y border-zinc-200 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No salons yet" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
           <WorkspaceText text="Create your first salon so customers, services, tickets, and bookings have a home." />
@@ -194,7 +194,7 @@ function SalonList({
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <div className="mt-4 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
         <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Salon" /></div>
         <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Address" /></div>
@@ -308,7 +308,7 @@ export async function SalonManagementPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    <main className="w-full min-w-0 px-4 py-6 sm:px-6">
       <div className="flex flex-wrap justify-end gap-3">
         <div className="flex flex-wrap gap-3">
           {hasCreatePermission ? (

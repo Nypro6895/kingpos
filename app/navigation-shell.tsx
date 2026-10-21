@@ -1638,7 +1638,7 @@ function CustomerDesktopNavigation({
 
 function CustomerDesktopMembershipCard() {
   return (
-    <section className="overflow-hidden rounded-2xl bg-surface-elevated p-3 shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80">
+    <section className="min-w-0 border-t border-divider-subtle bg-surface-elevated py-3">
       <div className="flex items-start gap-3">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-brand-orange-soft text-brand-orange">
           <Icon name="star" />

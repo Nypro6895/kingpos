@@ -123,7 +123,7 @@ const ExploreMap = dynamic(
   () => import("@/app/explore/explore-map").then((mod) => mod.ExploreMap),
   {
     loading: () => (
-      <div className="grid min-h-[22rem] place-items-center rounded-2xl bg-surface-muted text-sm font-medium text-text-secondary ring-1 ring-divider-subtle">
+      <div className="grid min-h-[22rem] place-items-center bg-surface-muted text-sm font-medium text-text-secondary rounded-none border-0 shadow-none">
         Loading map
       </div>
     ),
@@ -551,7 +551,7 @@ function DesktopExploreLanding({
 
   return (
     <div className="hidden bg-[linear-gradient(180deg,#fffaf7_0%,#ffffff_85%)] px-8 pb-6 pt-4 xl:block">
-      <div className="mx-auto grid w-full max-w-[92rem] overflow-hidden rounded-[1rem] bg-white shadow-[0_18px_50px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/75">
+      <div className="mx-auto grid w-full max-w-none overflow-hidden bg-white rounded-none border-0 shadow-none">
         <div className="grid gap-4 px-6 py-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-center">
             <div className="min-w-0">
@@ -1307,7 +1307,7 @@ function TopRatedSalonsSection({
           subtitle: "Salons will appear here when Experience signals are available.",
           title: "Top Rated Salons",
         })}
-        <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary">
+        <div className="border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary rounded-none border-0 shadow-none">
           No salons have enough Experience signals yet.
         </div>
       </section>
@@ -2271,7 +2271,7 @@ function DesktopDiscoveryFilterBar({
   return (
     <section
       aria-label="Popular Explore keywords"
-      className="rounded-[0.9rem] bg-white p-3 shadow-[0_10px_28px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/75"
+      className="bg-white p-3 rounded-none border-0 shadow-none"
       data-testid="desktop-discovery-filters"
     >
       <div className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto p-0.5">
@@ -2295,7 +2295,7 @@ function DesktopSectionSkeleton({ title }: { title: string }) {
   return (
     <section
       aria-hidden
-      className="grid gap-3 rounded-[1rem] bg-white p-4 shadow-[0_14px_34px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/70"
+      className="grid gap-3 bg-white p-4 rounded-none border-0 shadow-none"
     >
       <div>
         <div className="h-5 w-44 rounded-full bg-surface-muted" />
@@ -2304,7 +2304,7 @@ function DesktopSectionSkeleton({ title }: { title: string }) {
       <div className="grid gap-3 md:grid-cols-3">
         {[0, 1, 2].map((item) => (
           <div
-            className="grid gap-3 rounded-[0.95rem] bg-surface-muted p-3"
+            className="grid gap-3 bg-surface-muted p-3 rounded-none border-0 shadow-none"
             key={item}
           >
             <div className="aspect-[4/3] rounded-[0.8rem] bg-white/70" />
@@ -2431,7 +2431,7 @@ function DesktopTrustValueModule() {
 
   return (
     <section
-      className="grid gap-4 rounded-[1rem] bg-text-primary p-5 text-white shadow-[0_18px_44px_rgba(35,25,22,0.12)] ring-1 ring-black/5"
+      className="grid gap-4 bg-text-primary p-5 text-white rounded-none border-0 shadow-none"
       data-testid="desktop-trust-value"
     >
       <div>
@@ -2445,7 +2445,7 @@ function DesktopTrustValueModule() {
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
         {items.map((item) => (
           <div
-            className="grid gap-3 rounded-[0.9rem] bg-white/8 p-4 ring-1 ring-white/12"
+            className="grid gap-3 bg-white/8 p-4 rounded-none border-0 shadow-none"
             key={item.label}
           >
             <span className="grid h-10 w-10 place-items-center rounded-full bg-white/12 text-orange-200">
@@ -2775,7 +2775,7 @@ function DesktopDiscoveryMarketplace({
       className="hidden bg-white px-8 pb-10 xl:block"
       data-testid="desktop-discovery-marketplace"
     >
-      <div className="mx-auto grid w-full max-w-[92rem] gap-5">
+      <div className="mx-auto grid w-full max-w-none gap-5">
         {content.error ? (
           <ExploreNotice title="Discovery content is limited right now." tone="warning">
             Search still works while this section refreshes.
@@ -2893,11 +2893,11 @@ function ExploreNotice({
 }) {
   const toneClass =
     tone === "warning"
-      ? "bg-amber-50 text-amber-900 ring-1 ring-amber-200/75"
-      : "bg-surface-elevated text-text-secondary ring-1 ring-divider-subtle/80";
+      ? "bg-amber-50 text-amber-900"
+      : "bg-surface-elevated text-text-secondary";
 
   return (
-    <div className={`rounded-2xl p-4 shadow-[var(--shadow-soft)] ${toneClass}`}>
+    <div className={`p-4 ${toneClass}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
@@ -3026,7 +3026,7 @@ function QuickActions({ actions }: { actions: ExploreQuickAction[] }) {
       data-testid="quick-actions"
     >
       <div
-        className="relative grid overflow-hidden rounded-[1.25rem] bg-text-primary p-5 text-white shadow-[0_18px_48px_rgba(35,25,22,0.14)] ring-1 ring-black/5 lg:grid-cols-[minmax(0,0.62fr)_minmax(22rem,1fr)]"
+        className="relative grid overflow-hidden bg-text-primary p-5 text-white lg:grid-cols-[minmax(0,0.62fr)_minmax(22rem,1fr)] rounded-none border-0 shadow-none"
         style={{
           backgroundImage: "url(/explore/quick-actions-dark.png)",
           backgroundPosition: "center",
@@ -3894,7 +3894,7 @@ export function ExploreClient({
       >
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
-            <div data-explore-inline-search className="mx-auto w-full max-w-[92rem] px-4 pt-2 sm:px-6 lg:px-3">
+            <div data-explore-inline-search className="mx-auto w-full max-w-none px-4 pt-2 sm:px-6 lg:px-3">
               <ExploreSearchToolbar key={searchResetVersion} query={query} category={normalizedCategory} location={location}
                 initialDraftValue={readExploreStartupInteraction(commentViewer.userId)?.query}
                 restoreInitialFocus={readExploreStartupInteraction(commentViewer.userId)?.focused}
@@ -3907,6 +3907,7 @@ export function ExploreClient({
             </div>
             <div className="mx-auto w-full max-w-[92rem] px-4 sm:px-6 lg:px-3" data-testid="owner-campaign-placement">
               <OwnerSponsoredPost key={`${commentViewer.userId ?? "guest"}:${searchMode ? committedSearch.sessionKey : "home"}`}
+                query={searchMode ? committedSearch.displayQuery : undefined}
                 location={searchMode ? committedSearch.location : location}
                 latitude={(searchMode ? committedSearch.coordinates : gpsCoordinates)?.latitude}
                 longitude={(searchMode ? committedSearch.coordinates : gpsCoordinates)?.longitude} />
@@ -4048,7 +4049,7 @@ export function ExploreClient({
 
                 {requiresGps ? <><button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button><ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /></> : null}
                 {!searchUnavailable && !requiresGps ? (!hasAnyResults && !activeResponse.hasMore && !isSearching ? (
-                  <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-8 text-center shadow-[var(--shadow-soft)]">
+                  <div className="border-dashed border-divider-subtle bg-surface-elevated p-8 text-center rounded-none border-0 shadow-none">
                     <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} />
                   </div>
                 ) : (

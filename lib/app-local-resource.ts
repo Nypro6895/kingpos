@@ -24,7 +24,7 @@ export const appLocalResourceCache = createExperienceResourceCache({ canUse: () 
 export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; loading: boolean; refreshing: boolean; error?: string; accessDenied?: boolean };
 // Cells contain React view state only. Request ownership, freshness, conditional
 // responses and failure cooldown belong to the shared scoped read cache.
-type Cell = { context: ExperienceResourceContext; state: AppLocalResourceState<unknown>; listeners: Set<() => void>; active: number; validatedAt: number; invalidated?: boolean; epoch: number; revision: number; revalidate?: boolean; hydrated?: Promise<void>; pending?: Promise<void> };
+type Cell = { context: ExperienceResourceContext; state: AppLocalResourceState<unknown>; listeners: Set<() => void>; active: number; validatedAt: number; invalidated?: boolean; epoch: number; revision: number; deliveryRevision: number; revalidate?: boolean; hydrated?: Promise<void>; pending?: Promise<void> };
 const cells = new Map<string, Cell>();
 let epoch = 0;
 function stable(value: unknown): unknown {
@@ -39,7 +39,7 @@ function cellFor(scope: string, name: string, args: unknown) {
     if (cells.size >= 128) for (const [id, existing] of cells) if (!existing.listeners.size && !existing.pending) { cells.delete(id); break; }
     const context = { scope: scope || "unavailable", key: "app-local:" + JSON.stringify([name, stable(args)]) };
     const retained = appLocalResourceCache.get<AppLocalRead<unknown>>(context), saved = retained?.data;
-    cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, loading: !saved, refreshing: false }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0 }; cells.set(key, cell);
+    cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, loading: !saved, refreshing: false }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0, deliveryRevision: 0 }; cells.set(key, cell);
   }
   return { key, cell };
 }
@@ -119,7 +119,7 @@ if (typeof window !== "undefined") {
 
 export async function hydrateAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}): Promise<void> {
   const { key, cell } = cellFor(scope, name, args); if (cell.hydrated) return cell.hydrated;
-  const started = epoch, revision = cell.revision, host = getAppLocalHost();
+  const started = epoch, revision = cell.revision, deliveryRevision = cell.deliveryRevision, host = getAppLocalHost();
   let traceOperation = 0, traceStarted = 0;
   cell.hydrated = (async () => {
     if (!appLocalReadIsDurable(name)) return;
@@ -129,7 +129,10 @@ export async function hydrateAppLocalResource<T>(scope: string, name: string, ar
       ? await host.cache<{ data: T; revision?: string; updatedAt: number }>("get", { name, args, scope })
       : await readExperienceSnapshot<T>({ scope, domain: resourceDomain(name), params: args });
     recordExperienceTrace(saved ? "cache.hit" : "cache.miss", { source: "app-local", operation: traceOperation, offline: true, ...traceResource(name, args) });
-    if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cells.get(key) !== cell) return;
+    // Foreground/manual reads can finish while durable restoration is pending.
+    // That earlier cache request cannot replace a subsequently accepted result,
+    // even when the saved timestamp is ahead because of clock skew.
+    if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cell.deliveryRevision !== deliveryRevision || cells.get(key) !== cell) return;
     if (saved && !cell.invalidated && saved.updatedAt >= cell.state.updatedAt && appLocalResourceCache.isAvailable(cell.context)) {
       const snapshot: AppLocalRead<T> = { schemaVersion: 1, status: 200, scope, data: saved.data, etag: saved.revision ?? "", updatedAt: saved.updatedAt, offline: true };
       appLocalResourceCache.seed(cell.context, snapshot, {}, saved.updatedAt, saved.revision);
@@ -146,6 +149,7 @@ export function seedAppLocalResource<T>(scope: string, name: string, args: Recor
     appLocalResourceCache.seed(cell.context, snapshot, {}, snapshot.offline ? snapshot.updatedAt : Date.now(), snapshot.etag);
     cell.validatedAt = snapshot.offline ? snapshot.updatedAt : Date.now();
     cell.invalidated = false;
+    cell.deliveryRevision++;
     emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
   }
 }
@@ -222,7 +226,10 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (epoch !== started || cell.revision !== revision || cells.get(key) !== cell || !appLocalResourceCache.isAvailable(cell.context)) return;
     cell.invalidated = false;
     cell.validatedAt = appLocalResourceCache.get(cell.context)?.updatedAt ?? transportValidatedAt ?? cell.validatedAt;
-    if (snapshot.updatedAt >= cell.state.updatedAt) emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+    if (snapshot.updatedAt >= cell.state.updatedAt) {
+      cell.deliveryRevision++;
+      emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+    }
     // Native retains only envelopes it fetched and authorized itself. JavaScript
     // cannot manufacture a private native snapshot through a cache-write bridge.
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });

@@ -1339,7 +1339,7 @@ function ServicesQuickSetupDrawer({
 
             return (
               <section
-                className="rounded-xl border border-[#f0e6df] bg-white p-4"
+                className="min-w-0 border-t border-[#f0e6df] bg-white py-4"
                 key={service.id}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1922,7 +1922,7 @@ function ProfessionalDetailPanel({
   const services = options.services.filter((service) => service.is_active);
 
   return (
-    <section className="grid gap-5 rounded-xl border border-[#f0e6df] bg-white p-4">
+    <section className="grid min-w-0 gap-5 border-t border-[#f0e6df] bg-white py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h3 className="truncate text-xl font-extrabold text-[#211c24]">
@@ -2312,7 +2312,7 @@ function BookingHoursQuickSetupDrawer({
           ))}
         </div>
         {selectedStaff ? (
-          <section className="grid gap-5 rounded-xl border border-[#f0e6df] bg-white p-4">
+          <section className="grid min-w-0 gap-5 border-t border-[#f0e6df] bg-white py-4">
             <div>
               <h3 className="text-lg font-extrabold text-[#211c24]">
                 {selectedStaff.display_name}
@@ -3129,7 +3129,7 @@ function DayCalendarCanvas({
   };
 
   return (
-    <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <section className="min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="grid grid-cols-[72px_minmax(0,1fr)] border-b border-zinc-200 bg-zinc-50">
         <div className="px-3 py-3 text-xs font-semibold uppercase text-zinc-500">
           <WorkspaceText text="Time" />
@@ -4715,7 +4715,7 @@ function CalendarView({
 
           return (
             <section
-              className="min-w-0 rounded-lg border border-zinc-200 bg-zinc-50"
+              className="min-w-0 bg-zinc-50"
               key={day.date}
             >
               <div className="border-b border-zinc-200 px-3 py-2">
@@ -5125,7 +5125,7 @@ function DetailDrawer({
           ) : null}
         </section>
 
-        <section className="grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+        <section className="grid min-w-0 gap-3 bg-zinc-50 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold uppercase text-zinc-500">
@@ -6472,9 +6472,9 @@ function SettingsPanel({
 
   return (
     <div className="grid gap-5">
-      <form className="grid gap-5 rounded-lg border border-zinc-200 bg-white p-5" onSubmit={submit}>
+      <form className="grid min-w-0 gap-5 bg-white py-5" onSubmit={submit}>
       <Message result={result} />
-      <section className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 lg:grid-cols-[1fr_auto]">
+      <section className="grid min-w-0 gap-4 bg-zinc-50 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div>
           <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Public booking link" /></h3>
           <p className="mt-2 break-all rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700">

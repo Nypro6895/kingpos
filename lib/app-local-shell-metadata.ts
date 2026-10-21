@@ -24,7 +24,7 @@ export const APP_LOCAL_SHELL_READS = [
   { name: "shell.notice", argumentKeys: [], retain: true },
   { name: "http.shell.session", argumentKeys: [], retain: false },
   { name: "http.shell.quick-booking", argumentKeys: ["salonId", "inspiration", "lookId", "serviceId", "staffId", "date", "startAt", "source"], retain: false },
-  { name: "http.shell.campaigns", argumentKeys: ["location", "latitude", "longitude", "batch"], retain: false },
+  { name: "http.shell.campaigns", argumentKeys: ["location", "latitude", "longitude", "batch", "query"], retain: false },
   { name: "http.shell.advertising", argumentKeys: ["path", "device"], retain: false },
 ] as const;
 export const APP_LOCAL_SHELL_COMMANDS = [

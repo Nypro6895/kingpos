@@ -108,7 +108,7 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
     if (args.batch !== undefined && !["0","1"].includes(String(args.batch))) fail(400,"Invalid advertising request.");
     if (args.latitude !== undefined || args.longitude !== undefined) {
       if (typeof args.latitude !== "string" || !args.latitude.trim() || typeof args.longitude !== "string" || !args.longitude.trim()) fail(400,"Choose a valid location.");
-      const next = new NextRequest(url,{method:"POST",headers:forwarded(current,origin),signal:options.signal,body:JSON.stringify({kind:"select",location:args.location ?? "",latitude:Number(args.latitude),longitude:Number(args.longitude),batch:args.batch === "1"})});
+      const next = new NextRequest(url,{method:"POST",headers:forwarded(current,origin),signal:options.signal,body:JSON.stringify({kind:"select",location:args.location ?? "",latitude:Number(args.latitude),longitude:Number(args.longitude),batch:args.batch === "1",...(args.query ? {query:args.query} : {})})});
       data = await wire(await campaignPOST(next));
     } else {
       url.search = new URLSearchParams(args as Record<string,string>).toString();

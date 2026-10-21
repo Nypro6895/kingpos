@@ -75,7 +75,7 @@ function SalonForm({ createRequestKey, draft, draftKey }: { createRequestKey: st
     <ClaimSuggestions draftKey={draftKey}>
     <form
       action={createSalonAction}
-      className="mt-4 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
+      className="mt-4 grid min-w-0 gap-5 border-y border-zinc-200 bg-white py-5 sm:grid-cols-2"
     >
       <input name="create_request_key" type="hidden" value={createRequestKey} />
       <input name="duplicate_acknowledged" type="hidden" defaultValue="no" />
@@ -138,7 +138,7 @@ function SalonCreationUnavailable({
   title: string;
 }) {
   return (
-    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-5">
+    <div className="mt-4 border-y border-amber-200 bg-amber-50 p-5">
       <h2 className="text-sm font-semibold text-amber-950"><WorkspaceText text={title} /></h2>
       <p className="mt-2 text-sm text-amber-900">{description}</p>
       <Link
@@ -164,7 +164,7 @@ function SalonList({
 }) {
   if (salons.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 border-y border-zinc-200 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No salons yet" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
           <WorkspaceText text="Create your first salon so customers, services, tickets, and bookings have a home." />
@@ -182,7 +182,7 @@ function SalonList({
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <div className="mt-4 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
         <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Salon" /></div>
         <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Address" /></div>
@@ -268,7 +268,7 @@ export function AppLocalSalons({data,scope,mode="list",query={}}:{data:AppLocalS
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    <main className="w-full min-w-0 px-4 py-6 sm:px-6">
       <div className="flex flex-wrap justify-end gap-3">
         <div className="flex flex-wrap gap-3">
           {hasCreatePermission ? (
@@ -373,6 +373,6 @@ function ClaimSuggestions({children,draftKey}:{children:ReactNode;draftKey:strin
  <div aria-live="polite" className="mt-4">
  {pending?<p className="text-sm text-zinc-500"><WorkspaceText text="Checking existing salons…" /></p>:null}
  {error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></p>:null}
- {matches.length?<section className="grid gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4"><h2 className="font-semibold"><WorkspaceText text="Your salon may already be on Reylumi" /></h2><p className="text-sm text-zinc-600"><WorkspaceText text="Choose an existing profile to keep its followers and posts." /></p>{matches.map(row=><article key={row.salon_id} className="rounded-xl bg-white p-3"><h3 className="font-semibold">{row.name}</h3><p className="text-sm text-zinc-600">{row.address}</p><p className="text-sm text-zinc-600">{row.phone}</p><p className="mt-1 text-xs text-zinc-500"><WorkspaceText text={row.phone_match && row.address_match?'Same phone and address':row.phone_match?'Same phone':row.address_match?'Similar address':'Similar name'} /></p><Link className="mt-2 inline-block rounded-lg bg-zinc-950 px-3 py-2 text-sm font-semibold text-white" href={`/claim/${row.salon_id}`}><WorkspaceText text={row.unclaimed?'This is my salon — claim it':'This is my salon — request access'} /></Link></article>)}<button type="button" disabled={pending} className="justify-self-start text-sm underline" onClick={continueCreate}><WorkspaceText text="My salon is different — continue creating" /></button></section>:null}
+ {matches.length?<section className="grid gap-3 border-y border-amber-200 bg-amber-50 p-4"><h2 className="font-semibold"><WorkspaceText text="Your salon may already be on Reylumi" /></h2><p className="text-sm text-zinc-600"><WorkspaceText text="Choose an existing profile to keep its followers and posts." /></p>{matches.map(row=><article key={row.salon_id} className="border-b border-amber-100 bg-white p-3"><h3 className="font-semibold">{row.name}</h3><p className="text-sm text-zinc-600">{row.address}</p><p className="text-sm text-zinc-600">{row.phone}</p><p className="mt-1 text-xs text-zinc-500"><WorkspaceText text={row.phone_match && row.address_match?'Same phone and address':row.phone_match?'Same phone':row.address_match?'Similar address':'Similar name'} /></p><Link className="mt-2 inline-block rounded-lg bg-zinc-950 px-3 py-2 text-sm font-semibold text-white" href={`/claim/${row.salon_id}`}><WorkspaceText text={row.unclaimed?'This is my salon — claim it':'This is my salon — request access'} /></Link></article>)}<button type="button" disabled={pending} className="justify-self-start text-sm underline" onClick={continueCreate}><WorkspaceText text="My salon is different — continue creating" /></button></section>:null}
  </div></div>;
 }

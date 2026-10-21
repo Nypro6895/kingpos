@@ -21,13 +21,12 @@
 
 .booking-setup-panel {
   background: var(--booking-setup-surface);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 14px;
-  box-shadow: 0 1px 0 rgba(33, 28, 36, 0.03);
+  border:0;
+  border-radius:0;
+  box-shadow:none;
   display: grid;
   gap: 18px;
-  padding: 18px;
-}
+  padding:18px 0;min-width:0;}
 
 .booking-setup-profile-head {
   align-items: center;
@@ -133,10 +132,9 @@
 }
 
 .booking-setup-table {
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 12px;
-  overflow: hidden;
-}
+  border:0;
+  border-radius:0;
+  overflow: hidden;box-shadow:none;}
 
 .booking-setup-table-header {
   background: var(--booking-setup-soft);
@@ -170,13 +168,12 @@
 
 .booking-setup-staff-picker {
   background: var(--booking-setup-soft);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 14px;
+  border:0;
+  border-radius:0;
   display: grid;
   gap: 8px;
   height: fit-content;
-  padding: 8px;
-}
+  padding: 8px;box-shadow:none;}
 
 .booking-setup-staff-option {
   align-items: center;
@@ -203,12 +200,11 @@
 .booking-setup-day-card,
 .booking-setup-subpanel {
   background: var(--booking-setup-soft);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 12px;
+  border:0;
+  border-radius:0;
   display: grid;
   gap: 12px;
-  padding: 13px;
-}
+  padding: 13px;box-shadow:none;}
 
 .booking-setup-subpanel {
   gap: 16px;
@@ -216,10 +212,9 @@
 
 .booking-setup-empty {
   background: var(--booking-setup-soft);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 12px;
-  color: var(--booking-setup-muted);
-}
+  border:0;
+  border-radius:0;
+  color: var(--booking-setup-muted);box-shadow:none;}
 
 [data-booking-setup-surface="availability"] {
   gap: 14px;
@@ -253,10 +248,9 @@
 
 .booking-availability-staff-list {
   background: var(--booking-setup-surface);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 10px;
-  overflow: hidden;
-}
+  border:0;
+  border-radius:0;
+  overflow: hidden;box-shadow:none;}
 
 .booking-availability-staff-columns,
 .booking-availability-staff-summary {
@@ -487,20 +481,18 @@
 
 .booking-availability-empty-note {
   background: var(--booking-setup-surface);
-  border: 1px dashed var(--booking-setup-border);
-  border-radius: 8px;
+  border:0;
+  border-radius:0;
   color: var(--booking-setup-muted);
   font-size: 13px;
   margin: 0;
-  padding: 10px;
-}
+  padding: 10px;box-shadow:none;}
 
 .booking-availability-week {
   background: var(--booking-setup-surface);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 8px;
-  overflow: hidden;
-}
+  border:0;
+  border-radius:0;
+  overflow: hidden;box-shadow:none;}
 
 .booking-availability-day-header,
 .booking-availability-day-row {
@@ -639,14 +631,13 @@
 
 .booking-availability-copy-panel {
   background: var(--booking-setup-soft);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 8px;
+  border:0;
+  border-radius:0;
   display: grid;
   gap: 8px;
   margin-top: 6px;
   padding: 8px;
-  width: min(270px, 100%);
-}
+  width: min(270px, 100%);box-shadow:none;}
 
 .booking-availability-copy-panel p {
   color: var(--booking-setup-muted);
@@ -680,10 +671,9 @@
 }
 
 .booking-availability-schedule-section .booking-setup-savebar {
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 8px;
-  padding: 10px;
-}
+  border:0;
+  border-radius:0;
+  padding: 10px;box-shadow:none;border-top:1px solid var(--booking-setup-border);}
 
 .booking-availability-timeoff-list {
   display: grid;
@@ -693,13 +683,12 @@
 .booking-availability-timeoff-item {
   align-items: start;
   background: var(--booking-setup-surface);
-  border: 1px solid var(--booking-setup-border);
-  border-radius: 8px;
+  border:0;
+  border-radius:0;
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(0, 1fr) auto;
-  padding: 9px;
-}
+  padding: 9px;box-shadow:none;}
 
 .booking-availability-timeoff-item strong {
   color: var(--booking-setup-ink);
@@ -803,12 +792,10 @@
   }
 
   .booking-availability-copy-panel {
-    grid-column: 1 / -1;
-  }
+    grid-column: 1 / -1;border:0;border-radius:0;box-shadow:none;}
 
   .booking-availability-timeoff-item {
-    grid-template-columns: minmax(0, 1fr);
-  }
+    grid-template-columns: minmax(0, 1fr);border:0;border-radius:0;box-shadow:none;}
 }
 
 @media (max-width: 430px) {

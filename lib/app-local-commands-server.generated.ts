@@ -318,6 +318,7 @@ import {loadBookingRulesSettingsAction as action314} from "@/app/settings/plugin
 import {saveBookingRulesSettingsAction as action315} from "@/app/settings/plugin-settings-actions";
 import {loadBookSmsSettingsAction as action316} from "@/app/settings/plugin-settings-actions";
 import {saveBookSmsSettingsAction as action317} from "@/app/settings/plugin-settings-actions";
+import {loadCampaignPreviewAction as action318} from "@/app/campaigns/preview-actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.cd9e45d5fdc4291bdc97f8ad": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.d06245d954e31f5b8be168de": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -637,5 +638,6 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.135d0e25e4ee7c14d97966da": (values: unknown[]) => (action315 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.71559420db869529e30eabcb": (values: unknown[]) => (action316 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.c6936e7df92440098868ffc8": (values: unknown[]) => (action317 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.59a914e15c81c5ff5299612a": (values: unknown[]) => (action318 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}

@@ -306,7 +306,7 @@ async function CustomerDetailPage({
   );
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-2 py-3 sm:px-6">
+    <main className="grid min-w-0 w-full grid-cols-1 gap-2 py-3 sm:px-6">
       <div className="flex items-center justify-between gap-2 px-4">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           <span className="min-w-0 truncate text-sm font-normal text-zinc-950">

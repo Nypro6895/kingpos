@@ -339,7 +339,7 @@ export function LegalDocumentPage({ document }: { document: LegalDocument }) {
               <ArrowIcon />
               Legal hub
             </Link>
-            <details className="mt-3 rounded-md border border-divider-subtle bg-white px-3 py-2">
+            <details className="mt-3 border-y border-divider-subtle bg-white py-3">
               <summary className="cursor-pointer text-sm font-extrabold text-text-primary">
                 On this page
               </summary>

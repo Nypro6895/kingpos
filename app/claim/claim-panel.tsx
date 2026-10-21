@@ -41,7 +41,7 @@ export function ClaimPanel({salonId,phone,unclaimed,messagingReady,deliveryMetho
  {initialRequest?.review_reason && status==='rejected'?<p className="text-sm text-zinc-600">Previous decision: {initialRequest.review_reason}</p>:null}
  {!unclaimed?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950">This salon already has management access. Ask the current owner to invite you. If you need ownership recovery, explain the situation below; this request will not replace the current owner.</p>:null}
  <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={authorized} onChange={event=>setAuthorized(event.target.checked)} className="mt-1 size-4"/>I own this salon or am authorized to manage it.</label>
- {unclaimed?<section className="grid gap-3 rounded-2xl border border-zinc-200 p-4">
+ {unclaimed?<section className="grid min-w-0 gap-3 border-t border-zinc-200 py-4">
  <h2 className="font-semibold">Verify the salon phone</h2>
  <p className="text-sm text-zinc-600">We send the code to {phone || 'the phone listed on this salon'}. A different phone number requires support review.</p>
  {!messagingReady?<p className="text-sm text-amber-900">Phone verification is being set up. You can request support below.</p>:null}
@@ -51,7 +51,7 @@ export function ClaimPanel({salonId,phone,unclaimed,messagingReady,deliveryMetho
  </section>:null}
  <button type="button" className="justify-self-start text-sm underline" onClick={()=>setSupport(!support)} aria-expanded={support}>{support?'Hide support form':"Can't access this phone? Request support"}</button>
  </>}
- {support && !['approved','needs_info','rejected','expired'].includes(status??'')?<form className="grid gap-3 rounded-2xl border border-zinc-200 p-4" action={form=>{setError(null);startTransition(async()=>{try{const result=await requestBusinessClaimSupportAction(salonId,form);if(result.error)setError(result.error);else {setSupport(false);setStatus('waiting');router.refresh();}}catch{setError('Could not send your request. Please try again.');}});}}>
+ {support && !['approved','needs_info','rejected','expired'].includes(status??'')?<form className="grid min-w-0 gap-3 border-t border-zinc-200 py-4" action={form=>{setError(null);startTransition(async()=>{try{const result=await requestBusinessClaimSupportAction(salonId,form);if(result.error)setError(result.error);else {setSupport(false);setStatus('waiting');router.refresh();}}catch{setError('Could not send your request. Please try again.');}});}}>
  <input type="hidden" name="authorized" value={authorized?'yes':'no'}/>
  <h2 className="font-semibold">Request ownership review</h2>
  <label className="grid gap-2 text-sm">Your connection to this salon<textarea name="reason" required minLength={10} maxLength={2000} rows={4} className="rounded-xl border border-zinc-300 p-3" placeholder="Tell us your role and why the listed phone cannot be used. You can include a business website or other evidence."/></label>

@@ -142,7 +142,7 @@ function PostCard({
   const after = post.media.find((media) => media.role === "after");
   return (
     <article
-      className="grid gap-3 rounded-2xl bg-surface p-3 shadow-[0_14px_36px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle"
+      className="grid gap-3 bg-surface p-3 rounded-none border-0 shadow-none"
       id={`post-${post.id}`}
     >
       <div className="relative">
@@ -310,7 +310,7 @@ export function BeautyProfileReadView({ page }: { page: BeautyProfileRoutePage }
               Customer details
             </Link>
           </div>
-          <section className="rounded-3xl bg-surface p-8 text-center shadow-[0_18px_48px_rgba(35,25,22,0.06)] ring-1 ring-divider-subtle sm:p-10">
+          <section className="bg-surface p-8 text-center sm:p-10 rounded-none border-0 shadow-none">
             <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-orange-soft text-2xl font-extrabold text-brand-orange">
               {profile.initials}
             </div>
@@ -329,8 +329,8 @@ export function BeautyProfileReadView({ page }: { page: BeautyProfileRoutePage }
 
   return (
     <main className="min-h-screen bg-[#fffaf7] px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-6xl gap-5">
-        <section className="overflow-hidden rounded-[1.1rem] bg-white shadow-[0_18px_48px_rgba(35,25,22,0.06)] ring-1 ring-divider-subtle/80">
+      <div className="grid w-full min-w-0 gap-5">
+        <section className="overflow-hidden bg-white rounded-none border-0 shadow-none">
           <div className="relative h-32 bg-brand-orange-soft sm:h-44 lg:h-52">
             {profile.coverImageUrl ? (
               <Image
@@ -384,7 +384,7 @@ export function BeautyProfileReadView({ page }: { page: BeautyProfileRoutePage }
                   Milwaukee, WI
                 </p>
               </div>
-              <div className="grid w-full max-w-md grid-cols-4 gap-3 rounded-[1rem] bg-white px-2 py-3 ring-1 ring-divider-subtle/70">
+              <div className="grid w-full max-w-md grid-cols-4 gap-3 bg-white px-2 py-3 rounded-none border-0 shadow-none">
                 <ProfileStat label="Looks" value={posts.length} />
                 <ProfileStat label="Saved" value={savedLookCount} />
                 <ProfileStat label="Reviews" value={reviewActivityCount} />
@@ -435,7 +435,7 @@ export function BeautyProfileReadView({ page }: { page: BeautyProfileRoutePage }
             ))}
           </section>
         ) : (
-          <section className="rounded-[1rem] border border-dashed border-divider-subtle bg-white p-8 text-center">
+          <section className="border-dashed border-divider-subtle bg-white p-8 text-center rounded-none border-0 shadow-none">
             <p className="text-sm font-semibold text-text-primary">
               No Beauty posts yet
             </p>

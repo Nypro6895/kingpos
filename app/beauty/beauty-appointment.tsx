@@ -5,7 +5,7 @@ export async function BeautyAppointment() {
   const result = await listCustomerBookings({ scope: "upcoming", limit: 1 });
   if (!result.ok) return <p className="text-sm text-text-secondary">Appointment could not be loaded. <Link href="/my-bookings" className="text-brand-teal">Open bookings</Link></p>;
   const booking = result.data[0];
-  return <section className="relative rounded-2xl border border-border-subtle bg-surface p-4" aria-label="Your next appointment">
+  return <section className="relative border-border-subtle bg-surface p-4 rounded-none border-0 shadow-none" aria-label="Your next appointment">
     <span role="img" className="absolute right-3 top-3 text-text-secondary" title="Only you can see your appointment" aria-label="Only you can see your appointment"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg></span>
     <p className="text-xs font-semibold text-text-secondary">Next appointment</p>
     {booking ? <>

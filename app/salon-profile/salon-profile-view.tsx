@@ -732,7 +732,7 @@ function EmptyState({
   title: string;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/85 p-8 text-center shadow-[0_16px_50px_rgba(24,24,27,.05)]">
+    <div className="border-dashed border-zinc-200 bg-white/85 p-8 text-center rounded-none border-0 shadow-none">
       <h3 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h3>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-600">
         {children}
@@ -1340,7 +1340,7 @@ function ProfileEditor({
     <Modal onClose={onClose} title={__vt("Edit profile")}>
       <form action={updateSalonProfileIdentityAction} className="grid gap-4">
         <input name="salon_id" type="hidden" value={setting.salon_id} />
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="border-zinc-200 bg-zinc-50 p-4 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
             <WorkspaceText text="Live preview" />
           </p>
@@ -1511,7 +1511,7 @@ function ComposerCard({
   const __vt = useWorkspaceTranslation();
 
   return (
-    <section className="flex min-w-0 items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white p-3 shadow-sm sm:p-4">
+    <section className="flex min-w-0 items-center gap-3 border-zinc-200/80 bg-white p-3 sm:p-4 rounded-none border-0 shadow-none">
       <Avatar logoUrl={logoUrl} name={name} size="md" />
       <button className="min-h-12 min-w-0 flex-1 rounded-full bg-zinc-100 px-4 text-left text-sm text-zinc-500 transition hover:bg-zinc-200/70 focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => onOpen("auto")} type="button">
         <WorkspaceText text="Share something with your customers…" />
@@ -2008,7 +2008,7 @@ function FeedCard({
 
   return (
     <article
-      className="min-h-[calc(100svh-8rem)] scroll-mt-24 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)]"
+      className="min-h-[calc(100svh-8rem)] scroll-mt-24 overflow-hidden border-zinc-200/80 bg-white rounded-none border-0 shadow-none"
       id={`${item.contentType}-${item.id}`}
     >
       <div className="flex items-start justify-between gap-3 p-4">
@@ -2167,7 +2167,7 @@ function FeedCard({
         </div>
         {commentsExpanded && preferences.allow_comments ? (
           <div
-            className="rounded-xl border border-zinc-200 bg-zinc-50/75 p-3"
+            className="border-zinc-200 bg-zinc-50/75 p-3 rounded-none border-0 shadow-none"
             id={commentsPanelId}
           >
             <ProfilePostCommentThread
@@ -2236,7 +2236,7 @@ function BeautyTransformationsSection({
 
           return (
             <article
-              className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(24,24,27,.08)]"
+              className="group overflow-hidden border-zinc-200/80 bg-white transition rounded-none border-0 shadow-none"
               key={post.id}
             >
               <div className="relative">
@@ -2406,7 +2406,7 @@ function ExperienceSummaryPanel({ summary }: { summary: PublicSalonProfileData["
   const trustSummary = profileTrustSummary(summary);
   const evidence = summary.trustEvidence;
   return (
-    <section aria-labelledby="lumi-trust-profile-title" className="rounded-xl border border-zinc-200 bg-white p-4" id="lumi-trust">
+    <section aria-labelledby="lumi-trust-profile-title" className="border-zinc-200 bg-white p-4 rounded-none border-0 shadow-none" id="lumi-trust">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold text-brand-orange"><WorkspaceText text="LUMI Trust" /></p>
@@ -2528,7 +2528,7 @@ function ExperienceCard({
     .join(" / ");
 
   return (
-    <article className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_14px_42px_rgba(24,24,27,.05)]">
+    <article className="border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-zinc-950">
@@ -2566,7 +2566,7 @@ function ExperienceCard({
         </p>
       )}
       {experience.replyBody ? (
-        <div className="mt-4 rounded-xl bg-zinc-50 p-4">
+        <div className="mt-4 bg-zinc-50 p-4 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
             <WorkspaceText text="Salon reply" />
           </p>
@@ -3935,7 +3935,7 @@ export function SalonProfileView({
             onOpen={setComposerType}
           />
         ) : manageData && !capabilities.canEditProfile ? (
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+          <section className="border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 rounded-none border-0 shadow-none">
             <WorkspaceText text="Posting is disabled for your staff profile." />
           </section>
         ) : null}
@@ -4118,7 +4118,7 @@ export function SalonProfileView({
   }
 
   function renderServices() {
-    if (!manageData || capabilities.isOwnSalon) return <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6"><h3 className="mb-4 text-lg font-semibold"><WorkspaceText text="Our services" /></h3><WebsiteServices services={data.services} posts={feedItems} canBook={capabilities.canBook} onBook={openBooking} salonId={profile.salonId}/></section>;
+    if (!manageData || capabilities.isOwnSalon) return <section className="border-zinc-200 bg-white p-4 sm:p-6 rounded-none border-0 shadow-none"><h3 className="mb-4 text-lg font-semibold"><WorkspaceText text="Our services" /></h3><WebsiteServices services={data.services} posts={feedItems} canBook={capabilities.canBook} onBook={openBooking} salonId={profile.salonId}/></section>;
     if (data.services.length === 0) {
       return (
         <EmptyState title={__vt("No services published")}>
@@ -4131,7 +4131,7 @@ export function SalonProfileView({
   }
 
   function renderTeam() {
-    if (!manageData || capabilities.isOwnSalon) return <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6"><h3 className="mb-4 text-lg font-semibold"><WorkspaceText text="Meet our team" /></h3><WebsiteTeam members={data.staff} canBook={capabilities.canBook} onBook={openBooking} onOpen={setDetailStaff} salonId={profile.salonId}/></section>;
+    if (!manageData || capabilities.isOwnSalon) return <section className="border-zinc-200 bg-white p-4 sm:p-6 rounded-none border-0 shadow-none"><h3 className="mb-4 text-lg font-semibold"><WorkspaceText text="Meet our team" /></h3><WebsiteTeam members={data.staff} canBook={capabilities.canBook} onBook={openBooking} onOpen={setDetailStaff} salonId={profile.salonId}/></section>;
     if (data.staff.length === 0) {
       return (
         <EmptyState title={__vt("Team is not published yet")}>
@@ -4203,7 +4203,7 @@ export function SalonProfileView({
             </EmptyState>
           )}
         </div>
-        <aside className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+        <aside className="border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
             <WorkspaceText text="After a visit" />
           </p>
@@ -4225,14 +4225,14 @@ export function SalonProfileView({
 
     return (
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.58fr)]">
-        <section className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+        <section className="border-zinc-200/80 bg-white p-6 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
             <WorkspaceText text="About" />
           </p>
           <h3 className="mt-3 text-2xl font-semibold text-zinc-950">
             {profile.name}
           </h3>
-          <p className="mt-4 text-sm leading-7 text-zinc-600">
+          <p className="mt-4 max-w-prose text-sm leading-7 text-zinc-600">
             {(salonAboutParagraphs(profile).length ? salonAboutParagraphs(profile) : ["This salon is still shaping its public story."]).map((text, index) => <span key={index} className="block whitespace-pre-line [&+span]:mt-4"><WorkspaceText text={text} /></span>)}
           </p>
           {serviceSummary.length > 0 ? (
@@ -4254,7 +4254,7 @@ export function SalonProfileView({
           ) : null}
         </section>
         <aside className="grid gap-4">
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+          <section className="border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 rounded-none border-0 shadow-none">
             <h4 className="font-semibold text-zinc-950"><WorkspaceText text="Visit details" /></h4>
             <div className="mt-4 grid gap-4">
               <div><h5 className="mb-3 font-semibold text-zinc-950"><WorkspaceText text="Operating hours" /></h5><OperatingHoursDisplay salonId={profile.salonId} initialSettings={data.operatingHours} /></div>
@@ -4310,7 +4310,7 @@ export function SalonProfileView({
             </div>
           </section>
           {preferences.show_team && data.staff.length > 0 ? (
-            <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+            <section className="border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h4 className="font-semibold text-zinc-950"><WorkspaceText text="Team preview" /></h4>
@@ -4363,9 +4363,9 @@ export function SalonProfileView({
     <ProfileSalonIdentityContext.Provider value={{ name: profile.name, href: `/explore/salons/${profile.salonId}`, logoUrl: profile.logoImageUrl }}>
     <ProfilePreferencesContext.Provider value={preferences}>
     <div className={`min-w-0 overflow-x-hidden bg-[#f6f5f3] text-zinc-950 ${isWebsiteView ? websitePageStyles.shell : ""}`} style={effectiveTab === "services" || effectiveTab === "team" ? {backgroundColor:"white"} : undefined}>
-      <div className="mx-auto grid w-full max-w-[88rem] gap-3 px-4 pb-3 pt-3 sm:px-6 lg:px-8">
+      <div className="mx-auto grid w-full max-w-none gap-3 px-4 pb-3 pt-3 sm:px-6 lg:px-8">
         {data.directoryListing?.claimState === "unclaimed" ? (
-          <aside aria-label={__vt("Unclaimed business profile")} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          <aside aria-label={__vt("Unclaimed business profile")} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 rounded-none border-0 shadow-none">
             <span className="font-semibold"><WorkspaceText text="Unclaimed business" /></span>
             <a href={`/claim/${profile.salonId}`} className="rounded-lg bg-amber-950 px-3 py-2 text-xs font-semibold text-white"><WorkspaceText text="Own this salon? Claim it" /></a>
             <span><WorkspaceText text="Contact salon" /></span>
@@ -4394,7 +4394,7 @@ export function SalonProfileView({
               </div> : null}
             </div> : null}
         /> : (
-        <section className="group min-w-0 rounded-2xl border border-zinc-200/80 bg-white shadow-sm">
+        <section className="group min-w-0 border-zinc-200/80 bg-white rounded-none border-0 shadow-none">
           <div className="relative h-[72px] overflow-hidden rounded-t-2xl bg-zinc-100 sm:h-24">
             <SalonCover coverImageUrl={profile.coverImageUrl} name={profile.name} />
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-12" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 55%, #fff 100%)" }} />
@@ -4461,7 +4461,7 @@ export function SalonProfileView({
 
       <section
         aria-labelledby={`salon-profile-tab-${effectiveTab}`}
-        className={effectiveTab === "services" || effectiveTab === "team" ? "mx-auto w-full max-w-[88rem] pb-24" : "mx-auto w-full max-w-[88rem] px-4 pb-24 sm:px-6 lg:px-8"}
+        className={effectiveTab === "services" || effectiveTab === "team" ? "mx-auto w-full max-w-none pb-24" : "mx-auto w-full max-w-none px-4 pb-24 sm:px-6 lg:px-8"}
         id={`salon-profile-${effectiveTab}`}
         role="tabpanel"
       >

@@ -5,8 +5,9 @@
 }
 
 .services-page__frame {
-  width: min(100% - 40px, 1280px);
-  margin-inline: auto;
+  width: 100%;
+  min-width: 0;
+  margin-inline: 0;
 }
 
 .services-page__header {
@@ -204,8 +205,8 @@
 
 .services-list {
   overflow: hidden;
-  border: 1px solid #dedee3;
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   background: #ffffff;
 }
 
@@ -925,10 +926,11 @@
 }
 
 .services-page__empty {
-  border: 1px dashed #d4d4d8;
-  border-radius: 8px;
+  border: 0;
+  border-top: 1px solid #e4e4e7;
+  border-radius: 0;
   background: #ffffff;
-  padding: 34px;
+  padding: 24px 16px;
   color: #52525b;
 }
 
@@ -1010,7 +1012,7 @@
 
 @media (max-width: 640px) {
   .services-page__frame {
-    width: min(100% - 24px, 1280px);
+    width: 100%;
   }
 
   .services-page__header-inner {
@@ -1110,6 +1112,9 @@
   }
 }
 
+/* Page sections span the workspace; text and actions keep one safe gutter. */
+.services-toolbar,.services-message { margin-left:max(16px,env(safe-area-inset-left)); margin-right:max(16px,env(safe-area-inset-right)); }
+.services-save-bar__inner { padding-left:max(16px,env(safe-area-inset-left)); padding-right:max(16px,env(safe-area-inset-right)); }
 .services-toolbar .services-page__actions { grid-column: 3; grid-row: 1; }
 .services-toolbar .services-button { min-height: 44px; white-space: nowrap; padding-inline: 10px; }
 @media (max-width: 640px) { .services-toolbar { gap: 6px; } .services-toolbar .services-button { font-size: 12px; padding-inline: 8px; } }
@@ -1151,7 +1156,7 @@
   .services-save-bar { bottom: var(--app-bottom-nav-height, calc(64px + env(safe-area-inset-bottom))); }
   .services-page__content { padding-bottom: calc(240px + env(safe-area-inset-bottom)); }
   .services-page__frame { width: 100%; }
-  .services-toolbar,.services-message { margin-inline: 12px; }
+  .services-toolbar,.services-message { margin-left:max(12px,env(safe-area-inset-left)); margin-right:max(12px,env(safe-area-inset-right)); }
   .services-list { border-inline: 0; border-radius: 0; }
-  .services-save-bar__inner { padding-inline: 16px; }
+  .services-save-bar__inner { padding-left:max(16px,env(safe-area-inset-left)); padding-right:max(16px,env(safe-area-inset-right)); }
 }

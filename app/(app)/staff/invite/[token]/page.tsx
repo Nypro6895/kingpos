@@ -113,7 +113,7 @@ async function StaffInvitePage({
         </p>
       ) : null}
 
-      <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+      <section className="grid gap-4 border-y border-zinc-200 bg-white p-5">
         <div>
           <p className="text-sm text-zinc-500"><WorkspaceText text="Invited staff" /></p>
           <p className="mt-1 text-lg font-semibold text-zinc-950">

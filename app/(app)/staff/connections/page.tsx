@@ -282,7 +282,7 @@ async function StaffConnectionsPage({
   const connected = requests.filter((request) => request.status === "accepted");
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="grid w-full min-w-0 gap-8 px-4 py-6 sm:px-6 lg:px-8">
       {params.connection_notice ? (
         <Notice>{params.connection_notice}</Notice>
       ) : null}

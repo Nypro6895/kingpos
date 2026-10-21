@@ -216,7 +216,7 @@ function CorrectionHistory({
 }) {
   if (requests.length === 0 && adjustments.length === 0) {
     return (
-      <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
+      <section className="mt-6 min-w-0 border-t border-zinc-200 bg-white pt-5">
         <h2 className="text-lg font-semibold text-zinc-950">
           <WorkspaceText text="Correction History" />
         </h2>
@@ -226,11 +226,11 @@ function CorrectionHistory({
   }
 
   return (
-    <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
+    <section className="mt-6 min-w-0 border-t border-zinc-200 bg-white pt-5">
       <h2 className="text-lg font-semibold text-zinc-950">
         <WorkspaceText text="Correction History" />
       </h2>
-      <div className="mt-4 overflow-hidden rounded border border-zinc-200">
+      <div className="mt-4 min-w-0 overflow-hidden border-y border-zinc-200">
         <div className="grid grid-cols-12 bg-zinc-50 px-3 py-2 text-xs font-medium uppercase text-zinc-500">
           <div className="col-span-2"><WorkspaceText text="Status" /></div>
           <div className="col-span-2"><WorkspaceText text="Field" /></div>
@@ -297,7 +297,7 @@ function SnapshotSummary({
   }
 
   return (
-    <div className="mt-5 rounded border border-zinc-200 bg-zinc-50 p-4">
+    <div className="mt-5 min-w-0 bg-zinc-50 p-4">
       <div className="grid gap-3 text-sm sm:grid-cols-3">
         <div>
           <p className="text-xs font-medium uppercase text-zinc-500">
@@ -457,7 +457,7 @@ export function DailyClosingForm({
   return (
     <>
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <section className="rounded-lg border border-zinc-200 bg-white p-5">
+        <section className="min-w-0 border-t border-zinc-200 bg-white pt-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -614,7 +614,7 @@ export function DailyClosingForm({
           </form>
         </section>
 
-        <section className="rounded-lg border border-zinc-200 bg-white p-5">
+        <section className="min-w-0 border-t border-zinc-200 bg-white pt-5">
           <h2 className="text-lg font-semibold text-zinc-950">
             <WorkspaceText text="Reconciliation" />
           </h2>

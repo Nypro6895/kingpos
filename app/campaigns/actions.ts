@@ -8,8 +8,7 @@ import { revalidatePath } from "next/cache";
 export async function loadOwnerCampaignsAction(offset = 0, activeOnly = false) {
   const { client, salonId } = await requireCampaignOwner();
   const settings = await ownerCampaignSettings();
-  const { error: refreshError } = await client.rpc("campaign_credit_close_expired", {p_salon:salonId});
-  if (refreshError) throw new Error("Your campaigns could not load. Please try again.");
+  // Status/history reads never reconcile accounting. The credit queue closes expired periods.
   if (!Number.isSafeInteger(offset) || offset < 0 || offset > 100000) throw new Error("Reopen campaign history.");
   let query = client.from("owner_campaigns").select("*").eq("salon_id", salonId);
   if (activeOnly) query = query.in("status", ["awaiting_payment", "pending_review", "running", "paused"]);

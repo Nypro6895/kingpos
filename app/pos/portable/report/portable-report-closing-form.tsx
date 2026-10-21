@@ -139,7 +139,7 @@ function PortableClosingEditor({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
       {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} <WorkspaceText text="ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details." /></p>:null}
-      <section className="rounded-lg border border-zinc-200 bg-white p-5">
+      <section className="min-w-0 border-t border-zinc-200 bg-white py-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-zinc-950">
@@ -267,7 +267,7 @@ function PortableClosingEditor({
         </form>
       </section>
 
-      <section className="rounded-lg border border-zinc-200 bg-white p-5">
+      <section className="min-w-0 border-t border-zinc-200 bg-white py-5">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Reconciliation" /></h2>
         <dl className="mt-5 space-y-4">
           <div className="flex items-center justify-between gap-4">

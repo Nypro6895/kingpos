@@ -1,4 +1,5 @@
 import "server-only";
+import { getReadAbortSignal } from "@/lib/read-context-scope";
 
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -238,10 +239,12 @@ export async function getCustomerVisitQueueForSalon(input: {
   salonId: string;
   supabase: CustomerVisitSupabaseClient;
 }) {
-  const { data, error } = await input.supabase.rpc("get_customer_visit_queue", {
+  const read = input.supabase.rpc("get_customer_visit_queue", {
     p_limit: input.limit ?? 25,
     p_salon_id: input.salonId,
   });
+  const signal = getReadAbortSignal();
+  const { data, error } = await (signal ? read.abortSignal(signal) : read);
 
   if (error) {
     throw new Error(error.message);

@@ -60,7 +60,7 @@ async function AccountPage() {
 
   return (
     <div className="settings-style settings-style-page"><main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-6xl gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-none gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="h-fit rounded-lg border border-border-subtle bg-white p-3 lg:sticky lg:top-5">
           <div className="border-b border-zinc-100 px-2 pb-3">
             <p className="text-xs font-semibold uppercase text-zinc-500">

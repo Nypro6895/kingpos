@@ -110,7 +110,7 @@ export function BankCheckoutPanel({ pluginId, pluginName, billingState, hasActiv
     catch { inform(`Copy ${label.toLowerCase()} manually from the field.`, true); }
   }
 
-  return <section aria-label={`${pluginName} bank payment`} className="mt-6 min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-white p-4 sm:p-6">
+  return <section aria-label={`${pluginName} bank payment`} className="mt-6 min-w-0 border-t border-[var(--border-subtle)] bg-white py-4 sm:py-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><h3 className="!mt-0 !text-base">Pay by bank transfer</h3><p className="!mt-1">One month of {pluginName} for this salon.</p></div>
       {state.available && <span className="rounded-full bg-[#eef5ef] px-3 py-1 text-xs font-semibold text-[#285d4c]">USD · Manual payment</span>}
@@ -125,7 +125,7 @@ export function BankCheckoutPanel({ pluginId, pluginName, billingState, hasActiv
     {hasActiveSubscription && <p>You already have a card subscription. Use Manage subscription for changes; another purchase is unavailable while it remains linked.</p>}
     {paidAccess && <p className="rounded-lg bg-[#eef5ef] px-3 py-2">Paid access is available until <strong>{when(paidPeriodEnd!)}</strong>. A new invoice becomes available after this period ends.</p>}
 
-    {quote && !openOrder && !paidAccess && !hasActiveSubscription && <div className="mt-4 rounded-xl bg-[var(--surface-muted)] p-4" aria-label="Purchase total">
+    {quote && !openOrder && !paidAccess && !hasActiveSubscription && <div className="mt-4 min-w-0 bg-[var(--surface-muted)] p-4" aria-label="Purchase total">
       <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-2 text-sm">
         <dt>Plugin · one month</dt><dd className="text-right">{money(quote.baseCents)}</dd>
         <dt>{state.settings.tax_label || "Tax"} ({state.settings.tax_bps / 100}%)</dt><dd className="text-right">{money(quote.taxCents)}</dd>
@@ -136,7 +136,7 @@ export function BankCheckoutPanel({ pluginId, pluginName, billingState, hasActiv
     </div>}
     {!openOrder && !paidAccess && !hasActiveSubscription && item?.published && item.fulfillment_ready && <button type="button" className={`${styles.primary} mt-4 w-full sm:w-auto`} disabled={busy || !canCreate} onClick={create}>{busy ? "Preparing invoice…" : "Create bank payment invoice"}</button>}
 
-    {order && <article aria-label="Payment invoice" className="mt-5 rounded-xl border border-[var(--border-subtle)] p-4">
+    {order && <article aria-label="Payment invoice" className="mt-5 min-w-0 border-t border-[var(--border-subtle)] py-4">
       <div className="flex flex-wrap items-center justify-between gap-2"><strong className="break-all text-sm">{order.reference}</strong><span className="rounded-full bg-[var(--surface-muted)] px-2 py-1 text-xs font-semibold">{deadlinePassed && pending(order) ? "Deadline passed · refresh status" : STATUS_LABELS[order.status]}</span></div>
       {order.plugin_id === "booksms" && <p className="text-sm">Ordered allowance: {order.snapshot.monthly_sms_limit ?? 0} SMS per calendar month (UTC).</p>}
       <p className="!mb-1 !text-xs">Created {when(order.created_at)} · {order.publisher}</p>

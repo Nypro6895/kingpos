@@ -729,9 +729,9 @@ function MetricCard({ metric, pending = false }: { metric: TodayMetric; pending?
   const body = (
     <div
       className={classNames(
-        "flex h-full min-h-28 flex-col justify-between rounded-xl border p-3 shadow-[0_8px_24px_rgba(24,24,27,0.04)] transition sm:min-h-32 sm:p-4",
+        "flex h-full min-h-28 min-w-0 flex-col justify-between border-b p-3 transition sm:min-h-32 sm:p-4",
         metricToneClass(metric),
-        metric.href ? "hover:-translate-y-0.5 hover:shadow-md" : null,
+        metric.href ? "hover:bg-zinc-50" : null,
       )}
     >
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
@@ -774,7 +774,7 @@ function MetricCard({ metric, pending = false }: { metric: TodayMetric; pending?
   if (metric.href) {
     return (
       <Link
-        className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
         href={metric.href}
       >
         {body}
@@ -1783,7 +1783,7 @@ function RestrictedDashboard({ dashboard }: { dashboard: TodayDashboard }) {
 }
 
 function PendingPanel({ title }: { title: string }) {
-  return <section aria-busy="true" className="rounded-xl border border-zinc-200 bg-white p-5">
+  return <section aria-busy="true" className="border-y border-zinc-200 bg-white p-5">
     <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
     <div aria-hidden="true" className="mt-4 h-28 rounded-lg bg-zinc-50" />
   </section>;
@@ -1807,7 +1807,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
       className="min-h-screen bg-[#fbfaf8] px-4 py-6 sm:px-6 lg:px-8"
       data-today-dashboard="owner-manager"
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+      <div className="flex w-full min-w-0 flex-col gap-5">
 
         <header>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

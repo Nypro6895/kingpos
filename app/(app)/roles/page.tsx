@@ -27,7 +27,7 @@ function RoleBadge({ isSystem }: { isSystem: boolean }) {
 function RolesTable({ roles }: { roles: RoleWithMemberCount[] }) {
   if (roles.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 min-w-0 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No roles found" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
           <WorkspaceText text="Default system roles will appear here once this Account is seeded." />
@@ -37,7 +37,7 @@ function RolesTable({ roles }: { roles: RoleWithMemberCount[] }) {
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <div className="mt-4 min-w-0 overflow-x-auto border-y border-zinc-200 bg-white">
       <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
         <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Role Name" /></div>
         <div className="hidden sm:col-span-5 sm:block"><WorkspaceText text="Description" /></div>
@@ -81,8 +81,8 @@ async function RolesPage() {
 
   if (!account || !context.accountId) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <main className="mx-auto w-full max-w-none px-6 py-12">
+        <div className="min-w-0 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Choose a salon first" /></h2>
           <p className="mt-2 text-sm text-zinc-600">
             <WorkspaceText text="Roles belong to the Account behind the current salon." />
@@ -159,7 +159,7 @@ async function RolesPage() {
     })) ?? [];
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    <main className="mx-auto w-full max-w-none px-6 py-10">
       <div className="flex flex-wrap justify-end gap-3">
         <div className="flex flex-wrap gap-3">
           <Link

@@ -174,7 +174,7 @@ export function StaffMyWorkView({ resource, params, scope, relay }: { resource: 
     activeTab === "daily" && stringParam(params?.profile) === "1";
   return (
     <>
-      <main data-staff-today className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-5">
+      <main data-staff-today className="w-full min-w-0 px-4 py-4 sm:px-6 sm:py-5">
         <StaffPortalHeader
           greeting={{ name: staffDisplayName, timezone: salonTimezone, todayServices: activity.assignedServiceAmount, businessDate: today, history: greetingHistory, now: generatedAt }}
           activeTab={activeTab}
