@@ -61,8 +61,8 @@ test('pending automatic claim rechecks current demand without changing processin
     const prior=previousFunctions[index],current=after[index];
     if(prior.signature==='campaign_credit_claim_before_workspace(uuid)'){
      assert.deepEqual({...current,prosrc:prior.prosrc},prior);
-     const stripped=current.prosrc.replace(/\n if o\.status='pending' and w\.available_credits>w\.threshold_credits[\s\S]*?then return null; end if;\n/,'');
-     assert.equal(stripped,prior.prosrc);
+     const stripped=current.prosrc.replace(/\r\n/g,'\n').replace(/\n if o\.status='pending' and w\.available_credits>w\.threshold_credits[\s\S]*?then return null; end if;\n/,'');
+     assert.equal(stripped,prior.prosrc.replace(/\r\n/g,'\n'));
     }else assert.deepEqual(current,prior);
    }
   });

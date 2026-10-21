@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Activity, createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import type { ExperienceContext } from "@/lib/experience-context";
 import { resetExperienceCaches } from "@/lib/reset-experience-cache";
@@ -14,10 +14,17 @@ import { EXPERIENCE_OFFLINE_AUTHORIZATION_EVENT, getExperienceOfflineGrantForPat
 import { OfflineNetworkFormGuard } from "@/components/offline-network-form-guard";
 import { PreparedReadViewRefresh } from "@/components/prepared-read-view-refresh";
 import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
+import { getPortableOfflineAdmission, getServerPortableOfflineAdmission, subscribePortableOfflineAdmission } from "@/lib/portable-offline-admission";
 
 function ExperienceOfflineRuntime({ scope }: { scope: string }) {
   const pathname = usePathname();
+  const admission = useSyncExternalStore(subscribePortableOfflineAdmission, getPortableOfflineAdmission, getServerPortableOfflineAdmission);
+  // The root account can remain a guest after POS sign-in. The explicit POS
+  // boundary owns preparation; a login screen or public display token does not.
+  // Required context validation and cached-document boot guards remain below.
+  const portableAdmission = pathname === "/pos/portable" || pathname.startsWith("/pos/portable/") || pathname === "/pos/customer-display" ? admission : null;
   useEffect(() => {
+    if (portableAdmission && !portableAdmission.active) return;
     let active = true;
     const controller = new AbortController();
     const currentPath = () => location.pathname + location.search;
@@ -33,7 +40,7 @@ function ExperienceOfflineRuntime({ scope }: { scope: string }) {
     window.addEventListener("online", prepare);
     window.addEventListener("online", authorize); window.addEventListener("focus", authorize); window.addEventListener("reylumi:foreground", authorize);
     return () => { active = false; controller.abort(); if (!preparationFired) recordExperienceTrace("timer.cancel", { source: "web", trigger: "interval", reason: "grant" }); clearTimeout(timer); window.removeEventListener("online", prepare); window.removeEventListener("online", authorize); window.removeEventListener("focus", authorize); window.removeEventListener("reylumi:foreground", authorize); };
-  }, [scope, pathname]);
+  }, [scope, pathname, portableAdmission]);
   return <span hidden data-experience-offline-scope={scope} />;
 }
 

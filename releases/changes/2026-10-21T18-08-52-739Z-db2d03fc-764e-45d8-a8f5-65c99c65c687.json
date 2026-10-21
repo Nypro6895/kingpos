@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "unified-windows-portable-integration-20261021",
+  "status": "working",
+  "summary": "Integrate frozen Windows portable optional offline admission patch into a new common candidate after Campaign090; preserve auth and iOS lifecycle guards, no release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/portable/portable-offline-shell.tsx",
+    "components/experience-scope.tsx",
+    "lib/portable-offline-admission.ts",
+    "tests/portable-offline-admission-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\windows-integration\\preimage",
+    "commit": "59940d1c92f13f1c69e34e33be98f132683785ac"
+  },
+  "dependencies": [
+    "campaign-pending-claim-demand-20261021",
+    "windows-portable-startup-offline-admission-20261021"
+  ],
+  "validation": [
+    {
+      "name": "source-reconciliation-backup-applycheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\windows-integration\\PRE-APPLY.json"
+    }
+  ],
+  "constraints": {
+    "noRelease": true,
+    "noProductionWrites": true,
+    "noRealPosTransactions": true,
+    "noNativeSourceEdits": true
+  },
+  "id": "db2d03fc-764e-45d8-a8f5-65c99c65c687",
+  "recordedAt": "2026-10-21T18:08:52.739Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\unified-candidate-r3",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
