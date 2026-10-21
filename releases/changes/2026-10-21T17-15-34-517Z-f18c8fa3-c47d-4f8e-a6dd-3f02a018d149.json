@@ -1,0 +1,99 @@
+{
+  "kind": "change",
+  "changeId": "campaign-causal-settlement-reporting-20261021",
+  "status": "working",
+  "summary": "Continue isolated Campaign causal fixes with newly authorized sticky owner Pause until explicit Resume and owner-only in-app reminders at 24 hours and 7 days, once per pause episode. Preserve existing credit settlement timing, rates and budgets; no release or production writes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/internal/campaign-credits/route.ts",
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-entry.tsx",
+    "app/campaigns/campaign-modal.tsx",
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-results.tsx",
+    "app/campaigns/campaign-ui.module.css",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/create-campaign.tsx",
+    "app/campaigns/creative-actions.ts",
+    "app/campaigns/credit-actions.ts",
+    "app/campaigns/credit-panel.tsx",
+    "app/campaigns/preview-actions.ts",
+    "lib/campaign-credit-display.ts",
+    "lib/campaign-delivery-area.ts",
+    "lib/campaign-image-storage.ts",
+    "lib/campaign-payments.ts",
+    "lib/campaign-search-intent.ts",
+    "lib/owner-campaign-delivery.ts",
+    "lib/owner-campaign-rules.ts",
+    "lib/owner-campaigns.ts",
+    "supabase/migrations/202610080002_owner_campaigns.sql",
+    "supabase/migrations/202610080004_campaign_market_credits.sql",
+    "supabase/migrations/202610080005_campaign_credit_scheduler.sql",
+    "supabase/migrations/20261017210000_owner_campaign_workspace.sql",
+    "supabase/migrations/20261017235000_campaign_admin_operations.sql",
+    "supabase/migrations/20261018230000_campaign_admin_workspace.sql",
+    "supabase/migrations/20261019170000_campaign_local_rotation.sql",
+    "supabase/migrations/20261021010000_campaign_selection_daily_cap.sql",
+    "supabase/migrations/20261021020000_campaign_search_relevance.sql",
+    "supabase/migrations/20261021030000_campaign_geo_alias_compat.sql",
+    "tests/campaign-admission-boundaries.test.mjs",
+    "tests/campaign-delivery-area.test.mjs",
+    "tests/campaign-delivery-placement-ui.test.mjs",
+    "tests/campaign-delivery-route.test.mjs",
+    "tests/campaign-dom-image-readiness.test.mjs",
+    "tests/campaign-geo-compat.test.mjs",
+    "tests/campaign-impression-ui-boundaries.test.mjs",
+    "tests/campaign-local-rotation.test.mjs",
+    "tests/campaign-native-delivery.test.mjs",
+    "tests/campaign-owner-preview.test.mjs",
+    "tests/campaign-progressive-ui.test.mjs",
+    "tests/campaign-search-cost.test.mjs",
+    "tests/campaign-search-preview-ui.test.mjs",
+    "tests/campaign-search-relevance.test.mjs",
+    "tests/campaign-search-route.test.mjs",
+    "tests/campaign-selection-cost.test.mjs",
+    "tests/campaign-selection-daily-cap.test.mjs",
+    "tests/campaign-status-readonly.test.mjs",
+    "tests/campaign-ticket-boundaries.test.mjs",
+    "tests/fixtures/campaign-progressive-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs",
+    "types/owner-campaign.ts",
+    "supabase/migrations/20261021040000_campaign_expiry_settlement.sql",
+    "supabase/migrations/20261021050000_campaign_accounting_read.sql",
+    "supabase/migrations/20261021060000_campaign_credit_queue_progress.sql",
+    "supabase/migrations/20261021070000_campaign_pause_lifecycle.sql"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\causal-fix-preimage",
+    "commit": "016178247ba97e15b210e1090cce4bb4f2c8972d"
+  },
+  "dependencies": [
+    "pc-campaign-common-candidate-20261021"
+  ],
+  "validation": [
+    {
+      "name": "causal-reproductions-and-source-invariants",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\causal-review\\expiry-probe-results.json"
+    },
+    {
+      "name": "independent-PostgreSQL-race",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation\\postgres-race\\causal-review\\conclusion.json"
+    }
+  ],
+  "constraints": {
+    "noRelease": true,
+    "noProductionWrites": true,
+    "noIosSourceEdits": true,
+    "pausePolicy": "Owner intent persists until explicit Resume; existing expiry settlement timing retained; reminders cancelled on resume or period end."
+  },
+  "id": "f18c8fa3-c47d-4f8e-a6dd-3f02a018d149",
+  "recordedAt": "2026-10-21T17:15:34.517Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-causal-candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

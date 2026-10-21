@@ -38,6 +38,7 @@ function fixture() {
     { id: "paused", salon_id: salon, status: "paused", ends_at: "2000-01-01T00:00:00Z", ...accounting },
     { id: "returned", salon_id: salon, status: "cancelled", ...accounting, released_credits: 98 },
     { id: "other", salon_id: otherSalon, status: "running", ...accounting },
+    { id: "settled-pause", salon_id: salon, status: "completed", owner_paused_at:"2026-10-21T10:00:00Z", pause_episode_id:"00000000-0000-0000-0000-000000000001", ...accounting },
   ];
   globalThis.__campaignReadContext = structuredClone(owner);
   globalThis.__campaignReadClient = {
@@ -48,11 +49,15 @@ function fixture() {
     },
     from(table) {
       assert.ok(["owner_campaigns", "owner_campaign_settings"].includes(table), "status reads only campaign/settings tables");
-      const filters = {}, memberships = {};
+      const filters = {}, memberships = {}; let activeOnly=false;
       const query = {
         select() { return this; },
         eq(key, value) { filters[key] = value; return this; },
         in(key, values) { memberships[key] = values; return this; },
+        or(expression) {
+          assert.equal(expression,"status.in.(awaiting_payment,pending_review,running,paused),and(status.eq.completed,owner_paused_at.not.is.null)");
+          activeOnly=true;return this;
+        },
         order() { return this; },
         async single() {
           calls.push({ operation: "read", table, filters: { ...filters } });
@@ -63,7 +68,7 @@ function fixture() {
           calls.push({ operation: "read", table, filters: { ...filters }, memberships, from, through });
           assert.equal(table, "owner_campaigns");
           assert.equal(filters.salon_id, globalThis.__campaignReadContext.currentSalon.id, "all status reads use current salon authority");
-          const selected = rows.filter(row => Object.entries(filters).every(([key, value]) => row[key] === value)
+          const selected = rows.filter(row => (!activeOnly || ["awaiting_payment","pending_review","running","paused"].includes(row.status) || row.status==="completed"&&row.owner_paused_at!=null) && Object.entries(filters).every(([key, value]) => row[key] === value)
             && Object.entries(memberships).every(([key, values]) => values.includes(row[key])));
           return { data: structuredClone(selected.slice(from, through + 1)), error: state.readError ? { message: "fixture read failed" } : null };
         },
@@ -88,8 +93,8 @@ test("expired campaign status/history reads are repeatable and preserve authorit
     for (let i = 0; i < 3; i++) {
       const history = await loadOwnerCampaignsAction();
       const active = await loadOwnerCampaignsAction(0, true);
-      assert.deepEqual(history.campaigns, before.slice(0, 3));
-      assert.deepEqual(active.campaigns, before.slice(0, 2));
+      assert.deepEqual(history.campaigns, [before[0],before[1],before[2],before[4]]);
+      assert.deepEqual(active.campaigns, [before[0],before[1],before[4]],"settled sticky pause stays discoverable without reading another salon");
       assert.equal(history.settings.version, 7);
       assert.equal(history.hasMore, false);
       assert.equal(active.campaigns[0].status, "running", "read reports persisted status without closing an expired period");

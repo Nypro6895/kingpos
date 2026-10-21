@@ -11,7 +11,7 @@ export async function loadOwnerCampaignsAction(offset = 0, activeOnly = false) {
   // Status/history reads never reconcile accounting. The credit queue closes expired periods.
   if (!Number.isSafeInteger(offset) || offset < 0 || offset > 100000) throw new Error("Reopen campaign history.");
   let query = client.from("owner_campaigns").select("*").eq("salon_id", salonId);
-  if (activeOnly) query = query.in("status", ["awaiting_payment", "pending_review", "running", "paused"]);
+  if (activeOnly) query = query.or("status.in.(awaiting_payment,pending_review,running,paused),and(status.eq.completed,owner_paused_at.not.is.null)");
   const { data, error } = await query.order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 49);
   if (error) throw new Error("Your campaigns could not load. Please try again.");
   return { settings, campaigns: (data ?? []) as OwnerCampaign[], hasMore: data?.length === 50 };
@@ -60,10 +60,18 @@ export async function createOwnerCampaignAction(input: {
     return { ok: true, message: funded.data === "pending_review" ? "Your credits are set aside. Your ad will start after a quick review." : wallet.auto_topup_enabled&&!wallet.payment_blocked ? "Your ad is saved and waiting for automatic credits within your existing limit. It starts only after funding and review." : "Your ad is saved. Add credits to submit it for review.", id: String(data), status: funded.data };
   } catch (error) { return { ok: false, message: error instanceof Error ? error.message : "Your campaign could not be saved." }; }
 }
-export async function changeOwnerCampaignAction(id: string, action: "pause" | "resume" | "cancel") {
+export async function changeOwnerCampaignAction(id: string, action: "pause" | "resume" | "cancel", pauseEpisode?: string | null, resumeIntent?: "non_owner") {
   try {
     const { client, salonId, userId } = await requireCampaignOwner();
-    const { error } = await client.rpc("owner_campaign_change", { p_id: id, p_salon: salonId, p_user: userId, p_action: action });
+    const nonOwnerResume = action === "resume" && resumeIntent === "non_owner" && pauseEpisode === null;
+    if (action === "resume" && !nonOwnerResume && (typeof pauseEpisode !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pauseEpisode))) throw new Error("Refresh this campaign before resuming it.");
+    // The displayed pause episode is required. Reading the newest episode here
+    // would let a delayed retry resume a later, deliberate pause.
+    // An explicit unmarked admin-pause snapshot keeps the old Resume path.
+    // That RPC rejects any newer owner pause under its database lock.
+    const { error } = action === "resume" && !nonOwnerResume
+      ? await client.rpc("owner_campaign_resume", { p_id:id, p_salon:salonId, p_user:userId, p_episode:pauseEpisode })
+      : await client.rpc("owner_campaign_change", { p_id: id, p_salon: salonId, p_user: userId, p_action: action });
     if (error) throw new Error(error.message);
     revalidatePath("/campaigns");
     return { ok: true, message: action === "cancel" ? "Campaign cancelled. No more views will be charged." : "Campaign updated." };

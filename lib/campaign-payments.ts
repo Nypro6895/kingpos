@@ -5,6 +5,7 @@ import { advertisingClient } from "@/lib/explore-advertising";
 import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
 import type { requireCampaignOwner } from "@/lib/owner-campaigns";
 import { formatCredits } from "@/lib/campaign-credit-display";
+import { runCampaignCreditQueue } from "@/lib/campaign-credit-queue";
 
 export async function campaignPaymentReady(){if(process.env.CAMPAIGN_STRIPE_SECRET_KEY && process.env.CAMPAIGN_STRIPE_WEBHOOK_SECRET)return true;const c=await paymentConfig();return c.enabled && c.mode==="live" && Boolean(c.webhookSecret);}
 async function stripe(path:string,form?:URLSearchParams,key?:string):Promise<Record<string,unknown>>{
@@ -90,50 +91,78 @@ export function verifyCampaignWebhook(payload:string,signature:string){
   return parts.filter(v=>v.startsWith("v1=")).some(v=>{const actual=Buffer.from(v.slice(3),"hex");return actual.length===expected.length&&timingSafeEqual(actual,expected);});
 }
 export async function fulfillCreditPayment(intentId:string,expectedOrderId?:string){
+  return recordCreditPayment(intentId,expectedOrderId,stripe);
+}
+async function recordCreditPayment(intentId:string,expectedOrderId:string|undefined,readProvider:typeof stripe,queueClient?:ReturnType<typeof advertisingClient>,queueDeadline?:number){
   if(!/^pi_[a-zA-Z0-9]+$/.test(intentId))throw new Error("Invalid payment.");
-  const intent=await stripe(`payment_intents/${intentId}`);
+  const intent=await readProvider(`payment_intents/${intentId}`);
   const metadata=intent.metadata as Record<string,string>|undefined;
   if(expectedOrderId&&metadata?.campaign_credit_order!==expectedOrderId)throw new Error("Payment does not belong to this order.");
   if(intent.status!=="succeeded"||intent.currency!=="usd"||!metadata?.campaign_credit_order)throw new Error("Payment is not complete.");
-  const client=advertisingClient();
-  const {error}=await client.rpc("campaign_credit_paid",{p_order:metadata.campaign_credit_order,p_reference:intentId,p_amount:intent.amount_received,p_customer:typeof intent.customer==="string"?intent.customer:null,p_method:intent.setup_future_usage==="off_session"&&typeof intent.payment_method==="string"?intent.payment_method:null});
+  const client=queueClient??advertisingClient();
+  const query=client.rpc("campaign_credit_paid",{p_order:metadata.campaign_credit_order,p_reference:intentId,p_amount:intent.amount_received,p_customer:typeof intent.customer==="string"?intent.customer:null,p_method:intent.setup_future_usage==="off_session"&&typeof intent.payment_method==="string"?intent.payment_method:null});
+  const {error}=await (queueClient?query.abortSignal(queueTimeout(queueDeadline!)):query);
   if(error)throw new Error("Credits could not be recorded. Payment will be retried.");
 }
 export async function processCampaignCreditQueue(){
-  const started=Date.now();
   const client=advertisingClient();
-  if(await campaignPaymentReady()){
-    const {data:wallets}=await client.from("campaign_wallets").select("salon_id,payment_owner,topup_credits,threshold_credits,available_credits,stripe_customer,stripe_payment_method").eq("installed",true).eq("auto_topup_enabled",true).order("updated_at").limit(100);
-    for(const wallet of wallets??[]){
-      if(Date.now()-started>240000)break;
-      await client.from("campaign_wallets").update({updated_at:new Date().toISOString()}).eq("salon_id",wallet.salon_id);
-      const {data:id,error}=await client.rpc("campaign_credit_order",{p_salon:wallet.salon_id,p_owner:wallet.payment_owner,p_amount:wallet.topup_credits,p_auto:true});
-      if(error||!id)continue;
-      const {data:order}=await client.from("campaign_credit_orders").select("*").eq("id",id).single();
-      if(!order?.automatic||order.status==="paid"||order.owner_id!==wallet.payment_owner||order.credits!==wallet.topup_credits)continue;
-      const {data:claim,error:claimError}=await client.rpc("campaign_credit_claim",{p_order:id});
-      if(claimError||!claim)continue;
-      try{
-        const intent=await stripe("payment_intents",new URLSearchParams({amount:String(claim.amount),currency:"usd",customer:claim.customer,payment_method:claim.method,confirm:"true",off_session:"true","metadata[campaign_credit_order]":String(id)}),`campaign-topup:${id}`);
-        if(intent.status==="succeeded")await fulfillCreditPayment(String(intent.id));
-        else {await client.from("campaign_credit_orders").update({status:"failed",error:"Your card needs confirmation."}).eq("id",id).neq("status","paid");await client.from("campaign_wallets").update({auto_topup_enabled:false}).eq("salon_id",wallet.salon_id); }
-      }catch{
-        // Keep the same pending order/idempotency key after an unknown outcome. Never retry with a new charge.
-        await client.from("campaign_credit_orders").update({error:"Payment needs attention. Check your payment method."}).eq("id",id).neq("status","paid");
-        await client.from("campaign_wallets").update({auto_topup_enabled:false}).eq("salon_id",wallet.salon_id);
+  let queueConfig:Awaited<ReturnType<typeof paymentConfig>>|undefined;
+  return runCampaignCreditQueue({client,paymentReady:async()=>{
+    if(process.env.CAMPAIGN_STRIPE_SECRET_KEY&&process.env.CAMPAIGN_STRIPE_WEBHOOK_SECRET)return true;
+    queueConfig=await paymentConfig();
+    return queueConfig.enabled&&queueConfig.mode==="live"&&Boolean(queueConfig.webhookSecret);
+  },topUp:async(salonId,deadline)=>{
+    const timeout=()=>queueTimeout(deadline);
+    const queueStripe:typeof stripe=async(path,form,key)=>{
+      // Read the config once before this phase. Every provider request and DB
+      // write is bounded by the same absolute deadline; no payment promise is
+      // left running by a Promise.race after the worker proceeds to settlement.
+      const directSecret=process.env.CAMPAIGN_STRIPE_SECRET_KEY;
+      const secret=directSecret??queueConfig?.secretKey;
+      if(!secret)throw new Error("Campaign payment configuration unavailable.");
+      const response=await fetch(`https://api.stripe.com/v1/${path}`,{method:form?"POST":"GET",headers:{Authorization:`Bearer ${secret}`,...(!directSecret?{"Stripe-Version":"2024-06-20"}:{}),...(form?{"Content-Type":"application/x-www-form-urlencoded"}:{}),...(key?{"Idempotency-Key":key}:{})},body:form?.toString(),cache:"no-store",signal:queueTimeout(deadline,20000)});
+      if(!response.ok)throw new Error("Campaign payment needs attention.");
+      return response.json();
+    };
+    const {data:wallet,error:walletError}=await client.from("campaign_wallets").select("salon_id,payment_owner,topup_credits,installed,auto_topup_enabled").eq("salon_id",salonId).abortSignal(timeout()).maybeSingle();
+    if(walletError)throw new Error("Campaign wallet could not load.");
+    if(!wallet?.installed||!wallet.auto_topup_enabled)return;
+    const {data:id,error}=await client.rpc("campaign_credit_order",{p_salon:wallet.salon_id,p_owner:wallet.payment_owner,p_amount:wallet.topup_credits,p_auto:true}).abortSignal(timeout());
+    if(error)throw new Error("Campaign credit order could not load.");
+    if(!id)return;
+    const {data:order,error:orderError}=await client.from("campaign_credit_orders").select("*").eq("id",id).abortSignal(timeout()).single();
+    if(orderError)throw new Error("Campaign credit order could not load.");
+    if(!order?.automatic||order.status==="paid"||order.owner_id!==wallet.payment_owner||order.credits!==wallet.topup_credits)return;
+    const {data:claim,error:claimError}=await client.rpc("campaign_credit_claim",{p_order:id}).abortSignal(timeout());
+    if(claimError)throw new Error("Campaign payment claim failed.");
+    if(!claim)return;
+    const disable=async()=>{
+      const {error:saveError}=await client.from("campaign_wallets").update({auto_topup_enabled:false}).eq("salon_id",wallet.salon_id).abortSignal(timeout());
+      if(saveError)throw new Error("Campaign payment choice needs retry.");
+    };
+    try{
+      const intent=await queueStripe("payment_intents",new URLSearchParams({amount:String(claim.amount),currency:"usd",customer:claim.customer,payment_method:claim.method,confirm:"true",off_session:"true","metadata[campaign_credit_order]":String(id)}),`campaign-topup:${id}`);
+      if(intent.status==="succeeded")await recordCreditPayment(String(intent.id),String(id),queueStripe,client,deadline);
+      else {
+        const {error:saveError}=await client.from("campaign_credit_orders").update({status:"failed",error:"Your card needs confirmation."}).eq("id",id).neq("status","paid").abortSignal(timeout());
+        await disable();
+        if(saveError)throw new Error("Campaign payment outcome needs retry.");
+        throw new Error("Campaign payment requires confirmation.");
       }
+    }catch{
+      // Preserve the pending order and its Stripe idempotency key after an
+      // unknown outcome. A queue retry must never manufacture another charge.
+      const {error:saveError}=await client.from("campaign_credit_orders").update({error:"Payment needs attention. Check your payment method."}).eq("id",id).neq("status","paid").abortSignal(timeout());
+      await disable();
+      if(saveError)throw new Error("Campaign payment outcome needs retry.");
+      throw new Error("Campaign payment needs attention.");
     }
-  }
-  // Only ads explicitly submitted while automatic purchases were enabled may be funded by the queue.
-  const { data: waiting } = await client.from("owner_campaigns").select("id,salon_id,owner_id,keep_running").eq("status","awaiting_payment").eq("auto_fund",true).limit(100);
-  for (const campaign of waiting ?? []) {
-    const { data: wallet } = await client.from("campaign_wallets").select("auto_topup_enabled,payment_blocked").eq("salon_id",campaign.salon_id).single();
-    if (wallet?.auto_topup_enabled && !wallet.payment_blocked) await client.rpc("campaign_credit_fund",{p_id:campaign.id,p_salon:campaign.salon_id,p_owner:campaign.owner_id,p_keep:campaign.keep_running});
-  }
-  const {data:campaigns}=await client.from("owner_campaigns").select("id").eq("keep_running",true).in("status",["running","completed"]).lte("ends_at",new Date().toISOString()).limit(100);
-  for(const campaign of campaigns??[])await client.rpc("campaign_credit_renew",{p_id:campaign.id});
-  const {data:expired}=await client.from("owner_campaigns").select("salon_id").in("status",["running","paused"]).lte("ends_at",new Date().toISOString()).limit(100);
-  for(const salonId of new Set((expired??[]).map(row=>row.salon_id)))await client.rpc("campaign_credit_close_expired",{p_salon:salonId});
+  }});
+}
+function queueTimeout(deadline:number,maximum=10000){
+  const remaining=deadline-Date.now();
+  if(remaining<=0)throw new Error("Campaign queue deadline reached.");
+  return AbortSignal.timeout(Math.min(maximum,remaining));
 }
 
 type CampaignOwner = Awaited<ReturnType<typeof requireCampaignOwner>>;

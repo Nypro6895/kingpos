@@ -45,6 +45,8 @@ export type OwnerCampaign = {
   review_note?:string|null;reviewed_at?:string|null;
   settings_version?: number; settings_snapshot?: OwnerCampaignSettings;
   cycle_credit_limit?: number | null; auto_fund?: boolean;
+  owner_paused_at?: string | null; pause_episode_id?: string | null;
+  pause_origin?: "owner" | "legacy_unknown" | null;
 };
 export type CampaignPrompt = { id: string; target: PostCommentTarget };
 export type CampaignCreativeTarget = Omit<PostCommentTarget, "sourceType"> & { sourceType: PostCommentTarget["sourceType"] | "custom" };
