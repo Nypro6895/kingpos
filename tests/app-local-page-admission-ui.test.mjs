@@ -54,6 +54,7 @@ function contextHandler(options = {}) {
     '@/lib/staff-online-access-server': { getStaffOnlineOnlyAccess: async () => null },
     '@/lib/app-local-portable-context-server': { readAppLocalPortableContext: async () => null },
     '@/lib/app-local-display-server': { readAppLocalDisplayContext: async () => null },
+    '@/lib/read-request-trace-protocol': load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts') }),
     '@/lib/read-context-scope': scope, '@/lib/read-request-timing': { createReadRequestTiming: () => timing },
   });
   return original.GET;
@@ -61,7 +62,7 @@ function contextHandler(options = {}) {
 
 const entry = process.env.TEST_ENTRY_BASELINE ? execFileSync('git', ['show', (process.env.TEST_ENTRY_BASELINE === '39' ? '62f22d20c5fe9e048a679f9ba6c648d2115cd632' : '1c2628c4df2069de0722874ce8972231945e7146') + ':app/local-app/entry.tsx'], { encoding: 'utf8' }) : readFileSync('app/local-app/entry.tsx', 'utf8');
 const parsed = ts.createSourceFile('entry.tsx', entry, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX), imports = new Map();
-const real = ['react', 'react-dom/client', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission', '@/lib/experience-offline-policy'];
+const real = ['react', 'react-dom/client', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission', '@/lib/experience-offline-policy', '@/lib/read-request-trace-protocol'];
 for (const item of parsed.statements) {
   if (!ts.isImportDeclaration(item) || real.includes(item.moduleSpecifier.text)) continue;
   imports.set(item.moduleSpecifier.text, item.importClause?.namedBindings?.elements?.map(x => x.propertyName?.text ?? x.name.text) ?? []);
