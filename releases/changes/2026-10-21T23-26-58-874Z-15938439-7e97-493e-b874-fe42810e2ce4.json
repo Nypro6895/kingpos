@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "local-first-services-pilot-r6",
+  "status": "needs-integration",
+  "channels": [
+    "web"
+  ],
+  "summary": "Frozen local-only Services read cache pilot; 88 new tests and20 macOS WKWebView assertions passed; actual iOS surface/auth gate still pending.",
+  "files": [
+    "app/(app)/layout.tsx",
+    "app/(app)/services/page.tsx",
+    "app/api/services/catalog-pilot/route.ts",
+    "app/services/services-catalog-pilot.tsx",
+    "components/services-catalog-cache-lifecycle.tsx",
+    "docs/local-first-services-pilot.txt",
+    "lib/reset-experience-cache.ts",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-pilot-flag.ts",
+    "lib/services-catalog-runtime.ts",
+    "releases/changes/2026-10-21T23-09-30-936Z-0653900e-0d71-4eed-acd7-4d5306c8634a.json",
+    "tests/services-catalog-admission.test.mjs",
+    "tests/services-catalog-browser.test.mjs",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\source",
+    "commit": "dbad6b0e661c4ba59939207bfb407549ecbde4c1",
+    "manifestSha256": "308c241f131cefcddb08774d1513104371efbaae0ff1a30516c382d4e018f75e"
+  },
+  "dependencies": [
+    "R6 functional6e0a61b",
+    "Auth owner reconcile additive notify:false hook in lib/reset-experience-cache.ts; preserve ongoing auth changes",
+    "Future iOS Services admission/resource/registry integration and exact custom-origin authenticated tests; no new bridge required",
+    "R6 app-local-page-admission-ui fixture exports require separate repair;10failures reproduced on untouched baseline"
+  ],
+  "validation": [
+    {
+      "name": "new web/unit/storage suites",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\evidence\\pilot-tests-final.tap"
+    },
+    {
+      "name": "existing regression84passed;10inherited fixture compile failures",
+      "result": "failed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\evidence\\baseline-regression-proof.json"
+    },
+    {
+      "name": "typecheck and targetedlint and build239/239",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\validation-binding.json"
+    },
+    {
+      "name": "same JS macOS WKWebView persistent-process restart20assertions",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\evidence\\native-evidence\\result.json"
+    },
+    {
+      "name": "actual iOS custom-origin/native login and real server authorization",
+      "result": "pending"
+    },
+    {
+      "name": "exact Git tree forward/inverse rollback",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\rollback-proof.json"
+    }
+  ],
+  "releaseHeld": true,
+  "productionFlagEnabled": false,
+  "id": "15938439-7e97-493e-b874-fe42810e2ce4",
+  "recordedAt": "2026-10-21T23:26:58.874Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\local-first-pilot",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

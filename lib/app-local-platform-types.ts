@@ -8,6 +8,7 @@ import type { MyPlaceClient } from "@/app/my-place/my-place-client";
 import type { ServicesManager } from "@/app/services/services-manager";
 import type { SupportCaseItem, SupportConversation } from "./support-cases";
 import type { RoleNavigationKind } from "@/app/role-navigation";
+import type { CatalogPartition, ServicesCatalog } from "./services-catalog-cache";
 
 export type AppLocalSettingsData = Pick<ComponentProps<typeof SettingsHubClient>, "user" | "createdAtLabel" | "index">;
 export type AppLocalBookingsData = { tab: CustomerBookingListScope; bookings: CustomerBookingSummary[]; details: string | null; historyRows: CustomerActivity[] | null };
@@ -22,6 +23,8 @@ export type AppLocalFavoritesData = {
 export type AppLocalStaffIdentityData = { resourceScope: string; staffId: string; salonId: string };
 export type AppLocalMyPlaceData = Omit<ComponentProps<typeof MyPlaceClient>, "error">;
 export type AppLocalServicesData = Pick<ComponentProps<typeof ServicesManager>, "data">;
+export type AppLocalServicesCatalogAdmissionData = { schemaVersion: 1; partition: CatalogPartition };
+export type AppLocalServicesCatalogData = ServicesCatalog;
 export type AppLocalMoreData = { roleKind: RoleNavigationKind; campaignInstalled: boolean };
 export type AppLocalSupportData = { cases: SupportCaseItem[] };
 export type AppLocalSupportCaseData = { conversation: SupportConversation };
@@ -37,6 +40,8 @@ export const APP_LOCAL_PLATFORM_READS = {
   "page.staff-identity": { argumentKeys: ["view"], retention: "none" },
   "page.my-place": { argumentKeys: [], retention: "scoped" },
   "page.services": { argumentKeys: [], retention: "scoped" },
+  "page.services-catalog-admission": { argumentKeys: [], retention: "none" },
+  "page.services-catalog": { argumentKeys: [], retention: "none" },
   "page.more": { argumentKeys: [], retention: "scoped" },
   "page.support": { argumentKeys: [], retention: "scoped" },
   // The original RPC may expose an admin view; workspace leases do not attest platform-admin authority.

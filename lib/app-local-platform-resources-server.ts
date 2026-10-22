@@ -65,8 +65,23 @@ async function readAppLocalPlatformResourceInContext(name: string, input: unknow
   const args = parse(name as keyof typeof APP_LOCAL_PLATFORM_READS, input ?? {});
   if (!options.scope || options.scope.length > 8192) throw new AppLocalRoleReadError(400, "Invalid scope");
   cancelled(options.signal);
+  const catalogPilotRead = name === "page.services-catalog-admission" || name === "page.services-catalog";
+  if (catalogPilotRead) {
+    const { servicesCatalogPilotEnabled } = await import("./services-catalog-pilot-flag");
+    if (!servicesCatalogPilotEnabled()) throw new AppLocalRoleReadError(404, "Unavailable");
+    cancelled(options.signal);
+  }
   const readContext = () => runReadWithDeadline(getRequestBusinessContext(), 12000);
   const context = await (options.timing?.measure("auth", readContext) ?? readContext());
+  if (catalogPilotRead) {
+    cancelled(options.signal);
+    const { admitServicesCatalog, readServicesCatalog } = await import("./services-catalog-admission-server");
+    const data = await (name === "page.services-catalog-admission" ? admitServicesCatalog(context, options.scope) : readServicesCatalog(context, options.scope));
+    cancelled(options.signal);
+    // Pilot reads are online decisions, never conditional/durable transport DTOs.
+    // Even a matching ETag must return the newly checked result in a 200.
+    return reply(name, options.scope, data);
+  }
   let resolvedIdentity: Awaited<ReturnType<typeof getStaffPortalIdentity>> | Awaited<ReturnType<typeof getTodaysStaffWorkday>> | undefined;
   if (getExperienceContext(context).scope !== options.scope) {
     if (name !== "page.staff-identity" || !context.user) throw new AppLocalRoleReadError(409, "Workspace changed");

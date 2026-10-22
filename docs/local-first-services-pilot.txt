@@ -1,0 +1,203 @@
+LOCAL-FIRST SERVICES PILOT - LOCAL ONLY, R6
+
+Baseline and scope
+Functional baseline: 6e0a61bd5f1469c2ba79514f70f4b649a35619b8.
+R6 handoff and all 3,243 functional / 3,244 metadata source hashes were checked
+before editing. An independent local clone and linked worktree isolate this work
+from the dirty primary and frozen R6 candidate. No push/deploy/migration/release.
+Native delta starts from frozen pilot metadata5d6558c; functionaldbad6b0e and
+its53 hashed artifacts are preserved. The delta has its own worktree/branch.
+
+Architecture decision (recorded before implementation, refined after review)
+Keep Next plus WKWebView. Select the catalog from existing private page.services, whose original
+server reader checks services.view and current salon/manage/account context.
+Project only service id/name/category/description/list price/duration. Do not
+persist the ServicesManager DTO, canManage, staff, assignments, payroll, payment,
+credentials, offline grants or commands. These rows remain PRIVATE even when a
+similar public salon catalog exists; no public/private namespace mixing occurs.
+
+The shared web experience-persistent-cache uses IndexedDB and offline grants;
+workspace reset deletes that store. Reusing it for A-B-A would change global auth
+and lease policy. Reuse IndexedDB technology and existing bounded GET/host.read,
+scope fingerprint and original service server authorization in an isolated store.
+Native already has an encrypted store and get/remove bridge. Adding GRDB or a
+new arbitrary snapshot-write bridge is unjustified for this experiment.
+
+Initial intended files: Services page, dedicated admission endpoint, pilot view,
+cache/controller/flag modules, tests. Implementation also adds an app-layout
+lifecycle sidecar, runtime invalidation module, and a three-line additive hook in
+lib/reset-experience-cache.ts so notify:false cannot suppress pilot withdrawal.
+That shared reset file is an explicit integration dependency for the auth owner.
+No auth classification, permission calculation, server authorization policy or native transport
+is changed. Integrate this small hook with the auth specialist's eventual patch;
+do not replace the shared file wholesale.
+
+How to run / roll back
+Use the isolated worktree and its existing dependencies. For a local developer
+server set REYLUMI_SERVICES_CACHE_PILOT=1 and
+KINGPOS_DISABLE_BACKGROUND_DISPATCH=1, then npm run dev -- --port <unused-port>.
+Use the authorized local account session; this task does not provision credentials.
+/services shows the read-only pilot; Manage services opens /services?live=1,
+the original server-authorized editor. No offline editing/outbox is introduced.
+Unset the flag and restart the dev server to restore the original page. The
+layout sidecar purges the pilot store on the next application page. A production
+NODE_ENV or VERCEL_ENV disables the pilot even when the flag is accidentally set.
+Source rollback: use the frozen inverse patch/commit reversal, after purging the
+pilot store while its cleanup code is still installed. If code was already
+reverted, remove only IndexedDB reylumi-services-catalog-pilot-v1 through browser
+site storage; do not clear the existing POS/outbox stores. No DB migration exists.
+
+Admission, partitions and validity
+Each entry calls an online, no-store admission endpoint with the expected v3
+scope. It runs original services.view plus salon/manage/account guards. A cached
+row and server-rendered layout props can NEVER authorize a cache restore.
+Partition: viewer + account + salon + scope + permissionRevision; existing v3
+scope includes effective role, workspace, language, permissions and statuses.
+Same-account salon A-B-A is supported. A change of permissions/role within one
+salon retires that salon's previous partition; this deliberately does not promise
+retention of every alternate role's catalog. Account/logout resets erase all
+pilot rows; denial403/404/409 erases the denied scope. Unknown account cannot read.
+
+Catalog TTL: 15 minutes from successful online data; schema 1. A disk TTL permits
+reuse only AFTER new admission, never 15 minutes of offline authorization.
+Presentation admission lasts at most 30 seconds measured from request start,
+and a cached view uses the earlier of admission expiry or catalog TTL. The UI
+rechecks on foreground/focus/online and every 25 seconds while active. Hidden
+views withdraw their state. This conservative budget can interrupt browsing on
+slow connections but bounds unknown authority and avoids any new offline lease.
+
+Failure matrix
+- Cold/restarted entry cannot show private cache without successful new admission.
+- Explicit401: hide and erase the account cache. Explicit403/404/409: hide and
+  remove only the requested scope; logout/account reset removes all pilot data.
+- Transport network/timeout AFTER admission: keep the last valid read-only
+  catalog with an update-failed message, only to the original admission/data TTL.
+- HTTP5xx/unknown read error: R6 can encode final revoked authority as503. Hide
+  while checking exact services.view again. A matching online confirmation may
+  restore the old catalog without extending its original deadline. Explicit
+  denial removes its scope. Uncertain confirmation hides but keeps durable rows
+  quarantined for a later successful admission. This is not a global auth fix.
+- Failed initial admission never displays cached data. Unavailability alone does
+  not erase otherwise-valid disk rows. Expiry withdraws presentation without
+  destroying a valid catalog that a later fresh admission may reuse.
+- Invalid schema/DTO/corrupt/expired rows are discarded. Storage failure/quota
+  gives a cache miss while live reads still work. Deletion is best effort if the
+  browser denies storage; no local store can promise erasure of inaccessible disk.
+
+Limits and races
+Max8 catalogs / 1MiB including metadata, max256KiB per row, max500 services.
+Exact allowed fields prevent future manager payload additions being persisted.
+Request epochs, AbortSignal, active scope, storage generations and per-salon
+revision markers reject old account/context writes and delayed reads. Cross-tab
+resets contain invalidation only. Cache admission metadata is a write-fencing
+marker, not a credential or authority lease; it cannot unlock a private view.
+
+Evidence and timing
+Unit/controller/route/reset and actual Chrome/IndexedDB fixtures exercise cold,
+warm, A-B-A, browser process restart, account/logout, revocation, network loss,
+ambiguous503, corrupt storage, expiry, quota and stale writes. Separate device-
+local Performance measures: admission-ready, cache-ready, cache-render,
+fresh-data-ready and fresh-render. The bounded fixture response schedule and
+synthetic rows are NOT production latency or iOS speed evidence. Metrics carry
+no identifiers/business data and are not sent to any service.
+Read the frozen handoff for exact source hashes, test commands, results and gates.
+
+Hybrid / native delta
+The installed Services registry now selects the same ServicesCatalogPilot when
+compiled with __REYLUMI_SERVICES_CATALOG_QA__=true and using the native host.
+A missing/false flag, hosted registry or live=1 keeps the original manager.
+Both web and native use host.read for these compile-pinned scoped resources:
+  page.services-catalog-admission -> {schemaVersion:1,partition}
+  page.services-catalog -> {services:[six approved fields]}
+Both have retention:none / manifest cacheable:false. No cached native response
+or304 can authorize or refresh the pilot. The server projects the catalog before
+transport; staff/assignment/full-manager data never enter these pilot envelopes.
+The shared helper checks current server identity, exact services.view and scope.
+The client rejects offline replies, wrong scope, schema or missing data. Server
+RLS/original reader authorization remain in effect. Native URLSession -1001,
+-1004,-1005,-1009 are locally treated as transport loss; HTTP denial/503 remains
+unchanged. Manage services calls existing host.openOnline, never a new command.
+
+Native lifecycle is isolated from auth entry/classification. It listens to
+existing native events for withdrawal/purge and uses a durable native-generation
+fence to erase prior-session rows across a process restart. Context transitions
+retain same-account salon partitions; every visit still needs fresh admission.
+Unknown admission never renders private cache. No new native bridge or Swift
+product change is required.
+
+QA bundle only:
+  node scripts/build-app-local-bundle.mjs --services-catalog-pilot-qa
+The builder rejects --activate with the QA opt-in and rejects VERCEL_ENV=production
+before output mutation. Default build compiles the pilot off. The QA manifest is
+productionReady:false. Generated bundle/assets are validation artifacts, separate
+from source/test changes; they are not a signed installed app or release.
+The server must separately run the dev-only REYLUMI_SERVICES_CACHE_PILOT=1 flag;
+a production server intentionally returns404 for both pilot reads.
+
+The normal AppContainer requires productionReady:true, so this non-activated QA
+bundle does not silently replace its installed local surface. The smallest iOS
+acceptance harness should directly instantiate the existing local view controller
+with this QA bundle and an isolated test origin/store, using existing host.read.
+Do not weaken the production activation gate, replace a signed installed bundle,
+or reset the QA login/session. Live acceptance also needs an authorized signed-in
+QA server context with services.view, and an explicit revoke/account/salon cycle.
+No credential provisioning, extraction or relaying is part of this pilot.
+
+Partition / authority terms
+viewerId is the authenticated userId. accountId and salonId are explicit. The
+server's permissionRevision serializes effective role, exact permission codes,
+membership update/status and account/salon/user statuses; scope hashes all of
+these with user/account/salon/workspace. DB namespace and record schemaVersion1
+separate the schema. This is a logical role/permission partition, NOT a trusted
+monotonic server permissionVersion or an immediate revocation notification.
+No reliable global revocation/catalog version is exposed by this server contract.
+Fresh services.view admission is therefore mandatory and bounded to30seconds.
+An unobserved server revocation may remain unknown until the next check/deadline;
+an explicit denial withdraws immediately and late responses cannot restore it.
+
+Cache validity: exact schema/partition, valid projected DTO, bounds and15minute
+data TTL. Admission validity: fresh exact server decision for this run, no
+observed denial/change, at most30seconds from request start. Freshness: newly
+fetched catalog versus valid cached data displayed with an updating/stale label.
+Session generation is only a purge/write fence and never authorizes display.
+TTL does not extend admission. Storage persistence is best effort: WebKit/iOS
+may evict IndexedDB. Deleted/corrupt/unavailable storage must behave as a cache
+miss with live refetch; no guarantee that iOS retains data is made.
+
+ETag policy
+Existing page.services computes an ETag after authority and workspace data work;
+304 reduces response bytes but does not eliminate those checks/queries. Contract
+tests count that work separately. Both new pilot reads deliberately return a
+fresh200 body, even for a matching ETag; admission never accepts304 as authority.
+There is no cheap trusted catalog version to justify a broader optimization.
+Do not present fixture304 or request counts as measured production speed.
+
+Exact custom-origin macOS WKWebView tests and actual registry fixture results are
+listed in the delta handoff. Synthetic host/server tests prove wiring, storage
+and ordering, not live authentication or iPhone latency. Cache-render and
+fresh-data-ready are separate measurements and must never be sold as device speed.
+Physical iPhone acceptance additionally requires authorized real hardware on
+Wi-Fi and a controlled slow-cellular test. Simulator/macOS results cannot close
+that gate. App/test-level held responses are synthetic timing only. Do not change
+system network settings or enable Network Link Conditioner without its needed
+confirmation. Keep authenticated iOS/device acceptance explicit and release held.
+
+Delta rollback
+Default bundle flag off restores the original manager. Disable the QA server
+flag to withdraw both reads. Purge only reylumi-services-catalog-pilot-v1 while
+cleanup code is installed, then apply the delta inverse patch to return to5d6558c.
+The earlier frozen web pilot remains separately reversible to R6 using its own
+inverse patch. Never replace unrelated auth-owner changes wholesale. Reconcile
+the original three-line notify:false hook in lib/reset-experience-cache.ts when
+integrating the auth specialist. Integrator review found that a throwing optional
+pilot subscriber could stop core reset before its lock. The delta isolates each
+subscriber and failed purge, plus guards only that optional hook at its call site;
+core auth decisions, lock/generation/suspend/cleanup/broadcast remain unchanged.
+Executed fault-injection tests are required before integration, including flagoff.
+
+Regression fixture repair
+R6 had ten admission UI cases blocked before assertions by one module mock missing
+rememberAppLocalRoleResources, reconcileAppLocalRoleResources and
+clearAppLocalRoleResources. Add only these three no-op exports in the test fixture;
+assertions are unchanged. Test/mock repairs are frozen separately from product
+source. The repaired94-case regression runs these10 cases, rather than skipping.

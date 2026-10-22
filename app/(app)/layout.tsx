@@ -17,6 +17,8 @@ import { ExploreAccountActionsProvider } from "@/components/explore-account-acti
 import { WorkspaceLanguageConfiguration, WorkspaceLanguageProvider } from "@/components/workspace-language";
 import { vietnamesePluginState } from "@/lib/vietnamese-plugin";
 import { ExperienceCacheLifecycle } from "@/components/experience-cache-lifecycle";
+import { ServicesCatalogCacheLifecycle } from "@/components/services-catalog-cache-lifecycle";
+import { servicesCatalogPilotEnabled } from "@/lib/services-catalog-pilot-flag";
 import { ExperienceNavigation } from "@/components/experience-navigation";
 import { Suspense } from "react";
 import { getExperienceContext } from "@/lib/experience-context";
@@ -60,6 +62,7 @@ export default async function RootLayout({
 
   return (
     <ExperienceScopeProvider key={experience.scope} context={experience}>
+        <ServicesCatalogCacheLifecycle enabled={servicesCatalogPilotEnabled()} viewerId={experience.viewerId} accountId={context.currentAccount?.id ?? null} scope={experience.scope} />
         <ExperienceCacheLifecycle scope={experience.scope} viewerId={experience.viewerId} workspace={experience.workspaceId} permissionRevision={experience.permissionRevision} />
         <Suspense fallback={null}><ExperienceNavigation scope={experience.scope} /></Suspense>
         <WorkspaceLanguageProvider scope={experience.scope} enabled={false} portableEnabled={false} expiresAt={null}>

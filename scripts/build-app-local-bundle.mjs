@@ -6,6 +6,8 @@ import { createRequire } from 'node:module';
 import { build } from 'esbuild';
 import ts from 'typescript';
 const require = createRequire(import.meta.url), root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const servicesCatalogQA = process.argv.includes('--services-catalog-pilot-qa');
+if (servicesCatalogQA && (process.argv.includes('--activate') || process.env.VERCEL_ENV === 'production')) throw Error('Services catalog pilot is available only in a non-activated QA bundle');
 const digest = value => createHash('sha256').update(value).digest('hex');
 const policy = JSON.parse(await fs.readFile(path.join(root, 'lib/app-local-command-policy.json'), 'utf8'));
 const ownerPathsForBuild=new Set(['/pos','/pos/check-in','/pos/book','/pos/ticket','/pos/report']);
@@ -62,7 +64,7 @@ const nextPlugin = {
 };
 // Only these already-public configuration values enter the JavaScript bundle.
 const publicConfig = {NEXT_PUBLIC_APP_URL:'https://reylumi.com',...Object.fromEntries(['NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_ANON_KEY','NEXT_PUBLIC_MAPTILER_KEY','NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY'].map(key => [key, process.env[key]?.trim() ?? '']))};
-const result = await build({ absWorkingDir: root, entryPoints: ['app/local-app/entry.tsx'], outfile: path.join(output, 'app.js'), bundle: true, format: 'iife', platform: 'browser', target: ['safari16'], minify: true, metafile: true, jsx: 'automatic', tsconfig: path.join(root, 'tsconfig.json'), plugins: [nextPlugin], loader: { '.png': 'file', '.svg': 'file', '.woff2': 'file' }, define: { 'process.env.NODE_ENV': '"production"', ...Object.fromEntries(Object.entries(publicConfig).map(([key,value])=>['process.env.'+key,JSON.stringify(value)])) } });
+const result = await build({ absWorkingDir: root, entryPoints: ['app/local-app/entry.tsx'], outfile: path.join(output, 'app.js'), bundle: true, format: 'iife', platform: 'browser', target: ['safari16'], minify: true, metafile: true, jsx: 'automatic', tsconfig: path.join(root, 'tsconfig.json'), plugins: [nextPlugin], loader: { '.png': 'file', '.svg': 'file', '.woff2': 'file' }, define: { '__REYLUMI_SERVICES_CATALOG_QA__': String(servicesCatalogQA), 'process.env.NODE_ENV': '"production"', ...Object.fromEntries(Object.entries(publicConfig).map(([key,value])=>['process.env.'+key,JSON.stringify(value)])) } });
 const js = await fs.readFile(path.join(output, 'app.js'), 'utf8');
 const viewCSS = await fs.readFile(path.join(output,'app.css'),'utf8').catch(()=> '');
 const activeUnsupported = [...unsupported.keys()].filter(name => js.includes('__unsupported_action:' + name));

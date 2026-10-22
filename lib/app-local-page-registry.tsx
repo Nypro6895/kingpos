@@ -16,6 +16,9 @@ import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
 import { SettingsHubClient } from "@/app/settings/settings-hub-client";
 import { MyPlaceClient } from "@/app/my-place/my-place-client";
 import { ServicesManager } from "@/app/services/services-manager";
+import { ServicesCatalogNativePage } from "@/app/services/services-catalog-native-page";
+import { servicesCatalogNativePilotEnabled } from "./services-catalog-native-flag";
+import { installServicesCatalogNativeLifecycle } from "./services-catalog-native-runtime";
 import { marketBrowseFromQuery } from "@/app/market/market-browse";
 import { useAppLocalResource } from "./app-local-resource";
 import { AppLocalStaffRelay } from "./app-local-staff-relay";
@@ -66,7 +69,11 @@ function SettingsPage(props: AppLocalPageProps) {
   return <ReadView<AppLocalSettingsData> {...props} name="page.settings" title="All Settings">{data => <SettingsHubClient {...data} initialSection={section} initialQuery={url.searchParams.get("q") ?? undefined} />}</ReadView>;
 }
 function MyPlacePage(props: AppLocalPageProps) { return <ReadView<AppLocalMyPlaceData> {...props} name="page.my-place" title="My Place">{data => <MyPlaceClient {...data} error={urlFor(props.path).searchParams.get("error") ?? undefined} />}</ReadView>; }
-function ServicesPage(props: AppLocalPageProps) { return <ReadView<AppLocalServicesData> {...props} name="page.services" title="Services">{data => <ServicesManager {...data} initialServiceId={urlFor(props.path).searchParams.get("service")} />}</ReadView>; }
+installServicesCatalogNativeLifecycle(servicesCatalogNativePilotEnabled());
+function ServicesPage(props: AppLocalPageProps) {
+  if (servicesCatalogNativePilotEnabled() && (props.host ?? getAppLocalHost()).isNative && urlFor(props.path).searchParams.get("live") !== "1") return <ServicesCatalogNativePage {...props} />;
+  return <ReadView<AppLocalServicesData> {...props} name="page.services" title="Services">{data => <ServicesManager {...data} initialServiceId={urlFor(props.path).searchParams.get("service")} />}</ReadView>;
+}
 function MorePage(props: AppLocalPageProps) { return <ReadView<AppLocalMoreData> {...props} name="page.more" title="More">{data => <AppLocalMore {...data} />}</ReadView>; }
 function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Activity">{data => <CustomerActivityView activity={data.result} />}</ReadView>; }
 function BookingsPage(props: AppLocalPageProps) {
