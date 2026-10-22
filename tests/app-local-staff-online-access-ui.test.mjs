@@ -51,7 +51,7 @@ for (const item of parsed.statements) {
 const replacements = {
   '@/lib/app-local-host': `export const getAppLocalHost=()=>window.fixtureHost;export const appLocalRequestId=()=>crypto.randomUUID();export function appLocalPath(value){if(!value.startsWith('/')||value.startsWith('//')||/[\\\\\\u0000-\\u001f]/.test(value))throw Error('Invalid route');const u=new URL(value,'https://reylumi.com');if(u.origin!=='https://reylumi.com')throw Error('Invalid origin');return u.pathname+u.search+u.hash;}`,
   '@/lib/app-local-command-client': `let scope;export const getAppLocalCommandScope=()=>scope;export const setAppLocalCommandScope=value=>scope=value;`,
-  '@/lib/app-local-page-registry': `import React from'react';import{useExperienceScope}from'@/components/experience-scope';function Page({context,path}){const gate=useExperienceScope();React.useEffect(()=>{window.fixtureStats.rendered.push({path,role:context?.display.role});},[path,context]);return <main data-private-page data-path={path} data-scope={context?.context.scope} data-role={context?.display.role}>{path} {context?.display.role}<input aria-label='Draft' defaultValue='retained'/><button onClick={()=>gate.validate(true).then(value=>window.fixtureStats.validations.push(value))}>Validate current authority</button></main>;}export const getAppLocalPage=p=>['/staff/today','/staff/my-work','/staff/workday','/staff/appointments','/settings','/my-place','/salon-profile','/explore','/market'].includes(p)?{id:p,title:'Workspace',requiresContext:!['/explore','/market'].includes(p),Component:Page}:null;`,
+  '@/lib/app-local-page-registry': `import React from'react';import{useExperienceScope}from'@/components/experience-scope';function Page({context,path}){const gate=useExperienceScope();React.useLayoutEffect(()=>{if(window.fixtureOptions.disconnectDuringStaffMount&&context?.display.role==='staff'&&window.fixtureStats.offlineInjections===0){window.fixtureStats.offlineInjections++;window.fixtureStats.offlineInjection={path,role:context.display.role,privateElementMounted:Boolean(document.querySelector('[data-private-page][data-path=\"/staff/my-work\"]'))};window.fixtureOffline=true;window.dispatchEvent(new Event('offline'));}},[context,path]);React.useEffect(()=>{window.fixtureStats.rendered.push({path,role:context?.display.role});},[path,context]);return <main data-private-page data-path={path} data-scope={context?.context.scope} data-role={context?.display.role}>{path} {context?.display.role}<input aria-label='Draft' defaultValue='retained'/><button onClick={()=>gate.validate(true).then(value=>window.fixtureStats.validations.push(value))}>Validate current authority</button></main>;}export const getAppLocalPage=p=>['/staff/today','/staff/my-work','/staff/workday','/staff/appointments','/settings','/my-place','/salon-profile','/explore','/market'].includes(p)?{id:p,title:'Workspace',requiresContext:!['/explore','/market'].includes(p),Component:Page}:null;`,
   '@/components/app-local-shell': `import React from'react';export function AppLocalShell({context,children,checkContext}){window.fixtureMinuteCheck=checkContext;return <>{context?<nav data-role-nav={context.display.role}/>:<header data-opening/>}{children}</>;}`,
   './navigation': `export function AppLocalNavigationProvider({children}){return children;}`,
   './scope': `export function ExperienceScopeProvider({children}){return children;}`,
@@ -76,7 +76,7 @@ async function fixture(options = {}) {
   const built = await compile(), handler = contextHandler(options), calls = [], envelopes=[];
   const cached = options.cachedOwner ? await (await contextHandler({ role: 'owner' })(new Request('https://reylumi.com/api/app-local/context?' + new URLSearchParams({ path: '/staff/today', generation })))).json() : null;
   const setup = `
-    window.fixtureStats={rendered:[],commands:0,contextRequests:[],hosted:[],diagnosticExports:[],validations:[]};
+    window.fixtureStats={rendered:[],commands:0,contextRequests:[],hosted:[],diagnosticExports:[],validations:[],offlineInjections:0,offlineInjection:null};
     window.fixtureHoldNext=false;window.fixtureHeld=[];window.fixtureOffline=false;Object.defineProperty(navigator,'onLine',{get:()=>!window.fixtureOffline});window.fixtureOptions=${JSON.stringify(options)};
     window.fixtureCached=${JSON.stringify(cached)};
     window.__reylumiAppLocalContext={generation:'${generation}',scopeEpoch:1,nonce:'fixture'};
@@ -180,4 +180,28 @@ test('revoked, existing, denied, mismatched, malformed and unavailable proof loo
 test('explicit auth/permission/scope denial wins over online-only and Staff does not render Owner Today',{timeout:25000},async()=>{
  for(const explicitStatus of [401,403,409]){const f=await personal({patch:(body,path)=>{if(path==='/staff/my-work')body.grantStatus=explicitStatus;}});try{await enterStaff(f);await f.page.locator('[data-context-failure]').waitFor();assert.equal(await privateStaff(f.page).count(),0);}finally{await f.close();}}
  const f=await personal();try{await enterStaff(f);await privateStaff(f.page).waitFor();await f.page.evaluate(()=>window.fixtureNavigate('/staff/today'));await f.page.waitForFunction(()=>window.fixtureStats.contextRequests.some(call=>call.path==='/staff/today'));await settle(f.page);assert.equal(await f.page.locator('[data-private-page][data-path="/staff/today"]:visible').count(),0);}finally{await f.close();}
+});
+
+
+test('offline during Staff mount withdraws private data and reconnect waits for a new verified read',{timeout:15000},async()=>{
+ const f=await personal({disconnectDuringStaffMount:true});
+ try{
+  await enterStaff(f);
+  await f.page.waitForFunction(()=>window.fixtureStats.offlineInjections===1);
+  await privateStaff(f.page).waitFor({state:'hidden',timeout:4000});
+  assert.equal(await privateStaff(f.page).count(),0);
+  await f.page.locator('[data-context-failure]').waitFor({timeout:4000});
+  const witness=await f.page.evaluate(()=>({injections:window.fixtureStats.offlineInjections,injection:window.fixtureStats.offlineInjection,online:navigator.onLine,offline:window.fixtureOffline,commands:window.fixtureStats.commands}));
+  assert.deepEqual(witness,{injections:1,injection:{path:'/staff/my-work',role:'staff',privateElementMounted:true},online:false,offline:true,commands:1});
+  const before=f.calls.length;
+  await f.page.evaluate(()=>{window.fixtureHoldNext=true;window.fixtureOffline=false;window.dispatchEvent(new Event('online'));});
+  await f.page.waitForFunction(()=>window.fixtureHeld.length===1);
+  assert.equal(await privateStaff(f.page).count(),0,'held fresh verification must not restore private content');
+  assert.ok(f.calls.length>before,'reconnect must issue a new actual context GET');
+  assert.equal(await f.page.evaluate(()=>window.fixtureStats.contextRequests.at(-1).fresh),true);
+  await f.page.evaluate(()=>window.fixtureHeld.shift().resolve());
+  await privateStaff(f.page).waitFor({timeout:4000});
+  assert.equal(await f.page.evaluate(()=>window.fixtureStats.offlineInjections),1);
+  assert.equal(await f.page.evaluate(()=>window.fixtureStats.commands),1,'reconnect must not replay workspace command');
+ }finally{await f.close();}
 });
