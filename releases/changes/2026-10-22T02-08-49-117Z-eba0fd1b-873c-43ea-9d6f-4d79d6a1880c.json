@@ -1,0 +1,229 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+  "status": "needs-integration",
+  "summary": "Frozen integrated R10 local QA on preserved R9: Services invariants/realm guards, pilot off; correct online-only Staff withdrawal when disconnect precedes listener setup, with deterministic red/green regression. Selected453 executions (165 on final source,288 earlier with verified unchanged input closures),11 separate fresh denial/fault/positive200 controls and all four fresh quality checks. Requires exact-source native rebuild and authenticated Simulator/Services editor-return acceptance. No deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/services/page.tsx",
+    "app/services/services-catalog-pilot.tsx",
+    "app/services/services-manager.tsx",
+    "docs/services-catalog-invariants.txt",
+    "docs/services-catalog-measurement-protocol.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-runtime.ts",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs",
+    "tests/services-catalog-mutation.test.mjs",
+    "tests/services-catalog-native-registry.test.mjs",
+    "docs/services-catalog-realm-guards.txt",
+    "tests/services-catalog-realm-guards.test.mjs",
+    "tests/staff-online-access-server.test.mjs",
+    "tests/app-local-staff-online-access-ui.test.mjs",
+    "app/local-app/entry.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\source",
+    "commit": "7faa1e7d8088c1dd6b300fc0e9700b8050e23c48",
+    "tree": "ad1f7fe3bdc7da8a869242d9b426e02b1f11e992",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\functional-source-manifest.json"
+  },
+  "dependencies": [
+    "reylumi-final-r9-observability-integration-20261022"
+  ],
+  "validation": [
+    {
+      "name": "services-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-browser",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-browser\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-cache",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-cache\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-controller",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-controller\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-host-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-host-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-mutation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-mutation\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-native-flag",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-native-flag\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-native-registry",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-native-registry\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-native-runtime",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-native-runtime\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-reset-isolation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-reset-isolation\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-realm-guards",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\services-realm-guards\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "auth-rejection-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\auth-rejection-webkit\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "page-admission-ui",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\page-admission-ui\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "auth-rejection-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\auth-rejection-chromium\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\role-cache-webkit\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "page-admission-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\page-admission-webkit\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\role-cache-chromium\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "scoped-invalidation-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\scoped-invalidation-webkit\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "scoped-invalidation-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\scoped-invalidation-chromium\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "staff-online-server",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\staff-online-server\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "staff-online-ui-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\staff-online-ui-chromium\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "staff-online-ui-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\staff-online-ui-webkit\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\typecheck\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\lint\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\build\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\offline-assets\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "owner-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\owner-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\portable-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "idle-web",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\idle-web\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\experience-regression\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\experience-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-continuation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\guest-continuation\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\guest-webkit\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "same-home-recovery",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-services-validation\\same-home-recovery\\final3-attempt-1\\receipt.json"
+    },
+    {
+      "name": "supplemental11-positive200-and-real-fault-injection",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r10-auth-validation-final3\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "authenticated-integrated-Simulator-backend-transport-role-restart-cache-Services-editor-return",
+      "result": "pending"
+    },
+    {
+      "name": "authenticated-Windows-POS-staging-ACL-jobs-fallback",
+      "result": "pending"
+    }
+  ],
+  "id": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+  "recordedAt": "2026-10-22T02:08:49.117Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r10-services",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
