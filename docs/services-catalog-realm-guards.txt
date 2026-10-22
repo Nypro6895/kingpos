@@ -1,0 +1,94 @@
+SERVICES PILOT: REALM AND FAILED-DELETION GUARDS
+2026-10-22; additive to frozen metadata 38b1d123fe80ce120c3b91f9cdc9aa219455679d.
+
+Decision
+This delta adds regression evidence and clarifies the previous open contract
+items. It does not change product code, authentication policy, the original
+30-second admission maximum, or the default-off production gate. The tested
+delayed-observe/failed-deletion paths did not bypass the existing presentation
+guards. No persistent fence, native storage bridge, or new endpoint is needed
+for these demonstrated paths.
+
+Authority versus storage
+An IDB account/admission row is a partition/write fence, not persisted authority.
+Every controller entry/refresh/restart obtains a new server admission before
+reading cached payload. Exact partition/scope, active UI scope, controller epoch,
+abort state, admission deadline and payload TTL all remain independent checks.
+Native reads additionally check the current transport generation/scope epoch.
+Run validity uses conservative wall plus monotonic elapsed time; sampled clock
+regression invalidates the run. Neither its grant nor its deadline persists.
+
+Reset withdraws the current presentation before attempting optional deletion.
+If an IDB transaction aborts, bytes can remain on disk. Reload admission401,
+403 or503 cannot read/display those bytes. A valid later admission can use an
+otherwise valid payload; that is the intended persistent-cache benefit, not a
+reused grant. Physical deletion is best effort and is not claimed atomic.
+
+Topology actually inspected
+Web tabs in one browser profile at the same origin can share IDB. Each tab has
+its own controller/runtime and account observation. Existing logout/expiry and
+identity-change reset broadcasts invalidate receiving realms independently of
+disk deletion. The regression imports the actual web view, lifecycle/reset
+subscriptions, fetch interception, controller, host and IndexedDB adapter.
+The local fixture supplies synthetic server/session responses and clock samples,
+and stubs the surrounding Next scope/login renderer. It does not verify live
+backend authorization or authenticated Swift transport. Delays and aborted IDB
+transactions are injected around the real adapter, not replacement read guards.
+
+An ordinary native container creates one retained local WKWebView. Its hosted
+full-screen editor is another WKWebView, but uses HTTPS while local Services
+uses reylumi-app://bundle. Both use persistent default WKWebsiteDataStore;
+different origins do not share the Services IDB partition. Source and installed
+app metadata contain no explicit multiple-scene opt-in. This is not a runtime
+proof that simultaneous native scenes are impossible. Installed QA binaries
+are separately fingerprinted and are not claimed to be the frozen pilot.
+
+What the regression establishes
+- A delayed observation after another realm successfully removes the scope
+  does not render deleted data and still goes through an authorized live read.
+- Actual logout and identity/context lifecycle broadcasts invalidate a sibling
+  controller while its observation is pending. The stale continuation cannot
+  start the catalog request or display a cache payload.
+- With real IDB clear/delete transactions aborted in both realms, received
+  logout still withdraws presentation. Delayed observation and a separately
+  exercised in-flight late200 cannot restore rows on screen.
+- Failed deletion leaves proven disk residue; a new document with refused or
+  unknown admission cannot display it. A different account/scope can fetch only
+  its own authorized catalog.
+- Controller state and DOM are checked, with controlled clocks for the exact
+  original 30-second boundary. These are correctness tests, not speed measures.
+
+Explicit bounded-notification limitation
+A Services403 in tab A does not itself broadcast a scoped denial to tab B.
+If B has not received a reset and still has its own prior fresh admission, it
+can retain that admitted payload until its original deadline (at most30s).
+The regression deliberately proves this interval and withdrawal at the boundary;
+it does not claim instant global revocation. B's own denial/reset withdraws
+immediately, and admission is never renewed by stale storage or a late200.
+This is the already-selected bounded fresh-admission contract, not a newly
+granted exception. A future requirement for immediate sibling withdrawal needs
+a separately reviewed scoped notification; an unscoped blanket purge is not
+introduced here. No new grant or fabricated permissionVersion is stored.
+
+Remaining acceptance work
+The coordinator must test the assembled auth+pilot candidate on Simulator with
+actual Swift transport, session/cookies and authorized backend. Include cold,
+warm, A-B-A, role change, restart, logout/relogin, revocation during display,
+late responses, network failure, corrupt/evicted/unwritable storage and rollback.
+Hosted editor cover/return deserves an explicit Services mutation scenario:
+the local view is retained, and its refresh guard depends on WebKit visibility.
+Current evidence does not establish an unauthorized display there. Generic
+return context checks alone are not a measurement of fresh Services data.
+Record actual Services firstDOM/firstData/cacheRender/freshData/freshDOM,
+admission/catalog request counts and cross-account/tenant leakage results as
+described in services-catalog-measurement-protocol.txt. Synthetic fixture times
+are not real Services/iPhone performance. Physical iPhone is optional after
+deployment by the user's updated acceptance instruction, not a release blocker.
+
+Integration and rollback
+Apply this tests/docs/journal delta on metadata38b1d123; product bytes remain
+identical. No auth-owner or integrator source is replaced. The handoff binds
+exact files, tests and topology evidence and supplies forward/inverse patches.
+Reverting this delta removes evidence only, not the pilot or its safeguards.
+For product rollback retain the existing default-off flags and prior pilot-only
+cleanup/revert procedure. No push, deployment, migration or iOS release occurs.

@@ -52,6 +52,8 @@ async function ServicesPage({ searchParams }: ServicesPageProps) {
   return (
     <ServicesManager
       data={data}
+      expectedSalonId={context.currentSalon?.id}
+      catalogScope={getExperienceContext(context).scope}
       initialServiceId={stringParam(params.service) ?? null}
     />
   );

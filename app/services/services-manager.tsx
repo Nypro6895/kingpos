@@ -4,6 +4,7 @@ import { ContextualSupport } from "@/components/contextual-support";
 import { WorkspaceToolbar, toolbarStyles } from "@/components/workspace-toolbar";
 import { CompactFilters } from "@/components/compact-filters";
 import { DeleteUnusedButton } from "@/app/settings/delete-unused-button";
+import { invalidateServicesCatalogForMutation } from "@/lib/services-catalog-runtime";
 
 import {
   createServiceAction,
@@ -38,6 +39,7 @@ type ServicesManagerProps = {
   initialServiceId: string | null;
   embedded?: boolean;
   expectedSalonId?: string;
+  catalogScope?: string;
   onSaved?: () => void | Promise<void>;
 };
 
@@ -442,9 +444,13 @@ export function ServicesManager({
   initialServiceId,
   embedded = false,
   expectedSalonId,
+  catalogScope,
   onSaved,
 }: ServicesManagerProps) {
   const __vt = useWorkspaceTranslation();
+  const catalogSalonIds = [...new Set(data.services.map(service => service.salon_id))];
+  const catalogSalonId = expectedSalonId ?? (catalogSalonIds.length === 1 ? catalogSalonIds[0] : undefined);
+  const invalidateCatalogMutation = () => invalidateServicesCatalogForMutation(catalogScope, catalogSalonId);
 
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -616,6 +622,7 @@ export function ServicesManager({
       setMessage(response);
 
       if (response.ok) {
+        await invalidateCatalogMutation();
         setDrafts(current => Object.fromEntries(Object.entries(current).filter(([id]) => !savingIds.includes(id))));
         setServiceErrors(current => Object.fromEntries(Object.entries(current).filter(([id]) => !savingIds.includes(id))));
         await refreshAfterSave();
@@ -637,6 +644,7 @@ export function ServicesManager({
   }
 
   async function handleCreated(serviceId: string) {
+    await invalidateCatalogMutation();
     setShowCreate(false);
     setExpandedServiceId(serviceId);
     setMessage({ message: "Service created. Add booking staff or add-ons when ready.", ok: true, serviceIds: [serviceId] });
@@ -875,7 +883,7 @@ export function ServicesManager({
                           }}><WorkspaceText text="Cancel"/></button>
                           <button className="services-button services-button--primary" type="button" disabled={isPending || !dirty} onClick={() => saveAll(service.id)}><WorkspaceText text={isPending ? "Saving..." : "Save changes"}/></button></div>
                         </div> : null}
-                        {data.canManage ? <DeleteUnusedButton expectedSalonId={expectedSalonId} kind="services" id={service.id} name={config.name} onDeleted={onSaved} disabled={dirty || isPending} /> : null}
+                        {data.canManage ? <DeleteUnusedButton expectedSalonId={expectedSalonId} kind="services" id={service.id} name={config.name} onDeleted={async () => { await invalidateCatalogMutation(); await refreshAfterSave(); }} disabled={dirty || isPending} /> : null}
                       </>
                     ) : null}
                   </article>

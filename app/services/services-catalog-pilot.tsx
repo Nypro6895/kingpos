@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { getAppLocalHost, type AppLocalHost } from "@/lib/app-local-host";
 import { createServicesCatalogController, type CatalogMetric } from "@/lib/services-catalog-controller";
-import { getServicesCatalogStore, servicesCatalogRuntimeRevision, servicesCatalogScopeActive, subscribeServicesCatalogInvalidation } from "@/lib/services-catalog-runtime";
+import { getServicesCatalogStore, invalidateServicesCatalogForMutation, servicesCatalogRuntimeRevision, servicesCatalogScopeActive, subscribeServicesCatalogInvalidation } from "@/lib/services-catalog-runtime";
 import type { CatalogPartition, ServicesCatalog } from "@/lib/services-catalog-cache";
 
 // Native preserves URLSession's transport status. Interpret only these known
@@ -69,7 +69,12 @@ export function ServicesCatalogPilot({ scope, serviceId, host = getAppLocalHost(
   const visible = servicesCatalogScopeActive(scope) ? state.data : undefined;
   const managerQuery = new URLSearchParams({ live: "1", ...(serviceId ? { service: serviceId } : {}) });
   return <main className="services-page"><div className="services-page__frame grid gap-5 p-6">
-    <div className="flex flex-wrap items-center justify-between gap-4"><h1 className="text-2xl font-semibold">Services</h1><a href={`/services?${managerQuery}`} className="font-semibold underline" onClick={event => { if (!host.isNative || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); void host.openOnline(`/services?${managerQuery}`); }}>Manage services</a></div>
+    <div className="flex flex-wrap items-center justify-between gap-4"><h1 className="text-2xl font-semibold">Services</h1><a href={`/services?${managerQuery}`} className="font-semibold underline" onClick={event => {
+      const retired = invalidateServicesCatalogForMutation(scope);
+      if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      void retired.then(() => host.openOnline(`/services?${managerQuery}`)).catch(() => {});
+    }}>Manage services</a></div>
     {!visible ? <div role={state.error ? "alert" : "status"}><p>{state.error ?? "Opening services."}</p>{state.error ? <button type="button" onClick={() => { void controller.refresh(); }}>Try again</button> : null}</div> : <>
       <p role="status" className="text-sm text-text-secondary">{state.stale ? state.error : state.phase === "cache" ? "Updating services. Check current details before making changes." : "Service catalog"}</p>
       {visible.services.length ? <ul className="grid gap-3">{visible.services.map(service => <li key={service.id} className="rounded-xl border p-4">

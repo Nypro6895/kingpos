@@ -30,3 +30,18 @@ export function invalidateServicesCatalog(reason: ExperienceResetReason = "reset
 export function observeServicesCatalogScope(scope: string | null) {
   if (scope !== activeScope) { activeScope = scope; invalidateServicesCatalog("workspace"); }
 }
+
+/** A Services write/handoff invalidates only its read projection, never authority. */
+export function invalidateServicesCatalogForMutation(scope: string | null = activeScope, salonId?: string): Promise<void> {
+  if ((!scope && !salonId) || !store) return Promise.resolve();
+  if (scope === activeScope) invalidateServicesCatalog("workspace");
+  // Cancel current presentation before touching optional disk. The native
+  // editor has a different origin, so retire its old copy before opening it.
+  let removal: Promise<void>;
+  try { removal = salonId ? store.removeSalon(salonId) : store.removeScope(scope!); } catch { return Promise.resolve(); }
+  return new Promise(resolve => {
+    const timer = setTimeout(resolve, 2_000);
+    const finish = () => { clearTimeout(timer); resolve(); };
+    void Promise.resolve(removal).then(finish, finish);
+  });
+}

@@ -1,0 +1,103 @@
+Services pilot invariant delta — 2026-10-22
+
+Base: native metadata 89d8e4e998bfaa0fee102f93138c24d1debe0b61, functional
+00f3c909ed13c26bc3ec62d30d0e5fee839192d1. This delta is isolated from the
+coordinator candidate and both earlier frozen pilots. No auth decision logic,
+native database/bridge, endpoint, permission version, remote switch or production
+migration is added. QA flags stay default-off; no deploy or product iOS release.
+
+Admission and clock answer
+Admission authority is NOT persisted. Every refresh, page return and new process
+calls the existing fresh admission read before consulting disk. The persisted
+AdmissionRow contains a partition and usedAt: it fences writes and is not a grant
+or a display deadline. Fingerprinted permissions are not a trusted revocation
+version. Unknown revocation is bounded by subsequent fresh checks and the original
+30-second deadline; this is not instantaneous server revocation.
+
+The old controller used Date.now for validity and performance.now only for metrics.
+That allowed wall-clock changes or a stalled wall clock to extend presentation
+when timers were suspended. The delta samples both clocks before the admission
+request. Validity advances by monotonic elapsed time, respecting forward wall
+corrections. Any observed backward/nonfinite wall or monotonic sample latches the
+run invalid; later replies cannot revive it. Snapshot reads check the same clock
+so a delayed background timer cannot permit a reveal. Actual wall timestamps,
+not the derived validity clock, are persisted for data TTL. No admission clock or
+deadline crosses a process boundary. Cross-restart data TTL still uses wall time;
+there is no trusted elapsed-time source across processes and no claim to detect
+an unobserved OS clock manipulation. Fresh admission remains mandatory.
+
+Coverage and corrections (source-bound logs accompany the frozen handoff)
+- Explicit initial/displayed 401 or 403 -> 503 retry stays withdrawn; only a new
+  successful admission can start a new run. 401 purges the account namespace;
+  403/404/409 removes the affected scope. Transient known network loss can retain
+  an admitted valid cache until the original deadline; ambiguous R6 503 still
+  follows the existing re-admission policy, unchanged by this delta.
+- Late 200 after purge and after account/scope change is rejected by controller
+  epoch/abort checks. Persistent put/delete ordering is tested in real IndexedDB.
+  A newly demonstrated other-instance delayed read could reinstall deleted scope
+  metadata. Scoped removal now rotates the existing account generation in the
+  same transaction, fencing already-observed peers while retaining other salons.
+  This nonce is a local write fence, not a server permission version.
+- Exact admission and 15-minute payload boundaries, paused/backward/forward clocks,
+  fresh admission after restart, and late responses after withdrawal
+  have deterministic controller tests. Reads also recheck TTL after the IndexedDB
+  transaction completes, fixing expiry between its callback and completion.
+- Local successful save/create/delete now retires the affected salon's catalog
+  across cached roles. The exact salon/scope comes from existing context props;
+  one unambiguous service salon ID is only a fallback. Failed saves retain cache.
+  Tests cover direct manager reload and old-role cache -> new-role mutation ->
+  old-role return. Other salons stay cached. Manage retires its current scope
+  before opening the hosted editor, whose native origin may differ; in-flight
+  pre-edit replies cannot repaint/refill that retired scope.
+- Schema 0/2 records and an unsupported database-version downgrade safely miss;
+  malformed records are removed by actual IndexedDB primary keys, including
+  non-string keys. Corruption/eviction/quota/unavailable getters are covered.
+- Open and transaction timeouts remain 1500 ms each. Obsolete optional queued
+  observe/read/write/native-binding operations now skip before opening the DB.
+  A reproduced queue burst fell from 20 DB opens to the expected 3. Ordered
+  security removals are not skipped.
+- Controller observe/read/write waits are capped at 3000 ms each, including queue
+  delay, matching the existing two storage phases. A rejected/timed-out observe
+  skips cache for that run and proceeds with live fetch only if admission remains
+  valid. Timed-out reads cannot render later; writes remain generation-fenced.
+  These are fault-recovery bounds, not performance acceptance thresholds.
+
+Baseline evidence
+With the final controller tests applied to the original frozen controller:
+66/78 passed, 12 failed (8 clock cases, 4 hung-storage cases). Fixed: 78/78.
+Storage reproduced three defects plus the obsolete-queue burst; final storage
+suite has 25 passing cases. Mutation tests on frozen source failed 7 of 8 browser
+scenarios; the failed-save retention control passed. Final combined suite counts
+and exact source hashes are in the delivery validation, not inferred by summing
+overlapping producer runs. Historical R6 selected602 does not include all tests.
+
+Remaining limits and gates
+1. The storage API receives no per-request admission token. A delayed cross-realm
+   observeAccount that begins its transaction after another realm's denial is
+   indistinguishable from a genuine new admission. This delta fences already-
+   observed stale peers; it does not close that broader cross-realm race. The
+   actual controller/lifecycle must invalidate the old request. Do not claim a
+   durable global denial protocol or immediate cross-process withdrawal.
+2. Disk purge is best effort if IndexedDB cannot commit. Current UI withdraws
+   synchronously. Mutation handoff/success waits at most 2 seconds for optional
+   removal, so a hung store does not block the live editor. This is not an atomic
+   durable mutation guarantee under storage failure, particularly across process
+   exit/restart. Healthy-store success/reopen and immediate withdrawal are tested.
+3. Actual authenticated integrated Simulator transport, cookies, server authority,
+   role/restart/cache tests, measurements and rollback remain coordinator gates.
+   Synthetic Chrome/Simulator transport tests do not replace that evidence.
+   Physical iPhone is optional post-deploy, as the user's updated policy states.
+
+Rollback and integration
+Apply to the exact native-delta preimage; reconcile the existing optional reset
+hook with auth-owner work once. This delta edits Services runtime/manager/registry,
+not global auth classification. First disable the QA flag/bundle and exercise
+pilot-only cleanup, then use the inverse patch/revert. Keep the older pilot off:
+reverting also restores its known clock/storage/mutation defects. Do not clear
+POS/outbox databases. Recheck exact trees and assembled-source behavior; source
+inverse proof alone is not a live authenticated rollback test.
+
+Measurement proposal is in services-catalog-measurement-protocol.txt. Persistent
+payload can help after a new fresh admission even after restart or 30 seconds.
+No My Work timing is used as Services latency, and no external advice's fixed
+100 ms/50 ms/30-sample gate is adopted.

@@ -124,11 +124,9 @@ test("Services registry native opt-in and native read contract", { timeout: 120_
     const calls = await reads(); assert.deepEqual(calls.map(value => value.name), [admission, fresh]);
     for (const value of calls) { assert.equal(value.kind, "read"); assert.equal(value.args.scope, scope); assert.equal(value.nonce, "fixture-nonce"); assert.equal(value.scopeEpoch, 1); }
   });
-  await t.test("warm native return admits before cache render and opens manager through existing online host", async () => {
+  await t.test("warm native return admits before cache render and separately measures fresh data", async () => {
     await mount({ holdAdmission: true, holdFresh: true, label: "Native updated" }, { path: "/services?service=fixture-service" }); await pending(admission); await absent("Native first");
     await release(admission); await pending(fresh); await row("Native first").waitFor(); await page.getByRole("status").filter({ hasText: "Updating services" }).waitFor();
-    await page.getByRole("link", { name: "Manage services" }).click();
-    assert.deepEqual(await page.evaluate(() => window.fixture.opened), ["/services?live=1&service=fixture-service"]);
     await release(fresh); await row("Native updated").waitFor();
     const names = await page.evaluate(() => performance.getEntriesByType("measure").map(value => value.name));
     assert.ok(names.includes("reylumi:services-pilot:cache-render")); assert.ok(names.includes("reylumi:services-pilot:fresh-data-ready"));
@@ -149,6 +147,14 @@ test("Services registry native opt-in and native read contract", { timeout: 120_
     await release(fresh); await page.getByRole("alert").waitFor(); await absent("Native updated");
     await mount({ holdFresh: true }); await pending(fresh); assert.equal(await page.locator("li").count(), 0);
     await release(fresh); await row("Synthetic services").waitFor();
+    assert.equal(await page.evaluate(() => window.fixture.commands), 0); assert.deepEqual(errors, []); assert.deepEqual(external, []);
+  });
+  await t.test("Manage preserves its query and retires cached data before the hosted editor", async () => {
+    await persisted();
+    await mount({ holdFresh: true }, { path: "/services?service=fixture-service" }); await pending(fresh); await row("Synthetic services").waitFor();
+    await page.getByRole("link", { name: "Manage services" }).click(); await page.waitForFunction(() => window.fixture.opened.length === 1);
+    assert.deepEqual(await page.evaluate(() => window.fixture.opened), ["/services?live=1&service=fixture-service"]);
+    await release(fresh); await absent("Synthetic services");
     assert.equal(await page.evaluate(() => window.fixture.commands), 0); assert.deepEqual(errors, []); assert.deepEqual(external, []);
   });
 });

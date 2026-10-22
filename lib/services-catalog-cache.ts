@@ -96,7 +96,7 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
     });
     return opening;
   }
-  async function transaction<T>(work: (rows: unknown[], store: IDBObjectStore) => T): Promise<T> {
+  async function transaction<T>(work: (rows: unknown[], store: IDBObjectStore, recordKeys: IDBValidKey[]) => T): Promise<T> {
     const database = await db();
     return new Promise((resolve, reject) => {
       const tx = database.transaction(SERVICES_CATALOG_STORE, "readwrite"), store = tx.objectStore(SERVICES_CATALOG_STORE);
@@ -104,8 +104,10 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       const timeout = setTimeout(() => { try { tx.abort(); } catch { /* Already completed. */ } reject(new Error("Catalog storage timed out")); }, 1500);
       tx.oncomplete = () => { clearTimeout(timeout); resolve(value); };
       tx.onabort = tx.onerror = () => { clearTimeout(timeout); reject(tx.error ?? new Error("Catalog storage unavailable")); };
-      const request = store.getAll();
-      request.onsuccess = () => { try { value = work(request.result, store); } catch { tx.abort(); } };
+      const request = store.getAll(), recordKeys = store.getAllKeys();
+      // Requests execute in order in this transaction. Use actual primary keys
+      // so malformed values cannot escape pruning by hiding/changing their id.
+      recordKeys.onsuccess = () => { try { value = work(request.result, store, recordKeys.result); } catch { tx.abort(); } };
     });
   }
   const sameAccount = (rows: unknown[], partition: CatalogPartition, generation: string | undefined) => {
@@ -121,11 +123,20 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
     // another process still using the previous native session generation.
     if (marker) store.put(marker);
   }
-  function prune(rows: unknown[], store: IDBObjectStore, time: number): CatalogRow[] {
+  function fenceObservedInstances(rows: unknown[], store: IDBObjectStore) {
+    const account = rows.find(validAccount);
+    if (!account) return;
+    const generation = crypto.randomUUID();
+    if (observedAccount === accountKey(account.viewerId, account.accountId) && observedGeneration === account.generation) observedGeneration = generation;
+    // This is a local write fence, never a permission/revocation version. Other
+    // observed instances must observeAccount again after a fresh admission.
+    store.put({ ...account, generation });
+  }
+  function prune(rows: unknown[], store: IDBObjectStore, time: number, recordKeys: IDBValidKey[]): CatalogRow[] {
     const live: CatalogRow[] = [];
-    for (const row of rows) {
+    for (const [index, row] of rows.entries()) {
       if (validRow(row, time)) live.push(row);
-      else if (!validAccount(row) && !validNativeGeneration(row) && !validAdmission(row, time) && plain(row) && typeof row.id === "string") store.delete(row.id);
+      else if (!validAccount(row) && !validNativeGeneration(row) && !validAdmission(row, time)) store.delete(recordKeys[index]);
     }
     return live;
   }
@@ -137,6 +148,7 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       nativeGeneration = next;
       const started = ++nativeRevision;
       await serialize(async () => {
+        if (started !== nativeRevision) return;
         try { await transaction((rows, store) => {
           if (started !== nativeRevision) return;
           const marker = rows.find(validNativeGeneration);
@@ -151,6 +163,7 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       epoch++; observedAccount = next; observedGeneration = undefined;
       const started = epoch;
       await serialize(async () => {
+        if (started !== epoch) return;
         try {
           await transaction((rows, store) => {
             if (started !== epoch) return;
@@ -170,10 +183,11 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       partition = { ...partition };
       const started = epoch, generation = observedGeneration;
       return serialize(async () => {
+        if (started !== epoch) return null;
         try {
-          const result = await transaction((rows, store) => {
+          const result = await transaction((rows, store, recordKeys) => {
             if (started !== epoch || !sameAccount(rows, partition, generation)) return null;
-            const time = now(), live = prune(rows, store, time), admittedId = admissionId(partition);
+            const time = now(), live = prune(rows, store, time, recordKeys), admittedId = admissionId(partition);
             // A fresh caller admission replaces older permission/scope markers for
             // this salon. Old network writers may not install their own marker.
             for (const row of live) if (admissionId(row.partition) === admittedId && identity(row.partition) !== identity(partition)) store.delete(row.id);
@@ -193,7 +207,8 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
             store.put({ ...row, usedAt: time });
             return { data: row.data, updatedAt: row.updatedAt };
           });
-          return started === epoch ? result : null;
+          const completedAt = now();
+          return started === epoch && result && validTime(result.updatedAt, completedAt) && result.updatedAt + SERVICES_CATALOG_TTL_MS > completedAt ? result : null;
         } catch { return null; }
       });
     },
@@ -206,13 +221,14 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       // Copy at call time so a caller cannot add private fields while queued.
       const saved = JSON.parse(JSON.stringify(row)) as CatalogRow;
       return serialize(async () => {
+        if (started !== epoch) return false;
         try {
-          const written = await transaction((rows, store) => {
+          const written = await transaction((rows, store, recordKeys) => {
             const time = now();
             if (started !== epoch || !sameAccount(rows, partition, generation) || !validRow(saved, time)) return false;
             const admission = rows.find(row => plain(row) && row.id === admissionId(partition));
             if (!validAdmission(admission, time) || identity(admission.partition) !== identity(partition)) return false;
-            const live = prune(rows, store, time), previous = live.find(row => row.id === saved.id);
+            const live = prune(rows, store, time, recordKeys), previous = live.find(row => row.id === saved.id);
             if (previous && previous.updatedAt > saved.updatedAt) return false;
             const retained = live.filter(row => row.id !== saved.id).sort((a, b) => a.usedAt - b.usedAt);
             const metadataBytes = rows.filter(row => validAccount(row) || validNativeGeneration(row) || validAdmission(row, time)).reduce<number>((sum, row) => sum + byteLength(row), 0);
@@ -233,6 +249,7 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       partition = { ...partition };
       await serialize(async () => {
         try { await transaction((rows, store) => {
+          fenceObservedInstances(rows, store);
           for (const row of rows) if (plain(row) && isCatalogPartition(row.partition) && admissionId(row.partition) === admissionId(partition) && typeof row.id === "string") store.delete(row.id);
         }); } catch { /* Epoch still rejects this instance's pending replies. */ }
       });
@@ -242,10 +259,28 @@ export function createServicesCatalogStore(options: { indexedDB?: IDBFactory; no
       if (!text(scope, 128, true)) return;
       await serialize(async () => {
         try { await transaction((rows, store) => {
+          fenceObservedInstances(rows, store);
           // The caller may have only the rejected request's scope. Preserve other
           // salons and any newer admission marker for this salon's new scope.
           for (const row of rows) if (plain(row) && isCatalogPartition(row.partition) && row.partition.scope === scope && typeof row.id === "string") store.delete(row.id);
         }); } catch { /* The controller still withdraws the rejected view. */ }
+      });
+    },
+    async removeSalon(salonId: string): Promise<void> {
+      epoch++;
+      if (!text(salonId, 128, true)) return;
+      await serialize(async () => {
+        try { await transaction((rows, store) => {
+          const account = rows.find(validAccount);
+          if (!account) return;
+          fenceObservedInstances(rows, store);
+          // A successful online edit can enter through a different role without
+          // restoring this pilot. Remove every scope for the exact salon in the
+          // persisted account; an in-memory admission is not needed for deletion.
+          for (const row of rows) if (plain(row) && isCatalogPartition(row.partition)
+            && row.partition.viewerId === account.viewerId && row.partition.accountId === account.accountId
+            && row.partition.salonId === salonId && typeof row.id === "string") store.delete(row.id);
+        }); } catch { /* Presentation is separately invalidated even if optional disk removal fails. */ }
       });
     },
     async purge(): Promise<void> {

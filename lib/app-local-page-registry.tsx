@@ -72,7 +72,7 @@ function MyPlacePage(props: AppLocalPageProps) { return <ReadView<AppLocalMyPlac
 installServicesCatalogNativeLifecycle(servicesCatalogNativePilotEnabled());
 function ServicesPage(props: AppLocalPageProps) {
   if (servicesCatalogNativePilotEnabled() && (props.host ?? getAppLocalHost()).isNative && urlFor(props.path).searchParams.get("live") !== "1") return <ServicesCatalogNativePage {...props} />;
-  return <ReadView<AppLocalServicesData> {...props} name="page.services" title="Services">{data => <ServicesManager {...data} initialServiceId={urlFor(props.path).searchParams.get("service")} />}</ReadView>;
+  return <ReadView<AppLocalServicesData> {...props} name="page.services" title="Services">{data => <ServicesManager {...data} expectedSalonId={props.context?.context.salonId ?? undefined} catalogScope={props.context?.context.scope} initialServiceId={urlFor(props.path).searchParams.get("service")} />}</ReadView>;
 }
 function MorePage(props: AppLocalPageProps) { return <ReadView<AppLocalMoreData> {...props} name="page.more" title="More">{data => <AppLocalMore {...data} />}</ReadView>; }
 function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Activity">{data => <CustomerActivityView activity={data.result} />}</ReadView>; }

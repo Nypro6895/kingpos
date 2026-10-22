@@ -10,7 +10,7 @@ import path from 'node:path';
 const built = buildSync({ entryPoints: ['lib/services-catalog-cache.ts'], bundle: true, write: false, platform: 'browser', format: 'iife', globalName: 'CatalogModule' });
 const script = Buffer.from(built.outputFiles[0].contents).toString();
 const nodeBuilt = buildSync({ entryPoints: ['lib/services-catalog-cache.ts'], bundle: true, write: false, platform: 'node', format: 'esm' });
-const { isServicesCatalog, isCatalogPartition } = await import(`data:text/javascript;base64,${Buffer.from(nodeBuilt.outputFiles[0].contents).toString('base64')}`);
+const { isServicesCatalog, isCatalogPartition, createServicesCatalogStore } = await import(`data:text/javascript;base64,${Buffer.from(nodeBuilt.outputFiles[0].contents).toString('base64')}`);
 const executablePath = process.env.TEST_BROWSER_PATH || [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
@@ -158,14 +158,14 @@ test('TTL expiry, schema corruption, extra fields and invalid timestamps fail cl
     const a = partition(); await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog());
     time += CatalogModule.SERVICES_CATALOG_TTL_MS; const expired = await cache.read(a);
     const outcomes = [];
-    for (const mutation of [row => { row.schemaVersion = 2; }, row => { row.data.services[0].access_token = 'never-render'; }, row => { row.updatedAt = NaN; }, row => { row.expiresAt += 1; }, row => { row.partition.scope = 'other'; }]) {
+    for (const mutation of [row => { row.schemaVersion = 2; }, row => { row.schemaVersion = 0; }, row => { row.data.services[0].access_token = 'never-render'; }, row => { row.updatedAt = NaN; }, row => { row.expiresAt += 1; }, row => { row.partition.scope = 'other'; }]) {
       await cache.read(a); await cache.write(a, catalog());
       await raw((rows, store) => { const row = rows.find(row => row.id.startsWith('catalog:')); mutation(row); store.put(row); });
       outcomes.push(await cache.read(a));
     }
     return { expired, outcomes, rows: await raw(rows => rows.filter(row => row.id.startsWith('catalog:')).length) };
   });
-  assert.equal(result.expired, null); assert.deepEqual(result.outcomes, Array(5).fill(null)); assert.equal(result.rows, 0);
+  assert.equal(result.expired, null); assert.deepEqual(result.outcomes, Array(6).fill(null)); assert.equal(result.rows, 0);
 }));
 
 test('count, record size and total byte limits remain bounded', () => fixture(async page => {
@@ -318,3 +318,175 @@ test('native metadata survives account switch and remains inside the total byte 
   assert.ok(result.bytes <= result.max); assert.equal(result.privateRows, 0);
   assert.deepEqual(result.marker, { id: 'native-generation', schemaVersion: 1, generation: 'g1' });
 }));
+
+test('a scoped removal fences another already-admitted instance delayed read and write atomically', () => fixture(async page => {
+  const result = await page.evaluate(async () => {
+    const a = partition(), b = partition({ salonId: 'salon-b', scope: 'scope-b' });
+    await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog('A'));
+    await cache.read(b); await cache.write(b, catalog('B'));
+    const former = make(); await former.observeAccount(a.viewerId, a.accountId);
+    await cache.removeScope(a.scope);
+    const oldRead = await former.read(a), oldWrite = await former.write(a, catalog('Revoked late result'));
+    const retained = await cache.read(b);
+    const rows = await raw(rows => rows.filter(row => row.partition?.scope === a.scope).length);
+    // A genuinely fresh admission can observe the account fence again.
+    await former.observeAccount(a.viewerId, a.accountId); const freshRead = await former.read(a), freshWrite = await former.write(a, catalog('Newly admitted'));
+    return { oldRead, oldWrite, retained: retained.data.services[0].name, rows, freshRead, freshWrite };
+  });
+  assert.deepEqual(result, { oldRead: null, oldWrite: false, retained: 'B', rows: 0, freshRead: null, freshWrite: true });
+}));
+
+test('read result cannot escape after TTL expires between its IndexedDB callback and commit', () => fixture(async page => {
+  const result = await page.evaluate(async () => {
+    const a = partition(); await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog());
+    time += CatalogModule.SERVICES_CATALOG_TTL_MS - 1;
+    const original = IDBObjectStore.prototype.put;
+    try {
+      IDBObjectStore.prototype.put = function (value, ...args) {
+        const request = original.call(this, value, ...args);
+        if (value.id?.startsWith('catalog:')) time++;
+        return request;
+      };
+      return await cache.read(a);
+    } finally { IDBObjectStore.prototype.put = original; }
+  });
+  assert.equal(result, null);
+}));
+
+test('corrupt non-string record keys cannot bypass the cache byte bound', () => fixture(async page => {
+  const result = await page.evaluate(async () => {
+    const a = partition(); await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog());
+    await raw((rows, store) => {
+      store.put({ id: 42, schemaVersion: 0, payload: 'x'.repeat(CatalogModule.SERVICES_CATALOG_MAX_BYTES + 1) });
+      store.put({ id: new Date(1), schemaVersion: 0 });
+      store.put({ id: ['malformed-array-key', 2], schemaVersion: 2 });
+    });
+    const restored = await cache.read(a);
+    return { name: restored.data.services[0].name, records: await raw(rows => rows.map(row => row.id)), bytes: await raw(rows => rows.reduce((sum, row) => sum + new TextEncoder().encode(JSON.stringify(row)).length, 0)), max: CatalogModule.SERVICES_CATALOG_MAX_BYTES };
+  });
+  assert.equal(result.name, 'Manicure'); assert.equal(result.records.length, 3); assert.ok(result.bytes <= result.max);
+}));
+
+test('put already enqueued before purge, account change, scope removal or native rotation cannot survive it', () => fixture(async page => {
+  const results = await page.evaluate(async () => {
+    const outcomes = [];
+    for (const kind of ['purge', 'account', 'scope', 'native']) {
+      cache.close(); cache = make(); await cache.observeNativeGeneration('g1');
+      const a = partition(), b = partition({ salonId: 'salon-b', scope: 'scope-b' });
+      await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog('A'));
+      await cache.read(b); await cache.write(b, catalog('B'));
+      const original = IDBObjectStore.prototype.put;
+      let invalidating, triggered = false, written;
+      try {
+        IDBObjectStore.prototype.put = function (value, ...args) {
+          const request = original.call(this, value, ...args);
+          if (!triggered && value.id?.startsWith('catalog:')) {
+            triggered = true;
+            invalidating = kind === 'purge' ? cache.purge() : kind === 'account' ? cache.observeAccount('viewer-b', 'account-b') : kind === 'scope' ? cache.removeScope(a.scope) : cache.observeNativeGeneration('g2');
+          }
+          return request;
+        };
+        written = await cache.write(a, catalog('Late pending put')); await invalidating;
+      } finally { IDBObjectStore.prototype.put = original; }
+      outcomes.push({ kind, written, scopes: await raw(rows => rows.filter(row => row.partition).map(row => row.partition.scope)) });
+    }
+    return outcomes;
+  });
+  for (const result of results) {
+    assert.equal(result.written, false, result.kind);
+    assert.deepEqual(result.scopes, result.kind === 'scope' ? ['scope-b', 'scope-b'] : [], result.kind);
+  }
+}));
+
+test('TTL boundary, backward clock and prior expiry never resurrect removed rows', () => fixture(async page => {
+  const result = await page.evaluate(async () => {
+    const a = partition(); await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog());
+    const savedAt = time;
+    time = savedAt + CatalogModule.SERVICES_CATALOG_TTL_MS - 1; const before = await cache.read(a);
+    time++; const boundary = await cache.read(a);
+    time = savedAt + 1; const rollbackAfterExpiry = await cache.read(a);
+    await cache.write(a, catalog('New')); time--; const rollbackBeforeWrite = await cache.read(a);
+    time = savedAt + 2; const returned = await cache.read(a);
+    return { before: before.data.services[0].name, boundary, rollbackAfterExpiry, rollbackBeforeWrite, returned };
+  });
+  assert.deepEqual(result, { before: 'Manicure', boundary: null, rollbackAfterExpiry: null, rollbackBeforeWrite: null, returned: null });
+}));
+
+test('future IndexedDB schema refuses downgrade safely, and real eviction recovers as a fresh empty store', () => fixture(async page => {
+  const result = await page.evaluate(async () => {
+    const a = partition(); await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog('Prior schema'));
+    await new Promise((resolve, reject) => {
+      const request = indexedDB.open(CatalogModule.SERVICES_CATALOG_DATABASE, 2);
+      request.onsuccess = () => { request.result.close(); resolve(); }; request.onerror = () => reject(request.error);
+    });
+    const oldSchemaRead = await cache.read(a), oldSchemaWrite = await cache.write(a, catalog('No downgrade'));
+    cache.close();
+    await new Promise((resolve, reject) => { const request = indexedDB.deleteDatabase(CatalogModule.SERVICES_CATALOG_DATABASE); request.onsuccess = resolve; request.onerror = () => reject(request.error); });
+    cache = make(); await cache.observeAccount(a.viewerId, a.accountId); const evicted = await cache.read(a), recovered = await cache.write(a, catalog('Recovered'));
+    return { oldSchemaRead, oldSchemaWrite, evicted, recovered };
+  });
+  assert.deepEqual(result, { oldSchemaRead: null, oldSchemaWrite: false, evicted: null, recovered: true });
+}));
+
+test('hung IndexedDB open is bounded and a late successful connection is closed', async () => {
+  let request, closed = 0;
+  const cache = createServicesCatalogStore({ indexedDB: { open() { request = {}; return request; } } });
+  const began = performance.now();
+  const result = await cache.read({ viewerId: 'a', accountId: 'a', salonId: 'a', scope: 'a', permissionRevision: 'v1' });
+  assert.equal(result, null); assert.ok(performance.now() - began < 5000);
+  request.result = { close() { closed++; } }; request.onsuccess();
+  assert.equal(closed, 1); cache.close();
+});
+
+test('hung IndexedDB read is bounded, aborts the transaction and returns a safe miss', async () => {
+  let aborted = 0;
+  const database = {
+    close() {},
+    transaction() {
+      const tx = { objectStore: () => ({ getAll: () => ({}), getAllKeys: () => ({}) }), abort() { aborted++; queueMicrotask(() => tx.onabort()); } };
+      return tx;
+    },
+  };
+  const cache = createServicesCatalogStore({ indexedDB: { open() { const request = { result: database }; queueMicrotask(() => request.onsuccess()); return request; } } });
+  const began = performance.now();
+  const result = await cache.read({ viewerId: 'a', accountId: 'a', salonId: 'a', scope: 'a', permissionRevision: 'v1' });
+  assert.equal(result, null); assert.equal(aborted, 1); assert.ok(performance.now() - began < 5000); cache.close();
+});
+
+test('online manager removal clears the exact salon across old roles without prior pilot observation', () => fixture(async page => {
+  const result = await page.evaluate(async () => {
+    const a = partition({ scope: 'salon-a-old-role', permissionRevision: 'former-role:services.view' }), b = partition({ salonId: 'salon-b', scope: 'scope-b' });
+    await cache.observeAccount(a.viewerId, a.accountId); await cache.read(a); await cache.write(a, catalog('Old role A'));
+    await cache.read(b); await cache.write(b, catalog('Other salon B'));
+    const manager = make(); // Direct online manager entry never restored pilot.
+    await manager.removeSalon(a.salonId);
+    const removedRows = await raw(rows => rows.filter(row => row.partition?.salonId === a.salonId).length);
+    const delayedRead = await cache.read(a), delayedWrite = await cache.write(a, catalog('Late before edit'));
+    await cache.observeAccount(a.viewerId, a.accountId);
+    const after = await cache.read(a), retained = await cache.read(b);
+    return { removedRows, delayedRead, delayedWrite, after, retained: retained.data.services[0].name };
+  });
+  assert.deepEqual(result, { removedRows: 0, delayedRead: null, delayedWrite: false, after: null, retained: 'Other salon B' });
+}));
+
+test('obsolete queued account/read/write/native-binding bursts do not reopen unavailable IndexedDB', async () => {
+  let firstRequest, opened, opens = 0;
+  const firstOpened = new Promise(resolve => { opened = resolve; });
+  const cache = createServicesCatalogStore({ indexedDB: { open() {
+    const request = {}; opens++;
+    if (opens === 1) { firstRequest = request; opened(); }
+    else queueMicrotask(() => request.onerror());
+    return request;
+  } } });
+  const p = { viewerId: 'viewer', accountId: 'account', salonId: 'salon', scope: 'scope', permissionRevision: 'v1' };
+  const data = { services: [{ id: 's', name: 'Service', category: null, description: null, basePrice: 20, durationMinutes: 30 }] };
+  const first = cache.observeAccount(p.viewerId, p.accountId); await firstOpened;
+  const queued = [];
+  for (let i = 0; i < 5; i++) queued.push(cache.observeAccount(p.viewerId, p.accountId), cache.read(p), cache.write(p, data));
+  queued.push(cache.observeNativeGeneration('old-1'), cache.observeNativeGeneration('old-2'), cache.observeNativeGeneration('current'));
+  queued.push(cache.observeAccount(p.viewerId, p.accountId));
+  firstRequest.onerror(); await first; await Promise.all(queued);
+  // One already-started attempt, the latest binding, and the latest account.
+  // The current binding must survive a later account epoch, unlike stale work.
+  assert.equal(opens, 3); cache.close();
+});
