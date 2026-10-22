@@ -61,6 +61,7 @@ final class BackgroundCookieAuthorityWKTests: XCTestCase {
     private static let deletion = "contract-bg-session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0"
     private let origin = URL(string: "https://reylumi.com")!
     private var profiles: [WKWebsiteDataStore] = []
+    private var profileOwners: [IsolatedWKCookieProfileOwner] = []
     private var stores: [ReylumiSyncStore] = []
     private var directories: [URL] = []
     private final class Writes { var applications = 0 }
@@ -93,6 +94,8 @@ final class BackgroundCookieAuthorityWKTests: XCTestCase {
             }
             XCTAssertTrue(completed, "Bounded cleanup applies only to this test's unique WK profile")
         }
+        for owner in profileOwners { owner.close() }
+        profileOwners.removeAll()
         for directory in directories { try? FileManager.default.removeItem(at: directory) }
         try await super.tearDown()
     }
@@ -177,6 +180,9 @@ final class BackgroundCookieAuthorityWKTests: XCTestCase {
             let id = UUID(); profile = WKWebsiteDataStore(forIdentifier: id); XCTAssertEqual(profile.identifier, id)
         } else { profile = .nonPersistent() }
         profiles.append(profile)
+        let owner = IsolatedWKCookieProfileOwner(store: profile)
+        profileOwners.append(owner)
+        try await owner.prepare()
         let jar = profile.httpCookieStore
         let empty = await cookies(jar); XCTAssertTrue(empty.isEmpty)
         try await seed(cookie("contract-bg-stable", "stable", domain: "reylumi.com"), into: jar)

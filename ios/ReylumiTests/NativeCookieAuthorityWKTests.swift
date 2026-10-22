@@ -57,6 +57,7 @@ private actor NativeWKCookieHTTP: ReylumiLocalHTTPClient {
 final class NativeCookieAuthorityWKTests: XCTestCase {
     private enum Disturbance { case none, nonAuthorityExpiry, authorityExpiry, externalWorkspace }
     private var dataStores: [WKWebsiteDataStore] = []
+    private var profileOwners: [IsolatedWKCookieProfileOwner] = []
     private var directories: [URL] = []
     private var defaultsNames: [String] = []
     private final class CleanupGate {
@@ -80,6 +81,8 @@ final class NativeCookieAuthorityWKTests: XCTestCase {
             }
             XCTAssertTrue(completed, "Only this test's isolated WK profile must finish bounded cleanup")
         }
+        for owner in profileOwners { owner.close() }
+        profileOwners.removeAll()
         for directory in directories { try? FileManager.default.removeItem(at: directory) }
         for name in defaultsNames { UserDefaults.standard.removePersistentDomain(forName: name) }
         try await super.tearDown()
@@ -129,6 +132,9 @@ final class NativeCookieAuthorityWKTests: XCTestCase {
     }
     private func run(domain: String, mixedAliasesAndOtherKeys: Bool = false, disturbance: Disturbance = .none, denied: Bool = false) async throws {
         let websiteData = isolatedStore(), jar = websiteData.httpCookieStore
+        let owner = IsolatedWKCookieProfileOwner(store: websiteData)
+        profileOwners.append(owner)
+        try await owner.prepare()
         let empty = await cookies(jar); XCTAssertTrue(empty.isEmpty, "The test must never borrow an existing user's cookies")
         for name in [NativeWKCookieFixture.selectedName] + NativeWKCookieFixture.workspaceNames {
             try await seed(cookie(name, name == NativeWKCookieFixture.selectedName ? NativeWKCookieFixture.owner : "synthetic-workspace", domain: domain), into: jar)
