@@ -161,7 +161,7 @@ test('fresh proof renewal keeps the warm Staff form mounted and advances its val
 
 test('an unsettled renewal cannot extend the thirty-second online-only proof',{timeout:15000},async()=>{
  const options={clockTime:Date.now()+1000};options.patch=(body,path)=>{if(path==='/staff/my-work')body.onlineValidatedAt=options.clockTime;};
- const f=await personal(options);try{await enterStaff(f);await privateStaff(f.page).waitFor();await f.page.evaluate(()=>{window.fixtureHoldNext=true;});await f.page.clock.fastForward(21000);await f.page.waitForFunction(()=>window.fixtureHeld.length===1);await f.page.evaluate(()=>{window.fixtureHoldNext=true;});await f.page.clock.fastForward(10000);await privateStaff(f.page).waitFor({state:'hidden',timeout:4000});assert.equal(await privateStaff(f.page).count(),0);}finally{await f.close();}
+ const f=await personal(options);try{await enterStaff(f);await privateStaff(f.page).waitFor();await f.page.waitForFunction(()=>window.fixtureStats.rendered.some(value=>value.path==='/staff/my-work'&&value.role==='staff'));await f.page.evaluate(()=>{window.fixtureHoldNext=true;});await f.page.clock.fastForward(21000);await f.page.waitForFunction(()=>window.fixtureHeld.length===1);await f.page.evaluate(()=>{window.fixtureHoldNext=true;});await f.page.clock.fastForward(10000);await privateStaff(f.page).waitFor({state:'hidden',timeout:4000});assert.equal(await privateStaff(f.page).count(),0);}finally{await f.close();}
 });
 
 test('a malformed online-only marker withdraws a previously approved offline Staff lease',{timeout:15000},async()=>{
