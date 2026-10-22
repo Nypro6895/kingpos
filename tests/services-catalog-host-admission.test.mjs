@@ -21,6 +21,7 @@ const platformTypes = load('lib/app-local-platform-types.ts');
 const cache = load('lib/services-catalog-cache.ts');
 const experience = load('lib/experience-context.ts', { 'server-only': {}, 'node:crypto': crypto });
 const bounded = load('lib/bounded-get.ts');
+const readTrace = load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts') });
 const scopeModule = load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': { AsyncLocalStorage } });
 const names = ['page.services-catalog-admission', 'page.services-catalog'];
 const origin = 'https://catalog-host.invalid';
@@ -69,12 +70,14 @@ function fixture(options = {}) {
     'next/headers': { headers: async () => new Headers(options.unavailable ? { 'x-reylumi-auth-unavailable': '1' } : {}) },
     '@/lib/app-local-scope-id': load('lib/app-local-scope-id.ts'), '@/lib/read-context-scope': scopeModule,
     '@/lib/read-request-timing': load('lib/read-request-timing.ts'),
+    '@/lib/read-request-trace-protocol': readTrace,
   });
   const scope = experience.getExperienceContext(context).scope;
   const request = (name, { requestedScope = scope, args = {}, etag, signal } = {}) => route.GET(new Request(origin + '/api/app-local/read?' + new URLSearchParams({ name, scope: requestedScope, args: JSON.stringify(args) }), { signal, ...(etag ? { headers: { 'If-None-Match': etag } } : {}) }));
   const host = load('lib/app-local-host.ts', {
     './bounded-get': { ...bounded, fetchWithDeadline: (input, init) => route.GET(new Request(new URL(String(input), origin), init)) },
     './experience-persistent-cache': {},
+    './read-request-trace-protocol': readTrace,
   }).getAppLocalHost();
   return { calls, context, scope, request, host, platform };
 }
