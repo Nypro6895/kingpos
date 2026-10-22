@@ -555,6 +555,11 @@ function App() {
     };
     const offline = () => withdraw(true);
     window.addEventListener("offline", offline);
+    // Reconcile a disconnect that happened before this effect subscribed.
+    if (!navigator.onLine) {
+      withdraw(true);
+      return () => window.removeEventListener("offline", offline);
+    }
     // Recheck quietly before the proof ends. Failure never extends its lifetime.
     const renew = setTimeout(() => {
       if (navigator.onLine && admitted.current[family] === captured && authorityFamily(current.current) === family) void verify({ fresh: true, trigger: "interval" });
