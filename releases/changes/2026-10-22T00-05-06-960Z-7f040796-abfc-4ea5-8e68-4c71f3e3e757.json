@@ -1,0 +1,197 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r7-auth-integration-20261021",
+  "status": "needs-integration",
+  "summary": "Auth-only candidate from frozen R6 plus reviewed auth8776/f1c0. Sole integration edit repairs admission fixture exports using real role-cache boundary methods.649matrix+8combined local executions pass on exact functional hash; typecheck/lint/build/offline pass. Known late session revocation withdrawal validated locally. Native live, authenticatedPOS, staging and release gates remain open; Services pilot excluded.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/experience/my-work/route.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/supabase/auth-rejection.ts",
+    "lib/supabase/server.ts",
+    "tests/app-local-read-auth-rejection.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/session-restart-credential-contract.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "9b07ab1c58fcd2c4552bb8e96142e3ace086f473",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r7-auth\\functional-source-manifest.json",
+    "sha256": "4c028cf2fa2cb2f122934978a28cef9342ef0c6b3bd1a3154e182b8c6dc904f2"
+  },
+  "dependencies": [
+    "reylumi-final-r6-integration-20261021",
+    "r6-confirmed-auth-rejection-20261021"
+  ],
+  "sourceEvents": [
+    "94ea46f7-b835-42c7-be0e-4f80878ebf25"
+  ],
+  "validation": [
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\campaign-logic\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\campaign-browser\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\campaign-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "owner-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\owner-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\portable-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-continuation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\guest-continuation\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\guest-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "idle-web",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\idle-web\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\experience-regression\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\experience-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\scope-regression\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "payroll-daily",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\payroll-daily\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "daily-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\daily-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "bridge-contracts",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\bridge-contracts\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "native-recovery-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\native-recovery-fixture\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "session-guest-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\session-guest-fixture\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "staff-read-identity",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\staff-read-identity\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\role-cache-chromium\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\role-cache-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "auth-rejection-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\auth-rejection-chromium\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "auth-rejection-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\auth-rejection-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "page-admission-ui",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\page-admission-ui\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "page-admission-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\page-admission-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\lint\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\typecheck\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\build\\attempt-2\\receipt.json"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\offline-assets\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "combined-auth-role-cache",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r7-auth-validation\\DELIVERY.json"
+    },
+    {
+      "name": "native-live-auth-latency",
+      "result": "pending"
+    },
+    {
+      "name": "authenticated-Windows-POS",
+      "result": "pending"
+    },
+    {
+      "name": "staging-ACL-jobs-provider-fallback",
+      "result": "pending"
+    }
+  ],
+  "id": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+  "recordedAt": "2026-10-22T00:05:06.960Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
