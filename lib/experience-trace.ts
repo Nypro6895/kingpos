@@ -6,7 +6,7 @@ export const EXPERIENCE_TRACE_EVENTS = [
   "auth.start", "auth.end", "auth.join", "auth.skip", "auth.abort", "auth.reject",
   "context.read.start", "context.read.end", "context.accept", "context.reject", "context.abort", "gate.hide", "gate.show",
   "timer.schedule", "timer.fire", "timer.cancel",
-  "cache.reset", "cache.invalidate", "cache.hit", "cache.miss", "cache.join", "cache.restore.start", "cache.restore.end", "cache.read.start", "cache.read.end", "cache.refresh",
+  "cache.reset", "cache.invalidate", "cache.hit", "cache.miss", "cache.join", "cache.restore.start", "cache.restore.end", "cache.read.start", "cache.read.end", "cache.accept", "cache.refresh",
   "lifecycle.focus", "lifecycle.visible", "lifecycle.foreground", "lifecycle.online",
   "document.reload.request", "document.pagehide", "document.pageshow",
 ] as const;
@@ -25,6 +25,10 @@ export type ExperienceTraceFields = {
   status?: number;
   durationMs?: number;
   operation?: number;
+  /** Random response correlation only; never account/scope/resource identity. */
+  requestId?: string;
+  readKind?: "context" | "read";
+  readSource?: "network" | "joined" | "cache";
   blocked?: boolean;
   offline?: boolean;
   fresh?: boolean;
@@ -71,6 +75,12 @@ export function recordExperienceTrace(event: ExperienceTraceEvent, fields: Exper
   if (numeric(fields.status)) entry.status = Math.trunc(Math.min(999, Math.max(-10000, fields.status!)));
   if (numeric(fields.durationMs)) entry.durationMs = Math.round(Math.min(604_800_000, Math.max(0, fields.durationMs!)) * 10) / 10;
   if (numeric(fields.operation)) entry.operation = Math.trunc(Math.min(1_000_000_000, Math.max(0, fields.operation!)));
+  if (member(["context", "read"] as const, fields.readKind) && member(["network", "joined", "cache"] as const, fields.readSource)
+    && ["context.read.end", "context.accept", "context.reject", "context.abort", "auth.reject", "cache.read.end", "cache.accept"].includes(event)) {
+    entry.readKind = fields.readKind; entry.readSource = fields.readSource;
+    const requestId = fields.readSource !== "cache" && typeof fields.requestId === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(fields.requestId) ? fields.requestId.toLowerCase() : undefined;
+    if (requestId) entry.requestId = requestId;
+  }
   entries.push(entry);
   if (entries.length > LIMIT) entries.splice(0, entries.length - LIMIT);
   try { window.__reylumiDiagnostics ??= Object.freeze({ snapshot: getExperienceTraceSnapshot, clear: clearExperienceTrace }); } catch { /* Diagnostic access must never change the application's behavior. */ }

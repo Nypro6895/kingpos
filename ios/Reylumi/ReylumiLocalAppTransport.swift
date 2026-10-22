@@ -393,10 +393,17 @@ final class ReylumiLocalAppTransport {
         let data: Data, response: HTTPURLResponse
         do {
             (data, response) = try await client.send(request)
-            let trustedMetadata = response.url == url && (trace?.acceptsResponse(response) ?? true)
+            let matchesTrace = trace?.acceptsResponse(response) ?? true
+            let trustedMetadata = response.url == url && matchesTrace
+            let metadataTrace = matchesTrace ? trace : nil
             let failureCode = trustedMetadata && (400...599).contains(response.statusCode) ? response.value(forHTTPHeaderField: "X-Reylumi-Failure-Code").flatMap(ReylumiLocalDiagnostics.FailureCode.init(rawValue:)) : nil
             diagnostics.record(.httpEnd, category: timingCategory, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000, trace: trace, failureCode: failureCode)
-            if trustedMetadata { diagnostics.serverTiming(response.value(forHTTPHeaderField: "Server-Timing"), category: timingCategory, trace: trace) }
+            // Preserve fixed numeric legacy read timings from this exact HTTP
+            // response, but never correlate a missing/mismatched echo. Command
+            // metadata/failure codes retain their existing stricter trust gate.
+            if response.url == url && (matchesTrace || trace?.readKind != nil) {
+                diagnostics.serverTiming(response.value(forHTTPHeaderField: "Server-Timing"), category: timingCategory, trace: metadataTrace)
+            }
         } catch {
             diagnostics.record(.httpFailure, category: timingCategory, outcome: Task.isCancelled ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000, trace: trace)
             throw error
@@ -440,13 +447,16 @@ final class ReylumiLocalAppTransport {
     func freshContext(path: String) async throws -> [String: Any] {
         if let task = freshContextTask, freshContextPath == path {
             diagnostics.record(.contextJoin, category: ReylumiLocalDiagnostics.category(path: path), outcome: .joined)
-            return try await task.value
+            var joined = try await task.value
+            if var metadata = joined["__reylumiReadTrace"] as? [String: Any] { metadata["source"] = "joined"; joined["__reylumiReadTrace"] = metadata }
+            return joined
         }
         diagnostics.record(.contextRequest, category: ReylumiLocalDiagnostics.category(path: path), outcome: .started)
         // One in-flight context is authoritative for the current route family.
         // A staff request must never receive an unrelated owner context result.
         freshContextTask?.cancel()
         let epoch = scopeEpoch, expectedGeneration = generation, requestID = UUID(), conflictRevision = scopeConflictRevision
+        let trace = ReylumiLocalDiagnostics.RequestTrace(read: .context)
         freshContextID = requestID; freshContextPath = path
         let task = Task { @MainActor [weak self] () throws -> [String: Any] in
             guard let self else { throw CancellationError() }
@@ -460,7 +470,8 @@ final class ReylumiLocalAppTransport {
                     self.pendingScopeConflicts.removeAll()
                 }
             }
-            let (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch)
+            let (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch, trace: trace)
+            let trustedTrace = trace.acceptsResponse(response) ? trace : nil
             if [403, 409].contains(response.statusCode) {
                 let visibleScope = self.session?.scope ?? ((self.onlineContext?["context"] as? [String: Any])?["scope"] as? String)
                 await self.revokeDisplay(scope: visibleScope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
@@ -479,7 +490,7 @@ final class ReylumiLocalAppTransport {
             let staffOnline = explicitStaffOnline && self.verifiedStaffOnlineAccess(object, path: path)
             let denied = [401, 403, 409].contains(object["grantStatus"] as? Int ?? 0) || object["offlineState"] as? String == "unconfirmed" || explicitStaffOnline && !staffOnline
             let next = denied ? nil : ReylumiLocalSession.verified(object, generation: expectedGeneration)
-            self.diagnostics.record(.contextEnvelope, category: ReylumiLocalDiagnostics.category(path: path), outcome: next == nil ? .missing : .available, status: object["grantStatus"] as? Int)
+            self.diagnostics.record(.contextEnvelope, category: ReylumiLocalDiagnostics.category(path: path), outcome: next == nil ? .missing : .available, status: object["grantStatus"] as? Int, trace: trustedTrace)
             let stored = await self.store.session(generation: expectedGeneration)
             try self.ensureContextCurrent(epoch: epoch, scope: scope, conflictRevision: conflictRevision)
             let previous = self.session ?? stored
@@ -500,7 +511,7 @@ final class ReylumiLocalAppTransport {
                 && context["authenticated"] is Bool && context["permissionRevision"] is String
                 && Self.validUpdatedAt(object["onlineValidatedAt"]) && ReylumiLocalReadStore.isSafeJSON(object)
             guard next != nil || onlineOnly || denied else { throw self.failure(502, "App access could not be checked.") }
-            if onlineOnly { self.diagnostics.record(.contextEnvelope, category: .context, outcome: .available, status: 503, reason: .leaseUnavailable) }
+            if onlineOnly { self.diagnostics.record(.contextEnvelope, category: .context, outcome: .available, status: 503, reason: .leaseUnavailable, trace: trustedTrace) }
             let priorAuthority: ReylumiLocalSession?
             if let next { priorAuthority = await self.store.session(generation: expectedGeneration, scope: scope, authority: next.authority) }
             else { priorAuthority = nil }
@@ -559,10 +570,13 @@ final class ReylumiLocalAppTransport {
             }
             try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
             object["host"] = self.metadata; object["offline"] = false
+            // Never store diagnostic IDs in a lease or use them for authority.
+            // onlineContext/store.accept above retain the original envelope.
+            object["__reylumiReadTrace"] = trace.bridgeMetadata(response: response)
             self.onEvent?("reylumi:app-local-context", object)
             // Delivery is not the React entry's admission decision. The
             // separate JS context.accept trace records that later boundary.
-            self.diagnostics.record(.contextDelivered, category: ReylumiLocalDiagnostics.category(path: path))
+            self.diagnostics.record(.contextDelivered, category: ReylumiLocalDiagnostics.category(path: path), trace: trustedTrace)
             return object
         }
         freshContextTask = task
@@ -639,6 +653,7 @@ final class ReylumiLocalAppTransport {
             session = cached; loadedSession = true
             var object = cached.object
             object["host"] = metadata; object["offline"] = true; object["contextPath"] = path
+            object["__reylumiReadTrace"] = ["version": 1, "kind": "context", "source": "cache"]
             if path == "/pos/customer-display", cached.authority == "portable", cached.compatible(path: path) { object["displayAuthority"] = ["kind": "portable"] }
             Task { @MainActor [weak self] in _ = try? await self?.freshContext(path: path) }
             return object
@@ -730,6 +745,7 @@ final class ReylumiLocalAppTransport {
     func read(name: String, args raw: [String: Any], etag: String?, requestedScope: String? = nil) async throws -> [String: Any] {
         guard let rule = manifest.reads.first(where: { $0.name == name }) else { throw failure(400, "Unsupported app request.") }
         let args = try arguments(raw, keys: rule.argumentKeys), key = try cacheKey(name: name, args: args), epoch = scopeEpoch
+        let trace = ReylumiLocalDiagnostics.RequestTrace(read: .read)
         let json = String(decoding: try JSONSerialization.data(withJSONObject: args, options: [.sortedKeys]), as: UTF8.self)
         guard json.utf8.count <= 32768 else { throw failure(400, "Unsupported page filters.") }
         return try await withResourceReadPermit(key: key, scope: requestedScope ?? session?.scope) { permit in
@@ -742,7 +758,8 @@ final class ReylumiLocalAppTransport {
             // This POST is the same compile-pinned read, never a command or
             // outbox operation. Avoid truncating filters in a long GET URL.
             let body: [String: Any]? = useBody ? ["name": name, "args": args, "scope": requestedScope ?? ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) ?? session?.scope ?? ""] : nil
-            let (data, response) = try await send(path: rule.path, query: useBody ? [] : query, body: body, etag: etag, epoch: epoch)
+            let (data, response) = try await send(path: rule.path, query: useBody ? [] : query, body: body, etag: etag, epoch: epoch, trace: trace)
+            let trustedTrace = trace.acceptsResponse(response) ? trace : nil
             if response.statusCode == 404 {
                 // A fresh missing/private relationship response revokes this
                 // exact read only. Other drafts and scoped resources survive.
@@ -771,7 +788,8 @@ final class ReylumiLocalAppTransport {
                 let scope = response.value(forHTTPHeaderField: "x-reylumi-scope") ?? requestedScope ?? session?.scope ?? ""
                 guard requestedScope == nil || requestedScope == scope else { throw failure(409, "App access could not be checked.") }
                 try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
-                return ["status": 304, "schemaVersion": 1, "etag": response.value(forHTTPHeaderField: "ETag") ?? etag ?? "", "scope": scope, "updatedAt": Date().timeIntervalSince1970 * 1000]
+                diagnostics.record(.readDelivered, category: ReylumiLocalDiagnostics.category(resource: name), status: 304, trace: trustedTrace)
+                return ["status": 304, "schemaVersion": 1, "etag": response.value(forHTTPHeaderField: "ETag") ?? etag ?? "", "scope": scope, "updatedAt": Date().timeIntervalSince1970 * 1000, "__reylumiReadTrace": trace.bridgeMetadata(response: response)]
             }
             var object = try decode(data, response: response)
             guard object["schemaVersion"] as? Int == 1, object["status"] as? Int == 200,
@@ -784,6 +802,8 @@ final class ReylumiLocalAppTransport {
                 await store.put(key, payload: data, session: lease, resourceName: name, permit: permit)
             }
             try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch); object["offline"] = false
+            object["__reylumiReadTrace"] = trace.bridgeMetadata(response: response)
+            diagnostics.record(.readDelivered, category: ReylumiLocalDiagnostics.category(resource: name), status: 200, trace: trustedTrace)
             return object
         } catch {
             // Revocation can advance the epoch itself. Preserve that server
@@ -796,8 +816,9 @@ final class ReylumiLocalAppTransport {
             // needs the extra resource check here.
             if error is URLError {
                 try await ensureResourceReadCurrent(permit, key: key, scope: requestedScope, epoch: epoch)
-                if let cached = try await cached(name: name, args: args, requestedScope: requestedScope) {
+                if var cached = try await cached(name: name, args: args, requestedScope: requestedScope) {
                     try await ensureResourceReadCurrent(permit, key: key, scope: cached["scope"] as? String, epoch: epoch)
+                    cached["__reylumiReadTrace"] = ["version": 1, "kind": "read", "source": "cache"]
                     return cached
                 }
             }

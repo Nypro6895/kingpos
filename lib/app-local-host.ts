@@ -4,6 +4,7 @@ import { fetchBoundedGet, fetchWithDeadline } from "./bounded-get";
 import type { ExperienceContext } from "./experience-context";
 import type { ExperienceOfflineGrant } from "./experience-offline-policy";
 import { acceptExperienceOfflineGrant, clearExperienceSnapshots, getExperienceDeviceGeneration } from "./experience-persistent-cache";
+import { APP_LOCAL_READ_REQUEST_ID, captureAppLocalReadTrace, newReadRequestId, responseReadTrace } from "./read-request-trace-protocol";
 
 export type AppLocalContext = {
   schemaVersion: 1;
@@ -100,27 +101,31 @@ async function nativeRequest<T>(kind: AppLocalBridgeRequest["kind"], name: strin
 const webHost: AppLocalHost = {
   isNative: false,
   async context(path = "/market", options = {}) {
-    const response = await fetchBoundedGet("/api/app-local/context?" + new URLSearchParams({ path: appLocalPath(path), generation: getExperienceDeviceGeneration() }), { credentials: "same-origin", cache: "no-store", headers: { "X-Reylumi-Staff-Online-Access": "1" }, signal: options.signal }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
+    const requestId = newReadRequestId();
+    const response = await fetchBoundedGet("/api/app-local/context?" + new URLSearchParams({ path: appLocalPath(path), generation: getExperienceDeviceGeneration() }), { credentials: "same-origin", cache: "no-store", headers: { "X-Reylumi-Staff-Online-Access": "1", ...(requestId ? {[APP_LOCAL_READ_REQUEST_ID]:requestId} : {}) }, signal: options.signal }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
+    const trace = responseReadTrace(response,requestId,"context");
     if (!response.ok) {
       if([401,403,409].includes(response.status)){await clearExperienceSnapshots();window.dispatchEvent(new Event("reylumi:app-local-access-changed"));}
-      throw Object.assign(new Error("Connect to verify your account"),{status:response.status});
+      throw captureAppLocalReadTrace(Object.assign(new Error("Connect to verify your account"),{status:response.status}),trace);
     }
     const value = await response.json() as AppLocalContext;
     if (value.schemaVersion !== 1 || !value.context?.scope) throw new Error("Invalid application context");
     if (value.offlineState === "unconfirmed" || value.offlineState === "online-only" || [401,403,409].includes(value.grantStatus ?? 0)) await clearExperienceSnapshots();
     if (value.grant && value.offlineState !== "unconfirmed" && value.offlineState !== "online-only" && ![401,403,409].includes(value.grantStatus ?? 0)) await acceptExperienceOfflineGrant(value.grant);
-    return value;
+    return captureAppLocalReadTrace(value,trace);
   },
   async read<T>(name: string, args: Record<string, unknown> = {}, options: AppLocalRequestOptions = {}) {
     const query = new URLSearchParams({ name, args: JSON.stringify(args) });
     if (options.scope) query.set("scope", options.scope);
-    const long=query.toString().length>1800, headers:Record<string,string>={...(options.etag?{"If-None-Match":options.etag}:{}),...(long?{"Content-Type":"application/json"}:{})};
+    const requestId = newReadRequestId();
+    const long=query.toString().length>1800, headers:Record<string,string>={...(requestId ? {[APP_LOCAL_READ_REQUEST_ID]:requestId} : {}),...(options.etag?{"If-None-Match":options.etag}:{}),...(long?{"Content-Type":"application/json"}:{})};
     const response = await fetchWithDeadline(long?"/api/app-local/read":"/api/app-local/read?"+query, { method:long?"POST":"GET", credentials: "same-origin", cache: "no-store", signal: options.signal, headers, ...(long?{body:JSON.stringify({name,args,scope:options.scope})}:{}) }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
-    if (response.status === 304) return { schemaVersion: 1, status: 304, scope: response.headers.get("x-reylumi-scope") ?? options.scope ?? "", etag: response.headers.get("etag") ?? options.etag ?? "", updatedAt: Date.now() } as AppLocalRead<T>;
-    if (!response.ok) throw Object.assign(new Error(response.status === 401 || response.status === 403 ? "Your access must be checked again" : "Could not update this page"), { status: response.status });
+    const trace = responseReadTrace(response,requestId,"read");
+    if (response.status === 304) return captureAppLocalReadTrace({ schemaVersion: 1, status: 304, scope: response.headers.get("x-reylumi-scope") ?? options.scope ?? "", etag: response.headers.get("etag") ?? options.etag ?? "", updatedAt: Date.now() } as AppLocalRead<T>,trace);
+    if (!response.ok) throw captureAppLocalReadTrace(Object.assign(new Error(response.status === 401 || response.status === 403 ? "Your access must be checked again" : "Could not update this page"), { status: response.status }),trace);
     const value = await response.json() as AppLocalRead<T>;
     if (value.schemaVersion !== 1 || value.status !== 200 || options.scope && value.scope !== options.scope) throw new Error("The page belongs to a different account");
-    return value;
+    return captureAppLocalReadTrace(value,trace);
   },
   async command<T>(name: string, args: Record<string, unknown>, options: { scope?: string } = {}) {
     const response = await fetchWithDeadline("/api/app-local/command", { method: "POST", credentials: "same-origin", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, args, requestId: appLocalRequestId(), scope: options.scope }) }, { timeoutMs: 20_000, totalTimeoutMs: 20_000, maxAttempts: 1 });
@@ -133,8 +138,8 @@ const webHost: AppLocalHost = {
 };
 const nativeHost: AppLocalHost = {
   isNative: true,
-  context(path = "/market", options = {}) { return nativeRequest("context", "context", { path: appLocalPath(path), ...(options.fresh?{fresh:true}:{}) }, options.signal); },
-  read<T>(name: string, args: Record<string, unknown> = {}, options: AppLocalRequestOptions = {}) { return nativeRequest<AppLocalRead<T>>("read", name, { ...args, ...(options.etag ? { etag: options.etag } : {}), ...(options.scope ? { scope: options.scope } : {}) }, options.signal); },
+  context(path = "/market", options = {}) { return nativeRequest<AppLocalContext>("context", "context", { path: appLocalPath(path), ...(options.fresh?{fresh:true}:{}) }, options.signal).then(value => captureAppLocalReadTrace(value)); },
+  read<T>(name: string, args: Record<string, unknown> = {}, options: AppLocalRequestOptions = {}) { return nativeRequest<AppLocalRead<T>>("read", name, { ...args, ...(options.etag ? { etag: options.etag } : {}), ...(options.scope ? { scope: options.scope } : {}) }, options.signal).then(value => captureAppLocalReadTrace(value)); },
   command<T>(name: string, args: Record<string, unknown>, options: { scope?: string } = {}) { return nativeRequest<T>("command", name, { ...args, ...(options.scope ? { scope: options.scope } : {}) }); },
   openOnline(path) { return nativeRequest("online", "open", { path: appLocalPath(path) }); },
   async cache<T>(operation: "get" | "remove", args: Record<string, unknown>) {

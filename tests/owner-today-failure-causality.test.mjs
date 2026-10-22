@@ -227,7 +227,7 @@ function fixture({ fail = {}, hold = {}, timers = false, capacity = Infinity, ho
   const native = load('app/api/app-local/read/route.ts', {
     ...readers, 'next/server': { connection: async () => {} }, 'next/headers': { headers: async () => new Headers() },
     '@/lib/app-local-scope-id': load('lib/app-local-scope-id.ts'), '@/lib/read-context-scope': reads,
-    '@/lib/read-request-timing': timingModule, '@/lib/app-local-role-resources-server': role, '@/lib/app-local-platform-resources-server': platform,
+    '@/lib/read-request-trace-protocol': load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts') }), '@/lib/read-request-timing': timingModule, '@/lib/app-local-role-resources-server': role, '@/lib/app-local-platform-resources-server': platform,
   });
   function run(phase, { signal } = {}) {
     return request.run({ phase }, () => native.GET(new Request(origin + '/api/app-local/read?' + new URLSearchParams({

@@ -23,6 +23,7 @@ import { isAppLocalScopeId } from "@/lib/app-local-scope-id";
 import { runWithReadContext } from "@/lib/read-context-scope";
 import { readAppLocalDisplayResource } from "@/lib/app-local-display-server";
 import { createReadRequestTiming, type ReadRequestTiming } from "@/lib/read-request-timing";
+import { newReadRequestId } from "@/lib/read-request-trace-protocol";
 
 async function readPage(request: Request, timing: ReadRequestTiming) {
   await connection();
@@ -78,6 +79,6 @@ async function readPage(request: Request, timing: ReadRequestTiming) {
     return json({ error: status === 401 || status === 403 || status === 409 ? "Your access has changed. Please sign in again." : "Could not update this page. Please try again." }, { status, headers: responseHeaders });
   }
 }
-export async function GET(request:Request){const timing=createReadRequestTiming();return runWithReadContext(() => readPage(request,timing),timing);}
+export async function GET(request:Request){const timing=createReadRequestTiming(undefined,newReadRequestId(request.headers));return runWithReadContext(() => readPage(request,timing),timing);}
 /** Large search windows are still named read-only resources; POST is only a transport. */
-export async function POST(request:Request){const timing=createReadRequestTiming();return runWithReadContext(() => readPage(request,timing),timing);}
+export async function POST(request:Request){const timing=createReadRequestTiming(undefined,newReadRequestId(request.headers));return runWithReadContext(() => readPage(request,timing),timing);}

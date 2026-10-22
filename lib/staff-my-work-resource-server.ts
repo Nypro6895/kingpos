@@ -40,7 +40,7 @@ export async function loadStaffMyWorkResource(
   if (tabData && (tabData.staff?.id !== staff.id || getExperienceContext(tabData.context).scope !== getExperienceContext(context).scope)) {
     throw new Error("Staff pay tab identity could not be verified");
   }
-  if (readIdentity) await revalidateStaffPortalReadIdentity(readIdentity);
+  if (readIdentity) await measure("staff_revalidate", () => revalidateStaffPortalReadIdentity(readIdentity));
   const payroll = activeTab === "payroll" ? tabData as Awaited<ReturnType<typeof getCurrentStaffPayrollPortalData>> | null : null;
   const analysis = activeTab === "analysis" ? tabData as Awaited<ReturnType<typeof getCurrentStaffAnalysisPortalData>> | null : null;
   const workStatus = attendance.workday?.status ?? "not_checked_in";

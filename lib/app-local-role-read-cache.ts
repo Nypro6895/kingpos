@@ -21,25 +21,38 @@ export function createAppLocalRoleReadCache(options: { now?: () => number; maxEn
   const maxBytes = Math.max(1, Math.min(5 * 1024 * 1024, finite(options.maxBytes, 2 * 1024 * 1024)));
   const retainForMs = Math.max(0, Math.min(300_000, finite(options.retainForMs, 300_000)));
   const entries = new Map<string, Entry>();
-  const revisions = new Map<string, string>();
-  let boundary: AppLocalRoleReadAuthority | null = null, bytes = 0;
+  const revisions = new Map<string, { scope: string; revision: string }>();
+  let boundary: { viewerId: string; generation: string } | null = null, bytes = 0;
   const valid = (value: AppLocalRoleReadAuthority | null): value is AppLocalRoleReadAuthority => Boolean(value
     && [value.viewerId, value.generation, value.salonId, value.workspaceId, value.permissionRevision, value.proof].every(part => typeof part === "string" && part.trim().length > 0 && part.length <= 8192)
     && /^v3:[a-f0-9]{64}$/.test(value.scope) && typeof value.grantRevision === "string" && value.grantRevision.length <= 8192);
   const revision = (value: AppLocalRoleReadAuthority) => JSON.stringify([value.permissionRevision, value.grantRevision, value.proof]);
+  const contextKey = (value: AppLocalRoleReadAuthority) => JSON.stringify([value.salonId, value.workspaceId]);
   const identity = (value: AppLocalRoleReadAuthority) => JSON.stringify([value.viewerId, value.generation, value.salonId, value.workspaceId, value.scope, revision(value)]);
   function remove(key: string) { const entry = entries.get(key); if (entry) { bytes -= entry.bytes; entries.delete(key); } }
   function prune() { for (const [key, entry] of entries) if (entry.expiresAt <= now()) remove(key); }
-  function clear() { entries.clear(); revisions.clear(); boundary = null; bytes = 0; }
+  function clear(scope?: string) {
+    if (scope === undefined || !/^v3:[a-f0-9]{64}$/.test(scope)) { entries.clear(); revisions.clear(); boundary = null; bytes = 0; return; }
+    for (const [key, entry] of entries) if (entry.authority.scope === scope) remove(key);
+    for (const [key, value] of revisions) if (value.scope === scope) revisions.delete(key);
+  }
+  function observePrincipal(viewerId: string, generation: string): boolean {
+    if (![viewerId, generation].every(value => typeof value === "string" && value.trim().length > 0 && value.length <= 8192)) { clear(); return false; }
+    if (boundary && (boundary.viewerId !== viewerId || boundary.generation !== generation)) clear();
+    boundary = { viewerId, generation }; prune(); return true;
+  }
+  function removeContext(context: string) {
+    for (const [key, entry] of entries) if (contextKey(entry.authority) === context) remove(key);
+    revisions.delete(context);
+  }
   function observe(authority: AppLocalRoleReadAuthority | null): boolean {
     if (!valid(authority)) { clear(); return false; }
-    if (boundary && (boundary.viewerId !== authority.viewerId || boundary.generation !== authority.generation || boundary.salonId !== authority.salonId)) clear();
-    const previous = revisions.get(authority.workspaceId), next = JSON.stringify([authority.scope, revision(authority)]);
-    if (previous !== undefined && previous !== next) clear();
-    boundary = { ...authority };
+    if (!observePrincipal(authority.viewerId, authority.generation)) return false;
+    const context = contextKey(authority), previous = revisions.get(context), next = { scope: authority.scope, revision: revision(authority) };
+    if (previous && (previous.scope !== next.scope || previous.revision !== next.revision)) removeContext(context);
     // Metadata is bounded too, even when a workspace produced no retainable DTO.
-    if (revisions.size >= 30 && !revisions.has(authority.workspaceId)) clear();
-    boundary = { ...authority }; revisions.set(authority.workspaceId, next); prune(); return true;
+    if (revisions.size >= 30 && !revisions.has(context)) removeContext(revisions.keys().next().value!);
+    revisions.set(context, next); prune(); return true;
   }
   function remember(authority: AppLocalRoleReadAuthority, rows: readonly AppLocalRoleRead[]) {
     if (!observe(authority)) return;
@@ -75,5 +88,5 @@ export function createAppLocalRoleReadCache(options: { now?: () => number; maxEn
     }
     return result;
   }
-  return { remember, observe, restore, clear, stats: () => { prune(); return { entries: entries.size, bytes }; } };
+  return { remember, observe, observePrincipal, restore, clear, stats: () => { prune(); return { entries: entries.size, bytes }; } };
 }

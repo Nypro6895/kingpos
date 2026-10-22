@@ -11,6 +11,7 @@ import { subscribeReadRefresh, canAutomaticallyRefreshRead } from "./read-refres
 import { recordReadRequest, readResourceCategory } from "./read-request-metrics";
 import { nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceFields } from "./experience-trace";
 import { appLocalContextFailureReason, isAppLocalContextCancellation } from "./app-local-context-recovery";
+import { appLocalReadTraceFields } from "./read-request-trace-protocol";
 
 function traceResource(name: string, args: Record<string, unknown>): Pick<ExperienceTraceFields, "area" | "phase"> {
   const phase = ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].includes(String(args.phase)) ? args.phase as ExperienceTraceFields["phase"] : "none";
@@ -55,11 +56,33 @@ function roleReadAuthority(value: AppLocalContext, generation?: string): AppLoca
     scope: context.scope, permissionRevision: context.permissionRevision, grantRevision: value.grant?.grantRevision ?? "",
     proof: JSON.stringify([value.grant?.kind ?? null, value.offlineState ?? null, Boolean(value.access?.ownerWorkspace), Boolean(value.access?.staffWorkspace), value.staffOnlineAccess?.staffId ?? null]) };
 }
-export function clearAppLocalRoleResources() { roleReads.clear(); }
+export function clearAppLocalRoleResources(scope?: string) { roleReads.clear(scope); }
+/** A fresh denied destination can withdraw its quarantine without forgetting a
+ * different role of the positively identified account. This never admits it. */
+export function invalidateAppLocalRoleResources(value: AppLocalContext, generation?: string) {
+  const age = Date.now() - value.onlineValidatedAt;
+  const observedGeneration = value.grant?.generation ?? (value as AppLocalContext & { host?: { generation?: string } }).host?.generation;
+  if (value.schemaVersion !== 1 || value.offline || value.grantStatus === 401 || !value.context?.authenticated
+    || !/^v3:[a-f0-9]{64}$/.test(value.context.scope) || !Number.isFinite(age) || age < 0 || age >= 30_000
+    || !generation || observedGeneration !== generation
+    || !roleReads.observePrincipal(value.context.viewerId ?? "", generation ?? "")) {
+    roleReads.clear(); return false;
+  }
+  const authority = roleReadAuthority(value, generation);
+  if (authority && !roleReads.observe(authority)) return false;
+  roleReads.clear(value.context.scope);
+  return true;
+}
+function observePersonalPrincipal(value: AppLocalContext, generation?: string) {
+  // An accepted Personal context can preserve existing salon quarantine, but
+  // cannot mint, restore, or admit salon DTOs through its null tenant identity.
+  return !value.offline && value.context.authenticated && value.context.salonId === null
+    && roleReads.observePrincipal(value.context.viewerId ?? "", generation ?? "");
+}
 /** Capture settled online DTOs before the original workspace command runs. */
 export function rememberAppLocalRoleResources(value: AppLocalContext, generation?: string) {
   const authority = roleReadAuthority(value, generation);
-  if (!authority) { roleReads.clear(); return; }
+  if (!authority) { if (!observePersonalPrincipal(value, generation)) roleReads.clear(); return; }
   const rows = [];
   for (const [key, cell] of cells) {
     const [scope, name, args] = JSON.parse(key) as [string, string, Record<string, unknown>];
@@ -73,6 +96,7 @@ export function rememberAppLocalRoleResources(value: AppLocalContext, generation
 export function reconcileAppLocalRoleResources(value: AppLocalContext, generation?: string, restore = false) {
   if (value.offline) { roleReads.clear(); return; }
   const authority = roleReadAuthority(value, generation);
+  if (!authority) { if (!observePersonalPrincipal(value, generation)) roleReads.clear(); return; }
   if (!roleReads.observe(authority) || !authority || !restore) return;
   for (const { name, args, snapshot } of roleReads.restore(authority)) {
     const { cell } = cellFor(authority.scope, name, args);
@@ -105,7 +129,7 @@ export function resetAppLocalResources(scope?: string) {
 }
 /** Withdraw only these DTOs before an explicitly reauthorized page recovery. */
 export async function discardAppLocalResources(scope: string, name: string, argsList: readonly Record<string, unknown>[]): Promise<boolean> {
-  clearAppLocalRoleResources();
+  clearAppLocalRoleResources(scope);
   const started = epoch, host = getAppLocalHost();
   const targets = argsList.map(args => ({ ...cellFor(scope, name, args), args }));
   for (const { cell } of targets) {
@@ -229,6 +253,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
       appLocalResourceCache.seed(cell.context, { schemaVersion: 1, status: 200, scope, data: cell.state.data, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt } satisfies AppLocalRead<unknown>, { freshForMs: 0 }, cell.state.updatedAt, cell.state.etag);
     }
     let transportValidatedAt: number | undefined;
+    let acceptedReadTrace: ReturnType<typeof appLocalReadTraceFields> = {}, acceptedReadStatus: number | undefined;
     const snapshot = await appLocalResourceCache.load<AppLocalRead<T>>(cell.context, async ({ signal, etag, cached }) => {
       const category = readResourceCategory(cell.context.key), began = Date.now();
       const operation = nextExperienceTraceOperation();
@@ -245,8 +270,9 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
           return read();
         });
         if (revalidatedCancellation && !currentCancellationRead(signal)) throw new ExperienceResourceInvalidatedError();
-        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status: next.status, offline: Boolean(next.offline), durationMs: Date.now() - began, ...traceResource(name, args) });
+        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status: next.status, offline: Boolean(next.offline), durationMs: Date.now() - began, ...traceResource(name, args), ...appLocalReadTraceFields(next) });
         if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cells.get(key) !== cell || next.scope !== scope) throw new ExperienceResourceInvalidatedError();
+        acceptedReadTrace = appLocalReadTraceFields(next); acceptedReadStatus = next.status;
         transportValidatedAt = next.offline ? next.updatedAt : Date.now();
         const previous = cached ?? (cell.state.data === undefined ? undefined : { schemaVersion: 1, status: 200, scope, data: cell.state.data as T, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt } as AppLocalRead<T>);
         if (next.status === 304) {
@@ -261,7 +287,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
         return { data: accepted, etag: accepted.etag, validatedAt: transportValidatedAt };
       } catch (error) {
         const status = (error as { status?: number })?.status;
-        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status, contextReason: appLocalContextFailureReason(error), reason: signal.aborted ? "reset" : status === 401 ? "identity" : status === 403 ? "permissions" : status === 409 ? "scope" : "transient", durationMs: Date.now() - began, ...traceResource(name, args) });
+        recordExperienceTrace("cache.read.end", { source: "app-local", operation, status, contextReason: appLocalContextFailureReason(error), reason: signal.aborted ? "reset" : status === 401 ? "identity" : status === 403 ? "permissions" : status === 409 ? "scope" : "transient", durationMs: Date.now() - began, ...traceResource(name, args), ...appLocalReadTraceFields(error) });
         recordReadRequest(category, signal.aborted ? "aborted" : [401,403,409].includes(status ?? 0) ? "access-denied" : "error", Date.now() - began);
         throw error;
       }
@@ -272,13 +298,17 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (snapshot.updatedAt >= cell.state.updatedAt) {
       cell.deliveryRevision++;
       emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+      recordExperienceTrace("cache.accept", { source: "app-local", status: acceptedReadStatus, offline: Boolean(snapshot.offline), ...traceResource(name, args), ...acceptedReadTrace });
     }
     // Native retains only envelopes it fetched and authorized itself. JavaScript
     // cannot manufacture a private native snapshot through a cache-write bridge.
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });
   })().catch(error => {
     if (epoch !== started || cell.revision !== revision || error instanceof ExperienceResourceInvalidatedError || cells.get(key) !== cell) return;
-    if ([401, 403, 404, 409].includes(error?.status)) clearAppLocalRoleResources();
+    // 403 remains conservative: it may denote account suspension as well as
+    // a relationship denial. Only unambiguous scoped outcomes are narrowed.
+    if ([401, 403].includes(error?.status)) clearAppLocalRoleResources();
+    else if ([404, 409].includes(error?.status)) clearAppLocalRoleResources(scope);
     if (error?.status === 409) {
       // A stale request scope is not proof that the account expired. Withdraw
       // its DTOs, then let entry join the current authority read without

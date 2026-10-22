@@ -3,7 +3,7 @@
  * total is wall time; adding the individual spans does not produce wall time.
  */
 import type { ReadFailureProvenance } from "./bounded-get";
-export const READ_REQUEST_TIMING_STAGES = ["auth", "validate", "lease", "load", "serialize", "today_full", "today_shell", "today_staff", "today_bookings", "today_waiting", "today_financials", "today_extras", "clock", "hours", "staff_board", "staff_activity", "bookings", "waiting", "financial_report", "financial_compare", "extras", "staff_identity", "staff_assigned", "staff_attendance", "staff_timezone", "staff_greeting", "staff_pay_tab"] as const;
+export const READ_REQUEST_TIMING_STAGES = ["auth", "validate", "lease", "load", "serialize", "today_full", "today_shell", "today_staff", "today_bookings", "today_waiting", "today_financials", "today_extras", "clock", "hours", "staff_board", "staff_activity", "bookings", "waiting", "financial_report", "financial_compare", "extras", "staff_identity", "staff_assigned", "staff_attendance", "staff_timezone", "staff_greeting", "staff_pay_tab", "auth_user", "auth_status", "auth_session", "auth_tombstone", "staff_resolve", "staff_revalidate"] as const;
 const STAGES = READ_REQUEST_TIMING_STAGES;
 export type ReadStage = typeof STAGES[number];
 export type ReadBackendKind = "auth" | "rest" | "rpc";
@@ -12,8 +12,9 @@ const clock = () => performance.now();
 const finiteDuration = (value: number) => Number.isFinite(value) ? Math.min(3_600_000, Math.max(0, value)) : 0;
 const addCount = (value: number, amount = 1) => Math.min(Number.MAX_SAFE_INTEGER, value + amount);
 
-export function createReadRequestTiming(now: () => number = clock) {
+export function createReadRequestTiming(now: () => number = clock, requestId?: string) {
   const started = now();
+  const traceId = typeof requestId === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(requestId) ? requestId.toLowerCase() : undefined;
   const durations = new Map<ReadStage, number>();
   const backends = new Map<ReadBackendKind, { calls: number; duration: number; bytes: number; sized: number }>();
   const failures = new Map<ReadBackendKind, { count: number; attempts: number; http: number; network: number; timeout: number; body_limit: number; parent_abort: number; owned_timers: number }>();
@@ -41,7 +42,7 @@ export function createReadRequestTiming(now: () => number = clock) {
       loggedFailures++;
       // Build a fresh allowlisted object; never spread an error or caller data.
       const upstreamStatus = Number.isInteger(input.upstreamStatus) && input.upstreamStatus! >= 100 && input.upstreamStatus! <= 599 ? input.upstreamStatus : null;
-      try { console.warn("Reylumi read backend failure", { version: 1, backend: kind, failureKind: input.kind, attempts: input.attempts, upstreamStatus, ownedTimerFired: input.ownedTimerFired, parentAborted: input.parentAborted }); }
+      try { console.warn("Reylumi read backend failure", { version: 1, ...(traceId ? { requestId: traceId } : {}), backend: kind, failureKind: input.kind, attempts: input.attempts, upstreamStatus, ownedTimerFired: input.ownedTimerFired, parentAborted: input.parentAborted }); }
       catch { /* A logger failure cannot change read admission or its result. */ }
     },
     /** One logical transport call, including its existing retries/body policy.
@@ -95,6 +96,8 @@ export function createReadRequestTiming(now: () => number = clock) {
       values.push(`total;dur=${finiteDuration(now() - started).toFixed(1)}`);
       const existing = response.headers.get("Server-Timing");
       response.headers.set("Server-Timing", [...(existing ? [existing] : []), ...values].join(", "));
+      // Only the read/context route supplies its validated diagnostic UUID.
+      if (traceId) response.headers.set("X-Reylumi-Request-Id", traceId);
       return response;
     },
   };

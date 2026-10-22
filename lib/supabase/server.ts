@@ -11,7 +11,7 @@ import { cookies, headers } from "next/headers";
 import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
 import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
 import { AuthRejectionError, isConfirmedAuthRejection } from "./auth-rejection";
-import { coalesceReadInFlight } from "@/lib/read-context-scope";
+import { coalesceReadInFlight, getReadRequestTiming } from "@/lib/read-context-scope";
 import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -71,12 +71,19 @@ function authReadAuthority(config: SupabaseConfig, accessToken: string, ...parts
   return JSON.stringify([config.supabaseUrl, config.supabaseAnonKey, accessToken, ...parts]);
 }
 
+/** Executing SDK operation, including its decode; joined callers do not add a span.
+ * These nested/parallel waits are not additive wall time or database execution. */
+function measureAuthRead<T>(stage: "auth_user" | "auth_status" | "auth_session" | "auth_tombstone", read: () => Promise<T>): Promise<T> {
+  const timing = getReadRequestTiming();
+  return timing ? timing.measure(stage, read) : read();
+}
+
 function readAuthUser(
   supabase: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
   accessToken: string,
   config: SupabaseConfig | null,
 ) {
-  const read = () => supabase.auth.getUser(accessToken);
+  const read = () => measureAuthRead("auth_user", () => supabase.auth.getUser(accessToken));
   return config ? coalesceReadInFlight(authUserReadKey, authReadAuthority(config, accessToken), read) : read();
 }
 
@@ -358,11 +365,11 @@ async function isAccessTokenAllowedForAppSession(
   const statusRead = coalesceReadInFlight(
     accountStatusReadKey,
     authReadAuthority(config, accessToken, authData.user.id),
-    async () => await supabase
+    () => measureAuthRead("auth_status", async () => await supabase
       .from("users")
       .select("status")
       .eq("auth_user_id", authData.user.id)
-      .maybeSingle<PublicUserStatusRow>(),
+      .maybeSingle<PublicUserStatusRow>()),
   );
   const sessionRead = isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable, throwOnRejected);
   const [{ data: userStatus, error: userStatusError }, sessionAllowed] = throwOnRejected ? await (async () => {
@@ -408,9 +415,9 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   const { data: authIdentityDeleted, error: authIdentityDeletedError } =
-    await supabase.rpc("auth_identity_is_deleted", {
+    await measureAuthRead("auth_tombstone", async () => await supabase.rpc("auth_identity_is_deleted", {
       p_auth_user_id: authData.user.id,
-    });
+    }));
 
   if (authIdentityDeletedError) {
     if (throwOnUnavailable && authIdentityDeletedError.code !== "42883" && authIdentityDeletedError.code !== "42P01") {
@@ -485,12 +492,12 @@ async function isAppLoginSessionCookieAllowed(
   const { data, error } = await coalesceReadInFlight(
     loginSessionReadKey,
     authReadAuthority(config, accessToken, authUserId, loginSessionId),
-    async () => await supabase
+    () => measureAuthRead("auth_session", async () => await supabase
       .from("account_login_sessions")
       .select("revoked_at")
       .eq("id", loginSessionId)
       .eq("auth_user_id", authUserId)
-      .maybeSingle<AccountLoginSessionStatusRow>(),
+      .maybeSingle<AccountLoginSessionStatusRow>()),
   );
 
   if (error) {

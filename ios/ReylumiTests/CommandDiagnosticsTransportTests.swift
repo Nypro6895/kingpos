@@ -8,13 +8,17 @@ private actor CommandTraceHTTP: ReylumiLocalHTTPClient {
     private(set) var requests: [URLRequest] = []
     private var held: [String: (URLRequest, CheckedContinuation<(Data, HTTPURLResponse), Error>)] = [:]
     private let holdCommands: Bool
+    private let holdFirstContext: Bool
+    private let contextEcho: Bool
+    private let readEcho: Bool
+    private var hasHeldContext = false
     private let contextStatus: Int
     private let timeout: Bool
     private let status: Int
     private let responseID: String?
     private let failureCode: String
-    init(holdCommands: Bool = false, contextStatus: Int = 200, timeout: Bool = false, status: Int = 503, responseID: String? = nil, failureCode: String = "handler_timeout") {
-        self.holdCommands = holdCommands; self.contextStatus = contextStatus; self.timeout = timeout
+    init(holdCommands: Bool = false, holdFirstContext: Bool = false, contextEcho: Bool = false, readEcho: Bool = false, contextStatus: Int = 200, timeout: Bool = false, status: Int = 503, responseID: String? = nil, failureCode: String = "handler_timeout") {
+        self.holdCommands = holdCommands; self.holdFirstContext = holdFirstContext; self.contextEcho = contextEcho; self.readEcho = readEcho; self.contextStatus = contextStatus; self.timeout = timeout
         self.status = status; self.responseID = responseID; self.failureCode = failureCode
     }
     func heldCount() -> Int { held.count }
@@ -24,7 +28,15 @@ private actor CommandTraceHTTP: ReylumiLocalHTTPClient {
         if url.path == "/api/app-local/context" {
             let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
             let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
-            return try response(request, object: contextStatus == 200 ? AppLocalTestFixture.context(generation: generation) : ["error": "private-context-error"], status: contextStatus, echo: false)
+            if holdFirstContext && !hasHeldContext {
+                hasHeldContext = true
+                let id = try XCTUnwrap(request.value(forHTTPHeaderField: "X-Reylumi-Request-Id"))
+                return try await withCheckedThrowingContinuation { held[id] = (request, $0) }
+            }
+            return try response(request, object: contextStatus == 200 ? AppLocalTestFixture.context(generation: generation) : ["error": "private-context-error"], status: contextStatus, echo: contextEcho)
+        }
+        if url.path == "/api/app-local/read" {
+            return try response(request, object: ["schemaVersion": 1, "status": 200, "scope": AppLocalTestFixture.scope, "etag": "fixture-etag", "updatedAt": Date().timeIntervalSince1970 * 1000, "data": ["value": 1]], status: 200, echo: readEcho)
         }
         guard url.path == "/api/app-local/command" else { throw URLError(.unsupportedURL) }
         if timeout { throw URLError(.timedOut) }
@@ -33,6 +45,13 @@ private actor CommandTraceHTTP: ReylumiLocalHTTPClient {
             return try await withCheckedThrowingContinuation { held[id] = (request, $0) }
         }
         return try response(request, object: status == 200 ? ["ok": true, "data": ["saved": true]] : ["error": "private-command-error-payload"], status: status)
+    }
+    func releaseContext() throws {
+        let id = try XCTUnwrap(held.keys.first)
+        let (request, continuation) = try XCTUnwrap(held.removeValue(forKey: id))
+        let query = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
+        continuation.resume(returning: try response(request, object: AppLocalTestFixture.context(generation: generation), status: 200))
     }
     func release(_ id: String) throws {
         let (request, continuation) = try XCTUnwrap(held.removeValue(forKey: id))
@@ -102,7 +121,9 @@ final class CommandDiagnosticsTransportTests: XCTestCase {
         let requests = await http.requests, writes = requests.filter { $0.url?.path == "/api/app-local/command" }
         XCTAssertEqual(writes.count, 2, "Every gesture keeps exactly one write attempt")
         XCTAssertEqual(requests.filter { $0.url?.path == "/api/app-local/context" }.count, 2, "Diagnostics must not add another preflight")
-        XCTAssertTrue(requests.filter { $0.url?.path == "/api/app-local/context" }.allSatisfy { $0.value(forHTTPHeaderField: "X-Reylumi-Request-Id") == nil })
+        let contextIDs = requests.filter { $0.url?.path == "/api/app-local/context" }.compactMap { $0.value(forHTTPHeaderField: "X-Reylumi-Request-Id") }
+        XCTAssertEqual(contextIDs.count, 2); XCTAssertTrue(contextIDs.allSatisfy(ReylumiLocalDiagnostics.RequestTrace.validRequestID))
+        XCTAssertTrue(Set(contextIDs).isDisjoint(with: [first, second]), "A preflight has its actual HTTP ID, not its parent command ID")
         for request in writes {
             let body = try XCTUnwrap(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: Any])
             XCTAssertEqual(body["requestId"] as? String, request.value(forHTTPHeaderField: "X-Reylumi-Request-Id"))
@@ -185,7 +206,60 @@ final class CommandDiagnosticsTransportTests: XCTestCase {
         XCTAssertNotNil(rows.first { $0.event == .commandPreflight }?.durationMs)
         let requests = await http.requests
         XCTAssertEqual(requests.count, 1); XCTAssertEqual(requests.first?.url?.path, "/api/app-local/context")
-        XCTAssertNil(requests.first?.value(forHTTPHeaderField: "X-Reylumi-Request-Id"))
+        XCTAssertTrue(ReylumiLocalDiagnostics.RequestTrace.validRequestID(try XCTUnwrap(requests.first?.value(forHTTPHeaderField: "X-Reylumi-Request-Id"))))
         await transport.reset()
     }
+    func testJoinedContextSharesActualHTTPIDAndCachedContextCannotClaimIt() async throws {
+        let http = CommandTraceHTTP(holdFirstContext: true)
+        let (transport, trace, directory, _) = try environment(http)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let first = Task { @MainActor in try await transport.freshContext(path: "/help") }
+        try await waitForCommands(http, count: 1)
+        let second = Task { @MainActor in try await transport.freshContext(path: "/help") }
+        for _ in 0..<200 {
+            if trace.snapshot().contains(where: { $0.event == .contextJoin }) { break }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertTrue(trace.snapshot().contains { $0.event == .contextJoin })
+        try await http.releaseContext()
+        let network = try await first.value, joined = try await second.value
+        let a = try XCTUnwrap(network["__reylumiReadTrace"] as? [String: Any])
+        let b = try XCTUnwrap(joined["__reylumiReadTrace"] as? [String: Any])
+        XCTAssertEqual(a["source"] as? String, "network"); XCTAssertEqual(b["source"] as? String, "joined")
+        let id = try XCTUnwrap(a["requestId"] as? String)
+        XCTAssertEqual(b["requestId"] as? String, id)
+        let requests = await http.requests
+        XCTAssertEqual(requests.count, 1, "Joined bridge callers do not invent another HTTP request")
+        XCTAssertEqual(requests[0].value(forHTTPHeaderField: "X-Reylumi-Request-Id")?.lowercased(), id)
+        XCTAssertEqual(trace.snapshot().filter { $0.event == .contextDelivered }.count, 1)
+        let cached = try await transport.context(path: "/help")
+        let cacheTrace = try XCTUnwrap(cached["__reylumiReadTrace"] as? [String: Any])
+        XCTAssertEqual(cacheTrace["source"] as? String, "cache"); XCTAssertNil(cacheTrace["requestId"])
+        await transport.reset()
+    }
+
+    func testLegacyAndMismatchedReadEchoPreserveNumericTimingWithoutCorrelationOrChangingResults() async throws {
+        for echoed in [nil, UUID().uuidString, "private-secret"] as [String?] {
+            let http = CommandTraceHTTP(contextEcho: echoed != nil, readEcho: echoed != nil, responseID: echoed)
+            let (transport, trace, directory, _) = try environment(http)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let context = try await transport.freshContext(path: "/help")
+            let contextMetadata = try XCTUnwrap(context["__reylumiReadTrace"] as? [String: Any])
+            XCTAssertNil(contextMetadata["requestId"])
+            let value = try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope)
+            let readMetadata = try XCTUnwrap(value["__reylumiReadTrace"] as? [String: Any])
+            XCTAssertEqual(value["status"] as? Int, 200); XCTAssertNil(readMetadata["requestId"])
+            for category in [ReylumiLocalDiagnostics.Category.context, .read] {
+                let rows = trace.snapshot().filter { $0.event == .serverTiming && $0.category == category }
+                XCTAssertFalse(rows.isEmpty, "Legacy numeric timing remains available")
+                XCTAssertTrue(rows.allSatisfy { $0.requestId == nil && $0.readKind == nil && $0.failureCode == nil })
+            }
+            XCTAssertTrue(trace.snapshot().filter { $0.event == .contextDelivered || $0.event == .readDelivered }.allSatisfy { $0.requestId == nil })
+            let encoded = String(decoding: try JSONEncoder().encode(trace.snapshot()), as: UTF8.self)
+            XCTAssertFalse(encoded.contains("private-secret"))
+            if let echoed { XCTAssertFalse(encoded.contains(echoed)) }
+            await transport.reset()
+        }
+    }
+
 }

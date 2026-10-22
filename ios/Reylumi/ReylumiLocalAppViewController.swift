@@ -251,6 +251,8 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             } catch {
                 let cancelled = error is CancellationError || (error as NSError).code == NSURLErrorCancelled
                 let message = cancelled ? (kind == "command" ? "The result could not be confirmed. Check the latest record before making another change." : "This request was superseded. Please try again.") : error.localizedDescription
+                // Failed read/context association remains native-only. Do not
+                // wrap/reclassify errors to add diagnostic IDs to this bridge.
                 let reason = (error as NSError).userInfo["reason"] as? String
                 replyHandler(["__hostError": ["status": cancelled ? NSURLErrorCancelled : (error as NSError).code, "message": message, "reason": cancelled ? "cancelled" : reason == "stale-scope" ? "stale-scope" : "unknown"]], nil)
             }

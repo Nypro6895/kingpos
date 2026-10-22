@@ -4,7 +4,7 @@ import { getCurrentStaffBusinessContext, type CurrentBusinessContext } from "@/l
 import { createAuthenticatedSupabaseServerClient, getAuthenticatedReadAuthority } from "@/lib/supabase/server";
 import { resolveStaffAccountForSalon, CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE } from "@/lib/staff-account";
 import { getExperienceContext } from "@/lib/experience-context";
-import { getReadAbortSignal, getReadContextToken, runWithFreshReadValidation } from "@/lib/read-context-scope";
+import { getReadAbortSignal, getReadContextToken, getReadRequestTiming, runWithFreshReadValidation } from "@/lib/read-context-scope";
 
 type StaffPortalIdentity = Awaited<ReturnType<typeof readStaffPortalIdentity>>;
 type ReadCapability = { token: object; context: CurrentBusinessContext; staff: StaffPortalIdentity["staff"]; supabase: StaffPortalIdentity["supabase"]; fingerprint: string; authority: string };
@@ -22,7 +22,8 @@ async function readStaffPortalIdentity(targetContext?: CurrentBusinessContext, s
   if (!context.user || !context.currentSalon || !context.currentAccount) return { context, staff: null, supabase: null };
   const supabase = await createAuthenticatedSupabaseServerClient({ throwOnRejected: true, ...(strict ? { throwOnUnavailable: true } : {}) });
   if (!supabase) throw new Error("Staff session unavailable.");
-  const resolved = await resolveStaffAccountForSalon({ context, supabase });
+  const resolveStaff = () => resolveStaffAccountForSalon({ context, supabase });
+  const resolved = await (getReadRequestTiming()?.measure("staff_resolve", resolveStaff) ?? resolveStaff());
   if (resolved.status === "multiple") throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
   const identity = { context, staff: resolved.staff, supabase };
   const token = getReadContextToken(), authority = getAuthenticatedReadAuthority(supabase);

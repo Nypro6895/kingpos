@@ -50,8 +50,8 @@ test("unknown Personal tenant or incomplete authority fails closed and clears ea
   }
 });
 
-test("principal, device generation and tenant changes purge every former partition", () => {
-  for (const change of [{ viewerId: "viewer-b" }, { generation: "generation-b" }, { salonId: "salon-b" }]) {
+test("principal and device generation changes purge every former partition", () => {
+  for (const change of [{ viewerId: "viewer-b" }, { generation: "generation-b" }]) {
     const { cache } = fixture();
     cache.remember(owner, [row()]); cache.remember(staff, [row(staff)]);
     assert.equal(cache.observe(authority(change)), true);
@@ -60,13 +60,14 @@ test("principal, device generation and tenant changes purge every former partiti
   }
 });
 
-test("a known workspace permission, grant revision or proof change purges even another inactive role", () => {
-  for (const change of [{ permissionRevision: "owner-rights-2" }, { grantRevision: "grant-owner-2" }, { proof: "owner:different-proof" }]) {
+test("a known workspace permission, grant revision or proof change purges only that context", () => {
+  for (const change of [{ scope: scope("d") }, { permissionRevision: "owner-rights-2" }, { grantRevision: "grant-owner-2" }, { proof: "owner:different-proof" }]) {
     const { cache } = fixture();
     cache.remember(owner, [row()]); cache.remember(staff, [row(staff)]);
     assert.equal(cache.observe(authority(change)), true);
-    assert.deepEqual(cache.stats(), { entries: 0, bytes: 0 });
-    assert.deepEqual(cache.restore(staff), []);
+    assert.equal(cache.stats().entries, 1);
+    assert.deepEqual(cache.restore(staff), [row(staff)]);
+    assert.deepEqual(cache.restore(authority(change)), []);
   }
 });
 
@@ -200,4 +201,36 @@ test("clear withdraws all quarantined DTOs without allowing old restored copies 
   assert.deepEqual(cache.restore(owner), []);
   assert.deepEqual(cache.restore(staff), []);
   assert.deepEqual(cache.stats(), { entries: 0, bytes: 0 });
+});
+
+
+test("positive Personal principal observation retains quarantine without a restorable Personal context", () => {
+  const { cache } = fixture(); cache.remember(owner, [row()]); cache.remember(staff, [row(staff)]);
+  assert.equal(cache.observePrincipal(owner.viewerId, owner.generation), true);
+  assert.equal(cache.stats().entries, 2);
+  assert.deepEqual(cache.restore(owner), [row()]);
+  assert.deepEqual(cache.restore(staff), [row(staff)]);
+});
+
+test("unknown or changed Personal principal/generation clears all quarantine", () => {
+  for (const [viewer, generation] of [["", owner.generation], [owner.viewerId, ""], [null, owner.generation], ["viewer-b", owner.generation], [owner.viewerId, "generation-b"]]) {
+    const { cache } = fixture(); cache.remember(owner, [row()]); cache.remember(staff, [row(staff)]);
+    cache.observePrincipal(viewer, generation);
+    assert.deepEqual(cache.stats(), { entries: 0, bytes: 0 });
+  }
+});
+
+test("another known salon remains a separate quarantine until its own exact authority returns", () => {
+  const { cache } = fixture(), other = authority({ salonId: "salon-b", workspaceId: "owner:salon-b", scope: scope("c") });
+  cache.remember(owner, [row()]); cache.remember(staff, [row(staff)]);
+  assert.deepEqual(cache.restore(other), []); assert.equal(cache.stats().entries, 2);
+  cache.remember(other, [row(other)]); assert.equal(cache.stats().entries, 3);
+  assert.deepEqual(cache.restore(owner), [row()]); assert.deepEqual(cache.restore(other), [row(other)]);
+});
+
+test("explicit scoped invalidation removes its context without erasing an unaffected role", () => {
+  const { cache } = fixture(); cache.remember(owner, [row()]); cache.remember(staff, [row(staff)]);
+  cache.clear(owner.scope); assert.equal(cache.stats().entries, 1);
+  assert.deepEqual(cache.restore(owner), []); assert.deepEqual(cache.restore(staff), [row(staff)]);
+  cache.clear('malformed'); assert.deepEqual(cache.stats(), { entries: 0, bytes: 0 });
 });

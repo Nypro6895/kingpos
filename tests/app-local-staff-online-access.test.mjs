@@ -87,6 +87,7 @@ test('actual web host requests supported protocol on context reads and never per
   let reply = proof(), cleared = 0;
   const calls = [], accepted = [];
   const host = load('lib/app-local-host.ts', {
+    './read-request-trace-protocol': load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts') }),
     './bounded-get': { fetchBoundedGet: async (...args) => { calls.push(args); return Response.json(reply); }, fetchWithDeadline: async () => { throw Error('Unexpected write'); } },
     './experience-persistent-cache': { getExperienceDeviceGeneration: () => 'fixture-generation-20261020', clearExperienceSnapshots: async () => { cleared++; }, acceptExperienceOfflineGrant: async value => { accepted.push(value); } },
   }).getAppLocalHost();
@@ -110,6 +111,7 @@ test('actual web host retains normal approved offline lease persistence', async 
   const reply = { ...proof(), grant, grantStatus: 200 };
   delete reply.offlineState; delete reply.staffOnlineAccess;
   const host = load('lib/app-local-host.ts', {
+    './read-request-trace-protocol': load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts') }),
     './bounded-get': { fetchBoundedGet: async () => Response.json(reply), fetchWithDeadline: async () => { throw Error('Unexpected write'); } },
     './experience-persistent-cache': { getExperienceDeviceGeneration: () => 'fixture-generation-20261020', clearExperienceSnapshots: async () => { cleared++; }, acceptExperienceOfflineGrant: async value => { accepted.push(value); } },
   }).getAppLocalHost();

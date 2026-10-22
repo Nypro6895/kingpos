@@ -134,4 +134,37 @@ final class LocalDiagnosticsTests: XCTestCase {
         let invalid = try XCTUnwrap(JSONSerialization.jsonObject(with: trace.report(javascript: nil, appVersion: "1", appBuild: "1", bundleBuild: "invalid")) as? [String: Any])
         XCTAssertEqual(invalid["exportedAtUTC"] as? String, "unknown")
     }
+    @MainActor
+    func testReadEchoMetadataAndNestedStagesDoNotCreateAuthority() throws {
+        let request = ReylumiLocalDiagnostics.RequestTrace(read: .read)
+        let url = URL(string: "https://reylumi.com/api/app-local/read")!
+        let match = HTTPURLResponse(url: url, statusCode: 304, httpVersion: nil, headerFields: ["X-Reylumi-Request-Id": request.requestId])!
+        XCTAssertEqual(request.bridgeMetadata(response: match)["requestId"] as? String, request.requestId.lowercased())
+        for headers in [[:], ["X-Reylumi-Request-Id": UUID().uuidString], ["X-Reylumi-Request-Id": "private-secret"]] {
+            let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: headers)!
+            XCTAssertNil(request.bridgeMetadata(response: response)["requestId"])
+        }
+        let trace = ReylumiLocalDiagnostics(enabled: true)
+        trace.serverTiming("auth_user;dur=1,auth_status;dur=2,auth_session;dur=3,auth_tombstone;dur=4,staff_resolve;dur=5,staff_revalidate;dur=6,staff_identity;dur=7,staff_assigned;dur=8,clock;dur=9,backend_rest;dur=10;calls=2;bytes=123;sized=1,auth;dur=11;calls=4,backend_rpc;dur=12;calls=-1;bytes=Infinity;sized=2.5,private-secret;dur=13", category: .read, trace: request)
+        let rows = trace.snapshot()
+        XCTAssertEqual(rows.count, 12)
+        XCTAssertEqual(rows.first { $0.stage == .backendRest }?.backendCalls, 2)
+        XCTAssertEqual(rows.first { $0.stage == .backendRest }?.responseBytes, 123)
+        XCTAssertEqual(rows.first { $0.stage == .backendRest }?.sizedResponses, 1)
+        XCTAssertNil(rows.first { $0.stage == .auth }?.backendCalls)
+        XCTAssertNil(rows.first { $0.stage == .backendRPC }?.backendCalls)
+        let js: [[String: Any]] = [
+            ["event": "cache.accept", "readKind": "read", "readSource": "network", "requestId": request.requestId],
+            ["event": "cache.accept", "readKind": "read", "readSource": "cache", "requestId": request.requestId],
+            ["event": "data.visible", "readKind": "read", "readSource": "network", "requestId": request.requestId],
+            ["event": "context.accept", "readKind": "context", "readSource": "joined", "requestId": "private-secret"]
+        ]
+        let data = try trace.report(javascript: js, appVersion: "1", appBuild: "1", bundleBuild: String(repeating: "a", count: 64))
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let safe = try XCTUnwrap(report["javascript"] as? [[String: Any]])
+        XCTAssertEqual(safe[0]["requestId"] as? String, request.requestId.lowercased())
+        XCTAssertNil(safe[1]["requestId"]); XCTAssertNil(safe[2]["requestId"]); XCTAssertNil(safe[3]["requestId"])
+        XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("private-secret"))
+    }
+
 }

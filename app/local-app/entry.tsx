@@ -5,7 +5,7 @@ import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 import { LegalDocumentPage, LegalHub } from "@/app/legal/legal-components";
 import { legalDocuments } from "@/lib/legal-policies";
 import { getAppLocalHost, appLocalPath, appLocalRequestId, type AppLocalContext } from "@/lib/app-local-host";
-import { resetAppLocalResources, useAppLocalResource, rememberAppLocalRoleResources, reconcileAppLocalRoleResources, clearAppLocalRoleResources } from "@/lib/app-local-resource";
+import { resetAppLocalResources, useAppLocalResource, rememberAppLocalRoleResources, reconcileAppLocalRoleResources, clearAppLocalRoleResources, invalidateAppLocalRoleResources } from "@/lib/app-local-resource";
 import { getAppLocalCommandScope, setAppLocalCommandScope } from "@/lib/app-local-command-client";
 import { getAppLocalPage as getGeneralAppLocalPage } from "@/lib/app-local-page-registry";
 import { getAppLocalPersonalPage } from "@/lib/app-local-personal-registry";
@@ -46,6 +46,7 @@ import { getExperienceOfflinePath, isExperienceOfflineGrant } from "@/lib/experi
 import { appLocalAdmissionError, appLocalContextFailureReason, classifyAppLocalContextFailure, isAppLocalContextCancellation, runAppLocalContextRead, type AppLocalContextFailure, type AppLocalContextReason } from "@/lib/app-local-context-recovery";
 import { appLocalPageAdmissionReason, canAdmitAppLocalPage } from "@/lib/app-local-page-admission";
 import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
+import { appLocalReadTraceFields, captureAppLocalReadTrace } from "@/lib/read-request-trace-protocol";
 
 installExperienceTraceLifecycle();
 recordExperienceTrace("boot.start", { source: "app-local", durationMs: typeof window.__reylumiBundleParseStartedAt === "number" ? performance.now() - window.__reylumiBundleParseStartedAt : undefined });
@@ -188,7 +189,7 @@ function App() {
     return true;
   }, []);
   const accept = useCallback((value: AppLocalContext, requestedPath: string, requested = false, readRevision = -1, fresh = false) => {
-    const reject = (contextReason: AppLocalContextReason) => { recordExperienceTrace("context.reject", { source: "app-local", contextReason, offline: Boolean(value?.offline) }); return false; };
+    const reject = (contextReason: AppLocalContextReason) => { recordExperienceTrace("context.reject", { source: "app-local", contextReason, offline: Boolean(value?.offline), ...appLocalReadTraceFields(value) }); return false; };
     // A neutral workspace read resolves the selected home; it never admits the
     // former Staff route or the destination's private page by itself.
     if (workspaceRecovery.current) return reject("handoff");
@@ -213,7 +214,9 @@ function App() {
       // A fresh explicit denial cannot leave an older, still-unexpired private
       // lease visible while its error UI waits for the native reset event.
       if (!value.offline && ([401, 403, 409].includes(value.grantStatus ?? 0) || value.offlineState === "unconfirmed" || value.offlineState === "online-only")) {
-        clearAppLocalRoleResources(); roleReturn.current = null;
+        const scoped = requested && fresh && invalidateAppLocalRoleResources(value, generation);
+        if (!scoped) clearAppLocalRoleResources();
+        roleReturn.current = scoped ? { viewerId: value.context.viewerId!, generation: generation! } : null;
         const denied = Object.entries(admitted.current).filter(([key]) => !value.context.authenticated || key === family);
         for (const [, admission] of denied) if (admission) resetAppLocalResources(admission.value.context.scope);
         admitted.current = Object.fromEntries(Object.entries(admitted.current).filter(([key]) => !denied.some(([deniedKey]) => deniedKey === key)));
@@ -247,7 +250,7 @@ function App() {
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
     handoffPath.current = null; setSwitchingWorkspace(false);
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
-    recordExperienceTrace("context.accept", { source: "app-local", contextReason: value.grant && isExperienceOfflineGrant(value.grant, { scope: value.context.scope, ...(generation ? { generation } : {}) }) ? "lease-valid" : "online-valid", offline: Boolean(value.offline), changed: Boolean(identityChanged || authorityChanged), identityChanged, generationChanged: all.some(item => item && item.generation !== generation), scopeChanged: Boolean(previous && previous.value.context.scope !== value.context.scope), permissionChanged: Boolean(previous && previous.value.context.permissionRevision !== value.context.permissionRevision), grantChanged: Boolean(previous?.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision) });
+    recordExperienceTrace("context.accept", { source: "app-local", contextReason: value.grant && isExperienceOfflineGrant(value.grant, { scope: value.context.scope, ...(generation ? { generation } : {}) }) ? "lease-valid" : "online-valid", offline: Boolean(value.offline), changed: Boolean(identityChanged || authorityChanged), identityChanged, generationChanged: all.some(item => item && item.generation !== generation), scopeChanged: Boolean(previous && previous.value.context.scope !== value.context.scope), permissionChanged: Boolean(previous && previous.value.context.permissionRevision !== value.context.permissionRevision), grantChanged: Boolean(previous?.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision), ...appLocalReadTraceFields(value) });
     return true;
   }, []);
   const verify = useCallback((options?: { fresh?: boolean; trigger?: ExperienceTraceTrigger }): Promise<void> => {
@@ -283,10 +286,10 @@ function App() {
             recordExperienceTrace("context.read.start", { source: "app-local", operation: readOperation, fresh: forceFresh });
             try {
               const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: forceFresh });
-              recordExperienceTrace("context.read.end", { source: "app-local", operation: readOperation, status: 200, offline: Boolean(value.offline), durationMs: readOperation ? performance.now() - readStarted : 0 });
+              recordExperienceTrace("context.read.end", { source: "app-local", operation: readOperation, status: 200, offline: Boolean(value.offline), durationMs: readOperation ? performance.now() - readStarted : 0, ...appLocalReadTraceFields(value) });
               return value;
             } catch (cause) {
-              recordExperienceTrace("context.read.end", { source: "app-local", operation: readOperation, status: (cause as { status?: number })?.status, durationMs: readOperation ? performance.now() - readStarted : 0 });
+              recordExperienceTrace("context.read.end", { source: "app-local", operation: readOperation, status: (cause as { status?: number })?.status, durationMs: readOperation ? performance.now() - readStarted : 0, ...appLocalReadTraceFields(cause) });
               throw cause;
             }
           };
@@ -379,7 +382,7 @@ function App() {
   }, [path, verify]);
   useEffect(() => {
     const nav = (event: Event) => { const value = (event as CustomEvent<{ path?: string }>).detail?.path; if (value) navigate(value); };
-    const fresh = (event: Event) => { const value = (event as CustomEvent<AppLocalContext & { contextPath?: string }>).detail; if (typeof value?.contextPath === "string" && !accept(value, value.contextPath) && !staleScopes.current.has(value.context?.scope)) recoverPage(value, value.contextPath); };
+    const fresh = (event: Event) => { const value = captureAppLocalReadTrace((event as CustomEvent<AppLocalContext & { contextPath?: string }>).detail); if (typeof value?.contextPath === "string" && !accept(value, value.contextPath) && !staleScopes.current.has(value.context?.scope)) recoverPage(value, value.contextPath); };
     const scopeConflict = (event: Event) => {
       const detail = (event as CustomEvent<{ scope?: string; generation?: string }>).detail;
       if (!detail?.scope || detail.generation && detail.generation !== window.__reylumiAppLocalContext?.generation) return;
@@ -387,7 +390,7 @@ function App() {
       const affected = Object.entries(admitted.current).filter(([, admission]) => admission?.value.context.scope === scope);
       // An old page's reply cannot withdraw a newer accepted workspace.
       if (!affected.length) return;
-      clearAppLocalRoleResources(); roleReturn.current = null;
+      clearAppLocalRoleResources(scope); roleReturn.current = null;
       const activeAffected = affected.some(([family]) => family === currentFamily);
       staleScopes.current.set(scope, ++conflictRevision.current);
       resetAppLocalResources(scope);
@@ -473,7 +476,7 @@ function App() {
       const viewerId = saved?.viewerId ?? former?.value.context.viewerId;
       if (!viewerId || saved && saved.generation !== generation) return;
       const identity: WorkspaceRecovery = saved ?? { viewerId, generation, ...(typeof detail?.workspaceId === "string" ? { workspaceId: detail.workspaceId } : {}) };
-      reset(new Event("reylumi:app-local-reset"), !pageAttempt && Boolean(roleReturn.current));
+      reset(new Event("reylumi:app-local-reset"), Boolean(roleReturn.current));
       if (pageAttempt) pageRecovery.current = pageAttempt;
       workspaceRecovery.current = identity;
       handoffPath.current = "/"; setSwitchingWorkspace(true); setError(false);

@@ -16,7 +16,7 @@ const root = process.cwd(), engine = process.env.TEST_BROWSER_ENGINE || 'chromiu
 const browserPath = process.env.TEST_BROWSER_PATH || ['C:/Program Files/Google/Chrome/Application/chrome.exe', path.join(process.env.LOCALAPPDATA || '', 'ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-win64/chrome-headless-shell.exe')].find(existsSync);
 const entry = readFileSync('app/local-app/entry.tsx', 'utf8');
 const parsed = ts.createSourceFile('entry.tsx', entry, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const real = new Set(['react', 'react-dom/client', '@/lib/app-local-host', '@/lib/app-local-resource', '@/lib/app-local-command-client', './scope', './navigation', '@/lib/app-local-scope-id', '@/lib/experience-offline-policy', '@/lib/experience-persistent-cache', '@/lib/experience-state', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission', '@/lib/experience-trace']);
+const real = new Set(['react', 'react-dom/client', '@/lib/app-local-host', '@/lib/app-local-resource', '@/lib/app-local-command-client', './scope', './navigation', '@/lib/app-local-scope-id', '@/lib/experience-offline-policy', '@/lib/experience-persistent-cache', '@/lib/experience-state', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission', '@/lib/experience-trace', '@/lib/read-request-trace-protocol']);
 const imports = new Map();
 for (const statement of parsed.statements) if (ts.isImportDeclaration(statement) && !real.has(statement.moduleSpecifier.text)) imports.set(statement.moduleSpecifier.text, statement.importClause?.namedBindings?.elements?.map(item => item.propertyName?.text ?? item.name.text) || []);
 const mocks = {
@@ -165,7 +165,7 @@ for (const durable of [false, true]) test(`actual A→B→A handoff withdraws me
   await page.locator('[data-private-page]:visible [data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_1' }).waitFor();
   assert.notEqual(await visible(page).getAttribute('data-node'), node); assert.equal(await visible(page).getByLabel('retained draft').inputValue(), 'initial');
   const stats = await page.evaluate(() => ({ readsA: window.fixtureState.reads.filter(row => row.scope === 'v3:' + 'a'.repeat(64)).length, readsB: window.fixtureState.reads.filter(row => row.scope === 'v3:' + 'b'.repeat(64)).length, commands: window.fixtureState.commands.length, nativeCacheGets: window.fixtureState.cache.filter(row => row.op === 'get').length }));
-  assert.equal(stats.readsA, durable ? 1 : 2); assert.equal(stats.readsB, 1); assert.equal(stats.commands, 2);
+  assert.equal(stats.readsA, 2, 'Quarantined DTOs require fresh revalidation even when a durable endpoint also has a copy'); assert.equal(stats.readsB, 1); assert.equal(stats.commands, 2);
   return { ...stats, jsMemoryDiscarded: true, draftDiscarded: true, destinationAuthorityRequired: true, nativeStoreExecuted: false };
 }, { durable }));
 
@@ -363,7 +363,7 @@ test('explicit DTO discard prevents the previously quarantined role copy returni
   return { actualDiscardExecuted: true, quarantinedRejectedDtoRestored: false, lateReplacementFromFormerScopeIgnored: true };
 }));
 
-test('an external conflict for the admitted role purges an inactive role copy before bounded fresh recovery', { timeout: 20000 }, () => scenario('external-scope-conflict-purges-vault', async page => {
+test('an external conflict withdraws its admitted role but preserves another quarantined role before fresh return', { timeout: 20000 }, () => scenario('external-scope-conflict-purges-vault', async page => {
   await page.evaluate(() => window.fixtureSwitch('staff'));
   await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
   await page.evaluate(() => {
@@ -376,11 +376,11 @@ test('an external conflict for the admitted role purges an inactive role copy be
   await visible(page).locator('[data-private-dto]').filter({ hasText: 'STAFF_SYNTHETIC_1' }).waitFor();
   await page.evaluate(() => { window.fixtureState.version = 2; window.fixtureState.holdRead = true; window.fixtureSwitch('owner'); });
   await page.waitForFunction(() => window.fixtureState.holds.some(row => row.kind === 'read'));
-  assert.equal(await visible(page).locator('[data-private-dto]').innerText(), '');
+  assert.equal(await visible(page).locator('[data-private-dto]').innerText(), 'OWNER_SYNTHETIC_1', 'Unaffected role DTO still requires fresh Owner admission');
   await page.evaluate(() => { window.fixtureState.holdRead = false; window.fixtureRelease('read'); });
   await visible(page).locator('[data-private-dto]').filter({ hasText: 'OWNER_SYNTHETIC_2' }).waitFor();
   assert.ok(await page.evaluate(() => window.fixtureState.contexts.length) <= 5, 'Conflict recovery must remain bounded');
-  return { externalCurrentScopeConflict: true, inactiveRoleCopyWithdrawn: true, freshRecoveryBounded: true };
+  return { externalCurrentScopeConflict: true, unaffectedRoleQuarantineRetained: true, freshRecoveryBounded: true };
 }));
 
 test('accepted offline authority from another principal purges the former principal role vault', { timeout: 20000 }, () => scenario('offline-principal-change-purges-vault', async page => {

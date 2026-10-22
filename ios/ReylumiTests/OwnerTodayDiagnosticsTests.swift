@@ -23,6 +23,7 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         var status = 200, object: [String: Any]
         var headers = ["Content-Type": "application/json", "Server-Timing": "auth;dur=1,load;dur=2,total;dur=3"]
+        if let id = request.value(forHTTPHeaderField: "X-Reylumi-Request-Id") { headers["X-Reylumi-Request-Id"] = id }
         if url.path == "/api/app-local/context" {
             contextCount += 1
             requestedContextPaths.append(query.first { $0.name == "path" }?.value ?? "/")
@@ -95,6 +96,12 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         try await scenario("cold_empty_warm_revisit") { run in
             try await self.wait(self.fullReady, in: run.web)
             _ = try await run.web.evaluateJavaScript("window.__diagnosticOriginalToday=document.querySelector('[data-today-dashboard]');true")
+            let delivered = run.trace.snapshot().filter { $0.event == .readDelivered || $0.event == .contextDelivered }
+            XCTAssertFalse(delivered.isEmpty)
+            XCTAssertTrue(delivered.allSatisfy { $0.requestId != nil && $0.readKind != nil })
+            let js = try await run.web.evaluateJavaScript("window.__reylumiDiagnostics.snapshot().filter(e=>e.event==='cache.accept'||e.event==='context.accept')") as? [[String: Any]] ?? []
+            let nativeIDs = Set(delivered.compactMap(\.requestId).map { $0.lowercased() })
+            XCTAssertTrue(js.contains { ($0["requestId"] as? String).map(nativeIDs.contains) == true }, "Only matching echoed responses reach JS correlation")
             let first = await run.http.counts()
             run.controller.navigate("/help")
             try await self.wait("location.pathname==='/help'", in: run.web)

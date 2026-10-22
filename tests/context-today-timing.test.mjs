@@ -41,7 +41,9 @@ function fixture({ timed = true, realDelays = false } = {}) {
     return { date:options.date ?? '2026-10-19',generatedAt:'2026-10-19T00:00:00.000Z',noAccess:s.noAccess,loadErrors:s.incomplete ? [{area:'financials',message:'Synthetic unavailable source'}] : [],summary:{sales:{value:25}},phase };
   };
   const headers = async () => { await step(state().headerDelay); return new Headers(state().unavailable ? {'x-reylumi-auth-unavailable':'1'} : {}); };
+  const traceProtocol = load('lib/read-request-trace-protocol.ts', {'./app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts')});
   const commonRoute = {
+    '@/lib/read-request-trace-protocol':traceProtocol,
     'next/server':{connection:async () => step(state().connectionDelay)},'next/headers':{headers},
     '@/lib/read-context-scope':reads,'@/lib/read-request-timing':timingDependency,
     '@/lib/experience-context':{getExperienceContext:value => ({scope:value.scope})},
@@ -95,7 +97,7 @@ function fixture({ timed = true, realDelays = false } = {}) {
   const query = phase => new URLSearchParams({scope,date:'2026-10-19',...(phase === 'full' ? {} : {phase})});
   return {
     timing,makeState,
-    context:(options = {},query = 'path=/staff/today&generation=synthetic-generation-20261019') => run(context.GET,'https://fixture.invalid/api/app-local/context?'+query,options),
+    context:(options = {},query = 'path=/staff/today&generation=synthetic-generation-20261019',init) => run(context.GET,'https://fixture.invalid/api/app-local/context?'+query,options,init),
     hosted:(phase = 'full',options = {},init) => run(hosted.GET,'https://fixture.invalid/api/experience/today?'+query(phase),options,init),
     native:(phase = 'full',options = {},init) => run(native.GET,'https://fixture.invalid/api/app-local/read?'+new URLSearchParams({name:'page.owner-today',scope,args:JSON.stringify({date:'2026-10-19',...(phase === 'full' ? {} : {phase})})}),options,init),
     nativePost:(options,body,origin = 'https://fixture.invalid') => run(native.POST,'https://fixture.invalid/api/app-local/read',options,{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)}),
@@ -114,10 +116,29 @@ function timings(response) {
   assert.equal(/private|synthetic|v3:|grant-value|fixture\.invalid/i.test(header),false);
   return result;
 }
+test('actual context/named routes echo only validated random request IDs across response statuses and fresh304 work', async () => {
+  const f = fixture(),id = '10000000-0000-4000-8000-000000000001';
+  const headers = { 'X-Reylumi-Request-Id':id.toUpperCase() };
+  for (const options of [{},{unavailable:true},{authError:Object.assign(new Error('private-detail'),{status:401})},{authError:Object.assign(new Error('private-detail'),{status:403})}]) {
+    for (const result of [await f.context(options,undefined,{headers}),await f.native('shell',options,{headers})]) {
+      assert.equal(result.response.headers.get('X-Reylumi-Request-Id'),id);
+      assert.equal(result.response.headers.get('server-timing').includes('private-detail'),false);
+    }
+  }
+  const first = await f.native('shell',{}, {headers});
+  const nextId = '20000000-0000-4000-8000-000000000002';
+  const conditional = await f.native('shell',{}, {headers:{'X-Reylumi-Request-Id':nextId,'if-none-match':first.response.headers.get('etag')}});
+  assert.equal(conditional.response.status,304);
+  assert.equal(conditional.response.headers.get('X-Reylumi-Request-Id'),nextId);
+  assert.equal(conditional.state.authReads,1); assert.equal(conditional.state.dashboardReads.length,1,'304 still performs the existing authorized load');
+  const invalid = await f.context({},undefined,{headers:{'X-Reylumi-Request-Id':'private-secret'}});
+  assert.notEqual(invalid.response.headers.get('X-Reylumi-Request-Id'),'private-secret');
+  assert.equal((await invalid.response.text()).includes(id),false,'Diagnostic IDs never enter the DTO');
+});
 async function sameResponse(timed,plain) {
   assert.equal(timed.status,plain.status);
   assert.equal(await timed.clone().text(),await plain.clone().text());
-  assert.deepEqual([...timed.headers].filter(([name]) => name !== 'server-timing'),[...plain.headers]);
+  assert.deepEqual([...timed.headers].filter(([name]) => name !== 'server-timing' && name !== 'x-reylumi-request-id'),[...plain.headers]);
   timings(timed); assert.equal(plain.headers.has('server-timing'),false);
 }
 

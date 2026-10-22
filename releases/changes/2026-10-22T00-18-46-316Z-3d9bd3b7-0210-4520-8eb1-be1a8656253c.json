@@ -1,0 +1,113 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-observability-qa-20261021",
+  "status": "working",
+  "summary": "Test-only real protocol dependency wiring for three existing fixture loaders after retained canonical failures23/118; assertions/business behavior unchanged. Previous two browser failures are runner output EEXIST, not product assertions. Source/acceptance policy unchanged; no release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "tests/app-local-scoped-invalidation-ui.test.mjs",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/ios-acceptance-report.test.mjs",
+    "docs/ios-acceptance-measurement.md",
+    "lib/read-request-timing.ts",
+    "lib/supabase/server.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "lib/read-request-trace-protocol.ts",
+    "lib/app-local-host.ts",
+    "lib/experience-trace.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "tests/context-today-timing.test.mjs",
+    "tests/app-local-read-correlation.test.mjs",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/app-local-staff-online-access.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos-auth-observability-20261021",
+    "commit": "f1c03026009b158e7ce58f283aa3bdcff73d21f7"
+  },
+  "dependencies": [
+    "r6-confirmed-auth-rejection-20261021"
+  ],
+  "validation": [
+    {
+      "name": "Current27 canonical source remains unchanged across first full pass",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\canonical-validation-20261022T001528448287Z\\results.json"
+    },
+    {
+      "name": "Three real-module fixture maps and affected118 regression group rerun",
+      "result": "pending"
+    }
+  ],
+  "releaseHold": true,
+  "ownershipExcludes": [
+    "services-catalog*",
+    "lib/reset-experience-cache.ts",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "scripts/build-app-local-bundle.mjs"
+  ],
+  "ownership": {
+    "web_auth_audit": [
+      "lib/app-local-role-read-cache.ts",
+      "lib/app-local-resource.ts",
+      "app/local-app/entry.tsx",
+      "tests/app-local-role-read-cache.test.mjs",
+      "tests/app-local-role-return-cache.test.mjs",
+      "tests/app-local-scoped-invalidation-ui.test.mjs"
+    ],
+    "ios_audit": [
+      "scripts/ios/acceptance-report.mjs",
+      "tests/ios-acceptance-report.test.mjs",
+      "docs/ios-acceptance-measurement.md"
+    ],
+    "provenance_audit": [
+      "lib/read-request-timing.ts",
+      "lib/supabase/server.ts",
+      "lib/staff-portal-identity.ts",
+      "lib/staff-my-work-resource-server.ts",
+      "app/api/app-local/read/route.ts",
+      "app/api/app-local/context/route.ts",
+      "lib/read-request-trace-protocol.ts",
+      "lib/app-local-host.ts",
+      "lib/experience-trace.ts",
+      "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+      "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "tests/context-today-timing.test.mjs",
+      "tests/app-local-read-correlation.test.mjs",
+      "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+      "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+      "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+      "tests/staff-my-work-critical-path.test.mjs",
+      "tests/app-local-read-cancellation.test.mjs",
+      "tests/app-local-staff-online-access.test.mjs",
+      "tests/owner-today-failure-causality.test.mjs"
+    ],
+    "root": "integration/fixtures/handoff; resource/entry hooks authored only by web_auth_audit"
+  },
+  "acceptancePolicyRecord": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\resume-checkpoint-20261022T000244567698Z\\acceptance-policy-update.json",
+  "id": "3d9bd3b7-0210-4520-8eb1-be1a8656253c",
+  "recordedAt": "2026-10-22T00:18:46.316Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

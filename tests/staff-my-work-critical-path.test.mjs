@@ -207,6 +207,7 @@ function fixture({ hold = {}, fail = {}, snapshotDate = '2026-10-21', missingUse
     ...readers, 'next/server': { connection: async () => {} }, 'next/headers': { headers: async () => new Headers() },
     '@/lib/app-local-scope-id': load('lib/app-local-scope-id.ts'), '@/lib/read-context-scope': reads,
     '@/lib/read-request-timing': timing, '@/lib/app-local-role-resources-server': role,
+    '@/lib/read-request-trace-protocol': load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': load('lib/app-local-command-trace-protocol.ts') }),
   });
   function run({ suffix = '1', tab = 'daily', scope = scopeFor(suffix), staffId = ids(suffix).staff, signal, etag } = {}) {
     const requestURL = origin + '/api/app-local/read?' + new URLSearchParams({ name: 'staff.my-work', scope, args: JSON.stringify({ staffId, tab }) });

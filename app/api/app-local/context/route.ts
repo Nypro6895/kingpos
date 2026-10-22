@@ -11,9 +11,10 @@ import { readAppLocalDisplayContext } from "@/lib/app-local-display-server";
 import { runWithReadContext } from "@/lib/read-context-scope";
 import { createReadRequestTiming, type ReadRequestTiming } from "@/lib/read-request-timing";
 import { getStaffOnlineOnlyAccess } from "@/lib/staff-online-access-server";
+import { newReadRequestId } from "@/lib/read-request-trace-protocol";
 
 export async function GET(request: Request) {
-  const timing = createReadRequestTiming();
+  const timing = createReadRequestTiming(undefined,newReadRequestId(request.headers));
   return runWithReadContext(() => readContext(request, timing), timing);
 }
 
