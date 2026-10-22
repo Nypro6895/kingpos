@@ -102,6 +102,7 @@ test('successful refresh preserves explicit Remember true and false without exte
 // app-local context route. Only Supabase and the business/lease backend are
 // synthetic; no real account, HTTP request, credential or mutation is involved.
 const protocol = load('lib/app-local-command-trace-protocol.ts', {});
+const readTrace = load('lib/read-request-trace-protocol.ts', { './app-local-command-trace-protocol': protocol });
 const ios = load('lib/ios-client.ts', {});
 const timing = load('lib/read-request-timing.ts', {});
 const scope = load('lib/read-context-scope.ts', { 'server-only': {}, 'node:async_hooks': require('node:async_hooks') });
@@ -149,6 +150,7 @@ async function integrated(error, { remember = '1', success = false } = {}) {
     '@/lib/app-local-portable-context-server': { readAppLocalPortableContext: async () => null },
     '@/lib/app-local-display-server': { readAppLocalDisplayContext: async () => null },
     '@/lib/read-context-scope': scope, '@/lib/read-request-timing': timing,
+    '@/lib/read-request-trace-protocol': readTrace,
     '@/lib/staff-online-access-server': { getStaffOnlineOnlyAccess() { throw new Error('Owner path cannot acquire Staff proof'); } },
   });
   const response = await route.GET(new Request(url, { headers: forwarded }));
