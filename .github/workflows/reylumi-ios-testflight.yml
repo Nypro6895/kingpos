@@ -19,6 +19,20 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Rebuild source-bound production bundle (Services pilot OFF)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_MAPTILER_KEY: ${{ vars.NEXT_PUBLIC_MAPTILER_KEY || secrets.NEXT_PUBLIC_MAPTILER_KEY }}
+          NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY }}
+          KINGPOS_DISABLE_BACKGROUND_DISPATCH: '1'
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: node scripts/ios/local-bundle-release.mjs prepare
       - run: brew install xcodegen
       - name: Test simulator and unsigned archive
         working-directory: ios
@@ -44,6 +58,7 @@ jobs:
             ios/build/test.log
             ios/build/archive.log
             ios/build/build-receipt.json
+            ios/build/local-bundle-provenance.json
             ios/build/testflight-*.log
             ios/build/testflight-receipt.json
             ios/build/testflight-processing.json

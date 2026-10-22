@@ -21,6 +21,34 @@ Hướng dẫn chính thức: [đăng ký Apple Developer](https://developer.app
 
 ## Kiểm tra build chưa ký
 
+Trước mỗi build, tạo lại bundle từ đúng checkout phát hành đã stage/commit các
+file nguồn, với Node 24, `npm ci` và cấu hình public hiện có. Dùng checkout phát
+hành riêng đã cố định, giữ cả bốn giá trị public khớp baseline (kể cả giá trị
+cố ý để trống). Từ repository root:
+
+```sh
+node scripts/ios/local-bundle-release.mjs prepare
+node scripts/ios/local-bundle-release.mjs verify
+```
+
+`prepare` luôn chạy builder với `--activate`, Services pilot tắt. Nó yêu cầu
+`NEXT_PUBLIC_SUPABASE_URL` và `NEXT_PUBLIC_SUPABASE_ANON_KEY`; hai giá trị public
+tùy chọn là `NEXT_PUBLIC_MAPTILER_KEY` và `NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY`.
+Workflow đọc các giá trị này từ repository Variables/Secrets cùng tên. Thiếu
+cấu hình sẽ dừng build; không dùng lại bundle cũ. Không sao chép `.env` hay đưa
+server secrets vào nguồn phát hành.
+
+Receipt `ios/build/local-bundle-provenance.json` ghi commit, hash byte nguồn,
+bundle và command mappings; cấu hình chỉ ghi presence/hash. `check-build.sh`
+và `testflight.sh` yêu cầu receipt này trước đóng gói, rồi kiểm tra bundle trong
+archive và IPA. Nếu nguồn, mappings hoặc bundle đổi, chạy lại `prepare` trước
+build. Journal, generated outputs và receipt không tự trở thành input đệ quy.
+Giữ receipt và hash cùng release receipt; việc chuẩn bị bundle chưa phát hành app.
+Builder Tailwind hiện vẫn tự tìm class trong repository. Vì receipt loại trừ
+journal/artifacts/build outputs để tránh đệ quy, giữ checkout phát hành sạch,
+không thêm hay sửa các thư mục này trước lúc tạo bundle; gate này không chứng
+minh một build CSS hoàn toàn tách biệt khỏi môi trường.
+
 Sau khi workflow có trên GitHub, mở repository → **Actions → Reylumi iOS Build Check → Run workflow**, chọn nhánh có source iOS.
 
 Kết quả gồm log, Simulator test results, archive chưa ký và receipt chứa commit, phiên bản Xcode và SHA256 source. Bản archive này kiểm tra tính khả thi của mã Swift; **không phải IPA để cài trên iPhone**. Đạt unit tests không chứng minh tất cả luồng web đã hoạt động trên iOS.

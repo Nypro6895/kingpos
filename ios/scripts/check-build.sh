@@ -8,6 +8,8 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 1
 fi
 command -v xcodegen >/dev/null || { echo "Install XcodeGen before running this check." >&2; exit 1; }
+# Integrity of an inherited manifest is insufficient: require this source's rebuilt package.
+node ../scripts/ios/local-bundle-release.mjs verify
 # These tests exercise the real installed client, not only a generated fixture.
 test -f Reylumi/LocalAppBundle/manifest.json
 test -f Reylumi/AppLocalBridge.js
@@ -146,6 +148,7 @@ test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppLocalBridge.js"
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle/manifest.json"
 verify_local_package "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
+node ../scripts/ios/local-bundle-release.mjs verify "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
 python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
 import hashlib, json, os, pathlib, plistlib, subprocess, sys
 root = pathlib.Path.cwd()

@@ -2,6 +2,8 @@
 set -euo pipefail
 umask 077
 ROOT="$PWD"
+# Fail before creating/importing signing material when source or bundle is stale.
+node ../scripts/ios/local-bundle-release.mjs verify
 SIGNING=$(mktemp -d "$RUNNER_TEMP/reylumi-signing.XXXXXX")
 KEYCHAIN="$SIGNING/signing.keychain-db"
 KEYCHAIN_PASSWORD=$(openssl rand -hex 24)
@@ -51,10 +53,14 @@ EXPECTED_MARKETING_VERSION=$(python3 -c 'import re,pathlib; print(re.search(r"MA
 export EXPECTED_MARKETING_VERSION
 node scripts/release-version-preflight.mjs
 BUILD_VERSION=$(python3 -c 'import json; print(json.load(open("build/release-version-preflight.json"))["nextBuild"])')
+node ../scripts/ios/local-bundle-release.mjs verify
 xcodegen generate
 xcodebuild archive -project Reylumi.xcodeproj -scheme Reylumi -configuration Release -destination 'generic/platform=iOS' -archivePath "$ROOT/build/Reylumi.xcarchive" -derivedDataPath "$ROOT/build/DerivedData-signed" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" CURRENT_PROJECT_VERSION="$BUILD_VERSION" 2>&1 | tee build/testflight-archive.log
+node ../scripts/ios/local-bundle-release.mjs verify "$ROOT/build/Reylumi.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
 codesign --verify --deep --strict "$ROOT/build/Reylumi.xcarchive/Products/Applications/Reylumi.app"
 xcodebuild -exportArchive -archivePath "$ROOT/build/Reylumi.xcarchive" -exportPath "$ROOT/build/export" -exportOptionsPlist "$SIGNING/ExportOptions.plist" 2>&1 | tee build/testflight-export.log
+unzip -q "$ROOT/build/export/Reylumi.ipa" -d "$SIGNING/export-check"
+node ../scripts/ios/local-bundle-release.mjs verify "$SIGNING/export-check/Payload/Reylumi.app/LocalAppBundle"
 cd "$SIGNING"
 xcrun altool --upload-app --type ios --file "$ROOT/build/export/Reylumi.ipa" --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" 2>&1 | tee "$ROOT/build/testflight-upload.log"
 cd "$ROOT"
