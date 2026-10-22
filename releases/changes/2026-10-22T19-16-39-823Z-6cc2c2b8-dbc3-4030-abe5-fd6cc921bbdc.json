@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-cookie-wk-ci-control-20261022",
+  "status": "working",
+  "summary": "Narrow A/B investigation of the exact R11 native cookie test failures on the existing GitHub CI runner. Diagnostic branch only; no product release or test waiver.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    ".github/workflows/reylumi-ios-check.yml",
+    "ios/scripts/diagnose-cookie-lifecycle.sh",
+    "ios/diagnostics/cookie-lifecycle/BackgroundCookieAuthorityWKTests.swift",
+    "ios/diagnostics/cookie-lifecycle/NativeCookieAuthorityWKTests.swift",
+    "ios/diagnostics/cookie-lifecycle/IsolatedWKCookieProfileOwner.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\native-cookie-ci-diagnostic",
+    "commit": "dd32ecb225c1106043ee551f4b658fddf24dc3ea"
+  },
+  "dependencies": [
+    "reylumi-core-r11-integration-20261022"
+  ],
+  "validation": [
+    {
+      "name": "Original exact-source native CI, 205 executions, 198 passed and seven failed cases",
+      "result": "failed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\native\\ios-check-39831720146\\FAILURE-RECEIPT.json"
+    }
+  ],
+  "id": "6cc2c2b8-dbc3-4030-abe5-fd6cc921bbdc",
+  "recordedAt": "2026-10-22T19:16:39.823Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\native-cookie-ci-diagnostic",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

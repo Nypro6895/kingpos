@@ -1,23 +1,18 @@
-name: Reylumi iOS Build Check
+name: Reylumi iOS Cookie Lifecycle Diagnostic
 
-# Validate the dedicated iOS branch without merging or deploying the website.
+# Diagnostic branch only; preserves failed A evidence and does not replace the full release gate.
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/reylumi-ios-webview]
-    paths:
-      - 'ios/**'
-      - '.github/workflows/reylumi-ios-check.yml'
 
 permissions:
   contents: read
 
 concurrency:
   group: reylumi-ios-check-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  simulator-and-archive:
+  cookie-lifecycle-diagnostic:
     runs-on: macos-15
     timeout-minutes: 45
     env:
@@ -29,6 +24,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -47,19 +44,19 @@ jobs:
         run: node scripts/ios/local-bundle-release.mjs prepare
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Generate, test and archive
-        run: bash scripts/check-build.sh
-      - name: Save build results
+      - name: Run bounded synthetic cookie A/B diagnostic
+        timeout-minutes: 30
+        run: bash scripts/diagnose-cookie-lifecycle.sh
+      - name: Preserve every diagnostic result including failed A
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reylumi-ios-check-${{ github.run_number }}
+          name: reylumi-cookie-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ios/build/build-receipt.json
-            ios/build/local-bundle-provenance.json
-            ios/build/check.*/SimulatorTests.xcresult
-            ios/build/test.log
-            ios/build/archive.log
-            ios/build/check.*/Reylumi-unsigned.xcarchive
+            ios/build/cookie-lifecycle-diagnostic/*.json
+            ios/build/cookie-lifecycle-diagnostic/*.log
+            ios/build/cookie-lifecycle-diagnostic/*.txt
+            ios/build/cookie-lifecycle-diagnostic/*.plist
+            ios/build/cookie-lifecycle-diagnostic/*.xcresult
           if-no-files-found: warn
           retention-days: 7
