@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "auth-request-finite-deadline-20261022",
+  "status": "ready",
+  "summary": "Login and MFA now bound preflight and response waits to30s using the existing child-abort transport; each POST is sent once, with unchanged payloads, Remember me, BotID and session checks. No publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/login/login-form.tsx",
+    "tests/auth-request-deadline.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos-r10-login-deadline-20261022",
+    "commit": "e9260e9e51fd5730d8a94b0110102067660a0793"
+  },
+  "validation": [
+    {
+      "name": "Chromium real LoginForm and exact BotID deadline regressions7/7",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\login-deadline-validation-20261022T152716582765Z\\chromium.tap.log"
+    },
+    {
+      "name": "WebKit real LoginForm and request regressions7/7",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\login-deadline-validation-20261022T152716582765Z\\webkit.log"
+    },
+    {
+      "name": "Scoped ESLint and full TypeScript noEmit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\login-deadline-validation-20261022T152716582765Z\\freeze-receipt.json"
+    },
+    {
+      "name": "Independent source and security review",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\botid-security-contract-20261022-review1\\SECURITY-REVIEW.txt"
+    }
+  ],
+  "dependencies": [],
+  "id": "4072b660-7b05-4d67-81bf-43561df0cd04",
+  "recordedAt": "2026-10-22T15:34:03.864Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/login/login-form.tsx": "22c90f6407d1de7e08058861b9dbf77daa143524bcd6e231097aa118f70bfc1e",
+    "tests/auth-request-deadline.test.mjs": "eec7366a2f6ef45a2e37204f8e78f45d83c7f7777fb3881af3f8eba2ae8dd5e1"
+  }
+}

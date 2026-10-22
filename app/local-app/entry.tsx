@@ -93,6 +93,7 @@ type WorkspaceRecovery = { viewerId: string; generation: string; workspaceId?: s
 type WorkspaceGesture = WorkspaceRecovery & { scope: string };
 type WorkspaceResolution = { controller: AbortController; promise?: Promise<void> };
 type PageRecovery = WorkspaceRecovery & { path: string; target?: string };
+type NativeResetPending = { generation: string; scopeEpoch: number; path: string; contextEpoch: number; timer?: ReturnType<typeof setTimeout> };
 const contextFailureMessages: Record<AppLocalContextFailure, string> = {
   timeout: "Checking your account took too long. Please try again.",
   network: "Please check your connection and try again.",
@@ -160,6 +161,12 @@ function App() {
   const [helpPresentation, setHelpPresentation] = useState<Admission | null>(null);
   const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<ContextCheck | null>(null);
   const recoveryAttempts = useRef(new Set<string>());
+  const nativeResetPending = useRef<NativeResetPending | null>(null);
+  const finishNativeResetPending = useCallback(() => {
+    const pending = nativeResetPending.current;
+    if (pending?.timer !== undefined) { clearTimeout(pending.timer); pending.timer = undefined; }
+    // Retain the handled metadata: an identical delivery is not a new reset.
+  }, []);
   const staleScopes = useRef(new Map<string, number>()), conflictRevision = useRef(0);
   const handoffPath = useRef<string | null>(null), acceptedHostEpoch = useRef(-1);
   const workspaceRecovery = useRef<WorkspaceRecovery | null>(null), workspaceResolution = useRef<WorkspaceResolution | null>(null);
@@ -245,6 +252,7 @@ function App() {
     const restoreRole = requested && fresh && handoffPath.current === requestedPath && roleReturn.current?.viewerId === value.context.viewerId && roleReturn.current?.generation === generation;
     reconcileAppLocalRoleResources(value, generation, restoreRole);
     if (!value.offline && (restoreRole || !workspaceGesture.current && !handoffPath.current)) roleReturn.current = null;
+    finishNativeResetPending();
     admitted.current = { ...admitted.current, [family]: next }; setAdmissions(admitted.current);
     if (!value.offline) staleScopes.current.delete(value.context.scope);
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
@@ -252,12 +260,13 @@ function App() {
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
     recordExperienceTrace("context.accept", { source: "app-local", contextReason: value.grant && isExperienceOfflineGrant(value.grant, { scope: value.context.scope, ...(generation ? { generation } : {}) }) ? "lease-valid" : "online-valid", offline: Boolean(value.offline), changed: Boolean(identityChanged || authorityChanged), identityChanged, generationChanged: all.some(item => item && item.generation !== generation), scopeChanged: Boolean(previous && previous.value.context.scope !== value.context.scope), permissionChanged: Boolean(previous && previous.value.context.permissionRevision !== value.context.permissionRevision), grantChanged: Boolean(previous?.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision), ...appLocalReadTraceFields(value) });
     return true;
-  }, []);
+  }, [finishNativeResetPending]);
   const verify = useCallback((options?: { fresh?: boolean; trigger?: ExperienceTraceTrigger }): Promise<void> => {
     // All automatic checks join a workspace resolution. They must not restart
     // the old Staff path while its selected account workspace is being read.
     if (workspaceRecovery.current) return workspaceResolution.current?.promise ?? Promise.resolve();
     if (isPublic(current.current)) return Promise.resolve();
+    finishNativeResetPending();
     const requestedPath = current.current, fresh = Boolean(options?.fresh || handoffPath.current);
     const previous = request.current;
     if (previous?.path === requestedPath && !previous.controller.signal.aborted) {
@@ -334,8 +343,8 @@ function App() {
       } finally { recordExperienceTrace("auth.end", { source: "app-local", operation, durationMs: operation ? performance.now() - began : 0 }); if (request.current === check) request.current = null; }
     });
     return check.promise;
-  }, [accept, recoverPage]);
-  useEffect(() => () => { contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); }, []);
+  }, [accept, recoverPage, finishNativeResetPending]);
+  useEffect(() => () => { finishNativeResetPending(); contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); }, [finishNativeResetPending]);
   const transition = useCallback((destination: string) => {
     const previous = current.current;
     if (previous !== destination && pageRecovery.current?.target !== destination) pageRecovery.current = null;
@@ -347,12 +356,12 @@ function App() {
           && authorityFamily(previous) !== "portable" && authorityFamily(previous) !== "display" ? outgoing : null);
       }
     } else setHelpPresentation(null);
-    if (previous !== destination) { contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; recoveryAttempts.current.clear(); setError(false); }
+    if (previous !== destination) { finishNativeResetPending(); contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; recoveryAttempts.current.clear(); setError(false); }
     current.current = destination;
     const target = admitted.current[authorityFamily(destination)];
     setAppLocalCommandScope(!isPublic(destination) && usable(target, destination) ? target.value.context.scope : undefined);
     setVisited(paths => [...new Set([...paths, previous, destination])].slice(-16)); setPath(destination);
-  }, []);
+  }, [finishNativeResetPending]);
   const navigate = useCallback((value: string, replace = false) => {
     let destination: string; try { destination = appLocalPath(value); } catch { return; }
     destination=appLocalRouteAlias(destination)??destination;
@@ -382,7 +391,21 @@ function App() {
   }, [path, verify]);
   useEffect(() => {
     const nav = (event: Event) => { const value = (event as CustomEvent<{ path?: string }>).detail?.path; if (value) navigate(value); };
-    const fresh = (event: Event) => { const value = captureAppLocalReadTrace((event as CustomEvent<AppLocalContext & { contextPath?: string }>).detail); if (typeof value?.contextPath === "string" && !accept(value, value.contextPath) && !staleScopes.current.has(value.context?.scope)) recoverPage(value, value.contextPath); };
+    const fresh = (event: Event) => {
+      const value = captureAppLocalReadTrace((event as CustomEvent<AppLocalContext & { contextPath?: string; host?: typeof window.__reylumiAppLocalContext }>).detail);
+      if (typeof value?.contextPath !== "string" || accept(value, value.contextPath)) return;
+      const pending = nativeResetPending.current, host = window.__reylumiAppLocalContext;
+      // A current native denial is an actual result, not a still-pending reset.
+      // Stale, cached or malformed DTOs cannot settle this presentation clock.
+      if (pending?.timer !== undefined && pending.contextEpoch === contextEpoch.current && pending.path === current.current
+        && value.contextPath === current.current.split("?")[0] && value.schemaVersion === 1 && isAppLocalScopeId(value.context?.scope)
+        && value.offline === false && Number.isFinite(value.onlineValidatedAt) && Math.abs(Date.now() - value.onlineValidatedAt) < 30_000
+        && [401, 403, 409].includes(value.grantStatus ?? 0) && host?.generation === pending.generation && host.scopeEpoch === pending.scopeEpoch
+        && value.host?.version === 1 && value.host.generation === host.generation && value.host.scopeEpoch === host.scopeEpoch && value.host.nonce === host.nonce) {
+        finishNativeResetPending(); setError(classifyAppLocalContextFailure({ status: value.grantStatus }));
+      }
+      if (!staleScopes.current.has(value.context?.scope)) recoverPage(value, value.contextPath);
+    };
     const scopeConflict = (event: Event) => {
       const detail = (event as CustomEvent<{ scope?: string; generation?: string }>).detail;
       if (!detail?.scope || detail.generation && detail.generation !== window.__reylumiAppLocalContext?.generation) return;
@@ -410,10 +433,20 @@ function App() {
       void verify({ fresh: true });
     };
     const reset = (event: Event, roleHandoff = false) => {
-      const detail = (event as CustomEvent<{ reason?: string; status?: number; scope?: string; scopeEpoch?: number }>).detail;
+      const detail = (event as CustomEvent<{ reason?: string; status?: number; scope?: string; scopeEpoch?: number; generation?: string }>).detail;
       // A fresh authority result rotates native delivery metadata. Do not abort
       // the very context read producing it, or clear an already accepted reply.
       if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
+      const host = window.__reylumiAppLocalContext;
+      const pendingNativeReset = getAppLocalHost().isNative && detail?.reason === "explicitReset"
+        && !Object.prototype.hasOwnProperty.call(detail, "status") && !isPublic(current.current)
+        && host?.version === 1 && typeof detail.generation === "string" && detail.generation === host.generation
+        && Number.isSafeInteger(detail.scopeEpoch) && detail.scopeEpoch === host.scopeEpoch;
+      // Native reset() rotates metadata before publishing. A repeated delivery
+      // must not abort a newer workflow or restart its original 25s deadline.
+      if (pendingNativeReset && nativeResetPending.current?.generation === host!.generation
+        && nativeResetPending.current.scopeEpoch === host!.scopeEpoch) return;
+      finishNativeResetPending();
       // A validated gesture may rotate native delivery metadata before its
       // command reply arrives. Keep only quarantined DTOs, never old admission.
       const preserveRoleReads = roleHandoff || detail?.reason === "context" && roleReturn.current?.generation === window.__reylumiAppLocalContext?.generation;
@@ -421,7 +454,24 @@ function App() {
       const contextReason = detail?.reason === "logout" ? "logout" : appLocalContextFailureReason({ status: detail?.status, contextReason: "reset" });
       recordExperienceTrace("cache.reset", { source: "app-local", trigger: "reset", reason: detail?.reason === "context" ? "grant" : detail?.reason === "resource" ? "resource" : "reset", contextReason, status: detail?.status });
       if (detail?.reason !== "context") { contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; pageRecovery.current = null; handoffPath.current = null; setSwitchingWorkspace(false); }
-      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" ? false : classifyAppLocalContextFailure({ status: detail?.status, contextReason }));
+      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" || pendingNativeReset ? false : classifyAppLocalContextFailure({ status: detail?.status, contextReason }));
+      if (pendingNativeReset) {
+        const pending: NativeResetPending = { generation: host!.generation, scopeEpoch: host!.scopeEpoch, path: current.current, contextEpoch: contextEpoch.current };
+        nativeResetPending.current = pending;
+        // The hosted return owns its fresh context read. Keep old authority
+        // withdrawn without launching a competing GET against the former role.
+        pending.timer = setTimeout(() => {
+          if (nativeResetPending.current !== pending || pending.timer === undefined) return;
+          pending.timer = undefined;
+          const currentHost = window.__reylumiAppLocalContext;
+          if (pending.contextEpoch !== contextEpoch.current || pending.path !== current.current
+            || pending.generation !== currentHost?.generation || pending.scopeEpoch !== currentHost.scopeEpoch
+            || usable(admitted.current[authorityFamily(current.current)]) || request.current
+            || workspaceResolution.current || workspaceRecovery.current || workspaceGesture.current || handoffPath.current || pageRecovery.current
+            || isPublic(current.current) || getAppLocalPage(current.current)?.requiresContext === false) return;
+          setError("reset");
+        }, 25_000);
+      }
       const key = `${authorityFamily(current.current)}:${detail?.scope ?? ""}`;
       // One fresh authority recovery per user navigation. Context rejection or
       // a second failing read stops at an actionable retry, never a retry loop.
@@ -535,7 +585,7 @@ function App() {
     window.addEventListener("reylumi:app-local-revalidate-access", revalidateAccess);
     window.addEventListener("reylumi:app-local-workspace-start", startWorkspace); window.addEventListener("reylumi:app-local-workspace-finish", finishWorkspace); window.addEventListener("reylumi:app-local-workspace-handoff", handoff); window.addEventListener("reylumi:app-local-workspace-resolve", resolveWorkspace); window.addEventListener("reylumi:app-local-page-resolve", resolveWorkspace); window.addEventListener("reylumi:app-local-workspace-retry", retryWorkspace);
     return () => { clearTimeout(accessCheck); window.removeEventListener("reylumi:app-local-workspace-start", startWorkspace); window.removeEventListener("reylumi:app-local-workspace-finish", finishWorkspace); window.removeEventListener("reylumi:app-local-workspace-handoff", handoff); window.removeEventListener("reylumi:app-local-workspace-resolve", resolveWorkspace); window.removeEventListener("reylumi:app-local-page-resolve", resolveWorkspace); window.removeEventListener("reylumi:app-local-workspace-retry", retryWorkspace); window.removeEventListener("reylumi:app-local-revalidate-access", revalidateAccess); window.removeEventListener("reylumi:app-local-scope-conflict", scopeConflict); window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
-  }, [navigate, accept, verify, transition, recoverPage]);
+  }, [navigate, accept, verify, transition, recoverPage, finishNativeResetPending]);
   const activeAdmission = admissions[authorityFamily(path)], context = !isPublic(path) && usable(activeAdmission) ? activeAdmission.value : null;
   const checkSession = useCallback(() => verify({ fresh: true, trigger: "interval" }), [verify]);
   const diagnosticBlocked = !isPublic(path) && !context;
@@ -596,8 +646,8 @@ function App() {
   return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}{typeof window.__reylumiExportDiagnostics === "function" ? <button type="button" className="mt-4 block rounded border px-4 py-2" onClick={() => window.__reylumiExportDiagnostics?.()}>Save diagnostic report</button> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
-      {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
+      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}{typeof window.__reylumiExportDiagnostics === "function" ? <button type="button" className="mt-4 block rounded border px-4 py-2" onClick={() => window.__reylumiExportDiagnostics?.()}>Save diagnostic report</button> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspaceâ€¦</p> : null}</>}</section> : null}
+      {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspaceâ€¦"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" key={"owner:" + privateAdmissionKey(ownerAdmission)} hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
         {[...windows].map(([key,href]) => {

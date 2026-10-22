@@ -4,6 +4,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
 import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
+import { fetchWithDeadline } from "@/lib/bounded-get";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
@@ -121,14 +122,14 @@ export function LoginForm({
     let navigating = false;
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetchWithDeadline("/api/auth/login", {
         headers: {
           Accept: "application/json",
         },
         method: "POST",
         body: new FormData(event.currentTarget),
         signal: controller.signal,
-      });
+      }, { timeoutMs: 30_000, totalTimeoutMs: 30_000, maxAttempts: 1 });
       const result = await readAuthResponse(response, "Unable to log in.");
       if (controller.signal.aborted || !mounted.current || request.current !== controller) return;
 
@@ -194,14 +195,14 @@ export function LoginForm({
       formData.set("challenge_id", mfaChallenge.challengeId);
       formData.set("next", nextPath);
 
-      const response = await fetch("/api/auth/mfa/verify", {
+      const response = await fetchWithDeadline("/api/auth/mfa/verify", {
         headers: {
           Accept: "application/json",
         },
         method: "POST",
         body: formData,
         signal: controller.signal,
-      });
+      }, { timeoutMs: 30_000, totalTimeoutMs: 30_000, maxAttempts: 1 });
       const result = await readAuthResponse(
         response,
         "Unable to verify two-factor code.",

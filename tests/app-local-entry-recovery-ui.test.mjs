@@ -17,7 +17,7 @@ for (const declaration of parsed.statements) {
   const path = declaration.moduleSpecifier.text;
   // The actual recovery implementation stays in the bundle. These mocks only
   // isolate the existing host, shell, page registry and business adapters.
-  if (['react', 'react-dom/client', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission'].includes(path)) continue;
+  if (['react', 'react-dom/client', '@/lib/app-local-context-recovery', '@/lib/app-local-page-admission', '@/lib/read-request-trace-protocol'].includes(path)) continue;
   const names = declaration.importClause?.namedBindings?.elements?.map(element => element.propertyName?.text ?? element.name.text) ?? [];
   imports.set(path, names);
 }
@@ -108,18 +108,18 @@ const replacements = {
   '@/lib/app-local-page-registry': `
     import React from 'react';
     const Page=({context,path})=>{window.fixtureStats.pageRenders++;return <main data-private-page data-private-path={path} data-private-scope={context.context.scope}>Authorized synthetic page</main>};
-    export const getAppLocalPage=path=>['/staff/today','/settings'].includes(path.split('?')[0])?{id:path,title:path==='/staff/today'?'Today':'Settings',requiresContext:true,Component:Page}:null;`,
+    export const getAppLocalPage=path=>path==='/explore'?{id:'explore',title:'Explore',requiresContext:false,Component:()=> <main data-public-explore>Public Explore</main>}:['/staff/today','/staff/my-work','/settings'].includes(path.split('?')[0])?{id:path,title:path==='/staff/today'?'Today':'Settings',requiresContext:true,Component:Page}:null;`,
   '@/components/app-local-shell': `
     import React from 'react';
     export function AppLocalShell({context,children}){return <>{context?<nav data-owner-nav>Today Book POS More</nav>:<header data-guest-shell>Reylumi Search salons, cities, or nail ideas</header>}{children}{!context&&<footer>Report / Contact Help Terms Privacy</footer>}</>}`,
   './navigation': `export function AppLocalNavigationProvider({children}){return children}`,
   './scope': `export function ExperienceScopeProvider({children}){return children}`,
-  '@/lib/app-local-command-client': `let scope;export const getAppLocalCommandScope=()=>scope;export const setAppLocalCommandScope=value=>scope=value`,
+  '@/lib/app-local-command-client': `let scope;export const getAppLocalCommandScope=()=>scope;export const setAppLocalCommandScope=value=>{scope=value;window.fixtureStats.commandScope=value??null}`,
   '@/lib/app-local-scope-id': `export const isAppLocalScopeId=value=>/^v3:[a-f0-9]{64}$/.test(value);export const isAppLocalPortableScopeId=()=>false`,
   '@/lib/experience-offline-policy': `export const getExperienceOfflinePath=path=>path;export const isExperienceOfflineGrant=(grant,options,now=Date.now())=>grant?.scope===options.scope&&grant.expiresAt>now&&(!options.generation||grant.generation===options.generation)`,
   '@/lib/legal-policies': `export const legalDocuments={}`,
   '@/lib/app-local-reference-content': `export const APP_LOCAL_REFERENCE_ASSETS=[]`,
-  '@/lib/app-local-resource': `export const resetAppLocalResources=()=>{};export const useAppLocalResource=()=>({loading:false,refreshing:false,refresh:async()=>{}})`,
+  '@/lib/app-local-resource': `export const resetAppLocalResources=()=>{};export const rememberAppLocalRoleResources=()=>{};export const reconcileAppLocalRoleResources=()=>{};export const clearAppLocalRoleResources=()=>{};export const invalidateAppLocalRoleResources=()=>false;export const useAppLocalResource=()=>({loading:false,refreshing:false,refresh:async()=>{}})`,
   '@/lib/app-local-secondary-registry': `export const getAppLocalSecondaryPage=()=>null;export const appLocalRouteAlias=()=>null`,
   '@/lib/app-local-link-navigation': `export const installAppLocalLinkNavigation=()=>()=>{}`,
 };
@@ -127,7 +127,7 @@ const mock = (path, names) => replacements[path] ?? names.map(name => `export co
 let compiled;
 function compile() {
   compiled ??= build({
-    stdin: { contents: source, loader: 'tsx', resolveDir: process.cwd() },
+    stdin: { contents: source.replace('createRoot(document.getElementById("app")!).render(<App />);', 'const fixtureRoot=createRoot(document.getElementById("app")!);fixtureRoot.render(<App />);window.fixtureUnmount=()=>fixtureRoot.unmount();'), loader: 'tsx', resolveDir: process.cwd() },
     bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic', alias: { '@': process.cwd() },
     define: { 'process.env.NODE_ENV': '"production"' },
     plugins: [{ name: 'entry-fixture-boundaries', setup(builder) {
@@ -155,15 +155,31 @@ async function fixture(options = {}) {
       window.clearTimeout=id=>{const callback=window.fixtureRetryTimers.get(id);if(callback){window.fixtureRetryTimers.delete(id);window.fixtureCancelledRetries.push(callback);window.fixtureStats.retryCancelled++;}fixtureClearTimeout(id);};
     }
     window.fixtureDeliverCancelledRetries=()=>window.fixtureCancelledRetries.splice(0).forEach(callback=>callback());
-    window.__reylumiAppLocalContext={generation:'fixture-generation-20261018',scopeEpoch:1,nonce:'fixture-nonce'};
+    window.__reylumiAppLocalContext={version:1,generation:'fixture-generation-20261018',scopeEpoch:1,nonce:'fixture-nonce'};
+    // Record only the pending-grace deadline. Tests explicitly deliver it, even
+    // after cancellation, to model an alreadyqueued browser timer callback.
+    window.fixtureGraceTimers=new Map();window.fixtureCancelledGrace=[];window.fixtureGraceDelays=[];
+    const graceSetTimeout=window.setTimeout.bind(window),graceClearTimeout=window.clearTimeout.bind(window);
+    if(window.fixtureOptions.trackGrace){
+      window.setTimeout=(callback,delay,...args)=>{if(delay!==25000)return graceSetTimeout(callback,delay,...args);const id=graceSetTimeout(()=>{},60000);window.fixtureGraceDelays.push(delay);window.fixtureGraceTimers.set(id,()=>callback(...args));return id;};
+      window.clearTimeout=id=>{const callback=window.fixtureGraceTimers.get(id);if(callback){window.fixtureGraceTimers.delete(id);window.fixtureCancelledGrace.push(callback);}graceClearTimeout(id);};
+    }
+    window.fixtureFireGrace=()=>{for(const[id,callback]of window.fixtureGraceTimers){window.fixtureGraceTimers.delete(id);graceClearTimeout(id);callback();}};
+    window.fixtureFireCancelledGrace=()=>window.fixtureCancelledGrace.splice(0).forEach(callback=>callback());
     const makeContext=(path,extra={})=>{
-      const scope='v3:'+(path==='/settings'?'b':'a').repeat(64),generation=window.__reylumiAppLocalContext.generation;
-      return{schemaVersion:1,context:{scope,authenticated:true,viewerId:'synthetic-viewer',workspaceId:'synthetic-workspace',salonId:'synthetic-salon',permissionRevision:'synthetic-permission'},grant:{scope,generation,kind:'owner',viewerId:'synthetic-viewer',expiresAt:Date.now()+3600000},onlineValidatedAt:Date.now(),offline:false,access:{ownerWorkspace:true},...extra};
+      const scope='v3:'+(path==='/settings'?'b':path==='/staff/my-work'?'c':'a').repeat(64),generation=window.__reylumiAppLocalContext.generation;
+      const guest=path==='/explore'&&window.fixtureOptions.guest,kind=guest?'public':path==='/staff/my-work'?'staff':'owner';
+      return{schemaVersion:1,contextPath:path,host:{...window.__reylumiAppLocalContext},context:{scope,authenticated:!guest,viewerId:guest?null:'synthetic-viewer',workspaceId:guest?'public':'synthetic-workspace',salonId:guest?null:'synthetic-salon',permissionRevision:'synthetic-permission'},grant:{scope,generation,kind,viewerId:guest?null:'synthetic-viewer',expiresAt:Date.now()+3600000},onlineValidatedAt:Date.now(),offline:false,access:{ownerWorkspace:kind==='owner',staffWorkspace:kind==='staff'},...extra};
     };
     window.resolveContext=(id,extra={})=>window.fixtureHeld.get(id)?.resolve(extra);
+    window.fixturePublishContext=(extra={})=>window.dispatchEvent(new CustomEvent('reylumi:app-local-context',{detail:makeContext(location.pathname,extra)}));
+    window.fixtureNativeReset=(extra={},rotate=true)=>{
+      if(rotate)window.__reylumiAppLocalContext={...window.__reylumiAppLocalContext,generation:window.__reylumiAppLocalContext.generation+'-next',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch+1};
+      window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{...window.__reylumiAppLocalContext,reason:'explicitReset',...extra}}));
+    };
     window.fixtureNavigate=path=>window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path}}));
     window.fixtureReset=()=>{window.__reylumiAppLocalContext={...window.__reylumiAppLocalContext,generation:'fixture-new-generation-20261018',scopeEpoch:2};window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'logout',scopeEpoch:2}}))};
-    window.fixtureHost={isNative:true,cache:async()=>null,command:()=>{window.fixtureStats.commands++;throw Error('No commands authorized')},openOnline:()=>{throw Error('No hosted navigation authorized')},context:async(path,request)=>{
+    window.fixtureHost={isNative:window.fixtureOptions.native!==false,cache:async()=>null,command:()=>{window.fixtureStats.commands++;throw Error('No commands authorized')},openOnline:()=>{throw Error('No hosted navigation authorized')},context:async(path,request)=>{
       const id=++window.fixtureStats.attempts,plan=window.fixtureOptions.statuses||[200];window.fixtureStats.calls.push({id,path,fresh:Boolean(request.fresh)});
       const captured=makeContext(path);
       return new Promise((resolve,reject)=>{
@@ -192,7 +208,7 @@ async function fixture(options = {}) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
     const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.goto('http://127.0.0.1:' + server.address().port + '/staff/today');
+    await page.goto('http://127.0.0.1:' + server.address().port + (options.startPath || '/staff/today'));
     return { page, async close() { const commands = await page.evaluate(() => window.fixtureStats.commands); await browser.close(); await new Promise(resolve => server.close(resolve)); assert.equal(commands, 0); assert.deepEqual(errors, []); } };
   } catch (error) { await browser?.close(); await new Promise(resolve => server.close(resolve)); throw error; }
 }
@@ -340,4 +356,218 @@ test('only an otherwise-valid expired cached lease can advance to an already que
       }
     } finally { await app.close(); }
   }
+});
+
+
+const settleEntry = page => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+async function resetPending(page, extra = {}) {
+  await page.evaluate(value => window.fixtureNativeReset(value), extra);
+  await settleEntry(page);
+}
+for (const [role, startPath] of [['Owner', '/staff/today'], ['Staff', '/staff/my-work']]) {
+  test(`normal native reset keeps ${role} authority withdrawn while awaiting the existing fresh context`, { skip, timeout: 20000 }, async () => {
+    const app = await fixture({ startPath, trackGrace: true });
+    try {
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await resetPending(app.page);
+      assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.commandScope), null);
+      assert.equal(await app.page.locator('[data-context-failure]').count(), 0, 'a successful invalidation is not already a failed read');
+      assert.equal(await app.page.locator('section[aria-busy="true"]').count(), 1);
+      assert.deepEqual(await app.page.evaluate(() => window.fixtureGraceDelays), [25000]);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1, 'native handoff keeps ownership of its own GET');
+      await app.page.evaluate(() => window.fixturePublishContext());
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await app.page.evaluate(() => window.fixtureFireCancelledGrace());
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+      // Identical native metadata is an already handled delivery, including
+      // after admission. Native reset() always rotates generation/epoch.
+      await app.page.evaluate(() => window.fixtureNativeReset({}, false));
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator('[data-private-page]:visible').count(), 1);
+      assert.deepEqual(await app.page.evaluate(() => window.fixtureGraceDelays), [25000]);
+    } finally { await app.close(); }
+  });
+}
+
+test('native reset grace has one deadline despite duplicate delivery and falls back to existing manual retry', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ trackGrace: true });
+  try {
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await resetPending(app.page);
+    await app.page.evaluate(() => { window.fixtureNativeReset({}, false); window.fixtureNativeReset({}, false); });
+    await settleEntry(app.page);
+    assert.deepEqual(await app.page.evaluate(() => window.fixtureGraceDelays), [25000]);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+    await app.page.evaluate(() => window.fixtureFireGrace());
+    await app.page.locator('[data-context-failure="reset"]').waitFor();
+    await app.page.evaluate(() => window.fixtureNativeReset({}, false));
+    await settleEntry(app.page);
+    assert.equal(await app.page.locator('[data-context-failure="reset"]').count(), 1);
+    assert.deepEqual(await app.page.evaluate(() => window.fixtureGraceDelays), [25000]);
+    await app.page.getByRole('button', { name: 'Try again', exact: true }).click();
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    assert.deepEqual(await app.page.evaluate(() => window.fixtureStats.calls.map(call => call.fresh)), [false, true]);
+  } finally { await app.close(); }
+});
+
+test('status-bearing resets and logout stay immediate and supersede a queued native grace callback', { skip, timeout: 30000 }, async () => {
+  for (const [extra, category] of [[{ status: 401 }, 'sign-in'], [{ status: 403 }, 'access'], [{ status: 409 }, 'workspace'], [{ status: 500 }, 'reset'], [{ status: 504 }, 'reset'], [{ reason: 'logout' }, 'sign-in']]) {
+    const app = await fixture({ trackGrace: true });
+    try {
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await resetPending(app.page);
+      await app.page.evaluate(value => window.fixtureNativeReset(value, false), extra);
+      await app.page.locator(`[data-context-failure="${category}"]`).waitFor();
+      await app.page.evaluate(() => window.fixtureFireCancelledGrace());
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator(`[data-context-failure="${category}"]`).count(), 1);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+    } finally { await app.close(); }
+  }
+});
+
+test('only current native generation and epoch without a status field qualify for pending', { skip, timeout: 30000 }, async () => {
+  for (const variant of ['generation', 'epoch', 'missing', 'status-undefined', 'web']) {
+    const app = await fixture({ trackGrace: true, native: variant !== 'web' });
+    try {
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await app.page.evaluate(value => {
+        const extra=value==='generation'?{generation:'other-generation'}:value==='epoch'?{scopeEpoch:0}:value==='missing'?{generation:undefined}:value==='status-undefined'?{status:undefined}:{};
+        window.fixtureNativeReset(extra);
+      }, variant);
+      await app.page.locator('[data-context-failure="reset"]').waitFor();
+      assert.deepEqual(await app.page.evaluate(() => window.fixtureGraceDelays), []);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+    } finally { await app.close(); }
+  }
+});
+
+test('a stale or invalid fresh proof cannot revive old private authority or consume native reset pending', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ trackGrace: true });
+  try {
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await resetPending(app.page);
+    await app.page.evaluate(() => window.fixturePublishContext({ grant: null, grantStatus: 401, host: { ...window.__reylumiAppLocalContext, generation: 'stale-generation' } }));
+    await settleEntry(app.page);
+    assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.commandScope), null);
+    assert.equal(await app.page.evaluate(() => window.fixtureGraceTimers.size), 1);
+    await app.page.evaluate(() => window.fixturePublishContext({ offline: true, grant: { scope: 'v3:'+'a'.repeat(64), generation: 'old-generation', kind: 'owner', expiresAt: Date.now()+3600000 } }));
+    await settleEntry(app.page);
+    assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+    assert.equal(await app.page.evaluate(() => window.fixtureGraceTimers.size), 1);
+    await app.page.evaluate(() => window.fixturePublishContext());
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+  } finally { await app.close(); }
+});
+
+test('manual verification and role handoff own their pending result instead of an older reset timer', { skip, timeout: 30000 }, async () => {
+  for (const workflow of ['verify', 'handoff']) {
+    const app = await fixture({ trackGrace: true, hold: [2] });
+    try {
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await resetPending(app.page);
+      await app.page.evaluate(value => window.dispatchEvent(value==='verify'?new Event('reylumi:foreground'):new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/my-work'}})), workflow);
+      await app.page.waitForFunction(() => window.fixtureStats.attempts===2);
+      await app.page.evaluate(() => window.fixtureFireCancelledGrace());
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+      await app.page.evaluate(() => window.resolveContext(2));
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      assert.deepEqual(await app.page.evaluate(() => window.fixtureStats.calls.map(call => call.path)), workflow==='verify'?['/staff/today','/staff/today']:['/staff/today','/staff/my-work']);
+      assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+    } finally { await app.close(); }
+  }
+});
+
+test('navigation, a newer reset and unmount fence cancelled native reset timers', { skip, timeout: 30000 }, async () => {
+  for (const action of ['navigate', 'reset', 'unmount']) {
+    const app = await fixture({ trackGrace: true });
+    try {
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await resetPending(app.page);
+      await app.page.evaluate(value => { if(value==='navigate')window.fixtureNavigate('/settings');else if(value==='reset')window.fixtureNativeReset();else window.fixtureUnmount(); }, action);
+      await settleEntry(app.page);
+      await app.page.evaluate(() => window.fixtureFireCancelledGrace());
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+      if(action==='navigate')await app.page.locator('[data-private-path="/settings"]:visible').waitFor();
+      if(action==='reset'){
+        assert.deepEqual(await app.page.evaluate(() => window.fixtureGraceDelays), [25000,25000]);
+        assert.equal(await app.page.evaluate(() => window.fixtureGraceTimers.size), 1);
+        await app.page.evaluate(() => window.fixturePublishContext());
+        await app.page.locator('[data-private-page]:visible').waitFor();
+      }
+      if(action==='unmount')assert.equal(await app.page.locator('#app').textContent(), '');
+    } finally { await app.close(); }
+  }
+});
+
+test('native reset does not replace context-optional Guest Explore with an auth error or create reads', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ trackGrace: true, startPath: '/explore', guest: true });
+  try {
+    await app.page.locator('[data-public-explore]:visible').waitFor();
+    await app.page.waitForFunction(() => window.fixtureStats.attempts===1);
+    await resetPending(app.page);
+    await app.page.evaluate(() => window.fixtureFireGrace());
+    await settleEntry(app.page);
+    assert.equal(await app.page.locator('[data-public-explore]:visible').count(), 1);
+    assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+    assert.equal(await app.page.getByRole('button',{name:'Sign in',exact:true}).count(), 0);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+    assert.equal(await app.page.evaluate(() => window.fixtureStats.commandScope), null);
+  } finally { await app.close(); }
+});
+
+
+test('a current native denied envelope ends pending immediately while stale timers cannot replace the denial', { skip, timeout: 20000 }, async () => {
+  for (const [status, category] of [[401,'sign-in'],[403,'access'],[409,'workspace']]) {
+    const app = await fixture({ trackGrace: true });
+    try {
+      await app.page.locator('[data-private-page]:visible').waitFor();
+      await resetPending(app.page);
+      await app.page.evaluate(grantStatus => window.fixturePublishContext({ grant: null, grantStatus, context: { scope:'v3:'+'a'.repeat(64),authenticated:false,viewerId:null,workspaceId:'public',salonId:null,permissionRevision:'' } }), status);
+      await app.page.locator(`[data-context-failure="${category}"]`).waitFor();
+      await app.page.evaluate(() => window.fixtureFireCancelledGrace());
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator(`[data-context-failure="${category}"]`).count(), 1);
+      assert.equal(await app.page.locator('[data-private-page]').count(), 0);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.commandScope), null);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1);
+    } finally { await app.close(); }
+  }
+});
+
+
+test('stale nonce, path, time and offline denied events cannot settle the current native reset grace', { skip, timeout: 20000 }, async () => {
+  const app = await fixture({ trackGrace: true });
+  try {
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await resetPending(app.page);
+    for (const variant of ['nonce','path','time','offline']) {
+      await app.page.evaluate(value => {
+        const extra={grant:null,grantStatus:401};
+        if(value==='nonce')extra.host={...window.__reylumiAppLocalContext,nonce:'stale-nonce'};
+        if(value==='path')extra.contextPath='/settings';
+        if(value==='time')extra.onlineValidatedAt=Date.now()-60000;
+        if(value==='offline')extra.offline=true;
+        window.fixturePublishContext(extra);
+      }, variant);
+      await settleEntry(app.page);
+      assert.equal(await app.page.locator('[data-private-page]').count(), 0, variant);
+      assert.equal(await app.page.locator('[data-context-failure]').count(), 0, variant);
+      assert.equal(await app.page.evaluate(() => window.fixtureGraceTimers.size), 1, variant);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.attempts), 1, variant);
+      assert.equal(await app.page.evaluate(() => window.fixtureStats.commandScope), null, variant);
+    }
+    await app.page.evaluate(() => window.fixturePublishContext());
+    await app.page.locator('[data-private-page]:visible').waitFor();
+    await app.page.evaluate(() => window.fixtureFireCancelledGrace());
+    await settleEntry(app.page);
+    assert.equal(await app.page.locator('[data-context-failure]').count(), 0);
+  } finally { await app.close(); }
 });

@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "r10-native-reset-pending-20261022",
+  "status": "ready",
+  "summary": "Keep normal native explicit-reset validation pending for up to25s with no competing read; preserve authority withdrawal and immediate current denial/logout handling.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "tests/app-local-entry-recovery-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos-r10-native-reset-pending-20261022",
+    "commit": "2cd09be63bc50fd02dcdbb20fba6d17b1071ee63"
+  },
+  "validation": [
+    {
+      "name": "Actual-entry Chromium23/23 and WebKit23/23, no skip/cancel",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\native-reset-pending-implementation\\freeze-receipt.json SHA256 e4ea685812e2f27ed00747fde7352c191bce69fdb3365683580745a27d47e002"
+    },
+    {
+      "name": "Scoped ESLint and full TypeScript exact final source",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\native-reset-pending-implementation\\freeze-receipt.json; author tool exits0, unchanged input hashes"
+    },
+    {
+      "name": "Two independent exact-source/recovery reviews",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\native-reset-pending-test-review-cache.json SHA256 d12e4ed43a36815098fd7f5fe95bec001437681ca359b7e1c92e49f3ddb95060; C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\native-reset-pending-independent-code-review-packaging.json SHA256 9b834adbe725f8a484cdfacc6c848d5256f087748beed61fac7e326c34b591b8"
+    },
+    {
+      "name": "Root frozen commit matches exactly two reviewed files and checked source bytes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\native-reset-pending-implementation\\freeze-receipt.json"
+    }
+  ],
+  "dependencies": [],
+  "occurredAt": "2026-10-22T17:04:46.683Z",
+  "id": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+  "recordedAt": "2026-10-22T17:05:00.085Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "7ac60a93a4989a9d5ebada0a5b107291b8849d7c45142b7ab5cb582b6cf0df1e",
+    "tests/app-local-entry-recovery-ui.test.mjs": "a4a5f439321d04a939b1ddf423b8a5e6253fb1a268f75e3aee0a44d5eb10f96e"
+  }
+}
