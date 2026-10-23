@@ -1,0 +1,83 @@
+{
+  "kind": "change",
+  "changeId": "campaign-run-again-20261023",
+  "status": "ready",
+  "summary": "Expired approved campaigns can Run again with unchanged content, targeting, views and repeat settings, editing only duration and credit limit. A separate historical run uses current create/reservation rules without another admin review. Preserves shipped pause/archive/credit lifecycle, suppresses invalid repeat-run purchase demand and pins the installed-app action.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-workspace.tsx",
+    "components/owner-campaign-dialog.tsx",
+    "lib/owner-campaign-rules.ts",
+    "types/owner-campaign.ts",
+    "lib/vietnamese-campaign-copy.json",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "supabase/migrations/20261023190000_campaign_run_again.sql",
+    "tests/campaign-run-again-actions.test.mjs",
+    "tests/campaign-run-again.integration.test.mjs",
+    "tests/campaign-workspace-runtime.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-run-again-release-20261023\\frozen-candidate",
+    "baselineDeploymentId": "dpl_D5hXGPZ54axBEwSFWGmTLuLqZE9Q",
+    "baselineCommit": "e504c246010dbabd585fbd6086e86b2ff5c3725f",
+    "validatedBuildInputsSha256": "df5a03f8efb248e3ffeb66f46e33e7543689e1e0e1cca4dd2efd581fa164abb4"
+  },
+  "validation": [
+    {
+      "name": "Full Next.js production webpack build and TypeScript; all build inputs match final locked source",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-run-again-release-20261023/provisional-production-build-result.json"
+    },
+    {
+      "name": "Current R12 database lifecycle, rerun accounting, approval, demand/claim and backfill preservation: 12/12",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-run-again-release-20261023/provisional-db/verification.json"
+    },
+    {
+      "name": "Final candidate UI/actions/readonly status/pause/preview: 11/11, 320/390/1280 browser coverage",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-run-again-release-20261023/candidate-ui-tests.log"
+    },
+    {
+      "name": "Browser focus/resume/access gates and single loading indicator, plus initial cumulative campaign regression: 26/26",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-run-again-release-20261023/integration-and-focus-tests.log"
+    },
+    {
+      "name": "Scoped ESLint, full TypeScript and independent DB/security/native action review",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-run-again-release-20261023/candidate-eslint.log"
+    }
+  ],
+  "dependencies": [],
+  "nativeAssessment": {
+    "required": true,
+    "reason": "The shared OwnerCampaignDialog is bundled in the installed app; pin new action without changing existing IDs and rebuild from latest actually uploaded source."
+  },
+  "id": "1dfd4f21-1347-48df-b7ab-73bfb9ba0d7b",
+  "recordedAt": "2026-10-23T09:26:54.039Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/campaigns/actions.ts": "d7cc3055bbf33eef1a4be8e713439e636b301ab18fb89c19ca21112257cc9ca6",
+    "app/campaigns/campaign-workspace.tsx": "3146d5b05faa67b8f1e91c90aa06b031edd359bd9f1898259569b6b68514bf06",
+    "components/owner-campaign-dialog.tsx": "b31f09c45b930b593e52fd2265a7fed634e7caa6bdf78676c6943ff15044f4ef",
+    "lib/owner-campaign-rules.ts": "0dd36707b079764b61d53372f3453e2317b0294f7298cab42160f2e227c06088",
+    "types/owner-campaign.ts": "bb3d903c2ddd72e73899c760537d58d1bac602bf59ba26edf8a039bdf23e6205",
+    "lib/vietnamese-campaign-copy.json": "32cb2ecc25510fede935f30ab083983b1ccd284a57549bb8d55650c1a5c3bb57",
+    "lib/app-local-command-policy.json": "5f7074c8dd48987f7b602a001def6faf882bd439dc15810a78f68b468d078f7a",
+    "lib/app-local-commands-server.generated.ts": "e0b19800a8e8f41fb315fd35992c29d910df5cf896f837c69c8f0408df7d92d3",
+    "supabase/migrations/20261023190000_campaign_run_again.sql": "68b4512024960c0b29ca5c3f31ebbd54832b6fde4c5b3afa9c52446df1915cbe",
+    "tests/campaign-run-again-actions.test.mjs": "cdfafa7a6083bb9120a0eb9978217181eec6b7aa73baa8cc5394f1f5d2f7d4a7",
+    "tests/campaign-run-again.integration.test.mjs": "34cc594866e22327fb20b25dfd9c99c8dba58e822f1a6a66b16d0ba27e3a6f08",
+    "tests/campaign-workspace-runtime.test.mjs": "770ff11b086983e7093aeb858261338a58fcdf1dba1a3622378703c0dab59e15",
+    "tests/campaign-owner-status-ui.test.mjs": "480e39464cff5ae00618670544b355125ae619714b91e2b929dbe3a6fb560b2c"
+  }
+}

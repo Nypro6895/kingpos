@@ -78,6 +78,39 @@ export async function changeOwnerCampaignAction(id: string, action: "pause" | "r
   } catch (error) { return { ok: false, message: error instanceof Error ? error.message : "Please try again." }; }
 }
 
+export async function runAgainOwnerCampaignAction(input: {
+  id: string; previousId: string; settingsVersion?: number; days: number; creditLimit: number;
+}) {
+  try {
+    const { client, salonId, userId } = await requireCampaignOwner();
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuid.test(input.id) || !uuid.test(input.previousId) || input.id === input.previousId) throw new Error("Reopen this campaign and try again.");
+    if (!Number.isSafeInteger(input.days) || input.days < 1 || input.days > 90) throw new Error("Choose a valid number of days.");
+    if (!Number.isSafeInteger(input.creditLimit) || input.creditLimit < 1 || input.creditLimit > 2147483647) throw new Error("Choose a valid credit limit.");
+    if (!Number.isSafeInteger(input.settingsVersion) || input.settingsVersion! < 1) throw new Error("Campaign options changed. Refresh and review the new credit estimate.");
+    // The transaction copies the approved campaign itself. Browser input cannot
+    // substitute its post, audience, delivery limits, or approval provenance.
+    const { data: id, error } = await client.rpc("campaign_run_again", {
+      p_expected: input.settingsVersion, p_id: input.id, p_salon: salonId, p_user: userId,
+      p_previous: input.previousId, p_days: input.days, p_limit: input.creditLimit,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePath("/campaigns");
+    const { data: campaign, error: loadError } = await client.from("owner_campaigns").select("status,auto_fund").eq("id", id).eq("salon_id", salonId).single();
+    if (loadError || !campaign) return { ok: true, id: String(id), message: "Your new run is saved in History. Refresh to see its status." };
+    return {
+      ok: true, id: String(id), status: campaign.status,
+      message: campaign.status === "running"
+        ? "Your campaign is running again. This run is saved in History; no new review is needed."
+        : campaign.status === "awaiting_payment"
+          ? campaign.auto_fund
+            ? "Your new run is saved in History and waiting for automatic credits within your existing limit. No new review is needed."
+            : "Your new run is saved in History. Add credits to start it; no new review is needed."
+          : "Your new run is saved in History. Refresh to see its status.",
+    };
+  } catch (error) { return { ok: false, message: error instanceof Error ? error.message : "Your campaign could not run again." }; }
+}
+
 export async function fundSavedCampaignAction(id:string){
  try{
   const {client,salonId,userId}=await requireCampaignOwner();
@@ -95,7 +128,7 @@ export async function fundSavedCampaignAction(id:string){
       if(markError)throw new Error("Your ad is saved. Please retry to continue with automatic credits.");
     }
   }
-  revalidatePath("/campaigns");return{ok:true,message:data==="pending_review"?"Credits reserved. Your ad is ready for review.":automatic?"Waiting for automatic credits within your existing limit. Your ad has not started yet.":"Add enough credits to start your ad."};
+  revalidatePath("/campaigns");return{ok:true,message:data==="running"?"Your campaign is running.":data==="pending_review"?"Credits reserved. Your ad is ready for review.":automatic?"Waiting for automatic credits within your existing limit. Your ad has not started yet.":"Add enough credits to start your ad."};
  }catch(error){return{ok:false,message:error instanceof Error?error.message:"Please try again."};}
 }
 

@@ -135,7 +135,7 @@ test('actual owner workspace distinguishes retained Pause reserve from expired a
 
         assert.equal(await article('Expired running').getByRole('button',{name:/^(Pause|Resume)$/,exact:true}).count(),0);
 
-        assert.equal(await article('Expired paused').getByRole('button',{name:'Run again',exact:true}).count(),1,'settled terminal campaign retains Run again');checks.push('history reflects pending versus terminal status');
+        assert.equal(await article('Expired paused').getByRole('button',{name:'Run again',exact:true}).count(),0,'cancelled campaigns cannot bypass a new review through Run again');checks.push('history reflects pending versus terminal status');
 
         const actions=await page.evaluate(()=>window.ownerCampaignActions);assert.deepEqual(actions.map(({id,action})=>({id,action})),[{id:'expired-paused',action:'resume'},{id:'current-running',action:'pause'},{id:'current-running',action:'resume'},{id:'admin-paused',action:'resume'},{id:'settled-paused',action:'resume'},{id:'expired-paused',action:'cancel'}]);assert.equal(actions[2].episode,'33333333-3333-4333-8333-000000000004','same-period resume keeps the current pause episode');
 

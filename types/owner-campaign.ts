@@ -42,7 +42,8 @@ export type OwnerCampaign = {
   views: number; clicks: number; likes: number; comments: number; bookings: number;
   spent_cents: number; created_at: string; updated_at?:string; starts_at: string | null; ends_at: string | null;
   reserved_credits?: number; released_credits?: number; keep_running?: boolean;
-  review_note?:string|null;reviewed_at?:string|null;
+  review_note?:string|null;reviewed_at?:string|null;approved_at?:string|null;
+  run_again_of?: string | null; archived_at?: string | null;
   settings_version?: number; settings_snapshot?: OwnerCampaignSettings;
   cycle_credit_limit?: number | null; auto_fund?: boolean;
   owner_paused_at?: string | null; pause_episode_id?: string | null;
