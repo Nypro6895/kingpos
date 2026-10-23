@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "settings-grouped-inline-20261023",
+  "status": "ready",
+  "summary": "Approved grouped inline Settings redesign rebased onto exact production source; preserve safe areas, full-width canvas, existing functions and Windows POS downloads.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "lib/vietnamese-dictionary.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-inline-release-20261023\\validated-source"
+  },
+  "validation": [
+    {
+      "name": "Exact baseline assembly: 3206 files, only three intended Settings deltas",
+      "result": "passed"
+    },
+    {
+      "name": "Full Next.js production build, TypeScript and 239 pages",
+      "result": "passed",
+      "evidence": "artifacts/settings-inline-release-20261023/web-build-result.json"
+    },
+    {
+      "name": "ESLint on Settings and Admin Users files",
+      "result": "passed"
+    },
+    {
+      "name": "Settings, booking and Admin permissions/actions contracts: 7 passed",
+      "result": "passed"
+    },
+    {
+      "name": "Browser shell fixtures: responsive, permissions, draft retention, search and inline jumps",
+      "result": "passed",
+      "evidence": "artifacts/settings-redesign-20261023/verification.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "76d974c3-2a47-49c0-bc1f-74bac061faf2",
+  "recordedAt": "2026-10-23T06:48:42.888Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/settings-hub-client.tsx": "3d7f827ef1e30ae161383602f853555532734cb05ef9062d1a475086bd675636",
+    "app/settings/settings-hub.css": "1534a8ab555f817eccfdbcb01c8103d286bf93714c4762b23b61926b47f431fd",
+    "lib/vietnamese-dictionary.ts": "1c215858e2996e1f952bff90ca975003b2ccdb1e8e9897b69451154976f1b48f"
+  }
+}

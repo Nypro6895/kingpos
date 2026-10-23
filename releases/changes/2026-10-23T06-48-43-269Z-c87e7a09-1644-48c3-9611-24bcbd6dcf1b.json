@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "admin-users-filter-type-guard-20261023",
+  "status": "ready",
+  "summary": "Synchronize local Admin Users undefined guard with exact already-live guard; valid Active/All/status pagination and export logic unchanged.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/users/users-workspace.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-inline-release-20261023\\validated-source"
+  },
+  "validation": [
+    {
+      "name": "Active/All/Suspended/undefined and combined pagination/export filters",
+      "result": "passed"
+    },
+    {
+      "name": "Exact current production already contains this guard; retained unchanged",
+      "result": "passed"
+    },
+    {
+      "name": "Full assembled production build and TypeScript",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "id": "c87e7a09-1644-48c3-9611-24bcbd6dcf1b",
+  "recordedAt": "2026-10-23T06:48:43.269Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/users/users-workspace.tsx": "245890df8afa3f4de4e8dc4194c09b1e32db799de28c4acfbd03b4dc9a2d1ee8"
+  }
+}
