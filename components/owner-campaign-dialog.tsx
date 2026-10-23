@@ -3,7 +3,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { createOwnerCampaignAction } from "@/app/campaigns/actions";
+import { createOwnerCampaignAction, runAgainOwnerCampaignAction } from "@/app/campaigns/actions";
 import { campaignQuote, validateCampaignLocation } from "@/lib/owner-campaign-rules";
 import type { CampaignArea, OwnerCampaignSettings } from "@/types/owner-campaign";
 import type { CampaignCreativeTarget } from "@/types/owner-campaign";
@@ -25,10 +25,10 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
   const [country, setCountry] = useState(previous?.country ?? initialLocation?.country ?? "United States");
   const [region, setRegion] = useState(previous?.state ?? initialLocation?.state ?? "");
   const [city, setCity] = useState(previous?.city ?? initialLocation?.city ?? "");
-  const [days, setDays] = useState(Math.min(previous?.days ?? 3, settings.maxDays));
+  const [days, setDays] = useState(previous?.days ?? Math.min(3, settings.maxDays));
   const baseViews = Math.min(settings.maxDailyViews, Math.max(100, Math.floor(settings.dailyPriceCents * settings.viewsPerDollar / 100)));
-  const [views, setViews] = useState(Math.min(previous?.daily_views ?? baseViews, settings.maxDailyViews));
-  const [keepRunning,setKeepRunning] = useState(false);
+  const [views, setViews] = useState(previous?.daily_views ?? baseViews);
+  const [keepRunning,setKeepRunning] = useState(previous?.keep_running === true);
   const [savedMessage,setSavedMessage] = useState("Your campaign is saved.");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -37,9 +37,12 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
   const ref = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const exampleViews = baseViews * Math.min(7, settings.maxDays);
-  const quote = campaignQuote(settings, views, days, area);
+  let quote = { dailyCents: 0, totalCents: 0 }, quoteError = "";
+  try { quote = campaignQuote(settings, views, days, area); }
+  catch (error) { quoteError = previous && (views < 100 || views > settings.maxDailyViews) ? "This campaign's daily view limit is no longer available. Create a new campaign to choose a supported limit." : error instanceof Error ? error.message : "Campaign options changed. Refresh and review the new credit estimate."; }
   const [limit, setLimit] = useState<number | null>(previous?.cycle_credit_limit ?? (previous ? previous.daily_price_cents * previous.days : null));
-  const creditLimit = Math.min(limit ?? quote.totalCents, quote.totalCents);
+  const creditLimit = previous ? limit ?? quote.totalCents : Math.min(limit ?? quote.totalCents, quote.totalCents);
+  const rerunError = quoteError || (!Number.isSafeInteger(creditLimit) || creditLimit < 1 || creditLimit > quote.totalCents ? "Choose a credit limit within the estimate." : "");
   useEffect(() => {
     opener.current = document.activeElement as HTMLElement | null;
     const element = ref.current;
@@ -47,12 +50,15 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
     return () => { element?.close(); opener.current?.focus(); };
   }, []);
   async function save() {
+    if (previous && rerunError) { setError(rerunError); return; }
     setBusy(true); setError("");
     try {
       if(prepareCreative)setPhotoState("preparing");
       const readyTarget = prepareCreative ? await prepareCreative().catch(error=>{setPhotoState("failed");throw error;}) : target;
       setPhotoState("ready");
-      const result = await createOwnerCampaignAction({ id, settingsVersion:settings.version, target:readyTarget, area, location, country: area === "country" ? location : country, state: region, city, dailyViews: views, days, keepRunning, creditLimit });
+      const result = previous
+        ? await runAgainOwnerCampaignAction({ id, previousId: previous.id, days, creditLimit, settingsVersion: settings.version })
+        : await createOwnerCampaignAction({ id, settingsVersion:settings.version, target:readyTarget, area, location, country: area === "country" ? location : country, state: region, city, dailyViews: views, days, keepRunning, creditLimit });
       if (!result.ok) setError(result.message);
       else { setSavedMessage(result.message); setStep("saved"); onSaved?.({status:result.status,id:result.id}); }
     } catch { setError("Please try again. Your choices are still here."); }
@@ -80,6 +86,26 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
           <label className={styles.label}><WorkspaceText text="Maximum credits for this campaign" /><input type="number" min="1.2" max={displayCredits(quote.totalCents)} step="1.2" required value={displayCredits(creditLimit)} onChange={event => { try {setLimit(creditUnits(Number(event.target.value))); setError("");} catch {setError("Choose a credit amount in steps of 1.2.");} }} /></label><p className={styles.note}><WorkspaceText text="The campaign stops at this limit, even if your salon still has credits. A smaller limit may end the ad sooner." /></p>{error?<p role="alert" className={styles.error}><WorkspaceText text={error}/></p>:null}
           <div className={styles.total}><span><WorkspaceText text="Credit limit ·" /> {days} <WorkspaceText text="days" /></span><strong>{formatCredits(creditLimit)} <WorkspaceText text="credits" /></strong></div><p className={styles.note}><WorkspaceText text="Use credits only for delivered views. Cancel anytime; unused credits return to your balance." /></p>
           <div className={styles.actions}><button type="button" className={styles.secondary} onClick={() => setStep("intro")}><WorkspaceText text="Back" /></button><button className={styles.primary}><WorkspaceText text="Continue →" /></button></div>
+        </form>
+      </> : step === "payment" && previous ? <>
+        <h2 id="campaign-title"><WorkspaceText text="Run again" /></h2>
+        <p className={styles.muted}><WorkspaceText text="Keep the same ad and audience. Only adjust the duration and credit limit." /></p>
+        <div className={styles.summary}>
+          <p><span><WorkspaceText text="Post" /></span><strong>{target.title || <WorkspaceText text="Your post" />}</strong></p>
+          <p><span><WorkspaceText text="Audience" /></span><strong>{[...new Set([location, area === "neighborhood" ? city : "", area !== "country" ? region : "", country].filter(Boolean))].join(", ")}</strong></p>
+          <p><span><WorkspaceText text="Daily limit" /></span><strong>{views.toLocaleString()} <WorkspaceText text="views" /></strong></p>
+          <p><span><WorkspaceText text="Keep running" /></span><strong><WorkspaceText text={keepRunning ? "On" : "Off"} /></strong></p>
+        </div>
+        <form onSubmit={event => { event.preventDefault(); void save(); }}>
+          <div className={styles.twoColumns} style={{ alignItems: "end" }}>
+            <label className={styles.label}><WorkspaceText text="Number of days" /><input type="number" required min={1} max={settings.maxDays} step={1} value={days} disabled={busy} onChange={event => { setDays(Number(event.target.value)); setError(""); }} /></label>
+            <label className={styles.label}><WorkspaceText text="Maximum credits for this campaign" /><input type="number" required min="1.2" max={quoteError ? undefined : displayCredits(quote.totalCents)} step="1.2" value={displayCredits(creditLimit)} disabled={busy} onChange={event => { try { setLimit(creditUnits(Number(event.target.value))); setError(""); } catch { setError("Choose a credit amount in steps of 1.2."); } }} /></label>
+          </div>
+          {!quoteError ? <p className={styles.note}><WorkspaceText text="Current estimate:" /> {formatCredits(quote.dailyCents)} <WorkspaceText text="credits / day" /> · {formatCredits(quote.totalCents)} <WorkspaceText text="credits total" /></p> : null}
+          <p className={styles.note}><WorkspaceText text="The new run starts when enough credits are available. No admin review is needed; both runs stay in History." /></p>
+          <div className={styles.paymentNotice}><strong>{formatCredits(availableCredits)} <WorkspaceText text="credits available" /></strong><p><WorkspaceText text={availableCredits >= creditLimit ? "Your credits cover this run. They will be reserved and your ad will start right away." : automaticPurchases ? "This run will wait for an automatic credit purchase within your existing limit, then start without another review." : `You need ${formatCredits(Math.max(0,creditLimit-availableCredits))} more credits. Save your ad now and add credits in Campaigns.`} /></p></div>
+          {error || rerunError ? <p role="alert" className={styles.error}><WorkspaceText text={error || rerunError} /></p> : null}
+          <div className={styles.actions}><button type="button" className={styles.secondary} disabled={busy} onClick={onClose}><WorkspaceText text="Cancel" /></button><button className={styles.primary} disabled={busy || !settings.enabled || Boolean(rerunError)}><WorkspaceText text={busy ? "Saving…" : "Run again"} /></button></div>
         </form>
       </> : step === "payment" ? <>
         <span className={styles.step}><WorkspaceText text="2 of 2 · Review your ad" /></span><h2 id="campaign-title"><WorkspaceText text="Ready when you are." /></h2><div className={styles.summary}><p><span><WorkspaceText text="Post" /></span><strong><WorkspaceText text={target.title || "Your post"} /></strong></p><p><span><WorkspaceText text="Audience" /></span><strong>{location}{area !== "country" ? `, ${country}` : ""}</strong></p><p><span><WorkspaceText text="Daily limit" /></span><strong>{views.toLocaleString()} <WorkspaceText text="views" /></strong></p><p><span><WorkspaceText text="Duration" /></span><strong>{days} <WorkspaceText text="days" /></strong></p><p><span><WorkspaceText text="Total limit" /></span><strong>{formatCredits(creditLimit)} <WorkspaceText text="credits" /></strong></p></div>

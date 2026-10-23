@@ -1,4 +1,10 @@
-import { DEFAULT_OWNER_CAMPAIGN_SETTINGS, type OwnerCampaignSettings, type CampaignArea } from "@/types/owner-campaign";
+import { DEFAULT_OWNER_CAMPAIGN_SETTINGS, type OwnerCampaignSettings, type CampaignArea, type OwnerCampaign } from "@/types/owner-campaign";
+
+export function canRunAgainOwnerCampaign(campaign: OwnerCampaign, now = Date.now()) {
+  return Boolean(!campaign.owner_paused_at && !campaign.archived_at && campaign.approved_at && campaign.ends_at && Date.parse(campaign.ends_at) <= now && (
+    campaign.status === "completed" || ((campaign.status === "running" || campaign.status === "paused") && !campaign.keep_running)
+  ));
+}
 
 export function normalizeOwnerCampaignSettings(raw: Partial<OwnerCampaignSettings> = {}): OwnerCampaignSettings {
   const defaults = DEFAULT_OWNER_CAMPAIGN_SETTINGS;

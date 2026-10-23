@@ -68,6 +68,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
   const reloadAfterValidation = useRef(false);
   const recovering = useRef(false);
   const blocking = useRef(false);
+  const documentHidden = useRef(false);
   const runValidation = useRef<(force?: boolean, background?: boolean, trigger?: ExperienceTraceTrigger) => Promise<boolean>>(() => Promise.resolve(false));
   const [validationRevision, setValidationRevision] = useState(0);
   const [blocked, setBlocked] = useState(false);
@@ -122,6 +123,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       const existing = getExperienceOfflineGrantForPath(context.scope, path);
       const grant = existing ?? await restoreExperienceOfflineAuthorization(context.scope);
       if (!grant || !getExperienceOfflineGrantForPath(context.scope, path) || getExperienceOfflineAuthorizationPath() !== path || !alive.current || epoch !== validationEpoch.current || recovering.current || reloadAfterValidation.current) return false;
+      documentHidden.current = document.visibilityState !== "visible";
       checked.current = Date.now(); retryCount.current = 0; blocking.current = false;
       recordExperienceTrace("auth.end", { source: "web", trigger, offline: true, reason: "grant", blocked: false });
       resumeExperienceResources(context.scope); setBlocked(false); setConnectionState("idle");
@@ -181,6 +183,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
           recover("identity");
           return false;
         }
+        documentHidden.current = document.visibilityState !== "visible";
         checked.current = Date.now();
         markExperienceScopeOnlineValidated(context.scope);
         retryCount.current = 0;
@@ -258,6 +261,7 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
 
   useLayoutEffect(() => {
     alive.current = true;
+    if (document.visibilityState !== "visible") documentHidden.current = true;
     recordExperienceTrace("route.reveal", { source: "web", trigger: "mount" });
     // Only the first mount follows a fresh server render. An Activity reveal
     // must validate again instead of treating retained server props as fresh.
@@ -291,9 +295,16 @@ export function ExperienceScopeProvider({ context, children }: { context: Experi
       recheckAfterNotification("reset");
     };
     const resume = (event: Event) => {
-      if (document.visibilityState !== "visible" || !navigator.onLine) return;
+      // Remember a real document hide even when offline or when focus arrives
+      // before the corresponding visible event. Only fresh admission clears it.
+      if (document.visibilityState !== "visible") { documentHidden.current = true; return; }
+      if (!navigator.onLine) return;
       const trigger = event.type === "focus" ? "focus" : event.type === "online" ? "online" : "visible";
-      void validate(false, false, trigger);
+      // A continuously visible page already exposes this admitted view. Check
+      // it without stopping child effects or treating focus as a route return.
+      const background = event.type === "focus" && checked.current > 0 && !documentHidden.current
+        && !blocking.current && !recovering.current && !reloadAfterValidation.current && retryDue.current <= Date.now();
+      void validate(false, background, trigger);
     };
     window.addEventListener("reylumi:experience-reset", reset);
     window.addEventListener("reylumi:offline-clear", reset);

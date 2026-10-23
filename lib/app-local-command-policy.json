@@ -416,7 +416,8 @@
       "ownerCampaignPromptAction",
       "loadCampaignResultsAction",
       "saveCampaignLimitAction",
-      "loadCampaignPostsAction"
+      "loadCampaignPostsAction",
+      "runAgainOwnerCampaignAction"
     ],
     "app/campaigns/creative-actions.ts": [
       "createCampaignCreativeAction"
