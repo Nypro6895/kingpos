@@ -2635,10 +2635,14 @@ function MobileBottomNav({
       aria-label={__vt(ariaLabel)}
       className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border-subtle bg-surface px-1 pb-[env(safe-area-inset-bottom)] pt-2.5 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] lg:hidden"
     >
-      {links.map((link) => {
+      {links.map((originalLink) => {
+        const link: NavigationLink = roleKind === "owner" && originalLink.href === "/notifications"
+          ? { href: "/reports", icon: "list", id: "owner-reports", label: "Reports" }
+          : originalLink;
+        const isOwnerReportsActive = roleKind === "owner" && customerRouteMatches(pathname, "/reports");
         const isActive =
           isMoreLink(link)
-            ? isRoleMoreActive(roleKind, pathname, searchParams)
+            ? !isOwnerReportsActive && isRoleMoreActive(roleKind, pathname, searchParams)
             : isLinkActive(link, pathname, searchParams);
 
         if (isMoreLink(link)) {
