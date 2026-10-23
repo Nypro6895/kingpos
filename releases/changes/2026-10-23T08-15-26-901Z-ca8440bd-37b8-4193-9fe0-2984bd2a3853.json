@@ -1,0 +1,106 @@
+{
+  "kind": "change",
+  "changeId": "owner-reports-compact-20261023",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Source-verified native Report compact UI, rebuilt from uploaded build 47 with the approved Report files and four already-shipped web deltas. All 25 native implementation files unchanged. Apple processing and existing internal TestFlight group availability verified.",
+  "files": [
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/operational-report-dashboard.tsx",
+    "app/reports/report-controls.tsx",
+    "app/reports/report-ui.tsx",
+    "app/reports/reports.module.css",
+    "components/compact-filters.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/fixtures/owner-reports-preview.mjs",
+    "tests/owner-reports-compact-browser.mjs",
+    "app/explore/explore-salon-card.tsx",
+    "app/explore/explore-search-input.tsx",
+    "app/explore/nail-inspiration.tsx",
+    "app/settings/direct-settings-actions.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\owner-reports-release-20261023\\validated-native-source",
+    "commit": "c8f796f294a97c217e53ccdfe95ff19ceeba3279",
+    "baselineCommit": "e1fd29cb50699eb9c5cffc8882f6ae4a123c1aae",
+    "baselineBuild": "47",
+    "reportEventId": "edee97c3-e77b-41ad-b83e-de65075c216b",
+    "inheritedWebCommit": "39ccf257b39faace89144a81aa79b26b0e78ac3d"
+  },
+  "supersedesEvents": [
+    "edee97c3-e77b-41ad-b83e-de65075c216b"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Full production build including TypeScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/owner-reports-release-20261023/web-build-result.json"
+    },
+    {
+      "name": "Final Mac iPhone 17 iOS 27 Simulator: 5 passed, 0 failed; Save fully visible and native keyboard/tap",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/owner-reports-release-20261023/simulator/final-summary-v2.json"
+    },
+    {
+      "name": "Final browser checks 320/375/390/430/1024, English and Vietnamese",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/owner-reports-release-20261023/browser/browser-verification.json"
+    },
+    {
+      "name": "Exact production financial helpers, component state, input handlers and backend sources preserved",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/owner-reports-release-20261023/logic-preservation.json"
+    },
+    {
+      "name": "24 production save-controller regression cases",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/owner-reports-release-20261023/production-hook-regression.log"
+    },
+    {
+      "name": "Scoped lint zero errors; two unused helper warnings; whitespace check with CR-at-EOL handling",
+      "result": "passed"
+    },
+    {
+      "name": "CI simulator tests, signed archive, accepted upload; every source input and bundled resource matches frozen Git commit",
+      "result": "passed",
+      "evidence": "artifacts/owner-reports-release-20261023/native-source-verification.json"
+    },
+    {
+      "name": "Apple VALID and available to existing internal TestFlight group; read-only verification without invitations or group changes",
+      "result": "passed",
+      "evidence": "artifacts/owner-reports-release-20261023/native-availability/testflight-availability.json"
+    }
+  ],
+  "nativeAssessment": {
+    "swiftChanges": false,
+    "bridgeChanges": false,
+    "newPermissions": false,
+    "baselineBuild": "47",
+    "actualVersion": "1.0.0",
+    "actualBuild": "48"
+  },
+  "id": "ca8440bd-37b8-4193-9fe0-2984bd2a3853",
+  "recordedAt": "2026-10-23T08:15:26.901Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/reports/owner-live-reports.tsx": "fdc0d2e13813462c06580ccd20c7a5c860901e672db4b53197f4dab606da08e0",
+    "app/reports/daily-closing-form.tsx": "09ff3cbf3e913aedcbf125b4bcf2ef7d0478fb294bb2ae4bf1c21174c8ea8bc1",
+    "app/reports/operational-report-dashboard.tsx": "45baa9000f723b7ded05c6c3f173e06e13e3df48c01bdfb8fa0588843e73801d",
+    "app/reports/report-controls.tsx": "7e46180f14056ff1043e73a002cdd5c27a16752f0bce3463020ff058c0f1ee5e",
+    "app/reports/report-ui.tsx": "2f8a184f6138368eede904b319358e14fcce81349fd4d878359f8e1f4f4582b1",
+    "app/reports/reports.module.css": "40a39c3b355215c0567c6792f198d8e13edb2fe5b79e1310d99d9d8c9d0f0279",
+    "components/compact-filters.tsx": "7325350413da819bbd8d3b7123888562c53b508d7a9f79609c5be953cf2ed513",
+    "lib/vietnamese-dictionary.ts": "e913993035ad5388287c9153e7b3e0b4bf651deca6683d14e236b2ba5d3e369e",
+    "tests/fixtures/owner-reports-preview.mjs": "b6275f367d00db72ca7b8d5f203fcb66122bb78b74b5e240248e532b518eb007",
+    "tests/owner-reports-compact-browser.mjs": "6c4e948f447437a919f115d54d26326e2fe74290734b2709170ecab89303dd71",
+    "app/explore/explore-salon-card.tsx": "0a1a1de683a36a46f0a007d23a0f81beb1a07170f919a8eccd4864ffbb5575b8",
+    "app/explore/explore-search-input.tsx": "9020b0e3c435ae0196019d5f6bf77eb87bb1cfc4de3b783db3976dd701b64841",
+    "app/explore/nail-inspiration.tsx": "f6db046e741a1b390ce050b4492e74fb56565697eb20d34f1ed23fc1e3c38511",
+    "app/settings/direct-settings-actions.ts": "66418713061561d4d448b641a567050157b140664b9630a54bdb483555802f64"
+  }
+}

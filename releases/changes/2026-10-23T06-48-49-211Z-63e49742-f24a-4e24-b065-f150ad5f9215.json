@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "owner-reports-compact-20261023",
+  "status": "needs-integration",
+  "summary": "Completed approved compact Owner Reports UI with Reylumi teal/orange accents and preserved financial/save/correction behavior. Final full-project TypeScript, scoped lint, six input/report checks and isolated browser checks passed. Exact source frozen; production build and baseline integration remain for release. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/operational-report-dashboard.tsx",
+    "app/reports/report-controls.tsx",
+    "app/reports/report-ui.tsx",
+    "app/reports/reports.module.css",
+    "components/compact-filters.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/fixtures/owner-reports-preview.mjs",
+    "tests/owner-reports-compact-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\owner-reports-compact-20261023\\frozen",
+    "sourceSha256": "ea4e303bff2a943d6e3aa5e00e45c1e0550f9d884d573ee08cf754d6c12e5218"
+  },
+  "fileHashes": {
+    "app/reports/owner-live-reports.tsx": "8350aa9a4f542b4d8c8234740a316150eecc239224aa100ccc21bcf4e8f7dca4",
+    "app/reports/daily-closing-form.tsx": "cfdcca0ce4e390b6b72b72f422175ae6608f1280c6c1032f4ccf708a27725398",
+    "app/reports/operational-report-dashboard.tsx": "45baa9000f723b7ded05c6c3f173e06e13e3df48c01bdfb8fa0588843e73801d",
+    "app/reports/report-controls.tsx": "7e46180f14056ff1043e73a002cdd5c27a16752f0bce3463020ff058c0f1ee5e",
+    "app/reports/report-ui.tsx": "2f8a184f6138368eede904b319358e14fcce81349fd4d878359f8e1f4f4582b1",
+    "app/reports/reports.module.css": "2a1729389ce9682cad64b87f68b4f381ce714c12b0de6bfebd41fd850ba7579c",
+    "components/compact-filters.tsx": "51e110454a3ee0cf55667b28716f88adea1f329d0902dc9a32add6af941dcce9",
+    "lib/vietnamese-dictionary.ts": "5d21ea992b07e9b8c011fb5f5c258591bb86e190d442b9214783d8e465b90b1b",
+    "tests/fixtures/owner-reports-preview.mjs": "4c91218323d7577df81224f443ded584f17b402a9b7eb243e9730352efc41413",
+    "tests/owner-reports-compact-browser.mjs": "3906efffb34143a1bad0c392582c5893de850f6aa2a6ddb810fecc9628cbf036"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Money/report existing checks (6 passed)",
+      "result": "passed",
+      "evidence": "node --test tests/daily-closing-input.test.mjs tests/operational-report-contract.test.mjs"
+    },
+    {
+      "name": "AST comparison: financial helpers, form state, handlers, money input behavior preserved",
+      "result": "passed",
+      "evidence": "artifacts\\owner-reports-compact-20261023\\logic-preservation.json"
+    },
+    {
+      "name": "Actual report UI and save hook: browser checks at 320/375/390/430/1024px, English and Vietnamese",
+      "result": "passed",
+      "evidence": "artifacts\\owner-reports-compact-20261023\\browser-verification.json"
+    },
+    {
+      "name": "Scoped report TypeScript and lint",
+      "result": "passed",
+      "evidence": "npx tsc -p artifacts/owner-reports-compact-20261023/tsconfig.json --noEmit; scoped ESLint has zero errors and one pre-existing unused NoPermissionState warning"
+    },
+    {
+      "name": "Final full-project TypeScript",
+      "result": "passed",
+      "evidence": "npx tsc --noEmit --incremental false exited 0; artifacts/owner-reports-compact-20261023/full-typecheck.log is empty (no diagnostics)"
+    },
+    {
+      "name": "Full production build after release baseline assembly",
+      "result": "pending",
+      "evidence": "artifacts\\owner-reports-compact-20261023\\handoff.md"
+    },
+    {
+      "name": "Frozen source matches current files",
+      "result": "passed",
+      "evidence": "All 10 source SHA-256 values match artifacts/owner-reports-compact-20261023/source-hashes.json"
+    }
+  ],
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Only web presentation, icons, translated labels and isolated verification fixtures changed; no native assets, Swift, configuration or bridge contracts changed."
+  },
+  "reviewEvidence": "artifacts\\owner-reports-compact-20261023\\handoff.md",
+  "overlayPatch": "artifacts\\owner-reports-compact-20261023\\intended.patch",
+  "id": "63e49742-f24a-4e24-b065-f150ad5f9215",
+  "recordedAt": "2026-10-23T06:48:49.211Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

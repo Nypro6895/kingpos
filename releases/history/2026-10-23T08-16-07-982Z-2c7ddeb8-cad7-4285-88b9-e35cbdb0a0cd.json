@@ -1,0 +1,105 @@
+{
+  "kind": "release",
+  "releaseId": "owner-reports-simulator-release-20261023",
+  "summary": "Approved compact Owner Reports verified on Mac iPhone Simulator, published on reylumi.com and source-verified in TestFlight 1.0.0 (48). Preserve all calculations, financial inputs, viewer permissions, save/correction/recovery behavior and unrelated latest web/native features.",
+  "changes": [
+    "edee97c3-e77b-41ad-b83e-de65075c216b",
+    "ca8440bd-37b8-4193-9fe0-2984bd2a3853"
+  ],
+  "channelChanges": {
+    "web": [
+      "edee97c3-e77b-41ad-b83e-de65075c216b"
+    ],
+    "ios": [
+      "ca8440bd-37b8-4193-9fe0-2984bd2a3853"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_3h2e7yPQYQkdsteHCGdd1rr8pR42",
+      "baselineDeploymentId": "dpl_DrMyEqCCMTfqwfsAzNR5kYSSPMkT",
+      "baselineCommit": "b3d07a9fc4720656d5a8c70e7726807dd721a568",
+      "baselineSourceSha256": "9c3c60ed0a1c27bec4b278a07a90389a1116d3ecad823048b5cb1e19ff7c094f",
+      "sourceSha256": "0e2e93bf80dbf0ecc10da0555fe861830dd9ced76746da4f3b1333de43f04db6",
+      "deploySourceSha256": "48710538a6f81b8f4566684437d423a8ac6346880ce0b8215bbb66d07ec5fddc",
+      "overlaySha256": "dc7c33135e1ede46137c543dbb5ff28a84af34c61dcc1828a4c999c2357ec56e",
+      "commit": "39ccf257b39faace89144a81aa79b26b0e78ac3d",
+      "evidence": "artifacts/owner-reports-release-20261023/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "48",
+      "commit": "c8f796f294a97c217e53ccdfe95ff19ceeba3279",
+      "evidence": "artifacts/owner-reports-release-20261023/native-source-verification.json",
+      "workflowRun": 39921089006,
+      "availabilityWorkflowRun": 39923291975,
+      "appleBuildId": "57f876fa-382d-4257-943e-1037c7e8b876",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "existingGroups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal"
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support"
+        }
+      ]
+    }
+  },
+  "validation": {
+    "fullWebProductionBuild": true,
+    "typescript": true,
+    "macReportSimulatorTests": 5,
+    "browserWidths": [
+      320,
+      375,
+      390,
+      430,
+      1024
+    ],
+    "productionSaveRegressionTests": 24,
+    "financialStateHandlersAndBackendUnchanged": true,
+    "anonymousLiveChecks": 9,
+    "webSourceFilesVerified": 3213,
+    "nativeSimulatorTests": 205,
+    "nativeSourceInputsVerified": 2512,
+    "uploadedBundleResourcesVerified": 346,
+    "nativeImplementationFilesUnchanged": 25
+  },
+  "nativeBaseline": {
+    "commit": "e1fd29cb50699eb9c5cffc8882f6ae4a123c1aae",
+    "version": "1.0.0",
+    "build": "47"
+  },
+  "scope": {
+    "reportUiFiles": 8,
+    "reportVerificationFiles": 2,
+    "nativeInheritedFiles": [
+      "app/explore/explore-salon-card.tsx",
+      "app/explore/explore-search-input.tsx",
+      "app/explore/nail-inspiration.tsx",
+      "app/settings/direct-settings-actions.ts"
+    ],
+    "noSwiftBridgeOrPermissionChanges": true,
+    "unrelatedLiveExploreAndAdminFeaturesPreserved": true
+  },
+  "limits": [
+    "Report Simulator and browser checks use actual integrated components and the production save hook with synthetic data boundaries; no real customer or financial writes.",
+    "No physical iPhone installation or App Store publication claimed.",
+    "Unrelated working/blocked journal entries remain unpublished."
+  ],
+  "rollback": {
+    "webBaselineDeploymentId": "dpl_DrMyEqCCMTfqwfsAzNR5kYSSPMkT",
+    "nativeBaselineBuild": "47",
+    "onlyIfAliasStillMatchesThisRelease": true
+  },
+  "id": "2c7ddeb8-cad7-4285-88b9-e35cbdb0a0cd",
+  "recordedAt": "2026-10-23T08:16:07.982Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

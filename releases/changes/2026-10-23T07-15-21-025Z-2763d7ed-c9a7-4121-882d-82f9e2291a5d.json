@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "owner-reports-compact-20261023",
+  "status": "working",
+  "summary": "Integrate approved Reports presentation into exact live production source while retaining its viewer-scoped closing state and existing save/recovery protocol; validate final source on Mac iPhone Simulator before authorized web/native release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/operational-report-dashboard.tsx",
+    "app/reports/report-controls.tsx",
+    "app/reports/report-ui.tsx",
+    "app/reports/reports.module.css",
+    "components/compact-filters.tsx",
+    "lib/vietnamese-dictionary.ts"
+  ],
+  "source": {
+    "snapshot": "artifacts/owner-reports-compact-20261023/frozen"
+  },
+  "validation": [
+    {
+      "name": "Initial iPhone 17 / iOS 27 WebKit groups",
+      "result": "passed",
+      "evidence": "Mac OwnerReports-20261023/InitialWebKitTests.xcresult: 3 tests passed; final production-source integration remains pending"
+    },
+    {
+      "name": "Final integrated Simulator, production build and release",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "2763d7ed-c9a7-4121-882d-82f9e2291a5d",
+  "recordedAt": "2026-10-23T07:15:21.025Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

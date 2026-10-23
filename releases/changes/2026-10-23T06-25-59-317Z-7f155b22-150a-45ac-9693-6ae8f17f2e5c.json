@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "owner-reports-compact-20261023",
+  "status": "working",
+  "summary": "Implement approved compact Owner Reports UI with Reylumi teal/orange accents; preserve financial logic, permissions and save/correction behavior",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/operational-report-dashboard.tsx",
+    "app/reports/report-controls.tsx",
+    "app/reports/report-ui.tsx",
+    "app/reports/reports.module.css"
+  ],
+  "source": {
+    "snapshot": "artifacts/owner-reports-compact-20261023/before"
+  },
+  "validation": [
+    {
+      "name": "UI implementation and verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "7f155b22-150a-45ac-9693-6ae8f17f2e5c",
+  "recordedAt": "2026-10-23T06:25:59.317Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
