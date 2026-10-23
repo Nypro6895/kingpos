@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   useTransition,
@@ -43,6 +44,7 @@ type AccountProfileEditorProps = {
   user: KingUser;
   compact?: boolean;
   embedded?: boolean;
+  sectionId?: string;
   phoneVerified?: boolean;
 };
 
@@ -237,7 +239,7 @@ function ProfileField({ label, onEdit, value }: ProfileFieldProps) {
   const display = displayValue(value);
 
   return (
-    <div className="grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-profile-row grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <dt className="text-xs font-semibold uppercase text-zinc-500">
         <WorkspaceText text={label} />
       </dt>
@@ -267,10 +269,11 @@ function EditableField({
   onChange,
   value,
 }: EditableFieldProps) {
-  const fieldId = `account-profile-${name}`;
+  const instanceId = useId();
+  const fieldId = `account-profile-${instanceId}-${name}`;
 
   return (
-    <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-profile-row grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <label
         className="text-xs font-semibold uppercase text-zinc-500"
         htmlFor={fieldId}
@@ -291,7 +294,7 @@ function EditableField({
 
 function ReadonlyField({ label, value }: ProfileFieldProps) {
   return (
-    <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-profile-row grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <span className="text-xs font-semibold uppercase text-zinc-500">
         <WorkspaceText text={label} />
       </span>
@@ -464,6 +467,7 @@ export function AccountProfileEditor({
   user,
   compact = false,
   embedded = false,
+  sectionId = "profile-contact",
   phoneVerified = false,
 }: AccountProfileEditorProps) {
   const __vt = useWorkspaceTranslation();
@@ -476,6 +480,7 @@ export function AccountProfileEditor({
     safeAccountAvatarUrl(user.avatar_url),
   );
   const [editing, setEditing] = useState(false);
+  const profileSaveLock = useRef(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [phoneClaim, setPhoneClaim] = useState<PhoneClaimState | null>(null);
@@ -647,7 +652,7 @@ export function AccountProfileEditor({
   }
 
   function saveProfile() {
-    if (uploading) {
+    if (uploading || profileSaveLock.current) {
       return;
     }
 
@@ -657,7 +662,9 @@ export function AccountProfileEditor({
     setPhoneVerificationOpen(false);
     resetPhoneOtpState();
 
+    profileSaveLock.current = true;
     startSaving(async () => {
+      try {
       const result = await updateAccountProfileAction(profilePayload());
 
       if (result.error) {
@@ -678,6 +685,11 @@ export function AccountProfileEditor({
       setPhoneClaim(result.phoneClaim ?? null);
       setNotice(result.phoneClaim?.message ?? "Profile saved.");
       router.refresh();
+      } catch {
+        setError("Could not save. Your changes are still here.");
+      } finally {
+        profileSaveLock.current = false;
+      }
     });
   }
 
@@ -854,7 +866,8 @@ export function AccountProfileEditor({
   return (
     <div className={compact ? "settings-style bg-white px-4 py-3" : "settings-style"}><section
       className={`scroll-mt-6${embedded ? " settings-content-root" : ""}`}
-      id="profile-contact"
+      id={sectionId}
+      data-profile-editing={editing}
       onKeyDown={onEditorKeyDown}
     >
       {!embedded ? <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
@@ -1047,12 +1060,12 @@ export function AccountProfileEditor({
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+        <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
           <WorkspaceText text={error} />
         </p>
       ) : null}
       {notice ? (
-        <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <p role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
           <WorkspaceText text={notice} />
         </p>
       ) : null}

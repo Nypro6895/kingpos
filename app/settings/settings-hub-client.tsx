@@ -1,6 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { useEffect, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { KingUser } from "@/types/user";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import { PersonalPublicProfilePanel } from "./personal-public-profile-panel";
@@ -37,18 +37,23 @@ function SettingContent({active,children}:{active:boolean;children:ReactNode}) {
 export function SettingsHubClient({user,createdAtLabel,index:initial,initialSection="",initialQuery=""}: {user:KingUser;createdAtLabel:string;index:SettingsHubIndex;initialSection?:string;initialQuery?:string}) {
   const __vt = useWorkspaceTranslation();
 
- const [index,setIndex]=useState(initial),[query,setQuery]=useState(initialQuery),[error,setError]=useState(""),[busy,setBusy]=useState(false);
- const [selection,setSelection]=useState("");
- const [mobileStep,setMobileStep]=useState<"home"|"edit">(initialSection?"edit":"home");
+ const [index,setIndex]=useState(initial),[error,setError]=useState(""),[busy,setBusy]=useState(false);
+ const [queryState,setQueryState]=useState({source:initialQuery,value:initialQuery});
+ const query=queryState.source===initialQuery?queryState.value:initialQuery;
+ function setQuery(value:string){setQueryState({source:initialQuery,value});}
+ type View = {kind:"home"}|{kind:"group";id:string}|{kind:"detail";id:string};
+ const [navigation,setNavigation]=useState<{source:string;view:View}|null>(null);
+ const headingRef=useRef<HTMLHeadingElement>(null);
  async function reload(){setBusy(true);setError("");try{setIndex(await loadSettingsHub());}catch(e){setError(e instanceof Error?e.message:"Could not reload your salons.");}finally{setBusy(false);}}
- function reveal(id:string){
-  setQuery("");setSelection(id);setMobileStep("edit");
-  window.history.replaceState(null,"",`/settings?section=${encodeURIComponent(id)}`);
+ function navigate(next:View){
+  setQuery("");setNavigation({source:initialSection,view:next});
+  window.history.replaceState(null,"",next.kind==="home"?"/settings":`/settings?section=${encodeURIComponent(next.id)}`);
   requestAnimationFrame(()=>{
-   document.getElementById(id)?.scrollIntoView({block:"start"});
-   document.getElementById(`${id}-heading`)?.focus({preventScroll:true});
+   headingRef.current?.focus({preventScroll:true});
+   document.querySelector(".settings-hub")?.scrollIntoView({block:"start"});
   });
  }
+ function reveal(id:string){navigate({kind:"detail",id});}
  const groups:SettingGroup[]=[{id:"personal",label:"Personal account",description:user.email||user.display_name||undefined,items:[
   {id:"personal-profile",label:"Profile & contact",content:<AccountProfileEditor user={user} createdAtLabel={createdAtLabel} embedded/>},
   {id:"personal-public",label:"Public profile & visibility",content:<PersonalPublicProfilePanel/>},
@@ -66,21 +71,14 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  groups.push({id:"help",label:"Help & support",items:[{id:"help-support",label:"Help & support",content:<div className="grid gap-3 text-sm"><p><WorkspaceText text="Contact our team about app functionality, records, calculations or account access." /></p><Link className="text-orange-700 underline" href="/support"><WorkspaceText text="Send a request & view my conversations" /></Link><Link href="/account-recovery" className="underline"><WorkspaceText text="Account recovery" /></Link></div>}]});
  const all=groups.flatMap(g=>g.items);
  const initialId=initialSection==="profile"?"personal-profile":initialSection==="staff-connections"?"connections":all.find(i=>i.id===initialSection||i.id.endsWith(`-${initialSection}`)||initialSection==="staff-workspace"&&i.id.startsWith("staff-")&&i.id.endsWith("-profile")||initialSection==="staff-schedule"&&i.id.endsWith("-schedule"))?.id;
- const activeId=all.some(i=>i.id===selection)?selection:initialId||"personal-profile";
- const activeGroup=groups.find(g=>g.items.some(i=>i.id===activeId))||groups[0];
+ const initialGroup=groups.find(g=>g.id===initialSection);
+ const requested=(navigation?.source===initialSection?navigation.view:null)??(initialId?{kind:"detail",id:initialId}:initialGroup?{kind:"group",id:initialGroup.id}:{kind:"home"});
+ const detail=requested.kind==="detail"?all.find(i=>i.id===requested.id):undefined;
+ const activeGroup=groups.find(g=>requested.kind==="group"?g.id===requested.id:g.items.some(i=>i.id===detail?.id));
+ const current:View=activeGroup?requested:{kind:"home"};
  const search=query.trim().toLowerCase();
  const matching=(g:SettingGroup,i:SettingItem)=>[g.label,g.description||"",i.label].some(v=>v.toLowerCase().includes(search));
- useEffect(()=>{
-  const target=initialId;
-  if(!target)return;
-  const frame=requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({block:"start"}));
-  return ()=>cancelAnimationFrame(frame);
- },[initialId]);
- function selectGroup(g:SettingGroup){
-  setQuery("");setSelection(g.items[0]?.id||"personal-profile");setMobileStep("edit");
-  window.history.replaceState(null,"",`/settings?section=${encodeURIComponent(g.items[0]?.id||"personal-profile")}`);
-  requestAnimationFrame(()=>document.querySelector(".settings-hub")?.scrollIntoView({block:"start"}));
- }
+ function selectGroup(g:SettingGroup){navigate(g.items.length===1?{kind:"detail",id:g.items[0].id}:{kind:"group",id:g.id});}
  const areas=[
   {id:"personal",label:"Personal",groups:groups.filter(g=>g.id==="personal")},
   {id:"managed",label:"Salons I manage",groups:groups.filter(g=>g.id.startsWith("salon-")||g.id==="create")},
@@ -109,33 +107,44 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
   ]:[{title:g.id.startsWith("staff-")?"My staff workspace":g.label,icon:g.id.startsWith("staff-")?"team":"help",keys:g.items.map(i=>i.id)}];
   return definitions.map(c=>({...c,items:g.items.filter(i=>c.keys.some(k=>i.id===k||i.id===`${g.id}-${k}`))})).filter(c=>c.items.length);
  }
- return <div className="settings-hub" data-mobile-step={mobileStep}>
-  <header className="settings-page-header"><h1><WorkspaceText text="All Settings" /></h1><div className="settings-search"><label><SettingsIcon name="search"/><span className="sr-only"><WorkspaceText text="Find a setting or salon" /></span><input type="search" value={query} onChange={e=>{setQuery(e.target.value);setMobileStep("home");}} placeholder={__vt("Find a setting or salon…")}/></label><button type="button" aria-label={__vt("Refresh salon list")} disabled={busy} onClick={()=>void reload()}>↻</button></div></header>
-  {error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></p>:null}
-  <div className="settings-workbench">
+ const searching=Boolean(search);
+ return <div className="settings-hub" data-settings-view={searching?"search":current.kind}>
+  <header className="settings-page-header">
+   <h1 tabIndex={-1} ref={current.kind==="home"||searching?headingRef:undefined}><WorkspaceText text="All Settings"/></h1>
+   <div className="settings-search"><label><SettingsIcon name="search"/><span className="sr-only"><WorkspaceText text="Find a setting or salon"/></span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={__vt("Find a setting or salon…")}/></label>{query?<button type="button" aria-label={__vt("Clear search")} onClick={()=>setQuery("")}>×</button>:<button type="button" aria-label={__vt("Refresh salon list")} disabled={busy} aria-busy={busy} onClick={()=>void reload()}><span className={busy?"settings-spin":""}>↻</span></button>}</div>
+  </header>
+  {error?<p role="alert" className="settings-feedback settings-feedback-error"><WorkspaceText text={error}/></p>:null}
+  {searching?<section className="settings-results" aria-label={__vt("Matching settings")}>
+   <h2 className="settings-results-heading"><WorkspaceText text="Search results"/></h2>
+   {groups.flatMap(g=>g.items.filter(i=>matching(g,i)).map(i=><button type="button" key={i.id} onClick={()=>reveal(i.id)}><span><strong><WorkspaceText text={i.label}/></strong><small><WorkspaceText text={g.label}/></small></span><span aria-hidden="true">›</span></button>))}
+   {!groups.some(g=>g.items.some(i=>matching(g,i)))?<p role="status"><WorkspaceText text="No matching settings"/></p>:null}
+  </section>:null}
+  <div className="settings-workbench" hidden={searching}>
    <nav aria-label={__vt("Settings accounts and salons")} className="settings-accounts">
     {areas.filter(a=>a.groups.length).map(area=><section key={area.id} className="settings-area" aria-label={__vt(area.label)}><h2 className="settings-group-label"><WorkspaceText text={area.label}/></h2>{area.groups.map(g=>{
      const meta=context(g);
-     return <button key={g.id} type="button" className="settings-account-link" aria-pressed={activeGroup.id===g.id} onClick={()=>selectGroup(g)}>
+     return <button key={g.id} type="button" className="settings-account-link" aria-pressed={activeGroup?.id===g.id} onClick={()=>selectGroup(g)}>
       <SettingsIcon name={area.id==="managed"?"store":area.id==="staff"?"team":g.id==="personal"?"user":g.id==="legal"?"document":"help"}/>
       <span className="settings-account-copy"><strong><WorkspaceText text={g.label}/></strong><small>{meta.role?<><WorkspaceText text={meta.role}/>{meta.status?<> · <span className={meta.status==="active"?"settings-active":""}><WorkspaceText text={meta.status.replaceAll("_"," ")}/></span></>:null}</>:g.id==="personal"?<WorkspaceText text="Profile, security & notifications"/>:null}</small></span><span className="settings-account-chevron" aria-hidden="true">›</span>
      </button>;
     })}</section>)}
    </nav>
-   <main className="settings-editor" hidden={!!search}>
-    <button type="button" className="settings-back" onClick={()=>{setMobileStep("home");window.history.replaceState(null,"","/settings");}}>‹ <WorkspaceText text="All Settings"/></button>
-    {groups.map(g=>{
-     const meta=context(g), sections=categories(g),active=g.id===activeGroup.id;
-     return <section key={g.id} hidden={!active} aria-label={__vt(g.label)}><SettingContent active={active}>
-      <header className="settings-context-header"><p className="settings-breadcrumb"><WorkspaceText text="All Settings"/> / {g.label}</p><div className="settings-context-title"><h2><WorkspaceText text={g.label}/></h2>{meta.role?<span className="settings-role"><WorkspaceText text={meta.role}/></span>:null}{meta.status?<span className={meta.status==="active"?"settings-active":"settings-status"}><WorkspaceText text={meta.status.replaceAll("_"," ")}/></span>:null}</div>{meta.address||g.description?<p className="settings-context-description">{meta.address||g.description}</p>:null}</header>
-      <nav className="settings-category-grid" aria-label={__vt("Settings sections")}>
-       {sections.map(c=><div key={c.title} className={`settings-category${c.icon==="warning"?" settings-danger":""}`}><h3><SettingsIcon name={c.icon}/><WorkspaceText text={c.title}/></h3>{c.items.map(i=><button type="button" key={i.id} onClick={()=>reveal(i.id)}><SettingsIcon name={c.icon}/><span className="settings-row-label"><WorkspaceText text={i.label}/></span><span aria-hidden="true">›</span></button>)}</div>)}
-      </nav>
-      <div className="settings-inline-sections">{sections.map(c=><section className={`settings-inline-category${c.icon==="warning"?" settings-danger":""}`} key={c.title} aria-label={__vt(c.title)}><h3 className="settings-inline-heading"><SettingsIcon name={c.icon}/><WorkspaceText text={c.title}/></h3>{c.items.map(i=><section key={i.id} id={i.id} className="settings-inline-editor" aria-labelledby={`${i.id}-heading`}><h4 id={`${i.id}-heading`} tabIndex={-1}><WorkspaceText text={i.label}/></h4>{i.content}</section>)}</section>)}</div>
-     </SettingContent></section>;
-    })}
+   <main className="settings-editor" hidden={current.kind==="home"}>
+    {activeGroup?<>
+     <button type="button" className="settings-back" onClick={()=>navigate(current.kind==="detail"&&activeGroup.items.length>1?{kind:"group",id:activeGroup.id}:{kind:"home"})}>‹ <WorkspaceText text={current.kind==="detail"&&activeGroup.items.length>1?activeGroup.label:"All Settings"}/></button>
+     <header className="settings-context-header">
+      <p className="settings-breadcrumb"><WorkspaceText text="All Settings"/> / <WorkspaceText text={activeGroup.label}/></p>
+      <div className="settings-context-title"><h2 ref={headingRef} tabIndex={-1}><span className="settings-section-label"><WorkspaceText text={detail?.label||activeGroup.label}/></span>{detail?.id==="personal-profile"?<span className="settings-profile-edit-title"><WorkspaceText text="Edit profile"/></span>:null}</h2>{context(activeGroup).role?<span className="settings-role"><WorkspaceText text={context(activeGroup).role}/></span>:null}</div>
+      {activeGroup.id.startsWith("salon-")||activeGroup.id.startsWith("staff-")?<p className="settings-context-description">{current.kind==="detail"?activeGroup.label:context(activeGroup).address}{context(activeGroup).status?<> · <span className={context(activeGroup).status==="active"?"settings-active":""}><WorkspaceText text={context(activeGroup).status.replaceAll("_"," ")}/></span></>:null}</p>:null}
+     </header>
+    </>:null}
+    {current.kind==="group"&&activeGroup?<nav className="settings-category-grid" aria-label={__vt("Settings sections")}>
+     {categories(activeGroup).map(c=><section key={c.title} className={`settings-category${c.icon==="warning"?" settings-danger":""}`}><h3><SettingsIcon name={c.icon}/><WorkspaceText text={c.title}/></h3>{c.items.map(i=><button type="button" key={i.id} onClick={()=>reveal(i.id)}><SettingsIcon name={c.icon}/><span className="settings-row-label"><WorkspaceText text={i.label}/></span><span aria-hidden="true">›</span></button>)}</section>)}
+    </nav>:null}
+    <div className="settings-detail-content" hidden={current.kind!=="detail"}>
+     {groups.flatMap(g=>g.items.map(i=>{const active=current.kind==="detail"&&i.id===detail?.id;return <section key={i.id} hidden={!active} data-settings-item={i.id} aria-label={__vt(i.label)}><SettingContent active={active}>{i.content}</SettingContent></section>;}))}
+    </div>
    </main>
-   {search?<div className="settings-results" aria-label={__vt("Matching settings")}>{groups.flatMap(g=>g.items.filter(i=>matching(g,i)).map(i=><button type="button" key={i.id} onClick={()=>reveal(i.id)}><span><WorkspaceText text={i.label}/></span><small><WorkspaceText text={g.label}/></small><span aria-hidden="true">›</span></button>))}{!groups.some(g=>g.items.some(i=>matching(g,i)))?<p><WorkspaceText text="No matching settings"/></p>:null}</div>:null}
   </div>
  </div>;
 }

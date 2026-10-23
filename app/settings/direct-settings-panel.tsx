@@ -28,6 +28,7 @@ import { RecoveryBackOfficePanel } from "./recovery-back-office/recovery-back-of
 import { staffBookingPreferencesAction } from "@/app/staff/appointments/staff-preferences-actions";
 import "@/app/services/services.css";
 import "./direct-settings.css";
+import { SettingsLoading } from "./settings-loading";
 import { ShortcutsSettingsPanel } from "./shortcuts-settings-panel";
 
 function OwnPreferences({ salonId }: { salonId: string }) {
@@ -240,9 +241,7 @@ export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: Direct
         </>
       ) : (
         !error && (
-          <p role="status" className="text-sm text-zinc-500">
-            <WorkspaceText text="Loading settings…" />
-          </p>
+          <SettingsLoading/>
         )
       )}
     </div></div>

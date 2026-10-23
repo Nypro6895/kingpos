@@ -13,6 +13,7 @@ import { StaffWorkdayView } from "@/app/staff/workday/staff-workday-view";
 import { AppLocalTodayClient } from "@/app/staff/today/today-progressive-client";
 import { MarketClient } from "@/app/market/market-client";
 import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
+import { SettingsLoading } from "@/app/settings/settings-loading";
 import { SettingsHubClient } from "@/app/settings/settings-hub-client";
 import { MyPlaceClient } from "@/app/my-place/my-place-client";
 import { ServicesManager } from "@/app/services/services-manager";
@@ -38,6 +39,7 @@ function ReadView<T>({ context, name, args = {}, title, children, publicView }: 
   const state = useAppLocalResource<T>(scope, name, args, { enabled: Boolean(scope) });
   if (state.data !== undefined && context) return children(state.data, state.refresh);
   if (publicView) return publicView(scope);
+  if (name === "page.settings") return <main className="settings-hub settings-route-loading"><h1>{title}</h1>{state.error?<div role="alert"><p>{state.error}</p><button type="button" onClick={()=>void state.refresh()}>Try again</button></div>:<SettingsLoading/>}</main>;
   return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{title}</h1>{state.error ? <div role="alert"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div> : <p role="status">{context ? "Opening…" : "Connect to verify your account."}</p>}</main>;
 }
 const urlFor = (path: string) => new URL(path, "https://reylumi.com");
