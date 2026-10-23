@@ -1,0 +1,54 @@
+{
+  "kind": "release",
+  "releaseId": "campaign-run-again-release-20261023",
+  "summary": "Published Campaign Run again on verified live web with transactional no-review reruns and preserved credit/pause/archive behavior; native source-bound update is still being validated.",
+  "changes": [
+    "b2f809ed-547f-4982-8506-fbe45dc4b245",
+    "1dfd4f21-1347-48df-b7ab-73bfb9ba0d7b"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Fhgc3cDW4WN8DiSXC3cBPZDtFq5J",
+      "baselineDeploymentId": "dpl_D5hXGPZ54axBEwSFWGmTLuLqZE9Q",
+      "sourceSha256": "603dc7c737ccb3ad5403da57dc17a41548d7b4d0f7ec88e1148281e5b14b1d45",
+      "deploySourceSha256": "77d3517736c5afb41560ce16a6077f00a6d35c46b4fcae92000d74ea959dfe6d",
+      "overlaySha256": "992b7dfa2199b68ef68bf55fd15b675dd3bcbc7b6433c601d5160c3d968ef085",
+      "commit": "77f52260d816c29581eba25a209fe5efffc5bfea",
+      "evidence": "artifacts/campaign-run-again-release-20261023/live-source-verification.json"
+    }
+  },
+  "validation": {
+    "productionBuild": true,
+    "databaseLifecycleTestsPassed": 12,
+    "uiActionTestsPassed": 11,
+    "focusAndInitialDatabaseTestsPassed": 26,
+    "sourceFilesVerified": 3220,
+    "liveReadOnlyChecks": 13,
+    "databaseStatePreserved": true,
+    "existingNativeCommandIdsPreserved": true
+  },
+  "migration": {
+    "version": "20261023190000",
+    "sha256": "68b4512024960c0b29ca5c3f31ebbd54832b6fde4c5b3afa9c52446df1915cbe",
+    "evidence": "artifacts/campaign-run-again-release-20261023/db-preflight/apply-result.json"
+  },
+  "native": {
+    "status": "not-yet-verified-available",
+    "commit": null,
+    "workflowRun": null
+  },
+  "limits": [
+    "No real customer campaign, payment, invitation or message was created for validation.",
+    "No physical iPhone installation or App Store publication is claimed."
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_D5hXGPZ54axBEwSFWGmTLuLqZE9Q",
+    "onlyIfAliasStillMatchesThisRelease": true,
+    "additiveMigrationPreservesOldApplicationCompatibility": true
+  },
+  "id": "b62d7b82-44bb-4363-b61e-3288dfccf920",
+  "recordedAt": "2026-10-23T09:47:18.880Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
