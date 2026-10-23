@@ -4,7 +4,7 @@ import {
   normalizeBookingEmail,
   normalizeBookingPhone,
 } from "@/lib/booking-domain/customer-identity";
-import { CUSTOMER_PERMISSIONS, CUSTOMER_SELECT } from "@/lib/customers";
+import { CUSTOMER_PERMISSIONS } from "@/lib/customers";
 import {
   getCurrentBusinessContext,
   getRouteForInvalidSalonContext,
@@ -50,18 +50,6 @@ function uniqueStrings(values: Array<string | null | undefined>) {
   return [...new Set(values.filter((value): value is string => Boolean(value)))];
 }
 
-function firstValue<T>(values: T[]) {
-  return values.find((value) => Boolean(value)) ?? null;
-}
-
-function mergeNotes(primary: string | null, values: Array<string | null>) {
-  const uniqueNotes = uniqueStrings([primary, ...values]).filter(
-    (note, index, all) => all.indexOf(note) === index,
-  );
-
-  return uniqueNotes.length > 0 ? uniqueNotes.join("\n\nMerged duplicate note:\n") : null;
-}
-
 async function requireCustomerMutationContext(errorPath: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
   const context = await getCurrentBusinessContext();
@@ -104,23 +92,9 @@ export async function createCustomer(formData: FormData) {
     redirectWithError("/customers/new", "Customer name is required.");
   }
 
-  const { data, error } = await supabase
-    .from("customers")
-    .insert({
-      location_id: salon.id,
-      name,
-      phone: normalizeBookingPhone(readOptionalString(formData, "phone")),
-      email: normalizeBookingEmail(readOptionalString(formData, "email")),
-      notes: readOptionalString(formData, "notes"),
-      staff_notes: readOptionalString(formData, "staff_notes"),
-      internal_notes: readOptionalString(formData, "internal_notes"),
-      source: "manual",
-      status: "active",
-      created_by_user_id: user.id,
-      updated_by_user_id: user.id,
-    })
-    .select(CUSTOMER_SELECT)
-    .single<Customer>();
+  const { data, error } = await supabase.rpc("create_salon_customer_identity", {
+    p_salon: salon.id, p_input: Object.fromEntries(["name", "phone", "email", "notes", "staff_notes", "internal_notes", "existing_customer_id", "create_separate"].map(key => [key, readOptionalString(formData, key)])),
+  });
 
   if (error) {
     console.error("Supabase create customer failed", {
@@ -136,7 +110,7 @@ export async function createCustomer(formData: FormData) {
   }
 
   revalidatePath("/customers");
-  redirect(`/customers/${data.id}`);
+  redirect(`/customers/${data}`);
 }
 
 export async function updateCustomer(formData: FormData) {
@@ -153,8 +127,11 @@ export async function updateCustomer(formData: FormData) {
   if (!name) {
     redirectWithError(editPath, "Customer name is required.");
   }
+  if (readOptionalString(formData, "phone") && !normalizeBookingPhone(readOptionalString(formData, "phone"))) {
+    redirectWithError(editPath, "Enter a full phone number or leave phone blank.");
+  }
 
-  const { error } = await supabase
+  const { data: updatedCustomer, error } = await supabase
     .from("customers")
     .update({
       name,
@@ -167,7 +144,9 @@ export async function updateCustomer(formData: FormData) {
       updated_by_user_id: user.id,
     })
     .eq("id", customerId)
-    .eq("location_id", salon.id);
+    .eq("location_id", salon.id)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (error) {
     console.error("Supabase update customer failed", {
@@ -183,6 +162,8 @@ export async function updateCustomer(formData: FormData) {
     redirectWithError(editPath, error.message);
   }
 
+  if (!updatedCustomer) redirectWithError(editPath, "This customer was merged or changed. Reload the profile before editing.");
+
   revalidatePath("/customers");
   revalidatePath(`/customers/${customerId}`);
   redirect(`/customers/${customerId}`);
@@ -194,7 +175,7 @@ export async function mergeDuplicateCustomers(formData: FormData) {
     readStringList(formData, "source_customer_id"),
   ).filter((customerId) => customerId !== targetCustomerId);
   const errorPath = targetCustomerId ? `/customers/${targetCustomerId}` : "/customers";
-  const { supabase, user, salon } = await requireCustomerMutationContext(errorPath);
+  const { supabase, salon } = await requireCustomerMutationContext(errorPath);
 
   if (!targetCustomerId) {
     redirectWithError("/customers", "Choose the customer record to keep.");
@@ -204,123 +185,38 @@ export async function mergeDuplicateCustomers(formData: FormData) {
     redirectWithError(errorPath, "Choose at least one duplicate to merge.");
   }
 
-  const allCustomerIds = [targetCustomerId, ...sourceCustomerIds];
-  const { data: selectedCustomers, error: selectedError } = await supabase
-    .from("customers")
-    .select(CUSTOMER_SELECT)
-    .eq("location_id", salon.id)
-    .in("id", allCustomerIds)
-    .returns<Customer[]>();
-
-  if (selectedError) {
-    redirectWithError(errorPath, selectedError.message);
-  }
-
-  const targetCustomer = (selectedCustomers ?? []).find(
-    (customer) => customer.id === targetCustomerId,
-  );
-  const sourceCustomers = (selectedCustomers ?? []).filter((customer) =>
-    sourceCustomerIds.includes(customer.id),
-  );
-
-  if (!targetCustomer || sourceCustomers.length !== sourceCustomerIds.length) {
-    redirectWithError(errorPath, "Only customers from the current salon can be merged.");
-  }
-
-  const linkedUserIds = uniqueStrings(
-    [targetCustomer, ...sourceCustomers].map((customer) => customer.customer_user_id),
-  );
-
-  if (linkedUserIds.length > 1) {
-    redirectWithError(
-      errorPath,
-      "These customers are linked to different personal accounts and cannot be merged safely.",
-    );
-  }
-
-  const mergedCustomerUserId = linkedUserIds[0] ?? null;
-  const mergedStatus =
-    [targetCustomer, ...sourceCustomers].some((customer) => customer.status === "active")
-      ? "active"
-      : "inactive";
-  const targetUpdate = {
-    customer_user_id: mergedCustomerUserId,
-    email: targetCustomer.email ?? firstValue(sourceCustomers.map((customer) => customer.email)),
-    internal_notes: mergeNotes(
-      targetCustomer.internal_notes,
-      sourceCustomers.map((customer) => customer.internal_notes),
-    ),
-    notes: mergeNotes(
-      targetCustomer.notes,
-      sourceCustomers.map((customer) => customer.notes),
-    ),
-    phone: targetCustomer.phone ?? firstValue(sourceCustomers.map((customer) => customer.phone)),
-    staff_notes: mergeNotes(
-      targetCustomer.staff_notes,
-      sourceCustomers.map((customer) => customer.staff_notes),
-    ),
-    status: mergedStatus,
-    updated_by_user_id: user.id,
-  };
-
-  const { error: targetUpdateError } = await supabase
-    .from("customers")
-    .update(targetUpdate)
-    .eq("id", targetCustomerId)
-    .eq("location_id", salon.id);
-
-  if (targetUpdateError) {
-    redirectWithError(errorPath, targetUpdateError.message);
-  }
-
-  const bookingUpdate: Record<string, string | null> = {
-    customer_id: targetCustomerId,
-    customer_user_id: mergedCustomerUserId,
-    updated_by_user_id: user.id,
-  };
-  const { error: bookingsError } = await supabase
-    .from("bookings")
-    .update(bookingUpdate)
-    .eq("salon_id", salon.id)
-    .in("customer_id", sourceCustomerIds);
-
-  if (bookingsError) {
-    redirectWithError(errorPath, bookingsError.message);
-  }
-
-  const { error: ticketsError } = await supabase
-    .from("pos_tickets")
-    .update({ customer_id: targetCustomerId })
-    .eq("salon_id", salon.id)
-    .in("customer_id", sourceCustomerIds);
-
-  if (ticketsError) {
-    redirectWithError(errorPath, ticketsError.message);
-  }
-
-  const { error: sessionsError } = await supabase
-    .from("pos_desk_sessions")
-    .update({ customer_id: targetCustomerId })
-    .eq("salon_id", salon.id)
-    .in("customer_id", sourceCustomerIds);
-
-  if (sessionsError) {
-    redirectWithError(errorPath, sessionsError.message);
-  }
-
-  const { error: deleteError } = await supabase
-    .from("customers")
-    .delete()
-    .eq("location_id", salon.id)
-    .in("id", sourceCustomerIds);
-
-  if (deleteError) {
-    redirectWithError(errorPath, deleteError.message);
-  }
-
-  revalidatePath("/customers");
-  revalidatePath(`/customers/${targetCustomerId}`);
-  revalidatePath("/bookings");
-  revalidatePath("/pos-tickets");
+  const { error } = await supabase.rpc("merge_customer_records", {
+    p_salon: salon.id, p_target: targetCustomerId, p_sources: sourceCustomerIds, p_reason: "manual",
+  });
+  if (error) redirectWithError(errorPath, error.message);
+  for (const path of ["/customers", "/bookings", "/pos-tickets", "/pos", "/pos/portable", "/staff/today", "/activity", "/beauty", ...[targetCustomerId, ...sourceCustomerIds].map(id => `/customers/${id}`)]) revalidatePath(path);
   redirect(`/customers/${targetCustomerId}?merged=${sourceCustomerIds.length}`);
+}
+
+export async function searchCustomerMatches(input: { name: string; phone: string; email?: string }) {
+  const { supabase, salon } = await requireCustomerMutationContext("/customers");
+  const { data, error } = await supabase.rpc("find_customer_identity_matches", {
+    p_salon: salon.id, p_name: input.name.slice(0,100), p_phone: input.phone.slice(0,30), p_email: input.email?.slice(0,200) ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Array<Customer & { match: { automatic: boolean; score: number; reason: string } }>;
+}
+
+export async function searchCustomersForMerge(input: { name: string; phone: string }) {
+  const { supabase, salon } = await requireCustomerMutationContext("/customers");
+  const query = (input.phone.trim() || input.name.trim()).slice(0, 150);
+  if (query.length < 2) return [];
+  const { data, error } = await supabase.rpc("search_salon_customers", {
+    p_salon_id: salon.id, p_query: query, p_limit: 20, p_offset: 0, p_status: null,
+  });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Customer[]).map(customer => ({ ...customer, match: { automatic: false, score: 0, reason: "Review identity before merging" } }));
+}
+
+export async function consolidateCustomers() {
+  const { supabase, salon } = await requireCustomerMutationContext("/customers");
+  const { data, error } = await supabase.rpc("consolidate_customer_identities", { p_salon: salon.id });
+  if (error) redirectWithError("/customers", error.message);
+  for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/activity", "/beauty"]) revalidatePath(path);
+  redirect(`/customers?merged=${Number(data ?? 0)}`);
 }

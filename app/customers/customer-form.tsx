@@ -1,3 +1,4 @@
+import { CustomerIdentityFields } from "./customer-identity-fields";
 import { WorkspaceText } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
@@ -55,6 +56,7 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
         </p>
       ) : null}
 
+      {mode === "create" ? <CustomerIdentityFields /> : <>
       <div className="sm:col-span-2">
         <Field
           autoComplete="name"
@@ -77,6 +79,8 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
         name="email"
         type="email"
       />
+
+      </>}
 
       <label className="block sm:col-span-2">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Legacy notes" /></span>

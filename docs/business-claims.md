@@ -6,9 +6,19 @@ Implemented October 5, 2026. Public unclaimed salon profiles link to `/claim/<sa
 
 The claimant signs in, confirms authority, and chooses SMS or a voice call to the phone stored on the salon. Twilio Verify generates and checks the code; the client cannot change the destination, supply a provider SID, or grant ownership. Database reservations bind the provider SID to the requesting user, salon and send timestamp. Expiry is 10 minutes, with five checks per send, a 60-second cooldown, five sends per phone per hour and ten sends per user per hour. Limits apply across channels and across salons sharing a number. Provider failures do not release send limits.
 
-Automatic approval requires an unclaimed listing sourced from a business website within 90 days, a phone unique among salons, and no other waiting or live pending claim. Imported directory listings require admin ownership review after phone confirmation. All approvals also require an active claimant and account, a salon that is not permanently closed, and an isolated imported account with exactly one salon and no nonremoved management memberships. SMS/voice possession is evidence of phone access; it is not independent proof of legal ownership.
+The owner-approved policy (October 23, 2026) grants the first successfully verified stored-phone claim on an eligible unowned listing. Source category, collection age, a shared phone, or another unapproved applicant alone do not block that first grant. Existing explicit administrator review decisions remain manual. The grant still requires an active claimant/account, a salon that is not permanently closed, and an isolated imported account with exactly one salon and no nonremoved management memberships. First means the first successful serialized grant, not the first person to open a form. Multiple eligible listings may share the stored phone; each claim is separate.
 
-Granting locks account, salon and request in that order, creates owner roles and account/salon memberships, claims the directory ledger, and expires competing requests. Profile IDs, URLs, followers and posts remain. Booking remains disabled until configured by the owner. Claims never award the blue identity badge. Existing managed salons accept support requests but cannot be approved through claims; an owner invitation or privileged ownership recovery is required.
+Granting locks account, salon and request in that order, creates owner roles and account/salon memberships, claims the directory ledger, and expires competing OTP challenges. Existing support cases stay open for manual review. Profile IDs, URLs, followers and posts remain. Booking remains disabled until configured by the owner. Claims never award the blue identity badge. Existing managed salons accept support requests but cannot be approved through claims; an owner invitation or privileged ownership recovery is required.
+
+## First owner and disputed claims (October 23, 2026)
+
+Once management exists, another applicant sees the ownership support form instead of SMS/call controls. The server independently blocks new phone challenges and redirects stale in-flight verification to support. The applicant explains their claim and can attach evidence; the existing private conversation lets administrators request more information and decide manually.
+
+A dispute never automatically suspends the incumbent, revokes membership, disables booking, or transfers customer, booking, ticket, payment, or other operational data. Those data remain with the incumbent account, including after someone submits or supplements a claim. Existing account suspensions for independent reasons remain enforced; opening a dispute is not a suspension reason.
+
+Ordinary claim approval cannot replace an already managed salon. A later administrator resolution about a public listing must be handled separately from ownership/access to the incumbent's operational account. This patch adds no account takeover, data reassignment, or privileged recovery mechanism.
+
+Implementation is staged locally; this document is not evidence of production deployment. The migration changes no existing claims on installation, and legacy automatic holds require a fresh code before approval.
 
 ## Support and review
 

@@ -18,11 +18,13 @@ async function BusinessClaimPage({params}:{params:Promise<{salonId:string}>}) {
  const {data:rows,error}=await client!.rpc('get_business_claim_requests',{p_salon:salonId});
  const requests=(rows??[]) as BusinessClaimRequest[];
  const request=requests.find(r=>r.applicant_user_id===user.id)??null;
+ const {data:claimMode,error:modeError}=await client!.rpc('get_business_claim_mode',{p_salon:salonId});
+ const phoneClaimAvailable=claimMode==='phone';
  return <main className="mx-auto w-full max-w-xl px-4 py-8">
  <Link href={`/explore/salons/${salonId}`} className="text-sm text-zinc-500 underline">Back to salon</Link>
  <h1 className="mt-4 text-2xl font-semibold">{data.directoryListing?.claimState==='unclaimed'?'Claim your salon':'Request management access'}</h1>
  <div className="mt-4 rounded-2xl bg-zinc-50 p-4"><h2 className="font-semibold">{data.profile.name}</h2><p className="mt-1 text-sm text-zinc-600">{[data.profile.addressLine1,data.profile.addressLine2,data.profile.city,data.profile.state].filter(Boolean).join(', ')}</p><p className="text-sm text-zinc-600">{data.profile.phone}</p></div>
- {error?<p role="alert" className="mt-4 rounded-xl bg-amber-50 p-4 text-sm">Ownership requests are temporarily unavailable. Please try again later.</p>:<ClaimPanel key={`${request?.id??"new"}:${request?.status??"new"}`} salonId={salonId} phone={data.profile.phone} unclaimed={data.directoryListing?.claimState==='unclaimed'} messagingReady={await businessClaimMessagingReady()} deliveryMethods={await businessClaimDeliveryMethods()} uploadsReady={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)} initialRequest={request}/>}
+ {error || modeError || claimMode==='unavailable'?<p role="alert" className="mt-4 rounded-xl bg-amber-50 p-4 text-sm">Ownership requests are temporarily unavailable. Please try again later.</p>:<ClaimPanel key={`${request?.id??"new"}:${request?.status??"new"}:${claimMode}`} salonId={salonId} phone={data.profile.phone} unclaimed={phoneClaimAvailable} messagingReady={await businessClaimMessagingReady()} deliveryMethods={await businessClaimDeliveryMethods()} uploadsReady={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)} initialRequest={request}/>}
  </main>;
 }
 

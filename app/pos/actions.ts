@@ -1,4 +1,5 @@
 "use server";
+import type { CustomerIdentityChoice } from "@/types/customer-identity";
 
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
@@ -104,6 +105,7 @@ type CustomerDisplayPhoneActionResult =
   | { data: CustomerDisplayPhoneResult; ok: true }
   | {
       code?: string;
+      candidates?: CustomerIdentityChoice[];
       error: string;
       mode?: "check_in" | "checkout";
       ok: false;
@@ -2047,6 +2049,8 @@ export async function getCustomerDisplayLiveDraftTipOptions(input: {
 }
 
 export async function submitCustomerDisplayPhone(input: {
+  identityChoice?: string;
+  newCustomer?: boolean;
   checkInOnly?: boolean;
   name?: string | null;
   phone: string;
@@ -2061,6 +2065,8 @@ export async function submitCustomerDisplayPhone(input: {
     }
 
     const result = await resolveCustomerDisplaySubmission({
+      identityChoice: input.identityChoice,
+      newCustomer: input.newCustomer,
       checkInOnly: input.checkInOnly,
       customerName: cleanOptional(input.name),
       phone: input.phone,
@@ -2072,6 +2078,7 @@ export async function submitCustomerDisplayPhone(input: {
     if (!result.ok) {
       return {
         code: result.code,
+        candidates: result.candidates,
         error: result.message,
         mode: result.mode,
         ok: false,

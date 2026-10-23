@@ -1,4 +1,6 @@
 "use client";
+import { CustomerIdentityChoices } from "@/components/customer-identity-choices";
+import type { CustomerIdentityChoice } from "@/types/customer-identity";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CheckinReceiptPanel } from "./checkin-receipt-panel";
 import { CustomerRelayPass, CustomerRelayEntry } from "@/app/service-relay/customer-relay";
@@ -883,7 +885,7 @@ function ProfileCreationPanel({
 
       <div className="grid content-center gap-3">
         <p className="rounded-2xl border border-teal-700/10 bg-teal-50/80 px-4 py-3 text-sm font-medium leading-6 text-teal-900">
-          <WorkspaceText text="We did not find this phone number. Create a profile to continue your visit." />
+          <WorkspaceText text="Enter your name to find your profile or start a new visit." />
         </p>
         {customerStatus ? (
           <p className="rounded-xl bg-white/80 px-3 py-2 text-sm font-medium text-zinc-600">
@@ -1813,6 +1815,7 @@ export function CustomerDisplayClient({
   const [isChangingCustomer, setIsChangingCustomer] = useState(false);
   const [createCustomerMode, setCreateCustomerMode] = useState(false);
   const [customerNameInput, setCustomerNameInput] = useState("");
+  const [identityCandidates, setIdentityCandidates] = useState<CustomerIdentityChoice[]>([]);
   const [newCustomerKey, setNewCustomerKey] = useState<string | null>(null);
   const [receiptPrinting, setReceiptPrinting] = useState(false);
   const [checkInState, setCheckInState] = useState<CheckInState | null>(null);
@@ -1997,6 +2000,7 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setNewCustomerKey(null);
       setCustomerResults([]);
       setCustomerStatus(null);
@@ -2010,6 +2014,7 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setCheckInState(null);
       setServiceSelectionState(null);
       setSelectedServiceIds([]);
@@ -2071,7 +2076,8 @@ export function CustomerDisplayClient({
       if (value.completedAt || (previous && previous.value.cartId !== value.cartId)) {
         setGuestConfirmed(false); setCustomTipInput(""); setCustomTipMode(false);
         setPhoneInput(""); setConfirmedPhone(null); setIsChangingCustomer(false);
-        setCreateCustomerMode(false); setCustomerNameInput(""); setCustomerResults([]);
+        setCreateCustomerMode(false); setCustomerNameInput("");
+      setIdentityCandidates([]); setCustomerResults([]);
         setCheckInState(null); setServiceSelectionState(null); setSelectedServiceIds([]);
         setCustomerStatus(null); lastSubmittedPhoneRef.current = "";
       }
@@ -2096,6 +2102,7 @@ export function CustomerDisplayClient({
       setCreateCustomerMode(false);
       setCheckInState(null);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setNewCustomerKey(null);
       setCustomerStatus(null);
       setServiceSelectionState(null);
@@ -2119,6 +2126,7 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setCustomerResults([]);
       setCustomTipInput("");
       setCustomTipMode(false);
@@ -2169,7 +2177,7 @@ export function CustomerDisplayClient({
     [applySnapshot, selectableServiceIds, serviceCatalog.length, token],
   );
 
-  const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
+  const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string; identityChoice?: string; newCustomer?: boolean }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
     const preview = localPreview.current;
     const baseline = liveDraftRef.current;
     if (preview && baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline)) {
@@ -2216,6 +2224,7 @@ export function CustomerDisplayClient({
           setIsChangingCustomer(false);
           setCreateCustomerMode(true);
           setCustomerNameInput("");
+      setIdentityCandidates([]);
           setCustomerResults([]);
           setCustomerStatus(result.error);
           return;
@@ -2524,6 +2533,7 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setNewCustomerKey(null);
       setCustomerResults([]);
       setCustomerStatus(null);
@@ -2548,7 +2558,7 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await submitDisplayPhone({ phone });
+    const result = await submitDisplayPhone({ phone, name: customer.name ?? undefined, identityChoice: customer.id });
 
     setIsCustomerPending(false);
 
@@ -2560,7 +2570,8 @@ export function CustomerDisplayClient({
     applyCustomerPhoneResult(result.data, phone);
   }
 
-  async function createCustomerProfile() {
+  async function createCustomerProfile(identityChoice?: string | null) {
+    if (isCustomerPending) return;
     const name = customerNameInput.trim();
     const phone = digitsOnly(confirmedPhone ?? phoneInput).slice(0, 11);
 
@@ -2582,21 +2593,23 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await submitDisplayPhone({ name, phone });
+    const result = await submitDisplayPhone({ name, phone, identityChoice: identityChoice ?? undefined, newCustomer: identityChoice === null });
 
     setIsCustomerPending(false);
 
     if (!result.ok) {
+      setIdentityCandidates(result.candidates ?? []);
       setCustomerStatus(result.error);
       return;
     }
 
+    setIdentityCandidates([]);
     setConfirmedPhone(phone);
     applyCustomerPhoneResult(result.data, phone, { newCustomer: true });
     setCustomerStatus(
       result.data.mode === "checkout"
-        ? "Customer profile created."
-        : "Profile created.",
+        ? "Customer profile selected."
+        : "Profile selected.",
     );
   }
 
@@ -2651,6 +2664,7 @@ export function CustomerDisplayClient({
     setGuestConfirmed(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setNewCustomerKey(null);
     setConfirmedPhone(null);
     setPhoneInput("");
@@ -2672,6 +2686,7 @@ export function CustomerDisplayClient({
     setIsChangingCustomer(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setNewCustomerKey(null);
     setConfirmedPhone(null);
     setPhoneInput("");
@@ -2687,6 +2702,7 @@ export function CustomerDisplayClient({
     setSelectedServiceIds([]);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setCustomerStatus(null);
     lastSubmittedPhoneRef.current = "";
   }
@@ -2779,6 +2795,7 @@ export function CustomerDisplayClient({
     setIsChangingCustomer(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setNewCustomerKey(null);
     setCustomerResults([]);
     setCustomerStatus(null);
@@ -2845,7 +2862,7 @@ export function CustomerDisplayClient({
                 tipOptions={tipOptions}
               />
             ) : displayMode === "profile" ? (
-              <ProfileCreationPanel
+              <><CustomerIdentityChoices candidates={identityCandidates} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel
                 customerStatus={customerStatus}
                 disabled={!token || liveDraftStatus !== "draft"}
                 isPending={isCustomerPending}
@@ -2854,11 +2871,12 @@ export function CustomerDisplayClient({
                 onNameInput={(value) => {
                   markCustomerInteraction();
                   setCustomerNameInput(value);
+                  setIdentityCandidates([]);
                   setCustomerStatus(null);
                 }}
                 onSubmit={() => void createCustomerProfile()}
                 phone={confirmedPhone ?? phoneInput}
-              />
+              /></>
             ) : (
               <PhoneEntryPanel
                 customerResults={customerResults}
@@ -2896,7 +2914,7 @@ export function CustomerDisplayClient({
                 toggleService={toggleRequestedService}
               />
             ) : displayMode === "profile" ? (
-              <ProfileCreationPanel
+              <><CustomerIdentityChoices candidates={identityCandidates} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel
                 customerStatus={customerStatus}
                 disabled={!token || liveDraftStatus !== "draft"}
                 isPending={isCustomerPending}
@@ -2905,11 +2923,12 @@ export function CustomerDisplayClient({
                 onNameInput={(value) => {
                   markCustomerInteraction();
                   setCustomerNameInput(value);
+                  setIdentityCandidates([]);
                   setCustomerStatus(null);
                 }}
                 onSubmit={() => void createCustomerProfile()}
                 phone={confirmedPhone ?? phoneInput}
-              />
+              /></>
             ) : (
               <PhoneEntryPanel
                 customerResults={customerResults}

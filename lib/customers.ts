@@ -56,8 +56,12 @@ export type CustomerCrmMetric = {
   upcoming_start_at: string | null;
 };
 
+export type CustomerDuplicateCandidate = Customer & {
+  match?: { reason: string; automatic: boolean; score: number };
+};
+
 export type CustomerListItem = Customer & {
-  duplicateCandidates: Customer[];
+  duplicateCandidates: CustomerDuplicateCandidate[];
   duplicate_signal: boolean;
   groupedCustomerIds?: string[];
   isWalkingGroup?: boolean;
@@ -69,11 +73,6 @@ export type CustomerListPagination = {
   page: number;
   pageCount: number;
   pageSize: number;
-};
-
-type CustomerSearchRpcRow = Customer & {
-  search_rank?: number | string | null;
-  total_count?: number | string | null;
 };
 
 export type CustomerBookingSummary = Booking & {
@@ -100,7 +99,7 @@ export type CustomerDetailData = {
   activeTickets: CustomerTicketSummary[];
   bookingHistory: CustomerBookingSummary[];
   customer: Customer;
-  duplicateCandidates: Customer[];
+  duplicateCandidates: CustomerDuplicateCandidate[];
   finalizedSpend: number;
   groupedCustomerIds?: string[];
   isWalkingGroup?: boolean;
@@ -160,8 +159,8 @@ function isWalkingCustomer(customer: Customer) {
   ]);
 
   return (
-    !customer.phone &&
-    !customer.email &&
+    !customer.phone?.trim() &&
+    !customer.email?.trim() &&
     !customer.customer_user_id &&
     walkInNames.has(normalizeCustomerName(customer.name))
   );
@@ -221,39 +220,6 @@ function parsePage(value: string | string[] | undefined) {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-function readCount(value: number | string | null | undefined) {
-  if (typeof value === "number") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  return 0;
-}
-
-function customerFromSearchRow(row: CustomerSearchRpcRow): Customer {
-  return {
-    created_at: row.created_at,
-    created_by_user_id: row.created_by_user_id,
-    customer_user_id: row.customer_user_id,
-    email: row.email,
-    id: row.id,
-    internal_notes: row.internal_notes,
-    location_id: row.location_id,
-    name: row.name,
-    notes: row.notes,
-    phone: row.phone,
-    source: row.source,
-    staff_notes: row.staff_notes,
-    status: row.status,
-    updated_at: row.updated_at,
-    updated_by_user_id: row.updated_by_user_id,
-  };
-}
-
 async function loadCustomerMetrics(input: {
   customerIds: string[];
   salonId: string;
@@ -297,53 +263,12 @@ async function loadDuplicateCandidatesForCustomers(input: {
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
   >;
 }) {
-  const clauses = [
-    ...new Set(
-      input.customers
-        .flatMap((customer) => [
-          customer.phone ? `phone.eq.${customer.phone}` : null,
-          customer.email ? `email.eq.${customer.email}` : null,
-        ])
-        .filter((clause): clause is string => Boolean(clause)),
-    ),
-  ];
-
-  if (clauses.length === 0) {
-    return new Map<string, Customer[]>();
-  }
-
-  const { data, error } = await input.supabase
-    .from("customers")
-    .select(CUSTOMER_SELECT)
-    .eq("location_id", input.salonId)
-    .or(clauses.join(","))
-    .limit(250)
-    .returns<Customer[]>();
-
-  if (error) {
-    console.error("Supabase load customer duplicate candidates failed", {
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      salonId: input.salonId,
-    });
-    throw new Error(error.message);
-  }
-
-  const candidatePool = data ?? [];
-
-  return new Map(
-    input.customers.map((customer) => [
-      customer.id,
-      candidatePool.filter(
-        (candidate) =>
-          candidate.id !== customer.id &&
-          ((customer.phone && candidate.phone === customer.phone) ||
-            (customer.email && candidate.email === customer.email)),
-      ),
-    ]),
-  );
+  if (!input.customers.length) return new Map<string, CustomerDuplicateCandidate[]>();
+  const { data, error } = await input.supabase.rpc("customer_duplicate_batch", {
+    p_salon: input.salonId, p_ids: input.customers.map(customer => customer.id),
+  });
+  if (error) throw new Error(error.message);
+  return new Map(Object.entries((data ?? {}) as Record<string, CustomerDuplicateCandidate[]>));
 }
 
 async function loadWalkingCustomers(input: {
@@ -352,28 +277,15 @@ async function loadWalkingCustomers(input: {
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
   >;
 }) {
-  const { data, error } = await input.supabase
-    .from("customers")
-    .select(CUSTOMER_SELECT)
-    .eq("location_id", input.salonId)
-    .is("phone", null)
-    .is("email", null)
-    .is("customer_user_id", null)
-    .limit(500)
-    .returns<Customer[]>();
-
-  if (error) {
-    console.error("Supabase load walking customers failed", {
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      salonId: input.salonId,
+  const rows: Customer[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await input.supabase.rpc("customer_walking_records", {
+      p_salon: input.salonId, p_offset: offset,
     });
-    throw new Error(error.message);
+    if (error) throw new Error(error.message);
+    rows.push(...((data ?? []) as Customer[]));
+    if ((data ?? []).length < 500) return rows;
   }
-
-  return (data ?? []).filter(isWalkingCustomer);
 }
 
 export async function getCurrentSalonCustomerList(input: {
@@ -406,129 +318,26 @@ export async function getCurrentSalonCustomerList(input: {
 
   const trimmedSearch = input.search?.trim();
   const page = parsePage(input.page);
-  const from = (page - 1) * CUSTOMER_PAGE_SIZE;
-  const to = from + CUSTOMER_PAGE_SIZE - 1;
-  let count = 0;
-  let rows: Customer[] = [];
-  let error: { code?: string; details?: string; hint?: string; message: string } | null = null;
-
-  if (trimmedSearch) {
-    const result = await supabase.rpc("search_salon_customers", {
-      p_limit: CUSTOMER_PAGE_SIZE,
-      p_offset: from,
-      p_query: trimmedSearch,
-      p_salon_id: salon.id,
-      p_status: null,
-    });
-    const searchRows = (result.data ?? []) as CustomerSearchRpcRow[];
-
-    error = result.error;
-    rows = searchRows.map(customerFromSearchRow);
-    count = readCount(searchRows[0]?.total_count);
-
-    if (!error && searchRows.length === 0 && from > 0) {
-      const countResult = await supabase.rpc("search_salon_customers", {
-        p_limit: 1,
-        p_offset: 0,
-        p_query: trimmedSearch,
-        p_salon_id: salon.id,
-        p_status: null,
-      });
-      const countRows = (countResult.data ?? []) as CustomerSearchRpcRow[];
-
-      error = countResult.error;
-      count = readCount(countRows[0]?.total_count);
-    }
-  } else {
-    const result = await supabase
-      .from("customers")
-      .select(CUSTOMER_SELECT, { count: "exact" })
-      .eq("location_id", salon.id)
-      .order("created_at", { ascending: false })
-      .range(from, to)
-      .returns<Customer[]>();
-
-    error = result.error;
-    rows = result.data ?? [];
-    count = result.count ?? 0;
-  }
-
-  if (error) {
-    console.error("Supabase load customers failed", {
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      salonId: salon.id,
-      accountId: context.currentAccount?.id,
-      userId: context.user.id,
-    });
-    throw new Error(error.message);
-  }
-
-  const rowsContainWalking = rows.some(isWalkingCustomer);
-  const walkingCustomers = rowsContainWalking
-    ? await loadWalkingCustomers({ salonId: salon.id, supabase })
-    : [];
-  const displayRows = rows.filter((customer) => !isWalkingCustomer(customer));
-  const walkingPrimary = walkingCustomers[0] ?? null;
-  const customerIds = [
-    ...displayRows.map((customer) => customer.id),
-    ...walkingCustomers.map((customer) => customer.id),
-  ];
+  const { data, error } = await supabase.rpc("customer_directory", {
+    p_salon: salon.id, p_query: trimmedSearch ?? null, p_page: page,
+  });
+  if (error) throw new Error(error.message);
+  const rows = (data?.rows ?? []) as Array<Customer & { walking_count?: number; walking_ids?: string[] }>;
+  const count = Number(data?.count ?? 0);
+  const customerIds = rows.flatMap(row => row.walking_ids ?? [row.id]);
   const [metricsByCustomerId, duplicateCandidatesByCustomerId] = await Promise.all([
     loadCustomerMetrics({ customerIds, salonId: salon.id, supabase }),
-    loadDuplicateCandidatesForCustomers({
-      customers: displayRows,
-      salonId: salon.id,
-      supabase,
-    }),
+    loadDuplicateCandidatesForCustomers({ customers: rows.filter(row => !row.walking_count), salonId: salon.id, supabase }),
   ]);
-
-  const customers = displayRows.map<CustomerListItem>((customer) => {
-    const duplicateCandidates =
-      duplicateCandidatesByCustomerId.get(customer.id) ?? [];
-
-    return {
-      ...customer,
-      duplicateCandidates,
-      duplicate_signal: duplicateCandidates.length > 0,
-      metrics: metricsByCustomerId.get(customer.id) ?? defaultMetric(customer.id),
+  const customers = rows.map<CustomerListItem>(row => {
+    const ids = row.walking_ids ?? [row.id];
+    const duplicateCandidates = duplicateCandidatesByCustomerId.get(row.id) ?? [];
+    return { ...row, duplicateCandidates, duplicate_signal: duplicateCandidates.length > 0,
+      isWalkingGroup: Boolean(row.walking_count), groupedCustomerIds: row.walking_ids,
+      metrics: aggregateCustomerMetrics(row.id, ids.map(id => metricsByCustomerId.get(id) ?? defaultMetric(id))),
     };
   });
-
-  if (walkingPrimary) {
-    const walkingMetrics = walkingCustomers.map(
-      (customer) => metricsByCustomerId.get(customer.id) ?? defaultMetric(customer.id),
-    );
-    const walkingGroupedIds = walkingCustomers.map((customer) => customer.id);
-    const walkingItem: CustomerListItem = {
-      ...walkingPrimary,
-      duplicateCandidates: walkingCustomers.filter(
-        (customer) => customer.id !== walkingPrimary.id,
-      ),
-      duplicate_signal: walkingCustomers.length > 1,
-      groupedCustomerIds: walkingGroupedIds,
-      isWalkingGroup: true,
-      name: "Walking",
-      metrics: aggregateCustomerMetrics(walkingPrimary.id, walkingMetrics),
-    };
-
-    const firstWalkingIndex = rows.findIndex(isWalkingCustomer);
-
-    customers.splice(Math.max(0, firstWalkingIndex), 0, walkingItem);
-  }
-
-  return {
-    context,
-    customers,
-    pagination: {
-      count: count ?? rows.length,
-      page,
-      pageCount: Math.max(1, Math.ceil((count ?? rows.length) / CUSTOMER_PAGE_SIZE)),
-      pageSize: CUSTOMER_PAGE_SIZE,
-    } satisfies CustomerListPagination,
-  };
+  return { context, customers, pagination: { count, page, pageCount: Math.max(1, Math.ceil(count / CUSTOMER_PAGE_SIZE)), pageSize: CUSTOMER_PAGE_SIZE } };
 }
 
 export async function getCurrentSalonCustomers(search?: string) {
@@ -766,37 +575,8 @@ async function loadDuplicateCandidates(input: {
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
   >;
 }) {
-  const clauses = [
-    input.customer.phone ? `phone.eq.${input.customer.phone}` : null,
-    input.customer.email ? `email.eq.${input.customer.email}` : null,
-  ].filter((clause): clause is string => Boolean(clause));
-
-  if (clauses.length === 0) {
-    return [];
-  }
-
-  const { data, error } = await input.supabase
-    .from("customers")
-    .select(CUSTOMER_SELECT)
-    .eq("location_id", input.salonId)
-    .neq("id", input.customer.id)
-    .or(clauses.join(","))
-    .limit(10)
-    .returns<Customer[]>();
-
-  if (error) {
-    console.error("Supabase load duplicate customer candidates failed", {
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      customerId: input.customer.id,
-      salonId: input.salonId,
-    });
-    throw new Error(error.message);
-  }
-
-  return data ?? [];
+  const result = await loadDuplicateCandidatesForCustomers({ customers: [input.customer], salonId: input.salonId, supabase: input.supabase });
+  return result.get(input.customer.id) ?? [];
 }
 
 function buildCustomerTimeline(input: {
@@ -884,7 +664,16 @@ export async function getCurrentSalonCustomer(customerId: string) {
     throw new Error(error.message);
   }
 
-    return { context, customer: data ?? null };
+  if (!data) {
+    const { data: alias, error: aliasError } = await supabase.from("customer_merged_ids").select("target_id").eq("source_id", customerId).eq("salon_id", salon.id).maybeSingle<{ target_id: string }>();
+    if (aliasError) throw new Error(aliasError.message);
+    if (alias) {
+      const { data: canonical, error: canonicalError } = await supabase.from("customers").select(CUSTOMER_SELECT).eq("id", alias.target_id).eq("location_id", salon.id).maybeSingle<Customer>();
+      if (canonicalError) throw new Error(canonicalError.message);
+      return { context, customer: canonical };
+    }
+  }
+  return { context, customer: data ?? null };
 }
 
 export async function getCurrentSalonCustomerDetail(
@@ -934,7 +723,7 @@ export async function getCurrentSalonCustomerDetail(
     }),
     walkingCustomers.length > 0
       ? Promise.resolve(
-          walkingCustomers.filter((customer) => customer.id !== baseCustomer.id),
+          [] as Customer[],
         )
       : loadDuplicateCandidates({
           customer: baseCustomer,
