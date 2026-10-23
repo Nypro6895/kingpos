@@ -1,0 +1,40 @@
+{
+  "kind": "release",
+  "releaseId": "explore-remove-suggested-image-20261023-release",
+  "summary": "Published the Explore image-label cleanup and completed Explore submit keyboard dismissal on the exact current production baseline. Preserved later Explore optimizations and all unrelated live source.",
+  "changes": [
+    "0d0a2bac-0d5a-4612-bfbd-53300fbd7e6b",
+    "fbc49d81-f072-476e-89d1-87f8da02ecd3"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DrMyEqCCMTfqwfsAzNR5kYSSPMkT",
+      "baselineDeploymentId": "dpl_BmjLhm3QU4co4N9544U4FSVDoJyQ",
+      "sourceSha256": "9c3c60ed0a1c27bec4b278a07a90389a1116d3ecad823048b5cb1e19ff7c094f",
+      "overlaySha256": "957d7307b3e3c0e60bf1bd3eac892184ed793b2879d24895febf8b315cf5259c",
+      "commit": "b3d07a9fc4720656d5a8c70e7726807dd721a568",
+      "evidence": "Vercel source tree 3210/3210 hashes matched; reylumi.com alias points to this READY deployment; /, /explore, /login and offline-assets returned 200; live Explore HTML contains no visible Suggested image label."
+    }
+  },
+  "validation": {
+    "productionBuildRoutes": 239,
+    "focusedExploreTests": 3,
+    "searchDismissBrowserTests": 1,
+    "scopedLint": true,
+    "candidateSourceHashesMatched": true,
+    "liveHttpChecks": 4
+  },
+  "native": {
+    "required": false,
+    "reason": "Web-compatible TSX presentation and submit-focus changes only; no Swift, bundled native asset, app configuration or bridge contract changed."
+  },
+  "rollback": {
+    "baselineDeploymentId": "dpl_BmjLhm3QU4co4N9544U4FSVDoJyQ",
+    "onlyIfCurrentAliasStillMatchesThisRelease": true
+  },
+  "id": "72501457-086e-4c14-be53-274158515e40",
+  "recordedAt": "2026-10-23T07:29:06.016Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
