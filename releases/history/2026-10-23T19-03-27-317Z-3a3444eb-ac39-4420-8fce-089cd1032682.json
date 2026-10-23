@@ -1,0 +1,40 @@
+{
+  "kind": "release",
+  "summary": "Publish verified Customer identity and manual first-owner Phone claim conflicts; private Market metadata remains disabled. Preserve existing Explore, Activity, POS and native features. No mass merge or ownership data transfer executed.",
+  "changes": [
+    "1c6d131f-0871-42f4-a725-f8e6db7255e4",
+    "08d7db43-2418-4ef3-b621-5e1a528cd389",
+    "d77f09f8-c84b-48a6-adaa-05d07f4cb28d",
+    "8a97d0dc-efac-4316-a4fc-a92ddb54f137"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+      "baselineDeploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF",
+      "sourceSha256": "5bee0cd985d851f2ea82050104a8a97484a417eedf7e7c4af0e371dd097623a0",
+      "overlaySha256": "ccc51ac2e982dc82502e7997809c25adec35fd134e2ad0a68362917fff97e23f",
+      "evidence": [
+        "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/live-source-verification.json",
+        "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/live-http-smoke.json",
+        "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/database-verification.json"
+      ]
+    }
+  },
+  "limitations": {
+    "servicesPilot": "OFF",
+    "market": "Disabled; no permission grants, runtime, installation or billing enabled",
+    "physicalIPhone": "Not exercised in this release",
+    "appStore": "No App Store publication claimed",
+    "unfinishedTasks": "Working/blocked tasks and separate local plugin/tooling are excluded; see audit.log and worktrees.json"
+  },
+  "rollback": {
+    "webBaseline": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF",
+    "source": "0ad017ad85bbef88fc7e8e339cc5770a14d7967d",
+    "database": "Additive migrations retained; schema snapshot stored privately. Do not undo data or replay merge operations."
+  },
+  "id": "3a3444eb-ac39-4420-8fce-089cd1032682",
+  "recordedAt": "2026-10-23T19:03:27.317Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
