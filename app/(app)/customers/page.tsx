@@ -10,7 +10,7 @@ import {
   type CustomerListItem,
   type CustomerListPagination,
 } from "@/lib/customers";
-import { mergeDuplicateCustomers } from "@/app/customers/actions";
+import { consolidateCustomers, mergeDuplicateCustomers } from "@/app/customers/actions";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import Link from "next/link";
@@ -19,6 +19,7 @@ import type { ReactNode } from "react";
 type CustomersPageProps = {
   searchParams: Promise<{
     error?: string;
+    merged?: string;
     page?: string;
     q?: string;
   }>;
@@ -106,10 +107,12 @@ function DuplicateMergeMenu({
               <p className="mt-0.5 text-xs text-zinc-500">
                 <WorkspaceText text="Created" /> <WorkspaceText text={formatDateTime(candidate.created_at)} />
               </p>
+              {candidate.match && <p className="mt-0.5 text-xs text-amber-800">{candidate.match.reason}</p>}
             </div>
           ))}
         </div>
         <form action={mergeDuplicateCustomers} className="mt-3">
+          <label className="mb-2 flex gap-2 text-xs"><input required type="checkbox" />These records belong to the same person.</label>
           <input name="target_customer_id" type="hidden" value={customer.id} />
           {customer.duplicateCandidates.map((candidate) => (
             <input
@@ -127,6 +130,7 @@ function DuplicateMergeMenu({
           </SubmitButton>
         </form>
         <form action={mergeDuplicateCustomers} className="mt-2 grid gap-2">
+          <label className="flex gap-2 text-xs"><input required type="checkbox" />These records belong to the same person.</label>
           <input name="target_customer_id" type="hidden" value={customer.id} />
           <div className="grid gap-1">
             {customer.duplicateCandidates.map((candidate) => (
@@ -197,7 +201,7 @@ function CustomerList({
               <li className="px-4 py-2 text-sm" key={customer.id} data-customer-row>
                 <div className="flex min-w-0 items-center gap-2">
                   <Link className="min-w-0 flex-1 truncate py-1 text-zinc-950" href={detailHref}>
-                    <span className="font-medium">{customer.name}</span>
+                    <span className="font-medium">{customer.name}{customer.isWalkingGroup ? ` · ${customer.groupedCustomerIds?.length ?? 1} customers` : ""}</span>
                     {!customer.isWalkingGroup && customer.phone ? <span className="ml-2 text-xs text-zinc-500">{customer.phone}</span> : null}
                     {customer.status !== "active" ? <span className="ml-2 text-xs text-zinc-500"><WorkspaceText text="Inactive" /></span> : null}
                   </Link>
@@ -207,7 +211,7 @@ function CustomerList({
                 </div>
                 <div className="flex min-w-0 items-center justify-between gap-2 text-xs text-zinc-500">
                   <span className="min-w-0 truncate">
-                    {customer.isWalkingGroup ? `${customer.groupedCustomerIds?.length ?? 1} walk-ins · ` : ""}
+
                     {customer.metrics.upcoming_start_at ? <Link className="text-orange-700 underline" href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}><WorkspaceText text="Upcoming" /> {formatDateTime(customer.metrics.upcoming_start_at)}</Link> : <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at)} />}
                     {" · "}{customer.metrics.appointment_count} <WorkspaceText text="appts" />
                   </span>
@@ -273,7 +277,7 @@ function customerListHref({ page, q }: { page: number; q: string }) {
 async function CustomersPage({ searchParams }: CustomersPageProps) {
   const __vt = await getWorkspaceTranslation();
 
-  const { error, page, q } = await searchParams;
+  const { error, merged, page, q } = await searchParams;
   await requireSalonManagePageContext("/customers");
   const { context, customers, pagination } = await getCurrentSalonCustomerList({
     page,
@@ -320,6 +324,8 @@ async function CustomersPage({ searchParams }: CustomersPageProps) {
           ) : null}
       </WorkspaceToolbar>
 
+      {merged !== undefined && <p role="status" className="py-2 text-sm">Merged {Number(merged) || 0} duplicate records.</p>}
+      {canManageCustomers && <details className="border-b py-2 text-sm"><summary className="cursor-pointer">Find and merge matching customers</summary><p className="my-2 text-zinc-600">Automatically merge matching names with the same full phone number. Other possible matches remain available for review. Up to 100 records per batch.</p><form action={consolidateCustomers}><SubmitButton pendingLabel="Checking…" className="py-2 font-medium text-orange-700">Run automatic merge</SubmitButton></form></details>}
       <section>
         <CustomerList
           canManageCustomers={canManageCustomers}

@@ -1,0 +1,97 @@
+{
+  "kind": "change",
+  "changeId": "market-private-metadata-review-20261022",
+  "status": "ready",
+  "summary": "Private Market metadata review deployed disabled by default; no permissions provisioned or runtime enabled.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(market-private)/actions.ts",
+    "app/(market-private)/developers/market/page.tsx",
+    "app/(market-private)/layout.tsx",
+    "app/(market-private)/market-review/page.tsx",
+    "components/market-registry/action-form.tsx",
+    "components/market-registry/developer-workspace.tsx",
+    "components/market-registry/registry-shell.tsx",
+    "components/market-registry/registry.module.css",
+    "components/market-registry/review-workspace.tsx",
+    "components/market-registry/version-details.tsx",
+    "docs/market-private-registry.md",
+    "lib/market-registry/manifest.ts",
+    "lib/market-registry/server.ts",
+    "supabase/migrations/20261022180001_market_private_registry.sql",
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "tests/isolated-supabase-fixture.test.mjs",
+    "tests/market-automatic-tax.integration.test.mjs",
+    "tests/market-bank-billing.integration.test.mjs",
+    "tests/market-bank-external-catalog.test.mjs",
+    "tests/market-card-provider.test.mjs",
+    "tests/market-card-system.integration.test.mjs",
+    "tests/market-commerce.test.mjs",
+    "tests/market-ranking.test.mjs",
+    "tests/market-registry-boundary.test.mjs",
+    "tests/market-registry-routes.test.mjs",
+    "tests/market-registry-ui.test.mjs",
+    "tests/market-registry.fullstack.test.mjs",
+    "tests/market-registry.integration.test.mjs",
+    "types/market-registry.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2\\frozen-source",
+    "baselineDeploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/build-r2.log; C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/lint.log"
+    },
+    {
+      "name": "103 focused regressions and independent full-schema Customer, Phone and Market acceptance",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/focused-tests-r2.log; customer-fullschema.log; phone-fullschema.log; market-fullschema.log"
+    },
+    {
+      "name": "Production baseline preservation and native command pin integration",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/assembly-plan.json; command-pins.json"
+    }
+  ],
+  "supersedesEvents": [],
+  "id": "1c6d131f-0871-42f4-a725-f8e6db7255e4",
+  "recordedAt": "2026-10-23T18:54:34.393Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(market-private)/actions.ts": "79da713d743f9c31f19236f36be9d047c4db55ef52a089c2f841d5025a30b4a0",
+    "app/(market-private)/developers/market/page.tsx": "bbbcb0f87651398608857e4c51d1e1ffdf0cbcc43cbca1191396652629d16b57",
+    "app/(market-private)/layout.tsx": "988bbd93624074f346512d587a75d0761e8b452d158e6beee36c05545210c0fd",
+    "app/(market-private)/market-review/page.tsx": "ff622b940d8422efaeaa62991c65f5fe5d1f5e6f855cdc3bb7d5c9e3360f3cc1",
+    "components/market-registry/action-form.tsx": "cc31c0f96a5c86c10d7223eb81dfa9d0888d0ef836a005508704476647872019",
+    "components/market-registry/developer-workspace.tsx": "0b17713c967e4990e3fc62eee2f978781ddd5ea79e0dfd127b5e9cb1723abf08",
+    "components/market-registry/registry-shell.tsx": "64751589574ac0e7d1bcecca3c320bf7fcf87d76d4d59782e54b6d0964c2c4ab",
+    "components/market-registry/registry.module.css": "12fa999f341954804eba75cb1c1486c7ac6b2399644d05755382b78e5e56584c",
+    "components/market-registry/review-workspace.tsx": "7b8e54a3a3bb904133d46669ef255501a98eb4e88d76b8a1638a38b6684580b8",
+    "components/market-registry/version-details.tsx": "d353f2b2db1898b2708f3920fc82dbe903e30e1741bcc60646035fa81a3d3b3f",
+    "docs/market-private-registry.md": "b0db4c7350ccf0c8c00c4e8e2bf37ff092febaa053537ab2c5cf285766386c00",
+    "lib/market-registry/manifest.ts": "8e4cd4f351b05bed002b1909a136f6d248dc7f12cbf12bb7cc8734ca40920218",
+    "lib/market-registry/server.ts": "25091389f86dbae0078e6b1858b1ae4d06ee512b3776fb4d131a3a484687c408",
+    "supabase/migrations/20261022180001_market_private_registry.sql": "6ccbff7accb06c7e7f7300b27865a9f7a5da3e5899479a8a137f597400750d95",
+    "tests/helpers/isolated-supabase-fixture.mjs": "43f891028cf314bb5a7e544b6c29772619f2b712a4d93197fc2f4e859b4da12f",
+    "tests/isolated-supabase-fixture.test.mjs": "b273fc992bc27d26969e87071fd5d57ac5de975669b393157775d37032f6db5f",
+    "tests/market-automatic-tax.integration.test.mjs": "f7c933dc9b48e576cf2e3cf3557c1c0b3ea3bb016a0a5490b6ec9cf6f87f0a12",
+    "tests/market-bank-billing.integration.test.mjs": "ced7cfab08438c82ae975e0b0443d35c8716b6970c6e93dad2b00f60578a6620",
+    "tests/market-bank-external-catalog.test.mjs": "cf020424999fe98ac9ecb095e07a0b237449ddb8069e27d2ab3c2c12ebc5465a",
+    "tests/market-card-provider.test.mjs": "e57082863a03315d0b6d29fc64f42c2e047e8468641c0c49de4716030a0530fd",
+    "tests/market-card-system.integration.test.mjs": "8c94efe436dc8bdbf43b7769d122d89b5d530bb43a4416e2f672e89aa7a94789",
+    "tests/market-commerce.test.mjs": "8acc80a4765dd873b97059c643e55d20101e3cd134d72e5097b24f229b4bb92b",
+    "tests/market-ranking.test.mjs": "a56953215f8dbcc192dafef32a719646421ddce349e268ec04f44b53606d18b9",
+    "tests/market-registry-boundary.test.mjs": "5b9b1a2d330538648cd78d832b78813317e8241fb8a3764390cac579f8f779ad",
+    "tests/market-registry-routes.test.mjs": "0f7c59c6a272195174d3fed033f6b40d7502f23678733355ccad0027d06a82d9",
+    "tests/market-registry-ui.test.mjs": "5da3a0a1c249e71904c9a29e03db3b180f826f5fb4b2b393ad1f40d2c6bce83b",
+    "tests/market-registry.fullstack.test.mjs": "82e416b690ad3914e4ece79f750fa6095f97086861fc710e6b7177b63bc13ed9",
+    "tests/market-registry.integration.test.mjs": "4addca88bfdba501fcdd669bdc84c959fcabb5c7f8d7d95e5cde1c2e72bfb68a",
+    "types/market-registry.ts": "0fde5c059e394256a2e8e01cb02bcac53fdaf21c9cd315b13879799dd42df131"
+  }
+}

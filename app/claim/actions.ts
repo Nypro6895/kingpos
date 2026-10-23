@@ -41,6 +41,7 @@ export async function beginBusinessClaimAction(salonId:string,channel:'sms'|'cal
  if (!await businessClaimMessagingReady()) throw new Error('Phone verification is not available yet. Request support below.');
  const service=serviceClient();
  const {data,error}=await service.rpc('begin_business_claim',{p_salon:salonId,p_user:user.id,p_channel:channel});
+ if (error?.code==='PCL01') return {requestId:null,error:null,supportRequired:true};
  if (error) throw new Error(error.message);
  const reserved=data as {id:string;phone:string;last_sent_at:string};
  const sid=await sendBusinessClaimCode(reserved.phone,channel);
@@ -56,10 +57,12 @@ export async function confirmBusinessClaimAction(requestId:string,code:string) {
  if (!/^\d{6}$/.test(code)) throw new Error('Enter the six-digit code.');
  const service=serviceClient();
  const reserved=await service.rpc('reserve_business_claim_check',{p_request:requestId,p_user:user.id});
+ if (reserved.error?.code==='PCL01') return {status:null,error:null,supportRequired:true};
  if (reserved.error) throw new Error(reserved.error.message);
  const challenge=reserved.data as {provider_sid:string;salon_id:string};
  if (!await checkBusinessClaimCode(challenge.provider_sid,code)) throw new Error('Incorrect code. Please try again.');
  const {data,error}=await service.rpc('confirm_business_claim',{p_request:requestId,p_user:user.id,p_sid:challenge.provider_sid});
+ if (error?.code==='PCL01') return {status:null,error:null,supportRequired:true};
  if(error) throw new Error(error.message);
  const result=data as {status:'approved'|'waiting';salon_id:string};
  if(result.status==='approved') await setCurrentManageSalonCookie(result.salon_id);
@@ -75,7 +78,7 @@ export async function requestBusinessClaimSupportAction(salonId:string,form:Form
  const files=form.getAll('attachments').filter((f):f is File=>typeof f!=='string' && f.size>0);
  if(files.length>3) throw new Error('Attach up to three files.');
  const reason=String(form.get('reason')??'').trim();
- if(reason.length<10 || reason.length>2000) throw new Error('Explain your connection to the salon and the phone issue (10–2000 characters).');
+ if(reason.length<10 || reason.length>2000) throw new Error('Explain your connection to the salon and your ownership claim (10–2000 characters).');
  const attachments:{path:string;name:string}[]=[];
  for(const file of files) {
  service??=serviceClient();

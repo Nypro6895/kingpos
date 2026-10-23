@@ -1,4 +1,6 @@
 "use client";
+import { CustomerIdentityChoices } from "@/components/customer-identity-choices";
+import type { CustomerIdentityChoice } from "@/types/customer-identity";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { phoneRelayCheckin } from "./actions";
@@ -7,11 +9,14 @@ export function PhoneRelayCheckin({ entry, salonName, services, initialName = ""
   const [name, setName] = useState(initialName), [phone, setPhone] = useState(initialPhone), [selected, setSelected] = useState<string[]>([]), [error, setError] = useState(""), [busy, setBusy] = useState(false);
   const request = useRef<string | null>(null), inFlight = useRef(false);
   const router = useRouter();
-  return <main className={`${styles.panel} ${styles.pass}`}><h1 className="text-2xl font-semibold">{salonName}</h1><p>Check in · Choose your services</p><form onSubmit={async event => {
+  const [candidates, setCandidates] = useState<CustomerIdentityChoice[]>([]);
+  const choice = useRef<string | null | undefined>(undefined);
+  const form = useRef<HTMLFormElement>(null);
+  return <main className={`${styles.panel} ${styles.pass}`}><h1 className="text-2xl font-semibold">{salonName}</h1><p>Check in · Choose your services</p><form ref={form} onSubmit={async event => {
     event.preventDefault(); if (inFlight.current) return;
     inFlight.current = true; setBusy(true); setError(""); request.current ??= crypto.randomUUID();
-    try { const result = await phoneRelayCheckin({ entry, phone, name, services: selected, request: request.current }); if (result.error) setError(result.error); else if (result.pass) router.replace(`/visit/${result.pass}`); else setError("Check-in saved. Ask the front desk for your number."); }
+    try { const result = await phoneRelayCheckin({ entry, phone, name, services: selected, request: request.current, identityChoice: choice.current ?? undefined, newCustomer: choice.current === null }); if (result.error) { setError(result.error); setCandidates(result.candidates ?? []); } else if (result.pass) router.replace(`/visit/${result.pass}`); else setError("Check-in saved. Ask the front desk for your number."); }
     catch { setError("Reconnect and retry. Your information is kept."); }
     finally { inFlight.current = false; setBusy(false); }
-  }}><label>Name<input autoComplete="name" required maxLength={100} disabled={busy} value={name} onChange={e => setName(e.target.value)} /></label><label>Phone<input autoComplete="tel" type="tel" required maxLength={25} disabled={busy} value={phone} onChange={e => setPhone(e.target.value)} /></label><fieldset disabled={busy} className={styles.checklist}><legend>Services</legend>{services.map(s => <label key={s.id}><input type="checkbox" checked={selected.includes(s.id)} onChange={e => setSelected(ids => e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id))} />{s.name}</label>)}</fieldset><button className={styles.primary} disabled={busy || !selected.length}>{busy ? "Checking in…" : "Check in"}</button>{error && <p role="alert">{error}</p>}</form></main>;
+  }}><label>Name<input autoComplete="name" required maxLength={100} disabled={busy} value={name} onChange={e => { setName(e.target.value); setCandidates([]); choice.current = undefined; request.current = null; }} /></label><label>Phone<input autoComplete="tel" type="tel" required maxLength={25} disabled={busy} value={phone} onChange={e => { setPhone(e.target.value); setCandidates([]); choice.current = undefined; request.current = null; }} /></label><CustomerIdentityChoices candidates={candidates} disabled={busy} onChoose={id => { choice.current = id; form.current?.requestSubmit(); }} /><fieldset disabled={busy} className={styles.checklist}><legend>Services</legend>{services.map(s => <label key={s.id}><input type="checkbox" checked={selected.includes(s.id)} onChange={e => setSelected(ids => e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id))} />{s.name}</label>)}</fieldset><button className={styles.primary} disabled={busy || !selected.length}>{busy ? "Checking in…" : "Check in"}</button>{error && <p role="alert">{error}</p>}</form></main>;
 }

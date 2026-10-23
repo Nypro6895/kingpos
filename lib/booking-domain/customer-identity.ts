@@ -1,4 +1,5 @@
 import "server-only";
+import { customerPhoneKey, customerNameKey, customerNameSimilarity } from "@/lib/customer-identity-match";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -33,19 +34,7 @@ export function normalizeBookingEmail(value: string | null | undefined) {
 }
 
 export function normalizeBookingPhone(value: string | null | undefined) {
-  const trimmed = value?.trim() ?? "";
-
-  if (!trimmed) {
-    return null;
-  }
-
-  const digits = trimmed.replace(/[^0-9]/g, "");
-
-  if (!digits) {
-    return null;
-  }
-
-  return trimmed.startsWith("+") ? `+${digits}` : digits;
+  return customerPhoneKey(value);
 }
 
 function customerDisplayName(input: {
@@ -86,6 +75,18 @@ async function loadCustomerById(
     throw new BookingDomainError("database_error", error.message);
   }
 
+  if (!data) {
+    const { data: alias, error: aliasError } = await supabase.from("customer_merged_ids")
+      .select("target_id").eq("source_id", customerId).eq("salon_id", salonId).maybeSingle<{ target_id: string }>();
+    if (aliasError) throw new BookingDomainError("database_error", aliasError.message);
+    if (alias) {
+      const { data: canonical, error: canonicalError } = await supabase.from("customers").select(CUSTOMER_SELECT)
+        .eq("id", alias.target_id).eq("location_id", salonId).maybeSingle<Customer>();
+      if (canonicalError) throw new BookingDomainError("database_error", canonicalError.message);
+      return canonical;
+    }
+  }
+
   return data;
 }
 
@@ -117,39 +118,6 @@ async function loadPublicUser(
   }
 
   return data;
-}
-
-async function loadCustomerByContact(input: {
-  field: "email" | "phone";
-  salonId: string;
-  supabase: SupabaseClient;
-  value: string | null;
-}) {
-  if (!input.value) {
-    return null;
-  }
-
-  const { data, error } = await input.supabase
-    .from("customers")
-    .select(CUSTOMER_SELECT)
-    .eq("location_id", input.salonId)
-    .eq(input.field, input.value)
-    .limit(2)
-    .returns<Customer[]>();
-
-  if (error) {
-    throw new BookingDomainError("database_error", error.message);
-  }
-
-  if ((data ?? []).length > 1) {
-    throw new BookingDomainError(
-      "conflict",
-      `Multiple customers matched the same ${input.field}.`,
-      { field: input.field },
-    );
-  }
-
-  return data?.[0] ?? null;
 }
 
 export async function resolveBookingCustomer(input: {
@@ -193,27 +161,23 @@ export async function resolveBookingCustomer(input: {
     const normalizedEmail = normalizeBookingEmail(
       input.customer.email ?? user?.email,
     );
-    const phoneMatch = await loadCustomerByContact({
-      field: "phone",
-      salonId: input.salonId,
-      supabase: input.supabase,
-      value: normalizedPhone,
+    const { data: identityRows, error: identityError } = await input.supabase.rpc("booking_customer_identity_matches", {
+      p_salon: input.salonId, p_name: input.customer.name ?? user?.display_name ?? "", p_phone: normalizedPhone, p_email: normalizedEmail,
     });
-    const emailMatch = await loadCustomerByContact({
-      field: "email",
-      salonId: input.salonId,
-      supabase: input.supabase,
-      value: normalizedEmail,
-    });
-
-    if (phoneMatch && emailMatch && phoneMatch.id !== emailMatch.id) {
-      throw new BookingDomainError(
-        "conflict",
-        "Phone and email match different customer records.",
-      );
+    if (identityError) throw new BookingDomainError("database_error", identityError.message);
+    const candidates = (identityRows ?? []) as Customer[];
+    if (candidates.length >= 20) throw new BookingDomainError("conflict", "Multiple customer profiles matched. Select the correct customer.");
+    const matchName = input.customer.name?.trim() || user?.display_name || "";
+    const phoneMatches = candidates.filter(c => normalizedPhone && customerPhoneKey(c.phone) === normalizedPhone);
+    const emailMatches = candidates.filter(c => normalizedEmail && normalizeBookingEmail(c.email) === normalizedEmail);
+    const safePhoneMatches = phoneMatches.filter(c => customerNameKey(matchName).length >= 3 && customerNameSimilarity(matchName,c.name) >= 0.75);
+    const phoneMatch = safePhoneMatches[0] ?? null;
+    const emailMatch = emailMatches.length === 1 ? emailMatches[0] : null;
+    if (new Set(safePhoneMatches.map(c => c.customer_user_id).filter(Boolean)).size > 1 || emailMatches.length > 1 || (phoneMatch && emailMatch && phoneMatch.id !== emailMatch.id)) {
+      throw new BookingDomainError("conflict", "Multiple customer profiles matched. Select the correct customer.");
     }
-
     const matchedCustomer = phoneMatch ?? emailMatch;
+    if (!matchedCustomer && candidates.length > 0) throw new BookingDomainError("conflict", "Possible existing customer. Check the name and phone or select the correct profile.");
 
     if (matchedCustomer) {
       if (
@@ -274,28 +238,12 @@ export async function resolveBookingCustomer(input: {
       phone: normalizedPhone,
       user,
     });
-    const { data: createdCustomer, error: createError } = await input.supabase
-      .from("customers")
-      .insert({
-        created_by_user_id: input.actorUserId ?? null,
-        customer_user_id: user?.id ?? null,
-        email: normalizedEmail,
-        location_id: input.salonId,
-        name,
-        phone: normalizedPhone,
-        source: user
-          ? "account_link"
-          : input.bookingSource === "public_profile" ||
-              input.bookingSource === "explore"
-            ? "public_booking"
-            : input.bookingSource === "pos"
-              ? "pos"
-              : "owner_booking",
-        status: "active",
-        updated_by_user_id: input.actorUserId ?? null,
-      })
-      .select(CUSTOMER_SELECT)
-      .single<Customer>();
+    const { data: creationResult, error: createError } = await input.supabase.rpc("create_booking_customer_identity", {
+      p_salon: input.salonId, p_name: name, p_phone: normalizedPhone, p_email: normalizedEmail,
+      p_user: user?.id ?? null, p_actor: input.actorUserId ?? null,
+      p_source: user ? "account_link" : input.bookingSource === "public_profile" || input.bookingSource === "explore" ? "public_booking" : input.bookingSource === "pos" ? "pos" : "owner_booking",
+    });
+    const createdCustomer = (creationResult?.customer as Customer | undefined) ?? null;
 
     if (createError || !createdCustomer) {
       throw new BookingDomainError(
@@ -305,7 +253,7 @@ export async function resolveBookingCustomer(input: {
     }
 
     return bookingOk({
-      created: true,
+      created: creationResult?.created === true,
       customer: createdCustomer,
       customerUserId: user?.id ?? input.customer.customerUserId ?? null,
       matchedBy: user ? "customer_user" : "created",

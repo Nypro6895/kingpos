@@ -1,3 +1,4 @@
+import { ManualMergePicker } from "@/app/customers/manual-merge-picker";
 import { withExperiencePage } from "@/components/experience-page";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -344,6 +345,7 @@ async function CustomerDetailPage({
         </p>
       ) : null}
 
+      {canManageCustomers && !data.isWalkingGroup ? <ManualMergePicker customerId={customer.id} /> : null}
       {data.duplicateCandidates.length > 0 ? (
         <details className="border-y border-amber-200 bg-amber-50 px-4 py-2 text-sm"><summary className="min-h-7 cursor-pointer text-amber-900"><WorkspaceText text={data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"} /> · {data.isWalkingGroup ? (data.groupedCustomerIds?.length ?? data.duplicateCandidates.length + 1) : data.duplicateCandidates.length}</summary>
           <h2 className="sr-only">
@@ -352,7 +354,7 @@ async function CustomerDetailPage({
           <p className="mt-1 text-sm text-amber-800">
             <WorkspaceText text={data.isWalkingGroup
               ? "This view combines walk-in records that have no customer contact information."
-              : "Matching phone or email exists in this salon. No merge was performed."} />
+              : "Possible match by name, phone, or email. Review identity before merging."} />
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {data.duplicateCandidates.map((candidate) => (

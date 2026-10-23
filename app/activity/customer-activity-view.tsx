@@ -1,4 +1,6 @@
 "use client";
+import { MyCustomerProfiles } from "@/app/activity/my-customer-profiles";
+
 
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 import type {
@@ -279,6 +281,7 @@ export function CustomerActivityView({ activity }: { activity: CustomerActivityD
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-5xl gap-5">
+        <MyCustomerProfiles />
         {!hasActivity ? (
           <EmptyState />
         ) : (

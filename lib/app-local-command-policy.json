@@ -372,7 +372,10 @@
     "app/customers/actions.ts": [
       "createCustomer",
       "mergeDuplicateCustomers",
-      "updateCustomer"
+      "updateCustomer",
+      "searchCustomerMatches",
+      "searchCustomersForMerge",
+      "consolidateCustomers"
     ],
     "app/payroll/actions.ts": [
       "autosavePayrollPeriodStaffInputAction",
@@ -468,6 +471,10 @@
     ],
     "app/campaigns/preview-actions.ts": [
       "loadCampaignPreviewAction"
+    ],
+    "app/activity/customer-merge-actions.ts": [
+      "getMyCustomerMergeGroups",
+      "mergeMyCustomerProfiles"
     ]
   }
 }
