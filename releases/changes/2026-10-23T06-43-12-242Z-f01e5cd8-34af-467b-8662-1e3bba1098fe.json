@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "settings-grouped-inline-20261023",
+  "status": "working",
+  "summary": "Rebase approved grouped Settings UI onto exact live web baseline and uploaded iOS build46 source; preserve production full-width safe areas and Windows download integration. Native rebundle required because SettingsHubClient is imported by app-local-page-registry.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "lib/vietnamese-dictionary.ts"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/settings-redesign-20261023/source"
+  },
+  "validation": [
+    {
+      "name": "Production web build and native source verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f01e5cd8-34af-467b-8662-1e3bba1098fe",
+  "recordedAt": "2026-10-23T06:43:12.242Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
