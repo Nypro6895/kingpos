@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "admin-users-filter-type-guard-20261023",
+  "status": "working",
+  "summary": "Guard undefined filter values while retaining explicit All status, Active default and existing pagination/export behavior.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/users/users-workspace.tsx"
+  ],
+  "validation": [
+    {
+      "name": "Filter semantics and type check",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "348100c0-a0ee-4ff4-b415-00734b4694c2",
+  "recordedAt": "2026-10-23T06:35:43.616Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

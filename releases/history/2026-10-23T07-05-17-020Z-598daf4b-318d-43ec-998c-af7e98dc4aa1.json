@@ -1,0 +1,95 @@
+{
+  "kind": "release",
+  "releaseId": "settings-inline-admin-filter-20261023",
+  "summary": "Approved grouped inline Settings is source-verified on reylumi.com and TestFlight 1.0.0 (47). Preserve existing functions, permissions, financial/booking logic, Windows downloads and uploaded46 native implementations. Local Admin Users guard synchronized with the already-live guard.",
+  "changes": [
+    "76d974c3-2a47-49c0-bc1f-74bac061faf2",
+    "c87e7a09-1644-48c3-9611-24bcbd6dcf1b",
+    "ec804ae9-6f74-4fb3-8977-b647bebcf31b"
+  ],
+  "channelChanges": {
+    "web": [
+      "76d974c3-2a47-49c0-bc1f-74bac061faf2",
+      "c87e7a09-1644-48c3-9611-24bcbd6dcf1b"
+    ],
+    "ios": [
+      "ec804ae9-6f74-4fb3-8977-b647bebcf31b"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BmjLhm3QU4co4N9544U4FSVDoJyQ",
+      "baselineDeploymentId": "dpl_examqLJUF63L8DgXgiwGWmVNNEkZ",
+      "sourceSha256": "3fc7795eebc8f26974872b1707bfc03cdab213a940c3ad549930f4b85cd172b1",
+      "deploySourceSha256": "18240f8ef74c622a89195dcbae3a277dac1bc7d6a37ae08545e00c2c0b3a65e2",
+      "overlaySha256": "b83573acf4a44658bb7cb4fa6cd9179e667c89511262ffcd1072144c9555a583",
+      "commit": "ba9664be3207a6735f680280dd83f51b4ad10472",
+      "evidence": "artifacts/settings-inline-release-20261023"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "47",
+      "commit": "e1fd29cb50699eb9c5cffc8882f6ae4a123c1aae",
+      "evidence": "artifacts/settings-inline-release-20261023/native-source-verification.json",
+      "workflowRun": 39913476938,
+      "availabilityWorkflowRun": 39915312789,
+      "appleBuildId": "bdd3d417-a2b9-4a5c-9357-5eba5f898129",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "existingGroups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal"
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support"
+        }
+      ]
+    }
+  },
+  "validation": {
+    "webProductionBuild": true,
+    "typescript": true,
+    "focusedContractTests": 12,
+    "filterCases": 5,
+    "renderedGuestGuards": true,
+    "webChecks": 11,
+    "responsiveWidths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "nativeSimulatorTests": 205,
+    "nativeSourceInputsVerified": 2508,
+    "uploadedBundleResourcesVerified": 346,
+    "nativeImplementationFilesUnchanged": 25
+  },
+  "nativeBaseline": {
+    "commit": "b823db4bf44f916543f13550c52bd8ac294958dc",
+    "build": "46"
+  },
+  "scope": {
+    "productFilesChanged": 3,
+    "adminGuard": "Already in captured production source; retained unchanged.",
+    "noDatabaseOrFinancialBehaviorChanges": true
+  },
+  "limits": [
+    "Responsive Settings tests use real shell with fixture child editors; real authenticated save mutations were not executed.",
+    "No physical iPhone installation or App Store publication claimed.",
+    "Older pending journal entries remain unmarked where exact event publication is not established; unrelated R12 production source is preserved."
+  ],
+  "rollback": {
+    "webBaselineDeploymentId": "dpl_examqLJUF63L8DgXgiwGWmVNNEkZ",
+    "nativeBaselineBuild": "46",
+    "onlyIfCurrentAliasStillMatchesThisRelease": true
+  },
+  "id": "598daf4b-318d-43ec-998c-af7e98dc4aa1",
+  "recordedAt": "2026-10-23T07:05:17.020Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
