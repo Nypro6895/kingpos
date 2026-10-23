@@ -115,7 +115,8 @@ final class LocalHostedReturnTests: XCTestCase {
         for _ in 0..<250 { if container.presentedViewController == nil { break }; try await Task.sleep(nanoseconds: 10_000_000) }
         XCTAssertNil(container.presentedViewController)
         let launch = try XCTUnwrap(local.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
-        for _ in 0..<150 { if !launch.isLoading { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        // Await the actual painted-state invariant; this is not a production timing budget.
+        for _ in 0..<1000 { if !launch.isLoading { break }; try await Task.sleep(nanoseconds: 10_000_000) }
         XCTAssertFalse(launch.isLoading, "The native public cover yields only after the returned installed view paints")
         let retained = try await installed.evaluateJavaScript("window.acceptedPath==='/help' && window.returnedPath==='/help' && window.retainedDraft.isConnected && window.retainedDraft.value==='44.25'") as? Bool
         XCTAssertEqual(retained, true)

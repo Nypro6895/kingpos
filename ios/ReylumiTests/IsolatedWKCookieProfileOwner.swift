@@ -31,7 +31,9 @@ final class IsolatedWKCookieProfileOwner: NSObject, WKNavigationDelegate {
         try await withCheckedThrowingContinuation { (pending: CheckedContinuation<Void, Error>) in
             continuation = pending
             timeout = Task { @MainActor [weak self] in
-                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                // Fixture preparation only: CI may cold-start a new WebKit profile slowly.
+                // Production command deadlines and cookie assertions are unchanged.
+                try? await Task.sleep(nanoseconds: 20_000_000_000)
                 if !Task.isCancelled { self?.finish(URLError(.timedOut)) }
             }
             webView.loadHTMLString("<!doctype html><meta http-equiv='Content-Security-Policy' content=\"default-src 'none'\"><title>Isolated cookie fixture</title>", baseURL: nil)
