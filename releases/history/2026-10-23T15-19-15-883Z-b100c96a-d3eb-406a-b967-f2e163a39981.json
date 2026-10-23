@@ -1,0 +1,50 @@
+{
+  "kind": "release",
+  "releaseId": "pending-release-20261023",
+  "summary": "Publish Owner bottom Reports navigation on exact preserved live source; keep other roles and desktop notifications unchanged. Customer identity remains unpublished because full-schema acceptance could not execute.",
+  "changes": [
+    "cec9623c-83b4-4007-a87a-3f3b953ddc96",
+    "ffcb843d-c842-4b15-9e96-a5464da7876d"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF",
+      "baselineDeploymentId": "dpl_Fhgc3cDW4WN8DiSXC3cBPZDtFq5J",
+      "commit": "0ad017ad85bbef88fc7e8e339cc5770a14d7967d",
+      "sourceSha256": "36c3f868bcc2e8062ff48ddaaa022639a5e57041121fe1ae4fa521d050476d39",
+      "overlaySha256": "a72951697f71cd329a7a8f0cfc249233bebac829b1daedad8ee7b028fb1459e8",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pending-release-20261023/live-source-verification.json"
+    }
+  },
+  "validation": {
+    "localNextProductionBuild": true,
+    "vercelProductionBuild": true,
+    "navigationNotificationTests": 11,
+    "navBrowserCases": 6,
+    "sourceFilesVerified": 3223,
+    "liveReadOnlyChecks": 15,
+    "scope": [
+      "app/navigation-shell.tsx"
+    ]
+  },
+  "excluded": {
+    "customerIdentity": "Full schema validation unavailable: Docker daemon startup failure; no migration applied",
+    "market": "Explicitly excluded private project",
+    "services": "Pilot remains OFF",
+    "phoneClaim": "Ownership policy unresolved"
+  },
+  "limits": [
+    "No Customer identity migration or real merge operation executed.",
+    "Mobile navigation fixture uses actual component and route helpers with child menus mocked; no authenticated live Owner session or physical iPhone claim.",
+    "TestFlight availability is separate from App Store publication."
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_Fhgc3cDW4WN8DiSXC3cBPZDtFq5J",
+    "onlyIfAliasStillMatchesThisRelease": true
+  },
+  "id": "b100c96a-d3eb-406a-b967-f2e163a39981",
+  "recordedAt": "2026-10-23T15:19:15.883Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

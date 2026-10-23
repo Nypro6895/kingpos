@@ -1,0 +1,240 @@
+{
+  "at": "2026-10-23T15:50:31.364Z",
+  "releaseId": "pending-release-20261023",
+  "web": {
+    "at": "2026-10-23T15:18:46.663Z",
+    "deploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF",
+    "label": "live",
+    "url": "kingpos-b3xwo8kjk-kingpos.vercel.app",
+    "readyState": "READY",
+    "aliasDeploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF",
+    "commit": "0ad017ad85bbef88fc7e8e339cc5770a14d7967d",
+    "sourceSha256": "36c3f868bcc2e8062ff48ddaaa022639a5e57041121fe1ae4fa521d050476d39",
+    "deploySourceSha256": "36c3f868bcc2e8062ff48ddaaa022639a5e57041121fe1ae4fa521d050476d39",
+    "overlaySha256": "a72951697f71cd329a7a8f0cfc249233bebac829b1daedad8ee7b028fb1459e8",
+    "sourceFiles": 3223,
+    "allHashesMatch": true
+  },
+  "native": {
+    "at": "2026-10-23T15:49:46.047Z",
+    "commit": "e92728496b81dfa15dda72422c79488da230226b",
+    "baselineCommit": "c3e22870c0ef5a72f9b19928e91bf2ef02890788",
+    "version": "1.0.0",
+    "build": "51",
+    "upload": "accepted",
+    "processing": "VALID",
+    "internal": "IN_BETA_TESTING",
+    "uploadTimeInternalState": "READY_FOR_BETA_TESTING",
+    "appleBuildId": "4a0aedc3-28ea-444d-9d0e-65831302843f",
+    "simulatorTests": 205,
+    "sourceInputsVerified": 2520,
+    "sourceSha256": "762791357a2611c465ab565bafc0a3022735ec6a61f28540e61fe8d18368b362",
+    "uploadedBundleFilesVerified": 346,
+    "bundleSha256": "3c6005b106e73453889ebeeff3233a80ed1797292313fe631e146c3a4c21879a",
+    "unchangedNativeFilesVerified": 25,
+    "overlayFilesVerified": 6,
+    "servicesPilot": false,
+    "workflowRun": 39977156422,
+    "workflowAttempt": 1,
+    "artifact": {
+      "id": 12513951106,
+      "name": "reylumi-testflight-57-1"
+    },
+    "priorAttempts": [],
+    "retrySourceUnchanged": null,
+    "runAgainCommandId": "action.c6288b29694833d7ec21681b",
+    "availableToExistingInternalGroup": true,
+    "passed": true,
+    "physicalDeviceTested": false,
+    "appStorePublicationVerified": false
+  },
+  "checks": {
+    "localBuild": {
+      "passed": true,
+      "exitCode": 0,
+      "at": "2026-10-23T15:15:21.256Z",
+      "provisional": false,
+      "build": "Full Next.js webpack production build with TypeScript",
+      "restoredGeneratedConfig": [
+        {
+          "file": "tsconfig.json",
+          "sha256": "82cde3336f14460edad62a8599e8f0f895988646a771b69ee7e41170148e9746"
+        },
+        {
+          "file": "next-env.d.ts",
+          "sha256": "4e4da12aa061aac172fb1bcb48e9b6e4b293080d2f494327925fdba8f39632ac"
+        }
+      ]
+    },
+    "browser": {
+      "passed": true,
+      "cases": [
+        {
+          "width": 320,
+          "role": "owner",
+          "route": "/reports",
+          "passed": true
+        },
+        {
+          "width": 390,
+          "role": "owner",
+          "route": "/reports",
+          "passed": true
+        },
+        {
+          "width": 430,
+          "role": "owner",
+          "route": "/reports",
+          "passed": true
+        },
+        {
+          "role": "owner",
+          "route": "/more",
+          "passed": true
+        },
+        {
+          "role": "staff",
+          "route": "/notifications",
+          "passed": true
+        },
+        {
+          "role": "personal",
+          "route": "/notifications",
+          "passed": true
+        }
+      ],
+      "limits": "Actual MobileBottomNav and actual role/routing helpers; child menus/icons/translation mocked, isolated fixture CSS; not authenticated E2E."
+    },
+    "live": {
+      "at": "2026-10-23T15:18:58.806Z",
+      "label": "live",
+      "origin": "https://reylumi.com",
+      "passed": true,
+      "checks": [
+        {
+          "path": "/login",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": false,
+          "passed": true
+        },
+        {
+          "path": "/explore",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": false,
+          "passed": true
+        },
+        {
+          "path": "/reports",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": true,
+          "passed": true
+        },
+        {
+          "path": "/campaigns",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": true,
+          "passed": true
+        },
+        {
+          "path": "/settings",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": true,
+          "passed": true
+        },
+        {
+          "path": "/settings?section=notifications",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": true,
+          "passed": true
+        },
+        {
+          "path": "/admin/users",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": true,
+          "passed": true
+        },
+        {
+          "path": "/privacy",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": false,
+          "passed": true
+        },
+        {
+          "path": "/help",
+          "status": 200,
+          "location": null,
+          "streamedRedirect": false,
+          "passed": true
+        },
+        {
+          "path": "/reports",
+          "method": "Rendered Chrome guest navigation",
+          "finalPath": "/login",
+          "passed": true
+        },
+        {
+          "path": "/campaigns",
+          "method": "Rendered Chrome guest navigation",
+          "finalPath": "/login",
+          "passed": true
+        },
+        {
+          "path": "/settings",
+          "method": "Rendered Chrome guest navigation",
+          "finalPath": "/login",
+          "passed": true
+        },
+        {
+          "path": "/settings?section=notifications",
+          "method": "Rendered Chrome guest navigation",
+          "finalPath": "/login",
+          "passed": true
+        },
+        {
+          "path": "/admin/users",
+          "method": "Rendered Chrome guest navigation",
+          "finalPath": "/login",
+          "passed": true
+        },
+        {
+          "path": "/api/app-local/context (Guest Explore)",
+          "status": 200,
+          "passed": true
+        }
+      ],
+      "method": "Read-only GET requests with no login, transactions, tester changes or saved mutations."
+    },
+    "navigationParity": {
+      "at": "2026-10-23T15:22:46.998Z",
+      "file": "app/navigation-shell.tsx",
+      "webCommit": "0ad017ad85bbef88fc7e8e339cc5770a14d7967d",
+      "nativeCommit": "e92728496b81dfa15dda72422c79488da230226b",
+      "sha256": "adc7c520ac848b12a9d86e4d48b634f573bdc4ba9b950c3dbf6f4986cbf952ed",
+      "equal": true,
+      "scope": "Owner mobile navigation only; Swift/permissions/payment/booking unchanged"
+    }
+  },
+  "excluded": {
+    "customerIdentity": "Full schema validation unavailable: Docker daemon startup failure; no migration applied",
+    "market": "Explicitly excluded private project",
+    "services": "Pilot remains OFF",
+    "phoneClaim": "Ownership policy unresolved"
+  },
+  "customerPreflight": {
+    "at": "2026-10-23T15:08:58.058Z",
+    "productionMutated": false,
+    "state": "failed",
+    "error": "spawnSync C:/Program Files/Docker/Docker/resources/bin/docker.exe ETIMEDOUT"
+  },
+  "lockReleased": {
+    "released": true
+  }
+}
