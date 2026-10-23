@@ -30,8 +30,8 @@ export function Field({
   step?: string;
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      <WorkspaceText text={label} />
+    <label className="settings-field-row grid gap-1 text-sm">
+      <span className="settings-field-label"><WorkspaceText text={label} /></span>
       <input
         name={name}
         className={inputClass}
@@ -57,7 +57,7 @@ export function Check({
   required?: boolean;
 }) {
   return (
-    <label className="flex min-h-10 items-start gap-2 py-2 text-sm">
+    <label className="settings-check-row flex min-h-10 items-start gap-2 py-2 text-sm">
       <input
         className="mt-1 size-4 shrink-0"
         name={name}
@@ -81,8 +81,8 @@ export function Select({
   options: readonly (readonly [string, string])[];
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      <WorkspaceText text={label} />
+    <label className="settings-field-row grid gap-1 text-sm">
+      <span className="settings-field-label"><WorkspaceText text={label} /></span>
       <select className={inputClass} name={name} defaultValue={value}>
         {options.map(([id, text]) => (
           <option key={id} value={id}>
@@ -197,7 +197,7 @@ export function InlineForm({
         }}><WorkspaceText text="Reload saved values" /></button>
       </div>}
       {inviteUrl && (
-        <label className="grid gap-1 text-sm">
+        <label className="settings-field-row grid gap-1 text-sm">
           <WorkspaceText text="Invitation link" />
           <input
             className={inputClass}

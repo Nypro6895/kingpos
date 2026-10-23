@@ -82,8 +82,8 @@ function OperatingHours({
       <p className="text-sm text-zinc-600"><WorkspaceText text="Opening hours tell customers when the salon is open. Booking hours and staff availability are managed separately in Booking rules & availability." /></p>
       <label className="grid gap-1 text-sm"><WorkspaceText text="Time zone" /><TimeZoneSelect name="timezone" className={inputClass} defaultValue={data.hours.timeZone} required /></label>
       {days.map((day, dayOfWeek) => (
-        <div className="grid gap-2 border-t border-zinc-100 pt-3" key={day}>
-          <div className="flex items-center justify-between">
+        <div className="settings-hours-day grid gap-2 border-t border-zinc-100 pt-3" key={day}>
+          <div className="settings-hours-day-heading flex items-center justify-between">
             <span className="text-sm font-medium">{day}</span>
             <button
               type="button"
@@ -110,7 +110,7 @@ function OperatingHours({
           {windows.map((window, index) =>
             window.dayOfWeek === dayOfWeek ? (
               <div
-                className="grid grid-cols-[1fr_1fr_auto] items-end gap-2"
+                className="settings-hours-window grid grid-cols-[1fr_1fr_auto] items-end gap-2"
                 key={`${day}-${index}`}
               >
                 {(["opensAtLocal", "closesAtLocal"] as const).map((key) => (
