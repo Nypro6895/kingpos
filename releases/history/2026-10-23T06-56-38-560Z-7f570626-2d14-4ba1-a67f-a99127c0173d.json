@@ -1,0 +1,48 @@
+{
+  "kind": "release",
+  "releaseId": "settings-inline-admin-filter-20261023",
+  "summary": "Publish approved grouped inline Settings on verified live web. Existing Admin Users type guard retained exactly; production already contained it. Native update is running and not yet claimed.",
+  "changes": [
+    "76d974c3-2a47-49c0-bc1f-74bac061faf2",
+    "c87e7a09-1644-48c3-9611-24bcbd6dcf1b"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BmjLhm3QU4co4N9544U4FSVDoJyQ",
+      "baselineDeploymentId": "dpl_examqLJUF63L8DgXgiwGWmVNNEkZ",
+      "sourceSha256": "3fc7795eebc8f26974872b1707bfc03cdab213a940c3ad549930f4b85cd172b1",
+      "deploySourceSha256": "18240f8ef74c622a89195dcbae3a277dac1bc7d6a37ae08545e00c2c0b3a65e2",
+      "overlaySha256": "b83573acf4a44658bb7cb4fa6cd9179e667c89511262ffcd1072144c9555a583",
+      "commit": "ba9664be3207a6735f680280dd83f51b4ad10472",
+      "evidence": "artifacts/settings-inline-release-20261023"
+    }
+  },
+  "validation": {
+    "productionBuild": true,
+    "typescript": true,
+    "contracts": 12,
+    "responsiveShell": true,
+    "renderedGuestGuards": true,
+    "liveChecks": 11
+  },
+  "native": {
+    "status": "running-not-yet-uploaded",
+    "commit": "e1fd29cb50699eb9c5cffc8882f6ae4a123c1aae",
+    "workflowRun": 39913476938,
+    "baselineBuild": "46"
+  },
+  "limits": [
+    "Authenticated save mutations not exercised against real data. Browser responsive tests use fixture child editors.",
+    "No App Store publication or physical iPhone installation claimed.",
+    "Preserve unrelated exact live R12 source and existing Windows download integration."
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_examqLJUF63L8DgXgiwGWmVNNEkZ",
+    "onlyIfCurrentAliasStillMatchesThisRelease": true
+  },
+  "id": "7f570626-2d14-4ba1-a67f-a99127c0173d",
+  "recordedAt": "2026-10-23T06:56:38.560Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
