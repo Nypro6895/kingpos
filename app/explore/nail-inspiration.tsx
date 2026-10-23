@@ -85,7 +85,6 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
         <Image src={look.imageUrl} alt={look.alt} fill sizes="(max-width: 640px) 92vw, 600px" className="object-cover" />
         <LumiAiWatermark className="absolute bottom-3 right-3" />
       </button>}
-      <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white">Suggested image</span>
       <div className="absolute right-3 top-3"><ExploreReferenceLove itemKey={`look:nail-${look.id}`} name={look.title} initialActive={initialSaved} className="!size-11 !text-2xl" /></div>
     </div>
     <div className="grid gap-3 p-4">
