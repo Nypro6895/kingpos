@@ -1,0 +1,105 @@
+{
+  "kind": "release",
+  "releaseId": "settings-panels-release-20261023",
+  "summary": "Complete Settings navigation and compact full-bleed square groups source-verified on reylumi.com and TestFlight 1.0.0 (49). Preserve business functions, permission checks and latest unrelated web/native changes.",
+  "changes": [
+    "dec76f0c-c1e9-43d1-8d50-b406b8fc7f2d",
+    "174fb487-02e0-47f2-a458-bfcfcff216ec"
+  ],
+  "channelChanges": {
+    "web": [
+      "dec76f0c-c1e9-43d1-8d50-b406b8fc7f2d"
+    ],
+    "ios": [
+      "dec76f0c-c1e9-43d1-8d50-b406b8fc7f2d",
+      "174fb487-02e0-47f2-a458-bfcfcff216ec"
+    ]
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_D5hXGPZ54axBEwSFWGmTLuLqZE9Q",
+      "baselineDeploymentId": "dpl_3h2e7yPQYQkdsteHCGdd1rr8pR42",
+      "baselineCommit": "39ccf257b39faace89144a81aa79b26b0e78ac3d",
+      "baselineSourceSha256": "48710538a6f81b8f4566684437d423a8ac6346880ce0b8215bbb66d07ec5fddc",
+      "sourceSha256": "9a20b64f05bcbb22a18d51f6e1c9ff18fd7b56e54e9479c92d64c5bed012178a",
+      "deploySourceSha256": "98f22ffc522cc7a75adb3af17a054851d4ad4ff1069e5ac156efbc1217e3aba4",
+      "overlaySha256": "620e8304a20d0e58de35dea6ef030fa97aef62e08648aecae6c4a685d3bfcf05",
+      "commit": "e504c246010dbabd585fbd6086e86b2ff5c3725f",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/settings-panels-release-20261023/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "49",
+      "commit": "c9a3d232b0cf31e405fd4ca6f6e268295b0bfc26",
+      "baselineCommit": "c8f796f294a97c217e53ccdfe95ff19ceeba3279",
+      "baselineBuild": "48",
+      "workflowRun": 39929046193,
+      "workflowAttempt": 1,
+      "appleBuildId": "9e4eb561-235e-4590-ad70-0ecb1c58f0e5",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "existingGroups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal"
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support"
+        }
+      ],
+      "evidence": "C:/Users/giuse/kingpos/artifacts/settings-panels-release-20261023/native-source-verification.json"
+    }
+  },
+  "validation": {
+    "vercelProductionBuild": true,
+    "sourceFilesVerified": 3216,
+    "realEditorScenarios": [
+      "No eager editor/read loading",
+      "Home/group/detail navigation",
+      "Exactly one visible editor",
+      "Actual profile edit, Cancel and failed-save draft retention",
+      "Draft retained when navigating",
+      "Profile save single-flight",
+      "Search replaces navigation",
+      "Immediate delayed-load skeleton",
+      "Actual salon save payload, single save and reload-only recovery",
+      "Opening hours expansion",
+      "Booking save payload preserved",
+      "320/390/768/1440 overflow",
+      "Manager grants, failed-load retry, external/native deep link",
+      "All ten salon menu targets",
+      "Unique labels for multiple cached Profile editors"
+    ],
+    "responsiveWidths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "liveChecks": 11,
+    "nativeSimulatorTests": 205,
+    "nativeInputsVerified": 2514,
+    "uploadedBundleResourcesVerified": 346,
+    "nativeImplementationFilesUnchanged": 25,
+    "unrelatedLiveSourcePreserved": true
+  },
+  "limits": [
+    "Real editor tests substitute server boundaries; no real save/OTP/upload transactions.",
+    "Local assembled build stopped due host contention; Vercel candidate build passed.",
+    "Three initial native attempts hit simulator-only fixture readiness timeouts. Fixture preparation waits were adjusted without changing production code or assertions; complete suite passed before upload.",
+    "No physical iPhone installation or App Store publication claimed."
+  ],
+  "rollback": {
+    "webBaselineDeploymentId": "dpl_3h2e7yPQYQkdsteHCGdd1rr8pR42",
+    "nativeBaselineBuild": "48",
+    "onlyIfAliasStillMatchesThisRelease": true
+  },
+  "id": "52a8fdbf-af26-4296-a8c0-779671a5e6bd",
+  "recordedAt": "2026-10-23T09:20:14.737Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

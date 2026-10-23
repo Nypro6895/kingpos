@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "settings-ios-simulator-readiness-20261023",
+  "status": "ready",
+  "summary": "Stabilized simulator-only cold WK profile and returned-screen paint readiness waits. All test assertions and production deadlines retained; complete native test and unsigned archive step passed. No native product implementation changed.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-release-20261023\\simulator-frozen-source",
+    "commit": "c9a3d232b0cf31e405fd4ca6f6e268295b0bfc26"
+  },
+  "validation": [
+    {
+      "name": "Full simulator suite and unsigned native archive",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-release-20261023\\native-workflow-current.json"
+    },
+    {
+      "name": "Test-only diff audit; production implementation unchanged",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-release-20261023\\native-retry-assessment.json"
+    }
+  ],
+  "dependencies": [
+    "settings-panels-unified-20261023"
+  ],
+  "id": "174fb487-02e0-47f2-a458-bfcfcff216ec",
+  "recordedAt": "2026-10-23T09:15:31.567Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift": "3f5dab0badba9e6646e2fa73eb34dcccebe6272f534f9275bc42a44e5285de52",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "7dd3d94c61dae236e91bd085c91579cabe8e71c4f2435936363804988a6c433c"
+  }
+}

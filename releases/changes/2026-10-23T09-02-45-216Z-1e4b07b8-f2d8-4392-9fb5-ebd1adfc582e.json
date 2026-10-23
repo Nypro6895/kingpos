@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "settings-ios-simulator-readiness-20261023",
+  "status": "working",
+  "summary": "Stabilize simulator fixture preparation after three CI attempts timed out on foreground WK fixture readiness. Test-only readiness budgets; retain all cookie authority, hosted return and production timing assertions.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "source": {
+    "commit": "135d0f5568c61217ff84d35896cd45e19375542d"
+  },
+  "validation": [
+    {
+      "name": "Full unchanged assertion suite and native archive",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "settings-panels-unified-20261023"
+  ],
+  "id": "1e4b07b8-f2d8-4392-9fb5-ebd1adfc582e",
+  "recordedAt": "2026-10-23T09:02:45.216Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

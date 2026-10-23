@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "settings-panels-unified-20261023",
+  "status": "working",
+  "summary": "Approved complete Settings navigation and form style revision: separate home/group/detail views, immediate feedback and selected-only editors, search replacement, full-bleed square groups with compact label/control rows, assessed bundled iOS shell; preserve actions and permissions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/direct-settings-panel.tsx"
+  ],
+  "source": {
+    "commit": "45e579e24b131e8c508bdbfc1542b3101ed31bba"
+  },
+  "validation": [
+    {
+      "name": "Real editor behavior, loading feedback, responsive layout, full build and iOS packaging",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "8194cc2f-00d4-41c1-a198-44520eb4ead8",
+  "recordedAt": "2026-10-23T07:31:04.542Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
