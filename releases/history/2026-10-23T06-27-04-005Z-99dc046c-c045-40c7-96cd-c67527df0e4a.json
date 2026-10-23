@@ -1,0 +1,52 @@
+{
+  "kind": "release",
+  "releaseId": "reylumi-settings-download-20261023-task6",
+  "summary": "All Settings POS now uses the shared official Windows release resolver. Exact web source and live official0.7.1 download target verified; live authenticated Settings UI was not exercised.",
+  "changes": [
+    "8077fc8f-01a1-4af4-b5dd-efbbe89901dd"
+  ],
+  "sourceCommit": "20588ff07fde33d0a012ba072f29935d1a1ebb69",
+  "frozenFunctionalCommit": "de1dcde717b256c6c328580d70b12e79f47b2cc8",
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_examqLJUF63L8DgXgiwGWmVNNEkZ",
+      "baselineDeploymentId": "dpl_DRWAXf6uNf2wpkJVAows9QFmSDej",
+      "sourceSha256": "bc18b801fe55a4156e1d0c424367285c790af0ad8da83efc7a0fae4176be176b",
+      "overlaySha256": "3452a36c30083aa06ec703888fe8aec4ebbc26d2890fe53ef66ad024b1a96fe1",
+      "evidence": {
+        "remoteSource": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\settings-download-release-20261023\\remote\\VERIFICATION-20261023T062631168279Z.json",
+          "sha256": "f787c54103182d9f96f19671eee626e362db1ae751dccd3b459c1006f7470c13"
+        },
+        "liveReadonlySmoke": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\settings-download-release-20261023\\LIVE-SMOKE.json",
+          "sha256": "b8e2df61c8f9075076c1fbfca89f90baa41c2e3696364baa881f93a167fd6c4f"
+        },
+        "localQuality": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\settings-download-release-20261023\\local-quality\\FINAL.json",
+          "sha256": "4fc061f61ab443d70e434c9b1ae9e893aa9e6fd32e6d358147d372922f04808e"
+        },
+        "rollback": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\settings-download-release-20261023\\ROLLBACK-READINESS.json",
+          "sha256": "fa6bde7d251f97c42efe8d08b9ff3ceecbaf953a354eab83f0a60063d71086be"
+        }
+      }
+    }
+  },
+  "limits": [
+    "Authenticated Settings panel and its real user session are unverified; navigation was avoided because it auto-POSTs prompt preference state.",
+    "No Windows/iOS binary or version change, database migration, Campaign cron/payment operation.",
+    "Physical iPhone QA remains paused during user OS update.",
+    "Market, Pilot and unfinished Settings hub/CSS changes excluded."
+  ],
+  "rollback": {
+    "deploymentId": "dpl_DRWAXf6uNf2wpkJVAows9QFmSDej",
+    "sourceCommit": "b823db4bf44f916543f13550c52bd8ac294958dc",
+    "plan": "Under lock, verify current alias is this release, then promote exact prior deployment and verify. Same schema/worker/native; no DB rollback. Preserve audit journals. Restores old download-selection behavior."
+  },
+  "id": "99dc046c-c045-40c7-96cd-c67527df0e4a",
+  "recordedAt": "2026-10-23T06:27:04.005Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\release-journal-settings-download-20261023"
+}
