@@ -82,6 +82,8 @@ function SearchInputSession(props: Props) {
     const onSubmit = (event: Event) => {
       if (composingRef.current) { event.preventDefault(); event.stopImmediatePropagation(); return; }
       liveSearch.cancel(); cancelMetadata();
+      // Dismiss the iOS keyboard on explicit submit, after the IME guard.
+      inputRef.current?.blur();
     };
     form.addEventListener("submit", onSubmit, true);
     return () => form.removeEventListener("submit", onSubmit, true);

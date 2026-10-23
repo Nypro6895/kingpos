@@ -93,8 +93,7 @@ import { getCurrentSalonMapLocationState } from "@/lib/location/salon-map-locati
 import { getTodayQuickAccessConfiguration } from "@/lib/today-quick-accesses";
 import { getSalonProfileMediaUrl, getCurrentSalonProfileIdentitySettings } from "@/lib/salon-profile";
 import { getSettingsOwnerHistory } from "@/lib/settings-owner-history";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { getWindowsPosRelease } from "@/lib/windows-pos-release";
 
 export type DirectSettingsKind =
   | "salon-profile"
@@ -297,14 +296,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
           .maybeSingle(),
       ]);
       if (snapshot.error) throw new Error(snapshot.error.message);
-      const manifest = await readFile(
-        path.join(process.cwd(), "public/desktop-updates/latest.yml"),
-        "utf8",
-      ).catch(() => "");
-      const version = manifest.match(/^version:\s*["']?([\d.]+)/m)?.[1] ?? "";
-      const installer = /^\d+\.\d+\.\d+$/.test(version)
-        ? `/desktop-updates/${encodeURIComponent(`KingPOS Portable Test-Setup-${version}.exe`)}`
-        : null;
+      const installer = (await getWindowsPosRelease())?.href ?? null;
       return {
         kind,
         ...common,

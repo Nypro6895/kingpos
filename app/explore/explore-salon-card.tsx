@@ -25,7 +25,6 @@ export function ExploreSalonCard({ salon, compact = false, presentation = "card"
     <Link prefetch={false} href={href} className={styles.photo} aria-label={`View ${salon.name}`}>
       {image?<Image src={image} alt={suggested?`Suggested image for ${salon.name}; not actual salon work`:`${salon.name} salon photo`} fill sizes="(max-width:640px) 100vw, (max-width:1280px) 50vw, 33vw" className="object-cover" onError={()=>setFailedImage(imageKey)}/>:<span>{salon.name}</span>}
       <NailIllustrationCredit imageUrl={image} className="absolute bottom-2 right-2"/>
-      {suggested?<span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">Suggested image</span>:null}
     </Link>
     <div className={styles.body}>
       <div className={styles.header} data-salon-header>

@@ -1,0 +1,138 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { chromium } from 'playwright-core';
+import { ownerReportsPreview } from './fixtures/owner-reports-preview.mjs';
+
+const out='C:/Users/giuse/kingpos/artifacts/owner-reports-release-20261023/browser';
+fs.mkdirSync(out,{recursive:true});
+const server=await ownerReportsPreview();
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const base=`http://127.0.0.1:${server.address().port}`;
+const executablePath=process.env.TEST_BROWSER_PATH || process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const browser=await chromium.launch({executablePath,headless:true});
+const evidence=[];
+try {
+  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+  const page=await context.newPage();
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  let scenario=0;
+  const open=async(query='',hash='#daily-closing')=>{
+    if(page.url().startsWith(base))await page.evaluate(()=>sessionStorage.clear());
+    await page.goto(base+'/?_case='+(scenario++)+'&'+query+hash);await page.waitForSelector('input[name="cash_amount"]',{state:'attached'});
+    await page.waitForFunction(()=>{const q=new URLSearchParams(location.search);return q.has('locked')||q.has('readonly')||!document.querySelector('[name=cash_amount]').disabled});
+  };
+  for(const width of [320,375,390,430,1024]){
+    await page.setViewportSize({width,height:844});
+    await open();
+    const metrics=await page.evaluate(()=>{
+      const cash=document.querySelector('[name=cash_amount]'),save=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='Save');
+      return{scroll:document.documentElement.scrollWidth,width:innerWidth,cashTop:cash.getBoundingClientRect().top,cashHeight:cash.getBoundingClientRect().height,fontSize:getComputedStyle(cash).fontSize,saveBottom:save.getBoundingClientRect().bottom};
+    });
+    assert.ok(metrics.scroll<=width,`closing overflow at ${width}`);assert.equal(metrics.cashHeight,44);assert.equal(metrics.fontSize,'16px');assert.ok(metrics.cashTop<240);assert.ok(metrics.saveBottom<844,`Save must be reachable at ${width}`);
+    await page.screenshot({path:`${out}/closing-${width}.png`,fullPage:true});
+    await page.getByRole('button',{name:'Overview',exact:true}).click();
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overview overflow ${width}`);
+    if(width===390)await page.screenshot({path:`${out}/overview-390.png`,fullPage:true});
+    evidence.push({width,...metrics});
+  }
+  await page.setViewportSize({width:390,height:844});
+  await open();
+  await page.locator('[name=cash_amount]').fill('440.00');
+  await page.locator('[name=credit_card_amount]').click();
+  await page.waitForFunction(()=>window.previewRequests.length===1);
+  await page.getByText('Saved',{exact:true}).waitFor();
+  let sent=await page.evaluate(()=>window.previewRequests);
+  assert.deepEqual(sent[0].values,{cashAmount:440,creditCardAmount:1250,otherAmount:30,note:null});
+  await page.getByRole('button',{name:'Save',exact:true}).click();
+  await page.waitForFunction(()=>!document.body.innerText.includes('Saved'));
+  assert.equal(await page.evaluate(()=>window.previewRequests.length),1);
+  assert.equal((await page.evaluate(()=>window.previewRequests))[0].expectedScope,'preview-salon:preview-viewer');
+  await page.locator('[name=cash_amount]').fill('450.01');await page.locator('[name=cash_amount]').press('Enter');
+  await page.waitForFunction(()=>window.previewRequests.length===2);
+  assert.equal((await page.evaluate(()=>window.previewRequests))[1].values.cashAmount,450.01);
+  await page.locator('[name=cash_amount]').fill('0.0016');await page.locator('[name=cash_amount]').press('Tab');
+  await page.getByText('Invalid amount',{exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>window.previewRequests.length),2);
+  // Retained tab content must keep the edit instead of remounting the form.
+  await page.getByRole('button',{name:'Overview',exact:true}).click();await page.getByRole('button',{name:'Daily Closing',exact:true}).click();
+  assert.equal(await page.locator('[name=cash_amount]').inputValue(),'0.0016');
+  await open('locked');
+  assert.equal(await page.getByRole('button',{name:'Save',exact:true}).count(),0);
+  assert.ok(await page.locator('[name=cash_amount]').isDisabled());
+  await page.screenshot({path:`${out}/locked-390.png`,fullPage:true});
+  await page.locator('details').filter({has:page.locator('summary', {hasText:'Correction History'})}).last().locator('summary').click();
+  await page.getByText('Cash recounted at end of shift',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Request Correction',exact:true}).click();
+  const reason=page.locator('textarea').last();await reason.fill('Recount approved by owner');
+  await page.locator('input').last().fill('390.00');
+  // Both correction actions remain available to the owner.
+  assert.equal(await page.getByRole('button',{name:'Apply Correction',exact:true}).count(),1);
+  await page.getByRole('button',{name:'Submit Request',exact:true}).click();
+  await page.waitForFunction(()=>Boolean(window.previewCorrection));
+  assert.equal((await page.evaluate(()=>window.previewCorrection)).applyImmediately,false);
+  await open('locked');
+  await page.getByRole('button',{name:'Request Correction',exact:true}).click();
+  await page.getByRole('button',{name:'Apply Correction',exact:true}).click();
+  await page.getByText('Correction reason is required.',{exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>window.previewCorrection),undefined);
+  await page.locator('textarea').last().fill('Owner verified recount');
+  await page.locator('input').last().fill('390.00');
+  await page.getByRole('button',{name:'Apply Correction',exact:true}).click();
+  await page.waitForFunction(()=>Boolean(window.previewCorrection));
+  assert.equal((await page.evaluate(()=>window.previewCorrection)).applyImmediately,true);
+  await open('locked&request-only');
+  await page.getByRole('button',{name:'Request Correction',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Apply Correction',exact:true}).count(),0);
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  await open('', '#overview');
+  // Compare direction colors on the enclosing comparison spans.
+  const colors=await page.evaluate(()=>[...document.querySelectorAll('span')].filter(e=>e.className.includes('reports_comparison')).map(e=>getComputedStyle(e).color));
+  assert.ok(colors.includes('rgb(21, 128, 61)'));assert.ok(colors.includes('rgb(220, 38, 38)'));
+  await page.getByRole('button',{name:'Report filters',exact:true}).click();
+  await page.getByLabel('Custom dates',{exact:true}).check();
+  await page.locator('[name=start]').first().fill('2026-10-20');
+  await page.locator('[name=end]').first().fill('2026-10-23');
+  await page.getByRole('button',{name:'Apply filters',exact:true}).click();
+  assert.match(await page.evaluate(()=>window.previewNavigation),/preset=custom/);
+  assert.match(await page.evaluate(()=>window.previewNavigation),/start=2026-10-20/);
+  await page.getByRole('button',{name:'Daily Closing',exact:true}).click();
+  await page.getByRole('button',{name:'Closing date',exact:true}).click();
+  await page.locator('[name=date]').fill('2026-10-21');
+  await page.getByRole('button',{name:'Load',exact:true}).click();
+  assert.match(await page.evaluate(()=>window.previewNavigation),/date=2026-10-21/);
+  assert.match(await page.evaluate(()=>window.previewNavigation),/preset=this_week/);
+  await page.locator('summary').filter({hasText:'Closing breakdown'}).click();
+  await page.getByText('Total Staff Earned',{exact:true}).waitFor();
+  await page.locator('summary').filter({hasText:'Verification'}).click();
+  await page.getByText('Gift Card Payments',{exact:true}).waitFor();
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await open('readonly');assert.ok(await page.locator('[name=cash_amount]').isDisabled());assert.ok(await page.getByRole('button',{name:'Save',exact:true}).isDisabled());
+  await open('locked&no-correction');assert.equal(await page.getByRole('button',{name:'Request Correction',exact:true}).count(),0);
+  await open('save=unknown');await page.locator('[name=cash_amount]').fill('450');await page.locator('[name=cash_amount]').press('Tab');
+  await page.getByRole('button',{name:'Check saved result',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Check saved result',exact:true}).click();
+  await page.getByRole('button',{name:'Check saved result',exact:true}).waitFor({state:'hidden'});
+  assert.equal(await page.evaluate(()=>window.previewRequests.length),1);
+  await open('save=conflict');await page.locator('[name=cash_amount]').fill('450');await page.locator('[name=cash_amount]').press('Tab');
+  await page.getByRole('button',{name:'Check saved result',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Check saved result',exact:true}).click();
+  await page.getByRole('button',{name:'Use saved amounts',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>window.previewRequests.length),1);
+  await page.getByRole('button',{name:'Keep my entries for review',exact:true}).click();
+  assert.equal(await page.evaluate(()=>window.previewRequests.length),1);
+  await open('zero');await page.getByRole('button',{name:'Save',exact:true}).click();
+  await page.waitForFunction(()=>window.previewRequests.length===1 && document.body.innerText.includes('Saved'));
+  await page.getByRole('button',{name:'Save',exact:true}).click();
+  await page.waitForFunction(()=>!document.body.innerText.includes('Saved'));
+  assert.equal(await page.evaluate(()=>window.previewRequests.length),1);
+  await open('vi');assert.ok(await page.getByRole('heading',{name:'Nhập tiền chốt ngày',exact:true}).isVisible());
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.screenshot({path:`${out}/closing-vi-390.png`,fullPage:true});
+  await page.setViewportSize({width:320,height:844});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  assert.deepEqual(errors,[]);
+  fs.writeFileSync(`${out}/browser-verification.json`,JSON.stringify({passed:true,viewports:evidence,checks:['blur autosave payload','unchanged nonzero save never repeats','Enter cents precision','invalid amount rejected','draft retained across tabs','locked date and correction history','correction action payload','read-only permissions','lost response readback without resend','conflict review without automatic write','Vietnamese mobile layout','owner apply correction and required reason','request-only permissions','green and red comparisons','custom range filter','closing date filter','expanded financial details','first explicit zero closing and acknowledged duplicate suppression','viewer scoped save payload'],errors},null,2));
+  console.log('Owner reports browser checks passed',JSON.stringify(evidence));
+} finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
+
+
