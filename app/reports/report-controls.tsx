@@ -1,6 +1,7 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { toolbarStyles } from "@/components/workspace-toolbar";
+import styles from "./reports.module.css";
+import { ReportIcon } from "./report-ui";
 import { CompactFilters } from "@/components/compact-filters";
 import { ContextualSupport } from "@/components/contextual-support";
 
@@ -57,9 +58,9 @@ export function ReportRangeFilter({
   const reportPath=usePathname().startsWith('/pos/report')?'/pos/report':'/reports';
   return (
     <div className="min-w-0 text-sm">
-      <div className="flex min-w-0 items-center gap-2">
-        <span className={toolbarStyles.summary} title={__vt(report.range.label)}><WorkspaceText text={report.range.label} /></span>
-        <CompactFilters label={__vt("Report filters")} active={report.range.preset === "custom"}>
+      <div className={styles.date}>
+        <ReportIcon kind="calendar" /><span title={__vt(report.range.label)}><WorkspaceText text={report.range.label} /></span>
+        <CompactFilters label={__vt("Report filters")} active={report.range.preset === "custom"} icon={<ReportIcon kind="filter" />}>
           <p className="mb-3 text-xs text-zinc-500"><WorkspaceText text="Dates use" /> {report.range.timeZone}</p>
           <form
             className="grid gap-6"
@@ -168,17 +169,16 @@ export function ReportTabs({
   useEffect(()=>{onViewChange?.(closing ? "closing" : "overview");},[closing,onViewChange]);
   return (
     <>
-      <div className={toolbarStyles.toolbar}>
+      <div className={styles.toolbar}>
       <nav
         aria-label={__vt("Report views")}
-        className="flex min-w-0 shrink-0 gap-3 text-sm sm:gap-6"
+        className={styles.tabs}
       >
         {[false, true].map((value) => (
           <button
             key={String(value)}
             type="button"
             aria-pressed={closing === value}
-            className={`min-h-11 border-b-2 px-1 ${closing === value ? "border-teal-700 font-semibold text-teal-700" : "border-transparent text-zinc-500 hover:text-zinc-900"}`}
             onClick={() => {
               setClosing(value);
               window.history.replaceState(
@@ -188,12 +188,12 @@ export function ReportTabs({
               );
             }}
           >
-            {value ? "Daily Closing" : <WorkspaceText text="Overview" />}
+            <WorkspaceText text={value ? "Daily Closing" : "Overview"} />
           </button>
         ))}
       </nav>
         <ContextualSupport />
-        <div className="ml-auto flex min-w-0 items-center gap-2">{closing ? closingTools : overviewTools}</div>
+        <div className={styles.tools}>{closing ? closingTools : overviewTools}</div>
       </div>
       <div className="min-w-0" hidden={closing}>
         {overview}

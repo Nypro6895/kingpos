@@ -217,6 +217,13 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Choose what to add to Reylumi": "Chọn ứng dụng để thêm vào Reylumi", "Your features": "Ứng dụng của bạn",
   "Search features…": "Tìm ứng dụng…", "Browse all features": "Xem tất cả ứng dụng",
   "Add the features your salon needs, right inside Reylumi.": "Thêm tính năng tiệm của bạn cần ngay trong Reylumi.",
+  "Balanced": "Đủ",
+  "Over": "Dư",
+  "Closing breakdown": "Chi tiết chốt ngày",
+  "Snapshot & adjustments": "Số liệu đã chốt và điều chỉnh",
+  "About these metrics": "Giải thích chỉ số",
+  "Closing Inputs": "Nhập tiền chốt ngày",
+
 };
 const templates = Object.entries(VIETNAMESE_UI).filter(([key]) => /\{\d+\}/.test(key)).map(([key, value]) => {
   const slots: string[] = [];

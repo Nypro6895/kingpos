@@ -20,9 +20,12 @@ import type {
 } from "@/types/pos-daily-closing";
 import { useRouter } from "next/navigation";
 import type { KeyboardEvent } from "react";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
+import { ReportDetails } from "./report-ui";
+import styles from "./reports.module.css";
 
 type DailyClosingFormProps = {
+  children?: ReactNode;
   scope: string;
   adjustmentTotals: DailyClosingAdjustmentTotals;
   canApplyCorrection: boolean;
@@ -40,8 +43,8 @@ type DailyClosingFormProps = {
 };
 
 const RECONCILIATION_LABELS: Record<DailyPosReconciliationStatus, string> = {
-  balanced: "\u0110\u1ee7 / Balanced",
-  over: "D\u01b0 / Over",
+  balanced: "Balanced",
+  over: "Over",
   short: "Short",
 };
 
@@ -216,7 +219,7 @@ function CorrectionHistory({
 }) {
   if (requests.length === 0 && adjustments.length === 0) {
     return (
-      <section className="mt-6 min-w-0 border-t border-zinc-200 bg-white pt-5">
+      <section className={styles.message}>
         <h2 className="text-lg font-semibold text-zinc-950">
           <WorkspaceText text="Correction History" />
         </h2>
@@ -225,64 +228,18 @@ function CorrectionHistory({
     );
   }
 
-  return (
-    <section className="mt-6 min-w-0 border-t border-zinc-200 bg-white pt-5">
-      <h2 className="text-lg font-semibold text-zinc-950">
-        <WorkspaceText text="Correction History" />
-      </h2>
-      <div className="mt-4 min-w-0 overflow-hidden border-y border-zinc-200">
-        <div className="grid grid-cols-12 bg-zinc-50 px-3 py-2 text-xs font-medium uppercase text-zinc-500">
-          <div className="col-span-2"><WorkspaceText text="Status" /></div>
-          <div className="col-span-2"><WorkspaceText text="Field" /></div>
-          <div className="col-span-3"><WorkspaceText text="Requested" /></div>
-          <div className="col-span-2"><WorkspaceText text="Delta" /></div>
-          <div className="col-span-3"><WorkspaceText text="Reason" /></div>
-        </div>
-        <ul className="divide-y divide-zinc-200">
-          {requests.map((request) => (
-            <li className="grid grid-cols-12 gap-2 px-3 py-3 text-sm" key={request.id}>
-              <div className="col-span-2">
-                <span className="rounded border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium capitalize text-zinc-700">
-                  <WorkspaceText text={request.status} />
-                </span>
-                <p className="mt-1 text-xs text-zinc-500">
-                  <WorkspaceText text={formatDateTime(request.requestedAt)} />
-                </p>
-              </div>
-              <div className="col-span-2 font-medium text-zinc-950">
-                <WorkspaceText text={getCorrectionFieldLabel(request.correctionType)} />
-              </div>
-              <div className="col-span-3 text-zinc-700">
-                {formatCorrectionValue(
-                  request.correctionType,
-                  request.requestedValue,
-                )}
-                <p className="mt-1 text-xs text-zinc-500">
-                  <WorkspaceText text="By" /> <WorkspaceText text={request.requestedByName ?? "Unknown"} />
-                </p>
-              </div>
-              <div className="col-span-2 font-medium text-zinc-950">
-                {formatDelta(request.moneyDelta)}
-              </div>
-              <div className="col-span-3 text-zinc-700">
-                {request.reason}
-                {request.approvedByName ? (
-                  <p className="mt-1 text-xs text-zinc-500">
-                    <WorkspaceText text="Approved by" /> {request.approvedByName}
-                  </p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {adjustments.length > 0 ? (
-        <p className="mt-3 text-xs text-zinc-500">
-          <WorkspaceText text="Applied adjustment rows:" /> {adjustments.length}
-        </p>
-      ) : null}
-    </section>
-  );
+  return <>
+    <ul className={styles.history}>
+      {requests.map((request) => <li key={request.id}>
+        <div className={styles.historyHeading}><strong><WorkspaceText text={getCorrectionFieldLabel(request.correctionType)} /></strong><span><WorkspaceText text={request.status} /></span></div>
+        <div className={styles.historyHeading}><span>{formatCorrectionValue(request.correctionType, request.requestedValue)}</span><strong>{formatDelta(request.moneyDelta)}</strong></div>
+        <p>{request.reason}</p>
+        <p><WorkspaceText text="By" /> <WorkspaceText text={request.requestedByName ?? "Unknown"} /> · <WorkspaceText text={formatDateTime(request.requestedAt)} /></p>
+        {request.approvedByName ? <p><WorkspaceText text="Approved by" /> {request.approvedByName}</p> : null}
+      </li>)}
+    </ul>
+    {adjustments.length > 0 ? <p className={styles.message}><WorkspaceText text="Applied adjustment rows:" /> {adjustments.length}</p> : null}
+  </>;
 }
 
 function SnapshotSummary({
@@ -297,8 +254,8 @@ function SnapshotSummary({
   }
 
   return (
-    <div className="mt-5 min-w-0 bg-zinc-50 p-4">
-      <div className="grid gap-3 text-sm sm:grid-cols-3">
+    <div>
+      <div className={styles.snapshot}>
         <div>
           <p className="text-xs font-medium uppercase text-zinc-500">
             <WorkspaceText text="Snapshot Actual" />
@@ -329,6 +286,7 @@ function SnapshotSummary({
 }
 
 export function DailyClosingForm({
+  children,
   scope,
   adjustmentTotals,
   canApplyCorrection,
@@ -456,50 +414,21 @@ export function DailyClosingForm({
 
   return (
     <>
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <section className="min-w-0 border-t border-zinc-200 bg-white pt-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold text-zinc-950">
-                  <WorkspaceText text="Closing Inputs" />
-                </h2>
-                {lock.isLocked ? (
-                  <span className="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
-                    <WorkspaceText text={getLockLabel(lock)} />
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-1 text-sm text-zinc-600">
-                <WorkspaceText text="Actual money collected for the selected business date." />
-              </p>
-            </div>
-            <div className="min-h-6 text-sm" aria-live="polite">
-              {isSavePending ? (
-                <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
-              ) : saveState === "saved" ? (
-                <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
-              ) : saveState === "unknown" || saveState === "error" ? (
-                <span className="font-medium text-red-700"><WorkspaceText text="Save not confirmed" /></span>
-              ) : null}
-            </div>
-          </div>
-
-          <form
-            className="mt-5 space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void closing.save(true);
-            }}
-          >
-            <ClosingSaveNotice {...closing} />
-            <div className="grid gap-4 sm:grid-cols-3">
-              <label className="block">
-                <span className="text-xs font-medium uppercase text-zinc-500">
+      <form className={styles.closing} onSubmit={(event) => {
+        event.preventDefault();
+        void closing.save(true);
+      }}>
+        <div className={styles.closingHeader}>
+          <h2><WorkspaceText text="Closing Inputs" /></h2>
+          {lock.isLocked ? <span className={styles.lock}><WorkspaceText text={getLockLabel(lock)} /></span> : <span className={styles.draft}><WorkspaceText text={getLockLabel(lock)} /></span>}
+        </div>
+        <ClosingSaveNotice {...closing} />
+            <div className={styles.moneyInputs}>
+              <label className={styles.moneyRow}>
+                <span>
                   <WorkspaceText text="Cash" />
                 </span>
-                <input
-                  className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
+                <span className={styles.moneyInput} data-locked={lock.isLocked}><span aria-hidden="true">$</span><input
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="cash_amount"
@@ -511,14 +440,13 @@ export function DailyClosingForm({
                   }
                   onKeyDown={handleEnter}
                   value={values.cashAmount}
-                />
+                />{lock.isLocked ? <output>{formatMoney(fromCents(cashCents ?? 0))}</output> : null}</span>
               </label>
-              <label className="block">
-                <span className="text-xs font-medium uppercase text-zinc-500">
+              <label className={styles.moneyRow}>
+                <span>
                   <WorkspaceText text="Credit Card" />
                 </span>
-                <input
-                  className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
+                <span className={styles.moneyInput} data-locked={lock.isLocked}><span aria-hidden="true">$</span><input
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="credit_card_amount"
@@ -530,14 +458,13 @@ export function DailyClosingForm({
                   }
                   onKeyDown={handleEnter}
                   value={values.creditCardAmount}
-                />
+                />{lock.isLocked ? <output>{formatMoney(fromCents(creditCardCents ?? 0))}</output> : null}</span>
               </label>
-              <label className="block">
-                <span className="text-xs font-medium uppercase text-zinc-500">
+              <label className={styles.moneyRow}>
+                <span>
                   <WorkspaceText text="Other" />
                 </span>
-                <input
-                  className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
+                <span className={styles.moneyInput} data-locked={lock.isLocked}><span aria-hidden="true">$</span><input
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="other_amount"
@@ -549,16 +476,16 @@ export function DailyClosingForm({
                   }
                   onKeyDown={handleEnter}
                   value={values.otherAmount}
-                />
+                />{lock.isLocked ? <output>{formatMoney(fromCents(otherCents ?? 0))}</output> : null}</span>
               </label>
             </div>
 
-            <label className="block">
-              <span className="text-xs font-medium uppercase text-zinc-500">
+            <label className={styles.note}>
+              <span>
                 <WorkspaceText text="Note" />
               </span>
               <textarea
-                className="mt-1 min-h-20 w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
+                rows={1}
                 disabled={isReadOnly}
                 name="note"
                 onBlur={() => void closing.save()}
@@ -567,124 +494,52 @@ export function DailyClosingForm({
               />
             </label>
 
-  
 
-            {lock.isLocked ? (
-              <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                <WorkspaceText text="This business date is locked. Corrections are recorded separately." />
-              </p>
-            ) : !canEdit ? (
-              <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                <WorkspaceText text="Payroll manage permission is required to edit closing amounts." />
-              </p>
-            ) : null}
-
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4">
-              <div>
-                <p className="text-xs font-medium uppercase text-zinc-500">
-                  <WorkspaceText text="Actual Total" />
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-zinc-950">
-                  {hasInvalidAmount
-                    ? "-"
-                    : formatMoney(fromCents(actualTotalCents))}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {lock.isLocked && canRequestCorrection ? (
-                  <button
-                    className="h-10 rounded border border-zinc-300 px-4 text-sm font-medium text-zinc-950"
-                    onClick={openCorrection}
-                    type="button"
-                  >
-                    <WorkspaceText text="Request Correction" />
-                  </button>
-                ) : null}
-                {!lock.isLocked ? (
-                  <button
-                    className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-                    disabled={isReadOnly || closing.blocked || hasInvalidAmount}
-                    type="submit"
-                  >
-                    {isSavePending ? "Saving" : <WorkspaceText text="Save" />}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          </form>
-        </section>
-
-        <section className="min-w-0 border-t border-zinc-200 bg-white pt-5">
-          <h2 className="text-lg font-semibold text-zinc-950">
-            <WorkspaceText text="Reconciliation" />
-          </h2>
-          <dl className="mt-5 space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-sm text-zinc-600"><WorkspaceText text="Expected total" /></dt>
-              <dd className="text-sm font-semibold text-zinc-950">
-                {formatMoney(expectedTotal)}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-sm text-zinc-600"><WorkspaceText text="Actual total" /></dt>
-              <dd className="text-sm font-semibold text-zinc-950">
-                {hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-sm text-zinc-600"><WorkspaceText text="Difference" /></dt>
-              <dd className="text-sm font-semibold text-zinc-950">
+        <section className={styles.reconciliation}>
+          <h2><WorkspaceText text="Reconciliation" /></h2>
+          <dl>
+            <div><dt><WorkspaceText text="Expected total" /></dt><dd>{formatMoney(expectedTotal)}</dd></div>
+            <div><dt><WorkspaceText text="Actual total" /></dt><dd>{hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}</dd></div>
+            <div className={styles.difference}>
+              <dt><WorkspaceText text="Difference" /></dt>
+              <dd className={hasInvalidAmount ? styles.neutral : reconciliationStatus === "short" ? styles.down : reconciliationStatus === "over" ? styles.over : styles.up}>
                 {hasInvalidAmount ? "-" : formatMoney(fromCents(differenceCents))}
+                <small><WorkspaceText text={hasInvalidAmount ? "Invalid amount" : RECONCILIATION_LABELS[reconciliationStatus]} /></small>
               </dd>
             </div>
           </dl>
-
-          <div
-            className={`mt-5 rounded border px-4 py-3 ${
-              hasInvalidAmount
-                ? "border-zinc-200 bg-zinc-50 text-zinc-700"
-                : getStatusClass(reconciliationStatus)
-            }`}
-          >
-            <p className="text-sm font-semibold">
-              <WorkspaceText text={hasInvalidAmount
-                ? "Invalid amount"
-                : RECONCILIATION_LABELS[reconciliationStatus]} />
-            </p>
-            {!hasInvalidAmount && reconciliationStatus === "short" ? (
-              <p className="mt-1 text-sm">
-                <WorkspaceText text="Missing" /> {formatMoney(Math.abs(fromCents(differenceCents)))}
-              </p>
-            ) : null}
-            {!hasInvalidAmount && reconciliationStatus === "over" ? (
-              <p className="mt-1 text-sm">
-                <WorkspaceText text="Extra" /> {formatMoney(Math.abs(fromCents(differenceCents)))}
-              </p>
-            ) : null}
-          </div>
-
-          {lock.isLocked ? (
-            <SnapshotSummary
-              adjustmentTotals={adjustmentTotals}
-              snapshotTotals={snapshotTotals}
-            />
-          ) : null}
         </section>
-      </div>
-
-      {lock.isLocked ? (
-        <CorrectionHistory
-          adjustments={corrections.adjustments}
-          requests={corrections.requests}
-        />
-      ) : null}
+        {lock.isLocked ? <>
+          <p className={styles.message}><WorkspaceText text="This business date is locked. Corrections are recorded separately." /></p>
+          {canRequestCorrection ? <button className={styles.correction} onClick={openCorrection} type="button"><WorkspaceText text="Request Correction" /></button> : null}
+          <ReportDetails title="Snapshot & adjustments">
+            <SnapshotSummary adjustmentTotals={adjustmentTotals} snapshotTotals={snapshotTotals} />
+          </ReportDetails>
+          <ReportDetails title="Correction History" meta={corrections.requests.length || undefined}>
+            <CorrectionHistory adjustments={corrections.adjustments} requests={corrections.requests} />
+          </ReportDetails>
+        </> : !canEdit ? <p className={styles.message}><WorkspaceText text="Payroll manage permission is required to edit closing amounts." /></p> : null}
+        {children}
+        <div className={styles.actions}>
+          <div className={styles.saveState} aria-live="polite">{isSavePending ? (
+                <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
+              ) : saveState === "saved" ? (
+                <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
+              ) : saveState === "unknown" || saveState === "error" ? (
+                <span className="font-medium text-red-700"><WorkspaceText text="Save not confirmed" /></span>
+              ) : null}</div>
+          {!lock.isLocked ? <button className={styles.save} disabled={!canEdit || isSavePending} type="submit">
+            {isSavePending ? "Saving" : <WorkspaceText text="Save" />}
+          </button> : null}
+        </div>
+      </form>
 
       {isCorrectionOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl">
+          <div role="dialog" aria-modal="true" aria-labelledby="closing-correction-title" className={`${styles.dialog} w-full max-w-lg rounded-lg bg-white p-5 shadow-xl`}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-950">
+                <h2 id="closing-correction-title" className="text-lg font-semibold text-zinc-950">
                   <WorkspaceText text="Request Correction" />
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600">{reportDate}</p>

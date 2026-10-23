@@ -5,8 +5,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { FilterIcon, toolbarStyles as styles } from "./workspace-toolbar";
 
 /** Native popovers retain values and form ownership while closed. */
-export function CompactFilters({ children, label = "Filters", active = false }: {
-  children: ReactNode; label?: string; active?: boolean;
+export function CompactFilters({ children, label = "Filters", active = false, icon }: {
+  children: ReactNode; label?: string; active?: boolean; icon?: ReactNode;
 }) {
   const __vt = useWorkspaceTranslation();
 
@@ -36,7 +36,7 @@ export function CompactFilters({ children, label = "Filters", active = false }: 
   return <>
     <button ref={trigger} type="button" className={styles.icon} aria-label={__vt(active ? `${label}: filters applied` : label)}
       title={__vt(label)} aria-expanded={open} aria-controls={id} popoverTarget={id}>
-      <FilterIcon />{active && <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-teal-600" />}
+      {icon ?? <FilterIcon />}{active && <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-teal-600" />}
     </button>
     <div ref={panel} id={id} popover="auto" role="group" aria-label={__vt(label)} className={styles.panel}
       onToggle={event => setOpen(event.newState === "open")}

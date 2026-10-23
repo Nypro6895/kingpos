@@ -1,7 +1,8 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CompactFilters } from "@/components/compact-filters";
-import { toolbarStyles } from "@/components/workspace-toolbar";
+import styles from "./reports.module.css";
+import { ReportDetails, ReportIcon } from "./report-ui";
 import { ReportRangeFilter } from "./report-controls";
 import {useState,useEffect,useLayoutEffect,useRef,useCallback,useMemo} from 'react';
 import {useSearchParams,usePathname} from 'next/navigation';
@@ -37,9 +38,9 @@ function getReportHref(date: string, reportOverview?: OperationalReportData, rep
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <section className="min-w-0 bg-zinc-50 p-4">
-      <p className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text={label} /></p>
-      <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
+    <section>
+      <p><WorkspaceText text={label} /></p>
+      <p>{value}</p>
     </section>
   );
 }
@@ -67,9 +68,9 @@ function DateSelector({
 
   const reportPath = usePathname().startsWith("/pos/report") ? "/pos/report" : "/reports";
   return (
-    <div className="flex min-w-0 items-center gap-2">
-      <span className={toolbarStyles.summary}>{selectedDate}</span>
-      <CompactFilters label={__vt("Closing date")} active={selectedDate !== today}>
+    <div className={styles.date}>
+      <ReportIcon kind="calendar" /><span>{selectedDate}</span>
+      <CompactFilters label={__vt("Closing date")} active={selectedDate !== today} icon={<ReportIcon kind="filter" />}>
     <ClosingDateForm>
       <input name="preset" type="hidden" value={reportOverview.range.preset} />
       <input
@@ -79,7 +80,7 @@ function DateSelector({
       />
       <input name="end" type="hidden" value={reportOverview.range.endDate} />
       <label className="block min-w-0">
-        <span className="text-xs font-medium uppercase text-zinc-500">
+        <span >
           <WorkspaceText text="Business Date" />
         </span>
         <input
@@ -111,7 +112,7 @@ function DateSelector({
 function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
   if (rows.length === 0) {
     return (
-      <div className="mt-4 bg-zinc-50 p-6">
+      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950">
           <WorkspaceText text="No finalized staff rows for this date." />
         </h2>
@@ -120,26 +121,26 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
   }
 
   return (
-    <div className="mt-4 min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
+    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-        <div className="col-span-6"><WorkspaceText text="Staff" /></div>
+        <div className="col-span-4"><WorkspaceText text="Staff" /></div>
         <div className="col-span-3 text-right"><WorkspaceText text="Total Earned" /></div>
-        <div className="hidden text-right sm:col-span-2 sm:block"><WorkspaceText text="Tip" /></div>
-        <div className="col-span-3 text-right sm:col-span-1"><WorkspaceText text="Turns" /></div>
+        <div className="col-span-3 text-right"><WorkspaceText text="Tip" /></div>
+        <div className="col-span-2 text-right"><WorkspaceText text="Turns" /></div>
       </div>
       <ul className="divide-y divide-zinc-200">
         {rows.map((row) => (
           <li className="grid grid-cols-12 px-4 py-3 text-sm" key={row.staffId}>
-            <div className="col-span-6 font-medium text-zinc-950">
+            <div className="col-span-4 min-w-0 break-words font-medium text-zinc-950">
               {row.staffName}
             </div>
             <div className="col-span-3 text-right text-zinc-950">
               {formatMoney(row.totalEarned)}
             </div>
-            <div className="hidden text-right text-zinc-700 sm:col-span-2 sm:block">
+            <div className="col-span-3 text-right text-zinc-700">
               {formatMoney(row.tipAmount)}
             </div>
-            <div className="col-span-3 text-right text-zinc-700 sm:col-span-1">
+            <div className="col-span-2 text-right text-zinc-700">
               {row.totalTurns}
             </div>
           </li>
@@ -212,7 +213,8 @@ export function OwnerLiveReports(initial:Props){
  },{enabled:!initial.managedRead,initialReconcile:false,freshForMs:30000,snapshotAt:Math.max(initial.snapshotAt??0,scope?experienceResourceCache.get({scope,key:snapshotKey})?.updatedAt??0:0)||initial.snapshotAt});
  if(!retained.available)return null;
   return (
-    <main className="grid min-w-0 w-full gap-4 px-4 py-4 text-zinc-950 sm:px-6">
+    <main className={styles.page}>
+      <h1 className={styles.title}><WorkspaceText text="Reports" /></h1>
       <ReportTabs
         onViewChange={onViewChange}
         overviewTools={<ReportRangeFilter key={`${reportOverview.range.preset}:${reportOverview.range.startDate}:${reportOverview.range.endDate}`} report={reportOverview} selectedClosingDate={report.reportDate} />}
@@ -225,31 +227,9 @@ export function OwnerLiveReports(initial:Props){
           />
         }
       >
-        <section className="grid gap-5">
+        <section>
           <h2 className="sr-only"><WorkspaceText text="Daily Closing" /></h2>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <SummaryCard
-              label={__vt("Total Staff Earned")}
-              value={formatMoney(report.totals.totalStaffEarned)}
-            />
-            <SummaryCard
-              label={__vt("Total Tip")}
-              value={formatMoney(report.totals.totalTip)}
-            />
-            <SummaryCard
-              label={__vt("Total Discount")}
-              value={formatMoney(report.totals.totalDiscount)}
-            />
-            <SummaryCard
-              label={__vt("Gift Card")}
-              value={formatMoney(report.totals.totalGiftCard)}
-            />
-            <SummaryCard
-              label={__vt("Expected Total")}
-              value={formatMoney(report.totals.expectedTotal)}
-            />
-          </div>
 
           {report.lock.liveTotalsDifferFromSnapshot ? (
             <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -270,29 +250,36 @@ export function OwnerLiveReports(initial:Props){
             lock={report.lock}
             reportDate={report.reportDate}
             snapshotTotals={report.snapshotTotals}
-          />
+          >
+            <ReportDetails title="Closing breakdown">
+          <div className={styles.closingBreakdown}>
+            <SummaryCard
+              label={__vt("Total Staff Earned")}
+              value={formatMoney(report.totals.totalStaffEarned)}
+            />
+            <SummaryCard
+              label={__vt("Total Tip")}
+              value={formatMoney(report.totals.totalTip)}
+            />
+            <SummaryCard
+              label={__vt("Total Discount")}
+              value={formatMoney(report.totals.totalDiscount)}
+            />
+            <SummaryCard
+              label={__vt("Gift Card")}
+              value={formatMoney(report.totals.totalGiftCard)}
+            />
+          </div>
 
-          <section className="mt-8">
-            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-zinc-200 pb-3">
-              <div>
-                <h2 className="text-lg font-semibold text-zinc-950">
-                  <WorkspaceText text="Staff Daily Report" />
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600">
-                  <WorkspaceText text="Finalized POS staff earnings and turn totals for this business date." />
-                </p>
-              </div>
-            </div>
-            <StaffReportTable rows={report.staffRows} />
-          </section>
+            </ReportDetails>
+<ReportDetails title="Staff Daily Report" meta={report.staffRows.length}>
+<StaffReportTable rows={report.staffRows} />
+</ReportDetails>
 
-          <section className="mt-8 min-w-0 border-t border-zinc-200 bg-white pt-5">
-            <h2 className="text-lg font-semibold text-zinc-950">
-              <WorkspaceText text="Verification" />
-            </h2>
-            <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <ReportDetails title="Verification" meta={report.metadata.ticketCount}>
+            <dl className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
+                <dt>
                   <WorkspaceText text="Tickets" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
@@ -300,7 +287,7 @@ export function OwnerLiveReports(initial:Props){
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
+                <dt>
                   <WorkspaceText text="Finalized" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
@@ -308,7 +295,7 @@ export function OwnerLiveReports(initial:Props){
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
+                <dt>
                   <WorkspaceText text="Open Excluded" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
@@ -316,7 +303,7 @@ export function OwnerLiveReports(initial:Props){
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
+                <dt>
                   Void/Cancel Excluded
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
@@ -324,7 +311,7 @@ export function OwnerLiveReports(initial:Props){
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
+                <dt>
                   <WorkspaceText text="Gift Card Payments" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
@@ -332,7 +319,10 @@ export function OwnerLiveReports(initial:Props){
                 </dd>
               </div>
             </dl>
-          </section>
+          </ReportDetails>
+          </DailyClosingForm>
+
+
         </section>
       </ReportTabs>
     </main>
