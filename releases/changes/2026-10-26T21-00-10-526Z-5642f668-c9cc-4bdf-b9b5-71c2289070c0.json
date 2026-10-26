@@ -1,0 +1,27 @@
+{
+  "channels": [
+    "web"
+  ],
+  "status": "working",
+  "changeId": "windows-installer-reylumi-download-20261026",
+  "kind": "change",
+  "files": [
+    "desktop/build.cjs",
+    "desktop/installer-template.cjs",
+    "desktop/build/installer-check.nsh",
+    "lib/windows-pos-release.ts",
+    "app/download/windows/route.ts"
+  ],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Implementation and runtime validation"
+    }
+  ],
+  "summary": "Fix Windows installer WMI hang including legacy upgrades and keep download URLs on Reylumi",
+  "id": "5642f668-c9cc-4bdf-b9b5-71c2289070c0",
+  "recordedAt": "2026-10-26T21:00:10.526Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

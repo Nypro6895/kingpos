@@ -1,0 +1,65 @@
+{
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\portable-installer-20261026\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Online x64 installer build",
+      "evidence": "desktop/dist-installer-fix-0.7.2/KingPOS Portable-Setup-0.7.2.exe SHA256 a7710b8f6647fb09ba2012c41e238ea85ee8b543233e33e28dabe0f790cf99b7",
+      "result": "passed"
+    },
+    {
+      "name": "Native isolated install/running app/legacy upgrade/uninstall; saved profile preserved",
+      "evidence": "artifacts/portable-installer-20261026/1793048668853/result.json",
+      "result": "passed"
+    },
+    {
+      "result": "passed",
+      "name": "25 desktop and branded download tests"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped TypeScript, ESLint and diff check"
+    }
+  ],
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "summary": "Windows 0.7.2 installer avoids WMI and hanging legacy uninstallers; public downloads remain on Reylumi",
+  "files": [
+    "desktop/build.cjs",
+    "desktop/installer-template.cjs",
+    "desktop/installer-check.nsh",
+    "desktop/package.json",
+    "desktop/package-lock.json",
+    "desktop/tests/installer-smoke.cjs",
+    "desktop/RELEASE-NOTES-0.7.2.md",
+    "lib/windows-pos-release.ts",
+    "app/download/windows/route.ts",
+    "tests/public-app-url.test.mjs",
+    "tests/windows-pos-branded-download.test.mjs"
+  ],
+  "dependencies": [],
+  "changeId": "windows-installer-reylumi-download-20261026",
+  "status": "ready",
+  "notes": "Web queue includes coordinated Windows artifact publication. No iOS change. Production not modified. Full checkout tsc has unrelated stale generated Help imports.",
+  "id": "90c9f7ab-439d-4283-bdea-0904a7ebbdb9",
+  "recordedAt": "2026-10-26T21:05:30.893Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "desktop/build.cjs": "eb506883904872a2d599491ca45f2c2881dfffb3b6169ec95198b7af7b2ec83c",
+    "desktop/installer-template.cjs": "8c534a87ffd27b90fe848782b77221fd7b15767701c2f0abf3b20d46997568b0",
+    "desktop/installer-check.nsh": "29942bc803b9ccb731135c9696f78a57c8966f52cc34ba2bc2343b5baea9281e",
+    "desktop/package.json": "0d8d350fec16c8c8f489b1b9c1d1c91af815799f75270c60c6420c754e9dbdd4",
+    "desktop/package-lock.json": "b6591be4914bd173325c6179f46e892e41b933b2029e85394d4b0c7e5f799610",
+    "desktop/tests/installer-smoke.cjs": "4f2e9c6322a3ca850bb8c17bbdaa24ca2270d7d3774252f8975ce6874ccaa93a",
+    "desktop/RELEASE-NOTES-0.7.2.md": "c2b19df61bb3164c7943a4cc2013e1d21834078f9ae11e3b20aab378bbf44d4a",
+    "lib/windows-pos-release.ts": "47e50289b235fd9866a45840e2cdacee32275ea604bdfb03e769f245f99019dd",
+    "app/download/windows/route.ts": "4850c8b8fcf41bae49217c5e12bdd18042f24aefd14fed1124fc5f0156a69c84",
+    "tests/public-app-url.test.mjs": "c20d4a5aa807ceee5a7f5315af482a2175f2c7dd167191eeb609b1a04413fa8d",
+    "tests/windows-pos-branded-download.test.mjs": "e7c5db138513d909f94590e566dac932b3c3e5e306630d99973698e2d8cafa33"
+  }
+}
