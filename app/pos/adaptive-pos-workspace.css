@@ -1,0 +1,15 @@
+[data-adaptive-pos][data-pos-staff-turn-board]{overflow:hidden!important;min-height:0}
+[data-adaptive-pos] [data-pos-staff-grid],.owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-staff .owner-choice-grid{display:grid;grid-template-columns:repeat(var(--pos-staff-columns),minmax(0,var(--pos-staff-width)));grid-auto-rows:var(--pos-staff-height);gap:6px;height:var(--pos-staff-space);max-height:none;min-height:0;overflow-y:auto;overflow-x:hidden;flex-shrink:0;align-content:start;padding:2px}
+[data-adaptive-pos] [data-pos-staff-grid]>button,.owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-staff .owner-choice-grid>button{min-height:0;height:var(--pos-staff-height);aspect-ratio:auto;padding:5px;min-width:0}
+[data-adaptive-pos] [data-pos-staff-grid]>button>[data-pos-staff-name],.owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-staff .owner-choice-grid strong{font-size:var(--pos-tile-font)}
+[data-adaptive-pos] [data-pos-staff-grid]>button>span.tabular-nums,.owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-turn{font-size:var(--pos-turn-font);margin-top:3px}
+[data-adaptive-pos] [data-pos-service-workspace]{min-height:0;flex:1;overflow:hidden}
+[data-pos-service-tiles]{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;max-height:55vh;overflow-y:auto;overflow-x:hidden;align-content:start;padding:2px}
+[data-adaptive-pos] [data-pos-service-tiles]{grid-template-columns:repeat(var(--pos-service-columns),minmax(0,var(--pos-service-width)));grid-auto-rows:var(--pos-service-height);max-height:var(--pos-service-space);gap:6px}
+[data-pos-service-tile]{min-width:0;min-height:44px;border:1px solid #e4e4e7;border-radius:8px;padding:6px 8px;text-align:left;background:#fff;color:#18181b;font-size:14px;line-height:1.2}
+[data-adaptive-pos] [data-pos-service-tile]{font-size:var(--pos-tile-font);min-height:0}
+[data-pos-service-tile]>span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-weight:600}
+[data-pos-service-tile]>small{display:block;font-size:max(11px,.85em);margin-top:3px}
+[data-pos-service-tile][aria-pressed=true]{outline:2px solid #f26f3d;outline-offset:-2px}
+[data-pos-service-tile]:disabled{opacity:.5}
+.owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-services{min-height:0;overflow:hidden;flex:1}

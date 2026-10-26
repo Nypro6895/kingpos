@@ -1,3 +1,6 @@
+export const PORTABLE_TURN_ADJUST_DISABLED_MESSAGE =
+  'Turn adjustment is not enabled for this POS device. Ask your admin to enable "Turn adjust" for this POS ID in POS Settings > Portable POS access, then reload POS.';
+
 export const PORTABLE_POS_CAPABILITIES = {
   bookCancel: "portable.book.cancel",
   bookCreate: "portable.book.create",

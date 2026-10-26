@@ -137,7 +137,7 @@ export default async function PortablePosLayout({
         </div>
         <PortableOfflineShell />
         <PortableShellRefresh />
-        <PortableTouchKeyboard enabled={session.touch_keyboard_enabled !== false} />
+        <PortableTouchKeyboard />
       </PortableWorkspaceStateProvider></WorkspaceLanguageProvider>
     </main>
   );

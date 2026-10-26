@@ -1,0 +1,48 @@
+Windows Portable shared Help — October 26, 2026
+
+Implemented locally; not deployed and no Windows installer published.
+
+Shared destination: /help/windows-portable
+English default; Vietnamese: /help/windows-portable?lang=vi.
+The existing main Help catalog includes this guide for owners and staff.
+Search indexes both languages, including Vietnamese without diacritics.
+The existing Help language switch and language-preserving links are reused.
+
+Twelve walkthroughs cover installation, navigation, checkout, saved tickets,
+attendance, turn rules, manual turn adjustment, settings, bookings, reports,
+customer display, offline recovery, app controls and updates.
+No new screenshot claims are made. Content is grounded in current source;
+production staff workflows were not executed or mutated during this task.
+
+Windows: the three-dot app menu gets Help / Hướng dẫn sử dụng. It opens
+https://reylumi.com/help/windows-portable using Electron shell.openExternal.
+The fixed destination accepts no renderer-supplied URL. POS navigation policy
+and the active ticket are unchanged. A bilingual fallback gives the address
+if launching the system browser fails. Both page languages are available.
+
+Release web content before distributing a Windows binary that advertises it.
+An existing Windows binary needs one update to get the native menu item;
+later guide updates need only web publication. Older binaries can use /help.
+No iOS native change is required. No application version was bumped here.
+
+Validation:
+- node --test tests/help-draft.test.mjs desktop/tests/help-menu.test.cjs: 9 passed.
+- node --test tests/help-bilingual-ui.test.mjs: 1 browser suite passed.
+  Includes shared catalog search -> Windows article, both languages,
+  reload persistence, Vietnamese return link, 390/1280 layout and no overflow.
+- ESLint on the four touched TypeScript modules: passed.
+- node --check desktop/main.cjs: passed.
+- Visual review: actual Help render, Windows Vietnamese desktop and mobile.
+  Browser fixture uses the real Help components and mocks navigation/session;
+  it is not a live authenticated server or packaged Windows installer test.
+
+Integration:
+- Frozen source and QA artifacts: artifacts/windows-portable-help-20261026/.
+- Depends on the existing shared Help implementation and its public routes.
+- The workspace contains pre-existing changes. Do not deploy it wholesale.
+- In particular, desktop/main.cjs already included unrelated updater work.
+  Apply the task-only native-menu.patch to the current Windows release source;
+  do not replace its main.cjs with the whole frozen file without reconciliation.
+- The release journal supports only web/ios channels. This change is recorded
+  under web with needs-integration; the required Windows binary update is
+  explicitly tracked here and must not be inferred published by a web release.

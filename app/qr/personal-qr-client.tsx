@@ -13,9 +13,9 @@ import { checkinPersonalQr, loadPersonalQr, loadPersonalQrCatalog } from "./acti
 import styles from "./personal-qr.module.css";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
-export function PersonalQrClient({ viewerId, initial, initialError, entry, initialCatalog, initialVisitId }: {
+export function PersonalQrClient({ viewerId, initial, initialError, entry, initialCatalog, initialVisitId, customerName = "Guest" }: {
   viewerId: string; initial: PersonalQrWorkspace | null; initialError?: string;
-  entry?: string; initialCatalog?: PersonalQrCatalog; initialVisitId?: string;
+  entry?: string; initialCatalog?: PersonalQrCatalog; initialVisitId?: string; customerName?: string;
 }) {
   const [data, setData] = useState(initial), [error, setError] = useState(initialError ?? "");
   const [online, setOnline] = useState(true), [now, setNow] = useState(() => Date.now());
@@ -82,11 +82,14 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
     {!online && <p role="status" className={styles.notice}><WorkspaceText text="Offline. Showing the last saved status and prices." /></p>}
     {error && <div role="alert" className={styles.notice}><WorkspaceText text={error} /><div><button type="button" disabled={!online || busy} onClick={() => void refresh()}><WorkspaceText text="Refresh" /></button> <Link href="/account"><WorkspaceText text="Account" /></Link></div></div>}
     {catalog ? <section className={styles.card} aria-label="Choose check-in services">
-      <h2>{catalog.salonName}</h2>
+      <h2><WorkspaceText text="Hello," /> {customerName.split(/\s+/)[0].toUpperCase()}!</h2>
+      <p className={styles.muted}>{catalog.salonName}</p>
+      <p><WorkspaceText text="What can we do for you today?" /></p>
       <form onSubmit={event => { event.preventDefault(); void checkin(); }}>
         <p className={styles.muted}><WorkspaceText text="Select up to 8 services." /></p>
         <fieldset className={styles.services} disabled={busy || !online}><legend><WorkspaceText text="Services" /></legend>{catalog.services.map(service => <label key={service.id}><input type="checkbox" checked={selected.includes(service.id)} disabled={!selected.includes(service.id) && selected.length >= 8} onChange={event => { requestId.current = null; setSelected(values => event.target.checked ? values.length < 8 ? [...values, service.id] : values : values.filter(id => id !== service.id)); }} /><span>{service.name}</span></label>)}</fieldset>
-        <button type="submit" className={`${styles.primary} ${styles.full}`} disabled={busy || !online || !selected.length}><WorkspaceText text={busy ? "Checking in…" : "Check in"} /></button>
+        {!!selected.length && <div className={styles.total}><span><WorkspaceText text="Estimated total" /></span><strong>{money(catalog.services.filter(service => selected.includes(service.id)).reduce((sum, service) => sum + Number(service.base_price ?? 0), 0))}</strong></div>}
+        <button type="submit" className={`${styles.primary} ${styles.full}`} disabled={busy || !online || !selected.length}><WorkspaceText text={busy ? "Checking in…" : "Confirm check-in"} /></button>
         <div className={styles.actions}><button type="button" disabled={busy} onClick={() => { setCatalog(null); setSelected([]); }}><WorkspaceText text="Cancel" /></button></div>
       </form>
     </section> : visitId ? <>
@@ -128,7 +131,7 @@ function PersonalVisit({ visit, online }: { visit: PersonalQrVisit; online: bool
     {lines.length ? <>{lines.map(line => <div className={styles.row} key={line.id}><span>{line.serviceName}<small>{line.staffName}</small></span><strong>{money(Number(line.amount))}</strong></div>)}
       {totals && <><div className={styles.row}><span><WorkspaceText text="Tip" /></span><strong>{money(totals.tip_amount)}</strong></div>{totals.discount_amount > 0 && <div className={styles.row}><span><WorkspaceText text="Discount" /></span><strong>−{money(totals.discount_amount)}</strong></div>}{totals.tax_amount > 0 && <div className={styles.row}><span><WorkspaceText text="Tax" /></span><strong>{money(totals.tax_amount)}</strong></div>}</>}
       <div className={styles.total}><span><WorkspaceText text={visit.status === "paid" ? "Total paid" : "Current services total"} /></span><strong>{money(totals?.total ?? lines.reduce((sum, line) => sum + Number(line.amount), 0))}</strong></div>
-    </> : <><h3><WorkspaceText text="Requested services" /></h3>{visit.requestedServices.map(service => <p key={service.id}>{service.name}</p>)}<p className={styles.muted}><WorkspaceText text="Prices appear when staff save them." /></p></>}
+    </> : <><h3><WorkspaceText text="Requested services" /></h3>{visit.requestedServices.map(service => <p key={service.id}>{service.name}</p>)}<p className={styles.muted}><WorkspaceText text="Please have a seat. Our team will guide you when it's your turn." /></p></>}
     {!finished && <p className={styles.muted}><WorkspaceText text={online ? "Amount may change until POS finalizes." : "Reconnect to refresh status and prices."} /></p>}
     {visit.status === "paid" && visit.ticketId && <Link className={styles.receiptLink} href={`/activity/receipts/${visit.ticketId}`}><WorkspaceText text="View receipt" /></Link>}
     {finished && <p className={styles.muted}><WorkspaceText text={visit.status === "cancelled" ? "Visit cancelled. This visit QR is no longer active." : "Visit completed. This visit QR is no longer active."} /></p>}

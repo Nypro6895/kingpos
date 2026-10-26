@@ -1,12 +1,12 @@
 "use client";
 import type { PortableOperation } from "./portable-operations";
-export type DesktopUpdateState = { phase: string; version: string; scheduledAt: number | null; message: string };
+export type DesktopUpdateState = { phase: string; version: string; currentVersion?: string; progress?: number; scheduledAt: number | null; message: string };
 declare global {
   interface Window {
     kingposDesktop?: {
       version: number;
       offline?: { prepare(scope: string, assets: string[]): Promise<void>; lock(): boolean };
-      updates?: { state(): Promise<DesktopUpdateState>; later(): Promise<DesktopUpdateState>; schedule(at: number): Promise<DesktopUpdateState>; now(): Promise<DesktopUpdateState> };
+      updates?: { state(): Promise<DesktopUpdateState>; later(): Promise<DesktopUpdateState>; download?(): Promise<DesktopUpdateState>; schedule(at: number): Promise<DesktopUpdateState>; now(): Promise<DesktopUpdateState> };
       display?: { pair(token: string | null): Promise<void>; open(): Promise<void>; close(): Promise<void> };
       windowControls?: { fullscreen(toggle?: boolean): Promise<boolean>; menu(): void; onFullscreen(callback: (value: boolean) => void): () => void };
       storage: { get(key: string): string | null; set(key: string, value: string): void; remove(key: string): void };

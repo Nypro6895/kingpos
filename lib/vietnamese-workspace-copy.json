@@ -1,4 +1,5 @@
 {
+  "Turn adjustment is not enabled for this POS device. Ask your admin to enable \"Turn adjust\" for this POS ID in POS Settings > Portable POS access, then reload POS.": "Thiết bị POS này chưa được bật quyền chỉnh lượt. Hãy nhờ admin bật \"Turn adjust\" cho POS ID này trong POS Settings > Portable POS access, sau đó tải lại POS.",
   "Set booking times and preferences.": "Cài đặt thời gian và cách đặt lịch.",
   "Timing": "Thời gian",
   "Minimum notice": "Báo trước tối thiểu",

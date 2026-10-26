@@ -4,8 +4,10 @@ import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language
 import { OwnerPosTabs } from "@/app/pos/owner-pos-tabs";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
+import { serviceCategoryColor } from "@/lib/pos-service-catalog";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { DesktopDownloadPanel } from "@/app/pos/settings/desktop-download-panel";
+import { DeviceInputSettings } from "@/app/pos/portable/device-input-settings";
 /* eslint-disable @next/next/no-img-element */
 import { CustomerDisplayInstallPanel } from "@/app/pos/settings/customer-display-install-panel";
 import {
@@ -567,6 +569,8 @@ async function PosSettingsPage({
   const {data:raw}=await supabase!.from('pos_settings').select('*').eq('salon_id',context.currentSalon!.id).maybeSingle();
   const snapshot=raw??{};
   const preferences=normalizeWorkspacePreferences(raw?.workspace_preferences);
+  const {data:categoryServices}=await supabase!.from('services').select('category').eq('salon_id',context.currentSalon!.id).eq('is_active',true);
+  const serviceCategories=[...new Set((categoryServices??[]).map(service=>service.category?.trim()).filter((category):category is string=>!!category))].sort();
   return (
     <div className="settings-style settings-style-page pos-settings-page owner-pos-document"><main className="pos-settings mx-auto w-full max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
       <SettingsSaveBroadcast saved={saved} />
@@ -580,7 +584,7 @@ async function PosSettingsPage({
 
 
 <div className="settings-sections">
-        <details open><summary><WorkspaceText text="Windows app &amp; devices" /></summary><DesktopDownloadPanel/></details>
+        <details open><summary><WorkspaceText text="Windows app &amp; devices" /></summary><DesktopDownloadPanel/><DeviceInputSettings/></details>
         <details id="access"><summary><WorkspaceText text="POS login &amp; permissions" /></summary><PortableAccessSection accessKeys={portableAccessState.keys} canManageSettings={canManageSettings} saved={saved} schemaReady={portableAccessState.schemaReady} setupMessage={portableAccessState.setupMessage}/></details>
         <details><summary><WorkspaceText text="Staff &amp; turns" /></summary><SettingsGroupForm group="staff" snapshot={snapshot}>
           <Checkbox defaultChecked={settings.staffCheckInEnabled} label={__vt("Require staff check-in")} name="staff_check_in_enabled"/>
@@ -590,8 +594,10 @@ async function PosSettingsPage({
         <details><summary><WorkspaceText text="Checkout &amp; saved tickets" /></summary><SettingsGroupForm group="checkout" snapshot={snapshot}>
           <p className="text-sm font-semibold"><WorkspaceText text="Checkout options" /></p><div className="grid gap-2 sm:grid-cols-2">{([['showStaff','Staff'],['showServices','Services'],['showCustomer','Customer'],['showTip','Tip'],['showDiscount','Discount']] as const).map(([key,label])=><Checkbox key={key} name={key} label={__vt(label)} defaultChecked={preferences[key]}/>)}</div>
           <p className="text-sm text-zinc-500"><WorkspaceText text="Staff is required when check-in is on." /></p>
+          <Checkbox name="serviceCategoriesEnabled" label={__vt("Group and color services by category")} defaultChecked={preferences.serviceCategoriesEnabled}/>
+          <p className="text-sm text-zinc-500"><WorkspaceText text="Services in the same category appear together in the same color. Set categories in Services." /></p>
+          <div className="grid gap-3 sm:grid-cols-2">{serviceCategories.map(category=><label key={category} className="flex items-center justify-between gap-3 text-sm"><span>{category}</span><input type="color" name={`serviceCategoryColor:${category}`} defaultValue={serviceCategoryColor(category,preferences.serviceCategoryColors)} aria-label={__vt(`Category color: ${category}`)} className="h-10 w-14 rounded border border-zinc-200"/></label>)}</div>
           <div className="grid gap-3 sm:grid-cols-4">{settings.tipSuggestions.map((amount,index)=><Field key={index} name={`tip_suggestion_${index+1}`} label={__vt(`Tip option ${index+1}`)} defaultValue={amount} min={0} type="number" step="0.01"/>)}</div>
-          <Checkbox defaultChecked={settings.touchKeyboardEnabled} label={__vt("Portable on-screen keyboard")} name="touch_keyboard_enabled"/>
           <div className="grid gap-3 sm:grid-cols-2"><Field name="idleMinutes" label={__vt("Idle reminder (minutes)")} defaultValue={preferences.idleMinutes} min={1} type="number"/><Field name="idleWarningSeconds" label={__vt("Response time (seconds)")} defaultValue={preferences.idleWarningSeconds} min={15} type="number"/></div>
           <p className="text-sm text-zinc-500"><WorkspaceText text="Unfinished entries clear after the countdown. Saved and submitted tickets stay." /></p>
         </SettingsGroupForm></details>

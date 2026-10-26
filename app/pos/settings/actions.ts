@@ -30,8 +30,11 @@ export async function savePosSettingsGroup(formData: FormData): Promise<{ok:bool
     const group=String(formData.get('group'));let values:Record<string,unknown>={};
     const expected=JSON.parse(String(formData.get('expected')??'{}'));
     if(group==='staff') values={large_turn_threshold:Math.max(1,readNumber(formData,'large_turn_threshold',25)),staff_check_in_enabled:readBoolean(formData,'staff_check_in_enabled')};
-    else if(group==='checkout') values={tip_suggestions:readTipSuggestions(formData),touch_keyboard_enabled:readBoolean(formData,'touch_keyboard_enabled'),workspace_preferences:normalizeWorkspacePreferences({
-      ...Object.fromEntries(['showStaff','showServices','showCustomer','showTip','showDiscount'].map(k=>[k,readBoolean(formData,k)])),idleMinutes:readNumber(formData,'idleMinutes',3),idleWarningSeconds:readNumber(formData,'idleWarningSeconds',60)})};
+    else if(group==='checkout') values={tip_suggestions:readTipSuggestions(formData),workspace_preferences:normalizeWorkspacePreferences({
+      ...normalizeWorkspacePreferences(expected.workspace_preferences),
+      ...Object.fromEntries(['showStaff','showServices','showCustomer','showTip','showDiscount','serviceCategoriesEnabled'].map(k=>[k,readBoolean(formData,k)])),
+      serviceCategoryColors: {...normalizeWorkspacePreferences(expected.workspace_preferences).serviceCategoryColors,...Object.fromEntries([...formData.entries()].filter(([key])=>key.startsWith('serviceCategoryColor:')).map(([key,value])=>[key.slice('serviceCategoryColor:'.length),value]))},
+      idleMinutes:readNumber(formData,'idleMinutes',3),idleWarningSeconds:readNumber(formData,'idleWarningSeconds',60)})};
     else if(group==='display') {
       const [background,left,right]=await Promise.all([
         uploadPosDisplayImage({file:getUploadedFile(formData,'customer_background_image_file'),kind:'background',salonId:salon.id,supabase}),
@@ -504,7 +507,6 @@ export async function updatePosSettingsAction(formData: FormData) {
       ),
       salon_id: salon.id,
       staff_check_in_enabled: readBoolean(formData, "staff_check_in_enabled"),
-      touch_keyboard_enabled: readBoolean(formData, "touch_keyboard_enabled"),
       tip_suggestions: readTipSuggestions(formData),
     };
 

@@ -1,10 +1,11 @@
 import { HELP_GUIDES, type HelpGuide, type HelpRole } from "@/lib/help-guides";
 import helpCopy from "@/app/help/help-copy.json";
+import windowsCopy from "@/app/help/windows-portable-copy.json";
 
 export function normalizeHelpQuery(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().trim();
 }
-const dictionary: Readonly<Record<string, string>> = helpCopy;
+const dictionary: Readonly<Record<string, string>> = { ...helpCopy, ...windowsCopy };
 const searchText = (guide: HelpGuide) => {
   const text = [guide.title, guide.summary, guide.prerequisite, guide.entry.label,
     ...guide.steps.flatMap(step => [step.title, step.body]), ...guide.notes,

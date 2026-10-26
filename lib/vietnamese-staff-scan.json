@@ -24,7 +24,7 @@
   "Could not refresh Scan.": "Chưa cập nhật được trang Quét.",
   "Could not connect this customer.": "Chưa kết nối được với khách này.",
   "Connection interrupted. Refresh before choosing another customer.": "Kết nối bị gián đoạn. Cập nhật trước khi chọn khách khác.",
-  "Scan requires Check-in Receipt or Phone Checkin for this salon.": "Tiệm cần bật Check-in Receipt hoặc Phone Checkin để sử dụng Quét.",
+  "Your salon owner has not enabled Scan yet.": "Chủ tiệm chưa kích hoạt chức năng Quét.",
   "Choose a service and enter a positive amount for each service.": "Chọn dịch vụ và nhập số tiền lớn hơn 0 cho từng dịch vụ.",
   "Could not save. Your entries are kept.": "Chưa lưu được. Nội dung đang nhập được giữ lại.",
   "POS changed this work. Use the latest POS values before continuing.": "POS đã thay đổi phần việc này. Dùng dữ liệu mới nhất từ POS trước khi tiếp tục.",

@@ -3,6 +3,8 @@
 import { WorkspaceText } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 import { useActionState } from "react";
+import { PortableTouchKeyboard } from "./touch-keyboard";
+import { DeviceInputSettingsButton } from "./device-input-settings";
 import {
   forgetPortablePosAccessIdAction,
   signInPortablePosAction,
@@ -29,7 +31,9 @@ export function PortablePosLoginForm({
   const hasRememberedId = Boolean(rememberedAccessId);
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-sm" data-portable-login-shell>
+      <div className="mb-2 flex justify-end"><DeviceInputSettingsButton /></div>
+      <PortableTouchKeyboard scopeSelector="[data-portable-login-shell]" />
       <form
         action={formAction}
         className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"

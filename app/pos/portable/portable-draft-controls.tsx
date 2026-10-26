@@ -86,7 +86,7 @@ export function PortableDraftControls<T>({ scope, active, activity, value, label
   return <>
     <div className="grid grid-cols-2 gap-2" data-pos-customer-shortcuts>
       {leading}
-      <button type="button" aria-label={__vt(`Saved tickets (${saved.length})`)} aria-expanded={open} disabled={parking} onClick={() => setOpen(!open)} className="flex min-h-20 min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 text-left transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-teal-700">
+      <button type="button" data-pos-saved-launcher aria-label={__vt(`Saved tickets (${saved.length})`)} aria-expanded={open} disabled={parking} onClick={() => setOpen(!open)} className="flex min-h-20 min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 text-left transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-teal-700">
         <svg aria-hidden="true" className="h-5 w-5 shrink-0 text-teal-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6"/></svg>
         <span className="min-w-0"><span className="block text-sm font-semibold"><WorkspaceText text="Saved tickets" /></span><span className="mt-1 block text-xs text-zinc-500"><WorkspaceText text={saved.length ? `${saved.length} saved` : "None saved"} /></span></span>
       </button>

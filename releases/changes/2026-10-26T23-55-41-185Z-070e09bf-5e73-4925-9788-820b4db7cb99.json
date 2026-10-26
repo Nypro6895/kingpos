@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "phone-checkin-scan-continuity-20261026",
+  "status": "ready",
+  "summary": "21 checks passed: real phone kiosk -> mobile QR reuse including simultaneous confirmation -> Staff scan/save -> POS/history; queue only with original phone check-in release; reconciled with current live source and combined fixes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/personal-qr-full-schema.integration.test.mjs",
+    "tests/phone-checkin-camera.test.mjs",
+    "docs/phone-checkin-scan-continuity-deploy-note.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\all-recent-chats-20261026\\frozen"
+  },
+  "dependencies": [
+    "phone-checkin-auto-merge-20261026"
+  ],
+  "supersedesEvents": [
+    "0f384908-ff4b-433c-a69c-64373bd0f12a"
+  ],
+  "validation": [
+    {
+      "name": "Clean production build and full TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log"
+    },
+    {
+      "name": "Integrated browser/unit suites and 26 complete-schema database tests",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r2.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r3.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/pos-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json"
+      ]
+    },
+    {
+      "name": "Windows installer build, packaged updater SHA512/cache/corrupt-rejection and Help menu",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log"
+      ]
+    }
+  ],
+  "integration": {
+    "producerEventId": "0f384908-ff4b-433c-a69c-64373bd0f12a",
+    "baselineDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+    "notes": "Preserve shipped owner workspace recovery, action feedback, offline safeguards, Report and flat UI. Adaptive category tiles supersede the earlier folder presentation. Help uses shipped server language/session architecture. Windows Help ships in rebuilt 0.7.3. Database backfill awaits action-time confirmation; ready source is not publication."
+  },
+  "id": "070e09bf-5e73-4925-9788-820b4db7cb99",
+  "recordedAt": "2026-10-26T23:55:41.185Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "tests/personal-qr-full-schema.integration.test.mjs": "87adf7c719b403208211fdf4435e59bcb62afb81f312b79889a7d69cf68f3555",
+    "tests/phone-checkin-camera.test.mjs": "7032fe38ce8e675b9aa6996b11e3a3bad829fd79bf2f8ee567dde07fadfe992d",
+    "docs/phone-checkin-scan-continuity-deploy-note.txt": "08e07bfec3809847d3e86ae1bee9efbfee4c24875979399770d22bb1490999ed"
+  }
+}

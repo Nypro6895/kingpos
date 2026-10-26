@@ -1,6 +1,7 @@
 import copy from "@/app/help/help-copy.json";
+import windowsCopy from "@/app/help/windows-portable-copy.json";
 export type HelpLanguage = "en" | "vi";
-const dictionary: Readonly<Record<string, string>> = copy;
+const dictionary: Readonly<Record<string, string>> = { ...copy, ...windowsCopy };
 export function resolveHelpLanguage(value: string | string[] | null | undefined): HelpLanguage {
   return value === "vi" ? "vi" : "en";
 }

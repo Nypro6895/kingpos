@@ -50,6 +50,7 @@ import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import {
   DEFAULT_PORTABLE_POS_CAPABILITIES,
+  PORTABLE_TURN_ADJUST_DISABLED_MESSAGE,
   PORTABLE_POS_CAPABILITIES,
   type PortablePosCapability,
 } from "@/lib/pos-portable-capabilities";
@@ -1524,6 +1525,9 @@ async function requirePortableCapability(capability: PortablePosCapability) {
   const context = await requirePortablePosSessionContext();
 
   if (!hasPortableCapability(context.portableSession, capability)) {
+    if (capability === PORTABLE_POS_CAPABILITIES.turnAdjust) {
+      throw new Error(PORTABLE_TURN_ADJUST_DISABLED_MESSAGE);
+    }
     throw new Error("This Portable POS device is not allowed to open that area.");
   }
 
@@ -1644,6 +1648,7 @@ async function loadPortableReferenceData(input: {
 }
 
 export async function getPortablePosDeskData(): Promise<{
+  canAdjustStaffTurn: boolean;
   salonId: string;
   defaults: typeof POS_DESK_DEFAULTS;
   liveDraft: PosLiveDraftView | null;
@@ -1654,8 +1659,11 @@ export async function getPortablePosDeskData(): Promise<{
   today: string;
   waitingVisits: CustomerVisitQueueItem[];
 }> {
-  await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-  return loadPortablePosDeskData();
+  const { portableSession } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+  return {
+    ...await loadPortablePosDeskData(),
+    canAdjustStaffTurn: hasPortableCapability(portableSession, PORTABLE_POS_CAPABILITIES.turnAdjust),
+  };
 }
 
 export async function getPortableWorkspaceStaff(ids?:string[]) {

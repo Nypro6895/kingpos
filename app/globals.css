@@ -449,6 +449,17 @@ body {
 .portable-kiosk-surface [data-pos-customer-shortcuts] [data-pos-waiting-launcher]:hover {
   background: #f0fdfa; border-color: #5eead4;
 }
+@media (min-width: 981px) {
+  .portable-kiosk-surface [data-pos-customer-shortcuts] :is([data-pos-waiting-launcher], [data-pos-saved-launcher]) {
+    min-height: 48px; padding: 6px 10px; gap: 8px; border-radius: 9px;
+  }
+  .portable-kiosk-surface [data-pos-customer-shortcuts] :is([data-pos-waiting-launcher], [data-pos-saved-launcher]) > span {
+    display: flex; align-items: center; flex-wrap: wrap; column-gap: 6px;
+  }
+  .portable-kiosk-surface [data-pos-customer-shortcuts] :is([data-pos-waiting-launcher], [data-pos-saved-launcher]) > span > span {
+    margin-top: 0;
+  }
+}
 .portable-kiosk-surface input[name="pos-customer-query"] {
   min-height: 46px; border-radius: 10px; background: #fafafa; border-color: #e4e4e7;
 }

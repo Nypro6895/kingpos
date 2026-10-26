@@ -109,7 +109,7 @@ export function StaffScanClient({ salonId, staffId, initial, initialError }: { s
         })}</div>
       </section>}
       {camera ? <StaffQrScanner onCode={code => void connect({ code })} onClose={closeCamera} /> : <button type="button" className={styles.scanButton} disabled={busy || !online || !data?.enabled} onClick={() => setCamera(true)}><WorkspaceNavigationIcon name="qr" /><WorkspaceText text="Scan QR" /></button>}
-      {data && !data.enabled && <p className={styles.empty}><WorkspaceText text="Scan requires Check-in Receipt or Phone Checkin for this salon." /></p>}
+      {data && !data.enabled && <p className={styles.empty}><WorkspaceText text="Your salon owner has not enabled Scan yet." /></p>}
       {data?.enabled && <section className={styles.section} aria-label="Waiting customers"><div className={styles.heading}><h2><WorkspaceText text="Waiting" /> · {data.waiting.filter(customer => !data.current.some(t => t.visitId === customer.visitId)).length}</h2></div>
         <p className={styles.muted}><WorkspaceText text="Checked in · Not paid" /></p>
         <div className={styles.list}>{data.waiting.filter(customer => !data.current.some(t => t.visitId === customer.visitId)).map(customer => <button type="button" className={styles.customer} key={customer.visitId} disabled={busy || !online} onClick={() => void connect({ visitId: customer.visitId })}>

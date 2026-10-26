@@ -3,9 +3,11 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import { savePosSettingsGroup } from "./actions";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
+import { serviceCategoryColor } from "@/lib/pos-service-catalog";
 const button="min-h-12 rounded-xl border px-4 py-3 font-semibold transition hover:bg-orange-50";
 function valueFor(name:string,row:Record<string,unknown>){
   const preferences=normalizeWorkspacePreferences(row.workspace_preferences);
+  if(name.startsWith('serviceCategoryColor:'))return serviceCategoryColor(name.slice('serviceCategoryColor:'.length),preferences.serviceCategoryColors);
   if(name in preferences)return preferences[name as keyof typeof preferences];
   if(name.startsWith('tip_suggestion_'))return (row.tip_suggestions as number[]|undefined)?.[Number(name.slice(-1))-1]??0;
   if(name.startsWith('current_'))return row[name.slice(8)]??'';

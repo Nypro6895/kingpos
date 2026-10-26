@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "portable-turn-permission-20261026",
+  "status": "ready",
+  "summary": "Show immediate disabled-turn guidance directing staff to admin and POS Settings; English/Vietnamese, server guard preserved; reconciled with current live source and combined fixes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/portable/actions.ts",
+    "app/(app)/pos/portable/page.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "lib/pos-portable-capabilities.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/portable-turn-permission.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\all-recent-chats-20261026\\frozen"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Clean production build and full TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log"
+    },
+    {
+      "name": "Integrated browser/unit suites and 26 complete-schema database tests",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r2.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r3.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/pos-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json"
+      ]
+    },
+    {
+      "name": "Windows installer build, packaged updater SHA512/cache/corrupt-rejection and Help menu",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log"
+      ]
+    }
+  ],
+  "integration": {
+    "producerEventId": "55182bed-1ccc-4957-9bfd-847acc4d3952",
+    "baselineDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+    "notes": "Preserve shipped owner workspace recovery, action feedback, offline safeguards, Report and flat UI. Adaptive category tiles supersede the earlier folder presentation. Help uses shipped server language/session architecture. Windows Help ships in rebuilt 0.7.3. Database backfill awaits action-time confirmation; ready source is not publication."
+  },
+  "id": "20d5d902-6931-4bee-b246-4f7d1d13eace",
+  "recordedAt": "2026-10-26T23:55:38.465Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/pos/portable/actions.ts": "045dc627e74393b15eb21d26bbdb34d2feb6ab144c54de8fa9d9ca8fe53963f7",
+    "app/(app)/pos/portable/page.tsx": "7ac574eae5c9ee24d35229d1c71d726c8b8c9ba5a0c524dceb5c7647252c4030",
+    "app/pos/pos-desk-client.tsx": "686671d025bbf1129677ff0bfbb34dc60e6d35733f14496b60b0dd25bd032db5",
+    "lib/pos-portable-capabilities.ts": "85c8960bc774d7d23ba0ea5829c598e2bae7501975fac0587ab43341a1ac0363",
+    "lib/vietnamese-workspace-copy.json": "8708a475b3ed324de03857de8e9207253083bd68cae256374752e9537b0ac875",
+    "tests/portable-turn-permission.test.mjs": "6cbb4bc67a54128a4ba7fa078b24cb3b36229a3a07de9807f3bc9da5ff4953f5"
+  }
+}

@@ -1,0 +1,39 @@
+Phone check-in -> mobile QR -> Staff -> POS continuity verification, 2026-10-26
+
+Queue only for the combined deployment. No independent website, database or
+native release is authorized by this verification task.
+
+Dependency: phone-checkin-auto-merge-20261026, ready event
+671df549-fbb0-4f30-85b2-5a1633c95356. Keep its matching migration and web patch
+together. This follow-up adds regression coverage and evidence, not a separate
+product implementation or replacement for the original frozen patch.
+
+The complete-schema integration starts with the real public kiosk phone RPC,
+links its customer to an existing account, saves requested services and issues
+the canonical daily receipt number. The account sees that visit before any QR
+scan. Mobile confirmation, repeated requests and repeated phone check-in all
+reuse the same visit and receipt. Simultaneous phone/mobile confirmations must
+also converge. Rescanning during service and checkout preserves the saved Staff
+amounts, one working offer and the queue number.
+
+Staff can connect using either Personal ID or the visit QR. Both resolve the
+same visit/offer. Actual Staff save -> POS settlement -> customer history and
+Staff earnings use that visit and create one financial ticket. Existing Ready,
+Done, Stand by, Cancel, portable POS and stale offline-write tests stay enabled.
+
+Camera browser coverage uses the actual QR encoder and scanner, real video /
+canvas frames and jsQR decoding at a 390x844 touch viewport. A generated video
+stream replaces physical camera hardware. It decodes salon, Personal ID and
+visit QR payloads, checks track cleanup, and tests camera-denial link fallback.
+Scanning the salon QR alone does not submit a check-in; confirmation is needed.
+
+Full-schema tests use isolated PostgreSQL/Auth/PostgREST/RLS and all migrations.
+Browser action responses are synthetic; real persistence and financial checks
+are in the full-schema suite. No production data, real payment, message or
+printing is performed. Physical iPhone/Android camera and installed native app
+acceptance remain separate hardware checks; do not describe them as completed.
+
+No product/native source changes are required by the verified scenarios. The
+original implementation remains queued. This test/doc-only follow-up requires
+no additional native binary or repeat production build; combined-release source
+assembly still needs its normal build and live verification.

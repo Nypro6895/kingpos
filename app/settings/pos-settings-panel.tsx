@@ -1,6 +1,7 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { PluginMarketSettings } from "./plugin-market-settings";
+import { DeviceInputSettings } from "@/app/pos/portable/device-input-settings";
 import { WindowsPosDownloadLinks } from "@/components/windows-pos-download";
 import { parseLoginUserAgent } from "@/lib/account-security-shared";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
@@ -86,11 +87,6 @@ export function PosSettingsPanel({
               />
             ))}
           </div>
-          <Check
-            name="touch_keyboard_enabled"
-            label={__vt("Enable touch keyboard")}
-            checked={v.touchKeyboardEnabled}
-          />
           {(
             [
               ["showStaff", "Show staff"],
@@ -342,9 +338,10 @@ export function PosSettingsPanel({
       </details>:null}
       <details>
         <summary className="cursor-pointer font-semibold">
-          <WorkspaceText text="Install POS & customer display" />
+          <WorkspaceText text="Windows app & devices" />
         </summary>
         <div className="mt-3 grid gap-4">
+          <DeviceInputSettings />
           {data.installer ? (
             <WindowsPosDownloadLinks href={data.installer}/>
           ) : (

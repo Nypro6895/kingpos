@@ -10,6 +10,10 @@ import staffScanCopy from "@/lib/vietnamese-staff-scan.json";
 import personalQrCopy from "@/lib/vietnamese-personal-qr.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
+  "Enable supplemental app keyboard": "Bật bàn phím bổ sung của app",
+  "Windows app & devices": "App Windows và thiết bị",
+  "Saved automatically on this device only. Off by default; use your physical or Windows touch keyboard. Built-in POS, staff PIN and customer keypads stay available.": "Tự động lưu riêng trên máy này. Mặc định tắt; dùng bàn phím rời hoặc bàn phím cảm ứng Windows. Bàn phím số POS, PIN nhân viên và bàn phím khách luôn được giữ.",
+  "Unable to save this device setting. Please try again.": "Không thể lưu cài đặt trên máy này. Vui lòng thử lại.",
   ...helpCopy,
   ...salonSetupCopy,
   ...workspaceCopy,

@@ -3,6 +3,7 @@
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
 import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
+import { DeviceInputSettingsButton } from "@/app/pos/portable/device-input-settings";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
 import { fetchWithDeadline } from "@/lib/bounded-get";
 import Link from "next/link";
@@ -241,7 +242,8 @@ export function LoginForm({
 
   return (
     <div data-login-touch-shell>
-      <PortableTouchKeyboard enabled desktopOnly scopeSelector="[data-login-touch-shell]" />
+      <PortableTouchKeyboard desktopOnly scopeSelector="[data-login-touch-shell]" />
+      <div className="flex justify-end"><DeviceInputSettingsButton desktopOnly /></div>
       {error ? (
         <p
           className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"

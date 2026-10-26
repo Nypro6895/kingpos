@@ -1,10 +1,12 @@
 "use client";
+import "./customer-display-responsive.css";
 import { createKioskRequestGuard } from "@/lib/kiosk-request-guard";
-import { CustomerIdentityChoices } from "@/components/customer-identity-choices";
+import { AccountSelectionPanel as CustomerIdentityChoices } from "./check-in-panels";
 import type { CustomerIdentityChoice } from "@/types/customer-identity";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CheckinReceiptPanel } from "./checkin-receipt-panel";
-import { CustomerRelayPass, CustomerRelayEntry } from "@/app/service-relay/customer-relay";
+import { CheckInConfirmationPanel, ServiceSelectionPanel } from "./check-in-panels";
+import { CustomerRelayEntry } from "@/app/service-relay/customer-relay";
 import { notifyWaitingChanged } from "@/lib/portable-waiting";
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 
@@ -189,6 +191,15 @@ function formatMoney(amount: number) {
   }).format(amount);
 }
 
+function formatTipMoney(amount: number) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -303,10 +314,6 @@ function getTipOptions(settings: CustomerDisplaySettings, liveDraft: PosLiveDraf
     amount: roundMoney((base * percentage) / 100),
     percentage,
   }));
-}
-
-function serviceSummaryLabel(services: CustomerDisplayService[]) {
-  return services.map((service) => service.name).join(" / ");
 }
 
 function FullscreenIcon() {
@@ -467,6 +474,7 @@ function ReylumiCornerLogo({
 }
 
 function AttractScreen({
+  token,
   currentSlide,
   error,
   images,
@@ -475,6 +483,7 @@ function AttractScreen({
   onFullscreen,
   settings,
 }: {
+  token: string;
   currentSlide: number;
   error: string | null;
   images: string[];
@@ -547,8 +556,8 @@ function AttractScreen({
             <p className="text-base font-semibold uppercase tracking-normal text-white/70">
               {displayName}
             </p>
-            <h1 className="mt-4 text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">
-              <WorkspaceText text="Touch anywhere to begin" />
+            <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
+              <WorkspaceText text="Welcome!" />
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-white/82">
               {settings.customerRightAdText || settings.customerLeftAdText}
@@ -561,9 +570,9 @@ function AttractScreen({
           </div>
         </div>
 
-        <footer className="flex min-w-0 items-center justify-center gap-3 text-sm font-medium text-white/70">
-          <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span><WorkspaceText text="Ready for checkout" /></span>
+        <footer className="grid justify-items-center gap-4 pb-2 text-center">
+          <CustomerRelayEntry token={token} />
+          <p className="text-lg font-semibold text-white"><WorkspaceText text="Or touch the screen to check in here" /></p>
         </footer>
       </div>
     </section>
@@ -773,7 +782,7 @@ function PhoneEntryPanel({
         </button>
       ) : null}
 
-      <div className="mt-4 grid min-h-20 content-start gap-2">
+      <div className="mt-4 grid min-h-20 content-start gap-2" data-customer-display-phone-results>
         {isSearching ? (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-600">
             <WorkspaceText text="Searching" />
@@ -810,6 +819,7 @@ function PhoneEntryPanel({
 }
 
 function ProfileCreationPanel({
+  hidden = false,
   customerStatus,
   disabled,
   isPending,
@@ -819,6 +829,7 @@ function ProfileCreationPanel({
   onSubmit,
   phone,
 }: {
+  hidden?: boolean;
   customerStatus: string | null;
   disabled: boolean;
   isPending: boolean;
@@ -830,6 +841,7 @@ function ProfileCreationPanel({
 }) {
   const __vt = useWorkspaceTranslation();
 
+  if (hidden) return null;
   const nameIsReady = nameInput.trim().length >= 2;
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -931,7 +943,7 @@ function MoneyKeypad({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2" data-customer-display-money-keypad>
       {keys.map((digit) => (
         <button
           aria-label={__vt(`Custom tip digit ${digit}`)}
@@ -1011,6 +1023,7 @@ function TipPanel({
       className="grid h-full min-h-0 gap-4 bg-stone-50/95 p-5"
       data-customer-display-interaction-panel
       data-customer-display-tip
+      data-custom-tip={customTipMode || undefined}
       style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
@@ -1044,6 +1057,7 @@ function TipPanel({
       {customTipMode ? (
         <div
           className="grid min-h-0 gap-3"
+          data-customer-display-custom-tip-content
           style={{ gridTemplateRows: "auto minmax(0, 1fr)" }}
         >
           <div className="flex items-center justify-between gap-3">
@@ -1052,7 +1066,7 @@ function TipPanel({
                 <WorkspaceText text="Custom tip" />
               </p>
               <p className="text-3xl font-semibold text-zinc-950">
-                {formatMoney(customTipAmount)}
+                {formatTipMoney(customTipAmount)}
               </p>
             </div>
             <button
@@ -1095,7 +1109,7 @@ function TipPanel({
                     {option.percentage}%
                   </span>
                   <span className="text-sm font-medium text-zinc-500">
-                    {formatMoney(option.amount)}
+                    {formatTipMoney(option.amount)}
                   </span>
                 </button>
               );
@@ -1186,7 +1200,7 @@ function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string })
   );
 }
 
-function TransactionSummary({
+function TransactionSummaryContent({
   connectionState,
   displayMode,
   identityLabel,
@@ -1251,6 +1265,7 @@ function TransactionSummary({
           ) : null}
           <h1
             className="mt-1 text-4xl font-semibold text-zinc-950 lg:text-5xl"
+            data-customer-display-receipt-title
             style={RECEIPT_TITLE_STYLE}
           >
             <WorkspaceText text="Your Receipt" />
@@ -1262,6 +1277,7 @@ function TransactionSummary({
           </p>
           <p
             className="mt-1 text-4xl font-semibold text-teal-800 lg:text-5xl"
+            data-customer-display-receipt-total
             style={RECEIPT_TOTAL_STYLE}
           >
             {formatMoney(liveDraft?.total ?? 0)}
@@ -1431,6 +1447,74 @@ function TransactionSummary({
   );
 }
 
+function TransactionSummary(props: Parameters<typeof TransactionSummaryContent>[0]) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const __vt = useWorkspaceTranslation();
+
+  useEffect(() => {
+    if (receiptOpen) dialogRef.current?.showModal();
+  }, [receiptOpen]);
+
+  // A native dialog keeps the long receipt separate from phone entry, traps
+  // focus, supports Escape, and restores focus to the receipt button on close.
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 900px)");
+    const closeOnWideLayout = () => {
+      if (desktop.matches) dialogRef.current?.close();
+    };
+    desktop.addEventListener("change", closeOnWideLayout);
+    return () => desktop.removeEventListener("change", closeOnWideLayout);
+  }, []);
+
+  return (
+    <div className="h-full min-h-0" data-customer-display-receipt-wrapper>
+      <div className="h-full min-h-0" data-customer-display-full-receipt>
+        <TransactionSummaryContent {...props} />
+      </div>
+      <div data-customer-display-compact-receipt>
+        <div className="min-w-0">
+          {props.settings.customerShowSalonName ? (
+            <p className="truncate text-sm font-semibold text-zinc-700">
+              {props.settings.salonName}
+            </p>
+          ) : null}
+          <p className="text-xl font-semibold text-teal-800">
+            <WorkspaceText text="Total" /> {formatMoney(props.liveDraft?.total ?? 0)}
+          </p>
+        </div>
+        <button
+          aria-haspopup="dialog"
+          className="min-h-11 shrink-0 rounded-xl border border-stone-200 bg-white px-3 font-semibold text-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
+          onClick={() => setReceiptOpen(true)}
+          type="button"
+        >
+          <WorkspaceText text="Your Receipt" />
+        </button>
+      </div>
+      <dialog
+        aria-label={__vt("Your Receipt")}
+        data-customer-display-receipt-dialog
+        onClose={() => setReceiptOpen(false)}
+        ref={dialogRef}
+      >
+        {receiptOpen ? (
+          <>
+            <form method="dialog" className="flex justify-end pb-2">
+              <button className="min-h-11 rounded-xl border border-stone-200 px-4 font-semibold" type="submit" autoFocus>
+                <WorkspaceText text="Close" />
+              </button>
+            </form>
+            <div className="min-h-0">
+              <TransactionSummaryContent {...props} />
+            </div>
+          </>
+        ) : null}
+      </dialog>
+    </div>
+  );
+}
+
 function CheckoutShell({
   backgroundImageUrl,
   children,
@@ -1467,7 +1551,7 @@ function CheckoutShell({
         }}
       />
       <ReylumiCornerLogo behindPanels />
-      <div className="relative z-10 grid h-full place-items-center px-4 py-4 sm:px-6 sm:py-6">
+      <div className="relative z-10 grid h-full place-items-center px-4 py-4 sm:px-6 sm:py-6" data-customer-display-checkout-shell>
         <div
           className="grid h-full max-h-[880px] min-h-0 w-full max-w-[1280px] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,430px)]"
           data-customer-display-checkout
@@ -1479,7 +1563,7 @@ function CheckoutShell({
             liveDraft={liveDraft}
             settings={settings}
           />
-          <div className="min-h-0">{children}</div>
+          <div className="min-h-0" data-customer-display-action-region>{children}</div>
           {error ? (
             <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 lg:col-span-2">
               <WorkspaceText text={error} />
@@ -1625,165 +1709,6 @@ function CompletedScreen({
           </p>
         ) : null}
       </div>
-    </section>
-  );
-}
-
-function CheckInConfirmationPanel({
-  checkIn,
-}: {
-  checkIn: CheckInState;
-}) {
-  const firstName = checkIn.visit.firstName ?? "Guest";
-  const requestedServices = checkIn.visit.requestedServices;
-  const requestedServiceLabel = serviceSummaryLabel(requestedServices);
-  const title =
-    checkIn.state === "already_checked_in"
-      ? "You are already checked in"
-      : "You are checked in";
-  const sourceLabel =
-    checkIn.visit.source === "appointment"
-      ? "Appointment"
-      : checkIn.visit.source === "walk_in"
-        ? "Walk-in"
-        : "Customer screen";
-
-  return (
-    <section
-      className="grid h-full min-h-0 content-center gap-5 bg-stone-50/95 p-5 text-center"
-      data-customer-display-checkin
-    >
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-teal-700 text-white shadow-lg">
-        <CheckIcon />
-      </div>
-      <div>
-        <p className="text-sm font-semibold uppercase text-teal-700">
-          <WorkspaceText text={sourceLabel} />
-        </p>
-        <h2 className="mt-2 text-4xl font-semibold leading-tight text-zinc-950">
-          <WorkspaceText text={title} />
-        </h2>
-        <p className="mt-3 text-2xl font-semibold text-zinc-800">
-          <WorkspaceText text="Thanks," /> {firstName}.
-        </p>
-      </div>
-      <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
-        <WorkspaceText text={requestedServiceLabel || "Our team has your arrival."} />
-      </p>
-      {requestedServiceLabel ? (
-        <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
-          <WorkspaceText text="We&apos;ll be with you shortly." />
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
-function ServiceSelectionPanel({
-  checkIn,
-  disabled,
-  onBack,
-  onSubmit,
-  selectedServiceIds,
-  services,
-  toggleService,
-}: {
-  checkIn: CheckInState;
-  disabled: boolean;
-  onBack: () => void;
-  onSubmit: () => void;
-  selectedServiceIds: string[];
-  services: CustomerDisplayService[];
-  toggleService: (serviceId: string) => void;
-}) {
-  const selectedSet = new Set(selectedServiceIds);
-  const firstName = checkIn.visit.firstName ?? "Guest";
-
-  return (
-    <section
-      className="grid h-full min-h-0 gap-3 bg-stone-50/90 p-4"
-      data-customer-display-service-select
-      style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
-    >
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase text-teal-700">
-            <WorkspaceText text="Check in" />
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold leading-tight text-zinc-950">
-            <WorkspaceText text="What are you here for?" />
-          </h2>
-          <p className="mt-1 text-sm font-medium leading-6 text-zinc-500">
-            <WorkspaceText text="Thanks," /> {firstName}<WorkspaceText text=". Select any services you&apos;d like today." />
-          </p>
-        </div>
-        <button
-          className="min-h-10 shrink-0 rounded-lg border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700 shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
-          disabled={disabled}
-          onClick={onBack}
-          type="button"
-        >
-          <WorkspaceText text="Back" />
-        </button>
-      </div>
-
-      <div className="min-h-0 overflow-y-auto pr-1">
-        <div
-          className="grid gap-2 sm:grid-cols-2 md:grid-cols-3"
-          data-customer-display-service-grid
-        >
-          {services.map((service) => {
-            const selected = selectedSet.has(service.id);
-            const meta = [
-              service.category,
-              service.durationMinutes ? `${service.durationMinutes} min` : null,
-            ]
-              .filter(Boolean)
-              .join(" / ");
-
-            return (
-              <button
-                aria-pressed={selected}
-                className={[
-                  "relative grid min-h-[76px] content-between overflow-hidden rounded-lg border px-3 py-2.5 text-left shadow-[0_10px_22px_rgba(35,25,22,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(242,111,61,0.12)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-orange/20",
-                  selected
-                    ? "border-brand-orange bg-gradient-to-br from-brand-orange-soft via-white to-amber-50 text-zinc-950 ring-2 ring-brand-orange/25"
-                    : "border-brand-orange/25 bg-gradient-to-br from-[#fffaf7] via-white/90 to-brand-orange-soft/55 text-zinc-950 hover:border-brand-orange/45",
-                ].join(" ")}
-                data-customer-display-service-card
-                disabled={disabled}
-                key={service.id}
-                onClick={() => toggleService(service.id)}
-                type="button"
-              >
-                {selected ? (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-2 left-1.5 w-1 rounded-full bg-brand-orange"
-                  />
-                ) : null}
-                <span className="block truncate pl-1.5 text-base font-semibold leading-tight">
-                  {service.name}
-                </span>
-                {meta ? (
-                  <span className="mt-1 block truncate pl-1.5 text-xs font-medium text-zinc-500">
-                    {meta}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <button
-        className="min-h-[52px] rounded-lg bg-teal-700 px-4 py-3 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
-        disabled={disabled}
-        onClick={onSubmit}
-        type="button"
-      >
-        {disabled ? "Saving" : <WorkspaceText text="Check in" />}
-      </button>
     </section>
   );
 }
@@ -2249,13 +2174,13 @@ export function CustomerDisplayClient({
       setIsCustomerPending(false);
 
       if (!result.ok) {
-        if (result.code === "profile_required") {
+        if (result.code === "profile_required" || result.code === "identity_choice_required") {
           setConfirmedPhone(nextDigits);
           setGuestConfirmed(false);
           setIsChangingCustomer(true);
           setCreateCustomerMode(true);
           setCustomerNameInput("");
-      setIdentityCandidates([]);
+          setIdentityCandidates(result.candidates ?? []);
           setCustomerResults([]);
           setCustomerStatus(result.error);
           return;
@@ -2613,7 +2538,7 @@ export function CustomerDisplayClient({
       return;
     }
 
-    if (!name) {
+    if (!name && !identityChoice) {
       setCustomerStatus("Customer name is required.");
       return;
     }
@@ -2640,7 +2565,7 @@ export function CustomerDisplayClient({
 
     setIdentityCandidates([]);
     setConfirmedPhone(phone);
-    applyCustomerPhoneResult(result.data, phone, { newCustomer: true });
+    applyCustomerPhoneResult(result.data, phone, { newCustomer: !identityChoice });
     setCustomerStatus(
       result.data.mode === "checkout"
         ? "Customer profile selected."
@@ -2773,7 +2698,7 @@ export function CustomerDisplayClient({
   }
 
   async function submitRequestedServices() {
-    if (!serviceSelectionState || !token || liveDraftStatus !== "draft") {
+    if (!serviceSelectionState || !selectedServiceIds.length || !token || liveDraftStatus !== "draft") {
       return;
     }
 
@@ -2870,13 +2795,13 @@ export function CustomerDisplayClient({
 
   return (
     <div className={rootClass} ref={rootRef}>
-      {!hasCheckoutHandoff && ["attract", "phone"].includes(displayMode) && <div className="fixed bottom-4 right-4 z-30"><CustomerRelayEntry token={token} /></div>}
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
       ) : null}
       <div className="customer-display-auto-scale h-full w-full">
         {displayMode === "attract" ? (
           <AttractScreen
+            token={token}
             currentSlide={slideIndex}
             error={error}
             images={attractImages}
@@ -2923,7 +2848,7 @@ export function CustomerDisplayClient({
                 tipOptions={tipOptions}
               />
             ) : displayMode === "profile" ? (
-              <><CustomerIdentityChoices candidates={identityCandidates} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel
+              <><CustomerIdentityChoices candidates={identityCandidates} onBack={returnToPhoneEntry} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel hidden={identityCandidates.length > 0}
                 customerStatus={customerStatus}
                 disabled={!token || liveDraftStatus !== "draft"}
                 isPending={isCustomerPending}
@@ -2963,7 +2888,7 @@ export function CustomerDisplayClient({
             settings={settings}
           >
             {displayMode === "checkin" && checkInState ? (
-              <><CheckInConfirmationPanel checkIn={checkInState} /><CustomerRelayPass key={`relay-${checkInState.visit.id}`} token={token} visitId={checkInState.visit.id} /><CheckinReceiptPanel key={checkInState.visit.id} token={token} visitId={checkInState.visit.id} onPrintingChange={setReceiptPrinting} /></>
+              <div className="grid h-full min-h-0" style={{ gridTemplateRows: "minmax(0,1fr) auto" }}><CheckInConfirmationPanel checkIn={checkInState} /><CheckinReceiptPanel compact key={checkInState.visit.id} token={token} visitId={checkInState.visit.id} onPrintingChange={setReceiptPrinting} /></div>
             ) : displayMode === "service_select" && serviceSelectionState ? (
               <ServiceSelectionPanel
                 checkIn={serviceSelectionState}
@@ -2975,7 +2900,7 @@ export function CustomerDisplayClient({
                 toggleService={toggleRequestedService}
               />
             ) : displayMode === "profile" ? (
-              <><CustomerIdentityChoices candidates={identityCandidates} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel
+              <><CustomerIdentityChoices candidates={identityCandidates} onBack={returnToPhoneEntry} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel hidden={identityCandidates.length > 0}
                 customerStatus={customerStatus}
                 disabled={!token || liveDraftStatus !== "draft"}
                 isPending={isCustomerPending}

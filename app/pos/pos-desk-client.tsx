@@ -3,6 +3,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { ActionFeedback } from "@/components/action-feedback";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { PORTABLE_BOOKING_TICKET, type BookingTicketRequest } from "@/lib/portable-booking-ticket";
+import { PORTABLE_TURN_ADJUST_DISABLED_MESSAGE } from "@/lib/pos-portable-capabilities";
 import { CustomerName } from "@/components/customer-name";
 
 import {
@@ -20,6 +21,10 @@ import { QrCodeTile } from "@/components/qr-code-tile";
 import { usePathname, useRouter } from "next/navigation";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { parsePosAmountInput } from "@/lib/pos-desk-amounts";
+import { serviceDefaultAmount } from "@/lib/pos-service-catalog";
+import { normalizeWorkspacePreferences, type PosWorkspacePreferences } from "@/lib/pos-workspace-preferences";
+import { AdaptivePosWorkspace } from "./adaptive-pos-workspace";
+import { ServiceCatalog } from "./service-catalog";
 import { getStaffTurnToneLevel } from "@/lib/pos-staff-turn-tone";
 import {
   getPosLiveDraftRealtimeChannel,
@@ -40,6 +45,7 @@ import { PortableDraftControls } from "@/app/pos/portable/portable-draft-control
 import { usePortableCloseGuard } from "@/app/pos/portable/use-portable-close-guard";
 import { portableBusinessDate } from "@/lib/portable-business-day";
 import { CustomServiceDialog } from "./custom-service-dialog";
+import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
 import { CompactCheckoutAdjustments } from "./compact-checkout-adjustments";
 import { WAITING_CHANGED } from "@/lib/portable-waiting";
 import { isPosConnectionError, posUserMessage } from "@/lib/pos-user-messages";
@@ -193,7 +199,6 @@ const EMPTY_REQUESTED_SERVICES: NonNullable<
 
 const POS_IDLE_RESET_MS = 3 * 60 * 1000;
 const POS_TOAST_DISMISS_MS = 5000;
-const VISIBLE_SERVICE_TILE_LIMIT = 10;
 const WAITING_DRAWER_MARGIN = 12;
 const WAITING_DRAWER_DESKTOP_WIDTH = 420;
 const WAITING_DRAWER_PORTABLE_WIDTH = 460;
@@ -483,9 +488,11 @@ function liveLineToSessionLine(
 
 export function PosDeskClient({
   actions,
+  canAdjustStaffTurn = false,
   activeSession,
   defaults: initialDefaults,
   offlineDraftSyncEnabled = false,
+  preferences,
   liveDraft,
   salonLogoUrl,
   salonName,
@@ -496,9 +503,11 @@ export function PosDeskClient({
   waitingVisits = [],
 }: {
   actions?: Partial<PosDeskClientActions>;
+  canAdjustStaffTurn?: boolean;
   activeSession: PosDeskSessionView | null;
   defaults: PosDeskDefaults;
   offlineDraftSyncEnabled?: boolean;
+  preferences?: PosWorkspacePreferences;
   liveDraft: PosLiveDraftView | null;
   salonLogoUrl?: string | null;
   salonName: string;
@@ -511,6 +520,10 @@ export function PosDeskClient({
   const __vt = useWorkspaceTranslation();
 
   const portableWorkspaceState = usePortableWorkspaceState();
+  const catalogPreferences = normalizeWorkspacePreferences(portableWorkspaceState?.preferences ?? preferences);
+  const replaceAmountLineRef = useRef<string | null>(null);
+  const supplementalKeyboard = useSupplementalKeyboard();
+  const showSupplementalKeyboard = surface !== "portable" || supplementalKeyboard;
   const [services,setServices]=useState(initialServices);
   const [defaults,setDefaults]=useState(initialDefaults);
   const staff = useMemo(() => mergePortableStaff(serverStaff, portableWorkspaceState, today, defaults.staffCheckInEnabled), [serverStaff, portableWorkspaceState, today, defaults.staffCheckInEnabled]);
@@ -740,9 +753,6 @@ export function PosDeskClient({
     );
   }, [isPortableSurface]);
 
-  const selectedService = services.find(
-    (service) => service.id === draft.selectedServiceId,
-  );
   const selectedCustomer = liveCustomer;
   const requestedServices =
     selectedCustomer?.requestedServices ?? EMPTY_REQUESTED_SERVICES;
@@ -824,63 +834,6 @@ export function PosDeskClient({
       searchTextMatches([service.name, service.category], serviceSearch),
     );
   }, [serviceSearch, services]);
-  const visibleServiceTiles = useMemo(() => {
-    const tiles: Array<{
-      category: string | null;
-      id: string;
-      name: string;
-      requested: boolean;
-    }> = [];
-    const seen = new Set<string>();
-    const addTile = (input: {
-      category?: string | null;
-      id: string;
-      name: string;
-      requested?: boolean;
-    }) => {
-      if (seen.has(input.id) || tiles.length >= VISIBLE_SERVICE_TILE_LIMIT) {
-        return;
-      }
-
-      seen.add(input.id);
-      tiles.push({
-        category: input.category ?? null,
-        id: input.id,
-        name: input.name,
-        requested: Boolean(input.requested),
-      });
-    };
-
-    for (const service of requestedServices) {
-      addTile({
-        category: service.category,
-        id: service.id,
-        name: service.name,
-        requested: true,
-      });
-    }
-
-    if (selectedService) {
-      addTile({
-        category: selectedService.category,
-        id: selectedService.id,
-        name: selectedService.name,
-      });
-    }
-
-    for (const service of services) {
-      addTile({
-        category: service.category,
-        id: service.id,
-        name: service.name,
-      });
-    }
-
-    return tiles;
-  }, [requestedServices, selectedService, services]);
-  const hasHiddenServiceTiles = services.some(
-    (service) => !visibleServiceTiles.some((tile) => tile.id === service.id),
-  );
   const totals = useMemo(
     () =>
       calculateTicketTotals({
@@ -1817,19 +1770,21 @@ export function PosDeskClient({
   ): PosDeskSessionLine {
     const staffMember = staff.find((member) => member.id === staffId);
     const service = services.find((item) => item.id === serviceId);
+    const amountInput = serviceDefaultAmount(service?.base_price);
+    const amount = Number(amountInput || 0);
 
     return {
-      amount: 0,
-      amount_input: "",
-      amount_parts: [],
+      amount,
+      amount_input: amountInput,
+      amount_parts: amount > 0 ? [amount] : [],
       id: `local-${crypto.randomUUID()}`,
       service_id: serviceId,
       service_label: service?.name ?? (customName || `Service ${sortOrder}`),
       sort_order: sortOrder,
       staff_id: staffId,
       staff_name: staffMember?.display_name ?? null,
-      turn_large_count: 0,
-      turn_small_count: 0,
+      turn_large_count: amount >= defaults.largeTurnThreshold ? 1 : 0,
+      turn_small_count: amount > 0 && amount < defaults.largeTurnThreshold ? 1 : 0,
     };
   }
 
@@ -1875,6 +1830,7 @@ export function PosDeskClient({
   }
 
   function focusLine(line: PosDeskSessionLine) {
+    replaceAmountLineRef.current = line.id;
     setDraft((current) => ({
       ...current,
       amountInput: line.amount_input,
@@ -1903,6 +1859,10 @@ export function PosDeskClient({
     }
 
     clearStaffTurnHold();
+    if (!canAdjustStaffTurn) {
+      showError(PORTABLE_TURN_ADJUST_DISABLED_MESSAGE);
+      return;
+    }
     setTurnAdjustStaff(member);
     setTurnAdjustDelta(0);
     setTurnAdjustReason("");
@@ -2090,6 +2050,7 @@ export function PosDeskClient({
   }
 
   function editLine(line: PosDeskSessionLine) {
+    replaceAmountLineRef.current = line.id;
     updateDraft({
       amountInput: line.amount_input,
       editingLineId: line.id,
@@ -2121,6 +2082,7 @@ export function PosDeskClient({
   }
 
   function updateSelectedStaffAmount(amountInput: string) {
+    replaceAmountLineRef.current = null;
     if (!draft.editingLineId) {
       showError("Select staff before entering an amount.");
       setLastAction("Amount blocked");
@@ -2229,11 +2191,19 @@ export function PosDeskClient({
       return;
     }
 
+    const amountInput = serviceDefaultAmount(service?.base_price);
+    const amount = Number(amountInput || 0);
     const updatedLine = {
       ...lineToUpdate,
+      amount,
+      amount_input: amountInput,
+      amount_parts: amount > 0 ? [amount] : [],
+      turn_large_count: amount >= defaults.largeTurnThreshold ? 1 : 0,
+      turn_small_count: amount > 0 && amount < defaults.largeTurnThreshold ? 1 : 0,
       service_id: serviceId,
       service_label: service?.name ?? (customName || `Service ${lineToUpdate.sort_order}`),
     };
+    replaceAmountLineRef.current = updatedLine.id;
 
     setDraftStaffLines((current) => {
       if (current.some((line) => line.id === updatedLine.id)) {
@@ -2309,7 +2279,8 @@ export function PosDeskClient({
       return;
     }
 
-    updateSelectedStaffAmount(normalizeKeypadInput(draft.amountInput, key));
+    const replace = replaceAmountLineRef.current === draft.editingLineId && key !== "/";
+    updateSelectedStaffAmount(normalizeKeypadInput(replace ? "" : draft.amountInput, key));
   }
 
   function handleKeypadBack() {
@@ -3320,10 +3291,10 @@ export function PosDeskClient({
           </div>
         </div>
       ) : null}
-      {showCustomService && <CustomServiceDialog onCancel={() => setShowCustomService(false)} onDone={name => { selectService(null, name); setShowCustomService(false); }} />}
+      {showCustomService && <CustomServiceDialog showKeyboard={showSupplementalKeyboard} onCancel={() => setShowCustomService(false)} onDone={name => { selectService(null, name); setShowCustomService(false); }} />}
       {waitingDrawerLayer}
       {showCustomerCreateModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4" data-touch-keyboard="off">
           <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-xl">
             <div className="mb-3">
               <h2 className="text-lg font-semibold"><WorkspaceText text="New Customer" /></h2>
@@ -3345,6 +3316,7 @@ export function PosDeskClient({
                     setKeypadMode("amount");
                   }}
                   value={customerCreateDraft.name}
+                  inputMode={showSupplementalKeyboard ? "none" : "text"}
                 />
               </label>
               <label className="block text-sm font-medium">
@@ -3357,7 +3329,7 @@ export function PosDeskClient({
                       phone: event.target.value,
                     }))
                   }
-                  inputMode="tel"
+                  inputMode={showSupplementalKeyboard ? "none" : "tel"}
                   onFocus={() => {
                     setCustomerCreateField("phone");
                     setKeypadMode("customer_create_phone");
@@ -3381,9 +3353,10 @@ export function PosDeskClient({
                   }}
                   type="email"
                   value={customerCreateDraft.email}
+                  inputMode={showSupplementalKeyboard ? "none" : "email"}
                 />
               </label>
-              {renderCustomerCreateKeyboard()}
+              {showSupplementalKeyboard && renderCustomerCreateKeyboard()}
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <button
@@ -3436,21 +3409,7 @@ export function PosDeskClient({
               >
                 <WorkspaceText text="Custom amount" />
               </button>
-              {filteredServices.map((service) => (
-                <button
-                  className="min-h-14 rounded-lg border border-zinc-200 bg-white/80 px-4 py-3 text-left text-sm shadow-sm transition hover:bg-white"
-                  key={service.id}
-                  onClick={() => selectService(service.id)}
-                  type="button"
-                >
-                  <span className="block font-semibold">{service.name}</span>
-                  {service.category ? (
-                    <span className="mt-1 block text-sm text-zinc-500">
-                      {service.category}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
+              <div className="col-span-full"><ServiceCatalog services={filteredServices} preferences={catalogPreferences} selectedId={draft.selectedServiceId} disabled={receiptLocked} onSelect={selectService}/></div>
             </div>
           </div>
         </div>
@@ -3901,6 +3860,7 @@ export function PosDeskClient({
               : "shrink-0 space-y-2 border-t border-zinc-200 pt-3 text-sm"
           }
           data-pos-receipt-totals
+          data-touch-keyboard="off"
         >
           {isPortableSurface ? (
             <>
@@ -4116,12 +4076,12 @@ export function PosDeskClient({
         </div>
       </section>
 
-      <section
+      <AdaptivePosWorkspace staffCount={sortedStaff.length} serviceCount={services.length}
         className={[
           "flex min-h-0 flex-col overflow-y-auto overflow-x-hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_18px_46px_rgba(24,24,27,0.10)] backdrop-blur",
           isPortableSurface ? "p-3" : "p-4",
         ].join(" ")}
-        data-pos-staff-turn-board
+
       >
         <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-zinc-950">
@@ -4131,7 +4091,7 @@ export function PosDeskClient({
             <WorkspaceText text="Large turn:" /> {formatMoney(defaults.largeTurnThreshold)}
           </p>
         </div>
-        <div className="grid max-h-[min(42dvh,390px)] min-h-0 shrink-0 grid-cols-[repeat(auto-fill,minmax(90px,104px))] content-start justify-start gap-2 overflow-y-auto overflow-x-hidden pr-1">
+        <div data-pos-staff-grid className="grid max-h-[min(42dvh,390px)] min-h-0 shrink-0 grid-cols-[repeat(auto-fill,minmax(90px,104px))] content-start justify-start gap-2 overflow-y-auto overflow-x-hidden pr-1">
           {sortedStaff.map((member) => {
             const selected = draft.selectedStaffId === member.id;
             const unavailable =
@@ -4192,7 +4152,7 @@ export function PosDeskClient({
                     }}
                   />
                 ) : null}
-                <span className="relative z-10 block truncate text-[15px] font-semibold leading-tight">
+                <span data-pos-staff-name className="relative z-10 block truncate text-[15px] font-semibold leading-tight">
                   {getFirstName(member.display_name)}
                 </span>
                 {member.service_status === "working" && <span className="relative z-10 block text-[10px]"><WorkspaceText text="Working" />{(member.turns.holdingTurns ?? 0) > 0 ? <> · <WorkspaceText text="Holding" /></> : null}</span>}
@@ -4228,84 +4188,15 @@ export function PosDeskClient({
           </div>
 
           {draft.customServiceName && <p className="mb-2 text-sm font-medium text-orange-800">{draft.customServiceName}</p>}
-          {visibleServiceTiles.length > 0 ? (
-            <div
-              className="grid max-h-40 grid-cols-[repeat(auto-fill,minmax(96px,112px))] content-start justify-start gap-2 overflow-hidden"
-              data-pos-service-tiles
-              data-pos-requested-services={
-                requestedServices.length > 0 ? "visible" : undefined
-              }
-            >
-              {visibleServiceTiles.map((service) => {
-                const entered = positiveStaffLines.some(
-                  (line) => line.service_id === service.id,
-                );
-                const selected = draft.selectedServiceId === service.id;
+          {services.length > 0 ? <ServiceCatalog services={services.map(service=>({...service,requested:requestedServices.some(requested=>requested.id===service.id)}))} preferences={catalogPreferences} selectedId={draft.selectedServiceId} disabled={receiptLocked} onSelect={selectService}/> : <p className="text-sm text-zinc-500"><WorkspaceText text="Service catalog empty. Custom price entry stays available." /></p>}
 
-                return (
-                  <button
-                    aria-pressed={selected}
-                    className={[
-                      "relative min-h-12 overflow-hidden rounded-lg border px-2.5 py-2 text-left text-sm font-semibold shadow-[0_9px_18px_rgba(35,25,22,0.08)] transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(242,111,61,0.13)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2",
-                      selected
-                        ? "border-brand-orange bg-gradient-to-br from-brand-orange-soft via-white/90 to-amber-50/90 text-zinc-950 ring-2 ring-brand-orange/25"
-                        : entered
-                          ? "border-zinc-200 bg-zinc-100/80 text-zinc-500 shadow-inner"
-                          : service.requested
-                            ? "border-brand-orange/35 bg-gradient-to-br from-brand-orange-soft/90 via-white/85 to-amber-50/85 text-zinc-950 hover:border-brand-orange/55"
-                            : "border-brand-orange/25 bg-gradient-to-br from-[#fffaf7] via-white/85 to-brand-orange-soft/60 text-zinc-950 hover:border-brand-orange/45",
-                    ].join(" ")}
-                    data-pos-requested-service={
-                      service.requested ? "true" : undefined
-                    }
-                    data-pos-service-tile
-                    disabled={receiptLocked}
-                    key={service.id}
-                    onClick={() => selectService(service.id)}
-                    type="button"
-                  >
-                    {selected ? (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-y-2 left-1.5 w-1 rounded-full bg-brand-orange"
-                      />
-                    ) : null}
-                    <span className="block truncate pl-1.5 leading-tight">
-                      {service.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="rounded-lg border border-zinc-200 bg-white/70 px-3 py-3 text-sm font-medium text-zinc-500">
-              <WorkspaceText text="Service catalog empty. Custom price entry stays available." />
-            </p>
-          )}
-
-          <div className="mt-2 flex flex-wrap justify-end gap-2">
-            {hasHiddenServiceTiles ? (
-              <button
-                className="min-h-8 rounded-lg border border-zinc-200 bg-white/70 px-2.5 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
-                data-pos-service-more
-                disabled={receiptLocked}
-                onClick={() => {
-                  setShowServicePicker(true);
-                  setKeypadMode("amount");
-                }}
-                type="button"
-              >
-                <WorkspaceText text="More" />
-              </button>
-            ) : null}
-          </div>
           {unpricedRequestedServices.length > 0 ? (
             <p className="mt-2 truncate text-xs font-medium text-teal-800">
               <WorkspaceText text="Next requested:" /> {unpricedRequestedServices[0].name}
             </p>
           ) : null}
         </div>
-      </section>
+</AdaptivePosWorkspace>
 
       <section
         className={panelClass}
@@ -4344,6 +4235,11 @@ export function PosDeskClient({
           <div
             className="mb-3 rounded-lg border border-white/80 bg-gradient-to-br from-white/90 via-zinc-50/80 to-teal-50/60 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_24px_rgba(24,24,27,0.08)]"
             data-pos-current-input
+            role={keypadMode === "amount" ? "button" : undefined}
+            tabIndex={keypadMode === "amount" ? 0 : undefined}
+            aria-label={keypadMode === "amount" ? __vt("Replace amount") : undefined}
+            onClick={() => { if (keypadMode === "amount") replaceAmountLineRef.current = draft.editingLineId; }}
+            onKeyDown={(event) => { if (keypadMode === "amount" && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); replaceAmountLineRef.current = draft.editingLineId; } }}
           >
             <p className="text-[11px] font-semibold uppercase text-zinc-500">
               <WorkspaceText text="Current input" />

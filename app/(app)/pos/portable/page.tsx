@@ -67,6 +67,7 @@ async function PortablePosPage() {
               updatePosLiveDraftCustomer: portableUpdatePosLiveDraftCustomer,
             }}
             activeSession={null}
+            canAdjustStaffTurn={data.canAdjustStaffTurn}
             defaults={data.defaults}
             offlineDraftSyncEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"}
             liveDraft={data.liveDraft}

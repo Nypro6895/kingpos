@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "portable-user-controlled-updater-20261026",
+  "status": "ready",
+  "summary": "Windows 0.7.3 discovers updates automatically and supports explicit download or download/install with checksum, backup and reopen; reconciled with current live source and combined fixes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/main.cjs",
+    "desktop/build.cjs",
+    "desktop/preload.cjs",
+    "desktop/package.json",
+    "desktop/package-lock.json",
+    "desktop/installer-check.nsh",
+    "desktop/tests/update-flow.test.cjs",
+    "desktop/tests/online-updater.electron.cjs",
+    "desktop/tests/installer-smoke.cjs",
+    "desktop/RELEASE-NOTES-0.7.3.md",
+    "app/api/pos/windows-update/latest.yml/route.ts",
+    "app/pos/portable/desktop-update.tsx",
+    "lib/portable-device-storage.ts",
+    "tests/windows-update-feed.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\all-recent-chats-20261026\\frozen"
+  },
+  "dependencies": [
+    "windows-installer-reylumi-download-20261026"
+  ],
+  "supersedesEvents": [
+    "f1503f88-0507-47cf-87d0-d55db3ee2b85"
+  ],
+  "validation": [
+    {
+      "name": "Clean production build and full TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log"
+    },
+    {
+      "name": "Integrated browser/unit suites and 26 complete-schema database tests",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r2.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r3.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/pos-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json"
+      ]
+    },
+    {
+      "name": "Windows installer build, packaged updater SHA512/cache/corrupt-rejection and Help menu",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log"
+      ]
+    }
+  ],
+  "integration": {
+    "producerEventId": "f1503f88-0507-47cf-87d0-d55db3ee2b85",
+    "baselineDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+    "notes": "Preserve shipped owner workspace recovery, action feedback, offline safeguards, Report and flat UI. Adaptive category tiles supersede the earlier folder presentation. Help uses shipped server language/session architecture. Windows Help ships in rebuilt 0.7.3. Database backfill awaits action-time confirmation; ready source is not publication."
+  },
+  "id": "f32a48d0-9e82-47cf-aafa-7770115036a9",
+  "recordedAt": "2026-10-26T23:55:43.716Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "desktop/main.cjs": "bb95d4024387a0a34d543157c224045d1d051d9fd91d07463bcc43295f6b9a9f",
+    "desktop/build.cjs": "0db8a4c1eed77d5f7dc46043fe643769b988b3587a4ca24212bd563c16da95f5",
+    "desktop/preload.cjs": "48fc4c5c6e3628b415980fb4dae77a32e9e0367254186d4afe3287cf7a88ec58",
+    "desktop/package.json": "721ec3892c8aaa220fddd33bb0edd3d4e5ded814581bcbfc24cd6ece33b833b1",
+    "desktop/package-lock.json": "37338bd7a61639d0b9a5fe0a336fadcf203d4f2e559dd9ab3fdb928808889dd4",
+    "desktop/installer-check.nsh": "b756059a3ef91f0fd9103a26b4c7fb271ac8c98a1c30ae465381a075943504df",
+    "desktop/tests/update-flow.test.cjs": "166106516e866e483b263687cd689c6fb1e0c82b78e6561d1d047a496b428bcb",
+    "desktop/tests/online-updater.electron.cjs": "fa3eaa1188039546ef7b952d99c60e690f11d7892d3c8bc430a0630a77622995",
+    "desktop/tests/installer-smoke.cjs": "334ec9b14c54714d5e9cbe378322e4f3113c4c6547795acf9bba354ffc62d400",
+    "desktop/RELEASE-NOTES-0.7.3.md": "ab636189daf222dc5211800ed7c3af13adfe591e9077ea3443682c79d098d06a",
+    "app/api/pos/windows-update/latest.yml/route.ts": "9a91b7a63046f021e81258690c294de12450d2530d1982915d526e473fbd8e5a",
+    "app/pos/portable/desktop-update.tsx": "2698a53324823c7b7f7717c7acf193776056e7fa5747ef4dc835a2ada833ad17",
+    "lib/portable-device-storage.ts": "d820d1f7f3431b9600f5ae9b6ac4a90df3c0b90a9dc6b5dd8bace28b849fe575",
+    "tests/windows-update-feed.test.mjs": "5758d473e46b4f93ab675851f8355ae8e8e8cf563d129af00aecf165d14c1114"
+  }
+}

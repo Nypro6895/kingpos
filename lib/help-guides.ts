@@ -1,3 +1,5 @@
+import { WINDOWS_PORTABLE_HELP } from "./windows-portable-help";
+
 export type HelpRole = "customer" | "owner" | "staff";
 export type HelpImage = {src: string; width: number; height: number};
 export type HelpScreenshot = {id: string; caption: string; alt: string; provenance: "source-grounded-simulation"; status: "illustrated"; desktop: HelpImage; mobile: HelpImage};
@@ -12,6 +14,7 @@ export const HELP_VERSION = {
   "screenshotsStatus": "illustrated"
 } as const;
 export const HELP_GUIDES: readonly HelpGuide[] = [
+  WINDOWS_PORTABLE_HELP,
   {
     "slug": "overview",
     "title": "Start with Reylumi",

@@ -1,6 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { usePortableWorkspaceState } from "./portable-workspace-state";
+import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
 import { desktopDevice } from "@/lib/portable-device-storage";
 
 import { useEffect, useRef, useState } from "react";
@@ -10,11 +10,15 @@ import styles from "./touch-keyboard.module.css";
 type Editor = HTMLInputElement | HTMLTextAreaElement;
 const supported = new Set(["text", "search", "email", "tel", "password", "url", "number", "date", "time", "datetime-local"]);
 
-export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector = "[data-portable-shell]", desktopOnly = false }: { enabled: boolean; scopeSelector?: string; desktopOnly?: boolean }) {
-  const __vt = useWorkspaceTranslation();
+export function PortableTouchKeyboard({ enabled: override, scopeSelector = "[data-portable-shell]", desktopOnly = false }: { enabled?: boolean; scopeSelector?: string; desktopOnly?: boolean }) {
+  const deviceEnabled = useSupplementalKeyboard();
+  const enabled = override ?? deviceEnabled;
+  // Unmount on disable so the active editor, layout and native input mode reset.
+  return enabled ? <TouchKeyboard scopeSelector={scopeSelector} desktopOnly={desktopOnly} /> : null;
+}
 
-  const workspace=usePortableWorkspaceState();
-  const enabled=typeof workspace?.settings?.touch_keyboard_enabled==='boolean'?workspace.settings.touch_keyboard_enabled:initialEnabled;
+function TouchKeyboard({ scopeSelector, desktopOnly }: { scopeSelector: string; desktopOnly: boolean }) {
+  const __vt = useWorkspaceTranslation();
   const [editor, setEditor] = useState<Editor | null>(null);
   const [shift, setShift] = useState(false);
   const [symbols, setSymbols] = useState(false);
@@ -22,7 +26,7 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!enabled || (desktopOnly && !desktopDevice())) return;
+    if (desktopOnly && !desktopDevice()) return;
     function focus(event: FocusEvent) {
       const target = event.target;
       if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
@@ -55,10 +59,10 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
       document.removeEventListener("click", outside);
       document.removeEventListener("kingpos:hide-touch-keyboard", dismiss);
     };
-  }, [enabled, scopeSelector, desktopOnly]);
+  }, [scopeSelector, desktopOnly]);
 
   useEffect(() => {
-    if (!enabled || !editor) return;
+    if (!editor) return;
     const shell = editor.closest<HTMLElement>(scopeSelector);
     const oldPadding = shell?.style.paddingBottom ?? "";
     const oldInputMode = editor.getAttribute("inputmode");
@@ -80,7 +84,7 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
       if (shell) shell.style.paddingBottom = oldPadding;
       document.documentElement.style.removeProperty("--portable-keyboard-height");
     };
-  }, [editor, enabled, scopeSelector]);
+  }, [editor, scopeSelector]);
 
   function insert(text: string, erase = false) {
     if (!editor || !editor.isConnected) return;
@@ -100,7 +104,7 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
     }
   }
 
-  if (!enabled || !editor) return null;
+  if (!editor || (desktopOnly && !desktopDevice())) return null;
   const dateEditor = editor instanceof HTMLInputElement && ["date", "time", "datetime-local"].includes(editor.type);
   function setDate(text: string) {
     if (!editor) return;
