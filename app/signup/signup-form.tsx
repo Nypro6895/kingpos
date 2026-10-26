@@ -199,6 +199,26 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
         </div>
 
         <div>
+          <label className="block text-sm font-extrabold text-text-primary" htmlFor="phone">
+            Phone number
+          </label>
+          <input
+            aria-describedby="signup-phone-help"
+            aria-invalid={Boolean(error)}
+            className={fieldClassName(error ? "border-red-300" : "")}
+            id="phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="(555) 555-1234"
+            required
+          />
+          <p className="mt-2 text-xs leading-5 text-text-secondary" id="signup-phone-help">
+            Use the number you check in with. Verify it next to bring your salon history into your account.
+          </p>
+        </div>
+
+        <div>
           <label className="block text-sm font-extrabold text-text-primary" htmlFor="password">
             Password
           </label>

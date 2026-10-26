@@ -621,6 +621,7 @@ export function AccountProfileEditor({
     linkedCount: number;
     message: string;
     verifiedPhone: string;
+    selectionRequired?: boolean;
   }) {
     const nextValues = {
       ...values,
@@ -647,6 +648,7 @@ export function AccountProfileEditor({
         status: "connected",
       });
       resetPhoneOtpState();
+      if (input.selectionRequired) router.push("/welcome/phone?next=/activity");
       router.refresh();
     }, 900);
   }
@@ -684,6 +686,9 @@ export function AccountProfileEditor({
       setEditing(false);
       setPhoneClaim(result.phoneClaim ?? null);
       setNotice(result.phoneClaim?.message ?? "Profile saved.");
+      if (result.phoneClaim?.status === "connected" && result.phoneClaim.selectionRequired) {
+        router.push("/welcome/phone?next=/activity");
+      }
       router.refresh();
       } catch {
         setError("Could not save. Your changes are still here.");
@@ -737,6 +742,7 @@ export function AccountProfileEditor({
           linkedCount,
           message,
           verifiedPhone,
+          selectionRequired: result.selectionRequired || (profileResult.phoneClaim?.status === "connected" && profileResult.phoneClaim.selectionRequired),
         });
         return;
       }
@@ -793,6 +799,7 @@ export function AccountProfileEditor({
         linkedCount,
         message,
         verifiedPhone,
+        selectionRequired: result.selectionRequired || (profileResult.phoneClaim?.status === "connected" && profileResult.phoneClaim.selectionRequired),
       });
     });
   }

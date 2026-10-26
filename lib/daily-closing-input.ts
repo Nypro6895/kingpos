@@ -28,6 +28,7 @@ export function closingValues(input: {cashAmount: number; creditCardAmount: numb
 export function closingPayload(values: ClosingFormValues) {
   const cash = parseClosingCents(values.cashAmount), card = parseClosingCents(values.creditCardAmount), other = parseClosingCents(values.otherAmount);
   if (cash === null || card === null || other === null) throw new Error("Enter an amount of 0 or more, with up to 2 decimal places.");
+  if (values.note.length > 4000) throw new Error("Keep the note within 4,000 characters.");
   return {cashAmount: cash / 100, creditCardAmount: card / 100, otherAmount: other / 100, note: values.note.trim() || null};
 }
 

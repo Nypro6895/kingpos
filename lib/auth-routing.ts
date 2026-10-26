@@ -54,6 +54,8 @@ const ACCOUNT_CONTEXT_PREFIXES = [
   "/salons",
 ] as const;
 const PERSONAL_CONTEXT_PREFIXES = [
+  "/qr",
+  "/welcome/phone",
   "/activity",
   "/beauty",
   "/businesses",
@@ -65,6 +67,7 @@ const STAFF_CONTEXT_PREFIXES = [
   "/staff/appointments",
   "/staff/my-work",
   "/staff/workday",
+  "/staff/scan",
 ] as const;
 const MANAGE_CONTEXT_PREFIXES = [
   "/bookings",

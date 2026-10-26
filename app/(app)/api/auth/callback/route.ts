@@ -10,6 +10,7 @@ import {
   getPostAuthWorkspaceNavigation,
 } from "@/lib/post-auth-routing";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { resumeSignupPhonePath } from "@/lib/signup-phone-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
@@ -49,7 +50,7 @@ export async function GET(request: Request) {
   await recordAdvertisingSignup(request, data.user);
   const navigation = await getPostAuthWorkspaceNavigation({
     accessToken: data.session.access_token,
-    requestedPath,
+    requestedPath: resumeSignupPhonePath(data.user, requestedPath),
   }).catch((error: unknown) => {
     console.error("Unable to resolve post-callback workspace navigation", {
       message: error instanceof Error ? error.message : String(error),

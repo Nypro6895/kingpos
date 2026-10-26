@@ -52,14 +52,14 @@ function WebSectionReader({ scope, salonId, date, currentDate, section, accept, 
   useLiveExperienceRefresh(salonId, tags[section], refresh, resource.available, { automaticRefresh: resource.ensureFresh });
   useEffect(() => { if (resource.data) accept(section, resource.data.data); }, [accept, section, resource.data]);
   useEffect(() => { if (!resource.available) deny(); }, [deny, resource.available]);
-  return <ReadFailure section={section} error={resource.error} retry={resource.refresh} refreshing={resource.refreshing} />;
+  return <ReadFailure section={section} error={resource.error || Boolean(resource.data?.data.loadErrors.length)} retry={resource.refresh} refreshing={resource.refreshing} />;
 }
 
 function NativeSectionReader({ scope, date, section, accept, deny }: ReaderProps) {
   const state = useAppLocalResource<PageData>(scope, "page.owner-today", { date, phase: section });
   useEffect(() => { if (state.data) accept(section, state.data.dashboard); }, [accept, section, state.data]);
   useEffect(() => { if (!state.available || state.accessDenied) deny(); }, [deny, state.available, state.accessDenied]);
-  return <ReadFailure section={section} error={state.error} retry={state.refresh} refreshing={state.refreshing} />;
+  return <ReadFailure section={section} error={state.error || Boolean(state.data?.dashboard.loadErrors.length)} retry={state.refresh} refreshing={state.refreshing} />;
 }
 
 function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false, recovery }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean; recovery?: Recovery }) {

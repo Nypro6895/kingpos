@@ -13,7 +13,7 @@ export function ManualMergePicker({ customerId }: { customerId: string }) {
     <p className="my-2 text-zinc-600">Keep this profile and move selected history into it. Different personal accounts cannot be merged.</p>
     <form className="flex flex-wrap gap-2" onSubmit={async e => {
       e.preventDefault(); setError("");
-      try { setMatches((await searchCustomersForMerge({ name, phone })).filter(c => c.id !== customerId)); }
+      try { setMatches(await searchCustomersForMerge({ name, phone, targetId: customerId })); }
       catch { setError("Could not find customers. Try again."); }
     }}>
       <input aria-label="Customer name to merge" className="min-w-0 flex-1 border-b p-2" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
@@ -23,9 +23,9 @@ export function ManualMergePicker({ customerId }: { customerId: string }) {
     {error && <p role="alert">{error}</p>}
     {matches.length > 0 && <form action={mergeDuplicateCustomers} className="mt-3 grid gap-3">
       <input type="hidden" name="target_customer_id" value={customerId} />
-      {matches.map(c => <label key={c.id} className="flex gap-2"><input type="checkbox" name="source_customer_id" value={c.id} /><span>{c.name} · {c.phone}<span className="block text-xs text-zinc-500">{c.match.reason}</span></span></label>)}
+      {matches.map(c => <label key={c.id} className="flex gap-2"><input type="checkbox" name="source_customer_id" value={c.id} disabled={Boolean(c.mergeBlockedReason)} /><span>{c.name} · {c.phone}<span className="block text-xs text-zinc-500">{c.mergeBlockedReason || c.match.reason}</span></span></label>)}
       <label className="flex gap-2"><input type="checkbox" required />I checked these records belong to the same person.</label>
-      <SubmitButton pendingLabel="Merging…" className="rounded-md bg-zinc-900 px-3 py-2 text-white">Merge selected history</SubmitButton>
+      <SubmitButton disabled={matches.every(c => Boolean(c.mergeBlockedReason))} pendingLabel="Merging…" className="rounded-md bg-zinc-900 px-3 py-2 text-white">Merge selected history</SubmitButton>
     </form>}
   </details>;
 }

@@ -51,7 +51,7 @@ export async function loadStaffMyWorkResource(
     staffDisplayName: getStaffProfileDisplayName(staff, context.user),
     staffAvatarUrl: getStaffProfileAvatarUrl({ accountAvatarUrl: context.user.avatar_url, staffProfilePhotoPath: staff.public_profile_photo_path }),
     payrollData: payroll ? {
-      settings: payroll.settings, dailyRows: payroll.dailyRows, line: payroll.line, paystub: payroll.paystub,
+      history: payroll.history, settings: payroll.settings, dailyRows: payroll.dailyRows, line: payroll.line, paystub: payroll.paystub,
       period: payroll.period, periodOptions: payroll.periodOptions, status: payroll.status,
       latestStatement: payroll.latestStatement ? { run: { paid_at: payroll.latestStatement.run.paid_at } } : null,
     } : null,

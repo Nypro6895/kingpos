@@ -1,7 +1,7 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText } from "@/components/workspace-language";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
-import { portableLoadServiceRelay, portableSubmitServiceRelay } from "@/app/pos/portable/actions";
+import { portableLoadServiceRelay, portableSubmitServiceRelay, portableSaveServiceRelayAtDesk, portableNotifyPersonalReady } from "@/app/pos/portable/actions";
 import { PosDeskClient } from "@/app/pos/pos-desk-client";
 import { PosRapidMobileBridge } from "@/app/pos/pos-rapid-mobile-bridge";
 import styles from "@/app/pos/pos-rapid-mobile.module.css";
@@ -45,7 +45,7 @@ async function PortablePosPage() {
 
   return (
     <SingleWorkspaceWindow id="portable-pos">
-    <DeskRelay salonId={data.salonId} load={portableLoadServiceRelay} submit={portableSubmitServiceRelay} />
+    <DeskRelay salonId={data.salonId} load={portableLoadServiceRelay} submit={portableSubmitServiceRelay} save={portableSaveServiceRelayAtDesk} notify={portableNotifyPersonalReady} />
     <section
       className="h-full min-h-0 overflow-hidden p-2 max-md:p-0"
       data-portable-pos-page="pos"

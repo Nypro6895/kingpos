@@ -320,6 +320,7 @@ export function PayrollSettingsPanel({
                 save={(form) =>
                   saveDirectPayroll(data.salonId, {
                     staffId: row.staff.id,
+                    expectedSettingId:s?.id??null,expectedUpdatedAt:s?.updated_at??null,
                     effectiveFrom: text(form, "effective_from"),
                     legalName: text(form, "legal_name") || null,
                     payType:
@@ -452,3 +453,4 @@ export function PayrollSettingsPanel({
     </div>
   );
 }
+

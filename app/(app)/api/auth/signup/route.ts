@@ -14,6 +14,8 @@ import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
+import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
+import { signupPhonePath } from "@/lib/signup-phone-routing";
 
 const LOGIN_PATH = "/login";
 const SIGNUP_PATH = "/signup";
@@ -66,6 +68,7 @@ export async function POST(request: Request) {
   const email = readString(formData, "email").toLowerCase();
   const password = readString(formData, "password");
   const displayName = readString(formData, "display_name");
+  const phone = normalizePhoneForIdentity(readString(formData, "phone"));
   const requestedPath = readString(formData, "next");
   const nextPath = sanitizeAuthReturnPath(requestedPath);
 
@@ -87,6 +90,12 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!phone) {
+    return signupErrorResponse(request, "Enter the phone number you use at the salon.", 400, nextPath);
+  }
+
+  const onboardingPath = signupPhonePath(nextPath === "/explore" ? "/activity" : nextPath);
+
   let signupTicket: string;
   try {
     signupTicket = await createSignupTicket(email);
@@ -102,9 +111,12 @@ export async function POST(request: Request) {
     email,
     password,
     options: {
+      emailRedirectTo: new URL(`/api/auth/callback?next=${encodeURIComponent(onboardingPath)}`, request.url).href,
       data: {
         abuse_signup_ticket: signupTicket,
         display_name: displayName || email,
+        signup_phone: phone,
+        signup_phone_complete: false,
       },
     },
   });
@@ -128,7 +140,7 @@ export async function POST(request: Request) {
   if (!data.session) {
     const loginParams = new URLSearchParams({
       message: "Account created. Please confirm your email, then log in.",
-      next: nextPath,
+      next: onboardingPath,
     });
 
     return signupSuccessResponse(
@@ -139,13 +151,13 @@ export async function POST(request: Request) {
 
   const navigation = await getPostAuthWorkspaceNavigation({
     accessToken: data.session.access_token,
-    requestedPath,
+    requestedPath: onboardingPath,
   }).catch((error: unknown) => {
     console.error("Unable to resolve post-signup workspace navigation", {
       message: error instanceof Error ? error.message : String(error),
     });
 
-    return fallbackPostAuthWorkspaceNavigation();
+    return { ...fallbackPostAuthWorkspaceNavigation(), redirectTo: onboardingPath };
   });
   const response = signupSuccessResponse(request, navigation.redirectTo);
   response.cookies.set(

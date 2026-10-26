@@ -565,3 +565,44 @@ body {
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>[data-desktop-sidebar-slot],
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>header),
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>nav){display:none!important}
+
+/* Compact page chrome only inside the mobile POS workspaces. */
+@media (max-width: 979px) {
+  :is([data-owner-workspace], .portable-kiosk-surface) h1:not([data-ticket-title], [role="dialog"] h1, dialog h1) {
+    display: none;
+  }
+
+  :is([data-owner-workspace], .portable-kiosk-surface) [data-ticket-toolbar] {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 4px 8px 8px;
+  }
+
+  :is([data-owner-workspace], .portable-kiosk-surface) [data-ticket-date] {
+    width: 40%;
+    max-width: 160px;
+    min-width: 0;
+    flex-shrink: 0;
+  }
+
+  :is([data-owner-workspace], .portable-kiosk-surface) [data-ticket-date] > label {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+
+  [data-owner-workspace] [data-ticket-date]:has(h1) > label {
+    justify-content: center;
+    gap: 4px;
+    border: 1px solid var(--border-subtle, #d4d4d8);
+    border-radius: 8px;
+    padding: 0 6px;
+    font-size: 14px;
+  }
+
+  [data-owner-workspace] .owner-workspace-content > main:has([data-ticket-toolbar]),
+  .portable-kiosk-surface [data-portable-pos-page="ticket"] {
+    padding-top: 0;
+  }
+}

@@ -256,11 +256,7 @@ async function PayrollTaxCompanyPage({
     return <NoPermissionState message={message} />;
   }
 
-  const statementLabel = data.latestStatement
-    ? `Saved Statement v${data.latestStatement.run.version}${
-        data.latestStatement.run.status === "paid" ? " - paid" : ""
-      }`
-    : "Awaiting saved statement";
+  const statementLabel = "Live payroll";
   const returnPath = getTaxCompanyHref(data.period);
   const payrollRunId = data.latestStatement?.run.id ?? null;
   const totalWageCheckNet = data.lines.reduce(
@@ -303,7 +299,7 @@ async function PayrollTaxCompanyPage({
         </p>
       ) : null}
 
-      <p className="rounded-lg bg-zinc-50 p-3 text-sm text-zinc-600"><WorkspaceText text="This report uses the saved payroll version. Current edits are shared only after saving a new statement." /></p>
+      <p className="rounded-lg bg-zinc-50 p-3 text-sm text-zinc-600"><WorkspaceText text="This report shows current payroll amounts. Uploaded paystub documents are separate attachments and do not replace live calculations." /></p>
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <SummaryCard label={__vt("Reportable lines")} value={`${data.lines.length}`} />
         <SummaryCard
@@ -334,3 +330,4 @@ async function PayrollTaxCompanyPage({
 }
 
 export default withExperiencePage(PayrollTaxCompanyPage);
+

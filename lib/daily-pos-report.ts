@@ -2705,3 +2705,27 @@ export async function getPayrollReadyDailyFinancials(
 
   return rows;
 }
+
+export async function loadPayrollReportExpected(auth: ReportAuthContext, start: string, end: string): Promise<Map<string, number>> {
+  const timezone = await getContextBusinessTimezone(auth.context);
+  const first = getUtcBoundsForLocalDate(start, timezone), last = getUtcBoundsForLocalDate(end, timezone);
+  type TicketWithEarnings = ReportTicketRow & { earnings: (StaffEarningRow & { work_date: string })[] };
+  const tickets: TicketWithEarnings[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const {data,error} = await auth.supabase.from("pos_tickets").select("id,opened_at,closed_at,status,discount_type,discount_value,tax_rate,tip_type,tip_value,ticket_items:pos_ticket_items(id,assigned_staff_id,quantity,line_total,is_removed,turn_parts:pos_ticket_item_turn_parts(amount,staff_id,turn_index,turn_type)),earnings:pos_ticket_staff_earnings(staff_id,work_date,service_total,tip_amount,big_turn_count,small_turn_count)")
+      .eq("salon_id",auth.salon.id).eq("status","closed").gte("opened_at",first.openedFrom).lte("opened_at",last.openedTo).order("opened_at").order("id").range(offset,offset+499).returns<TicketWithEarnings[]>();
+    if(error) throw new Error("Daily Report reconciliation could not be loaded.");
+    tickets.push(...data??[]); if(!data||data.length<500)break;
+  }
+  const formatter=new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit"});
+  const groups=new Map<string,TicketWithEarnings[]>();
+  for(const ticket of tickets){const date=formatter.format(new Date(ticket.opened_at));const group=groups.get(date)??[];group.push(ticket);groups.set(date,group);}
+  const result=new Map<string,number>();
+  for(const [date,group] of groups){
+    const earnings=group.flatMap(ticket=>(ticket.earnings??[]).filter(earning=>earning.work_date===date));
+    const staffRows=earnings.length?buildStaffRowsFromEarnings(earnings):buildStaffRowsFromTickets(group);
+    const totals=calculateTicketSummaryCents(group);
+    result.set(date,(sumCents(staffRows.map(row=>toCents(row.totalEarned)))+totals.totalTipCents-totals.totalDiscountCents)/100);
+  }
+  return result;
+}

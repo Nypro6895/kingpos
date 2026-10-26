@@ -1,3 +1,4 @@
+import {withDashboardDeadline} from "@/lib/dashboard-deadline";
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
 import {
@@ -61,7 +62,8 @@ import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
 function measureTodayRead<T>(stage: ReadStage, read: () => Promise<T>): Promise<T> {
   const timing = getReadRequestTiming();
-  return timing ? timing.measure(stage, read) : read();
+  const bounded = () => withDashboardDeadline(read(), stage === "clock" ? 8000 : 1800);
+  return timing ? timing.measure(stage, bounded) : bounded();
 }
 
 export type TodayClientPresence = {

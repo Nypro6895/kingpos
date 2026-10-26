@@ -93,7 +93,7 @@ export type PayrollPeriodStaffInput = {
 };
 
 export type PayrollPeriodStaffInputHistory = {
-  change_type: "input_update" | "correction_request" | "owner_adjustment";
+  change_type: "input_update" | "correction_request";
   created_at: string;
   created_by: string | null;
   cycle_type: PayrollCycleType;
@@ -263,8 +263,10 @@ export type PayrollSummary = {
 };
 
 export type PayrollStaffLineWithDailyTotals = PayrollStaffLine & {
-  dailyIncome?: import("@/lib/payroll-ledger").PayrollDailyIncome[];
+  /** Legacy audit facts only; never replaces the current live calculation. */
   ledger?: import("@/lib/payroll-ledger").PayrollLineLedger;
+  dailyIncome?: import("@/lib/payroll-ledger").PayrollDailyIncome[];
+  liveDailyIncome?: import("@/lib/payroll-live-projection").LiveIncomeDay[];
   dailyTotals: PayrollStaffDailyTotal[];
   input: PayrollPeriodStaffInput | null;
   inputHistory?: PayrollPeriodStaffInputHistory[];
@@ -272,7 +274,6 @@ export type PayrollStaffLineWithDailyTotals = PayrollStaffLine & {
 };
 
 export type PayrollStatementSnapshot = {
-  ledger?: import("@/lib/payroll-ledger").PayrollLedger;
   lines: PayrollStaffLineWithDailyTotals[];
   paystubs: PayrollPaystub[];
   run: PayrollStatement;
@@ -282,7 +283,6 @@ export type PayrollStatementSnapshot = {
 };
 
 export type PayrollLiveSnapshot = {
-  reportLines?: import("@/lib/payroll-range").PayrollReportLine[];
   corrections: PayrollCorrectionListItem[];
   lines: PayrollStaffLineWithDailyTotals[];
   periodInputs: PayrollPeriodStaffInput[];
@@ -368,7 +368,7 @@ export type PayrollPeriodOption = {
 };
 
 export type PayrollShopDailyRow = {
-  payrollRecord?: {state:"closed"|"adjusted";sourcePeriod:{start:string;end:string};originalStaffNetPay:number;netAdjustment:number;originalTaxWithheld:number;taxAdjustment:number;originalStaffObligation:number;obligationAdjustment:number;originalShopNetIncome:number|null;shopNetAdjustment:number};
+  payrollRecord?: {state:"closed"|"adjusted";sourcePeriod:{start:string;end:string};originalStaffNetPay:number;netAdjustment:number;originalTaxWithheld:number;taxAdjustment:number;originalStaffObligation:number;obligationAdjustment:number;originalShopNetIncome:number|null;shopNetAdjustment:number};
   actualIncome: number | null;
   businessDate: string;
   cashAmount: number | null;

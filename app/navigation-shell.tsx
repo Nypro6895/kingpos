@@ -1967,7 +1967,7 @@ function CustomerMobileHeader({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const shouldRestoreContextFocusRef = useRef(false);
   const label = customerWorkspaceLabel(currentWorkspace, accountLabel);
-  const subtitle = customerWorkspaceSubtitle(currentWorkspace);
+
   const closeContext = useCallback(() => {
     shouldRestoreContextFocusRef.current = true;
     setContextOpen(false);
@@ -2003,14 +2003,12 @@ function CustomerMobileHeader({
               workspace={currentWorkspace}
             />
             <span className="min-w-0">
-              <span className="block truncate text-sm font-extrabold text-text-primary">
+              <span className="block truncate text-xs font-bold text-text-primary min-[430px]:text-sm">
                 <WorkspaceText text={label} />
               </span>
-              <span className="block truncate text-[11px] font-semibold text-text-secondary">
-                <WorkspaceText text={subtitle} />
-              </span>
+
             </span>
-            <span className="grid h-7 w-7 self-start mt-0.5 place-items-center rounded-full bg-brand-orange-soft text-text-secondary ring-1 ring-brand-orange/15">
+            <span className="grid h-6 w-6 self-center place-items-center rounded-full bg-brand-orange-soft text-text-secondary ring-1 ring-brand-orange/15">
               <Icon name="chevron-down" />
             </span>
           </button>
@@ -2018,7 +2016,7 @@ function CustomerMobileHeader({
             notificationSummary={notificationSummary}
             triggerClassName="grid h-11 w-11 place-items-center rounded-full bg-surface-elevated text-text-secondary shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           />
-          <ReylumiLogo />
+          <span className="shrink-0 [&_img]:w-[104px] [&_img]:max-w-[26vw]"><ReylumiLogo /></span>
         </div>
       </header>
       <CustomerContextSheet
@@ -2893,3 +2891,5 @@ export function NavigationShell({
     </>
   );
 }
+
+

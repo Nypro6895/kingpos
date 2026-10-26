@@ -1,5 +1,6 @@
 "use client";
 import { resolvePostIdentity } from "@/lib/post-identity";
+import { SalonIntroduction } from "@/components/salon-introduction";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 /* eslint-disable @next/next/no-img-element -- Preserve public URLs for salon-uploaded media. */
 import { useState, type CSSProperties, type ReactNode, type ImgHTMLAttributes } from "react";
@@ -169,7 +170,7 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
       <div className={styles.welcome}>
         <p className={styles.eyebrow}><WorkspaceText text={locality || "Welcome"} /></p>
         <h2>{data.profile.tagline?.trim() || data.profile.name}</h2>
-        {intro ? <p className={styles.intro}>{intro.length > 220 ? `${intro.slice(0, 217).trimEnd()}…` : intro}</p> : null}
+        {intro ? <SalonIntroduction className={styles.intro} text={intro} /> : null}
         <div className={styles.heroActions}>
           {canBook ? <button className={styles.book} type="button" onClick={() => onBook({ title: "Book appointment" })}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
           {data.profile.phone ? <a className={styles.secondary} href={`tel:${data.profile.phone}`}><WorkspaceText text="Call salon" /></a> : data.profile.addressLine1 ? <a className={styles.secondary} href={directions} target="_blank" rel="noreferrer"><WorkspaceText text="Get directions ↗" /></a> : null}

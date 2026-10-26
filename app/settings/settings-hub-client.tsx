@@ -1,6 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { KingUser } from "@/types/user";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import { PersonalPublicProfilePanel } from "./personal-public-profile-panel";
@@ -44,6 +44,11 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  type View = {kind:"home"}|{kind:"group";id:string}|{kind:"detail";id:string};
  const [navigation,setNavigation]=useState<{source:string;view:View}|null>(null);
  const headingRef=useRef<HTMLHeadingElement>(null);
+ useEffect(() => () => {
+    if (initialSection) return;
+    setNavigation(null);
+    setQueryState({ source: initialQuery, value: initialQuery });
+  }, [initialSection, initialQuery]);
  async function reload(){setBusy(true);setError("");try{setIndex(await loadSettingsHub());}catch(e){setError(e instanceof Error?e.message:"Could not reload your salons.");}finally{setBusy(false);}}
  function navigate(next:View){
   setQuery("");setNavigation({source:initialSection,view:next});

@@ -418,6 +418,8 @@ export function StaffPayrollSettingInlineEdit({
         }
       }}
     >
+      <input type="hidden" name="expected_setting_id" value={setting?.id ?? ""}/>
+      <input type="hidden" name="expected_setting_updated_at" value={setting?.updated_at ?? ""}/>
       <HiddenSettingInputs
         bonusPayout={bonusPayout}
         checkRate={checkRate}
@@ -719,3 +721,4 @@ export function StaffPayrollSettingInlineEdit({
     </form></div>
   );
 }
+

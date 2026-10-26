@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
+import styles from "./ticket-filters.module.css";
 
 export function TicketFilters({ date, query, onQueryChange, title, actions }: {
   title?: string;
@@ -15,13 +16,14 @@ export function TicketFilters({ date, query, onQueryChange, title, actions }: {
   const pathname = usePathname();
   const translate = useWorkspaceTranslation();
   const dateLabel = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${date}T12:00:00`));
+  const compactDateLabel = new Intl.DateTimeFormat("en-US", { month: "numeric", day: "numeric", year: "numeric" }).format(new Date(`${date}T12:00:00`));
   return (
-    <form className="flex min-w-0 items-center gap-2 px-4 py-3 sm:px-0" data-ticket-toolbar role="search"
+    <form className={title ? styles.ownerToolbar : "flex min-w-0 items-center gap-2 px-4 py-3 sm:px-0"} data-ticket-toolbar data-owner-ticket-toolbar={title ? "true" : undefined} role="search"
       onSubmit={event => { event.preventDefault(); (event.currentTarget.elements.namedItem("q") as HTMLInputElement)?.blur(); }}>
-      <div className={title ? "w-32 shrink-0" : "w-[44%] max-w-48"}>
-        {title ? <h1 className="text-xs font-semibold leading-5 text-zinc-950">{translate(title)}</h1> : null}
-        <label className={title ? "relative flex min-h-7 items-center gap-1 text-sm text-zinc-700" : "block"}>
-          {title ? <><span>{dateLabel}</span><span aria-hidden="true">⌄</span></> : null}
+      {title ? <h1 data-ticket-title className={styles.title}>{translate(title)}</h1> : null}
+      <div data-ticket-date className={title ? styles.date : "w-[44%] max-w-48"}>
+        <label className={title ? styles.dateLabel : "block"}>
+          {title ? <><span className={styles.fullDate}>{dateLabel}</span><span className={styles.compactDate}>{compactDateLabel}</span><span aria-hidden="true">⌄</span></> : null}
       <input aria-label={translate("Date")} name="date" type="date" value={date}
         className={title ? "absolute inset-0 h-full w-full cursor-pointer opacity-0" : "h-11 min-w-0 w-full appearance-none rounded-lg border border-zinc-300 bg-white px-2 text-base text-zinc-950"}
         onChange={event => {

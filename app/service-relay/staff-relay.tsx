@@ -41,6 +41,7 @@ export function StaffRelay({ salonId, scope, initialData, managedRead = false, r
     finally { setBusy(false); }
   }
   if (!data?.installed) return error ? <p role="status">{error}</p> : null;
+  if (!data.tickets.some(ticket => !ticket.scanMode)) return null;
   return <section className={styles.panel} aria-label="Phone Checkin">
     <div className={styles.header}><h2><WorkspaceText text="Your next customer" /></h2><button onClick={() => setFinding(!finding)}><WorkspaceText text="Find customer" /></button></div>
     {finding && <form className={styles.actions} onSubmit={async event => {
@@ -51,6 +52,7 @@ export function StaffRelay({ salonId, scope, initialData, managedRead = false, r
     }}><input aria-label="Check-in number or QR link" placeholder="Check-in number or QR link" value={code} onChange={e => setCode(e.target.value)} /><RelayScanner onCode={setCode} /><button disabled={busy} className={styles.primary}>Find</button></form>}
     {!data.tickets.length && <div className={styles.waiting}><span className={styles.badge}>Ready</span><p>POS will send your next customer here.</p></div>}
     {data.tickets.map(ticket => {
+      if (ticket.scanMode) return null;
       const offer = ticket.offers.find(o => o.staffId === data.staffId && ["offered", "working"].includes(o.status));
       if (!offer) return null;
       return offer.status === "offered" ? <article key={offer.id} className={styles.card} role="status"><h3>{ticket.customerName} · #{ticket.queueNumber}</h3><p>{offer.serviceName}</p><p className={styles.muted}>POS assigned this customer. Please respond within 60 seconds.</p><div className={styles.actions}><button disabled={busy} className={styles.primary} onClick={() => void respond(offer.id, true)}>Accept</button><button disabled={busy} onClick={() => void respond(offer.id, false)}>Decline</button></div></article>

@@ -48,6 +48,7 @@ export type CustomerClaimPreview = {
 export type CustomerClaimCompletion = {
   idempotent: boolean;
   linkedCount: number;
+  selectionRequired?: boolean;
 };
 
 export type ProfilePhoneClaimInspection = {
@@ -380,6 +381,7 @@ export async function claimCustomersForVerifiedPhone(
     data: {
       idempotent: false,
       linkedCount: readNumber(payload.linkedCount),
+      selectionRequired: readBoolean(payload.selectionRequired),
     },
     ok: true,
   };

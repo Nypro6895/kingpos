@@ -296,7 +296,7 @@ async function MyBookingsPage({
 
   return (
     <main className={classNames(styles.bookingSurface, "min-h-screen overflow-x-hidden bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
-      <div className="grid w-full min-w-0 gap-5">
+      <div className="mx-auto grid w-full max-w-6xl gap-5">
         {message ? (
           <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
             {message}
@@ -308,7 +308,7 @@ async function MyBookingsPage({
           </p>
         ) : null}
 
-        <p className="text-xs text-text-secondary">Appointments here ? <Link className="font-bold text-brand-teal" href="/activity">All visits & receipts</Link></p>
+        <p className="text-xs text-text-secondary">Appointments here · <Link className="font-bold text-brand-teal" href="/activity">All visits & receipts</Link></p>
         <div className="flex min-w-0 items-center gap-3">
 <nav style={{ flex: "1 1 auto", minWidth: 0 }} className="flex gap-6 overflow-x-auto" aria-label="Booking filters">
           {TABS.map((tab) => {

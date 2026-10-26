@@ -6,7 +6,7 @@ export function customerPhoneKey(value: string | null | undefined) {
   return null;
 }
 export function customerNameKey(value: string | null | undefined) {
-  return (value ?? "").trim().toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+  return (value ?? "").normalize("NFC").trim().toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 }
 export function customerNameSimilarity(a: string, b: string) {
   const x = customerNameKey(a).slice(0, 100), y = customerNameKey(b).slice(0, 100);

@@ -9,6 +9,8 @@ export type PosDeskTurnType = "large" | "small";
 
 export type PosDeskTurnSummary = {
   pendingTurns?: number;
+  pendingSmallTurns?: number;
+  holdingTurns?: number;
   largeTurns: number;
   queueTurns: number;
   receiptLargeTurns: number;

@@ -4,13 +4,16 @@ import { WorkspaceText } from "@/components/workspace-language";
 import { WorkspaceToolbar, toolbarStyles } from "@/components/workspace-toolbar";
 
 import Form from "next/form";
+import { formatCustomerDateTime as formatDateTime } from "@/lib/customer-date-time";
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { SubmitButton } from "@/components/submit-button";
 import {
   getCurrentSalonCustomerList,
   type CustomerListItem,
   type CustomerListPagination,
 } from "@/lib/customers";
-import { consolidateCustomers, mergeDuplicateCustomers } from "@/app/customers/actions";
+import { consolidateCustomers } from "@/app/customers/actions";
+import { DuplicateMergeForms } from "@/app/customers/duplicate-merge-forms";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import Link from "next/link";
@@ -24,17 +27,6 @@ type CustomersPageProps = {
     q?: string;
   }>;
 };
-
-function formatDateTime(value: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -71,8 +63,10 @@ function SignalBadge({
 
 function DuplicateMergeMenu({
   customer,
+  timezone,
 }: {
   customer: CustomerListItem;
+  timezone: string;
 }) {
   if (customer.duplicateCandidates.length === 0) {
     return null;
@@ -105,56 +99,13 @@ function DuplicateMergeMenu({
                 / <WorkspaceText text={sourceLabel(candidate.source)} />
               </p>
               <p className="mt-0.5 text-xs text-zinc-500">
-                <WorkspaceText text="Created" /> <WorkspaceText text={formatDateTime(candidate.created_at)} />
+                <WorkspaceText text="Created" /> <WorkspaceText text={formatDateTime(candidate.created_at, timezone)} />
               </p>
               {candidate.match && <p className="mt-0.5 text-xs text-amber-800">{candidate.match.reason}</p>}
             </div>
           ))}
         </div>
-        <form action={mergeDuplicateCustomers} className="mt-3">
-          <label className="mb-2 flex gap-2 text-xs"><input required type="checkbox" />These records belong to the same person.</label>
-          <input name="target_customer_id" type="hidden" value={customer.id} />
-          {customer.duplicateCandidates.map((candidate) => (
-            <input
-              key={candidate.id}
-              name="source_customer_id"
-              type="hidden"
-              value={candidate.id}
-            />
-          ))}
-          <SubmitButton pendingLabel="Processing…"
-            className="w-full rounded-md bg-zinc-950 px-3 py-2 text-sm font-semibold text-white"
-            type="submit"
-          >
-            <WorkspaceText text="Merge all" />
-          </SubmitButton>
-        </form>
-        <form action={mergeDuplicateCustomers} className="mt-2 grid gap-2">
-          <label className="flex gap-2 text-xs"><input required type="checkbox" />These records belong to the same person.</label>
-          <input name="target_customer_id" type="hidden" value={customer.id} />
-          <div className="grid gap-1">
-            {customer.duplicateCandidates.map((candidate) => (
-              <label
-                className="flex items-center gap-2 text-xs font-semibold text-zinc-700"
-                key={candidate.id}
-              >
-                <input
-                  className="h-4 w-4 accent-zinc-950"
-                  name="source_customer_id"
-                  type="checkbox"
-                  value={candidate.id}
-                />
-                <span className="truncate">{candidate.name}</span>
-              </label>
-            ))}
-          </div>
-          <SubmitButton pendingLabel="Processing…"
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
-            type="submit"
-          >
-            <WorkspaceText text="Merge selected" />
-          </SubmitButton>
-        </form>
+        <DuplicateMergeForms customerId={customer.id} candidates={customer.duplicateCandidates} />
       </div>
     </details>
   );
@@ -165,11 +116,13 @@ function CustomerList({
   canManageCustomers,
   pagination,
   query,
+  timezone,
 }: {
   customers: CustomerListItem[];
   canManageCustomers: boolean;
   pagination: CustomerListPagination;
   query: string;
+  timezone: string;
 }) {
   if (customers.length === 0) {
     return (
@@ -205,14 +158,14 @@ function CustomerList({
                     {!customer.isWalkingGroup && customer.phone ? <span className="ml-2 text-xs text-zinc-500">{customer.phone}</span> : null}
                     {customer.status !== "active" ? <span className="ml-2 text-xs text-zinc-500"><WorkspaceText text="Inactive" /></span> : null}
                   </Link>
-                  {customer.duplicate_signal ? canManageCustomers ? <DuplicateMergeMenu customer={customer} /> : <SignalBadge tone="amber"><WorkspaceText text="Duplicate?" /></SignalBadge> : null}
+                  {customer.duplicate_signal ? canManageCustomers ? <DuplicateMergeMenu customer={customer} timezone={timezone} /> : <SignalBadge tone="amber"><WorkspaceText text="Duplicate?" /></SignalBadge> : null}
                   {riskCount > 0 ? <span className="text-xs text-amber-700" title="Cancel/no-show">{riskCount} !</span> : null}
                   {canManageCustomers && !customer.isWalkingGroup ? <Link aria-label={`Edit ${customer.name}`} className="flex h-9 w-9 shrink-0 items-center justify-center text-zinc-500" href={`/customers/${customer.id}/edit`}><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 5 5L9 20l-6 1 1-6Z" /></svg></Link> : null}
                 </div>
                 <div className="flex min-w-0 items-center justify-between gap-2 text-xs text-zinc-500">
                   <span className="min-w-0 truncate">
 
-                    {customer.metrics.upcoming_start_at ? <Link className="text-orange-700 underline" href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}><WorkspaceText text="Upcoming" /> {formatDateTime(customer.metrics.upcoming_start_at)}</Link> : <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at)} />}
+                    {customer.metrics.upcoming_start_at ? <Link className="text-orange-700 underline" href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}><WorkspaceText text="Upcoming" /> {formatDateTime(customer.metrics.upcoming_start_at, timezone)}</Link> : <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at, timezone)} />}
                     {" · "}{customer.metrics.appointment_count} <WorkspaceText text="appts" />
                   </span>
                   <Link className="shrink-0 tabular-nums text-zinc-700" href={detailHref}>{formatMoney(customer.metrics.finalized_spend)}{customer.metrics.active_pos_ticket_count > 0 ? ` · ${customer.metrics.active_pos_ticket_count} open` : ""}</Link>
@@ -285,6 +238,7 @@ async function CustomersPage({ searchParams }: CustomersPageProps) {
   });
 
   const canManageCustomers = await hasPermission("customers.manage", context);
+  const timezone = await getContextBusinessTimezone(context);
 
   return (
     <main className="min-w-0 w-full px-4 py-4 sm:px-6 sm:py-6">
@@ -328,6 +282,7 @@ async function CustomersPage({ searchParams }: CustomersPageProps) {
       {canManageCustomers && <details className="border-b py-2 text-sm"><summary className="cursor-pointer">Find and merge matching customers</summary><p className="my-2 text-zinc-600">Automatically merge matching names with the same full phone number. Other possible matches remain available for review. Up to 100 records per batch.</p><form action={consolidateCustomers}><SubmitButton pendingLabel="Checking…" className="py-2 font-medium text-orange-700">Run automatic merge</SubmitButton></form></details>}
       <section>
         <CustomerList
+          timezone={timezone}
           canManageCustomers={canManageCustomers}
           customers={customers}
           pagination={pagination}

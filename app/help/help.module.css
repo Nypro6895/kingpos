@@ -101,3 +101,8 @@
   .shell .catalogLink { gap: .6rem; padding: 1rem 0; }
   .catalogLink > .number { flex-basis: 1.5rem; }
 }
+
+/* Compact walkthroughs; keep shipped safe-area, flat layout and languages. */
+.walkthrough > summary { cursor: pointer; min-height: 44px; display: list-item; }
+.walkthrough > summary h3 { display: inline; margin: 0; }
+.walkthrough[open] > summary { padding-bottom: 12px; }

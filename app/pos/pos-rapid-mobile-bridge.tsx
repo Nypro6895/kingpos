@@ -515,6 +515,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                       <span className="text-3xl font-black tabular-nums text-brand-orange">
                         {turn(member)}
                       </span>
+                      {member.service_status === "working" && <span className="text-xs text-brand-teal"><WorkspaceText text="Working" />{(member.turns.holdingTurns ?? 0) > 0 ? <> · <WorkspaceText text="Holding" /></> : null}</span>}
                     </button>
                   );
                 })}

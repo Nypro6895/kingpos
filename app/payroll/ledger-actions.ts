@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { createOwnerPayrollAdjustment,recordOwnerPayrollPayment,verifyOwnerPayrollRequest } from "@/lib/payroll";
+import { createOwnerPayrollAdjustment,recordOwnerPayrollPayment,verifyOwnerPayrollRequest } from "@/lib/payroll-records";
 import { parsePayrollMoney } from "@/lib/payroll-money";
 import { PayrollWriteError } from "@/lib/payroll-write-result";
 

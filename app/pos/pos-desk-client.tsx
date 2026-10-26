@@ -4147,7 +4147,7 @@ export function PosDeskClient({
             );
             const colorClass = getStaffCardToneClass(turnToneLevel, selected);
             const holdActive = turnHoldStaffId === member.id;
-            const staffStatusLabel = member.today_status.replaceAll("_", " ");
+            const staffStatusLabel = member.service_status === "working" ? "Working" : member.today_status.replaceAll("_", " ");
 
             return (
               <button
@@ -4195,6 +4195,7 @@ export function PosDeskClient({
                 <span className="relative z-10 block truncate text-[15px] font-semibold leading-tight">
                   {getFirstName(member.display_name)}
                 </span>
+                {member.service_status === "working" && <span className="relative z-10 block text-[10px]"><WorkspaceText text="Working" />{(member.turns.holdingTurns ?? 0) > 0 ? <> · <WorkspaceText text="Holding" /></> : null}</span>}
                 <span className="relative z-10 mt-1 block text-[34px] font-bold leading-none tabular-nums">
                   {member.turns.queueTurns ?? member.turns.largeTurns}
                 </span>

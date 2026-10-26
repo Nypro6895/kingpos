@@ -37,7 +37,7 @@ async function readToday(request: Request, timing: ReadRequestTiming) {
     if (dashboard.noAccess) return failure("Forbidden", 403);
     // An upstream failure must not replace a retained section with an empty
     // fallback. A subsequent workspace event or poll retries silently.
-    if (dashboard.loadErrors.length) return failure("Temporarily unavailable", 503);
+    if (dashboard.loadErrors.length && !isTodayDashboardSection(phase)) return failure("Temporarily unavailable", 503);
     return timing.finish(timing.measureSync("serialize", () => liveResourceResponse(request, createLiveResourceSnapshot(dashboard, ["generatedAt"]))));
   } catch (error) {
     console.error("Today resource load failed", error);

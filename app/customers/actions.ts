@@ -185,12 +185,17 @@ export async function mergeDuplicateCustomers(formData: FormData) {
     redirectWithError(errorPath, "Choose at least one duplicate to merge.");
   }
 
-  const { error } = await supabase.rpc("merge_customer_records", {
-    p_salon: salon.id, p_target: targetCustomerId, p_sources: sourceCustomerIds, p_reason: "manual",
-  });
+  const mergeAll = readRequiredString(formData, "merge_mode") === "all";
+  const { data, error } = await supabase.rpc(
+    mergeAll ? "merge_customer_suggestions" : "merge_customer_records",
+    { p_salon: salon.id, p_target: targetCustomerId, p_sources: sourceCustomerIds,
+      ...(mergeAll ? {} : { p_reason: "manual" }) },
+  );
   if (error) redirectWithError(errorPath, error.message);
   for (const path of ["/customers", "/bookings", "/pos-tickets", "/pos", "/pos/portable", "/staff/today", "/activity", "/beauty", ...[targetCustomerId, ...sourceCustomerIds].map(id => `/customers/${id}`)]) revalidatePath(path);
-  redirect(`/customers/${targetCustomerId}?merged=${sourceCustomerIds.length}`);
+  const merged = Number(data?.merged ?? 0);
+  const skipped = Array.isArray(data?.skipped) ? data.skipped.length : 0;
+  redirect(`/customers/${targetCustomerId}?merged=${merged}&skipped=${skipped}`);
 }
 
 export async function searchCustomerMatches(input: { name: string; phone: string; email?: string }) {
@@ -202,7 +207,7 @@ export async function searchCustomerMatches(input: { name: string; phone: string
   return (data ?? []) as Array<Customer & { match: { automatic: boolean; score: number; reason: string } }>;
 }
 
-export async function searchCustomersForMerge(input: { name: string; phone: string }) {
+export async function searchCustomersForMerge(input: { name: string; phone: string; targetId: string }) {
   const { supabase, salon } = await requireCustomerMutationContext("/customers");
   const query = (input.phone.trim() || input.name.trim()).slice(0, 150);
   if (query.length < 2) return [];
@@ -210,7 +215,14 @@ export async function searchCustomersForMerge(input: { name: string; phone: stri
     p_salon_id: salon.id, p_query: query, p_limit: 20, p_offset: 0, p_status: null,
   });
   if (error) throw new Error(error.message);
-  return ((data ?? []) as Customer[]).map(customer => ({ ...customer, match: { automatic: false, score: 0, reason: "Review identity before merging" } }));
+  const customers = ((data ?? []) as Customer[]).filter(customer => customer.id !== input.targetId);
+  if (!customers.length) return [];
+  const { data: plan, error: planError } = await supabase.rpc("customer_merge_plan", {
+    p_salon: salon.id, p_target: input.targetId, p_sources: customers.map(customer => customer.id),
+  });
+  if (planError) throw new Error(planError.message);
+  const blocked = new Map((plan as Array<{ id: string; blockedReason: string | null }>).map(item => [item.id, item.blockedReason]));
+  return customers.map(customer => ({ ...customer, mergeBlockedReason: blocked.get(customer.id), match: { automatic: false, score: 0, reason: "Review identity before merging" } }));
 }
 
 export async function consolidateCustomers() {

@@ -121,6 +121,7 @@ async function loadPublicUser(
 }
 
 export async function resolveBookingCustomer(input: {
+  deferWrites?: boolean;
   actorUserId?: string | null;
   bookingSource?: BookingSource;
   customer: BookingCustomerResolutionInput;
@@ -192,7 +193,7 @@ export async function resolveBookingCustomer(input: {
         );
       }
 
-      if (user?.id && !matchedCustomer.customer_user_id) {
+      if (user?.id && !matchedCustomer.customer_user_id && !input.deferWrites) {
         const { data: linkedCustomer, error: linkError } = await input.supabase
           .from("customers")
           .update({
@@ -238,6 +239,16 @@ export async function resolveBookingCustomer(input: {
       phone: normalizedPhone,
       user,
     });
+    if (input.deferWrites) {
+      // A proposal only. The booking RPC resolves again under the identity lock
+      // and commits customer creation/linking together with the appointment.
+      return bookingOk({
+        created: true,
+        customer: { name, phone: normalizedPhone, email: normalizedEmail } as Customer,
+        customerUserId: user?.id ?? input.customer.customerUserId ?? null,
+        matchedBy: "created",
+      });
+    }
     const { data: creationResult, error: createError } = await input.supabase.rpc("create_booking_customer_identity", {
       p_salon: input.salonId, p_name: name, p_phone: normalizedPhone, p_email: normalizedEmail,
       p_user: user?.id ?? null, p_actor: input.actorUserId ?? null,

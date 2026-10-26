@@ -57,6 +57,7 @@ export type CustomerCrmMetric = {
 };
 
 export type CustomerDuplicateCandidate = Customer & {
+  mergeBlockedReason?: string | null;
   match?: { reason: string; automatic: boolean; score: number };
 };
 

@@ -1,4 +1,6 @@
 {
+  "Find a guide for your task.": "Tìm hướng dẫn cho việc bạn cần làm.",
+  "Example and troubleshooting": "Ví dụ và cách xử lý sự cố",
   "Choose your role": "Chọn vai trò",
   "Customers discover salons and manage their bookings. Owners set up a salon and oversee its work. Linked staff use their own work area.": "Khách tìm salon và quản lý lịch hẹn. Chủ thiết lập salon và theo dõi hoạt động. Nhân viên đã liên kết dùng khu vực làm việc của mình.",
   "Check the selected salon": "Kiểm tra salon đang chọn",
@@ -531,5 +533,18 @@
   "Use the existing secure contact form. Previous guest conversations require their own secure access.": "Sử dụng biểu mẫu liên hệ bảo mật. Mỗi cuộc trao đổi trước đó của khách cần quyền truy cập riêng.",
   "Account access": "Truy cập tài khoản",
   "Use account recovery if you cannot sign in. Support instructions do not bypass account or salon permission checks.": "Dùng chức năng khôi phục tài khoản nếu bạn không đăng nhập được. Hướng dẫn hỗ trợ không thay thế việc kiểm tra quyền tài khoản hoặc quyền truy cập tiệm.",
-  "Sending a support request requires a connection and confirmation from the server.": "Gửi yêu cầu hỗ trợ cần kết nối mạng và xác nhận từ máy chủ."
+  "Sending a support request requires a connection and confirmation from the server.": "Gửi yêu cầu hỗ trợ cần kết nối mạng và xác nhận từ máy chủ.",
+  "Review live income, change notes and recorded payment evidence.": "Xem thu nhập cập nhật trực tiếp, ghi chú thay đổi và chứng từ thanh toán.",
+  "Review the current calculation": "Xem số tính hiện tại",
+  "Select the salon and period. Payroll uses current services, tips, assignments and effective settings, including historical periods. Compare the underlying source records.": "Chọn tiệm và kỳ lương. Payroll tính theo dịch vụ, tip, phân công và cấu hình có hiệu lực hiện tại, kể cả kỳ cũ. Đối chiếu dữ liệu nguồn.",
+  "Read the change note and history": "Đọc ghi chú và lịch sử thay đổi",
+  "Open Change history to inspect who changed a value, when it changed and its before/after values. Read staff input notes and review the affected business dates.": "Mở Change history để xem người sửa, thời gian và giá trị trước/sau. Đọc ghi chú nhập liệu nhân viên và kiểm tra các ngày bị ảnh hưởng.",
+  "Keep payment evidence separate": "Đối chiếu riêng chứng từ thanh toán",
+  "Calculated cash and check amounts are amounts due, not proof of payment. Open Recorded payments and adjustment evidence to export the original records, dates, actors and notes. Unavailable history does not mean zero paid.": "Tiền mặt và check được tính là số cần trả, không phải bằng chứng đã trả. Mở Recorded payments and adjustment evidence để xuất chứng từ gốc, ngày, người ghi và ghi chú. Lịch sử không tải được không có nghĩa đã trả bằng không.",
+  "Reconcile live reports and exports": "Đối chiếu báo cáo và dữ liệu xuất hiện tại",
+  "Tax Company and downloads use the current calculation. Verify legal names, tax settings and the source period. Historical statements and recorded payments remain separate evidence and are not silently rewritten by recalculation.": "Tax Company và dữ liệu xuất dùng số tính hiện tại. Kiểm tra tên pháp lý, cấu hình thuế và kỳ nguồn. Bảng lương đã lưu và chứng từ đã trả vẫn là bằng chứng riêng, không bị âm thầm sửa khi tính lại.",
+  "Reconcile live income with payment evidence": "Đối chiếu thu nhập trực tiếp với chứng từ đã trả",
+  "The live calculation agrees with current source data; change notes explain updates and actual payment evidence is reviewed separately.": "Số tính trực tiếp khớp dữ liệu nguồn hiện tại; ghi chú giải thích thay đổi và chứng từ đã trả được đối chiếu riêng.",
+  "A period previously calculated at $500 can show $600 after a valid source correction. A recorded $500 payment stays $500 with its original payment date and note; recalculation does not transfer another $100.": "Kỳ từng tính $500 có thể thành $600 sau sửa dữ liệu nguồn hợp lệ. Chứng từ đã trả $500 vẫn giữ $500 cùng ngày và ghi chú gốc; việc tính lại không tự chuyển thêm $100.",
+  "If a save is not confirmed, check the saved result before retrying. Do not create a second payment to work around a pending result.": "Nếu chưa xác nhận được việc lưu, kiểm tra kết quả đã lưu trước khi thử lại. Không tạo khoản thanh toán thứ hai để xử lý kết quả còn chờ."
 }

@@ -1219,77 +1219,70 @@ export const HELP_GUIDES: readonly HelpGuide[] = [
     ]
   },
   {
-    "slug": "payroll-and-tax",
-    "title": "Review payroll, commission and tax records",
-    "summary": "Review current income, closed originals, owner adjustments and recorded payments.",
-    "roles": [
-      "owner"
-    ],
-    "entry": {
-      "href": "/payroll",
-      "label": "Open Payroll"
-    },
-    "prerequisite": "Payroll sections and edits depend on your access. Some export or Tax Company tools require additional setup or a plugin.",
-    "steps": [
-      {
-        "title": "Select and review the period",
-        "body": "Select the salon and payroll period. Compare services, tips, staff assignments and payroll settings with the underlying tickets. Open periods show estimated income."
-      },
-      {
-        "title": "Understand automatic closing",
-        "body": "After the pay period ends in the salon time zone, payroll closes into an immutable original. A processing or review message means the verified original is not ready; reload later or contact support. Do not treat an estimate as a closed record."
-      },
-      {
-        "title": "Review an owner adjustment",
-        "body": "Only the owner can adjust a closed original. Open Adjust income, review the staff member and amounts, enter a reason, and submit once. Reload to verify the recorded adjustment and before/after history. The original remains unchanged."
-      },
-      {
-        "title": "Record a payment after it occurs",
-        "body": "After paying staff outside the app, use Record actual payment to record cash, check, date and note. Verify the result before retrying. This records evidence only: it does not move money, collect overpayments or deduct future wages."
-      },
-      {
-        "title": "Compare original, adjusted and paid amounts",
-        "body": "Review Original income, Adjustment, Recorded as paid and Income minus recorded payments. A negative balance means recorded payments exceed current income. Older Paid flags are not imported as payment evidence; verify them before adding a payment record."
-      },
-      {
-        "title": "Review the Tax Company record",
-        "body": "Tax Company reports use the closed original with recorded adjustments. Verify the period, legal names, reported amounts and paystubs. Final check income is not proof that a check was received; check the payment records separately."
-      }
-    ],
-    "notes": [
-      "Payroll records do not transfer money or file or pay taxes. Staff can view only the payroll for their authorized linked identity."
-    ],
-    "evidence": {
-      "sourceFiles": [
-        "app/(app)/payroll/page.tsx",
-        "app/(app)/payroll/tax-company/page.tsx",
-        "app/(app)/tax-company/page.tsx",
-        "app/payroll/payroll-ledger-panel.tsx",
-        "lib/payroll-ledger.ts"
-      ],
-      "sourceReviewed": true,
-      "screenshots": [],
-      "productionFlowVerified": false
-    },
-    "sections": [
-      {
-        "id": "commission-review",
-        "title": "Reconcile one staff pay period",
-        "steps": [
-          "Select the salon and payroll period. Compare services, tips, staff assignments and payroll settings with the underlying tickets. Open periods show estimated income.",
-          "After the pay period ends in the salon time zone, payroll closes into an immutable original. A processing or review message means the verified original is not ready; reload later or contact support. Do not treat an estimate as a closed record.",
-          "Only the owner can adjust a closed original. Open Adjust income, review the staff member and amounts, enter a reason, and submit once. Reload to verify the recorded adjustment and before/after history. The original remains unchanged.",
-          "After paying staff outside the app, use Record actual payment to record cash, check, date and note. Verify the result before retrying. This records evidence only: it does not move money, collect overpayments or deduct future wages."
-        ],
-        "check": "The staff identity, period, original, adjustments and recorded payment evidence agree. Review every adjustment reason and payment date before relying on the remaining balance.",
-        "example": "An original income of $600 plus a $20 owner adjustment gives $620. If $500 was actually paid and recorded, income minus recorded payments is $120. The app does not transfer that $120.",
-        "issues": [
-          "If a submission fails or its outcome is unclear, reload and verify the history before retrying. Keep the same draft; do not create a second payment to work around a pending result.",
-          "Payroll records do not transfer money or file or pay taxes. Staff can view only the payroll for their authorized linked identity."
-        ]
-      }
-    ]
+  "slug": "payroll-and-tax",
+  "title": "Review payroll, commission and tax records",
+  "summary": "Review live income, change notes and recorded payment evidence.",
+  "roles": [
+    "owner"
+  ],
+  "entry": {
+    "href": "/payroll",
+    "label": "Open Payroll"
   },
+  "prerequisite": "Payroll sections and edits depend on your access. Some export or Tax Company tools require additional setup or a plugin.",
+  "steps": [
+    {
+      "title": "Review the current calculation",
+      "body": "Select the salon and period. Payroll uses current services, tips, assignments and effective settings, including historical periods. Compare the underlying source records."
+    },
+    {
+      "title": "Read the change note and history",
+      "body": "Open Change history to inspect who changed a value, when it changed and its before/after values. Read staff input notes and review the affected business dates."
+    },
+    {
+      "title": "Keep payment evidence separate",
+      "body": "Calculated cash and check amounts are amounts due, not proof of payment. Open Recorded payments and adjustment evidence to export the original records, dates, actors and notes. Unavailable history does not mean zero paid."
+    },
+    {
+      "title": "Reconcile live reports and exports",
+      "body": "Tax Company and downloads use the current calculation. Verify legal names, tax settings and the source period. Historical statements and recorded payments remain separate evidence and are not silently rewritten by recalculation."
+    }
+  ],
+  "notes": [
+    "Tax Company and downloads use the current calculation. Verify legal names, tax settings and the source period. Historical statements and recorded payments remain separate evidence and are not silently rewritten by recalculation.",
+    "Payroll records do not transfer money or file or pay taxes. Staff can view only the payroll for their authorized linked identity."
+  ],
+  "evidence": {
+    "sourceFiles": [
+      "app/(app)/payroll/page.tsx",
+      "app/payroll/payroll-change-history.tsx",
+      "app/payroll/payroll-recorded-facts.tsx",
+      "lib/payroll.ts",
+      "lib/payroll-records.ts"
+    ],
+    "sourceReviewed": true,
+    "screenshots": [],
+    "productionFlowVerified": false
+  },
+  "sections": [
+    {
+      "id": "commission-review",
+      "title": "Reconcile live income with payment evidence",
+      "steps": [
+        "Select the salon and period. Payroll uses current services, tips, assignments and effective settings, including historical periods. Compare the underlying source records.",
+        "Open Change history to inspect who changed a value, when it changed and its before/after values. Read staff input notes and review the affected business dates.",
+        "Calculated cash and check amounts are amounts due, not proof of payment. Open Recorded payments and adjustment evidence to export the original records, dates, actors and notes. Unavailable history does not mean zero paid.",
+        "Tax Company and downloads use the current calculation. Verify legal names, tax settings and the source period. Historical statements and recorded payments remain separate evidence and are not silently rewritten by recalculation."
+      ],
+      "check": "The live calculation agrees with current source data; change notes explain updates and actual payment evidence is reviewed separately.",
+      "example": "A period previously calculated at $500 can show $600 after a valid source correction. A recorded $500 payment stays $500 with its original payment date and note; recalculation does not transfer another $100.",
+      "issues": [
+        "If a save is not confirmed, check the saved result before retrying. Do not create a second payment to work around a pending result.",
+        "Payroll records do not transfer money or file or pay taxes. Staff can view only the payroll for their authorized linked identity."
+      ]
+    }
+  ]
+},
   {
     "slug": "reports-and-mobile",
     "title": "Review reports and manage remotely",

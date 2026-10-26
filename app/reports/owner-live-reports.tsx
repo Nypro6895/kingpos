@@ -238,6 +238,7 @@ export function OwnerLiveReports(initial:Props){
           ) : null}
 
           <DailyClosingForm
+            salonId={salonId}
             scope={`${salonId}:${data.viewerId}`}
             adjustmentTotals={report.adjustmentTotals}
             canApplyCorrection={canApplyCorrection}

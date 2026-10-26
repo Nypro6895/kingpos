@@ -1,5 +1,6 @@
 "use server";
 import type { RelayWorkspace } from "@/types/service-relay";
+import type { ScanDeskLine } from "@/types/staff-scan";
 
 export async function portableLoadServiceRelay(): Promise<{ data?: RelayWorkspace; error?: string }> {
   try {
@@ -17,6 +18,24 @@ export async function portableSubmitServiceRelay(input: { visitId: string; revis
     await broadcastPosStaffChange(portableSession.salon_id, "pos");
     return { ok: true, ticketId: String(data.ticketId) };
   } catch (error) { return { error: error instanceof Error ? error.message : "Could not submit service ticket." }; }
+}
+export async function portableSaveServiceRelayAtDesk(input: { visitId: string; revision: number; lines: ScanDeskLine[] }) {
+  try {
+    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { error } = await supabase.rpc("staff_scan_desk_save", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_expected: input.revision, p_lines: input.lines, p_key: keyId, p_signature: signature });
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
+    return { ok: true };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Could not save service ticket." }; }
+}
+export async function portableNotifyPersonalReady(input: { visitId: string; staffId: string | null; chair: string; requestId: string }) {
+  try {
+    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { error } = await supabase.rpc("personal_qr_notify_ready", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_staff: input.staffId, p_chair: input.chair, p_request: input.requestId, p_key: keyId, p_signature: signature });
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "waiting");
+    return { ok: true };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Could not notify this customer." }; }
 }
 
 import { revalidatePath } from "next/cache";
@@ -522,6 +541,8 @@ function normalizePortableDeskTurns(value: unknown): PosDeskStaff["turns"] {
     largeTurns,
     queueTurns,
     pendingTurns: readPortableNumberField(payload, ["pendingTurns"]),
+    pendingSmallTurns: readPortableNumberField(payload, ["pendingSmallTurns"]),
+    holdingTurns: readPortableNumberField(payload, ["holdingTurns"]),
     receiptLargeTurns: readPortableNumberField(
       payload,
       ["receiptLargeTurns", "receipt_large_turns"],

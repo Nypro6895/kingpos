@@ -220,7 +220,7 @@ export function MyPlaceClient({
           </div>
         </div>
         <nav aria-label={__vt(`Shortcuts for ${workspace.label}`)} className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-0" data-place-shortcuts>
-          {managing && workspace.roleCode === "OWNER" ? <Link href="/pos/portable" prefetch={false} className={textLink} title={__vt("Open Portable using your salon?s Portable ID and access code")}><WorkspaceText text="Portable" /></Link> : null}
+          {managing && workspace.roleCode === "OWNER" ? <Link href="/pos/portable" prefetch={false} className={textLink} title={__vt("Open Portable using your salon’s Portable ID and access code")}><WorkspaceText text="Portable" /></Link> : null}
           {links.map(link => <a key={link.label} className={textLink} href={link.href}><WorkspaceText text={link.label} /></a>)}
           <button className={textLink} disabled={busy} onClick={() => setPanel({ type: "salon", workspace })}><WorkspaceText text="Details" /></button>
         </nav>

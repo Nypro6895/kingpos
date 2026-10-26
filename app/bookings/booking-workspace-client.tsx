@@ -1,5 +1,9 @@
 "use client";
 import { ActionFeedback } from "@/components/action-feedback";
+import { countBookedAppointments } from "@/lib/booking-count";
+import { bookingPhoneDisplay } from "@/lib/booking-phone-display";
+import { defaultBookingStart } from "@/lib/booking-time-policy";
+import { portableBookingTime as localDateTimeToUtcIso } from "@/lib/portable-booking-time";
 import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { TimeZoneSelect } from "@/components/time-zone-select";
@@ -2973,9 +2977,7 @@ function AppointmentCard({
         <span className="rounded-md border border-zinc-200 px-2 py-1">
           <WorkspaceText text={sourceLabel(booking.source)} />
         </span>
-        <span className="rounded-md border border-zinc-200 px-2 py-1">
-          {booking.confirmation_status}
-        </span>
+        {booking.confirmation_status !== booking.normalizedStatus ? <span className="rounded-md border border-zinc-200 px-2 py-1">{booking.confirmation_status.replace(/_/g, " ")}</span> : null}
         {booking.hasOverbookingOverride ? (
           <span className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-amber-800">
             <WorkspaceText text="Override" />
@@ -3474,6 +3476,7 @@ function AppointmentRowEditDialog({
           </p>
         </div>
         <button
+          aria-label={__vt("Close new appointment")}
           className="grid size-10 place-items-center rounded-md border border-zinc-300 text-lg font-semibold"
           onClick={onClose}
           type="button"
@@ -4720,7 +4723,7 @@ function CalendarView({
             >
               <div className="border-b border-zinc-200 px-3 py-2">
                 <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text={day.label} /></h3>
-                <p className="text-xs text-zinc-500">{dayBookings.length} <WorkspaceText text="booked" /></p>
+                <p className="text-xs text-zinc-500">{countBookedAppointments(dayBookings)} <WorkspaceText text="booked" /></p>
               </div>
               <div className="grid gap-2 p-2">
                 {dayBookings.length === 0 ? (
@@ -4908,6 +4911,7 @@ function DetailDrawer({
 
   function runStatus(command: Parameters<typeof runBookingStatusAction>[0]["command"]) {
     if (isPending) return;
+    if (command === "cancel" && !window.confirm(__vt("Cancel this appointment?"))) return;
     setPendingAction("status:" + command);
     setResult(null);
     startTransition(async () => {
@@ -5017,9 +5021,7 @@ function DetailDrawer({
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
               <WorkspaceText text={sourceLabel(booking.source)} />
             </span>
-            <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
-              {booking.confirmation_status}
-            </span>
+            {booking.confirmation_status !== booking.normalizedStatus ? <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">{booking.confirmation_status.replace(/_/g, " ")}</span> : null}
           </div>
           <div className="grid gap-2 text-sm text-zinc-700 sm:grid-cols-2">
             <p>
@@ -5528,12 +5530,13 @@ function generateRealSlots(input: {
     }
   }
 
-  return [...new Set(slots)].slice(0, 24);
+  return [...new Set(slots)].sort();
 }
 
 function AppointmentDrawer({
   bookings,
   onClose,
+  onCreated,
   options,
   prefill,
   settings,
@@ -5541,6 +5544,7 @@ function AppointmentDrawer({
 }: {
   bookings: BookingWorkspaceItem[];
   onClose: () => void;
+  onCreated: () => void;
   options: BookingWorkspaceClientProps["options"];
   prefill: DraftPrefill | null;
   settings: BookingWorkspaceClientProps["settings"];
@@ -5550,7 +5554,7 @@ function AppointmentDrawer({
 
   
   const [step, setStep] = useState(0);
-  const [result, setResult] = useState<BookingActionResult | null>(null);
+  const [resultState, setResultState] = useState<{signature:string;result:BookingActionResult}|null>(null);
   const [isPending, startTransition] = useTransition();
   const [customerId, setCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -5565,7 +5569,12 @@ function AppointmentDrawer({
   ]);
   const [startLocal, setStartLocal] = useState(
     prefill?.startLocal ??
-      `${todayInTimeZone(timezone)}T${settings.slot_interval_minutes <= 15 ? "09:00" : "10:00"}`,
+      defaultBookingStart(todayInTimeZone(timezone), {
+        sameDayBookingEnabled: settings.same_day_booking_enabled,
+        minimumLeadTimeMinutes: settings.minimum_lead_time_minutes,
+        maximumAdvanceWindowDays: settings.maximum_advance_window_days,
+        slotIntervalMinutes: settings.slot_interval_minutes,
+      }, timezone),
   );
   const [publicNotes, setPublicNotes] = useState("");
   const [internalNotes, setInternalNotes] = useState(prefill?.internalNotes ?? "");
@@ -5573,6 +5582,9 @@ function AppointmentDrawer({
     useState<BookingConfirmationMode>(settings.confirmation_mode);
   const [source, setSource] = useState<BookingSource>(prefill?.source ?? "owner_manual");
   const [overrideReason, setOverrideReason] = useState("");
+  const signature=JSON.stringify([step,customerId,customerName,customerPhone,customerEmail,lines,startLocal,publicNotes,internalNotes,confirmationMode,source,overrideReason]);
+  const result=resultState?.signature===signature?resultState.result:null;
+  const setResult=(value:BookingActionResult|null)=>setResultState(value?{signature,result:value}:null);
   const [key] = useState(idempotencyKey);
   const selectedDate = startLocal.slice(0, 10);
   const slots = useMemo(
@@ -5651,7 +5663,7 @@ function AppointmentDrawer({
       setResult(response);
 
       if (response.ok) {
-        
+        onCreated();
         onClose();
       }
     });
@@ -5726,6 +5738,8 @@ function AppointmentDrawer({
                 <input
                   className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                   onChange={(event) => setCustomerPhone(event.target.value)}
+                  onBlur={() => setCustomerPhone(bookingPhoneDisplay(customerPhone))}
+                  type="tel"
                   value={customerPhone}
                 />
               </label>
@@ -5851,6 +5865,7 @@ function AppointmentDrawer({
             </label>
             <div className="grid gap-2">
               <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Real available slots" /></h3>
+              <p className="text-xs text-zinc-500"><WorkspaceText text="Start times follow the professional's working hours and selected service duration. Salon opening hours can be longer." /></p>
               {slots.length === 0 ? (
                 <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                   <WorkspaceText text="No slot can be generated from configured staff availability for this selection. Manual time remains available for owner review and will still be validated by the booking domain." />{" "}
@@ -5981,7 +5996,7 @@ function AppointmentDrawer({
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-zinc-950"><WorkspaceText text="Start:" /> </span>
-                {startLocal.replace("T", " ")}
+                {localDateTimeToUtcIso(startLocal, timezone) ? formatDateTime(localDateTimeToUtcIso(startLocal, timezone)!, timezone) : "Choose a time"}
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-zinc-950"><WorkspaceText text="Subtotal:" /> </span>
@@ -5989,7 +6004,7 @@ function AppointmentDrawer({
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-zinc-950"><WorkspaceText text="Cancellation window:" /> </span>
-                {settings.cancellation_window_minutes} <WorkspaceText text="minutes" />
+                {formatMinutes(settings.cancellation_window_minutes)}
               </p>
             </div>
           </section>
@@ -7248,7 +7263,7 @@ function OwnerAgenda({bookings, filters, range, timezone, canManage, onOpen}: {
     {groups.map(day => {
       const items = visible.filter(item=>dateParts(item.start_at,timezone).date===day.date);
       return <section key={day.date} className="owner-agenda-day">
-        {day.label ? <div className="owner-agenda-day-heading"><h2><WorkspaceText text={day.label} /></h2><span>{items.length ? `${items.length} booked` : <WorkspaceText text="No appointments" />}</span></div> : null}
+        {day.label ? <div className="owner-agenda-day-heading"><h2><WorkspaceText text={day.label} /></h2><span>{items.length ? `${countBookedAppointments(items)} booked` : <WorkspaceText text="No appointments" />}</span></div> : null}
         {items.map(booking=><OwnerAgendaRow key={`${booking.id}:${booking.updated_at}`} booking={booking} timezone={timezone} canManage={canManage} onOpen={onOpen}/>)}
       </section>;
     })}
@@ -7324,6 +7339,7 @@ export function BookingWorkspaceClient({
   );
   const [drawerPrefill, setDrawerPrefill] = useState<DraftPrefill | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [createdNotice, setCreatedNotice] = useState(false);
   const [timeline, setTimeline] = useState(false);
   const navigation = useRef<HTMLDivElement>(null);
   useEffect(()=>{
@@ -7375,11 +7391,11 @@ export function BookingWorkspaceClient({
     setShowCreate(true);
   }
 
-  const appointmentCount = rangeScopedBookings(
+  const appointmentCount = countBookedAppointments(rangeScopedBookings(
     bookings,
     filters,
     timezone,
-  ).length;
+  ));
   const setupIncomplete = bookingReadinessSteps({
     bookingEnabled: settings.booking_enabled,
     guestBookingEnabled: settings.guest_booking_enabled,
@@ -7504,8 +7520,10 @@ export function BookingWorkspaceClient({
         />
       ) : null}
 
+      {createdNotice ? <div role="status" className="fixed bottom-24 right-4 z-50 rounded-lg bg-emerald-800 px-4 py-3 text-white"><WorkspaceText text="Appointment created." /><button type="button" aria-label="Dismiss appointment confirmation" onClick={() => setCreatedNotice(false)} className="ml-4">×</button></div> : null}
       {showCreate ? (
         <AppointmentDrawer
+          onCreated={() => setCreatedNotice(true)}
           bookings={bookings}
           onClose={() => setShowCreate(false)}
           options={options}

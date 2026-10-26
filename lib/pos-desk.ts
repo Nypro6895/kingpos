@@ -321,7 +321,9 @@ export async function getCurrentSalonPosDeskData({includeCustomers=true,includeW
   const projectedStaff = staff.map(member => {
     const current = projectedById.get(member.id);
     const pending = current?.turns.pendingTurns ?? 0;
-    return current ? { ...member, service_status: current.service_status, turns: { ...member.turns, pendingTurns: pending, queueTurns: member.turns.queueTurns + pending, largeTurns: member.turns.largeTurns + pending, totalTurns: member.turns.totalTurns + pending } } : member;
+    const holding = current?.turns.holdingTurns ?? 0;
+    const smallPending = current?.turns.pendingSmallTurns ?? 0;
+    return current ? { ...member, service_status: current.service_status, turns: { ...member.turns, pendingTurns: pending, pendingSmallTurns: smallPending, holdingTurns: holding, queueTurns: member.turns.queueTurns + pending + holding, largeTurns: member.turns.largeTurns + pending, smallTurns: member.turns.smallTurns + smallPending, totalTurns: member.turns.totalTurns + pending + smallPending } } : member;
   }).sort((a, b) => a.turns.queueTurns - b.turns.queueTurns || (a.check_in_sequence ?? Number.MAX_SAFE_INTEGER) - (b.check_in_sequence ?? Number.MAX_SAFE_INTEGER));
   return {
     context,

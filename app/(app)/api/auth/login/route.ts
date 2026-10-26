@@ -18,6 +18,7 @@ import {
   getPostAuthWorkspaceNavigation,
 } from "@/lib/post-auth-routing";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { resumeSignupPhonePath } from "@/lib/signup-phone-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import {
   clearWorkspaceContextCookies,
@@ -283,7 +284,7 @@ export async function POST(request: Request) {
   const [navigation] = await Promise.all([
     getPostAuthWorkspaceNavigation({
       accessToken: data.session.access_token,
-      requestedPath,
+      requestedPath: resumeSignupPhonePath(data.user, requestedPath),
     }).catch((error: unknown) => {
       console.error("Unable to resolve post-login workspace navigation", {
         message: error instanceof Error ? error.message : String(error),

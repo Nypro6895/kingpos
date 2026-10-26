@@ -8,6 +8,7 @@ import {
   type PayrollStaffInputAutosaveState,
 } from "@/app/payroll/actions";
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const INITIAL_STATE: PayrollStaffInputAutosaveState = {
   message: null,
@@ -59,6 +60,7 @@ export function StaffIncomeAutosaveInputs({
   periodStart,
   staffId,
   taxBonus,
+  inputUpdatedAt = null,
 }: {
   bonusAmount: number;
   bonusPayoutMethod: string;
@@ -70,8 +72,10 @@ export function StaffIncomeAutosaveInputs({
   periodStart: string;
   staffId: string;
   taxBonus: boolean;
+  inputUpdatedAt?: string | null;
 }) {
   const __vt = useWorkspaceTranslation();
+  const router = useRouter();
   const { update: updateEditState } = usePayrollEdits();
 
   const [state, formAction, pending] = useActionState(
@@ -111,7 +115,7 @@ export function StaffIncomeAutosaveInputs({
   }, []);
 
   const submitIfChanged = useCallback(() => {
-    if (!canManage || pending || !formRef.current || !navigator.onLine) {
+    if (!canManage || pending || !formRef.current) {
       return;
     }
 
@@ -155,12 +159,6 @@ export function StaffIncomeAutosaveInputs({
   }, [initialSignature]);
 
   useEffect(() => {
-    const reconnect = () => { if (localStatus !== "saved") submitIfChanged(); };
-    window.addEventListener("online", reconnect);
-    return () => window.removeEventListener("online", reconnect);
-  }, [localStatus, submitIfChanged]);
-
-  useEffect(() => {
     if (pending) {
       return;
     }
@@ -201,6 +199,7 @@ export function StaffIncomeAutosaveInputs({
         : displayStatus === "saved"
           ? "saved"
           : "";
+  const baseline = state.baseline && (!inputUpdatedAt || Date.parse(state.baselineAt ?? "") >= Date.parse(inputUpdatedAt)) ? state.baseline : {bonus_amount:bonusAmount,check_number:checkNumber,note};
 
   return (
     <form action={formAction} data-payroll-autosave="true" className="grid gap-3" ref={formRef}
@@ -210,6 +209,10 @@ export function StaffIncomeAutosaveInputs({
       <input name="period_end" type="hidden" value={periodEnd} />
       <input name="staff_id" type="hidden" value={staffId} />
       <input name="note" type="hidden" value={note ?? ""} />
+      <input name="expected_bonus_amount" type="hidden" value={baseline.bonus_amount} />
+      <input name="expected_check_number" type="hidden" value={baseline.check_number ?? ""} />
+      <input name="expected_note" type="hidden" value={baseline.note ?? ""} />
+      {state.status === "error" && <button type="button" className="min-h-11 rounded border px-3 text-sm" onClick={()=>{setLocalStatus("saved");setValues({bonus:bonusAmount.toFixed(2),check:checkNumber??"",source:initialSignature});updateEditState(staffId,false);router.refresh();}}><WorkspaceText text="Discard this draft and reload current amounts"/></button>}
 
       <div className="grid grid-cols-[54px_max-content] items-center gap-x-2">
         <label className="text-zinc-500" htmlFor={`bonus-amount-${staffId}`}>
@@ -223,7 +226,7 @@ export function StaffIncomeAutosaveInputs({
             id={`bonus-amount-${staffId}`}
             min="0"
             name="bonus_amount"
-            onBlur={() => submitIfChanged()}
+            onBlur={submitIfChanged}
             onChange={event => {
               const value = event.currentTarget.value;
               // A focused number input keeps its old default in React. Keep the
@@ -248,7 +251,7 @@ export function StaffIncomeAutosaveInputs({
           disabled={!canManage}
           id={`check-number-${staffId}`}
           name="check_number"
-          onBlur={() => submitIfChanged()}
+          onBlur={submitIfChanged}
           onChange={event => { const value = event.currentTarget.value; event.currentTarget.defaultValue = value; setValues(current => ({ ...current, check: value })); scheduleSave(); }}
         />
       </div>

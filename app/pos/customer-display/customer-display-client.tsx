@@ -1,4 +1,5 @@
 "use client";
+import { createKioskRequestGuard } from "@/lib/kiosk-request-guard";
 import { CustomerIdentityChoices } from "@/components/customer-identity-choices";
 import type { CustomerIdentityChoice } from "@/types/customer-identity";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -1841,6 +1842,9 @@ export function CustomerDisplayClient({
     null,
   );
   const lastSubmittedPhoneRef = useRef("");
+  const phoneRequestGuard = useRef(createKioskRequestGuard());
+  const serviceRequestGuard = useRef(createKioskRequestGuard());
+  const phoneEntryEditingRef = useRef(false);
   const [localPreviewMode, setLocalPreviewMode] = useState(false);
   const localPreview = useRef<{ value: LocalReceiptPreview; receivedAt: number } | null>(null);
   const liveDraftRef = useRef<PosLiveDraftView | null>(seededSnapshot);
@@ -1940,7 +1944,7 @@ export function CustomerDisplayClient({
       return "attract";
     }
 
-    if (createCustomerMode && !liveDraftCustomer && !guestConfirmed) {
+    if (createCustomerMode && (!liveDraftCustomer || isChangingCustomer) && !guestConfirmed) {
       return "profile";
     }
 
@@ -1994,6 +1998,9 @@ export function CustomerDisplayClient({
       snapshot.status === "closed" ||
       (snapshot.status === "draft" && !snapshot.customer && !hasMeaningfulReceipt(snapshot) && hasMeaningfulReceipt(previousSnapshot))
     ) {
+      phoneEntryEditingRef.current = false;
+      phoneRequestGuard.current.reset();
+      serviceRequestGuard.current.reset();
       setPhoneInput("");
       setConfirmedPhone(null);
       setGuestConfirmed(false);
@@ -2009,7 +2016,7 @@ export function CustomerDisplayClient({
       lastSubmittedPhoneRef.current = "";
     }
 
-    if (snapshot.customer) {
+    if (snapshot.customer && !phoneEntryEditingRef.current) {
       setGuestConfirmed(false);
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
@@ -2074,6 +2081,9 @@ export function CustomerDisplayClient({
       setLiveDraft(snapshot);
       setServerTipOptions(null);
       if (value.completedAt || (previous && previous.value.cartId !== value.cartId)) {
+        phoneEntryEditingRef.current = false;
+        phoneRequestGuard.current.reset();
+        serviceRequestGuard.current.reset();
         setGuestConfirmed(false); setCustomTipInput(""); setCustomTipMode(false);
         setPhoneInput(""); setConfirmedPhone(null); setIsChangingCustomer(false);
         setCreateCustomerMode(false); setCustomerNameInput("");
@@ -2097,6 +2107,12 @@ export function CustomerDisplayClient({
       const nextDigits = digitsOnly(value).slice(0, 11);
 
       markCustomerInteraction();
+      phoneEntryEditingRef.current = true;
+      phoneRequestGuard.current.invalidate();
+      serviceRequestGuard.current.invalidate();
+      setIsCustomerPending(false);
+      setIsServicePending(false);
+      setConfirmedPhone(null);
       setPhoneInput(nextDigits);
       setGuestConfirmed(false);
       setCreateCustomerMode(false);
@@ -2121,6 +2137,7 @@ export function CustomerDisplayClient({
       phone: string,
       options?: { newCustomer?: boolean },
     ) => {
+      phoneEntryEditingRef.current = false;
       setConfirmedPhone(phone);
       setGuestConfirmed(false);
       setIsChangingCustomer(false);
@@ -2180,17 +2197,30 @@ export function CustomerDisplayClient({
   const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string; identityChoice?: string; newCustomer?: boolean }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
     const preview = localPreview.current;
     const baseline = liveDraftRef.current;
-    if (preview && baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline)) {
-      const result = input.name
-        ? await createLiveDraftCustomer({ ...input, name: input.name, token })
-        : await findLiveDraftCustomerByPhone({ phone: input.phone, token });
-      if (!result.ok) return result;
-      if (!result.data) return { ok: false, code: "profile_required", error: "Enter your name to continue." };
-      return { ok: true, data: { mode: "checkout", visit: null,
-        snapshot: { ...baseline, customer: result.data } } };
+    const localCheckout = !!preview && !!baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline);
+    const checkInOnly = !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline);
+    const key = JSON.stringify([token, localPhoneKey(input.phone), input.name?.trim() ?? "", input.identityChoice ?? null, !!input.newCustomer, localCheckout, checkInOnly, localCheckout ? preview?.value.cartId : null]);
+    const ticket = phoneRequestGuard.current.begin(key, getRequestId);
+    const superseded = { ok: false as const, code: "request_superseded", error: "" };
+    if (!ticket) return superseded;
+    try {
+      let result: Awaited<ReturnType<typeof submitCustomerDisplayPhone>>;
+      if (localCheckout && baseline) {
+        const found = input.name
+          ? await createLiveDraftCustomer({ ...input, name: input.name, token })
+          : await findLiveDraftCustomerByPhone({ phone: input.phone, token });
+        result = !found.ok ? found : !found.data
+          ? { ok: false, code: "profile_required", error: "Enter your name to continue." }
+          : { ok: true, data: { mode: "checkout", visit: null, snapshot: { ...baseline, customer: found.data } } };
+      } else {
+        result = await submitCustomerDisplayPhone({ ...input, phone: localPhoneKey(input.phone), name: input.name?.trim(), requestId: ticket.requestId, token, checkInOnly });
+      }
+      return phoneRequestGuard.current.finish(ticket) ? result : superseded;
+    } catch {
+      return phoneRequestGuard.current.finish(ticket)
+        ? { ok: false, code: "lookup_failed", error: "Unable to connect. Please try again." }
+        : superseded;
     }
-    return submitCustomerDisplayPhone({ ...input, requestId: getRequestId(), token,
-      checkInOnly: !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline) });
   }, [token]);
 
   const submitPhoneLookup = useCallback(
@@ -2215,13 +2245,14 @@ export function CustomerDisplayClient({
       const result = await submitDisplayPhone({
         phone: nextDigits,
       });
+      if (!result.ok && result.code === "request_superseded") return;
       setIsCustomerPending(false);
 
       if (!result.ok) {
         if (result.code === "profile_required") {
           setConfirmedPhone(nextDigits);
           setGuestConfirmed(false);
-          setIsChangingCustomer(false);
+          setIsChangingCustomer(true);
           setCreateCustomerMode(true);
           setCustomerNameInput("");
       setIdentityCandidates([]);
@@ -2526,6 +2557,8 @@ export function CustomerDisplayClient({
     }
 
     const timeoutId = window.setTimeout(() => {
+      phoneRequestGuard.current.reset();
+      serviceRequestGuard.current.reset();
       setCheckInState(null);
       setPhoneInput("");
       setConfirmedPhone(null);
@@ -2560,6 +2593,7 @@ export function CustomerDisplayClient({
 
     const result = await submitDisplayPhone({ phone, name: customer.name ?? undefined, identityChoice: customer.id });
 
+    if (!result.ok && result.code === "request_superseded") return;
     setIsCustomerPending(false);
 
     if (!result.ok) {
@@ -2595,6 +2629,7 @@ export function CustomerDisplayClient({
 
     const result = await submitDisplayPhone({ name, phone, identityChoice: identityChoice ?? undefined, newCustomer: identityChoice === null });
 
+    if (!result.ok && result.code === "request_superseded") return;
     setIsCustomerPending(false);
 
     if (!result.ok) {
@@ -2657,6 +2692,11 @@ export function CustomerDisplayClient({
 
   function changeCustomer() {
     markCustomerInteraction();
+    phoneEntryEditingRef.current = true;
+    phoneRequestGuard.current.invalidate();
+    serviceRequestGuard.current.reset();
+    setIsCustomerPending(false);
+    setIsServicePending(false);
     setCheckInState(null);
     setServiceSelectionState(null);
     setSelectedServiceIds([]);
@@ -2697,6 +2737,16 @@ export function CustomerDisplayClient({
 
   function returnToPhoneEntry() {
     markCustomerInteraction();
+    phoneEntryEditingRef.current = true;
+    phoneRequestGuard.current.invalidate();
+    serviceRequestGuard.current.reset();
+    setIsCustomerPending(false);
+    setIsServicePending(false);
+    const editablePhone = confirmedPhone ?? phoneInput;
+    setPhoneInput(editablePhone);
+    setConfirmedPhone(null);
+    setGuestConfirmed(false);
+    setIsChangingCustomer(true);
     setCheckInState(null);
     setServiceSelectionState(null);
     setSelectedServiceIds([]);
@@ -2704,7 +2754,7 @@ export function CustomerDisplayClient({
     setCustomerNameInput("");
       setIdentityCandidates([]);
     setCustomerStatus(null);
-    lastSubmittedPhoneRef.current = "";
+    lastSubmittedPhoneRef.current = digitsOnly(editablePhone);
   }
 
   function toggleRequestedService(serviceId: string) {
@@ -2728,15 +2778,24 @@ export function CustomerDisplayClient({
     }
 
     markCustomerInteraction();
+    const ticket = serviceRequestGuard.current.begin(JSON.stringify([token, serviceSelectionState.visit.id, [...selectedServiceIds].sort()]), getRequestId);
+    if (!ticket) return;
     setIsServicePending(true);
     setError(null);
-
-    const result = await saveCustomerDisplayRequestedServices({
+    let result: Awaited<ReturnType<typeof saveCustomerDisplayRequestedServices>>;
+    try {
+      result = await saveCustomerDisplayRequestedServices({
       serviceIds: selectedServiceIds,
       token,
       visitId: serviceSelectionState.visit.id,
-    });
-
+      });
+    } catch {
+      if (!serviceRequestGuard.current.finish(ticket)) return;
+      setIsServicePending(false);
+      setError("Unable to connect. Please try again.");
+      return;
+    }
+    if (!serviceRequestGuard.current.finish(ticket, result.ok && result.data.mode === "check_in")) return;
     setIsServicePending(false);
 
     if (!result.ok) {
@@ -2770,6 +2829,8 @@ export function CustomerDisplayClient({
       return;
     }
 
+    phoneRequestGuard.current.reset();
+    serviceRequestGuard.current.reset();
     completedResetInFlightRef.current = true;
     setError(null);
 

@@ -1,4 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { PersonalQrStaffConnector } from "@/app/staff/personal-qr-connector";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
@@ -1375,6 +1376,8 @@ function StaffDetailDrawer({
 }
 
 function AddStaffDrawer({
+  salonId,
+  viewerId,
   canManageStaff,
   closeHref,
   error,
@@ -1384,6 +1387,8 @@ function AddStaffDrawer({
   lookupResult,
   staff,
 }: {
+  salonId: string;
+  viewerId: string;
   canManageStaff: boolean;
   closeHref: string;
   error?: string;
@@ -1396,10 +1401,10 @@ function AddStaffDrawer({
   return (
     <StaffSlideOver
       closeHref={closeHref}
-      subtitle="Create a profile or invite a staff account."
+      subtitle="Scan a Personal QR to send a staff invitation."
       title="Add Staff"
     >
-      {canManageStaff ? (
+      {canManageStaff ? <PersonalQrStaffConnector salonId={salonId} viewerId={viewerId} closeHref={closeHref}>
         <AddStaffConnectionPanel
           inviteEmail={inviteEmail}
           invitePhone={invitePhone}
@@ -1407,8 +1412,8 @@ function AddStaffDrawer({
           lookupResult={lookupResult}
           staff={staff}
         />
-      ) : null}
       <StaffForm canManageStaff={canManageStaff} error={error} />
+      </PersonalQrStaffConnector> : <StaffForm canManageStaff={false} error={error} />}
     </StaffSlideOver>
   );
 }
@@ -1970,6 +1975,8 @@ async function StaffPage({ searchParams }: StaffPageProps) {
 
       {showAddStaff ? (
         <AddStaffDrawer
+          salonId={context.currentSalon!.id}
+          viewerId={context.user!.id}
           canManageStaff={canManageStaff}
           closeHref={closeHref}
           error={error}

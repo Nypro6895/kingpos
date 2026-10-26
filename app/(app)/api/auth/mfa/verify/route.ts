@@ -5,6 +5,7 @@ import {
 } from "@/lib/account-security-shared";
 import { recordAccountLoginForSession } from "@/lib/account-security";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { resumeSignupPhonePath } from "@/lib/signup-phone-routing";
 import {
   clearWorkspaceContextCookies,
   writeNormalizedWorkspaceContextCookies,
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
   const [navigation] = await Promise.all([
     getPostAuthWorkspaceNavigation({
       accessToken: verification.data.access_token,
-      requestedPath: nextPath,
+      requestedPath: resumeSignupPhonePath(verification.data.user, nextPath),
     }).catch((error: unknown) => {
       console.error("Unable to resolve post-MFA workspace navigation", {
         message: error instanceof Error ? error.message : String(error),

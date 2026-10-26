@@ -1,4 +1,7 @@
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
+import { bookingDate } from "@/lib/portable-booking-layout";
 import { ManualMergePicker } from "@/app/customers/manual-merge-picker";
+import { DuplicateMergeForms } from "@/app/customers/duplicate-merge-forms";
 import { withExperiencePage } from "@/components/experience-page";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -30,18 +33,20 @@ type CustomerDetailPageProps = {
     group?: string;
     history?: string;
     merged?: string;
+    skipped?: string;
   }>;
 };
 
-function formatDateTime(value: string) {
+function formatDateTime(value: string, timezone: string) {
   return new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
-function formatDateTimeMaybe(value: string | null) {
-  return value ? formatDateTime(value) : "-";
+function formatDateTimeMaybe(value: string | null, timezone: string) {
+  return value ? formatDateTime(value, timezone) : "-";
 }
 
 function formatMoney(value: number) {
@@ -210,33 +215,33 @@ function ReylumiProfileCard({
   );
 }
 
-function shortDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
+function shortDate(value: string, timezone: string) {
+  return new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
-function BookingList({ empty, items }: { empty: string; items: CustomerBookingSummary[] }) {
+function BookingList({ empty, items, timezone }: { empty: string; items: CustomerBookingSummary[]; timezone: string }) {
   return items.length ? <div>{items.map(booking => <details className="border-b border-zinc-100 text-sm font-normal" key={booking.id} data-history-record>
     <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-xs font-normal">
-      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(booking.start_at)} /> · <WorkspaceText text={booking.serviceNames.join(", ") || "No services"} /> · <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} /></span>
+      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(booking.start_at, timezone)} /> · <WorkspaceText text={booking.serviceNames.join(", ") || "No services"} /> · <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} /></span>
       <span className="shrink-0 tabular-nums">{formatMoney(booking.subtotal)} ›</span>
     </summary>
     <div className="space-y-2 px-4 pb-4 text-sm font-normal" data-customer-receipt>
-      <div><WorkspaceText text={formatDateTime(booking.start_at)} /> · <WorkspaceText text={booking.staff?.display_name ?? "Unassigned"} /></div>
+      <div><WorkspaceText text={formatDateTime(booking.start_at, timezone)} /> · <WorkspaceText text={booking.staff?.display_name ?? "Unassigned"} /></div>
       {booking.lines.map(line => <div key={line.id} className="flex justify-between gap-3"><span>{line.service_name_snapshot}</span><span>{formatMoney(Number(line.line_total))}</span></div>)}
       <div className="flex justify-between border-t border-zinc-100 pt-2"><WorkspaceText text="Total" /><span>{formatMoney(booking.subtotal)}</span></div>
       <BookingDepositReceipt booking={booking} />
-      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/bookings?date=${booking.start_at.slice(0, 10)}&bookingId=${booking.id}`}><WorkspaceText text="View appointment" /> ›</Link>
+      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/bookings?date=${bookingDate(booking.start_at, timezone)}&bookingId=${booking.id}`}><WorkspaceText text="View appointment" /> ›</Link>
     </div>
   </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text={empty} /></p>;
 }
 
-function TicketList({ items }: { items: CustomerTicketSummary[] }) {
+function TicketList({ items, timezone }: { items: CustomerTicketSummary[]; timezone: string }) {
   return items.length ? <div>{items.map(ticket => <details className="border-b border-zinc-100 text-sm font-normal" key={ticket.id} data-history-record>
     <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-xs font-normal">
-      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(ticket.opened_at)} /> · {ticket.ticket_number} · <WorkspaceText text={ticket.status} /></span><span className="shrink-0 tabular-nums">{formatMoney(ticket.totals.total)} ›</span>
+      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(ticket.opened_at, timezone)} /> · {ticket.ticket_number} · <WorkspaceText text={ticket.status} /></span><span className="shrink-0 tabular-nums">{formatMoney(ticket.totals.total)} ›</span>
     </summary>
     <div className="space-y-2 px-4 pb-4 text-sm font-normal" data-customer-receipt>
-      <div>{ticket.ticket_number} · <WorkspaceText text={formatDateTime(ticket.opened_at)} /></div>
+      <div>{ticket.ticket_number} · <WorkspaceText text={formatDateTime(ticket.opened_at, timezone)} /></div>
       <div>{ticket.customer?.name ?? <WorkspaceText text="Walk-in Customer" />}</div>
       {ticket.ticket_items.map(item => <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 border-t border-zinc-100 py-2"><span>{item.assigned_staff?.display_name ?? <WorkspaceText text="Unassigned" />}</span><span>{item.service?.name ?? item.service_name_snapshot ?? <WorkspaceText text="Service" />}</span><span className="tabular-nums">{formatMoney((item.turn_parts?.length ? item.turn_parts.reduce((total,part) => total + part.amount, 0) : item.line_total))}</span></div>)}
       {ticket.totals.discount_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Discount" /><span>-{formatMoney(ticket.totals.discount_amount)}</span></div> : null}
@@ -248,9 +253,9 @@ function TicketList({ items }: { items: CustomerTicketSummary[] }) {
   </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No linked POS tickets yet." /></p>;
 }
 
-function Timeline({ items }: { items: CustomerTimelineItem[] }) {
+function Timeline({ items, timezone }: { items: CustomerTimelineItem[]; timezone: string }) {
   return <ol>{items.map(item => <li key={item.id} className="border-b border-zinc-100 px-4 text-xs font-normal">
-    {item.href ? <Link className="flex min-h-11 items-center justify-between gap-2" href={item.href}><span className="truncate"><WorkspaceText text={shortDate(item.timestamp)} /> · <WorkspaceText text={item.label} /></span><span>›</span></Link> : <span className="flex min-h-11 items-center"><WorkspaceText text={shortDate(item.timestamp)} /> · <WorkspaceText text={item.label} /></span>}
+    {item.href ? <Link className="flex min-h-11 items-center justify-between gap-2" href={item.href}><span className="truncate"><WorkspaceText text={shortDate(item.timestamp, timezone)} /> · <WorkspaceText text={item.label} /></span><span>›</span></Link> : <span className="flex min-h-11 items-center"><WorkspaceText text={shortDate(item.timestamp, timezone)} /> · <WorkspaceText text={item.label} /></span>}
   </li>)}{!items.length ? <li className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No timeline activity yet." /></li> : null}</ol>;
 }
 
@@ -277,7 +282,7 @@ async function CustomerDetailPage({
   const __vt = await getWorkspaceTranslation();
 
   const { customerId } = await params;
-  const { error, group, history, merged } = await searchParams;
+  const { error, group, history, merged, skipped } = await searchParams;
   const historyFilter = ["appointments", "tickets", "timeline"].includes(history ?? "")
     ? history
     : "all";
@@ -298,6 +303,7 @@ async function CustomerDetailPage({
       })
     : null;
   const canManageCustomers = await hasPermission("customers.manage", context);
+  const timezone = await getContextBusinessTimezone(context);
   const showAppointments =
     historyFilter === "all" || historyFilter === "appointments";
   const showTickets = historyFilter === "all" || historyFilter === "tickets";
@@ -333,7 +339,7 @@ async function CustomerDetailPage({
         </div>
       </div>
 
-      {merged ? (
+      {Number(merged) > 0 ? (
         <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
           <WorkspaceText text="Merged" /> {merged} <WorkspaceText text="duplicate customer record" />{merged === "1" ? "" : "s"}.
         </p>
@@ -344,6 +350,10 @@ async function CustomerDetailPage({
           <WorkspaceText text={error} />
         </p>
       ) : null}
+
+      {Number(skipped) > 0 ? <p role="status" className="border-y border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        {skipped} <WorkspaceText text="suggested records were kept separate. Review the reasons below." />
+      </p> : null}
 
       {canManageCustomers && !data.isWalkingGroup ? <ManualMergePicker customerId={customer.id} /> : null}
       {data.duplicateCandidates.length > 0 ? (
@@ -367,6 +377,7 @@ async function CustomerDetailPage({
               </Link>
             ))}
           </div>
+          {canManageCustomers && !data.isWalkingGroup ? <DuplicateMergeForms customerId={customer.id} candidates={data.duplicateCandidates} /> : null}
         </details>
       ) : null}
 
@@ -398,14 +409,14 @@ async function CustomerDetailPage({
 
           {historyFilter === "all" ? (
             <div data-unified-history>{!data.upcomingBookings.length && !data.bookingHistory.length && !data.tickets.length ? <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No timeline activity yet." /></p> : null}{[
-              ...data.upcomingBookings.map(booking => ({ at: booking.start_at, key: `up-${booking.id}`, content: <BookingList empty="" items={[booking]} /> })),
-              ...data.bookingHistory.map(booking => ({ at: booking.start_at, key: `booking-${booking.id}`, content: <BookingList empty="" items={[booking]} /> })),
-              ...data.tickets.map(ticket => ({ at: ticket.opened_at, key: `ticket-${ticket.id}`, content: <TicketList items={[ticket]} /> })),
+              ...data.upcomingBookings.map(booking => ({ at: booking.start_at, key: `up-${booking.id}`, content: <BookingList timezone={timezone} empty="" items={[booking]} /> })),
+              ...data.bookingHistory.map(booking => ({ at: booking.start_at, key: `booking-${booking.id}`, content: <BookingList timezone={timezone} empty="" items={[booking]} /> })),
+              ...data.tickets.map(ticket => ({ at: ticket.opened_at, key: `ticket-${ticket.id}`, content: <TicketList timezone={timezone} items={[ticket]} /> })),
             ].sort((a,b) => b.at.localeCompare(a.at)).map(row => <div key={row.key}>{row.content}</div>)}</div>
           ) : <>
-            {showAppointments ? <><BookingList empty="No upcoming appointments." items={data.upcomingBookings} /><BookingList empty="No booking history yet." items={data.bookingHistory} /></> : null}
-            {showTickets ? <TicketList items={data.tickets} /> : null}
-            {showTimeline ? <Timeline items={data.timeline} /> : null}
+            {showAppointments ? <><BookingList timezone={timezone} empty="No upcoming appointments." items={data.upcomingBookings} /><BookingList timezone={timezone} empty="No booking history yet." items={data.bookingHistory} /></> : null}
+            {showTickets ? <TicketList timezone={timezone} items={data.tickets} /> : null}
+            {showTimeline ? <Timeline timezone={timezone} items={data.timeline} /> : null}
           </>}
         </section>
 
@@ -451,7 +462,7 @@ async function CustomerDetailPage({
               <div>
                 <dt className="text-zinc-500"><WorkspaceText text="Last visit" /></dt>
                 <dd className="mt-1 font-semibold text-zinc-950">
-                  <WorkspaceText text={formatDateTimeMaybe(lastVisit?.start_at ?? null)} />
+                  <WorkspaceText text={formatDateTimeMaybe(lastVisit?.start_at ?? null, timezone)} />
                 </dd>
               </div>
             </dl>
@@ -470,8 +481,8 @@ async function CustomerDetailPage({
 
           <Section title={__vt("Record")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label={__vt("Created At")} value={formatDateTime(customer.created_at)} />
-              <DetailRow label={__vt("Updated At")} value={formatDateTime(customer.updated_at)} />
+              <DetailRow label={__vt("Created At")} value={formatDateTime(customer.created_at, timezone)} />
+              <DetailRow label={__vt("Updated At")} value={formatDateTime(customer.updated_at, timezone)} />
             </dl>
           </Section>
         </aside>

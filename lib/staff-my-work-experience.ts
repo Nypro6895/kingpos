@@ -11,7 +11,7 @@ export type StaffMyWorkSearchParams = {
 };
 
 export type StaffPayrollView = Pick<StaffPayrollPortalData,
-  "settings" | "dailyRows" | "line" | "paystub" | "period" | "periodOptions" | "status"
+  "history" | "settings" | "dailyRows" | "line" | "paystub" | "period" | "periodOptions" | "status"
 > & { latestStatement: { run: { paid_at: string | null } } | null };
 export type StaffAnalysisView = Pick<StaffAnalysisPortalData, "period" | "periodOptions" | "workPerformance" | "comparison">;
 

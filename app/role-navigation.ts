@@ -17,6 +17,7 @@ export type NavigationIcon =
   | "people"
   | "plus"
   | "receipt"
+  | "qr"
   | "scissors"
   | "search"
   | "star"
@@ -106,10 +107,10 @@ const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/my-bookings", icon: "calendar", id: "bookings", label: "Bookings" },
   { href: "/beauty", icon: "user", id: "beauty", label: "Beauty" },
   {
-    href: "/notifications",
-    icon: "bell",
-    id: "notifications",
-    label: "Notifications",
+    href: "/qr",
+    icon: "qr",
+    id: "personal-qr",
+    label: "QR",
   },
   { href: "/more", icon: "more", id: "more", label: "More" },
 ];
@@ -124,10 +125,10 @@ const STAFF_LINKS: NavigationLink[] = [
   },
   { href: "/salon-profile", icon: "store", id: "staff-post", label: "Post" },
   {
-    href: "/notifications",
-    icon: "bell",
-    id: "staff-notifications",
-    label: "Notifications",
+    href: "/staff/scan",
+    icon: "qr",
+    id: "staff-scan",
+    label: "Scan",
   },
   { href: "/more", icon: "more", id: "staff-more", label: "More" },
 ];
@@ -377,6 +378,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: PERSONAL_LINKS,
     moreLinks: moreNavigationLinks("personal"),
     routePrefixes: [
+      "/qr",
       "/activity",
       "/beauty",
       "/claim",
@@ -399,6 +401,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
       "/staff/appointments",
       "/staff/my-work",
       "/staff/workday",
+      "/staff/scan",
     ],
   },
   owner: {

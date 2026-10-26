@@ -167,8 +167,8 @@ function failure(
   options?: { code?: string; field?: string },
 ): BookingActionResult {
   return {
-    code: options?.code,
-    field: options?.field,
+    ...(options?.code ? { code: options.code } : {}),
+    ...(options?.field ? { field: options.field } : {}),
     message,
     ok: false,
   };

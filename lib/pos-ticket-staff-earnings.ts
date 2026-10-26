@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType } from "@/lib/pos-desk-amounts";
@@ -620,7 +620,7 @@ export async function recalculateStaffEarningsForDate(
   salonId: string,
   workDate: string,
 ) {
-  const { salon, supabase, timeZone } = await requireEarningContext();
+  const { salon, supabase, timeZone, context } = await requireEarningContext();
 
   if (salon.id !== salonId) {
     throw new Error("Staff earnings can only be recalculated for the current salon.");
@@ -642,7 +642,7 @@ export async function recalculateStaffEarningsForDate(
   );
   const unlockedRows = calculatedRows.filter((row) => {
     const existing = existingByKey.get(getExistingKey(row.ticket_id, row.staff_id));
-    return !existing?.locked_at;
+    return isOwnerMembership(context.currentMembership) || !existing?.locked_at;
   });
 
   if (unlockedRows.length > 0) {
@@ -656,7 +656,7 @@ export async function recalculateStaffEarningsForDate(
   }
 
   const staleRows = existingRows.filter(
-    (row) => !row.locked_at && !calculatedKeys.has(getExistingKey(row.ticket_id, row.staff_id)),
+    (row) => (isOwnerMembership(context.currentMembership) || !row.locked_at) && !calculatedKeys.has(getExistingKey(row.ticket_id, row.staff_id)),
   );
 
   for (const row of staleRows) {
@@ -716,3 +716,4 @@ export async function recalculateTicketStaffEarnings(ticketId: string) {
 
   return rows.filter((row) => row.ticket_id === ticketId);
 }
+

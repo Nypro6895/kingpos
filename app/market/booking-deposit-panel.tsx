@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { EMPTY_BOOKING_DEPOSIT, type BookingDepositState } from "@/types/booking-deposit";
 import { bookingDepositBillingAction, connectBookingStripeAction, loadBookingDepositAction, saveBookingDepositAction, installBookingDepositAction } from "./booking-deposit-actions";
 import styles from "./booking-deposit.module.css";
-export function BookingDepositPanel({ initial, salonId, paymentsAvailable = true, bankCheckout = false, monthlyPrice = "$5.90 / month", settingsOnly = false }: { initial?: BookingDepositState; salonId?: string; paymentsAvailable?: boolean; bankCheckout?: boolean; monthlyPrice?: string; settingsOnly?: boolean }) {
+type BookingDepositPanelProps = { initial?: BookingDepositState; salonId?: string; paymentsAvailable?: boolean; bankCheckout?: boolean; monthlyPrice?: string; settingsOnly?: boolean };
+export function BookingDepositPanel(props: BookingDepositPanelProps) {
+  return <BookingDepositPanelState key={JSON.stringify([props.salonId ?? null, props.initial ?? null])} {...props} />;
+}
+function BookingDepositPanelState({ initial, salonId, paymentsAvailable = true, bankCheckout = false, monthlyPrice = "$5.90 / month", settingsOnly = false }: BookingDepositPanelProps) {
   const [state, setState] = useState(initial ?? EMPTY_BOOKING_DEPOSIT);
   const [loading, setLoading] = useState(!initial), [message, setMessage] = useState("");
   const [loadedTarget, setLoadedTarget] = useState<{ salonId?: string } | null>(initial ? { salonId } : null);
@@ -14,9 +18,7 @@ export function BookingDepositPanel({ initial, salonId, paymentsAvailable = true
   const router = useRouter();
   useEffect(() => {
     let active = true;
-    setMessage("");
-    if (initial) { setState(initial); setLoadedTarget({ salonId }); setLoading(false); return; }
-    setLoading(true); setLoadedTarget(null);
+    if (initial) return;
     loadBookingDepositAction(salonId).then(result => {
       if (!active) return;
       if (result.state) { setState(result.state); setLoadedTarget({ salonId }); }
@@ -28,7 +30,7 @@ export function BookingDepositPanel({ initial, salonId, paymentsAvailable = true
   function open(action: () => Promise<{ url?: string; error?: string }>) { startTransition(async () => { const result = await action(); if (result.url) openMarketPayment(result.url); else setMessage(result.error ?? "Please retry."); }); }
   if (loading || !loadedTarget || loadedTarget.salonId !== salonId) return <section className={styles.panel} aria-label="Booking deposit settings" aria-busy={loading}>
     <header><h3>Booking Deposit</h3></header>
-    {loading ? <p role="status">Loading payment settings…</p> : <><p role="alert">{message || "Payment settings could not load. Please retry."}</p><button type="button" onClick={() => { setLoading(true); setLoadAttempt(n => n + 1); }}>Retry loading</button></>}
+    {loading ? <p role="status">Loading payment settings…</p> : <><p role="alert">{message || "Payment settings could not load. Please retry."}</p><button type="button" onClick={() => { setMessage(""); setLoading(true); setLoadedTarget(null); setLoadAttempt(n => n + 1); }}>Retry loading</button></>}
   </section>;
   return <section className={styles.panel} aria-label="Booking deposit settings" aria-busy={busy || loading}>
     <header><div><h3>Booking Deposit</h3>{!settingsOnly && <p>By Reylumi · {monthlyPrice} per salon</p>}</div><span className={styles.badge}>{state.testMode ? "Test mode · No charges" : state.active ? "Subscribed" : "Subscription needed"}</span></header>

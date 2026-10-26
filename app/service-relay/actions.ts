@@ -1,4 +1,5 @@
 "use server";
+import type { ScanDeskLine } from "@/types/staff-scan";
 import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
@@ -96,6 +97,28 @@ export async function findServiceRelay(code: string) {
     if (error) throw new Error(error.message);
     revalidateServiceRelay();
     await broadcastPosStaffChange(salonId, "pos");
+    return { ok: true };
+  } catch (error) { return { error: message(error) }; }
+}
+
+export async function saveServiceRelayAtDesk(input: { visitId: string; revision: number; lines: ScanDeskLine[] }) {
+  try {
+    const { client, salonId } = await deskContext();
+    const { error } = await client.rpc("staff_scan_desk_save", { p_salon: salonId, p_visit: input.visitId, p_expected: input.revision, p_lines: input.lines });
+    if (error) throw new Error(error.message);
+    revalidateServiceRelay();
+    await broadcastPosStaffChange(salonId, "pos");
+    return { ok: true };
+  } catch (error) { return { error: message(error) }; }
+}
+
+export async function notifyPersonalReady(input: { visitId: string; staffId: string | null; chair: string; requestId: string }) {
+  try {
+    const { client, salonId } = await deskContext();
+    const { error } = await client.rpc("personal_qr_notify_ready", { p_salon: salonId, p_visit: input.visitId, p_staff: input.staffId, p_chair: input.chair, p_request: input.requestId });
+    if (error) throw new Error(error.message);
+    revalidatePath("/qr"); revalidatePath("/notifications");
+    await broadcastPosStaffChange(salonId, "waiting");
     return { ok: true };
   } catch (error) { return { error: message(error) }; }
 }

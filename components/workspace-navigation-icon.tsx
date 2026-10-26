@@ -106,6 +106,7 @@ export function WorkspaceNavigationIcon({ name, className = "h-4 w-4" }: { name:
       </>
     ),
     plus: <path d="M12 5v14M5 12h14" />,
+    qr: <><rect x="3" y="3" width="6" height="6" rx="1" /><rect x="15" y="3" width="6" height="6" rx="1" /><rect x="3" y="15" width="6" height="6" rx="1" /><path d="M15 15h3v3h3M15 21h3M21 15v-3M12 3v6M3 12h6M12 12v6" /></>,
     receipt: (
       <>
         <path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2z" />

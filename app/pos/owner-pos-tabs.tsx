@@ -26,10 +26,17 @@ function OwnerMoreMenu() {
   const panel = useRef<HTMLDivElement>(null);
   const [placement, setPlacement] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
   const open = placement !== null;
+  const openRef = useRef(false);
+
+  function closeMenu() {
+    openRef.current = false;
+    setPlacement(null);
+  }
 
   function placeMenu() {
     const button = trigger.current;
     if (!button || button.getClientRects().length === 0) { setPlacement(null); return; }
+    openRef.current = true;
     const rect = button.getBoundingClientRect();
     const viewport = window.visualViewport;
     const width = viewport?.width ?? window.innerWidth;
@@ -46,46 +53,50 @@ function OwnerMoreMenu() {
     const focus = requestAnimationFrame(() => panel.current?.querySelector<HTMLAnchorElement>("a")?.focus({ preventScroll: true }));
     function dismiss(event: PointerEvent) {
       const target = event.target;
-      if (target instanceof Node && !panel.current?.contains(target) && !trigger.current?.contains(target)) setPlacement(null);
+      if (target instanceof Node && !panel.current?.contains(target) && !trigger.current?.contains(target)) closeMenu();
     }
     function onKey(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       event.preventDefault();
-      setPlacement(null);
+      closeMenu();
       trigger.current?.focus({ preventScroll: true });
     }
     function onFocus(event: FocusEvent) {
       const target = event.target;
-      if (target instanceof Node && !panel.current?.contains(target) && !trigger.current?.contains(target)) setPlacement(null);
+      if (target instanceof Node && !panel.current?.contains(target) && !trigger.current?.contains(target)) closeMenu();
     }
     function onScroll(event: Event) {
+      if (!openRef.current) return;
       if (event.target instanceof Node && panel.current?.contains(event.target)) return;
       placeMenu();
     }
     document.addEventListener("pointerdown", dismiss);
     document.addEventListener("keydown", onKey);
     document.addEventListener("focusin", onFocus);
-    window.addEventListener("resize", placeMenu);
+    function reposition() { if (openRef.current) placeMenu(); }
+    window.addEventListener("resize", reposition);
     window.addEventListener("scroll", onScroll, true);
-    window.visualViewport?.addEventListener("resize", placeMenu);
+    window.visualViewport?.addEventListener("resize", reposition);
     return () => {
       cancelAnimationFrame(focus);
       document.removeEventListener("pointerdown", dismiss);
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("focusin", onFocus);
-      window.removeEventListener("resize", placeMenu);
+      window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", onScroll, true);
-      window.visualViewport?.removeEventListener("resize", placeMenu);
+      window.visualViewport?.removeEventListener("resize", reposition);
+      // Activity hides the POS tree but portals live outside its hidden DOM.
+      closeMenu();
     };
   }, [open]);
 
   return <>
-    <button ref={trigger} type="button" className="owner-nav-item owner-more-button" aria-label={translate("More")} aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => open ? setPlacement(null) : placeMenu()}>
+    <button ref={trigger} type="button" className="owner-nav-item owner-more-button" aria-label={translate("More")} aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => open ? closeMenu() : placeMenu()}>
       <OwnerPosIcon name="more" /><span><WorkspaceText text="More" /></span>
     </button>
     {placement ? createPortal(
       <div id={id} ref={panel} className="owner-more-popover" style={placement} role="region" aria-label={translate("More")} data-owner-more-popover>
-        <RoleMoreContent roleKind="owner" activeItemIds={["owner-pos"]} workspace="pos" onNavigate={() => setPlacement(null)} />
+        <RoleMoreContent workspace="pos" roleKind="owner" activeItemIds={["owner-pos"]} onNavigate={closeMenu} />
       </div>, document.body,
     ) : null}
   </>;

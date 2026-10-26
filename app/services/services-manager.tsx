@@ -226,7 +226,8 @@ function CreateServiceDrawer({
   const [draft, setDraft] = useState(EMPTY_CREATE_DRAFT);
   const [result, setResult] = useState<SaveServiceConfigsResult | null>(null);
   const [isPending, startTransition] = useTransition();
-  const errors = validateServiceConfig({ ...draft, serviceId: null }).fieldErrors;
+  const [attempted, setAttempted] = useState(false);
+  const errors = attempted ? validateServiceConfig({ ...draft, serviceId: null }).fieldErrors : {};
   const creationRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (embedded) creationRef.current?.querySelector<HTMLInputElement>("input")?.focus(); }, [embedded]);
 
@@ -244,6 +245,7 @@ function CreateServiceDrawer({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setAttempted(true);
     const validation = validateServiceConfig({ ...draft, serviceId: null });
 
     if (!validation.valid || !canManage) {

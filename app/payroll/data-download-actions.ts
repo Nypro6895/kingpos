@@ -1,11 +1,12 @@
 "use server";
 import { marketPluginContext, payrollDataPluginInstalled } from "@/lib/market-plugins";
+import {recordedPayrollRows,RECORDED_PAYMENT_COLUMNS,RECORDED_ADJUSTMENT_COLUMNS} from "@/lib/payroll-recorded-export";
 import { getPayrollPageData } from "@/lib/payroll";
-import { PAYROLL_INCOME_COLUMNS,PAYROLL_ADJUSTMENT_COLUMNS,PAYROLL_PAYMENT_COLUMNS,PAYROLL_FINANCIAL_COLUMNS,payrollIncomeExport,payrollAdjustmentExport,payrollPaymentExport,payrollFinancialExport } from "@/lib/payroll-export";
 
-export async function downloadPayrollData(input: { start: string; end: string; categories: string[] }) {
+export async function downloadPayrollData(input: { salonId: string; start: string; end: string; categories: string[] }) {
   try {
     const { client, salonId } = await marketPluginContext();
+    if(input.salonId!==salonId)throw new Error("The selected salon changed. Reopen Payroll before downloading.");
     if (!await payrollDataPluginInstalled()) throw new Error("Add Payroll Data Download from Market first.");
     const validDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
     if (!validDate(input.start) || !validDate(input.end) || input.start > input.end || Date.parse(input.end) - Date.parse(input.start) > 365 * 86400000) throw new Error("Choose a valid date range of up to one year.");
@@ -22,14 +23,17 @@ export async function downloadPayrollData(input: { start: string; end: string; c
     if (input.categories.includes("financial") || input.categories.includes("staff")) {
       const data = await getPayrollPageData({ preset: "custom", startDate: input.start, endDate: input.end });
       if (!data.access.canViewAllPayroll) throw new Error("You do not have access to salon payroll data.");
-      if (["legacy_review","schedule_review","processing"].includes(data.ledger.state)) throw new Error(data.ledger.configurationIssue || "This range does not have a verified closed payroll original yet. Select an available scheduled period.");
-      if (input.categories.includes("financial")) addFile("financial",PAYROLL_FINANCIAL_COLUMNS,payrollFinancialExport(data.live.shopDailyRows));
-      if (input.categories.includes("staff")) {
-        const lines=data.live.reportLines??data.live.lines,period={start:input.start,end:input.end};
-        addFile("staff",PAYROLL_INCOME_COLUMNS,payrollIncomeExport(lines,period,data.ledger.state));
-        addFile("adjustments",PAYROLL_ADJUSTMENT_COLUMNS,payrollAdjustmentExport(lines,period));
-        addFile("actual-payments-for-source-periods",PAYROLL_PAYMENT_COLUMNS,payrollPaymentExport(lines,period));
+      if (input.categories.includes("financial")) {
+        const summary=data.live.shopSummary;
+        addFile("financial", ["Date", "POS expected", "Daily Report collected", "Cash", "Card", "Other", "Over / short", "Staff net pay", "Tips allocated (calculated)", "Tax withheld", "Total staff cost", "Remaining after payroll"], [
+          ...data.live.shopDailyRows.map(row => [row.businessDate, row.posIncome, row.actualIncome, row.cashAmount, row.creditCardAmount, row.otherAmount, row.difference, row.staffNetPay, row.tipsPaid, row.taxWithheld, row.staffObligation, row.shopNetIncome]),
+          ["PERIOD TOTAL (includes all staff cost)",summary.posIncome,summary.totalActualIncome,summary.cashAmount,summary.creditCardAmount,summary.otherAmount,summary.overShortTotal,summary.staffNetPay,summary.tipsPaid,summary.taxWithheld,summary.totalStaffObligation,summary.shopNetIncome],
+        ]);
       }
+      const records=recordedPayrollRows(data.recordedFacts);
+      if(records){addFile("recorded-payments",RECORDED_PAYMENT_COLUMNS,records.payments);addFile("recorded-adjustments",RECORDED_ADJUSTMENT_COLUMNS,records.adjustments);}
+      else addFile("recorded-history-status",["Status"],[["Recorded payment/adjustment history unavailable; live calculations do not confirm payment."]]);
+      if (input.categories.includes("staff")) addFile("staff", ["Staff", "Start", "End", "Gross sales", "Earned", "Tips", "Bonus", "Tax withheld", "Cash due (calculated)", "Check due (calculated)", "Final income"], data.live.lines.map(line => [line.staff_display_name_snapshot, input.start, input.end, line.gross_sales, line.earned_amount, line.tip_amount, line.bonus_amount, line.tax_withheld, line.final_cash_amount, line.final_check_amount, line.final_staff_income]));
     }
     if (input.categories.includes("customers")) {
       const rows: (string | number | null)[][] = [];

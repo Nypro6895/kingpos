@@ -69,6 +69,7 @@ export type AccountProfileActionResult = {
     message: string;
     normalizedPhone: string;
     status: "connected";
+    selectionRequired?: boolean;
   } | null;
 };
 
@@ -86,6 +87,7 @@ export type AccountPhoneOtpActionResult = {
     | "too_many_attempts";
   error: string | null;
   linkedCount?: number;
+  selectionRequired?: boolean;
   message?: string;
   normalizedPhone?: string;
   resendAfterSeconds?: number;
@@ -270,8 +272,9 @@ export async function updateAccountProfileAction(
         return { error: claimResult.message };
       }
 
-      if (claimResult.data.linkedCount > 0) {
+      if (claimResult.data.linkedCount > 0 || claimResult.data.selectionRequired) {
         phoneClaim = {
+          selectionRequired: claimResult.data.selectionRequired,
           linkedCount: claimResult.data.linkedCount,
           message: verifiedPhoneConnectedMessage(claimResult.data.linkedCount),
           normalizedPhone: inspection.data.normalizedPhone,
@@ -438,6 +441,7 @@ async function connectCurrentConfirmedAuthPhone(input: {
       message: verifiedPhoneConnectedMessage(claimResult.data.linkedCount),
       normalizedPhone: verifiedPhone.data.normalizedPhone,
       status: "connected" as const,
+        selectionRequired: claimResult.data.selectionRequired,
     },
     ok: true as const,
   };
@@ -490,6 +494,7 @@ async function alreadyConfirmedPhoneOtpResult(
     code: "already_verified",
     error: null,
     linkedCount: connectionResult.data.linkedCount,
+    selectionRequired: connectionResult.data.selectionRequired,
     message: connectionResult.data.message,
     normalizedPhone: connectionResult.data.normalizedPhone,
     status: "already_verified",
@@ -738,6 +743,7 @@ export async function verifyAccountPhoneOtpAction(
   return {
     error: null,
     linkedCount: claimResult.data.linkedCount,
+    selectionRequired: claimResult.data.selectionRequired,
     message:
       claimResult.data.linkedCount > 0
         ? "Phone verified and eligible visit history was connected."
