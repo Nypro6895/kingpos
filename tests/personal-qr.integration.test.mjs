@@ -53,14 +53,19 @@ test('New account Send creates one pending profile, never grants Staff/POS acces
  }finally{await db.close();}
 });
 
-test('Ready is scoped and deduplicated, changes neither turns nor payment; cancelled/working visits cannot be called',async()=>{
+test('Ready retries retain the accepted outcome; cancelled/working visits reject new calls',async()=>{
  const db=await fixture();try{
   await actor(db,100);const v=await checkin(db,await entry(db));
   const args=[id(1),v,id(10),'3',id(210)];await assert.rejects(db.query('select personal_qr_notify_ready($1,$2,$3,$4,$5)',args),/Not authorized/);
   await actor(db,90);await db.query('select personal_qr_notify_ready($1,$2,$3,$4,$5)',args);await db.query('select personal_qr_notify_ready($1,$2,$3,$4,$5)',args);
   assert.equal((await db.query("select count(*) n from app_notifications where notification_type='service_ready'")).rows[0].n,1);
   assert.equal((await db.query('select status from customer_visits where id=$1',[v])).rows[0].status,'waiting');assert.equal((await db.query('select count(*) n from pos_tickets')).rows[0].n,0);
-  await db.query("update customer_visits set status='cancelled' where id=$1",[v]);await assert.rejects(db.query('select personal_qr_notify_ready($1,$2,$3,$4,$5)',args),/no longer waiting/);
+  await db.query("update customer_visits set status='cancelled' where id=$1",[v]);
+  const before=(await db.query('select * from personal_qr_ready where visit_id=$1',[v])).rows;
+  await db.query('select personal_qr_notify_ready($1,$2,$3,$4,$5)',args);
+  assert.deepEqual((await db.query('select * from personal_qr_ready where visit_id=$1',[v])).rows,before);
+  assert.equal((await db.query("select count(*) n from app_notifications where notification_type='service_ready'")).rows[0].n,1);
+  await assert.rejects(db.query('select personal_qr_notify_ready($1,$2,$3,$4,$5)',[...args.slice(0,4),id(211)]),/no longer waiting/);
   await actor(db,null);await assert.rejects(workspace(db),/Sign in/);
  }finally{await db.close();}
 });

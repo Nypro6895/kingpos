@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {startIsolatedSupabase} from './helpers/isolated-supabase-fixture.mjs';
+import {runQrCapabilityAndRetentionChecks} from './helpers/qr-capability-retention-cases.mjs';
 
 // Runs real PostgreSQL/Auth/PostgREST, all migrations and the actual receipt core.
 // The fixture has no network, host ports, production credentials or message worker.
@@ -189,5 +190,6 @@ test('Personal QR → check-in → Staff → POS → History on the complete int
   assert.equal(rpc(owner,'personal_qr_staff_send',{p_salon:salon,p_token:code}).status,'connected');
   assertDenied(outsider,'accept_staff_connection_invite_by_request',{p_request_id:sent.requestId});
  });
+ await runQrCapabilityAndRetentionChecks(t,f,{owner,staffUser,customer,account,salon,staff,services,visit});
  f.save('qr-full-flow-results.json',{completed:true,migrations:f.evidence.migrationHashes.length,realAuth:true,realPostgrest:true,realRls:true,realFinancialCore:true});
 });

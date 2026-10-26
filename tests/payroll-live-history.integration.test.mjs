@@ -42,12 +42,22 @@ insert into public.pos_daily_closings(salon_id,report_date,cash_amount,credit_ca
 insert into public.pos_financial_adjustments(salon_id,target_type,business_date,cash_delta) values('${ids.salon}','daily_closing','2026-09-01',25);
 grant select,insert,update,delete on public.pos_daily_closings,public.payroll_period_staff_inputs,public.staff_payroll_settings,public.pos_ticket_staff_earnings to authenticated;
 `);
-await db.exec(fs.readFileSync('supabase/migrations/20261025143000_payroll_live_history.sql','utf8'));
+await db.exec("alter table public.staff add column display_name text default 'Fixture staff'");
+await db.exec(fs.readFileSync('supabase/migrations/202610060004_classify_staff_service_deletion.sql','utf8'));
+const liveMigration=fs.readFileSync('supabase/migrations/20261025143000_payroll_live_history.sql','utf8');
+const originalGuard=(await db.query("select pg_get_functiondef('public.guard_used_salon_record_delete()'::regprocedure) body")).rows[0].body;
+await db.exec('begin');await db.exec(originalGuard.replace('These rows are setup','These  rows are setup'));
+await assert.rejects(db.exec(liveMigration),/Review Staff deletion guard/);await db.exec('rollback');
+assert.equal((await db.query("select pg_get_functiondef('public.guard_used_salon_record_delete()'::regprocedure) body")).rows[0].body,originalGuard);
+assert.equal((await db.query("select to_regclass('public.payroll_live_change_history') object")).rows[0].object,null);
+await db.exec(liveMigration);
 const actor=async user=>db.exec(`reset role;select set_config('test.actor','${user}',false);set role authenticated;`);
 const scalar=async sql=>(await db.query(sql)).rows[0];
 const daily=async(date,request,revision,values)=>db.query('select public.save_owner_live_daily_report($1,$2,$3,$4,$5::jsonb) result',[ids.salon,date,request,revision,JSON.stringify(values)]);
 const input=async(values,expected)=>db.query('select public.save_owner_live_payroll_input($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb) result',[ids.salon,ids.staff,'2026-10-01','2026-10-15','semi_monthly',JSON.stringify(values),JSON.stringify(expected)]);
 const blank={bonus_amount:0,check_number:null,note:null};
+
+test('Staff deletion guard drift aborts and rolls back the entire proposed migration',()=>{assert.ok(originalGuard.includes('These rows are setup'));});
 
 test('legacy applied cash correction materializes once without removing old history',async()=>{
   await db.exec('reset role');const result=await scalar(`select cash_amount from public.pos_daily_closings where report_date='2026-09-01'`);assert.equal(Number(result.cash_amount),125);
@@ -131,4 +141,24 @@ test('temporary shadow tables cannot redirect Owner checks or financial writes',
   await actor(ids.owner);const result=await daily('2026-10-23','60000000-0000-4000-8000-000000000011',0,{cashAmount:12.34,creditCardAmount:0,otherAmount:0,note:null});assert.equal(Number(result.rows[0].result.current.closingInputs.cashAmount),12.34);
   await db.exec('reset role');assert.equal((await scalar('select count(*)::int n from pg_temp.payroll_live_change_history')).n,0);
 });
+test('deleting Staff preserves prior financial notes, values, actor/source/dates and captured identity',async()=>{
+  const removed='30000000-0000-4000-8000-000000000009';
+  await db.exec(`reset role;insert into public.staff(id,salon_id,is_active,display_name) values('${removed}','${ids.salon}',true,'Original Fixture Name')`);
+  await actor(ids.owner);
+  const values={bonus_amount:10,check_number:'fixture',note:'Original note'};
+  const args=[ids.salon,removed,'2026-08-01','2026-08-15','semi_monthly'];
+  await db.query('select public.save_owner_live_payroll_input($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb)',[...args,JSON.stringify(values),JSON.stringify(blank)]);
+  await db.query('select public.save_owner_live_payroll_input($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb)',[...args,JSON.stringify({...values,bonus_amount:25,note:'Revised note'}),JSON.stringify(values)]);
+  await db.exec('reset role');
+  const before=(await db.query(`select * from public.payroll_live_change_history where staff_id='${removed}' order by id`)).rows;
+  assert.equal(before.length,2);assert.ok(before.every(row=>row.staff_snapshot.id===removed&&row.staff_snapshot.displayName==='Original Fixture Name'));
+  await db.exec(`update public.staff set display_name='Renamed later' where id='${removed}'`);
+  await db.exec(`delete from public.staff where id='${removed}'`);
+  await actor(ids.owner);
+  for(const row of before){const after=await scalar(`select * from public.payroll_live_change_history where id='${row.id}'`);assert.deepEqual(after,{...row,staff_id:null});}
+  const deleted=(await db.query(`select * from public.payroll_live_change_history where staff_snapshot->>'id'='${removed}' and after_values='{}'::jsonb`)).rows;
+  assert.equal(deleted.length,1);assert.equal(deleted[0].before_values.note,'Revised note');assert.equal(deleted[0].before_values.bonus_amount,25);
+  await actor(ids.anna);assert.equal((await db.query(`select * from public.payroll_live_change_history where staff_snapshot->>'id'='${removed}'`)).rows.length,0,'retention does not expand Staff RLS');
+});
+
 test.after(async()=>{await db.close();});

@@ -25,7 +25,9 @@ where cash_amount<>0 or credit_card_amount<>0 or other_amount<>0 or note is not 
 create table public.payroll_live_change_history (
   id uuid primary key default gen_random_uuid(),
   salon_id uuid not null references public.locations(id) on delete cascade,
-  staff_id uuid references public.staff(id) on delete cascade,
+  staff_id uuid references public.staff(id) on delete set null,
+  -- Minimal business identity captured at creation, independent of Staff lifetime.
+  staff_snapshot jsonb,
   source_table text not null,
   source_id uuid not null,
   period_start date not null,
@@ -37,6 +39,18 @@ create table public.payroll_live_change_history (
 );
 create index payroll_live_history_scope on public.payroll_live_change_history(salon_id,period_start,period_end,created_at desc,id);
 alter table public.payroll_live_change_history enable row level security;
+-- The existing Staff deletion guard rejects every referenced non-setup row,
+-- including SET NULL references. Permit only this audited, retaining FK action;
+-- all existing financial-history blockers remain authoritative.
+do $$declare definition text; marker text:='    -- These rows are setup or nonfinancial presentation.';begin
+  definition:=pg_get_functiondef('public.guard_used_salon_record_delete()'::regprocedure);
+  if cardinality(string_to_array(definition,marker))<>2 then raise exception 'Review Staff deletion guard before retaining live audit history'; end if;
+  definition:=replace(definition,marker,
+    '    if ref.nspname=''public'' and ref.relname=''payroll_live_change_history'' and ref.attname=''staff_id''
+      and exists(select 1 from pg_catalog.pg_constraint c where c.conrelid=ref.conrelid and c.confrelid=TG_RELID and c.contype=''f'' and c.confdeltype=''n'') then continue; end if;'
+    ||chr(10)||marker);
+  execute definition;
+end $$;
 revoke all on public.payroll_live_change_history from public,anon,authenticated;
 grant select on public.payroll_live_change_history to authenticated;
 create policy payroll_live_history_read on public.payroll_live_change_history for select to authenticated using (
@@ -116,8 +130,12 @@ begin
     union select s.id from public.staff s where tg_table_name='salon_payroll_settings' and s.salon_id=sid and s.is_active loop
     own_before:=case when old_staff=recipient_staff or tg_table_name='salon_payroll_settings' then b else '{}'::jsonb end;
     own_after:=case when new_staff=recipient_staff or tg_table_name='salon_payroll_settings' then a else '{}'::jsonb end;
-    insert into public.payroll_live_change_history(salon_id,staff_id,source_table,source_id,period_start,period_end,before_values,after_values,actor_id)
-      values(sid,recipient_staff,tg_table_name,record_id,starts,ends,own_before,own_after,actor) returning id into audit_id;
+    insert into public.payroll_live_change_history(salon_id,staff_id,staff_snapshot,source_table,source_id,period_start,period_end,before_values,after_values,actor_id)
+      values(sid,(select s.id from public.staff s where s.id=recipient_staff and s.salon_id=sid),
+        coalesce((select jsonb_build_object('id',s.id,'displayName',s.display_name) from public.staff s where s.id=recipient_staff and s.salon_id=sid),
+          (select h.staff_snapshot from public.payroll_live_change_history h where h.salon_id=sid and h.staff_snapshot->>'id'=recipient_staff::text order by h.created_at desc,h.id desc limit 1),
+          jsonb_build_object('id',recipient_staff,'displayName',null)),
+        tg_table_name,record_id,starts,ends,own_before,own_after,actor) returning id into audit_id;
     select s.account_user_id into target_user from public.staff s where s.id=recipient_staff and s.salon_id=sid and s.is_active;
     if target_user is not null then
       insert into public.app_notifications(account_id,salon_id,recipient_user_id,recipient_kind,notification_type,title,body,href,event_key)

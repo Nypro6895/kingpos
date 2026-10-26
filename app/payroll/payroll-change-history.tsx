@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { WorkspaceText as Text } from "@/components/workspace-language";
+import { payrollHistoryStaffLabel } from "@/lib/payroll-live-history-presentation";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
 import styles from "./payroll-dashboard.module.css";
 
@@ -29,7 +30,7 @@ export function PayrollChangeHistory({ changes, staffNames = {}, title = "Change
     <p className={styles.note}><Text text="Current amounts already include these changes. History does not add another charge." /></p>
     {!changes.length && <p className={styles.note}><Text text="No recorded changes in this period." /></p>}
     {changes.slice(0, visible).map(change => <details className={styles.day} key={change.id} id={`change-${change.id}`}>
-      <summary><Text text="Updated" /> · {new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }).format(new Date(change.created_at))}{change.staff_id && staffNames[change.staff_id] ? ` · ${staffNames[change.staff_id]}` : ""}</summary>
+      <summary><Text text="Updated" /> · {new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }).format(new Date(change.created_at))}{payrollHistoryStaffLabel(change, staffNames) ? ` · ${payrollHistoryStaffLabel(change, staffNames)}` : ""}</summary>
       <p className={styles.note}>{change.period_start}{change.period_end !== change.period_start && change.period_end !== "9999-12-31" ? ` – ${change.period_end}` : ""} · <Text text={change.source_table === "pos_daily_closings" ? "Daily Report" : change.source_table === "staff_payroll_settings" ? "Pay settings" : change.source_table === "pos_ticket_staff_earnings" ? "Service / tip" : "Payroll input"} /></p>
       <dl>{[...new Set([...Object.keys(change.before_values), ...Object.keys(change.after_values)])].filter(field => JSON.stringify(change.before_values[field]) !== JSON.stringify(change.after_values[field])).map(field => <div className={styles.row} key={field}><dt><Text text={labels[field] ?? field} /></dt><dd><Text text={value(field, change.before_values[field])} /> → <Text text={value(field, change.after_values[field])} /></dd></div>)}</dl>
       <p className={styles.note}><Text text="Changed by" />: <Text text={change.actor_id ? "Owner" : "System"} /></p>

@@ -26,6 +26,18 @@ create table public.personal_qr_ready (
 alter table public.personal_qr_ready enable row level security;
 revoke all on public.personal_qr_ready from public,anon,authenticated;
 
+-- Durable request identities outlive the latest Ready and notification dismissal.
+create table public.personal_qr_ready_requests (
+ salon_id uuid not null references public.locations(id) on delete cascade,
+ request_id uuid not null,
+ visit_id uuid not null references public.customer_visits(id) on delete cascade,
+ staff_id uuid, chair text,
+ created_at timestamptz not null default clock_timestamp(),
+ primary key(salon_id,request_id)
+);
+alter table public.personal_qr_ready_requests enable row level security;
+revoke all on public.personal_qr_ready_requests from public,anon,authenticated;
+
 create function public.personal_qr_issue() returns jsonb
 language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); qr personal_qr_codes;
@@ -217,17 +229,25 @@ end $$;
 
 create function public.personal_qr_notify_ready(p_salon uuid,p_visit uuid,p_staff uuid,p_chair text,p_request uuid,p_key uuid default null,p_signature text default null) returns void
 language plpgsql security definer set search_path=public,pg_temp as $$
-declare v customer_visits; customer_account uuid; prior personal_qr_ready; label text;
+declare v customer_visits; customer_account uuid; prior personal_qr_ready; receipt personal_qr_ready_requests; label text;
 begin
  if not coalesce(user_has_salon_permission(p_salon,array['tickets.manage']),false)
  and not coalesce(pos_portable_access_salon_id(p_key,p_signature)=p_salon and pos_portable_access_has_capability(p_key,p_signature,'portable.pos.use'),false) then raise exception 'Not authorized'; end if;
  if p_request is null or length(coalesce(p_chair,''))>40 then raise exception 'Invalid Ready request'; end if;
  perform pg_advisory_xact_lock(hashtextextended('service-relay:'||p_salon::text,0));
+ select * into receipt from public.personal_qr_ready_requests where salon_id=p_salon and request_id=p_request;
+ if found then
+  if receipt.visit_id is distinct from p_visit or receipt.staff_id is distinct from p_staff
+   or receipt.chair is distinct from nullif(btrim(p_chair),'') then raise exception 'Ready request was already used with different details'; end if;
+  return;
+ end if;
  select * into v from customer_visits where id=p_visit and salon_id=p_salon for update;
  if v.id is null or v.status<>'waiting' or v.ticket_id is not null then raise exception 'This customer is no longer waiting'; end if;
  if p_staff is not null and not exists(select 1 from staff where id=p_staff and salon_id=p_salon and is_active and pos_enabled) then raise exception 'Staff is not available'; end if;
  select customer_user_id into customer_account from customers where id=v.customer_id and location_id=p_salon;
  if customer_account is null then raise exception 'This check-in is not linked to a Personal account'; end if;
+ insert into public.personal_qr_ready_requests(salon_id,request_id,visit_id,staff_id,chair)
+ values(p_salon,p_request,p_visit,p_staff,nullif(btrim(p_chair),''));
  select * into prior from personal_qr_ready where visit_id=v.id;
  if prior.request_id=p_request or (prior.notified_at>now()-interval '1 minute' and prior.staff_id is not distinct from p_staff and coalesce(prior.chair,'')=coalesce(btrim(p_chair),'')) then return; end if;
  insert into personal_qr_ready(visit_id,salon_id,staff_id,chair,request_id) values(v.id,p_salon,p_staff,nullif(btrim(p_chair),''),p_request)
