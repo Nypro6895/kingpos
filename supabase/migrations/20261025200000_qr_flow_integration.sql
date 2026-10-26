@@ -14,9 +14,9 @@ begin
  day:=(v.checked_in_at at time zone coalesce(get_salon_business_timezone(p_salon),'America/Chicago'))::date;
  select * into r from checkin_receipts where visit_id=v.id;
  if r.visit_id is null then
-  insert into checkin_receipt_counters values(p_salon,day,1)
+  insert into checkin_receipt_counters(salon_id,business_date,last_number) values(p_salon,day,1)
    on conflict(salon_id,business_date) do update set last_number=checkin_receipt_counters.last_number+1 returning last_number into n;
-  insert into checkin_receipts values(v.id,p_salon,day,n) returning * into r;
+  insert into checkin_receipts(visit_id,salon_id,business_date,queue_number) values(v.id,p_salon,day,n) returning * into r;
  end if;
  return jsonb_build_object('visitId',v.id,'queueNumber',r.queue_number,'businessDate',r.business_date,
   'salonName',(select name from locations where id=p_salon),'customerName',(select name from customers where id=v.customer_id));
@@ -39,9 +39,12 @@ end $$;
 do $$declare definition text; marker text:=' insert into service_relay_tickets(visit_id,salon_id,scan_mode)';begin
  definition:=pg_get_functiondef('public.personal_qr_checkin(uuid,uuid[],uuid)'::regprocedure);
  if position(marker in definition)=0 then raise exception 'Review Personal check-in before integrating receipt numbering'; end if;
+ if cardinality(string_to_array(definition,marker))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025200000_qr_flow_integration.sql #1'; end if;
  definition:=replace(definition,marker,
   ' if visit.status=''waiting'' then perform personal_qr_ensure_receipt_for_visit(target_salon,visit.id); end if;'||chr(10)||marker);
+ if cardinality(string_to_array(definition,'not between 1 and 30'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025200000_qr_flow_integration.sql #2'; end if;
  definition:=replace(definition,'not between 1 and 30','not between 1 and 8');
+ if cardinality(string_to_array(definition,'''Choose your services'''))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025200000_qr_flow_integration.sql #3'; end if;
  definition:=replace(definition,'''Choose your services''','''Choose up to 8 services''');
  execute definition;
 end $$;
@@ -64,11 +67,14 @@ execute function public.personal_qr_consume_ready();
 do $$declare definition text;begin
  definition:=pg_get_functiondef('public.personal_qr_visit(uuid)'::regprocedure);
  if position('where n.visit_id=v.id)' in definition)=0 then raise exception 'Review Personal Ready projection'; end if;
+ if cardinality(string_to_array(definition,'where n.visit_id=v.id)'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025200000_qr_flow_integration.sql #4'; end if;
  definition:=replace(definition,'where n.visit_id=v.id)','where n.visit_id=v.id and n.consumed_at is null)');
  execute definition;
  definition:=pg_get_functiondef('public.personal_qr_notify_ready(uuid,uuid,uuid,text,uuid,uuid,text)'::regprocedure);
  if position('(prior.notified_at>now()' in definition)=0 or position('notified_at=now();' in definition)=0 then raise exception 'Review Ready retry handling'; end if;
+ if cardinality(string_to_array(definition,'(prior.notified_at>now()'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025200000_qr_flow_integration.sql #5'; end if;
  definition:=replace(definition,'(prior.notified_at>now()','(prior.consumed_at is null and prior.notified_at>now()');
+ if cardinality(string_to_array(definition,'notified_at=now();'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025200000_qr_flow_integration.sql #6'; end if;
  definition:=replace(definition,'notified_at=now();','notified_at=now(),consumed_at=null;');
  execute definition;
 end $$;

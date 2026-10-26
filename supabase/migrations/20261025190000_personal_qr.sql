@@ -253,6 +253,7 @@ end $$;
 do $$declare definition text;begin
  definition:=pg_get_functiondef('public.service_relay_payload(uuid)'::regprocedure);
  if position('''scanMode'',t.scan_mode,' in definition)=0 then raise exception 'Install Staff Scan before Personal QR'; end if;
+ if cardinality(string_to_array(definition,'''scanMode'',t.scan_mode,'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025190000_personal_qr.sql #1'; end if;
  definition:=replace(definition,'''scanMode'',t.scan_mode,','''scanMode'',t.scan_mode,''canNotifyReady'',(v.status=''waiting'' and v.ticket_id is null and c.customer_user_id is not null),');
  execute definition;
 end $$;

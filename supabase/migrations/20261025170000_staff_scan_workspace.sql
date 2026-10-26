@@ -6,10 +6,13 @@ alter table public.service_relay_tickets add column scan_mode boolean not null d
 do $$declare definition text;begin
  definition:=pg_get_functiondef('public.pos_dispatch_service_relay(uuid)'::regprocedure);
  if position('status in (''waiting'',''in_service'') order by queue_number' in definition)=0 then raise exception 'Review relay dispatcher before installing Scan'; end if;
+ if cardinality(string_to_array(definition,'status in (''waiting'',''in_service'') order by queue_number'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #1'; end if;
  definition:=replace(definition,'status in (''waiting'',''in_service'') order by queue_number','status in (''waiting'',''in_service'') and not scan_mode order by queue_number');
  execute definition;
  definition:=pg_get_functiondef('public.service_relay_payload(uuid)'::regprocedure);
+ if cardinality(string_to_array(definition,'''revision'',t.revision,'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #2'; end if;
  definition:=replace(definition,'''revision'',t.revision,','''revision'',t.revision,''scanMode'',t.scan_mode,');
+ if cardinality(string_to_array(definition,'''queueNumber'',t.queue_number'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #3'; end if;
  definition:=replace(definition,'''queueNumber'',t.queue_number','''queueNumber'',coalesce((select r.queue_number from checkin_receipts r where r.visit_id=t.visit_id),t.queue_number)');
  execute definition;
 end $$;
@@ -244,8 +247,10 @@ end $$;
 do $$declare definition text;begin
  definition:=pg_get_functiondef('public.service_relay_submit(uuid,uuid,integer,numeric,numeric,uuid,text)'::regprocedure);
  if position('if t.status<>''checkout'' or p_expected is null' in definition)=0 then raise exception 'Review relay settlement before installing Scan'; end if;
+ if cardinality(string_to_array(definition,'select * into t from service_relay_tickets where visit_id=p_visit and salon_id=p_salon for update;'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #4'; end if;
  definition:=replace(definition,'select * into t from service_relay_tickets where visit_id=p_visit and salon_id=p_salon for update;',
   'perform staff_scan_reconcile(p_salon); select * into t from service_relay_tickets where visit_id=p_visit and salon_id=p_salon for update;');
+ if cardinality(string_to_array(definition,'if t.status<>''checkout'' or p_expected is null'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #5'; end if;
  definition:=replace(definition,'if t.status<>''checkout'' or p_expected is null',
   'if t.scan_mode and t.status=''in_service'' and t.revision=p_expected and exists(select 1 from service_relay_lines l join service_relay_offers o on o.id=l.offer_id where o.visit_id=p_visit and o.status in (''working'',''done'')) then
     update service_relay_offers set status=''done'' where visit_id=p_visit and status=''working'';
@@ -257,7 +262,9 @@ do $$declare definition text;begin
  execute definition;
  -- Keep the desk's installed portable/owner authorization and legacy work visible.
  definition:=pg_get_functiondef('public.service_relay_workspace(uuid,boolean,uuid,text)'::regprocedure);
+ if cardinality(string_to_array(definition,'perform pos_dispatch_service_relay(p_salon);'))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #6'; end if;
  definition:=replace(definition,'perform pos_dispatch_service_relay(p_salon);','perform staff_scan_reconcile(p_salon); perform pos_dispatch_service_relay(p_salon);');
+ if cardinality(string_to_array(definition,'''services'',coalesce('))<>2 then raise exception 'Expected exactly one migration rewrite target: 20261025170000_staff_scan_workspace.sql #7'; end if;
  definition:=replace(definition,'''services'',coalesce(','''staff'',case when p_desk then coalesce((select jsonb_agg(jsonb_build_object(''id'',s.id,''name'',s.display_name) order by s.display_name) from staff s where s.salon_id=p_salon and s.is_active and s.pos_enabled),''[]''::jsonb) else ''[]''::jsonb end,''services'',coalesce(');
  execute definition;
 end $$;
