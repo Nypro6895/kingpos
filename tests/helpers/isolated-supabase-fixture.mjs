@@ -118,7 +118,12 @@ export async function startIsolatedSupabase(labelPrefix = 'booking-access', imag
     const migrations = path.join(process.cwd(), 'supabase/migrations');
     for (const file of fs.readdirSync(migrations).filter(n => n.endsWith('.sql')).sort()) {
       const bytes = fs.readFileSync(path.join(migrations, file));
-      sql(`begin;\n${bytes.toString()}\ncommit;`); evidence.migrationHashes.push({ file, sha256: hash(bytes) });
+      // Replay the SQL text with the same LF convention as the deployed Linux
+      // checkout. PL/pgSQL pg_get_functiondef guards compare literal newlines;
+      // raw Windows CRLF inside an earlier function body must not invalidate a
+      // later unchanged guard. Preserve both hashes in the test receipt.
+      const executed = bytes.toString().replaceAll('\r\n', '\n');
+      sql(`begin;\n${executed}\n;\ncommit;`); evidence.migrationHashes.push({ file, sha256: hash(bytes), executedSha256: hash(executed), lineEndingNormalization: 'CRLF to LF only', transactionBoundary: 'Explicit final statement delimiter, including EOF-terminated SQL files' });
       if (evidence.migrationHashes.length % 50 === 0) console.log(`Isolated fixture: ${evidence.migrationHashes.length} migrations`);
     }
     spawn('rest', 'public.ecr.aws/supabase/postgrest:v14.5', { PGRST_DB_URI: `postgres://authenticator:${password}@127.0.0.1:5432/postgres`,

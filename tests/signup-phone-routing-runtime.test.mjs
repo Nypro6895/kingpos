@@ -27,7 +27,7 @@ test('signup API validates phone, keeps it untrusted until OTP, and preserves em
  globalThis.signupFixture={calls:[],session:true};
  const {POST}=await load('app/(app)/api/auth/signup/route.ts',{
   '@/lib/supabase/session-policy':'export const writeLoginPolicy=()=>{};export const sessionCookieOptions=()=>({});',
-  '@/lib/abuse-server':'export const createSignupTicket=async()=>"fixture-ticket";',
+  '@/lib/abuse-server':'export const createSignupTicket=async()=>"fixture-ticket";export const getAbuseErrorResponse=()=>Response.json({error:"Synthetic abuse guard"},{status:400});',
   '@/lib/advertising-attribution':'export const recordAdvertisingSignup=async()=>{};',
   '@/lib/supabase/server':`export const ACCESS_TOKEN_COOKIE='access',REFRESH_TOKEN_COOKIE='refresh';export const createSupabaseServerClient=()=>({auth:{signUp:async input=>{globalThis.signupFixture.calls.push(input);return {data:{user:{id:'fixture'},session:globalThis.signupFixture.session?{access_token:'fixture-access',refresh_token:'fixture-refresh'}:null},error:null};}}});`,
   '@/lib/post-auth-routing':'export const getPostAuthWorkspaceNavigation=async input=>({redirectTo:input.requestedPath,workspace:null});export const fallbackPostAuthWorkspaceNavigation=()=>({redirectTo:"/explore",workspace:null});',

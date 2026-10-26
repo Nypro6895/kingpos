@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "1d85f270d246910f38f72a2fb7efb8417782336c8a3c73a0c2212329d258fe47",
+  "buildId": "51f4b7069d5b73075720ea722e7dfaec632817b94b89046bb36df29e5cd5c98c",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 566132,
-      "sha256": "0873b475905305f1da79132e225ab3cd66a8ecdd6fb910e292fba61e456ddb9e",
+      "bytes": 589332,
+      "sha256": "de8c73338943f910d922af40114ddee3bc06840b357a2fb365051710639d5383",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4241118,
-      "sha256": "128e34a8332438d213ec10b7f02acde485e9208c3c026888f7dc8b68a1996be2",
+      "bytes": 4295469,
+      "sha256": "23d13d368b6fb73586cffd001e4c074d467d43fc74d5caa9f8d04aca2472aa58",
       "mime": "text/javascript"
     },
     {
@@ -2742,6 +2742,20 @@
       "cacheable": true
     },
     {
+      "name": "page.services-catalog-admission",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.services-catalog",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "page.more",
       "path": "/api/app-local/read",
       "argumentKeys": [],
@@ -3311,7 +3325,8 @@
         "location",
         "latitude",
         "longitude",
-        "batch"
+        "batch",
+        "query"
       ],
       "access": "scoped",
       "cacheable": false
@@ -3625,6 +3640,20 @@
       ]
     },
     {
+      "name": "action.7e782fa906349d994c1d7257",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e6ed2533cee7b65eb1589fce",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.9a9014c676ca50443dc7f3ea",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -3829,20 +3858,6 @@
     },
     {
       "name": "action.2f6f64620a3c5535b79da7d5",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.2b1c614855accebcb89d4505",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.d29d025153b49ac81fca2aba",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5144,6 +5159,13 @@
       ]
     },
     {
+      "name": "action.60b40a31d0c3d4b4735e43b8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.ef6399bcf1eddc328eb44797",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5320,6 +5342,13 @@
     },
     {
       "name": "action.ffb7ca22ac735acf50557145",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c6288b29694833d7ec21681b",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5508,27 +5537,6 @@
       ]
     },
     {
-      "name": "action.9fd4ab0baf110f64f1724bbc",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.b3c9e30ba50c20ac87db234e",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.0331240a42531083fcd3a4d7",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
       "name": "action.0c401bb88ab58561433b2370",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5558,6 +5566,34 @@
     },
     {
       "name": "action.c6936e7df92440098868ffc8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.59a914e15c81c5ff5299612a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.10c2df65d7601ab7a291d3aa",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.59d4487eb01643b82c1e02d9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.84de4a64ca07b333163b0f3c",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"

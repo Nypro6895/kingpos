@@ -21,9 +21,9 @@ const more=()=>document.querySelector('.owner-more-button');
 const link=text=>[...document.querySelectorAll('[data-owner-more-popover] a')].find(e=>e.textContent.trim()===text);
 (async()=>{await pause();
  more().click();await pause();check(!!link('View all settings'),'Settings action exists');check(link('View all settings').getAttribute('href')==='/settings','Settings action targets all-settings hub');
- link('View all settings').click();await pause();check(window.qaPath==='/settings','All Settings navigation');check(!document.querySelector('[data-owner-more-popover]'),'Portal closes despite immediate scroll and resize');check(document.querySelector('.settings-hub').dataset.mobileStep==='home','Initial Settings shows account and salon hub');
- [...document.querySelectorAll('button')].find(e=>e.textContent.includes('Fixture Salon')).click();await pause();check(document.querySelector('.settings-hub').dataset.mobileStep==='edit','Salon editor can be selected');
- window.go('/pos');await pause();check(!document.querySelector('[data-owner-more-popover]'),'Returning to POS keeps More closed');more().click();await pause();link('View all settings').click();await pause();check(document.querySelector('.settings-hub').dataset.mobileStep==='home','Reopening All Settings resets previous salon editor');
+ link('View all settings').click();await pause();check(window.qaPath==='/settings','All Settings navigation');check(!document.querySelector('[data-owner-more-popover]'),'Portal closes despite immediate scroll and resize');check(document.querySelector('.settings-hub').dataset.settingsView==='home','Initial Settings shows account and salon hub');
+ [...document.querySelectorAll('.settings-account-link')].find(e=>e.textContent.includes('Fixture Salon')).click();await pause();check(document.querySelector('.settings-hub').dataset.settingsView==='group','Salon settings group can be selected');
+ window.go('/pos');await pause();check(!document.querySelector('[data-owner-more-popover]'),'Returning to POS keeps More closed');more().click();await pause();link('View all settings').click();await pause();check(document.querySelector('.settings-hub').dataset.settingsView==='home','Reopening All Settings resets previous salon editor');
  window.go('/pos');await pause();more().click();await pause();window.go('/other');await pause();check(!document.querySelector('[data-owner-more-popover]'),'Activity hide removes portal even without link click');
  window.go('/pos');await pause();more().click();await pause();link('All').click();await pause();check(window.qaPath==='/more'&&!document.querySelector('[data-owner-more-popover]'),'All closes More and navigates');
  window.go('/pos');await pause();more().click();await pause();document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await pause();check(!document.querySelector('[data-owner-more-popover]'),'Escape closes menu');
@@ -33,7 +33,7 @@ const link=text=>[...document.querySelectorAll('[data-owner-more-popover] a')].f
 const stubs = {
  language: `import React from 'react';export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>s=>s;`,
  navigation: `import React from 'react';export const usePathname=()=>React.useSyncExternalStore(fn=>{window.addEventListener('qa-route',fn);return()=>window.removeEventListener('qa-route',fn)},()=>window.qaPath);`,
- link: `import React from 'react';export default function Link({href,onClick,onNavigate,children,...props}){return <a {...props} href={href} onClick={e=>{onClick?.(e);if(!e.defaultPrevented){e.preventDefault();onNavigate?.({preventDefault(){}});window.go(href)}}}>{children}</a>}`,
+ link: `import React from 'react';export const useLinkStatus=()=>({pending:false});export default function Link({href,onClick,onNavigate,children,...props}){return <a {...props} href={href} onClick={e=>{onClick?.(e);if(!e.defaultPrevented){e.preventDefault();onNavigate?.({preventDefault(){}});window.go(href)}}}>{children}</a>}`,
 };
 const result = await build({stdin:{contents:fixture,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'qa-fixtures',setup(b){
  b.onResolve({filter:/next\/navigation$/},()=>({path:'navigation',namespace:'stub'}));

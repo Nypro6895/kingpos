@@ -19,7 +19,7 @@ const nothing = () => null;
 const domProps = (props, omitted) => Object.fromEntries(Object.entries(props).filter(([key]) => !omitted.includes(key)));
 const stubs = {
   'next/navigation': { usePathname: () => pathname, useRouter: () => ({}), useSearchParams: () => new URLSearchParams() },
-  'next/link': props => h('a', domProps(props, ['prefetch', 'onNavigate'])),
+  'next/link': Object.assign(props => h('a', domProps(props, ['prefetch', 'onNavigate'])),{useLinkStatus:()=>({pending:false})}),
   'next/image': props => h('img', domProps(props, ['priority'])),
   '@/components/workspace-language': { WorkspaceText: ({ text }) => text, useWorkspaceTranslation: () => value => value },
   '@/components/campaign-plugin-context': { useCampaignPlugin: () => false },

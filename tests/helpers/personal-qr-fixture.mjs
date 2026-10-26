@@ -3,7 +3,7 @@ import { fixture as relayFixture, id } from './service-relay-fixture.mjs';
 export { id };
 
 function definition(file, name) {
- const sql=fs.readFileSync(file,'utf8');const start=sql.indexOf('create or replace function public.'+name+'(');
+ const sql=fs.readFileSync(file,'utf8').replaceAll('\r\n','\n');const start=sql.indexOf('create or replace function public.'+name+'(');
  if(start<0)throw Error('Missing fixture dependency '+name);
  return sql.slice(start,sql.indexOf('$$;',start)+3);
 }

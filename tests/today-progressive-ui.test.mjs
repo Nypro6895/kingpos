@@ -1,94 +1,45 @@
-import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
-import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
-import test from 'node:test';
-import ts from 'typescript';
-import { build } from 'esbuild';
-import { chromium } from 'playwright-core';
-
-const browserPath = process.env.TEST_BROWSER_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-
-test('Today keeps same-day warm details while a new business day starts with its own actual counts', { timeout: 60000, skip: !existsSync(browserPath) }, async () => {
-  const serverModule = {};
-  new Function('require', 'exports', ts.transpileModule(readFileSync('lib/experience-live-resource-server.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText)(name => name === 'node:crypto' ? { createHash } : {}, serverModule);
-  const metric = (label, value) => ({ label, value, chart: null, detail: null, href: null });
-  const core = { pendingSections: { metrics: ['sales'], details: true }, attention: [], businessHours: {}, date: '2026-10-12', dayView: { currentDate: '2026-10-12', selectedDate: '2026-10-12', maxDate: '2026-10-12', previousDate: '2026-10-11', nextDate: null, todayHref: '/staff/today', isCurrentDate: true, invalidDate: null }, generatedAt: '2026-10-12T15:00:00Z', greetingName: 'Owner', loadErrors: [], noAccess: false, performance: { bookingStatus: { active: 0, completed: 0, upcoming: 0 }, emptyLabel: null, salesTrend: [], sales: null, staffBars: [] }, permissions: { canViewBookings: true, canViewDashboard: true, canViewReports: true, canViewStaffFinancials: true, canViewTickets: true }, quickAccesses: { selected: [] }, rightNow: { scheduleHref: null, upcomingBookings: [], waitingClients: [] }, salonName: 'My Salon', summary: { customers: metric('Appointments', '12'), sales: { ...metric('Sales Today', '--'), detail: 'Financial totals require Reports permission.' }, staff: metric('Staff Working', '4'), waiting: metric('Waiting', '2') }, team: [], timezone: 'America/Chicago' };
-  const full = { ...core, pendingSections: { metrics: [], details: false }, summary: { ...core.summary, sales: metric('Sales Today', '$325') } };
-  const initial = serverModule.createLiveResourceSnapshot(core, ['generatedAt']);
-  const final = serverModule.createLiveResourceSnapshot(full, ['generatedAt']);
-  const nextCore = { ...core, date: '2026-10-13', generatedAt: '2026-10-13T15:00:00Z', dayView: { ...core.dayView, currentDate: '2026-10-13', selectedDate: '2026-10-13', maxDate: '2026-10-13', previousDate: '2026-10-12' }, summary: { ...core.summary, staff: metric('Staff Working', '7') } };
-  const nextInitial = serverModule.createLiveResourceSnapshot(nextCore, ['generatedAt']);
-  const nextFinal = serverModule.createLiveResourceSnapshot({ ...nextCore, pendingSections: { metrics: [], details: false }, summary: { ...nextCore.summary, sales: metric('Sales Today', '$450') } }, ['generatedAt']);
-  const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `import React,{useState}from'react';import{createRoot}from'react-dom/client';import{TodayDashboardClient}from'./app/staff/today/today-dashboard-client';function App(){const[key,setKey]=useState(0),[initial,setInitial]=useState(${JSON.stringify(initial)});window.restart=()=>setKey(value=>value+1);window.nextDay=()=>{setInitial(${JSON.stringify(nextInitial)});setKey(value=>value+1)};return <TodayDashboardClient key={key} initialSnapshot={initial} scope="owner" salonId="salon" isOwner={false}/>};createRoot(document.getElementById('root')).render(<App/>);` }, outfile: 'bundle.js', bundle: true, write: false, jsx: 'automatic', format: 'iife', alias: { '@': process.cwd() }, plugins: [{ name: 'ui-fixture', setup(b) {
-    b.onResolve({ filter: /^(next\/link|.*workspace-language|.*owner-market-promo|.*quick-access-editor|.*pos-workspace-sync)$/ }, args => ({ path: args.path, namespace: 'fixture' }));
-    b.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ resolveDir: process.cwd(), loader: 'tsx', contents: path === 'next/link' ? `import React from'react';export default({children,...props})=>React.createElement('a',props,children);` : path.endsWith('workspace-language') ? `import React from'react';export const WorkspaceText=({text})=>text;export const WorkspaceElement=({as='div',children,...props})=>React.createElement(as,props,children);` : `export const OwnerMarketPromo=()=>null;export const QuickAccessPanel=()=>null;export const subscribePosChanges=()=>()=>{};` }));
-  } }] });
-  let calls = 0, failing = true;
-  let release, releaseNext = () => {};
-  const gate = new Promise(resolve => { release = resolve; });
-  let responseGate = gate, responseSnapshot = final;
-  const server = createServer(async (req, res) => {
-    if (req.url === '/bundle.js') { res.setHeader('Content-Type', 'application/javascript'); res.end(bundle.outputFiles[0].text); return; }
-    if (req.url.startsWith('/api/experience/today')) { calls++; await responseGate; if (failing) { res.writeHead(503); res.end('{}'); return; } const result = serverModule.liveResourceResponse(new Request(`http://localhost${req.url}`, { headers: req.headers }), responseSnapshot); res.writeHead(result.status, Object.fromEntries(result.headers)); res.end(await result.text()); return; }
-    res.setHeader('Content-Type', 'text/html'); res.end('<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>');
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const browser = await chromium.launch({ args: ['--no-proxy-server'], executablePath: browserPath, headless: true });
-  try {
-    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-    const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.goto(`http://127.0.0.1:${server.address().port}`);
-    await page.getByText('12', { exact: true }).waitFor();
-    assert.equal(await page.getByText('4', { exact: true }).count(), 1);
-    assert.equal(await page.getByText('Financial totals require Reports permission.', { exact: true }).count(), 0);
-    assert.equal(await page.getByText('$0', { exact: true }).count(), 0);
-    assert.equal(await page.locator('[aria-busy=true]').count(), 3);
-    await page.evaluate(() => { window.firstHeader = document.querySelector('header'); document.querySelector('details').open = true; });
-    release();
-    await page.getByRole('button', { name: 'Try again', exact: true }).waitFor();
-    assert.equal(calls, 2, 'finite read retry budget');
-    failing = false;
-    await page.getByRole('button', { name: 'Try again', exact: true }).click();
-    await page.getByText('$325', { exact: true }).waitFor();
-    assert.equal(await page.evaluate(() => document.querySelector('header') === window.firstHeader && document.querySelector('details').open), true);
-    assert.equal(await page.locator('[aria-busy=true]').count(), 0);
-    const previousCalls = calls;
-    await page.evaluate(() => window.restart());
-    await page.getByText('$325', { exact: true }).waitFor();
-    assert.equal(await page.locator('[aria-busy=true]').count(), 0);
-    assert.equal(calls, previousCalls, 'complete retained data wins over a new partial initial frame');
-    responseGate = new Promise(resolve => { releaseNext = resolve; });
-    responseSnapshot = nextFinal;
-    await page.evaluate(() => window.nextDay());
-    await page.getByText('7', { exact: true }).waitFor({ timeout: 5000 });
-    assert.equal(await page.getByText('$325', { exact: true }).count(), 0, 'a new resolved business date never reuses yesterday’s complete snapshot');
-    assert.equal(await page.locator('[aria-busy=true]').count(), 3);
-    releaseNext();
-    await page.getByText('$450', { exact: true }).waitFor();
-    assert.equal(await page.locator('[aria-busy=true]').count(), 0);
-    assert.deepEqual(errors, []);
-  } finally { release(); releaseNext(); await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
+import assert from 'node:assert/strict';import test from 'node:test';import fs from 'node:fs';import http from 'node:http';import {createHash}from'node:crypto';import ts from 'typescript';import {build}from'esbuild';import {chromium}from'playwright-core';
+const phases=['staff','bookings','waiting','financials','extras'];
+function dashboard(date='2026-10-12',scope='owner'){
+ const metric=(label,value)=>({label,value,detail:'Loading.'});
+ return{date,timezone:'UTC',salonName:scope,noAccess:false,generatedAt:new Date().toISOString(),dayView:{currentDate:date,isCurrentDate:true},permissions:{canViewDashboard:true,canViewBookings:true,canViewReports:true,canViewStaffFinancials:true,canViewTickets:true},pendingSections:{sections:phases,metrics:['staff','waiting','customers','sales'],details:true},loadErrors:[],attention:[],summary:{staff:metric('Team','--'),waiting:metric('Waiting','--'),customers:metric('Appointments','--'),sales:metric('Sales','--')},team:[],rightNow:{waitingClients:[],upcomingBookings:[],scheduleHref:'/bookings'},performance:{bookingStatus:[]},quickAccesses:{}};
+}
+test('Today real phase readers settle independently, retry errors, retain warm UI and reject former scope/date',{timeout:45000},async t=>{
+ const api={};new Function('exports','require',ts.transpileModule(fs.readFileSync('lib/experience-live-resource-server.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(api,n=>n==='node:crypto'?{createHash}:{});
+ const initial=dashboard('2026-10-12','owner-a'),next=dashboard('2026-10-13','owner-a'),other=dashboard('2026-10-13','owner-b');
+ const entry=`import React from 'react';import{createRoot}from'react-dom/client';import{TodayDashboardClient}from'./app/staff/today/today-dashboard-client';
+ function App(){const[value,setValue]=React.useState({data:${JSON.stringify(initial)},scope:'owner-a'}),[key,setKey]=React.useState(0);window.remount=()=>setKey(k=>k+1);window.nextDay=()=>setValue({data:${JSON.stringify(next)},scope:'owner-a'});window.otherScope=()=>setValue({data:${JSON.stringify(other)},scope:'owner-b'});return <TodayDashboardClient key={key} initialSnapshot={{data:value.data}} scope={value.scope} salonId='salon' isOwner/>;}createRoot(document.getElementById('root')).render(<App/>);`;
+ const bundle=await build({stdin:{contents:entry,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,jsx:'automatic',format:'iife',alias:{'@':process.cwd()},define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'phase-observer-only',setup(b){
+  b.onResolve({filter:/today-dashboard-view$/},()=>({path:'view',namespace:'fixture'}));
+  b.onResolve({filter:/app-local-resource$|use-live-experience-refresh$|components\/experience-scope$/},a=>({path:a.path,namespace:'fixture'}));
+  b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'tsx',resolveDir:process.cwd(),contents:a.path==='view'?`import React from'react';export function TodayDashboardView({dashboard:d}){return <main data-scope={d.salonName}><header><details><summary>Keep open</summary><input aria-label='Unrelated draft' defaultValue='draft'/></details></header>{Object.entries(d.summary).map(([key,m])=><p key={key} data-metric={key}>{m.value}</p>)}<p data-pending>{d.pendingSections?.sections?.join(',')}</p>{d.attention.map(a=><p key={a.id}>{a.label}</p>)}</main>;}`:a.path.endsWith('app-local-resource')?`export const useAppLocalResource=()=>{throw Error('Unexpected native read')};export const discardAppLocalResources=()=>{};export const refreshAppLocalResource=()=>{};`:a.path.endsWith('experience-scope')?`export const useExperienceScope=()=>null;`:`export const useLiveExperienceRefresh=()=>{};` }));
+ }}]});
+ const gates=new Map(),calls=[];let badFinancial=true;
+ function hold(key){let release;const promise=new Promise(r=>release=r);gates.set(key,{promise,release});}
+ hold('2026-10-12:financials');hold('2026-10-12:extras');hold('2026-10-13:owner-a:financials');
+ const server=http.createServer(async(req,res)=>{try{
+  if(req.url==='/bundle.js'){res.setHeader('Content-Type','application/javascript');res.end(bundle.outputFiles[0].text);return;}
+  if(req.url.startsWith('/api/experience/today')){
+   const url=new URL(req.url,'http://fixture.invalid'),phase=url.searchParams.get('phase'),date=url.searchParams.get('date'),scope=url.searchParams.get('scope');assert.ok(phases.includes(phase));assert.ok(date);calls.push({phase,date,scope});
+   const gate=gates.get(`${date}:${scope}:${phase}`)??gates.get(`${date}:${phase}`);if(gate)await gate.promise;
+   const patch=dashboard(date,scope);patch.generatedAt=new Date().toISOString();patch.pendingSections={sections:phases.filter(p=>p!==phase),metrics:[],details:true};patch.summary.staff.value=date==='2026-10-12'?'12':'7';patch.summary.customers.value='4';patch.summary.waiting.value='2';patch.summary.sales.value=scope==='owner-b'?'$700':date==='2026-10-12'?'$325':'$450';
+   if(phase==='financials'&&badFinancial)patch.loadErrors=[{section:'financials',area:'reports',message:'Synthetic unavailable'}];
+   const response=api.liveResourceResponse(new Request(url,{headers:req.headers}),api.createLiveResourceSnapshot(patch,['generatedAt']));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(await response.text());return;
+  }
+  res.setHeader('Content-Type','text/html');res.end('<div id="root"></div><script src="/bundle.js"></script>');
+ }catch(error){res.writeHead(500);res.end(error.message);}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ let browser;try{browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});t.signal.addEventListener('abort',()=>void browser.close(),{once:true});const page=await browser.newPage();page.setDefaultTimeout(7000);const errors=[];page.on('pageerror',e=>errors.push(e.message));const origin=`http://127.0.0.1:${server.address().port}`;await page.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());await page.goto(origin);
+  await page.locator('[data-metric=staff]').filter({hasText:'12'}).waitFor();assert.equal(await page.locator('[data-metric=customers]').innerText(),'4');assert.equal(await page.locator('[data-metric=sales]').innerText(),'--');assert.ok(!await page.getByText('All good',{exact:true}).count());
+  await page.locator('summary').click();await page.getByLabel('Unrelated draft').fill('retained');await page.evaluate(()=>window.header=document.querySelector('header'));
+  gates.get('2026-10-12:financials').release();await page.locator('[data-today-retry=financials] button').waitFor();assert.ok(!(await page.locator('[data-pending]').innerText()).includes('financials'));badFinancial=false;await page.locator('[data-today-retry=financials] button').click();await page.locator('[data-metric=sales]').filter({hasText:'$325'}).waitFor();await page.locator('[data-today-retry=financials]').waitFor({state:'hidden'});gates.get('2026-10-12:extras').release();await page.waitForFunction(()=>document.querySelector('[data-pending]').textContent==='');assert.equal(await page.getByLabel('Unrelated draft').inputValue(),'retained');assert.equal(await page.evaluate(()=>document.querySelector('header')===window.header&&document.querySelector('details').open),true);
+  const warmCalls=calls.length;await page.evaluate(()=>window.remount());await page.locator('[data-metric=sales]').filter({hasText:'$325'}).waitFor();assert.equal(calls.length,warmCalls);
+  await page.evaluate(()=>window.nextDay());await page.locator('[data-metric=staff]').filter({hasText:'7'}).waitFor();assert.equal(await page.locator('[data-metric=sales]').innerText(),'--');
+  await page.evaluate(()=>window.otherScope());await page.locator('[data-metric=sales]').filter({hasText:'$700'}).waitFor();gates.get('2026-10-13:owner-a:financials').release();await page.waitForTimeout(50);assert.equal(await page.locator('[data-metric=sales]').innerText(),'$700');assert.equal(await page.locator('main').getAttribute('data-scope'),'owner-b');assert.deepEqual(errors,[]);assert.ok(calls.every(c=>phases.includes(c.phase)&&c.date&&c.scope));
+ }finally{for(const g of gates.values())g.release();await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 
-test('the Today resource key binds selected and current business dates while the live endpoint stays unchanged', () => {
-  let options;
-  const endpoints = [];
-  const api = {};
-  const modules = {
-    'react/jsx-runtime': { jsx: (type, props) => ({ type, props }) },
-    '@/components/loading-feedback': { PageLoadingSkeleton: 'loading' },
-    '@/lib/fetch-live-experience-resource': { fetchLiveExperienceResource: endpoint => { endpoints.push(endpoint); return async () => ({ data: {} }); } },
-    '@/lib/use-experience-resource': { useExperienceResource: value => { options = value; return { data: value.initialData, available: true, refresh: async () => {}, error: undefined, refreshing: false }; } },
-    '@/lib/use-live-experience-refresh': { useLiveExperienceRefresh() {} },
-    './today-dashboard-view': { TodayDashboardView: 'today' },
-  };
-  new Function('require', 'exports', ts.transpileModule(readFileSync('app/staff/today/today-dashboard-client.tsx', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText)(name => modules[name] ?? {}, api);
-  const key = (date, currentDate, requestedDate) => {
-    api.TodayDashboardClient({ initialSnapshot: { data: { date, loadErrors: [], dayView: { currentDate }, pendingSections: { details: true } }, revision: 'initial', updatedAt: new Date().toISOString() }, scope: 'owner', salonId: 'salon', requestedDate, isOwner: true });
-    return options.key;
-  };
-  assert.notEqual(key('2026-10-12', '2026-10-12'), key('2026-10-13', '2026-10-13'));
-  assert.notEqual(key('2026-10-12', '2026-10-12', '2026-10-12'), key('2026-10-12', '2026-10-13', '2026-10-12'));
-  assert.deepEqual(endpoints, ['/api/experience/today', '/api/experience/today', '/api/experience/today?date=2026-10-12', '/api/experience/today?date=2026-10-12']);
+test('Today wrapper delegates the resolved initial dashboard and authorization scope unchanged',()=>{
+ const jsx=(type,props)=>({type,props}),Child=()=>null,exports={};const deps={'react/jsx-runtime':{jsx},'./today-progressive-client':{TodayProgressiveClient:Child}};
+ new Function('require','exports',ts.transpileModule(fs.readFileSync('app/staff/today/today-dashboard-client.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>{assert.ok(n in deps,n);return deps[n];},exports);
+ const data=dashboard(),value=exports.TodayDashboardClient({initialSnapshot:{data},scope:'actor-salon-session',salonId:'salon',requestedDate:'2026-10-12',isOwner:true});assert.equal(value.type,Child);assert.equal(value.props.initialDashboard,data);assert.equal(value.props.scope,'actor-salon-session');assert.equal(value.props.requestedDate,'2026-10-12');assert.equal(value.props.isOwner,true);
 });
