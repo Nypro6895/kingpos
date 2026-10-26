@@ -1,8 +1,10 @@
 import "server-only";
 import { cache } from "react";
 import { scopedBusinessContext } from "./scoped-business-context";
+import { memoizeReadContext } from "./read-context-scope";
 
 import { routes } from "@/lib/routes";
+import { loadMembershipPermissionCodes } from "@/lib/membership-permissions";
 import {
   isActiveSalonLifecycle,
   isHistoricalSalonLifecycle,
@@ -18,6 +20,7 @@ import {
   normalizeSalonProfileMediaPath,
 } from "@/lib/salon-profile-media";
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
+import { assertAuthAvailable } from "@/lib/supabase/auth-rest";
 import {
   getCurrentKingUser,
   getKingUserForAuthUser,
@@ -44,8 +47,6 @@ export const LOCATION_SELECT =
 export const ROLE_SELECT =
   "id, account_id, name, code, description, is_system, created_at, updated_at";
 
-const ROLE_PERMISSION_SELECT = "id, role_id, permission_id, created_at";
-const PERMISSION_SELECT = "id, code";
 
 export type WorkspaceType = "account" | "personal" | "salon";
 export type SalonMode = "manage" | "staff";
@@ -167,16 +168,6 @@ type CurrentBusinessContextOptions = {
   cookieStore?: CookieReader | null;
 };
 
-type PermissionRow = {
-  code: string;
-  id: string;
-};
-
-type RolePermissionRow = {
-  id: string;
-  permission_id: string;
-  role_id: string;
-};
 
 type StaffContextSalonRow = {
   id: string;
@@ -851,57 +842,9 @@ async function loadPermissionCodesForMembership(
   membership: CurrentMembership | null,
   supabase: SupabaseContextClient | null,
 ) {
-  if (!membership?.role_id) {
-    return new Set<string>();
-  }
-
-  if (!supabase) {
-    return new Set<string>();
-  }
-
-  const { data: rolePermissions, error: rolePermissionsError } = await supabase
-    .from("role_permissions")
-    .select(ROLE_PERMISSION_SELECT)
-    .eq("role_id", membership.role_id)
-    .returns<RolePermissionRow[]>();
-
-  if (rolePermissionsError) {
-    console.error("Supabase load role permission ids failed", {
-      code: rolePermissionsError.code,
-      details: rolePermissionsError.details,
-      hint: rolePermissionsError.hint,
-      message: rolePermissionsError.message,
-      roleId: membership.role_id,
-    });
-    throw new Error(rolePermissionsError.message);
-  }
-
-  const permissionIds = (rolePermissions ?? []).map(
-    (rolePermission) => rolePermission.permission_id,
-  );
-
-  if (permissionIds.length === 0) {
-    return new Set<string>();
-  }
-
-  const { data: permissions, error: permissionsError } = await supabase
-    .from("permissions")
-    .select(PERMISSION_SELECT)
-    .in("id", permissionIds)
-    .returns<PermissionRow[]>();
-
-  if (permissionsError) {
-    console.error("Supabase load permission codes failed", {
-      code: permissionsError.code,
-      details: permissionsError.details,
-      hint: permissionsError.hint,
-      message: permissionsError.message,
-      roleId: membership.role_id,
-    });
-    throw new Error(permissionsError.message);
-  }
-
-  return new Set((permissions ?? []).map((permission) => permission.code));
+  if (!membership) return new Set<string>();
+  const permissions = await loadMembershipPermissionCodes([membership], supabase);
+  return permissions.get(membership.id) ?? new Set<string>();
 }
 
 async function loadCurrentMemberships(input: {
@@ -1503,6 +1446,8 @@ async function getCurrentBusinessContextAuth(
 
     const { data, error } = await supabase.auth.getUser(accessToken);
 
+    assertAuthAvailable(error, error?.status, "Authentication");
+
     if (error || !data.user) {
       return { supabase: null, user: null };
     }
@@ -1517,7 +1462,7 @@ async function getCurrentBusinessContextAuth(
   }
 
   const [supabase, user] = await Promise.all([
-    createAuthenticatedSupabaseServerClient(),
+    createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true }),
     getCurrentKingUser(),
   ]);
 
@@ -1525,13 +1470,14 @@ async function getCurrentBusinessContextAuth(
 }
 
 const getDefaultBusinessContext = cache(() => loadCurrentBusinessContext({}));
+const businessReadKey = Symbol("business-context");
 
 export function getCurrentBusinessContext(options: CurrentBusinessContextOptions = {}): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
   if (scoped && !options.accessToken && !options.cookieStore) return Promise.resolve(scoped);
   return options.accessToken || options.cookieStore
     ? loadCurrentBusinessContext(options)
-    : getDefaultBusinessContext();
+    : memoizeReadContext(businessReadKey, getDefaultBusinessContext);
 }
 
 async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
@@ -1610,15 +1556,11 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
   const inactiveManageSalons = historicalManageSalons;
   const allBusinesses = allSalons as Business[];
   const salonsByAccount = groupSalonsByAccount(allSalons);
-  const salonProfilesById = await loadSalonWorkspaceProfiles({
-    salonIds: allSalons.map((salon) => salon.id),
-    supabase,
-  });
-  const staffLinkedContext = await loadStaffSalons({
-    accountsById,
-    supabase,
-    user,
-  });
+  const [salonProfilesById, staffLinkedContext, permissionCodesByMembershipId] = await Promise.all([
+    loadSalonWorkspaceProfiles({ salonIds: allSalons.map((salon) => salon.id), supabase }),
+    loadStaffSalons({ accountsById, supabase, user }),
+    loadMembershipPermissionCodes([...accountMemberships, ...enrichedSalonMemberships], supabase),
+  ]);
   const availableAccounts = dedupeById([...accountsById.values()]);
   const personalWorkspace = buildPersonalWorkspaceOption();
   const accountOptions = accountMemberships
@@ -1633,15 +1575,6 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
     .filter(
       (workspace): workspace is CurrentWorkspaceOption => workspace !== null,
     );
-  const permissionCodesByMembershipId = new Map<string, Set<string>>();
-
-  for (const membership of [...accountMemberships, ...enrichedSalonMemberships]) {
-    permissionCodesByMembershipId.set(
-      membership.id,
-      await loadPermissionCodesForMembership(membership, supabase),
-    );
-  }
-
   const salonMembershipBySalonId = new Map(
     enrichedSalonMemberships.map((membership) => [
       membership.salon_id,

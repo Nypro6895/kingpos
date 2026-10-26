@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getPhoneOtpProviderStatus } from "@/lib/phone-otp";
+import {systemSmsReady} from '@/lib/system-sms';
 import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -47,6 +48,7 @@ export type CustomerClaimPreview = {
 export type CustomerClaimCompletion = {
   idempotent: boolean;
   linkedCount: number;
+  selectionRequired?: boolean;
 };
 
 export type ProfilePhoneClaimInspection = {
@@ -379,24 +381,26 @@ export async function claimCustomersForVerifiedPhone(
     data: {
       idempotent: false,
       linkedCount: readNumber(payload.linkedCount),
+      selectionRequired: readBoolean(payload.selectionRequired),
     },
     ok: true,
   };
 }
 
-export function getPhoneVerificationRequirement(
+export async function getPhoneVerificationRequirement(
   normalizedPhone: string,
-): PhoneVerificationRequirement {
+): Promise<PhoneVerificationRequirement> {
   const providerStatus = getPhoneOtpProviderStatus();
+  const ready=providerStatus.configured && await systemSmsReady('authSms');
 
   return {
     attemptLimit: providerStatus.attemptLimit,
-    canSendOtp: providerStatus.configured,
+    canSendOtp: ready,
     codeExpirySeconds: providerStatus.codeExpirySeconds,
     message: "Verify this phone to save it and connect eligible visit history.",
     normalizedPhone,
     provider: providerStatus.provider,
-    reason: providerStatus.reason,
+    reason: ready?providerStatus.reason:'System authentication SMS is disabled or not configured.',
     resendCooldownSeconds: providerStatus.resendCooldownSeconds,
     status: "verification_required",
   };

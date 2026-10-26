@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { LegalDocumentPage } from "@/app/legal/legal-components";
 import { legalDocuments, legalMetadata } from "@/lib/legal-policies";
 import type { Metadata } from "next";
@@ -8,6 +9,8 @@ export const metadata: Metadata = legalMetadata({
   title: legalDocuments.privacy.title,
 });
 
-export default function PrivacyPage() {
+function PrivacyPage() {
   return <LegalDocumentPage document={legalDocuments.privacy} />;
 }
+
+export default withExperiencePage(PrivacyPage);

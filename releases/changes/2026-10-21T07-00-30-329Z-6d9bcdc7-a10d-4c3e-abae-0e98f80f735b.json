@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "pc-ios-today-session-reliability-20261021",
+  "status": "working",
+  "summary": "Preserve read-failure causes and audit Today503/session restart on isolated verified PC source; release and shared bundle transport held",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/bounded-get.ts",
+    "lib/supabase/auth-rest.ts",
+    "lib/read-request-timing.ts",
+    "tests/read-failure-provenance.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "tests/context-today-timing.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\candidate-pre-edit",
+    "commit": "8b4748e34be818c8d7ea27650616ab3dfd73b8a6"
+  },
+  "validation": [
+    {
+      "name": "dirty-source-backup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\latest-backup.json"
+    },
+    {
+      "name": "regression-tests",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "online-authority-refresh-20261021"
+  ],
+  "id": "6d9bcdc7-a10d-4c3e-abae-0e98f80f735b",
+  "recordedAt": "2026-10-21T07:00:30.329Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

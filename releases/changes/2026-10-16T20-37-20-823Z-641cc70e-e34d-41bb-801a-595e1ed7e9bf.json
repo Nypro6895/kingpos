@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "salon-not-found-title-followup-20261016",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/not-found.tsx"
+  ],
+  "summary": "Preserve the existing app 404 message and leave the document title with active route metadata; avoid the default error view inline title remaining hoisted after navigation.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-setup-release-20261016\\title-followup\\frozen-source",
+    "commit": "b1157ff755c6a82ecd11042e766e80094db72915"
+  },
+  "dependencies": [
+    "salon-setup-review-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Full production webpack build with TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/title-followup/production-build.log"
+    },
+    {
+      "name": "Next 16 production fixture after 404 to active Settings interaction: exactly one Settings title",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/title-followup/fixture-verification.json"
+    },
+    {
+      "name": "Full built app: 404 to Login, active client interaction, exactly one correct title",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/title-followup/full-app-verification.json"
+    },
+    {
+      "name": "ESLint for not-found component",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/title-followup/lint.log"
+    }
+  ],
+  "nativeAssessment": "Web-only server route fallback; no changes to the signed iPhone source or bundled client. Existing verified TestFlight 22.1 remains the native release.",
+  "id": "641cc70e-e34d-41bb-801a-595e1ed7e9bf",
+  "recordedAt": "2026-10-16T20:37:20.823Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/not-found.tsx": "3b5b2ffac8ad0a31e1f4b3aff847d9af1e160f246bc330401fdb2114cdb0fd8a"
+  }
+}

@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
+
 
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
@@ -29,7 +31,7 @@ export function SettingsSubmitButton({
       disabled={disabled || pending}
       type="submit"
     >
-      {pending ? <><span aria-hidden="true" className="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none" />{pendingLabel}</> : saved ? savedLabel : children}
+      {pending ? <><span aria-hidden="true" className="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none" /><WorkspaceText text={pendingLabel} /></> : saved ? savedLabel : children}
     </button>
   );
 }

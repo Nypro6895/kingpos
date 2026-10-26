@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "ios-testflight-readonly-availability-20261016",
+  "status": "working",
+  "summary": "Add an explicit GET-only TestFlight availability checker and separate dispatch-only status workflow, with exact build and existing-group proofs and no tester/store mutation.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-testflight-availability.mjs",
+    "ios/scripts/check-testflight-availability.test.mjs",
+    ".github/workflows/reylumi-ios-availability-readonly.yml"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Read-only checker fixtures and workflow syntax",
+      "result": "pending"
+    },
+    {
+      "name": "Authenticated Apple availability read after actual upload",
+      "result": "pending"
+    }
+  ],
+  "id": "aa6c8a6c-7640-49dd-be46-93a247e7719b",
+  "recordedAt": "2026-10-16T19:31:22.772Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

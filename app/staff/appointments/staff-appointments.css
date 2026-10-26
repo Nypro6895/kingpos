@@ -31,9 +31,9 @@
 .staff-appointments-frame {
   margin-left: auto;
   margin-right: auto;
-  max-width: min(1880px, calc(100vw - 32px));
-  padding-left: 16px;
-  padding-right: 16px;
+  max-width: none;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
   width: 100%;
 }
 
@@ -116,9 +116,7 @@
 .staff-appointments-toolbar {
   align-items: center;
   background: var(--staff-booking-surface);
-  border: 1px solid var(--staff-booking-border);
-  border-radius: 8px;
-  box-shadow: 0 14px 34px rgba(33, 28, 36, 0.06);
+  border-bottom: 1px solid var(--staff-booking-border);
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -217,9 +215,8 @@
 .staff-appointments-panel,
 .staff-appointments-card {
   background: var(--staff-booking-surface);
-  border: 1px solid var(--staff-booking-border);
-  border-radius: 8px;
-  box-shadow: 0 1px 0 rgba(33, 28, 36, 0.03);
+  border-block: 1px solid var(--staff-booking-border);
+  border-radius: 0;
 }
 
 .staff-appointments-card {
@@ -233,13 +230,13 @@
 
 .staff-appointments-card:hover {
   border-color: var(--staff-booking-strong-border);
-  box-shadow: 0 12px 24px rgba(57, 37, 52, 0.08);
+  background: var(--staff-booking-soft);
 }
 
 .staff-appointments-empty {
   background: var(--staff-booking-soft);
-  border: 1px solid var(--staff-booking-border);
-  border-radius: 8px;
+  border-block: 1px solid var(--staff-booking-border);
+  border-radius: 0;
   color: var(--staff-booking-muted);
 }
 
@@ -1015,8 +1012,8 @@
 .staff-booking-settings-summary {
   align-items: center;
   background: var(--staff-booking-surface);
-  border: 1px solid var(--staff-booking-border);
-  border-radius: 8px;
+  border-bottom: 1px solid var(--staff-booking-border);
+  border-radius: 0;
   display: flex;
   gap: 16px;
   justify-content: space-between;
@@ -1119,8 +1116,8 @@
 }
 
 .staff-booking-hours-row {
-  border: 1px solid var(--staff-booking-border);
-  border-radius: 8px;
+  border-bottom: 1px solid var(--staff-booking-border);
+  border-radius: 0;
   display: grid;
   gap: 10px;
   padding: 10px;

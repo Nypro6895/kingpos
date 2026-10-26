@@ -1,0 +1,103 @@
+"use client";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { campaignDeliveryRequest } from "@/lib/campaign-delivery-area";
+import { adRequest, prepareAdImage } from "@/lib/advertising-client";
+import styles from "./owner-campaign.module.css";
+type Ad = { title: string; caption: string; image: string | null; href: string; ticket: string };
+export function OwnerSponsoredPost({ location, latitude, longitude, query }: { query?: string; location?: string; latitude?:number|null; longitude?:number|null }) {
+  const selection = useMemo(() => campaignDeliveryRequest(location,latitude,longitude,query),[location,latitude,longitude,query]);
+  const requestKey = selection?.key ?? null;
+  const [delivery, setDelivery] = useState<{ key: string; ads: Ad[] } | null>(null);
+  useEffect(() => {
+    if (!selection) return;
+    const abort = new AbortController();
+    void adRequest(selection.body ? selection.url : `${selection.url}&batch=1`, { signal: abort.signal, ...(selection.body ? {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...JSON.parse(selection.body),batch:true})}: {}) }, selection.body ? 10000 : 4000)
+      .then((value: Ad | Ad[] | null) => {
+        const ads = (Array.isArray(value) ? value : value ? [value] : []).filter(ad => ad?.ticket && ad.href).slice(0,5);
+        if (!abort.signal.aborted) setDelivery({ key:selection.key, ads });
+      }).catch(() => {});
+    return () => abort.abort();
+  }, [selection]);
+  const ads = delivery?.key === requestKey ? delivery.ads : [];
+  if (!ads.length) return null;
+  return <section aria-label="Sponsored posts" style={{display:"flex",gap:16,overflowX:"auto",scrollSnapType:"x mandatory",paddingBlock:12}}>
+    {ads.map(ad => <div key={ad.ticket} className="empty:hidden" style={{flex:ads.length === 1 ? "1 0 100%" : "0 0 min(88%, 400px)",minWidth:0,scrollSnapAlign:"start"}}><SponsoredCard ad={ad}/></div>)}
+  </section>;
+}
+function SponsoredCard({ad}:{ad:Ad}) {
+  const [imageResult, setImageResult] = useState<{ ticket: string; ready: boolean } | null>(null);
+  const imageReady = imageResult?.ticket === ad.ticket && imageResult.ready;
+  // Preloading and the rendered image have separate load/error lifecycles.
+  const [loadedImage, setLoadedImage] = useState<{ ticket: string; src: string } | null>(null);
+  const displayedImageReady = !ad.image || (loadedImage?.ticket === ad.ticket && loadedImage.src === ad.image);
+  useEffect(() => {
+    const abort = new AbortController();
+    // Each slot prepares independently; a slow sibling never blocks a ready ad.
+    void prepareAdImage(ad.image ?? "", abort.signal).then(ready => {
+      if (!abort.signal.aborted) setImageResult({ ticket: ad.ticket, ready });
+    });
+    return () => abort.abort();
+  }, [ad.ticket, ad.image]);
+  const [admittedTicket, setAdmittedTicket] = useState<string | null>(null);
+  const [dismissedTicket, setDismissedTicket] = useState<string | null>(null);
+  const imageLoaded = useCallback(() => setLoadedImage({ ticket: ad.ticket, src: ad.image ?? "" }), [ad.ticket, ad.image]);
+  const imageFailed = useCallback(() => setDismissedTicket(ad.ticket), [ad.ticket]);
+  const ref = useRef<HTMLElement>(null);
+  const claims = useRef(new Map<string, Promise<boolean>>());
+  useEffect(() => {
+    const element = ref.current;
+    if (!ad || !element || !imageReady || !displayedImageReady || dismissedTicket === ad.ticket) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let disposed = false, requested = false, visible = false;
+    const cancel = () => { clearTimeout(timer); timer = undefined; };
+    const schedule = () => {
+      cancel();
+      if (!visible || document.visibilityState !== "visible" || requested) return;
+      timer = setTimeout(() => {
+        const rect = element.getBoundingClientRect();
+        const height = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+        const image = element.querySelector("img");
+        if (image && (!image.complete || !image.naturalWidth)) return;
+        if (disposed || document.visibilityState !== "visible" || height < rect.height * .5) return;
+        requested = true;
+        let claim = claims.current.get(ad.ticket);
+        if (!claim) {
+          claim = adRequest("/api/campaigns/delivery", { method: "POST", keepalive: true,
+            headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: ad.ticket, kind: "view" }) })
+            .then(result => result.ok === true).catch(() => false);
+          claims.current.set(ad.ticket, claim);
+        }
+        void claim.then(ok => {
+          if (disposed) return;
+          if (ok) setAdmittedTicket(ad.ticket); else setDismissedTicket(ad.ticket);
+        });
+      }, 1000);
+    };
+    const observer = new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting && entries[0].intersectionRatio >= .5;
+      schedule();
+    }, { threshold: [0, .5, 1] });
+    observer.observe(element);
+    document.addEventListener("visibilitychange", schedule);
+    return () => { disposed = true; cancel(); observer.disconnect(); document.removeEventListener("visibilitychange", schedule); };
+  }, [ad, dismissedTicket, imageReady, displayedImageReady]);
+  if (!ad || dismissedTicket === ad.ticket || (imageResult?.ticket === ad.ticket && !imageResult.ready)) return null;
+  // Reserve the server-selected slot while loading, preserving rotation order.
+  // Failed images remove only their own slot and never create a billable view.
+  if (!imageReady) return <div className={styles.card} aria-label="Loading sponsored post" aria-busy="true">
+    <span className={styles.eyebrow}>SPONSORED</span>
+    <div aria-hidden="true" style={{ aspectRatio: "8 / 5", maxHeight: 320, background: "var(--surface-muted, #f3f4f6)", borderRadius: 14, margin: "12px 0" }} />
+    <p className={styles.muted}>Loading sponsored post…</p>
+  </div>;
+  return <article ref={ref} className={styles.card} aria-label="Sponsored post">
+    <div className={styles.cardHeader}><span className={styles.eyebrow}>SPONSORED</span><button className={styles.close} aria-label="Hide sponsored post" onClick={() => setDismissedTicket(ad.ticket)}>×</button></div>
+    {ad.image ? <Image unoptimized src={ad.image} alt="" width={640} height={400} sizes="(max-width: 600px) 100vw, 50vw" onLoad={imageLoaded} onError={imageFailed} style={{ width: "100%", height: "auto", maxHeight: 320, objectFit: "cover", borderRadius: 14, margin: "12px 0" }} /> : null}
+    <h3 style={{ marginTop: 12 }}>{ad.title}</h3>{ad.caption ? <p className={styles.muted}>{ad.caption}</p> : null}
+    <a className={styles.primary} href={ad.href} onClick={() => {
+      // Navigation is immediate. An early click cannot create an unearned, billable view.
+      if (admittedTicket === ad.ticket) void adRequest("/api/campaigns/delivery", { method: "POST", keepalive: true,
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: ad.ticket, kind: "click" }) }).catch(() => {});
+    }}>Discover this post →</a>
+  </article>;
+}

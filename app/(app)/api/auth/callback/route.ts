@@ -1,14 +1,16 @@
+import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
+import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   createSupabaseServerClient,
-  getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
 import {
   fallbackPostAuthWorkspaceNavigation,
   getPostAuthWorkspaceNavigation,
 } from "@/lib/post-auth-routing";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { resumeSignupPhonePath } from "@/lib/signup-phone-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
@@ -45,9 +47,10 @@ export async function GET(request: Request) {
     );
   }
 
+  await recordAdvertisingSignup(request, data.user);
   const navigation = await getPostAuthWorkspaceNavigation({
     accessToken: data.session.access_token,
-    requestedPath,
+    requestedPath: resumeSignupPhonePath(data.user, requestedPath),
   }).catch((error: unknown) => {
     console.error("Unable to resolve post-callback workspace navigation", {
       message: error instanceof Error ? error.message : String(error),
@@ -61,16 +64,20 @@ export async function GET(request: Request) {
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
-    getSupabaseCookieOptions(data.session.expires_in),
+    sessionCookieOptions(true),
   );
   response.cookies.set(
     REFRESH_TOKEN_COOKIE,
     data.session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(true),
   );
   if (navigation.workspace) {
-    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+    writeNormalizedWorkspaceContextCookies(
+      response.cookies,
+      navigation.workspace,
+    );
   }
 
+  writeLoginPolicy(response.cookies, data.session.access_token, true);
   return response;
 }

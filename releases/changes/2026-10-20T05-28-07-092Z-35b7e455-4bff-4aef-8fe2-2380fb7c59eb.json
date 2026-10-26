@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "staff-online-access-20261020",
+  "status": "working",
+  "summary": "Preserve explicit Staff unconfirmed revocation when optional online identity/proof checks fail, including warm cached native lease recovery.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "c94ddafac05e28616abfaee7243dafbd1e72449b"
+  },
+  "validation": [
+    {
+      "name": "Optional proof failure regression and canonical release revalidation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "35b7e455-4bff-4aef-8fe2-2380fb7c59eb",
+  "recordedAt": "2026-10-20T05:28:07.092Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

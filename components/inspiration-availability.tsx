@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import { openQuickBooking } from "@/lib/quick-booking-client";
 type Hint = {key:string;startAt:string|null;timezoneIana?:string};
@@ -46,5 +47,5 @@ export function InspirationAvailability({href}:{href:string}) {
   const nextDay=tomorrow.toISOString().slice(0,10);
   const label=day===today?"Today":day===nextDay?"Tomorrow":new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:timezone}).format(new Date(hint.startAt));
   const time=new Intl.DateTimeFormat("en-US",{hour:"numeric",minute:"2-digit",timeZone:timezone}).format(new Date(hint.startAt));
-  return <div ref={root}><button type="button" className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#e6f5f3] px-3 text-xs font-semibold text-[#168785]" onClick={()=>{const url=new URL(href,location.href);url.searchParams.set("startAt",hint.startAt!);openQuickBooking(url.href);}}>▣ {label} · {time}</button></div>;
+  return <div ref={root}><button type="button" className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#e6f5f3] px-3 text-xs font-semibold text-[#168785]" onClick={()=>{const url=new URL(href,location.href);url.searchParams.set("startAt",hint.startAt!);openQuickBooking(url.href);}}>▣ <WorkspaceText text={label} /> · {time}</button></div>;
 }

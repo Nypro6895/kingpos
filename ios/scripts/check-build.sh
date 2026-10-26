@@ -8,6 +8,26 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 1
 fi
 command -v xcodegen >/dev/null || { echo "Install XcodeGen before running this check." >&2; exit 1; }
+# Integrity of an inherited manifest is insufficient: require this source's rebuilt package.
+node ../scripts/ios/local-bundle-release.mjs verify
+# These tests exercise the real installed client, not only a generated fixture.
+test -f Reylumi/LocalAppBundle/manifest.json
+test -f Reylumi/AppLocalBridge.js
+verify_local_package() {
+  python3 - "$1" <<'PY'
+import hashlib, json, pathlib, sys
+root = pathlib.Path(sys.argv[1])
+manifest = json.loads((root / 'manifest.json').read_bytes())
+for row in manifest['files']:
+    file = root / row['path']
+    data = file.read_bytes()
+    assert len(data) == row['bytes'] and hashlib.sha256(data).hexdigest() == row['sha256'], 'Bundled resource integrity mismatch: ' + row['path']
+print('Exact installed bundle bytes verified:', len(manifest['files']), 'resources, build', manifest['buildId'])
+PY
+}
+# Catch checkout line-ending normalization before a costly Simulator run, and
+# verify the same bytes again after Xcode copies/signs the resource directory.
+verify_local_package Reylumi/LocalAppBundle
 mkdir -p build
 # A distinct run directory keeps old test results from interfering with a rerun.
 task_run_dir="$(mktemp -d "$PWD/build/check.XXXXXX")"
@@ -31,12 +51,89 @@ sys.exit("No available iPhone Simulator is installed in this Xcode environment."
 PY
 )"
 
-xcodebuild test \
-  -project Reylumi.xcodeproj -scheme Reylumi \
+# Overlap the cold Simulator boot with compilation. Do not shorten any runtime
+# capability test or replace it with a source assertion to make CI faster.
+task_simulator_state="$(python3 - "$task_run_dir/devices.json" "$task_simulator_id" <<'PY'
+import json, sys
+devices = json.loads(open(sys.argv[1]).read())["devices"]
+print(next(item["state"] for group in devices.values() for item in group if item["udid"] == sys.argv[2]))
+PY
+)"
+if [[ "$task_simulator_state" == "Shutdown" ]]; then
+  xcrun simctl boot "$task_simulator_id"
+fi
+
+# Simulator Keychain access still requires the host's signed application ID.
+# Ad-hoc signing needs no device certificate/profile, and this entitlements file
+# applies only to these simulator commands, never the Release/device archive.
+task_simulator_signing=(CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES
+  CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=-
+  "CODE_SIGN_ENTITLEMENTS=$PWD/ReylumiTests/Simulator.entitlements")
+xcodebuild build-for-testing \
+  -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
+  -destination "platform=iOS Simulator,id=$task_simulator_id" \
+  -derivedDataPath "$task_run_dir/DerivedData" \
+  "${task_simulator_signing[@]}" 2>&1 | tee build/test-build.log
+
+task_simulator_app="$task_run_dir/DerivedData/Build/Products/Debug-iphonesimulator/Reylumi.app"
+test -f "$task_simulator_app/LocalAppBundle/manifest.json"
+test -f "$task_simulator_app/AppLocalBridge.js"
+verify_local_package "$task_simulator_app/LocalAppBundle"
+codesign --verify --deep --strict "$task_simulator_app"
+codesign -d --entitlements :- "$task_simulator_app" > "$task_run_dir/SimulatorSignatureEntitlements.plist" 2> "$task_run_dir/SimulatorSigning.log"
+xcrun otool -l "$task_simulator_app/Reylumi" > "$task_run_dir/SimulatorLoadCommands.txt"
+python3 - "$task_simulator_app" "$task_run_dir" <<'PY'
+import pathlib, plistlib, re, sys
+app, run = map(pathlib.Path, sys.argv[1:])
+info = plistlib.loads((app / "Info.plist").read_bytes())
+# Simulator APIs use the Mach-O __TEXT,__entitlements section. Xcode's ordinary
+# ad-hoc code-signature entitlements can be {}, which is not an access failure.
+sections, current = [], None
+for line in (run / "SimulatorLoadCommands.txt").read_text().splitlines():
+    if line.strip() == "Section" or line.strip().startswith("Load command "):
+        if current:
+            sections.append(current)
+        current = None
+        continue
+    fields = line.strip().split(None, 1)
+    if len(fields) != 2:
+        continue
+    key, value = fields
+    if key == "sectname":
+        if current:
+            sections.append(current)
+        current = {key: value}
+    elif current is not None and key in ("segname", "offset", "size"):
+        current[key] = value
+if current:
+    sections.append(current)
+matches = [item for item in sections if item.get("sectname") == "__entitlements" and item.get("segname") == "__TEXT"]
+assert len(matches) == 1, "Simulator host must embed exactly one own entitlement section"
+section = matches[0]
+offset, size = int(section["offset"], 0), int(section["size"], 0)
+binary = (app / info["CFBundleExecutable"]).read_bytes()
+assert size > 0 and offset >= 0 and offset + size <= len(binary), "Invalid Simulator entitlement section bounds"
+embedded = binary[offset:offset + size].rstrip(b"\0")
+entitlements = plistlib.loads(embedded)
+(run / "SimulatorEntitlements.plist").write_bytes(plistlib.dumps(entitlements))
+packaged = list((run / "DerivedData/Build/Intermediates.noindex").rglob("Reylumi.app-Simulated.xcent"))
+assert len(packaged) == 1, "Simulator host's packaged entitlements are missing or ambiguous"
+assert plistlib.loads(packaged[0].read_bytes()) == entitlements, "Actual host Mach-O entitlements differ from the packaged Simulator inputs"
+team = entitlements.get("com.apple.developer.team-identifier", "")
+assert re.fullmatch(r"[A-Z0-9]{10}", team), "Simulator host has no valid signing team entitlement"
+identifier = team + "." + info["CFBundleIdentifier"]
+assert entitlements.get("application-identifier") == identifier, "Simulator host has no own application-identifier entitlement"
+assert entitlements.get("keychain-access-groups") == [identifier], "Simulator Keychain group must be the host app's own identifier only"
+print("Ad-hoc signature and actual embedded Simulator application/own Keychain entitlements verified; runtime Keychain preflight follows.")
+PY
+
+xcrun simctl bootstatus "$task_simulator_id" -b
+xcodebuild test-without-building \
+  -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
   -destination "platform=iOS Simulator,id=$task_simulator_id" \
   -derivedDataPath "$task_run_dir/DerivedData" \
   -resultBundlePath "$task_run_dir/SimulatorTests.xcresult" \
-  CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/test.log
+  "${task_simulator_signing[@]}" 2>&1 | tee build/test.log
 
 xcodebuild archive \
   -project Reylumi.xcodeproj -scheme Reylumi -configuration Release \
@@ -47,8 +144,13 @@ xcodebuild archive \
 
 # Confirm that the bridge is actually bundled, rather than testing JS source alone.
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/NativeBridge.js"
+test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppViewport.js"
+test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppLocalBridge.js"
+test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle/manifest.json"
+verify_local_package "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
+node ../scripts/ios/local-bundle-release.mjs verify "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
 python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
-import hashlib, json, os, pathlib, subprocess, sys
+import hashlib, json, os, pathlib, plistlib, subprocess, sys
 root = pathlib.Path.cwd()
 run = pathlib.Path(sys.argv[1])
 paths = [root / "project.yml"]
@@ -59,6 +161,8 @@ receipt = {
     "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
     "xcode": subprocess.check_output(["xcodebuild", "-version"], text=True).strip(),
     "simulator": sys.argv[2], "simulatorTests": "passed", "deviceArchive": "unsigned",
+    "simulatorSigning": "ad-hoc; own application-identifier and Keychain access group verified",
+    "simulatorEntitlements": plistlib.loads((run / "SimulatorEntitlements.plist").read_bytes()),
     "installableOnIPhone": False, "runDirectory": str(run.relative_to(root)),
     "githubRun": os.environ.get("GITHUB_RUN_ID"), "sourceSHA256": hashes,
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./compact-checkout-adjustments.module.css";
@@ -25,6 +26,8 @@ function AdjustmentIcon({ mode }: { mode: Adjustment }) {
 }
 
 function AdjustmentDialog({ mode, onClose, ...props }: Props & { mode: Adjustment; onClose: () => void }) {
+  const __vt = useWorkspaceTranslation();
+
   const dialog = useRef<HTMLDialogElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const titleId = useId();
@@ -70,31 +73,31 @@ function AdjustmentDialog({ mode, onClose, ...props }: Props & { mode: Adjustmen
         onClose();
       }}>
         <header className={styles.heading}>
-          <h2 id={titleId}>{title}</h2>
-          <button type="button" aria-label={`Close ${title.toLowerCase()}`} onClick={onClose}>×</button>
+          <h2 id={titleId}><WorkspaceText text={title} /></h2>
+          <button type="button" aria-label={__vt(`Close ${title.toLowerCase()}`)} onClick={onClose}>×</button>
         </header>
         <div className={styles.body}>
-          {mode === "discount" && <div className={styles.types} role="group" aria-label="Discount type">
-            <button type="button" aria-pressed={!isPercentage} onClick={() => setDiscountType("fixed_amount")}>$ Amount</button>
-            <button type="button" aria-pressed={isPercentage} onClick={() => setDiscountType("percentage")}>% Percent</button>
+          {mode === "discount" && <div className={styles.types} role="group" aria-label={__vt("Discount type")}>
+            <button type="button" aria-pressed={!isPercentage} onClick={() => setDiscountType("fixed_amount")}><WorkspaceText text="$ Amount" /></button>
+            <button type="button" aria-pressed={isPercentage} onClick={() => setDiscountType("percentage")}><WorkspaceText text="% Percent" /></button>
           </div>}
-          <label htmlFor={inputId}>{isPercentage ? "Discount percent" : `${title} amount`}</label>
+          <label htmlFor={inputId}><WorkspaceText text={isPercentage ? "Discount percent" : `${title} amount`} /></label>
           <div className={styles.input}>
             <span aria-hidden="true">{isPercentage ? "%" : "$"}</span>
-            <input ref={input} id={inputId} value={value} placeholder="0" inputMode="decimal" autoComplete="off" aria-invalid={!!error} aria-describedby={error ? errorId : undefined} disabled={props.disabled} onChange={event => setValue(event.target.value)} />
+            <input ref={input} id={inputId} value={value} placeholder={__vt("0")} inputMode="decimal" autoComplete="off" aria-invalid={!!error} aria-describedby={error ? errorId : undefined} disabled={props.disabled} onChange={event => setValue(event.target.value)} />
           </div>
-          {error && <p className={styles.error} id={errorId} role="alert">{error}</p>}
+          {error && <p className={styles.error} id={errorId} role="alert"><WorkspaceText text={error} /></p>}
           {mode === "tip" && <div className={styles.suggestions}>
             {props.tipSuggestions.map((suggestion, index) => <button type="button" key={`${suggestion}-${index}`} onClick={() => setValue(String(suggestion))}>${suggestion}</button>)}
           </div>}
           <div className={styles.keypad} onPointerDown={event => { if ((event.target as HTMLElement).closest("button")) event.preventDefault(); }}>
-            {["7", "8", "9", "4", "5", "6", "1", "2", "3", ".", "0", "Backspace"].map(key => <button type="button" key={key} aria-label={key === "Backspace" ? "Backspace" : undefined} disabled={props.disabled} onClick={() => typeKey(key)}>{key === "Backspace" ? "⌫" : key}</button>)}
+            {["7", "8", "9", "4", "5", "6", "1", "2", "3", ".", "0", "Backspace"].map(key => <button type="button" key={key} aria-label={__vt(key === "Backspace" ? "Backspace" : undefined)} disabled={props.disabled} onClick={() => typeKey(key)}>{key === "Backspace" ? "⌫" : key}</button>)}
           </div>
-          <button type="button" className={styles.clear} disabled={props.disabled} onClick={() => { setValue(""); input.current?.focus(); }}>Clear</button>
+          <button type="button" className={styles.clear} disabled={props.disabled} onClick={() => { setValue(""); input.current?.focus(); }}><WorkspaceText text="Clear" /></button>
         </div>
         <footer className={styles.actions}>
-          <button type="button" onClick={onClose}>Cancel</button>
-          <button type="submit" disabled={!!error || props.disabled}>Apply</button>
+          <button type="button" onClick={onClose}><WorkspaceText text="Cancel" /></button>
+          <button type="submit" disabled={!!error || props.disabled}><WorkspaceText text="Apply" /></button>
         </footer>
       </form>
     </dialog>, document.body,
@@ -102,6 +105,8 @@ function AdjustmentDialog({ mode, onClose, ...props }: Props & { mode: Adjustmen
 }
 
 export function CompactCheckoutAdjustments(props: Props) {
+  const __vt = useWorkspaceTranslation();
+
   const [mode, setMode] = useState<Adjustment | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   function close() {
@@ -116,7 +121,7 @@ export function CompactCheckoutAdjustments(props: Props) {
         const value = Number(raw || 0);
         const label = kind === "discount" ? "Discount" : "Tip";
         const summary = value > 0 ? (kind === "discount" && props.discountType === "percentage" ? `${value}%` : `$${value.toFixed(2)}`) : "";
-        return <button key={kind} type="button" aria-label={summary ? `${label}: ${summary}` : label} aria-haspopup="dialog" title={label} disabled={props.disabled} data-active={value > 0} onClick={event => { trigger.current = event.currentTarget; setMode(kind); }}>
+        return <button key={kind} type="button" aria-label={__vt(summary ? `${label}: ${summary}` : label)} aria-haspopup="dialog" title={__vt(label)} disabled={props.disabled} data-active={value > 0} onClick={event => { trigger.current = event.currentTarget; setMode(kind); }}>
           <AdjustmentIcon mode={kind} />
           {summary && <span>{summary}</span>}
         </button>;

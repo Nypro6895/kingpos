@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "ticket-edit-receipt-20261017",
+  "status": "ready",
+  "summary": "Completed shared receipt ticket editor in owner and portable POS: one header, editable staff/service/price rows, add line, applied adjustments, single total, Reason and Save. Preserved part editing/staff tips in More, correction history, validations, locked-date request/apply actions and original payloads. Not deployed. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "92e86c63-a7a4-480e-abb5-35be35b2ed30"
+  },
+  "supersedesEvents": [],
+  "dependencies": [
+    "compact-ticket-layout-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "3dd4110f-ceda-4ddc-a211-45136f598870",
+  "recordedAt": "2026-10-17T22:06:56.243Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "f144aa9565593211bca595b206a8409543ec8976f1e9b4f17802d0e08a18fc14"
+  }
+}

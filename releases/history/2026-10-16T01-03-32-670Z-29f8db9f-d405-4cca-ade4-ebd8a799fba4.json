@@ -1,0 +1,48 @@
+{
+  "kind": "release",
+  "summary": "Web responsive actions, retained POS tab/drafts, useful thin cold shell and Lumi shipped from exact protected production baseline. Live source hashes and read-only functional/cold checks verified. Native1.0.1(18.1) separately recorded TestFlight available.",
+  "changes": [
+    "09c07fb2-a3e3-4256-8b86-104e835f77bc",
+    "17f63b97-26d6-4ab2-ab84-9eee40cf630f",
+    "0ac4bad6-004e-4441-ae7a-07a4293c6556",
+    "90a104a7-27ef-4ff8-898e-46bd701a9637",
+    "2fa7edf0-adee-44b5-9b6e-9e533f181201",
+    "53aea0f2-c91a-4fa0-a606-d054cdab4ef8"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DSMbriHBZG7KthtT1Cnqdcm3Jxkk",
+      "baselineDeploymentId": "dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW",
+      "sourceSha256": "1bda745d83d6aade9b139445bed08c917c2c2a729a29ee3a31bd8ebde6b06d30",
+      "overlaySha256": "0e39166cf235e22561433cb2855580bc402f34b4b8919cc7a06b6a5e8d0f5776",
+      "commit": "7101aaba39c4d16c9ddc4f43450ce3621bb2ce93",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\release-receipt.json"
+    }
+  },
+  "nativeReceipt": "b1f0198a-2d57-4f12-8207-307952ce4d60",
+  "baselineSourceSha256": "c5f51f6bccd7b8625027990cbee7bc7a6b8e0daff6588b743cdf3f9aa35e92db",
+  "deploySourceSha256": "bf8085c0975fbbfe72aee2dacea53f0e8429eaf7777ef0c7620f126cbbc95f47",
+  "excludedChanges": [
+    {
+      "changeId": "daily-closing-saving-20261015",
+      "reason": "Older ready revision invalidated by identified security flaw; replacement still working at frozen cutoff; no SQL changes integrated"
+    },
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "reason": "Blocked privacy/ownership policy decision"
+    },
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Working, no completed validated revision"
+    },
+    {
+      "changeId": "help-local-draft-20261015",
+      "reason": "Blocked early draft; independent completed Help selected"
+    }
+  ],
+  "id": "29f8db9f-d405-4cca-ade4-ebd8a799fba4",
+  "recordedAt": "2026-10-16T01:03:32.670Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos"
+}

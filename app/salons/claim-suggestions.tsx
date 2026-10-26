@@ -1,8 +1,9 @@
 'use client';
 
+import { WorkspaceText } from "@/components/workspace-language";
 import {useEffect,useRef,useState,useTransition,type ReactNode} from 'react';
 import Link from 'next/link';
-import {findBusinessClaimMatchesAction} from '@/app/claim/actions';
+import {findBusinessClaimMatches} from '@/lib/business-claim-client';
 import type {BusinessClaimInput,BusinessClaimMatch} from '@/lib/business-claims';
 
 function readForm(form:HTMLFormElement):BusinessClaimInput {
@@ -18,17 +19,21 @@ export function ClaimSuggestions({children}:{children:ReactNode}) {
  const wrapper=useRef<HTMLDivElement>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);const generation=useRef(0);
  const [matches,setMatches]=useState<BusinessClaimMatch[]>([]);const [error,setError]=useState<string|null>(null);const [pending,startTransition]=useTransition();
  const checkedKey=useRef('');const acknowledgedKey=useRef('');
+ const activeSearch=useRef<AbortController|null>(null);
  useEffect(()=>{
  const form=wrapper.current?.querySelector('form');if(!form)return;
  try {const draft=JSON.parse(sessionStorage.getItem('business-create-draft')??'null') as Record<string,string>|null;
  if(draft)for(const [key,value] of Object.entries(draft)){const field=form.elements.namedItem(key);if(field instanceof HTMLInputElement && field.type!=='hidden'){if(field.type==='checkbox')field.checked=value==='yes';else if(!field.value)field.value=value;}}
  }catch{/* Browser storage is optional. */}
- return ()=>{if(timer.current)clearTimeout(timer.current);};
+ return ()=>{if(timer.current)clearTimeout(timer.current);activeSearch.current?.abort();activeSearch.current=null;};
  },[]);
  async function search(form:HTMLFormElement) {
  const input=readForm(form),key=inputKey(input),current=++generation.current;
- const result=await findBusinessClaimMatchesAction(input);
- if(current!==generation.current || key!==inputKey(readForm(form)))return null;
+ activeSearch.current?.abort();const controller=new AbortController();activeSearch.current=controller;
+ const deadline=setTimeout(()=>controller.abort(),12000);
+ let result;
+ try{result=await findBusinessClaimMatches(input,controller.signal);}finally{clearTimeout(deadline);}
+ if(activeSearch.current!==controller || current!==generation.current || key!==inputKey(readForm(form)))return null;
  checkedKey.current=result.error?'':key;setMatches(result.matches);setError(result.error);
  return result;
  }
@@ -44,7 +49,7 @@ export function ClaimSuggestions({children}:{children:ReactNode}) {
  }
  return <div ref={wrapper} onChange={event=>{
  const form=(event.target as HTMLInputElement).form;if(!form)return;
- persist(form);acknowledgedKey.current='';generation.current++;setMatches([]);
+ persist(form);acknowledgedKey.current='';generation.current++;activeSearch.current?.abort();setMatches([]);setError(null);
  const field=form.elements.namedItem('duplicate_acknowledged');if(field instanceof HTMLInputElement)field.value='no';
  if(timer.current)clearTimeout(timer.current);timer.current=setTimeout(()=>startTransition(async()=>{await search(form);}),450);
  }} onSubmit={event=>{
@@ -56,8 +61,8 @@ export function ClaimSuggestions({children}:{children:ReactNode}) {
  }}>
  {children}
  <div aria-live="polite" className="mt-4">
- {pending?<p className="text-sm text-zinc-500">Checking existing salons…</p>:null}
- {error?<p role="alert" className="text-sm text-red-700">{error}</p>:null}
- {matches.length?<section className="grid gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4"><h2 className="font-semibold">Your salon may already be on Reylumi</h2><p className="text-sm text-zinc-600">Choose an existing profile to keep its followers and posts.</p>{matches.map(row=><article key={row.salon_id} className="rounded-xl bg-white p-3"><h3 className="font-semibold">{row.name}</h3><p className="text-sm text-zinc-600">{row.address}</p><p className="text-sm text-zinc-600">{row.phone}</p><p className="mt-1 text-xs text-zinc-500">{row.phone_match && row.address_match?'Same phone and address':row.phone_match?'Same phone':row.address_match?'Similar address':'Similar name'}</p><Link className="mt-2 inline-block rounded-lg bg-zinc-950 px-3 py-2 text-sm font-semibold text-white" href={`/claim/${row.salon_id}`}>{row.unclaimed?'This is my salon — claim it':'This is my salon — request access'}</Link></article>)}<button type="button" disabled={pending} className="justify-self-start text-sm underline" onClick={continueCreate}>My salon is different — continue creating</button></section>:null}
+ {pending?<p className="text-sm text-zinc-500"><WorkspaceText text="Checking existing salons…" /></p>:null}
+ {error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></p>:null}
+ {matches.length?<section className="grid gap-3 border-y border-amber-200 bg-amber-50 p-4"><h2 className="font-semibold"><WorkspaceText text="Your salon may already be on Reylumi" /></h2><p className="text-sm text-zinc-600"><WorkspaceText text="Choose an existing profile to keep its followers and posts." /></p>{matches.map(row=><article key={row.salon_id} className="border-b border-amber-100 bg-white p-3"><h3 className="font-semibold">{row.name}</h3><p className="text-sm text-zinc-600">{row.address}</p><p className="text-sm text-zinc-600">{row.phone}</p><p className="mt-1 text-xs text-zinc-500"><WorkspaceText text={row.phone_match && row.address_match?'Same phone and address':row.phone_match?'Same phone':row.address_match?'Similar address':'Similar name'} /></p><Link className="mt-2 inline-block rounded-lg bg-zinc-950 px-3 py-2 text-sm font-semibold text-white" href={`/claim/${row.salon_id}`}><WorkspaceText text={row.unclaimed?'This is my salon — claim it':'This is my salon — request access'} /></Link></article>)}<button type="button" disabled={pending} className="justify-self-start text-sm underline" onClick={continueCreate}><WorkspaceText text="My salon is different — continue creating" /></button></section>:null}
  </div></div>;
 }

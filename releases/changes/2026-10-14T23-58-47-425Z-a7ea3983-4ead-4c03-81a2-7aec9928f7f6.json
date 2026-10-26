@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "salon-claim-lookup-diagnostics-20261014",
+  "status": "blocked",
+  "summary": "Local diagnostics implemented and tested at both lookup call sites. Authenticated reproduction blocked by browser runtime startup failure (0x80070003); root cause remains unconfirmed. No release authorized.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/claim/actions.ts",
+    "app/salons/actions.ts",
+    "lib/business-claim-diagnostics.ts",
+    "tests/business-claim-diagnostics.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\diagnostics-source",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "fileHashes": {
+    "app/claim/actions.ts": "53d0ebf4738c84d3df70f8099d5ada37a50925b7b5a40230c6faae12ba3cb5b7",
+    "app/salons/actions.ts": "ef37073f265805274c1797a1d9d30bfea3fe81122d2fb1b1491ce1401870f979",
+    "lib/business-claim-diagnostics.ts": "a26763f8438c3b955db4b832120069a3a3bd1de5170df73a005d76cc3136b918",
+    "tests/business-claim-diagnostics.test.mjs": "30df59c26219d3c17b5190bd01ff1987ccf65c11bca5bb71b3ee1b8a133f74c8"
+  },
+  "validation": [
+    {
+      "name": "node --test tests/business-claim-diagnostics.test.mjs",
+      "result": "passed",
+      "evidence": "6/6: safe timeout diagnostics, sensitive text exclusion, transport throw preservation, success/no retry, both action paths; mocked errors, no live failure reproduced."
+    },
+    {
+      "name": "node scripts/verify-salon-creation-routing.mjs",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint four changed code/test files",
+      "result": "passed"
+    },
+    {
+      "name": "Strict TypeScript helper and installed Supabase RPC PromiseLike compatibility",
+      "result": "passed",
+      "evidence": "No emit; scoped compiler probe, not a full application build."
+    },
+    {
+      "name": "git diff --check and exact overlay hash comparison",
+      "result": "passed",
+      "evidence": "Existing edits retained in both action files; no staging or commits."
+    },
+    {
+      "name": "Authenticated local reproduction",
+      "result": "pending",
+      "evidence": "Browser runtime cannot initialize: MXC launcher Windows platform directory missing, HRESULT 0x80070003. No available secure login handoff; no session or credential extraction attempted."
+    }
+  ],
+  "id": "a7ea3983-4ead-4c03-81a2-7aec9928f7f6",
+  "recordedAt": "2026-10-14T23:58:47.425Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

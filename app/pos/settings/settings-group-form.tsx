@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import { savePosSettingsGroup } from "./actions";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
@@ -12,6 +13,8 @@ function valueFor(name:string,row:Record<string,unknown>){
   return row[name];
 }
 export function SettingsGroupForm({group,snapshot,children,saveAction=savePosSettingsGroup}:{group:string;snapshot:Record<string,unknown>;children:ReactNode;saveAction?:typeof savePosSettingsGroup}) {
+  const __vt = useWorkspaceTranslation();
+
   const expected=useRef(snapshot),form=useRef<HTMLFormElement>(null);
   const [busy,start]=useTransition(),[message,setMessage]=useState('');
   const [conflict,setConflict]=useState<Record<string,unknown>|null>(null);
@@ -34,11 +37,11 @@ export function SettingsGroupForm({group,snapshot,children,saveAction=savePosSet
     }
     expected.current=conflict;setConflict(null);setMessage('Saved values loaded. Other settings groups were kept.');
   }
-  return <form ref={form} className="mt-4 grid gap-4" onSubmit={event=>{
+  return <div className="settings-style"><form ref={form} className="mt-4 grid gap-4" onSubmit={event=>{
     event.preventDefault();if(conflict)return;
     const data=new FormData(event.currentTarget);data.set('group',group);data.set('expected',JSON.stringify(expected.current));
     start(async()=>{try{const result=await saveAction(data);if(result.ok&&result.snapshot)expected.current=result.snapshot;setConflict(result.conflict??null);setChanged(result.conflict?describeConflict(result.conflict):[]);setMessage(result.ok?'Saved':result.error??'Unable to save. Your changes are still here.');}catch{setMessage('Unable to save. Your changes are still here.');}});
   }}><fieldset disabled={busy} className="grid gap-4">{children}</fieldset>
-    {conflict?<section className="rounded-xl border border-amber-200 bg-amber-50 p-4" aria-label="Settings changed"><p className="font-semibold">Changed on another screen</p><ul className="my-3 space-y-2 text-sm">{changed.map(item=><li key={item.name}>{item.label}: <strong>{item.saved}</strong></li>)}</ul><div className="flex flex-wrap gap-2"><button type="button" className={button} onClick={acceptSaved}>Use saved values</button><button type="button" className={button} onClick={()=>{expected.current=conflict;setConflict(null);setMessage('Your changes are kept. Select Save changes to replace the saved values.');}}>Keep my changes</button></div></section>:null}
-    <div className="flex items-center justify-end gap-3"><p role="status" className="text-sm text-zinc-600">{message}</p><button className="min-h-12 rounded-xl bg-orange-600 px-5 py-3 font-semibold text-white transition hover:bg-orange-700 disabled:opacity-50" disabled={busy||Boolean(conflict)}>{busy?'Saving...':'Save changes'}</button></div></form>;
+    {conflict?<section className="rounded-xl border border-amber-200 bg-amber-50 p-4" aria-label={__vt("Settings changed")}><p className="font-semibold"><WorkspaceText text="Changed on another screen" /></p><ul className="my-3 space-y-2 text-sm">{changed.map(item=><li key={item.name}><WorkspaceText text={item.label} />: <strong>{item.saved}</strong></li>)}</ul><div className="flex flex-wrap gap-2"><button type="button" className={button} onClick={acceptSaved}><WorkspaceText text="Use saved values" /></button><button type="button" className={button} onClick={()=>{expected.current=conflict;setConflict(null);setMessage('Your changes are kept. Select Save changes to replace the saved values.');}}><WorkspaceText text="Keep my changes" /></button></div></section>:null}
+    <div className="flex items-center justify-end gap-3"><p role="status" className="text-sm text-zinc-600"><WorkspaceText text={message} /></p><button className="min-h-12 rounded-xl bg-orange-600 px-5 py-3 font-semibold text-white transition hover:bg-orange-700 disabled:opacity-50" disabled={busy||Boolean(conflict)}>{busy?'Saving...':<WorkspaceText text="Save changes" />}</button></div></form></div>;
 }

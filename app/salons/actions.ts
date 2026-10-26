@@ -16,7 +16,8 @@ import {
 import { hasPermission } from "@/lib/permissions";
 import { routes, withSearchParams } from "@/lib/routes";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
-import { refresh, revalidatePath } from "next/cache";
+import { withBusinessClaimLookupDiagnostics } from "@/lib/business-claim-diagnostics";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 const MANAGE_SALON_SWITCH_PERMISSIONS = [
@@ -99,10 +100,10 @@ export async function createSalonAction(formData: FormData) {
   }
 
   if (readFormString(formData, 'duplicate_acknowledged') !== 'yes') {
-    const {data: matches, error: matchError} = await supabase.rpc('find_business_claim_matches', {
+    const {data: matches, error: matchError} = await withBusinessClaimLookupDiagnostics('create', () => supabase.rpc('find_business_claim_matches', {
       p_name: name, p_phone: readFormString(formData,'phone'), p_address: readFormString(formData,'address_line1'),
       p_unit: readFormString(formData,'address_line2'), p_city: readFormString(formData,'city'), p_state: readFormString(formData,'state'),
-    });
+    }));
     if (matchError || Array.isArray(matches) && matches.length) {
       const draft: Record<string,string> = {};
       for (const field of ['name','phone','address_line1','address_line2','city','state','postal_code','owner_is_staff']) draft[field]=readFormString(formData,field);
@@ -218,8 +219,9 @@ async function switchWorkspaceToDestination(input: {
     };
   }
 
+  // Cookie writes update the shell; invalidation makes the destination fresh.
+  // Callers navigate once without issuing another router refresh.
   revalidatePath("/", "layout");
-  refresh();
   return { href, ok: true };
 }
 

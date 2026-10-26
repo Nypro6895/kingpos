@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { PORTABLE_BOOKING_TICKET, type BookingTicketRequest } from "@/lib/portable-booking-ticket";
 import { CustomerName } from "@/components/customer-name";
@@ -44,9 +46,11 @@ import { isPosConnectionError, posUserMessage } from "@/lib/pos-user-messages";
 import { usePortableDraft } from "@/app/pos/portable/use-portable-draft";
 import { StaffAvatar } from "@/app/pos/portable/staff-avatar";
 import { desktopDevice } from "@/lib/portable-device-storage";
+import { registerPortableServiceWorker } from "@/lib/portable-service-worker";
 import { subscribeLocalDisplay } from "@/lib/pos-local-display";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
+  resolveScannedCheckinReceipt,
   cancelWaitingVisitForPos,
   createPosDeskCustomer,
   getPosLiveDraft,
@@ -154,6 +158,7 @@ type PosDeskClientActions = {
   getPosLiveDraft: typeof getPosLiveDraft;
   searchPosDeskCustomers: typeof searchPosDeskCustomers;
   selectWaitingVisitForPos: typeof selectWaitingVisitForPos;
+  resolveScannedCheckinReceipt?: typeof resolveScannedCheckinReceipt;
   submitPosDeskReceipt: typeof submitPosDeskReceipt;
   touchCustomerDisplayLiveDraftActivity: typeof touchCustomerDisplayLiveDraftActivity;
   updatePosActiveDraft: typeof updatePosActiveDraft;
@@ -503,6 +508,8 @@ export function PosDeskClient({
   today?: string;
   waitingVisits?: CustomerVisitQueueItem[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const portableWorkspaceState = usePortableWorkspaceState();
   const [services,setServices]=useState(initialServices);
   const [defaults,setDefaults]=useState(initialDefaults);
@@ -651,8 +658,8 @@ export function PosDeskClient({
     void desktop.display.pair(liveDraftToken);
     const prepare = async () => {
       if (desktop.offline || !navigator.onLine || !("serviceWorker" in navigator)) return;
-      const registration = await navigator.serviceWorker.ready;
-      if (active) registration.active?.postMessage({ kind: "portable-prepare", scope: portableWorkspaceState.scope,
+      const worker = await registerPortableServiceWorker();
+      if (active) worker?.postMessage({ kind: "portable-prepare", scope: portableWorkspaceState.scope,
         displayPath: "/pos/customer-display?token=" + encodeURIComponent(liveDraftToken) });
     };
     void prepare().catch(() => {});
@@ -663,6 +670,9 @@ export function PosDeskClient({
   const isPortableSurface = surface === "portable";
   const localFirstDraft = isPortableSurface && offlineDraftSyncEnabled;
   const waitingScope = portableWorkspaceState?.scope;
+  const [receiptScan, setReceiptScan] = useState("");
+  const [receiptScanBusy, setReceiptScanBusy] = useState(false);
+  const [receiptScanError, setReceiptScanError] = useState("");
   const [currentWaitingVisits, setCurrentWaitingVisits] = useState(waitingVisits);
   const [editingVisit, setEditingVisit] = useState<CustomerVisitQueueItem | null>(null);
   const [visitEditName, setVisitEditName] = useState("");
@@ -2995,7 +3005,7 @@ export function PosDeskClient({
               onClick={() => appendCustomerCreateText(" ")}
               type="button"
             >
-              Space
+              <WorkspaceText text="Space" />
             </button>
           ) : (
             <span />
@@ -3005,14 +3015,14 @@ export function PosDeskClient({
             onClick={backspaceCustomerCreateText}
             type="button"
           >
-            Backspace
+            <WorkspaceText text="Backspace" />
           </button>
           <button
             className="min-h-10 rounded border border-zinc-300 bg-white text-sm font-medium"
             onClick={clearCustomerCreateText}
             type="button"
           >
-            Clear
+            <WorkspaceText text="Clear" />
           </button>
         </div>
       </div>
@@ -3058,7 +3068,7 @@ export function PosDeskClient({
             key={visit.id}
           >
             <button
-              aria-label={`Select ${visit.customerName} from waiting`}
+              aria-label={__vt(`Select ${visit.customerName} from waiting`)}
               className="grid min-h-14 min-w-0 rounded px-2 py-1 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-wait disabled:opacity-60"
               data-pos-waiting-row-select
               disabled={(!localFirstDraft && isPending) || receiptLocked || !liveDraftToken || busy}
@@ -3072,12 +3082,12 @@ export function PosDeskClient({
                   </p>
                   {selected ? (
                     <span className="shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">
-                      Selected
+                      <WorkspaceText text="Selected" />
                     </span>
                   ) : null}
                   {busy ? (
                     <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-semibold text-zinc-700">
-                      Working
+                      <WorkspaceText text="Working" />
                     </span>
                   ) : null}
                 </div>
@@ -3093,7 +3103,7 @@ export function PosDeskClient({
             </div> :             <div className="relative">
               <button
                 aria-expanded={menuOpen}
-                aria-label={`More actions for ${visit.customerName}`}
+                aria-label={__vt(`More actions for ${visit.customerName}`)}
                 className="grid h-10 w-10 place-items-center rounded-md border border-zinc-300 bg-white text-sm font-bold text-zinc-700 disabled:opacity-50"
                 disabled={isPending || busy}
                 onClick={() =>
@@ -3113,7 +3123,7 @@ export function PosDeskClient({
                     onClick={() => removeWaitingVisit(visit)}
                     type="button"
                   >
-                    Remove from waiting
+                    <WorkspaceText text="Remove from waiting" />
                   </button>
                 </div>
               ) : null}
@@ -3126,7 +3136,7 @@ export function PosDeskClient({
   const waitingButton = (
     <button
       aria-expanded={waitingDrawerOpen}
-      aria-label={`Open waiting list${visitQueue.length > 0 ? `, ${visitQueue.length} waiting` : ""}`}
+      aria-label={__vt(`Open waiting list${visitQueue.length > 0 ? `, ${visitQueue.length} waiting` : ""}`)}
       className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-zinc-950 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
       data-pos-waiting-launcher
       onClick={() => {
@@ -3142,7 +3152,7 @@ export function PosDeskClient({
       ref={waitingButtonRef}
       type="button"
     >
-      {isPortableSurface ? <><svg aria-hidden="true" className="h-5 w-5 shrink-0 text-teal-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m1-16a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5v2"/></svg><span className="min-w-0"><span className="block text-sm font-semibold">Customers</span><span className="mt-1 block text-xs font-normal text-zinc-500">{visitQueue.length ? `${visitQueue.length} waiting` : "No customer waiting"}</span></span></> : <span>Waiting</span>}
+      {isPortableSurface ? <><svg aria-hidden="true" className="h-5 w-5 shrink-0 text-teal-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m1-16a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5v2"/></svg><span className="min-w-0"><span className="block text-sm font-semibold"><WorkspaceText text="Customers" /></span><span className="mt-1 block text-xs font-normal text-zinc-500"><WorkspaceText text={visitQueue.length ? `${visitQueue.length} waiting` : "No customer waiting"} /></span></span></> : <span><WorkspaceText text="Waiting" /></span>}
       {!isPortableSurface && visitQueue.length > 0 ? (
         <span
           className="rounded-full bg-zinc-950 px-2 py-0.5 text-xs font-semibold text-white"
@@ -3167,7 +3177,7 @@ export function PosDeskClient({
         }}
       />
       <div
-        aria-label={waitingDrawerTitle}
+        aria-label={__vt(waitingDrawerTitle)}
         className="fixed z-10 pointer-events-auto flex min-w-0 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white/95 shadow-2xl backdrop-blur"
         data-pos-waiting-drawer
         data-pos-waiting-drawer-placement={
@@ -3193,7 +3203,7 @@ export function PosDeskClient({
               {waitingDrawerTitle}
             </h2>
             <p className="text-xs font-medium text-zinc-500">
-              Oldest check-in first
+              <WorkspaceText text="Oldest check-in first" />
             </p>
           </div>
           <button
@@ -3204,16 +3214,31 @@ export function PosDeskClient({
             }}
             type="button"
           >
-            Close
+            <WorkspaceText text="Close" />
           </button>
         </div>
         <div
           className="min-h-0 flex-1 overflow-auto px-3 py-3"
           data-pos-waiting-drawer-scroll
         >
+          <form className="mb-3 flex flex-wrap gap-2" onSubmit={async event => {
+            event.preventDefault(); if (receiptScanBusy || receiptLocked) return;
+            setReceiptScanBusy(true); setReceiptScanError("");
+            try {
+              const result = await (actions?.resolveScannedCheckinReceipt ?? resolveScannedCheckinReceipt)(receiptScan);
+              if (result.error || !result.visit) { setReceiptScanError(result.error ?? "Receipt could not be scanned."); return; }
+              selectWaitingVisit(result.visit); setReceiptScan("");
+            } catch { setReceiptScanError("Receipt could not be scanned. Please retry."); }
+            finally { setReceiptScanBusy(false); }
+          }}>
+            <label className="w-full text-sm font-semibold" htmlFor="checkin-receipt-scan"><WorkspaceText text="Scan check-in receipt to start a ticket" /></label>
+            <input id="checkin-receipt-scan" className="min-w-0 flex-1 rounded-md border p-2 text-sm" placeholder={__vt("Scan QR with your scanner")} value={receiptScan} onChange={event => setReceiptScan(event.target.value)} disabled={receiptScanBusy || receiptLocked} />
+            <button type="submit" className="rounded-md border px-3 text-sm" disabled={receiptScanBusy || receiptLocked || !receiptScan.trim()}>{receiptScanBusy ? <WorkspaceText text="Loading…" /> : "Start ticket"}</button>
+            {receiptScanError && <p className="w-full text-sm text-red-700" role="alert"><WorkspaceText text={receiptScanError} /></p>}
+          </form>
           {visitQueue.length === 0 ? (
             <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm font-medium text-zinc-600">
-              Waiting 0
+              <WorkspaceText text="Waiting 0" />
             </div>
           ) : (
             waitingRows
@@ -3228,7 +3253,7 @@ export function PosDeskClient({
             }}
             type="button"
           >
-            Refresh
+            <WorkspaceText text="Refresh" />
           </button>
         </div>
       </div>
@@ -3241,12 +3266,12 @@ export function PosDeskClient({
 
   return (
     <>
-      {editingVisit && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/30" role="dialog" aria-label="Edit waiting customer" aria-modal="true">
-        <form className="grid gap-3 rounded-xl bg-white p-6 shadow-xl" autoComplete="off" onSubmit={event => { event.preventDefault(); void changeLocalVisit(editingVisit, "edit"); }}>
-          <h2 className="font-semibold">Edit customer</h2>
-          <label>Name<input className="block border p-2" value={visitEditName} onChange={event => setVisitEditName(event.target.value)} autoComplete="off" maxLength={120} /></label>
-          <label>Phone<input className="block border p-2" value={visitEditPhone} onChange={event => setVisitEditPhone(event.target.value)} autoComplete="off" inputMode="tel" /></label>
-          <div className="flex justify-end gap-4"><button type="button" disabled={Boolean(waitingVisitBusyId)} onClick={() => setEditingVisit(null)}>Cancel</button><button type="submit" disabled={Boolean(waitingVisitBusyId)} aria-busy={Boolean(waitingVisitBusyId)}>{waitingVisitBusyId ? "Saving…" : "Save"}</button></div>
+      {editingVisit && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/30" role="dialog" aria-label={__vt("Edit waiting customer")} aria-modal="true">
+        <form data-offline-local-submit={localFirstDraft ? "true" : undefined} className="grid gap-3 rounded-xl bg-white p-6 shadow-xl" autoComplete="off" onSubmit={event => { event.preventDefault(); void changeLocalVisit(editingVisit, "edit"); }}>
+          <h2 className="font-semibold"><WorkspaceText text="Edit customer" /></h2>
+          <label><WorkspaceText text="Name" /><input className="block border p-2" value={visitEditName} onChange={event => setVisitEditName(event.target.value)} autoComplete="off" maxLength={120} /></label>
+          <label><WorkspaceText text="Phone" /><input className="block border p-2" value={visitEditPhone} onChange={event => setVisitEditPhone(event.target.value)} autoComplete="off" inputMode="tel" /></label>
+          <div className="flex justify-end gap-4"><button type="button" disabled={Boolean(waitingVisitBusyId)} onClick={() => setEditingVisit(null)}><WorkspaceText text="Cancel" /></button><button type="submit" disabled={Boolean(waitingVisitBusyId)} aria-busy={Boolean(waitingVisitBusyId)}>{waitingVisitBusyId ? <WorkspaceText text="Saving…" /> : <WorkspaceText text="Save" />}</button></div>
         </form>
       </div>}
       {toast ? (
@@ -3267,7 +3292,7 @@ export function PosDeskClient({
               ].join(" ")}
             />
             <div className="min-w-0 flex-1">
-              <p className="text-base font-bold text-zinc-950">{toast.title}</p>
+              <p className="text-base font-bold text-zinc-950"><WorkspaceText text={toast.title} /></p>
               {toast.detail ? (
                 <p className="mt-1 truncate text-sm font-medium text-zinc-600">
                   {toast.detail}
@@ -3283,7 +3308,7 @@ export function PosDeskClient({
               ) : null}
             </div>
             <button
-              aria-label="Close notification"
+              aria-label={__vt("Close notification")}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/80 bg-white/80 text-sm font-bold text-zinc-600 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               data-pos-toast-close
               onClick={() => setToast(null)}
@@ -3301,12 +3326,12 @@ export function PosDeskClient({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
           <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-xl">
             <div className="mb-3">
-              <h2 className="text-lg font-semibold">New Customer</h2>
-              <p className="text-sm text-zinc-600">No matching customer found.</p>
+              <h2 className="text-lg font-semibold"><WorkspaceText text="New Customer" /></h2>
+              <p className="text-sm text-zinc-600"><WorkspaceText text="No matching customer found." /></p>
             </div>
             <div className="space-y-3">
               <label className="block text-sm font-medium">
-                Name
+                <WorkspaceText text="Name" />
                 <input
                   className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
                   onChange={(event) =>
@@ -3323,7 +3348,7 @@ export function PosDeskClient({
                 />
               </label>
               <label className="block text-sm font-medium">
-                Phone
+                <WorkspaceText text="Phone" />
                 <input
                   className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
                   onChange={(event) =>
@@ -3341,7 +3366,7 @@ export function PosDeskClient({
                 />
               </label>
               <label className="block text-sm font-medium">
-                Email
+                <WorkspaceText text="Email" />
                 <input
                   className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
                   onChange={(event) =>
@@ -3366,7 +3391,7 @@ export function PosDeskClient({
                 onClick={() => setShowCustomerCreateModal(false)}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className="rounded bg-zinc-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
@@ -3374,7 +3399,7 @@ export function PosDeskClient({
                 onClick={createCustomerFromModal}
                 type="button"
               >
-                Done
+                <WorkspaceText text="Done" />
               </button>
             </div>
           </div>
@@ -3388,19 +3413,19 @@ export function PosDeskClient({
             data-pos-service-picker
           >
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">Select Service</h2>
+              <h2 className="text-lg font-semibold"><WorkspaceText text="Select Service" /></h2>
               <button
                 className="rounded border border-zinc-300 bg-white px-3 py-2 text-sm font-medium"
                 onClick={() => setShowServicePicker(false)}
                 type="button"
               >
-                Close
+                <WorkspaceText text="Close" />
               </button>
             </div>
             <input
               className="mb-3 w-full rounded border border-zinc-300 px-4 py-3 text-lg"
               onChange={(event) => setServiceSearch(event.target.value)}
-              placeholder="Search services"
+              placeholder={__vt("Search services")}
               value={serviceSearch}
             />
             <div className="grid max-h-[58vh] grid-cols-1 gap-2 overflow-auto sm:grid-cols-2">
@@ -3409,7 +3434,7 @@ export function PosDeskClient({
                 onClick={() => selectService(null)}
                 type="button"
               >
-                Custom amount
+                <WorkspaceText text="Custom amount" />
               </button>
               {filteredServices.map((service) => (
                 <button
@@ -3439,12 +3464,12 @@ export function PosDeskClient({
         >
           <div className="grid max-h-[calc(100dvh-2rem)] w-full max-w-md gap-4 overflow-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-2xl">
             <div>
-              <p className="text-sm font-semibold text-zinc-500">Adjust turn</p>
+              <p className="text-sm font-semibold text-zinc-500"><WorkspaceText text="Adjust turn" /></p>
               <h2 className="text-xl font-semibold text-zinc-950">
                 {turnAdjustStaff.display_name}
               </h2>
               <p className="mt-1 text-sm text-zinc-600">
-                Current canonical turn{" "}
+                <WorkspaceText text="Current canonical turn" />{" "}
                 <span className="font-semibold text-zinc-950">
                   {turnAdjustStaff.turns.queueTurns ??
                     turnAdjustStaff.turns.largeTurns}
@@ -3472,11 +3497,11 @@ export function PosDeskClient({
                 }
                 type="button"
               >
-                Minus one
+                <WorkspaceText text="Minus one" />
               </button>
               <div className="grid min-w-24 justify-items-center rounded-md bg-zinc-50 px-3 py-2">
                 <span className="text-xs font-semibold text-zinc-500">
-                  Projected
+                  <WorkspaceText text="Projected" />
                 </span>
                 <span className="text-3xl font-bold tabular-nums">
                   {Math.max(
@@ -3491,13 +3516,13 @@ export function PosDeskClient({
                 onClick={() => setTurnAdjustDelta((current) => current + 1)}
                 type="button"
               >
-                Plus one
+                <WorkspaceText text="Plus one" />
               </button>
             </div>
 
             <label className="grid gap-2">
               <span className="text-sm font-medium text-zinc-700">
-                Manager
+                <WorkspaceText text="Manager" />
               </span>
               <select
                 className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
@@ -3506,7 +3531,7 @@ export function PosDeskClient({
                 }
                 value={turnAdjustOperatorStaffId}
               >
-                <option value="">Choose manager</option>
+                <option value=""><WorkspaceText text="Choose manager" /></option>
                 {sortedStaff
                   .filter((member) => member.id !== turnAdjustStaff.id)
                   .map((member) => (
@@ -3519,7 +3544,7 @@ export function PosDeskClient({
 
             <label className="grid gap-2">
               <span className="text-sm font-medium text-zinc-700">
-                Manager passcode
+                <WorkspaceText text="Manager passcode" />
               </span>
               <input
                 autoComplete="off"
@@ -3538,7 +3563,7 @@ export function PosDeskClient({
             </label>
 
             <label className="grid gap-2">
-              <span className="text-sm font-medium text-zinc-700">Reason</span>
+              <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Reason" /></span>
               <textarea
                 className="min-h-20 rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 onChange={(event) => setTurnAdjustReason(event.target.value)}
@@ -3547,13 +3572,12 @@ export function PosDeskClient({
             </label>
 
             <p className="text-xs leading-5 text-amber-800">
-              Use the approving manager&apos;s own staff passcode. Reset default
-              passcodes in Staff Settings.
+              <WorkspaceText text="Use the approving manager&apos;s own staff passcode. Reset default passcodes in Staff Settings." />
             </p>
 
             {turnAdjustError ? (
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-                {turnAdjustError}
+                <WorkspaceText text={turnAdjustError} />
               </p>
             ) : null}
 
@@ -3563,15 +3587,16 @@ export function PosDeskClient({
                 onClick={closeTurnAdjustment}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className="min-h-11 rounded-md bg-zinc-950 px-3 py-2 font-semibold text-white disabled:bg-zinc-300"
                 disabled={isPending || turnAdjustDelta === 0}
                 onClick={submitTurnAdjustment}
+                aria-busy={isPending}
                 type="button"
               >
-                {isPending ? "Confirming" : "Confirm"}
+                <ActionFeedback pending={isPending} pendingLabel="Confirming…"><WorkspaceText text="Confirm" /></ActionFeedback>
               </button>
             </div>
           </div>
@@ -3599,7 +3624,7 @@ export function PosDeskClient({
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    alt={`${salonName} logo`}
+                    alt={__vt(`${salonName} logo`)}
                     className="h-9 w-9 shrink-0 rounded-md border border-zinc-200 object-cover"
                     src={salonLogoUrl}
                   />
@@ -3633,7 +3658,7 @@ export function PosDeskClient({
           )}
           {!liveDraft ? (
             <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              Live draft is unavailable. Local POS still works.
+              <WorkspaceText text="Live draft is unavailable. Local POS still works." />
             </p>
           ) : null}
         </div>
@@ -3646,7 +3671,7 @@ export function PosDeskClient({
           }
         >
           {!(isPortableSurface && localFirstDraft && portableWorkspaceState) && <div className="flex items-center justify-between gap-2">
-            {!isPortableSurface && <label className="block text-sm font-medium">Customer</label>}
+            {!isPortableSurface && <label className="block text-sm font-medium"><WorkspaceText text="Customer" /></label>}
             <div className="relative shrink-0">
               {waitingButton}
             </div>
@@ -3657,7 +3682,7 @@ export function PosDeskClient({
             leading={isPortableSurface ? waitingButton : undefined}
             scope={portableWorkspaceState.scope} active={hasUnsavedDraftWork && !isSubmitting && !isResetting}
             activity={`${idleResetKey}:${posActivityTick}`} value={recovery}
-            label={`${selectedCustomer?.name ?? "Ticket"} · $${totals.total.toFixed(2)}`}
+            label={__vt(`${selectedCustomer?.name ?? "Ticket"} · $${totals.total.toFixed(2)}`)}
             reset={() => resetReceipt("idle")}
             restore={saved => {
               if (!persistLocalPortableDraft(JSON.parse(liveDraftPayloadKey), saved)) return false;
@@ -3682,7 +3707,7 @@ export function PosDeskClient({
                 onClick={clearSelectedCustomer}
                 type="button"
               >
-                Change
+                <WorkspaceText text="Change" />
               </button>
             </div>
           ) : (
@@ -3699,7 +3724,7 @@ export function PosDeskClient({
                   });
                 }}
                 onFocus={() => setKeypadMode("customer_search")}
-                placeholder="Phone, email, account, name"
+                placeholder={__vt("Phone, email, account, name")}
                 type="search"
                 name="pos-customer-query"
                 autoComplete="off"
@@ -3727,7 +3752,7 @@ export function PosDeskClient({
                     ))
                   ) : (
                     <div className="px-3 py-2 text-sm text-zinc-500">
-                      {customerSearchComplete ? "No match yet" : "Searching"}
+                      <WorkspaceText text={customerSearchComplete ? "No match yet" : "Searching"} />
                     </div>
                   )}
                   {canOfferCustomerCreate(draft.customerLookup) ? (
@@ -3736,7 +3761,7 @@ export function PosDeskClient({
                       onClick={openCustomerCreateFromLookup}
                       type="button"
                     >
-                      Create new customer
+                      <WorkspaceText text="Create new customer" />
                     </button>
                   ) : null}
                 </div>
@@ -3755,7 +3780,7 @@ export function PosDeskClient({
         >
           {staffLines.length === 0 ? (
             <p className="rounded border border-dashed border-zinc-300 p-4 text-sm text-zinc-500">
-              No receipt lines yet.
+              <WorkspaceText text="No receipt lines yet." />
             </p>
           ) : (
             staffLines.map((line, index) => {
@@ -3778,7 +3803,7 @@ export function PosDeskClient({
                     className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-zinc-200 px-1 py-1.5 last:border-b-0"
                     data-pos-receipt-line
                     key={line.id}
-                    title={`${rowTitle} ${formatMoney(line.amount)}`}
+                    title={__vt(`${rowTitle} ${formatMoney(line.amount)}`)}
                   >
                     <button
                       className="min-w-0 rounded px-1 py-2 text-left transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
@@ -3794,7 +3819,7 @@ export function PosDeskClient({
                           {staffLabel}
                         </span>
                         <span aria-hidden="true" className="shrink-0 text-zinc-400">
-                          &middot;
+                          <WorkspaceText text="&middot;" />
                         </span>
                         <span
                           className="truncate text-zinc-600"
@@ -3807,7 +3832,7 @@ export function PosDeskClient({
                             className="shrink-0 text-xs font-semibold text-zinc-500"
                             data-pos-receipt-line-quantity
                           >
-                            &times;{quantity}
+                            <WorkspaceText text="&times;" />{quantity}
                           </span>
                         ) : null}
                       </span>
@@ -3819,13 +3844,13 @@ export function PosDeskClient({
                       {formatMoney(line.amount)}
                     </p>
                     <button
-                      aria-label={`Remove ${rowTitle}`}
+                      aria-label={__vt(`Remove ${rowTitle}`)}
                       className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-lg font-semibold text-red-600 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                       data-pos-receipt-line-remove
                       onClick={() => removeLine(line.id)}
                       type="button"
                     >
-                      &times;
+                      <WorkspaceText text="&times;" />
                     </button>
                   </div>
                 );
@@ -3849,7 +3874,7 @@ export function PosDeskClient({
                         {staffLabel}
                       </p>
                       <p className="text-xs text-zinc-500">
-                        Parts: {line.amount_input}
+                        <WorkspaceText text="Parts:" /> {line.amount_input}
                       </p>
                     </button>
                     <div className="text-right">
@@ -3859,7 +3884,7 @@ export function PosDeskClient({
                         onClick={() => removeLine(line.id)}
                         type="button"
                       >
-                        Remove
+                        <WorkspaceText text="Remove" />
                       </button>
                     </div>
                   </div>
@@ -3881,7 +3906,7 @@ export function PosDeskClient({
             <>
               {showSubtotalRow ? (
                 <div className="flex justify-between text-zinc-500">
-                  <span>Subtotal</span>
+                  <span><WorkspaceText text="Subtotal" /></span>
                   <span className="tabular-nums">{formatMoney(totals.subtotal)}</span>
                 </div>
               ) : null}
@@ -3896,7 +3921,7 @@ export function PosDeskClient({
                     onClick={() => focusReceiptMoneyInput("discount")}
                     type="button"
                   >
-                    Discount
+                    <WorkspaceText text="Discount" />
                   </button>
                   {keypadMode === "discount" ? (
                     <label className="flex min-w-0 items-center justify-end gap-1 font-semibold text-zinc-950">
@@ -3930,7 +3955,7 @@ export function PosDeskClient({
                   className="flex justify-between text-zinc-500"
                   data-pos-receipt-adjustment="tax"
                 >
-                  <span>Tax</span>
+                  <span><WorkspaceText text="Tax" /></span>
                   <span className="tabular-nums">{formatMoney(totals.tax_amount)}</span>
                 </div>
               ) : null}
@@ -3945,7 +3970,7 @@ export function PosDeskClient({
                     onClick={() => focusReceiptMoneyInput("tip")}
                     type="button"
                   >
-                    Tip
+                    <WorkspaceText text="Tip" />
                   </button>
                   {keypadMode === "tip" ? (
                     <label className="flex min-w-0 items-center justify-end gap-1 font-semibold text-zinc-950">
@@ -3989,7 +4014,7 @@ export function PosDeskClient({
                   onClick={() => focusReceiptMoneyInput("discount")}
                   type="button"
                 >
-                  Discount
+                  <WorkspaceText text="Discount" />
                 </button>
                 {keypadMode === "discount" ? (
                   <label className="flex min-w-0 items-center justify-end gap-1 font-semibold">
@@ -4020,11 +4045,11 @@ export function PosDeskClient({
                 )}
               </div>
               <div className="flex justify-between">
-                <span>Tax</span>
+                <span><WorkspaceText text="Tax" /></span>
                 <span>{formatMoney(totals.tax_amount)}</span>
               </div>
               <div className="flex justify-between text-zinc-500">
-                <span>Gift card</span>
+                <span><WorkspaceText text="Gift card" /></span>
                 <span>{formatMoney(0)}</span>
               </div>
               <div
@@ -4039,7 +4064,7 @@ export function PosDeskClient({
                   onClick={() => focusReceiptMoneyInput("tip")}
                   type="button"
                 >
-                  Tip
+                  <WorkspaceText text="Tip" />
                 </button>
                 {keypadMode === "tip" ? (
                   <label className="flex min-w-0 items-center justify-end gap-1 font-semibold">
@@ -4073,14 +4098,14 @@ export function PosDeskClient({
             className="flex items-end justify-between gap-3 border-t border-zinc-200 pt-2 text-xl font-semibold"
             data-pos-receipt-total
           >
-            <span className="text-sm uppercase text-zinc-500">Total</span>
+            <span className="text-sm uppercase text-zinc-500"><WorkspaceText text="Total" /></span>
             <span className="text-2xl tabular-nums">{formatMoney(totals.total)}</span>
           </div>
           {!isPortableSurface ? (
             <textarea
               className="mt-2 w-full rounded border border-zinc-300 px-3 py-2"
               onChange={(event) => updateDraft({ note: event.target.value })}
-              placeholder="Note"
+              placeholder={__vt("Note")}
               rows={2}
               value={draft.note}
             />
@@ -4100,10 +4125,10 @@ export function PosDeskClient({
       >
         <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-zinc-950">
-            Staff Turn Board
+            <WorkspaceText text="Staff Turn Board" />
           </h2>
           <p className="rounded-full border border-teal-100 bg-teal-50/80 px-2.5 py-1 text-xs font-semibold text-teal-900">
-            Large turn: {formatMoney(defaults.largeTurnThreshold)}
+            <WorkspaceText text="Large turn:" /> {formatMoney(defaults.largeTurnThreshold)}
           </p>
         </div>
         <div className="grid max-h-[min(42dvh,390px)] min-h-0 shrink-0 grid-cols-[repeat(auto-fill,minmax(90px,104px))] content-start justify-start gap-2 overflow-y-auto overflow-x-hidden pr-1">
@@ -4122,11 +4147,11 @@ export function PosDeskClient({
             );
             const colorClass = getStaffCardToneClass(turnToneLevel, selected);
             const holdActive = turnHoldStaffId === member.id;
-            const staffStatusLabel = member.today_status.replaceAll("_", " ");
+            const staffStatusLabel = member.service_status === "working" ? "Working" : member.today_status.replaceAll("_", " ");
 
             return (
               <button
-                aria-label={`${member.display_name}, ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`}
+                aria-label={__vt(`${member.display_name}, ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`)}
                 aria-pressed={selected}
                 className={`relative aspect-square overflow-hidden rounded-lg border p-2 text-center transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(35,25,22,0.14)] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 ${colorClass} ${
                   unavailable ? "opacity-60" : ""
@@ -4148,7 +4173,7 @@ export function PosDeskClient({
                 onPointerMove={handleStaffPointerMove}
                 onPointerUp={handleStaffPointerEnd}
                 type="button"
-                title={`${member.display_name}: ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`}
+                title={__vt(`${member.display_name}: ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`)}
               >
                 {member.avatar_url ? (
                   <StaffAvatar
@@ -4170,6 +4195,7 @@ export function PosDeskClient({
                 <span className="relative z-10 block truncate text-[15px] font-semibold leading-tight">
                   {getFirstName(member.display_name)}
                 </span>
+                {member.service_status === "working" && <span className="relative z-10 block text-[10px]"><WorkspaceText text="Working" />{(member.turns.holdingTurns ?? 0) > 0 ? <> · <WorkspaceText text="Holding" /></> : null}</span>}
                 <span className="relative z-10 mt-1 block text-[34px] font-bold leading-none tabular-nums">
                   {member.turns.queueTurns ?? member.turns.largeTurns}
                 </span>
@@ -4186,7 +4212,7 @@ export function PosDeskClient({
         >
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-zinc-950">Services</h2>
+              <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Services" /></h2>
             </div>
             <button
               className="min-h-8 shrink-0 rounded-lg border border-zinc-200 bg-white/70 px-2.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
@@ -4197,7 +4223,7 @@ export function PosDeskClient({
               }}
               type="button"
             >
-              Custom services
+              <WorkspaceText text="Custom services" />
             </button>
           </div>
 
@@ -4253,7 +4279,7 @@ export function PosDeskClient({
             </div>
           ) : (
             <p className="rounded-lg border border-zinc-200 bg-white/70 px-3 py-3 text-sm font-medium text-zinc-500">
-              Service catalog empty. Custom price entry stays available.
+              <WorkspaceText text="Service catalog empty. Custom price entry stays available." />
             </p>
           )}
 
@@ -4269,13 +4295,13 @@ export function PosDeskClient({
                 }}
                 type="button"
               >
-                More
+                <WorkspaceText text="More" />
               </button>
             ) : null}
           </div>
           {unpricedRequestedServices.length > 0 ? (
             <p className="mt-2 truncate text-xs font-medium text-teal-800">
-              Next requested: {unpricedRequestedServices[0].name}
+              <WorkspaceText text="Next requested:" /> {unpricedRequestedServices[0].name}
             </p>
           ) : null}
         </div>
@@ -4291,10 +4317,10 @@ export function PosDeskClient({
             <div className="mb-3 grid justify-items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-4 text-center shadow-sm">
               <div>
                 <p className="text-sm font-bold text-emerald-950">
-                  Save receipt & visit history to ReyLUMI
+                  <WorkspaceText text="Save receipt & visit history to ReyLUMI" />
                 </p>
                 <p className="mt-1 text-xs font-medium text-emerald-800">
-                  Scan with your phone to connect this visit.
+                  <WorkspaceText text="Scan with your phone to connect this visit." />
                 </p>
               </div>
               <QrCodeTile
@@ -4310,7 +4336,7 @@ export function PosDeskClient({
                 rel="noreferrer"
                 target="_blank"
               >
-                Open claim link
+                <WorkspaceText text="Open claim link" />
               </a>
             </div>
           ) : null}
@@ -4320,10 +4346,10 @@ export function PosDeskClient({
             data-pos-current-input
           >
             <p className="text-[11px] font-semibold uppercase text-zinc-500">
-              Current input
+              <WorkspaceText text="Current input" />
             </p>
             <p className="mt-1 min-h-10 text-3xl font-semibold tabular-nums text-zinc-950">
-              {keypadMode === "amount"
+              <WorkspaceText text={keypadMode === "amount"
                 ? draft.amountInput
                   ? `$${draft.amountInput}`
                   : "$0"
@@ -4333,7 +4359,7 @@ export function PosDeskClient({
                     ? `Discount ${
                         draft.discountInput ? `$${draft.discountInput}` : "$0"
                       }`
-                    : draft.customerLookup || "$0"}
+                    : draft.customerLookup || "$0"} />
             </p>
           </div>
 
@@ -4359,7 +4385,7 @@ export function PosDeskClient({
               onClick={handleKeypadBack}
               type="button"
             >
-              Back
+              <WorkspaceText text="Back" />
             </button>
             <button
               className="min-h-12 rounded-lg border border-zinc-200 bg-white/75 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
@@ -4368,7 +4394,7 @@ export function PosDeskClient({
               onClick={handleKeypadClear}
               type="button"
             >
-              Clear
+              <WorkspaceText text="Clear" />
             </button>
           </div>
 
@@ -4385,7 +4411,7 @@ export function PosDeskClient({
               onClick={() => focusReceiptMoneyInput("discount")}
               type="button"
             >
-              Discount
+              <WorkspaceText text="Discount" />
             </button>
             <button
               className={[
@@ -4398,7 +4424,7 @@ export function PosDeskClient({
               onClick={() => focusReceiptMoneyInput("tip")}
               type="button"
             >
-              Tip
+              <WorkspaceText text="Tip" />
             </button>
           </div>
 
@@ -4460,7 +4486,7 @@ export function PosDeskClient({
             onFocus={() => setKeypadMode("gift_card")}
             type="button"
           >
-            Gift card
+            <WorkspaceText text="Gift card" />
           </button>
 
         </div>
@@ -4487,17 +4513,19 @@ export function PosDeskClient({
               className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-3 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
               disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
               onClick={cancelActiveSession}
+              aria-busy={isResetting}
               type="button"
             >
-              {isResetting ? "Resetting" : "Reset"}
+              <ActionFeedback pending={isResetting} pendingLabel="Resetting…"><WorkspaceText text="Reset" /></ActionFeedback>
             </button>
             <button
               className="rounded-lg border border-brand-orange bg-gradient-to-b from-brand-orange via-[#ef5d28] to-brand-orange-hover px-3 py-3 font-bold text-white shadow-[0_16px_30px_rgba(242,111,61,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(242,111,61,0.34)] active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
               disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
               onClick={submitReceipt}
+              aria-busy={isSubmitting}
               type="button"
             >
-              {isSubmitting ? "Submitting" : "Submit"}
+              <ActionFeedback pending={isSubmitting} pendingLabel="Submitting…"><WorkspaceText text="Submit" /></ActionFeedback>
             </button>
           </div>
         </div>

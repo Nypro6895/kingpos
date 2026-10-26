@@ -1,10 +1,10 @@
 {
   "name": "kingpos",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node scripts/build-offline-assets.mjs",
     "start": "next start",
     "lint": "eslint",
     "db:validate-account-salon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-account-salon-foundation.ps1",
@@ -20,11 +20,15 @@
     "test": "node scripts/test.mjs"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^10.0.0",
     "@supabase/supabase-js": "^2.108.2",
+    "botid": "^1.5.11",
+    "jsqr": "^1.4.0",
     "maplibre-gl": "^5.24.0",
     "next": "16.2.9",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

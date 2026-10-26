@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import {
   createSettingsSalon,
@@ -33,7 +34,7 @@ function SalonFields({ salon, busy }: { salon?: Salon; busy: boolean }) {
           className={`grid gap-1 text-sm ${name === "name" ? "sm:col-span-2" : ""}`}
           key={name}
         >
-          {label}
+          <WorkspaceText text={label} />
           <input
             name={name}
             autoComplete={autoComplete}
@@ -51,11 +52,14 @@ function SalonFields({ salon, busy }: { salon?: Salon; busy: boolean }) {
 }
 
 export function SalonListPanel({ initialCreate = false, createOnly = false, onChanged }: { initialCreate?: boolean; createOnly?: boolean; onChanged?: () => void | Promise<void> }) {
+  const __vt = useWorkspaceTranslation();
+
   const [data, setData] = useState<Dashboard | null>(null);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [createdSalonId, setCreatedSalonId] = useState<string | null>(null);
   const [editor, setEditor] = useState<string | null>(initialCreate ? "new" : null);
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<BusinessClaimMatch[]>([]);
@@ -78,7 +82,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
 
   async function run(
     operation: () => Promise<
-      | { ok: true }
+      | { ok: true; salonId?: string }
       | { ok: false; error: string; matches?: BusinessClaimMatch[] }
     >,
     message: string,
@@ -97,6 +101,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
         return;
       }
       setNotice(message);
+      setCreatedSalonId(result.salonId ?? null);
       if (closeEditor) {
         setEditor(null);
         setMatches([]);
@@ -132,20 +137,20 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
   }
 
   return (
-    <div className="grid gap-4" aria-busy={busy}>
+    <div className="settings-style"><div className="grid gap-4" aria-busy={busy}>
       {error && (
         <div
           role="alert"
           className="rounded-md bg-red-50 p-3 text-sm text-red-800"
         >
-          <p>{error}</p>
+          <p><WorkspaceText text={error} /></p>
           {!data || notice ? (
             <button
               className={`${button} mt-2`}
               disabled={busy}
               onClick={reload}
             >
-              Reload list
+              <WorkspaceText text="Reload list" />
             </button>
           ) : null}
         </div>
@@ -155,13 +160,22 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
           role="status"
           className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-800"
         >
-          {notice}
+          <WorkspaceText text={notice} />
         </p>
+      )}
+      {createdSalonId && (
+        <div className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-sm"><WorkspaceText text="Next, review your salon details, add services and staff, then set booking hours and rules." /></p>
+          <div className="flex flex-wrap gap-2">
+            <a className={primary} href={`/settings?section=${encodeURIComponent(`salon-${createdSalonId}-salon-profile`)}`}><WorkspaceText text="Continue salon setup" /></a>
+            <a className={button} href={`/settings?section=${encodeURIComponent(`salon-${createdSalonId}-booking`)}`}><WorkspaceText text="Set up booking" /></a>
+          </div>
+        </div>
       )}
       {!data ? (
         !error && (
           <p role="status" className="text-sm text-zinc-500">
-            Loading salons…
+            <WorkspaceText text="Loading salons…" />
           </p>
         )
       ) : (
@@ -169,7 +183,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
           <div className="flex flex-wrap items-end justify-between gap-3">
             {data.accounts.length > 1 && (
               <label className="grid gap-1 text-sm">
-                Business account
+                <WorkspaceText text="Shared access group" />
                 <select
                   className={field}
                   disabled={busy}
@@ -182,6 +196,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                     setQuery("");
                     setError("");
                     setNotice("");
+                    setCreatedSalonId(null);
                   }}
                 >
                   {data.accounts.map((a) => (
@@ -199,11 +214,13 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                 aria-expanded={editor === "new"}
                 onClick={() => {
                   setEditor(editor === "new" ? null : "new");
+                  setCreatedSalonId(null);
+                  setNotice("");
                   setMatches([]);
                   setError("");
                 }}
               >
-                + Add salon
+                <WorkspaceText text="+ Add salon" />
               </button>
             )}
           </div>
@@ -233,8 +250,9 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                 );
               }}
             >
-              <h3 className="font-semibold">Add salon</h3>
+              {!createOnly ? <h3 className="font-semibold"><WorkspaceText text="Add salon" /></h3> : null}
               <SalonFields busy={busy} />
+              <p className="text-sm text-zinc-600"><WorkspaceText text="Only the salon name is required. After creation, add your salon details, services and team in Settings. Your salon stays private until you publish it." /></p>
               <label className="flex items-start gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -243,12 +261,12 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                   disabled={busy}
                   className="mt-1"
                 />
-                I also work as staff at this salon
+                <WorkspaceText text="I also work as staff at this salon" />
               </label>
               {matches.length > 0 && (
                 <div className="grid gap-3 rounded-md bg-amber-50 p-3">
                   <p className="text-sm font-semibold">
-                    These salons may match:
+                    <WorkspaceText text="These salons may match:" />
                   </p>
                   {matches.map((match) => (
                     <div key={match.salon_id} className="text-sm">
@@ -268,44 +286,44 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                       disabled={busy}
                       required
                     />
-                    My salon is different from these existing salons.
+                    <WorkspaceText text="My salon is different from these existing salons." />
                   </label>
                 </div>
               )}
               <div className="flex gap-2">
                 <button className={primary} disabled={busy}>
-                  {busy ? "Creating…" : "Create salon"}
+                  <WorkspaceText text={busy ? "Creating…" : "Create salon"} />
                 </button>
                 <button
                   className={button}
                   disabled={busy}
                   type="button"
                   onClick={() => {
-                    setEditor(createOnly ? "new" : null);
+                    setEditor(null);
                     setMatches([]);
                     setError("");
                   }}
                 >
-                  Cancel
+                  <WorkspaceText text="Cancel" />
                 </button>
               </div>
             </form>
           )}
           {!createOnly && data.salons.length > 5 && (
             <label className="grid gap-1 text-sm">
-              Find salon
+              <WorkspaceText text="Find salon" />
               <input
                 className={field}
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Name or address"
+                placeholder={__vt("Name or address")}
               />
             </label>
           )}
           {!createOnly && data.salons.length === 0 && (
             <p className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-500">
-              No salons in this business account yet.
+              <WorkspaceText text="No salons in this business account yet." />
             </p>
           )}
           {(createOnly ? [] : data.salons)
@@ -323,7 +341,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-semibold">{salon.name}</h3>
+                    <h3 className="font-semibold"><a href={`/settings?section=${encodeURIComponent(`salon-${salon.id}-salon-profile`)}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salon.name}</a></h3>
                     <p className="mt-1 text-sm text-zinc-500">
                       {[
                         salon.address_line1,
@@ -337,11 +355,12 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                     </p>
                     <div className="mt-2 flex gap-2 text-xs">
                       <span className="rounded-md bg-zinc-100 px-2 py-1 capitalize">
-                        {salon.status.replaceAll("_", " ")}
+                        <WorkspaceText text="Salon status:" />{" "}
+                        <WorkspaceText text={salon.status.replaceAll("_", " ")} />
                       </span>
                       {salon.isCurrent && (
                         <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-700">
-                          Current salon
+                          <WorkspaceText text="Current salon" />
                         </span>
                       )}
                     </div>
@@ -357,7 +376,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                           setError("");
                         }}
                       >
-                        {editor === salon.id ? "Close editor" : "Edit"}
+                        <WorkspaceText text={editor === salon.id ? "Close editor" : "Edit"} />
                       </button>
                     )}
                     {!salon.isCurrent && salon.canSelect && (
@@ -371,7 +390,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                           )
                         }
                       >
-                        Select
+                        <WorkspaceText text="Select" />
                       </button>
                     )}
                   </div>
@@ -392,7 +411,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                     <SalonFields salon={salon} busy={busy} />
                     <div className="flex gap-2">
                       <button className={primary} disabled={busy}>
-                        {busy ? "Saving…" : "Save changes"}
+                        <WorkspaceText text={busy ? "Saving…" : "Save changes"} />
                       </button>
                       <button
                         className={button}
@@ -403,7 +422,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                           setError("");
                         }}
                       >
-                        Cancel
+                        <WorkspaceText text="Cancel" />
                       </button>
                     </div>
                   </form>
@@ -417,9 +436,9 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                 .join(" ")
                 .toLowerCase()
                 .includes(query.trim().toLowerCase()),
-            ) && <p className="text-sm text-zinc-500">No matching salons.</p>}
+            ) && <p className="text-sm text-zinc-500"><WorkspaceText text="No matching salons." /></p>}
         </>
       )}
-    </div>
+    </div></div>
   );
 }

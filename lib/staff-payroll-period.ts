@@ -64,13 +64,7 @@ export function staffPayPeriodChoices(setting: SalonPayrollSetting | null, today
   const choices = new Map(saved.map(period => [staffPeriodKey(period), period]));
   for (const period of scheduled) if (!choices.has(staffPeriodKey(period))) choices.set(staffPeriodKey(period), period);
   const periods = [...choices.values()].sort((a, b) => b.startDate.localeCompare(a.startDate) || b.endDate.localeCompare(a.endDate));
-  const daysRemaining = Math.round((Date.parse(scheduled[0].endDate) - Date.parse(today)) / DAY);
-  // No separate payday is configured; use the salon's period end as the boundary.
-  const previousPublished = saved.filter(period => period.endDate < scheduled[0].startDate)
-    .sort((a, b) => b.endDate.localeCompare(a.endDate))[0];
-  const previous = previousPublished && previousPublished.endDate >= scheduled[1].endDate
-    ? previousPublished : scheduled[1];
-  return { periods, defaultPeriod: daysRemaining <= 5 ? scheduled[0] : previous };
+  return { periods, defaultPeriod: scheduled[0] };
 }
 
 export function staffComparisonPeriods(setting: SalonPayrollSetting | null, period: PayrollPeriod, today: string) {

@@ -1,3 +1,9 @@
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
+import { withExperiencePage } from "@/components/experience-page";
+import { PayrollFilterToolbar } from "@/app/payroll/payroll-filter-toolbar";
+import styles from "@/app/payroll/payroll-mobile.module.css";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
 import {
   TaxCompanyCalculationGuide,
   TaxCompanyLinesTable,
@@ -9,6 +15,7 @@ import Link from "next/link";
 
 type PayrollTaxCompanyPageProps = {
   searchParams: Promise<{
+    report?: string;
     end?: string;
     month?: string;
     payroll_error?: string;
@@ -52,6 +59,7 @@ function getPayrollHref(period: PayrollPeriod) {
 
 function getTaxCompanyHref(period: PayrollPeriod) {
   const params = new URLSearchParams({
+    report: "1",
     preset: period.preset,
   });
 
@@ -77,10 +85,10 @@ function NoPermissionState({ message }: { message: string }) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-10">
       <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        {message}
+        <WorkspaceText text={message} />
       </p>
       <Link className="text-sm font-medium text-zinc-700 underline" href="/payroll">
-        Back to payroll
+        <WorkspaceText text="Back to payroll" />
       </Link>
     </main>
   );
@@ -105,14 +113,15 @@ function PeriodSelector({
   const missingBiweeklyAnchor = scheduleSetup.needsBiweeklyAnchor;
 
   return (
-    <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <form
+    <PayrollFilterToolbar summary={<WorkspaceText text={period.label} />} periodLabel={period.label} active={period.preset === "custom"}>
+      <NavigationForm
         action="/payroll/tax-company"
         className="flex flex-wrap items-end gap-3"
       >
+        <input name="report" type="hidden" value="1" />
         {scheduleCycle === "monthly" ? (
           <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
-            Month
+            <WorkspaceText text="Month" />
             <input
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={monthInputFromPeriod(period)}
@@ -124,7 +133,7 @@ function PeriodSelector({
         {scheduleCycle === "semi_monthly" ? (
           <>
             <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
-              Month
+              <WorkspaceText text="Month" />
               <input
                 className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 defaultValue={monthInputFromPeriod(period)}
@@ -133,7 +142,7 @@ function PeriodSelector({
               />
             </label>
             <label className="flex min-w-64 flex-col gap-1 text-sm font-medium text-zinc-700">
-              Period
+              <WorkspaceText text="Period" />
               <select
                 className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 defaultValue={
@@ -148,8 +157,8 @@ function PeriodSelector({
           </>
         ) : null}
         {scheduleCycle === "biweekly" ? (
-          <label className="flex min-w-72 flex-col gap-1 text-sm font-medium text-zinc-700">
-            Pay period
+          <label className="flex min-w-0 w-full flex-col gap-1 text-sm font-medium text-zinc-700">
+            <WorkspaceText text="Pay period" />
             <select
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={period.startDate}
@@ -157,37 +166,38 @@ function PeriodSelector({
               name="payPeriodStart"
             >
               {missingBiweeklyAnchor ? (
-                <option value="">Set anchor in Payroll Settings</option>
+                <option value=""><WorkspaceText text="Set anchor in Payroll Settings" /></option>
               ) : (
                 periodOptions.map((option) => (
                   <option key={option.value} value={option.startDate}>
-                    {option.label}
+                    <WorkspaceText text={option.label} />
                   </option>
                 ))
               )}
             </select>
           </label>
         ) : null}
-        <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
-          Apply
-        </button>
-      </form>
+        <NavigationSubmitButton pendingLabel="Loading…" className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
+          <WorkspaceText text="Apply" />
+        </NavigationSubmitButton>
+      </NavigationForm>
       {missingBiweeklyAnchor ? (
         <p className="text-sm text-amber-700">
-          Every-2-weeks payroll needs an anchor date. Update it in Payroll Settings.
+          <WorkspaceText text="Every-2-weeks payroll needs an anchor date. Update it in Payroll Settings." />
         </p>
       ) : null}
       <details>
         <summary className="cursor-pointer text-sm font-medium text-zinc-600">
-          Advanced custom range
+          <WorkspaceText text="Advanced custom range" />
         </summary>
-        <form
+        <NavigationForm
           action="/payroll/tax-company"
           className="mt-3 flex flex-wrap items-end gap-3"
         >
           <input name="preset" type="hidden" value="custom" />
+          <input name="report" type="hidden" value="1" />
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-            Start
+            <WorkspaceText text="Start" />
             <input
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={period.startDate}
@@ -196,7 +206,7 @@ function PeriodSelector({
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-            End
+            <WorkspaceText text="End" />
             <input
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={period.endDate}
@@ -204,27 +214,29 @@ function PeriodSelector({
               type="date"
             />
           </label>
-          <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
-            Apply Custom
-          </button>
-        </form>
+          <NavigationSubmitButton pendingLabel="Loading…" className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
+            <WorkspaceText text="Apply Custom" />
+          </NavigationSubmitButton>
+        </NavigationForm>
       </details>
-    </section>
+    </PayrollFilterToolbar>
   );
 }
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
+    <div className="min-w-0 bg-zinc-50 p-4">
+      <p className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text={label} /></p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
     </div>
   );
 }
 
-export default async function PayrollTaxCompanyPage({
+async function PayrollTaxCompanyPage({
   searchParams,
 }: PayrollTaxCompanyPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const params = await searchParams;
   await requireSalonManagePageContext("/payroll/tax-company");
   let data: Awaited<ReturnType<typeof getPayrollTaxCompanyData>>;
@@ -244,11 +256,7 @@ export default async function PayrollTaxCompanyPage({
     return <NoPermissionState message={message} />;
   }
 
-  const statementLabel = data.latestStatement
-    ? `Printed Statement v${data.latestStatement.run.version}${
-        data.latestStatement.run.status === "paid" ? " - paid" : ""
-      }`
-    : "Live Preview - not printed yet";
+  const statementLabel = "Live payroll";
   const returnPath = getTaxCompanyHref(data.period);
   const payrollRunId = data.latestStatement?.run.id ?? null;
   const totalWageCheckNet = data.lines.reduce(
@@ -262,19 +270,19 @@ export default async function PayrollTaxCompanyPage({
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <main className={`${styles.page} flex min-w-0 w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8`}>
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0"><h1 className="mb-2 text-xl font-semibold"><WorkspaceText text="Tax payroll report" /></h1>
             <p className="text-sm text-zinc-500">
-              {data.period.label} - {statementLabel}
+              <WorkspaceText text={data.period.label} /> - <WorkspaceText text={statementLabel} />
             </p>
           </div>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800"
             href={getPayrollHref(data.period)}
           >
-            Payroll
+            <WorkspaceText text="Payroll" />
           </Link>
         </div>
         <PeriodSelector
@@ -291,24 +299,26 @@ export default async function PayrollTaxCompanyPage({
         </p>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-5">
-        <SummaryCard label="Reportable lines" value={`${data.lines.length}`} />
+      <p className="rounded-lg bg-zinc-50 p-3 text-sm text-zinc-600"><WorkspaceText text="This report shows current payroll amounts. Uploaded paystub documents are separate attachments and do not replace live calculations." /></p>
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <SummaryCard label={__vt("Reportable lines")} value={`${data.lines.length}`} />
         <SummaryCard
-          label="Reported Gross"
+          label={__vt("Reported Gross")}
           value={formatMoney(data.summary.totalTaxCompanyTaxableGross)}
         />
-        <SummaryCard label="Tax" value={formatMoney(totalTax)} />
+        <SummaryCard label={__vt("Tax")} value={formatMoney(totalTax)} />
         <SummaryCard
-          label="Wage Check Net"
+          label={__vt("Wage Check Net")}
           value={formatMoney(totalWageCheckNet)}
         />
         <SummaryCard
-          label="Actual Check Paid"
+          label={__vt("Actual Check Paid")}
           value={formatMoney(totalActualCheckPaid)}
         />
       </section>
 
       <TaxCompanyLinesTable
+        canUpload={data.access.canManagePayroll || data.access.canViewTaxCompany}
         lines={data.lines}
         payrollRunId={payrollRunId}
         returnPath={returnPath}
@@ -318,3 +328,6 @@ export default async function PayrollTaxCompanyPage({
     </main>
   );
 }
+
+export default withExperiencePage(PayrollTaxCompanyPage);
+

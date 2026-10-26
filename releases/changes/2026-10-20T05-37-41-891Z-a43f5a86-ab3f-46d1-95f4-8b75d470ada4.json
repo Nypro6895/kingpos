@@ -1,0 +1,115 @@
+{
+  "kind": "change",
+  "changeId": "staff-online-access-20261020",
+  "status": "ready",
+  "summary": "Restore strictly verified Staff online access without requiring offline cache approval; retain existing business authorization, guest/session behavior and Owner Today recovery.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "app/local-app/entry.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift",
+    "lib/app-local-host.ts",
+    "lib/app-local-page-admission.ts",
+    "lib/app-local-staff-online-access.ts",
+    "lib/staff-online-access-server.ts",
+    "supabase/migrations/20261020050000_staff_online_access_proof.sql",
+    "tests/app-local-admission-reasons.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/app-local-scope-admission.test.mjs",
+    "tests/app-local-staff-online-access-ui.test.mjs",
+    "tests/app-local-staff-online-access.test.mjs",
+    "tests/context-today-timing.test.mjs",
+    "tests/staff-online-access-server.test.mjs",
+    "tests/staff-online-access-sql.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\staff-online-access-release-r2-20261020\\frozen-e2fa5a6-raw",
+    "commit": "e2fa5a6b79fb858676b122288ab02a48933520d9",
+    "sourceSha256": "f7e3c35a3af936935f0038ca57023aa315fe3c64e3c8686c2572da65e04bd0aa",
+    "overlaySha256": "1a249e4dac3f9a9d22f2598ada382b521be0842741b2102502ecdef48ae9e9a8"
+  },
+  "validation": [
+    {
+      "name": "Canonical targeted unit/server/SQL/Today/workspace contracts",
+      "result": "passed",
+      "evidence": "canonical-unit.log"
+    },
+    {
+      "name": "Canonical Chromium UI matrix",
+      "result": "passed",
+      "evidence": "canonical-browser-chromium.log"
+    },
+    {
+      "name": "Canonical WebKit UI matrix",
+      "result": "passed",
+      "evidence": "canonical-browser-webkit.log"
+    },
+    {
+      "name": "Canonical six changed TS/TSX file lint",
+      "result": "passed",
+      "evidence": "canonical-lint.log"
+    },
+    {
+      "name": "Canonical production build with TypeScript",
+      "result": "passed",
+      "evidence": "canonical-production-build-result.json"
+    },
+    {
+      "name": "All raw source hashes before and after generated-output restoration",
+      "result": "passed",
+      "evidence": "canonical-source-final.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "cf8e5b16-48af-460f-a334-4f540b20c1a5"
+  ],
+  "releaseGates": [
+    "Exact production candidate source and build",
+    "Read-only migration preserving existing rows and offline function",
+    "Actual pinned native tests/archive/upload and Apple/TestFlight availability",
+    "Live web verification"
+  ],
+  "limitations": [
+    "Physical iPhone verification remains the owner testing step.",
+    "Offline Staff approval, identity, account, role and business authorization are unchanged.",
+    "Native runtime tests and provider publication are mandatory release gates, not claimed by this implementation-ready event."
+  ],
+  "id": "a43f5a86-ab3f-46d1-95f4-8b75d470ada4",
+  "recordedAt": "2026-10-20T05:37:41.891Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020",
+  "fileHashes": {
+    "app/api/app-local/context/route.ts": "6947764e777f0622070e5d6160f68b4897cd7d3906da35e50d22e3087e1b77b4",
+    "app/local-app/entry.tsx": "9f245d6f330891be17a1b9f7c7a0b8a54bb09e82fe14e636162b258e14a462a4",
+    "ios/Reylumi/LocalAppBundle/app.css": "a5431d3701d40ea5287ed0af8b810a9abe878c9b8bb394dc796147585074cf9e",
+    "ios/Reylumi/LocalAppBundle/app.js": "cce8969ddeecd86e34b5aae2a91d81e820060523f7792a45930942fc09f3e51d",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "d423217e1af458f6457786f8c9c141efc91e3321d6d0ce2ad16b46a912bd239d",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "96b2af669170efc8eed3ddbadbd1311d881fe4ad47636a8c4d8de66f6b7afd3a",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "6bbf69b878cba6ecb3770f03eef55c4ffd780b2ea98435e5a9efefa6cc036a9f",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "809485707ff4e26308cfb2c53534e25fc490a41aeb0acf1e19b312c4e6a3f186",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift": "54be9190ef67293ca94839a791369d06b6bb268f9e93550cbb90a0ec12e9a4ca",
+    "lib/app-local-host.ts": "878dc1e171a84ed1a8db2a15cdf99ffa6f1c20c3d8c9b6ecac1d69eb0a834c34",
+    "lib/app-local-page-admission.ts": "28b1720673e070b89aae859aff43307e9e108cd1827102886c6bae4507ff0339",
+    "lib/app-local-staff-online-access.ts": "1cfda8de0d3d408871e797ce21f94f6ab5516b857c6ccca04ab870da10ad0e99",
+    "lib/staff-online-access-server.ts": "de3b961e04420d1e09aae9340620395d7794e31ad013d49a33b1a48efdd27c76",
+    "supabase/migrations/20261020050000_staff_online_access_proof.sql": "8602f87827e7dedf5ee9655522c291602ab0847158fc769fb052defc8d02ce67",
+    "tests/app-local-admission-reasons.test.mjs": "298e58feb1b8b6fb45b8022edfcf631562fec4b7e6765c6039b60714d78e5b83",
+    "tests/app-local-page-admission-ui.test.mjs": "4230909d56c0d2acd0a2e6b844cba73b4ccd41f7dc1e04f7ccb9b00f9f12e887",
+    "tests/app-local-scope-admission.test.mjs": "967c4557b3f2f2b7a5239c7fb1e49346a22afdc796c191a93e870dfa0b415bdf",
+    "tests/app-local-staff-online-access-ui.test.mjs": "f50c61b78190d67ded5858d45bbc508f34a6473b0f3f4feecdd6e03036d91de4",
+    "tests/app-local-staff-online-access.test.mjs": "756179750e16588873ad8d74497e05645d0f6478431ddb14aa4a057b9f9230f5",
+    "tests/context-today-timing.test.mjs": "5181ce0753b139b6b4d6589783f5cac68508d29a6e01356b194a827d2453d7c5",
+    "tests/staff-online-access-server.test.mjs": "bbd9bef2b0cf2a8c3cb8fa6de1932112f71eb5aacdf0e012dc05fe5cc8bdc3cb",
+    "tests/staff-online-access-sql.test.mjs": "bc3afd1f30a8af1844d5a563ed765c8675b4a55b8ed60e29f21a2b45583e0996"
+  }
+}

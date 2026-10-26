@@ -2,9 +2,10 @@
 import { useEffect, useRef } from "react";
 import { createSupabaseBrowserClient } from "./supabase/browser";
 import { getPosStaffRealtimeChannel } from "./pos-staff-realtime";
+import { canAutomaticallyRefreshRead, subscribeReadRefresh } from "./read-refresh-scheduler";
 
 export type PosResource = "staff" | "tickets" | "booking" | "report" | "waiting" | "settings" | "catalog";
-export type PosChange = { resource: PosResource; ids?: string[]; reason?: "poll" | "resume" | "reconnect" };
+export type PosChange = { resource: PosResource; ids?: string[]; reason?: "poll" | "resume" | "reconnect" | "foreground" };
 const all: PosResource[] = ["staff", "tickets", "booking", "report", "waiting", "settings", "catalog"];
 const sourceResources: Record<string, PosResource[]> = {
   attendance: ["staff"], staff: ["staff"], turn_adjust: ["staff", "report"],
@@ -12,6 +13,7 @@ const sourceResources: Record<string, PosResource[]> = {
   waiting: ["waiting"], catalog:["catalog"], settings: ["settings"], report: ["report"],
 };
 type Listener = (change: PosChange) => void;
+type RefreshState = { salonId: string; resource: PosResource; at: number; retryAfter: number; inFlight?: Promise<void>; pending: boolean; full: boolean; authoritative: boolean; ids: Set<string> };
 const brokers = new Map<string, { listeners: Set<Listener>; close(): void }>();
 
 // Broadcasts are hints only. Data is always fetched through a scoped, authorized
@@ -21,11 +23,13 @@ export function subscribePosChanges(salonId: string, listener: Listener) {
   if (!broker) {
     const listeners = new Set<Listener>();
     const emit = (change: PosChange) => { for (const callback of listeners) callback(change); };
-    const wake = () => { if (navigator.onLine && document.visibilityState === "visible") all.forEach(resource => emit({ resource, reason: "resume" })); };
+    const unsubscribeWake = subscribeReadRefresh(reason => {
+      all.forEach(resource => emit({ resource, reason: reason === "foreground" ? "foreground" : "resume" }));
+    });
     let ticks = 0, subscribed = false;
     const poll = () => {
       ticks++;
-      if (!navigator.onLine || document.visibilityState !== "visible") return;
+      if (!canAutomaticallyRefreshRead()) return;
       // Catalog/config change rarely; realtime and focus still reconcile them.
       all.filter(resource => !["catalog", "settings"].includes(resource) || ticks % 5 === 0)
         .forEach(resource => emit({ resource, reason: "poll" }));
@@ -56,43 +60,74 @@ export function subscribePosChanges(salonId: string, listener: Listener) {
     const local = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(`kingpos:workspace:${salonId}`);
     if (local) local.onmessage = event => receive(event.data ?? {});
     const timer = setInterval(poll, 60000);
-    window.addEventListener("online", wake); window.addEventListener("focus", wake); document.addEventListener("visibilitychange", wake);
-    broker = { listeners, close() { clearInterval(timer); local?.close(); if (channel) void supabase?.removeChannel(channel); window.removeEventListener("online", wake); window.removeEventListener("focus", wake); document.removeEventListener("visibilitychange", wake); } };
+    broker = { listeners, close() { clearInterval(timer); unsubscribeWake(); local?.close(); if (channel) void supabase?.removeChannel(channel); } };
     brokers.set(salonId, broker);
   }
   broker.listeners.add(listener);
   return () => { broker.listeners.delete(listener); if (!broker.listeners.size) { broker.close(); brokers.delete(salonId); } };
 }
 
-export function usePosResourceRefresh(salonId: string | null | undefined, resource: PosResource, refresh: (ids?: string[]) => Promise<void>, { initialReconcile = true, enabled = true, snapshotAt }: {initialReconcile?: boolean; enabled?: boolean; snapshotAt?:number} = {}) {
+export function usePosResourceRefresh(salonId: string | null | undefined, resource: PosResource, refresh: (ids?: string[]) => Promise<void>, { initialReconcile = true, enabled = true, snapshotAt, freshForMs = 10000 }: {initialReconcile?: boolean; enabled?: boolean; snapshotAt?:number;freshForMs?:number} = {}) {
   const current = useRef(refresh);
+  const completed = useRef<RefreshState | undefined>(undefined);
   useEffect(() => { current.current = refresh; }, [refresh]);
   useEffect(() => {
     if (!salonId || !enabled) return;
-    let alive = true, running = false, pending = false, full = false;
-    const reconcileInitial=initialReconcile || (snapshotAt!==undefined && Date.now()-snapshotAt>=10000);
-    let lastRefresh = reconcileInitial ? 0 : snapshotAt ?? Date.now();
-    const ids = new Set<string>(); let timer: ReturnType<typeof setTimeout> | undefined;
+    let alive = true, running = false;
+    const firstReconcile = completed.current?.salonId !== salonId || completed.current.resource !== resource;
+    if (firstReconcile) {
+      completed.current = { salonId, resource, at: initialReconcile ? 0 : snapshotAt ?? Date.now(), retryAfter: 0, pending: false, full: false, authoritative: false, ids: new Set() };
+    }
+    const freshness = completed.current!;
+    freshness.at = Math.max(freshness.at, snapshotAt ?? 0);
+    const reconcileInitial = firstReconcile && initialReconcile || freshness.at === 0 || Date.now() - freshness.at >= freshForMs;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = (delay = 100) => {
+      if (!freshness.authoritative && freshness.retryAfter > Date.now()) return;
+      if (alive && freshness.pending && !running && !timer && canAutomaticallyRefreshRead()) timer = setTimeout(run, delay);
+    };
     async function run() {
       timer = undefined;
-      if (!alive || running || !navigator.onLine || document.visibilityState !== "visible") return;
-      running = true; pending = false;
-      const requested = full || !ids.size ? undefined : [...ids]; full = false; ids.clear();
-      try { await current.current(requested); lastRefresh = Date.now(); } catch { /* Preserve the last snapshot and all local work. */ }
-      finally { running = false; if (alive && pending) timer = setTimeout(run, 100); }
+      if (!alive || running || !canAutomaticallyRefreshRead()) return;
+      // Activity detaches effects while retaining this ref. Reentry joins the
+      // earlier read instead of starting a second request for the same view.
+      if (freshness.inFlight) {
+        running = true;
+        try { await freshness.inFlight; } catch { /* The original reader preserves its failure policy. */ }
+        finally { running = false; schedule(); }
+        return;
+      }
+      // A wake/poll during a successful read is covered by that result. Actual
+      // data changes received during it must still produce a follow-up read.
+      if (!freshness.authoritative && Date.now() - freshness.at < freshForMs) { freshness.pending = false; freshness.full = false; freshness.ids.clear(); return; }
+      running = true; freshness.pending = false;
+      const requested = freshness.full || !freshness.ids.size ? undefined : [...freshness.ids];
+      freshness.full = false; freshness.authoritative = false; freshness.ids.clear();
+      const read = current.current;
+      const request = Promise.resolve().then(() => read(requested));
+      freshness.inFlight = request;
+      try { await request; freshness.at = Date.now(); freshness.retryAfter = 0; }
+      catch { freshness.retryAfter = Date.now() + 3000; /* Keep local work. A later hint retries; failures never start a retry loop. */ }
+      finally { if (freshness.inFlight === request) freshness.inFlight = undefined; running = false; schedule(); }
     }
     const unsubscribe = subscribePosChanges(salonId, change => {
       if (change.resource !== resource) return;
-      if (change.reason && change.reason !== "reconnect" && Date.now() - lastRefresh < 10000) return;
-      pending = true;
-      if (!change.ids?.length) full = true; else change.ids.forEach(id => ids.add(id));
-      if (!running && !timer) timer = setTimeout(run, 100);
+      const changed = !change.reason || change.reason === "reconnect";
+      if (!changed && freshness.inFlight) return;
+      if (!changed && Date.now() - freshness.at < freshForMs) return;
+      freshness.authoritative ||= changed;
+      freshness.pending = true;
+      if (!change.ids?.length) freshness.full = true; else change.ids.forEach(id => freshness.ids.add(id));
+      if (freshness.ids.size > 100) { freshness.full = true; freshness.ids.clear(); }
+      schedule();
     });
-    const resume = () => { if (pending && !running && !timer) timer = setTimeout(run,100); };
-    document.addEventListener("visibilitychange",resume);
+    const unsubscribeWake = subscribeReadRefresh(() => schedule());
     // Offline snapshots and unseeded providers reconcile immediately; freshly
     // rendered owner views wait for a change or the fallback poll.
-    if (reconcileInitial) { full = true; pending = true; timer = setTimeout(run, 0); }
-    return () => { alive = false; unsubscribe(); if (timer) clearTimeout(timer); document.removeEventListener("visibilitychange",resume); };
-  }, [salonId, resource, initialReconcile, enabled, snapshotAt]);
+    if (reconcileInitial && !freshness.pending) {
+      freshness.full = true; freshness.pending = true; freshness.authoritative = firstReconcile && initialReconcile;
+    }
+    schedule(reconcileInitial ? 0 : 100);
+    return () => { alive = false; unsubscribe(); unsubscribeWake(); if (timer) clearTimeout(timer); };
+  }, [salonId, resource, initialReconcile, enabled, snapshotAt, freshForMs]);
 }

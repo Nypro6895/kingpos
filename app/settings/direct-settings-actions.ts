@@ -93,8 +93,7 @@ import { getCurrentSalonMapLocationState } from "@/lib/location/salon-map-locati
 import { getTodayQuickAccessConfiguration } from "@/lib/today-quick-accesses";
 import { getSalonProfileMediaUrl, getCurrentSalonProfileIdentitySettings } from "@/lib/salon-profile";
 import { getSettingsOwnerHistory } from "@/lib/settings-owner-history";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { getWindowsPosRelease } from "@/lib/windows-pos-release";
 
 export type DirectSettingsKind =
   | "salon-profile"
@@ -203,12 +202,15 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
     } as const;
   }
   const { context, supabase, salon } = await salonContext();
-  const common = { salonId: salon.id, salonName: salon.name };
+  const common = { salonId: salon.id, salonName: salon.name, salonStatus: salon.status, canManagePlugins: isOwnerMembership(context.currentMembership) && isSalonManageContext(context) && salon.status === "active" };
   switch (kind) {
     case "public-profile": {
       const setting=await getCurrentSalonProfileIdentitySettings(context);
       const canManageSalon=await hasPermission('salon_settings.manage',context);
-      return {kind,...common,setting,profileIdentity:setting,canManageSalon,canManage:await hasPermission('salon_profile.manage',context),readiness:canManageSalon?await getCurrentSalonDiscoveryReadiness(setting):{canEnable:false,missingLabels:[]},logoUrl:getSalonProfileMediaUrl(setting.public_profile_logo_path),coverUrl:getSalonProfileMediaUrl(setting.public_profile_cover_path)} as const;
+      const availability = setting.public_discovery_enabled
+        ? await supabase.rpc("salon_profile_public_salon_exists", { target_salon_id: salon.id })
+        : { data: false, error: null };
+      return {kind,...common,setting,profileIdentity:setting,canManageSalon,canManage:await hasPermission('salon_profile.manage',context),publicProfileAvailable:availability.error ? null : availability.data === true,readiness:canManageSalon?await getCurrentSalonDiscoveryReadiness(setting):{canEnable:false,missingLabels:[],items:[]},logoUrl:getSalonProfileMediaUrl(setting.public_profile_logo_path),coverUrl:getSalonProfileMediaUrl(setting.public_profile_cover_path)} as const;
     }
     case "salon-profile": {
       const { setting } = await getCurrentSalonSetting();
@@ -294,14 +296,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
           .maybeSingle(),
       ]);
       if (snapshot.error) throw new Error(snapshot.error.message);
-      const manifest = await readFile(
-        path.join(process.cwd(), "public/desktop-updates/latest.yml"),
-        "utf8",
-      ).catch(() => "");
-      const version = manifest.match(/^version:\s*["']?([\d.]+)/m)?.[1] ?? "";
-      const installer = /^\d+\.\d+\.\d+$/.test(version)
-        ? `/desktop-updates/${encodeURIComponent(`KingPOS Portable Test-Setup-${version}.exe`)}`
-        : null;
+      const installer = (await getWindowsPosRelease())?.href ?? null;
       return {
         kind,
         ...common,

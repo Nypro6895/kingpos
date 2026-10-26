@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "staff-online-access-20261020",
+  "status": "working",
+  "summary": "Correct the native Staff negative fixture to use a real privileged plugin action instead of the permitted loadServiceRelay read; retain all existing assertions and unchanged app runtime.",
+  "channels": [
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "757846dc86135eb28e2dbce0b8f5bfae4d26bf09"
+  },
+  "validation": [
+    {
+      "name": "Correct negative action identity, retained assertions and runtime byte parity",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "d402d218-17c0-4073-bb8c-b4cdb292c927",
+  "recordedAt": "2026-10-20T06:13:05.356Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

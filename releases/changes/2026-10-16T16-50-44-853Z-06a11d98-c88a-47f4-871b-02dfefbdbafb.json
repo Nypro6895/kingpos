@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "app-local-platform-native-foundation",
+  "status": "needs-integration",
+  "summary": "Bundle native host with same-viewer scoped encrypted read leases; fix XCTest Swift overlay compatibility, exact404 eviction, bounded named read POST, original blob previews and narrow existing MapTiler worker CSP.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r4",
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "validation": [
+    {
+      "name": "Native bridge syntax and VM contracts (9)",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-js-verification.json"
+    },
+    {
+      "name": "Actual generated 343-file bundle length/SHA and manifest contract",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-bundle-verification.json"
+    },
+    {
+      "name": "macOS r1 Swift build + named transport3/scope-encryption4 tests",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-check-r1.log"
+    },
+    {
+      "name": "22 new XCTest cases plus existing suite, actual WK storage/WebCrypto/Web Locks/photos/worker and unsigned archive",
+      "result": "pending",
+      "evidence": "r2 copied actual bundle correctly, but zero tests ran because the callAsyncJavaScript Swift overlay library is absent on iOS18.5. Removed that overlay dependency while awaiting actual JS operations via bounded result-slot polling; r3 macOS run required."
+    }
+  ],
+  "id": "06a11d98-c88a-47f4-871b-02dfefbdbafb",
+  "recordedAt": "2026-10-16T16:50:44.853Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

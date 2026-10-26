@@ -1,4 +1,42 @@
 "use server";
+import type { RelayWorkspace } from "@/types/service-relay";
+import type { ScanDeskLine } from "@/types/staff-scan";
+
+export async function portableLoadServiceRelay(): Promise<{ data?: RelayWorkspace; error?: string }> {
+  try {
+    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc("service_relay_workspace", { p_salon: portableSession.salon_id, p_desk: true, p_key: keyId, p_signature: signature });
+    if (error) throw new Error(error.message);
+    return { data: data as RelayWorkspace };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Could not load service tickets." }; }
+}
+export async function portableSubmitServiceRelay(input: { visitId: string; revision: number; tip: number; discount: number }) {
+  try {
+    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc("service_relay_submit", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_expected: input.revision, p_tip: input.tip, p_discount: input.discount, p_key: keyId, p_signature: signature });
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
+    return { ok: true, ticketId: String(data.ticketId) };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Could not submit service ticket." }; }
+}
+export async function portableSaveServiceRelayAtDesk(input: { visitId: string; revision: number; lines: ScanDeskLine[] }) {
+  try {
+    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { error } = await supabase.rpc("staff_scan_desk_save", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_expected: input.revision, p_lines: input.lines, p_key: keyId, p_signature: signature });
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
+    return { ok: true };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Could not save service ticket." }; }
+}
+export async function portableNotifyPersonalReady(input: { visitId: string; staffId: string | null; chair: string; requestId: string }) {
+  try {
+    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { error } = await supabase.rpc("personal_qr_notify_ready", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_staff: input.staffId, p_chair: input.chair, p_request: input.requestId, p_key: keyId, p_signature: signature });
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "waiting");
+    return { ok: true };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Could not notify this customer." }; }
+}
 
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
@@ -7,6 +45,7 @@ import { after } from "next/server";
 import { cache } from "react";
 import { createHash, createPublicKey, pbkdf2, privateDecrypt, constants as cryptoConstants } from "node:crypto";
 import { getPosLiveDraft } from "@/app/pos/actions";
+import { marketServiceClient } from "@/lib/market-payments";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import {
@@ -331,6 +370,7 @@ export type PortableCreateAppointmentInput = {
 };
 
 export type PortableReportData = {
+  closingScope?: string;
   closingInputs: {
     cashAmount: number;
     creditCardAmount: number;
@@ -361,6 +401,7 @@ export type PortableReportData = {
 };
 
 export type PortableReportClosingSaveInput = {
+  expectedScope?: string;
   expectedClosing?: PortableReportData["closingInputs"];
   cashAmount: string;
   creditCardAmount: string;
@@ -499,6 +540,9 @@ function normalizePortableDeskTurns(value: unknown): PosDeskStaff["turns"] {
   return {
     largeTurns,
     queueTurns,
+    pendingTurns: readPortableNumberField(payload, ["pendingTurns"]),
+    pendingSmallTurns: readPortableNumberField(payload, ["pendingSmallTurns"]),
+    holdingTurns: readPortableNumberField(payload, ["holdingTurns"]),
     receiptLargeTurns: readPortableNumberField(
       payload,
       ["receiptLargeTurns", "receipt_large_turns"],
@@ -563,6 +607,7 @@ function normalizePortableDeskStaffRow(value: unknown): PosDeskStaff | null {
 
   return {
     avatar_url: normalizePortableDeskStaffAvatarUrl(payload),
+    service_status: payload.service_status === "working" ? "working" : "ready",
     check_in_at: normalizePortableNullableString(
       payload.check_in_at ?? payload.checkInAt,
     ),
@@ -1508,6 +1553,7 @@ async function getPortableBusinessDate(input: {
 }
 
 async function loadPortablePosDeskData(): Promise<{
+  salonId: string;
   defaults: typeof POS_DESK_DEFAULTS;
   liveDraft: PosLiveDraftView | null;
   salonLogoUrl: string | null;
@@ -1549,6 +1595,7 @@ async function loadPortablePosDeskData(): Promise<{
 
   return {
     defaults: getPosDeskDefaults(settings),
+    salonId: portableSession.salon_id,
     liveDraft: normalizeLiveDraft(
       (payload.liveDraft ?? payload.live_draft ?? null) as PosLiveDraftView | null,
     ),
@@ -1597,6 +1644,7 @@ async function loadPortableReferenceData(input: {
 }
 
 export async function getPortablePosDeskData(): Promise<{
+  salonId: string;
   defaults: typeof POS_DESK_DEFAULTS;
   liveDraft: PosLiveDraftView | null;
   salonLogoUrl: string | null;
@@ -2211,6 +2259,7 @@ export async function getPortableReportData(
     }
 
     return {
+    closingScope: `${portableSession.salon_id}:${keyId}`,
       closingInputs: {
         cashAmount: 0,
         creditCardAmount: 0,
@@ -2252,6 +2301,7 @@ export async function getPortableReportData(
   const totals = payload.totals ?? {};
 
   return {
+    closingScope: `${portableSession.salon_id}:${keyId}`,
     closingInputs: normalizePortableReportClosingInputs(payload.closingInputs),
     lock: normalizePortableReportLock(payload.lock),
     reportDate,
@@ -2283,9 +2333,12 @@ export async function savePortableReportClosing(
       throw new Error("Report date is required.");
     }
 
-    const { keyId, signature, supabase } = await requirePortableCapability(
+    const { keyId, portableSession, signature, supabase } = await requirePortableCapability(
       PORTABLE_POS_CAPABILITIES.reportView,
     );
+    if (input.expectedScope && input.expectedScope !== `${portableSession.salon_id}:${keyId}`) {
+      throw new Error("The Portable salon session changed. Reopen this report before saving.");
+    }
     const cashAmountCents = parsePortableCurrencyToCents(
       input.cashAmount,
       "Cash",
@@ -2526,6 +2579,17 @@ export async function portableGetWaitingQueue() {
     if (error) throw error;
     return { ok: true as const, data: normalizePortableWaitingVisits(data) };
   } catch { return { ok: false as const }; }
+}
+
+export async function portableResolveScannedCheckinReceipt(code: string) {
+  try {
+    const { portableSession } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const match = /^reylumi:checkin:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(code.trim());
+    if (!match) throw new Error("Scan a Reylumi check-in receipt.");
+    const { data, error } = await marketServiceClient().rpc("resolve_checkin_receipt", { p_salon: portableSession.salon_id, p_visit: match[1] });
+    if (error || !data) throw new Error("Receipt is unavailable: check the salon, subscription, or whether this customer already has a ticket.");
+    return { visit: data as CustomerVisitQueueItem };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Receipt could not be scanned." }; }
 }
 
 export async function portableSelectWaitingVisitForPos(input: {

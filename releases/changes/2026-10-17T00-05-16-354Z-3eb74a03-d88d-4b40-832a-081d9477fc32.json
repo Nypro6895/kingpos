@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "restore-original-reylumi-logo-web-20261016",
+  "summary": "Restore exact original Reylumi web and home-screen icons on current production source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/icon.png",
+    "app/apple-icon.png",
+    "app/favicon.ico",
+    "public/brand/reylumi-favicon.png",
+    "public/brand/reylumi-app-192.png",
+    "public/brand/reylumi-app-512.png"
+  ],
+  "dependencies": [],
+  "baselineDeploymentId": "dpl_GFYtc7Ju9PijSyxe4EyXwwyGSTwF",
+  "baselineCommit": "ac824ab0e7cf9905554143796b4c0f38a63c56d1",
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\restore-original-logo-20261016\\web-overlay"
+  },
+  "validation": [
+    {
+      "name": "All six original asset SHA256 hashes match saved originals; only six product files differ from live baseline",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/restore-original-logo-20261016/web-ready.json"
+    }
+  ],
+  "id": "3eb74a03-d88d-4b40-832a-081d9477fc32",
+  "recordedAt": "2026-10-17T00:05:16.354Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\reylumi-glass-logo\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/icon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "app/apple-icon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "app/favicon.ico": "c90ca5a9926943717f0f4fd990c2b902769a8aacc51cc8f2d899f9b5dd3d42ee",
+    "public/brand/reylumi-favicon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "public/brand/reylumi-app-192.png": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+    "public/brand/reylumi-app-512.png": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9"
+  }
+}

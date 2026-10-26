@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import type { PublicBookingPageData } from "@/lib/public-booking";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
@@ -25,6 +26,8 @@ async function loadContext(url: URL, signal: AbortSignal) {
 }
 
 export function QuickBooking() {
+  const __vt = useWorkspaceTranslation();
+
   const authenticated = useExploreAuthenticated();
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
@@ -111,7 +114,7 @@ export function QuickBooking() {
     return () => { abort.abort(); if (usableWarm) warm.controller.abort(); element?.close(); document.body.style.overflow = previous; opener.current?.focus(); };
   }, [href, retry]);
   if (!href) return null;
-  return <dialog ref={dialog} className={styles.dialog} aria-label="Quick booking" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}>
-    {data && Wizard ? <Wizard data={data} embedded onClose={close} onBusyChange={value => { busy.current = value; }} /> : <div className={styles.loading}><header><strong>Book an appointment</strong><button onClick={close} aria-label="Close booking">×</button></header>{error ? <><p role="alert">{error}</p><button className={styles.primary} onClick={() => { setError(""); setRetry(value => value + 1); }}>Try again</button></> : <><div className={styles.skeleton}/><div className={styles.skeleton}/><p role="status">Checking available times…</p></>}</div>}
+  return <dialog ref={dialog} className={styles.dialog} aria-label={__vt("Quick booking")} onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}>
+    {data && Wizard ? <Wizard data={data} embedded onClose={close} onBusyChange={value => { busy.current = value; }} /> : <div className={styles.loading}><header><strong><WorkspaceText text="Book an appointment" /></strong><button onClick={close} aria-label={__vt("Close booking")}>×</button></header>{error ? <><p role="alert"><WorkspaceText text={error} /></p><button className={styles.primary} onClick={() => { setError(""); setRetry(value => value + 1); }}><WorkspaceText text="Try again" /></button></> : <><div className={styles.skeleton}/><div className={styles.skeleton}/><p role="status"><WorkspaceText text="Checking available times…" /></p></>}</div>}
   </dialog>;
 }

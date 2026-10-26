@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "app-local-daily-reference-20261016",
+  "status": "working",
+  "summary": "Complete original ticket detail plus Tax Company list/report/install local UI (Tax reads never retained), pinned original read-only business claim suggestions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-daily-registry.tsx",
+    "lib/app-local-daily-server.ts",
+    "lib/app-local-daily-metadata.ts",
+    "components/app-local-ticket-detail.tsx",
+    "lib/app-local-business-http-client.ts",
+    "lib/app-local-business-http-server.ts",
+    "lib/app-local-business-http-metadata.ts",
+    "tests/app-local-daily-server.test.mjs",
+    "tests/app-local-daily-ui.test.mjs",
+    "tests/app-local-business-http.test.mjs",
+    "components/app-local-tax-company.tsx"
+  ],
+  "validation": [
+    {
+      "name": "controlled readers and original forms UI",
+      "result": "pending"
+    }
+  ],
+  "id": "54472c3c-60cd-4f2d-9478-0345d0f0d2fa",
+  "recordedAt": "2026-10-16T16:50:11.451Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,99 @@
+{
+  "kind": "change",
+  "changeId": "macqa-help-background-integration-20261020",
+  "status": "needs-integration",
+  "summary": "Local QA assembly frozen: uploaded45 preserved with cookie replacement, typed missing-session rejection, Help dismissal and background cookie delivery;345-resource bundle hash-verified and67 local contracts passed. Native180/Release and actual Staff/Help candidate UI remain pending; nothing published.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "components/app-local-shell.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift",
+    "lib/supabase/auth-rest.ts",
+    "tests/app-local-command-backend-trace.test.mjs",
+    "tests/app-local-help-dismiss-ui.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs"
+  ],
+  "dependencies": [
+    "ios-workspace-cookie-deletion-20261020",
+    "auth-session-missing-rejection-20261020",
+    "help-context-dismiss-20261020",
+    "ios-background-cookie-authority-20261020"
+  ],
+  "selectedEvents": [
+    "f1a21743-b245-433f-bc2f-03a61fa05495",
+    "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+    "4cff2fad-08e3-42d0-9b22-623957e87395",
+    "bca89a39-186f-412a-81bd-b76075e4d5da"
+  ],
+  "source": {
+    "commit": "ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\frozen-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+    "snapshotKind": "raw-native-ios-subtree; full product source retained in exact Git commit",
+    "snapshotSha256": "03caf8901156099e91d53e015fbf9c978b247467ab2f97664413f70ee7303bd3",
+    "nativeInputCount": 414,
+    "archive": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\reylumi-ios-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359-raw.tar",
+    "archiveSha256": "21ea78a85852a8601eb3ff484d4c9df2b43587add00876a9e518953957c6b087",
+    "baselineNativeCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+    "bundleBuildId": "1d85f270d246910f38f72a2fb7efb8417782336c8a3c73a0c2212329d258fe47"
+  },
+  "validation": [
+    {
+      "name": "Bundled JS generation with allowlisted public configuration and dispatch disabled",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/macqa-integration/bundle-build-result.json"
+    },
+    {
+      "name": "67 actual local auth/navigation/trace contracts;0fail/cancel/skip",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/macqa-integration/focused-contract-tests.log"
+    },
+    {
+      "name": "414 raw Git native files and345 bundle-resource hashes; manifest metadata preserved",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/macqa-integration/raw-source-manifest.json"
+    },
+    {
+      "name": "Foreground canonical writer and selected background guards preserved",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/macqa-integration/assembly-verification.json"
+    },
+    {
+      "name": "CSS generated delta additive utility rules; no existing style rule removed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/macqa-integration/css-rule-delta.json"
+    },
+    {
+      "name": "Native180 tests and Release Simulator build",
+      "result": "pending"
+    },
+    {
+      "name": "Actual authenticated Staff/Help candidate UI including separate Post issue",
+      "result": "pending"
+    },
+    {
+      "name": "Assembled web production build and publication integration",
+      "result": "pending"
+    }
+  ],
+  "notes": [
+    "Start record used shortened background dependency label; authoritative dependency here is ios-background-cookie-authority-20261020.",
+    "Initial validation orchestration parsed TAP-only summary although Node selected spec reporter; process itself exited0 with67pass. Same preserved log was reparsed; tests were not repeated or weakened.",
+    "Native source remains original configured1.0.0(45) for local QA only; no install, launch, upload or release performed by this assembly."
+  ],
+  "id": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+  "recordedAt": "2026-10-21T04:29:50.229Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-macqa-integrated-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

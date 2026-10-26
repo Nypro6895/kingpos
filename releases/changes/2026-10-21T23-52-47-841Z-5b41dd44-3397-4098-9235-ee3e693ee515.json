@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "local-first-services-native-delta-r6",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Frozen QA native Services registry/host.read delta with durable web cache, isolated reset errors and actual iOS Simulator custom-origin tests; live auth/physical iPhone acceptance pending.",
+  "files": [
+    "app/api/services/catalog-pilot/route.ts",
+    "app/services/services-catalog-native-page.tsx",
+    "app/services/services-catalog-pilot.tsx",
+    "docs/local-first-services-pilot.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "lib/reset-experience-cache.ts",
+    "lib/services-catalog-admission-server.ts",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-native-flag.ts",
+    "lib/services-catalog-native-runtime.ts",
+    "lib/services-catalog-runtime.ts",
+    "releases/changes/2026-10-21T23-34-15-802Z-31ed7437-3777-4b62-b021-4ff5908978e3.json",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/services-catalog-admission.test.mjs",
+    "tests/services-catalog-browser.test.mjs",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs",
+    "tests/services-catalog-host-admission.test.mjs",
+    "tests/services-catalog-native-flag.test.mjs",
+    "tests/services-catalog-native-registry.test.mjs",
+    "tests/services-catalog-native-runtime.test.mjs",
+    "tests/services-catalog-reset-isolation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\source",
+    "commit": "00f3c909ed13c26bc3ec62d30d0e5fee839192d1",
+    "manifestSha256": "544d9fd1bfb7ad19610518abe4ee11406d8f097c37cec906575de41acf65cd7d"
+  },
+  "dependencies": [
+    "Frozen local-first pilot functionaldbad6b0e / metadata5d6558c",
+    "Auth specialist frozen handoff pending; reconcile optional notify:false hook and its exception guard without replacing auth logic",
+    "Real Swift transport/live authorized QA context and physical iPhone acceptance"
+  ],
+  "validation": [
+    {
+      "name": "pilot177 and regression94 including admissionUI10",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\validation-binding.json"
+    },
+    {
+      "name": "iOS Simulator51 and macOS WK20 exact custom origin",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\evidence\\NATIVE-HANDOFF.json"
+    },
+    {
+      "name": "build239/typecheck/lint and QA/default bundles",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\validation-binding.json"
+    },
+    {
+      "name": "whole and separated exact-tree rollback",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\rollback-proof.json"
+    },
+    {
+      "name": "authenticated Swift transport and physical iPhone Wi-Fi/slow-cellular acceptance",
+      "result": "pending"
+    }
+  ],
+  "releaseHeld": true,
+  "productionFlagEnabled": false,
+  "id": "5b41dd44-3397-4098-9235-ee3e693ee515",
+  "recordedAt": "2026-10-21T23:52:47.841Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\services-native-delta",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

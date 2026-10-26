@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 ﻿import { ROLE_SELECT } from "@/lib/current-context";
 import { getAccountPermissionSet } from "@/lib/permissions";
 import { requireAccountPageContext } from "@/lib/route-context-guards";
@@ -69,17 +71,17 @@ function displayCategory(category: string) {
 
 function EmptyBusinessState() {
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">Choose a salon first</h2>
+    <main className="mx-auto w-full max-w-none px-6 py-12">
+      <div className="min-w-0 bg-zinc-50 p-6">
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Choose a salon first" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Permissions are assigned to roles for the current Account and salon.
+          <WorkspaceText text="Permissions are assigned to roles for the current Account and salon." />
         </p>
         <Link
           className="mt-5 inline-flex rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           href={routes.salons.list()}
         >
-          Go to Salons
+          <WorkspaceText text="Go to Salons" />
         </Link>
       </div>
     </main>
@@ -91,10 +93,10 @@ function PermissionCatalog({ permissions }: { permissions: Permission[] }) {
 
   if (permissions.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">No permissions found</h2>
+      <div className="mt-4 min-w-0 bg-zinc-50 p-6">
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No permissions found" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
-          System permissions will appear here once the permission foundation is seeded.
+          <WorkspaceText text="System permissions will appear here once the permission foundation is seeded." />
         </p>
       </div>
     );
@@ -104,7 +106,7 @@ function PermissionCatalog({ permissions }: { permissions: Permission[] }) {
     <div className="mt-4 grid gap-4 md:grid-cols-2">
       {groupedPermissions.map(([category, categoryPermissions]) => (
         <section
-          className="rounded-lg border border-zinc-200 bg-white p-5"
+          className="min-w-0 border-t border-zinc-200 bg-white py-5"
           key={category}
         >
           <h3 className="text-sm font-semibold uppercase tracking-normal text-zinc-500">
@@ -131,10 +133,10 @@ function RolePermissionList({
 }) {
   if (roles.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">No roles found</h2>
+      <div className="mt-4 min-w-0 bg-zinc-50 p-6">
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No roles found" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Default roles need to be seeded before permissions can be shown by role.
+          <WorkspaceText text="Default roles need to be seeded before permissions can be shown by role." />
         </p>
       </div>
     );
@@ -143,14 +145,14 @@ function RolePermissionList({
   return (
     <div className="mt-4 grid gap-4 lg:grid-cols-2">
       {roles.map((role) => (
-        <section className="rounded-lg border border-zinc-200 bg-white p-5" key={role.id}>
+        <section className="min-w-0 border-t border-zinc-200 bg-white py-5" key={role.id}>
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-100 pb-4">
             <div>
               <h3 className="text-lg font-semibold text-zinc-950">{role.name}</h3>
               <p className="mt-1 text-sm text-zinc-600">{role.description}</p>
             </div>
             <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">
-              {role.permissions.length} permissions
+              {role.permissions.length} <WorkspaceText text="permissions" />
             </span>
           </div>
 
@@ -167,7 +169,7 @@ function RolePermissionList({
             </ul>
           ) : (
             <p className="mt-4 text-sm text-zinc-600">
-              No permissions are assigned to this role yet.
+              <WorkspaceText text="No permissions are assigned to this role yet." />
             </p>
           )}
         </section>
@@ -176,7 +178,7 @@ function RolePermissionList({
   );
 }
 
-export default async function PermissionsPage() {
+async function PermissionsPage() {
   if (!SHOW_ROLE_PERMISSION_CATALOGS) redirect("/settings");
   const context = await requireAccountPageContext("/permissions");
 
@@ -219,35 +221,37 @@ export default async function PermissionsPage() {
   const permissionSet = await getAccountPermissionSet(account.id, roles ?? []);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-none px-6 py-10">
       <div className="flex flex-wrap justify-end gap-3">
         <div className="flex flex-wrap gap-3">
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
             href="/roles"
           >
-            Roles
+            <WorkspaceText text="Roles" />
           </Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
             href={routes.salons.list()}
           >
-            Salons
+            <WorkspaceText text="Salons" />
           </Link>
         </div>
       </div>
 
       <section className="mt-6">
         <h2 className="text-lg font-semibold text-zinc-950">
-          Role permissions for {account.name}
+          <WorkspaceText text="Role permissions for" /> {account.name}
         </h2>
         <RolePermissionList roles={permissionSet.roles} />
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-semibold text-zinc-950">Permission catalog</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Permission catalog" /></h2>
         <PermissionCatalog permissions={permissionSet.permissions} />
       </section>
     </main>
   );
 }
+
+export default withExperiencePage(PermissionsPage);

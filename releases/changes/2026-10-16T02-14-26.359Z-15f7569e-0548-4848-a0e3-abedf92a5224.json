@@ -1,0 +1,122 @@
+{
+  "kind": "change",
+  "changeId": "payroll-period-ledger-20261015",
+  "status": "ready",
+  "summary": "Automatic immutable payroll originals with exact-cent daily allocation, Owner adjustment audit, separate actual-payment ledger, authenticated scoped recovery, original/delta/final reports and CSV. Validated local implementation only; no production schema change or deployment.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/api/internal/booking-messages/route.ts",
+    "app/api/payroll/close-due/route.ts",
+    "app/payroll/data-download-actions.ts",
+    "app/payroll/ledger-actions.ts",
+    "app/payroll/owner-payroll-form.tsx",
+    "app/payroll/payroll-ledger-panel.tsx",
+    "app/payroll/tax-company-table.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "instrumentation.ts",
+    "lib/payroll-close-worker.ts",
+    "lib/payroll-export.ts",
+    "lib/payroll-intent-client.ts",
+    "lib/payroll-ledger.ts",
+    "lib/payroll-money.ts",
+    "lib/payroll-period-boundary.ts",
+    "lib/payroll-range.ts",
+    "lib/payroll-write-result.ts",
+    "lib/payroll.ts",
+    "supabase/migrations/20261015220000_payroll_period_ledger.sql",
+    "supabase/migrations/20261015220001_payroll_adjustment_ledger.sql",
+    "supabase/migrations/20261015220002_payroll_atomic_publication.sql",
+    "tests/helpers/payroll-calculation-loader.mjs",
+    "tests/payroll-ledger-regression.test.mjs",
+    "tests/payroll-period-ledger.test.mjs",
+    "tests/payroll-records-regression.test.mjs",
+    "tests/payroll-worker.test.mjs",
+    "types/payroll.ts",
+    "vercel.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\frozen"
+  },
+  "validation": [
+    {
+      "name": "ledger",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\evidence\\ledger-final-r5\\results.json"
+    },
+    {
+      "name": "dependencies",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\evidence\\dependencies-final-r3\\results.json"
+    },
+    {
+      "name": "browser",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\evidence\\browser-r4\\results.json"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\evidence\\build-r2-result.json"
+    },
+    {
+      "name": "tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\evidence\\test-r1-result.json"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\evidence\\lint-r1-result.json"
+    },
+    {
+      "name": "Exact live baseline preserved outside payroll patch",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\preservation.json"
+    },
+    {
+      "name": "Newest live deployment has no direct payroll patch overlap",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\live-baseline-overlap.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "15f7569e-0548-4848-a0e3-abedf92a5224",
+  "recordedAt": "2026-10-16T02:14:26.359Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "967cc2fe9df0b29b0474351420f7f739f73d9dd2435f489a18cb0d1ec1832a65",
+    "app/api/internal/booking-messages/route.ts": "9b73de6992a0b3bbacdc20c5063719a50ca2ac6f3cceec3ecf8ac31267e34d20",
+    "app/api/payroll/close-due/route.ts": "3d4504de6312bd693df31630c6c2730c1ecce6c4fd2d385fc1c5e71ff67baba1",
+    "app/payroll/data-download-actions.ts": "1db35da4f91194125691064079a1ae4a2c97699175b2a7cb814c4195f314b614",
+    "app/payroll/ledger-actions.ts": "9a3e1f71d456896c14af99474a449b3ca54e31238e58d42f5a501a58ca822aaf",
+    "app/payroll/owner-payroll-form.tsx": "cd8f34cafb923ed467b878807d59b5ec7efabe712f7d8a9dd66400b01081e699",
+    "app/payroll/payroll-ledger-panel.tsx": "04795e3303354e918ceddeda4d8359afb28870e99233e9e58994b6e6da7b53d6",
+    "app/payroll/tax-company-table.tsx": "d519767e4a2810a01464a4623904366048cd0408986b54b4e00c2da6aca84a3f",
+    "app/staff/my-work/staff-pay-analysis.tsx": "f8c79c96e5a71bf88be267ecfd23a172a2c1cc492d8aa9dbc1eeadbf03525427",
+    "instrumentation.ts": "a6e9ca058dc0b3d159f4a95a7923285f79d3828c22e9d9eabb3a62de0a001a73",
+    "lib/payroll-close-worker.ts": "d5d2a41d040ab3194611b8e9cdeffd2d54df996659a79679bc887b707b2bec64",
+    "lib/payroll-export.ts": "328ff0b3402cc6a499799e61b6992ef0638ce2dd306555d6af20eca0085daf8c",
+    "lib/payroll-intent-client.ts": "6e88873ef8f34616fe3b133669f5c700c4d6a91b9c4821ea7897a75952a98b83",
+    "lib/payroll-ledger.ts": "eb981cf3004c0beb5d04ba94bbd4bfa9af8d956ffa345e59aa2dc22c18f09bf8",
+    "lib/payroll-money.ts": "fb46b650bac3791111c801251faafb1f36bf92c66e9783c52d61679ac0505c7a",
+    "lib/payroll-period-boundary.ts": "128ade9ee36ef5f8802ace8517f3a25ea1b066f2b3d6ae5754d463c0e0732412",
+    "lib/payroll-range.ts": "2736fc9d5b470e4ddc02d574a2756931e61bf458a470149f45767e0ae587a6a4",
+    "lib/payroll-write-result.ts": "967777a3e6e31c7c7d6df848d79547fdcd4357899bc95108f82d1f04bc5ca407",
+    "lib/payroll.ts": "89e66d7cecf3f1fdf80bdf43223a7aafa96bb9808ace976e9ffc651fb553e9da",
+    "supabase/migrations/20261015220000_payroll_period_ledger.sql": "b47389eed725c7245fdd098145f27c658e6f386717b0c7d3fcde574ecb56c443",
+    "supabase/migrations/20261015220001_payroll_adjustment_ledger.sql": "05c67da5df61864c956bff8f930561f77d3aa4ec1bdcfad8b85819f8a9c3cce3",
+    "supabase/migrations/20261015220002_payroll_atomic_publication.sql": "184f940386f3e16ad2ac00f13a51aa38ab05f00a88c081988ebe1a42ee0bcdbb",
+    "tests/helpers/payroll-calculation-loader.mjs": "836559620ba3f04d3aefd3e5b4dddd98da73b22167d23c273f3fac9bfd010a77",
+    "tests/payroll-ledger-regression.test.mjs": "8d5e8faf8ddd3026fbf8bf5ae64d941bc70c65a0c17bb45a4dc2dbc6a50bcbcc",
+    "tests/payroll-period-ledger.test.mjs": "9c986c6404a01c06409c156fecbef9ed2074ec395721560e843370697a88cf6a",
+    "tests/payroll-records-regression.test.mjs": "99e3cf0f7c236481532b55efcc4ef6e6fce1ed172c7191c8f8f0ef72cdff773a",
+    "tests/payroll-worker.test.mjs": "e00a2b38aa4bd56ee9b3d5f17f723de06f460047dcfd0cdc10ffbf95b08e0c87",
+    "types/payroll.ts": "19271c05c50cf5a38df3b44282f611124b258584444b2ea6f4879970dccb9488",
+    "vercel.json": "e47ae1df845d799f92b268bd6dbcdd7635210a21c0c848dc598b4a5303f1f670"
+  }
+}

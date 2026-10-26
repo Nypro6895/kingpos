@@ -1,4 +1,5 @@
 "use server";
+import { postModerationAction } from "@/app/post-moderation/actions";
 
 import {
   ACCOUNT_AVATAR_BUCKET,
@@ -8,11 +9,9 @@ import {
 import {
   createBeautyPost,
   deleteCurrentBeautyAvatarMedia,
-  deleteBeautyPost,
   deleteCurrentBeautyMedia,
   getBeautyTimelinePage,
   searchBeautyAttributionSalons,
-  updateBeautyPostCaption,
   updateBeautyProfile,
 } from "@/lib/beauty";
 import {
@@ -196,31 +195,16 @@ export async function searchBeautyAttributionSalonsAction(
   return searchBeautyAttributionSalons(query);
 }
 
+/** Compatibility entry points for older loaded clients; mutations have one implementation. */
 export async function updateBeautyPostCaptionAction(input: {
   caption: string | null;
   postId: string;
 }): Promise<BeautyMutationResult> {
-  const result = await updateBeautyPostCaption(input);
-
-  if (!result.ok) {
-    return { error: result.message };
-  }
-
-  revalidatePath("/beauty");
-
-  return { error: null };
+  const result = await postModerationAction({ sourceType: "beauty_post", sourceId: input.postId }, "edit", { caption: input.caption });
+  return { error: result.error };
 }
 
-export async function deleteBeautyPostAction(
-  postId: string,
-): Promise<BeautyMutationResult> {
-  const result = await deleteBeautyPost(postId);
-
-  if (!result.ok) {
-    return { error: result.message };
-  }
-
-  revalidatePath("/beauty");
-
-  return { error: null };
+export async function deleteBeautyPostAction(postId: string): Promise<BeautyMutationResult> {
+  const result = await postModerationAction({ sourceType: "beauty_post", sourceId: postId }, "delete");
+  return { error: result.error };
 }

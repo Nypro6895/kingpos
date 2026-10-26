@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { getSelfBeautyProfilePage } from "@/lib/beauty";
 import { getPostCommentViewer } from "@/lib/post-comments";
@@ -5,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BeautyAppointment } from "@/app/beauty/beauty-appointment";
 
-export default async function BeautyPage() {
+async function BeautyPage() {
   const [result, commentViewer] = await Promise.all([
     getSelfBeautyProfilePage(),
     getPostCommentViewer(),
@@ -18,7 +19,7 @@ export default async function BeautyPage() {
 
     return (
       <main className="min-h-screen bg-surface-muted px-4 py-6 sm:px-6 lg:px-8">
-        <section className="mx-auto grid max-w-xl gap-3 rounded-2xl border border-border-subtle bg-surface p-5 text-center shadow-sm">
+        <section className="mx-auto grid max-w-xl gap-3 border-border-subtle bg-surface p-5 text-center rounded-none border-0 shadow-none">
           <p className="text-xs font-extrabold uppercase tracking-wide text-brand-orange">
             Beauty
           </p>
@@ -43,3 +44,5 @@ export default async function BeautyPage() {
     />
   );
 }
+
+export default withExperiencePage(BeautyPage);

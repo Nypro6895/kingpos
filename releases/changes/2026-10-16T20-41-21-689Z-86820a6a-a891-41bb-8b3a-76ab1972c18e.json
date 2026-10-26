@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "app-local-public-repair-20261016",
+  "status": "working",
+  "summary": "Repair pinned salon social GET and scoped Market/Help browsing; prevent outgoing native-reset UI writers from resurrecting cleared search state.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "lib/app-local-explore-server.ts",
+    "app/market/market-client.tsx",
+    "components/app-local-help.tsx",
+    "tests/app-local-public-search-retention.test.mjs",
+    "tests/app-local-salon-social-bridge.test.mjs",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs",
+    "lib/use-remembered-experience.ts"
+  ],
+  "source": {
+    "commit": "d1347e535a43e953b57cd2d1ea89c3b63767078e"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Native-reset immediate-unmount regression",
+      "result": "failed",
+      "evidence": "Reproduced cleared Help query being re-saved by outgoing cleanup before listener fix."
+    },
+    {
+      "name": "Completion validation",
+      "result": "pending"
+    }
+  ],
+  "id": "86820a6a-a891-41bb-8b3a-76ab1972c18e",
+  "recordedAt": "2026-10-16T20:41:21.689Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

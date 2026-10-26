@@ -1,4 +1,5 @@
 "use server";
+import type { CustomerIdentityChoice } from "@/types/customer-identity";
 
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
@@ -34,12 +35,14 @@ import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { buildTicketReceipt } from "@/lib/pos-ticket-receipt";
 import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
+import { marketServiceClient } from "@/lib/market-payments";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 import type {
   CustomerDisplayVisit,
+  CustomerVisitQueueItem,
   CustomerVisitRequestedService,
   CustomerVisitStatus,
 } from "@/types/customer-visit";
@@ -102,6 +105,7 @@ type CustomerDisplayPhoneActionResult =
   | { data: CustomerDisplayPhoneResult; ok: true }
   | {
       code?: string;
+      candidates?: CustomerIdentityChoice[];
       error: string;
       mode?: "check_in" | "checkout";
       ok: false;
@@ -2045,6 +2049,8 @@ export async function getCustomerDisplayLiveDraftTipOptions(input: {
 }
 
 export async function submitCustomerDisplayPhone(input: {
+  identityChoice?: string;
+  newCustomer?: boolean;
   checkInOnly?: boolean;
   name?: string | null;
   phone: string;
@@ -2059,6 +2065,8 @@ export async function submitCustomerDisplayPhone(input: {
     }
 
     const result = await resolveCustomerDisplaySubmission({
+      identityChoice: input.identityChoice,
+      newCustomer: input.newCustomer,
       checkInOnly: input.checkInOnly,
       customerName: cleanOptional(input.name),
       phone: input.phone,
@@ -2070,6 +2078,7 @@ export async function submitCustomerDisplayPhone(input: {
     if (!result.ok) {
       return {
         code: result.code,
+        candidates: result.candidates,
         error: result.message,
         mode: result.mode,
         ok: false,
@@ -2125,6 +2134,17 @@ export async function submitCustomerDisplayPhone(input: {
       ok: false,
     };
   }
+}
+
+export async function resolveScannedCheckinReceipt(code: string) {
+  try {
+    const { salon } = await requirePosDeskMutationContext();
+    const match = /^reylumi:checkin:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(code.trim());
+    if (!match) throw new Error("Scan a Reylumi check-in receipt.");
+    const { data, error } = await marketServiceClient().rpc("resolve_checkin_receipt", { p_salon: salon.id, p_visit: match[1] });
+    if (error || !data) throw new Error("Receipt is unavailable: check the salon, subscription, or whether this customer already has a ticket.");
+    return { visit: data as CustomerVisitQueueItem };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Receipt could not be scanned." }; }
 }
 
 export async function selectWaitingVisitForPos(input: {

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
 import type { PublicSalonProfileStaff } from "@/types/salon-profile";
 import { preloadQuickBooking } from "@/lib/quick-booking-client";
@@ -11,6 +12,8 @@ export function TeamMenu({members,canBook,bookingHref,onOpen}: {
   bookingHref: (staffId:string)=>string;
   onOpen: (member:PublicSalonProfileStaff)=>void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [selected,setSelected]=useState<string|null>(null);
   const root=useRef<HTMLUListElement>(null);
   const id=useId();
@@ -38,7 +41,7 @@ export function TeamMenu({members,canBook,bookingHref,onOpen}: {
       }}>
         <span className={styles.avatar} aria-hidden="true">{member.avatarUrl ?
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={member.avatarUrl} alt="" loading="lazy"/> : member.displayName.trim().split(/\s+/).map(part=>part[0]).slice(0,2).join('')}</span>
+          <img src={member.avatarUrl} alt={__vt("")} loading="lazy"/> : member.displayName.trim().split(/\s+/).map(part=>part[0]).slice(0,2).join('')}</span>
         <span className={styles.identity}><strong>{member.displayName}</strong>{member.jobTitle?<small>{member.jobTitle}</small>:null}</span>
         <svg className={open?styles.open:undefined} aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m6 9 6 6 6-6"/></svg>
       </button>
@@ -46,10 +49,10 @@ export function TeamMenu({members,canBook,bookingHref,onOpen}: {
         {member.specialties.length?<p>{member.specialties.join(' · ')}</p>:null}
         {member.bio?<p>{member.bio}</p>:null}
         <div className={styles.actions}>
-          <button type="button" onClick={()=>onOpen(member)}>View profile</button>
-          {bookable?<a href={bookingHref(member.id)} aria-label={`Book with ${member.displayName}`}>
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 5 3 3 5-5"/></svg>Book
-          </a>:<span>Online booking unavailable</span>}
+          <button type="button" onClick={()=>onOpen(member)}><WorkspaceText text="View profile" /></button>
+          {bookable?<a href={bookingHref(member.id)} aria-label={__vt(`Book with ${member.displayName}`)}>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 5 3 3 5-5"/></svg><WorkspaceText text="Book" />
+          </a>:<span><WorkspaceText text="Online booking unavailable" /></span>}
         </div>
       </div>:null}
     </li>;

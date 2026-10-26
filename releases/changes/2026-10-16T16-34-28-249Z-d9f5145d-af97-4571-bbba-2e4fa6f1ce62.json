@@ -1,0 +1,41 @@
+{
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "status": "working",
+  "changeId": "app-local-public-profiles-20261016",
+  "kind": "change",
+  "dependencies": [
+    "app-local-platform-20261016",
+    "app-local-explore-20261016"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Reuse complete salon/Beauty/inspiration read views and non-deposit public booking with existing viewer guards and explicit HTTPS payment exception",
+  "validation": [
+    {
+      "name": "Original public presentation equivalence and scoped read/booking transport regressions",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "lib/app-local-public-registry.tsx",
+    "lib/app-local-public-server.ts",
+    "lib/app-local-public-metadata.ts",
+    "lib/app-local-public-http-client.ts",
+    "lib/app-local-public-types.ts",
+    "app/explore/beauty/beauty-profile-read-view.tsx",
+    "app/explore/beauty/beauty-post-read-view.tsx",
+    "app/(app)/explore/beauty/[profileId]/page.tsx",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx",
+    "tests/app-local-public.test.mjs",
+    "tests/app-local-public-ui.test.mjs"
+  ],
+  "id": "d9f5145d-af97-4571-bbba-2e4fa6f1ce62",
+  "recordedAt": "2026-10-16T16:34:28.249Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

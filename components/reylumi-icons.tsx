@@ -1,6 +1,9 @@
 import type { SVGProps } from "react";
 
 export type ReylumiIconName =
+  | "link"
+  | "eye-off"
+  | "flag"
   | "bell"
   | "bookmark"
   | "calendar"
@@ -22,6 +25,7 @@ export type ReylumiIconName =
   | "sparkle"
   | "star"
   | "user"
+  | "user-plus"
   | "verified";
 
 type ReylumiIconProps = SVGProps<SVGSVGElement> & {
@@ -37,7 +41,7 @@ export function ReylumiIcon({
   return (
     <svg
       aria-hidden="true"
-      className={className}
+      className={`shrink-0 ${className}`}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -53,6 +57,10 @@ export function ReylumiIcon({
 
 function iconPath(name: ReylumiIconName) {
   switch (name) {
+    case "user-plus": return <><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2M20 7v6m-3-3h6"/></>;
+    case "link": return <><path d="M10 13a5 5 0 0 0 7 .2l3-3a5 5 0 0 0-7-7l-2 2"/><path d="M14 11a5 5 0 0 0-7-.2l-3 3a5 5 0 0 0 7 7l2-2"/></>;
+    case "eye-off": return <><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9 5.5A11 11 0 0 1 12 5c7 0 10 7 10 7a19 19 0 0 1-3.2 4.2M6.3 6.3A19 19 0 0 0 2 12s3 7 10 7a11 11 0 0 0 5-1.2"/></>;
+    case "flag": return <><path d="M5 21V4m0 0c5-4 9 4 15 0v11c-6 4-10-4-15 0"/></>;
     case "bell":
       return (
         <>

@@ -7,6 +7,7 @@ export const POST_COMMENT_TARGET_TYPES = [
 export type PostCommentTargetType = (typeof POST_COMMENT_TARGET_TYPES)[number];
 
 export type PostCommentTarget = {
+  salonName?: string | null;
   profileId?: string | null;
   salonId?: string | null;
   sourceId: string;
@@ -15,6 +16,7 @@ export type PostCommentTarget = {
 };
 
 export type PostCommentViewer = {
+  identity?: { name: string; role: "personal" | "staff" | "salon"; salonId: string | null; avatarUrl: string | null };
   canModerate: boolean;
   canReplyAsSalon: boolean;
   isAuthenticated: boolean;
@@ -22,10 +24,14 @@ export type PostCommentViewer = {
 };
 
 export type PostComment = {
+  actingRole?: "personal" | "staff" | "salon" | null;
+  actingSalonId?: string | null;
+  salonName?: string | null;
   authorDisplayName: string;
   authorUserId: string | null;
   beautyPostId: string | null;
   body: string;
+  moderationPending?: boolean;
   createdAt: string;
   editedAt: string | null;
   id: string;

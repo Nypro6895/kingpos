@@ -1,6 +1,9 @@
+import { getCurrentBusinessContext } from "@/lib/current-context";
+import { exploreCommentIdentity, commentIdentityKey } from "@/lib/explore-comment-identity";
+import { assertAbuseRequest } from "@/lib/abuse-server";
 import "server-only";
 
-import { getHistoricalUserDisplayName } from "@/lib/deleted-user-display";
+import { commentDisplayName } from "@/lib/comment-identity";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
@@ -26,10 +29,14 @@ export type {
 };
 
 type CommentRow = {
+  acting_role?: "personal" | "staff" | "salon" | null;
+  acting_salon_id?: string | null;
+  salon_name?: string | null;
   author_display_name: string | null;
   author_user_id: string | null;
   beauty_post_id?: string | null;
   body: string;
+  status?: string;
   created_at: string;
   edited_at?: string | null;
   id: string;
@@ -162,13 +169,14 @@ function mapCommentRow(row: CommentRow): PostComment {
   const targetType = rowTargetType(row);
 
   return {
-    authorDisplayName: getHistoricalUserDisplayName({
-      context: "review",
-      fallbackName: row.author_display_name ?? "Reylumi customer",
-    }),
+    actingRole: row.acting_role ?? null,
+    actingSalonId: row.acting_salon_id ?? null,
+    salonName: row.salon_name ?? null,
+    authorDisplayName: commentDisplayName({ authorName: row.author_display_name, isSalonReply: row.is_salon_reply === true, salonName: row.salon_name }),
     authorUserId: row.author_user_id,
     beautyPostId: row.beauty_post_id ?? null,
     body: row.body,
+    moderationPending: row.status === "reported",
     createdAt: row.created_at,
     editedAt: row.edited_at ?? null,
     id: row.id,
@@ -203,6 +211,27 @@ export async function getPostCommentViewer(
     isAuthenticated: Boolean(user),
     userId: user?.id ?? null,
   };
+}
+
+async function mapCommentRows(rows: CommentRow[]) {
+  const client = createSupabaseServerClient();
+  const names = new Map<string, string>();
+  const readable = await getReadableSupabaseClient();
+  if (readable && rows.length) {
+    const metadata = await readable.from("salon_profile_comments").select("id,acting_role,acting_salon_id").in("id", rows.map(row => row.id));
+    const byId = new Map((metadata.data ?? []).map(row => [row.id, row]));
+    rows = rows.map(row => ({ ...row, ...byId.get(row.id) }));
+  }
+  if (client) await Promise.all([...new Set(rows.filter(row => row.is_salon_reply && row.salon_id).map(row => row.salon_id!))].map(async id => {
+    try {
+      const { data, error } = await client.rpc("get_public_salon_profile", { target_salon_id: id });
+      const name = !error && Array.isArray(data) ? data[0]?.salon_name : null;
+      if (typeof name === "string" && name.trim()) names.set(id, name);
+    } catch {
+      // A profile lookup failure must not erase comments or expose the actor as the salon.
+    }
+  }));
+  return rows.map(row => mapCommentRow({ ...row, salon_name: row.salon_id ? names.get(row.salon_id) : null }));
 }
 
 export async function loadPostCommentsPage(input: {
@@ -257,7 +286,7 @@ export async function loadPostCommentsPage(input: {
   return {
     error: null,
     hasMore,
-    items: rows.map(mapCommentRow),
+    items: await mapCommentRows(rows),
     nextOffset: hasMore ? nextOffset : null,
     rootCount,
     totalCount,
@@ -357,6 +386,7 @@ async function ensureCommentBelongsToTarget(input: {
 }
 
 export async function createPostComment(input: {
+  workspaceIdentityKey?: string;
   requestId?: string;
   asSalonReply?: boolean;
   body: string;
@@ -386,12 +416,16 @@ export async function createPostComment(input: {
   const parentCommentId = cleanUuid(input.parentCommentId ?? null);
   const requestId = input.requestId ? cleanUuid(input.requestId) : null;
   if (input.requestId && !requestId) throw new Error("Comment request is not valid.");
+  await assertAbuseRequest("comment");
+  const persona = input.workspaceIdentityKey ? exploreCommentIdentity(await getCurrentBusinessContext()) : null;
+  if (persona && commentIdentityKey(persona) !== input.workspaceIdentityKey) throw new Error("Your commenting identity changed. Refresh before posting.");
   const insertPayload = {
+    ...(persona ? { acting_role: persona.role, acting_salon_id: persona.salonId } : {}),
     ...(requestId ? { id: requestId } : {}),
-    author_display_name: displayNameForUser(user),
+    author_display_name: persona?.name ?? displayNameForUser(user),
     author_user_id: user.id,
     body,
-    is_salon_reply: input.asSalonReply === true,
+    is_salon_reply: !persona && input.asSalonReply === true,
     parent_comment_id: parentCommentId,
     salon_id: target.salonId ?? null,
     status: "visible",
@@ -402,22 +436,23 @@ export async function createPostComment(input: {
     .from("salon_profile_comments")
     .insert(insertPayload)
     .select(
-      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
+      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, status, created_at, updated_at, edited_at, acting_role, acting_salon_id",
     )
     .single<CommentRow>();
 
   if (error?.code === "23505" && requestId) {
     const { data: existing, error: readError } = await supabase
       .from("salon_profile_comments")
-      .select("id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at")
+      .select("id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, status, created_at, updated_at, edited_at, acting_role, acting_salon_id")
       .eq("id", requestId)
       .eq("author_user_id", user.id)
       .maybeSingle<CommentRow>();
     if (!readError && existing && rowTargetType(existing) === target.sourceType &&
         rowTargetId(existing) === target.sourceId && existing.body === body &&
         existing.parent_comment_id === parentCommentId &&
-        Boolean(existing.is_salon_reply) === (input.asSalonReply === true)) {
-      return { comment: mapCommentRow(existing), totalCount: await countForTarget(target) };
+        Boolean(existing.is_salon_reply) === (!persona && input.asSalonReply === true) &&
+        (existing.acting_role ?? null) === (persona?.role ?? null) && (existing.acting_salon_id ?? null) === (persona?.salonId ?? null)) {
+      return { comment: (await mapCommentRows([existing]))[0], totalCount: await countForTarget(target) };
     }
     throw new Error("This comment request has already been used. Refresh the thread before continuing.");
   }
@@ -435,7 +470,7 @@ export async function createPostComment(input: {
   }
 
   return {
-    comment: mapCommentRow(data),
+    comment: (await mapCommentRows([data]))[0],
     totalCount: await countForTarget(target),
   };
 }
@@ -476,12 +511,13 @@ export async function updatePostComment(input: {
     throw new Error("Only the author can edit this comment.");
   }
 
+  await assertAbuseRequest("comment");
   const { data, error } = await supabase
     .from("salon_profile_comments")
     .update({ body })
     .eq("id", commentId)
     .select(
-      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
+      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, status, created_at, updated_at, edited_at, acting_role, acting_salon_id",
     )
     .single<CommentRow>();
 
@@ -490,7 +526,7 @@ export async function updatePostComment(input: {
   }
 
   return {
-    comment: mapCommentRow(data),
+    comment: (await mapCommentRows([data]))[0],
     totalCount: await countForTarget(target),
   };
 }

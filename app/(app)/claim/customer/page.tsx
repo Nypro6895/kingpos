@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 
 import { SubmitButton } from "@/components/submit-button";
 import { connectCustomerHistory } from "@/app/claim/customer/actions";
@@ -80,7 +81,7 @@ function StatusState({ status }: { status: string }) {
   return (
     <section
       className={[
-        "mx-auto grid w-full max-w-md gap-5 rounded-2xl border bg-white p-6 text-center shadow-sm",
+        "mx-auto grid w-full max-w-md gap-5 bg-white py-6 text-center",
         success ? "border-emerald-200" : "border-amber-200",
       ].join(" ")}
     >
@@ -126,7 +127,7 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-export default async function CustomerClaimPage({
+async function CustomerClaimPage({
   searchParams,
 }: CustomerClaimPageProps) {
   const params = await searchParams;
@@ -140,7 +141,7 @@ export default async function CustomerClaimPage({
 
   if (status) {
     return (
-      <main className="min-h-screen bg-surface-muted px-4 py-12 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-surface px-4 py-12 sm:px-6 lg:px-8">
         <StatusState status={status} />
       </main>
     );
@@ -148,7 +149,7 @@ export default async function CustomerClaimPage({
 
   if (!token) {
     return (
-      <main className="min-h-screen bg-surface-muted px-4 py-12 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-surface px-4 py-12 sm:px-6 lg:px-8">
         <ErrorState message="invalid" />
       </main>
     );
@@ -158,7 +159,7 @@ export default async function CustomerClaimPage({
 
   if (!preview.ok) {
     return (
-      <main className="min-h-screen bg-surface-muted px-4 py-12 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-surface px-4 py-12 sm:px-6 lg:px-8">
         <StatusState
           status={
             preview.code === "expired_token"
@@ -176,8 +177,8 @@ export default async function CustomerClaimPage({
   }
 
   return (
-    <main className="min-h-screen bg-surface-muted px-4 py-12 sm:px-6 lg:px-8">
-      <section className="mx-auto grid w-full max-w-md gap-5 rounded-2xl border border-border-subtle bg-white p-6 shadow-sm">
+    <main className="min-h-screen bg-surface px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto grid w-full max-w-md gap-5 bg-white py-6">
         <div>
           <p className="text-xs font-bold uppercase text-brand-orange">
             ReyLUMI history
@@ -216,3 +217,5 @@ export default async function CustomerClaimPage({
     </main>
   );
 }
+
+export default withExperiencePage(CustomerClaimPage);

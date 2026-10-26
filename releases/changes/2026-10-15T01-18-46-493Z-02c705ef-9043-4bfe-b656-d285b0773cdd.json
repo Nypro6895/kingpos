@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "booking-lock-order-schema-review-20261015",
+  "status": "working",
+  "summary": "Review pending concurrency migration against current live schema metadata; reproduce rank-trigger lock inversion and scope idempotency locking per salon/key. Use isolated PostgreSQL Unix socket without TCP; no production mutation.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "dependencies": [
+    "booking-concurrency-cache-review-20261015"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-before",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "validation": [
+    {
+      "name": "Live schema metadata, lock order and ACL preservation",
+      "result": "pending"
+    }
+  ],
+  "id": "02c705ef-9043-4bfe-b656-d285b0773cdd",
+  "recordedAt": "2026-10-15T01:18:46.493Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

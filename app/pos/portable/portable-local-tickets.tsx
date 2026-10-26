@@ -1,10 +1,13 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
 import { useEffect, useState } from "react";
 import { listPortableOperations, PORTABLE_OPERATIONS_CHANGED, type PortableOperation } from "@/lib/portable-operations";
 import { usePortableWorkspaceState } from "./portable-workspace-state";
 
 export function PortableLocalTickets({ serverIds, date, timezone, query }: { serverIds: string[]; date: string; timezone: string; query: string }) {
+  const __vt = useWorkspaceTranslation();
+
   const workspace = usePortableWorkspaceState();
   const [rows, setRows] = useState<PortableOperation[]>([]);
   useEffect(() => {
@@ -27,11 +30,11 @@ export function PortableLocalTickets({ serverIds, date, timezone, query }: { ser
     return <article key={row.id} className="text-sm">
       <header className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-zinc-50 px-3 py-3">
         <strong>{String(row.result?.ticketNumber ?? "Ticket")}</strong>
-        <time className="text-zinc-600">{new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", minute: "2-digit" }).format(new Date(row.occurredAt))}</time>
+        <time className="text-zinc-600"><WorkspaceText text={new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", minute: "2-digit" }).format(new Date(row.occurredAt))} /></time>
         <span className="min-w-0 flex-1"><CustomerName name={String(row.payload.customerName || "")} /></span>
-        <span>Total: <strong>${total.toFixed(2)}</strong></span>
-        <span>Tip: ${Number(row.payload.tipAmount ?? 0).toFixed(2)}</span>
-        <span title={status} aria-label={status} className={row.state === "cancelled" ? "text-zinc-500" : row.state === "synced" ? "text-emerald-700" : "text-amber-700"}>{row.state === "cancelled" ? "Cancelled" : row.state === "synced" ? "✓" : row.state === "attention" ? "!" : "↑"}</span>
+        <span><WorkspaceText text="Total:" /> <strong>${total.toFixed(2)}</strong></span>
+        <span><WorkspaceText text="Tip: $" />{Number(row.payload.tipAmount ?? 0).toFixed(2)}</span>
+        <span title={__vt(status)} aria-label={__vt(status)} className={row.state === "cancelled" ? "text-zinc-500" : row.state === "synced" ? "text-emerald-700" : "text-amber-700"}>{row.state === "cancelled" ? <WorkspaceText text="Cancelled" /> : row.state === "synced" ? "✓" : row.state === "attention" ? "!" : "↑"}</span>
       </header>
       {lines.map((line, index) => <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-3 border-t border-zinc-100 px-3 py-3"><strong>{workspace?.staffRoster.find(staff => staff.id === line.staffId)?.display_name ?? "Staff"}</strong><span>{line.serviceLabel}</span><span>${line.total.toFixed(2)}</span></div>)}
     </article>;

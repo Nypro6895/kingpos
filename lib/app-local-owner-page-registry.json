@@ -1,0 +1,10 @@
+{
+  "routes": ["/staff", "/customers", "/customers/new", "/customers/:customerId", "/customers/:customerId/edit", "/payroll"],
+  "reads": {
+    "page.owner-staff": {"argumentKeys": ["add", "connection_error", "connection_notice", "error", "filter", "invite_email", "invite_phone", "invite_request", "q", "setup", "staff"], "cacheable": true},
+    "page.owner-customers": {"argumentKeys": ["page", "q"], "cacheable": true},
+    "page.owner-customer-detail": {"argumentKeys": ["customerId", "group"], "cacheable": true},
+    "page.owner-customer-form": {"argumentKeys": ["customerId"], "cacheable": false},
+    "page.owner-payroll": {"argumentKeys": ["end", "month", "overviewRange", "overviewService", "overviewServiceRank", "overviewStaff", "overviewTrend", "payPeriodStart", "editStaff", "preset", "segment", "start", "tab"], "cacheable": true}
+  }
+}

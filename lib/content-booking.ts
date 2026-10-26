@@ -242,7 +242,12 @@ export function mapContentBookingOptionRow(
   };
 }
 
-export async function loadPublicContentBookingOptions(salonIds: string[], contentId?: string | null) {
+/**
+ * With no content selection, load the latest 100 eligible posts as an initial
+ * list. Known post/detail/booking paths must pass their exact content identity,
+ * including older posts that are outside that initial list.
+ */
+export async function loadPublicContentBookingOptions(salonIds: string[], contentId?: string | null, selectedContentIds?: string[]) {
   const uniqueSalonIds = Array.from(
     new Set(
       salonIds
@@ -251,7 +256,10 @@ export async function loadPublicContentBookingOptions(salonIds: string[], conten
     ),
   );
 
-  if (uniqueSalonIds.length === 0) {
+  const exactSelection = contentId != null || selectedContentIds !== undefined;
+  const uniqueContentIds = [...new Set((selectedContentIds ?? (contentId != null ? [contentId] : []))
+    .map(cleanUuid).filter((id): id is string => Boolean(id)))];
+  if (uniqueSalonIds.length === 0 || uniqueSalonIds.length > 100 || uniqueContentIds.length > 100 || (exactSelection && uniqueContentIds.length === 0)) {
     return [];
   }
 
@@ -261,10 +269,9 @@ export async function loadPublicContentBookingOptions(salonIds: string[], conten
     return [];
   }
 
-  const query = supabase.rpc("get_public_content_booking_options", {
-    target_salon_ids: uniqueSalonIds,
-  });
-  const { data, error } = await (contentId ? query.eq("content_id", contentId) : query);
+  const { data, error } = await (exactSelection
+    ? supabase.rpc("get_public_explore_content_booking_options", { target_salon_ids: uniqueSalonIds, target_content_ids: uniqueContentIds })
+    : supabase.rpc("get_public_content_booking_options", { target_salon_ids: uniqueSalonIds }));
 
   if (error) {
     console.warn("Public content booking options unavailable", {

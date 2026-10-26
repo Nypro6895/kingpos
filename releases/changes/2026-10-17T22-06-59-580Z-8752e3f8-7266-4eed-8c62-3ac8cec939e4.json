@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "my-place-compact-20261017",
+  "status": "ready",
+  "summary": "Completed presentation-only My Place: Personal/Businesses/Staff order, square full-width sections, flowing shortcuts without chevrons, Switch beside role, Find & apply label, per-salon separators, compact personal ellipsis and no redundant missing-phone label. All handlers preserved. No email-edit or scheduled-closure logic added; not deployed. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/my-place/my-place-client.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/account/account-profile-editor.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "4c69fc24-6164-447b-91a5-238a4afd29a2"
+  },
+  "supersedesEvents": [],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "8752e3f8-7266-4eed-8c62-3ac8cec939e4",
+  "recordedAt": "2026-10-17T22:06:59.580Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/my-place/my-place-client.tsx": "ee0ad020d3407a40de7d5b2666e0e796baaf168042acd0e10a2687de7cf247d5",
+    "app/my-place/place-ui.tsx": "6212b772f267380270eca9882506a35b27f9917868fcf0344b938d643a77537c",
+    "app/account/account-profile-editor.tsx": "6d8a664f7839c8023716c78a301142493a9ce72ea4267e04407bf45dab4b38e4"
+  }
+}

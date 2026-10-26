@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "services-cache-realm-guards-r6",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Audit actual Services realm topology and reproduce delayed observeAccount/purge failure through real admission/controller guards; fix only demonstrated reachable hazards in isolated delta.",
+  "files": [
+    "tests/services-catalog-realm-guards.test.mjs"
+  ],
+  "source": {
+    "commit": "38b1d123fe80ce120c3b91f9cdc9aa219455679d"
+  },
+  "dependencies": [
+    "Frozen Services invariants functional2d0b2619; preserve auth-owner classification and coordinator candidate"
+  ],
+  "validation": [
+    {
+      "name": "261 existing frozen artifacts and invariants handoff SHA256",
+      "result": "passed"
+    }
+  ],
+  "releaseHeld": true,
+  "productionFlagEnabled": false,
+  "id": "377f0c45-abe5-4269-aafc-1d96594e3358",
+  "recordedAt": "2026-10-22T00:58:21.154Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\services-realm-delta",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

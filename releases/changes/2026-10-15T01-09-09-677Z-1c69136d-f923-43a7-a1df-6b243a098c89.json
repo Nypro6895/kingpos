@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "booking-concurrency-cache-review-20261015",
+  "status": "needs-integration",
+  "summary": "Real PostgreSQL concurrent sessions reproduced duplicate idempotency requests and guest reschedule races. Forward migration locks creation before idempotency lookup and locks the booking row before rescheduling; owner/grants preserved and repeated application verified. Cache keys now include salon timezone. No production changes or release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/book/[salonId]/public-booking-client.tsx",
+    "tests/public-booking-cache-scope-ui.test.mjs",
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "dependencies": [
+    "booking-flow-local-audit-20261015"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-source",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968",
+    "patch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2.patch",
+    "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Real PostgreSQL 17.11 independent sessions",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-concurrency-after.log; seven scenarios plus parent test passed (8/8), zero skips. Covers competing creates, idempotency across staff, competing/same-booking reschedules, cancel/rebook, cancellation versus reschedule, atomic rollback. Migration applied twice with owner/ACL/SECURITY DEFINER unchanged."
+    },
+    {
+      "name": "Before-fix concurrency evidence",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-concurrency-before.log; three scenario failures: duplicate writes, header/line drift, and cancellation/reschedule race. Two locking fixes address the root causes."
+    },
+    {
+      "name": "Browser UI regressions with mocked readers/actions",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-ui.log; 3/3 passed, zero skips. Includes service/staff changes, warmed timezone caches, next-day navigation, guest reschedule/cancel and wizard conflict recovery."
+    },
+    {
+      "name": "Timezone before-fix reproduction",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\cache-scope-before.log and C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\cache-hints-before.log; both slot and warmed hint caches reused stale timezone scope before the fix."
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-eslint.log; zero errors; two unchanged pre-existing hook warnings."
+    },
+    {
+      "name": "Patch and frozen source integrity",
+      "result": "passed",
+      "evidence": "Both incremental and combined patches passed git apply --check --reverse. Current four files match frozen SHA-256 hashes."
+    },
+    {
+      "name": "Temporary database cleanup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-postgres-cleanup.json; PostgreSQL stopped, zero test databases left, temporary cluster data and download ZIP removed; no Windows service installed."
+    },
+    {
+      "name": "Authenticated full-backend E2E",
+      "result": "pending",
+      "evidence": "Docker Desktop engine failed before startup: initializing Inference manager, dockerInference socket inaccessible / invalid filename. No local Supabase Auth/PostgREST runtime was available. Existing owner-portable-e2e.mjs reads .env.local and uses --linked SQL, so it was not run."
+    }
+  ],
+  "limitations": [
+    "Tests execute actual repository booking RPC bodies and scheduling triggers in a minimal isolated PostgreSQL schema. Identity is stubbed to guest, deposit configuration returns null, and notification delivery is replaced by a local table. No authenticated Supabase E2E is claimed.",
+    "Full login E2E needs a functioning isolated Supabase stack with Auth/PostgREST and disposable test salon/user fixtures; no production credential is needed or used.",
+    "No production database write, schema/permission change, payment, real notification, commit, push or deploy. The new migration is local only.",
+    "Full assembled release build and live-version/schema verification remain for release integration.",
+    "Salon lookup log still contains only startup; no new RPC error establishes its root cause."
+  ],
+  "combinedBookingPatch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-combined.patch",
+  "combinedBookingManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-combined-manifest.json",
+  "postgresBinarySource": "https://www.enterprisedb.com/download-postgresql-binaries",
+  "id": "1c69136d-f923-43a7-a1df-6b243a098c89",
+  "recordedAt": "2026-10-15T01:09:09.677Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

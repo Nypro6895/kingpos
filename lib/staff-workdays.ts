@@ -13,7 +13,7 @@ import {
 } from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
-import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
+import { getStaffPortalIdentity, requireStaffPortalReadIdentity, type StaffPortalIdentity } from "@/lib/staff-portal-identity";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Staff } from "@/types/staff";
 import type {
@@ -62,6 +62,7 @@ export type StaffDailyActivitySummary = {
 type StaffResolutionOptions = {
   workDate?: string;
   allowEmailFallback?: boolean;
+  readIdentity?: StaffPortalIdentity;
 };
 type StaffWorkdaysSupabaseClient = NonNullable<
   Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -297,7 +298,8 @@ export async function getTodaysStaffWorkday(
   context?: CurrentBusinessContext,
   options: StaffResolutionOptions = {},
 ) {
-  const identity = !context && options.allowEmailFallback === false ? await getStaffPortalIdentity() : null;
+  const identity = options.readIdentity ? requireStaffPortalReadIdentity(options.readIdentity, context ?? options.readIdentity.context)
+    : !context && options.allowEmailFallback === false ? await getStaffPortalIdentity() : null;
   const resolvedContext = context ?? identity?.context ?? (await getCurrentStaffBusinessContext());
   const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
 
@@ -525,8 +527,10 @@ export async function getCurrentSalonStaffActivitySummaries(
 
 export async function getCurrentStaffAssignedWork(
   context?: CurrentBusinessContext,
+  options: { readIdentity?: StaffPortalIdentity } = {},
 ) {
-  const identity = context ? null : await getStaffPortalIdentity();
+  const identity = options.readIdentity ? requireStaffPortalReadIdentity(options.readIdentity, context ?? options.readIdentity.context)
+    : context ? null : await getStaffPortalIdentity();
   const resolvedContext = context ?? identity!.context;
   let today = await getContextBusinessDate(resolvedContext);
 

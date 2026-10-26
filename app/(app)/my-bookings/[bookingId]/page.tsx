@@ -1,7 +1,8 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { getCustomerBookingDetail } from "@/lib/customer-bookings";
 import { notFound, redirect } from "next/navigation";
 
-export default async function MyBookingDetailPage({ params, searchParams }: {
+async function MyBookingDetailPage({ params, searchParams }: {
   params: Promise<{ bookingId: string }>;
   searchParams: Promise<{ message?: string; error?: string }>;
 }) {
@@ -16,3 +17,5 @@ export default async function MyBookingDetailPage({ params, searchParams }: {
   if (messages.error) query.set("error", messages.error);
   redirect(`/my-bookings?${query.toString()}`);
 }
+
+export default withExperiencePage(MyBookingDetailPage);

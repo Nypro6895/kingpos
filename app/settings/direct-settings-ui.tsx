@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 import { useRef, useState, type ReactNode } from "react";
 import type { loadDirectSettings } from "./direct-settings-actions";
 export type DirectData = Awaited<ReturnType<typeof loadDirectSettings>>;
@@ -29,8 +30,8 @@ export function Field({
   step?: string;
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      {label}
+    <label className="settings-field-row grid gap-1 text-sm">
+      <span className="settings-field-label"><WorkspaceText text={label} /></span>
       <input
         name={name}
         className={inputClass}
@@ -56,7 +57,7 @@ export function Check({
   required?: boolean;
 }) {
   return (
-    <label className="flex min-h-10 items-start gap-2 py-2 text-sm">
+    <label className="settings-check-row flex min-h-10 items-start gap-2 py-2 text-sm">
       <input
         className="mt-1 size-4 shrink-0"
         name={name}
@@ -64,7 +65,7 @@ export function Check({
         defaultChecked={checked}
         required={required}
       />
-      <span>{label}</span>
+      <span><WorkspaceText text={label} /></span>
     </label>
   );
 }
@@ -80,12 +81,12 @@ export function Select({
   options: readonly (readonly [string, string])[];
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      {label}
+    <label className="settings-field-row grid gap-1 text-sm">
+      <span className="settings-field-label"><WorkspaceText text={label} /></span>
       <select className={inputClass} name={name} defaultValue={value}>
         {options.map(([id, text]) => (
           <option key={id} value={id}>
-            {text}
+            <WorkspaceText text={text} />
           </option>
         ))}
       </select>
@@ -100,6 +101,8 @@ export function InlineForm({
   label = "Save changes",
   danger = false,
   disabled = false,
+  changed = false,
+  className = "",
 }: {
   children: ReactNode;
   save: (form: FormData) => Promise<ActionResult>;
@@ -108,17 +111,23 @@ export function InlineForm({
   label?: string;
   danger?: boolean;
   disabled?: boolean;
+  changed?: boolean;
+  className?: string;
 }) {
+  const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
+    [refreshFailed, setRefreshFailed] = useState(false),
     [inviteUrl, setInviteUrl] = useState("");
   const lock = useRef(false),
     formRef = useRef<HTMLFormElement>(null);
   return (
     <form
       ref={formRef}
-      className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4"
+      aria-busy={busy}
+      className={`settings-inline-form grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 ${className}`}
+      onChange={() => { setDirty(true); setMessage(""); setError(""); }}
       onSubmit={async (event) => {
         event.preventDefault();
         if (lock.current || disabled) return;
@@ -127,6 +136,7 @@ export function InlineForm({
         setError("");
         setMessage("");
         setInviteUrl("");
+        setRefreshFailed(false);
         const form = new FormData(event.currentTarget);
         try {
           const result = await save(form);
@@ -137,6 +147,7 @@ export function InlineForm({
             return;
           }
           setMessage(result.message ?? "Saved.");
+          setDirty(false);
           setInviteUrl(
             result.inviteUrl
               ? new URL(result.inviteUrl, window.location.origin).toString()
@@ -145,13 +156,13 @@ export function InlineForm({
           try {
             await onSaved();
           } catch {
-            setError(
-              "Saved, but this panel could not refresh. Reload it to see the latest values.",
-            );
+            setRefreshFailed(true);
           }
         } catch (e) {
           setError(
-            e instanceof Error
+            e instanceof TypeError
+              ? "Could not connect. Your changes are still here. Try saving again."
+              : e instanceof Error
               ? e.message
               : "Could not save. Your changes are still here.",
           );
@@ -166,17 +177,28 @@ export function InlineForm({
       </fieldset>
       {error && (
         <p role="alert" className="text-sm text-red-700">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       )}
-      {message && (
+      {message && !dirty && !changed && (
         <p role="status" className="text-sm text-emerald-700">
-          {message}
+          <WorkspaceText text={message} />
         </p>
       )}
+      {refreshFailed && <div role="status" className="grid gap-2 text-sm text-amber-800">
+        <p><WorkspaceText text="Saved, but the latest values could not be loaded. Retry loading without saving again." /></p>
+        {dirty || changed ? <p><WorkspaceText text="You have new edits. Save or cancel them before reloading saved values." /></p> : null}
+        <button type="button" className={`${buttonClass} w-fit`} disabled={busy || dirty || changed} onClick={async () => {
+          if (lock.current) return;
+          lock.current = true;
+          setBusy(true);
+          try { await onSaved(); setRefreshFailed(false); } catch { /* Keep the retry and all drafts. */ }
+          finally { lock.current = false; setBusy(false); }
+        }}><WorkspaceText text="Reload saved values" /></button>
+      </div>}
       {inviteUrl && (
-        <label className="grid gap-1 text-sm">
-          Invitation link
+        <label className="settings-field-row grid gap-1 text-sm">
+          <WorkspaceText text="Invitation link" />
           <input
             className={inputClass}
             readOnly
@@ -185,12 +207,13 @@ export function InlineForm({
           />
         </label>
       )}
-      <div className="flex gap-2">
+      <div className="settings-form-actions flex gap-2">
+        <p role="status"><WorkspaceText text={dirty || changed ? "Unsaved changes in this group" : "Changes apply to this group only"} /></p>
         <button
           disabled={busy || disabled}
           className={`${buttonClass} ${danger ? "!border-red-700 !bg-red-700" : "!border-zinc-950 !bg-zinc-950"} !text-white`}
         >
-          {busy ? "Processing…" : label}
+          <WorkspaceText text={busy ? "Processing…" : label} />
         </button>
         <button
           type="button"
@@ -198,13 +221,15 @@ export function InlineForm({
           disabled={busy || disabled}
           onClick={() => {
             formRef.current?.reset();
+            setDirty(false);
             onCancel?.();
             setInviteUrl("");
             setError("");
             setMessage("");
+            setRefreshFailed(false);
           }}
         >
-          Cancel
+          <WorkspaceText text="Cancel" />
         </button>
       </div>
     </form>

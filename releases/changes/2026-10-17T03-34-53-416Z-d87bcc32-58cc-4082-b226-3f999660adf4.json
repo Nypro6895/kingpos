@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "changeId": "help-local-draft-20261015",
+  "files": [
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx",
+    "app/help/help-content.tsx",
+    "lib/help-guides.ts",
+    "app/help/help-copy.json",
+    "lib/help-draft.ts"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Historical Help draft reconciled with the currently shipped bilingual 13-guide Help, source-grounded illustrations and current payroll guidance; complete browser/render and translation verification.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source",
+    "baselineDeploymentId": "dpl_Ejji8CkeAdsjudkYHVpgR9Ycdmoj"
+  },
+  "validation": [
+    {
+      "name": "Final assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/build-release.log"
+    },
+    {
+      "name": "Integrated SQL search, browser, permissions, ledger, native DTO and Help regression checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/validation-summary.json"
+    },
+    {
+      "name": "Isolated current schema staff/payroll security",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/evidence/staff-payroll-current/results.json"
+    }
+  ],
+  "id": "d87bcc32-58cc-4082-b226-3f999660adf4",
+  "recordedAt": "2026-10-17T03:34:53.416Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/help/page.tsx": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+    "app/(app)/help/[slug]/page.tsx": "4f9d2c519a31df4b14e24abf484ccd5bf8a13ca531064c975303fe0ab4a75558",
+    "app/help/help-content.tsx": "c8f5c854b366b2186273c1280ee07719b967ba8ebe3c96f4cf2051a6207f9767",
+    "lib/help-guides.ts": "746cca1cc1d1a3b5bf9b7876585c4ed5fb89065ef5a49e4e765a6abba73cebfb",
+    "app/help/help-copy.json": "261020de817e065701ca057aa6593c05bb49dafc6289e6fe2d2f684e2120725c",
+    "lib/help-draft.ts": "e5f3292f169d7136cb85cead88fad7890ea13b1d8f7bab662cf5d4c4b955f302"
+  }
+}

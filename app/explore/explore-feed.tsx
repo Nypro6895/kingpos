@@ -1,9 +1,24 @@
 "use client";
+import { COLLAPSED_COMMENTS, editorialCommentOptions, feedCommentCandidate, selectExploreCommentPresentation, type ExploreCommentPresentation } from "@/lib/explore-comment-presentation";
+import { useExploreCommentPresentation } from "./use-explore-comment-presentation";
+import { ExploreCommentPreview } from "./explore-comment-preview";
+import { NailIllustrationCredit } from "@/components/nail-illustration-credit";
+import { exploreShortcutPreviews, type ExploreVisualPreview } from "@/lib/explore-visual-presentation";
+import { explorePostIdentity } from "@/lib/explore-post-presentation";
+import { ExploreSalonFollow, ExploreSalonMenu, ExploreSocialActions, useSalonSocial } from "@/components/explore-social";
+import { exploreAlternatingShortcuts, exploreShortcutIndex } from "@/lib/explore-entry-presentation";
+import { FeedLoadingSkeleton } from "@/components/loading-feedback";
+import { currentExplorePrefetchPolicy, recordExploreLoadDuration } from "@/lib/explore-viewport-priority";
+import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
+import { PostIdentity } from "@/components/post-identity";
 
-import { loadExploreFeedAction } from "@/app/explore/actions";
+import { exploreFeedErrorMessage, fetchExploreFeedPage, requestExploreFeed } from "@/lib/explore-feed-client";
+import { exploreFeedRevisions, retainValidatedExploreItems, type ExploreFeedValidation } from "@/lib/explore-feed-revisions";
 import { discoveryItemIdentity, matchesExploreFeedItem, type ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
-import { withRequestTimeout } from "@/lib/request-timeout";
 import { savedPostKey } from "@/types/saved-post";
+import { PostActions } from "@/app/salon-profile/post-actions";
+import { useHiddenPosts, postIdentity } from "@/components/post-safety";
+import { usePostCaption } from "@/components/post-change-state";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
@@ -29,7 +44,7 @@ import type {
 } from "@/types/post-comments";
 import {
 } from "@/lib/reylumi-trust";
-import Image from "next/image";
+import { ExploreViewportImage as Image } from "./explore-viewport-image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -47,11 +62,14 @@ import {
 } from "react";
 
 const EXPLORE_FEED_SESSION_KEY = "kingpos-explore-continuous-feed";
-const EXPLORE_FEED_SESSION_VERSION = 13;
+const EXPLORE_FEED_SESSION_VERSION = 15;
 const EXPLORE_FEED_SESSION_TTL_MS = 30 * 60 * 1000;
 const EXPLORE_FEED_SESSION_ITEM_LIMIT = 120;
+const EXPLORE_FEED_SESSION_ROUTE_LIMIT = 6;
+const EXPLORE_FEED_SESSION_BYTE_LIMIT = 1500000;
 
 type StoredExploreFeedState = {
+  sessionCursor?: string | null;
   cursor: ExploreFeedCursor | null;
   hasMore: boolean;
   items: ExploreFeedItem[];
@@ -59,6 +77,7 @@ type StoredExploreFeedState = {
   viewerId: string | null;
   savedAt: number;
   scrollY: number;
+  scrollAnchor?: { contentKey: string; offset: number } | null;
   version: typeof EXPLORE_FEED_SESSION_VERSION;
 };
 
@@ -165,6 +184,7 @@ function readStoredFeedState(
       parsed.route !== route ||
       parsed.viewerId !== viewerId ||
       typeof parsed.savedAt !== "number" ||
+      !Number.isFinite(parsed.savedAt) || parsed.savedAt > Date.now() ||
       Date.now() - parsed.savedAt > EXPLORE_FEED_SESSION_TTL_MS ||
       !Array.isArray(parsed.items)
     ) {
@@ -182,6 +202,7 @@ function readStoredFeedState(
     }
 
     return {
+      sessionCursor: typeof parsed.sessionCursor === "string" ? parsed.sessionCursor : null,
       cursor: typeof parsed.cursor === "string" ? parsed.cursor : null,
       hasMore: parsed.hasMore === true,
       items,
@@ -192,6 +213,7 @@ function readStoredFeedState(
         typeof parsed.scrollY === "number" && Number.isFinite(parsed.scrollY)
           ? Math.max(0, parsed.scrollY)
           : 0,
+      scrollAnchor: parsed.scrollAnchor && typeof parsed.scrollAnchor.contentKey === "string" && typeof parsed.scrollAnchor.offset === "number" && Number.isFinite(parsed.scrollAnchor.offset) ? parsed.scrollAnchor : null,
       version: EXPLORE_FEED_SESSION_VERSION,
     };
   } catch {
@@ -200,17 +222,20 @@ function readStoredFeedState(
 }
 
 function writeStoredFeedState(input: {
+  sessionCursor?: string | null;
   cursor: ExploreFeedCursor | null;
   hasMore: boolean;
   items: ExploreFeedItem[];
   viewerId: string | null;
   route: string;
+  scrollAnchor?: StoredExploreFeedState["scrollAnchor"];
 }) {
   try {
     // Keep the last complete page boundary, never pair a truncated list with
     // a cursor pointing beyond items that have not been stored.
     if (input.items.length > EXPLORE_FEED_SESSION_ITEM_LIMIT) return;
     const state: StoredExploreFeedState = {
+      sessionCursor: input.sessionCursor ?? null,
       cursor: input.cursor,
       hasMore: input.hasMore,
       items: input.items.slice(0, EXPLORE_FEED_SESSION_ITEM_LIMIT),
@@ -218,20 +243,52 @@ function writeStoredFeedState(input: {
       viewerId: input.viewerId,
       savedAt: Date.now(),
       scrollY: window.scrollY,
+      scrollAnchor: input.scrollAnchor ?? null,
       version: EXPLORE_FEED_SESSION_VERSION,
     };
 
+    const serialized = JSON.stringify(state);
+    if (serialized.length * 2 > EXPLORE_FEED_SESSION_BYTE_LIMIT) return;
+    // Bound only our own entries; never evict drafts or unrelated app data.
+    const storage = window.sessionStorage;
+    const entries: { key: string; savedAt: number; bytes: number }[] = [];
+    if (typeof storage.length === "number") for (let index = storage.length - 1; index >= 0; index--) {
+      const key = storage.key(index);
+      if (!key?.startsWith(`${EXPLORE_FEED_SESSION_KEY}:`) || key === `${EXPLORE_FEED_SESSION_KEY}:${input.route}`) continue;
+      const raw = storage.getItem(key);
+      try {
+        const value = JSON.parse(raw ?? "null") as StoredExploreFeedState | null;
+        if (!value || value.version !== EXPLORE_FEED_SESSION_VERSION || !Number.isFinite(value.savedAt) || Date.now() - value.savedAt > EXPLORE_FEED_SESSION_TTL_MS || value.savedAt > Date.now()) { storage.removeItem(key); continue; }
+        entries.push({ key, savedAt: value.savedAt, bytes: (raw?.length ?? 0) * 2 });
+      } catch { storage.removeItem(key); }
+    }
+    entries.sort((a, b) => a.savedAt - b.savedAt);
+    let bytes = entries.reduce((total, entry) => total + entry.bytes, serialized.length * 2);
+    while (entries.length >= EXPLORE_FEED_SESSION_ROUTE_LIMIT || bytes > EXPLORE_FEED_SESSION_BYTE_LIMIT) {
+      const entry = entries.shift();
+      if (!entry) break;
+      storage.removeItem(entry.key); bytes -= entry.bytes;
+    }
     window.sessionStorage.setItem(
       `${EXPLORE_FEED_SESSION_KEY}:${input.route}`,
-      JSON.stringify(state),
+      serialized,
     );
   } catch {
     clearStoredFeedState();
   }
 }
 
-function clearStoredFeedState() {
-  try { window.sessionStorage.removeItem(EXPLORE_FEED_SESSION_KEY); } catch { /* Optional cache. */ }
+function clearStoredFeedState(route?: string) {
+  try {
+    if (route) window.sessionStorage.removeItem(`${EXPLORE_FEED_SESSION_KEY}:${route}`);
+    else {
+      for (let i = window.sessionStorage.length - 1; i >= 0; i--) {
+        const key = window.sessionStorage.key(i);
+        if (key?.startsWith(`${EXPLORE_FEED_SESSION_KEY}:`)) window.sessionStorage.removeItem(key);
+      }
+      window.sessionStorage.removeItem(EXPLORE_FEED_SESSION_KEY);
+    }
+  } catch { /* Optional cache. */ }
 }
 
 function shouldRestoreStoredFeedState() {
@@ -576,39 +633,8 @@ function FeedAvatar({ item }: { item: ExploreFeedItem }) {
   );
 }
 
-function FeedSalonLogo({ item }: { item: ExploreFeedItem }) {
-  const salon = item.salon;
-
-  if (!salon) {
-    return null;
-  }
-
-  return (
-    <span
-      aria-hidden
-      className="relative grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-[0.55rem] font-extrabold text-brand-orange ring-1 ring-divider-subtle"
-    >
-      {salon.logoImageUrl ? (
-        <Image
-          alt=""
-          className="object-cover"
-          fill
-          sizes="20px"
-          src={salon.logoImageUrl}
-        />
-      ) : (
-        initialsFor(salon.name)
-      )}
-    </span>
-  );
-}
-
 function FeedHeaderTitle({authorHref,item}:{authorHref:string;item:ExploreFeedItem}) {
- const salon=item.salon,personal=item.sourceType==='personal'&&Boolean(salon);
- return <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-text-primary">
-  <Link className="min-w-0 max-w-[11rem] truncate hover:text-brand-orange" href={authorHref}>{displayName(item.author.name,"Reylumi")}</Link>
-  {personal&&salon?<><span className="font-normal text-text-secondary">at</span><Link className="inline-flex min-w-0 max-w-[13rem] items-center gap-1 truncate hover:text-brand-orange" href={salon.href??authorHref}><FeedSalonLogo item={item}/><span className="truncate">{salon.name}</span><SalonVerifiedBadge verified={salon.trust.identityVerified}/></Link></>:<SalonVerifiedBadge verified={salon?.trust.identityVerified}/>}
- </span>;
+ return <span className="flex min-w-0 items-start gap-1 text-sm text-text-primary"><PostIdentity source={item.sourceType} salonName={item.salon?.name} salonHref={item.salon?.href} authorName={item.sourceType==='salon'?item.salonAuthorName:item.author.name} authorHref={item.sourceType==='salon'?null:authorHref} authorRole={item.salonAuthorRole}/><SalonVerifiedBadge verified={item.salon?.trust.identityVerified}/></span>;
 }
 function FeedSalonIdentityLine({item}:{item:ExploreFeedItem}) {
  if(!item.salon)return <span className="block truncate text-xs text-text-secondary">{itemContextLabel(item)}</span>;
@@ -666,10 +692,12 @@ function FeedShareButton({
           title: shareTitle(item),
           url,
         });
+        window.dispatchEvent(new CustomEvent("reylumi:explore-share", { detail: item.contentKey }));
         return;
       }
 
       await copyUrl(url);
+      window.dispatchEvent(new CustomEvent("reylumi:explore-share", { detail: item.contentKey }));
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
@@ -758,6 +786,7 @@ function SingleMedia({
           src={media.imageUrl}
         />
       )}
+      <NailIllustrationCredit imageUrl={media.imageUrl} className="absolute bottom-2 right-2"/>
     </div>
   );
 }
@@ -947,7 +976,7 @@ function FeedMediaFrame({
       tabIndex={href && isBeforeAfter ? 0 : undefined}
     >
       {href && !isBeforeAfter ? (
-        <Link
+        <Link prefetch={false}
           aria-label={`Open ${itemContextLabel(item)} by ${item.author.name}`}
           className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
           href={href}
@@ -967,6 +996,7 @@ function exploreCommentTarget(item: ExploreFeedItem): PostCommentTarget | null {
   }
 
   return {
+    salonName: item.salon?.name ?? null,
     profileId: item.personal?.profileId ?? null,
     salonId: item.saveTarget.salonId ?? item.salon?.id ?? null,
     sourceId: item.saveTarget.sourceId,
@@ -1054,7 +1084,7 @@ function FeedHeroIntro({
             </p>
           ) : null}
         </div>
-        <Link
+        <Link prefetch={false}
           className="inline-flex min-h-10 w-fit items-center rounded-[0.65rem] bg-white px-4 text-sm font-semibold text-text-primary transition hover:bg-brand-orange hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           href={href}
         >
@@ -1115,7 +1145,7 @@ function FeedDecisionMeta({
 
 function feedDiscoveryTitle(shortcut: ExploreDiscoveryShortcut) {
   if (shortcut.id === "available-today") {
-    return "Available today";
+    return "Booking options";
   }
 
   if (shortcut.id === "near-you") {
@@ -1131,7 +1161,7 @@ function feedDiscoveryTitle(shortcut: ExploreDiscoveryShortcut) {
   }
 
   if (shortcut.id === "trending") {
-    return "Trending";
+    return "Fresh looks";
   }
 
   return shortcut.label;
@@ -1196,37 +1226,29 @@ function feedShortcutToneClass(shortcut: ExploreDiscoveryShortcut) {
 }
 
 function FeedDiscoveryPreview({
-  fallback,
-  imageUrl,
-  index,
+  preview,
+  fallbackImage,
 }: {
-  fallback: string;
-  imageUrl: string | null;
-  index: number;
+  preview: ExploreVisualPreview;
+  fallbackImage: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const visibleImage = imageFailed ? null : imageUrl;
+  const visibleImage = imageFailed ? fallbackImage : preview.imageUrl;
 
   return (
     <span
-      className="relative block aspect-square overflow-hidden rounded-[0.7rem] bg-surface-muted ring-1 ring-divider-subtle/65"
-      style={{ transform: index === 1 ? "translateY(6px)" : undefined }}
+      className="relative block aspect-[4/3] overflow-hidden rounded-[0.7rem] bg-surface-muted"
     >
-      {visibleImage ? (
         <Image
-          alt=""
+          alt={preview.label}
           className="object-cover"
           fill
           loading="lazy"
           onError={() => setImageFailed(true)}
-          sizes="72px"
+          sizes="(min-width:640px) 200px, 30vw"
           src={visibleImage}
         />
-      ) : (
-        <span className="grid h-full w-full place-items-center bg-brand-orange-soft text-xs font-semibold text-brand-orange">
-          {initialsFor(fallback)}
-        </span>
-      )}
+      {preview.illustration || imageFailed ? <span className="absolute bottom-1 left-1 rounded bg-white/95 px-1.5 py-0.5 text-[10px] text-text-secondary">AI illustration</span> : null}
     </span>
   );
 }
@@ -1235,15 +1257,22 @@ function FeedDiscoveryModule({
   activeResultKind,
   onSelect,
   shortcut,
+  items,
+  category,
+  location,
 }: {
   activeResultKind: ExploreDiscoveryResultKind | null;
   onSelect?: (shortcut: ExploreDiscoveryShortcut) => void;
   shortcut: ExploreDiscoveryShortcut;
+  items: ExploreFeedItem[];
+  category: string;
+  location: string;
 }) {
   const active =
     shortcut.action.type === "result" &&
     shortcut.action.resultKind === activeResultKind;
-  const previews = shortcut.previews.slice(0, 3);
+  const previews = exploreShortcutPreviews(shortcut, items, category, location);
+  const referencePreviews = exploreShortcutPreviews({ ...shortcut, previews: [] }, [], category, location);
   const label = feedDiscoveryTitle(shortcut);
   const moduleBody = (
     <span className="grid gap-3">
@@ -1264,7 +1293,7 @@ function FeedDiscoveryModule({
           </span>
           {shortcut.context ? (
             <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
-              {shortcut.context}
+              {shortcut.moduleKind === "visual" && previews.every(preview => preview.illustration) ? "Style inspiration" : shortcut.context}
             </span>
           ) : null}
           {shortcut.detail ? (
@@ -1277,24 +1306,19 @@ function FeedDiscoveryModule({
           {feedDiscoveryActionLabel(shortcut)}
         </span>
       </span>
-      <span aria-hidden className="grid grid-cols-3 gap-1.5">
-        {previews.length > 0 ? (
-          previews.map((preview, index) => (
+      <span className="grid gap-2" data-discovery-preview-row style={{ gridTemplateColumns: `repeat(${Math.max(1, previews.length)}, minmax(0, 1fr))` }}>
+          {previews.map((preview, index) => (
             <FeedDiscoveryPreview
-              fallback={preview.label ?? label}
-              imageUrl={preview.imageUrl}
-              index={index}
-              key={preview.sourceId}
+              preview={preview}
+              fallbackImage={referencePreviews[index % referencePreviews.length]?.imageUrl ?? "/images/nail-defaults/nails-01.webp"}
+              key={preview.imageUrl}
             />
-          ))
-        ) : (
-          <FeedDiscoveryPreview fallback={label} imageUrl={null} index={0} />
-        )}
+          ))}
       </span>
     </span>
   );
   const className = [
-    "sm:hidden rounded-[0.95rem] bg-white p-3 text-left shadow-[0_10px_26px_rgba(35,25,22,0.045)] ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+    "rounded-[0.95rem] bg-white p-3 text-left shadow-[0_10px_26px_rgba(35,25,22,0.045)] ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
     active
       ? "ring-brand-orange/35"
       : "ring-divider-subtle/70 hover:ring-brand-orange/25",
@@ -1302,7 +1326,7 @@ function FeedDiscoveryModule({
 
   if (shortcut.action.type === "href") {
     return (
-      <Link
+      <Link prefetch={false}
         aria-label={`${label}. ${shortcut.actionLabel}`}
         className={className}
         href={shortcut.action.href}
@@ -1320,6 +1344,7 @@ function FeedDiscoveryModule({
     <button
       aria-label={`${label}. ${shortcut.actionLabel}`}
       aria-pressed={active}
+      data-discovery-shortcut={shortcut.id}
       className={className}
       onClick={() => onSelect(shortcut)}
       type="button"
@@ -1330,189 +1355,56 @@ function FeedDiscoveryModule({
 }
 
 function orderedFeedDiscoveryShortcuts(shortcuts: ExploreDiscoveryShortcut[]) {
-  const priority = new Map([
-    ["available-today", 0],
-    ["near-you", 1],
-    ["trending", 2],
-    ["top-rated", 3],
-    ["under-60", 4],
-    ["recommended", 5],
-  ]);
-
-  return shortcuts
-    .filter((shortcut) => shortcut.moduleKind !== "booking")
-    .slice()
-    .sort(
-      (left, right) =>
-        (priority.get(left.id) ?? 20) - (priority.get(right.id) ?? 20),
-    )
-    .slice(0, 4);
+  return exploreAlternatingShortcuts(shortcuts);
 }
 
-function ExploreFeedCard({
-  featured = false,
-  item,
-  onCommentCountChange,
-  viewer,
-}: {
-  featured?: boolean;
-  item: ExploreFeedItem;
-  onCommentCountChange: (feedKey: string, count: number) => void;
-  viewer: PostCommentViewer;
-}) {
-  const service = serviceLabel(item);
-  const href = item.destination.href;
-  const isSalonRecommendation = item.contentType === "salon_recommendation";
-  const [commentsOpen, setCommentsOpen] = useState(false);
-  const booking = item.booking?.eligible ? item.booking : null;
-  const bookingHref = booking?.href ?? null;
-  const postHref = href && !isSalonRecommendation ? href : null;
-  const actionHref = postHref ?? href;
-  const authorHref =
-    item.sourceType === "personal" && item.personal?.profileId
-      ? `/explore/beauty/${encodeURIComponent(item.personal.profileId)}`
-      : actionHref ?? item.salon?.href ?? "/explore";
-  const commentTarget = exploreCommentTarget(item);
-  const commentCount = item.commentCount;
-  function updateCommentCount(count: number) {
-    onCommentCountChange(item.feedKey, count);
-  }
-
-  return (
-    <article
-      className={[
-        "flex flex-col overflow-visible bg-white ring-1",
-        featured
-          ? "rounded-[1.05rem] shadow-[0_14px_34px_rgba(35,25,22,0.07)] ring-brand-orange/20 sm:rounded-[0.95rem] sm:shadow-[0_8px_22px_rgba(35,25,22,0.035)] sm:ring-divider-subtle/65"
-          : "rounded-[0.95rem] shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-divider-subtle/65",
-      ].join(" ")}
-      data-feed-key={item.feedKey}
-      data-feed-hero={featured ? "true" : undefined}
-      data-source-type={item.sourceType}
-      data-testid="explore-feed-card"
-    >
-      {featured ? <FeedHeroIntro item={item} service={service} viewer={viewer} /> : null}
-      <div
-        className={[
-          "min-w-0 items-center justify-between gap-2.5 px-3 py-2.5",
-          "order-2 flex sm:order-1",
-        ].join(" ")}
-      >
-        <Link
-          aria-label={`Open ${displayName(item.author.name, "Reylumi")}`}
-          className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={authorHref}
-        >
-          <FeedAvatar item={item} />
-        </Link>
-        <div className="grid min-w-0 flex-1 gap-0.5">
-          <FeedHeaderTitle authorHref={authorHref} item={item} />
-          <FeedSalonIdentityLine item={item} />
-        </div>
-        <span className="shrink-0 text-[11px] font-semibold text-text-muted">
-          {item.publishedAtKnown === false ? "Salon to explore" : timeAgo(item.publishedAt)}
-        </span>
-      </div>
-
-      <div className={featured ? "hidden sm:block" : "order-1 sm:order-2"}>
-        <FeedMediaFrame featured={featured} href={href} item={item} />
-      </div>
-
-      <div className="order-3 grid gap-2 px-3 py-2.5">
-        {item.caption ? (
-          actionHref ? (
-            <Link
-              className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={actionHref}
-            >
-              <p className="line-clamp-2 text-sm leading-5 text-text-primary transition hover:text-brand-orange">
-                {item.caption}
-              </p>
-            </Link>
-          ) : (
-            <p className="line-clamp-2 text-sm leading-5 text-text-primary">
-              {item.caption}
-            </p>
-          )
-        ) : null}
-        <FeedDecisionMeta item={item} service={service} />
-        {bookingHref && item.contentType !== "salon_recommendation" ? <InspirationAvailability href={bookingHref} /> : null}
-        <div className="grid gap-2 pt-0.5">
-          <div className="flex items-center gap-1.5">
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              <ExploreBookButton href={bookingHref} name={item.salon?.name ?? item.author.name} contactHref={item.salon?.href ?? authorHref} />
-              {actionHref ? <FeedShareButton href={actionHref} item={item} /> : null}
-              {commentTarget ? (
-                <ActionTooltip label="Comment">
-                  <button
-                    aria-controls={`comments-${item.feedKey}`}
-                    aria-expanded={commentsOpen}
-                    aria-label={`Comment on ${itemContextLabel(item)}`}
-                    className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full bg-white px-2.5 text-xs font-semibold text-text-secondary ring-1 ring-divider-subtle transition hover:bg-surface-muted hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                    onClick={() => setCommentsOpen((current) => !current)}
-                    type="button"
-                  >
-                    <CommentActionIcon />
-                    <span>{commentCount}</span>
-                  </button>
-                </ActionTooltip>
-              ) : null}
-            </div>
-            {item.saveTarget ? (
-              <SavePostButton
-                className={[
-                  "ml-auto shrink-0",
-
-                ].join(" ")}
-                initialSaved={item.saveTarget.saved}
-                isAuthenticated={viewer.isAuthenticated}
-                saveCount={item.saveTarget.saveCount}
-                size="compact"
-                target={item.saveTarget}
-              />
-            ) : item.salon ? <ExploreSalonLove salonId={item.salon.id} name={item.salon.name} className="ml-auto" /> : <SavePostButton className="ml-auto" isAuthenticated={viewer.isAuthenticated} target={{sourceId:item.id,sourceType:"beauty_post"}} size="compact"/>}
-          </div>
-          {commentsOpen && commentTarget ? (
-            <div
-              className="rounded-xl bg-surface-muted/70 p-3 ring-1 ring-divider-subtle/70"
-              id={`comments-${item.feedKey}`}
-            >
-              <PostCommentThread
-                compact
-                initialCount={commentCount}
-                onCountChange={updateCommentCount}
-                target={commentTarget}
-                viewer={viewer}
-              />
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-    </article>
-  );
+export function ExploreFeedCard({featured=false,item,onCommentCountChange,viewer,showMedia=true,showCaption=true,inlineComments=true,onOpenComments,commentPresentation=COLLAPSED_COMMENTS,openCommentsInitially=false}:{featured?:boolean;item:ExploreFeedItem;onCommentCountChange:(key:string,count:number)=>void;viewer:PostCommentViewer;showMedia?:boolean;showCaption?:boolean;inlineComments?:boolean;onOpenComments?:()=>void;commentPresentation?:ExploreCommentPresentation;openCommentsInitially?:boolean}) {
+ const hiddenPosts=useHiddenPosts(viewer.userId),social=useSalonSocial(item.salon?.id);
+ const [commentsOpen,setCommentsOpen]=useState(openCommentsInitially),[focusKey,setFocusKey]=useState(0);
+ const openComments=()=>{if(onOpenComments){onOpenComments();return;}setCommentsOpen(true);setFocusKey(key=>key+1);};
+ const recommendation=item.contentType==="salon_recommendation";
+ const commentTarget=exploreCommentTarget(item);
+ const caption=usePostCaption(commentTarget,item.caption,viewer.userId)??null;
+ const href=item.destination.href??item.salon?.href??"/explore";
+ const bookingHref=item.booking?.eligible?item.booking.href:null;
+ const salon=item.salon?{...item.salon,bookingHref}:null;
+ const personName=item.sourceType==="personal"?item.author.name:item.salonAuthorRole==="staff"?item.salonAuthorName:null;
+ const authorName=explorePostIdentity({source:item.sourceType,salonName:item.salon?.name,authorName:personName??item.author.name,authorRole:item.salonAuthorRole}).primary;
+ const authorHref=item.sourceType==="personal"&&item.personal?.profileId?`/explore/beauty/${item.personal.profileId}`:item.salon?.href??href;
+ const tagged=!recommendation&&item.salon&&authorName!==item.salon.name;
+ if(social.state.hidden||(commentTarget&&hiddenPosts.includes(postIdentity(commentTarget))))return null;
+ const header=<div className="flex min-w-0 items-center gap-2 px-3 py-2" data-feed-identity>
+  <Link prefetch={false} href={authorHref} aria-label={`Open ${authorName}`} className="shrink-0">{!recommendation&&item.sourceType==='salon'&&personName?<span className="grid size-9 place-items-center rounded-full bg-orange-50 text-xs font-semibold text-brand-orange">{personName.split(/\s+/).slice(0,2).map(word=>word[0]).join('')}</span>:<FeedAvatar item={item}/>}</Link>
+  <div className="min-w-0 flex-1">
+   <div className="flex min-w-0 flex-wrap items-center gap-x-1 text-sm">
+    <Link prefetch={false} href={authorHref} className="min-w-0 truncate font-semibold" title={authorName}>{authorName}</Link>
+    {tagged?<><span className="text-text-muted">Â·</span><Link prefetch={false} href={item.salon!.href??href} className="min-w-0 truncate font-medium" title={item.salon!.name}>{item.salon!.name}</Link></>:null}
+    {salon?<ExploreSalonFollow salon={salon}/>:null}
+   </div>
+   <p className="text-xs text-text-muted">{item.platformIntroduction ? "Introduction by Reylumi" : recommendation?[item.serviceCategory,item.salon?.city,item.salon?.state].filter(Boolean).join(' Â· '):timeAgo(item.publishedAt)}</p>
+  </div>
+  {salon?<ExploreSalonMenu salon={salon} target={commentTarget??undefined}/>:commentTarget?<PostActions plain target={commentTarget} viewerId={viewer.userId}/>:null}
+ </div>;
+ return <article className={`${showMedia ? "-mx-4 sm:mx-0" : ""} flex min-w-0 flex-col border-b border-divider-subtle bg-white pb-2`} data-feed-key={item.feedKey} data-feed-hero={featured?'true':undefined} data-source-type={item.sourceType} data-testid="explore-feed-card">
+  {showMedia?<FeedMediaFrame featured={false} href={href} item={{...item,caption}}/>:null}
+  {header}
+  {showCaption&&caption?<p className="line-clamp-3 px-3 pb-2 text-sm leading-5 text-text-secondary">{caption}</p>:null}
+  <div className="px-3">
+   <ExploreSocialActions salon={salon} href={href} target={item.saveTarget} commentCount={item.commentCount} onComment={commentTarget?openComments:undefined}/>
+   {!commentsOpen&&commentPresentation.preview&&commentTarget?<ExploreCommentPreview key={`${viewer.userId}:${commentTarget.sourceType}:${commentTarget.sourceId}`} target={commentTarget} onOpen={openComments}/>:null}
+   {inlineComments&&(commentPresentation.composer||commentsOpen)&&!recommendation&&commentTarget?<div onFocusCapture={()=>setCommentsOpen(true)}><PostCommentThread compact inlineComposer expanded={commentsOpen} focusKey={focusKey} initialCount={item.commentCount} onCountChange={count=>onCommentCountChange(item.feedKey,count)} target={commentTarget} viewer={viewer}/></div>:null}
+  </div>
+ </article>;
 }
 
 export function ExploreFeedSkeleton() {
-  return (
-    <article className="overflow-hidden rounded-[0.95rem] bg-white shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65">
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        <div className="h-10 w-10 rounded-full bg-surface-muted" />
-        <div className="grid flex-1 gap-2">
-          <div className="h-3 w-32 rounded-full bg-surface-muted" />
-          <div className="h-3 w-48 max-w-full rounded-full bg-surface-muted" />
-        </div>
-      </div>
-      <div className="aspect-[4/3] bg-surface-muted" />
-      <div className="grid gap-2 px-3 py-2.5">
-        <div className="h-3 w-11/12 rounded-full bg-surface-muted" />
-        <div className="h-3 w-7/12 rounded-full bg-surface-muted" />
-      </div>
-    </article>
-  );
+  return <FeedLoadingSkeleton />;
 }
 
 type ExploreFeedProps = {
+  commentLeadPosts?: ExploreFeedItem[];
+  supplementaryPosts?: ReactNode[];
+  supplementaryFooter?: ReactNode;
   activeDiscoveryResult?: ExploreDiscoveryResultKind | null;
   discoveryShortcuts?: ExploreDiscoveryShortcut[];
   initialPage: ExploreFeedPage;
@@ -1520,6 +1412,14 @@ type ExploreFeedProps = {
   filterItem?: (item: ExploreFeedItem) => boolean;
   sessionKey?: string;
   allowRestore?: boolean;
+  emptyContent?: ReactNode;
+  emptyMessage?: string;
+  endContent?: (items: ExploreFeedItem[]) => ReactNode;
+  errorContent?: ReactNode;
+  maxEmptyPages?: number;
+  heading?: string;
+  description?: string;
+  feedId?: string;
   onDiscoveryShortcutSelect?: (shortcut: ExploreDiscoveryShortcut) => void;
   viewer: PostCommentViewer;
 };
@@ -1539,6 +1439,9 @@ export function ExploreFeed(props: ExploreFeedProps) {
 }
 
 function ExploreFeedContent({
+  commentLeadPosts = [],
+  supplementaryPosts = [],
+  supplementaryFooter,
   activeDiscoveryResult = null,
   discoveryShortcuts = [],
   initialPage,
@@ -1548,8 +1451,24 @@ function ExploreFeedContent({
   discovery,
   filterItem,
   sessionKey = "",
+  emptyContent,
+  emptyMessage,
+  endContent,
+  errorContent,
+  maxEmptyPages,
+  heading,
+  description,
+  feedId = "explore-feed",
 }: ExploreFeedProps & { restoreSession: boolean }) {
   const [items, setItems] = useState(initialPage.items);
+  const [sessionCursor, setSessionCursor] = useState(initialPage.sessionCursor ?? null);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const restoreRequest = useRef<AbortController | null>(null);
+  const restoringRef = useRef(restoreSession);
+  const [isRestoring, setIsRestoring] = useState(restoreSession);
+  const generationRef = useRef(0);
+  const telemetryRef = useRef({ session: sessionCursor, recorded: new Set<string>(), queue: new Map<string, Record<string, unknown>>(), retries: new Map<string, number>(), flushing: false });
   const [cursor, setCursor] = useState<ExploreFeedCursor | null>(
     initialPage.nextCursor,
   );
@@ -1561,13 +1480,20 @@ function ExploreFeedContent({
   const mountedRef = useRef(false);
   const restoredRef = useRef(false);
   const pendingScrollRef = useRef<number | null>(null);
+  const pendingAnchorRef = useRef<StoredExploreFeedState["scrollAnchor"]>(null);
   const requestedCursorsRef = useRef(new Set<string>());
+  const emptyPagesRef = useRef(0);
   const firstKey = initialPage.items[0]
     ? feedItemKey(initialPage.items[0])
     : null;
-  const isEmpty = items.length === 0 && !paginationError && !hasMore;
   const initialFailure = items.length === 0 && Boolean(paginationError);
+  // A keyword search exhausts real matching posts before suggesting reference images.
+  const matchingPostsFirst = Boolean(discovery?.query?.trim());
+  const showSearchInspiration = matchingPostsFirst && !hasMore && !loadingMore && !isRestoring && !paginationError;
   const memoizedItems = useMemo(() => items.filter(item => matchesExploreFeedItem(item, discovery) && (!filterItem || filterItem(item))), [items, discovery, filterItem]);
+  const isEmpty = memoizedItems.length === 0 && !paginationError && !hasMore && !loadingMore && !isRestoring;
+  const commentLeadCandidates = commentLeadPosts.map((item,index)=>feedCommentCandidate(item,editorialCommentOptions(index)));
+  const commentPlan = useExploreCommentPresentation([...commentLeadCandidates,...memoizedItems.map(item=>feedCommentCandidate(item))],selectExploreCommentPresentation(commentLeadCandidates));
   const feedDiscoveryShortcuts = useMemo(
     () => orderedFeedDiscoveryShortcuts(discoveryShortcuts),
     [discoveryShortcuts],
@@ -1603,6 +1529,7 @@ function ExploreFeedContent({
         !cursor ||
         !hasMore ||
         loadingMoreRef.current ||
+        restoringRef.current ||
         (paginationError && !options.retry)
       ) {
         return;
@@ -1616,11 +1543,15 @@ function ExploreFeedContent({
       loadingMoreRef.current = true;
       setLoadingMore(true);
       setPaginationError("");
+      const controller = new AbortController();
+      activeRequest.current?.abort();
+      activeRequest.current = controller;
+      const startedAt = performance.now();
 
       try {
-        const page = await withRequestTimeout(loadExploreFeedAction(cursor, discovery));
+        const page = await requestExploreFeed<ExploreFeedPage>({ mode: "page", cursor, discovery: discovery ?? {}, limit: currentExplorePrefetchPolicy().limit }, controller.signal);
 
-        if (!mountedRef.current) {
+        if (!mountedRef.current || controller.signal.aborted) {
           return;
         }
 
@@ -1631,28 +1562,184 @@ function ExploreFeedContent({
         }
 
         setItems((current) => appendUniqueFeedItems(current, page.items));
-        setCursor(page.nextCursor === cursor ? null : page.nextCursor);
-        setHasMore(page.hasMore && page.nextCursor !== cursor);
-      } catch {
-        if (mountedRef.current) {
+        const existing = new Set(items.map(feedItemKey));
+        const addsVisibleItems = page.items.some(item => !existing.has(feedItemKey(item)) && matchesExploreFeedItem(item, discovery) && (!filterItem || filterItem(item)));
+        emptyPagesRef.current = addsVisibleItems ? 0 : emptyPagesRef.current + 1;
+        const exhausted = page.nextCursor === cursor || !page.nextCursor || Boolean(maxEmptyPages && emptyPagesRef.current >= maxEmptyPages);
+        setCursor(exhausted ? null : page.nextCursor);
+        setHasMore(page.hasMore && !exhausted);
+      } catch (cause) {
+        if (mountedRef.current && !controller.signal.aborted) {
           requestedCursorsRef.current.delete(cursor);
-          setPaginationError("Explore posts could not be loaded.");
+          setPaginationError(exploreFeedErrorMessage(cause));
         }
       } finally {
-        if (mountedRef.current) {
+        if (!controller.signal.aborted) recordExploreLoadDuration(performance.now() - startedAt);
+        if (mountedRef.current && activeRequest.current === controller) {
           loadingMoreRef.current = false;
           setLoadingMore(false);
         }
       }
     },
-    [cursor, hasMore, paginationError, discovery],
+    [cursor, hasMore, paginationError, discovery, filterItem, items, maxEmptyPages],
   );
+
+  async function refreshFeed() {
+    generationRef.current += 1;
+    restoreRequest.current?.abort();
+    restoringRef.current = false;
+    setIsRestoring(false);
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    try {
+      const page = await fetchExploreFeedPage(null, discovery ?? {}, controller.signal);
+      if (!mountedRef.current || controller.signal.aborted) return;
+      if (page.error) { setPaginationError(page.error); return; }
+      requestedCursorsRef.current.clear();
+      emptyPagesRef.current = 0;
+      setItems(page.items);
+      setCursor(page.nextCursor);
+      setSessionCursor(page.sessionCursor ?? null);
+      setHasMore(page.hasMore);
+      setPaginationError("");
+      sectionRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    } catch (cause) {
+      if (mountedRef.current && !controller.signal.aborted) setPaginationError(exploreFeedErrorMessage(cause));
+    } finally {
+      if (mountedRef.current && activeRequest.current === controller) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (!sessionCursor) return;
+    const controller = new AbortController();
+    let busy = false;
+    let lastInteraction = Date.now();
+    const interacted = () => { lastInteraction = Date.now(); };
+    const canRefresh = () => {
+      const section = sectionRef.current;
+      if (!section || !section.getClientRects().length || document.visibilityState !== "visible" || restoringRef.current || loadingMoreRef.current || Date.now() - lastInteraction < 1500 || document.querySelector('[role="dialog"], [aria-modal="true"]')) return false;
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && (active.matches("input, textarea, select") || active.isContentEditable)) return false;
+      const rect = section.getBoundingClientRect();
+      return rect.top >= -24 && rect.top < window.innerHeight;
+    };
+    const check = async () => {
+      if (busy || !canRefresh()) return;
+      busy = true;
+      try {
+        const result = await requestExploreFeed<{ hasNewPosts?: boolean }>({ mode: "updates", cursor: sessionCursor, discovery }, controller.signal);
+        if (controller.signal.aborted || !result.hasNewPosts || !canRefresh()) return;
+        const generation = generationRef.current;
+        const page = await fetchExploreFeedPage(null, discovery ?? {}, controller.signal);
+        // A user moving away or opening a dialog during the request keeps their
+        // current reading position. A later safe opportunity retries silently.
+        if (controller.signal.aborted || !mountedRef.current || generation !== generationRef.current || !canRefresh() || page.error) return;
+        generationRef.current += 1;
+        activeRequest.current?.abort();
+        requestedCursorsRef.current.clear();
+        setItems(page.items); setCursor(page.nextCursor); setSessionCursor(page.sessionCursor ?? null); setHasMore(page.hasMore); setPaginationError("");
+      } catch { /* A background freshness check does not interrupt the current page. */ }
+      finally { busy = false; }
+    };
+    const timer = window.setInterval(() => { void check(); }, 60000);
+    const resumed = () => { if (document.visibilityState === "visible") void check(); };
+    window.addEventListener("scroll", interacted, { passive: true });
+    window.addEventListener("pointerdown", interacted, { passive: true });
+    window.addEventListener("keydown", interacted);
+    document.addEventListener("visibilitychange", resumed);
+    return () => { controller.abort(); window.clearInterval(timer); window.removeEventListener("scroll", interacted); window.removeEventListener("pointerdown", interacted); window.removeEventListener("keydown", interacted); document.removeEventListener("visibilitychange", resumed); };
+  }, [sessionCursor, discovery]);
+
+  useEffect(() => {
+    if (!sessionCursor || !sectionRef.current || typeof IntersectionObserver === "undefined") return;
+    const section = sectionRef.current;
+    const controller = new AbortController();
+    const timers = new Map<Element, number>();
+    if (telemetryRef.current.session !== sessionCursor) telemetryRef.current = { session: sessionCursor, recorded: new Set(), queue: new Map(), retries: new Map(), flushing: false };
+    const telemetry = telemetryRef.current;
+    const { recorded, queue } = telemetry;
+    const enqueue = (key: string, kind: string) => {
+      if (queue.size < 80) queue.set(`${kind}:${key}`, { contentKey: key, kind, elapsedMs: 2000, visibleRatio: 0.5 });
+    };
+    const flush = async () => {
+      if (!queue.size || telemetry.flushing) return;
+      telemetry.flushing = true;
+      const events = [...queue.values()].slice(0, 20);
+      try {
+        const result = await requestExploreFeed<{ error?: string }>({ mode: "events", cursor: sessionCursor, events }, controller.signal);
+        if (result.error) throw new Error(result.error);
+        for (const event of events) { const key = `${event.kind}:${event.contentKey}`; queue.delete(key); telemetry.retries.delete(key); }
+      } catch {
+        for (const event of events) { const key = `${event.kind}:${event.contentKey}`; const retries = (telemetry.retries.get(key) ?? 0) + 1; telemetry.retries.set(key, retries); if (retries >= 3) queue.delete(key); }
+      } finally { telemetry.flushing = false; }
+    };
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        const key = (entry.target as HTMLElement).dataset.exploreContentKey;
+        if (!key || recorded.has(key)) continue;
+        const visibleArea = entry.intersectionRect.width * entry.intersectionRect.height;
+        const viewableArea = Math.min(entry.boundingClientRect.width, window.innerWidth) * Math.min(entry.boundingClientRect.height, window.innerHeight);
+        if (entry.isIntersecting && viewableArea > 0 && visibleArea / viewableArea >= 0.5 && document.visibilityState === "visible") {
+          if (!timers.has(entry.target)) timers.set(entry.target, window.setTimeout(() => {
+            if (document.visibilityState === "visible") { recorded.add(key); enqueue(key, "meaningful_view"); }
+            timers.delete(entry.target);
+          }, 2000));
+        } else {
+          const timer = timers.get(entry.target);
+          if (timer !== undefined) window.clearTimeout(timer);
+          timers.delete(entry.target);
+        }
+      }
+    }, { threshold: Array.from({ length: 21 }, (_, index) => index / 20) });
+    const nodes = section.querySelectorAll<HTMLElement>("[data-explore-content-key]");
+    nodes.forEach(node => observer.observe(node));
+    const profileClick = (event: Event) => {
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href^="/explore/salons/"]') : null;
+      const key = link?.closest<HTMLElement>("[data-explore-content-key]")?.dataset.exploreContentKey;
+      if (key && section.contains(link)) enqueue(key, "profile_view");
+    };
+    const share = (event: Event) => {
+      if (event instanceof CustomEvent && typeof event.detail === "string" && items.some(item => item.contentKey === event.detail)) enqueue(event.detail, "share");
+    };
+    const onHide = () => {
+      if (!queue.size) return;
+      navigator.sendBeacon?.("/api/explore/feed", new Blob([JSON.stringify({ mode: "events", cursor: sessionCursor, events: [...queue.values()].slice(0, 20) })], { type: "application/json" }));
+    };
+    const visibility = () => {
+      if (document.visibilityState !== "visible") {
+        timers.forEach(timer => window.clearTimeout(timer)); timers.clear();
+      } else {
+        nodes.forEach(node => { observer.unobserve(node); observer.observe(node); });
+      }
+    };
+    const interval = window.setInterval(() => { void flush(); }, 5000);
+    section.addEventListener("click", profileClick);
+    window.addEventListener("reylumi:explore-share", share);
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      observer.disconnect(); timers.forEach(timer => window.clearTimeout(timer));
+      window.clearInterval(interval); section.removeEventListener("click", profileClick);
+      window.removeEventListener("reylumi:explore-share", share); window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", visibility);
+      void flush().finally(() => controller.abort());
+    };
+  }, [items, sessionCursor]);
 
   useLayoutEffect(() => {
     mountedRef.current = true;
 
     return () => {
       mountedRef.current = false;
+      activeRequest.current?.abort();
+      restoreRequest.current?.abort();
     };
   }, []);
 
@@ -1661,93 +1748,120 @@ function ExploreFeedContent({
       return;
     }
 
-    restoredRef.current = true;
-
-    if (!restoreSession || !shouldRestoreStoredFeedState()) {
-      clearStoredFeedState();
-      return;
-    }
-
     const route = `${window.location.pathname}${window.location.search}${sessionKey ? `#${sessionKey}` : ""}`;
-    const stored = readStoredFeedState(route, firstKey, viewer.userId);
 
-    if (!stored || stored.items.length === 0) {
+    if (!restoreSession) {
+      restoredRef.current = true;
+      clearStoredFeedState(route);
       return;
     }
 
-    const restoreFrame = window.requestAnimationFrame(() => {
+    const controller = new AbortController();
+    restoreRequest.current = controller;
+    restoringRef.current = true;
+    const generation = generationRef.current;
+    let interacted = false;
+    const stopScrollRestore = () => { interacted = true; pendingScrollRef.current = null; pendingAnchorRef.current = null; };
+    window.addEventListener("pointerdown", stopScrollRestore, { passive: true });
+    window.addEventListener("touchstart", stopScrollRestore, { passive: true });
+    window.addEventListener("wheel", stopScrollRestore, { passive: true });
+    window.addEventListener("keydown", stopScrollRestore);
+    const restore = async () => {
+      if (!shouldRestoreStoredFeedState()) {
+        clearStoredFeedState(route);
+        return;
+      }
+      const stored = readStoredFeedState(route, sessionCursor ? null : firstKey, viewer.userId);
+      if (!stored || stored.items.length === 0) return;
+      const revisions = await exploreFeedRevisions(stored.items);
+      if (controller.signal.aborted) return;
+      const known = new Map(revisions.map(row => [row.contentKey, row.revision]));
+      const contentKeys = stored.items.map(item => item.contentKey).filter((key): key is string => Boolean(key));
+      const visibility = stored.sessionCursor ? await requestExploreFeed<ExploreFeedValidation>({
+        mode: "validate", cursor: stored.sessionCursor,
+        contentKeys, revisions: contentKeys.map(key => known.get(key) ?? null),
+      }, controller.signal) : null;
+      if (controller.signal.aborted || generationRef.current !== generation || visibility?.error || (sessionCursor && !visibility)) return;
+      const retained = visibility ? retainValidatedExploreItems(stored.items, visibility, revisions) : stored.items;
       if (!mountedRef.current) {
         return;
       }
 
-      setItems((current) => mergeStoredFeedItems(stored.items, current));
-      pendingScrollRef.current = stored.scrollY;
+      setItems(sessionCursor ? retained : (current) => mergeStoredFeedItems(retained, current));
+      if (stored.sessionCursor) setSessionCursor(stored.sessionCursor);
+      if (!interacted && !window.location.hash) { pendingScrollRef.current = stored.scrollY; pendingAnchorRef.current = stored.scrollAnchor; }
       setCursor(stored.cursor);
       setHasMore(stored.hasMore);
       setPaginationError("");
-    });
+    };
+    const restoreFrame = window.requestAnimationFrame(() => { restoredRef.current = true; void restore().catch(() => {}).finally(() => {
+      if (generationRef.current === generation) {
+        restoringRef.current = false;
+        if (mountedRef.current) setIsRestoring(false);
+      }
+    }); });
 
-    return () => window.cancelAnimationFrame(restoreFrame);
-  }, [firstKey, viewer.userId, restoreSession, sessionKey]);
+    return () => {
+      controller.abort();
+      restoringRef.current = false;
+      window.cancelAnimationFrame(restoreFrame);
+      window.removeEventListener("pointerdown", stopScrollRestore); window.removeEventListener("touchstart", stopScrollRestore); window.removeEventListener("wheel", stopScrollRestore); window.removeEventListener("keydown", stopScrollRestore);
+    };
+  }, [firstKey, viewer.userId, restoreSession, sessionKey, sessionCursor]);
 
   useLayoutEffect(() => {
     if (pendingScrollRef.current !== null) {
-      window.scrollTo(0, pendingScrollRef.current);
+      const anchor = pendingAnchorRef.current;
+      const node = anchor ? Array.from(sectionRef.current?.querySelectorAll<HTMLElement>("[data-explore-content-key]") ?? []).find(element => element.dataset.exploreContentKey === anchor.contentKey) : null;
+      window.scrollTo(0, node && anchor ? Math.max(0, window.scrollY + node.getBoundingClientRect().top - anchor.offset) : pendingScrollRef.current);
       pendingScrollRef.current = null;
+      pendingAnchorRef.current = null;
     }
   }, [items]);
 
   useEffect(() => {
     const route = `${window.location.pathname}${window.location.search}${sessionKey ? `#${sessionKey}` : ""}`;
-    const save = () => { if (sentinelRef.current?.getClientRects().length) writeStoredFeedState({ cursor, hasMore, items, viewerId: viewer.userId, route }); };
+    let reset = false;
+    const onReset = () => { reset = true; generationRef.current += 1; activeRequest.current?.abort(); restoreRequest.current?.abort(); };
+    const save = () => {
+      if (reset || restoringRef.current || !sentinelRef.current?.getClientRects().length) return;
+      const node = Array.from(sectionRef.current?.querySelectorAll<HTMLElement>("[data-explore-content-key]") ?? []).find(element => element.getBoundingClientRect().bottom > 80);
+      const scrollAnchor = node?.dataset.exploreContentKey ? { contentKey: node.dataset.exploreContentKey, offset: node.getBoundingClientRect().top } : null;
+      writeStoredFeedState({ sessionCursor, cursor, hasMore, items, viewerId: viewer.userId, route, scrollAnchor });
+    };
     let timeout = window.setTimeout(save, 250);
     const onScroll = () => {
       window.clearTimeout(timeout);
-      timeout = window.setTimeout(save, 150);
+      timeout = window.setTimeout(save, 450);
     };
     const onNavigate = (event: Event) => {
       if (event.target instanceof Element && event.target.closest("a[href]")) save();
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pagehide", save);
+    const hidden = () => { if (document.visibilityState === "hidden") save(); };
+    document.addEventListener("visibilitychange", hidden);
+    window.addEventListener("reylumi:experience-reset", onReset);
     document.addEventListener("click", onNavigate, true);
     return () => {
       window.clearTimeout(timeout);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pagehide", save);
+      document.removeEventListener("visibilitychange", hidden);
+      window.removeEventListener("reylumi:experience-reset", onReset);
       document.removeEventListener("click", onNavigate, true);
     };
-  }, [cursor, hasMore, items, viewer.userId, sessionKey]);
+  }, [cursor, hasMore, items, viewer.userId, sessionKey, sessionCursor]);
 
-  useEffect(() => {
-    const node = sentinelRef.current;
-
-    if (!node || !hasMore || loadingMore || paginationError || typeof IntersectionObserver === "undefined") {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting) && node.getClientRects().length > 0) {
-          void loadNextPage();
-        }
-      },
-      {
-        rootMargin: "900px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [hasMore, loadNextPage, loadingMore, paginationError]);
-
+  if (isEmpty && supplementaryPosts.length === 0 && endContent) return <>{endContent(items)}</>;
   return (
+    <>
     <section
-      aria-busy={loadingMore}
+      ref={sectionRef}
+      aria-busy={loadingMore || isRestoring}
       aria-label="Explore discovery feed"
       className="mx-auto grid w-full max-w-[40rem] gap-2.5"
-      id="explore-feed"
+      id={feedId}
       data-testid="explore-continuous-feed"
     >
       {initialFailure ? (
@@ -1756,21 +1870,19 @@ function ExploreFeedContent({
         </div>
       ) : null}
 
-      {isEmpty ? (
+      {heading && (memoizedItems.length > 0 || supplementaryPosts.length > 0) ? <div className="px-1 pb-2 pt-3"><h2 className="text-xl font-semibold">{heading}</h2>{description ? <p className="mt-1 text-sm text-text-secondary">{description}</p> : null}</div> : null}
+      {isEmpty && supplementaryPosts.length === 0 && emptyMessage !== "" ? (
         <div className="rounded-[1.25rem] border border-dashed border-divider-subtle bg-surface-elevated p-6 text-center text-sm leading-6 text-text-secondary">
-          Public beauty posts and salon visuals will appear here as Reylumi discovery grows.
+          {emptyMessage ?? (discovery?.query ? "No ideas found for this search. Try another phrase or location." : "Public beauty posts and salon visuals will appear here as Reylumi discovery grows.")}
         </div>
       ) : null}
 
       <div className="grid gap-3">
-        {memoizedItems.length < 4 ? <ExploreAdSlot /> : null}
+        {!matchingPostsFirst && memoizedItems.length === 0 ? supplementaryPosts[0] : null}
         {memoizedItems.map((item, index) => {
-          const shortcutIndex =
-            index > 0 && (index + 1) % 3 === 0
-              ? Math.floor((index + 1) / 3) - 1
-              : -1;
+          const shortcutIndex = exploreShortcutIndex(index + 1);
           const shortcut =
-            shortcutIndex >= 0 && feedDiscoveryShortcuts.length > 0
+            shortcutIndex !== null && feedDiscoveryShortcuts.length > 0
               ? feedDiscoveryShortcuts[
                   shortcutIndex % feedDiscoveryShortcuts.length
                 ]
@@ -1779,25 +1891,34 @@ function ExploreFeedContent({
           return (
             <Fragment key={feedItemKey(item)}>
               {item.discoveryScope === "wider" ? (
-                <p className="px-2 pt-2 text-xs font-medium text-text-muted">Beyond your area · {[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` · ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
+                <p className="px-2 pt-2 text-xs font-medium text-text-muted">{[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` Â· ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
               ) : null}
+              <div data-explore-content-key={item.contentKey}>
               <ExploreFeedCard
+                commentPresentation={commentPlan[feedCommentCandidate(item)?.key ?? ""]}
                 featured={index === 0}
                 item={item}
                 onCommentCountChange={updateCommentCount}
                 viewer={viewer}
               />
-              {(index + 1) % 4 === 0 ? <ExploreAdSlot /> : null}
+              </div>
+              {(index + 1) % 4 === 0 ? <ExploreAdSlot slotIndex={Math.floor(index / 4)} /> : null}
+              {!matchingPostsFirst && (index + 1) % 4 === 0 ? supplementaryPosts[Math.floor((index + 1) / 4) - 1] : null}
               {shortcut ? (
                 <FeedDiscoveryModule
                   activeResultKind={activeDiscoveryResult}
                   onSelect={onDiscoveryShortcutSelect}
                   shortcut={shortcut}
+                  items={memoizedItems}
+                  category={discovery?.category ?? "All"}
+                  location={discovery?.location ?? ""}
                 />
               ) : null}
             </Fragment>
           );
         })}
+        {matchingPostsFirst ? showSearchInspiration ? supplementaryPosts : null : supplementaryPosts.slice(memoizedItems.length ? Math.floor(memoizedItems.length / 4) : 1)}
+        {!matchingPostsFirst || showSearchInspiration ? supplementaryFooter : null}
       </div>
 
       {paginationError ? (
@@ -1810,6 +1931,7 @@ function ExploreFeedContent({
           >
             Retry
           </button>
+          <button type="button" onClick={() => void refreshFeed()} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 text-sm font-semibold text-brand-teal">Refresh feed</button>
         </div>
       ) : null}
 
@@ -1819,17 +1941,23 @@ function ExploreFeedContent({
         </div>
       ) : null}
 
-      <div aria-hidden className="h-4" ref={sentinelRef} />
+      <div aria-hidden className="h-4" ref={sentinelRef}>
+        <ExploreAutoLoad enabled={hasMore && !loadingMore && !paginationError && !isRestoring} onLoad={loadNextPage} progressKey={cursor} />
+      </div>
 
       {hasMore && !loadingMore && !paginationError ? (
-        <button type="button" onClick={() => void loadNextPage()} className="mx-auto rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-text-primary">Explore more</button>
+        <button type="button" onClick={() => void loadNextPage()} className="sr-only mx-auto rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-text-primary focus:not-sr-only">Explore more</button>
       ) : null}
-      {!hasMore ? (
+      {!endContent && !hasMore && !loadingMore && !isRestoring && supplementaryPosts.length === 0 && !(isEmpty && emptyContent != null) ? (
         <div className="grid justify-items-center gap-2 py-5 text-center text-sm text-text-muted">
           <p>You&apos;ve explored the available results. Try another category or area.</p>
           <a href="#explore-search" className="font-semibold text-brand-teal" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Adjust your discovery</a>
         </div>
       ) : null}
     </section>
+    {isEmpty && supplementaryPosts.length === 0 ? emptyContent : null}
+    {!hasMore && !loadingMore && !isRestoring && !paginationError ? endContent?.(items) : null}
+    {paginationError ? errorContent : null}
+    </>
   );
 }

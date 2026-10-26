@@ -1,0 +1,72 @@
+.ownerToolbar[data-owner-ticket-toolbar] {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e4e4e7;
+  margin-bottom: 12px;
+}
+
+.title {
+  flex-shrink: 0;
+  margin: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #09090b;
+}
+
+.date { min-width: 0; }
+
+.ownerToolbar[data-owner-ticket-toolbar] [data-ticket-date] {
+  width: auto;
+  max-width: none;
+  flex-shrink: 0;
+}
+
+.ownerToolbar[data-owner-ticket-toolbar] [data-ticket-date] > .dateLabel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #3f3f46;
+}
+
+.dateLabel:focus-within {
+  outline: 2px solid #71717a;
+  outline-offset: 2px;
+}
+
+.compactDate { display: none; }
+
+@media (max-width: 479px) {
+  .ownerToolbar[data-owner-ticket-toolbar] {
+    gap: 6px;
+    padding: 4px 0 8px;
+  }
+
+  .title { font-size: 12px; }
+
+  .ownerToolbar[data-owner-ticket-toolbar] [data-ticket-date] > .dateLabel {
+    gap: 2px;
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  .fullDate { display: none; }
+  .compactDate { display: inline; }
+}
+
+@media (min-width: 640px) {
+  .ownerToolbar[data-owner-ticket-toolbar] { padding-inline: 0; }
+}

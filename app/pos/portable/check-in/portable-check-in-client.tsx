@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { portableBusinessDate } from "@/lib/portable-business-day";
@@ -37,6 +39,11 @@ type ActionResult<T> =
   | { data?: never; error: string; ok: false };
 
 type PortableCheckInClientProps = {
+  active?: boolean;
+  managedRead?: boolean;
+  businessDate?: string;
+  onAttendanceSettled?: () => void;
+  onDataChange?: (data: PortableCheckInData, pending: boolean) => void;
   workspacePath?: string;
   staffEndpoint?: string;
   action: (
@@ -192,10 +199,11 @@ function availableEvents(status: string): PortableAttendanceEventInput["eventTyp
   return ["CHECK_IN"];
 }
 
-function usePortableClock(timezone: string) {
+function usePortableClock(timezone: string, active: boolean) {
   const [clock, setClock] = useState({ date: "", time: "" });
 
   useEffect(() => {
+    if (!active) return;
     function updateClock() {
       const now = new Date();
       setClock({
@@ -222,17 +230,24 @@ function usePortableClock(timezone: string) {
       window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
-  }, [timezone]);
+  }, [timezone, active]);
 
   return clock;
 }
 
 export function PortableCheckInClient({
+  active = true,
+  managedRead = false,
+  businessDate: managedBusinessDate,
+  onAttendanceSettled,
+  onDataChange,
   workspacePath="/pos/portable/check-in",
   staffEndpoint="/api/pos/portable/staff",
   action,
   data,
 }: PortableCheckInClientProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const pathname = usePathname();
   const workspaceState = usePortableWorkspaceState();
@@ -240,19 +255,27 @@ export function PortableCheckInClient({
   const localAttendancePendingCountRef = useRef(0);
   const lastLocalAttendanceAtRef = useRef(0);
   const [localData, setLocalData] = useState<PortableCheckInData | null>(null);
+  const localDataBase = useRef(data);
   const [modal, setModal] = useState<ModalState>(null);
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
   const [savingStaffIds, setSavingStaffIds] = useState<string[]>([]);
+  const savingStaffIdsRef = useRef(new Set<string>());
+  const modalSaving = Boolean(modal && savingStaffIds.includes(modal.staff.id));
   const sourceData = localData ?? data;
-  const businessDate = workspaceState?.businessDate || "";
+  useEffect(() => {
+    if (managedRead && !savingStaffIds.length && localDataBase.current !== data) setLocalData(null);
+  }, [data, managedRead, savingStaffIds.length]);
+  useEffect(() => { onDataChange?.(sourceData, savingStaffIds.length > 0); }, [sourceData, savingStaffIds.length, onDataChange]);
+  const businessDate = workspaceState?.businessDate || managedBusinessDate || "";
   const modalDay = useRef("");
   const viewData = { ...sourceData, today: businessDate || sourceData.today, staff: sourceData.staff.map(member => ({ ...member,
-    ...(workspaceState && (sourceData.today !== businessDate || (member.checkInAt && portableBusinessDate(sourceData.timezone, member.checkInAt) !== businessDate)) ? { status: "not_checked_in", checkInAt: null, checkInSequence: null, queueTurnCount: 0, leaveCohortStaffIds: [], leaveBaselineTurnCount: null } : {}),
+    ...((workspaceState || managedRead && businessDate) && (sourceData.today !== businessDate || (member.checkInAt && portableBusinessDate(sourceData.timezone, member.checkInAt) !== businessDate)) ? { status: "not_checked_in", checkInAt: null, checkInSequence: null, queueTurnCount: 0, leaveCohortStaffIds: [], leaveBaselineTurnCount: null } : {}),
     ...(workspaceState?.attendanceByStaffId[member.id] ?? {}) })) };
   const scope = workspaceState?.offlineEnabled ? workspaceState.scope : undefined;
   useEffect(() => {
+    if (managedRead) return;
     let active = true;
     let loading = false;
     let again=false;
@@ -273,7 +296,7 @@ export function PortableCheckInClient({
     void refresh();
     document.addEventListener("visibilitychange", wake);
     return () => { active = false; unsubscribe(); document.removeEventListener("visibilitychange", wake); };
-  }, [scope, data.salonId, data.today, data.timezone, businessDate, pathname, workspacePath, staffEndpoint]);
+  }, [scope, data.salonId, data.today, data.timezone, businessDate, pathname, workspacePath, staffEndpoint, managedRead]);
   useEffect(() => {
     setStaffRoster?.(sourceData.staff.map(member => ({ id: member.id, display_name: member.displayName,
       job_title: member.jobTitle, is_active: true, avatar_url: member.avatarUrl,
@@ -290,7 +313,7 @@ export function PortableCheckInClient({
     window.addEventListener("online", refresh);
     return () => { clearInterval(timer); window.removeEventListener("online", refresh); };
   }, [scope]);
-  const clock = usePortableClock(viewData.timezone);
+  const clock = usePortableClock(viewData.timezone, active);
   const selectedEvents = useMemo(
     () => (modal ? availableEvents(modal.staff.status) : []),
     [modal],
@@ -361,6 +384,7 @@ export function PortableCheckInClient({
   }
 
   function pressKey(key: string) {
+    if (modalSaving) return;
     setError("");
 
     if (key === "clear") {
@@ -377,7 +401,7 @@ export function PortableCheckInClient({
   }
 
   async function submit() {
-    if (!modal || savingStaffIds.includes(modal.staff.id)) {
+    if (!modal || savingStaffIdsRef.current.has(modal.staff.id)) {
       return;
     }
 
@@ -388,6 +412,8 @@ export function PortableCheckInClient({
     const staff = viewData.staff.find(member => member.id === modal.staff.id) ?? modal.staff;
     const staffName = staff.displayName;
     const submittedPasscode = passcode;
+    localDataBase.current = data;
+    savingStaffIdsRef.current.add(staff.id);
     setSavingStaffIds((current) => [...current, staff.id]);
     if (scope) {
       try {
@@ -398,7 +424,7 @@ export function PortableCheckInClient({
         clearModal();
       } catch (error) {
         setError(posUserMessage(error instanceof Error ? error.message : "Unable to save check-in."));
-      } finally { setSavingStaffIds(current => current.filter(id => id !== staff.id)); }
+      } finally { savingStaffIdsRef.current.delete(staff.id); setSavingStaffIds(current => current.filter(id => id !== staff.id)); }
       return;
     }
 
@@ -507,6 +533,7 @@ export function PortableCheckInClient({
         setLocalData(null);
         workspaceState?.setAttendance(staff.id, null);
       } finally {
+        savingStaffIdsRef.current.delete(staff.id);
         localAttendancePendingCountRef.current = Math.max(
           0,
           localAttendancePendingCountRef.current - 1,
@@ -514,6 +541,7 @@ export function PortableCheckInClient({
         setSavingStaffIds((current) =>
           current.filter((staffId) => staffId !== staff.id),
         );
+        onAttendanceSettled?.();
       }
     })();
   }
@@ -526,11 +554,10 @@ export function PortableCheckInClient({
       >
         <div className="max-w-md rounded-lg border border-white/70 bg-white/70 p-6 shadow-sm backdrop-blur-xl">
           <h2 className="text-xl font-semibold text-zinc-950">
-            Staff check-in is off
+            <WorkspaceText text="Staff check-in is off" />
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Enable staff check-in from POS Settings before using this Portable
-            page.
+            <WorkspaceText text="Enable staff check-in from POS Settings before using this Portable page." />
           </p>
         </div>
       </section>
@@ -552,7 +579,7 @@ export function PortableCheckInClient({
             {viewData.salonLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                alt={`${viewData.salonName} logo`}
+                alt={__vt(`${viewData.salonName} logo`)}
                 className="h-full w-full object-cover"
                 src={viewData.salonLogoUrl}
               />
@@ -587,10 +614,12 @@ export function PortableCheckInClient({
             <button
               className="group relative min-h-[116px] overflow-hidden rounded-lg border border-white/65 bg-white/52 p-3 text-left shadow-[0_12px_28px_rgba(24,24,27,0.09)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/68 hover:shadow-[0_16px_36px_rgba(24,24,27,0.13)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               key={member.id}
+              aria-busy={isSaving}
+              disabled={isSaving}
               onClick={() => openAction(member)}
-              title={`${member.displayName}: ${statusLabel(
+              title={__vt(`${member.displayName}: ${statusLabel(
                 member.status,
-              )}, turn ${member.queueTurnCount}, ${checkInLabel}`}
+              )}, turn ${member.queueTurnCount}, ${checkInLabel}`)}
               type="button"
             >
               <span
@@ -619,13 +648,13 @@ export function PortableCheckInClient({
                       )}`}
                     >
                       <span className="truncate">
-                        {statusLabel(member.status)}
+                        <WorkspaceText text={statusLabel(member.status)} />
                       </span>
                     </span>
                   </span>
                   <span className="grid min-w-11 justify-items-end rounded-md bg-white/55 px-2 py-1 ring-1 ring-white/70">
                     <span className="text-[9px] font-bold uppercase tracking-normal text-zinc-500">
-                      Turn
+                      <WorkspaceText text="Turn" />
                     </span>
                     <span className="text-xl font-black leading-none tabular-nums">
                       {member.queueTurnCount}
@@ -633,13 +662,13 @@ export function PortableCheckInClient({
                   </span>
                 </div>
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-white/60 pt-2 text-[11px] font-semibold leading-tight text-zinc-500">
-                  <span className="truncate">{checkInLabel}</span>
+                  <span className="truncate"><WorkspaceText text={checkInLabel} /></span>
                   <span
                     className={`truncate text-right ${
                       isSaving ? "text-emerald-700" : ""
                     }`}
                   >
-                    {isSaving ? "Saving..." : sequenceLabel}
+                    <ActionFeedback pending={isSaving} pendingLabel="Saving…"><WorkspaceText text={sequenceLabel} /></ActionFeedback>
                   </span>
                 </div>
               </div>
@@ -654,7 +683,7 @@ export function PortableCheckInClient({
         data-portable-check-in-reylumi-logo
       >
         <Image
-          alt=""
+          alt={__vt("")}
           className="h-auto w-24 object-contain drop-shadow-[0_12px_24px_rgba(24,24,27,0.16)]"
           height={419}
           src="/brand/reylumi-logo-horizontal.png"
@@ -679,7 +708,7 @@ export function PortableCheckInClient({
             />
             <div className="min-w-0">
               <p className="text-base font-bold text-zinc-950">
-                {toast.title}
+                <WorkspaceText text={toast.title} />
               </p>
               <p className="mt-1 truncate text-sm font-medium text-zinc-600">
                 {toast.detail}
@@ -692,17 +721,18 @@ export function PortableCheckInClient({
       {modal ? (
         <div
           aria-modal="true"
+          aria-busy={modalSaving}
           className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/40 p-4 backdrop-blur-sm"
           role="dialog"
         >
           <div className="grid max-h-[calc(100dvh-2rem)] w-full max-w-sm gap-4 overflow-hidden rounded-lg border border-white/70 bg-white/88 p-4 shadow-2xl backdrop-blur-xl">
             <div>
               <p className="text-sm font-bold text-zinc-500">
-                {statusLabel(modal.staff.status)}
+                <WorkspaceText text={statusLabel(modal.staff.status)} />
               </p>
               <h2 className="text-xl font-semibold">{modal.staff.displayName}</h2>
               <p className="mt-1 text-sm text-zinc-600">
-                Current turn {modal.staff.queueTurnCount}
+                <WorkspaceText text="Current turn" /> {modal.staff.queueTurnCount}
               </p>
             </div>
 
@@ -716,6 +746,7 @@ export function PortableCheckInClient({
                       : "border-zinc-300 bg-white/74 text-zinc-950 hover:bg-white",
                   ].join(" ")}
                   key={eventType}
+                  disabled={modalSaving}
                   onClick={() =>
                     setModal((current) =>
                       current ? { ...current, eventType } : current,
@@ -723,16 +754,16 @@ export function PortableCheckInClient({
                   }
                   type="button"
                 >
-                  {eventLabel(eventType)}
+                  <WorkspaceText text={eventLabel(eventType)} />
                 </button>
               ))}
             </div>
 
             <label className="grid gap-2">
-              <span className="text-sm font-medium text-zinc-700">Passcode</span>
+              <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Passcode" /></span>
               <div
                 role="textbox"
-                aria-label="Passcode"
+                aria-label={__vt("Passcode")}
                 tabIndex={0}
                 className="flex min-h-12 items-center justify-center rounded-md border border-zinc-300 bg-white/82 px-3 text-center text-2xl font-semibold tracking-[0.25em] shadow-inner focus:outline-2 focus:outline-zinc-950"
                 onKeyDown={(event) => {
@@ -748,17 +779,18 @@ export function PortableCheckInClient({
                 <button
                   className="min-h-14 rounded-md border border-zinc-300 bg-white/72 text-lg font-semibold text-zinc-950 transition hover:bg-white"
                   key={key}
+                  disabled={modalSaving}
                   onClick={() => pressKey(key)}
                   type="button"
                 >
-                  {key === "back" ? "Back" : key === "clear" ? "Clear" : key}
+                  {key === "back" ? <WorkspaceText text="Back" /> : key === "clear" ? <WorkspaceText text="Clear" /> : key}
                 </button>
               ))}
             </div>
 
             {error ? (
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-                {error}
+                <WorkspaceText text={error} />
               </p>
             ) : null}
 
@@ -766,17 +798,19 @@ export function PortableCheckInClient({
               <button
                 className="min-h-11 rounded-md border border-zinc-300 bg-white/76 px-3 py-2 font-semibold text-zinc-950 transition hover:bg-white"
                 onClick={clearModal}
+                disabled={modalSaving}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className="min-h-11 rounded-md bg-zinc-950 px-3 py-2 font-semibold text-white transition hover:bg-zinc-800 disabled:bg-zinc-300"
-                disabled={passcode.length < 4}
+                disabled={passcode.length < 4 || modalSaving}
+                aria-busy={modalSaving}
                 onClick={submit}
                 type="button"
               >
-                Confirm
+                <ActionFeedback pending={modalSaving} pendingLabel="Saving…"><WorkspaceText text="Confirm" /></ActionFeedback>
               </button>
             </div>
           </div>

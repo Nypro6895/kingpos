@@ -1,4 +1,12 @@
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
+import { bookingDate } from "@/lib/portable-booking-layout";
+import { ManualMergePicker } from "@/app/customers/manual-merge-picker";
+import { DuplicateMergeForms } from "@/app/customers/duplicate-merge-forms";
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
+import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import {
   getCurrentSalonCustomerDetail,
   type CustomerBookingSummary,
@@ -25,18 +33,20 @@ type CustomerDetailPageProps = {
     group?: string;
     history?: string;
     merged?: string;
+    skipped?: string;
   }>;
 };
 
-function formatDateTime(value: string) {
+function formatDateTime(value: string, timezone: string) {
   return new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
-function formatDateTimeMaybe(value: string | null) {
-  return value ? formatDateTime(value) : "-";
+function formatDateTimeMaybe(value: string | null, timezone: string) {
+  return value ? formatDateTime(value, timezone) : "-";
 }
 
 function formatMoney(value: number) {
@@ -59,7 +69,7 @@ function DetailRow({
 }) {
   return (
     <div className="border-b border-zinc-100 py-4 last:border-b-0">
-      <dt className="text-sm font-medium text-zinc-500">{label}</dt>
+      <dt className="text-sm font-medium text-zinc-500"><WorkspaceText text={label} /></dt>
       <dd className="mt-1 text-sm text-zinc-950">{value || "-"}</dd>
     </div>
   );
@@ -75,13 +85,13 @@ function Section({
   title: string;
 }) {
   return (
-    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-5 py-4">
-        <h2 className="text-lg font-semibold text-zinc-950">{title}</h2>
+    <details className="border-b border-zinc-200 bg-white">
+      <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 py-2">
+        <span className="text-sm font-normal text-zinc-600"><WorkspaceText text={title} /></span>
         {action}
-      </div>
-      <div className="p-5">{children}</div>
-    </section>
+      </summary>
+      <div className="px-4 pb-3">{children}</div>
+    </details>
   );
 }
 
@@ -94,7 +104,7 @@ function StatusBadge({ customer }: { customer: Customer }) {
           : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
       }
     >
-      {customer.status === "active" ? "Active" : "Inactive"}
+      {customer.status === "active" ? <WorkspaceText text="Active" /> : <WorkspaceText text="Inactive" />}
     </span>
   );
 }
@@ -109,11 +119,11 @@ function ReylumiProfileCard({
   if (!linked) {
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
-        <p className="text-sm font-semibold text-zinc-950">
-          No ReyLUMI profile linked
+        <p className="text-sm font-normal text-zinc-950">
+          <WorkspaceText text="No ReyLUMI profile linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
-          This customer is only a salon CRM record right now.
+          <WorkspaceText text="This customer is only a salon CRM record right now." />
         </p>
       </div>
     );
@@ -122,11 +132,11 @@ function ReylumiProfileCard({
   if (result?.ok && result.state === "unlinked") {
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
-        <p className="text-sm font-semibold text-zinc-950">
-          No ReyLUMI profile linked
+        <p className="text-sm font-normal text-zinc-950">
+          <WorkspaceText text="No ReyLUMI profile linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
-          This customer is only a salon CRM record right now.
+          <WorkspaceText text="This customer is only a salon CRM record right now." />
         </p>
       </div>
     );
@@ -135,11 +145,11 @@ function ReylumiProfileCard({
   if (result?.ok && result.state === "profile_not_created") {
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
-        <p className="text-sm font-semibold text-zinc-950">
-          ReyLUMI account linked
+        <p className="text-sm font-normal text-zinc-950">
+          <WorkspaceText text="ReyLUMI account linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
-          Beauty profile is not available yet.
+          <WorkspaceText text="Beauty profile is not available yet." />
         </p>
       </div>
     );
@@ -149,10 +159,10 @@ function ReylumiProfileCard({
     return (
       <div className="content-surface border-amber-200 bg-amber-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-amber-950">
-          ReyLUMI account linked
+          <WorkspaceText text="ReyLUMI account linked" />
         </p>
         <p className="mt-1 text-sm text-amber-800">
-          Beauty profile could not be checked right now.
+          <WorkspaceText text="Beauty profile could not be checked right now." />
         </p>
       </div>
     );
@@ -177,18 +187,17 @@ function ReylumiProfileCard({
           )}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-zinc-950">
+          <span className="block truncate text-sm font-normal text-zinc-950">
             {profile.displayName}
           </span>
           <span className="mt-1 inline-flex rounded-full bg-white px-2 py-1 text-[11px] font-semibold capitalize text-orange-700 ring-1 ring-orange-100">
-            {isPrivate ? "Beauty profile is private" : "Public Beauty profile"}
+            <WorkspaceText text={isPrivate ? "Beauty profile is private" : "Public Beauty profile"} />
           </span>
         </span>
       </div>
       {isPrivate ? (
         <p className="text-sm leading-6 text-zinc-600">
-          This customer has a ReyLUMI Beauty identity, but their Beauty content
-          is private.
+          <WorkspaceText text="This customer has a ReyLUMI Beauty identity, but their Beauty content is private." />
         </p>
       ) : null}
       {!isPrivate && profile.bio ? (
@@ -197,136 +206,57 @@ function ReylumiProfileCard({
         </p>
       ) : null}
       <Link
-        className="inline-flex min-h-10 w-fit items-center justify-center rounded-md bg-[#f26f3d] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e85f2b]"
+        className="inline-flex min-h-10 w-fit items-center justify-center rounded-md bg-[#f26f3d] px-4 text-sm font-normal text-white shadow-sm transition hover:bg-[#e85f2b]"
         href={profile.href}
       >
-        View Beauty Profile
+        <WorkspaceText text="View Beauty Profile" />
       </Link>
     </div>
   );
 }
 
-function BookingList({
-  empty,
-  items,
-}: {
-  empty: string;
-  items: CustomerBookingSummary[];
-}) {
-  if (items.length === 0) {
-    return (
-      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        {empty}
-      </p>
-    );
-  }
-
-  return (
-    <ul className="divide-y divide-zinc-100">
-      {items.map((booking) => (
-        <li className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto]" key={booking.id}>
-          <div className="min-w-0">
-            <Link
-              className="font-semibold text-zinc-950 underline"
-              href={`/bookings?date=${booking.start_at.slice(0, 10)}&bookingId=${booking.id}`}
-            >
-              {formatDateTime(booking.start_at)}
-            </Link>
-            <p className="mt-1 text-sm text-zinc-600">
-              {booking.serviceNames.join(", ") || "No services"} /{" "}
-              {booking.staff?.display_name ?? "Unassigned"}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:justify-end">
-            <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              {bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)}
-            </span>
-            <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
-              {formatMoney(booking.subtotal)}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+function shortDate(value: string, timezone: string) {
+  return new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
-function TicketList({ items }: { items: CustomerTicketSummary[] }) {
-  if (items.length === 0) {
-    return (
-      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        No linked POS tickets yet.
-      </p>
-    );
-  }
-
-  return (
-    <ul className="divide-y divide-zinc-100">
-      {items.map((ticket) => (
-        <li className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto]" key={ticket.id}>
-          <div className="min-w-0">
-            <Link
-              className="font-semibold text-zinc-950 underline"
-              href={`/pos-tickets/${ticket.id}`}
-            >
-              {ticket.ticket_number}
-            </Link>
-            <p className="mt-1 text-sm text-zinc-600">
-              {formatDateTime(ticket.opened_at)}
-              {ticket.source_booking_id ? " / From appointment" : ""}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:justify-end">
-            <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              {ticket.status}
-            </span>
-            <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
-              {formatMoney(ticket.totals.total)}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+function BookingList({ empty, items, timezone }: { empty: string; items: CustomerBookingSummary[]; timezone: string }) {
+  return items.length ? <div>{items.map(booking => <details className="border-b border-zinc-100 text-sm font-normal" key={booking.id} data-history-record>
+    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-xs font-normal">
+      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(booking.start_at, timezone)} /> · <WorkspaceText text={booking.serviceNames.join(", ") || "No services"} /> · <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} /></span>
+      <span className="shrink-0 tabular-nums">{formatMoney(booking.subtotal)} ›</span>
+    </summary>
+    <div className="space-y-2 px-4 pb-4 text-sm font-normal" data-customer-receipt>
+      <div><WorkspaceText text={formatDateTime(booking.start_at, timezone)} /> · <WorkspaceText text={booking.staff?.display_name ?? "Unassigned"} /></div>
+      {booking.lines.map(line => <div key={line.id} className="flex justify-between gap-3"><span>{line.service_name_snapshot}</span><span>{formatMoney(Number(line.line_total))}</span></div>)}
+      <div className="flex justify-between border-t border-zinc-100 pt-2"><WorkspaceText text="Total" /><span>{formatMoney(booking.subtotal)}</span></div>
+      <BookingDepositReceipt booking={booking} />
+      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/bookings?date=${bookingDate(booking.start_at, timezone)}&bookingId=${booking.id}`}><WorkspaceText text="View appointment" /> ›</Link>
+    </div>
+  </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text={empty} /></p>;
 }
 
-function Timeline({ items }: { items: CustomerTimelineItem[] }) {
-  if (items.length === 0) {
-    return (
-      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        No timeline activity yet.
-      </p>
-    );
-  }
+function TicketList({ items, timezone }: { items: CustomerTicketSummary[]; timezone: string }) {
+  return items.length ? <div>{items.map(ticket => <details className="border-b border-zinc-100 text-sm font-normal" key={ticket.id} data-history-record>
+    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-xs font-normal">
+      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(ticket.opened_at, timezone)} /> · {ticket.ticket_number} · <WorkspaceText text={ticket.status} /></span><span className="shrink-0 tabular-nums">{formatMoney(ticket.totals.total)} ›</span>
+    </summary>
+    <div className="space-y-2 px-4 pb-4 text-sm font-normal" data-customer-receipt>
+      <div>{ticket.ticket_number} · <WorkspaceText text={formatDateTime(ticket.opened_at, timezone)} /></div>
+      <div>{ticket.customer?.name ?? <WorkspaceText text="Walk-in Customer" />}</div>
+      {ticket.ticket_items.map(item => <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 border-t border-zinc-100 py-2"><span>{item.assigned_staff?.display_name ?? <WorkspaceText text="Unassigned" />}</span><span>{item.service?.name ?? item.service_name_snapshot ?? <WorkspaceText text="Service" />}</span><span className="tabular-nums">{formatMoney((item.turn_parts?.length ? item.turn_parts.reduce((total,part) => total + part.amount, 0) : item.line_total))}</span></div>)}
+      {ticket.totals.discount_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Discount" /><span>-{formatMoney(ticket.totals.discount_amount)}</span></div> : null}
+      {ticket.totals.tip_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Tip" /><span>{formatMoney(ticket.totals.tip_amount)}</span></div> : null}
+      {ticket.totals.tax_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Tax" /><span>{formatMoney(ticket.totals.tax_amount)}</span></div> : null}
+      <div className="flex justify-between border-t border-zinc-200 pt-2"><WorkspaceText text="Total" /><span>{formatMoney(ticket.totals.total)}</span></div>
+      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/pos-tickets/${ticket.id}`}><WorkspaceText text="View ticket" /> ›</Link>
+    </div>
+  </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No linked POS tickets yet." /></p>;
+}
 
-  return (
-    <ol className="border-l border-zinc-200">
-      {items.map((item) => (
-        <li className="relative pb-5 pl-5" key={item.id}>
-          <span className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full border border-zinc-300 bg-white" />
-          <div className="content-surface border-zinc-200 bg-white p-4 rounded-none border-y shadow-none">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              {item.href ? (
-                <Link className="text-sm font-semibold capitalize text-zinc-950 underline" href={item.href}>
-                  {item.label}
-                </Link>
-              ) : (
-                <p className="text-sm font-semibold capitalize text-zinc-950">
-                  {item.label}
-                </p>
-              )}
-              <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-600">
-                {item.type}
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-zinc-500">
-              {formatDateTime(item.timestamp)}
-            </p>
-          </div>
-        </li>
-      ))}
-    </ol>
-  );
+function Timeline({ items, timezone }: { items: CustomerTimelineItem[]; timezone: string }) {
+  return <ol>{items.map(item => <li key={item.id} className="border-b border-zinc-100 px-4 text-xs font-normal">
+    {item.href ? <Link className="flex min-h-11 items-center justify-between gap-2" href={item.href}><span className="truncate"><WorkspaceText text={shortDate(item.timestamp, timezone)} /> · <WorkspaceText text={item.label} /></span><span>›</span></Link> : <span className="flex min-h-11 items-center"><WorkspaceText text={shortDate(item.timestamp, timezone)} /> · <WorkspaceText text={item.label} /></span>}
+  </li>)}{!items.length ? <li className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No timeline activity yet." /></li> : null}</ol>;
 }
 
 function historyFilterHref(customerId: string, filter: string, group?: string) {
@@ -345,12 +275,14 @@ function historyFilterHref(customerId: string, filter: string, group?: string) {
   return query ? `/customers/${customerId}?${query}` : `/customers/${customerId}`;
 }
 
-export default async function CustomerDetailPage({
+async function CustomerDetailPage({
   params,
   searchParams,
 }: CustomerDetailPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const { customerId } = await params;
-  const { error, group, history, merged } = await searchParams;
+  const { error, group, history, merged, skipped } = await searchParams;
   const historyFilter = ["appointments", "tickets", "timeline"].includes(history ?? "")
     ? history
     : "all";
@@ -371,6 +303,7 @@ export default async function CustomerDetailPage({
       })
     : null;
   const canManageCustomers = await hasPermission("customers.manage", context);
+  const timezone = await getContextBusinessTimezone(context);
   const showAppointments =
     historyFilter === "all" || historyFilter === "appointments";
   const showTickets = historyFilter === "all" || historyFilter === "tickets";
@@ -380,53 +313,58 @@ export default async function CustomerDetailPage({
   );
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 py-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <main className="grid min-w-0 w-full grid-cols-1 gap-2 py-3 sm:px-6">
+      <div className="flex items-center justify-between gap-2 px-4">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <span className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+          <span className="min-w-0 truncate text-sm font-normal text-zinc-950">
             {customer.name}
           </span>
             <StatusBadge customer={customer} />
         </div>
         <div className="flex flex-wrap gap-3">
           <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
+            className="inline-flex min-h-11 items-center text-sm font-normal text-orange-600"
             href="/customers"
           >
-            Customers
+            <WorkspaceText text="Customers" />
           </Link>
           {canManageCustomers && !data.isWalkingGroup ? (
             <Link
-              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex min-h-11 items-center px-2 text-sm font-normal text-orange-600"
               href={`/customers/${customer.id}/edit`}
             >
-              Edit
+              <WorkspaceText text="Edit" />
             </Link>
           ) : null}
         </div>
       </div>
 
-      {merged ? (
+      {Number(merged) > 0 ? (
         <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
-          Merged {merged} duplicate customer record{merged === "1" ? "" : "s"}.
+          <WorkspaceText text="Merged" /> {merged} <WorkspaceText text="duplicate customer record" />{merged === "1" ? "" : "s"}.
         </p>
       ) : null}
 
       {error ? (
         <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
+      {Number(skipped) > 0 ? <p role="status" className="border-y border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        {skipped} <WorkspaceText text="suggested records were kept separate. Review the reasons below." />
+      </p> : null}
+
+      {canManageCustomers && !data.isWalkingGroup ? <ManualMergePicker customerId={customer.id} /> : null}
       {data.duplicateCandidates.length > 0 ? (
-        <section className="content-surface border-amber-200 bg-amber-50 px-5 py-4 rounded-none border-y shadow-none">
-          <h2 className="text-base font-semibold text-amber-950">
-            {data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"}
+        <details className="border-y border-amber-200 bg-amber-50 px-4 py-2 text-sm"><summary className="min-h-7 cursor-pointer text-amber-900"><WorkspaceText text={data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"} /> · {data.isWalkingGroup ? (data.groupedCustomerIds?.length ?? data.duplicateCandidates.length + 1) : data.duplicateCandidates.length}</summary>
+          <h2 className="sr-only">
+            <WorkspaceText text={data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"} />
           </h2>
           <p className="mt-1 text-sm text-amber-800">
-            {data.isWalkingGroup
+            <WorkspaceText text={data.isWalkingGroup
               ? "This view combines walk-in records that have no customer contact information."
-              : "Matching phone or email exists in this salon. No merge was performed."}
+              : "Possible match by name, phone, or email. Review identity before merging."} />
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {data.duplicateCandidates.map((candidate) => (
@@ -439,12 +377,16 @@ export default async function CustomerDetailPage({
               </Link>
             ))}
           </div>
-        </section>
+          {canManageCustomers && !data.isWalkingGroup ? <DuplicateMergeForms customerId={customer.id} candidates={data.duplicateCandidates} /> : null}
+        </details>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="grid content-start gap-6">
-          <div className="flex flex-wrap items-start gap-2">
+      <div className="flex justify-between gap-2 px-4 py-2 text-xs font-normal text-zinc-600">
+        <span>{data.upcomingBookings.length + data.bookingHistory.length} <WorkspaceText text="appts" /></span><span>{formatMoney(data.finalizedSpend)} <WorkspaceText text="Finalized POS spend" /></span>
+      </div>
+      <div className="grid min-w-0 gap-2">
+        <section className="grid min-w-0 content-start gap-1">
+          <div className="flex min-w-0 items-center justify-between border-b border-zinc-200 px-2">
             {[
               ["all", "All"],
               ["appointments", "Appointments"],
@@ -454,111 +396,93 @@ export default async function CustomerDetailPage({
               <Link
                 className={
                   historyFilter === value
-                    ? "inline-flex h-10 shrink-0 items-center rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"
-                    : "inline-flex h-10 shrink-0 items-center rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950"
+                    ? "inline-flex h-11 items-center border-b-2 border-orange-500 px-2 text-sm font-normal text-orange-600"
+                    : "inline-flex h-11 items-center px-2 text-sm font-normal text-zinc-600"
                 }
                 href={historyFilterHref(customer.id, value, group)}
                 key={value}
               >
-                {label}
+                <WorkspaceText text={label} />
               </Link>
             ))}
           </div>
 
-          {showAppointments ? (
-            <>
-              <Section title="Upcoming Appointments">
-                <BookingList
-                  empty="No upcoming appointments."
-                  items={data.upcomingBookings}
-                />
-              </Section>
-
-              <Section title="Booking History">
-                <BookingList
-                  empty="No booking history yet."
-                  items={data.bookingHistory}
-                />
-              </Section>
-            </>
-          ) : null}
-
-          {showTickets ? (
-            <Section title="POS Ticket History">
-              <TicketList items={data.tickets} />
-            </Section>
-          ) : null}
-
-          {showTimeline ? (
-            <Section title="Timeline">
-              <Timeline items={data.timeline} />
-            </Section>
-          ) : null}
+          {historyFilter === "all" ? (
+            <div data-unified-history>{!data.upcomingBookings.length && !data.bookingHistory.length && !data.tickets.length ? <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No timeline activity yet." /></p> : null}{[
+              ...data.upcomingBookings.map(booking => ({ at: booking.start_at, key: `up-${booking.id}`, content: <BookingList timezone={timezone} empty="" items={[booking]} /> })),
+              ...data.bookingHistory.map(booking => ({ at: booking.start_at, key: `booking-${booking.id}`, content: <BookingList timezone={timezone} empty="" items={[booking]} /> })),
+              ...data.tickets.map(ticket => ({ at: ticket.opened_at, key: `ticket-${ticket.id}`, content: <TicketList timezone={timezone} items={[ticket]} /> })),
+            ].sort((a,b) => b.at.localeCompare(a.at)).map(row => <div key={row.key}>{row.content}</div>)}</div>
+          ) : <>
+            {showAppointments ? <><BookingList timezone={timezone} empty="No upcoming appointments." items={data.upcomingBookings} /><BookingList timezone={timezone} empty="No booking history yet." items={data.bookingHistory} /></> : null}
+            {showTickets ? <TicketList timezone={timezone} items={data.tickets} /> : null}
+            {showTimeline ? <Timeline timezone={timezone} items={data.timeline} /> : null}
+          </>}
         </section>
 
-        <aside className="grid h-fit gap-6">
-          <Section title="ReyLUMI Profile">
+        <aside className="grid h-fit gap-1">
+          <Section title={__vt("ReyLUMI Profile")}>
             <ReylumiProfileCard
               linked={Boolean(customer.customer_user_id)}
               result={beautyProfileResult}
             />
           </Section>
 
-          <Section title="Identity">
+          <Section title={__vt("Identity")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label="Customer Name" value={customer.name} />
-              <DetailRow label="Phone" value={customer.phone} />
-              <DetailRow label="Email" value={customer.email} />
-              <DetailRow label="Source" value={sourceLabel(customer.source)} />
+              <DetailRow label={__vt("Customer Name")} value={customer.name} />
+              <DetailRow label={__vt("Phone")} value={customer.phone} />
+              <DetailRow label={__vt("Email")} value={customer.email} />
+              <DetailRow label={__vt("Source")} value={sourceLabel(customer.source)} />
               <DetailRow
-                label="Account Link"
+                label={__vt("Account Link")}
                 value={customer.customer_user_id ? "Linked" : "Not linked"}
               />
               <DetailRow
-                label="Status"
+                label={__vt("Status")}
                 value={customer.status === "active" ? "Active" : "Inactive"}
               />
             </dl>
           </Section>
 
-          <Section title="Signals">
+          <Section title={__vt("Signals")}>
             <dl className="grid gap-4 text-sm">
               <div>
-                <dt className="text-zinc-500">Finalized POS spend</dt>
+                <dt className="text-zinc-500"><WorkspaceText text="Finalized POS spend" /></dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {formatMoney(data.finalizedSpend)}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">Active tickets</dt>
+                <dt className="text-zinc-500"><WorkspaceText text="Active tickets" /></dt>
                 <dd className="mt-1 font-semibold text-zinc-950">
                   {data.activeTickets.length}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">Last visit</dt>
+                <dt className="text-zinc-500"><WorkspaceText text="Last visit" /></dt>
                 <dd className="mt-1 font-semibold text-zinc-950">
-                  {formatDateTimeMaybe(lastVisit?.start_at ?? null)}
+                  <WorkspaceText text={formatDateTimeMaybe(lastVisit?.start_at ?? null, timezone)} />
                 </dd>
               </div>
             </dl>
           </Section>
 
-          <Section title="Notes">
+          <Section title={__vt("Notes")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label="Public notes" value={customer.notes} />
-              <DetailRow label="Staff-safe notes" value={customer.staff_notes} />
+              <DetailRow label={__vt("Public notes")} value={customer.notes} />
+              <DetailRow label={__vt("Staff-safe notes")} value={customer.staff_notes} />
               <DetailRow
-                label="Owner-only notes"
+                label={__vt("Owner-only notes")}
                 value={customer.internal_notes}
               />
             </dl>
           </Section>
 
-          <Section title="Record">
+          <Section title={__vt("Record")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label="Created At" value={formatDateTime(customer.created_at)} />
-              <DetailRow label="Updated At" value={formatDateTime(customer.updated_at)} />
+              <DetailRow label={__vt("Created At")} value={formatDateTime(customer.created_at, timezone)} />
+              <DetailRow label={__vt("Updated At")} value={formatDateTime(customer.updated_at, timezone)} />
             </dl>
           </Section>
         </aside>
@@ -566,3 +490,5 @@ export default async function CustomerDetailPage({
     </main>
   );
 }
+
+export default withExperiencePage(CustomerDetailPage);

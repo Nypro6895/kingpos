@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 import { OwnerLiveBookingWorkspace } from "@/app/bookings/owner-live-booking-workspace";
 import {
   BOOKING_PERMISSIONS,
@@ -11,7 +13,7 @@ type BookingsPageProps = {
   searchParams: Promise<BookingWorkspaceSearchParams>;
 };
 
-export default async function BookingsPage({ searchParams }: BookingsPageProps) {
+async function BookingsPage({ searchParams }: BookingsPageProps) {
   const [params, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/bookings"),
@@ -22,7 +24,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          You do not have permission to view bookings.
+          <WorkspaceText text="You do not have permission to view bookings." />
         </p>
       </main>
     );
@@ -54,3 +56,5 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
     </>
   );
 }
+
+export default withExperiencePage(BookingsPage);

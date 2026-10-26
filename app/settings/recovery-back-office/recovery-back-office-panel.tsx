@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   secureRecoveryBackOfficeAccountAction,
   updateRecoveryBackOfficeCaseAction,
@@ -85,7 +86,7 @@ function Badge({
   children,
   className,
 }: {
-  children: string;
+  children: React.ReactNode;
   className: string;
 }) {
   return (
@@ -131,6 +132,8 @@ function RecoveryCaseCard({
   onUpdate: (event: FormEvent<HTMLFormElement>, requestId: string) => void;
   recoveryCase: RecoveryBackOfficeCase;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <article className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="grid gap-3 border-b border-zinc-100 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -140,14 +143,14 @@ function RecoveryCaseCard({
               {readable(recoveryCase.requestType)}
             </h2>
             <Badge className={statusTone(recoveryCase.status)}>
-              {readable(recoveryCase.status)}
+              <WorkspaceText text={readable(recoveryCase.status)} />
             </Badge>
             <Badge className={riskTone(recoveryCase.riskLevel)}>
               {readable(recoveryCase.riskLevel)}
             </Badge>
             {recoveryCase.recoveryCodeVerified ? (
               <Badge className="bg-emerald-50 text-emerald-700 ring-emerald-200">
-                Recovery code verified
+                <WorkspaceText text="Recovery code verified" />
               </Badge>
             ) : null}
           </div>
@@ -158,46 +161,46 @@ function RecoveryCaseCard({
           </p>
         </div>
         <div className="text-left text-sm leading-6 text-zinc-600 lg:text-right">
-          <p>Created {formatDateTime(recoveryCase.createdAt)}</p>
-          <p>Updated {formatDateTime(recoveryCase.updatedAt)}</p>
+          <p><WorkspaceText text="Created" /> <WorkspaceText text={formatDateTime(recoveryCase.createdAt)} /></p>
+          <p><WorkspaceText text="Updated" /> <WorkspaceText text={formatDateTime(recoveryCase.updatedAt)} /></p>
         </div>
       </div>
 
       <div className="grid gap-4 px-4 py-4 lg:grid-cols-2">
         <div className="grid gap-3">
           <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
-            <h3 className="text-sm font-semibold text-zinc-950">Account</h3>
+            <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Account" /></h3>
             <dl className="mt-2 grid gap-1 text-sm text-zinc-600">
-              <div>Email: {recoveryCase.user?.email ?? "-"}</div>
-              <div>Profile phone: {recoveryCase.user?.phone ?? "-"}</div>
-              <div>Status: {recoveryCase.user?.status ?? "-"}</div>
+              <div><WorkspaceText text="Email:" /> {recoveryCase.user?.email ?? "-"}</div>
+              <div><WorkspaceText text="Profile phone:" /> {recoveryCase.user?.phone ?? "-"}</div>
+              <div><WorkspaceText text="Status:" /> <WorkspaceText text={recoveryCase.user?.status ?? "-"} /></div>
               <div>
-                Recovery code:{" "}
-                {recoveryCase.recoveryCodeVerified ? "verified" : "not used"}
+                <WorkspaceText text="Recovery code:" />{" "}
+                <WorkspaceText text={recoveryCase.recoveryCodeVerified ? "verified" : "not used"} />
               </div>
               <div>
-                Last login: {formatDateTime(recoveryCase.user?.last_login_at)}
+                <WorkspaceText text="Last login:" /> <WorkspaceText text={formatDateTime(recoveryCase.user?.last_login_at)} />
               </div>
-              <div>Recovery email: {recoveryCase.preferences?.recoveryEmail ?? "-"}</div>
-              <div>Recovery phone: {recoveryCase.preferences?.recoveryPhone ?? "-"}</div>
+              <div><WorkspaceText text="Recovery email:" /> {recoveryCase.preferences?.recoveryEmail ?? "-"}</div>
+              <div><WorkspaceText text="Recovery phone:" /> {recoveryCase.preferences?.recoveryPhone ?? "-"}</div>
               <div>
-                SMS alerts:{" "}
-                {recoveryCase.preferences?.smsLoginAlertsEnabled
+                <WorkspaceText text="SMS alerts:" />{" "}
+                <WorkspaceText text={recoveryCase.preferences?.smsLoginAlertsEnabled
                   ? "on"
-                  : "off"}
+                  : "off"} />
               </div>
             </dl>
           </div>
 
           <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">
-              Request details
+              <WorkspaceText text="Request details" />
             </h3>
             <p className="mt-2 text-sm leading-6 text-zinc-600">
-              {recoveryCase.details || "No details provided."}
+              <WorkspaceText text={recoveryCase.details || "No details provided."} />
             </p>
             <p className="mt-2 text-sm text-zinc-600">
-              Contact: {recoveryCase.contactEmail ?? "-"} /{" "}
+              <WorkspaceText text="Contact:" /> {recoveryCase.contactEmail ?? "-"} /{" "}
               {recoveryCase.contactPhone ?? "-"}
             </p>
           </div>
@@ -206,7 +209,7 @@ function RecoveryCaseCard({
         <div className="grid gap-3">
           <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">
-              Recent sessions
+              <WorkspaceText text="Recent sessions" />
             </h3>
             <CaseList
               empty="No login sessions found."
@@ -216,15 +219,15 @@ function RecoveryCaseCard({
                   key={session.id}
                 >
                   <p className="font-semibold text-zinc-950">
-                    {session.deviceLabel}
+                    <WorkspaceText text={session.deviceLabel} />
                   </p>
                   <p>
-                    {session.locationLabel} -{" "}
-                    {formatDateTime(session.lastSeenAt)}
+                    <WorkspaceText text={session.locationLabel} /> -{" "}
+                    <WorkspaceText text={formatDateTime(session.lastSeenAt)} />
                   </p>
                   <p>
-                    {session.revokedAt ? "Revoked" : "Active"}
-                    {session.trustedAt ? " - trusted" : ""}
+                    <WorkspaceText text={session.revokedAt ? "Revoked" : "Active"} />
+                    <WorkspaceText text={session.trustedAt ? " - trusted" : ""} />
                   </p>
                 </li>
               ))}
@@ -233,7 +236,7 @@ function RecoveryCaseCard({
 
           <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">
-              Recent activity
+              <WorkspaceText text="Recent activity" />
             </h3>
             <CaseList
               empty="No activity found."
@@ -246,9 +249,9 @@ function RecoveryCaseCard({
                     {readable(activity.activityType)}
                   </p>
                   <p>
-                    {activity.deviceLabel} - {activity.locationLabel}
+                    <WorkspaceText text={activity.deviceLabel} /> - <WorkspaceText text={activity.locationLabel} />
                   </p>
-                  <p>{formatDateTime(activity.createdAt)}</p>
+                  <p><WorkspaceText text={formatDateTime(activity.createdAt)} /></p>
                 </li>
               ))}
             />
@@ -261,73 +264,73 @@ function RecoveryCaseCard({
           <input name="request_id" type="hidden" value={recoveryCase.id} />
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="grid gap-1.5">
-              <span className="text-sm font-semibold text-zinc-950">Status</span>
+              <span className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Status" /></span>
               <select
                 className={inputClassName}
                 defaultValue={recoveryCase.status}
                 name="status"
               >
-                <option value="open">Open</option>
-                <option value="reviewing">Reviewing</option>
-                <option value="needs_info">Needs info</option>
-                <option value="approved">Approved</option>
-                <option value="denied">Denied</option>
-                <option value="resolved">Resolved</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="open"><WorkspaceText text="Open" /></option>
+                <option value="reviewing"><WorkspaceText text="Reviewing" /></option>
+                <option value="needs_info"><WorkspaceText text="Needs info" /></option>
+                <option value="approved"><WorkspaceText text="Approved" /></option>
+                <option value="denied"><WorkspaceText text="Denied" /></option>
+                <option value="resolved"><WorkspaceText text="Resolved" /></option>
+                <option value="cancelled"><WorkspaceText text="Cancelled" /></option>
               </select>
             </label>
             <label className="grid gap-1.5">
-              <span className="text-sm font-semibold text-zinc-950">Priority</span>
+              <span className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Priority" /></span>
               <select
                 className={inputClassName}
                 defaultValue={recoveryCase.priority}
                 name="priority"
               >
-                <option value="low">Low</option>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="low"><WorkspaceText text="Low" /></option>
+                <option value="normal"><WorkspaceText text="Normal" /></option>
+                <option value="high"><WorkspaceText text="High" /></option>
+                <option value="urgent"><WorkspaceText text="Urgent" /></option>
               </select>
             </label>
             <label className="grid gap-1.5">
-              <span className="text-sm font-semibold text-zinc-950">Risk</span>
+              <span className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Risk" /></span>
               <select
                 className={inputClassName}
                 defaultValue={recoveryCase.riskLevel}
                 name="risk_level"
               >
-                <option value="unknown">Unknown</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="unknown"><WorkspaceText text="Unknown" /></option>
+                <option value="low"><WorkspaceText text="Low" /></option>
+                <option value="medium"><WorkspaceText text="Medium" /></option>
+                <option value="high"><WorkspaceText text="High" /></option>
+                <option value="critical"><WorkspaceText text="Critical" /></option>
               </select>
             </label>
           </div>
           <label className="grid gap-1.5">
             <span className="text-sm font-semibold text-zinc-950">
-              Internal note
+              <WorkspaceText text="Internal note" />
             </span>
             <textarea
               className={textareaClassName}
               name="note"
-              placeholder="Verification steps, evidence, decision reason..."
+              placeholder={__vt("Verification steps, evidence, decision reason...")}
             />
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-semibold text-zinc-950">
-              Resolution summary
+              <WorkspaceText text="Resolution summary" />
             </span>
             <textarea
               className={textareaClassName}
               defaultValue={recoveryCase.resolutionSummary ?? ""}
               name="resolution_summary"
-              placeholder="Visible resolution summary for this case."
+              placeholder={__vt("Visible resolution summary for this case.")}
             />
           </label>
           <div>
             <button className={primaryButtonClassName} disabled={isBusy} type="submit">
-              {isBusy ? "Saving..." : "Save review"}
+              <WorkspaceText text={isBusy ? "Saving..." : "Save review"} />
             </button>
           </div>
         </form>
@@ -337,16 +340,16 @@ function RecoveryCaseCard({
             <input name="request_id" type="hidden" value={recoveryCase.id} />
             <label className="grid gap-1.5">
               <span className="text-sm font-semibold text-zinc-950">
-                Secure account note
+                <WorkspaceText text="Secure account note" />
               </span>
               <textarea
                 className={textareaClassName}
                 name="note"
-                placeholder="Why sessions and trusted devices are being revoked."
+                placeholder={__vt("Why sessions and trusted devices are being revoked.")}
               />
             </label>
             <button className={dangerButtonClassName} disabled={isBusy} type="submit">
-              {isBusy ? "Securing..." : "Secure account"}
+              <WorkspaceText text={isBusy ? "Securing..." : "Secure account"} />
             </button>
           </form>
 
@@ -354,29 +357,29 @@ function RecoveryCaseCard({
             <input name="request_id" type="hidden" value={recoveryCase.id} />
             <label className="grid gap-1.5">
               <span className="text-sm font-semibold text-zinc-950">
-                Account status
+                <WorkspaceText text="Account status" />
               </span>
               <select
                 className={inputClassName}
                 defaultValue={recoveryCase.user?.status ?? "active"}
                 name="user_status"
               >
-                <option value="active">Active</option>
-                <option value="suspended">Suspended</option>
+                <option value="active"><WorkspaceText text="Active" /></option>
+                <option value="suspended"><WorkspaceText text="Suspended" /></option>
               </select>
             </label>
             <label className="grid gap-1.5">
               <span className="text-sm font-semibold text-zinc-950">
-                Status note
+                <WorkspaceText text="Status note" />
               </span>
               <textarea
                 className={textareaClassName}
                 name="note"
-                placeholder="Reason for suspend or restore."
+                placeholder={__vt("Reason for suspend or restore.")}
               />
             </label>
             <button className={secondaryButtonClassName} disabled={isBusy} type="submit">
-              {isBusy ? "Updating..." : "Update account status"}
+              <WorkspaceText text={isBusy ? "Updating..." : "Update account status"} />
             </button>
           </form>
         </div>
@@ -384,7 +387,7 @@ function RecoveryCaseCard({
 
       <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-4">
         <h3 className="text-sm font-semibold text-zinc-950">
-          Support audit
+          <WorkspaceText text="Support audit" />
         </h3>
         <CaseList
           empty="No support events have been recorded."
@@ -397,8 +400,8 @@ function RecoveryCaseCard({
                 {readable(event.eventType)}
               </p>
               <p>
-                {readable(event.fromStatus)} to {readable(event.toStatus)} -{" "}
-                {formatDateTime(event.createdAt)}
+                <WorkspaceText text={readable(event.fromStatus)} /> <WorkspaceText text="to" /> <WorkspaceText text={readable(event.toStatus)} /> -{" "}
+                <WorkspaceText text={formatDateTime(event.createdAt)} />
               </p>
               {event.note ? <p className="mt-1">{event.note}</p> : null}
             </li>
@@ -471,7 +474,7 @@ export function RecoveryBackOfficePanel({
   }
 
   return (
-    <div className="grid gap-5">
+    <div className="settings-style"><div className="grid gap-5">
       {overview.loadWarning ? (
         <p className="content-surface border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
           {overview.loadWarning}
@@ -482,7 +485,7 @@ export function RecoveryBackOfficePanel({
           className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none"
           role="alert"
         >
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
       {message ? (
@@ -490,26 +493,26 @@ export function RecoveryBackOfficePanel({
           className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none"
           role="status"
         >
-          {message}
+          <WorkspaceText text={message} />
         </p>
       ) : null}
 
       <section className="content-surface grid gap-3 border-border-subtle bg-white p-4 sm:grid-cols-4 rounded-none border-y shadow-none">
         <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
-          <p className="text-xs font-semibold uppercase text-zinc-500">Total</p>
+          <p className="text-xs font-semibold uppercase text-zinc-500"><WorkspaceText text="Total" /></p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
             {overview.stats.total}
           </p>
         </div>
         <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
-          <p className="text-xs font-semibold uppercase text-zinc-500">Open</p>
+          <p className="text-xs font-semibold uppercase text-zinc-500"><WorkspaceText text="Open" /></p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
             {overview.stats.open}
           </p>
         </div>
         <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
           <p className="text-xs font-semibold uppercase text-zinc-500">
-            Reviewing
+            <WorkspaceText text="Reviewing" />
           </p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
             {overview.stats.reviewing}
@@ -517,7 +520,7 @@ export function RecoveryBackOfficePanel({
         </div>
         <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
           <p className="text-xs font-semibold uppercase text-zinc-500">
-            High risk
+            <WorkspaceText text="High risk" />
           </p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
             {overview.stats.highRisk}
@@ -544,9 +547,9 @@ export function RecoveryBackOfficePanel({
         </div>
       ) : (
         <p className="content-surface border-zinc-300 bg-white px-4 py-6 text-sm font-semibold text-zinc-600 rounded-none border-y shadow-none">
-          No recovery cases are waiting for review.
+          <WorkspaceText text="No recovery cases are waiting for review." />
         </p>
       )}
-    </div>
+    </div></div>
   );
 }

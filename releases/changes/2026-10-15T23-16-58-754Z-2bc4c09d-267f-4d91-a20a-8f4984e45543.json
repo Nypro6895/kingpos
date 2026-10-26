@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "pos-instant-tab-navigation-20261015",
+  "status": "working",
+  "summary": "POS: tab phản hồi ngay trước dữ liệu live, giữ nguyên checkout/số tiền và dự thảo; cải thiện panel đầu tiên và kết quả tải nền.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/pos-tab-placeholder.tsx",
+    "app/pos/portable/portable-panels.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx"
+  ],
+  "source": {
+    "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+    "baselineDeploymentId": "dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW"
+  },
+  "notes": [
+    "Implementation only; no deployment requested. Preserve writes, money calculations, auth, SingleWorkspaceWindow lock and outbox identity."
+  ],
+  "id": "2bc4c09d-267f-4d91-a20a-8f4984e45543",
+  "recordedAt": "2026-10-15T23:16:58.754Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

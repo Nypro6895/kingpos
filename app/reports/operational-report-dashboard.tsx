@@ -1,3 +1,6 @@
+import styles from "./reports.module.css";
+import { ReportDetails, ReportIcon } from "./report-ui";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
 import type {
   OperationalReportBookingMetrics,
@@ -9,7 +12,6 @@ import type {
   OperationalReportTicketRow,
   OperationalReportTrendPoint,
 } from "@/lib/operational-report";
-import { ReportRangeFilter } from "./report-controls";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -71,10 +73,10 @@ function ComparisonBadge({
 }) {
   const tone =
     metric.direction === "up"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      ? styles.up
       : metric.direction === "down"
-        ? "border-rose-200 bg-rose-50 text-rose-800"
-        : "border-zinc-200 bg-zinc-50 text-zinc-600";
+        ? styles.down
+        : styles.neutral;
   const label =
     metric.percentChange === null
       ? metric.previous === 0 && metric.current > 0
@@ -84,9 +86,9 @@ function ComparisonBadge({
 
   return (
     <span
-      className={`inline-flex min-h-6 items-center rounded border px-2 text-xs font-semibold ${tone}`}
+      className={`${styles.comparison} ${tone}`}
     >
-      {label}
+      <span aria-hidden="true">{metric.direction === "up" ? "▲ " : metric.direction === "down" ? "▼ " : ""}</span><WorkspaceText text={label} />
     </span>
   );
 }
@@ -103,9 +105,9 @@ function MetricCard({
   value: string;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-4">
+    <section className={styles.metric}>
       <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
-        {label}
+        <WorkspaceText text={label} />
       </p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
       {comparison ? (
@@ -116,7 +118,7 @@ function MetricCard({
       {detail ? (
         <details className="mt-2 text-xs text-zinc-500">
           <summary className="w-fit cursor-pointer py-1 text-teal-700">
-            About this metric
+            <WorkspaceText text="About this metric" />
           </summary>
           <p className="mt-1 leading-5">{detail}</p>
         </details>
@@ -133,11 +135,10 @@ function EmptyState({ report }: { report: OperationalReportData }) {
   return (
     <section className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-5">
       <h2 className="text-base font-semibold text-zinc-950">
-        No operational activity in this range.
+        <WorkspaceText text="No operational activity in this range." />
       </h2>
       <p className="mt-1 text-sm text-zinc-600">
-        Closed POS tickets, bookings, and new customer records will appear here
-        once activity is recorded for {report.range.label}.
+        <WorkspaceText text="Closed POS tickets, bookings, and new customer records will appear here once activity is recorded for" /> <WorkspaceText text={report.range.label} />.
       </p>
     </section>
   );
@@ -145,28 +146,24 @@ function EmptyState({ report }: { report: OperationalReportData }) {
 
 function SummaryCards({ report }: { report: OperationalReportData }) {
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div className={styles.metrics}>
       <MetricCard
         comparison={report.comparison.grossSales}
-        detail="POS item subtotal before discounts, tax, and tip."
         label="Gross Sales"
         value={formatMoney(report.totals.grossSales)}
       />
       <MetricCard
         comparison={report.comparison.netSales}
-        detail="Gross sales after discounts, before tax and tip."
         label="Net Sales"
         value={formatMoney(report.totals.netSales)}
       />
       <MetricCard
         comparison={report.comparison.totalRevenue}
-        detail="Net sales plus tax and tip from closed tickets."
         label="Ticket Revenue"
         value={formatMoney(report.totals.totalRevenue)}
       />
       <MetricCard
         comparison={report.comparison.ticketCount}
-        detail={`${formatMoney(report.totals.averageTicket)} average ticket`}
         label="Closed Tickets"
         value={formatNumber(report.totals.ticketCount)}
       />
@@ -176,7 +173,7 @@ function SummaryCards({ report }: { report: OperationalReportData }) {
 
 function MoneyBreakdownCards({ report }: { report: OperationalReportData }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-2xl bg-zinc-50 px-5 py-4 sm:grid-cols-4">
+    <dl className={styles.moneyBreakdown}>
       {[
         ["Collected", report.totals.collectedTotal],
         ["Tips", report.totals.tipTotal],
@@ -184,13 +181,13 @@ function MoneyBreakdownCards({ report }: { report: OperationalReportData }) {
         ["Discounts", report.totals.discountTotal],
       ].map(([label, value]) => (
         <div key={label}>
-          <dt className="text-xs text-zinc-500">{label}</dt>
+          <dt className="text-xs text-zinc-500"><WorkspaceText text={label} /></dt>
           <dd className="mt-1 text-lg font-semibold tabular-nums">
             {formatMoney(Number(value))}
           </dd>
           {label === "Collected" ? (
             <p className="mt-1 text-xs text-zinc-500">
-              {formatMoney(report.totals.dueTotal)} remaining
+              {formatMoney(report.totals.dueTotal)} <WorkspaceText text="remaining" />
             </p>
           ) : null}
         </div>
@@ -207,18 +204,18 @@ function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
   const baseline = y(0);
   const step = (width - 66) / Math.max(1, points.length);
   return (
-    <section className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5">
-      <h2 className="text-lg font-semibold text-zinc-950">Daily revenue</h2>
+    <section className={styles.chart}>
+      <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Daily revenue" /></h2>
       <p className="mt-1 text-sm text-zinc-500">
-        Closed-ticket revenue by business date.
+        <WorkspaceText text="Closed-ticket revenue by business date." />
       </p>
-      <div
+      <WorkspaceElement as="div"
         className="mt-4 overflow-x-auto"
         tabIndex={0}
         role="region"
         aria-label="Daily revenue chart; scroll horizontally for more dates"
       >
-        <svg
+        <WorkspaceElement as="svg"
           width={width}
           height="224"
           viewBox={`0 0 ${width} 224`}
@@ -258,8 +255,8 @@ function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
           {points.map((point, index) => (
             <g key={point.date}>
               <title>
-                {point.label}: {formatExactMoney(point.totalRevenue)},{" "}
-                {point.ticketCount} tickets
+                <WorkspaceText text={point.label} />: {formatExactMoney(point.totalRevenue)},{" "}
+                {point.ticketCount} <WorkspaceText text="tickets" />
               </title>
               <rect
                 x={62 + index * step}
@@ -267,7 +264,7 @@ function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
                 width={Math.max(1, step - 10)}
                 height={Math.abs(y(point.totalRevenue) - baseline)}
                 rx="2"
-                fill={point.totalRevenue < 0 ? "#be123c" : "#0f766e"}
+                fill={point.totalRevenue < 0 ? "#dc2626" : index === points.length - 1 ? "#f26f3d" : "#008f8a"}
               />
               <text
                 x={62 + index * step + (step - 10) / 2}
@@ -280,31 +277,31 @@ function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
               </text>
             </g>
           ))}
-        </svg>
-      </div>
+        </WorkspaceElement>
+      </WorkspaceElement>
       <p className="text-xs text-zinc-500">
-        {points[0]?.label} to {points.at(-1)?.label} / USD
+        <WorkspaceText text={points[0]?.label} /> <WorkspaceText text="to" /> <WorkspaceText text={points.at(-1)?.label} /> / USD
       </p>
       <details className="mt-3 text-sm">
         <summary className="w-fit cursor-pointer py-2 font-medium text-teal-700">
-          View daily values
+          <WorkspaceText text="View daily values" />
         </summary>
         <div className="max-h-72 overflow-auto">
           <table className="w-full text-left text-xs">
             <caption className="sr-only">
-              Daily revenue and closed tickets
+              <WorkspaceText text="Daily revenue and closed tickets" />
             </caption>
             <thead>
               <tr className="border-b">
-                <th className="py-2">Date</th>
-                <th className="text-right">Revenue</th>
-                <th className="text-right">Tickets</th>
+                <th className="py-2"><WorkspaceText text="Date" /></th>
+                <th className="text-right"><WorkspaceText text="Revenue" /></th>
+                <th className="text-right"><WorkspaceText text="Tickets" /></th>
               </tr>
             </thead>
             <tbody>
               {points.map((point) => (
                 <tr key={point.date} className="border-b border-zinc-100">
-                  <th className="py-2 font-normal">{point.label}</th>
+                  <th className="py-2 font-normal"><WorkspaceText text={point.label} /></th>
                   <td className="text-right tabular-nums">
                     {formatExactMoney(point.totalRevenue)}
                   </td>
@@ -320,62 +317,37 @@ function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
 }
 
 function PaymentBreakdown({ rows }: { rows: OperationalReportPaymentRow[] }) {
-  return (
-    <section className="grid gap-4">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-950">Payments</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Tender totals recorded on closed POS tickets.
-        </p>
-      </div>
-      {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-          No payments recorded for this range.
-        </p>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {rows.map((row) => (
-            <section
-              className="rounded-2xl border border-zinc-200 bg-white p-4"
-              key={row.method}
-            >
-              <p className="text-sm font-semibold text-zinc-950">
-                {methodLabel(row.method)}
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-zinc-950">
-                {formatMoney(row.amount)}
-              </p>
-              <p className="mt-2 text-sm text-zinc-500">
-                {formatPercent(row.percentOfCollected)} of collected
-              </p>
-            </section>
-          ))}
-        </div>
-      )}
-    </section>
-  );
+  return <section className={styles.payments}>
+    <h2><WorkspaceText text="Payments" /></h2>
+    {rows.length === 0 ? <p className="text-sm text-zinc-500"><WorkspaceText text="No payments recorded for this range." /></p> : rows.map((row) => <div className={styles.payment} key={row.method}>
+      <ReportIcon kind={row.method === "cash" ? "cash" : row.method.includes("card") ? "card" : "other"} />
+      <span><WorkspaceText text={methodLabel(row.method)} /></span>
+      <strong>{formatMoney(row.amount)}</strong>
+      <small>{formatPercent(row.percentOfCollected)}</small>
+    </div>)}
+  </section>;
 }
 
 function ServiceBreakdown({ rows }: { rows: OperationalReportServiceRow[] }) {
   return (
     <section className="grid gap-4">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-950">Service Mix</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Service Mix" /></h2>
         <p className="mt-1 text-sm text-zinc-600">
-          POS service snapshots ranked by gross sales.
+          <WorkspaceText text="POS service snapshots ranked by gross sales." />
         </p>
       </div>
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-          No service lines found on closed tickets for this range.
+          <WorkspaceText text="No service lines found on closed tickets for this range." />
         </p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
           <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            <div className="col-span-6">Service</div>
-            <div className="col-span-2 text-right">Items</div>
-            <div className="hidden text-right sm:col-span-2 sm:block">Mix</div>
-            <div className="col-span-4 text-right sm:col-span-2">Sales</div>
+            <div className="col-span-6"><WorkspaceText text="Service" /></div>
+            <div className="col-span-2 text-right"><WorkspaceText text="Items" /></div>
+            <div className="hidden text-right sm:col-span-2 sm:block"><WorkspaceText text="Mix" /></div>
+            <div className="col-span-4 text-right sm:col-span-2"><WorkspaceText text="Sales" /></div>
           </div>
           <ul className="divide-y divide-zinc-200">
             {rows.map((row) => (
@@ -420,15 +392,15 @@ function StaffPerformance({
     <section className="grid gap-4">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Staff Performance
+          <WorkspaceText text="Staff Performance" />
         </h2>
         <p className="mt-1 text-sm text-zinc-600">
-          Source: {source.replaceAll("_", " ")}
+          <WorkspaceText text="Source:" /> {source.replaceAll("_", " ")}
         </p>
       </div>
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-          No staff-attributed sales found for this range.
+          <WorkspaceText text="No staff-attributed sales found for this range." />
         </p>
       ) : (
         <div>
@@ -444,7 +416,7 @@ function StaffPerformance({
                     ["Tickets", formatNumber(row.ticketCount)],
                   ].map(([label, value]) => (
                     <div key={label}>
-                      <dt className="text-xs text-zinc-500">{label}</dt>
+                      <dt className="text-xs text-zinc-500"><WorkspaceText text={label} /></dt>
                       <dd className="mt-1 font-medium">{value}</dd>
                     </div>
                   ))}
@@ -454,13 +426,13 @@ function StaffPerformance({
           </ul>
           <div className="hidden overflow-hidden rounded-lg border border-zinc-200 bg-white sm:block">
             <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
-              <div className="col-span-5 lg:col-span-3">Staff</div>
-              <div className="col-span-3 text-right">Service Sales</div>
+              <div className="col-span-5 lg:col-span-3"><WorkspaceText text="Staff" /></div>
+              <div className="col-span-3 text-right"><WorkspaceText text="Service Sales" /></div>
               <div className="hidden text-right lg:col-span-2 lg:block">
-                Tips
+                <WorkspaceText text="Tips" />
               </div>
-              <div className="col-span-2 text-right">Turns</div>
-              <div className="col-span-2 text-right">Tickets</div>
+              <div className="col-span-2 text-right"><WorkspaceText text="Turns" /></div>
+              <div className="col-span-2 text-right"><WorkspaceText text="Tickets" /></div>
             </div>
             <ul className="divide-y divide-zinc-200">
               {rows.map((row) => (
@@ -473,7 +445,7 @@ function StaffPerformance({
                       {row.staffName}
                     </p>
                     <p className="truncate text-xs text-zinc-500">
-                      {formatMoney(row.averageTicket)} avg ticket
+                      {formatMoney(row.averageTicket)} <WorkspaceText text="avg ticket" />
                     </p>
                   </div>
                   <div className="col-span-3 text-right font-semibold text-zinc-950">
@@ -530,7 +502,7 @@ function BookingStatusBar({
     <div className="grid gap-3">
       <div className="flex h-3 overflow-hidden rounded-full bg-zinc-100">
         {parts.map((part) => (
-          <span
+          <WorkspaceElement as="span"
             className={part.className}
             key={part.label}
             style={{ width: `${(part.value / total) * 100}%` }}
@@ -542,7 +514,7 @@ function BookingStatusBar({
         {parts.map((part) => (
           <div className="flex items-center gap-2" key={part.label}>
             <span className={`h-2.5 w-2.5 rounded-full ${part.className}`} />
-            <span className="text-zinc-600">{part.label}</span>
+            <span className="text-zinc-600"><WorkspaceText text={part.label} /></span>
             <span className="ml-auto font-semibold text-zinc-950">
               {formatNumber(part.value)}
             </span>
@@ -558,10 +530,10 @@ function BookingCustomerSection({ report }: { report: OperationalReportData }) {
     <section className="grid gap-4">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Bookings and Customers
+          <WorkspaceText text="Bookings and Customers" />
         </h2>
         <p className="mt-1 text-sm text-zinc-600">
-          Appointment status and customer records scoped to this salon.
+          <WorkspaceText text="Appointment status and customer records scoped to this salon." />
         </p>
       </div>
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -614,23 +586,23 @@ function RecentTickets({
     <section className="grid gap-4">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Ticket Drill-Down
+          <WorkspaceText text="Ticket Drill-Down" />
         </h2>
         <p className="mt-1 text-sm text-zinc-600">
-          Most recent closed POS tickets in the selected range.
+          <WorkspaceText text="Most recent closed POS tickets in the selected range." />
         </p>
       </div>
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-          No closed tickets to show.
+          <WorkspaceText text="No closed tickets to show." />
         </p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
           <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            <div className="col-span-4">Ticket</div>
-            <div className="hidden sm:col-span-3 sm:block">Customer</div>
-            <div className="col-span-4 text-right sm:col-span-3">Revenue</div>
-            <div className="col-span-4 text-right sm:col-span-2">Payment</div>
+            <div className="col-span-4"><WorkspaceText text="Ticket" /></div>
+            <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Customer" /></div>
+            <div className="col-span-4 text-right sm:col-span-3"><WorkspaceText text="Revenue" /></div>
+            <div className="col-span-4 text-right sm:col-span-2"><WorkspaceText text="Payment" /></div>
           </div>
           <ul className="divide-y divide-zinc-200">
             {rows.map((row) => (
@@ -643,7 +615,7 @@ function RecentTickets({
                     #{row.ticketNumber}
                   </p>
                   <p className="truncate text-xs text-zinc-500">
-                    {formatDateTime(row.closedAt ?? row.openedAt, timeZone)}
+                    <WorkspaceText text={formatDateTime(row.closedAt ?? row.openedAt, timeZone)} />
                   </p>
                 </div>
                 <div className="hidden min-w-0 text-zinc-700 sm:col-span-3 sm:block">
@@ -653,7 +625,7 @@ function RecentTickets({
                   {formatMoney(row.totals.totalRevenue)}
                 </div>
                 <div className="col-span-4 text-right capitalize text-zinc-700 sm:col-span-2">
-                  {row.paymentStatus}
+                  <WorkspaceText text={row.paymentStatus} />
                 </div>
               </li>
             ))}
@@ -673,7 +645,7 @@ function DataNotes({ report }: { report: OperationalReportData }) {
 
   return (
     <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-      <h2 className="text-base font-semibold text-amber-950">Data Notes</h2>
+      <h2 className="text-base font-semibold text-amber-950"><WorkspaceText text="Data Notes" /></h2>
       <ul className="mt-3 grid gap-2 text-sm text-amber-900">
         {uniqueGaps.map((gap) => (
           <li key={gap}>{gap}</li>
@@ -686,51 +658,39 @@ function DataNotes({ report }: { report: OperationalReportData }) {
 export function OperationalReportDashboard({
   report,
   salonName,
-  selectedClosingDate,
 }: {
   report: OperationalReportData;
   salonName: string;
   selectedClosingDate: string;
 }) {
   return (
-    <section className="grid gap-5">
-      <header className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            Owner Report
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
-            Reports
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
-            Sales and business performance for {salonName}.
-          </p>
-        </div>
-        <ReportRangeFilter
-          report={report}
-          selectedClosingDate={selectedClosingDate}
-        />
-      </header>
+    <section className={styles.overview}>
+      <h1 className="sr-only"><WorkspaceText text="Reports for" /> {salonName}</h1>
 
       <EmptyState report={report} />
-      <p className="text-xs text-zinc-500">
-        Compared with {formatDate(report.range.previousStartDate)} to{" "}
-        {formatDate(report.range.previousEndDate)} (same number of days).
+      <p className={styles.comparisonNote}>
+        <WorkspaceText text="Compared with" /> <WorkspaceText text={formatDate(report.range.previousStartDate)} /> <WorkspaceText text="to" />{" "}
+        <WorkspaceText text={formatDate(report.range.previousEndDate)} /> <WorkspaceText text="(same number of days)." />
       </p>
       <SummaryCards report={report} />
-      <MoneyBreakdownCards report={report} />
+      <div className={styles.average}><span><WorkspaceText text="Average Ticket" /></span><strong>{formatMoney(report.totals.averageTicket)}</strong></div>
       <TrendChart points={report.trend} />
+      <MoneyBreakdownCards report={report} />
       <PaymentBreakdown rows={report.paymentBreakdown} />
-      <ServiceBreakdown rows={report.serviceBreakdown} />
-      <StaffPerformance
-        rows={report.staffRows}
-        source={report.staffAttributionSource}
-      />
-      <BookingCustomerSection report={report} />
-      <RecentTickets
-        rows={report.recentTickets}
-        timeZone={report.range.timeZone}
-      />
+      <div>
+        <ReportDetails title="Service Mix"><ServiceBreakdown rows={report.serviceBreakdown} /></ReportDetails>
+        <ReportDetails title="Staff Performance"><StaffPerformance rows={report.staffRows} source={report.staffAttributionSource} /></ReportDetails>
+        <ReportDetails title="Bookings and Customers"><BookingCustomerSection report={report} /></ReportDetails>
+        <ReportDetails title="Ticket Drill-Down"><RecentTickets rows={report.recentTickets} timeZone={report.range.timeZone} /></ReportDetails>
+      </div>
+      <ReportDetails title="About these metrics">
+        <dl className="grid gap-2 text-xs text-zinc-500">
+          <div><dt><WorkspaceText text="Gross Sales" /></dt><dd><WorkspaceText text="POS item subtotal before discounts, tax, and tip." /></dd></div>
+          <div><dt><WorkspaceText text="Net Sales" /></dt><dd><WorkspaceText text="Gross sales after discounts, before tax and tip." /></dd></div>
+          <div><dt><WorkspaceText text="Ticket Revenue" /></dt><dd><WorkspaceText text="Net sales plus tax and tip from closed tickets." /></dd></div>
+          <div><dt><WorkspaceText text="Payments" /></dt><dd><WorkspaceText text="Tender totals recorded on closed POS tickets." /></dd></div>
+        </dl>
+      </ReportDetails>
       <DataNotes report={report} />
     </section>
   );

@@ -14,17 +14,27 @@ targets:
   Reylumi:
     type: application
     platform: iOS
-    sources: [Reylumi]
+    sources:
+      - path: Reylumi
+        excludes: [Info.plist, Info-Debug.plist, LocalAppBundle]
+      - path: Reylumi/LocalAppBundle
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.reylumi.ios
         INFOPLIST_FILE: Reylumi/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
+      configs:
+        Debug:
+          INFOPLIST_FILE: Reylumi/Info-Debug.plist
   ReylumiTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [ReylumiTests]
+    sources:
+      - path: ReylumiTests
+        excludes: [Simulator.entitlements]
     dependencies:
       - target: Reylumi
     settings:

@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "web-resource-view-retention-20261016",
+  "status": "working",
+  "summary": "Avoid duplicate whole-route refresh for three existing scoped live-resource views on web Activity return",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/experience-page-boundary.tsx",
+    "tests/web-resource-view-retention.test.mjs"
+  ],
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Held live GET Activity return keeps same input/DOM, one scoped read, zero RSC refresh and unchanged authorization gate",
+      "result": "pending"
+    }
+  ],
+  "id": "5e4f328f-6df2-4dc2-a71b-ef189c556ba7",
+  "recordedAt": "2026-10-16T17:40:54.157Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

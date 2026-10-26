@@ -1,0 +1,37 @@
+{
+  "files": [
+    "app/salon-switcher.tsx",
+    "components/app-local-shell.tsx",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-workspace-navigation.ts",
+    "tests/app-local-shell.test.mjs",
+    "tests/app-local-shell-ui.test.mjs"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "working",
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Original shell, safe scoped DTO, named endpoints and retained draft runtime",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "changeId": "app-local-original-shell-20261016",
+  "summary": "Preserve original role navigation, workspace handoff, scoped language and account/booking/session runtimes in installed client shell",
+  "id": "9d8fc2ba-4fa5-4c88-9a3f-9ccb61dad83f",
+  "recordedAt": "2026-10-16T16:55:19.427Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

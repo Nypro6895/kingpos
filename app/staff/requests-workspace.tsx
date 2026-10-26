@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   createContext,
   useContext,
@@ -54,7 +55,7 @@ function RequestFormContents({ children }: { children: ReactNode }) {
       </fieldset>
       {pending ? (
         <p role="status" className="text-sm text-zinc-500">
-          Saving...
+          <WorkspaceText text="Saving..." />
         </p>
       ) : null}
     </>
@@ -74,6 +75,8 @@ export function RequestsWorkspace({
   initialInvite: boolean;
   initialRequest?: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [tab, setTab] = useState<Entry["group"]>(
     initialRequest ? "invitations" : "applications",
   );
@@ -85,26 +88,26 @@ export function RequestsWorkspace({
   const entry = entries.find((item) => item.id === selected);
   const visible = entries.filter((item) => item.group === tab);
   return (
-    <section className="grid gap-4">
+    <section className="grid min-w-0 gap-3 bg-white py-3 md:gap-4 md:p-0">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">Requests</h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            Staff applications and invitations.
+          <h2 className="text-sm font-semibold md:text-xl"><WorkspaceText text="Requests" /></h2>
+          <p className="mt-0.5 text-xs text-zinc-500 md:mt-1 md:text-sm">
+            <WorkspaceText text="Staff applications and invitations." />
           </p>
         </div>
         <button
-          className="min-h-11 shrink-0 text-sm font-semibold text-teal-700 hover:underline"
+          className="min-h-10 shrink-0 rounded-lg border border-teal-200 bg-teal-50 px-3 text-xs font-semibold text-teal-700 hover:bg-teal-100 md:min-h-11 md:rounded-none md:border-0 md:bg-transparent md:px-0 md:text-sm md:hover:bg-transparent md:hover:underline"
           onClick={() => {
             setDirty(false);
             setSelected("invite");
           }}
         >
-          + Invite staff
+          <WorkspaceText text="+ Invite staff" />
         </button>
       </div>
       <nav
-        aria-label="Request views"
+        aria-label={__vt("Request views")}
         className="flex gap-4 border-b border-zinc-200 sm:gap-6"
       >
         {(["applications", "invitations", "history"] as const).map((group) => (
@@ -117,8 +120,8 @@ export function RequestsWorkspace({
             {group === "applications"
               ? "Applications"
               : group === "invitations"
-                ? "Invitations"
-                : "History"}{" "}
+                ? <WorkspaceText text="Invitations" />
+                : <WorkspaceText text="History" />}{" "}
             <span className="ml-1 text-xs">
               {entries.filter((item) => item.group === group).length}
             </span>
@@ -148,10 +151,10 @@ export function RequestsWorkspace({
                   <span
                     className={`block text-xs font-medium capitalize ${item.status === "accepted" ? "text-teal-700" : item.status === "pending" ? "text-amber-700" : "text-zinc-500"}`}
                   >
-                    {item.status}
+                    <WorkspaceText text={item.status} />
                   </span>
                   <span className="mt-1 block text-xs text-teal-700">
-                    View →
+                    <WorkspaceText text="View →" />
                   </span>
                 </span>
               </button>
@@ -159,22 +162,20 @@ export function RequestsWorkspace({
           ))}
         </ul>
       ) : (
-        <p className="py-5 text-sm text-zinc-500">
-          {tab === "applications"
+        <p className="rounded-lg bg-zinc-50 px-3 py-3 text-xs text-zinc-500 md:rounded-none md:bg-transparent md:px-0 md:py-5 md:text-sm">
+          <WorkspaceText text={tab === "applications"
             ? "No applications awaiting review."
             : tab === "invitations"
               ? "No outgoing invitations."
-              : "No connection history yet."}
+              : "No connection history yet."} />
         </p>
       )}
       {selected === "invite" || entry ? (
         <Sheet
-          title={entry?.name ?? "Invite staff"}
-          subtitle={
-            entry
+          title={__vt(entry?.name ?? "Invite staff")}
+          subtitle={__vt(entry
               ? `${entry.kind} · ${entry.status}`
-              : "Find an account and send an invitation."
-          }
+              : "Find an account and send an invitation.")}
           busy={busy}
           dirty={dirty}
           onClose={() => setSelected(null)}
@@ -222,7 +223,7 @@ export function RequestAccountSearch({
     >
       <fieldset disabled={busy} className="grid gap-3">
         <legend className="mb-2 text-sm text-zinc-500">
-          Search by exact email or phone
+          <WorkspaceText text="Search by exact email or phone" />
         </legend>
         <div className="flex gap-5">
           {(["email", "phone"] as const).map((value) => (
@@ -254,7 +255,7 @@ export function RequestAccountSearch({
           />
         </label>
         <button className={primaryButton} type="submit">
-          {busy ? "Searching…" : "Search account"}
+          <WorkspaceText text={busy ? "Searching…" : "Search account"} />
         </button>
       </fieldset>
     </form>

@@ -1,4 +1,5 @@
 import "server-only";
+import {systemSmsReady} from "@/lib/system-sms";
 
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
@@ -253,6 +254,7 @@ export async function sendPhoneVerificationOtp(input: {
   phone: string;
   supabase: SupabaseClient;
 }): Promise<PhoneOtpSendResult> {
+  if (!(await systemSmsReady('authSms'))) return providerUnavailable();
   const provider = providerFromStatus();
   const deliveryMode = input.deliveryMode ?? "initial";
   const normalizedPhone = normalizePhoneForIdentity(input.phone);

@@ -1,7 +1,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 95;
+  z-index: 130;
   display: grid;
   place-items: end center;
   background: #21171f73;

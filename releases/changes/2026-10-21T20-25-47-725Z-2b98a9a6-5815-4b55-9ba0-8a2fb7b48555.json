@@ -1,0 +1,223 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r5-integration-20261021",
+  "status": "needs-integration",
+  "summary": "Frozen R4 plus Campaign R5 assembled by exact hunks in independent candidate; product tree identical to handed-off R5, native/Windows/Guest retained. Final local regressions, quality/build/offline, legacy and Cancel fixtures verified. Exact source ready for parent-routed native/host/staging QA; release held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-panel.tsx",
+    "lib/campaign-payments.ts",
+    "lib/campaign-status.ts",
+    "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+    "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+    "tests/campaign-credit-demand-budget.test.mjs",
+    "tests/campaign-credit-queue.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs",
+    "tests/campaign-pending-claim-worker.test.mjs",
+    "tests/campaign-status-presentation.test.mjs",
+    "tests/fixtures/campaign-owner-status-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs"
+  ],
+  "source": {
+    "commit": "090d276ab4b0f94361f7622f7f5f29932737bd6f",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\source",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\functional-source-manifest.json",
+    "sha256": "2440ecf64f7e093d09862b3df6333b91c71f8e13d9cbbfe4f49b942b5641a83d"
+  },
+  "dependencies": [
+    "unified-owner-guest-integration-20261021",
+    "campaign-credit-lifecycle-r5-20261021"
+  ],
+  "sourceEvents": [
+    "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+    "df7e32b3-7171-47d3-86c6-2335990a478f"
+  ],
+  "validation": [
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\campaign-logic\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\campaign-browser\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\campaign-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "owner-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\owner-admission\\attempt-2-escalated\\receipt.json"
+    },
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\portable-admission\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "guest-continuation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\guest-continuation\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "guest-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\guest-webkit\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "idle-web",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\idle-web\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\experience-regression\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\experience-webkit\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\scope-regression\\attempt-2\\receipt.json"
+    },
+    {
+      "name": "payroll-daily",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\payroll-daily\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "daily-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\daily-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "bridge-contracts",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\bridge-contracts\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "native-recovery-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\native-recovery-fixture\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "session-guest-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\session-guest-fixture\\attempt-1-escalated\\receipt.json"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\lint\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\typecheck\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\build\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-validation\\offline-assets\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "legacy-validation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\legacy-validation\\DELIVERY.json"
+    },
+    {
+      "name": "cancel-ui-validation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\cancel-ui-validation\\DELIVERY.json"
+    },
+    {
+      "name": "inherited-real-postgresql63-final-source-binding",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\audits\\final-postgres-binding.json"
+    },
+    {
+      "name": "final-native-auth-latency",
+      "result": "pending",
+      "evidence": "Parent transfers this exact functional/metadata hash to existing native coordinator at its checkpoint. Verify real auth/role return/Guest/restart/Today, cold/warm latency and native fallback against actual uploaded binary/bundled source."
+    },
+    {
+      "name": "authenticated-windows-pos",
+      "result": "pending",
+      "evidence": "Parent routes final hash for authorized login/unlock/offline lease/revocation and POS acceptance without financial transaction."
+    },
+    {
+      "name": "staging-acl-jobs-provider",
+      "result": "pending",
+      "evidence": "Validate actual PostgREST/RLS/owner ACL, scheduler/leases, owner-only24h/7d reminder dedupe and provider sandbox callbacks/reconciliation with test sinks/no real charges."
+    },
+    {
+      "name": "legacy-data-and-db-fallback",
+      "result": "pending",
+      "evidence": "Use prepared read-only aggregate inventory to review real legacy pause/end/reserve and unresolved processing states on authorized staging. Retain R5 DB+worker+status contracts as a compatible unit; rehearse forward correction and in-flight reconciliation before fallback."
+    },
+    {
+      "name": "release-baseline-single-release",
+      "result": "pending",
+      "evidence": "Parent reconciles exact currently deployed web and actually uploaded native source, any later frozen handoffs, final gate evidence and rollback before deciding one release."
+    }
+  ],
+  "gates": [
+    {
+      "id": "final-native-auth-latency",
+      "status": "PENDING_PARENT_ROUTED_EXACT_HASH_QA",
+      "ownerThread": "01a155f0-f24b-75f1-b5ff-32f00b8d1aa0",
+      "action": "Parent transfers this exact functional/metadata hash to existing native coordinator at its checkpoint. Verify real auth/role return/Guest/restart/Today, cold/warm latency and native fallback against actual uploaded binary/bundled source.",
+      "limit": "R4 native4 raw bytes preserved; local browser/native-bridge fixtures are not Simulator/device certification. No new iOS release build or upload."
+    },
+    {
+      "id": "authenticated-windows-pos",
+      "status": "PENDING_FINAL_HASH_HOST_SESSION",
+      "ownerThread": "01a15f87-8ec3-726e-b21b-007f4d432013",
+      "action": "Parent routes final hash for authorized login/unlock/offline lease/revocation and POS acceptance without financial transaction.",
+      "limit": "Owner7/Portable8 fixture passes are not installed-host authenticated acceptance. Actual0.6.4/localhost3107 recovery remains separate; no userapp config/profile changed."
+    },
+    {
+      "id": "staging-acl-jobs-provider",
+      "status": "PENDING_AUTHORIZED_STAGING_NO_MUTATIONS_HERE",
+      "action": "Validate actual PostgREST/RLS/owner ACL, scheduler/leases, owner-only24h/7d reminder dedupe and provider sandbox callbacks/reconciliation with test sinks/no real charges.",
+      "limit": "No staging/production data accessed or migrated and no real notification/provider request made by this task."
+    },
+    {
+      "id": "legacy-data-and-db-fallback",
+      "status": "LOCAL_UPGRADE_FIXTURES_PASSED_STAGING_INVENTORY_AND_OPERATIONAL_FALLBACK_PENDING",
+      "action": "Use prepared read-only aggregate inventory to review real legacy pause/end/reserve and unresolved processing states on authorized staging. Retain R5 DB+worker+status contracts as a compatible unit; rehearse forward correction and in-flight reconciliation before fallback.",
+      "limit": "No safe blanket rollback to R4 worker after migrations1000/1100/new processing. Git inverse only supports source rollback before DBapply. No production inventory or rollback performed."
+    },
+    {
+      "id": "release-baseline-single-release",
+      "status": "HELD_BY_USER",
+      "ownerThread": "01a15ce0-fc08-723e-a94a-96c2afa9900b",
+      "action": "Parent reconciles exact currently deployed web and actually uploaded native source, any later frozen handoffs, final gate evidence and rollback before deciding one release.",
+      "limit": "No push/deploy/publish/upload/migration/production notification/real payment authorized or performed here."
+    }
+  ],
+  "id": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+  "recordedAt": "2026-10-21T20:25:47.725Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r5",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

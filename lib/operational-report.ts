@@ -234,6 +234,25 @@ type TicketRow = {
   tip_value: number;
 };
 
+type FinancialTicketItem = Pick<TicketItemRow, "is_removed" | "line_total"> & {
+  turn_parts?: Pick<TicketTurnPartRow, "amount">[] | null;
+};
+
+type FinancialTicketRow = Pick<
+  TicketRow,
+  | "discount_type"
+  | "discount_value"
+  | "payments"
+  | "tax_rate"
+  | "tip_type"
+  | "tip_value"
+> & {
+  ticket_items?: FinancialTicketItem[] | null;
+};
+
+type ComparisonTicketRow = FinancialTicketRow &
+  Pick<TicketRow, "customer_id" | "id" | "opened_at" | "status">;
+
 type StaffEarningRow = {
   big_turn_count: number;
   service_total: number;
@@ -272,6 +291,12 @@ type ReportFacts = {
   tickets: TicketRow[];
   totals: OperationalReportTotals;
   trend: OperationalReportTrendPoint[];
+};
+
+type ComparisonFacts = {
+  bookingMetrics: Pick<OperationalReportBookingMetrics, "booked">;
+  customerMetrics: Pick<OperationalReportCustomerMetrics, "activeCustomers">;
+  totals: OperationalReportTotals;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -620,22 +645,36 @@ function rangeBounds(range: Pick<OperationalReportRange, "endDate" | "startDate"
   };
 }
 
+function loadTickets(
+  auth: ReportAuthContext,
+  range: OperationalReportRange,
+  includeDetails?: true,
+): Promise<TicketRow[]>;
+function loadTickets(
+  auth: ReportAuthContext,
+  range: OperationalReportRange,
+  includeDetails: false,
+): Promise<ComparisonTicketRow[]>;
 async function loadTickets(
   auth: ReportAuthContext,
   range: OperationalReportRange,
-) {
+  includeDetails = true,
+): Promise<TicketRow[] | ComparisonTicketRow[]> {
   const bounds = rangeBounds(range);
+  // The result shape is declared below. Widen this projection so PostgREST's
+  // type parser does not expand both large nested selection literals together.
+  const projection: string = includeDetails
+    ? "id, ticket_number, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, customer:customers(id, name, created_at), payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, service_id, assigned_staff_id, service_name_snapshot, service_category_snapshot, quantity, line_total, is_removed, service:services(id, name, category), assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))"
+    : "id, customer_id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(line_total, is_removed, turn_parts:pos_ticket_item_turn_parts(amount))";
   const { data, error } = await auth.supabase
     .from("pos_tickets")
-    .select(
-      "id, ticket_number, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, customer:customers(id, name, created_at), payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, service_id, assigned_staff_id, service_name_snapshot, service_category_snapshot, quantity, line_total, is_removed, service:services(id, name, category), assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
-    )
+    .select(projection)
     .eq("salon_id", auth.salon.id)
     .gte("opened_at", bounds.startIso)
     .lte("opened_at", bounds.endIso)
     .order("opened_at", { ascending: true })
     .limit(RESULT_LIMIT)
-    .returns<TicketRow[]>();
+    .returns<TicketRow[] | ComparisonTicketRow[]>();
 
   if (error) {
     console.error("Supabase load operational report POS tickets failed", {
@@ -795,11 +834,13 @@ async function loadNewCustomerRecords(
   return data ?? [];
 }
 
-function activeItems(ticket: TicketRow) {
+function activeItems<Item extends FinancialTicketItem>(ticket: {
+  ticket_items?: Item[] | null;
+}) {
   return (ticket.ticket_items ?? []).filter((item) => !item.is_removed);
 }
 
-function itemAmountCents(item: TicketItemRow) {
+function itemAmountCents(item: FinancialTicketItem) {
   const turnParts = item.turn_parts ?? [];
 
   if (turnParts.length > 0) {
@@ -809,7 +850,7 @@ function itemAmountCents(item: TicketItemRow) {
   return toCents(item.line_total);
 }
 
-function calculateOperationalTicketTotals(ticket: TicketRow): OperationalReportTotals {
+function calculateOperationalTicketTotals(ticket: FinancialTicketRow): OperationalReportTotals {
   const activeTicketItems = activeItems(ticket);
   const totals = calculateTicketTotals({
     discountType: ticket.discount_type,
@@ -1303,8 +1344,8 @@ function buildComparisonMetric(
 }
 
 function buildComparison(
-  current: ReportFacts,
-  previous: ReportFacts,
+  current: ComparisonFacts,
+  previous: ComparisonFacts,
 ): OperationalReportComparison {
   return {
     averageTicket: buildComparisonMetric(
@@ -1335,6 +1376,38 @@ function buildComparison(
       current.totals.totalRevenue,
       previous.totals.totalRevenue,
     ),
+  };
+}
+
+async function loadComparisonFacts(input: {
+  auth: ReportAuthContext;
+  permissions: OperationalReportData["permissions"];
+  range: OperationalReportRange;
+}): Promise<ComparisonFacts> {
+  // Comparison consumes no staff attribution, customer records, or detail rows.
+  // Keep the same independent source limits and ordering before filtering closed
+  // tickets, so a large date range still compares the same records as the report.
+  const [tickets, bookings] = await Promise.all([
+    loadTickets(input.auth, input.range, false),
+    loadBookings(input.auth, input.range, input.permissions.canViewBookings),
+  ]);
+  const finalizedTickets = tickets.filter((ticket) => ticket.status === "closed");
+  let totals = emptyTotals();
+
+  for (const ticket of finalizedTickets) {
+    totals = addTotals(totals, calculateOperationalTicketTotals(ticket));
+  }
+
+  return {
+    bookingMetrics: { booked: bookings.length },
+    customerMetrics: {
+      activeCustomers: new Set(
+        [...finalizedTickets, ...bookings]
+          .map((row) => row.customer_id)
+          .filter((id): id is string => Boolean(id)),
+      ).size,
+    },
+    totals,
   };
 }
 
@@ -1495,9 +1568,8 @@ export async function getOperationalReport(
       permissions,
       range,
     }),
-    loadReportFacts({
+    loadComparisonFacts({
       auth,
-      includeDetails: false,
       permissions,
       range: previousRange,
     }),

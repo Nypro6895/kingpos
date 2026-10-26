@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "help-report-separation-20261017",
+  "status": "needs-integration",
+  "summary": "Separate Help from Report, default Help to English and show request history as dated rows",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/support/page.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "tests/help-draft.test.mjs",
+    "app/role-navigation.ts",
+    "app/navigation-shell.tsx",
+    "lib/reylumi-config.ts",
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/help-report-separation/completed"
+  },
+  "validation": [
+    {
+      "name": "Help and workspace tests (11)",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint changed UI modules",
+      "result": "passed"
+    },
+    {
+      "name": "Production baseline integration, build and mobile visual verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "541cdfdd-821b-42f9-9d04-335778e89b38",
+  "recordedAt": "2026-10-17T20:15:12.054Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

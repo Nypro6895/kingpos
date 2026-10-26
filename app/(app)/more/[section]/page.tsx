@@ -1,3 +1,6 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceLink } from "@/components/workspace-link";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 
 import Form from "next/form";
 import { SubmitButton } from "@/components/submit-button";
@@ -221,7 +224,7 @@ function BackLink() {
       className="w-fit rounded-full px-2 py-1 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       href="/more"
     >
-      Back to More
+      <WorkspaceText text="Back to More" />
     </Link>
   );
 }
@@ -240,7 +243,7 @@ function EmptyState({
         className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#ef5d28] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
         href={actionHref}
       >
-        {actionLabel}
+        <WorkspaceText text={actionLabel} />
       </Link>
     </section>
   );
@@ -251,7 +254,7 @@ function SavedPostCard({ post, index }: { post: AccountSavedPost; index: number 
   return (
     <article className={styles.card}>
       <div className={styles.media}>
-        <Link
+        <WorkspaceLink
           className={styles.thumbnail}
           style={{ aspectRatio: ["4 / 5", "1 / 1", "3 / 4"][index % 3] }}
           href={post.href}
@@ -269,7 +272,7 @@ function SavedPostCard({ post, index }: { post: AccountSavedPost; index: number 
             <span className={styles.fallback}>{post.title}</span>
           )}
           <span className={styles.badge}>{post.contentLabel}</span>
-        </Link>
+        </WorkspaceLink>
         <form action={removeSavedPostAction} className={styles.removeForm}>
           <input name="source_type" type="hidden" value={post.sourceType} />
           <input name="source_id" type="hidden" value={post.sourceId} />
@@ -304,14 +307,14 @@ function FollowingRow({ item }: { item: AccountFollowingItem }) {
         </span>
         <div className={styles.profileInfo}>
           <h2>{item.name}</h2>
-          <span className={styles.profileType}>{followingTypeLabel(item)}</span>
+          <span className={styles.profileType}><WorkspaceText text={followingTypeLabel(item)} /></span>
           {item.secondaryLabel ? <span className={styles.profileDetail}>{item.secondaryLabel}</span> : null}
         </div>
       </Link>
       <form action={removeFollowingAction}>
         <input name="target_type" type="hidden" value={item.targetType} />
         <input name="target_id" type="hidden" value={item.targetId} />
-        <SubmitButton pendingLabel="Processing…" type="submit" className={styles.unfollow} aria-label={`Unfollow ${item.name}`}>Unfollow</SubmitButton>
+        <SubmitButton pendingLabel="Processing…" type="submit" className={styles.unfollow} aria-label={`Unfollow ${item.name}`}><WorkspaceText text="Unfollow" /></SubmitButton>
       </form>
     </article>
   );
@@ -321,8 +324,8 @@ function SavedPostControls({ filter, query }: { filter: AccountSavedPostFilter; 
   return (
     <div className={styles.controls}>
       <Form action="/more/saved-post" className={styles.search} role="search">
-        <label className="sr-only" htmlFor="saved-post-search">Search saved posts</label>
-        <input id="saved-post-search" defaultValue={query} name="q" placeholder="Search your saved posts" type="search" />
+        <label className="sr-only" htmlFor="saved-post-search"><WorkspaceText text="Search saved posts" /></label>
+        <WorkspaceElement as="input" id="saved-post-search" defaultValue={query} name="q" placeholder="Search your saved posts" type="search" />
         <input type="hidden" name="filter" value={filter} />
         <SubmitButton pendingLabel="Processing…" type="submit" aria-label="Search saved posts">
           <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -330,13 +333,13 @@ function SavedPostControls({ filter, query }: { filter: AccountSavedPostFilter; 
           </svg>
         </SubmitButton>
       </Form>
-      <nav className={styles.filters} aria-label="Saved post filters">
+      <WorkspaceElement as="nav" className={styles.filters} aria-label="Saved post filters">
         {SAVED_POST_FILTERS.map((option) => (
           <Link key={option.value} href={savedPostHref({ filter: option.value, page: 1, query })} className={styles.filter} aria-current={filter === option.value ? "page" : undefined}>
-            {option.label}
+            <WorkspaceText text={option.label} />
           </Link>
         ))}
-      </nav>
+      </WorkspaceElement>
     </div>
   );
 }
@@ -357,7 +360,7 @@ function SavedPostPagination({
   }
 
   return (
-    <nav
+    <WorkspaceElement as="nav"
       aria-label="Saved posts pages"
       className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle bg-surface p-3 text-sm font-bold text-text-secondary"
     >
@@ -371,9 +374,9 @@ function SavedPostPagination({
         ].join(" ")}
         href={savedPostHref({ filter, page: Math.max(1, page - 1), query })}
       >
-        Previous
+        <WorkspaceText text="Previous" />
       </Link>
-      <span>Page {page}</span>
+      <span><WorkspaceText text="Page" /> {page}</span>
       <Link
         aria-disabled={!hasNext}
         className={[
@@ -384,9 +387,9 @@ function SavedPostPagination({
         ].join(" ")}
         href={savedPostHref({ filter, page: page + 1, query })}
       >
-        Next
+        <WorkspaceText text="Next" />
       </Link>
-    </nav>
+    </WorkspaceElement>
   );
 }
 
@@ -423,11 +426,11 @@ function SavedPostsSection({
   return (
     <div className="grid gap-3">
       <SavedPostControls filter={filter} query={query} />
-      <section className={styles.gallery} aria-label="Saved posts">
+      <WorkspaceElement as="section" className={styles.gallery} aria-label="Saved posts">
         {posts.map((post, index) => (
           <SavedPostCard key={post.id} post={post} index={index} />
         ))}
-      </section>
+      </WorkspaceElement>
       <SavedPostPagination
         filter={filter}
         hasNext={hasNext}
@@ -442,8 +445,8 @@ function FollowingControls({ filter, query }: { filter: AccountFollowingFilter; 
   return (
     <div className={styles.controls}>
       <Form action="/more/following" className={styles.search} role="search">
-        <label className="sr-only" htmlFor="following-search">Search following</label>
-        <input id="following-search" defaultValue={query} name="q" placeholder="Search people and shops" type="search" />
+        <label className="sr-only" htmlFor="following-search"><WorkspaceText text="Search following" /></label>
+        <WorkspaceElement as="input" id="following-search" defaultValue={query} name="q" placeholder="Search people and shops" type="search" />
         <input type="hidden" name="filter" value={filter} />
         <SubmitButton pendingLabel="Processing…" type="submit" aria-label="Search following">
           <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -451,13 +454,13 @@ function FollowingControls({ filter, query }: { filter: AccountFollowingFilter; 
           </svg>
         </SubmitButton>
       </Form>
-      <nav className={styles.filters} aria-label="Following filters">
+      <WorkspaceElement as="nav" className={styles.filters} aria-label="Following filters">
         {FOLLOWING_FILTERS.map((option) => (
           <Link key={option.value} href={followingHref({ filter: option.value, page: 1, query })} className={styles.filter} aria-current={filter === option.value ? "page" : undefined}>
-            {option.label}
+            <WorkspaceText text={option.label} />
           </Link>
         ))}
-      </nav>
+      </WorkspaceElement>
     </div>
   );
 }
@@ -478,7 +481,7 @@ function FollowingPagination({
   }
 
   return (
-    <nav
+    <WorkspaceElement as="nav"
       aria-label="Following pages"
       className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle bg-surface p-3 text-sm font-bold text-text-secondary"
     >
@@ -492,10 +495,10 @@ function FollowingPagination({
         ].join(" ")}
         href={followingHref({ filter, page: Math.max(1, page - 1), query })}
       >
-        Previous
+        <WorkspaceText text="Previous" />
       </Link>
       <span>
-        Page {page} of {totalPages}
+        <WorkspaceText text="Page" /> {page} <WorkspaceText text="of" /> {totalPages}
       </span>
       <Link
         aria-disabled={page >= totalPages}
@@ -507,9 +510,9 @@ function FollowingPagination({
         ].join(" ")}
         href={followingHref({ filter, page: page + 1, query })}
       >
-        Next
+        <WorkspaceText text="Next" />
       </Link>
-    </nav>
+    </WorkspaceElement>
   );
 }
 
@@ -546,11 +549,11 @@ function FollowingSection({
   return (
     <div className="grid gap-3">
       <FollowingControls filter={filter} query={query} />
-      <section className={styles.followingList} aria-label="Following">
+      <WorkspaceElement as="section" className={styles.followingList} aria-label="Following">
         {items.map((item) => (
           <FollowingRow item={item} key={item.id} />
         ))}
-      </section>
+      </WorkspaceElement>
       <FollowingPagination
         filter={filter}
         page={page}
@@ -561,7 +564,7 @@ function FollowingSection({
   );
 }
 
-export default async function MoreSectionPage({
+async function MoreSectionPage({
   params,
   searchParams,
 }: MoreSectionPageProps) {
@@ -570,6 +573,7 @@ export default async function MoreSectionPage({
     searchParams ?? Promise.resolve<MoreSectionSearchParams>({}),
     getCurrentBusinessContext(),
   ]);
+  if(section==="reports")redirect("/support");
 
   if (!context.user) {
     redirect(`/login?next=/more/${encodeURIComponent(section)}`);
@@ -670,3 +674,5 @@ export default async function MoreSectionPage({
     </main>
   );
 }
+
+export default withExperiencePage(MoreSectionPage);

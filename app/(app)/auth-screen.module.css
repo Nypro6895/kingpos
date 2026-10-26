@@ -453,3 +453,29 @@
     display: block;
   }
 }
+
+/* An inline signup check adds content beyond the usual single-screen form. */
+.authViewport:has([data-signup-security-check]) {
+  height: auto;
+  max-height: none;
+  min-height: 100dvh;
+  overflow: visible;
+  overscroll-behavior: auto;
+}
+
+.authViewport:has([data-signup-security-check]) .authMain {
+  flex: 1 0 auto;
+  overflow: visible;
+}
+
+.authViewport:has([data-signup-security-check]) .authGrid,
+.authViewport:has([data-signup-security-check]) .authPanel {
+  height: auto;
+  overflow: visible;
+}
+
+.authViewport:has([data-signup-security-check]) .authPanelInner,
+.authViewport:has([data-signup-security-check]) .authCard {
+  max-height: none;
+  overflow: visible;
+}

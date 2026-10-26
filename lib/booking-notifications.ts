@@ -1,16 +1,16 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import {getTwilioSettings} from '@/lib/twilio-settings';
+import {bookSmsConfig} from '@/lib/booksms';
 
-type Message = { id: string; channel: "email" | "sms"; recipient: string; message: string };
+type Message = { id: string; channel: "email" | "sms"; recipient: string; message: string; salon_id: string; event_key: string };
 export type BookingMessageResult = { state: "accepted" | "failed" | "unknown" | "unconfigured"; detail?: string; provider_id?: string };
 const env = (...names: string[]) => names.map(name => process.env[name]?.trim()).find(Boolean);
 
 export async function bookingMessageReadiness() {
-  const config=await getTwilioSettings().catch(()=>null);
+
   return {
     email: Boolean(env("RESEND_API_KEY") && env("BOOKING_EMAIL_FROM", "RESEND_FROM_EMAIL", "STAFF_INVITE_EMAIL_FROM")),
-    sms: Boolean(config?.enabled && config.accountSid && config.authToken && (config.messagingServiceSid || config.from)),
+    sms: true, // Database entitlement gates each salon; plugin credentials are checked before sending.
   };
 }
 
@@ -27,7 +27,10 @@ export async function sendBookingMessage(message: Message): Promise<BookingMessa
     } else {
       const phone = message.recipient.replace(/[\s().-]/g, "");
       if (!/^\+[1-9]\d{7,14}$/.test(phone)) return { state: "failed", detail: "SMS requires a phone number with country code, for example +1." };
-      const config=await getTwilioSettings();
+      const config=await bookSmsConfig(message.salon_id);
+      if(!config) return {state:'unconfigured',detail:'Activate and configure BookSMS in Market.'};
+      const {data:reserved,error:reserveError}=await createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}}).rpc('booksms_reserve_send',{p_salon:message.salon_id,p_reminder:message.event_key.startsWith('reminder:')});
+      if(reserveError || reserved!==true) return {state:'unconfigured',detail:'BookSMS access, message policy or SMS allowance is unavailable.'};
       if(!config.enabled) return {state:'unconfigured'};
       const sid = config.accountSid;
       const token = config.authToken;

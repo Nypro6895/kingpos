@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "campaign-credit-lifecycle-r5-20261021",
+  "status": "working",
+  "summary": "Implement owner-confirmed credit lifecycle: paused campaign retains unused reserve and auto-credit consent, Resume uses remaining reserve, Cancel releases once; atomic active demand, manual checkout recovery and existing monthly cap across rollover. No release or production/payment mutations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+    "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs",
+    "tests/campaign-credit-demand-budget.test.mjs"
+  ],
+  "dependencies": [
+    "unified-owner-guest-integration-20261021",
+    "campaign-pending-claim-demand-20261021"
+  ],
+  "source": {
+    "commit": "a9d05ae6ee52baed9e31dce1b6a5fa1e07501cfb",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-lifecycle-r5"
+  },
+  "validation": [
+    {
+      "name": "final-regression-and-real-postgresql-transition-races",
+      "result": "pending"
+    }
+  ],
+  "id": "678bba16-40f9-4893-b5de-e8965213abbb",
+  "recordedAt": "2026-10-21T19:26:05.001Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-lifecycle-r5",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

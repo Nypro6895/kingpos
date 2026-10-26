@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
 
 import {
@@ -60,6 +61,8 @@ export function PortableWorkspaceStateProvider({
   scope: string;
   children: ReactNode;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [locked, setLocked] = useState(false);
   const [unlockMessage, setUnlockMessage] = useState("");
   useEffect(() => {
@@ -172,12 +175,12 @@ export function PortableWorkspaceStateProvider({
     [scope, businessDate, timezone, preparedAt, offlineEnabled, staffRoster, seedStaffRoster, attendanceByStaffId, setAttendance, preferences, settings],
   );
 
-  if (locked) return <section className="grid h-full place-items-center bg-zinc-100 p-6 text-center" role="dialog" aria-label="POS locked">
-    <div className="rounded-xl border bg-white p-8 shadow-sm"><h1 className="text-xl font-semibold">POS locked</h1>
+  if (locked) return <section className="grid h-full place-items-center bg-zinc-100 p-6 text-center" role="dialog" aria-label={__vt("POS locked")}>
+    <div className="rounded-xl border bg-white p-8 shadow-sm"><h1 className="text-xl font-semibold"><WorkspaceText text="POS locked" /></h1>
       <button type="button" className="mt-5 rounded-lg bg-zinc-950 px-6 py-3 font-semibold text-white" onClick={() => {
         if (navigator.onLine) window.location.reload(); else setUnlockMessage("Connect to sign in.");
-      }}>Sign in</button>
-      {unlockMessage ? <p className="mt-3 text-sm text-zinc-600">{unlockMessage}</p> : null}
+      }}><WorkspaceText text="Sign in" /></button>
+      {unlockMessage ? <p className="mt-3 text-sm text-zinc-600"><WorkspaceText text={unlockMessage} /></p> : null}
     </div>
   </section>;
 

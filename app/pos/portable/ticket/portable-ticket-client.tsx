@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 import { usePathname } from "next/navigation";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { usePortableWorkspaceState } from "../portable-workspace-state";
@@ -16,7 +17,7 @@ import {
   type EditablePosTicket,
 } from "@/app/pos-tickets/closed-ticket-correction-form";
 import { searchTextMatches } from "@/lib/search-normalization";
-import Link from "next/link";
+import { TicketFilters } from "@/app/pos-tickets/ticket-filters";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -297,63 +298,12 @@ function sortTicketsForWorkLog(tickets: PortableTicketRow[]) {
   );
 }
 
-function PortableWorkLogFilters({
-  query,
-  selectedDate,
-  todayHref,
-}: {
-  query: string;
-  selectedDate: string;
-  todayHref: string;
-}) {
-  return (
-    <form
-      action="/pos/portable/ticket"
-      className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
-      method="get"
-    >
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Date</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={selectedDate}
-          name="date"
-          type="date"
-        />
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Search</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={query}
-          name="q"
-          placeholder="Search customer, staff, service, ticket #"
-          type="search"
-        />
-      </label>
-      <button
-        className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
-        type="submit"
-      >
-        Search
-      </button>
-      <Link
-        className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
-        href={todayHref}
-      >
-        Today
-      </Link>
-    </form>
-  );
-}
-
 function PortableDailyWorkLog({
   canEdit,
   dailyNumbers,
   isBusinessDateLocked,
   returnTo,
   selectedDateCompactLabel,
-  selectedDateLabel,
   services,
   staff,
   tickets,
@@ -373,14 +323,9 @@ function PortableDailyWorkLog({
   if (tickets.length === 0) {
     return (
       <section className="mt-6">
-        <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
-          <h2 className="text-lg font-semibold text-zinc-950">
-            {selectedDateLabel}
-          </h2>
-        </div>
         <div className="rounded border border-dashed border-zinc-300 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950">
-            No POS work log for this date.
+            <WorkspaceText text="No POS work log for this date." />
           </h2>
         </div>
       </section>
@@ -388,14 +333,9 @@ function PortableDailyWorkLog({
   }
 
   return (
-    <div className="mt-6 space-y-8">
+    <div className="mt-1">
       <section>
-        <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
-          <h2 className="text-lg font-semibold text-zinc-950">
-            {selectedDateLabel}
-          </h2>
-        </div>
-        <div className="overflow-hidden rounded border border-zinc-200 bg-white">
+        <div className="bg-white">
           {tickets.map((ticket) => (
             <DailyPosTicketCard
               actions={{
@@ -424,6 +364,7 @@ function PortableDailyWorkLog({
 export function PortableTicketClient({ initialData, searchQuery, error, followToday = true }: {
   initialData: Awaited<ReturnType<typeof getPortableTicketData>>; searchQuery: string; error?: string; followToday?: boolean;
 }) {
+  const [query, setQuery] = useState(searchQuery);
   const pathname=usePathname();
   const panelVisible=pathname==="/pos/portable/ticket";
   const workspace=usePortableWorkspaceState();
@@ -461,16 +402,15 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
     data.date,
     data.timezone,
   );
-  const todayHref = "/pos/portable/ticket";
   const returnTo = getPortableTicketFilterHref({
     date: data.date,
-    q: searchQuery,
+    q: query,
   });
   const dailyNumbers = buildDailyTicketNumbers(data.tickets);
   const visibleTickets = sortTicketsForWorkLog(
     filterTicketsBySearch(
       data.tickets,
-      searchQuery,
+      query,
       dailyNumbers,
       data.timezone,
     ),
@@ -478,30 +418,25 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
 
   return (
     <section
-      className="h-full overflow-auto px-4 py-6 text-zinc-950 sm:px-6"
+      className="h-full overflow-auto py-3 text-zinc-950 sm:px-6"
       data-portable-pos-page="ticket"
     >
       <main className="mx-auto w-full max-w-7xl">
-        <PortableWorkLogFilters
-          key={data.date}
-          query={searchQuery}
-          selectedDate={data.date}
-          todayHref={todayHref}
-        />
+        <TicketFilters date={selectedDate} query={query} onQueryChange={setQuery} />
 
         {data.setupMessage ? (
           <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            {data.setupMessage}
+            <WorkspaceText text={data.setupMessage} />
           </p>
         ) : null}
 
         {error ? (
           <p className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : null}
 
-        <PortableLocalTickets serverIds={data.tickets.map(ticket => ticket.id)} date={data.date} timezone={data.timezone} query={searchQuery} />
+        <PortableLocalTickets serverIds={data.tickets.map(ticket => ticket.id)} date={data.date} timezone={data.timezone} query={query} />
         <PortableDailyWorkLog
           canEdit={data.canEdit}
           dailyNumbers={dailyNumbers}

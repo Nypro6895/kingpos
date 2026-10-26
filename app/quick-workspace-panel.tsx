@@ -1,8 +1,9 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionDialog } from "@/app/action-dialog";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
-import { switchWorkspaceDestination } from "@/app/salons/actions";
+import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import {
   CurrentWorkspaceCard,
   HubIcon,
@@ -54,6 +55,8 @@ export function QuickWorkspacePanel({
   returnFocusRef,
   workspaceOptions,
 }: QuickWorkspacePanelProps) {
+  const __vt = useWorkspaceTranslation();
+
   useCloseOnNavigation(onClose, isOpen);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -198,20 +201,9 @@ export function QuickWorkspacePanel({
         return;
       }
 
-      const result = await switchWorkspaceDestination({
-        destinationHref: action.href,
-        workspaceId: workspace.id,
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        setPendingKey(null);
-        return;
-      }
+      navigateToWorkspace(workspace.id, action.href);
 
       closeAndFocus();
-      router.push(result.href);
-      router.refresh();
       setPendingKey(null);
     });
   };
@@ -239,12 +231,12 @@ export function QuickWorkspacePanel({
                 className="truncate text-lg font-semibold text-zinc-950"
                 id="quick-workspace-title"
               >
-                My Place
+                <WorkspaceText text="My Place" />
               </h2>
               <p className="truncate text-xs text-zinc-500">{accountLabel}</p>
             </div>
             <button
-              aria-label="Close My Place"
+              aria-label={__vt("Close My Place")}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               onClick={closeAndFocus}
               type="button"
@@ -259,7 +251,7 @@ export function QuickWorkspacePanel({
                 setQuery("");
                 searchRef.current?.focus();
               }}
-              placeholder="Search salons and workspaces"
+              placeholder={__vt("Search salons and workspaces")}
               query={query}
               refCallback={(node) => {
                 searchRef.current = node;
@@ -282,7 +274,7 @@ export function QuickWorkspacePanel({
             <WorkspaceGroup
               count={quickAccess.length}
               icon="zap"
-              title="Quick Access"
+              title={__vt("Quick Access")}
               variant="panel"
             >
               <div className="grid min-w-0 grid-cols-1 gap-2 p-2.5 min-[420px]:grid-cols-2">
@@ -303,13 +295,13 @@ export function QuickWorkspacePanel({
             <WorkspaceGroup
               count={manageWorkspaces.length}
               icon="store"
-              title="Owner Salons"
+              title={__vt("Owner Salons")}
               variant="panel"
             >
               {manageWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="store"
-                  title="No owner salons found."
+                  title={__vt("No owner salons found.")}
                   variant="panel"
                 />
               ) : (
@@ -332,13 +324,13 @@ export function QuickWorkspacePanel({
             <WorkspaceGroup
               count={staffWorkspaces.length}
               icon="briefcase"
-              title="Staff Workplaces"
+              title={__vt("Staff Workplaces")}
               variant="panel"
             >
               {staffWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="briefcase"
-                  title="No staff workplaces found."
+                  title={__vt("No staff workplaces found.")}
                   variant="panel"
                 />
               ) : (
@@ -361,13 +353,13 @@ export function QuickWorkspacePanel({
             <WorkspaceGroup
               count={accountWorkspaces.length}
               icon="building"
-              title="Accounts"
+              title={__vt("Accounts")}
               variant="panel"
             >
               {accountWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="building"
-                  title="No Accounts found."
+                  title={__vt("No Accounts found.")}
                   variant="panel"
                 />
               ) : (
@@ -387,11 +379,11 @@ export function QuickWorkspacePanel({
           ) : null}
 
           {pendingMatches ? (
-            <WorkspaceGroup icon="inbox" title="Pending" variant="panel">
+            <WorkspaceGroup icon="inbox" title={__vt("Pending")} variant="panel">
               <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-zinc-950">
-                    {notificationSummary.total} pending
+                    {notificationSummary.total} <WorkspaceText text="pending" />
                   </p>
                   <p className="mt-0.5 truncate text-xs text-zinc-500">
                     {notificationSummary.items
@@ -404,7 +396,7 @@ export function QuickWorkspacePanel({
                   href={notificationSummary.reviewHref}
                   onClick={closeAndFocus}
                 >
-                  <span className="truncate">Review</span>
+                  <span className="truncate"><WorkspaceText text="Review" /></span>
                 </Link>
               </div>
             </WorkspaceGroup>
@@ -413,7 +405,7 @@ export function QuickWorkspacePanel({
           {isFiltering && !hasDirectoryResults ? (
             <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-3 py-4 text-sm text-zinc-500">
               <p className="font-semibold text-zinc-800">
-                {`No salons or workspaces match "${query.trim()}".`}
+                <WorkspaceText text={`No salons or workspaces match "${query.trim()}".`} />
               </p>
               <button
                 className="mt-3 inline-flex min-h-9 items-center rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
@@ -423,7 +415,7 @@ export function QuickWorkspacePanel({
                 }}
                 type="button"
               >
-                Clear search
+                <WorkspaceText text="Clear search" />
               </button>
             </div>
           ) : null}
@@ -436,12 +428,12 @@ export function QuickWorkspacePanel({
             onClick={closeAndFocus}
           >
             <HubIcon className="h-4 w-4 shrink-0" name="grid" />
-            <span className="truncate">View full My Place</span>
+            <span className="truncate"><WorkspaceText text="View full My Place" /></span>
           </Link>
         </div>
       </aside>
       <ActionDialog
-        description={error ?? ""}
+        description={__vt(error ?? "")}
         onClose={() => setError(null)}
         open={Boolean(error)}
         primaryAction={{
@@ -449,7 +441,7 @@ export function QuickWorkspacePanel({
           onClick: () => setError(null),
         }}
         secondaryAction={{ href: "/explore", label: "Explore" }}
-        title="Workspace action needed"
+        title={__vt("Workspace action needed")}
       />
     </div>
   );

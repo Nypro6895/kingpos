@@ -1,0 +1,5982 @@
+{
+  "version": 1,
+  "productionReady": true,
+  "buildId": "2b71dcb4a02fc459ae554b6009e2377ae5e46dcf415afcb1e2c7ff41851c1f13",
+  "entry": "index.html",
+  "connectOrigins": [
+    "https://bowkoiprvqwjilwaxhda.supabase.co",
+    "wss://bowkoiprvqwjilwaxhda.supabase.co"
+  ],
+  "mapOrigins": [],
+  "files": [
+    {
+      "path": "api/vendor/maplibre-gl",
+      "bytes": 1056837,
+      "sha256": "45a9b07a9189ce56054c620a947ccf41e291e58c95e9b61533b740aaa65ee5cb",
+      "mime": "text/javascript"
+    },
+    {
+      "path": "app.css",
+      "bytes": 590122,
+      "sha256": "026089b6d05ee4de0e8fb80ce970a333a5c0442e9b3490f9eaf578b0503ed47f",
+      "mime": "text/css"
+    },
+    {
+      "path": "app.js",
+      "bytes": 4295469,
+      "sha256": "23d13d368b6fb73586cffd001e4c074d467d43fc74d5caa9f8d04aca2472aa58",
+      "mime": "text/javascript"
+    },
+    {
+      "path": "brand/reylumi-admin-favicon.svg",
+      "bytes": 24219,
+      "sha256": "18f6dc326f40dfebbd4e76dd624848122a9f0dac99bdd1b940bb34fe769d463c",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/reylumi-app-192.png",
+      "bytes": 16110,
+      "sha256": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+      "mime": "image/png"
+    },
+    {
+      "path": "brand/reylumi-app-512.png",
+      "bytes": 51798,
+      "sha256": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
+      "mime": "image/png"
+    },
+    {
+      "path": "brand/reylumi-favicon.png",
+      "bytes": 17900,
+      "sha256": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+      "mime": "image/png"
+    },
+    {
+      "path": "brand/reylumi-logo-horizontal.png",
+      "bytes": 30511,
+      "sha256": "8dc0076108ce87279028f6563cc4aa0d610dd60b68913765f600431042e0ca45",
+      "mime": "image/png"
+    },
+    {
+      "path": "brand/reylumi-logo-login.webp",
+      "bytes": 10074,
+      "sha256": "ec8f81c49e7988eab0b3af7c0d70fff9c8ee09a8cdf9e7ee8ae55df6616f0bf6",
+      "mime": "image/webp"
+    },
+    {
+      "path": "brand/reylumi-logo-tagline.png",
+      "bytes": 34160,
+      "sha256": "33845960dab5f30c0fb4383e4576eab347789a2e505613f07a805d98052534f4",
+      "mime": "image/png"
+    },
+    {
+      "path": "explore/login-service-defaults.webp",
+      "bytes": 43972,
+      "sha256": "e89cef14260ec15fc9763ff6bc9309d4846b756245d06f0764c2f6b83a2809b7",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/mockup-look-chrome.webp",
+      "bytes": 35700,
+      "sha256": "b3c67ce7ce81d29607ba42fdd31d70f1a1db5c3f18b2c767360c7d117b9848cf",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/mockup-look-floral.webp",
+      "bytes": 30562,
+      "sha256": "eb4ec06a548ee6e537f4f152197f5bb9a850cf277127fec7ca7785a0053a1efd",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/mockup-look-nude.webp",
+      "bytes": 28998,
+      "sha256": "3d6c5103aa38313f0158ac23961080c25699593b49383d9f9425018c30a216b8",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/mockup-look-pink.webp",
+      "bytes": 31204,
+      "sha256": "8693e9ac28ec9d39c5ce7e121ee73ff1c298855c82816adcb72bc828805388b0",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/mockup-look-red.webp",
+      "bytes": 30224,
+      "sha256": "1d445e277b41a06c0420244aff177c74bcfedfb18b7f2ad298b00c6ea9ab6e51",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/mockup-look-softpink.webp",
+      "bytes": 26604,
+      "sha256": "16accbcc8dda1c35b6c746859e53617691905141271f3d05adbf1cdd5b734583",
+      "mime": "image/webp"
+    },
+    {
+      "path": "explore/quick-actions-dark.png",
+      "bytes": 1813858,
+      "sha256": "0b5d6d43ecb191030f650fa3e41ade9c4c1943bcefdd266ebddbbdc704eb1588",
+      "mime": "image/png"
+    },
+    {
+      "path": "explore/service-defaults.png",
+      "bytes": 2041600,
+      "sha256": "6f79f3e6fafec57c49a4b633b67a4c03bde77539152f99dbceddc503d03b307a",
+      "mime": "image/png"
+    },
+    {
+      "path": "file.svg",
+      "bytes": 391,
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "fonts/Geist.woff2",
+      "bytes": 69632,
+      "sha256": "6b388cdd1db5932173b27d8ba1ec9f0da092028e09a17e3268dbf6338d0a6f50",
+      "mime": "font/woff2"
+    },
+    {
+      "path": "fonts/Manrope.woff2",
+      "bytes": 53732,
+      "sha256": "34e8102f3718ec7db4e8c5b1b993f7eb9a314e4e5febcb261e98e8d5cbaa383e",
+      "mime": "font/woff2"
+    },
+    {
+      "path": "globe.svg",
+      "bytes": 1035,
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "help/2026-10-15/beauty-profile-desktop.jpg",
+      "bytes": 49252,
+      "sha256": "c4f04d6cc46a0ddb3aa43d8173c26f059d49c339e6545e4984f1b48c04838a47",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/beauty-profile-mobile.jpg",
+      "bytes": 33837,
+      "sha256": "be1cda1c1490ff1b5446763847d8247ad4764ec40483ced7118cc0db2df5b52a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/booking-confirmed-desktop.jpg",
+      "bytes": 44098,
+      "sha256": "2435701ce56c76a301e57478c37c4d584257c8273db30bec6ac9dff218d27580",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/booking-confirmed-mobile.jpg",
+      "bytes": 26322,
+      "sha256": "b63cef76b1dee84ba9f7973964c4623a5283386d9057f166e3a3a2463c9b2b81",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/booking-desktop.jpg",
+      "bytes": 58865,
+      "sha256": "2ee2ebf5e058b73b96a413f5d47e8196c72095ae4edba189fb783dc94844ca41",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/booking-mobile.jpg",
+      "bytes": 37950,
+      "sha256": "eb61ff444264b1aba3d685cd7900c4a3464d4b33b9dfc9623663290d1ac6fd5a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/booking-settings-desktop.jpg",
+      "bytes": 55013,
+      "sha256": "006401b4f3f7e3f5f6b1d5c64b825ad5c2564eaab5ad7cac789e03fcaa1c380f",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/booking-settings-mobile.jpg",
+      "bytes": 36192,
+      "sha256": "33bbfa90cc490dbcc551a396f7c05f053f09e4905bda7a40e20324ebf702fe40",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/check-in-desktop.jpg",
+      "bytes": 56085,
+      "sha256": "494be27af0c08782b5f651f3c87cbd35f3b3a8e960d337c272043183d915ac38",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/check-in-mobile.jpg",
+      "bytes": 36862,
+      "sha256": "dd6065a8bfdf37b7b5484781116e96cdaced36e2f6b3541a5904f689e787fb51",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/checkout-desktop.jpg",
+      "bytes": 61414,
+      "sha256": "d712a789c809aa7263dd6df36061bfedef974cff92dd8a0e66dbb010f6509b96",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/checkout-mobile.jpg",
+      "bytes": 38469,
+      "sha256": "0db575276d5a3ad38b6e0e5b681fc3489d3957f9fd5361e5938eae48f09c2dfa",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/claim-desktop.jpg",
+      "bytes": 61596,
+      "sha256": "3a0836d8a787cd21794f044ae8f831549b706388efdc644c6021f9f2f4b16a5c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/claim-mobile.jpg",
+      "bytes": 44144,
+      "sha256": "f8a729c683b99d72f2f01f06893c5a29dc16fc1eec1fb1a1f9a323f7b406c225",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/connections-desktop.jpg",
+      "bytes": 66971,
+      "sha256": "ead0754891caf842c64aac1a014e02108811829c34ea2acea2617d3f2b019703",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/connections-mobile.jpg",
+      "bytes": 46542,
+      "sha256": "4975e0f30b26cd725075ca60c9bb389ef7f2dfeff6191adcb74d45cf9548c4ac",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/customer-display-desktop.jpg",
+      "bytes": 46660,
+      "sha256": "cfbac5d673211b2070d0ff62833f0ed26f95cab58845519792135ae581d3de6e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/customer-display-mobile.jpg",
+      "bytes": 29142,
+      "sha256": "fb078ea6e7c29ce0e99896c6804b4ac3cc1f7a6d8f88f46cd689cffb1c6da2a1",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/display-pair-desktop.jpg",
+      "bytes": 36939,
+      "sha256": "ef7cf7f22fc720ecc047c0db35008109796d34e40dda15092be0372ee20f92ba",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/display-pair-mobile.jpg",
+      "bytes": 23886,
+      "sha256": "66d6fac9f2bcbb0d9a44c5c06789e6efba15a7f737521fb76b61f707b3b32f59",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/explore-desktop.jpg",
+      "bytes": 38552,
+      "sha256": "f29b36959b8e6a7c876f81646cd79a2bae4a64a7c73ad187acbe3f53043a239a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/explore-mobile.jpg",
+      "bytes": 23187,
+      "sha256": "32da5b63f2e2aaaccd44bdb955f79f93fe307c7f1dce3a5b59fb7624b65fb0c7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/external-card-desktop.jpg",
+      "bytes": 57019,
+      "sha256": "5ed02e5d728fd2c839baed5258b2c5b01ebb6a0a46fe03a80779bde175f2846f",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/external-card-mobile.jpg",
+      "bytes": 41104,
+      "sha256": "c6b200073feed809b35986831791cf968a53d0f02957a17feb72bd5d713150db",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/money-flow-desktop.jpg",
+      "bytes": 60182,
+      "sha256": "e5e37b42fbecbc950914aa4981bac27051c28e3f21ea582d8f5868a5fa5dccfb",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/money-flow-mobile.jpg",
+      "bytes": 40582,
+      "sha256": "3d66eda99d367a0112a414fab6adfd1d5e032ac04aea6ba0f31ae95034189cbb",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/owner-remote-desktop.jpg",
+      "bytes": 56646,
+      "sha256": "7e68700f5960c343753235e952fd37051cd31317f61c1fb5ba6cbe9c792f3034",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/owner-remote-mobile.jpg",
+      "bytes": 36965,
+      "sha256": "8ed335f9014bd49589a617e3392f7aa3511e0d059ff4ae43d86301274bea8c50",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/payroll-desktop.jpg",
+      "bytes": 62165,
+      "sha256": "49eec97012237438bd8148d7b12cf66e7f10cc4b903738664c8631f7a9d85521",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/payroll-mobile.jpg",
+      "bytes": 42675,
+      "sha256": "cdd5d581f6e1e7bd961fda5ba166a54f133fe9ff09b9a4a1f8d33b8bbbaffa70",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/pos-setup-desktop.jpg",
+      "bytes": 94460,
+      "sha256": "9a8a0ee92a27315cb4de2f03a57584debe50919828b6511ae82b5634f0de2e50",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/pos-setup-mobile.jpg",
+      "bytes": 66975,
+      "sha256": "033c4a87bd563a9996811a92cc9be0bbbb72569fd4adf640d26aacf7a9e772c5",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/reports-desktop.jpg",
+      "bytes": 68501,
+      "sha256": "22f5aa1ab2e5339a89bd639c8e377cc025ef2a4a30a15784118fd21136a362cf",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/reports-mobile.jpg",
+      "bytes": 43406,
+      "sha256": "9590579abab2761ea5528f43193bd34bbfb46e2b2494ef2345efc9b2b677cac6",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/salon-new-desktop.jpg",
+      "bytes": 60006,
+      "sha256": "9469f95b7fe4fc05f7663b11d5fe8858b39370ada0958e9e236d1f41b5c9dc87",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/salon-new-mobile.jpg",
+      "bytes": 42038,
+      "sha256": "f05c3ea9201397cb22afd6fd86767dbea2af2f2cc2a48dd2c795a343f1e5517a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/salon-profile-desktop.jpg",
+      "bytes": 44211,
+      "sha256": "2c885a99917d2e60ae0cc32071b520fe30087c549021df38a2567bf994be4955",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/salon-profile-mobile.jpg",
+      "bytes": 28772,
+      "sha256": "9b1a5b8ac8a38133ec813aa514d70bdf60a7cdda41411c9fffd4052d2b049d21",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/services-desktop.jpg",
+      "bytes": 45683,
+      "sha256": "39bef54b108402c5bbbaf774e8f80e2c6d92f0d184ea9d988813e6a007a0ae4e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/services-mobile.jpg",
+      "bytes": 30830,
+      "sha256": "6e612b27e3fd0cd24a553ee053f036c9c2c375fd732ddc7fe616892de5f1a171",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/signup-desktop.jpg",
+      "bytes": 41857,
+      "sha256": "660d02e0c9b2906a95de6a6867f09d72e6fc500190b0cd416bfcfd5ff9159862",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/signup-mobile.jpg",
+      "bytes": 27579,
+      "sha256": "ad75c01f6d38fa7a5b8035cd8b03b2bc0325fc753fac5b1abacc951da6c8098e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/staff-appointments-desktop.jpg",
+      "bytes": 50889,
+      "sha256": "c6421a3738fdd1524b1174557f13b6277b6b9b265013d36161b1aa2fbfe42aa8",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/staff-appointments-mobile.jpg",
+      "bytes": 29434,
+      "sha256": "ea33042ce6ec3b71514517b1a6d03c8b3a7ea0355459af7ffd22eea85bfd8f6a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/staff-daily-desktop.jpg",
+      "bytes": 49695,
+      "sha256": "a27af990616f1a78476e1ea0efce93618ba4841bee9bf24977bc0c7b2cc09450",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/staff-daily-mobile.jpg",
+      "bytes": 30398,
+      "sha256": "fc80286cf040f946510975c381dd6b4763d4bb664d35318d8f0b65c8b4eeb628",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/staff-setup-desktop.jpg",
+      "bytes": 48665,
+      "sha256": "5c1d72c68efa9e29df3daa7b1d135c899e02950b3e2849f7ade8c7cee2d2f15a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/staff-setup-mobile.jpg",
+      "bytes": 30402,
+      "sha256": "581e98a888f2d26e8ab97d4639ec6d2bd403af17d4d35d6b91c3593c70b50891",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/support-desktop.jpg",
+      "bytes": 52263,
+      "sha256": "5fe6aa6a1ed045a51c855d9b53f59c1ac922116a83cc65b182081304458ee5d6",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/support-mobile.jpg",
+      "bytes": 35648,
+      "sha256": "90ed2b27057556fc54392089217466d84944afc9d326faef479599caa8913521",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/tax-desktop.jpg",
+      "bytes": 61960,
+      "sha256": "fee086cb9ce5d498c488595c95dd1d1fdfca76281896770096e4f16ba83a3cff",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/tax-mobile.jpg",
+      "bytes": 37908,
+      "sha256": "ed7777f1c100607459f444224bfde5d64c483c8969acc1737a793320cafe09d9",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/welcome-desktop.jpg",
+      "bytes": 42857,
+      "sha256": "946736b763f249d800f21077dd9aea583cb3113ed28b8732125a07abc39f53a3",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-15/welcome-mobile.jpg",
+      "bytes": 25778,
+      "sha256": "e46e985e0adc01e9a258dcb70cf6c5e2f54fa67c183bce19543b042abaaef4ca",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/beauty-profile-desktop.jpg",
+      "bytes": 38728,
+      "sha256": "70b7dac39008cd8d127e9a2072999e7ffc77608c9b59bae557b5f90ed8fbb403",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/beauty-profile-mobile.jpg",
+      "bytes": 25103,
+      "sha256": "3b7618bcc9d12b0ae8810aeccb4b765ac47fe5d3ecaeb5f7a019485873985642",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/booking-confirmed-desktop.jpg",
+      "bytes": 38886,
+      "sha256": "6ede60ebe77bf34d2d8c0e8ad55ccc3081afdd703b07fa37a93d9d696de3f843",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/booking-confirmed-mobile.jpg",
+      "bytes": 21246,
+      "sha256": "560c439e087412af7d6c922e1cdd3b23bc319b2c5f8277a985cf7a130dca7856",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/booking-desktop.jpg",
+      "bytes": 58609,
+      "sha256": "b47cf25e0072e9204c49d5635640dfd316bc568620c690af85b6b36d68cc0b16",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/booking-mobile.jpg",
+      "bytes": 36087,
+      "sha256": "0267545a91cab6f7fc045df59cfc02d2e849763d5ffa45cdbc25fb09e42667d2",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/booking-settings-desktop.jpg",
+      "bytes": 45669,
+      "sha256": "d328dca6303133055d77422f2bf1b77c9bd5201c537c694768bab54b665d9d57",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/booking-settings-mobile.jpg",
+      "bytes": 28722,
+      "sha256": "5e4d889abf7eaf8f0b45879fb33d100eb58b6dbd37662f7e6b7522b7f2d85de5",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/check-in-desktop.jpg",
+      "bytes": 40678,
+      "sha256": "ad10a299b947303358bb30c00b959040041abfe0b4aaef85c85b70dc59aff97d",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/check-in-mobile.jpg",
+      "bytes": 24058,
+      "sha256": "bc590b10d08e7fcb992351c4e150a31a64bd9e5abb3cd63a07991236d1161897",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/checkout-desktop.jpg",
+      "bytes": 51593,
+      "sha256": "2927b7cd778eece0aacae65fb1917865a32e8c7087d39e90f3f85ad1b40e1944",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/checkout-mobile.jpg",
+      "bytes": 30668,
+      "sha256": "98d893698914faa7845db73d3234c4361194e55e36feec8b4f9ab4222f15a040",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/claim-desktop.jpg",
+      "bytes": 55976,
+      "sha256": "8f2e338e69625005a63f3d98b5467c5749c2df9950e7dd2f180a01c51a0b2a82",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/claim-mobile.jpg",
+      "bytes": 40147,
+      "sha256": "f09348d7852593543eba69a081258ac567527290d162793fc0610fd47d0b4a1b",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/connections-desktop.jpg",
+      "bytes": 57846,
+      "sha256": "6a45c2a33865539a9f4391c94c8f0c470b056e659cbe317b0170c6d0bc28fcbc",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/connections-mobile.jpg",
+      "bytes": 38470,
+      "sha256": "ccbc71b5829b5fe10ffc793306eeab4491e38247211452b37015283c8fc3026c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/customer-display-desktop.jpg",
+      "bytes": 38763,
+      "sha256": "83e0010cb2173d59ade997b2fa225dbc5fb668706f3cc3a695246a3ef3c80a0e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/customer-display-mobile.jpg",
+      "bytes": 21403,
+      "sha256": "1de060cf8dd98df9e60e681905e4af33e6677ebfb3e03749b6818855f93278e7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/display-pair-desktop.jpg",
+      "bytes": 32855,
+      "sha256": "8725f6aeab049621ec1d2b806a2f7fcb1c46010d677ad8182700ef7bf2057059",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/display-pair-mobile.jpg",
+      "bytes": 20319,
+      "sha256": "38a8c687b51511fedce842f2a60e3b7c6ae2cfead1b5bc5ac3f972926e9aa856",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/explore-desktop.jpg",
+      "bytes": 32165,
+      "sha256": "0cff3b9f95e1dea9e7b32b10914256101e986435800fe93c492abcec38ad0a66",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/explore-mobile.jpg",
+      "bytes": 18049,
+      "sha256": "aae214c3c8a7b60ce86098b058284beccc74abab0005411f25ac74a40a9719df",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/external-card-desktop.jpg",
+      "bytes": 48007,
+      "sha256": "2202ba02ff7e7edc97cff05819afa416fe9ffe43461e5f677142cfc6c8708277",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/external-card-mobile.jpg",
+      "bytes": 32290,
+      "sha256": "89566c9da08e847094e6d068426fef637104e3705a0cfd96f0be03de5abf64af",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/money-flow-desktop.jpg",
+      "bytes": 48905,
+      "sha256": "73e35bc81368766bfb8ea264e6b52fb705017ba2682cdab74ffb4cf82c2885f9",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/money-flow-mobile.jpg",
+      "bytes": 28044,
+      "sha256": "732ef9b5b5bf5325f622ed94808c38e1368c072c2d5512b4ff909d87b01528c7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/owner-remote-desktop.jpg",
+      "bytes": 48499,
+      "sha256": "224fb6ff08a5e3d851f2d60059066dcb58d183e72c1495307695c0e7a6ff9d05",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/owner-remote-mobile.jpg",
+      "bytes": 28731,
+      "sha256": "4c7e05d1997b35b0469cc2c6a112d04af80d47fc116a409845c329c7fd18c93b",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/payroll-desktop.jpg",
+      "bytes": 51854,
+      "sha256": "c93a9a89048b3f146442d9b6c88029a1e6b5db1330929f9616d14a1a450cb5b3",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/payroll-mobile.jpg",
+      "bytes": 34197,
+      "sha256": "d252735c45121aa5321862d9b2dc1ed066e7b163d7c943e189f667d9a4492900",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/pos-setup-desktop.jpg",
+      "bytes": 64903,
+      "sha256": "230899f6bdfe7fbf89733710e9125ba5494d4b5b1baa08bffadaa7fc44e36a45",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/pos-setup-mobile.jpg",
+      "bytes": 43782,
+      "sha256": "996d2f4664c2c7551858b934c87f2630d2bb819b11e1ad58fb319bbec6e31b4b",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/reports-desktop.jpg",
+      "bytes": 58884,
+      "sha256": "a6aeb68b666c9260739035e8018183ead4427dafeabb04a67ea2080b9583d21a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/reports-mobile.jpg",
+      "bytes": 35282,
+      "sha256": "a60d280ad26144642fab83c8b5b7978e92d58b32f473731b8969533f3f795aab",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/salon-new-desktop.jpg",
+      "bytes": 48895,
+      "sha256": "1236e8c51ce8f8d6e242a65c5274897404f8dc94dbe730576ee6e26291a967aa",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/salon-new-mobile.jpg",
+      "bytes": 32134,
+      "sha256": "a7d1ab7d998ffd20d38a9c77924eba7094c202baccddf09cc9fc66ed91a2a2eb",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/salon-profile-desktop.jpg",
+      "bytes": 40997,
+      "sha256": "141bc34c678c8113e36180c4ce266f5b83adaca329e505cf550a2f6e866e0fd1",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/salon-profile-mobile.jpg",
+      "bytes": 25669,
+      "sha256": "69f1409244fd58dff29d46c077a3250366cc4ed97d1e08fb574ae290648f5058",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/services-desktop.jpg",
+      "bytes": 41225,
+      "sha256": "6a25b916ff215a66ebf152f4f65cdd136189034e5361302b75455db9a4f5f7bf",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/services-mobile.jpg",
+      "bytes": 26563,
+      "sha256": "9bab04df913fa281c53fab457cf4fc8d2834a2340b947ac8b105403a1a3cee13",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/signup-desktop.jpg",
+      "bytes": 36265,
+      "sha256": "67ac49ec5e217893356b8eb4cbcbb2ddc989c16f7ca2fc08533fbd26cb99745c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/signup-mobile.jpg",
+      "bytes": 23410,
+      "sha256": "6e86222457a20e60bb2d034a66d5a6a8ba47faddf401cb228765ccd9232d573c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/staff-appointments-desktop.jpg",
+      "bytes": 45195,
+      "sha256": "4c0ff1b1af279395ee934031c8776b56efd2cb9f0488f135d338736646640ccb",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/staff-appointments-mobile.jpg",
+      "bytes": 25672,
+      "sha256": "6615cd42f088c34614d892d7dd9d209061e524fbe0191c0b3c75377c796e8777",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/staff-daily-desktop.jpg",
+      "bytes": 44114,
+      "sha256": "8ae4141e6e1e1ce66813a90495fb13f0d26291d5ccd7e965d3ec436c51150247",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/staff-daily-mobile.jpg",
+      "bytes": 24915,
+      "sha256": "7ec89a3fa24270bfbd608a256f3d027ea61c94c766bc7d58f2ae393dc23b2b16",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/staff-setup-desktop.jpg",
+      "bytes": 44886,
+      "sha256": "1e7ee6b05b38e88085da261e20d0fad93cb418c2717c20fa4e13475152281f22",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/staff-setup-mobile.jpg",
+      "bytes": 26848,
+      "sha256": "5b473086c58e15c6d7193c85ce8a4f7598395def394be742ed2823f141070176",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/support-desktop.jpg",
+      "bytes": 42584,
+      "sha256": "ec2fb73ef10267f1a7bdbbec20dd8149ac6b1819b14c6fdd0943ba55f84e1590",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/support-mobile.jpg",
+      "bytes": 27562,
+      "sha256": "9a0549828fcfc529949e4691e901fcb45f4f0510655c7161e2b700ef4a8d34c7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/tax-desktop.jpg",
+      "bytes": 54045,
+      "sha256": "61a66e85f09d4574c13a328f7cfa7e25f7c3384159e6afe71be73a99881bea9f",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/tax-mobile.jpg",
+      "bytes": 30763,
+      "sha256": "14113fbc79a37433f111ab0ebd26f85001184a8f091b7baef3eab0af8a8d5844",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/welcome-desktop.jpg",
+      "bytes": 39193,
+      "sha256": "0dc52872262dec00f8b6b89582ce7c043b5e1ee8987f82a5bb47435602842b3b",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/en/welcome-mobile.jpg",
+      "bytes": 22190,
+      "sha256": "4bb32b599bb35474b556abd0582ecb88532c8f620ef00a8a8db209fe5253570f",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/beauty-profile-desktop.jpg",
+      "bytes": 38389,
+      "sha256": "5ddd5c561a0fda7b07122946466a026faed42ca71cf4158014b63abb65840320",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/beauty-profile-mobile.jpg",
+      "bytes": 24934,
+      "sha256": "da7058b92be5a846b5af55eff35e934b6b2deefdf5718a518b1613deb649c658",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/booking-confirmed-desktop.jpg",
+      "bytes": 40800,
+      "sha256": "a193def3f9079b0610788293f81b449ce55a5cf7141e29b585c679fffed00c2e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/booking-confirmed-mobile.jpg",
+      "bytes": 22688,
+      "sha256": "87a8611ecafb4fef3b98e8d6aee85009799a21fcf5e09c61b44a3d6a983e0bce",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/booking-desktop.jpg",
+      "bytes": 62089,
+      "sha256": "da29f84f2eeac8dbd53a865cf84405e7bf00366b6bcb9cf2757040e8fa49c89d",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/booking-mobile.jpg",
+      "bytes": 38181,
+      "sha256": "6fbf492f8327d825ddbca1673652d8a30ff295dbb12b090591796563d857d9e9",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/booking-settings-desktop.jpg",
+      "bytes": 46016,
+      "sha256": "3805eedcbf795db38f0a7a24e26ae1da6c64209a9d7bacc9613c8a1d47b08270",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/booking-settings-mobile.jpg",
+      "bytes": 28484,
+      "sha256": "e4694d13d808851bb81e6c84fb21683e2d1cf0abccd38645ca8d9fd17ebf46f5",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/check-in-desktop.jpg",
+      "bytes": 43878,
+      "sha256": "b2b2f690c10a7f13db99483160fb12baacafe267715798043e885d2d00c1a59c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/check-in-mobile.jpg",
+      "bytes": 26716,
+      "sha256": "c7adda1d63c8261fc094630c9805a42e7cda8bc42b1f98b1214c5b35131cc71a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/checkout-desktop.jpg",
+      "bytes": 52382,
+      "sha256": "185d494b3984adf463c119a92f0f6752a48b56ec7bd5e4f92c22e6caa99d553b",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/checkout-mobile.jpg",
+      "bytes": 31638,
+      "sha256": "b3548b9eaa3bcabc666f5afdcd1e26d1778f21c31af36de74ec17c40dd0b928f",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/claim-desktop.jpg",
+      "bytes": 54896,
+      "sha256": "267acaa83be2952470ad54aadccfcd0f3de633368474ca1166d6c19ab7c09fe7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/claim-mobile.jpg",
+      "bytes": 38155,
+      "sha256": "c11e7190d45f5257d7a5f69e312db7466085b796df5bc36d341376ba5a266e46",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/connections-desktop.jpg",
+      "bytes": 58908,
+      "sha256": "36668e88400fce9b813f2d78fb9e6cd544e237d241c89f007f7a10835deeaa9c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/connections-mobile.jpg",
+      "bytes": 39229,
+      "sha256": "0865f54d58088a6ed409ee9ef00e2378d4ae9b6c2245e7681bf8b2aded8601d6",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/customer-display-desktop.jpg",
+      "bytes": 38407,
+      "sha256": "588006eaab9e92d51f62e1f843c3f796c939596245c63e3b6da80c518fd788e3",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/customer-display-mobile.jpg",
+      "bytes": 20923,
+      "sha256": "637059260219c3f8b920e081478bda466e3690cf82a7f5e8a9e5827c41541c91",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/display-pair-desktop.jpg",
+      "bytes": 34382,
+      "sha256": "c3e6a1a78b56068700a4002538daafdc1439b774ab51e68404511effc0402ae8",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/display-pair-mobile.jpg",
+      "bytes": 21429,
+      "sha256": "1324811c7f21ccb2cf1a35f3877e03719f308c533d098c074f635a1952dd89bf",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/explore-desktop.jpg",
+      "bytes": 33097,
+      "sha256": "42c995f3f94cfc19ad0488c1dafe4e1a3e11869d933f0b81ba7b07316597a4c3",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/explore-mobile.jpg",
+      "bytes": 18720,
+      "sha256": "d59d13e82823aaf0e12b98bf7c2dd55d4c845839966ebfce97bfd8bda2b6bfb2",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/external-card-desktop.jpg",
+      "bytes": 47962,
+      "sha256": "d38ccf5651f1ab6c73485c1f8fa826687e67f9361c13dba28b058d76cb0f544a",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/external-card-mobile.jpg",
+      "bytes": 31721,
+      "sha256": "d71b2a8bf9289d991791b072ca170f2d0bda179d26378cd6d55ec74b84489da7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/money-flow-desktop.jpg",
+      "bytes": 50810,
+      "sha256": "3deb31b36124b26ed0d5a0249318aed38df907fa2e2d7eb2c3feed0dca8d9a90",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/money-flow-mobile.jpg",
+      "bytes": 29876,
+      "sha256": "d7b2fced22bb7e5f801151d08039e96cdd45a5fcfff7877471f5bfc09078e7a4",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/owner-remote-desktop.jpg",
+      "bytes": 50599,
+      "sha256": "6711c5c7aec67eb3a62663fa5b7bba3ee89a749420fd1fc7041749bd4bbaf287",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/owner-remote-mobile.jpg",
+      "bytes": 30177,
+      "sha256": "97fe59ccb2ee8ab1ed8a7c7dc268549428194c3968d4154d430fe67c7b88d499",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/payroll-desktop.jpg",
+      "bytes": 53966,
+      "sha256": "2d950f2d643ecd6b679e0d489dcafc94b5c26039f2dc75200997e699eafbc56f",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/payroll-mobile.jpg",
+      "bytes": 35929,
+      "sha256": "4f357077585cbe3a0b3bbf6f21c75d6847d5c576eac0adab587786c5a90211d3",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/pos-setup-desktop.jpg",
+      "bytes": 67878,
+      "sha256": "258cb75fdff3263f04114baf1aaaca5974df88651e376b2607466d82b6e42d86",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/pos-setup-mobile.jpg",
+      "bytes": 45341,
+      "sha256": "e059d2099b8799f5cff5bdb52842b61bd9b1aab9d26963a82fd298429c9d5368",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/reports-desktop.jpg",
+      "bytes": 61075,
+      "sha256": "06dcce4b19939f416a3b1bea99712bf9182111d8c0aeef7ccff45f7475f69538",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/reports-mobile.jpg",
+      "bytes": 36997,
+      "sha256": "f33e75d060ea136619107b53d7cc04f67b9857e24b94b32ab3f7479e9df2f973",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/salon-new-desktop.jpg",
+      "bytes": 49212,
+      "sha256": "0d7ec527f3c4726063db6f561f94a0e2868fec42012cbd906816500d65dacacc",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/salon-new-mobile.jpg",
+      "bytes": 32233,
+      "sha256": "06c4aefb46d90563ef7fbe811f52d2d0a998c4b82fbb0c48523af94e0dc865f3",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/salon-profile-desktop.jpg",
+      "bytes": 41676,
+      "sha256": "6e726af8880d4e631e73171b85fd7ffdf8e87a39c8850f099011890cf339703c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/salon-profile-mobile.jpg",
+      "bytes": 26316,
+      "sha256": "7a1cbafccdc77caf3faa02b956251f145ea3b12bf466e43e4af3d07e881036bd",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/services-desktop.jpg",
+      "bytes": 44693,
+      "sha256": "d33078f1605c1959d43e5bddd7c716f544e01b8465518ef0088852207ec9ddde",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/services-mobile.jpg",
+      "bytes": 29971,
+      "sha256": "a2060b7cb1334f86a76b47ed6352cb83e8cb8a445431a98126df6685ed364c0e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/signup-desktop.jpg",
+      "bytes": 35580,
+      "sha256": "7e4a546816b02deb2f34bb80312cd14f88924f306bd01c1314665fc31658f118",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/signup-mobile.jpg",
+      "bytes": 22546,
+      "sha256": "44243cdfbbfc555ea8af6d1989aa7ffd23eab9dd7d115e129da4df332787ed90",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/staff-appointments-desktop.jpg",
+      "bytes": 44282,
+      "sha256": "8dd420ac80a5509573bb567555252d95aa393356ec042987174f59fd9ef58ae5",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/staff-appointments-mobile.jpg",
+      "bytes": 24328,
+      "sha256": "d07ab2a0175997ad2085ce9ea62e7ebdb46fcb362ba9105c085edf46063d8415",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/staff-daily-desktop.jpg",
+      "bytes": 48212,
+      "sha256": "95789ed3d8de723f3ccb9fd179e871709a41ac136ae11fdbd1472f7978a3fe3c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/staff-daily-mobile.jpg",
+      "bytes": 28063,
+      "sha256": "e8bb19be18b81fabf5a636fc56a877967fccb5ec6ab5f70dc860954f14578444",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/staff-setup-desktop.jpg",
+      "bytes": 47766,
+      "sha256": "f3dc2ffe20d25794438793a56a80263fef581d55999269a68d17f8eab4e621cd",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/staff-setup-mobile.jpg",
+      "bytes": 29123,
+      "sha256": "4471383afb28548573328712a2d0ee61cfe90ca8abf572131fd2c5b9f9b152d5",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/support-desktop.jpg",
+      "bytes": 42655,
+      "sha256": "f113f9be33b978636dc829d2c59a2a95f26417b8fce4c4070257ee8150467b5e",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/support-mobile.jpg",
+      "bytes": 27276,
+      "sha256": "96a89b5ab2103622a51f881aa8c2703d7c0202cb4d3d451b418c85b5d292e8ee",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/tax-desktop.jpg",
+      "bytes": 58572,
+      "sha256": "8776f0cdfaa0e2d51d9c9e6a82687789872ed40b9a8670dd9293ec484ff29d4b",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/tax-mobile.jpg",
+      "bytes": 34421,
+      "sha256": "f3ba924804b29f9b6fc08b9a54a69cdbc780b873fea4456492c2aab65f37eaa7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/welcome-desktop.jpg",
+      "bytes": 42578,
+      "sha256": "5de31c2262477cc12c0fcbcf489e34ae090a25d6d5e98844e856c7c580cd1d55",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "help/2026-10-16/vi/welcome-mobile.jpg",
+      "bytes": 24701,
+      "sha256": "fa886b4d98ba41a36c8e909bbf97cf1137755fc72a0f7217407e68c4f66da095",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "images/business-defaults/brows-01.webp",
+      "bytes": 85352,
+      "sha256": "a848663b08e1c92f290e428620167512cb17e2435d149765f66bea4e7eab18fc",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/brows-02.webp",
+      "bytes": 54622,
+      "sha256": "85e6992d44534e1c201617e94299a2c5281bb3c8a43c06eb4368aa6927254564",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-01.webp",
+      "bytes": 104500,
+      "sha256": "1d7e75fb4755cd15131499cd2e267416253c44629cfc6cfd403f6c4e511458b5",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-02.webp",
+      "bytes": 70406,
+      "sha256": "f6490e7833f939605553ac1749e3208728c236c7fc644514db9a809a1fa3e445",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-03.webp",
+      "bytes": 75674,
+      "sha256": "0584b4a9f44547d354d10c588aecdce3647f5ae46a79e6d9e01049104b3270ae",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-04.webp",
+      "bytes": 114352,
+      "sha256": "83af701bbc7c09b5163640599082e1b2ab383eb16ec0e7264ea0ce52f691c7e3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-05.webp",
+      "bytes": 86090,
+      "sha256": "5922fe5b105e0581b66b7dda386035bab703d57156c09ec9de300e45c66483c9",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-06.webp",
+      "bytes": 107764,
+      "sha256": "005b1e67db56bf1c522001eceab34aafc4ced2c591097dba99086acc1180d240",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-07.webp",
+      "bytes": 80946,
+      "sha256": "ee8c148e149cbd3e3cd50f751e1f3502165564231489445f30dbc2a5b0f47950",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/hair-08.webp",
+      "bytes": 72074,
+      "sha256": "c11041358744fc3e7052206becc47146cd3022291a2d5ed6071a2ba8637d0a6a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-01.webp",
+      "bytes": 75412,
+      "sha256": "e0a110cd7dad922e3b57ccb993c4884351cc07a7c0a7fb5d31e2e66063052821",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-02.webp",
+      "bytes": 77422,
+      "sha256": "9aeb9ff434a226b095964760b9868cace26b3a9ab990586dd0657cc63f7d51b0",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-03.webp",
+      "bytes": 87384,
+      "sha256": "20e5a59b9ba2a3a9e7cd79e96a3d309b759ea59615e7b968ce9a929a206399e7",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-04.webp",
+      "bytes": 138572,
+      "sha256": "f1de30358c1bad2dffec8d82e519f71aae5746d42fa2a6ff217fe9a95c6062e1",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-05.webp",
+      "bytes": 95648,
+      "sha256": "bad548d4483e2d168d589eb93771a571a90bb79a92468fb92788b03adc200937",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-06.webp",
+      "bytes": 66106,
+      "sha256": "9d224a74bd3c41522a06ec8add7aabd1824edeac9f828520bc8beb4c3ffcd39b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-07.webp",
+      "bytes": 78118,
+      "sha256": "c87c223254eb58411a1e7b60cd0522480b5c52e1c7c2e5a3af8918ed8cde7762",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/lashes-08.webp",
+      "bytes": 86124,
+      "sha256": "4ac55dad50881edf9ab906b2b1893219c21e6f145182211026c99aac078d5eb6",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-01.webp",
+      "bytes": 78644,
+      "sha256": "623bbccbeff948f77774e330064fe3d1d54c5f46b96470cba94359e3fd1d11cd",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-02.webp",
+      "bytes": 87802,
+      "sha256": "614b1bb40fe8caa73e44e34b49f18ed409fa7b1985abcfe88c2a69c02ad11dd5",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-03.webp",
+      "bytes": 75650,
+      "sha256": "0f6813f51f7dd890da7abb9c8bd5e11cfee146d10a84d623add0ae8639ff1b09",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-04.webp",
+      "bytes": 99992,
+      "sha256": "cf4895142cd2466461458b9503b028b923ffc6e03516c968a6ee3be9615424e3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-05.webp",
+      "bytes": 84276,
+      "sha256": "08a783c3a52960cf162eaaadacd42a95c093378bd056caaa93386c7e3b482384",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-06.webp",
+      "bytes": 62360,
+      "sha256": "0703d009f2a8dfb030c3e058ec19afd2c391fbb1e7893a4ffb3f03ff61257e37",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-07.webp",
+      "bytes": 102746,
+      "sha256": "6ba99dd10097d22397f236f49c520e5f3210bb52ddf201ac4de4498fee1342b7",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/massage-08.webp",
+      "bytes": 74318,
+      "sha256": "3d9b27a28236251c910d9032c80bbc6527b814c7f8b6b344ca7b5fe7f875bf30",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/skincare-01.webp",
+      "bytes": 73196,
+      "sha256": "759a5b92022b4265971ac3b9417e27bda32b9d409b5557a73c836bb913b6a175",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/skincare-02.webp",
+      "bytes": 158256,
+      "sha256": "607e0cd68d2955ad3d49f2163c8bfaf5098864f228ac9e0652addc7b97205b1b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/spa-01.webp",
+      "bytes": 127668,
+      "sha256": "e128a320f4b48d196059805fb0673068a7afb0cf4c59a3acc7921dfd23703fc6",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/spa-02.webp",
+      "bytes": 106802,
+      "sha256": "fb1a80a98ef2bd5dfd7c8b6c394fb0c1c35945c4eb9baca078e613acf5c66f1f",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-01.webp",
+      "bytes": 83946,
+      "sha256": "22c35d5d9664f5716ea331d20f39020a6698fd44fa2f081e319a9783d4fd79eb",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-02.webp",
+      "bytes": 75162,
+      "sha256": "ad1407045d5694dcd0a5614b939a0e1645a09d99ee85f503032999b59de74170",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-03.webp",
+      "bytes": 54948,
+      "sha256": "542c236d36d10a7f237704beb6252cf510ed4e8d82c59728eef011ef1da62ddb",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-04.webp",
+      "bytes": 84228,
+      "sha256": "2bcf315ef6935278120d9db5ec57d11eb4fe6dbfaa851e44486bf708e709031d",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-05.webp",
+      "bytes": 75728,
+      "sha256": "f89a6b108f443d652d26088fb0348b4fff74e953b85ff9dd0b174198d83e5471",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-06.webp",
+      "bytes": 90758,
+      "sha256": "9183c366d12f2154793b606ddcb549b17a9755af53de25097c1dc210028c4a52",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-07.webp",
+      "bytes": 130494,
+      "sha256": "315bfa48acd5877c27edbb08b1c2349c4da65013e032e1a5c769118e20823741",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/tattoo-08.webp",
+      "bytes": 160024,
+      "sha256": "7a0a0af72581c36a6e49e651d6be4bbdce020c0beb692d95d128f419e4c1cbbf",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/waxing-01.webp",
+      "bytes": 55376,
+      "sha256": "19c129863b204860cf62e5397379af29eca4de216b9283f2674f242dfd06ea1b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/business-defaults/waxing-02.webp",
+      "bytes": 116910,
+      "sha256": "4b7e11444928c643ff1fe1c3324025b7b1cd087165fc00b583695ae93f94f1c8",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-01.webp",
+      "bytes": 102492,
+      "sha256": "0fb846fcdb3896ce6b4e7d557b8b89c571a3ad1f1ec7dc71120dca69b09118da",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-02.webp",
+      "bytes": 100166,
+      "sha256": "7bc0291ce7c758490da3918f4d36e7e59c81283792e25df9276e185516c6a68b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-03.webp",
+      "bytes": 125862,
+      "sha256": "bc536b9a5da8bf42eb2440811bb9b6f6f3df27038f17c041af09c5434cce62a3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-04.webp",
+      "bytes": 127514,
+      "sha256": "f18cbe050b67121104266edbaf05769ada020e468960da50bf9c524d68684143",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-05.webp",
+      "bytes": 111688,
+      "sha256": "e6598ce285f616cb1fdc7fa99f01c4a903a1760d2a772f2d9bd04fe7ae00f281",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-06.webp",
+      "bytes": 103240,
+      "sha256": "a51408a65f2175b90511157c2ff2370410d3783243d91741314f48312dc36884",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-07.webp",
+      "bytes": 113948,
+      "sha256": "9d4d51bd654dd9b2afb0f36400c8d2d2b268b00535750c1204ab19ce5eab6a81",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-08.webp",
+      "bytes": 116218,
+      "sha256": "e6692cf37533ea3dd9a855bd980ec054c61e2a1cdf026a4933638ef854c45891",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-09.webp",
+      "bytes": 53682,
+      "sha256": "b6b2a66ba2082fab5296ada823a22ff4b54c053a98f7eb675fb66b12c363baed",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-10.webp",
+      "bytes": 108580,
+      "sha256": "4fbdbe73c241c5d45f59b9fc703a4af8ad6d1a4bfc5cbc9262f64aa755452292",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-11.webp",
+      "bytes": 138738,
+      "sha256": "cae0330d07644a05a23276fa340cf5bbeb1871359cd5969a265379ccb17ff40b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-12.webp",
+      "bytes": 141276,
+      "sha256": "8a4e521bdce51289a0fa3d52b90bda62550fc34235b5ef464a7b94dafb1e2e9a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-13.webp",
+      "bytes": 115758,
+      "sha256": "b7da73fb56c8db5383bc1b3051f37a2749fa569cb12f7fdf375b38d7c0885b93",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-14.webp",
+      "bytes": 115332,
+      "sha256": "2539bceaeac63f02674d7d41803a919e35c3928c88c455d3491ff98a57f987e5",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-15.webp",
+      "bytes": 141708,
+      "sha256": "3cbf88ea946cd652c64f1910566696aa49f016abf19ad207fd205f9115a8530f",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-16.webp",
+      "bytes": 67178,
+      "sha256": "25b0bf5bcc6980e6e8e546afef3ae79c4f8e7507fd06b1e57dbe0b6c332f180d",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-17.webp",
+      "bytes": 111344,
+      "sha256": "194ed895a717c27c5bd5905d22ed9d50291126ab72c0ea435424008e11eac285",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-18.webp",
+      "bytes": 142922,
+      "sha256": "bc65db8c6f2af82297e49c5b6d001bbe97f40e7c92b7d7302b12aeee9b8c4af3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-19.webp",
+      "bytes": 132362,
+      "sha256": "7bf2992ecd9fc76115907d8914ead222342848e6a4402e5c5d53782db55781ed",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/nail-defaults/nails-20.webp",
+      "bytes": 97410,
+      "sha256": "b8fc10045af54a14419363fdba020aff0c86b4fc6808b0654d43995e2287d817",
+      "mime": "image/webp"
+    },
+    {
+      "path": "index.html",
+      "bytes": 4509,
+      "sha256": "d5d25fa0c096d5e1824ae72cd997a41fd2d0720e01daf22b3ecd805231313b83",
+      "mime": "text/html"
+    },
+    {
+      "path": "inspiration/nails/amber-tortoiseshell.webp",
+      "bytes": 185972,
+      "sha256": "ee44539b6a38ae766a439cd2abe0f579562aae478762ed8c773e2f795bd49313",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/autumn-mix-match.webp",
+      "bytes": 115302,
+      "sha256": "4e5188b7e2c4ee3db17d734cb2474e381fd9016eee17473c29b346e5475d7920",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/black-square.webp",
+      "bytes": 221110,
+      "sha256": "3b14dc02a82d635dc184a3396507c023c660ce86a2d745dce6f3f4fda2b8cbdb",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/blush-almond.webp",
+      "bytes": 81872,
+      "sha256": "900050c71cb4ad3387b700d46103162dc0345c9e59568fb789cb58b0f325ab70",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/burgundy-jelly-oval.webp",
+      "bytes": 172108,
+      "sha256": "6144defc1bce0c9c353457ce2c8ef0a98602caa3a950c23e36e5536cf506df6c",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/burgundy-micro-french.webp",
+      "bytes": 253438,
+      "sha256": "ce6a7dc55c635cb4e6a67840658cac9a069c57155cb62be9069ff6ea518f1883",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/burgundy-oval.webp",
+      "bytes": 205194,
+      "sha256": "06cc3bf589252a654906f5ac25ddb7075e005364c585b14ba407c86c9c76abda",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/butter-squoval.webp",
+      "bytes": 143524,
+      "sha256": "89a5a2c5f7150f2cda08afea638f3c30aeeb28f4efcebb85617e6bb1c74eefd3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/caramel-jelly-square.webp",
+      "bytes": 188182,
+      "sha256": "989e70624b7ae4b781f35902ad6fb2b8c562533235d2aa306d605d708e3bf78b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/cashmere-knit-square.webp",
+      "bytes": 258162,
+      "sha256": "5c1951617920d3c8b1c2f0d67e52adb16f95274498df0a2ed6a005ea1474f990",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/chartreuse-gloss-oval.webp",
+      "bytes": 260218,
+      "sha256": "a4132f0dfbc50261afbde3473ab3d0cabb4e422e4f29aac9f19ece751bfde1b9",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/cheetah-neutral-almond.webp",
+      "bytes": 202520,
+      "sha256": "ec1c186d7a5d5365fcb26d2296ff6899e80a4815ca602cbc185cd11ad84df3cb",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/cherry-stiletto.webp",
+      "bytes": 212152,
+      "sha256": "b8d8ee1200b45c3970eb07264db6296b1fc969606778278125792bc3ec4f107e",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/clean-soap-round.webp",
+      "bytes": 168038,
+      "sha256": "a3e48cb5f3af76700a92aab125156e6e695536d85195af3701f4eebaeae74746",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/cobalt-square.webp",
+      "bytes": 201074,
+      "sha256": "c4057e3636c14c20e6cbf1aadc70462d6d1e3487810f7491c8efbfa573ec538a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/cocoa-almond.webp",
+      "bytes": 126896,
+      "sha256": "81b818291f4e9989fdadd63227ab0f959654aa4f8d345399b5bb84a94735a4b8",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/cocoa-polka-dots.webp",
+      "bytes": 211484,
+      "sha256": "73b12e765fb445336291b8b94284f3327955ca274263b020036d0ac223826db4",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/coral-round.webp",
+      "bytes": 96872,
+      "sha256": "9310ed6e4c60d9dc553c8c4f16824bd84e31ff1ef9c2fba36da5771c30be30cb",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/emerald-coffin.webp",
+      "bytes": 230002,
+      "sha256": "7ab04524f96d67fc664a9f4e0fc2b46943024303aad398d462ae56efc51d6951",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/fawn-print-almond.webp",
+      "bytes": 265568,
+      "sha256": "7f4c33406ffd6524081c546b9eb18dd07d865df83cb71698d3989da2771433a0",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/french-oval.webp",
+      "bytes": 219202,
+      "sha256": "56025476a075025a982301ef2c3927b9e7121f533a7a7a8772787668bc1fdb72",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/gold-coffin.webp",
+      "bytes": 211288,
+      "sha256": "475668c94d8caa51269c5305883a7453379b6ad1406625557e64dd7bb18d3594",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/holiday-red-glitter.webp",
+      "bytes": 196972,
+      "sha256": "739c5dde81534cb8e0196434090e3905313480807a761838120d3fbd828e6767",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/hot-pink-ballerina.webp",
+      "bytes": 300826,
+      "sha256": "f14a21e9a1d0d9a6e1832830aea9fe74f06e0b75f6628a508e92f76fdb25ea05",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/lavender-round.webp",
+      "bytes": 113606,
+      "sha256": "be52dbc1d3de30d471dacf67fe2b893d73e23c260bb5f42c787b0c7a6f508ef6",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/lilac-marble.webp",
+      "bytes": 226386,
+      "sha256": "31679e03c02f204502e66aab3bee13333e418860b14af45aa4c78d629e90a07a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/liquid-silver-sculpture.webp",
+      "bytes": 144586,
+      "sha256": "4ac77cd69884ad072af6e736a44164e3eb13617ecf645f549ab04323a128cff3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/midnight-stiletto.webp",
+      "bytes": 153268,
+      "sha256": "36d78d8b5e950d69bdbb004bca08f1ff8fe09775ecdc28a2cfdba01bc6a99c33",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/milky-matcha-squoval.webp",
+      "bytes": 210924,
+      "sha256": "9911f14310c10332283881546e5bf5678d3526a9d1da15fe605aa0a7fa99b8a3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/mint-almond.webp",
+      "bytes": 232786,
+      "sha256": "b73f29c0e10ddd501ce5b36ee5b9ec9101622c1124c2ea9409283f1faad39bac",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/nude-square.webp",
+      "bytes": 254486,
+      "sha256": "cc6f06d47743cba4edf6382b2647377a70592b63dd2131acbd3533cec38918db",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/ocean-coffin.webp",
+      "bytes": 291476,
+      "sha256": "0f379c1c3e3a003b6cc445fc9f008508e240df88921377f51e630573dbf12bd9",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/olive-velvet-almond.webp",
+      "bytes": 234912,
+      "sha256": "da91142fa74defc0417cfd5f4372d77c0f3ad91d8ddde5a2fba331516b659ae2",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/peach-round.webp",
+      "bytes": 179252,
+      "sha256": "219f3abe491455ebbd7e69b1c7ad8f8113799e340a7e8d2a90112d419fcf208a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/pearl-french-almond.webp",
+      "bytes": 160376,
+      "sha256": "ec2b20ef4a187c18332a985759886bb87ae6360d1b9dfbdbbad6ad87c39b6518",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/pearl-oval.webp",
+      "bytes": 217846,
+      "sha256": "97c8c929d550ce69a4e62eb5f912a96e1a771d676d1cb622a43ee66b2ebeaf5d",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/pink-french.webp",
+      "bytes": 131122,
+      "sha256": "3df58ac09280eec2029ca8c943c61e597bdcf4903953e6bb08d33723bc470bd5",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/plum-aura-coffin.webp",
+      "bytes": 209074,
+      "sha256": "3e6ffa80a3e04fb46ee3064f408fb242927a195915eb37c50aca0ba6bfa46f36",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/red-french-stiletto.webp",
+      "bytes": 223062,
+      "sha256": "9405f01bce285916ec88814b1cc0cbb2d51c9ca39903c85b8b03d5f430123afe",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/rose-3d.webp",
+      "bytes": 252834,
+      "sha256": "ccc6615c24f1ab7e59e0922b6366d3cc338b3bc524969e049ad705827b5fed2d",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/ruby-stiletto.webp",
+      "bytes": 116778,
+      "sha256": "6acf1e8fed8b0927cd21b07e94be21052620d26ad770c6e4c33062c9ef79efa4",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/sage-squoval.webp",
+      "bytes": 227214,
+      "sha256": "3dc949adfd036e4a7d4a14ec7942577e26fe8bb37d9b7325d84304e4ecfe8d31",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/scarlet-square.webp",
+      "bytes": 158222,
+      "sha256": "5293d6cedc54759a6ade05c085022e7a28c060fa8ea08166be11d33b67c7e61b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/silver-almond.webp",
+      "bytes": 361004,
+      "sha256": "d58bfa489b97c541a1cd8e9c804841bcc8bd086441d3b7b39e7eef1e1066cdbd",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/spring-floral.webp",
+      "bytes": 256924,
+      "sha256": "ae5d4396fa312aa5624c390958e7858087a247c431ac9ed3a56b7ad37893174d",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/summer-rainbow.webp",
+      "bytes": 290412,
+      "sha256": "ba6b9ad9b54dd7865b48f38f077e0f4440992e7798abed9de26e281648fd1979",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/terracotta-square.webp",
+      "bytes": 181300,
+      "sha256": "384a11b703fb67a4f9790db82f7ab64de2331f4da5d4360d1feca04a50359e2d",
+      "mime": "image/webp"
+    },
+    {
+      "path": "inspiration/nails/white-coffin.webp",
+      "bytes": 206052,
+      "sha256": "67f4227d983ef7cf044d32114e5aa7e10e958f265b00cce5e9f553708258cdbc",
+      "mime": "image/webp"
+    },
+    {
+      "path": "market/booking-deposit/booking.jpg",
+      "bytes": 34821,
+      "sha256": "e6cb2f8c084e85e5ad903c632330877ba36718b89b2bd4353838d133c4dc90ca",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "market/booking-deposit/receipts.jpg",
+      "bytes": 19221,
+      "sha256": "779d7b428464d96e5f2a44103b06b5de1df999479f9c8f67d4aee5e5e06e3c0c",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "market/booking-deposit/settings.jpg",
+      "bytes": 35076,
+      "sha256": "87c854aa72f8569868ced7ca3930f9714560d45e5db7c99ea52a4ac13e5168a7",
+      "mime": "image/jpeg"
+    },
+    {
+      "path": "market/features/ai-marketing.svg",
+      "bytes": 3153,
+      "sha256": "7a23e88689defc86505101ecb33d0837af3c95cde7c40ed2cc9e8a20d1586f6d",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/auto-backup.svg",
+      "bytes": 3985,
+      "sha256": "e9cc079038a3a80560a92be82681590c28506f9a297e3be3c93a60ca18df8aa8",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/booking-deposit.svg",
+      "bytes": 1263,
+      "sha256": "fd4420aa76362835330e8a4ecfd81f585373337071dd2c72acfcae4c57dd8b32",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/booking-policy.svg",
+      "bytes": 954,
+      "sha256": "05575ff532858a48d7f5730ab8c0851d3a0b3ce08d2e4c74c074c54b06ab7c37",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/campaigns.svg",
+      "bytes": 1282,
+      "sha256": "e6bd5e220a769adbb25f69df79adb2876063ff3afebd32c1e74515a39fb39394",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/campaigns/audience-v1.webp",
+      "bytes": 66424,
+      "sha256": "bd2d0133cc88cb07cccc57a6c64d702c77a88eeaa5ff429cbe2ae402814a3ffc",
+      "mime": "image/webp"
+    },
+    {
+      "path": "market/features/campaigns/create-ad-v1.webp",
+      "bytes": 128628,
+      "sha256": "8286c9e5a2ca15985072624a6a243309242aebf68266492cbd9923d67914a7f2",
+      "mime": "image/webp"
+    },
+    {
+      "path": "market/features/campaigns/results-v1.webp",
+      "bytes": 85224,
+      "sha256": "f8e39e57d1f6de43f81b6b21586d6943dd550d27518aeeac03027a942141d6b0",
+      "mime": "image/webp"
+    },
+    {
+      "path": "market/features/checkin-receipt.svg",
+      "bytes": 1120,
+      "sha256": "2003812370592af87f8af27ec852e6d65e2d9a855a96d6dd53b7f97be1ed09a1",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/custom-payroll.svg",
+      "bytes": 3943,
+      "sha256": "05fce1417eee99abc356facad0012da3ec9110d0204d8c99bee994c814272c3c",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/customer-import.svg",
+      "bytes": 4277,
+      "sha256": "78e01ec4da7f35c9f7db5065bdf6fa7c3c9b4ce8d9d2caf5d99092eb06bf851f",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/facebook-connect.svg",
+      "bytes": 2994,
+      "sha256": "d2f16519f48589ab8d4d44ef8cf084628976e5d94ba1204ed342b4170f887904",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/gift-card.svg",
+      "bytes": 3611,
+      "sha256": "b65c6b7de06449a3e2d1613986e97b46e3453e60cc93d6cfae5b664a53f8e9a6",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/inventory-sync.svg",
+      "bytes": 4228,
+      "sha256": "490807dc1425433178dc0fb45f286446a958cd3a882ef98fe45bf5a45dea07c5",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/membership.svg",
+      "bytes": 2955,
+      "sha256": "a9ed387daa2f200f9c6b631bc863699a195e15aa79903d0a1add8a0429361e31",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/merchant-rate.svg",
+      "bytes": 3937,
+      "sha256": "f8e89da9d2a0ee491312b8442ec560800acd24bdaf2d4a34bb5e384e36b8b525",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/online-store.svg",
+      "bytes": 4011,
+      "sha256": "3d4a1e3d63ab24714a86d33242113ca656f4f29b987ac572ce685c18b33f5aec",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/payroll-data-download.svg",
+      "bytes": 2486,
+      "sha256": "67fedbff77fff537b9450d667b09320d8d447baf7ff2ae57168401e480c937cc",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/print-check.svg",
+      "bytes": 2938,
+      "sha256": "f4180f3803677740d205381f9cea616906653da299ee6bf438acc97bc23cc71d",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/promotion.svg",
+      "bytes": 3066,
+      "sha256": "cf079d23074489afe1dee37fa8779ea23f583640cb190bb081c1255760ba1727",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/qr-ticket.svg",
+      "bytes": 8437,
+      "sha256": "6e7356c1428c4e945b84f21636a4c2036342375bdab1049664efd265799d1f33",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/return-visit.svg",
+      "bytes": 3975,
+      "sha256": "f91d8bf340416585162f5cc7615aba4979733ebda538da3a3ce146fe4b29a87b",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/review-studio.svg",
+      "bytes": 3079,
+      "sha256": "7ff6004bfb13c915df6906ea4436853cb4c16132161d81fd7d257e2f18f2b656",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/rewards.svg",
+      "bytes": 3785,
+      "sha256": "7766f78ed11498c249439b10d7a4e569f7a8142f1beb1e911c032822ff25f7e1",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/salon-chat.svg",
+      "bytes": 3290,
+      "sha256": "1ef934ec9dfe33b256d7b5092f3ec0afa7dd205cf95065c656d168585ddc67b3",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/salon-insights.svg",
+      "bytes": 3740,
+      "sha256": "cb60f1d80692d5ff1d225b3accceaf79a5dfe477f9b98e4b075b4edca43ea60d",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/service-relay.svg",
+      "bytes": 1632,
+      "sha256": "41f321ddb74af23046f9c199764ba2438991d7c272633dbe071db1d05ab51e7f",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/sms-connect.svg",
+      "bytes": 3665,
+      "sha256": "49fa28181056be478b52dbded13fec159166d8515b9f30b8a72eb42fe7f6bf6a",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/tax-company.svg",
+      "bytes": 3972,
+      "sha256": "e434602058b8ab7de92e876ad77962d5bf37e8cdb979b895652b928406e77e7e",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/tax-company/owner-settings-v1.png",
+      "bytes": 58902,
+      "sha256": "340715357bd2408772751bca34e8106463a1bbc6775e2b9ffa0c813d52d99c4c",
+      "mime": "image/png"
+    },
+    {
+      "path": "market/features/team-calendar.svg",
+      "bytes": 6060,
+      "sha256": "d7ac612ebeaf31e13d35c973cabe0cc4bdcad4f35323694429fb8e68a35f772a",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/features/vietnamese-language/customers-v1.png",
+      "bytes": 26603,
+      "sha256": "53852cfdb47f88007723bc3f36941b9e4a2dc6665e503aaaa905ad73cdbcb3c8",
+      "mime": "image/png"
+    },
+    {
+      "path": "market/features/vietnamese-language/service-settings-v1.png",
+      "bytes": 44855,
+      "sha256": "4903fa3cfc573d9691c8a8aba9f93f52a6cfbe4c600fd0e0cc604ffdf3b73672",
+      "mime": "image/png"
+    },
+    {
+      "path": "market/features/vietnamese-language/services-v1.png",
+      "bytes": 27006,
+      "sha256": "b49e40127700555fc8b7d4bbf8c2b11f433631f96358348ad44d83fa0b52f4bd",
+      "mime": "image/png"
+    },
+    {
+      "path": "market/features/vietnamese-language/today-v1.png",
+      "bytes": 99713,
+      "sha256": "31fdd8ef5be5e21846cc80c78348357243402fa3d95f094c091672118298e03e",
+      "mime": "image/png"
+    },
+    {
+      "path": "market/features/website-layout.svg",
+      "bytes": 3142,
+      "sha256": "dfc23d8288a8f57868d130fdd52d121ab8b908c485a6b9ed924d64410e7a780b",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "market/reylumi-features.webp",
+      "bytes": 70578,
+      "sha256": "61076947cd081ea4303903caecc497d13e76128f50bbfb317e8738468dd083e5",
+      "mime": "image/webp"
+    },
+    {
+      "path": "next.svg",
+      "bytes": 1375,
+      "sha256": "55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "pos/customer-display-default-ad.png",
+      "bytes": 330788,
+      "sha256": "a9c0e6d076bf1637ef3e51f62a6182389d58f8f831111b3f622d4be20167dc31",
+      "mime": "image/png"
+    },
+    {
+      "path": "pos/customer-display-default-promo-slide.png",
+      "bytes": 1812119,
+      "sha256": "45609796e156708de6d44984dc7bb21d88f29673f24fab2a5f1009a07f9c5f48",
+      "mime": "image/png"
+    },
+    {
+      "path": "pos/customer-display-default-receipt-background.png",
+      "bytes": 1314733,
+      "sha256": "c7f45c12fda5bb7ba00ae7d69ceaf828733e495a0488d77dae533094e7b4d90b",
+      "mime": "image/png"
+    },
+    {
+      "path": "pos/portable-floating-menu-icon-gloss.png",
+      "bytes": 661502,
+      "sha256": "ffb97ef1b3319c4f8e213d26cce7f04602d9dda4f837e5806b5fc4078e237c77",
+      "mime": "image/png"
+    },
+    {
+      "path": "pos/portable-floating-menu-icon-white.png",
+      "bytes": 14932,
+      "sha256": "26147290e0581f04446217c4f3711994da379fcafbb7617eff457b465b9d0a19",
+      "mime": "image/png"
+    },
+    {
+      "path": "pos/portable-floating-menu-icon.png",
+      "bytes": 17900,
+      "sha256": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+      "mime": "image/png"
+    },
+    {
+      "path": "tax-company/icon-192.png",
+      "bytes": 16110,
+      "sha256": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+      "mime": "image/png"
+    },
+    {
+      "path": "tax-company/icon-512.png",
+      "bytes": 51798,
+      "sha256": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
+      "mime": "image/png"
+    },
+    {
+      "path": "vercel.svg",
+      "bytes": 128,
+      "sha256": "f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "window.svg",
+      "bytes": 385,
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+      "mime": "image/svg+xml"
+    }
+  ],
+  "routes": [
+    {
+      "path": "/help",
+      "adapter": "help-full",
+      "access": "public"
+    },
+    {
+      "path": "/help/:slug",
+      "adapter": "help-full",
+      "access": "public"
+    },
+    {
+      "path": "/legal",
+      "adapter": "/legal",
+      "access": "public"
+    },
+    {
+      "path": "/terms",
+      "adapter": "/terms",
+      "access": "public"
+    },
+    {
+      "path": "/privacy",
+      "adapter": "/privacy",
+      "access": "public"
+    },
+    {
+      "path": "/community",
+      "adapter": "/community",
+      "access": "public"
+    },
+    {
+      "path": "/business-terms",
+      "adapter": "/business-terms",
+      "access": "public"
+    },
+    {
+      "path": "/pos",
+      "adapter": "owner-workspace",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/check-in",
+      "adapter": "owner-workspace",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/book",
+      "adapter": "owner-workspace",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/ticket",
+      "adapter": "owner-workspace",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/report",
+      "adapter": "owner-workspace",
+      "access": "scoped"
+    },
+    {
+      "path": "/support",
+      "adapter": "/support",
+      "access": "scoped"
+    },
+    {
+      "path": "/support/:caseId",
+      "adapter": "/support/:caseId",
+      "access": "scoped"
+    },
+    {
+      "path": "/market",
+      "adapter": "/market",
+      "access": "scoped"
+    },
+    {
+      "path": "/market/booking-deposit",
+      "adapter": "/market/booking-deposit",
+      "access": "scoped"
+    },
+    {
+      "path": "/settings",
+      "adapter": "/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/settings/login-security",
+      "adapter": "/settings/login-security",
+      "access": "scoped"
+    },
+    {
+      "path": "/account",
+      "adapter": "/account",
+      "access": "scoped"
+    },
+    {
+      "path": "/roles",
+      "adapter": "/roles",
+      "access": "scoped"
+    },
+    {
+      "path": "/permissions",
+      "adapter": "/permissions",
+      "access": "scoped"
+    },
+    {
+      "path": "/my-place",
+      "adapter": "/my-place",
+      "access": "scoped"
+    },
+    {
+      "path": "/services",
+      "adapter": "/services",
+      "access": "scoped"
+    },
+    {
+      "path": "/more",
+      "adapter": "/more",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff/connections",
+      "adapter": "/staff/connections",
+      "access": "scoped"
+    },
+    {
+      "path": "/activity",
+      "adapter": "/activity",
+      "access": "scoped"
+    },
+    {
+      "path": "/activity/receipts/:ticketId",
+      "adapter": "/activity/receipts/:ticketId",
+      "access": "scoped"
+    },
+    {
+      "path": "/my-bookings",
+      "adapter": "/my-bookings",
+      "access": "scoped"
+    },
+    {
+      "path": "/my-bookings/:bookingId",
+      "adapter": "/my-bookings/:bookingId",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/saved-post",
+      "adapter": "/more/saved-post",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/saved-posts",
+      "adapter": "/more/saved-posts",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/saved-designs",
+      "adapter": "/more/saved-designs",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/following",
+      "adapter": "/more/following",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/favorite-shop",
+      "adapter": "/more/favorite-shop",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/favorite-customer",
+      "adapter": "/more/favorite-customer",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/favorites",
+      "adapter": "/explore/favorites",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff/my-work",
+      "adapter": "/staff/my-work",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff/workday",
+      "adapter": "/staff/workday",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff/appointments",
+      "adapter": "/staff/appointments",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff/today",
+      "adapter": "/staff/today",
+      "access": "scoped"
+    },
+    {
+      "path": "/beauty",
+      "adapter": "/beauty",
+      "access": "scoped"
+    },
+    {
+      "path": "/notifications",
+      "adapter": "/notifications",
+      "access": "scoped"
+    },
+    {
+      "path": "/salon-profile",
+      "adapter": "/salon-profile",
+      "access": "scoped"
+    },
+    {
+      "path": "/salon-settings",
+      "adapter": "/salon-settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/settings",
+      "adapter": "/pos/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/salons",
+      "adapter": "/salons",
+      "access": "scoped"
+    },
+    {
+      "path": "/businesses",
+      "adapter": "/businesses",
+      "access": "scoped"
+    },
+    {
+      "path": "/salons/new",
+      "adapter": "/salons/new",
+      "access": "scoped"
+    },
+    {
+      "path": "/businesses/new",
+      "adapter": "/businesses/new",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore",
+      "adapter": "/explore",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/salons/:salonId",
+      "adapter": "/explore/salons/:salonId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/beauty/:profileId",
+      "adapter": "/explore/beauty/:profileId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/beauty/:profileId/posts/:postId",
+      "adapter": "/explore/beauty/:profileId/posts/:postId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/inspiration/:lookId",
+      "adapter": "/explore/inspiration/:lookId",
+      "access": "scoped"
+    },
+    {
+      "path": "/book/:salonId",
+      "adapter": "/book/:salonId",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos-tickets/:ticketId",
+      "adapter": "/pos-tickets/:ticketId",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/ticket/:ticketId",
+      "adapter": "/pos/ticket/:ticketId",
+      "access": "scoped"
+    },
+    {
+      "path": "/tax-company",
+      "adapter": "/tax-company",
+      "access": "scoped"
+    },
+    {
+      "path": "/tax-company/:salonId",
+      "adapter": "/tax-company/:salonId",
+      "access": "scoped"
+    },
+    {
+      "path": "/tax-company/install",
+      "adapter": "/tax-company/install",
+      "access": "scoped"
+    },
+    {
+      "path": "/",
+      "adapter": "/",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/more",
+      "adapter": "/pos/more",
+      "access": "scoped"
+    },
+    {
+      "path": "/bookings",
+      "adapter": "/bookings",
+      "access": "scoped"
+    },
+    {
+      "path": "/reports",
+      "adapter": "/reports",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos-tickets",
+      "adapter": "/pos-tickets",
+      "access": "scoped"
+    },
+    {
+      "path": "/businesses/create",
+      "adapter": "/businesses/create",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/looks/:lookId",
+      "adapter": "/explore/looks/:lookId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/wisconsin",
+      "adapter": "/explore/wisconsin",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/wisconsin/:businessId",
+      "adapter": "/explore/wisconsin/:businessId",
+      "access": "scoped"
+    },
+    {
+      "path": "/notifications/visits/:visitId",
+      "adapter": "/notifications/visits/:visitId",
+      "access": "scoped"
+    },
+    {
+      "path": "/salon-profile/client-transformations",
+      "adapter": "/salon-profile/client-transformations",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/memberships",
+      "adapter": "/more/memberships",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/reviews",
+      "adapter": "/more/reviews",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/gift-cards",
+      "adapter": "/more/gift-cards",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/reports",
+      "adapter": "/more/reports",
+      "access": "scoped"
+    },
+    {
+      "path": "/payroll/tax-company",
+      "adapter": "/payroll/tax-company",
+      "access": "scoped"
+    },
+    {
+      "path": "/payroll/tax-company/settings",
+      "adapter": "/payroll/tax-company/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/campaigns",
+      "adapter": "/campaigns",
+      "access": "scoped"
+    },
+    {
+      "path": "/market/booking-deposit/settings",
+      "adapter": "/market/booking-deposit/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/market/orders/:orderId",
+      "adapter": "/market/orders/:orderId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/campaigns/:campaignId",
+      "adapter": "/explore/campaigns/:campaignId",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable",
+      "adapter": "/pos/portable",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/check-in",
+      "adapter": "/pos/portable/check-in",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/book",
+      "adapter": "/pos/portable/book",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/ticket",
+      "adapter": "/pos/portable/ticket",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/today",
+      "adapter": "/pos/portable/today",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/report",
+      "adapter": "/pos/portable/report",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/customer-display",
+      "adapter": "/pos/customer-display",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/customer-display/setup",
+      "adapter": "/pos/customer-display/setup",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff",
+      "adapter": "/staff",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers",
+      "adapter": "/customers",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers/new",
+      "adapter": "/customers/new",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers/:customerId",
+      "adapter": "/customers/:customerId",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers/:customerId/edit",
+      "adapter": "/customers/:customerId/edit",
+      "access": "scoped"
+    },
+    {
+      "path": "/payroll",
+      "adapter": "/payroll",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/:section",
+      "adapter": "/more/:section",
+      "access": "scoped"
+    }
+  ],
+  "reads": [
+    {
+      "name": "customer.activity",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.history",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "bookingId",
+        "ticketId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.bookings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "tab",
+        "details"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.saved-posts",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "filter",
+        "page",
+        "q"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.following",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "filter",
+        "page",
+        "q"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.favorites",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salons",
+        "after"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "staff.schedule",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "staffId",
+        "range",
+        "status",
+        "bookingId",
+        "date",
+        "quickId",
+        "view"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "staff.workday",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "staffId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "staff.my-work",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "staffId",
+        "tab",
+        "payPeriodStart"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.today",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date",
+        "phase"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.market",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.market-deposit",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-today",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date",
+        "phase"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.customer-bookings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "tab",
+        "details",
+        "bookingId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.customer-receipt",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ticketId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.staff-identity",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "view"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.my-place",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.services",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.services-catalog-admission",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.services-catalog",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.more",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.support",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.support-case",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "caseId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.workspace",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.check-in",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query",
+        "ids"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.bookings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.tickets",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.reports",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.workspace-patch",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "resource",
+        "ownerScope",
+        "ids"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "app.connection",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "public",
+      "cacheable": false
+    },
+    {
+      "name": "owner.report-closing",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "view",
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.staff.creation",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "catalog"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.notifications.preferences",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.beauty",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.notifications",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "filter"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.notifications.feed",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "filter",
+        "limit",
+        "before",
+        "id"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.salon-profile",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.salon-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.pos-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.salons",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.ticket-detail",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ticketId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.tax-salons",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "customer.tax-report",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "run",
+        "period"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.business-claims.matches",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "name",
+        "phone",
+        "address",
+        "unit",
+        "city",
+        "state"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "customer.visit",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "visitId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.transformations",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.directory",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "businessId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.payroll-tax-report",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "end",
+        "month",
+        "payPeriodStart",
+        "preset",
+        "segment",
+        "start"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.payroll-tax-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.campaigns",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.deposit-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.market-order",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "orderId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "public.campaign",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "campaignId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.workspace",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.check-in",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.book",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.ticket",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.report",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.customer-display",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.customer-display-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "display.http.settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "token"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "display.http.entry",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "token"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.explore",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.explore-extras",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.explore-feed",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.explore.search",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.feed-page",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.feed-updates",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.feed-validate",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.area",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.suggestions",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "q",
+        "location",
+        "category"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.salon-social",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ids"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "public.salon",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.beauty",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "profileId",
+        "customerId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.beauty-post",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "profileId",
+        "postId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.inspiration",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "lookId",
+        "location"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.booking",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.public-booking.availability",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "shell.navigation",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.configuration",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.summary",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.notice",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.shell.session",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.shell.quick-booking",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "inspiration",
+        "lookId",
+        "serviceId",
+        "staffId",
+        "date",
+        "startAt",
+        "source"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.shell.campaigns",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "location",
+        "latitude",
+        "longitude",
+        "batch",
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.shell.advertising",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "path",
+        "device"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "staff.relay",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "staffId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-staff",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "add",
+        "connection_error",
+        "connection_notice",
+        "error",
+        "filter",
+        "invite_email",
+        "invite_phone",
+        "invite_request",
+        "q",
+        "setup",
+        "staff"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-customers",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "page",
+        "q"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-customer-detail",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "customerId",
+        "group"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-customer-form",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "customerId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.owner-payroll",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "end",
+        "month",
+        "overviewRange",
+        "overviewService",
+        "overviewServiceRank",
+        "overviewStaff",
+        "overviewTrend",
+        "payPeriodStart",
+        "editStaff",
+        "preset",
+        "segment",
+        "start",
+        "tab"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.http.workspace",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "resource",
+        "ids",
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.http.staff",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ids"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.http.tickets",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.http.connection",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    }
+  ],
+  "commands": [
+    {
+      "name": "action.cd9e45d5fdc4291bdc97f8ad",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d06245d954e31f5b8be168de",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8c6144966289f5c73446fee7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.491f716a916c74d93c6523f0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c31772f1c4eca38298bbfdb3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.38a40647dd7273051f3a4999",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d84730935b14a9ad0d9d42ef",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d18579cec4fb4921100be388",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bb94214f0d3f0d2a38d0d32f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8f7e6d39a400851675090333",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3e744ce93fbdc7844bc697ca",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a341bbd6abe80a7668234095",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ab56383965005dd3353e4520",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e770a3b93f2aa6fefe139a12",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9a768cd7fdcfcfe9372612ad",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.288ca4eaf71e6abc98f00c33",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.154e231a1efb12a7bf1b440a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8f9f0e42896e4b40830bf6d5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1e598d3e7e7b75c9591fde44",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c677a7649dad82ced1d0102a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.5290c94f98ce780e04f5d9ad",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7b22c4f98645f7c6163afc37",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1280e34d976480d359667a16",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f65c8c8d814e8b9d4c3aa9e5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.02955b8e7f91531436bbbd92",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4937915331dbcee8bb3c0ff5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7e782fa906349d994c1d7257",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e6ed2533cee7b65eb1589fce",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9a9014c676ca50443dc7f3ea",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.90a47ec81badef66ec80dbff",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e404aa3754a10bffff3e3449",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1ac5c3ea05df9a4c829c5e55",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.662559a52cd5701b9ed5af94",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ce248b3cbade83d919554d57",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d372a8c11a0583d7e14b4eed",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.39fb05170b4d6698f8e4975a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.923f39628506a8bdc1959964",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8120079bcf1ba0d1a0b48903",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c8d2ed912253a2a9ca0a0122",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f163b47a84a728e4f33c02c8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4c40f10ecae1f17754e89644",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cfb8b4aa13248633447f49bd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f99b2c814cccbda46ac25ce1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a8d52f428a77d59ed32412d1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ccbccf17275333ff61b5ce2c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4ff7e121d64b42b9f97b3182",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e99bfbac281b2f0040bd797b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.911d2ccb0632ffea258384de",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.80572fb89ff72f23c1192523",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.125ecdd528c2160f9bc23c90",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dc79aee24bdbcf715ad1ddeb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bbb59baefab3741154789163",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a06d5a6b1fadcb4acf5e751f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.73cb3c0c50601c0fbdfd99eb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.98eb8d678c30460a4b49a5d6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c2f9d5d2b7eee4a4fbcee253",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ef3781c2eb3fbba71f06f6de",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2f6f64620a3c5535b79da7d5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2ff1ef437bd70a49370b307e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2fee1d2ec30604149c8f4bd9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c513c234cea367b151cb0cf9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.caa814d3b87b7fcc1c594cee",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3b5814b81376b29b6f702b6d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.fd4b1f4bbd588ce73ad2337f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6bfdf471a2501181af6c6733",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c273b009a9fe8b00d661599f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.43ea35bd7c39ad42537645b5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b6594f88d6d87bc27091d2a7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b6d72cbaa3b9944ef2e7eb67",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6ab67ce57face0c17c6ca51b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.65f6ddfec4bcc7176c3f7202",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.40084b43686b6b73dc4dc79b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cb1c59ec1593cd442d3308b6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.36b2f4cad54893e52ab798a1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d94d6b6fffa7661a78432671",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.147475f1747e29fc780d6db7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7fe4e45b099411edb1ef649d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2d917d2c3d746842918f595d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a6b9d77f7d5ddbff1458f2b2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2de2a16fcf121489467bd99a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b230f0fee30cdc438f5883a2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8e15707f4f804f1d6aefafb9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cbc887d5f2340a7ec02fba0d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.585d774096576fe78b903850",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.df095b8f4d9c78a567439f03",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.fa47cb6d9b9e74c636dadda2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2f1772afceae92f622cc744c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f030b83763df0d3a018fa523",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ccd6694994f2fca12f020a21",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9f4574903e4b0d84c3f21dd4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.48d0286b2a5b8fe16774b1bc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.5bc6ad9fa5b2286d232b6b14",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.10c7ea9233a347f690a1f7c2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d4232c01e7a0463f4a4cb64a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4502f3c187bec77327a67027",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.5d11cb006df637ddf886c2f3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.efc196d40c1355cb97795327",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2c9c7c649d9121c6b430132a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bfa75635bb73f19d9bebb95a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9b6c85e463ddea88607aa2e0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.895262798ea1dce5bbde13b6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d0fa95b0f3376950cec2b4da",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9abfdadd0e98c80705d212f8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.31a5721011b4449a649d96d9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.feaf50863708b882d73df6bb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.54da5d1347af7999836448bf",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7854dd5191eae68f4d73b6a8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.045fc806fa064066635efc39",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.811cc7795324663f73872d92",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7961ac2c910f7a2067d2f4a4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.153a120996d5378acd17b4d7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.772cdac11ef85b024329a565",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2e29abd92df58ad9b2be813b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.69a2c74fd5803838e297d374",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2895f09934e6d0b1831afc8f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.338b77bfc26559632fe1c407",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0f711abcc9ae6349a5050205",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e5c1fe6ebefb482edc4a1ddf",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4addf9da8f41cb5db8e9cfc0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.89a73524f42b8fa39269faa8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9adc68948447bec8b29a9131",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d79109dc36c7fc0fc6ad0bdc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bcd8e6bbb80bf3563d0ee9bc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6f41695c27a66fa75c9c02e7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.5041cef8ca37ef016a7fc9cd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.427b872b42d18da1a038c5e3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d7a13ea8ac314a10a1929d50",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.57b3af811bc182f185af8788",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bf1d73e6c144acfd6d7de892",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e17521b389c256c86c8a2694",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.361866e4f3fe481645af55b8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.185507fa17438136f09c6554",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3ead20083986204316cb0419",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.df8434167ea70164fb74f8e5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.799fd30bf3d361ae76c3a8e3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.398e36477969b82a42384575",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.90a2646a492d211f36c5b65c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a9640f09af0496a08482250b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3335be22a24981caae800954",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4f494950db0bb4811d70f618",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a76d34dc391ae49c4dc3702c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d44dd2450113525c84d6cf0f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.af480cecbd2e5eb3b0026449",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.388657dfb959c8c94466d163",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.674b56080b66ad34bd271918",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.51dfd39daf6d6d169826db73",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c3cf6ec7361ef26fc530abbf",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f47992eae0ec8ee25a996eb4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8d6b32c3c4b4c3261a3cd54e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.008a1121f46e0ac4a0ab1db1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cb4fc917c237ffe99a67651e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b1f3594694b500e99371210b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dbd36b5b42d7ff634a5ed312",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.177d9c8d4485049b7e410ae0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bebbbf3c1ca953cb536c0e80",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8d1ed81931b6e82cf5f39f77",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.32c5f03cf83e64b4e3d1a51a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.91dc00903a8d9fad5bc54c0e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b6ed9b024aca62f575126e69",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.60c6b06e3d7f1735af4b4907",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9455213d450ca82fa784eb75",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.93cd826230bef6c22e492cc2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.527c0c2642a54a88fc220736",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7740809d8af93808ca51efd7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.02852af1b51b335acd621aa7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3ddb57365702b954b07bfcba",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.48ff31f3dc27bfba9839d91e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6dd014f02b1a38d7ace645b2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.805a8e77dd5fc4af68d0ac5c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c7dcbfbf7aeb16d364d0321a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f09c3c0aab5d772b1b2e8b21",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f4f4c3af1540449da2953dbc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.978c6e7fae8c6123fea05a78",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dfbd0ef1bedbce850df01029",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6ab54832a69c8bec098e9dd2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0033ad6758bbc0015a26a901",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f43d51531c07527d3a5f5c12",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b0a00bd67f29e0624454828d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7bad2f653b11224353df34f3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.85186aff501259dbe8342b90",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f800612a0d9d66f726d969d2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.825603ad31c4241a9c79b42c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a8f1c838509e61d9f044b61c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.92d145c80e5f9d463eca943b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cc2d6383a9be0f5bc0c73073",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.42ccd944a3464d4808044597",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c6373d95c41587e9ba708a5f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4c6503087b4c6812381e3af0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7bb22aeea8fa8b285822e26b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.554b39a5b738a00fd864175d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3bfa142e6386689d39bc253a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f49fa1248a6270a7292cfcda",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9ec50f3f74c8abe1ac65f6e3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.76fe184982c90e34cb21867d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a470bb83c15ca277ab34889f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.348082c78adb64873e61d50b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8ceaef1ec1863395c19e2f05",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3bf40a20a61957f10b42d982",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.97e2ca534aca481ad4abaf45",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f52ca58649ae708196149daa",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4840ec3df9733a94d4916d0f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.86840100cd75a8758ff84961",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f0183755b41ce958178dcfd5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0b1e0a58e14816ae5b2c1e9a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7855235fbaecc8c8cf078e80",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8a3d20bfd007c6b1453dd008",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.148422b26966c4d68dfee682",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2cc3e151abe07fe32f0bb1e4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6d392c78c83274cd84290218",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e0f4858c1586bf24d5c7dc84",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7421045de9e57e32677f2184",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c004a697911655938eaaa101",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c99c554720d56914bc1385e8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2cc752fbcff2cf74bddc5ffc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.78a6a43f5062627c5560401f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8bf63c94a49e4c5fa9fe2817",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cb13ebe7eac233aa0063b607",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8cf74eab6ba13a0f0ea381a3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.fcdf2e7d99b39d1c4db8a003",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b0421b12e1d97957a2d9f88f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2cd93ae8c99ed4cd17ac7ba8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.738e70cf8751b3ef67c18a4f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.47fe4e766d6f7b1604fbbbf5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3ac9987997bdf89a42c1c9cb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0f14b7b530906a88e02dbc94",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9fd336c4ed9fde63fc1018a7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2e4fb88e63ddce69d92f7d39",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c938c496d6ab48f45d4cd0e0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b4f7fee0733bda6dd9ed9d20",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e0d374c1726cbbd6f12f70c9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f46bef51991e77f23bb9e8a5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.91c83c32fc47ef4896ce524b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.21f97cf3eddd78bc22de9c23",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.58b59a8a8771f1228fa5cd60",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8be7bf84ff8fb6f897fd884d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f1a8a4d76e98b29494cf02b1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8f157255a920779473921117",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4fefd2e488e7935d48711994",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.679e3f19640c070acd05fa0b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f72f2736bc2b4a4b67e4427d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7607cb1fb252b8d6ed53be98",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.31c0ae2688c16a3f26bff44e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ef89640c5a541203067e783a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.60b40a31d0c3d4b4735e43b8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ef6399bcf1eddc328eb44797",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c0bb39386d1a305646380e0b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ba18d75b34029fc53e80470b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.54072c2407a11cc75bd91fe7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ed1af3e056bd899837687d6f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ff25d55a5fc31b661bcf3275",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.37e2e1f79d45912d6b2af4f1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a8527452c40f032c2c2f683c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c1d80e9ad712381210d676e8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.28078aa8561c157e9b45c7b7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cdf06dd2801e948acf28a01f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4119499ccbab7ccf2ffd2d33",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.eff48cf4c7e753de7c119c6b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.08072b94c3dd3f5b1d6154ab",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.805ee4ab28a6954dd0389212",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f2e75fe0fff43ccafa597013",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f6c9fc9f70a538ca476fd067",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.393ea0f1c971c7c63be45469",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.76baa008cdde8ba0dbb909e4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.aea9486dc01af87281803902",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6e26f508d8f1900bf1b294ee",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dc68d24d69dfd38458d98c38",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.43868b737ff7fd87908af008",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e9bf91eb64c76739dbe11c91",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6ee6652b9246e7b981bbf46b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ffb7ca22ac735acf50557145",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c6288b29694833d7ec21681b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ee11d447d1154d3e1ff376fb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.df00c997ca86dc0f6e4d98f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2e671786f0d60d166a740406",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.873dd44c9cae0c2e2c122111",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3328f976642407d3bb758851",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e1c71ae1f667bfa62cac8bfa",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0b43f27dcc5613ae950c92e0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9c003c514393eb0c40456d6d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3470ba5f84cd735396917ac1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dbbf589caa638c4b301f50dd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9226c3e659b438d3631fb5f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.65b74daa544272e68a6971b1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0af210864589a26446f777d6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c0312284ce4561de83547d1a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.37163ef18027d9a42141b764",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e0180c8c1867ee8bdc0e937f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e380ac00aecc3d65f25a1f54",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.5f59a9dc86edf620500faea2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8932ff3a79e278527019c086",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e9dd5ea7780ddceb2d7e53ba",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.889b535531e80a4b8b649de8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6fd7b5830eab4d395e5fe2cd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cb40b4e47805aac83680fba2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1bfbdc4d83449f475b758906",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.12f5502676580d765e7cb609",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.424821f362cce37338ac2706",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0c401bb88ab58561433b2370",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d14797e33bdffa7d9940f9f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.135d0e25e4ee7c14d97966da",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.71559420db869529e30eabcb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c6936e7df92440098868ffc8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.59a914e15c81c5ff5299612a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.10c2df65d7601ab7a291d3aa",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.59d4487eb01643b82c1e02d9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.84de4a64ca07b333163b0f3c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "owner.receipt-operation",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "operation"
+      ]
+    },
+    {
+      "name": "http.staff.create-appointment",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.staff.report-no-show",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.staff.confirm-booking",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.staff.booking-preferences",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.notifications.preferences",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.notifications.viewed",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "upload.prepare",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "action",
+        "fields",
+        "file",
+        "files"
+      ]
+    },
+    {
+      "name": "upload.finalize",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "sessionId"
+      ]
+    },
+    {
+      "name": "upload.status",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "sessionId"
+      ]
+    },
+    {
+      "name": "upload.cancel",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "sessionId"
+      ]
+    },
+    {
+      "name": "portable.http.operations",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "portable.http.draft",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "portable.http.prepare-device",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.explore.feed-events",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.public-booking.confirm",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "shell.switch-workspace",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "workspaceId",
+        "destination"
+      ]
+    },
+    {
+      "name": "shell.logout",
+      "path": "/api/app-local/command",
+      "argumentKeys": []
+    },
+    {
+      "name": "http.shell.campaign-event",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.shell.advertising-event",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    }
+  ],
+  "help": {
+    "version": "2026-10-17.1:local-1",
+    "slugs": [
+      "overview",
+      "owner-tips",
+      "account",
+      "find-and-book",
+      "open-or-claim",
+      "staff-connections",
+      "booking-setup",
+      "pos-and-displays",
+      "check-in-and-checkout",
+      "payroll-and-tax",
+      "reports-and-mobile",
+      "profiles-and-posts",
+      "troubleshooting"
+    ],
+    "languages": [
+      "en",
+      "vi"
+    ]
+  },
+  "coverage": {
+    "total": 134,
+    "bundled": 86,
+    "ordinaryEligible": 86,
+    "registeredPatterns": 96,
+    "missing": [],
+    "online": [
+      {
+        "path": "/accept-invite",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/account-recovery",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/admin",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/advertising",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/attention",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/audit",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/businesses",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/businesses/:businessId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/claims",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/inbox",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/inbox/:threadId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/locations",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/locations/:locationId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/market",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/market/tax",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/notifications",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/post-safety",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/post-safety/spam",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/recovery",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/reports",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/reports/:reportId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/search",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/settings",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/settings/support-email",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/settings/twilio",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/team",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/users",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/users/:userId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/verification",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/booking-payment/:token",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/booking/manage/:token",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/check-in/:entry",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/claim/:salonId",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/claim/customer",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/contact-support",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/deletion-status/:token",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/forgot-password",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/login",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/market/booking-deposit/payment",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/market/payment-return",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/ownership/invite/:token",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/reset-password",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/security-check",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/settings/recovery-back-office",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/signup",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/staff/invite/:token",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/support/guest/:threadId",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/visit/:pass",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      }
+    ],
+    "boundedFamilies": {
+      "/more/:section": [
+        "/more/saved-post",
+        "/more/saved-posts",
+        "/more/saved-designs",
+        "/more/following",
+        "/more/favorite-shop",
+        "/more/favorite-customer",
+        "/more/memberships",
+        "/more/reviews",
+        "/more/gift-cards",
+        "/more/reports"
+      ]
+    }
+  }
+}

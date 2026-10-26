@@ -55,6 +55,7 @@ const ORGANIC_RANKING_WEIGHTS = {
 } as const;
 
 type ExploreFeedRecommendationCursor = {
+  searchCursor?: Record<string, unknown>;
   rank: number;
   salonId: string;
   directory?: boolean;
@@ -269,6 +270,7 @@ function normalizeRecommendationCursor(
     rank,
     salonId,
     directory: payload.directory === true,
+    searchCursor: payload.searchCursor && typeof payload.searchCursor === "object" && !Array.isArray(payload.searchCursor) ? payload.searchCursor as Record<string, unknown> : undefined,
     scope: payload.scope === "wider" ? "wider" : "local",
   };
 }
@@ -727,17 +729,15 @@ function trustSignalsFromSalon(
 }
 
 function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
-  const authorName =
-    item.authorIsAnonymous || !item.authorDisplayName
-      ? item.salonName
-      : item.authorDisplayName;
-
   return {
+    salonAuthorRole: item.authorRole,
+    salonAuthorName: item.authorIsAnonymous ? null : item.authorDisplayName,
+    salonAuthorStaffId: item.authorStaffId,
     author: {
       avatarUrl: item.salonLogoImageUrl,
       id: item.salonId,
       kind: "salon",
-      name: authorName,
+      name: item.salonName,
     },
     booking: {
       bookedCount: 0,
@@ -979,10 +979,11 @@ async function getRecommendationSourcePage(input: {
     latitude: discovery.latitude,
     longitude: discovery.longitude,
     page: Math.floor(offset / batchSize) + 1,
+    cursor: input.cursor?.searchCursor,
     pageSize: batchSize,
   });
   if (response.error) return { ...emptyRecommendationSourcePage(), error: response.error };
-  const results = response.results.slice(offset % batchSize);
+  const results = input.cursor?.searchCursor ? response.results : response.results.slice(offset % batchSize);
   if (!results.length && scope === "local" && discovery.location && !discovery.strictLocation) {
     return getRecommendationSourcePage({
       ...input,
@@ -999,13 +1000,19 @@ async function getRecommendationSourcePage(input: {
   }));
   return {
     error: null,
-    hasMore: offset + results.length < response.totalCount ||
+    hasMore: (response.hasMore ?? offset + results.length < response.totalCount) ||
       (scope === "local" && Boolean(discovery.location) && !discovery.strictLocation),
     items,
     baseRank: offset,
     directory: true,
     scope,
-    nextCursor: results.length ? { rank: offset + results.length, salonId: results[results.length - 1].id, directory: true, scope } : null,
+    nextCursor: results.length ? {
+      rank: offset + results.length,
+      salonId: results[results.length - 1].id,
+      searchCursor: response.nextCursor ?? results[results.length - 1].continuationCursor,
+      directory: true,
+      scope,
+    } : null,
   };
 }
 
@@ -1162,6 +1169,7 @@ function compareSelectableCandidates(input: {
 }
 
 function selectVisibleCandidates(input: {
+  discovery?: ExploreFeedDiscoveryOptions;
   pageSize: number;
   sources: FeedCandidateSources;
 }) {
@@ -1173,6 +1181,17 @@ function selectVisibleCandidates(input: {
   const selected: FeedCandidate[] = [];
 
   while (selected.length < input.pageSize) {
+    // Consume rejected candidates in source order before spending a visible
+    // page slot. Their boundary advances, while matching posts not selected
+    // yet remain available on the next request.
+    for (const source of FEED_SOURCES) {
+      while (
+        input.sources[source][consumed[source]] &&
+        !matchesExploreFeedItem(input.sources[source][consumed[source]].item, input.discovery)
+      ) {
+        consumed[source] += 1;
+      }
+    }
     let available = FEED_SOURCES.map(
       (source) => input.sources[source][consumed[source]],
     ).filter((candidate): candidate is FeedCandidate => Boolean(candidate));
@@ -1256,10 +1275,8 @@ function buildNextCursor(input: {
 }
 
 function sourceCompleted(input: {
-  consumedCount: number;
   hasMore: boolean;
   hasUnconsumedCandidates: boolean;
-  itemCount: number;
   wasCompleted: boolean;
 }) {
   if (input.wasCompleted) {
@@ -1270,11 +1287,7 @@ function sourceCompleted(input: {
     return false;
   }
 
-  return !(
-    input.hasMore &&
-    input.itemCount > 0 &&
-    input.consumedCount === input.itemCount
-  );
+  return !input.hasMore;
 }
 
 function rankedFeedCandidate(input: {
@@ -1482,6 +1495,7 @@ export async function getExploreFeedPage(input: {
             cursor: {
               rank,
               salonId: salon.id,
+              searchCursor: salon.continuationCursor,
               directory: recommendationPage.directory,
               scope: recommendationPage.scope,
             },
@@ -1500,31 +1514,26 @@ export async function getExploreFeedPage(input: {
     salon: arrangeSourceCandidates(salonCandidates),
   };
   const { consumed, selected } = selectVisibleCandidates({
+    discovery: input.discovery,
     pageSize,
     sources,
   });
   const completed: ExploreFeedSourceCompletion = {
     personal: sourceCompleted({
-      consumedCount: consumed.personal,
       hasMore: personalPage.hasMore,
       hasUnconsumedCandidates: consumed.personal < personalCandidates.length,
-      itemCount: personalPage.items.length,
       wasCompleted: sourceState.completed.personal,
     }),
     recommendation: recommendationPage.directory
       ? consumed.recommendation >= recommendationCandidates.length && !recommendationPage.hasMore
       : sourceCompleted({
-          consumedCount: consumed.recommendation,
           hasMore: recommendationPage.hasMore,
           hasUnconsumedCandidates: consumed.recommendation < recommendationCandidates.length,
-          itemCount: recommendationPage.items.length,
           wasCompleted: sourceState.completed.recommendation,
         }),
     salon: sourceCompleted({
-      consumedCount: consumed.salon,
       hasMore: salonPage.hasMore,
       hasUnconsumedCandidates: consumed.salon < salonCandidates.length,
-      itemCount: salonPage.items.length,
       wasCompleted: sourceState.completed.salon,
     }),
   };
@@ -1532,7 +1541,14 @@ export async function getExploreFeedPage(input: {
     (source) => consumed[source] < sources[source].length,
   );
   const hasIncompleteSource = FEED_SOURCES.some((source) => !completed[source]);
-  const nextState = buildNextCursor({ completed, current: sourceState, visibleCandidates: selected });
+  const consumedCandidates = FEED_SOURCES.flatMap(source => sources[source].slice(0, consumed[source]));
+  const nextState = buildNextCursor({ completed, current: sourceState, visibleCandidates: consumedCandidates });
+  if (consumed.personal >= personalCandidates.length && personalPage.nextCursor) {
+    nextState.personal = personalPage.nextCursor;
+  }
+  if (consumed.salon >= salonCandidates.length && salonPage.nextCursor) {
+    nextState.salon = salonPage.nextCursor;
+  }
   if (recommendationPage.directory && consumed.recommendation >= recommendationCandidates.length && recommendationPage.nextCursor) {
     nextState.recommendation = recommendationPage.nextCursor;
   }

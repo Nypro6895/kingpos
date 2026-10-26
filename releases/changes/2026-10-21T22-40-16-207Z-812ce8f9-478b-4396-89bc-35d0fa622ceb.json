@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+  "status": "needs-integration",
+  "summary": "Bounded settled online DTOs can return only after fresh same-principal same-salon destination authorization; old DOM/drafts and command admission still withdraw. Security/unknown tenant/mutations/discard/scope conflict purge. Isolated validated source; no deploy or Mac app update.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-read-cache.ts",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\role-read-reuse\\frozen-implementation-20261021T224009609534Z\\source",
+    "commit": "54b692557288c7eb2fd1839618a4f8499f799d52"
+  },
+  "dependencies": [
+    "ios-my-work-critical-path-20261021"
+  ],
+  "validation": [
+    {
+      "name": "Canonical Chromium38 and WebKit22 controls; lint; complete production build; exact five input bytes match Git",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\role-read-reuse\\canonical-validation-20261021T223645669246Z\\result.json"
+    },
+    {
+      "name": "Independent security review plus exact line-ending-only canonical mapping",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\role-read-reuse\\frozen-implementation-20261021T224009609534Z\\patch-manifest.json"
+    },
+    {
+      "name": "Actual c701 installed Mac hosted login, role/session and native performance validation for this additional patch",
+      "result": "pending"
+    }
+  ],
+  "id": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+  "recordedAt": "2026-10-21T22:40:16.207Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

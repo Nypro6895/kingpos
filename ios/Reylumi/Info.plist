@@ -10,8 +10,13 @@
   <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
   <key>LSRequiresIPhoneOS</key><true/>
   <key>ITSAppUsesNonExemptEncryption</key><false/>
-  <key>UILaunchScreen</key><dict/>
+  <key>UIUserInterfaceStyle</key><string>Light</string>
+  <key>UILaunchScreen</key><dict><key>UIColorName</key><string>AppBackground</string></dict>
   <key>ReylumiServerURL</key><string>https://reylumi.com</string>
+  <key>WKAppBoundDomains</key><array><string>reylumi.com</string><string>reylumi-app:</string></array>
+  <key>BGTaskSchedulerPermittedIdentifiers</key><array><string>com.reylumi.ios.read-refresh</string></array>
+  <key>UIBackgroundModes</key><array><string>fetch</string></array>
+  <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>com.reylumi.ios</string><key>CFBundleURLSchemes</key><array><string>reylumi</string></array></dict></array>
   <key>NSCameraUsageDescription</key><string>Take photos for your beauty profile and salon posts.</string>
   <key>NSPhotoLibraryUsageDescription</key><string>Choose photos for your profile and salon posts.</string>
   <key>NSLocationWhenInUseUsageDescription</key><string>Find nearby salons when you choose to use your location.</string>

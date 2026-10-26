@@ -10,6 +10,7 @@ import {
   getCurrentBusinessContext,
   getRouteForInvalidSalonContext,
   isSalonManageContext,
+  isOwnerMembership,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
 import {
@@ -693,6 +694,8 @@ async function assertWorkDateIsUnlocked({
   supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
   workDate: string;
 }) {
+  const ownerContext=await getCurrentBusinessContext();
+  if(isSalonManageContext(ownerContext)&&ownerContext.currentSalon?.id===salonId&&isOwnerMembership(ownerContext.currentMembership))return;
   const { data, error } = await supabase
     .from("pos_ticket_staff_earnings")
     .select("id, locked_at, payroll_batch_id")
@@ -3676,3 +3679,4 @@ export async function deletePosPayment(formData: FormData) {
   revalidatePath(returnPath);
   redirectAfterMutation(returnPath);
 }
+

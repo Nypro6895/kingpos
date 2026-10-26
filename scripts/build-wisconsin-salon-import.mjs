@@ -2,15 +2,35 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 
 const read = async (name) => JSON.parse(await readFile(new URL(`../data/${name}`, import.meta.url), "utf8"));
-const official = await read("wisconsin-business-sources.json");
-const directory = await read("wisconsin-directory-sources.json");
-const businesses = [...official.businesses.map((b) => ({ ...b, collectedOn: official.collectedOn })), ...directory.businesses.map((b) => ({ ...b, collectedOn: directory.collectedOn }))];
+const state = process.argv.includes("--state") ? process.argv[process.argv.indexOf("--state") + 1] : "WI";
+const stateNames = Object.fromEntries("AL:Alabama|AK:Alaska|AZ:Arizona|AR:Arkansas|CA:California|CO:Colorado|CT:Connecticut|DE:Delaware|DC:District of Columbia|FL:Florida|GA:Georgia|HI:Hawaii|ID:Idaho|IL:Illinois|IN:Indiana|IA:Iowa|KS:Kansas|KY:Kentucky|LA:Louisiana|ME:Maine|MD:Maryland|MA:Massachusetts|MI:Michigan|MN:Minnesota|MS:Mississippi|MO:Missouri|MT:Montana|NE:Nebraska|NV:Nevada|NH:New Hampshire|NJ:New Jersey|NM:New Mexico|NY:New York|NC:North Carolina|ND:North Dakota|OH:Ohio|OK:Oklahoma|OR:Oregon|PA:Pennsylvania|RI:Rhode Island|SC:South Carolina|SD:South Dakota|TN:Tennessee|TX:Texas|UT:Utah|VT:Vermont|VA:Virginia|WA:Washington|WV:West Virginia|WI:Wisconsin|WY:Wyoming".split("|").map(entry => entry.split(":")));
+const stateName = stateNames[state];
+if (!stateName) throw Error("Unsupported state");
+const timezone = process.argv.includes("--timezone") ? process.argv[process.argv.indexOf("--timezone") + 1] : ({ WI: "America/Chicago", IL: "America/Chicago", OR: "America/Los_Angeles", WA: "America/Los_Angeles" })[state];
+if (!timezone) throw Error("New states require --timezone with a verified IANA timezone; split mixed-timezone datasets into separate batches");
+new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format();
+const stateSlug = stateName.toLowerCase().replaceAll(" ", "-");
+const { businesses: sourceBusinesses } = await read(`${stateSlug}-profile-sources.json`);
+if (!Array.isArray(sourceBusinesses)) throw Error("Missing businesses array");
+const businesses = process.argv.includes("--timezone-filter")
+  ? sourceBusinesses.filter(b => b.operatingTimezoneIana === timezone)
+  : sourceBusinesses;
+if (process.argv.includes("--timezone-filter") && sourceBusinesses.some(b => !b.operatingTimezoneIana)) throw Error("Timezone-filter requires verified timezone on every source record");
+const batchSize = process.argv.includes("--batch-size") ? Number(process.argv[process.argv.indexOf("--batch-size") + 1]) : 500;
+const batchIndex = process.argv.includes("--batch-index") ? Number(process.argv[process.argv.indexOf("--batch-index") + 1]) : 0;
+if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 1000 || !Number.isInteger(batchIndex) || batchIndex < 0) throw Error("Use batch-size 1..1000 and a nonnegative batch-index");
+if (!Array.isArray(businesses)) throw Error("Missing businesses array");
+const selectedBusinesses = businesses.slice(batchIndex * batchSize, (batchIndex + 1) * batchSize);
 const uuid = (key) => {
-  const hex = createHash("sha1").update(`reylumi-wisconsin:${key}`).digest("hex").slice(0, 32);
+  const hex = createHash("sha1").update(`reylumi-${stateSlug}:${key}`).digest("hex").slice(0, 32);
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20)}`;
 };
-const rows = businesses.map((b) => {
+const rows = selectedBusinesses.map((b) => {
   if (!b.id || !b.name || !b.address || !b.city || !/^\d{3}-\d{3}-\d{4}$/.test(b.phone)) throw new Error(`Incomplete contact: ${b.id}`);
+  if (b.state && b.state !== state) throw Error(`Wrong state for ${b.id}: ${b.state}`);
+  if (b.operatingTimezoneIana && b.operatingTimezoneIana !== timezone) throw Error(`Timezone mismatch for ${b.id}; split using --timezone-filter`);
+  if (b.country && b.country !== "US") throw Error(`Wrong country for ${b.id}: ${b.country}`);
+  if (!/^https:\/\//.test(b.sourceUrl ?? "") || !Array.isArray(b.categories) || !b.categories.length) throw Error(`Missing provenance/categories: ${b.id}`);
   return {
     listing_id: b.id, salon_id: uuid(`${b.id}:salon`), account_id: uuid(`${b.id}:account`),
     post_id: uuid(`${b.id}:reference-post`), name: b.name, phone: b.phone, email: b.email,
@@ -19,14 +39,18 @@ const rows = businesses.map((b) => {
     source_url: b.sourceUrl, source_type: b.sourceType ?? "business_website",
     categories: b.categories, collected_on: b.collectedOn, notes: b.notes ?? "",
     title: `Discover ${b.name} in ${b.city}`,
-    body: `${b.name} is listed under ${b.categories.map((c) => c.toLowerCase()).join(" and ")} in ${b.city}, Wisconsin. The source lists ${b.address}, ${b.city}, WI ${b.postalCode} and contact number ${b.phone}. Contact the business directly to confirm services, prices and availability. This introduction was compiled by Reylumi from the linked ${b.sourceType === "directory" ? "third-party directory" : "business website"}; it is reference information and has not been submitted or confirmed by the owner. Source: ${b.sourceUrl}`,
+    body: `${b.name} is listed under ${b.categories.map((c) => c.toLowerCase()).join(" and ")} in ${b.city}, ${stateName}. The source lists ${b.address}, ${b.city}, ${state} ${b.postalCode} and contact number ${b.phone}. Contact the business directly to confirm services, prices and availability. This introduction was compiled by Reylumi from the linked ${b.sourceType === "directory" ? "third-party directory" : "business website"}; it is reference information and has not been submitted or confirmed by the owner. Source: ${b.sourceUrl}`,
   };
 });
 const jsonLiteral = "'" + JSON.stringify(rows).replaceAll("'", "''") + "'::jsonb";
-const sql = `-- Generated by scripts/build-wisconsin-salon-import.mjs. Run after migration 202610050005.
+const sql = `-- Generated by scripts/build-wisconsin-salon-import.mjs. Requires migrations 20261008223001 and 20261008223002.
 begin;
+-- This trusted maintenance transaction uses the existing service-role policy;
+-- no user is impersonated and no trigger or security policy is disabled.
+set local request.jwt.claims = '{"role":"service_role"}';
 -- Serialize repeat imports; claim workflows must lock the ledger before changes.
 lock table public.salon_directory_listings in share row exclusive mode;
+lock table public.salon_directory_suppressions in share row exclusive mode;
 create temporary table wi_import on commit drop as
 select * from jsonb_to_recordset(${jsonLiteral}) as x(
   listing_id text,salon_id uuid,account_id uuid,post_id uuid,name text,phone text,email text,
@@ -38,22 +62,32 @@ do $$ begin
     raise exception 'Duplicate input listing identity';
   end if;
 end $$;
+-- A source may change listing IDs; also match the normalized contact identity.
+delete from wi_import i where exists (
+ select 1 from public.salon_directory_suppressions s where s.listing_id=i.listing_id
+ or s.identity_key=public.directory_import_identity('${state}',i.city,i.phone,i.address)
+);
 -- Existing linked/claimed profiles are never rewritten by an import.
+-- Enrich only the directory categories of existing unclaimed listings, never owner settings.
+update public.salon_directory_listings d set source_categories = array(
+  select distinct category from unnest(d.source_categories || i.categories) category order by category
+) from wi_import i where d.listing_id=i.listing_id and d.claim_state='unclaimed'
+  and not d.source_categories @> i.categories;
 delete from wi_import i where exists(select 1 from public.salon_directory_listings d where d.listing_id=i.listing_id);
 -- Avoid overwriting or creating duplicates of existing independently registered salons.
 delete from wi_import i where exists(
-  select 1 from public.locations l where
+  select 1 from public.locations l where upper(coalesce(l.state,''))='${state}' and
     regexp_replace(coalesce(l.phone,''),'[^0-9]','','g')=regexp_replace(i.phone,'[^0-9]','','g')
     and lower(coalesce(l.city,''))=lower(i.city)
     and regexp_replace(lower(coalesce(l.address_line1,'')),'[^a-z0-9]','','g')=regexp_replace(lower(i.address),'[^a-z0-9]','','g')
 );
 insert into public.accounts(id,name,status) select account_id,name,'active' from wi_import;
 insert into public.locations(id,account_id,name,phone,address_line1,city,state,postal_code,country,status,create_request_key)
-select salon_id,account_id,name,phone,address,city,'WI',postal_code,'US','active','directory:'||listing_id from wi_import;
+select salon_id,account_id,name,phone,address,city,'${state}',postal_code,'US','active','directory:'||listing_id from wi_import;
 insert into public.salon_settings(salon_id,business_name,phone,email,website,address_line1,city,state,postal_code,country,business_description,public_profile_tagline,public_profile_story,public_discovery_enabled,public_discovery_published_at,operating_timezone_iana,allow_staff_applications)
-select salon_id,name,phone,email,nullif(website,''),address,city,'WI',postal_code,'US',
-  name||' · '||array_to_string(categories,', ')||' in '||city||', Wisconsin. Public listing created by Reylumi; not yet claimed by the business owner.',
-  array_to_string(categories,' · ')||' in '||city,body,true,now(),'America/Chicago',false from wi_import;
+select salon_id,name,phone,email,nullif(website,''),address,city,'${state}',postal_code,'US',
+  name||' · '||array_to_string(categories,', ')||' in '||city||', ${stateName}. Public listing created by Reylumi; not yet claimed by the business owner.',
+  array_to_string(categories,' · ')||' in '||city,body,true,now(),'${timezone}',false from wi_import;
 insert into public.booking_settings(salon_id,booking_enabled,online_booking_visible) select salon_id,false,false from wi_import;
 insert into public.salon_profile_updates(id,salon_id,author_display_name,update_type,title,caption,summary,status,published_at)
 select post_id,salon_id,'Reylumi · Reference introduction','announcement',title,body,
@@ -64,5 +98,6 @@ select listing_id,salon_id,source_url,source_type,categories,collected_on,post_i
 select count(*) as imported_new_profiles from wi_import;
 commit;
 `;
-await writeFile(new URL("../supabase/.temp/import-wisconsin-salon-profiles.sql", import.meta.url), sql);
+await writeFile(new URL(`../supabase/.temp/import-${stateSlug}-salon-profiles.sql`, import.meta.url), sql);
 console.log(`Prepared ${rows.length} ownerless salon profiles and reference posts.`);
+console.log(`Batch ${batchIndex + 1}/${Math.ceil(businesses.length / batchSize)}; use --batch-index for subsequent batches.`);

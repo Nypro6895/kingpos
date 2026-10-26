@@ -1,5 +1,6 @@
 "use client";
 
+import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionDialog } from "@/app/action-dialog";
 import { useState } from "react";
 
@@ -22,6 +23,8 @@ export function QueryErrorDialog({
   secondaryLabel,
   title,
 }: QueryErrorDialogProps) {
+  const __vt = useWorkspaceTranslation();
+
   const [isOpen, setOpen] = useState(Boolean(message));
 
   if (!message) {
@@ -30,7 +33,7 @@ export function QueryErrorDialog({
 
   return (
     <ActionDialog
-      description={description ?? message}
+      description={__vt(description ?? message)}
       onClose={() => setOpen(false)}
       open={isOpen}
       primaryAction={
@@ -43,7 +46,7 @@ export function QueryErrorDialog({
           ? { href: secondaryHref, label: secondaryLabel }
           : undefined
       }
-      title={title}
+      title={__vt(title)}
     />
   );
 }

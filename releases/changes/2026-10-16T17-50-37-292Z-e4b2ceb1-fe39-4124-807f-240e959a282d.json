@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "app-local-final-integration-fixtures-20261016",
+  "status": "working",
+  "summary": "Refresh generated route-source inventory for actual extracted original UI modules and adapt binding-authority command fixture to current compile-pinned broker imports, preserving real original binding handler.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-route-inventory.generated.json",
+    "tests/app-local-staff-binding-command.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "inventory and original staff-binding command integration tests",
+      "result": "pending"
+    }
+  ],
+  "id": "e4b2ceb1-fe39-4124-807f-240e959a282d",
+  "recordedAt": "2026-10-16T17:50:37.292Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

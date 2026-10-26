@@ -9,7 +9,7 @@ test('Portable Ticket follows the business day, receives remote tickets and pres
  const {build}=await import(pathToFileURL(process.env.ESBUILD_MODULE_PATH).href);
  const root=resolve('.').replaceAll('\\','/');
  const initial={date:'2026-09-24',timezone:'America/Chicago',tickets:[],staff:[],services:[],canEdit:false,isBusinessDateLocked:false};
- const bundle=await build({stdin:{resolveDir:root,loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{PortableTicketClient}from'${root}/app/pos/portable/ticket/portable-ticket-client';const root=createRoot(document.getElementById('root'));window.render=(followToday=true)=>root.render(<PortableTicketClient initialData={${JSON.stringify(initial)}} searchQuery="" followToday={followToday}/>);window.render();`},jsx:'automatic',bundle:true,write:false,platform:'browser',plugins:[{name:'fixtures',setup(b){
+ const bundle=await build({stdin:{resolveDir:root,loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{PortableTicketClient}from'${root}/app/pos/portable/ticket/portable-ticket-client';const root=createRoot(document.getElementById('root'));window.render=(followToday=true)=>root.render(<PortableTicketClient initialData={${JSON.stringify(initial)}} searchQuery="" followToday={followToday}/>);window.render();`},jsx:'automatic',bundle:true,write:false,outfile:'fixture.js',platform:'browser',plugins:[{name:'fixtures',setup(b){
   b.onResolve({filter:/pos-workspace-sync$/},()=>({path:'sync',namespace:'fixture'}));
   b.onResolve({filter:/portable-workspace-state$/},()=>({path:'workspace',namespace:'fixture'}));
   b.onResolve({filter:/portable-operations$/},()=>({path:'ops',namespace:'fixture'}));
@@ -20,7 +20,7 @@ test('Portable Ticket follows the business day, receives remote tickets and pres
   b.onResolve({filter:/^next\/navigation$/},()=>({path:'navigation',namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({loader:'tsx',resolveDir:root,contents:({
    sync:`export function subscribePosChanges(id,fn){window.remote=fn;return()=>{};}`,
-   navigation:`export function usePathname(){return '/pos/portable/ticket';}`,
+   navigation:`const router={replace(href){window.history.replaceState(null,'',href);}};export function useRouter(){return router;}export function usePathname(){return '/pos/portable/ticket';}`,
    workspace:`export function usePortableWorkspaceState(){return{scope:'salon:key',businessDate:window.day??'2026-09-25'};}`,
    ops:`export const PORTABLE_OPERATIONS_CHANGED='operations';`,
    local:`export function PortableLocalTickets(){return null;}`,

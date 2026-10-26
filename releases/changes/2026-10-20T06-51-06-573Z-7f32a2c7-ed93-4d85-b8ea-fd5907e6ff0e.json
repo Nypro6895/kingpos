@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "campaign-top-local-ios-20261020",
+  "status": "working",
+  "summary": "Package authorized local campaign placement and rotation into iOS Explore; preserve uploaded build44 native source",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-discovery-feed.tsx",
+    "components/owner-sponsored-post.tsx"
+  ],
+  "dependencies": [
+    "campaign-top-local-20261019"
+  ],
+  "validation": [
+    {
+      "name": "Native bundle, simulator, archive and upload",
+      "result": "pending"
+    }
+  ],
+  "id": "7f32a2c7-ed93-4d85-b8ea-fd5907e6ff0e",
+  "recordedAt": "2026-10-20T06:51:06.573Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
