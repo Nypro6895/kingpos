@@ -1,0 +1,61 @@
+Windows Portable Report and navigation - 2026-10-26 (America/Chicago)
+
+Implementation complete locally. Not deployed. Queue for the shared release.
+Change ID: portable-report-flat-today-20261026
+
+Report uses one full-height white canvas with readable outer padding and
+unframed closing/reconciliation columns. Date filter, Load and repeated salon/
+date header removed. Portable Report always opens today's salon date, ignoring
+the page date query. Server actions reject historical/future reads and both
+closing save paths. When the workspace day changes, yesterday's cached form
+and totals are hidden and Reload is offered. Existing drafts remain stored.
+
+Desktop navigation follows the salon brand with a vertical divider. Tabs use
+background fill without a selection ring; utility controls remain at right.
+The existing below-1280 compact header behavior remains in effect.
+
+Evidence and frozen inputs:
+artifacts/portable-report-flat-today-20261026/
+  before/               exact pre-task versions of the four changed sources
+  frozen/               final source and regression test
+  task-only.patch       ONLY this task's changes against before/
+  source-hashes.json    SHA256 before and after
+  report-1417.png       actual components in isolated browser fixture
+  browser-evidence.json viewport/white-canvas/flat-selection measurements
+  source-typecheck.txt  source check passed
+  typecheck.txt         default check fails on 6 stale generated Help imports
+
+Validation: 6/6 tests pass, no skips, covering money editing, salon midnight,
+date guards, timezone differences, save behavior and report layout at five
+widths from 768 to 1904. ESLint passed for changed page, nav, form and test.
+Browser fixture uses actual Report page/form/nav and closing-save hook with
+mock authentication, RPC/network data and unrelated toolbar integrations.
+No production database reads/writes, native packaging or live UI checks.
+
+Integration: checkout already contained extensive unrelated edits. Apply the
+task-only patch to a freshly captured live baseline; do not copy these full
+source files wholesale. Preserve concurrent changes, especially daily-closing
+save and device keyboard work. Validate the assembled production build and
+authenticated Windows Report. Regenerate stale Next route types during that
+build; do not change Help source to satisfy old generated imports.
+Web-compatible change; no bundled/native Windows or iOS assets changed.
+
+Follow-up 2026-10-26: portable-menu-blue-fullheight-20261026
+Owner requested blue selected menu, full bar height, no rounded appearance.
+Selected tab now uses bg-blue-100/text-blue-900 with square corners and a
+60px minimum height; navigation stretches to both edges of the menu row.
+Apply this follow-up AFTER the original report/navigation patch above.
+Frozen follow-up sources and pre-change versions:
+artifacts/portable-menu-blue-fullheight-20261026/{before,frozen}/
+Browser and server regression checks: 2/2 passed; ESLint passed. All five
+viewport widths verify blue selection, 0px corner radius and matching top/
+bottom edges of the bar. Not deployed.
+
+Latest selection revision 2026-10-26: owner requested pale teal background
+#E7F7F5 with dark teal #007A75 text and icons. Full height and square corners
+preserved. This revision supersedes blue ready event
+49aff179-e296-4277-8d58-59167399382a; use the latest ready revision of
+portable-menu-blue-fullheight-20261026 after the original Report patch.
+Frozen sources: artifacts/portable-menu-teal-fullheight-20261026/frozen/
+Exact computed colors, full-height edges and zero radius passed at all five
+viewport widths; server/save regressions and ESLint passed. Not deployed.

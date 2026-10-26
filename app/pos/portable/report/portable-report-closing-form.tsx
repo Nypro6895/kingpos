@@ -137,9 +137,9 @@ function PortableClosingEditor({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:gap-16">
       {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} <WorkspaceText text="ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details." /></p>:null}
-      <section className="min-w-0 border-t border-zinc-200 bg-white py-5">
+      <section className="min-w-0 py-2">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-zinc-950">
@@ -267,7 +267,7 @@ function PortableClosingEditor({
         </form>
       </section>
 
-      <section className="min-w-0 border-t border-zinc-200 bg-white py-5">
+      <section className="min-w-0 py-2">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Reconciliation" /></h2>
         <dl className="mt-5 space-y-4">
           <div className="flex items-center justify-between gap-4">
@@ -314,5 +314,11 @@ function PortableClosingEditor({
 
 export function PortableReportClosingForm({ data }: { data: PortableReportData }) {
   const workspace = usePortableWorkspaceState();
+  if (workspace?.businessDate && workspace.businessDate !== data.reportDate) {
+    return <div role="alert" className="bg-amber-50 p-4 text-sm text-amber-900">
+      <p><WorkspaceText text="The business date has changed. Reload Report to view today before entering closing amounts." /></p>
+      <button type="button" className="mt-3 rounded bg-zinc-950 px-4 py-2 text-white" onClick={() => window.location.reload()}><WorkspaceText text="Reload" /></button>
+    </div>;
+  }
   return <PortableClosingEditor key={(workspace?.scope ?? data.closingScope ?? '') + ':' + data.reportDate} data={data}/>;
 }

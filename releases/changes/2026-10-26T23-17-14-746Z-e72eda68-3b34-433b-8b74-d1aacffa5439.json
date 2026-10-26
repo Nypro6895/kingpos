@@ -1,0 +1,41 @@
+{
+  "files": [
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "tests/portable-report-today.test.mjs"
+  ],
+  "dependencies": [
+    "portable-report-flat-today-20261026"
+  ],
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Revised selected Portable Windows menu: pale teal #E7F7F5 background, dark teal #007A75 text and icons, full menu height, no rounded corners. Replaces blue selection revision.",
+  "supersedesEvents": [
+    "49aff179-e296-4277-8d58-59167399382a"
+  ],
+  "kind": "change",
+  "validation": [
+    {
+      "name": "2 runtime/browser tests passed, including exact computed teal colors on text/icon/background, square corners and full menu-bar height at five viewport widths",
+      "evidence": "artifacts/portable-menu-teal-fullheight-20261026/browser-evidence.json",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint changed navigation and test",
+      "result": "passed"
+    }
+  ],
+  "changeId": "portable-menu-blue-fullheight-20261026",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\portable-menu-teal-fullheight-20261026\\frozen"
+  },
+  "id": "e72eda68-3b34-433b-8b74-d1aacffa5439",
+  "recordedAt": "2026-10-26T23:17:14.746Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/portable/portable-workspace-tabs.tsx": "5d45f355290581cd0183b42b68652adb005761816381af56a7984d0782f8d4d6",
+    "tests/portable-report-today.test.mjs": "813a96275010719b63a7662a663e75a4051b2fb6d18ab1b0658b73a866889450"
+  }
+}

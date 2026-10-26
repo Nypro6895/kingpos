@@ -2240,7 +2240,9 @@ export async function getPortableReportData(
 ): Promise<PortableReportData> {
   const { keyId, portableSession, signature, supabase } =
     await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
-  reportDate ??= getTodayDate(portableSession.salon_timezone);
+  const today = getTodayDate(portableSession.salon_timezone);
+  if (reportDate && reportDate !== today) throw new Error("Portable Report is available for today only.");
+  reportDate = today;
   const rpcResult = await supabase.rpc("get_pos_portable_report_data", {
     p_key_id: keyId,
     p_report_date: reportDate,
@@ -2339,6 +2341,9 @@ export async function savePortableReportClosing(
     if (input.expectedScope && input.expectedScope !== `${portableSession.salon_id}:${keyId}`) {
       throw new Error("The Portable salon session changed. Reopen this report before saving.");
     }
+      if (input.reportDate !== getTodayDate(portableSession.salon_timezone)) {
+        throw new Error("Portable Report is available for today only. Reload Report to continue.");
+      }
     const cashAmountCents = parsePortableCurrencyToCents(
       input.cashAmount,
       "Cash",

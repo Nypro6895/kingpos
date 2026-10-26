@@ -243,7 +243,7 @@ export function PortableWorkspaceTabs({
         salonId={salonId}
       /> : null}
       <div className="mx-auto flex min-h-[60px] w-full items-center gap-3">
-        <div className="hidden min-w-0 max-w-64 flex-1 items-center gap-3 xl:flex">
+        <div className="hidden min-w-0 max-w-72 shrink-0 items-center gap-3 border-r border-zinc-200 pr-5 xl:flex">
           <SalonBrand
             salonLogoUrl={salonLogoUrl}
             salonName={salonName}
@@ -253,7 +253,7 @@ export function PortableWorkspaceTabs({
 
         <nav
           aria-label={__vt("POS workspace")}
-          className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto xl:justify-center"
+          className="flex min-w-0 flex-1 self-stretch items-stretch gap-1 overflow-x-auto"
         >
           {items.map((item) => {
             const active = optimisticHref
@@ -264,9 +264,9 @@ export function PortableWorkspaceTabs({
               <Link
                 aria-current={active ? "page" : undefined}
                 className={[
-                  "relative flex h-10 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 text-center text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 sm:text-sm xl:max-w-32",
+                  "relative flex min-h-[60px] min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-none px-3 text-center text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#007A75] sm:text-sm xl:flex-none xl:px-4",
                   active
-                    ? "bg-orange-100 text-orange-900 ring-1 ring-inset ring-orange-200"
+                    ? "bg-[#E7F7F5] text-[#007A75]"
                     : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950",
                 ].join(" ")}
                 href={item.href}
@@ -288,7 +288,7 @@ export function PortableWorkspaceTabs({
           })}
         </nav>
 
-        <div className="flex items-center gap-1 lg:justify-self-end">
+        <div className="ml-auto flex shrink-0 items-center gap-1">
         {items.some(item => item.id === "book") ? <PortableBookingNotifications key={workspace?.scope ?? salonId} salonId={salonId} timezone={salonTimezone} canConfirm={canConfirmBookings} /> : null}
         {workspace?.offlineEnabled ? <PortableSyncIndicator scope={workspace.scope} /> : null}
         <DesktopTools />

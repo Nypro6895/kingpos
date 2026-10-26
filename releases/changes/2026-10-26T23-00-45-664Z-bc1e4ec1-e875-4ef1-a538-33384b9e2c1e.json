@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "portable-report-flat-today-20261026",
+  "status": "needs-integration",
+  "summary": "Completed locally: white continuous Portable Report, today-only server access and saving, flat left navigation after salon divider. Integrate task-only.patch into current production baseline.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/pos/portable/report/page.tsx",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "app/pos/portable/actions.ts",
+    "tests/portable-report-today.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\portable-report-flat-today-20261026\\frozen"
+  },
+  "validation": [
+    {
+      "name": "6 runtime/browser regression checks, no skips; 768/1024/1280/1417/1904 layout and save/date guards",
+      "result": "passed",
+      "evidence": "artifacts/portable-report-flat-today-20261026/browser-evidence.json"
+    },
+    {
+      "name": "ESLint changed page, navigation, form and test",
+      "result": "passed"
+    },
+    {
+      "name": "Source TypeScript check excluding stale generated .next-readiness-check route cache",
+      "result": "passed",
+      "evidence": "artifacts/portable-report-flat-today-20261026/source-typecheck.txt"
+    },
+    {
+      "name": "Default TypeScript check: 6 existing TS2307 references to moved Help pages in generated cache",
+      "result": "failed",
+      "evidence": "artifacts/portable-report-flat-today-20261026/typecheck.txt"
+    },
+    {
+      "name": "Fresh production baseline integration, production build and live Windows verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "bc1e4ec1-e875-4ef1-a538-33384b9e2c1e",
+  "recordedAt": "2026-10-26T23:00:45.664Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

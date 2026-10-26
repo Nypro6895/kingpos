@@ -1,5 +1,4 @@
 import { withExperiencePage } from "@/components/experience-page";
-import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { WorkspaceText } from "@/components/workspace-language";
 import { getPortableReportData } from "@/app/pos/portable/actions";
 import { PortableReportClosingForm } from "@/app/pos/portable/report/portable-report-closing-form";
@@ -10,24 +9,10 @@ type PortableReportPageProps = {
   }>;
 };
 
-function formatDate(value: string, timeZone: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    timeZone,
-    weekday: "short",
-    year: "numeric",
-  }).format(new Date(`${value}T12:00:00`));
-}
-
-function validDate(value: string | undefined) {
-  return value?.match(/^\d{4}-\d{2}-\d{2}$/) ? value : undefined;
-}
-
 function PortableReportDenied() {
   return (
     <section
-      className="h-full overflow-auto px-4 py-5 text-zinc-950 sm:px-6"
+      className="h-full overflow-auto bg-white px-6 py-8 text-zinc-950 sm:px-8 lg:py-10"
       data-portable-pos-page="report"
     >
       <div className="mx-auto grid max-w-3xl gap-4">
@@ -44,49 +29,24 @@ function PortableReportDenied() {
   );
 }
 
-async function PortableReportPage({
-  searchParams,
-}: PortableReportPageProps) {
-  const params = await searchParams;
+async function PortableReportPage({searchParams}: PortableReportPageProps) {
+  // Resolve the route input without allowing it to select a historical date.
+  await searchParams;
   let data: Awaited<ReturnType<typeof getPortableReportData>>;
 
   try {
-    data = await getPortableReportData(validDate(params.date));
+    // Device reports always use today's date in the salon's timezone.
+    data = await getPortableReportData();
   } catch {
     return <PortableReportDenied />;
   }
 
   return (
     <section
-      className="h-full overflow-auto px-4 py-5 text-zinc-950 sm:px-6"
+      className="h-full overflow-auto bg-white px-6 py-8 text-zinc-950 sm:px-8 lg:py-10"
       data-portable-pos-page="report"
     >
       <div className="mx-auto grid max-w-7xl gap-5">
-        <header className="flex flex-wrap items-end justify-between gap-3">
-          <p className="text-sm font-medium text-zinc-600">
-            {data.salonName} / <WorkspaceText text={formatDate(data.reportDate, data.timezone)} />
-          </p>
-          <NavigationForm className="flex items-end gap-2" method="get">
-            <label className="block">
-              <span className="text-xs font-semibold uppercase text-zinc-500">
-                <WorkspaceText text="Date" />
-              </span>
-              <input
-                className="mt-1 h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-                defaultValue={data.reportDate}
-                name="date"
-                type="date"
-              />
-            </label>
-            <NavigationSubmitButton pendingLabel="Loading…"
-              className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white"
-              type="submit"
-            >
-              <WorkspaceText text="Load" />
-            </NavigationSubmitButton>
-          </NavigationForm>
-        </header>
-
         {data.setupMessage ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <WorkspaceText text={data.setupMessage} />
