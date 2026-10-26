@@ -1,0 +1,50 @@
+{
+  "kind": "release",
+  "summary": "Publish KingPOS Portable 0.7.2 and serve branded installer downloads through Reylumi; full public download SHA256 verified.",
+  "changes": [
+    "90c9f7ab-439d-4283-bdea-0904a7ebbdb9"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_CiktEHG3sfKqyMybua1NmG6gJ4tr",
+      "baselineDeploymentId": "dpl_CTdA1SDeK9YxEjo7cDT6Js8eMZWz",
+      "sourceSha256": "373ffef9c2bd198b896a97cd48b91ceea03d54b8b582ec429a19d502adccef71",
+      "overlaySha256": "6be15bf10d918d4975e5df52f982c46bb6f6c814a537d5a20ba4735c8b6e821e",
+      "commit": "b762890180e5c28c0b6fdf3af8dbebc5815da11e",
+      "evidence": [
+        "artifacts/portable-installer-20261026/live-verification.json",
+        "artifacts/portable-installer-20261026/candidate-download-verified.json",
+        "artifacts/portable-installer-20261026/source-overlay.json",
+        "artifacts/portable-installer-20261026/production-env-updated.json"
+      ]
+    }
+  },
+  "windows": {
+    "version": "0.7.2",
+    "status": "published",
+    "verified": true,
+    "downloadUrl": "https://reylumi.com/download/windows",
+    "bytes": 111790179,
+    "sha256": "a7710b8f6647fb09ba2012c41e238ea85ee8b543233e33e28dabe0f790cf99b7",
+    "releaseId": 424808476,
+    "tag": "desktop-v0.7.2",
+    "assetId": 679583578,
+    "installerRuntimeEvidence": "artifacts/portable-installer-20261026/1793048668853/result.json",
+    "signed": false,
+    "distribution": "Existing unsigned online channel preserved"
+  },
+  "ios": {
+    "required": false,
+    "reason": "Compatible web download delivery and Windows packaging only; no new iOS bundle or bridge changes."
+  },
+  "scope": "Only selected Portable event published; other pending events remain queued. All current production source files retained; web source delta is two download modules plus two journal records.",
+  "rollback": {
+    "webDeploymentId": "dpl_CTdA1SDeK9YxEjo7cDT6Js8eMZWz",
+    "previousWindowsVersion": "0.7.1"
+  },
+  "id": "2d962203-42d7-480c-8084-bc2e11fa9570",
+  "recordedAt": "2026-10-26T21:54:51.241Z",
+  "worktree": "C:\\Reylumi\\kingpos"
+}
