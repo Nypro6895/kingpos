@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "booking-flow-local-audit-20261015",
+  "status": "working",
+  "summary": "Isolated booking audit: reproduce and fix wrong-date availability caching; refresh stale test mocks and verify local scheduler guards. No production writes or deployment.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/booking/manage/[token]/guest-manage-client.tsx",
+    "tests/public-booking-wizard-ui.test.mjs",
+    "tests/guest-manage-ui.test.mjs",
+    "tests/quick-booking-selection.test.mjs",
+    "tests/booking-scheduler-guards.integration.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-before",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "validation": [
+    {
+      "name": "Isolated booking audit and regression tests",
+      "result": "pending"
+    }
+  ],
+  "id": "438ac3f2-a880-4756-b4cf-0e353f39f0cd",
+  "recordedAt": "2026-10-15T00:44:08.869Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

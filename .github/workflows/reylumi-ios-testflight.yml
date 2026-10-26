@@ -1,0 +1,66 @@
+name: Reylumi TestFlight
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/reylumi-ios-webview]
+    paths:
+      - '.github/workflows/reylumi-ios-testflight.yml'
+      - 'ios/scripts/testflight.sh'
+permissions:
+  contents: read
+concurrency:
+  group: reylumi-testflight
+  cancel-in-progress: false
+jobs:
+  upload:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Rebuild source-bound production bundle (Services pilot OFF)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_MAPTILER_KEY: ${{ vars.NEXT_PUBLIC_MAPTILER_KEY || secrets.NEXT_PUBLIC_MAPTILER_KEY }}
+          NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY }}
+          KINGPOS_DISABLE_BACKGROUND_DISPATCH: '1'
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: node scripts/ios/local-bundle-release.mjs prepare
+      - run: brew install xcodegen
+      - name: Test simulator and unsigned archive
+        working-directory: ios
+        run: bash scripts/check-build.sh
+      - name: Sign and upload to TestFlight
+        working-directory: ios
+        shell: bash
+        env:
+          IOS_DISTRIBUTION_P12: ${{ secrets.IOS_DISTRIBUTION_P12 }}
+          IOS_DISTRIBUTION_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_PASSWORD }}
+          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        run: bash scripts/testflight.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reylumi-testflight-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            ios/build/test.log
+            ios/build/archive.log
+            ios/build/build-receipt.json
+            ios/build/local-bundle-provenance.json
+            ios/build/testflight-*.log
+            ios/build/testflight-receipt.json
+            ios/build/testflight-processing.json
+            ios/build/release-version-preflight.json
+          retention-days: 7

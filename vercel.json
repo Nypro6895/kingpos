@@ -1,0 +1,28 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "codex/ios-session-role-stability-20261019": false
+    }
+  },
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "crons": [
+    {
+      "path": "/api/payroll/close-due",
+      "schedule": "7 7 * * *"
+    },
+    {
+      "path": "/api/security/cleanup",
+      "schedule": "17 9 * * *"
+    },
+    {
+      "path": "/api/payments/reconcile",
+      "schedule": "41 8 * * *"
+    },
+    {
+      "path": "/api/account/erase-due",
+      "schedule": "23 9 * * *"
+    }
+  ]
+}

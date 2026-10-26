@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "customer-compact-20261017",
+  "status": "ready",
+  "summary": "Completed compact Customers UI: two-line directory, regular single-line history, inline compact receipts, folded secondary details; CRM operations, privacy/profile states, merge forms, pagination, permissions and backend logic preserved. Pending deploy only. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "b733528c-6118-44a8-ba80-579c340f3c96"
+  },
+  "supersedesEvents": [],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "0c03df31-342b-4968-9dde-f9c89929674b",
+  "recordedAt": "2026-10-17T22:06:56.802Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/customers/page.tsx": "88bcc1bfa03819a7a86151ea81d2910d02ae870e2de149aff16dc6cfcb4a8881",
+    "app/(app)/customers/[customerId]/page.tsx": "9c2a1a7eda71e65a4e4de2ed87b82d1dc255be9a2b2c9093095074104d7fd010"
+  }
+}

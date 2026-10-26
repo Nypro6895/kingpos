@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "admin-default-active-20261018",
+  "status": "ready",
+  "summary": "Admin defaults Active with explicit All retained; merged with shipped search feedback and string-safe query guard",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/users/page.tsx",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/locations/page.tsx",
+    "app/(app)/admin/locations/businesses-workspace.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\video2-fix-release-20261019\\ready-admin-default-active-20261018",
+    "baselineCommit": "effe174969ca2523e24845156c9d70dce34bc1c4",
+    "baselineDeploymentId": "dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy",
+    "inputEvent": "8f8a3094-96b5-4271-80a4-e3458bf956a8"
+  },
+  "supersedesEvents": [
+    "8f8a3094-96b5-4271-80a4-e3458bf956a8"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Combined core and Chrome/WebKit regressions",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/local-verification.json"
+    },
+    {
+      "name": "Full production build, TypeScript and focused lint",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/production-build.json"
+    },
+    {
+      "name": "Independent baseline, Explore/Campaign and native bridge preservation",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/integration-review.json"
+    },
+    {
+      "name": "Seven actual assembled Admin page/helper/query checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/video2-fix-release-20261019/admin-integration-verification.json"
+    }
+  ],
+  "id": "d63c9a66-80ea-4b1b-8af9-2b7363a0d8cf",
+  "recordedAt": "2026-10-19T07:08:38.980Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\video2-fix-release-20261019",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/admin/users/page.tsx": "aa2f5bf4c48935c54bcf5bded9c1dda478c11229159db3ebeffcd3ae0ec8fed7",
+    "app/(app)/admin/users/users-workspace.tsx": "245890df8afa3f4de4e8dc4194c09b1e32db799de28c4acfbd03b4dc9a2d1ee8",
+    "app/(app)/admin/locations/page.tsx": "ce5df1b85c8e1927ae92742f48d5a90d8f97ebbd8f497cfd3919dd3313acbb9d",
+    "app/(app)/admin/locations/businesses-workspace.tsx": "acd007ed8bef50c16378d07dd060b00c2a376d39a6cbd9bab42e2c5fc6902ba1"
+  }
+}

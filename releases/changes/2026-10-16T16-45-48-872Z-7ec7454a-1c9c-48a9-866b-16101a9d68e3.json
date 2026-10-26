@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "app-local-public-profiles-20261016",
+  "status": "ready",
+  "summary": "Reuse complete salon/Beauty/inspiration views and original non-deposit booking, with per-viewer read guards and explicit HTTPS payment exception",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-public-registry.tsx",
+    "lib/app-local-public-server.ts",
+    "lib/app-local-public-metadata.ts",
+    "lib/app-local-public-http-client.ts",
+    "lib/app-local-public-types.ts",
+    "app/explore/beauty/beauty-profile-read-view.tsx",
+    "app/explore/beauty/beauty-post-read-view.tsx",
+    "app/(app)/explore/beauty/[profileId]/page.tsx",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx",
+    "tests/app-local-public.test.mjs",
+    "tests/app-local-public-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\public-frozen-source"
+  },
+  "validation": [
+    {
+      "name": "5 public authority/presentation/transport and actual wizard tests, clean lint, full typecheck",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/public-validation.json"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016",
+    "app-local-explore-20261016"
+  ],
+  "id": "7ec7454a-1c9c-48a9-866b-16101a9d68e3",
+  "recordedAt": "2026-10-16T16:45:48.872Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-public-registry.tsx": "5206a5752b80577159a4d104b950c7efdc577f09c10cd64b93a39f70d7dae6d1",
+    "lib/app-local-public-server.ts": "693d98bb065250b58c018f7f4073e119b2abc8d25ee22075e462e64522392253",
+    "lib/app-local-public-metadata.ts": "50d67442cc97c2403f74e15167a3c507a922f6db897b804184adc57e060f5fde",
+    "lib/app-local-public-http-client.ts": "ccf76ca6a2b720152ce0738494b135b6c9e6624c2fb2d85ebdfd5f3a6fd44642",
+    "lib/app-local-public-types.ts": "1e6a4866e8fdcf41636484e0a91c7a57af8b9b10bb46573d5dfa2423ddc7e740",
+    "app/explore/beauty/beauty-profile-read-view.tsx": "546a85c8e7675508eb31ba675df19ce53a88b5690f2ed382256892ac405e2bb9",
+    "app/explore/beauty/beauty-post-read-view.tsx": "d456f7ca2db167db6c01be4df34ac97f249d18c84bcc49cbf93d0b2c6445cae4",
+    "app/(app)/explore/beauty/[profileId]/page.tsx": "15209e8970110ac81d3c502f69af9a2e31e551cc9ba61ae34825618af81be190",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx": "9aad48cb879c5a949a3c920f18822ff9e10df548daa5fc5076b1151b9993643c",
+    "tests/app-local-public.test.mjs": "360e13c3781f7feef83b7cb3b42ba90df03b2a0b66adc01624b7af4b7ed85ff7",
+    "tests/app-local-public-ui.test.mjs": "5f27cbee90bfa486ac729440a1ecf537449dd90f032bf39cc1cb2da6d7cbe900"
+  }
+}

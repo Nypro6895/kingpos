@@ -1,0 +1,33 @@
+.overlay { place-items:center; padding:12px 8px !important; }
+.panel { width:100%; max-width:560px; overflow-y:auto; overscroll-behavior:contain; border-radius:16px; background:white; color:#27272a; box-shadow:0 16px 60px #0003; }
+.media { position:relative; height:clamp(220px, 38dvh, 440px); flex-shrink:0; background:#faf8f5; }
+.photo { object-fit:contain; }
+.close { position:absolute; top:12px; right:12px; z-index:2; display:grid; place-items:center; width:40px; height:40px; border-radius:50%; background:#fffffff2; color:#27272a; box-shadow:0 2px 8px #0001; }
+.close:focus-visible,.identity:focus-visible { outline:2px solid var(--brand-orange,#f26f3d); outline-offset:3px; }
+.body { padding:16px 18px 20px; }
+.header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.identity { display:flex; align-items:center; min-width:0; gap:10px; }
+.logo { display:grid; flex-shrink:0; place-items:center; width:38px; height:38px; overflow:hidden; border-radius:50%; background:#f5f5f4; color:#71717a; }
+.logo img { width:100%; height:100%; object-fit:contain; }
+.name { min-width:0; font-size:18px; font-weight:600; line-height:1.35; overflow-wrap:anywhere; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; }
+.name > span { margin-left:4px; }
+.metadata { display:grid; justify-items:start; gap:4px; margin-top:8px; }
+.trust { color:#71717a; }
+.location { font-size:12px; line-height:20px; color:#71717a; }
+.content { display:grid; gap:6px; margin-top:16px; padding-top:14px; border-top:1px solid #e7e5e4; }
+.serviceRow { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.service { min-width:0; font-size:15px; font-weight:600; line-height:22px; overflow-wrap:anywhere; }
+.price { flex-shrink:0; font-size:13px; line-height:22px; }
+.caption { margin:0; font-size:14px; line-height:21px; overflow-wrap:anywhere; white-space:pre-wrap; }
+.actions { margin-top:16px; margin-bottom:12px; padding:5px 0; border-block:1px solid #e7e5e4; }
+@media(min-width:900px) {
+ .overlay { padding:24px !important; }
+ .panel { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(340px,.8fr); max-width:1040px; }
+ .media { height:auto; min-height:560px; position:sticky; top:0; align-self:start; }
+ .body { padding:22px; }
+}
+@media(max-width:359px) {
+ .body { padding-inline:14px; }
+ .name { font-size:16px; }
+ .logo { width:34px; height:34px; }
+}

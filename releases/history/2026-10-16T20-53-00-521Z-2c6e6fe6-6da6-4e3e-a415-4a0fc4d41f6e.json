@@ -1,0 +1,80 @@
+{
+  "kind": "release",
+  "summary": "Verified TestFlight 1.0.1 (22.1) with salon setup parity and previously completed glass logo. The subsequent not-found fallback is web-only and changes no native source.",
+  "changes": [
+    "8a50bcc5-55de-48ad-9e4d-076db0513ef4",
+    "86149564-d12c-4a4b-8990-54569ccd6e5d",
+    "a6162a5c-d3e3-43ae-aff4-f8c7cf0ce79c"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "22.1",
+      "commit": "da426d42a3d15fa1508dc478a4da51cfe2673500",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/native-final-verification.json",
+      "groups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal",
+          "associationConfirmed": true
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support",
+          "associationConfirmed": true
+        }
+      ]
+    }
+  },
+  "verification": {
+    "xctest": {
+      "expectedCount": 81,
+      "count": 81,
+      "failures": 0,
+      "failedCases": 0,
+      "reportedPassed": true,
+      "executionSucceeded": true,
+      "passed": true
+    },
+    "archives": {
+      "unsignedPassed": true,
+      "signedPassed": true,
+      "exportPassed": true
+    },
+    "apple": {
+      "checkedAt": "2026-10-16T20:23:43.051Z",
+      "build": "22.1",
+      "buildId": "97e05784-1fd9-4255-a484-420a0e9e4b07",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "matched": true,
+      "valid": true
+    },
+    "existingGroupAvailability": {
+      "checkedAt": "2026-10-16T20:24:55.675Z",
+      "availableToExistingInternalGroup": true,
+      "status": "available-to-existing-internal-group",
+      "groups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal",
+          "associationConfirmed": true
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support",
+          "associationConfirmed": true
+        }
+      ]
+    }
+  },
+  "source": {
+    "commit": "da426d42a3d15fa1508dc478a4da51cfe2673500",
+    "expected": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/native-upload-expected.json"
+  },
+  "id": "2c6e6fe6-6da6-4e3e-a415-4a0fc4d41f6e",
+  "recordedAt": "2026-10-16T20:53:00.521Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos"
+}

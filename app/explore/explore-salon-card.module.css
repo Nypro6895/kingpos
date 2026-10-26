@@ -1,0 +1,30 @@
+.card { display:flex; flex-direction:column; min-width:0; background:white; border-bottom:1px solid #e5e7eb; padding-bottom:8px; }
+.photo { position:relative; display:block; aspect-ratio:3/2; overflow:hidden; background:#f4f4f5; }
+.body { padding:8px 12px 0; }
+.header { display:flex; align-items:center; gap:8px; position:relative; }
+.avatar { position:relative; flex-shrink:0; width:36px; height:36px; border-radius:50%; overflow:hidden; display:grid; place-items:center; background:#fff3eb; color:#ed723f; font-size:13px; font-weight:600; }
+.identity { flex:1; min-width:0; }
+.nameRow { display:flex; align-items:center; gap:4px; min-width:0; }
+.name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:650; color:#27272a; }
+.location { color:#71717a; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:-6px; }
+.address { margin:12px 0 4px; color:#71717a; font-size:12px; line-height:1.5; }
+.compact { flex:0 0 300px; scroll-snap-align:start; }
+@media(max-width:639px) { .card:not(.compact) { margin-inline:-16px; } }
+
+/* Only the curated directory adopts the compact editorial presentation. */
+.directory { border-bottom:0; }
+.directory .photo { border-radius:12px; aspect-ratio:2; }
+.directory .body { padding:10px 0 0; }
+.directory .address { display:none; }
+.directory .location { margin-top:2px; }
+@media(max-width:1023px) {
+ .directory:not(.compact) { margin-inline:0; display:grid; grid-template-columns:104px minmax(0,1fr); column-gap:14px; align-items:start; border-bottom:1px solid #eee6e0; padding-bottom:12px; }
+ .directory .photo { aspect-ratio:1; grid-column:1; grid-row:1; }
+ .directory .body { display:contents; }
+ .directory .header { grid-column:2; min-width:0; flex-wrap:wrap; gap:3px; }
+ .directory .avatar { display:none; }
+ .directory .identity { flex-basis:calc(100% - 34px); }
+ .directory .nameRow { flex-wrap:wrap; gap:0 4px; }
+ .directory .name { white-space:normal; overflow:visible; }
+ .directory [data-social-actions] { grid-column:1/-1; margin-top:8px; }
+}

@@ -1,0 +1,126 @@
+"use server";
+import { storeAdminCampaignImage } from "@/lib/campaign-image-storage";
+import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
+import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
+import { advertisingClient } from "@/lib/explore-advertising";
+import {
+  parseCampaign,
+  CampaignValidationError,
+} from "@/lib/explore-advertising-rules";
+import { revalidatePath } from "next/cache";
+export async function saveAdvertisingLimitsAction(form: FormData) {
+  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.advertisingManage);
+  const config: Record<string, number> = {};
+  for (const [key, min, max] of [
+    ["maxTotal", 0, 30],
+    ["maxPopups", 0, 10],
+    ["minPopupGapSeconds", 8, 3600],
+    ["sessionMinutes", 5, 120],
+  ] as const) {
+    const value = Number(form.get(key));
+    if (!Number.isInteger(value) || value < min || value > max)
+      return {
+        ok: false,
+        message: `${key}: enter a whole number between ${min} and ${max}.`,
+      };
+    config[key] = value;
+  }
+  if (config.maxPopups > config.maxTotal)
+    return { ok: false, message: "Popup limit cannot exceed the total limit." };
+  const { error } = await advertisingClient()
+    .from("advertising_settings")
+    .upsert({ id: true, config });
+  if (error)
+    return {
+      ok: false,
+      message: "Settings could not be saved. Your inputs have been kept.",
+    };
+  revalidatePath("/admin/advertising");
+  return { ok: true, message: "Session limits saved." };
+}
+export async function campaignImageUploadAction(mime: string, size: number) {
+  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.advertisingManage);
+  if (
+    !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mime) ||
+    !Number.isFinite(size) ||
+    size <= 0 ||
+    size > 10485760
+  )
+    throw new Error("Choose a JPG, PNG, WebP or GIF under 10 MB.");
+  const client = advertisingClient();
+  const path = `uploads/${crypto.randomUUID()}.${mime.split("/")[1]}`;
+  const { data, error } = await client.storage
+    .from("explore-advertising")
+    .createSignedUploadUrl(path);
+  if (error || !data) throw new Error("Image upload is unavailable.");
+  return {
+    path,
+    token: data.token,
+    url: client.storage.from("explore-advertising").getPublicUrl(path).data
+      .publicUrl,
+  };
+}
+export async function saveCampaignAction(
+  _previous: { ok: boolean; message: string; id?: string },
+  form: FormData,
+) {
+  const actor = await requirePlatformAdmin(
+    PLATFORM_ADMIN_PERMISSIONS.advertisingManage,
+  );
+  try {
+    const file = form.get("image");
+    if (file instanceof File && file.size)
+      form.set("imageUrl", "/advertising-upload-pending");
+    const campaign = parseCampaign(form);
+    if (campaign.kind === "popup") campaign.closeButton = true;
+    if (file instanceof File && file.size) {
+      if (
+        !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
+          file.type,
+        ) ||
+        file.size > 10485760
+      )
+        throw new Error("Choose a JPG, PNG, WebP or GIF under 10 MB.");
+      const image = await storeAdminCampaignImage("", new Uint8Array(await file.arrayBuffer()));
+      campaign.imageUrl = image.url;
+      campaign.imageWidth = image.width;
+      campaign.imageHeight = image.height;
+      campaign.imageVariants = image.variants;
+    } else if (campaign.imageUrl && campaign.kind !== "ticker") {
+      const image = await storeAdminCampaignImage(campaign.imageUrl);
+      campaign.imageUrl = image.url;
+      campaign.imageWidth = image.width;
+      campaign.imageHeight = image.height;
+      campaign.imageVariants = image.variants;
+    }
+
+    const { error } = await advertisingClient()
+      .from("explore_campaigns")
+      .upsert({
+        id: campaign.id,
+        config: campaign,
+        updated_by: actor.userId,
+        updated_at: new Date().toISOString(),
+      });
+    if (error) throw new Error("Campaign could not be saved.");
+    revalidatePath("/admin/advertising");
+    return { ok: true, message: "Campaign saved.", id: campaign.id, campaign };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Unable to save campaign.",
+      id: _previous.id,
+      errors: error instanceof CampaignValidationError ? error.fields : {},
+    };
+  }
+}
+export async function deleteCampaignAction(form: FormData) {
+  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.advertisingManage);
+  const { error } = await advertisingClient()
+    .from("explore_campaigns")
+    .delete()
+    .eq("id", String(form.get("id")));
+  if (error) throw new Error("Campaign could not be deleted.");
+  revalidatePath("/admin/advertising");
+}

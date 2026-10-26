@@ -1,0 +1,41 @@
+{
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Held optional reads do not block original core, real search draft/cursor retained, no duplicate startup reads"
+    }
+  ],
+  "status": "working",
+  "kind": "change",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "lib/explore-page-resource-server.ts",
+    "lib/explore-discovery-presentation.ts",
+    "lib/app-local-explore-types.ts",
+    "lib/app-local-explore-registry.tsx",
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-ui.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs",
+    "lib/explore-showcase-content.ts"
+  ],
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "changeId": "app-local-explore-20261016",
+  "summary": "Separate Explore core/extras/feed and reuse unchanged presentation with explicit server-approved demo setting in client",
+  "id": "232a7bca-aa1a-4a85-be2f-7448ec960de4",
+  "recordedAt": "2026-10-16T17:31:59.667Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

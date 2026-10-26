@@ -1,0 +1,119 @@
+{
+  "kind": "change",
+  "changeId": "performance-coldlaunch-feedback-completion-20261015",
+  "status": "ready",
+  "summary": "Complete remaining action feedback, useful thin cold web shell, streamed optional language without draft remount, and Lumi orbit. Assembled production build222routes;81 focused/cache checks plus read-only retained Market browser smoke passed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/feedback-search-form.tsx",
+    "app/(app)/admin/_components/workspace-controls.tsx",
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/(app)/pos-tickets/page.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/(app)/pos/portable/report/page.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/staff/copy-invite-link-button.tsx",
+    "components/explore-social.tsx",
+    "tests/remaining-action-feedback-ui.test.mjs",
+    "app/(app)/layout.tsx",
+    "app/(app)/loading.tsx",
+    "components/app-startup-shell.tsx",
+    "components/app-startup-shell.module.css",
+    "components/startup-controls.tsx",
+    "components/lumi-loading-mark.tsx",
+    "components/lumi-loading-mark.module.css",
+    "components/workspace-language.tsx",
+    "tests/cold-startup-ui.test.mjs",
+    "docs/performance-release-20261015.txt",
+    "docs/action-feedback-open-findings.json",
+    "docs/action-feedback-audit.txt",
+    "docs/action-feedback-route-matrix.txt",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/dashboard/dashboard-secondary.tsx",
+    "app/(app)/admin/dashboard/dashboard-workspace.tsx",
+    "app/(app)/admin/market/tax/tax-workspace.tsx",
+    "app/salon-profile/salon-profile-studio.tsx",
+    "app/(app)/admin/locations/businesses-workspace.tsx",
+    "app/navigation-shell.tsx",
+    "tests/independent-action-feedback-ui.test.mjs",
+    "tests/secondary-action-feedback-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\performance-web-frozen-20261016",
+    "baseCommit": "9215fe50d2249597df82aa291a3c52ad63438604",
+    "baselineDeploymentId": "dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW",
+    "validatedSourceSha256": "db755693f120f87b7c089ebc4bc549b6a6e29f782cc2fbdf5a0e45cd5992308d"
+  },
+  "dependencies": [
+    "pos-instant-tab-navigation-20261015",
+    "whole-site-action-feedback-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Assembled Next production build and TypeScript;222routes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\production-build.log"
+    },
+    {
+      "name": "52 focused interaction/cold/Help checks and2journal checks;27cache regressions; no skipped",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\final-tests.log"
+    },
+    {
+      "name": "Retained Market actual DOM/query, Back without document reload; public routes; no writes/errors",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\local-final-browser-smoke.json"
+    },
+    {
+      "name": "89 source/test files lint:0errors;10 existing warnings retained",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\final-lint.json"
+    },
+    {
+      "name": "Protected108Explore/location source files unchanged; source and deployment exclusion validation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\deployable-source.json"
+    }
+  ],
+  "id": "2e52441f-77a7-440a-b0ee-8f2d4e2e1e45",
+  "recordedAt": "2026-10-16T00:47:12.890Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/feedback-search-form.tsx": "3e0015f332584ffb0164a99bb7f2de47435e03642d680ecf27bac67718cf883e",
+    "app/(app)/admin/_components/workspace-controls.tsx": "278240af0c3349ac42d7b279efe797fc093509d19703c325b114bc7784b8daad",
+    "app/(app)/admin/_components/admin-ui.tsx": "9bf14bbf756dee6fb24db99924c2d11f98d9f59f686f534ead778818503b1c16",
+    "app/(app)/pos-tickets/page.tsx": "4f0c1724d661f5c12728f05c4a900816e9f642807f6a07348f881c6cbe915fa1",
+    "app/staff/today/today-dashboard-view.tsx": "17a343a7db81fcf36241ca05416c6015b97faabdddd21d5cdbce78fec96f630b",
+    "app/(app)/pos/portable/report/page.tsx": "db1e678b67d6a2f0a2c1ba3e9b08f2744f4ae7f12c0d42a57971f6be88b7fe7c",
+    "app/(app)/payroll/page.tsx": "0eabeb476351e82c87e2e66631e10f93b52d0803e776147112e24e73399adfb3",
+    "app/staff/copy-invite-link-button.tsx": "ecb874a5618d2ab73c82917a305831b761d869b0f9b01e482898f5f7db42dad9",
+    "components/explore-social.tsx": "dfab67cd5139ca70d614ec26d66280d6bbe2c919ee8f14380c72b90f51c27a45",
+    "tests/remaining-action-feedback-ui.test.mjs": "84960166ab28d293bfc52bd96ee405a303961b6515d9ee8e036ead80e07e171b",
+    "app/(app)/layout.tsx": "514351f557c0e7952ffa16d00a7c0fe90afbd0a0d7662b6df72515f6dc28fb31",
+    "app/(app)/loading.tsx": "88f19632e6a498e2a3f727240b7559b80d4cdcbeae532532d988fbe781ac4f31",
+    "components/app-startup-shell.tsx": "2937142bbc26fb5d7b7ac5a756c113a31c58f942500c518a1b0f446a338fdf9a",
+    "components/app-startup-shell.module.css": "dc084029737d31d4b5f01065ec4c170ed784bf1b17d5dd1b80e771af9df87bb5",
+    "components/startup-controls.tsx": "a5a316269aff4d1152146b04bf67e91377421aefa4727091084c57ac9df58dc9",
+    "components/lumi-loading-mark.tsx": "fa5cde6f3050fa2afb38a693b49966f6d4cc667f6a6ad18db09dff632a95e187",
+    "components/lumi-loading-mark.module.css": "c7239f5a3e87f5dc3944db33d40154ae1da31417ef51c08a7725341f60033d5d",
+    "components/workspace-language.tsx": "cf115ed42f4d1555fe4fbe9aeeaa0b06c666bb6573fb099f71123e3579fdda88",
+    "tests/cold-startup-ui.test.mjs": "76d636bed718c891d639919ed06f61c1afd7997239f3ceadfce7e204973f7fe3",
+    "docs/performance-release-20261015.txt": "819d8613cee36534c05aad154298165129aafe4f4d79726ebe750879a14860b2",
+    "docs/action-feedback-open-findings.json": "b761292d3218eed75ea02fdde906520c2c5233ad062fc09ac975827394f4c676",
+    "docs/action-feedback-audit.txt": "d3916c3418af47b1ea920f2331bc36ecc4106936db66689d7fb862fe97665413",
+    "docs/action-feedback-route-matrix.txt": "6b5381710bfc6d080111179b9a04b4d38dd31009f41249f6e7ae9aea13bf6c47",
+    "app/(app)/admin/users/users-workspace.tsx": "5d7ab18789def1328f914b9f4495d54f1e907eaa05196d77a93c8a696fb2073f",
+    "app/(app)/admin/dashboard/dashboard-secondary.tsx": "8cde5cc168a99cc214dc6e608207ff6022eada7651a86e42915f847b8b42909d",
+    "app/(app)/admin/dashboard/dashboard-workspace.tsx": "c1d6525c6d5c9495466d3efbd9d23b147eda639de5cd1eaf92bd1ac00f76dfc0",
+    "app/(app)/admin/market/tax/tax-workspace.tsx": "d87d539de0d5cada1b7d76e21fecd384be1ff4476b801e49ccfd9c98de425b7c",
+    "app/salon-profile/salon-profile-studio.tsx": "0ef9a3e063bec5f3f0b3b2a5e2508e40b090cafd7605dfb8361081fcc8856dff",
+    "app/(app)/admin/locations/businesses-workspace.tsx": "015df423b9cff61abecdecffa2ba29845cce05f3f85ed19a36a708d0b981db02",
+    "app/navigation-shell.tsx": "7aa58413c5f96e29779fa85e1e7517e4d72cbbda2e32742a34f0c331caa58ff4",
+    "tests/independent-action-feedback-ui.test.mjs": "b12b498e837aaa038c69395c0852defa99eb8996476f64755a11284dc701d178",
+    "tests/secondary-action-feedback-ui.test.mjs": "cc21ad09c43b390d3c6d077e44c938f9d16b1e292180cb70db8b5ee89ba5824b"
+  }
+}

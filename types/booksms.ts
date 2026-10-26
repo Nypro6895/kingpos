@@ -1,0 +1,2 @@
+export type BookSmsState = {active:boolean;installed:boolean;paidUntil:string|null;enabled:boolean;confirmation:boolean;reminders:boolean;accountSid:string;messagingServiceSid:string;from:string;tokenConfigured:boolean;monthlyLimit:number};
+export const EMPTY_BOOKSMS:BookSmsState={active:false,installed:false,paidUntil:null,enabled:false,confirmation:false,reminders:false,accountSid:'',messagingServiceSid:'',from:'',tokenConfigured:false,monthlyLimit:0};

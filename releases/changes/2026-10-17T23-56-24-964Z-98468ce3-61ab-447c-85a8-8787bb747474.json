@@ -1,0 +1,71 @@
+{
+  "kind": "change",
+  "changeId": "help-bilingual-mobile-20261017",
+  "status": "ready",
+  "summary": "Preserve shipped URL-based EN/VI Help and localized illustrations; fix shared mobile catalog and actual iPhone adapter; translate Report categories and request dates. Integrated on exact web/native baseline dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/support/page.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help-copy.json",
+    "app/help/help.module.css",
+    "app/support/support-ui.tsx",
+    "components/app-local-help.tsx",
+    "components/app-local-support.tsx",
+    "lib/app-local-reference-content.ts",
+    "lib/vietnamese-dictionary.ts",
+    "tests/help-report-release-ui.test.mjs",
+    "tests/app-local-platform.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\help-report-live-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+    "sourceEventId": "8430df69-3b14-45b4-a4dc-690cd623cc25"
+  },
+  "dependencies": [
+    "help-report-separation-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Final assembled Next production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/web-build.log"
+    },
+    {
+      "name": "38 focused and installed-native regression cases; both languages and 320-1280px; sequential final run",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/final-regressions.log"
+    },
+    {
+      "name": "Exact production-ready local native bundle: 344 files,96 routes,322 commands",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/native-build.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/lint.log"
+    }
+  ],
+  "id": "98468ce3-61ab-447c-85a8-8787bb747474",
+  "recordedAt": "2026-10-17T23:56:24.964Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\help-report-live-20261017",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/support/page.tsx": "4cabf6bda9c0229771a8874d67220efe36d2883a5011cd23f41dd51f11a141df",
+    "app/help/help-catalog.tsx": "7ca9761cb1ed7ffd835982bd025c37ad623c74a0265f061ea12d6a5e58dc5d9e",
+    "app/help/help-copy.json": "78360e30de4e02a1596992e6ca87c89f78e333295e2df1237461077cb81afd3e",
+    "app/help/help.module.css": "6477f986279a18bc7557ad2528581a4fdb818d6efdf8f35cce82c5d5db77601e",
+    "app/support/support-ui.tsx": "ca1669fc6e32248f8fcfef925b147309573a3b86193278721e5cbb890fa0d727",
+    "components/app-local-help.tsx": "ee880f58792f21f56f9ec1435339006c92bab41542dff1dd7d304b63f7f21d5c",
+    "components/app-local-support.tsx": "18f990215c8628dfd2d7909e45aa69dc304b41b20e5b942dc7135d972b272f17",
+    "lib/app-local-reference-content.ts": "5aca34d5d8a8c40d1e3329d54306cce909eb68e36dc14ae40b784bdfd043f506",
+    "lib/vietnamese-dictionary.ts": "80b215ad420510f16b466e2552fe3e6bf04c081cb318f176b3e955bf7154856b",
+    "tests/help-report-release-ui.test.mjs": "eb135f0c82aaa1ddfb9b84dc8edabb1527d12a2368bf617b7176012416883759",
+    "tests/app-local-platform.test.mjs": "b9daa0d64037044d8cbb9a40bb10d867ef585c877104174216cdc2dd8eb1c560"
+  }
+}

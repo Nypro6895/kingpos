@@ -1,0 +1,72 @@
+POS — CHUYỂN TAB VÀ PHÂN LOẠI DỮ LIỆU
+Ngày: 2026-10-15 (America/Chicago)
+
+Yêu cầu sản phẩm:
+Bấm POS / Ticket / Book / Check In / Report phải đổi phần chọn tab, tiêu đề
+và khung màn hình ngay. Mạng và máy chủ chỉ quyết định lúc dữ liệu mới xuất
+hiện; không được giữ người dùng ở tab cũ hoặc làm mất thao tác đang nhập.
+Mục tiêu đo trên thiết bị thực: phản hồi khung/tab trong khoảng 100 ms.
+Đây là mục tiêu nghiệm thu, chưa phải số đo đã đạt trên iPhone/POS thật.
+
+1. HIỂN THỊ NGAY
+Menu, biểu tượng, nhãn, tiêu đề, cột, bố cục và bàn phím đang có trong ứng
+dụng. Không gọi API chỉ để đổi phần được chọn. Khi chưa có dữ liệu, giữ đúng
+bố cục và hình chờ; không hiển thị số 0 hoặc tổng tiền tự tạo.
+
+2. GIỮ NGUYÊN CÔNG VIỆC ĐANG LÀM
+Chuỗi số tiền, các dòng phiếu, tip/discount, mã cart, bản nháp, bộ lọc và trạng
+thái nhập thuộc phiên làm việc. Chuyển tab không phải là Submit, Reset hoặc
+Cancel. Checkout tiếp tục mounted để giữ Web Lock một cửa sổ ghi; không đặt
+nó trong Activity có thể cleanup/release lock khi bị ẩn.
+
+3. DỮ LIỆU ÍT THAY ĐỔI
+Tên dịch vụ, danh sách nhân viên và cấu hình hiển thị không phải dữ liệu bất
+biến. Dùng snapshot đã xác thực đúng tiệm/phiên và cập nhật theo thay đổi;
+không đổi giá/defaults của phiếu đang nhập một cách ngầm định. Cấu hình tài
+chính, quyền và dữ liệu từ tiệm/phiên khác không được xem như tài nguyên chung.
+
+4. DỮ LIỆU ĐỘNG VÀ NGHIỆP VỤ
+Attendance, hàng đợi/turn, lịch/slot/trạng thái booking, ticket đã đóng, xác
+nhận giao dịch, khóa chốt ca và báo cáo phải được xác minh phía server.
+Cập nhật đúng vùng/record bị đổi bằng các luồng read/realtime hiện có; giữ
+bản nháp và khung ổn định. Không tự gửi lại giao dịch khi đổi tab hoặc retry
+một lượt đọc. Luồng ghi, idempotency, outbox và kiểm tra quyền giữ nguyên.
+
+ĐÃ LÀM TRONG BẢN MÃ NÀY:
+- Owner Frame phản hồi ý định bấm tab trước khi Next trả route/RSC mới.
+- Khung đích tĩnh hiện ngay; nội dung tab cũ được ẩn trong lúc chờ.
+- Checkout và route children không bị bỏ khỏi cây chỉ vì bấm tab khác.
+- Bấm quay về POS có thể hủy ý định chuyển tab trước, giữ tiền và một phiên
+  checkout; Back/Forward xóa ý định cũ, cử chỉ mở tab mới/More được giữ.
+- loading boundary đặt dưới layout POS dùng chung để hỗ trợ partial prefetch
+  và streaming riêng panel; không thay bằng màn hình loading toàn workspace.
+- Hai lượt đọc bootstrap độc lập (desk và preferences) chạy song song sau
+  guard workspace; vẫn phải có đầy đủ dữ liệu có thẩm quyền mới mở checkout.
+- Portable hiện khung tab lần đầu; lượt đọc đang chờ được dedup theo path,
+  kết quả vẫn được giữ khi tab ẩn, lỗi trễ chỉ thuộc đúng tab, đúng phiên/quyền.
+- Không thêm thông báo cache hoặc nội dung kỹ thuật vào luồng sản phẩm.
+
+KIỂM TRA:
+- Máy chủ/route bị giữ phản hồi: khung đích phải hiện trong hai frame render
+  của fixture trước khi path commit; đổi nhanh/Back/Forward vẫn đúng tab.
+- Checkout thật: giữ chính xác số tiền và cart; một receipt trong outbox vẫn
+  là một receipt qua các lần chuyển tab, không phát sinh Submit tự động.
+- Lượt đọc trễ/ lỗi trễ/ đổi session hoặc permission không trộn panel.
+- Guard auth trước read, bootstrap chạy song song và không trả dữ liệu thiếu.
+- Production build/TypeScript, lint và các kiểm tra POS hiện có.
+
+PHẠM VI CÒN LẠI:
+- Lượt đọc panel Portable ban đầu vẫn dùng Server Function chung hàng đợi
+  của Next. Bước tiếp theo là tách read-only bootstrap sang GET có auth/capability,
+  scope và dedup, khi dữ liệu thực vẫn chờ lâu sau khung đã đổi; cần kiểm tra
+  từng DTO trước khi chuyển, không thay hàng đợi ghi hay bỏ bảo vệ.
+- Chỉ tối ưu phản hồi khi workspace đã khởi tạo; cold app/server auth và thời
+  gian DB vẫn cần đo riêng. Panel ẩn đã tải có thể còn chạy hiệu ứng nền.
+- Navigation thực sự treo giữ khung chờ; các tab khác và quay lại POS vẫn dùng
+  được. Không coi fallback giao diện là dữ liệu nghiệp vụ đã sẵn sàng.
+- Chưa đo iPhone/POS vật lý, mạng và khối lượng lịch/nhân viên thực tế.
+
+PHÁT HÀNH:
+Thay đổi web, không đổi Swift/bridge, chưa yêu cầu tăng phiên bản native.
+Task này là triển khai mã và kiểm tra, chưa promote web hoặc upload app.
+Đã ghi journal để coordinator tích hợp với baseline live mới nhất khi deploy.

@@ -1,0 +1,100 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-lifecycle-observability-20261019",
+  "status": "needs-integration",
+  "summary": "Auth/workspace cookie race, explicit denial and online lease503 contract repairs; bounded safe GET cancellation; device diagnostic export. Web checks pass; native CI awaiting runner during GitHub Actions incident; no deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-help.tsx",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "lib/app-local-context-recovery.ts",
+    "lib/app-local-page-admission.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-resources-server.ts",
+    "lib/bounded-get.ts",
+    "lib/experience-trace.ts",
+    "lib/read-context-scope.ts",
+    "lib/request-business-context.ts",
+    "lib/supabase/auth-rest.ts",
+    "tests/app-local-context-recovery.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/context-today-timing.test.mjs",
+    "tests/experience-trace.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/owner-today-progressive-native-contract.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/workspace-selection-contract.test.mjs",
+    "ios/ReylumiTests/AuthCookieProtocolFixture.json",
+    "ios/ReylumiTests/AuthLifecycleContextFixture.json",
+    "ios/ReylumiTests/AuthLifecycleGuestContextFixture.json",
+    "ios/ReylumiTests/AuthLifecycleTransportTests.swift",
+    "releases/changes/2026-10-19T15-29-41-660Z-2d2d9427-1d77-49e9-816b-fe567ce79fb5.json",
+    "tests/app-local-admission-reasons.test.mjs",
+    "tests/app-local-device-diagnostics.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "artifacts/ios-auth-lifecycle-20261019/implementation-notes.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\ios-auth-lifecycle-20261019\\artifacts\\ios-auth-lifecycle-20261019\\frozen-345c5b8ad882",
+    "commit": "345c5b8ad88227477ed121e0ad54d245e54cfe3e",
+    "baselineCommit": "fe233c9c3244f762914c2d7a9944795f40925ccc",
+    "patchSha256": "14fe6c5343fb15869a948e357cc5d928b988a0c27bf7d0a4bc47332b17a86a4a"
+  },
+  "validation": [
+    {
+      "name": "135 shared regressions",
+      "result": "passed",
+      "evidence": "artifacts/ios-auth-lifecycle-20261019/regression-tests.log"
+    },
+    {
+      "name": "70 related server regressions (overlapping suite)",
+      "result": "passed",
+      "evidence": "artifacts/ios-auth-lifecycle-20261019/server/server-related-tests.log"
+    },
+    {
+      "name": "18 Chrome and 18 WebKit UI cases",
+      "result": "passed",
+      "evidence": "artifacts/client/verification.json"
+    },
+    {
+      "name": "Typecheck, focused ESLint and production build",
+      "result": "passed",
+      "evidence": "artifacts/ios-auth-lifecycle-20261019/production-build.log"
+    },
+    {
+      "name": "345 native bundled-file integrity checks",
+      "result": "passed",
+      "evidence": "artifacts/ios-auth-lifecycle-20261019/bundle-integrity.json"
+    },
+    {
+      "name": "Xcode simulator tests and unsigned archive",
+      "result": "pending",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/39281462819"
+    },
+    {
+      "name": "Physical iPhone original failure",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "notDeployed": true,
+  "physicalDeviceVerified": false,
+  "id": "b4167b66-1ed5-4504-bac9-6ea18cdb7d1c",
+  "recordedAt": "2026-10-19T16:02:25.163Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-auth-lifecycle-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

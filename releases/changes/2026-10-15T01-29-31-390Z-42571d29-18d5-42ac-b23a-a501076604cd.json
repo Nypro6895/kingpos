@@ -1,0 +1,71 @@
+{
+  "kind": "change",
+  "changeId": "booking-lock-order-schema-review-20261015",
+  "status": "needs-integration",
+  "summary": "Narrow public retry locking to salon/idempotency key, retain guest booking-row lock, and correct existing portable POS rank/schedule inversion while retaining same-contact customer reuse. Verified live schema metadata and 16 isolated PostgreSQL tests. Docker failed at its pre-existing internal socket; authenticated E2E remains blocked. No production writes or release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "dependencies": [
+    "booking-concurrency-cache-review-20261015"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-source",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968",
+    "patch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3.patch",
+    "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Independent PostgreSQL sessions, socket only",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-lock-order-after.log; 15 scenarios plus parent, 16/16 passed, zero skips. Covers competing create/reschedule/cancel, exact retry-key scope, rank/schedule ordering, POS contact reuse, deposit and customer-scope rejection and atomic rollback."
+    },
+    {
+      "name": "Before-fix POS deadlock and intermediate contact regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-pos-lock-before.log shows deadlock with the existing POS body; C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-pos-contact-before.log detects duplicate contacts before the lookup recheck correction. Captured live POS definition independently reproduced the deadlock in C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-pos-existing-risk.log."
+    },
+    {
+      "name": "Live schema metadata and function preservation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-verification.json and booking-schema-review.json. Live base RPC and rank bodies match tested local sources; pending migration absent from linked database. Applying final migration twice preserves owner, ACL, SECURITY DEFINER and search_path in isolated database."
+    },
+    {
+      "name": "Scoped lint, patches and frozen source",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-verification.json; zero lint errors, both patches reverse-apply cleanly, all nine final files match SHA-256 manifests and previous booking files remain unchanged."
+    },
+    {
+      "name": "Local cleanup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-socket-cleanup.json and docker-retry-cleanup.json; stopped only task-owned instances, zero test databases remain; no TCP listener used in this phase."
+    },
+    {
+      "name": "Authenticated Supabase E2E",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\docker-context-review.json and docker-runtime-error.txt. Both existing local contexts have no engine pipe. A bounded start of desktop-linux failed while removing inaccessible internal dockerInference socket, before engine startup."
+    }
+  ],
+  "limitations": [
+    "Use booking-final.patch/source/manifest for the combined nine-file booking change, or apply phase3 after phase2. The old phase2 frozen migration used a salon-wide early lock and must not be released alone.",
+    "Only schema/function/permission metadata was read from the linked Supabase project. No live booking RPC, data creation, schema or permission change, payments, notification delivery, commit, push or deployment.",
+    "The isolated tests use actual booking, scheduling and ranking SQL against minimal tables. Identity/capability and time-policy helpers are synthetic fixtures, deposits are null-configured except POS rejection checks, and notification delivery is stubbed. Auth/PostgREST/RLS/session behavior has not been verified end to end.",
+    "Portable POS now explicitly acquires the same existing ranking advisory lock before rechecking a missing contact. Migration fails closed if that ranking lock signature or expected function anchors changed; future ranking lock changes must update this dependency.",
+    "Current retry-key behavior is preserved: scope is salon plus exact key, without adding actor/payload scoping or a unique index. Hash collisions can only serialize unrelated keys; SQL lookup retains the full key.",
+    "Docker context is correct; dockerInference is an internal Desktop socket, not a context. Starting or choosing the existing contexts cannot repair the inaccessible runtime reparse point. Windows/Docker runtime repair is outside the allowed start/context-only intervention. No evidence supports promising that a reset, delete, permission change or reinstall is necessary or safe; none was attempted.",
+    "Full release baseline assembly/build and authenticated isolated E2E remain required for launch confidence. No assertion that all possible multi-function lock cycles are eliminated.",
+    "Salon creation root cause remains unconfirmed: the local sanitized lookup log still has startup only. Manual authenticated lookup reproduction is still needed."
+  ],
+  "combinedBookingPatch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final.patch",
+  "combinedBookingManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final-manifest.json",
+  "id": "42571d29-18d5-42ac-b23a-a501076604cd",
+  "recordedAt": "2026-10-15T01:29:31.390Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

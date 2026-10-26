@@ -1,0 +1,480 @@
+{
+  "schemaVersion": 1,
+  "modules": {
+    "app/pos/owner-check-in-actions.ts": [
+      "ownerSubmitAttendance"
+    ],
+    "app/pos/actions.ts": [
+      "cancelWaitingVisitForPos",
+      "createPosDeskCustomer",
+      "getPosLiveDraft",
+      "resolveScannedCheckinReceipt",
+      "searchPosDeskCustomers",
+      "selectWaitingVisitForPos",
+      "submitPosDeskReceipt",
+      "touchCustomerDisplayLiveDraftActivity",
+      "updatePosActiveDraft",
+      "updatePosLiveDraftCustomer",
+      "confirmCustomerDisplayLiveDraftTip",
+      "findLiveDraftCustomerByPhone",
+      "createLiveDraftCustomer",
+      "getCustomerDisplayLiveDraftTipOptions",
+      "resetCustomerDisplayCompletedDraft",
+      "saveCustomerDisplayRequestedServices",
+      "searchCustomerDisplayLiveDraftCustomers",
+      "submitCustomerDisplayPhone"
+    ],
+    "app/service-relay/actions.ts": [
+      "findServiceRelay",
+      "loadServiceRelay",
+      "respondServiceRelay",
+      "saveServiceRelay",
+      "setServiceRelayPlugin",
+      "submitServiceRelay",
+      "issueServiceRelayPass"
+    ],
+    "app/bookings/actions.ts": [
+      "createBookingPosTicketAction",
+      "createQuickSetupStaffAction",
+      "createOwnerAppointmentAction",
+      "reassignOwnerBookingAction",
+      "rescheduleOwnerBookingAction",
+      "runBookingStatusAction",
+      "saveOwnerWorkspaceBookingAction",
+      "replaceOwnerBookingServicesAction",
+      "updateBookingSettingsAction",
+      "updateQuickSetupAssignmentAction",
+      "updateQuickSetupServiceOnlineAction",
+      "updateQuickSetupStaffOnlineAction"
+    ],
+    "app/booking-setup/actions.ts": [
+      "cancelStaffTimeBlockAction",
+      "createStaffTimeBlockAction",
+      "saveStaffWeeklyAvailabilityAction"
+    ],
+    "app/services/actions.ts": [
+      "createServiceAction",
+      "saveServiceConfigsAction"
+    ],
+    "app/pos-tickets/actions.ts": [
+      "addPosPayment",
+      "addPosTicketItem",
+      "cancelPosTicket",
+      "closePosTicket",
+      "correctClosedPosTicketInline",
+      "deletePosPayment",
+      "deletePosTicketItem",
+      "reopenPosTicket",
+      "submitLockedStaffFinancialCorrection",
+      "updatePosTicketDiscount",
+      "updatePosTicketItemStaff",
+      "updatePosTicketTaxRate",
+      "updatePosTicketTip",
+      "voidPosTicket"
+    ],
+    "app/reports/actions.ts": [
+      "saveDailyPosClosing",
+      "submitDailyClosingCorrection",
+      "applyDailyClosingCorrection"
+    ],
+    "app/activity/history-details-actions.ts": [
+      "loadHistoryDetailsAction"
+    ],
+    "app/activity/history-link-actions.ts": [
+      "loadHistoryEvidenceAction",
+      "setHistoryLinkAction"
+    ],
+    "app/activity/actions.ts": [
+      "recordVisitExperienceAction"
+    ],
+    "app/my-bookings/actions.ts": [
+      "cancelCustomerBookingAction",
+      "loadCustomerRescheduleSlotsAction",
+      "rescheduleCustomerBookingAction"
+    ],
+    "app/local-app/customer-social-actions.ts": [
+      "removeAppLocalFollowingAction",
+      "removeAppLocalSavedPostAction"
+    ],
+    "app/explore/social-actions.ts": [
+      "setExploreSalonPreferenceAction"
+    ],
+    "app/explore/account-actions.ts": [
+      "referenceLoveAction",
+      "referenceLoveStatesAction",
+      "salonLoveAction"
+    ],
+    "app/saved-post/actions.ts": [
+      "getAccountSavedPostStatesAction",
+      "setAccountSavedPostAction"
+    ],
+    "app/staff/actions.ts": [
+      "acceptStaffInviteByRequestFormAction",
+      "becomeOwnerStaffAction",
+      "cancelStaffSalonApplicationFormAction",
+      "createSalonStaffInviteFormAction",
+      "createStaff",
+      "declineStaffInviteByRequestFormAction",
+      "getStaffProfileAvatarUploadSessionAction",
+      "resendSalonStaffInviteFormAction",
+      "resetStaffPasscodeFormAction",
+      "reviewStaffSalonApplicationFormAction",
+      "revokeSalonStaffInviteFormAction",
+      "updateOwnStaffPasscodeAction",
+      "updateStaffDirectoryBatchFormAction",
+      "updateStaffPublicProfileAction",
+      "saveStaffDirectoryEntryAction"
+    ],
+    "app/staff/workday/actions.ts": [
+      "checkInStaffWorkday",
+      "checkOutStaffWorkday",
+      "updateStaffWorkdayStatus"
+    ],
+    "app/staff/today/actions.ts": [
+      "saveTodayQuickAccessesAction"
+    ],
+    "app/market/booksms-actions.ts": [
+      "saveBookSms"
+    ],
+    "app/market/tax-company-actions.ts": [
+      "taxCompanyPaymentAction"
+    ],
+    "app/market/booking-deposit-actions.ts": [
+      "bookingDepositBillingAction",
+      "connectBookingStripeAction",
+      "installBookingDepositAction",
+      "loadBookingDepositAction",
+      "saveBookingDepositAction"
+    ],
+    "app/market/booking-policy-actions.ts": [
+      "bookingPolicyPaymentAction",
+      "saveBookingPolicy"
+    ],
+    "app/market/checkin-receipt-actions.ts": [
+      "checkinReceiptPaymentAction"
+    ],
+    "app/campaigns/credit-actions.ts": [
+      "buyCampaignCreditsAction",
+      "saveCampaignTopupAction",
+      "setCampaignPluginAction",
+      "campaignWalletAction",
+      "campaignPaymentControlAction",
+      "campaignCardSetupAction",
+      "loadCampaignCardAction",
+      "loadCampaignLedgerAction",
+      "saveCampaignRemindersAction"
+    ],
+    "app/market/plugin-actions.ts": [
+      "setPayrollDataPlugin"
+    ],
+    "app/market/card-payment-actions.ts": [
+      "refreshCardPurchase",
+      "startCardCheckout"
+    ],
+    "app/market/vietnamese-actions.ts": [
+      "setVietnamesePlugin",
+      "vietnamesePaymentAction"
+    ],
+    "app/market/booking-deposit-purchase-actions.ts": [
+      "beginBookingDepositCheckoutAction"
+    ],
+    "app/account/actions.ts": [
+      "cancelAccountDeletionAction",
+      "createOwnerTransferInviteAction",
+      "generateAccountDeletionBackupAction",
+      "getAccountAvatarUploadSessionAction",
+      "requestAccountDeletionAction",
+      "sendAccountPhoneVerificationOtpAction",
+      "updateAccountProfileAction",
+      "verifyAccountPhoneOtpAction"
+    ],
+    "app/beauty/actions.ts": [
+      "createBeautyPostAction",
+      "deleteBeautyAvatarMediaAction",
+      "deleteBeautyMediaAction",
+      "deleteBeautyPostAction",
+      "getBeautyAvatarUploadSessionAction",
+      "getBeautyMediaUploadSessionAction",
+      "loadBeautyTimelineAction",
+      "searchBeautyAttributionSalonsAction",
+      "updateBeautyPostCaptionAction",
+      "updateBeautyProfileAction"
+    ],
+    "app/settings/personal-public-profile-actions.ts": [
+      "loadPersonalPublicProfileSettings"
+    ],
+    "app/settings/login-security/actions.ts": [
+      "beginPhoneMfaEnrollmentAction",
+      "beginTotpEnrollmentAction",
+      "changeAccountPasswordAction",
+      "createRecoveryRequestAction",
+      "disableMfaFactorAction",
+      "generateRecoveryCodesAction",
+      "logOutAllSessionsAction",
+      "logOutCurrentSessionAction",
+      "removeTrustedDeviceAction",
+      "revokeLoginSessionAction",
+      "secureMyAccountAction",
+      "trustCurrentDeviceAction",
+      "updateLoginSecurityPreferencesAction",
+      "verifyPhoneMfaEnrollmentAction",
+      "verifyTotpEnrollmentAction"
+    ],
+    "app/settings/load-personal-section.tsx": [
+      "loadPersonalSettingsSection"
+    ],
+    "app/settings/connections-actions.ts": [
+      "loadSettingsConnections",
+      "searchSettingsConnectionSalons",
+      "updateSettingsConnection"
+    ],
+    "app/settings/salon-list-actions.ts": [
+      "createSettingsSalon",
+      "loadSettingsSalonList",
+      "saveSettingsSalon",
+      "selectSettingsSalon"
+    ],
+    "app/settings/direct-settings-actions.ts": [
+      "loadDirectSettings",
+      "runDirectLifecycle",
+      "runDirectOwnership",
+      "runDirectStaffRequest",
+      "saveDirectBooking",
+      "saveDirectHours",
+      "saveDirectPayroll",
+      "saveDirectSalonProfile",
+      "saveDirectSpecialHours",
+      "saveDirectStaff"
+    ],
+    "app/settings/salon-verification-actions.ts": [
+      "beginSalonVerificationAction",
+      "confirmSalonVerificationAction",
+      "loadSalonVerificationAction"
+    ],
+    "app/settings/salon-profile-preferences-actions.ts": [
+      "loadSalonProfilePreferencesAction",
+      "saveSalonProfilePreferencesAction"
+    ],
+    "app/salon-profile/actions.ts": [
+      "createSalonProfileLookAction",
+      "createSalonProfileReviewReplyAction",
+      "createSalonProfileSocialPostAction",
+      "createSalonProfileUpdateAction",
+      "deleteSalonProfileLookAction",
+      "deleteSalonProfileLookDirectAction",
+      "deleteSalonProfileMediaAction",
+      "getSalonProfileMediaUploadSessionAction",
+      "pinSalonProfileLookAction",
+      "setSalonProfileLookStatusAction",
+      "setSalonProfileLookStatusDirectAction",
+      "setSalonProfilePublicationAction",
+      "toggleSalonFollowAction",
+      "toggleSalonLookSaveAction",
+      "updateSalonProfileIdentityAction",
+      "updateSalonProfileIdentityMediaAction"
+    ],
+    "app/post-moderation/actions.ts": [
+      "loadHiddenPostIdentitiesAction",
+      "postModerationAction"
+    ],
+    "app/salon-profile/report-actions.ts": [
+      "reportSalonAction"
+    ],
+    "app/post-moderation/block-actions.ts": [
+      "loadBlockedUsers",
+      "setUserBlocked"
+    ],
+    "app/salon-profile/operating-hours-actions.ts": [
+      "loadProfileOperatingHours",
+      "loadVisibleProfileHours",
+      "saveProfileOperatingHours"
+    ],
+    "app/post-comments/actions.ts": [
+      "createPostCommentAction",
+      "deletePostCommentAction",
+      "hidePostCommentAction",
+      "updatePostCommentAction"
+    ],
+    "app/settings/settings-extra-actions.ts": [
+      "downloadSettingsSalonBackup",
+      "refreshSettingsMap",
+      "resolveSettingsClosureRecord",
+      "saveSettingsProfileIdentity",
+      "saveSettingsPublicTeam",
+      "saveSettingsShortcuts"
+    ],
+    "app/settings/delete-unused-action.ts": [
+      "deleteUnusedRecordAction"
+    ],
+    "app/settings/direct-pos-actions.ts": [
+      "resetDirectStaffPasscode",
+      "saveDirectPortableAccess",
+      "saveDirectPosGroup"
+    ],
+    "app/pos/settings/actions.ts": [
+      "createPortablePosAccessAction",
+      "savePosSettingsGroup",
+      "updatePortablePosAccessCapabilitiesAction",
+      "updatePortablePosAccessStatusAction"
+    ],
+    "app/settings/recovery-back-office/actions.ts": [
+      "secureRecoveryBackOfficeAccountAction",
+      "updateRecoveryBackOfficeCaseAction",
+      "updateRecoveryBackOfficeUserStatusAction"
+    ],
+    "app/staff/appointments/staff-preferences-actions.ts": [
+      "staffBookingPreferencesAction"
+    ],
+    "app/settings/settings-hub-actions.ts": [
+      "loadSettingsHub"
+    ],
+    "app/support/actions.ts": [
+      "createSupportRequest",
+      "reopenContentReportReview",
+      "sendGuestSupportMessage",
+      "sendSupportMessage",
+      "uploadSupportEvidence"
+    ],
+    "app/my-place/owner-invite-actions.ts": [
+      "respondOwnerInvite"
+    ],
+    "app/my-place/actions.ts": [
+      "applyToPlaceSalon",
+      "createPlaceSalon",
+      "getPlaceAccount",
+      "getPlaceLifecycleReview",
+      "getPlaceSalon",
+      "respondPlaceRequest",
+      "savePlaceLogo",
+      "savePlaceMember",
+      "savePlaceSalon",
+      "searchPlaceSalons",
+      "setPlaceSalonActivity"
+    ],
+    "app/salon-settings/actions.ts": [
+      "closeCurrentSalonPermanentlyAction",
+      "createCurrentSalonSpecialHoursAction",
+      "deleteCurrentSalonSpecialHoursAction",
+      "disableCurrentSalonAction",
+      "generateCurrentSalonBackupAction",
+      "reactivateCurrentSalonAction",
+      "refreshSalonMapLocation",
+      "updateSalonSettings",
+      "updateStaffPublicTeamBatchAction"
+    ],
+    "app/salon-settings/ownership-actions.ts": [
+      "leaveSalonOwnershipAction"
+    ],
+    "app/salons/actions.ts": [
+      "createSalonAction",
+      "setCurrentSalon"
+    ],
+    "app/customers/actions.ts": [
+      "createCustomer",
+      "mergeDuplicateCustomers",
+      "updateCustomer",
+      "searchCustomerMatches",
+      "searchCustomersForMerge",
+      "consolidateCustomers"
+    ],
+    "app/payroll/actions.ts": [
+      "autosavePayrollPeriodStaffInputAction",
+      "markLatestPayrollStatementPaidAction",
+      "savePayrollStatementAction",
+      "saveSalonPayrollScheduleAction",
+      "saveStaffPayrollSettingWithEffectiveDateAction",
+      "uploadPayrollPaystubAction"
+    ],
+    "app/explore/actions.ts": [
+      "rememberExplorePreferenceAction",
+      "toggleBeautyProfileFollowAction"
+    ],
+    "app/staff/offline-binding-actions.ts": [
+      "confirmStaffAccountAccess"
+    ],
+    "app/notifications/actions.ts": [
+      "openAppNotificationAction",
+      "runNotificationBookingAction"
+    ],
+    "app/payroll/data-download-actions.ts": [
+      "downloadPayrollData"
+    ],
+    "app/tax-company/actions.ts": [
+      "connectTaxSalon",
+      "disconnectTaxSalon",
+      "saveTaxCompanyNote",
+      "updateTaxSettings",
+      "uploadTaxPaystub"
+    ],
+    "app/salon-profile/client-transformations/actions.ts": [
+      "acceptBeautySalonPublicationRequestAction",
+      "declineBeautySalonPublicationRequestAction"
+    ],
+    "app/campaigns/actions.ts": [
+      "changeOwnerCampaignAction",
+      "createOwnerCampaignAction",
+      "dismissCampaignPromptAction",
+      "fundSavedCampaignAction",
+      "loadOwnerCampaignsAction",
+      "ownerCampaignPromptAction",
+      "loadCampaignResultsAction",
+      "saveCampaignLimitAction",
+      "loadCampaignPostsAction",
+      "runAgainOwnerCampaignAction"
+    ],
+    "app/campaigns/creative-actions.ts": [
+      "createCampaignCreativeAction"
+    ],
+    "app/pos/portable/actions.ts": [
+      "correctPortableClosedPosTicketInline",
+      "getPortableTicketData",
+      "logoutPortablePosAction",
+      "portableAdjustStaffTurn",
+      "portableBookingAppointments",
+      "portableBookingHours",
+      "portableBookingNotifications",
+      "portableBookingSlots",
+      "portableBookingStaffOptions",
+      "portableCancelWaitingVisitForPos",
+      "portableCreateAppointment",
+      "portableCreatePosDeskCustomer",
+      "portableGetPosLiveDraft",
+      "portableLoadServiceRelay",
+      "portableManageBooking",
+      "portableResolveScannedCheckinReceipt",
+      "portableSearchBookingCustomers",
+      "portableSearchPosDeskCustomers",
+      "portableSelectWaitingVisitForPos",
+      "portableSubmitAttendanceEvent",
+      "portableSubmitPosDeskReceipt",
+      "portableSubmitServiceRelay",
+      "portableUpdatePosActiveDraft",
+      "portableUpdatePosLiveDraftCustomer",
+      "savePortableReportClosing"
+    ],
+    "app/pos/checkin-receipt-actions.ts": [
+      "issueCheckinReceipt"
+    ],
+    "app/payroll/ledger-actions.ts": [
+      "saveOwnerAdjustment",
+      "saveRecordedPayment",
+      "verifyPayrollIntent"
+    ],
+    "app/settings/plugin-market-status-actions.ts": [
+      "loadPluginMarketStatusAction"
+    ],
+    "app/settings/plugin-settings-actions.ts": [
+      "loadBookingRulesSettingsAction",
+      "saveBookingRulesSettingsAction",
+      "loadBookSmsSettingsAction",
+      "saveBookSmsSettingsAction"
+    ],
+    "app/campaigns/preview-actions.ts": [
+      "loadCampaignPreviewAction"
+    ],
+    "app/activity/customer-merge-actions.ts": [
+      "getMyCustomerMergeGroups",
+      "mergeMyCustomerProfiles"
+    ]
+  }
+}

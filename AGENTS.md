@@ -1,0 +1,26 @@
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+
+## Production source baseline
+
+Before deploying to `reylumi.com`, capture its current Vercel alias deployment ID and use that exact deployment's source as the release baseline. Preserve unrelated changes from that baseline; an older checkout or a previous task's snapshot is not a complete release source. Keep the baseline ID and source/overlay hashes in the release receipt.
+
+Immediately before promotion, run `node scripts/verify-production-base.mjs <captured deployment ID>`. If the alias changed, refresh the baseline and merge the intended changes before promoting.
+
+Verify the release source includes the shipped Explore routes and their modules: `app/api/explore/{search,feed,area}/route.ts`, `lib/explore-{search,search-rpc,search-client,feed-client,visitor,feed-discovery,social-feed,social-feed-ranking,query-intent,query-routing}.ts`, `app/explore/explore-discovery-feed.tsx`, and the imported `lib/location/` providers. Preserve the current optimized Explore pages and helpers alongside unrelated admin/support changes; validate the assembled release with its production build before promoting to the live domain.
+
+## Release coordination and standing owner authorization
+
+Owner instruction recorded on 2026-10-14. Every chat must read `docs/release-policy.txt` before changing release behavior, completing implementation work, or deploying; reread this file before each deployment even in an existing chat.
+
+- A user command to deploy/publish/go live authorizes the ordinary release process for this project: integrate completed authorized changes, fix routine conflicts, test/build, push the intended release source, publish the web release, and build/upload the necessary iOS update through the existing distribution channel. Do not ask for routine confirmation again. Implementation-only tasks must register their changes; they do not automatically publish them.
+- Each implementation task must record dated change events with `node scripts/release-journal.mjs record <manifest.json>` at start and completion. Use separate immutable records in `releases/changes/`; include scope, files, dependencies, verification and the exact frozen source. Never mark an unfinished change ready or overwrite another chat's record.
+- On a deploy command, run `node scripts/release-journal.mjs pending`, inspect linked Git worktrees, tracked/untracked changes, recent commits and prior release receipts, and compare them with the exact current production source. Journal dates and chat completion are discovery aids, not proof that code is live. Resolve completed `needs-integration` work, including older unshipped tasks; do not deploy the entire dirty checkout or an old snapshot wholesale.
+- Exactly one coordinator may publish at a time. Acquire `node scripts/release-journal.mjs lock <release-id>` before baseline capture; the lock is shared by all linked worktrees. Hold it through source assembly, required checks, publication, live verification and the release record; unlock with the returned token in a finally path. Do not steal a lock by age alone. A local lock does not block external deployments: the production alias guard above remains mandatory.
+- Freeze the selected change event IDs and their source hashes. Preserve unpublished ready revisions when a newer revision is still working; use explicit `supersedesEvents` only after validation, per overlapping channel. Preserve the latest shipped web/native features, assemble compatible completed changes, validate the assembled source, and mark only the exact verified event IDs as published per channel in `releases/history/`. Never infer publication from a successful local build, workflow, higher app version, or elapsed date.
+- Automatically assess whether a native iOS build is required. Web-compatible changes publish through the web; Swift, bundled JS/assets, app configuration or bridge compatibility changes require a new native build. Base it on the most recent actually uploaded native source, preserve its changes, choose a valid newer build/version, test/archive/sign/upload, and verify Apple's processing and availability. Keep TestFlight and App Store statuses distinct; do not claim App Store publication from a TestFlight upload.
+- Ask only for an important decision outside existing authorization: destructive production data/schema/account operations, weakened access/privacy/security, money/pricing/billing changes, new sensitive device permissions/tracking, identity/signing ownership or distribution changes, or unresolved legal/App Store declarations. Prepare a concrete reviewed action first and state the precise reason. Routine migrations that preserve data and have been validated are part of the authorized release.
+- Never bypass tool/provider approval requirements, expose secrets, invite testers/users, or send messages as part of a release without the necessary separate authorization. A status check must use read-only tools; some existing iOS helpers mutate tester groups or store metadata.

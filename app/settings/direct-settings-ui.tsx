@@ -1,0 +1,241 @@
+"use client";
+import { WorkspaceText } from "@/components/workspace-language";
+import { useRef, useState, type ReactNode } from "react";
+import type { loadDirectSettings } from "./direct-settings-actions";
+export type DirectData = Awaited<ReturnType<typeof loadDirectSettings>>;
+export type ActionResult =
+  | { ok: true; message?: string; inviteUrl?: string | null }
+  | { ok: false; error?: string };
+export const inputClass =
+  "min-h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm";
+export const buttonClass =
+  "inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:opacity-50";
+export function Field({
+  name,
+  label,
+  value,
+  type = "text",
+  required = false,
+  min,
+  max,
+  step,
+}: {
+  name: string;
+  label: string;
+  value?: string | number | null;
+  type?: string;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  step?: string;
+}) {
+  return (
+    <label className="settings-field-row grid gap-1 text-sm">
+      <span className="settings-field-label"><WorkspaceText text={label} /></span>
+      <input
+        name={name}
+        className={inputClass}
+        defaultValue={value ?? ""}
+        type={type}
+        required={required}
+        min={min}
+        max={max}
+        step={step}
+      />
+    </label>
+  );
+}
+export function Check({
+  name,
+  label,
+  checked = false,
+  required = false,
+}: {
+  name: string;
+  label: string;
+  checked?: boolean;
+  required?: boolean;
+}) {
+  return (
+    <label className="settings-check-row flex min-h-10 items-start gap-2 py-2 text-sm">
+      <input
+        className="mt-1 size-4 shrink-0"
+        name={name}
+        type="checkbox"
+        defaultChecked={checked}
+        required={required}
+      />
+      <span><WorkspaceText text={label} /></span>
+    </label>
+  );
+}
+export function Select({
+  name,
+  label,
+  value,
+  options,
+}: {
+  name: string;
+  label: string;
+  value: string;
+  options: readonly (readonly [string, string])[];
+}) {
+  return (
+    <label className="settings-field-row grid gap-1 text-sm">
+      <span className="settings-field-label"><WorkspaceText text={label} /></span>
+      <select className={inputClass} name={name} defaultValue={value}>
+        {options.map(([id, text]) => (
+          <option key={id} value={id}>
+            <WorkspaceText text={text} />
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+export function InlineForm({
+  children,
+  save,
+  onSaved,
+  onCancel,
+  label = "Save changes",
+  danger = false,
+  disabled = false,
+  changed = false,
+  className = "",
+}: {
+  children: ReactNode;
+  save: (form: FormData) => Promise<ActionResult>;
+  onSaved: () => void | Promise<void>;
+  onCancel?: () => void;
+  label?: string;
+  danger?: boolean;
+  disabled?: boolean;
+  changed?: boolean;
+  className?: string;
+}) {
+  const [dirty, setDirty] = useState(false);
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [message, setMessage] = useState(""),
+    [refreshFailed, setRefreshFailed] = useState(false),
+    [inviteUrl, setInviteUrl] = useState("");
+  const lock = useRef(false),
+    formRef = useRef<HTMLFormElement>(null);
+  return (
+    <form
+      ref={formRef}
+      aria-busy={busy}
+      className={`settings-inline-form grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 ${className}`}
+      onChange={() => { setDirty(true); setMessage(""); setError(""); }}
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (lock.current || disabled) return;
+        lock.current = true;
+        setBusy(true);
+        setError("");
+        setMessage("");
+        setInviteUrl("");
+        setRefreshFailed(false);
+        const form = new FormData(event.currentTarget);
+        try {
+          const result = await save(form);
+          if (!result.ok) {
+            setError(
+              result.error ?? "Could not save. Your changes are still here.",
+            );
+            return;
+          }
+          setMessage(result.message ?? "Saved.");
+          setDirty(false);
+          setInviteUrl(
+            result.inviteUrl
+              ? new URL(result.inviteUrl, window.location.origin).toString()
+              : "",
+          );
+          try {
+            await onSaved();
+          } catch {
+            setRefreshFailed(true);
+          }
+        } catch (e) {
+          setError(
+            e instanceof TypeError
+              ? "Could not connect. Your changes are still here. Try saving again."
+              : e instanceof Error
+              ? e.message
+              : "Could not save. Your changes are still here.",
+          );
+        } finally {
+          lock.current = false;
+          setBusy(false);
+        }
+      }}
+    >
+      <fieldset disabled={busy} className="grid gap-3">
+        {children}
+      </fieldset>
+      {error && (
+        <p role="alert" className="text-sm text-red-700">
+          <WorkspaceText text={error} />
+        </p>
+      )}
+      {message && !dirty && !changed && (
+        <p role="status" className="text-sm text-emerald-700">
+          <WorkspaceText text={message} />
+        </p>
+      )}
+      {refreshFailed && <div role="status" className="grid gap-2 text-sm text-amber-800">
+        <p><WorkspaceText text="Saved, but the latest values could not be loaded. Retry loading without saving again." /></p>
+        {dirty || changed ? <p><WorkspaceText text="You have new edits. Save or cancel them before reloading saved values." /></p> : null}
+        <button type="button" className={`${buttonClass} w-fit`} disabled={busy || dirty || changed} onClick={async () => {
+          if (lock.current) return;
+          lock.current = true;
+          setBusy(true);
+          try { await onSaved(); setRefreshFailed(false); } catch { /* Keep the retry and all drafts. */ }
+          finally { lock.current = false; setBusy(false); }
+        }}><WorkspaceText text="Reload saved values" /></button>
+      </div>}
+      {inviteUrl && (
+        <label className="settings-field-row grid gap-1 text-sm">
+          <WorkspaceText text="Invitation link" />
+          <input
+            className={inputClass}
+            readOnly
+            value={inviteUrl}
+            onFocus={(e) => e.currentTarget.select()}
+          />
+        </label>
+      )}
+      <div className="settings-form-actions flex gap-2">
+        <p role="status"><WorkspaceText text={dirty || changed ? "Unsaved changes in this group" : "Changes apply to this group only"} /></p>
+        <button
+          disabled={busy || disabled}
+          className={`${buttonClass} ${danger ? "!border-red-700 !bg-red-700" : "!border-zinc-950 !bg-zinc-950"} !text-white`}
+        >
+          <WorkspaceText text={busy ? "Processing…" : label} />
+        </button>
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={busy || disabled}
+          onClick={() => {
+            formRef.current?.reset();
+            setDirty(false);
+            onCancel?.();
+            setInviteUrl("");
+            setError("");
+            setMessage("");
+            setRefreshFailed(false);
+          }}
+        >
+          <WorkspaceText text="Cancel" />
+        </button>
+      </div>
+    </form>
+  );
+}
+export const text = (form: FormData, key: string) =>
+  String(form.get(key) ?? "").trim();
+export const number = (form: FormData, key: string) => Number(text(form, key));
+export const checked = (form: FormData, key: string) => form.get(key) === "on";

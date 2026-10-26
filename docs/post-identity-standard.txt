@@ -1,0 +1,27 @@
+Post identity standard
+
+The publishing destination, not the account currently viewing the app, determines who stands behind a post.
+
+1. Owner publishing a salon look/update: salon name and salon logo are primary. Owner name, avatar and byline are omitted. An owner who also has a staff record is still an owner.
+2. Staff publishing a salon look/update: salon name and salon logo are primary. Staff name appears underneath as a smaller By line.
+3. Personal/customer post, including an approved salon publication: personal name/avatar are primary. A related salon appears underneath as a smaller At tag. A person's separate ownership does not turn their personal post into a salon post.
+4. Personal post without a salon: show only the personal identity.
+5. Imported/reference salon information or unknown attribution: retain the salon as primary; do not guess a staff byline.
+
+Primary salon names navigate to that salon. Personal names navigate to the public personal profile when its ID is available. Secondary staff names remain text where no public staff destination exists.
+
+Implementation
+- lib/post-identity.ts is the single resolver; components/post-identity.tsx renders the two-level identity.
+- Feed mapping keeps the salon in author.name for salon-source content, with staff attribution held separately.
+- Profile timeline, post detail, gallery entry popup, personal transformation cards/dialogs, Explore cards and inspiration popup use the same precedence.
+- Website post cards retain salon identity and a staff-only subordinate byline.
+- Author names in comments, reviews and moderation tools are separate from post identity.
+
+Database
+- 20261009010001_salon_post_attribution.sql adds role snapshots and a restricted public batch reader.
+- Owner classification wins over staff. Existing rows are classified with current membership evidence; historical roles before this migration cannot be reconstructed.
+- New role snapshots survive normal edits and later ownership changes. Publishing a draft records its publishing role.
+- The public reader returns only roles and staff IDs for published posts belonging to a public salon; it never returns owner names or user IDs.
+- Migration applied to production on 2026-10-08. The compatibility fallback still retains salon identity if attribution is temporarily unavailable.
+
+Validation: TypeScript and targeted lint passed. 42 related checks passed across identity, database migration, trust, operating hours, profile content and timeline. Rendered owner/staff/personal identities plus a PGlite execution of the migration and public/private access behavior. Production deployment dpl_Hka7oG4eGzeNfPrhJ7cz4qc1Fkht is READY at https://reylumi.com. Migration 20261009010001 is recorded in production. Public attribution API returned HTTP 200 and correctly hid the owner staff ID. Explore and a public owner salon profile returned HTTP 200 without a server error.

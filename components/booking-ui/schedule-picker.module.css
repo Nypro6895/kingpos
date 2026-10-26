@@ -1,0 +1,11 @@
+.picker { width: 100%; color: #211c24; font-size: 13px; }
+.heading { display:flex; align-items:center; justify-content:space-between; }
+.heading button { font-size:24px; width:40px; }
+.picker button { min-height:36px; border:0; background:transparent; color:inherit; cursor:pointer; border-radius:5px; }
+.days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; }
+.days span { padding:6px 0; font-size:11px; color:#786d78; }
+.picker button[aria-pressed=true] { background:var(--booking-orange,#f66e38); color:white; }
+.filters { display:flex; gap:4px; align-items:center; border-top:1px solid #eee3dd; margin-top:6px; padding-top:6px; }
+.filters button { padding:0 9px; font-size:12px; }
+.filters span { font-size:11px; color:#786d78; margin-left:auto; }
+.picker button:focus-visible { outline:2px solid #f66e38; outline-offset:1px; }

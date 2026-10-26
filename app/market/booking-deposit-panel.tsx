@@ -1,0 +1,48 @@
+"use client";
+import {openMarketPayment} from "@/lib/open-market-payment";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { EMPTY_BOOKING_DEPOSIT, type BookingDepositState } from "@/types/booking-deposit";
+import { bookingDepositBillingAction, connectBookingStripeAction, loadBookingDepositAction, saveBookingDepositAction, installBookingDepositAction } from "./booking-deposit-actions";
+import styles from "./booking-deposit.module.css";
+export function BookingDepositPanel({ initial, salonId, paymentsAvailable = true, bankCheckout = false, monthlyPrice = "$5.90 / month", settingsOnly = false }: { initial?: BookingDepositState; salonId?: string; paymentsAvailable?: boolean; bankCheckout?: boolean; monthlyPrice?: string; settingsOnly?: boolean }) {
+  const [state, setState] = useState(initial ?? EMPTY_BOOKING_DEPOSIT);
+  const [loading, setLoading] = useState(!initial), [message, setMessage] = useState("");
+  const [loadedTarget, setLoadedTarget] = useState<{ salonId?: string } | null>(initial ? { salonId } : null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [busy, startTransition] = useTransition();
+  const router = useRouter();
+  useEffect(() => {
+    let active = true;
+    setMessage("");
+    if (initial) { setState(initial); setLoadedTarget({ salonId }); setLoading(false); return; }
+    setLoading(true); setLoadedTarget(null);
+    loadBookingDepositAction(salonId).then(result => {
+      if (!active) return;
+      if (result.state) { setState(result.state); setLoadedTarget({ salonId }); }
+      else setMessage(result.error ?? "Payment settings could not load. Please retry.");
+    }).catch(() => { if (active) setMessage("Could not connect. Retry loading payment settings."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [initial, salonId, loadAttempt]);
+  function open(action: () => Promise<{ url?: string; error?: string }>) { startTransition(async () => { const result = await action(); if (result.url) openMarketPayment(result.url); else setMessage(result.error ?? "Please retry."); }); }
+  if (loading || !loadedTarget || loadedTarget.salonId !== salonId) return <section className={styles.panel} aria-label="Booking deposit settings" aria-busy={loading}>
+    <header><h3>Booking Deposit</h3></header>
+    {loading ? <p role="status">Loading payment settings…</p> : <><p role="alert">{message || "Payment settings could not load. Please retry."}</p><button type="button" onClick={() => { setLoading(true); setLoadAttempt(n => n + 1); }}>Retry loading</button></>}
+  </section>;
+  return <section className={styles.panel} aria-label="Booking deposit settings" aria-busy={busy || loading}>
+    <header><div><h3>Booking Deposit</h3>{!settingsOnly && <p>By Reylumi · {monthlyPrice} per salon</p>}</div><span className={styles.badge}>{state.testMode ? "Test mode · No charges" : state.active ? "Subscribed" : "Subscription needed"}</span></header>
+    {!settingsOnly && <p>Collect a deposit or full payment before customers confirm their appointment.</p>}
+    {state.testMode && !settingsOnly ? <p className={styles.note}>Testing is available now. Add the plugin and enable it to try checkout without a card or a subscription charge. Test bookings are real appointments; their payment records are clearly marked as tests.</p> : null}
+    {!settingsOnly && <button className={styles.install} disabled={busy || loading} onClick={() => startTransition(async () => { const result = await installBookingDepositAction(!state.installed, salonId); if (result.state) { setState(result.state); setMessage(result.state.installed ? "Added to your salon. You can now configure and test booking deposits." : "Plugin removed. Receipts and settings are preserved. If you have a subscription, use Manage subscription to stop renewal."); router.refresh(); } else setMessage(result.error ?? "Could not update plugin."); })}>{state.installed ? "Remove from Reylumi" : state.testMode ? "Add to Reylumi · Test" : "Add to Reylumi"}</button>}
+    <label className={styles.toggle}><span><strong>Require payment when booking</strong><small>Turn off anytime without losing your settings or receipts.</small></span><input type="checkbox" role="switch" checked={state.enabled} disabled={busy || loading || (!state.enabled && (!state.active || (!state.testMode && !state.connected)))} onChange={e => setState({ ...state, enabled: e.target.checked })} /></label>
+    <div className={styles.fields}><label>Payment amount<select aria-label="Payment amount" value={state.mode} disabled={busy || loading} onChange={e => setState({ ...state, mode: e.target.value as BookingDepositState["mode"], value: e.target.value === "percent" ? Math.min(state.value, 100) : state.value })}><option value="fixed">Fixed deposit ($)</option><option value="percent">Percentage deposit (%)</option><option value="full">Full service price</option></select></label>
+    {state.mode !== "full" ? <label>{state.mode === "percent" ? "Deposit percentage" : "Deposit amount (USD)"}<input type="number" inputMode="decimal" min="0.01" max={state.mode === "percent" ? 100 : 999999} step="0.01" value={state.value} disabled={busy || loading} onChange={e => setState({ ...state, value: Number(e.target.value) })} /></label> : null}
+    <label>Customer checkout<select aria-label="Customer checkout" value={state.checkout} disabled={busy || loading} onChange={e => setState({ ...state, checkout: e.target.value as BookingDepositState["checkout"] })}><option value="both">Customer chooses card entry or Stripe</option><option value="embedded">Enter card in booking</option><option value="hosted">Stripe checkout page</option></select></label></div>
+    <p className={styles.note}>Deposits never exceed the service price. The salon pays all Stripe processing, refund and dispute fees. The plugin subscription is separate. Cards are handled securely by Stripe.</p>
+    <p>{state.testMode ? "No money moves in test mode. Live transaction setup is managed in Market Settings." : state.connected ? "✓ Stripe connected — payments go to your salon." : "Connect your salon's Stripe account to receive payments."}</p>
+    <p>In the iOS app, Stripe account setup opens the Reylumi website. Sign in there to connect your salon securely.</p>
+    <div className={styles.actions}><button disabled={busy || loading || !state.installed} onClick={() => startTransition(async () => { const result = await saveBookingDepositAction(state, salonId); if (result.state) { setState(result.state); setMessage("Booking payment settings saved."); } else setMessage(result.error ?? "Could not save."); })}>Save settings</button>{!state.testMode ? <><button disabled={busy || loading} onClick={() => open(() => connectBookingStripeAction(salonId))}>{state.connected ? "Reconnect Stripe" : "Connect Stripe"}</button>{(!bankCheckout || state.subscribed) && <button disabled={busy || loading || (!state.subscribed && (!paymentsAvailable || state.active))} onClick={() => open(() => bookingDepositBillingAction(state.subscribed, salonId))}>{state.subscribed ? "Manage subscription" : "Subscribe · $5.90 / month"}</button>}</> : null}{state.testMode && state.subscribed && <button disabled={busy || loading} onClick={() => open(() => bookingDepositBillingAction(true, salonId))}>Manage subscription</button>}</div>
+    <p role="status" aria-live="polite">{loading ? "Loading payment settings…" : busy ? "Updating…" : message}</p>
+  </section>;
+}

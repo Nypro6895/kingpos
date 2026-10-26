@@ -1,0 +1,79 @@
+REYLUMI MARKET — CÀI ĐẶT VÀ VẬN HÀNH THANH TOÁN NGÂN HÀNG
+Ngày 09/10/2026
+
+Admin → Settings → Plugins and payments → Market payments.
+Chỉ platform owner có quyền quản lý team được cấu hình và xác nhận tiền.
+
+Khởi động
+1. Configuration → Receiving bank accounts: nhập tên ngân hàng, chủ tài khoản,
+   số tài khoản/IBAN, routing/SWIFT nếu cần, hướng dẫn và trạng thái hoạt động.
+2. Chọn tài khoản mặc định. Kiểm tra giá tháng của bốn plugin Reylumi:
+   Tiếng Việt, Booking Policy, Booking Deposit và Check-in Receipt.
+3. Nhập nhãn/tỷ lệ thuế, phí giao dịch % và phí cố định. Xem tổng mẫu rồi bật
+   customer bank payments. Hệ thống không tự điền tài khoản hoặc tỷ lệ thuế.
+4. Giá và ngân hàng mới áp dụng cho đơn tạo sau khi lưu. Đơn đã tạo giữ nguyên
+   giá, thuế, phí, phiên bản và ngân hàng đã thỏa thuận với khách.
+
+Quy chuẩn tiền và giao dịch
+- USD, số nguyên cent; tỷ lệ lưu basis point, 100 = 1%.
+- Thuế = làm tròn cent(giá × thuế%). Phí = làm tròn cent((giá + thuế) × phí%)
+  + phí cố định. Ví dụ 5.90, thuế 8%, phí 2% + 0.30: tổng 6.80 USD.
+- Mỗi kỳ tháng là một đơn riêng. Không tự ghi nợ, không tự gia hạn ngân hàng.
+- Một đơn có mã duy nhất, salon/người mua/plugin, giá chốt, ngân hàng chốt,
+  thời hạn trả, trạng thái, tiền áp dụng/tiền dư, kỳ sử dụng và lịch sử hoàn.
+- Mỗi khoản thu/chi có tài khoản, mã giao dịch ngân hàng, số tiền thực nhận/
+  thực chi, thời điểm, người xác nhận và ghi chú. Mã trùng không ghi tiền lần hai.
+- Biên nhận và sổ tiền chỉ thêm dòng. Cấu hình và audit được lưu cùng giao dịch.
+- Tiền khách chuyển thiếu/dư hoặc không đủ điều kiện được giữ riêng để đối soát,
+  không đồng nhất tổng tiền vào ngân hàng với doanh thu.
+
+Khách hàng
+Chủ tiệm chọn plugin → xem tổng → tạo đơn → chuyển đúng số tiền và mã tham chiếu.
+Trang đơn cho phép sao chép thông tin, cập nhật trạng thái và in/lưu PDF.
+Chỉ đơn chưa nhận tiền và khách xác nhận chưa gửi tiền mới được hủy.
+Tiếng Việt giữ dùng thử miễn phí 5 ngày; mua sau kỳ dùng thử.
+
+Xác nhận tiền và quyền sử dụng
+Admin → Orders & refunds → tìm mã đơn → Record money received. Đối chiếu tiền
+thực sự đã vào tài khoản với sao kê, nhập số tiền thực nhận/mã giao dịch/ngày giờ.
+Đủ tiền và đủ điều kiện: quyền được cấp trực tiếp vào plugin hiện có, bắt đầu
+từ lúc xác nhận, hết sau một tháng lịch (tính UTC). Không dựa vào ảnh chuyển tiền.
+Thiếu: chưa cấp quyền; nhận bổ sung bằng một giao dịch khác. Dư: chỉ áp dụng
+đúng tổng đơn, phần dư là tiền khách đang giữ. Tiền đến sau hạn/đơn hủy: giữ riêng,
+đối soát hoặc hoàn, không tự cấp quyền. Sao kê đến đúng hạn nhưng admin xác nhận
+sau hạn vẫn được kiểm tra theo thời điểm tiền nhận thực tế, tránh mất quyền
+của khách vì admin đối soát chậm.
+Không cho mua trùng khi còn kỳ đã trả hoặc thuê bao Stripe hiện hữu.
+Thuê bao Stripe cũ vẫn có cổng quản lý/hủy; đơn mới dùng ngân hàng.
+
+Hoàn tiền và sửa nhầm
+Tạo yêu cầu hoàn với số tiền và lý do → chuyển từ ngân hàng đến tài khoản khách
+đã xác minh → nhập mã giao dịch chi để hoàn tất. Yêu cầu chưa chuyển có thể hủy
+với lý do, giải phóng phần tiền đã giữ cho yêu cầu; không tạo chi giả.
+Hoàn tiền dư không tước quyền sử dụng. Hoàn hết phần đã áp dụng sẽ thu hồi kỳ
+được cấp bởi chính đơn đó, bảo vệ kỳ mới được trả sau này.
+Hoàn một phần đảo phân bổ giá/thuế/phí theo số tiền; hoàn toàn phần khớp từng cent.
+
+Thu chi
+Overview và Income & expenses tách tiền vào, tiền hoàn, chi phí vận hành,
+tiền ngân hàng ròng, giá plugin, thuế, phí, hoa hồng và khoản phải trả nhà cung cấp.
+Tiền khách chưa áp dụng và các khoản đặt trước chưa đủ để cấp quyền là nghĩa vụ
+với khách; yêu cầu hoàn đang chờ không được tính là tiền đã chi.
+Chi phí doanh nghiệp có luồng riêng, không sử dụng hoàn tiền khách để ghi chi phí.
+Xuất CSV toàn bộ sổ tiền; không âm thầm cắt bỏ các dòng cũ.
+
+Plugin bên ngoài
+Admin thêm hồ sơ giá dự kiến gồm ID, tên, nhà cung cấp, giá và hoa hồng.
+Chưa nối cấp quyền/hết hạn thì fulfillment_ready=false, không nhận tiền.
+Khi phát triển tích hợp cần nối adapter cấp quyền/hết hạn/thu hồi, kiểm tra quyền
+salon, đối soát nhà cung cấp và hợp đồng hoàn tiền. Khoản phải trả nhà cung cấp
+được dự trù riêng; hiện không có chuyển tiền nhà cung cấp tự động.
+Payroll Data Download vẫn miễn phí. Campaigns dùng ví credit riêng.
+Tiền đặt cọc lịch hẹn của Booking Deposit là luồng tiền của salon, tách khỏi
+thanh toán thuê plugin cho Reylumi; salon kết nối tài khoản thanh toán riêng.
+
+Giới hạn vận hành rõ ràng
+Đây là chuyển khoản và đối soát do admin xác nhận, chưa có API ngân hàng tự động.
+Admin nhập thông tin ngân hàng thật và bật checkout sau khi kiểm tra. Chưa ghi
+nhận tiền thật hoặc tạo thuê bao thật trong quá trình kiểm thử phát triển.
+Thuế là tỷ lệ do admin cấu hình; chưa tự tra cứu nghĩa vụ thuế theo địa phương.

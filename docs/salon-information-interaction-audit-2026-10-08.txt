@@ -1,0 +1,32 @@
+Salon information interaction audit — 2026-10-08
+
+Implemented
+- Post preview: salon title opens its actual salon profile.
+- Shared SalonTrustLine: the visible LUMI label and spark open evidence details; unranked salons retain a usable popup without displaying a fabricated rank.
+- Visit/opinion counters retain navigation to the salon evidence/customer experience sections.
+- Explore cards, recommendations, post preview and map: operating status opens the public weekly schedule and special hours, with timezone, loading/error/retry states.
+- Compact Explore cards: moved interactive information outside the outer card link to avoid nested controls.
+- Salon names now link from recommendations, available-today cards, public booking header, guest booking management, booking list, activity drawer, Beauty appointment, salon management/list and account impact list.
+- Connected salons retain their disclosure action and now also offer View salon.
+- Booking workspace customer preview links to the current salon profile.
+- Opening hours are fetched only after the popup is opened.
+- Escape from an inner information popup does not dismiss the post preview.
+
+Reviewed existing behavior
+- Feed/post-detail salon names and main salon cards already link to the profile.
+- Salon profile headers already provide an operating-hours dialog.
+- Call and booking actions already use their dedicated destinations.
+- Settings selectors, workspace switchers, confirmation fields and passive customer-display surfaces keep their existing task-specific actions.
+
+Data limitations
+- Owner invitation summaries supply a salon name but no salon ID; no guessed destination was introduced.
+- Anonymous/byline text without a public profile ID remains text.
+- Demonstration showcase content without a real salon destination remains labelled Preview.
+
+Validation
+- TypeScript: passed.
+- Targeted lint: passed.
+- 27 trust, operating-status and interaction regression checks: passed.
+- Additional profile-content checks: passed.
+- Existing salon-profile-header-layout test fails because its test harness does not define WorkspaceText.
+- No live browser or production deployment verification performed in this task.

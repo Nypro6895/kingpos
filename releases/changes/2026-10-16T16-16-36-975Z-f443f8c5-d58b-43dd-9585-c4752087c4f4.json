@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-http-20261016",
+  "status": "working",
+  "summary": "Bridge only exact existing staff booking and notification HTTP reads/actions to their original guarded route handlers for installed local views.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-role-http-client.ts",
+    "lib/app-local-role-http-server.ts",
+    "tests/app-local-role-http.test.mjs",
+    "lib/app-local-platform-types.ts"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Pinned transport, scope, cancellation and original wire-response tests",
+      "result": "pending"
+    }
+  ],
+  "id": "f443f8c5-d58b-43dd-9585-c4752087c4f4",
+  "recordedAt": "2026-10-16T16:16:36.975Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

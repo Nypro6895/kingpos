@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "changeId": "plugin-popups-navigation",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Use Market activation popups only on attempted feature use; keep Download once in Payroll Tools beside Tax; remove Campaigns from Information and expose Advertising/Quảng cáo through owner More with an activation popup on uninstalled entry. Preserve paid actions, permissions and existing operational behavior; queue for combined deployment.",
+  "files": [
+    "app/settings/plugin-settings-row.tsx",
+    "app/settings/booking-deposit-settings.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/campaigns/page.tsx",
+    "app/role-navigation.ts",
+    "components/role-more-content.tsx",
+    "app/(app)/more/page.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/plugin-settings-ui.test.mjs",
+    "tests/booking-deposit-settings-ui.test.mjs",
+    "tests/tax-company-ui.test.mjs",
+    "app/settings/plugin-activation-dialog.tsx",
+    "app/settings/plugin-activation-dialog.module.css",
+    "tests/fixtures/plugin-navigation-preview.mjs",
+    "tests/plugin-navigation-ui.test.mjs",
+    "docs/plugin-popups-navigation-deploy-note.txt"
+  ],
+  "dependencies": [
+    "booking-deposit-compact-settings",
+    "plugin-settings-consistency"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\plugin-popups-navigation-20261016\\source",
+    "commit": "6d6896722a5e86ed602cb686c527530edb81de04",
+    "patch": "work/plugin-popups-navigation-20261016/implementation.patch",
+    "patchSha256": "fa8d5e3b567fd637dc076a401e128885871b4c48084eb268260951c7cee1057f",
+    "preexistingSnapshotCommit": "ddb3244de47f75fbf816f451ce25392ad1e638d1",
+    "note": "Isolated delta only. Apply after dependencies; preserve unrelated production/pending work. Never use the synthetic baseline parent wholesale."
+  },
+  "validation": [
+    {
+      "name": "22 popup, settings, Tax and navigation tests including cached page restoration and role boundaries",
+      "result": "passed",
+      "evidence": "work/plugin-popups-navigation-20261016/verification.json"
+    },
+    {
+      "name": "Full workspace TypeScript and targeted ESLint",
+      "result": "passed",
+      "evidence": "work/plugin-popups-navigation-20261016/verification.json"
+    },
+    {
+      "name": "25 screenshots, actual page placement checks, exact frozen hashes/patch replay and unchanged business actions",
+      "result": "passed",
+      "evidence": "work/plugin-popups-navigation-20261016/verification.json"
+    }
+  ],
+  "limitations": [
+    "No deployment or push. Full production build and authenticated live checks must run on the future assembled exact current production baseline.",
+    "Activated plugins retain existing enable/disable semantics. This change adds no subscription operation or new business enable flag."
+  ],
+  "nativeAssessment": "Web UI only; no native source, bundled assets, configuration or bridge change. No separate iOS binary required for this patch.",
+  "handoffNote": "docs/plugin-popups-navigation-deploy-note.txt",
+  "id": "46a001aa-b407-44bc-ac7a-eb8eba7694a0",
+  "recordedAt": "2026-10-17T03:03:32.566Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/plugin-settings-row.tsx": "cf126e2661c2c887fe0cf4b682c0ea0c6f41067845a036016204a9c2630f0c8b",
+    "app/settings/booking-deposit-settings.tsx": "62dd6bd4a00a39a4249828d357404808e766a0cf03bb95cf0290ef4c1f01fed3",
+    "app/settings/salon-settings-panels.tsx": "61da4969dc73c63d4c60b817ee39940409d75004dc2ea534b0c8d1a08a9f816b",
+    "app/settings/team-payroll-panels.tsx": "c93ac1aa3d0957b215e2a183fb5bee838eb580cefd43a801f054050c8eef1c93",
+    "app/(app)/payroll/page.tsx": "86104adc6f8243e123ded82774ec2ed7d012b3991fcd5c565f5d1c6bdc6dd4e8",
+    "app/(app)/campaigns/page.tsx": "709922fb9968543e134bf54556cbf33a376fb69087a0bfd265df732b754181a9",
+    "app/role-navigation.ts": "52470fad5a5734b7da764d0b98f6c424f8b5bc75a98cd689cd534d176da20695",
+    "components/role-more-content.tsx": "98292473de5cfdca538a58294b96c2540af18a86a94a547f232fdcb5a163fd4d",
+    "app/(app)/more/page.tsx": "4d5cedef86fe6d305f827435e39210313eb6ef228bf0d64423cefa80172a5872",
+    "app/campaigns/campaign-workspace.tsx": "2382d34c93fc7c638d1bd6efb15ea685230d718ad87bc3967ec45811b4d101a0",
+    "lib/vietnamese-dictionary.ts": "c6d336e4b5e2e04240fffe8f32aaab224529205b3245a1ce70042f379f2e3128",
+    "tests/plugin-settings-ui.test.mjs": "33e6c3ab74f4cd4aa6f98a7de11a79317b0013ab9e97e16e8c424e8d06b68fa2",
+    "tests/booking-deposit-settings-ui.test.mjs": "f1a6ac7deac50c418f4b5f786d804a78428c723d364fb3a58f88b9d5cbc07462",
+    "tests/tax-company-ui.test.mjs": "1cb1d4b3e99efb24be92e578b89a6c6f26cbabe3a8a6784dacd910470a8aefbc",
+    "app/settings/plugin-activation-dialog.tsx": "e244fbca9d511e85c9f97dd28e134db74e9b00d2408d5d5edad26f50765b6d5c",
+    "app/settings/plugin-activation-dialog.module.css": "65c054031a9272bf2e96612e02643a9262d491ff64725fc21c5b7137b19acd79",
+    "tests/fixtures/plugin-navigation-preview.mjs": "1b86e793d60c47373cc03a67f5c7e5a66c5cc3686ed59bdb0f39ca975d0f5086",
+    "tests/plugin-navigation-ui.test.mjs": "a5d2cbd48263ae2b25a6af5b8a3680df22a42fcb742f66ed9b94b9607a7bb894",
+    "docs/plugin-popups-navigation-deploy-note.txt": "86eca8cdf8229e8592a5471eb8b18190bfe2f8875aa4f91c7b55556457c6ca49"
+  }
+}

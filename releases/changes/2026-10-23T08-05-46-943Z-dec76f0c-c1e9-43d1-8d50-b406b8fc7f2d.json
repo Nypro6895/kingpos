@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "settings-panels-unified-20261023",
+  "status": "ready",
+  "summary": "Complete Settings home/group/detail navigation, replacement search, compact full-bleed square groups, selected-only editors and draft retention, accessible Profile edits, loading/saving/retry feedback. Server permissions and action payloads preserved. Validated isolated revision; merge intended changes into exact release baseline before publishing.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/settings/loading.tsx",
+    "app/account/account-profile-editor.tsx",
+    "app/settings/deferred-personal-section.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "app/settings/settings-loading.tsx",
+    "lib/app-local-page-registry.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-unified-20261023\\frozen-source",
+    "commit": "fad8d667343061eb4f51d5bdf1c7a1e57858c9b4"
+  },
+  "validation": [
+    {
+      "name": "Production webpack build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-unified-20261023\\web-build-result.json"
+    },
+    {
+      "name": "ESLint and focused contracts",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-unified-20261023\\validation-notes.json"
+    },
+    {
+      "name": "Real editors and responsive behavior",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-unified-20261023\\verification.json"
+    },
+    {
+      "name": "Source-bound production iOS bundle preparation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\settings-panels-unified-20261023\\native-build-result.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "dec76f0c-c1e9-43d1-8d50-b406b8fc7f2d",
+  "recordedAt": "2026-10-23T08:05:46.943Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/settings/loading.tsx": "f757f780e1e0d446ef6e0d3cc392ac0ee2a517a6047dce2040a365b84a1efb08",
+    "app/account/account-profile-editor.tsx": "cf249000681abd09346c30953cf7ad4257911ce8b486a71097050f973fb43096",
+    "app/settings/deferred-personal-section.tsx": "27d96c1d107b49c9064bf8b00cf2333ae13a596f76adda47953b687c751b9c2d",
+    "app/settings/direct-settings-panel.tsx": "ead7f53bd294b722b510b1274e195d6db8014cafc463ba1d74cfebc284b52220",
+    "app/settings/direct-settings-ui.tsx": "17bbdbbe157055ddf6fca46a66af38576e42692d80e5753a2b3794b17681f540",
+    "app/settings/salon-settings-panels.tsx": "7cea697463b164dd45d209b6fe43bd3455dcd2fd714135e1b320ed426f7f48d4",
+    "app/settings/settings-hub-client.tsx": "327e4e6641074ee5fae650d291deefa4f600963321f6eb941d1351ee1e946fd8",
+    "app/settings/settings-hub.css": "fb71f474833e1bc596b83f72dcf2b0966daf1652f37130f3e23f63d393710e43",
+    "app/settings/settings-loading.tsx": "af0406cc2aec2c6f4016fa07e476430793da86df4ac3dade3629d710ab2bb605",
+    "lib/app-local-page-registry.tsx": "a288f94b79e01bef4d5b62599fd7c6f5214c532b42a91c95fb4dd964d067bada"
+  }
+}

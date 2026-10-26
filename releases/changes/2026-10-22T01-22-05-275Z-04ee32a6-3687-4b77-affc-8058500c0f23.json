@@ -1,0 +1,240 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r9-observability-integration-20261022",
+  "status": "needs-integration",
+  "summary": "Frozen local R9 observability checkpoint: frozen producer30 plus three minimal fixture dependency corrections; selected643 phase-bound executions, separate11 denial/fault/positive200 controls, build239, typecheck/lint/offline. Pilot off. Await authenticated Simulator and deployment coordination; no deployment authorized here.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "tests/app-local-scoped-invalidation-ui.test.mjs",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/ios-acceptance-report.test.mjs",
+    "docs/ios-acceptance-measurement.md",
+    "lib/read-request-timing.ts",
+    "lib/supabase/server.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "lib/read-request-trace-protocol.ts",
+    "lib/app-local-host.ts",
+    "lib/experience-trace.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "tests/context-today-timing.test.mjs",
+    "tests/app-local-read-correlation.test.mjs",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/app-local-staff-online-access.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/services-catalog-host-admission.test.mjs",
+    "tests/refresh-session-availability.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\source",
+    "commit": "3ba5757ec22bb0b2a1ac0f8c9e30e03e8be03d0e",
+    "tree": "02115e4ea2f30bab3cf171f52a572a20d4128305",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\functional-source-manifest.json"
+  },
+  "dependencies": [
+    "reylumi-final-r8-pilot-off-integration-20261022",
+    "ios-auth-observability-qa-20261021"
+  ],
+  "validation": [
+    {
+      "name": "auth-observability-unit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\auth-observability-unit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "owner-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\owner-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\portable-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-continuation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\guest-continuation\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\guest-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "idle-web",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\idle-web\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\experience-regression\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\experience-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\scope-regression\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "bridge-contracts",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\bridge-contracts\\attempt-2\\receipt.json"
+    },
+    {
+      "name": "native-recovery-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\native-recovery-fixture\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "session-guest-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\session-guest-fixture\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\role-cache-chromium\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\role-cache-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "auth-rejection-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\auth-rejection-chromium\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "auth-rejection-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\auth-rejection-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "page-admission-ui",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\page-admission-ui\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "page-admission-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\page-admission-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-browser",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-browser\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-cache",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-cache\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-controller",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-controller\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-host-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-host-admission\\attempt-2\\receipt.json"
+    },
+    {
+      "name": "services-native-flag",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-native-flag\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-native-registry",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-native-registry\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-native-runtime",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-native-runtime\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "services-reset-isolation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\services-reset-isolation\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "scoped-invalidation-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\scoped-invalidation-chromium\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "scoped-invalidation-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\scoped-invalidation-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\lint\\attempt-3\\receipt.json"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\typecheck\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\build\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-observability-validation\\offline-assets\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "supplemental11-positive200-and-real-fault-injection",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r9-auth-validation\\DELIVERY.json"
+    },
+    {
+      "name": "integrated-authenticated-Simulator-backend-transport-role-restart-cache",
+      "result": "pending"
+    },
+    {
+      "name": "authenticated-Windows-POS-and-staging-ACL-jobs-fallback",
+      "result": "pending"
+    }
+  ],
+  "id": "04ee32a6-3687-4b77-affc-8058500c0f23",
+  "recordedAt": "2026-10-22T01:22:05.275Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r9-observability",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

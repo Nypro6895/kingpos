@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [],
+  "changeId": "salon-setup-review-20261016",
+  "files": [
+    "lib/salon-settings.ts",
+    "lib/salon-profile.ts",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/salons/salon-management-page.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/(app)/salon-profile/page.tsx",
+    "app/(app)/salon-settings/page.tsx",
+    "app/(app)/settings/page.tsx",
+    "lib/location/salon-map-location.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/salon-publication-readiness.ts",
+    "lib/vietnamese-salon-setup.json",
+    "components/salon-publication-status.tsx",
+    "app/salon-profile/publication-panel.tsx",
+    "tests/salon-setup-readiness.test.mjs"
+  ],
+  "summary": "Reviewed salon setup fixes integrated with current production: verified public links, clear independent statuses, friendly map fallback, metadata recovery and save/draft feedback. Existing publication requirements and booking/staff/payroll logic retained.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-setup-release-20261016\\frozen-source-r2",
+    "commit": "e376723c94082de7a8984f5acd64f068d8f53f8e"
+  },
+  "validation": [
+    {
+      "name": "50 settings, lifecycle, booking and app-local authorization/public-link tests",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-tests.log"
+    },
+    {
+      "name": "Production webpack build including TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-build-final.log"
+    },
+    {
+      "name": "Lint of integration and new components",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-lint.log"
+    },
+    {
+      "name": "344 native bundled resources match manifest byte lengths and hashes",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/frozen-selection.json"
+    }
+  ],
+  "id": "8a50bcc5-55de-48ad-9e4d-076db0513ef4",
+  "recordedAt": "2026-10-16T20:11:08.384Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/salon-settings.ts": "de71ba753d85fe45366dcc5763ce94acdf2abf60267b2a4eae690aaffd03a75e",
+    "lib/salon-profile.ts": "1a835746db0f2a6c394f9a46d49d62d4fd8111dbdedbfeecfed989315fae8600",
+    "app/settings/salon-settings-panels.tsx": "16de29f2a7845ec6df7ee992858594b76cf92644b094a240a7b31d9630a18cb6",
+    "app/settings/direct-settings-ui.tsx": "8c17ed344e5d316a1040ddf068960cfeb3b63957bc4f864cb94787f6a277f5b3",
+    "app/settings/direct-settings-actions.ts": "5d0d0c7b071a2aeec11ca233286ebd6660432f569797012a136646348e8849c5",
+    "app/settings/settings-hub-client.tsx": "c33743dd9f36b75f3022d560dceff0a1695ee46fac7ca679bc6421648163f2a1",
+    "app/settings/salon-list-panel.tsx": "40794481c142b68d97adb03a323c4ed391a924d2042d68b8af3f61532ef8df60",
+    "app/settings/ownership-lifecycle-panels.tsx": "fc96c548ba8773128d2f562917d91e8000999e46f325399ec9cbc92aad073787",
+    "app/salons/salon-management-page.tsx": "ac23c7a7e348c2a4df52a5136c973ea62c937673fa3503434cf6c98efd7d92d1",
+    "app/salon-profile/salon-profile-view.tsx": "c1a3179e150aa158a97a525469535ca00c7c6a17aed07e0f4070a4e1b0333dc4",
+    "app/(app)/salon-profile/page.tsx": "68c82966042b7c5b201f2f356421d1877ad136fab7eed1433a07937aee76d805",
+    "app/(app)/salon-settings/page.tsx": "26477de49fb2ca6956f1be11f4992f3766ff2d2de500dce642f5a4a71c6b13cd",
+    "app/(app)/settings/page.tsx": "47d9321fe928bd91ee5f4c769022d4c8123e4993f1850cfa63af9f18a1d5fd6b",
+    "lib/location/salon-map-location.ts": "fe68f8745e69be278cb3bbd2b4fe666e7770f00fa61e78e8c50efed4c2aaf106",
+    "lib/vietnamese-dictionary.ts": "d7f233b637d8c2982c7c756ca857dbf4c24b2c078d4092719230151d78dba7dc",
+    "lib/salon-publication-readiness.ts": "75a3e079cdbd4f1b0199bbc0bb2895481d11082a1af54e1918d5ed93815eb8fa",
+    "lib/vietnamese-salon-setup.json": "5ce395c8e491bc80ade7e46c4da16f004f9d68cb24721f50bc1e4ac5ab8276a4",
+    "components/salon-publication-status.tsx": "77d66c25da7b45b07ae3da4f1d863cbb9a94b1dc57bda01d92d48e88b81abe93",
+    "app/salon-profile/publication-panel.tsx": "6b0c7457542ef191ed0047ec662773d6263bb15e910a7888e4945d94e56a7747",
+    "tests/salon-setup-readiness.test.mjs": "f6f05498a96a847e9bf3b305563d79fe5d03d708426f528caf372068f9418d60"
+  }
+}

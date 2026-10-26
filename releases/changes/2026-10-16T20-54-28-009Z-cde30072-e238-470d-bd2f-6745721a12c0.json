@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-menu-startup-recovery-20261016",
+  "status": "ready",
+  "summary": "Validated owner POS navigation/startup recovery layer with sanitized stage/code diagnostics. Saved work is preserved, failure remains retryable, and original cause stays internal without technical UI or data emission. Matching root entry integration and physical-iPhone acceptance remain coordinator gates before publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "supersedesEvents": [
+    "e469ede4-9ed0-42bb-8762-efd958ad7de2"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "lib/owner-cart-startup.ts",
+    "tests/owner-pos-recovery-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\frozen-source-r2"
+  },
+  "validation": [
+    {
+      "name": "Nine actual-entry/navigation/cart/diagnostic/Check-in browser regressions",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/focused-tests-r2.json"
+    },
+    {
+      "name": "Four existing owner local-workspace browser regressions",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/focused-tests.json"
+    },
+    {
+      "name": "Repository TypeScript no-emit and changed-file lint",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/focused-tests-r2.json"
+    }
+  ],
+  "id": "cde30072-e238-470d-bd2f-6745721a12c0",
+  "recordedAt": "2026-10-16T20:54:28.009Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-client.tsx": "3d58d49daea2a72cb809ed0d3f38180e238a54c6ff6b869135b04d26fb41df9e",
+    "app/pos/owner-pos-tabs.tsx": "aaab2692444cc5afc0babaf09e414085870f8d195a22ddf887af467ae9cfd629",
+    "app/pos/owner-pos.css": "baa0876b4d67d5f3cab38b3a9c2738a50cab26d8871396355faab02a932283ee",
+    "app/pos/owner-local-panels.tsx": "0ed2d76fd641e621d21a69001a6614a6aa5766887969e4286f6a373ce9a0c104",
+    "app/pos/portable/check-in/portable-check-in-client.tsx": "e147de30982538db27429f97b62eac50bd0a0807372672f6e42473ff8aa88022",
+    "lib/owner-cart-startup.ts": "11ab9192b91381c189c2d5b07d477e87381b3866f7cb9724cea9744696cd61d0",
+    "tests/owner-pos-recovery-ui.test.mjs": "5e4f1a1b5475f5dd4684c1c540c978502c283c0302a6d8ad915380cd941dc73c"
+  }
+}

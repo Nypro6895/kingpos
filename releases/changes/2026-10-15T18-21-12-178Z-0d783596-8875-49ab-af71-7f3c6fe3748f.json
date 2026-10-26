@@ -1,0 +1,99 @@
+{
+  "kind": "change",
+  "changeId": "signup-inline-security-web-20261015",
+  "status": "ready",
+  "summary": "Show readable verification inside signup, preserve entered values on mobile, and charge account quotas only for committed Auth users while retaining request and abuse protections.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/abuse-server.ts",
+    "lib/auth-response.ts",
+    "app/(app)/api/auth/signup/route.ts",
+    "supabase/migrations/20261015190000_signup_admission_retries.sql",
+    "tests/abuse-prevention.integration.test.mjs",
+    "tests/fixtures/abuse-prevention-db.mjs",
+    "tests/signup-admission-retries.integration.test.mjs",
+    "tests/signup-security-response.test.mjs",
+    "tests/signup-admission-concurrency.test.mjs",
+    "app/signup/signup-form.tsx",
+    "app/(app)/signup/page.tsx",
+    "app/(app)/security-check/security-check.tsx",
+    "app/(app)/auth-screen.module.css",
+    "components/security-challenge.tsx",
+    "tests/signup-security-ui.test.mjs",
+    "lib/security-challenge-image.ts",
+    "app/(app)/api/security/challenge/route.ts",
+    "app/fonts/GeistMono.ttf",
+    "next.config.ts",
+    "tests/security-challenge-image.test.mjs",
+    "tests/security-challenge-route.test.mjs",
+    "docs/post-safety.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\source-v1",
+    "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Final production webpack build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/production-build.log"
+    },
+    {
+      "name": "Assembled product ESLint",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/assembled-eslint.log"
+    },
+    {
+      "name": "Signup/abuse/route/image regressions",
+      "result": "passed",
+      "evidence": "signup-assembled-tests.tap:26/26; source UI suite Chromium11/11 and WebKit11/11"
+    },
+    {
+      "name": "Actual built signup browser flow",
+      "result": "passed",
+      "evidence": "qa/built-signup-browser-evidence.json:Chromium/WebKit320,390,1280;6/6"
+    },
+    {
+      "name": "Multi-connection PostgreSQL quota atomicity",
+      "result": "passed",
+      "evidence": "12 concurrent transactions;3 committed,9 rejected; exact committed counters/tickets3"
+    },
+    {
+      "name": "Font packaging",
+      "result": "passed",
+      "evidence": "font-trace-verification.json;720x192 PNG generated with bundled Geist Mono"
+    }
+  ],
+  "id": "0d783596-8875-49ab-af71-7f3c6fe3748f",
+  "recordedAt": "2026-10-15T18:21:12.178Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/abuse-server.ts": "1c5a411dc3ae3dfbff56bbe0c592ac123fe551c40e7997cafb8b3de985ef75da",
+    "lib/auth-response.ts": "be321562de5c2d1585635a244dfd72ab8f4690d8111a4e21bb3275d758771cec",
+    "app/(app)/api/auth/signup/route.ts": "4f71e202c0ace38763aeb69e69319dc918703a7a9bd0f63f12954f5dec038d7b",
+    "supabase/migrations/20261015190000_signup_admission_retries.sql": "68e493f1b0a98a459f489892590254342706ff5f55d06f3619535a6c15205e83",
+    "tests/abuse-prevention.integration.test.mjs": "2589afc132ba2921e156e8c77dd5fc2667fcf4dc126f8fa82afee38fcdcad6aa",
+    "tests/fixtures/abuse-prevention-db.mjs": "b7e0dd3b7fb63d42cfadecabfd270d33f7851950a462794ce28870daaf9e70c4",
+    "tests/signup-admission-retries.integration.test.mjs": "c051cb930e849edf719a5f73842c743d18632bcaa6b67a38eee73f15ca95aaa1",
+    "tests/signup-security-response.test.mjs": "f0e86b341346d60060b9c741150d58a4cf6136eaeaad2f35cb0ec1ece5f27b3f",
+    "tests/signup-admission-concurrency.test.mjs": "62caef691b2d3c145fb7d6865a812636a232100219ad31783ee171a99066bf7b",
+    "app/signup/signup-form.tsx": "098312ca9a9e6a1749a1f5847c58d4162819c1004ebefc375b4cdca3e6739684",
+    "app/(app)/signup/page.tsx": "2ef7f2fea0a4dc5ff2e77dc8052ee4f2e029bee4ba3d054a9497120f94ef734f",
+    "app/(app)/security-check/security-check.tsx": "4db0357eef36c55f8497d0c072345e1a5fe5829a24a04401698df8d4e33eda45",
+    "app/(app)/auth-screen.module.css": "746cb9d34b92a7680233445f29d5f9401888d2e3f100075d622e1606ad745ee2",
+    "components/security-challenge.tsx": "5b6ca073a18eadbe509901ce3df379d7839c0ac7457c781b517c44d26c29a286",
+    "tests/signup-security-ui.test.mjs": "49be4d320715843421dba4add2e023f9d9099e433142599b5f5e852f46acdedc",
+    "lib/security-challenge-image.ts": "44a6630915d7c085c67064945c540c5654dfa65873194d7184670c6ff306242b",
+    "app/(app)/api/security/challenge/route.ts": "e89d9147a9d204edaa80b4cb2b449a5a116ac8310b6073fb69aea31f0f5c9018",
+    "app/fonts/GeistMono.ttf": "6c083b0aef3e98da9b4a10fcbcf2f4f13651e1027047e5db8845acabca89ebd6",
+    "next.config.ts": "a00138fa80df0a52806d467880af1d4ccdb7726945e52015dc2f375e7dc60037",
+    "tests/security-challenge-image.test.mjs": "5dd5195a6999d383d72809753e78c58e8bebd54d65d893cdb8ee65444ae242c4",
+    "tests/security-challenge-route.test.mjs": "c74e75dbbde03a13277b0d399d7311c8885fa444006a7726919c9f1f060bec92",
+    "docs/post-safety.md": "441a7952b036f48a88da92678329c7a7a326769cfa7091e1d2b2b03814b5ac47"
+  }
+}

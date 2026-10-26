@@ -1,0 +1,189 @@
+SETTINGS — AUDIT LUỒNG, PHẠM VI VÀ BỐ CỤC
+Ngày: 2026-10-07 (America/Chicago)
+Trạng thái: đã đối chiếu mã và kiểm tra logic; CHƯA hoàn tất audit giao diện đăng nhập.
+
+1. BẰNG CHỨNG VÀ GIỚI HẠN
+
+Route đang dùng: app/(app)/settings/page.tsx -> SettingsHubClient.
+AllSettingsClient là component khác, không được route này gọi. Các ảnh QA cũ
+trong artifacts/all-settings-qa mô tả drawer/sheet của giao diện khác; không
+được dùng làm bằng chứng rằng giao diện hiện tại đã được audit.
+
+Đã mở http://localhost:3000/settings qua trình duyệt. Trang chuyển đến
+/login?next=/settings. Chưa có phiên đăng nhập để xem dữ liệu và giao diện thật.
+Không gửi lời mời, OTP, chỉnh quyền, sửa dữ liệu, đóng salon hoặc xóa tài khoản.
+Không sửa mã ứng dụng. Ảnh concept trước không phải đề xuất đã được audit.
+
+25 kiểm tra logic có sẵn đạt, không bỏ qua:
+tests/settings-target-context.test.mjs
+tests/settings-regressions.test.mjs
+tests/settings-save-feedback.test.mjs
+tests/settings-salon-list.test.mjs
+tests/all-settings-direct-actions.test.mjs
+Các kiểm tra dùng dữ liệu mô phỏng, không chứng minh bố cục hay backend live.
+
+2. LUỒNG THỰC TẾ CẦN GIỮ
+
+Vào /settings -> đăng nhập -> loadSettingsHub -> tài khoản cá nhân mặc định,
+trừ khi section hợp lệ được truyền trong URL.
+
+Hub có ba nhánh độc lập:
+A. Tài khoản cá nhân: danh tính, public profile, bảo mật, thông báo, kết nối,
+   xóa tài khoản.
+B. Mỗi salon sở hữu/quản lý: tối đa 10 mục, lọc theo quyền và tư cách chủ.
+C. Mỗi salon làm nhân viên: hồ sơ và tùy chọn booking cá nhân, lịch làm/nghỉ.
+
+Một người có thể đồng thời có B và C, kể cả cùng salon. Không được gom thành
+một nhánh salon rồi mất tư cách thao tác.
+
+Chọn salon trong hub chỉ đổi section cục bộ. loadDirectSettings và các thao tác
+lưu dùng salonId cụ thể + withSettingsTarget. Không cần đổi workspace toàn app.
+Thanh điều hướng toàn app vì vậy có thể đang chọn một workspace khác salon
+đang chỉnh. Bố cục mới phải thể hiện rõ đối tượng đang chỉnh trong vùng nội dung.
+
+Các section đã mở được giữ mounted rồi hidden để giữ bản nháp. Không được
+thay điều hướng bằng cách unmount toàn bộ form mà không xử lý bản nháp.
+
+3. DANH MỤC, PHẠM VI VÀ CÁCH LƯU
+
+TÀI KHOẢN CÁ NHÂN — 6 mục
+Profile & contact: hồ sơ cá nhân; chế độ sửa/lưu; xác minh số điện thoại riêng.
+Public profile & visibility: Beauty profile cá nhân; bio, visibility, cover;
+  upload trước khi lưu và dọn upload nếu lưu thất bại.
+Login, devices & security: phiên đăng nhập, trusted devices, 2FA, cảnh báo,
+  recovery contacts/codes, recovery request, secure account, lịch sử đăng nhập;
+  nhiều thao tác riêng, không phải một form Save chung.
+Notifications: bật/tắt lưu ngay. Preferences cá nhân áp dụng mọi workspace;
+  staffBooking chỉ xuất hiện khi workspace toàn app là staff, lấy currentSalon.
+Connections & invitations: kết nối salon, lời mời staff/owner, đơn ứng tuyển,
+  chấp nhận/từ chối/hủy, lịch sử; thao tác trực tiếp + refresh hub khi thay đổi.
+Delete personal account: phân tích tác động, điều kiện chặn, backup và xác nhận;
+  phải giữ tác động liên salon/tài khoản, không biến thành xóa salon.
+
+SALON SỞ HỮU/QUẢN LÝ — tối đa 10 mục mỗi salon
+Salon information: danh tính, liên hệ, website, mô tả, địa chỉ; form riêng.
+  Map: dùng ĐỊA CHỈ ĐÃ LƯU, thao tác refresh riêng.
+  Opening hours: timezone và nhiều khung giờ theo từng ngày; lưu riêng.
+  Holiday/special hours: thêm/xóa từng ngày; thao tác riêng.
+Public profile: tagline/story/logo/cover; publishing/discovery và staff
+  applications; verification qua OTP + admin review; 3 kiểu website;
+  appearance, posts/interactions, review highlights. Nhiều đơn vị lưu riêng.
+Services: danh mục, giá, booking staff và readiness trong ServicesManager;
+  component embedded, salonId được truyền cụ thể.
+Booking: 10 flags, confirmation mode, lead time, advance window, slot interval,
+  cleanup buffer, cancellation notice, timezone, tạo POS ticket; form riêng.
+  Staff availability/time off là editor riêng với quyền riêng.
+Staff/team: tạo/sửa staff, mời/link app account, booking/post permissions,
+  public staff profile/order, passcode, xóa bản ghi chưa dùng, xử lý requests.
+Payroll: chu kỳ salon và cấu hình từng nhân viên là hai thao tác khác nhau;
+  ngày hiệu lực, commission/fixed pay, check share, tax rate/options, tip/bonus
+  payout. Không được thay bằng một nút Save cho toàn salon.
+POS/devices: staff check-in/turns, checkout/workspace, customer display;
+  SettingsGroupForm có kiểm tra snapshot và xử lý xung đột; access key/device
+  tạo/đổi tên/quyền/trạng thái/passcode/xóa key chưa dùng là thao tác riêng.
+Today shortcuts: lựa chọn + thứ tự, giới hạn số lượng; lưu riêng.
+Ownership: chủ hiện tại/cũ, mời đồng chủ/chuyển quyền, revoke, leave ownership;
+  chỉ chủ salon; chủ cuối cùng không thể rời.
+Salon status: backup, disable/reactivate, review blockers, xử lý bookings/tickets,
+  xác nhận tên salon + quyết định backup trước đóng vĩnh viễn; chỉ chủ salon.
+
+SALON LÀM NHÂN VIÊN — 2 mục mỗi salon
+My staff profile & booking preferences: public staff identity + online booking
+  và notifications; chỉ hồ sơ staff của chính người dùng trong salon đích.
+My working hours & time off: lịch và time blocks của chính staff trong salon đích.
+
+CÁC NHÁNH BỔ SUNG
+Add salon: chỉ hiện khi có business account được tạo salon; có account selector,
+  canCreate của account được chọn, kiểm tra trùng, form tạo và refresh hub.
+Recovery back office: chỉ người có quyền support; khác recovery tự phục vụ.
+Platform administration / Messaging: chỉ platform owner có index.twilio.
+Legal & Privacy: policies; Business terms theo hasBusinessWorkspace.
+Help & support: đi đến support conversations hoặc self-service account recovery.
+
+4. PHÁT HIỆN CÓ BẰNG CHỨNG TRONG MÃ
+
+F01 — Điều hướng URL không xác định salon đầy đủ.
+settings-hub-client.tsx:39,57-58: reveal chỉ setState, không cập nhật URL;
+section dạng booking/payroll dùng all.find + endsWith, chọn kết quả đầu tiên.
+Hệ quả theo mã: reload không khôi phục lựa chọn mới; Back/Forward không biểu
+diễn lịch sử chọn; section không kèm salon có thể mở salon đầu trong index.
+Cần tái hiện live với ít nhất hai salon, gồm workspace hiện tại khác salon đầu.
+
+F02 — Quyền xem có thể dẫn tới panel không hiển thị dữ liệu.
+Menu lọc salon_settings.view / salon_profile.view / payroll.view / tickets.view.
+salon-settings-panels.tsx:142, team-payroll-panels.tsx:269,
+pos-settings-panel.tsx:28 trả về thông báo khi !canManage, bỏ toàn bộ dữ liệu.
+Cần phân biệt view-only với forbidden trong từng màn; kiểm tra bằng manager
+có view nhưng không manage. Đây là vấn đề trình bày, không kết luận lộ quyền.
+
+F03 — Save không có một quy tắc chung, nên một footer Save toàn trang là sai.
+Notification switches lưu ngay; InlineForm lưu từng nhóm; POS lưu snapshot
+và giải quyết conflict; verification/invitation/lifecycle là command riêng.
+Thiết kế phải thể hiện đơn vị lưu và trạng thái của mỗi nhóm đang thao tác.
+
+F04 — Notifications trộn phạm vi cá nhân và workspace staff hiện tại.
+app/api/notifications/preferences/route.ts:26-43 dùng isSalonStaffContext và
+currentSalon; NotificationPreferencesPanel giữ dữ liệu từ lần mount đầu.
+Đây không phải notifications của salon được chọn trong nhánh quản lý hub.
+Cần hiển thị salon staff áp dụng và kiểm tra trạng thái khi workspace đổi.
+
+F05 — Mobile xếp toàn bộ danh sách nhóm lên trước nội dung.
+settings-hub-client.tsx:73-84: chỉ từ md có hai cột; nav luôn trước main.
+Tab mục dài được flex-wrap. Chưa đo chiều cao hay vị trí form trên viewport thật.
+Cần đo với 0/1/nhiều salon và cả managed + staff, không chỉ tài khoản mẫu một salon.
+
+F06 — Metadata chủ sở hữu lặp trên mọi section quản lý.
+settings-hub-client.tsx:47,81 dựng roster ở header nhóm, mọi mục đều hiển thị.
+OwnershipSettingsPanel lại có roster riêng. Cần kiểm tra nhiều đồng chủ và
+định hướng giữ vai trò/tên salon ở header, đưa roster chi tiết vào ownership.
+
+F07 — Lỗi tải public appearance không có Retry tại panel.
+salon-profile-preferences-panel.tsx:24-25: lỗi chỉ thành role=status text;
+không có nút Retry khi chưa có preferences. DirectSettingsPanel Retry chỉ xuất
+hiện khi loader cha lỗi, không bắt được lỗi loader con này.
+
+F08 — Form payroll không phản ứng theo pay type/cycle type.
+team-payroll-panels.tsx: chu kỳ nào cũng hiện anchor date; pay type nào cũng
+hiện cả commission và fixed amount. Cần chỉ dẫn giá trị nào áp dụng, ngày hiệu
+lực và tác động. Không thay công thức tính tiền chỉ vì đổi bố cục.
+
+F09 — Map và timezone cần luồng thứ tự rõ.
+Map lấy địa chỉ đã lưu. Opening hours dùng data.hours.timeZone; booking có
+timezone_iana riêng; payroll default today hiện hardcode America/Chicago.
+Cần đối chiếu salon ngoài Chicago và hành vi booking thật trước thống nhất
+timezone; chưa kết luận toàn bộ tính toán timezone sai.
+
+F10 — Draft persistence có sẵn nhưng chưa có cảnh báo rời trang chung.
+SectionContent giữ các panel mounted. Hub không có dirty state hay route guard.
+Cần kiểm tra đổi mục/đổi salon/quay lại/reload, Save thất bại và Cancel về
+giá trị đã lưu. Không xóa cơ chế giữ bản nháp khi thiết kế lại.
+
+5. CÁC QUY TẮC ĐÃ ĐỐI CHIẾU
+
+withSettingsTarget cô lập salon đích, không đổi workspace cookie chung;
+staff target không có membership/permission quản lý; account owner có ưu tiên
+so với direct membership hẹp hơn. Các kiểm tra scope hiện có đều đạt.
+Lưu chu kỳ lương biweekly cần anchor date hợp lệ; loại khác lưu anchor null.
+Cấu hình nhân viên theo effective_from; tỷ lệ được giới hạn 0..100 ở backend,
+fixed amount làm tròn và không âm. Chưa audit toàn bộ số tiền payroll live.
+POS có xung đột dữ liệu giữa màn hình; phải giữ Use saved values/Keep my changes.
+Permanent closure tái kiểm tra blockers; không thực thi để thử giao diện.
+
+6. KIỂM TRA LIVE CÒN THIẾU — CHƯA ĐƯỢC ĐÁNH DẤU HOÀN TẤT
+
+Tài khoản cá nhân không salon; chủ một salon; chủ nhiều salon/nhiều business;
+manager view-only; staff một/nhiều salon; người vừa quản lý vừa làm staff;
+salon disabled/closed; recovery operator; platform owner.
+
+Desktop: viewport 1280/1440 và 1920; tablet 768/1024; mobile 360/390/430.
+Đo vùng điều hướng, số hàng tab, vị trí form, overflow, cỡ vùng chạm, bàn phím,
+safe area, save visibility, focus, đọc nhãn và thông báo.
+
+Từng mục: entry point -> đúng account/salon/mode -> dữ liệu/empty/loading/error
+-> edit -> validation -> pending -> success/failure -> Cancel -> đổi mục/salon
+-> quay lại -> refresh -> mất quyền; kiểm tra bản nháp và đối tượng lưu.
+Thao tác gửi OTP/lời mời, chỉnh quyền, passcode, tài chính, đóng/xóa chỉ xem
+luồng và đối chiếu guard; không thực thi trên dữ liệu thật trong audit giao diện.
+
+Chỉ sau khi có ảnh chụp và số đo theo luồng trên mới chốt bố cục và tạo concept
+đúng phạm vi. Bản này là bằng chứng audit mã và danh sách phần live còn thiếu.

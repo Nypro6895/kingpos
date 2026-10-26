@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-16",
+  "groups": [
+    {
+      "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product.",
+      "routes": ["/admin", "/admin/advertising", "/admin/attention", "/admin/audit", "/admin/businesses", "/admin/businesses/:businessId", "/admin/claims", "/admin/inbox", "/admin/inbox/:threadId", "/admin/locations", "/admin/locations/:locationId", "/admin/market", "/admin/market/tax", "/admin/notifications", "/admin/post-safety", "/admin/post-safety/spam", "/admin/recovery", "/admin/reports", "/admin/reports/:reportId", "/admin/search", "/admin/settings", "/admin/settings/support-email", "/admin/settings/twilio", "/admin/team", "/admin/users", "/admin/users/:userId", "/admin/verification"]
+    },
+    {
+      "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL.",
+      "routes": ["/accept-invite", "/account-recovery", "/forgot-password", "/login", "/reset-password", "/security-check", "/settings/recovery-back-office", "/signup", "/ownership/invite/:token", "/staff/invite/:token", "/claim/:salonId", "/claim/customer", "/deletion-status/:token"]
+    },
+    {
+      "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability.",
+      "routes": ["/booking-payment/:token", "/booking/manage/:token", "/check-in/:entry", "/market/booking-deposit/payment", "/market/payment-return", "/visit/:pass", "/support/guest/:threadId", "/contact-support"]
+    }
+  ],
+  "boundedFamilies": {
+    "/more/:section": ["/more/saved-post", "/more/saved-posts", "/more/saved-designs", "/more/following", "/more/favorite-shop", "/more/favorite-customer", "/more/memberships", "/more/reviews", "/more/gift-cards", "/more/reports"]
+  }
+}

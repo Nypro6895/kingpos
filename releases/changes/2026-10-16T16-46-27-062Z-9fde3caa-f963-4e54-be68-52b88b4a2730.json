@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "app-local-daily-reference-20261016",
+  "status": "working",
+  "summary": "Complete original ticket detail and campaign local UI with scoped original readers; pinned read-only business claim suggestions bridge.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-daily-registry.tsx",
+    "lib/app-local-daily-server.ts",
+    "lib/app-local-daily-metadata.ts",
+    "components/app-local-ticket-detail.tsx",
+    "lib/app-local-business-http-client.ts",
+    "lib/app-local-business-http-server.ts",
+    "lib/app-local-business-http-metadata.ts",
+    "tests/app-local-daily-server.test.mjs",
+    "tests/app-local-daily-ui.test.mjs",
+    "tests/app-local-business-http.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "scoped daily read/UI and pinned read-only HTTP tests",
+      "result": "pending"
+    }
+  ],
+  "id": "9fde3caa-f963-4e54-be68-52b88b4a2730",
+  "recordedAt": "2026-10-16T16:46:27.062Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "pc-ios-today-session-reliability-20261021",
+  "status": "working",
+  "summary": "Preserve read-failure provenance and align refresh unknown errors with confirmed rejection classification; no cookie persistence or privilege changes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/bounded-get.ts",
+    "lib/supabase/auth-rest.ts",
+    "lib/read-request-timing.ts",
+    "tests/read-failure-provenance.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "tests/context-today-timing.test.mjs",
+    "lib/supabase/auth-rejection.ts",
+    "lib/supabase/refresh-session.ts",
+    "tests/refresh-session-availability.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/app-local-command-backend-trace.test.mjs",
+    "tests/read-backend-profile.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\classifier-fixture-pre-edit",
+    "commit": "8b4748e34be818c8d7ea27650616ab3dfd73b8a6"
+  },
+  "validation": [
+    {
+      "name": "dirty-source-backup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\latest-backup.json"
+    },
+    {
+      "name": "regression-tests",
+      "result": "pending"
+    },
+    {
+      "name": "refresh-classifier-regression",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "online-authority-refresh-20261021"
+  ],
+  "id": "307c94ce-de66-4bad-9fd1-945f50af26f2",
+  "recordedAt": "2026-10-21T07:06:07.894Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

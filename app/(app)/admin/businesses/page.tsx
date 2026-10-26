@@ -1,0 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { redirect } from "next/navigation";
+async function BusinessesPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){const params=await searchParams;const query=new URLSearchParams();for(const [key,value] of Object.entries(params)){if(typeof value==="string")query.set(key,value);}redirect(`/admin/locations?${query}`);}
+
+export default withExperiencePage(BusinessesPage, { admin: true });

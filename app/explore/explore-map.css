@@ -1,0 +1,70 @@
+.maplibregl-map {
+  font: 12px/20px Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.maplibregl-canvas-container,
+.maplibregl-canvas {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.maplibregl-canvas {
+  outline: none;
+}
+
+.maplibregl-control-container {
+  pointer-events: none;
+}
+
+.maplibregl-ctrl-top-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.maplibregl-ctrl {
+  clear: both;
+  float: right;
+  margin: 10px;
+  pointer-events: auto;
+}
+
+.maplibregl-ctrl-group {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 10%);
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+  background: #fff;
+  border: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: block;
+  height: 30px;
+  padding: 0;
+  width: 30px;
+}
+
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid #ddd;
+}
+
+.maplibregl-ctrl-icon {
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+}
+
+.maplibregl-marker {
+  left: 0;
+  position: absolute;
+  top: 0;
+  will-change: transform;
+}

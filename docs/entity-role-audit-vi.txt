@@ -1,0 +1,66 @@
+KIỂM TOÁN VAI TRÒ USER / ACCOUNT / SALON
+Ngày: 2026-10-07. Chỉ đọc production; không deploy, không gộp/xóa bảng, không thay đổi owner hay gửi email.
+Báo cáo này thay thế kết luận trước rằng accounts là tầng dư cần loại bỏ. Đề xuất migration trong store-model-audit.txt là giả thuyết cũ, không phải quyết định thực hiện.
+
+KẾT LUẬN
+Accounts có mục đích thực sự: phạm vi quản lý/tenant, vai trò và quyền dùng chung cho các salon thuộc nó. Locations là cửa hàng vật lý/vận hành/public profile. Users là người thật. Cùng tên và tỷ lệ một-một trong dữ liệu hiện tại không chứng minh hai bảng trùng ý nghĩa. Chưa có lý do đủ mạnh để gộp database. Giao diện có thể dùng User/Business và giấu account nội bộ, nhưng phải giữ cách tính quyền thực tế, hoặc thiết kế thay đổi quyền thành dự án riêng.
+
+PHƯƠNG PHÁP / GIỚI HẠN
+Đọc schema, FK, view, policy inventory, dữ liệu tổng hợp; xuất định nghĩa hiện hành của 22 hàm trọng yếu và 4 hàm bổ sung từ database thật; đối chiếu migration, script import và code app. Kiểm chứng các hàm quyền hiện hành trong PGlite cô lập: không thực hiện mutation production. 25 kiểm tra contract/lifecycle có sẵn đạt; chúng không thay thế E2E từng chức năng. Không khẳng định toàn app không có bug; phân biệt hành vi đã xác nhận và rủi ro cần kiểm thử thêm.
+
+VAI TRÒ ĐÃ XÁC NHẬN
+users + auth.users: người/hồ sơ và identity đăng nhập. Không phải cửa hàng.
+accounts: container quản lý/tenant; không có cột phân loại personal/business; không có unique constraint buộc một account chỉ có một salon. Role definitions và account memberships thuộc container này.
+locations: salon/store thực tế; FK account_id liên kết phạm vi quản lý. Địa chỉ, lịch đóng/mở, booking/POS/public profile lấy store ID.
+account_memberships: quyền người dùng ở phạm vi container; có thể áp dụng qua nhiều salon.
+salon_memberships: quyền người dùng trực tiếp ở một salon.
+roles/role_permissions: role có account scope, bộ permission quyết định hành động; không phải hồ sơ User.
+staff: hồ sơ công việc tại salon. Liên kết public.users qua account_user_id; user_id là đường auth identity legacy trong resolver. Staff record giữ lịch/lương/POS/booking ngay cả khi User bị unlink. Không gộp vào users.
+salon_directory_listings: provenance và claim state; không phải bảng cửa hàng thứ hai hoặc User.
+salon_settings: cấu hình và nội dung công khai của cửa hàng; một số trường tên/liên hệ trùng locations cần kiểm tra nguồn cập nhật, không chứng minh toàn bảng dư.
+Các account_security/login/recovery tables dùng user_id: bảo mật cá nhân, không phải tài khoản tenant.
+
+BẰNG CHỨNG THEO LUỒNG
+1. Import online:
+scripts/build-wisconsin-salon-import.mjs tạo ID account và salon ổn định riêng; insert accounts rồi locations, profile/settings/listing/reference post. Script ghi rõ không tạo staff, services, owner memberships hay review giả. docs/wisconsin-directory.md nêu account ownerless để giữ tenant isolation trước verified claim.
+Live: 606 directory listings, 605 unclaimed và 1 claimed. Toàn DB có 607 locations, 610 accounts: 607 container một salon, 3 container không salon. Không có container multi-salon ở snapshot này.
+2. Claim:
+complete_business_claim khóa account -> salon -> claim request; yêu cầu listing unclaimed, User active, account active, đúng một salon và không có management membership chưa removed. Hàm seed role OWNER theo account, cấp account_membership và salon_membership cho cùng User, đánh dấu claimed; không đổi salon ID hay booking/identity-verification settings. Điều kiện isolated account là chống chiếm phạm vi chứa dữ liệu khác. Hai grant là hành vi chủ đích hiện tại.
+3. Bootstrap cá nhân:
+ensure_personal_account_for_current_user tái sử dụng active account mà User có OWNER, hoặc tạo accounts + OWNER membership nếu chưa có. Không có cột xác nhận loại personal. Nó phục vụ container khởi đầu/khả năng tạo salon; không tạo người mới. Nhãn 'personal account' không được diễn giải thành shop hoặc loại tenant chắc chắn.
+4. Tạo salon:
+create_account_salon yêu cầu OWNER của account active, tạo locations trong p_account_id và direct salon membership; khóa chống tạo trùng theo account/create_request_key. Wrapper create_account_salon_with_owner_staff tùy chọn tạo staff profile cho owner làm dịch vụ. Luồng cho phép nhiều salon trong một account, dù dữ liệu hiện tại chưa có trường hợp đó.
+5. Quyền:
+user_has_account_permission đánh giá account grant. user_can_manage_salon và user_has_salon_permission cho phép account-derived hoặc direct salon grant. Thử nghiệm local bằng định nghĩa live xác nhận: A owner container A thấy A1/A2; A direct staff B1 chỉ có booking.view ở B1, không refund/B2; nếu cấp account-level staff ở container B thì A có booking.view tại cả B1/B2. Xóa direct grant vẫn còn quyền account. Đây là hai phạm vi, không phải cùng một quyền bị lặp vô nghĩa.
+6. Thành viên:
+my_place_save_member và my_place_respond_account_invitation là lời mời/role cấp container. UI hiện nói rõ business account roles apply across its salons. Staff-linked workspace từ staff.account_user_id là một đường liên kết công việc riêng.
+7. Owner transfer/leave:
+accept_salon_owner_transfer_invite hiện cấp cả account và direct salon OWNER cho người nhận. lifecycle_remove_owner_access_from_salon giữ quyền các salon anh em bằng cách materialize direct memberships trước khi gỡ account owner. Đoạn xử lý này chứng minh mô hình multi-salon đã được tính đến.
+Cần kiểm thử thêm: nhận owner ở một salon khi container có nhiều salon có thể nhận quyền container rộng hơn tên lời mời; snapshot không có multi-salon nên không xác nhận một sự cố dữ liệu thật.
+8. Lifecycle/deletion:
+request_account_deletion/finalize_account_deletion ở đây là xóa User/person: kiểm tra last-owner qua cả hai nguồn membership, gỡ quyền, unlink staff, anonymize User và giữ lịch sử. Không được suy luận 'account deletion' là DROP accounts. Salon lifecycle điều khiển đóng/ngừng hoạt động riêng.
+9. POS:
+pos_staff_operator_has_permission hiện đánh giá account_memberships cho User được resolve từ staff. user_has_salon_permission lại chấp nhận hai nguồn. Đây là sự khác biệt xác nhận trong code; cần test direct-only operator và các caller/PIN policy trước kết luận bug hoặc chuẩn hóa.
+10. Billing/support/exports:
+FK tới accounts còn ở roles, memberships, subscriptions/entitlements/usage, notifications, owner invites, lifecycle exports, platform reports và admin notes. Store-scoped booking/POS/payroll có salon_id. Không gộp chỉ vì cùng account/salon ID.
+
+GIAO DIỆN GÂY NHẦM ĐÃ XÁC NHẬN
+platform_admin_businesses_compat map mọi accounts thành Business; platform_admin_business_memberships_compat đổi account_id thành organization_id. Admin /businesses và /locations hiển thị hai lớp như hai loại doanh nghiệp; User Access nối hai membership arrays. Normal app types/business.ts lại định nghĩa Business là Location. Vì vậy 'Business' có hai nghĩa khác nhau giữa Admin và app.
+Các chỗ liên quan: admin Users/detail/filter/export; Businesses/Locations detail; dashboard/search/attention; report/note subject pickers; My Place account cards; Settings account selector; create salon account context. Chi tiết inventory xem store-model-code-references.txt và báo cáo cũ; danh sách đó là ứng viên rà soát, không phải mọi match đều sai.
+
+HƯỚNG ĐI SAU AUDIT
+- Giữ schema/owner/claim và permission semantics hiện tại trước mắt.
+- Một UI User/Business; Business trỏ salon ID. Không trình bày technical account như người hoặc một shop bổ sung.
+- Access một dòng/shop nhưng phải expand account grants sang linked salons và combine direct grants. Có thể dùng disclosure cho admin xem nguồn quyền 'account-level'/'direct salon' khi cần chẩn đoán, không hiển thị hai cửa hàng.
+- Các grant/edit/revoke không được chỉ sửa một bảng rồi nói đã thu hồi toàn bộ; phải mô tả scope thực tế, xử lý an toàn salon anh em.
+- Không xóa ba accounts không salon: bootstrap/creation và quyền khác có thể đang dùng chúng.
+- Nếu muốn MỌI quyền đều độc lập theo cửa hàng như mô hình mục tiêu, đó là thay đổi nghiệp vụ đối với account-level invitation/ownership, không chỉ dọn dữ liệu dư. Chốt phạm vi, kiểm thử multi-store và thiết kế migration riêng trước khi quyết định.
+
+NHỮNG ĐIỂM CHƯA ĐỦ CĂN CỨ KẾT LUẬN
+Không thể gọi accounts/membership là dư; không thể khẳng định tất cả luồng đã đúng vì app đang chạy; không thể nói đã thử từng chức năng production. Cần E2E multi-store, owner invitation, direct-only staff POS, revoke một salon, đổi role, account inactive/user suspended, storage/export/service-role jobs và hồi phục/deletion. Không gửi claim OTP hay mutation dữ liệu thật trong audit này.
+
+EVIDENCE
+artifacts/entity-role-deep-audit.json: định nghĩa live và constraints + directory aggregate.
+artifacts/entity-role-extra-functions.json: additional live functions.
+artifacts/entity-role-permission-proof.mjs: tái hiện permission bằng live definitions trong local PGlite.
+artifacts/store-model-database-audit.json / store-model-authorization-audit.json: dependency metadata, views, policies, aggregate snapshot.

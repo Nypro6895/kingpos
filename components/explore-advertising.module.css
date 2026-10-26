@@ -1,0 +1,184 @@
+.imageLink {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff0e8;
+  box-shadow: 0 8px 24px #30232612;
+}
+.imageLink img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+.sponsored {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  border-radius: 20px;
+  padding: 3px 8px;
+  background: #ffffffdf;
+  font-size: 10px;
+  color: #66545b;
+}
+.feed {
+  margin: 8px 0;
+}
+.pagePlacement {
+  margin: 16px auto;
+  padding: 0 16px;
+  width: min(100%, 720px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker a,
+  .tickerText {
+    animation: none;
+    padding-left: 12px;
+  }
+}
+.desktop {
+  margin: 16px 10px;
+  animation: slide 0.5s ease-out;
+}
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(54px, calc(env(safe-area-inset-bottom) + 16px)) max(16px, env(safe-area-inset-left));
+  pointer-events: none;
+}
+.popup {
+  position: relative;
+  width: min(380px, 100%);
+  max-height: 75dvh;
+  overflow: auto;
+  pointer-events: auto;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #30232633;
+  outline: none;
+  animation: slide 0.3s ease-out;
+}
+.close {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  border: 0;
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  background: white;
+  color: #302326;
+  font-size: 25px;
+  box-shadow: 0 4px 16px #0003;
+}
+.ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 85;
+  height: 38px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.top {
+  top: 0;
+}
+.bottom {
+  bottom: 0;
+}
+.ticker a,
+.tickerText {
+  white-space: nowrap;
+  display: block;
+  min-width: 100%;
+  padding-left: 100%;
+  animation: marquee linear infinite;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+}
+.ticker:hover a,
+.ticker:focus-within a,
+.ticker:hover .tickerText {
+  animation-play-state: paused;
+}
+.message {
+  padding: 32px 24px 44px;
+  white-space: pre-wrap;
+}
+.bottomReserve {
+  padding-bottom: 48px;
+}
+.message strong {
+  font-size: 22px;
+}
+.message p {
+  margin-top: 12px;
+  font-size: 15px;
+}
+.ticker button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 38px;
+  width: 38px;
+  background: inherit;
+  font-size: 23px;
+  color: inherit;
+}
+.ticker a:focus-visible {
+  animation: none;
+  padding-left: 12px;
+  white-space: normal;
+}
+.feed:empty {
+  display: none;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes slide {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (min-width: 1280px) {
+  .feed {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker a {
+    animation: none;
+    padding-left: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .popup,
+  .desktop {
+    animation: none;
+  }
+}
+.desktop img {
+  max-height: 340px;
+}
+.topReserve {
+  padding-top: 38px;
+}
+.topReserve :global([data-testid="guest-navigation-shell"]),
+.topReserve :global([data-testid="customer-desktop-header"]) {
+  top: 38px;
+}
