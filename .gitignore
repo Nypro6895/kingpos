@@ -1,7 +1,0 @@
-node_modules/
-.next/
-tsconfig.tsbuildinfo
-public/experience-build-assets.json
-ios/build/
-ios/Reylumi.xcodeproj/
-ios/Reylumi.xcworkspace/
