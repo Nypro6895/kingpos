@@ -186,6 +186,7 @@ function customerWorkspaceLabel(
   }
 
   if (workspace.type === "salon") {
+    if (workspace.salonMode === "staff") return accountLabel;
     return workspace.salonName ?? workspace.businessName ?? workspace.label;
   }
 
@@ -202,6 +203,9 @@ function customerWorkspaceSubtitle(workspace: CurrentWorkspaceOption | null) {
   }
 
   if (workspace.type === "salon") {
+    if (workspace.salonMode === "staff") {
+      return `Staff - ${workspace.salonName ?? workspace.businessName ?? workspace.label}`;
+    }
     return workspace.roleLabel || "Salon";
   }
 
@@ -596,7 +600,7 @@ function WorkspaceAvatar({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  if (workspace?.type === "personal") {
+  if (workspace?.type === "personal" || (workspace?.type === "salon" && workspace.salonMode === "staff")) {
     return (
       <AccountAvatar
         avatarUrl={accountAvatarUrl}
@@ -2006,7 +2010,11 @@ function CustomerMobileHeader({
               <span className="block truncate text-xs font-bold text-text-primary min-[430px]:text-sm">
                 <WorkspaceText text={label} />
               </span>
-
+              {currentWorkspace?.type === "salon" && (
+                <span className="mt-0.5 block truncate text-[10px] font-normal leading-tight text-text-secondary min-[430px]:text-xs">
+                  <WorkspaceText text={customerWorkspaceSubtitle(currentWorkspace)} />
+                </span>
+              )}
             </span>
             <span className="grid h-6 w-6 self-center place-items-center rounded-full bg-brand-orange-soft text-text-secondary ring-1 ring-brand-orange/15">
               <Icon name="chevron-down" />
