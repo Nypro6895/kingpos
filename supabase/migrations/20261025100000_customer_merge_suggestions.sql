@@ -4,7 +4,7 @@ begin;
 -- Compute the whole selection first so an unlinked target never picks an owner
 -- merely because that owner's source happened to appear first in the list.
 create function public.customer_merge_plan_internal(p_salon uuid,p_target uuid,p_sources uuid[])
-returns jsonb language plpgsql stable security definer set search_path=public as $$
+returns jsonb language plpgsql stable security definer set search_path=public,pg_temp as $$
 declare sources uuid[]; ids uuid[]; owner_count integer; target_owners uuid[]; result jsonb;
 begin
  select array_agg(distinct x order by x) into sources from unnest(p_sources) x where x<>p_target;
@@ -48,7 +48,7 @@ end $$;
 revoke all on function public.customer_merge_plan_internal(uuid,uuid,uuid[]) from public,anon,authenticated;
 
 create function public.customer_merge_plan(p_salon uuid,p_target uuid,p_sources uuid[])
-returns jsonb language plpgsql stable security definer set search_path=public as $$
+returns jsonb language plpgsql stable security definer set search_path=public,pg_temp as $$
 begin
  if not user_has_salon_permission(p_salon,array['customers.view','customers.manage']) then
   raise exception 'Customer access required' using errcode='42501'; end if;
@@ -58,7 +58,7 @@ revoke all on function public.customer_merge_plan(uuid,uuid,uuid[]) from public,
 grant execute on function public.customer_merge_plan(uuid,uuid,uuid[]) to authenticated;
 
 create or replace function public.customer_duplicate_batch(p_salon uuid,p_ids uuid[]) returns jsonb
-language plpgsql stable security definer set search_path=public as $$
+language plpgsql stable security definer set search_path=public,pg_temp as $$
 declare result jsonb:='{}'; c customers; candidates jsonb; plan jsonb;
 begin
  if cardinality(p_ids)>25 or not user_has_salon_permission(p_salon,array['customers.view','customers.manage']) then
@@ -81,7 +81,7 @@ end $$;
 -- One transaction for the compatible subset; unexpected errors still roll back
 -- all changes. Keep the existing merge RPC's ownership and dependency guards.
 create function public.merge_customer_suggestions(p_salon uuid,p_target uuid,p_sources uuid[])
-returns jsonb language plpgsql security definer set search_path=public as $$
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare plan jsonb; sources uuid[]; skipped jsonb; result jsonb;
 begin
  if current_public_user_id() is null or not user_has_salon_permission(p_salon,array['customers.manage']) then

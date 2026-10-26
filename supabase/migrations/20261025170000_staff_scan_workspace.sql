@@ -18,13 +18,13 @@ do $$declare definition text;begin
 end $$;
 
 create function public.staff_scan_available(p_salon uuid) returns boolean
-language sql stable security definer set search_path=public as $$
+language sql stable security definer set search_path=public,pg_temp as $$
  select exists(select 1 from checkin_receipt_subscriptions where salon_id=p_salon and paid_until>now())
  or exists(select 1 from salon_market_plugins where salon_id=p_salon and plugin_id='service-relay')
 $$;
 
 create function public.staff_scan_reconcile(p_salon uuid) returns void
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 begin
  perform pg_advisory_xact_lock(hashtextextended('service-relay:'||p_salon::text,0));
  -- A ticket saved by POS is authoritative, even if the phone never sent Done.
@@ -38,7 +38,7 @@ begin
 end $$;
 
 create function public.staff_scan_workspace(p_salon uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid; enabled boolean;
 begin
  actor:=service_relay_staff(p_salon);
@@ -74,7 +74,7 @@ begin
 end $$;
 
 create function public.staff_scan_connect(p_salon uuid,p_visit uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid; t service_relay_tickets; v customer_visits; o service_relay_offers;
 begin
  actor:=service_relay_staff(p_salon);
@@ -108,7 +108,7 @@ begin
 end $$;
 
 create function public.staff_scan_save(p_salon uuid,p_offer uuid,p_lines jsonb,p_done boolean,p_expected integer) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid; t service_relay_tickets; o service_relay_offers; line jsonb;
 begin
  actor:=service_relay_staff(p_salon);
@@ -143,7 +143,7 @@ begin
 end $$;
 
 create function public.staff_scan_connect_pass(p_salon uuid,p_pass uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare visit uuid;
 begin
  if service_relay_staff(p_salon) is null then raise exception 'Not authorized'; end if;
@@ -153,7 +153,7 @@ begin
 end $$;
 
 create function public.staff_scan_cancel(p_salon uuid,p_offer uuid,p_expected integer) returns void
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid; t service_relay_tickets; o service_relay_offers;
 begin
  actor:=service_relay_staff(p_salon);
@@ -171,7 +171,7 @@ end $$;
 -- Done counts provisionally; payment replaces this projection with receipt turns.
 -- Holding reserves a place in the queue without inflating completed large turns.
 create or replace function public.pos_service_relay_pending_turns(p_salon uuid,p_staff uuid) returns bigint
-language sql stable security definer set search_path=public as $$
+language sql stable security definer set search_path=public,pg_temp as $$
  select count(*) from service_relay_lines l join service_relay_offers o on o.id=l.offer_id
  join service_relay_tickets t on t.visit_id=o.visit_id join customer_visits v on v.id=t.visit_id
  where t.salon_id=p_salon and o.staff_id=p_staff and t.status in ('in_service','checkout') and v.ticket_id is null
@@ -179,7 +179,7 @@ language sql stable security definer set search_path=public as $$
  and l.amount>=coalesce((select large_turn_threshold from pos_settings where salon_id=p_salon),25)
 $$;
 create or replace function public.pos_service_relay_project_staff(p_salon uuid,p_payload jsonb) returns jsonb
-language plpgsql stable security definer set search_path=public as $$
+language plpgsql stable security definer set search_path=public,pg_temp as $$
 declare member jsonb; projected jsonb:='[]'; pending bigint; small_pending bigint; holding bigint; working boolean;
 begin
  if p_payload is null or jsonb_typeof(p_payload->'staff')<>'array' then return p_payload; end if;
@@ -210,7 +210,7 @@ end $$;
 
 -- POS can correct services/amounts and finish work without the staff's phone.
 create function public.staff_scan_desk_save(p_salon uuid,p_visit uuid,p_expected integer,p_lines jsonb,p_key uuid default null,p_signature text default null) returns void
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare t service_relay_tickets; line jsonb; o service_relay_offers; selected_staff uuid;
 begin
  if not coalesce(user_has_salon_permission(p_salon,array['tickets.manage']),false)

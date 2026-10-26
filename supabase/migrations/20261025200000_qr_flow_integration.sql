@@ -5,7 +5,7 @@ begin;
 -- The public display wrapper keeps its pairing/origin checks. The private
 -- issuance core also supports an account-owned visit first created at the desk.
 create function public.personal_qr_ensure_receipt_for_visit(p_salon uuid,p_visit uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare v customer_visits; r checkin_receipts; day date; n integer;
 begin
  select * into v from customer_visits where id=p_visit and salon_id=p_salon for update;
@@ -24,7 +24,7 @@ end $$;
 revoke all on function public.personal_qr_ensure_receipt_for_visit(uuid,uuid) from public,anon,authenticated;
 
 create or replace function public.issue_checkin_receipt(p_token text,p_visit uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare v customer_visits; d pos_live_drafts;
 begin
  select * into d from pos_live_drafts where token=p_token and status='draft';
@@ -54,7 +54,7 @@ end $$;
 alter table public.personal_qr_ready add column consumed_at timestamptz;
 
 create function public.personal_qr_consume_ready() returns trigger
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 begin
  update personal_qr_ready set consumed_at=coalesce(consumed_at,now()) where visit_id=new.id;
  return new;

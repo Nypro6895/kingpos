@@ -27,7 +27,7 @@ alter table public.personal_qr_ready enable row level security;
 revoke all on public.personal_qr_ready from public,anon,authenticated;
 
 create function public.personal_qr_issue() returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); qr personal_qr_codes;
 begin
  if actor is null or not exists(select 1 from users where id=actor and status='active') then raise exception 'Sign in required'; end if;
@@ -44,7 +44,7 @@ end $$;
 
 -- Existing screen-pairing rules now also support Check-in Receipt without Phone Checkin.
 create or replace function public.service_relay_entry(p_token text) returns uuid
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare entry uuid;
 begin
  if not exists(select 1 from pos_live_drafts d where d.token=p_token and d.status='draft' and staff_scan_available(d.salon_id)) then return null; end if;
@@ -53,7 +53,7 @@ begin
  return entry;
 end $$;
 create or replace function public.service_relay_entry_catalog(p_entry uuid) returns jsonb
-language sql stable security definer set search_path=public as $$
+language sql stable security definer set search_path=public,pg_temp as $$
  select jsonb_build_object('salonId',d.salon_id,'salonName',s.name,'personalOnly',not exists(select 1 from salon_market_plugins p where p.salon_id=d.salon_id and p.plugin_id='service-relay'),
  'services',coalesce((select jsonb_agg(to_jsonb(catalog)) from get_customer_display_service_catalog(e.display_token) catalog),'[]'::jsonb))
  from service_relay_entries e join pos_live_drafts d on d.token=e.display_token join locations s on s.id=d.salon_id
@@ -61,7 +61,7 @@ language sql stable security definer set search_path=public as $$
 $$;
 
 create function public.personal_qr_checkin(p_entry uuid,p_services uuid[],p_request uuid) returns uuid
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); u users; target_salon uuid; display text;
  customer customers; visit customer_visits; previous personal_qr_checkins;
  candidates uuid[]; requested uuid[]; verified_phone text; result jsonb; appointment_candidate uuid; appointment_count integer;
@@ -129,7 +129,7 @@ begin
 end $$;
 
 create function public.personal_qr_visit(p_visit uuid) returns jsonb
-language plpgsql stable security definer set search_path=public as $$
+language plpgsql stable security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); v customer_visits; receipt jsonb;
 begin
  select cv.* into v from customer_visits cv join customers c on c.id=cv.customer_id and c.location_id=cv.salon_id
@@ -151,7 +151,7 @@ begin
 end $$;
 
 create function public.personal_qr_workspace() returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); identity jsonb; visits jsonb;
 begin
  identity:=personal_qr_issue();
@@ -164,7 +164,7 @@ end $$;
 
 -- Resolve only inside a permitted owner/manager Staff workspace.
 create function public.personal_qr_staff_preview(p_salon uuid,p_token uuid) returns jsonb
-language plpgsql stable security definer set search_path=public as $$
+language plpgsql stable security definer set search_path=public,pg_temp as $$
 declare target users; connected uuid; pending uuid;
 begin
  if not coalesce(user_has_salon_permission(p_salon,array['staff.manage']),false) then raise exception 'Not authorized to add staff'; end if;
@@ -181,7 +181,7 @@ begin
 end $$;
 
 create function public.personal_qr_staff_send(p_salon uuid,p_token uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare preview jsonb; target users; candidate_ids uuid[]; selected uuid; request staff_salon_connection_requests;
 begin
  preview:=personal_qr_staff_preview(p_salon,p_token);
@@ -216,7 +216,7 @@ begin
 end $$;
 
 create function public.personal_qr_notify_ready(p_salon uuid,p_visit uuid,p_staff uuid,p_chair text,p_request uuid,p_key uuid default null,p_signature text default null) returns void
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare v customer_visits; customer_account uuid; prior personal_qr_ready; label text;
 begin
  if not coalesce(user_has_salon_permission(p_salon,array['tickets.manage']),false)
@@ -238,7 +238,7 @@ begin
 end $$;
 
 create function public.personal_qr_connect_customer(p_salon uuid,p_token uuid) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare visits uuid[];
 begin
  if service_relay_staff(p_salon) is null then raise exception 'Open your Staff workspace first'; end if;

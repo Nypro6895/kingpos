@@ -3,7 +3,7 @@ begin;
 -- Phone is a salon CRM lookup, never an account claim or access to personal history.
 -- Keep the salon lock used by the check-in core through customer/visit creation.
 create or replace function public.resolve_display_customer_identity(p_salon uuid,p_name text,p_phone text,p_choice uuid default null,p_new boolean default false)
-returns jsonb language plpgsql security definer set search_path=public as $$
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare normalized_phone text:=normalize_customer_claim_phone(p_phone);
  name_key text:=customer_name_key(p_name); matching_ids uuid[]; selected uuid;
 begin
@@ -45,7 +45,7 @@ revoke all on function public.resolve_display_customer_identity(uuid,text,text,u
 -- The locally paired receipt path uses these legacy RPCs. Apply the same exact,
 -- scoped resolver rather than raw digits or newest-row selection.
 create or replace function public.find_pos_live_draft_customer_by_phone(p_phone text,p_token text)
-returns jsonb language plpgsql security definer set search_path=public as $$
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare draft_row pos_live_drafts%rowtype; resolution jsonb; c customers%rowtype;
 begin
  select * into draft_row from pos_live_drafts where token=btrim(coalesce(p_token,'')) and status='draft' limit 1;
@@ -59,7 +59,7 @@ begin
 end $$;
 
 create or replace function public.create_pos_live_draft_customer_by_phone(p_token text,p_name text,p_phone text)
-returns jsonb language plpgsql security definer set search_path=public as $$
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare draft_row pos_live_drafts%rowtype; resolution jsonb; c customers%rowtype; payload jsonb;
 begin
  select * into draft_row from pos_live_drafts where token=btrim(coalesce(p_token,'')) and status='draft' limit 1;

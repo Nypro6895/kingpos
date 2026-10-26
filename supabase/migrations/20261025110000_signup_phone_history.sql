@@ -6,7 +6,7 @@ alter function public.claim_customers_for_verified_phone_internal(uuid,text,text
 
 create function public.claim_customers_for_verified_phone_internal(
   p_user_id uuid, p_normalized_phone text, p_claim_method text
-) returns jsonb language plpgsql security definer set search_path=public as $$
+) returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare phone_value text:=normalize_customer_claim_phone(p_normalized_phone); names_count integer;
 begin
   if not exists(select 1 from customer_verified_phones v join users u on u.id=v.user_id
@@ -27,7 +27,7 @@ revoke all on function public.claim_customers_for_verified_phone_before_selectio
 -- An explicit claim does not fire this branch. New/edited unclaimed profiles
 -- only auto-link when their name agrees with the already connected identity.
 create or replace function public.auto_link_customer_to_verified_phone() returns trigger
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare phone_value text; owner_id uuid; profile_name text;
 begin
   if new.customer_user_id is not null then return new; end if;
@@ -54,7 +54,7 @@ begin
 end $$;
 
 create function public.get_my_phone_history_profiles(p_phone text) returns jsonb
-language plpgsql stable security definer set search_path=public as $$
+language plpgsql stable security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); phone_value text:=normalize_customer_claim_phone(p_phone);
 begin
   if actor is null or not exists(select 1 from customer_verified_phones v join users u on u.id=v.user_id
@@ -69,7 +69,7 @@ begin
 end $$;
 
 create function public.claim_selected_phone_history(p_phone text,p_customer_ids uuid[]) returns jsonb
-language plpgsql security definer set search_path=public as $$
+language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=current_public_user_id(); phone_value text:=normalize_customer_claim_phone(p_phone);
   linked_count integer; selected_ids uuid[];
 begin

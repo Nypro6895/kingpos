@@ -4,7 +4,7 @@ begin;
 create function public.create_owner_booking_atomic(
  p_booking jsonb, p_customer jsonb,
  p_source_reference_type text default null, p_source_reference_id text default null
-) returns jsonb language plpgsql security invoker set search_path=public as $$
+) returns jsonb language plpgsql security invoker set search_path=public,pg_temp as $$
 declare salon uuid := (p_booking->>'p_salon_id')::uuid;
  actor uuid := current_public_user_id();
  customer_id uuid := nullif(p_customer->>'id','')::uuid;
