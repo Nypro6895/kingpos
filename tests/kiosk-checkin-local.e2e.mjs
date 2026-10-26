@@ -53,7 +53,7 @@ test('local full UI: known customer, Back/edit and one confirmed visit',{skip:!e
   await page.getByRole('button',{name:'Backspace',exact:true}).click();await page.getByRole('button',{name:'Digit 7',exact:true}).click();await page.getByText('Synthetic manicure',{exact:true}).waitFor();
   stage='services';console.log('UI stage: services');
   await page.getByRole('button',{name:/Synthetic manicure/}).click();
-  await page.getByRole('button',{name:/Confirm/}).click();
+  await page.getByRole('button',{name:'Check in',exact:true}).click();
   stage='confirmation';console.log('UI stage: confirmation');
   await page.locator('[data-customer-display-checkin]').waitFor();
   assert.equal(sql(`select count(*) from customer_visit_services s join customer_visits v on v.id=s.visit_id where v.salon_id='${salon}' and s.service_id='${service}'`),'1');

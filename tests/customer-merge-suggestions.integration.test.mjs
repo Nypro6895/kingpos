@@ -6,7 +6,7 @@ import { startIsolatedSupabase } from './helpers/isolated-supabase-fixture.mjs';
 test('bulk customer merge with complete migrations, Auth, PostgREST and RLS', {
   skip:process.env.RUN_ISOLATED_SUPABASE!=='1',timeout:900000,
 },async t=>{
-  const f=await startIsolatedSupabase('customer-merge-suggestions');
+  const f=await startIsolatedSupabase('customer-merge-suggestions', process.env.TEST_SUPABASE_IMAGES ? JSON.parse(process.env.TEST_SUPABASE_IMAGES) : undefined);
   t.after(()=>f.close());
   const owner=f.person('owner'),personal=f.person('personal'),other=f.person('other');
   const account=f.rpc(owner,'ensure_personal_account_for_current_user',{p_account_name:'Merge Fixture'})[0].account_id;
