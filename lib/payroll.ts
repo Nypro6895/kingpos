@@ -81,6 +81,7 @@ export type StaffPayrollPortalDailyRow = {
 };
 
 export type StaffPayrollPortalData = {
+  paymentEvidence?: { markedPaidStatements: Array<{runId:string;version:number;paidAt:string|null}>; recordedFacts: import("@/types/payroll-records").PayrollRecordedFacts };
   history: PayrollLiveChange[];
   settings: StaffPayrollSetting[];
   context: CurrentBusinessContext;
@@ -4282,7 +4283,8 @@ export async function getCurrentStaffPayrollPortalData(input: StaffPeriodInput):
     shopGross: numberValue(day.gross_sales), tipAmount: numberValue(day.tip_amount),
   }));
   const status: PayrollStatusView={kind:"live",label:history.length?"Updated":"Live",statementVersion:null};
-  return {context,staff,history,settings,dailyRows,latestStatement:null,line,paystub,period,periodOptions,salonPayrollSetting,status};
+  const paymentEvidence={markedPaidStatements:publishedRuns.filter(run=>run.period_start===period.startDate&&run.period_end===period.endDate&&run.status==="paid").map(run=>({runId:run.id,version:run.version,paidAt:run.paid_at})),recordedFacts:await loadPayrollRecordedFacts(auth.supabase,auth.salon.id,period.startDate,period.endDate)};
+  return {context,staff,history,settings,dailyRows,latestStatement:null,line,paystub,period,periodOptions,salonPayrollSetting,status,paymentEvidence};
 }
 
 function emptyStaffAnalysisWorkPerformance(): StaffAnalysisPortalWorkPerformance {

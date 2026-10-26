@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
 import ts from 'typescript';
 const require = createRequire(import.meta.url);
 function load(path, overrides = {}) {
@@ -19,6 +20,7 @@ function load(path, overrides = {}) {
     if (name === 'next/navigation') return { useRouter: () => ({ push() {} }) };
     if (name === 'next/link') return { __esModule: true, default: ({ children, ...props }) => require('react').createElement('a', props, children) };
     if (name.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
+    if (name.startsWith('./')) return load(resolve(dirname(path),name)+'.tsx');
     if (name.startsWith('@/lib/')) return load(name.replace('@/', '') + '.ts');
     return require(name);
   };
@@ -76,6 +78,13 @@ test('My Pay renders final payouts, daily tip and total, individual settings wit
   const html=renderToStaticMarkup(React.createElement(StaffMyPay,{data}));
   for(const value of ['Commission 60%','Tax ','20','Tip · ','No tax','Bonus · ','$75.00','$50.00','$65.00','$60.00','<tfoot>']) assert.ok(html.includes(value),value);
   assert.ok(!html.includes('Cash %')); assert.ok(!html.includes('$40.00')); assert.ok(!html.includes('Custom range'));
+});
+
+test('live My Pay keeps historical paid evidence without calling the current amount unpaid or rewriting payment facts',()=>{
+ const payment={id:'payment-synthetic',staff_id:'staff-a',cash_amount:200,check_amount:300,paid_at:'2026-09-30T12:00:00Z',recorded_at:'2026-09-30T12:01:00Z',actor_id:'owner-a',note:'Original payment note',request_id:'synthetic-intent',revision_at_payment:1};
+ const facts={status:'available',periods:[{base:{id:'base-a',periodStart:'2026-09-16',periodEnd:'2026-09-30'},revision:1,payments:[payment],adjustments:[],legacyPaidHistory:[]}]};
+ const before=JSON.stringify(facts),data={period:staffPeriodAt({cycle_type:'semi_monthly'},'2026-09-25'),periodOptions:[],settings:[],status:{kind:'live',label:'Updated'},latestStatement:null,paystub:null,history:[],dailyRows:[],line:{staff_id:'staff-a',staff_display_name_snapshot:'Synthetic Staff',final_staff_income:600,final_cash_amount:250,final_check_amount:350,gross_sales:1000,staff_commission_gross:600,tip_amount:0,bonus_amount:0,tax_withheld:0,settings_used_snapshot:[]},paymentEvidence:{markedPaidStatements:[{runId:'run-a',version:1,paidAt:'2026-09-30T12:00:00Z'}],recordedFacts:facts}};
+ const html=renderToStaticMarkup(React.createElement(StaffMyPay,{data}));assert.ok(html.includes('$600.00'));assert.ok(html.includes('earlier statement for this period was marked paid'));assert.ok(!html.includes('Payment has not been marked paid'));assert.ok(html.includes('$200.00')&&html.includes('$300.00'));assert.ok(html.includes('Original payment note'));assert.equal(JSON.stringify(facts),before);
 });
 
 test('published history preserves old cycles, same-start different ends and deduplicates revisions',()=>{

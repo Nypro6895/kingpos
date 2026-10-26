@@ -85,7 +85,7 @@ test('legal headers use the server session and never flash guest actions while u
 test('phone rotation keeps payout in document flow and navigation/popovers within the viewport', {
   skip: !process.env.TEST_BROWSER_PATH,
   timeout: 60000,
-}, async () => {
+}, async (t) => {
   pathname = '/payroll';
   const workspace = { id: 'salon:fixture', type: 'salon', salonMode: 'manage', salonId: 'fixture', salonName: 'QA Salon', label: 'QA Salon', roleLabel: 'Owner', menuActions: [] };
   const footer = h('footer', { className: 'output', id: 'payout' },
@@ -117,7 +117,9 @@ test('phone rotation keeps payout in document flow and navigation/popovers withi
   let browser;
   try {
     browser = await chromium.launch({ executablePath: process.env.TEST_BROWSER_PATH, headless: true });
+    t.signal.addEventListener('abort',()=>void browser.close(),{once:true});
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    page.setDefaultTimeout(7000);
     await page.goto(`http://127.0.0.1:${server.address().port}`);
     const evidence = [];
     for (const [width, height] of [[320,568], [390,844], [430,932], [667,375], [844,390], [932,430], [390,844], [1024,768], [1280,800]]) {
@@ -142,7 +144,8 @@ test('phone rotation keeps payout in document flow and navigation/popovers withi
         if (landscapePhone) assert.ok(navBox.height <= 54, 'Landscape bar recovers vertical space');
         const targets = await nav.locator(':scope > a, :scope > details > summary').evaluateAll(elements => elements.map(el => el.getBoundingClientRect().height));
         assert.ok(targets.every(size => size >= 44), 'All navigation targets remain touch sized');
-        for (const label of ['More', 'Notifications']) {
+        assert.equal(await nav.getByRole('link',{name:'Reports',exact:true}).count(),1,'Owner bottom navigation keeps the shipped Reports shortcut');
+        for (const label of ['More']) {
           await nav.locator('summary').filter({ hasText: label }).click();
           const panel = nav.locator('details[open] > .workspace-mobile-panel');
           const box = await panel.boundingBox();
@@ -172,6 +175,7 @@ test('phone rotation keeps payout in document flow and navigation/popovers withi
     }
   } finally {
     await browser?.close();
+    server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));
   }
 });

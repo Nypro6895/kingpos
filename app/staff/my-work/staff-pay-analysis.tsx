@@ -1,4 +1,5 @@
 import { PayrollChangeHistory } from "@/app/payroll/payroll-change-history";
+import { PayrollRecordedFactsPanel } from "@/app/payroll/payroll-recorded-facts";
 import { CurrentStaffPayrollDownload } from "@/app/payroll/current-payroll-download";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { StaffPayPeriodPicker } from "./staff-pay-period-picker";
@@ -39,12 +40,16 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
   const tipTotal = rows.reduce((sum, row) => sum + row.tipAmount, 0);
   const dailyTotal = rows.reduce((sum, row) => sum + row.commissionGross + row.tipAmount, 0);
 
-  const paidAt = data.latestStatement?.run.paid_at;
+  const markedPaid = data.paymentEvidence?.markedPaidStatements ?? [];
+  const paymentNote = markedPaid.length
+    ? "An earlier statement for this period was marked paid. This historical flag does not confirm that the current live amount was paid."
+    : "Current income is a live calculation. Review recorded payment evidence separately; no payment status is inferred.";
   return <section className={styles.portal}><Period data={data} tab="payroll" />
     <p className={styles.note}><WorkspaceText text="Current live payroll. Changes are reflected immediately." /></p>
+    <PayrollRecordedFactsPanel staffNames={line?{[line.staff_id]:line.staff_display_name_snapshot}:{}} facts={data.paymentEvidence?.recordedFacts??{status:"unavailable",message:"Recorded payment history is unavailable. Live income does not confirm a payment."}}/>
     {data.history?.length>0&&<PayrollChangeHistory compact changes={data.history} />}
     {line&&<CurrentStaffPayrollDownload periodStart={data.period.startDate} periodEnd={data.period.endDate} salonId={line.salon_id} staffId={line.staff_id}/>}
-    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text={data.status.label} /><WorkspaceText text={paidAt ? ` · ${date(paidAt)}` : ""} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
+    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text={data.status.label} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
       <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
     <div className={styles.columns}>{line && <section><h2><WorkspaceText text="Pay breakdown" /></h2><dl>
       <div className={styles.row}><dt><WorkspaceText text="Service pay" /><small>{money(line.gross_sales)} <WorkspaceText text="in services" /></small></dt><dd>{money(line.staff_commission_gross)}</dd></div>
@@ -58,7 +63,7 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
         <p className={styles.note}><WorkspaceText text="Total = service pay + tip, before tax and period bonus." /></p>
         {rows.length ? <table className={styles.table}><thead><tr><th scope="col"><WorkspaceText text="Date" /></th><th scope="col"><WorkspaceText text="Tip" /></th><th scope="col"><WorkspaceText text="Total" /></th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td><WorkspaceText text={date(row.businessDate)} /></td><td>{money(row.tipAmount)}</td><td><strong>{money(row.commissionGross + row.tipAmount)}</strong></td></tr>)}</tbody><tfoot><tr><td><strong><WorkspaceText text="Total" /></strong></td><td><strong>{money(tipTotal)}</strong></td><td><strong>{money(dailyTotal)}</strong></td></tr></tfoot></table> : <p className={styles.note}><WorkspaceText text="No daily payroll entries yet." /></p>}
       </details>
-      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary><p className={styles.note}><WorkspaceText text={paidAt ? `Marked paid ${date(paidAt)}.` : "Payment has not been marked paid."} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /><WorkspaceText text={data.paystub ? "" : " Paystub not posted for this statement."} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
+      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary><p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /><WorkspaceText text={data.paystub ? "" : " Paystub not posted for this statement."} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
       {data.paystub?.view_url ? <><a className={styles.action} href={data.paystub.view_url} target="_blank" rel="noreferrer"><WorkspaceText text="View uploaded paystub →" /></a><p className={styles.note}><WorkspaceText text="Uploaded document. Use Download current payroll for the latest calculated amounts."/></p></> : data.paystub ? <p className={styles.note}><WorkspaceText text="Paystub is posted, but its download is temporarily unavailable." /></p> : null}
     </section></div>
   </section>;
