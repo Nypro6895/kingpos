@@ -59,3 +59,18 @@ portable-menu-blue-fullheight-20261026 after the original Report patch.
 Frozen sources: artifacts/portable-menu-teal-fullheight-20261026/frozen/
 Exact computed colors, full-height edges and zero radius passed at all five
 viewport widths; server/save regressions and ESLint passed. Not deployed.
+
+Published 2026-10-26, 6:27 PM America/Chicago:
+  Live: dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq
+  Baseline preserved: dpl_7tcuyKtnGrCUpEJuNHHBKkxXcrKL
+  Deployed source commit: 16150e788df8348ad50634a55a2b53ae205745f3
+  Receipt: artifacts/portable-report-teal-release-20261026/RELEASE-RECEIPT.json
+Production integration preserved the newer live signed closing-save hook,
+expectedScope session checks and denied Portable mode on the owner closing
+endpoint. Current-day checks apply to Portable report reads and its signed
+save action. Fresh production build and runtime/browser tests passed.
+Live alias, every deployed source file hash, teal CSS and HTTP/login gate
+checks passed. A signed production Portable session was unavailable in the
+verification browser; no production closing amounts were written.
+No native Windows or iOS binary change required. Reload/reopen the app to
+load the new remote web interface.

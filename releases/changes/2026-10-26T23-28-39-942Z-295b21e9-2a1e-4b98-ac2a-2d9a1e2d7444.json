@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "portable-report-flat-today-20261026",
+  "status": "ready",
+  "summary": "Validated production-integrated revision: continuous white Report and current salon day only, preserving live signed save/scope checks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/pos/portable/report/page.tsx",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "app/pos/portable/actions.ts",
+    "tests/portable-report-today.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\portable-report-teal-release-20261026\\frozen"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Fresh production build including TypeScript, static pages and offline asset generation",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/build.log"
+    },
+    {
+      "name": "Server date/salon scope guards and actual production signed-save hook browser fixture at 768/1024/1280/1417/1904",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/browser-evidence.json"
+    },
+    {
+      "name": "Changed page, navigation, form and test lint: zero errors, one unchanged pre-existing workspace hook dependency warning",
+      "result": "passed"
+    }
+  ],
+  "integration": {
+    "baselineDeploymentId": "dpl_7tcuyKtnGrCUpEJuNHHBKkxXcrKL",
+    "producerEvents": [
+      "bc1e4ec1-e875-4ef1-a538-33384b9e2c1e",
+      "e72eda68-3b34-433b-8b74-d1aacffa5439"
+    ],
+    "adaptations": "Retained live daily-closing-save signed save flow and expectedScope verification; getPortableReportData and savePortableReportClosing reject non-today dates. Portable mode on /api/pos/closing remains denied as already shipped. No private data/schema/configuration changes."
+  },
+  "integratedFromEvents": [
+    "bc1e4ec1-e875-4ef1-a538-33384b9e2c1e"
+  ],
+  "id": "295b21e9-2a1e-4b98-ac2a-2d9a1e2d7444",
+  "recordedAt": "2026-10-26T23:28:39.942Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/pos/portable/report/page.tsx": "8dc77b78a1458c8223b5118f4e494bbead9fe4e83ddb672977b04639dd9c0074",
+    "app/pos/portable/report/portable-report-closing-form.tsx": "8f016b989cff04ccecc826befa06684d0006f6ad80d6a0b6d1ab27783b11e726",
+    "app/pos/portable/portable-workspace-tabs.tsx": "10783f86343cdc9e5b7f4126674a3d8f97ff9df60161c7e8b23c052d3014d5ed",
+    "app/pos/portable/actions.ts": "641f8c17295c8dae370698f53953f59b1715679d176cfb8111418641b1f3909d",
+    "tests/portable-report-today.test.mjs": "9f617cb9974ed6386e7dfe163892d16990429569918e1ea5bed6b5fa32c61fef"
+  }
+}

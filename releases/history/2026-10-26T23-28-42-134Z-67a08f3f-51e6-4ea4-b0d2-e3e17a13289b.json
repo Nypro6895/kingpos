@@ -1,0 +1,57 @@
+{
+  "kind": "release",
+  "summary": "Publish approved Windows Report white canvas, today-only access, flat left navigation and full-height pale teal selected menu.",
+  "changes": [
+    "295b21e9-2a1e-4b98-ac2a-2d9a1e2d7444",
+    "0a288f94-b583-4fc8-880c-2c75e10635a8",
+    "b9fb5fbd-0517-4f33-9796-a6a2001d6ab3"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+      "baselineDeploymentId": "dpl_7tcuyKtnGrCUpEJuNHHBKkxXcrKL",
+      "sourceSha256": "11655b8e6dc0ceb465bce163518ef1e0593a4c511eda7c96dee989e7452f25d0",
+      "overlaySha256": "926aef992f4f0a0c229e1ed2b88647711ce14e550aaf69e2bff8cebe934f372c",
+      "commit": "16150e788df8348ad50634a55a2b53ae205745f3",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/live-verified.json",
+        "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/live-http.json",
+        "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/live-styles.json",
+        "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/candidate-verified.json",
+        "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/build.log",
+        "C:/Reylumi/kingpos/artifacts/portable-report-teal-release-20261026/browser-evidence.json"
+      ]
+    }
+  },
+  "native": {
+    "iosRequired": false,
+    "windowsBinaryRequired": false,
+    "reason": "Compatible remotely served web UI and existing server actions only; no packaged/native assets or bridge changes."
+  },
+  "validationLimits": "Production source hashes, alias and unauthenticated HTTP/login gate verified. Browser had no signed Portable device session; signed Report rendering, saving, scope/date guards and five widths tested with actual integrated production components against isolated fixture data. No production report amounts were changed.",
+  "integration": {
+    "producerEvents": [
+      "bc1e4ec1-e875-4ef1-a538-33384b9e2c1e",
+      "e72eda68-3b34-433b-8b74-d1aacffa5439"
+    ],
+    "preservedBaselineFiles": 3332,
+    "removedFiles": 0,
+    "changedFiles": [
+      "app/(app)/pos/portable/report/page.tsx",
+      "app/pos/portable/actions.ts",
+      "app/pos/portable/portable-workspace-tabs.tsx",
+      "app/pos/portable/report/portable-report-closing-form.tsx",
+      "docs/portable-report-flat-today-deploy-note.txt",
+      "releases/changes/2026-10-26T23-00-45-664Z-bc1e4ec1-e875-4ef1-a538-33384b9e2c1e.json",
+      "releases/changes/2026-10-26T23-17-14-746Z-e72eda68-3b34-433b-8b74-d1aacffa5439.json",
+      "releases/changes/2026-10-26T23-24-01-563Z-b9fb5fbd-0517-4f33-9796-a6a2001d6ab3.json"
+    ],
+    "baselineSourceSha256": "1ac5957f2182b270e06b332b6683f1871e7eeca6b7347aa46c42f6ed75438fbb",
+    "notes": "Preserved live signed closing-save hook and session scope checks. Only this chat approval and its integration event published. Other pending work remains queued."
+  },
+  "id": "67a08f3f-51e6-4ea4-b0d2-e3e17a13289b",
+  "recordedAt": "2026-10-26T23:28:42.134Z",
+  "worktree": "C:\\Reylumi\\kingpos"
+}
