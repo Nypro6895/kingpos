@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useState } from "react";
 import type { BeautyProfileSummary } from "@/types/beauty";
 import NextImage from "next/image";
@@ -7,11 +8,13 @@ import { updateBeautyProfileAction, getBeautyMediaUploadSessionAction, deleteBea
 import { loadPersonalPublicProfileSettings } from "./personal-public-profile-actions";
 import { InlineForm, Select, inputClass, buttonClass } from "./direct-settings-ui";
 export function PersonalPublicProfilePanel() {
+  const __vt = useWorkspaceTranslation();
+
   const [profile,setProfile]=useState<BeautyProfileSummary|null>(null),[error,setError]=useState("");
   async function reload(){setProfile(await loadPersonalPublicProfileSettings());setError("");}
   useEffect(()=>{let active=true;loadPersonalPublicProfileSettings().then(p=>{if(active)setProfile(p);}).catch(e=>{if(active)setError(e instanceof Error?e.message:"Your public profile could not be loaded.");});return()=>{active=false;};},[]);
-  if(!profile)return <div>{error?<><p role="alert" className="text-sm text-red-700">{error}</p><button className={buttonClass} onClick={()=>void reload().catch(e=>setError(e instanceof Error?e.message:"Could not load your profile."))}>Retry</button></>:<p role="status">Loading public profile…</p>}</div>;
-  return <InlineForm key={profile.bio+profile.visibility+profile.coverMediaPath} save={async form=>{
+  if(!profile)return <div className="settings-style"><div>{error?<><p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></p><button className={buttonClass} onClick={()=>void reload().catch(e=>setError(e instanceof Error?e.message:"Could not load your profile."))}><WorkspaceText text="Retry" /></button></>:<p role="status"><WorkspaceText text="Loading public profile…" /></p>}</div></div>;
+  return <div className="settings-style"><InlineForm key={profile.bio+profile.visibility+profile.coverMediaPath} save={async form=>{
     let coverMediaPath:string|null=null;
     try{
       const removeCover=form.get('remove_cover')==='on',file=form.get('cover_image');
@@ -28,10 +31,10 @@ export function PersonalPublicProfilePanel() {
     }catch(e){if(coverMediaPath)await deleteBeautyMediaAction(coverMediaPath).catch(()=>{});return {ok:false,error:e instanceof Error?e.message:'Could not save your public profile.'};}
   }} onSaved={reload}>
     <p className="text-sm font-semibold">{profile.displayName}</p>
-    <Select name="visibility" label="Public profile visibility" value={profile.visibility} options={[["public","Public"],["self","Only me"]]}/>
-    {profile.coverImageUrl?<NextImage src={profile.coverImageUrl} alt="Current public profile cover" width={800} height={320} unoptimized className="max-h-48 w-full rounded-md object-cover"/>:null}
-    <label className="grid gap-1 text-sm">Cover image<input name="cover_image" type="file" accept="image/jpeg,image/png,image/webp" className={inputClass}/></label>
-    {profile.coverMediaPath?<label className="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_cover"/>Remove saved cover image</label>:null}
-    <label className="grid gap-1 text-sm">Bio<textarea name="bio" className={inputClass} rows={3} maxLength={500} defaultValue={profile.bio||""}/></label>
-  </InlineForm>;
+    <Select name="visibility" label={__vt("Public profile visibility")} value={profile.visibility} options={[["public","Public"],["self","Only me"]]}/>
+    {profile.coverImageUrl?<NextImage src={profile.coverImageUrl} alt={__vt("Current public profile cover")} width={800} height={320} unoptimized className="max-h-48 w-full rounded-md object-cover"/>:null}
+    <label className="grid gap-1 text-sm"><WorkspaceText text="Cover image" /><input name="cover_image" type="file" accept="image/jpeg,image/png,image/webp" className={inputClass}/></label>
+    {profile.coverMediaPath?<label className="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_cover"/><WorkspaceText text="Remove saved cover image" /></label>:null}
+    <label className="grid gap-1 text-sm"><WorkspaceText text="Bio" /><textarea name="bio" className={inputClass} rows={3} maxLength={500} defaultValue={profile.bio||""}/></label>
+  </InlineForm></div>;
 }

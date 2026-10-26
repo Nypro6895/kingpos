@@ -1,0 +1,143 @@
+{
+  "kind": "change",
+  "changeId": "explore-unified-salon-search-20261016",
+  "status": "needs-integration",
+  "summary": "Verify Explore against107414 real public salons; correct generic Nails brand collision, distinctive fuzzy name matching, explicit-area reference order and labelled GPS expansion. Local preview only, no deployment or production writes.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "app/api/explore/search/route.ts",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-salon-card.tsx",
+    "app/explore/explore-search-recommendations.tsx",
+    "app/explore/explore-startup-shell.tsx",
+    "app/explore/nail-inspiration.tsx",
+    "lib/explore-query-intent.ts",
+    "lib/explore-query-routing.ts",
+    "lib/explore-search-client.ts",
+    "lib/explore-search-context.ts",
+    "lib/explore-search-media.ts",
+    "lib/explore-search-recommendations.ts",
+    "lib/explore-search-refresh.ts",
+    "lib/explore-search-suggestions.ts",
+    "lib/explore-search.ts",
+    "lib/explore-showcase-content.ts",
+    "lib/nail-inspiration.ts",
+    "lib/use-explore-search-media.ts",
+    "supabase/migrations/20261016010001_explore_unified_salon_search.sql",
+    "tests/explore-auto-load-runtime.test.mjs",
+    "tests/explore-gps-recovery-runtime.test.mjs",
+    "tests/explore-progressive-startup-ui.test.mjs",
+    "tests/explore-progressive-startup.test.mjs",
+    "tests/explore-query-intent.test.mjs",
+    "tests/explore-query-routing-runtime.test.mjs",
+    "tests/explore-query-ssr-runtime.test.mjs",
+    "tests/explore-query-ui-races-runtime.test.mjs",
+    "tests/explore-request-cancellation.test.mjs",
+    "tests/explore-search-context-runtime.test.mjs",
+    "tests/explore-search-context-ui-runtime.test.mjs",
+    "tests/explore-search-first-runtime.test.mjs",
+    "tests/explore-search-media-refresh-runtime.test.mjs",
+    "tests/explore-search-recommendations-runtime.test.mjs",
+    "tests/explore-search-refresh-runtime.test.mjs",
+    "tests/explore-search-service-runtime.test.mjs",
+    "tests/explore-search-suggestions-runtime.test.mjs",
+    "tests/explore-unified-card-runtime.test.mjs",
+    "tests/explore-unified-search-api.test.mjs",
+    "tests/explore-unified-search-media.test.mjs",
+    "tests/explore-unified-search-scale.integration.test.mjs",
+    "tests/explore-unified-search.integration.test.mjs",
+    "tests/explore-unified-showcase-runtime.test.mjs",
+    "tests/fixtures/explore-query-production-entities-20261016.json",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs",
+    "tests/nail-book-card-ui.test.mjs",
+    "tests/nail-discovery-runtime.test.mjs",
+    "tests/nail-inspiration.test.mjs",
+    "types/explore.ts"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-real-data-20261016\\completed-source-v3",
+    "hashManifest": "work/explore-real-data-20261016/audit/completed-source-hashes-v3.json",
+    "priorEvent": "07f35611-2c22-404e-be62-9793330a17a0",
+    "preimplementationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-unified-search-20261016\\preimplementation-source",
+    "additionalBeforeSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-search-continuity-20261016\\completed-source",
+    "buildSource": "C:\\Users\\giuse\\kingpos\\work\\explore-unified-search-20261016\\validation-source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Read-only production evidence and complete public snapshot with capture window",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/production-king-milwaukee.json"
+    },
+    {
+      "name": "Captured real query entities;49 query/API/service/media checks",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/routing-tests.json"
+    },
+    {
+      "name": "14 SQL integration groups including fuzzy distinctive token,58-salon GPS expansion and explicit-service fallback regressions",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/sql-integration-results-v3.txt"
+    },
+    {
+      "name": "Bounded fuzzy helper optimization preserves exact ordered real-data results",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/name-helper-performance.json"
+    },
+    {
+      "name": "Webpack build,TypeScript and222 prerender pages; local image transport config only",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/build-final.txt"
+    },
+    {
+      "name": "Real snapshot HTTP/API order,6-page continuation and9 desktop/mobile browser cases",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/real-public-ranking.json"
+    },
+    {
+      "name": "Independent actual fixed/expandable GPS city boundary and manual override",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/labelled-gps-independent-review.json"
+    },
+    {
+      "name": "Actual summer nails title/caption match uses the correct public King Nails post and media; same-session hydration",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/real-style-independent-review.json"
+    },
+    {
+      "name": "Unfamiliar phrase with explicit Nails service cue keeps zero primary matches and real local salon references",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/unknown-phrase-fallback.json"
+    },
+    {
+      "name": "Actual public salon image exact original bytes, no placeholder substitution",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/public-media-original-check.json"
+    },
+    {
+      "name": "Frozen49-file source matches workspace and staged source; CSS and product image config unchanged",
+      "result": "passed",
+      "evidence": "work/explore-real-data-20261016/audit/final-source-verification-v3.json"
+    },
+    {
+      "name": "New search query execution and latency on production",
+      "result": "pending",
+      "evidence": "Not deployed. No production search-session calls or database writes; local PGlite replay is not a production performance measurement."
+    },
+    {
+      "name": "Previous broader legacy editorial/feed failures and separate home timeout",
+      "result": "failed",
+      "evidence": "Prior revision audit retained at work/explore-unified-search-20261016/audit/ui-final-validation.json. Not reclassified or claimed fixed by this focused real-data correction."
+    }
+  ],
+  "nativeAssessment": "Web-compatible search/routing/SQL only; no native source, assets, permissions or bridge changes. No iOS binary required for this revision.",
+  "integrationNotes": "Includes prior frozen revision07f35611-2c22-404e-be62-9793330a17a0 and five corrected/new files. Use this full frozen source with current production baseline when separately authorized to deploy. Migration remains unapplied by this task. Preview-only next.config local-image permission is excluded from product patch. Anonymous snapshot preview covers Explore search; other profile/enrichment routes are not a complete production replica. Sources are read-only chunked captures, not one atomic database snapshot.",
+  "id": "65e3cb87-2481-443d-96b5-c8f1f0c39095",
+  "recordedAt": "2026-10-16T23:15:06.076Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "supersedesEvents": []
+}

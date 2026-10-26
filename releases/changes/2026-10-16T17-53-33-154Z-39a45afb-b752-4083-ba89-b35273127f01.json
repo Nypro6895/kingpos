@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "needs-integration",
+  "summary": "Prevent XCTest-host automatic production WebView and shared background scheduling; keep explicit native fixtures and Release startup unchanged.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/Reylumi/ReylumiAppDelegate.swift"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Native bridge VM12",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-js-verification.json"
+    },
+    {
+      "name": "Hosted SPA/frame VM11",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-hosted-ready-verification.json"
+    },
+    {
+      "name": "Owned source diff and LF hashes",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-source-manifest-r9.json"
+    },
+    {
+      "name": "Actual macOS complete XCTest with productionReady candidate and host-isolation guard (38 foundation cases)",
+      "result": "pending"
+    },
+    {
+      "name": "Unsigned Release archive normal launch path",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r9"
+  },
+  "id": "39a45afb-b752-4083-ba89-b35273127f01",
+  "recordedAt": "2026-10-16T17:53:33.154Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

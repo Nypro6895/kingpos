@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "booking-lock-order-schema-review-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Integrated and verified completed booking-lock-order-schema-review-20261015 against current web source; concurrency migration applied and privileges verified.",
+  "files": [
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\release",
+    "originalEvent": "42571d29-18d5-42ac-b23a-a501076604cd",
+    "originalSnapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-source"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\production-build.log"
+    },
+    {
+      "name": "main: 195 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-main.json"
+    },
+    {
+      "name": "built: 4 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-built.json"
+    },
+    {
+      "name": "regression: 59 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-regression.json"
+    },
+    {
+      "name": "Isolated PostgreSQL concurrency and production migration verification",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\booking-migration-verification.json"
+    }
+  ],
+  "dependencies": [
+    "booking-concurrency-cache-review-20261015"
+  ],
+  "id": "d286fc90-496c-4ca3-aa09-b792d70ee99d",
+  "recordedAt": "2026-10-15T03:27:24.095Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/booking-concurrency.integration.test.mjs": "17071008063a344914d5e39537e00766450f010b5735bfa67c4cad68c7333d33",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql": "e1ae76d43fa57fa21d61633423828146014016cc9fade3af79e12d45c35e6f64"
+  }
+}

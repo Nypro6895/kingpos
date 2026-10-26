@@ -4,6 +4,11 @@ import styles from "./market.module.css";
 // Original vector marks for fictional publishers; kept crisp at every UI size.
 export function AppLogo({ app }: { app: MarketApp }) {
   const marks: Record<string, React.ReactNode> = {
+    "booking-deposit": <><rect x="3" y="7" width="24" height="19" rx="4" /><path d="M3 13h24M8 19h5m5 1 3 3 6-7" /></>,
+    "vietnamese-language": <><path d="M4 6h15M11 3v3M6 9c2 6 6 10 12 12M16 6c-1 7-6 13-12 16M18 29l5-14 5 14M20 24h6" /></>,
+    "booking-policy": <><path d="M7 3h12l5 5v21H7zM19 3v6h5M11 13h9M11 18h9M11 23h6" /></>,
+    "campaigns": <><path d="M4 20 4 12 24 5v22L4 20ZM8 22l2 7h5l-3-8M25 8l4-3M25 16h5M25 24l4 3" /></>,
+    "payroll-data-download": <><path d="M7 3h12l5 5v21H7zM19 3v6h5M15 12v11m-4-4 4 4 4-4" /></>,
     "salon-chat": <><path d="M4 5h17v14H11l-5 5v-5H4zM10 24h10l5 4V12h-4" /><path d="M8 10h9M8 14h6" /></>,
     "sms-connect": <><rect x="8" y="3" width="15" height="26" rx="3" /><path d="M12 6h7M14 25h3M3 10h15v9h-7l-4 3v-3H3z" /></>,
     "merchant-rate": <><rect x="3" y="6" width="24" height="18" rx="4" /><path d="M3 12h24M8 19h4m5-3 4 4 4-4M21 14v6" /></>,
@@ -27,5 +32,5 @@ export function AppLogo({ app }: { app: MarketApp }) {
     "team-calendar": <><rect x="5" y="7" width="20" height="19" rx="4" /><path d="M5 13h20M10 4v6M20 4v6m-9 10 3 3 5-6" /></>,
     "review-studio": <><path d="M24 17c0 5-4 8-10 8l-7 3 1-5c-4-2-5-5-5-8 0-6 5-10 11-10 4 0 7 1 9 4" /><path d="m21 3 1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5zM8 15h10M8 19h6" /></>,
   };
-  return <span className={`${styles.icon} ${styles[app.color]} ${styles.logo}`} aria-hidden="true"><svg viewBox="0 0 30 32" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{marks[app.id]}</svg></span>;
+  return <span className={`${styles.icon} ${styles[app.color]} ${styles.logo}`} aria-hidden="true"><svg viewBox="0 0 30 32" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{marks[app.id] ?? <text x="15" y="20" textAnchor="middle" fill="currentColor" stroke="none" fontSize="10" fontWeight="700">{app.symbol.slice(0, 2)}</text>}</svg></span>;
 }

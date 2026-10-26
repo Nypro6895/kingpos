@@ -1,27 +1,49 @@
 "use client";
+import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
+import { useExploreEditorialFeed } from "./use-explore-editorial-feed";
+import { selectExploreEditorialPosts } from "@/lib/explore-post-presentation";
+import { SalonPostPreview } from "@/components/salon-post-preview";
+import { ExploreInspirationPost } from "./explore-inspiration-post";
+import { ExploreSalonCard } from "./explore-salon-card";
+import { ExploreSocialProvider } from "@/components/explore-social";
+import { PostIdentity } from "@/components/post-identity";
 
 import type { ExploreFeedItem } from "@/types/explore";
-import { SubmitButton } from "@/components/submit-button";
+
 
 import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
 import {salonPopularPrice} from "@/lib/salon-identity";
 import { resolveNailCoverImage, isDefaultNailImage } from "@/lib/default-nail-images";
 import { NailIllustrationCredit } from "@/components/nail-illustration-credit";
 
-import {
-  loadExploreNearYouAction,
-  searchExploreWithGpsAction,
-} from "@/app/explore/actions";
-import {
-  ExploreDiscoveryRail,
-  MobileDiscoveryShortcuts,
-} from "@/app/explore/customer-explore-utility-panel";
+import { rememberExplorePreferenceAction } from "@/app/explore/actions";
+import { readExploreStartupInteraction, clearExploreStartupInteraction } from "@/lib/explore-startup-interaction";
+import { ExploreDeferred } from "./explore-deferred";
+import { useExploreFirstContentPaint } from "@/lib/explore-viewport-priority";
 import { ExploreDiscoveryFeed } from "@/app/explore/explore-discovery-feed";
-import { withRequestTimeout } from "@/lib/request-timeout";
+import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
+import { ExploreEditorialHeading } from "./explore-editorial";
+import { ExploreLookEditorial, ExploreSalonDirectory, ExploreBookingEditorial } from "./explore-editorial-sections";
+import { exploreEditorialHref } from "@/lib/explore-editorial";
+import { NailInspirationFilters } from "@/app/explore/nail-inspiration";
+import { useExploreSearchMedia } from "@/lib/use-explore-search-media";
+import type { NailFilters } from "@/lib/nail-inspiration-catalog";
+import { ExploreSearchOnwardActions, ExploreSearchRecommendations } from "@/app/explore/explore-search-recommendations";
+import { ExploreSearchContext } from "@/app/explore/explore-search-context";
+import { ExploreIntroHeadline, ExploreSalonPreview } from "@/app/explore/explore-intro";
+import { exploreAlternatingShortcuts, exploreShortcutDiscovery } from "@/lib/explore-entry-presentation";
+import { consumeExploreDocumentReload, EXPLORE_HOME_RESET_EVENT, exploreHomeUrl } from "@/lib/explore-entry-navigation";
+import { ExploreSearchToolbar } from "@/app/explore/explore-search-toolbar";
+import { exploreSearchOnwardLink, groupExploreSearchRecommendations, isExplorePrimarySearchResult } from "@/lib/explore-search-recommendations";
+import { buildExploreCommittedSearchContext, type ExploreCommittedGpsContext } from "@/lib/explore-search-context";
+import type { ExploreSearchSuggestion } from "@/lib/explore-search-suggestions";
+import { fetchExploreSearchPage } from "@/lib/explore-search-client";
+import { fetchExploreGpsArea } from "@/lib/location/explore-gps-area-client";
+import type { ExploreGpsArea } from "@/types/explore-gps-area";
+import { classifyExploreSearchError, exploreSearchErrorMessage } from "@/lib/explore-search-rpc";
 import { ExploreBookButton, ExploreSalonLove } from "@/components/explore-account-actions";
 import { ExploreAdSlot } from "@/components/explore-advertising";
 import { SavePostAuthProvider, SavePostButton } from "@/app/saved-post/save-post-button";
-import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
 import {
   ReylumiIcon,
   type ReylumiIconName,
@@ -34,7 +56,6 @@ import {
   type ExploreHomeContent,
   type ExploreHomeSalon,
   type ExploreInspirationItem,
-  type ExploreInspirationPage,
   type ExploreInitialLocation,
   type ExploreLocationSource,
   type ExploreMapSalon,
@@ -45,22 +66,24 @@ import {
 import {
   buildReylumiTrustSummary,
   compareReylumiTrustedSalons,
-  orderReylumiExploreResults,
   type ReylumiExploreSearchOrder,
 } from "@/lib/reylumi-trust";
+import { useHiddenPosts, postIdentity } from "@/components/post-safety";
+import type { PostCommentTarget } from "@/types/post-comments";
 import type { PostCommentViewer } from "@/types/post-comments";
 import dynamic from "next/dynamic";
-import Image from "next/image";
+import { ExploreViewportImage as Image } from "./explore-viewport-image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  createContext,
+  useContext,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   useTransition,
-  type KeyboardEvent,
   type ReactNode,
 } from "react";
 
@@ -71,12 +94,14 @@ export type ExploreQuickAction = {
   tone: "dark" | "light";
 };
 
-type ExploreClientProps = {
+export type ExploreClientProps = {
   commentViewer: PostCommentViewer;
   discoveryContent: ExploreDiscoveryContent;
   hasUrlLocation: boolean;
   homeContent: ExploreHomeContent;
   initialFeed: ExploreFeedPage;
+  initialFeedPromise?: Promise<ExploreFeedPage | null>;
+  startupExtrasPending?: boolean;
   initialLocationSource: ExploreLocationSource;
   initialResponse: ExploreSearchResponse;
   initialSearchMode: boolean;
@@ -92,18 +117,20 @@ type GpsCoordinates = {
 type GpsStatus = "denied" | "error" | "idle" | "locating" | "searching" | "unsupported";
 
 const SAVED_LOCATION_KEY = "kingpos-explore-manual-location";
+const GPS_PREFERENCE_KEY = "kingpos-explore-use-current-location";
 const MAPTILER_BROWSER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ?? "";
 const ExploreMap = dynamic(
   () => import("@/app/explore/explore-map").then((mod) => mod.ExploreMap),
   {
     loading: () => (
-      <div className="grid min-h-[22rem] place-items-center rounded-2xl bg-surface-muted text-sm font-medium text-text-secondary ring-1 ring-divider-subtle">
+      <div className="grid min-h-[22rem] place-items-center bg-surface-muted text-sm font-medium text-text-secondary rounded-none border-0 shadow-none">
         Loading map
       </div>
     ),
     ssr: false,
   },
 );
+const ExploreDiscoveryRail = dynamic(() => import("./customer-explore-utility-panel").then(module => module.ExploreDiscoveryRail));
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const STATE_NAME_TO_ABBR: Record<string, string> = {
@@ -162,15 +189,6 @@ const STATE_NAMES_LONGEST_FIRST = Object.keys(STATE_NAME_TO_ABBR).sort(
   (a, b) => b.length - a.length,
 );
 const STATE_ABBRS = new Set(Object.values(STATE_NAME_TO_ABBR));
-const EXPLORE_DISCOVERY_CATEGORIES = [
-  { category: "All", icon: "grid", label: "All" },
-  { category: "Nails", icon: "hand", label: "Nails" },
-  { category: "Hair", icon: "user", label: "Hair" },
-  { category: "Lashes", icon: "eye", label: "Lashes" },
-  { category: "Spa", icon: "spa", label: "Spa" },
-  { category: "Brows", icon: "brow", label: "Brows" },
-  { category: "Massage", icon: "massage", label: "Massage" },
-] as const;
 const SERVICE_DEFAULT_IMAGE = "/explore/service-defaults.png";
 const QUICK_ACTION_VISUALS = [
   {
@@ -206,16 +224,6 @@ type DesktopPopularFilterChip = {
   more?: string;
   query?: string;
 };
-
-type ExploreCategoryIconName =
-  | "brow"
-  | "eye"
-  | "grid"
-  | "hand"
-  | "massage"
-  | "more"
-  | "spa"
-  | "user";
 
 function cleanCategory(category: string) {
   return category && category !== "All" ? category : "";
@@ -313,6 +321,7 @@ function buildUrl(input: {
   searchParams: URLSearchParams;
 }) {
   const params = new URLSearchParams(input.searchParams.toString());
+  if (params.has("type")) params.set("type", "salons");
   const category = cleanCategory(input.category);
 
   if (input.query.trim()) {
@@ -341,128 +350,6 @@ function buildUrl(input: {
 
   const queryString = params.toString();
   return queryString ? `${input.pathname}?${queryString}` : input.pathname;
-}
-
-function ExploreCategoryIcon({ name }: { name: ExploreCategoryIconName }) {
-  const common = {
-    "aria-hidden": true,
-    className: "h-4 w-4",
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 1.8,
-    viewBox: "0 0 24 24",
-  };
-  const paths: Record<ExploreCategoryIconName, ReactNode> = {
-    brow: <path d="M4 14c4-4 12-4 16 0M7 12c3-1.8 7-1.8 10 0" />,
-    eye: (
-      <>
-        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
-        <circle cx="12" cy="12" r="3" />
-      </>
-    ),
-    grid: (
-      <>
-        <rect height="5" rx="1" width="5" x="4" y="4" />
-        <rect height="5" rx="1" width="5" x="15" y="4" />
-        <rect height="5" rx="1" width="5" x="4" y="15" />
-        <rect height="5" rx="1" width="5" x="15" y="15" />
-      </>
-    ),
-    hand: (
-      <>
-        <path d="M7 11V6a1.5 1.5 0 0 1 3 0v5" />
-        <path d="M10 10V5a1.5 1.5 0 0 1 3 0v6" />
-        <path d="M13 11V7a1.5 1.5 0 0 1 3 0v6" />
-        <path d="M16 13v-2a1.5 1.5 0 0 1 3 0v3c0 4-2.6 7-6.5 7H11c-2.2 0-3.9-1.1-5-3l-1.6-2.9a1.6 1.6 0 0 1 2.7-1.7L9 15" />
-      </>
-    ),
-    massage: (
-      <>
-        <circle cx="8" cy="7" r="3" />
-        <path d="M2 21c.8-4 3.2-6 7-6h2c4.2 0 7 2.1 8 6" />
-        <path d="M16 6h6M18 3l4 3-4 3" />
-      </>
-    ),
-    more: (
-      <>
-        <circle cx="5" cy="12" r="1" />
-        <circle cx="12" cy="12" r="1" />
-        <circle cx="19" cy="12" r="1" />
-      </>
-    ),
-    spa: (
-      <>
-        <path d="M12 21c-4.5-2.8-7-6-7-9.5A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 7 5.5c0 3.5-2.5 6.7-7 9.5Z" />
-        <path d="M12 6c0-2 1-3.5 3-4" />
-      </>
-    ),
-    user: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 22a8 8 0 0 1 16 0" />
-      </>
-    ),
-  };
-
-  return <svg {...common}>{paths[name]}</svg>;
-}
-
-function CategoryChips({
-  allLabel = "All",
-  category,
-  onChange,
-  onMore,
-}: {
-  allLabel?: string;
-  category: string;
-  onChange: (category: string) => void;
-  onMore: () => void;
-}) {
-  const selectedCategory = cleanCategory(category);
-
-  return (
-    <nav
-      aria-label="Explore categories"
-      className="no-scrollbar -mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
-    >
-      <div className="flex w-max gap-2">
-        {EXPLORE_DISCOVERY_CATEGORIES.map((option) => {
-          const optionCategory = cleanCategory(option.category);
-          const isActive =
-            optionCategory.toLowerCase() === selectedCategory.toLowerCase();
-          const label = option.category === "All" ? allLabel : option.label;
-
-          return (
-            <button
-              aria-pressed={isActive}
-              className={[
-                "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-                isActive
-                  ? "bg-brand-orange-soft text-brand-orange ring-1 ring-brand-orange/35"
-                  : "bg-surface-elevated text-text-secondary ring-1 ring-divider-subtle/85 hover:text-text-primary hover:ring-brand-orange/25",
-              ].join(" ")}
-              key={option.label}
-              onClick={() => onChange(option.category)}
-              type="button"
-            >
-              <ExploreCategoryIcon name={option.icon} />
-              <span>{label}</span>
-            </button>
-          );
-        })}
-        <button
-          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-surface-elevated px-4 text-sm font-semibold text-text-secondary shadow-sm ring-1 ring-divider-subtle/85 transition hover:text-text-primary hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          onClick={onMore}
-          type="button"
-        >
-          <ExploreCategoryIcon name="more" />
-          <span>More</span>
-        </button>
-      </div>
-    </nav>
-  );
 }
 
 function formatSalonLocation(salon: ExploreSearchResult) {
@@ -565,12 +452,6 @@ function cardServiceLabel(salon: ExploreSearchResult) {
   return null;
 }
 
-function displaySalonCity(salon: ExploreSearchResult) {
-  return formatDisplayLocation(
-    [salon.city, salon.state].filter(Boolean).join(", "),
-  );
-}
-
 function featuredServiceLine(salon: ExploreSearchResult) {
   const candidates = [
     salon.featuredServiceName,
@@ -610,142 +491,20 @@ function salonAvailabilityLine(salon: ExploreSearchResult) {
   return salon.operatingStatus.nextOpensLabel ?? null;
 }
 
+const ExplorePostContext = createContext<{viewerId: string | null; viewer: PostCommentViewer; items: ExploreInspirationItem[]}>({viewerId: null, viewer:{userId:null,isAuthenticated:false,canModerate:false,canReplyAsSalon:false},items: []});
+function inspirationTarget(item: ExploreInspirationItem): PostCommentTarget {
+  return {salonId: item.salonId, sourceId: item.contentId, sourceType: item.contentType === "look" ? "salon_profile_look" : "salon_profile_update", title: item.captionExcerpt};
+}
+function useInspirationHidden(item?: ExploreInspirationItem) {
+  const {viewerId} = useContext(ExplorePostContext);
+  const hidden = useHiddenPosts(viewerId);
+  return Boolean(item && hidden.includes(postIdentity(inspirationTarget(item))));
+}
+
 function inspirationDetailHref(item: ExploreInspirationItem) {
   return item.salonHref
     ? `${item.salonHref}#${item.contentType}-${item.contentId}`
     : item.bookingHref ?? "/explore";
-}
-
-function shortcutIconName(shortcut: ExploreDiscoveryShortcut): ReylumiIconName {
-  if (shortcut.id === "available-today") {
-    return "calendar";
-  }
-
-  if (shortcut.id === "near-you") {
-    return "map-pin";
-  }
-
-  if (shortcut.id === "top-rated") {
-    return "star";
-  }
-
-  if (shortcut.id === "under-60") {
-    return "dollar";
-  }
-
-  if (shortcut.id === "trending") {
-    return "flame";
-  }
-
-  return "sparkle";
-}
-
-function shortcutToneClass(shortcut: ExploreDiscoveryShortcut) {
-  if (shortcut.id === "available-today" || shortcut.id === "near-you") {
-    return "bg-sky-50 text-sky-600 ring-sky-100";
-  }
-
-  if (shortcut.id === "top-rated") {
-    return "bg-amber-50 text-amber-600 ring-amber-100";
-  }
-
-  if (shortcut.id === "under-60") {
-    return "bg-violet-50 text-violet-600 ring-violet-100";
-  }
-
-  if (shortcut.id === "trending") {
-    return "bg-rose-50 text-rose-600 ring-rose-100";
-  }
-
-  return "bg-emerald-50 text-emerald-600 ring-emerald-100";
-}
-
-function DesktopShortcutCard({
-  activeResultKind,
-  onSelect,
-  shortcut,
-}: {
-  activeResultKind: ExploreDiscoveryResultKind | null;
-  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
-  shortcut: ExploreDiscoveryShortcut;
-}) {
-  const active =
-    shortcut.action.type === "result" &&
-    shortcut.action.resultKind === activeResultKind;
-  const className = [
-    "group grid min-h-[5.75rem] content-center rounded-[0.8rem] bg-white p-3 text-left shadow-[0_8px_18px_rgba(35,25,22,0.035)] ring-1 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-    active ? "ring-brand-orange/35" : "ring-divider-subtle/75",
-  ].join(" ");
-  const content = (
-    <span className="flex min-w-0 items-center gap-3">
-      <span
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-[0.75rem] ring-1 ${shortcutToneClass(
-          shortcut,
-        )}`}
-      >
-        <ReylumiIcon className="h-5 w-5" name={shortcutIconName(shortcut)} />
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold text-text-primary">
-          {shortcut.label}
-        </span>
-        <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
-          {shortcut.actionLabel}
-        </span>
-        {shortcut.context ? (
-          <span className="mt-0.5 block truncate text-[11px] text-text-muted">
-            {shortcut.context}
-          </span>
-        ) : null}
-      </span>
-    </span>
-  );
-
-  if (shortcut.action.type === "href") {
-    return (
-      <Link className={className} href={shortcut.action.href}>
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <button
-      aria-pressed={active}
-      className={className}
-      onClick={() => onSelect(shortcut)}
-      type="button"
-    >
-      {content}
-    </button>
-  );
-}
-
-function DesktopShortcutGrid({
-  activeResultKind,
-  onSelect,
-  shortcuts,
-}: {
-  activeResultKind: ExploreDiscoveryResultKind | null;
-  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
-  shortcuts: ExploreDiscoveryShortcut[];
-}) {
-  if (shortcuts.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-      {shortcuts.slice(0, 5).map((shortcut) => (
-        <DesktopShortcutCard
-          activeResultKind={activeResultKind}
-          key={shortcut.id}
-          onSelect={onSelect}
-          shortcut={shortcut}
-        />
-      ))}
-    </div>
-  );
 }
 
 function inspirationPriceLabel(item: ExploreInspirationItem) {
@@ -776,227 +535,14 @@ function inspirationAvailabilityLabel(item: ExploreInspirationItem) {
   return label && !/^request\s+(?:a|the)\s+time$/i.test(label) ? label : null;
 }
 
-function DesktopSocialProof({ content }: { content: ExploreHomeContent }) {
-  const proofImages = content.inspiration.items.slice(0, 5);
-
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-[0.9rem] bg-white/82 px-3 py-2 ring-1 ring-divider-subtle/70">
-      <div className="flex -space-x-2">
-        {proofImages.map((item, index) => (
-          <span
-            className="relative block h-9 w-9 overflow-hidden rounded-full bg-surface-muted ring-2 ring-white"
-            key={`${item.mediaId}:${index}`}
-          >
-            <Image
-              alt=""
-              className="object-cover"
-              fill
-              loading="lazy"
-              sizes="36px"
-              src={item.salonLogoImageUrl ?? item.imageUrl}
-            />
-          </span>
-        ))}
-        {proofImages.length === 0 ? (
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-orange text-xs font-black text-white ring-2 ring-white">
-            R
-          </span>
-        ) : null}
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-semibold text-text-primary">
-          Discover work from local beauty professionals
-        </p>
-        <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-text-secondary">
-          <span>Explore looks and available services</span>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function DesktopInspiredCard({
-  item,
-  onOpen,
-  priority = false,
-}: {
-  item: ExploreInspirationItem;
-  onOpen?: (item: ExploreInspirationItem) => void;
-  priority?: boolean;
-}) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const href = inspirationDetailHref(item);
-  const service = inspirationServiceLabel(item) ?? "Featured look";
-  const price = inspirationPriceLabel(item);
-  const duration = inspirationDurationLabel(item);
-  const distance = inspirationDistanceLabel(item);
-  const availability = inspirationAvailabilityLabel(item);
-
-  return (
-    <article className="overflow-hidden rounded-[0.85rem] bg-white shadow-[0_12px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(35,25,22,0.08)]">
-      <div className="relative p-2 pb-0">
-        {onOpen ? (
-          <button
-            aria-label={`Open ${service} from ${item.salonName}`}
-            className="group block w-full overflow-hidden rounded-[0.75rem] bg-surface-muted text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            onClick={() => onOpen(item)}
-            type="button"
-          >
-            <span className="relative block aspect-[4/3]">
-              {imageFailed ? (
-                <span className="grid h-full w-full place-items-center bg-brand-orange-soft text-lg font-semibold text-brand-orange">
-                  {salonInitials(item.salonName)}
-                </span>
-              ) : (
-                <Image
-                  alt={`${service} from ${item.salonName}`}
-                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                  fill
-                  loading={priority ? "eager" : "lazy"}
-                  onError={() => setImageFailed(true)}
-                  priority={priority}
-                  sizes="(max-width: 1280px) 22vw, 280px"
-                  src={item.imageUrl}
-                />
-              )}
-            </span>
-          </button>
-        ) : (
-          <Link
-            aria-label={`Open ${service} from ${item.salonName}`}
-            className="group block overflow-hidden rounded-[0.75rem] bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href={href}
-          >
-          <span className="relative block aspect-[4/3]">
-            {imageFailed ? (
-              <span className="grid h-full w-full place-items-center bg-brand-orange-soft text-lg font-semibold text-brand-orange">
-                {salonInitials(item.salonName)}
-              </span>
-            ) : (
-              <Image
-                alt={`${service} from ${item.salonName}`}
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                fill
-                loading={priority ? "eager" : "lazy"}
-                onError={() => setImageFailed(true)}
-                priority={priority}
-                sizes="(max-width: 1280px) 22vw, 280px"
-                src={item.imageUrl}
-              />
-            )}
-          </span>
-          </Link>
-        )}
-        {availability ? (
-          <span className="absolute left-4 top-4 rounded-full bg-emerald-50/95 px-2.5 py-1 text-[10px] font-bold text-emerald-700 shadow-sm ring-1 ring-emerald-100">
-            {availability}
-          </span>
-        ) : null}
-        {item.saveTarget ? (
-          <SavePostButton
-            className="absolute right-4 top-4"
-            initialSaved={item.saveTarget.saved}
-            saveCount={item.saveTarget.saveCount}
-            size="compact"
-            target={item.saveTarget}
-          />
-        ) : (
-          <span className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-white/80">
-            <ReylumiIcon className="h-4 w-4" name="bookmark" />
-          </span>
-        )}
-      </div>
-      <div className="grid gap-2 p-3">
-        <div className="flex min-w-0 items-start justify-between gap-3">
-          <div className="min-w-0">
-            <Link
-              className="inline-flex max-w-full items-center gap-1.5 rounded-md text-sm font-semibold text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={item.salonHref ?? href}
-            >
-              <span className="truncate">{item.salonName}</span>
-              <SalonVerifiedBadge verified={item.trust.identityVerified}/>
-            </Link>
-            <SalonTrustLine signals={item.trust} href={item.salonHref} name={item.salonName} distance={distance} className="text-text-secondary"/>
-          </div>
-          <ExploreBookButton href={item.bookingEnabled ? item.bookingHref : null} name={item.salonName} contactHref={item.salonHref} phoneHref={item.phoneHref} />
-        </div>
-        <div className="grid gap-1">
-          <p className="truncate text-sm font-semibold text-text-primary">
-            {service}
-          </p>
-          <p className="flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary">
-            {price ? <span className="text-text-primary">{price}</span> : null}
-            {duration ? <span>{duration}</span> : null}
-          </p>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function DesktopInspiredGrid({ content }: { content: ExploreHomeContent }) {
-  const items = content.inspiration.items.slice(0, 4);
-  const [selectedItem, setSelectedItem] =
-    useState<ExploreInspirationItem | null>(null);
-
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <section className="grid gap-3" data-testid="desktop-inspired-style">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-base font-semibold text-text-primary">
-            Inspired by your style
-          </h2>
-          <p className="mt-0.5 text-xs font-medium text-text-secondary">
-            Real work, prices, time, distance, and open booking context.
-          </p>
-        </div>
-        <Link
-          className="text-xs font-semibold text-brand-orange transition hover:text-brand-orange-hover"
-          href="/explore?category=Nails"
-        >
-          View all
-        </Link>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {items.map((item, index) => (
-          <DesktopInspiredCard
-            item={item}
-            key={item.mediaId}
-            onOpen={setSelectedItem}
-            priority={index === 0}
-          />
-        ))}
-      </div>
-      {selectedItem ? (
-        <InspirationPreview
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      ) : null}
-    </section>
-  );
-}
+function DesktopInspiredCard({item,onOpen,priority=false}:{item:ExploreInspirationItem;onOpen?:(item:ExploreInspirationItem)=>void;priority?:boolean;editorial?:boolean}) { const {viewer}=useContext(ExplorePostContext);return <ExploreInspirationPost item={item} viewer={viewer} onOpen={onOpen} priority={priority}/>; }
 
 function DesktopExploreLanding({
-  activeDiscoveryResult,
   content,
-  discoveryShortcuts,
-  onExploreClick,
-  onSelectCategory,
-  onSelectDiscoveryShortcut,
-  selectedCategory,
+  salons,
 }: {
-  activeDiscoveryResult: ExploreDiscoveryResultKind | null;
   content: ExploreHomeContent;
-  discoveryShortcuts: ExploreDiscoveryShortcut[];
-  onExploreClick: () => void;
-  onSelectCategory: (category: string) => void;
-  onSelectDiscoveryShortcut: (shortcut: ExploreDiscoveryShortcut) => void;
-  selectedCategory: string;
+  salons: ExploreSearchResult[];
 }) {
   const bookableCount = mergeHomeSalons(
     content.recommendedSalons,
@@ -1005,15 +551,12 @@ function DesktopExploreLanding({
 
   return (
     <div className="hidden bg-[linear-gradient(180deg,#fffaf7_0%,#ffffff_85%)] px-8 pb-6 pt-4 xl:block">
-      <div className="mx-auto grid w-full max-w-[92rem] overflow-hidden rounded-[1rem] bg-white shadow-[0_18px_50px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/75">
-        <div className="grid gap-5 px-7 py-7">
+      <div className="mx-auto grid w-full max-w-none overflow-hidden bg-white rounded-none border-0 shadow-none">
+        <div className="grid gap-4 px-6 py-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-center">
             <div className="min-w-0">
-              <h1 className="max-w-xl text-3xl font-semibold leading-tight text-text-primary">
-                Discover local beauty pros. See real work.{" "}
-                <span className="text-brand-orange">Book instantly.</span>
-              </h1>
-              <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-text-secondary">
+              <ExploreIntroHeadline />
+              <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold text-text-secondary">
                 <span className="inline-flex items-center gap-1.5">
                   <ReylumiIcon className="h-4 w-4 text-brand-orange" name="message" />
                   Real reviews
@@ -1032,19 +575,8 @@ function DesktopExploreLanding({
                 </span>
               </div>
             </div>
-            <DesktopSocialProof content={content} />
+            <ExploreSalonPreview content={content} salons={salons} />
           </div>
-          <CategoryChips
-            category={selectedCategory}
-            onChange={onSelectCategory}
-            onMore={onExploreClick}
-          />
-          <DesktopShortcutGrid
-            activeResultKind={activeDiscoveryResult}
-            onSelect={onSelectDiscoveryShortcut}
-            shortcuts={discoveryShortcuts}
-          />
-          <DesktopInspiredGrid content={content} />
           <p className="sr-only">
             Explore shows {content.inspiration.items.length} public looks and{" "}
             {bookableCount} bookable shops.
@@ -1055,76 +587,6 @@ function DesktopExploreLanding({
   );
 }
 
-function MobileExploreSearch({
-  gpsStatus,
-  location,
-  onCurrentLocation,
-  query,
-  selectedCategory,
-}: {
-  gpsStatus: GpsStatus;
-  location: string;
-  onCurrentLocation: () => void;
-  query: string;
-  selectedCategory: string;
-}) {
-  const normalizedCategory = cleanCategory(selectedCategory);
-  const canUseLocation = gpsStatus !== "locating" && gpsStatus !== "searching";
-
-  return (
-    <form
-      action="/explore"
-      className="grid gap-2 rounded-[0.95rem] bg-surface-elevated p-2 shadow-[0_10px_26px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 xl:hidden"
-      role="search"
-    >
-      <label
-        className="grid min-h-11 gap-0.5 rounded-[0.8rem] bg-surface-muted px-3 py-1.5 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-brand-orange/25"
-        htmlFor="customer-mobile-explore-search"
-      >
-        <span className="text-[11px] font-medium text-text-muted">
-          Search Explore
-        </span>
-        <input
-          className="min-w-0 bg-transparent text-sm font-semibold text-text-primary outline-none placeholder:text-text-muted"
-          defaultValue={query}
-          id="customer-mobile-explore-search"
-          name="q"
-          placeholder="Salon, service, city, or ZIP"
-          type="search"
-        />
-      </label>
-      <label className="grid gap-0.5 rounded-[0.8rem] bg-surface-muted px-3 py-1.5">
-        <span className="text-[11px] font-medium text-text-muted">Location (optional)</span>
-        <input
-          className="min-w-0 bg-transparent text-sm text-text-primary outline-none"
-          defaultValue={location}
-          name="location"
-          placeholder="Any location"
-          type="search"
-        />
-      </label>
-      {normalizedCategory ? (
-        <input name="category" type="hidden" value={normalizedCategory} />
-      ) : null}
-      <div className="grid grid-cols-2 gap-2">
-        <SubmitButton pendingLabel="Processing…"
-          className="min-h-10 rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          type="submit"
-        >
-          Search
-        </SubmitButton>
-        <button
-          className="min-h-10 rounded-full bg-brand-teal-soft px-4 text-sm font-semibold text-brand-teal transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={!canUseLocation}
-          onClick={onCurrentLocation}
-          type="button"
-        >
-          {canUseLocation ? "Near you" : "Locating"}
-        </button>
-      </div>
-    </form>
-  );
-}
 
 function mergeHomeSalons(
   ...groups: ExploreHomeSalon[][]
@@ -1192,7 +654,7 @@ function availableTodayResults({
   )
     .filter(
       (salon) =>
-        Boolean(salon.nextAvailabilityLabel) || salon.operatingStatus.isOpen,
+        salon.bookingEnabled && Boolean(salon.bookableServiceId),
     )
     .sort((left, right) => {
       const leftTime = left.nextAvailableAt
@@ -1622,8 +1084,9 @@ function filterLooksForDesktopDiscovery<T extends DiscoveryLook>(
 }
 
 function feedMatchesDesktopDiscovery(item: ExploreFeedItem, filters: DesktopDiscoveryFilterState, category: string) {
-  if (item.discoverySalon) return filterSalonsForDesktopDiscovery([item.discoverySalon], filters, category).length > 0;
-  if (filters.more.includes("new") || filters.more.includes("trending")) return false;
+  const structured = Boolean(item.contentKey && item.discoveryScope);
+  if (item.discoverySalon) return filterSalonsForDesktopDiscovery([item.discoverySalon], filters, structured ? "All" : category).length > 0;
+  if (!structured && (filters.more.includes("new") || filters.more.includes("trending"))) return false;
   const trust = item.salon?.trust ?? { averageRating: null, noIssueRate: null, sharedExperienceCount: 0, uniqueCustomerCount: 0, verifiedVisitCount: 0 };
   return filterLooksForDesktopDiscovery([{
     serviceCategory: item.serviceCategory,
@@ -1634,7 +1097,7 @@ function feedMatchesDesktopDiscovery(item: ExploreFeedItem, filters: DesktopDisc
     trust,
     bookingEnabled: item.booking?.eligible === true,
     operatingStatus: item.salon?.operatingStatus ?? { isOpen: false },
-  }], filters, category).length > 0;
+  }], filters, structured ? "All" : category).length > 0;
 }
 
 function desktopFilterChipsForCategory(
@@ -1693,7 +1156,7 @@ function desktopFilterChipsForCategory(
   const chips = [
     ...postKeywordChips,
     ...serviceChips,
-    { label: "Available today", more: "available_today" },
+    { label: "Open now", more: "available_today" },
     { label: "Under $60", more: "under_60" },
     { label: "Gold LUMI Truth", more: "trust_gold" },
   ];
@@ -1733,7 +1196,7 @@ function sectionHeader({
         ) : null}
       </div>
       {actionHref ? (
-        <Link
+        <Link prefetch={false}
           className="shrink-0 text-sm font-semibold text-brand-orange hover:text-brand-orange-hover"
           href={actionHref}
         >
@@ -1744,86 +1207,21 @@ function sectionHeader({
   );
 }
 
-function PublicSalonProfilesSection({ salons, selectedCategory = "" }: { salons: ExploreSearchResult[]; selectedCategory?: string }) {
-  const profiles = salons.filter((salon) => salon.hasPublicProfile && UUID_PATTERN.test(salon.id) && salonMatchesDiscoveryCategory(salon, selectedCategory)).slice(0, 12);
+function PublicSalonProfilesSection({ salons, selectedCategory = "", editorial = false, location = "" }: { salons: ExploreSearchResult[]; selectedCategory?: string; editorial?: boolean; location?: string }) {
+  const profiles = salons.filter((salon) => salon.hasPublicProfile && UUID_PATTERN.test(salon.id) && salonMatchesDiscoveryCategory(salon, selectedCategory)).slice(0, editorial ? 6 : 12);
   if (!profiles.length) return null;
   return <section className="grid gap-3" data-testid="public-salon-profiles">
-    <div className="flex items-center justify-between gap-3">
-      <div><h2 className="text-xl font-semibold text-text-primary">Explore salons</h2><p className="mt-1 text-sm text-text-secondary">Find salon profiles, contact details and directions.</p></div>
-      <Link className="shrink-0 text-sm font-semibold text-brand-orange" href={`/explore?${new URLSearchParams({ category: cleanCategory(selectedCategory) || "All" })}`}>View all →</Link>
-    </div>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {profiles.map((salon) => <article key={salon.id} className="grid gap-3 rounded-2xl border border-divider-subtle bg-white p-4">
-        {salon.coverImageUrl ? <Link href={salonProfileHref(salon.id)} className="relative block aspect-[3/2] overflow-hidden rounded-xl">
-          <Image src={salon.coverImageUrl} alt={isDefaultNailImage(salon.coverImageUrl) ? "AI-generated nail-service illustration" : `${salon.name} salon photo`} fill sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover" />
-          <NailIllustrationCredit imageUrl={salon.coverImageUrl} className="absolute bottom-2 right-2" />
-        </Link> : null}
-        <Link href={salonProfileHref(salon.id)} className="flex items-center gap-3">
-          <span className="relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] font-semibold text-brand-orange"><SalonLogoContent salon={salon} size={48} /></span>
-          <span className="min-w-0"><span className="block font-semibold text-text-primary">{salon.name}</span><span className="block text-xs text-text-secondary">{[salon.serviceCategories.join(" · "), salon.city, salon.state].filter(Boolean).join(" · ")}</span></span>
-        </Link>
-        <p className="text-sm text-text-secondary">{[salon.addressLine1, salon.addressLine2, salon.city, salon.state, salon.postalCode].filter(Boolean).join(", ")}</p>
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-          {salon.phone ? <a href={`tel:${salon.phone}`} className="font-semibold text-text-primary">{salon.phone}</a> : null}
-          <Link className="font-medium text-brand-orange" href={salonProfileHref(salon.id)}>View profile →</Link>
-        </div>
-        <div className="flex justify-between gap-2"><ExploreSalonLove salonId={salon.id} name={salon.name}/><ExploreBookButton href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={salonProfileHref(salon.id)} phoneHref={salon.phone?`tel:${salon.phone}`:null}/></div>
-      </article>)}
+    {editorial ? <ExploreEditorialHeading eyebrow="Places to know" title="Recommended for you" description="Get to know the salons, explore their services and find your next favorite place." action={<Link prefetch={false} className="text-sm font-semibold text-brand-orange" href={exploreEditorialHref(selectedCategory, location)}>Explore salons <span aria-hidden>↗</span></Link>} /> : <div className="flex items-center justify-between gap-3">
+      <h2 className="text-base font-semibold text-text-primary">Salons</h2>
+      <Link prefetch={false} className="shrink-0 text-sm font-semibold text-brand-orange" href={`/explore?${new URLSearchParams({ category: cleanCategory(selectedCategory) || "All" })}`}>View all →</Link>
+    </div>}
+    <div className={`grid sm:grid-cols-2 xl:grid-cols-3 ${editorial ? "mt-3 gap-5" : "gap-3"}`}>
+      {profiles.map(salon => <ExploreSalonCard key={salon.id} salon={salon}/>)}
     </div>
   </section>;
 }
 
-function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
-  const displayName = displaySalonName(salon.name);
-  const profileHref =
-    UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-      ? salonProfileHref(salon.id)
-      : null;
-  const href = profileHref ?? salon.bookingHref ?? "/explore";
-  const service = salonPopularPrice(salon) ? null : featuredServiceLine(salon);
-  const price = salonPopularPrice(salon);
-
-  return (
-    <article
-      className="min-w-[11.25rem] snap-start overflow-hidden rounded-[0.95rem] bg-surface-elevated shadow-[0_9px_24px_rgba(35,25,22,0.042)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(35,25,22,0.075)] sm:min-w-0"
-      style={{ flex: "0 0 calc((100% - 2.25rem) / 4)" }}
-    >
-      <Link
-        className="group grid min-h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href={href}
-      >
-        <span className="block p-2 pb-0">
-          <span className="relative block aspect-[16/9] overflow-hidden rounded-[0.75rem] bg-surface-muted">
-            {imageUrl ? (
-              <Image
-                alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${displayName} salon photo`}
-                className="object-cover transition duration-300 group-hover:scale-[1.025]"
-                fill
-                onError={() => setImageFailed(true)}
-                sizes="(max-width: 768px) 180px, 25vw"
-                src={imageUrl}
-              />
-            ) : (
-              <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-xl font-semibold text-brand-orange">
-                {salonInitials(displayName)}
-              </span>
-            )}
-          </span>
-        </span>
-        <NailIllustrationCredit imageUrl={imageUrl} className="mx-3 mt-2 justify-self-start" />
-        <span className="grid gap-0.5 p-3 pt-2">
-          <span className="flex min-w-0 items-center gap-1 truncate text-sm font-semibold text-text-primary"><span className="truncate">{displayName}</span><SalonVerifiedBadge verified={salon.identityVerified}/></span>
-          <SalonTrustLine staticOnly compact signals={salon} name={displayName} className="text-text-secondary"/>
-          {price||service?<span className="truncate text-[11px] leading-5 text-text-secondary">{price??service}</span>:null}
-          <SalonOperatingStatusBadge className="max-w-full" status={salon.operatingStatus}/>
-        </span>
-      </Link>
-      <div className="flex items-center justify-between gap-2 px-3 pb-3"><ExploreSalonLove salonId={salon.id} name={salon.name}/><ExploreBookButton href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={profileHref} phoneHref={salon.phone?`tel:${salon.phone}`:null}/></div>
-    </article>
-  );
-}
+function CompactSalonCard({salon}:{salon:ExploreHomeSalon}) { return <ExploreSalonCard salon={salon} compact/>; }
 
 function CarouselArrow({
   direction,
@@ -1909,7 +1307,7 @@ function TopRatedSalonsSection({
           subtitle: "Salons will appear here when Experience signals are available.",
           title: "Top Rated Salons",
         })}
-        <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary">
+        <div className="border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary rounded-none border-0 shadow-none">
           No salons have enough Experience signals yet.
         </div>
       </section>
@@ -1924,125 +1322,6 @@ function TopRatedSalonsSection({
         title: "Top Rated Salons",
       })}
       <TopRatedCarousel salons={salons} />
-    </section>
-  );
-}
-
-function TrendingDesignTile({
-  item,
-  onOpen,
-  remainingLabel,
-}: {
-  item: ExploreInspirationItem;
-  onOpen: (item: ExploreInspirationItem) => void;
-  remainingLabel: string | null;
-}) {
-  const salonName = displaySalonName(item.salonName);
-  const tileFrameClass =
-    "group relative aspect-[1.15/1] min-w-[6.75rem] max-w-[6.75rem] snap-start overflow-hidden rounded-[0.8rem] bg-surface-muted text-left shadow-[0_8px_20px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(35,25,22,0.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:min-w-[7.5rem] sm:max-w-[7.5rem] lg:min-w-[8.25rem] lg:max-w-[8.25rem]";
-  const tileActionClass =
-    "absolute inset-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange";
-  const tileContent = (
-    <>
-      <Image
-        alt={`${salonName} design`}
-        className="object-cover transition duration-300 group-hover:scale-[1.045]"
-        fill
-        sizes="132px"
-        src={item.imageUrl}
-      />
-      <span
-        aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(36,27,31,0),rgba(36,27,31,0.08)_62%,rgba(36,27,31,0.22))]"
-      />
-      {remainingLabel ? (
-        <span className="absolute inset-0 z-20 grid place-items-center bg-text-primary/58 text-xl font-semibold text-white">
-          {remainingLabel}
-        </span>
-      ) : null}
-    </>
-  );
-
-  return (
-    <div className={tileFrameClass}>
-      <button
-        aria-label={`Open ${salonName} design`}
-        className={tileActionClass}
-        onClick={() => onOpen(item)}
-        type="button"
-      >
-        {tileContent}
-      </button>
-      <ExploreBookButton compact className="absolute bottom-1.5 left-1.5 z-30" href={item.bookingEnabled ? item.bookingHref : null} name={item.salonName} contactHref={item.salonHref} phoneHref={item.phoneHref} />
-      <SavePostButton
-        className="absolute bottom-1.5 right-1.5 z-30 origin-bottom-right scale-75 shadow-sm sm:bottom-2 sm:right-2 sm:scale-[.82]"
-        initialSaved={item.saveTarget.saved}
-        target={item.saveTarget}
-      />
-    </div>
-  );
-}
-
-function TrendingDesignsSection({
-  initialPage,
-  subtitle,
-  title = "Fresh Looks",
-}: {
-  initialPage: ExploreInspirationPage;
-  subtitle?: string;
-  title?: string;
-}) {
-  const [selectedItem, setSelectedItem] =
-    useState<ExploreInspirationItem | null>(null);
-  const visibleItems = initialPage.items.slice(0, 8);
-  const remainingCount = Math.max(0, initialPage.items.length - visibleItems.length);
-  const remainingLabel =
-    remainingCount > 0 ? `+${remainingCount}` : initialPage.hasMore ? "More" : null;
-
-  return (
-    <section className="grid gap-3" data-testid="trending-designs">
-      {sectionHeader({
-        actionHref: "/explore",
-        subtitle: initialPage.error
-          ? "Inspiration could not be loaded right now."
-          : subtitle,
-        title,
-      })}
-      {visibleItems.length > 0 ? (
-        <div className="relative min-w-0 overflow-hidden">
-          <div
-            className="no-scrollbar min-w-0 overflow-x-auto overscroll-x-contain scroll-smooth pb-3"
-          >
-            <div className="flex w-max snap-x snap-mandatory gap-3">
-              {visibleItems.map((item, index) => (
-                <TrendingDesignTile
-                  item={item}
-                  key={item.mediaId}
-                  onOpen={setSelectedItem}
-                  remainingLabel={
-                    index === visibleItems.length - 1 ? remainingLabel : null
-                  }
-                />
-              ))}
-            </div>
-          </div>
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-12 bg-[linear-gradient(90deg,rgba(255,255,255,0),var(--page-background))] sm:block"
-          />
-        </div>
-      ) : !initialPage.error ? (
-        <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary">
-          Fresh public looks will appear here as salons share photos.
-        </div>
-      ) : null}
-
-      {selectedItem ? (
-        <InspirationPreview
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      ) : null}
     </section>
   );
 }
@@ -2091,161 +1370,7 @@ function mapSalonToMapSalon(salon: ExploreSearchResult): ExploreMapSalon | null 
 
 
 
-function SalonCard({
-  featured = false,
-  imageHref,
-  rankAriaLabel,
-  rankLabel,
-  salon,
-}: {
-  featured?: boolean;
-  imageHref?: string | null;
-  rankAriaLabel: string;
-  rankLabel: string;
-  salon: ExploreSearchResult;
-}) {
-  const callHref = phoneHref(salon.phone);
-  const distance = formatDistance(salon.distanceMiles);
-  const location = formatSalonLocation(salon);
-  const canViewProfile = UUID_PATTERN.test(salon.id) && salon.hasPublicProfile;
-  const profileHref = canViewProfile ? salonProfileHref(salon.id) : null;
-  const mediaHref = imageHref ?? profileHref;
-  const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
-  const service = salonPopularPrice(salon) ? null : cardServiceLabel(salon);
-  const price = salonPopularPrice(salon);
-  const availabilityLabel = salonAvailabilityLine(salon);
-  const bookingHref =
-    salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
-  const cardSizeClass = featured
-    ? "aspect-[4/3] md:aspect-[16/9]"
-    : "aspect-[4/3]";
-  const imageSizes = featured
-    ? "(max-width: 768px) 100vw, (max-width: 1280px) 66vw, 42vw"
-    : "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 24vw";
-
-  return (
-    <article
-      className={[
-        "group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl bg-white shadow-[0_12px_32px_rgba(80,47,36,0.06)] ring-1 ring-divider-subtle/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(80,47,36,0.12)] focus-within:ring-brand-orange/35",
-      ].join(" ")}
-    >
-      <div className={`relative shrink-0 overflow-hidden bg-surface-muted ${cardSizeClass}`}>
-      {mediaHref ? (
-        <Link
-          aria-label={isDefaultNailImage(imageUrl) ? `Open profile of ${salon.name}` : `Open featured work from ${salon.name}`}
-          className="absolute inset-0 z-[1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={mediaHref}
-        />
-      ) : null}
-      {imageUrl ? (
-        <Image
-          alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${salon.name} salon photo`}
-          className="object-cover transition duration-300 group-hover:scale-[1.02]"
-          fill
-          onError={() => setImageFailed(true)}
-          sizes={imageSizes}
-          src={imageUrl}
-        />
-      ) : (
-        <div className="absolute inset-0 grid place-items-center bg-text-primary px-6 text-center text-white">
-          <div>
-            <div className="relative mx-auto grid h-16 w-16 place-items-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-lg font-semibold">
-              <SalonLogoContent salon={salon} size={64} />
-            </div>
-            <p className="mt-4 text-sm font-semibold">Photos coming soon</p>
-          </div>
-        </div>
-      )}
-
-      <NailIllustrationCredit imageUrl={imageUrl} className="absolute right-3 bottom-3 z-20" />
-      <div className="pointer-events-none absolute left-2.5 right-2.5 top-2.5 z-10 flex items-start justify-between gap-2">
-        <span
-          aria-label={rankAriaLabel}
-          className="grid min-h-9 min-w-9 place-items-center rounded-[0.85rem] bg-white px-2 py-1 text-center text-[11px] font-bold leading-tight text-brand-orange shadow-sm"
-        >
-          {rankLabel}
-        </span>
-        {distance ? (
-          <span className="rounded-full bg-text-primary/45 px-2.5 py-1 text-[11px] font-semibold text-white ring-1 ring-white/20">
-            {distance}
-          </span>
-        ) : null}
-      </div>
-
-      </div>
-      <div className="flex flex-1 flex-col gap-4 p-4 text-text-primary sm:p-5">
-        <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-1.5">
-            {profileHref ? (
-              <Link
-                className="min-w-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={profileHref}
-              >
-                <h3
-                  className={[
-                    "break-words font-semibold leading-snug transition hover:text-brand-orange",
-                    featured ? "text-xl sm:text-2xl" : "text-lg",
-                  ].join(" ")}
-                >
-                  {salon.name}
-                </h3>
-              </Link>
-            ) : (
-              <h3
-                className={[
-                  "min-w-0 break-words font-semibold leading-snug",
-                  featured ? "text-xl sm:text-2xl" : "text-lg",
-                ].join(" ")}
-              >
-                {salon.name}
-              </h3>
-            )}
-            <SalonVerifiedBadge verified={salon.identityVerified}/>
-          </div>
-          {availabilityLabel?<span className="sr-only">{availabilityLabel}</span>:null}
-          <SalonTrustLine signals={salon} href={profileHref} name={salon.name} distance={distance} className="text-text-secondary"/>
-          {location?<p className="mt-1 text-sm leading-5 text-text-secondary">{location}</p>:null}
-          {service || price ? (
-            <p className="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-semibold text-text-primary">
-              {service ? <span className="line-clamp-1">{service}</span> : null}
-              {price ? <span className="text-text-primary">{price}</span> : null}
-            </p>
-          ) : null}          <SalonOperatingStatusBadge
-            className="mt-2 max-w-full"
-            showDetail={featured}
-            status={salon.operatingStatus}
-          />
-
-        </div>
-
-        <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-divider-subtle pt-4">
-          <ExploreBookButton href={bookingHref} name={salon.name} contactHref={profileHref} phoneHref={callHref} />
-          <ExploreSalonLove salonId={salon.id} name={salon.name} />
-          {profileHref ? (
-            <Link
-              className={[
-                "inline-flex min-h-10 items-center rounded-full bg-surface-muted px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-              ].join(" ")}
-              href={profileHref}
-            >
-              View salon
-            </Link>
-          ) : null}
-          {callHref && !bookingHref && !canViewProfile ? (
-            <a
-              aria-label={`Call ${salon.name}`}
-              className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={callHref}
-            >
-              Call
-            </a>
-          ) : null}
-        </div>
-      </div>
-    </article>
-  );
-}
+function SalonCard({salon}:{featured?:boolean;imageHref?:string|null;rankAriaLabel:string;rankLabel:string;salon:ExploreSearchResult}) { return <ExploreSalonCard salon={salon}/>; }
 
 function inspirationLocation(item: ExploreInspirationItem) {
   return formatDisplayLocation(
@@ -2255,47 +1380,6 @@ function inspirationLocation(item: ExploreInspirationItem) {
 
 function inspirationServiceLabel(item: ExploreInspirationItem) {
   return item.serviceName ?? item.serviceCategory;
-}
-
-function inspirationDateLabel(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-function getFocusableElements(root: HTMLElement | null) {
-  if (!root) {
-    return [];
-  }
-
-  return Array.from(
-    root.querySelectorAll<HTMLElement>(
-      [
-        "a[href]",
-        "button:not([disabled])",
-        "textarea:not([disabled])",
-        "input:not([disabled])",
-        "select:not([disabled])",
-        "[tabindex]:not([tabindex='-1'])",
-      ].join(","),
-    ),
-  ).filter((element) => !element.hasAttribute("disabled"));
-}
-
-function countLabel(count: number) {
-  return `${count} salon${count === 1 ? "" : "s"}`;
-}
-
-function bestMatchCountLabel(count: number) {
-  return `${count} best match${count === 1 ? "" : "es"}`;
 }
 
 function hasMeasuredDistance(results: ExploreSearchResult[]) {
@@ -2311,80 +1395,24 @@ type SearchShortcut = {
   query?: string;
 };
 
-function orderedSearchSections(
-  sections: ExploreSearchResponse["sections"],
-  mode: SearchOrderMode,
-) {
-  return {
-    bestMatches: orderReylumiExploreResults(sections.bestMatches, mode),
-    nearby: orderReylumiExploreResults(sections.nearby, mode),
-    recommended: orderReylumiExploreResults(sections.recommended, mode),
-  };
-}
-
 function quotedQuery(query: string) {
   const trimmedQuery = query.trim();
   return trimmedQuery ? `"${trimmedQuery}"` : "";
-}
-
-function bestMatchDescription(input: {
-  category: string;
-  count: number;
-  query: string;
-}) {
-  const queryLabel = quotedQuery(input.query);
-  const category = cleanCategory(input.category);
-
-  if (queryLabel) {
-    return `${bestMatchCountLabel(input.count)} for ${queryLabel}`;
-  }
-
-  if (category) {
-    return `${bestMatchCountLabel(input.count)} for ${category}`;
-  }
-
-  return bestMatchCountLabel(input.count);
 }
 
 function resultSummary(input: {
   bestCount: number;
   category: string;
   hasAnyResults: boolean;
+  hasPrimaryResults: boolean;
   location: string;
   nearbyCount: number;
   query: string;
   recommendedCount: number;
 }) {
   const location = input.location.trim();
-  const queryLabel = quotedQuery(input.query);
-
-  if (input.bestCount > 0) {
-    const context = bestMatchDescription({
-      category: input.category,
-      count: input.bestCount,
-      query: input.query,
-    });
-
-    return location ? `${context} in ${location}` : context;
-  }
-
-  if (queryLabel && input.nearbyCount > 0) {
-    return location
-      ? `No exact matches for ${queryLabel}. ${countLabel(input.nearbyCount)} in ${location}`
-      : `No exact matches for ${queryLabel}`;
-  }
-
-  if (input.nearbyCount > 0) {
-    return location
-      ? `${countLabel(input.nearbyCount)} in ${location}`
-      : countLabel(input.nearbyCount);
-  }
-
-  if (input.recommendedCount > 0) {
-    return "Recommended salons on Reylumi";
-  }
-
-  return input.hasAnyResults ? countLabel(input.bestCount) : "No salons available";
+  if (!input.hasPrimaryResults) return "No results found";
+  return input.query.trim() ? "Results for " + quotedQuery(input.query) + (location ? " in " + location : "") : location ? "Salons in " + location : "Recommended salons on Reylumi";
 }
 
 type SearchRankKind = "area" | "best" | "recommended";
@@ -2442,11 +1470,13 @@ function homeRankBadge(salon: ExploreHomeSalon, index: number) {
 
 function ResultSection({
   description,
+  hideHeading = false,
   rankKind,
   results,
   title,
 }: {
   description?: string;
+  hideHeading?: boolean;
   rankKind: SearchRankKind;
   results: ExploreSearchResult[];
   title: string;
@@ -2456,8 +1486,8 @@ function ResultSection({
   }
 
   return (
-    <section className="grid gap-4">
-      <div>
+    <section className={hideHeading ? "grid" : "grid gap-4"}>
+      <div className={hideHeading ? "sr-only" : undefined}>
         <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
         {description ? (
           <p className="mt-1 text-sm font-medium text-text-secondary">
@@ -2481,7 +1511,7 @@ function ResultSection({
                 rankLabel={rank.label}
                 salon={salon}
               />
-              {(index + 1) % 4 === 0 || (results.length < 4 && index === results.length - 1) ? <ExploreAdSlot /> : null}
+              {(index + 1) % 4 === 0 || (results.length < 4 && index === results.length - 1) ? <ExploreAdSlot slotIndex={Math.floor(index / 4)} /> : null}
             </div>
           );
         })}
@@ -2490,19 +1520,35 @@ function ResultSection({
   );
 }
 
+function SearchRecommendationSections({ results, location, renderCards }: {
+  results: ExploreSearchResult[];
+  location: string;
+  renderCards?: (results: ExploreSearchResult[]) => ReactNode;
+}) {
+  return groupExploreSearchRecommendations(results, location).map((group, index) => (
+    <ExploreSearchRecommendations key={`${group.key}:${index}`} title={group.title}>
+      {renderCards ? renderCards(group.results) : <ResultSection hideHeading rankKind="recommended" results={group.results} title={group.title} />}
+    </ExploreSearchRecommendations>
+  ));
+}
+
 function SearchRefinementBar({
+  children,
   category,
   location,
   mode,
   onModeChange,
+  onClear,
   onShortcut,
   query,
   workspaceLocation,
 }: {
+  children?: ReactNode;
   category: string;
   location: string;
   mode: SearchOrderMode;
   onModeChange: (mode: SearchOrderMode) => void;
+  onClear: () => void;
   onShortcut: (input: {
     category?: string;
     location?: string;
@@ -2548,32 +1594,21 @@ function SearchRefinementBar({
   return (
     <section
       aria-label="Search refinement"
-      className="grid gap-3 rounded-2xl bg-surface-elevated p-3 ring-1 ring-divider-subtle/75"
+      className="flex flex-wrap items-start gap-2"
       data-testid="explore-search-refinement"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        {ordering.map((item) => (
-          <button
-            aria-pressed={mode === item.mode}
-            className={[
-              "min-h-9 rounded-full px-3 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-              mode === item.mode
-                ? "bg-text-primary text-white"
-                : "bg-white text-text-secondary ring-1 ring-divider-subtle hover:text-brand-orange",
-            ].join(" ")}
-            key={item.mode}
-            onClick={() => onModeChange(item.mode)}
-            type="button"
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-      {shortcuts.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2">
+      {children}
+      <select aria-label="Sort results" value={mode} onChange={event => onModeChange(event.target.value as SearchOrderMode)}
+        className="min-h-11 rounded-full bg-surface-elevated px-3 text-sm font-medium text-text-primary outline-none ring-1 ring-divider-subtle focus:ring-brand-orange">
+        {ordering.map(item => <option key={item.mode} value={item.mode}>{item.label}</option>)}
+      </select>
+        <details className="min-w-0 flex-1">
+          <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center rounded-full bg-surface-elevated px-4 text-sm font-medium text-text-primary ring-1 ring-divider-subtle">Filters</summary>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={onClear} className="min-h-11 rounded-full bg-white px-3 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle hover:text-brand-orange">Clear filters</button>
           {shortcuts.map((shortcut) => (
             <button
-              className="min-h-9 rounded-full bg-white px-3 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              className="min-h-11 rounded-full bg-white px-3 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               key={`${shortcut.label}:${shortcut.query ?? ""}:${shortcut.location ?? ""}:${shortcut.category ?? ""}`}
               onClick={() => onShortcut(shortcut)}
               type="button"
@@ -2581,428 +1616,17 @@ function SearchRefinementBar({
               {shortcut.label}
             </button>
           ))}
-        </div>
-      ) : null}
+          </div>
+        </details>
     </section>
   );
 }
 
-function InspirationPreview({
-  item,
-  onClose,
-}: {
-  item: ExploreInspirationItem;
-  onClose: () => void;
-}) {
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-  const location = inspirationLocation(item);
-  const service = inspirationServiceLabel(item);
-  const price = inspirationPriceLabel(item);
-  const duration = inspirationDurationLabel(item);
-  const publishedAt = inspirationDateLabel(item.publishedAt);
-
-  useEffect(() => {
-    previousFocusRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
-
-    function closeOnEscape(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.removeEventListener("keydown", closeOnEscape);
-      document.body.style.overflow = previousOverflow;
-      previousFocusRef.current?.focus();
-    };
-  }, [onClose]);
-
-  function trapFocus(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const focusableElements = getFocusableElements(dialogRef.current);
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (!firstElement || !lastElement) {
-      return;
-    }
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-      return;
-    }
-
-    if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-end bg-black/70 p-0 sm:place-items-center sm:p-6"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <div
-        aria-labelledby="inspiration-preview-title"
-        aria-modal="true"
-        className="grid max-h-[94dvh] w-full grid-rows-[minmax(0,1fr)_auto] overflow-hidden rounded-t-2xl bg-surface-elevated shadow-2xl sm:max-w-5xl sm:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)] sm:grid-rows-1 sm:rounded-2xl"
-        onKeyDown={trapFocus}
-        ref={dialogRef}
-        role="dialog"
-      >
-        <div className="relative min-h-[42dvh] bg-surface-muted sm:min-h-[72dvh]">
-          <Image
-            alt={`${item.salonName} nail inspiration preview`}
-            className="object-contain"
-            fill
-            sizes="(max-width: 768px) 100vw, 68vw"
-            src={item.imageUrl}
-          />
-          <SavePostButton
-            className="absolute bottom-4 right-4 z-10"
-            initialSaved={item.saveTarget.saved}
-            target={item.saveTarget}
-          />
-        </div>
-        <div className="grid max-h-[52dvh] min-h-0 content-between gap-5 overflow-y-auto p-5 sm:max-h-none sm:p-6">
-          <div>
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h2
-                  className="line-clamp-2 text-xl font-semibold text-text-primary"
-                  id="inspiration-preview-title"
-                >
-                {item.salonName} <SalonVerifiedBadge verified={item.trust.identityVerified}/>
-              </h2>
-                <SalonTrustLine signals={item.trust} href={item.salonHref} name={item.salonName} distance={inspirationDistanceLabel(item)} expanded className="text-text-secondary"/>
-                {service||price?<p className="text-xs leading-5 text-text-secondary">{[service,price,duration].filter(Boolean).join(" · ")}</p>:null}
-                {location ? (
-                  <p className="text-[11px] leading-5 font-medium text-text-secondary">
-                    {location}
-                  </p>
-                ) : null}
-                <SalonOperatingStatusBadge
-                  className="mt-0.5 max-w-full"
-                  showDetail
-                  status={item.operatingStatus}
-                />
-              </div>
-              <button
-                aria-label="Close preview"
-                className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-muted text-lg font-semibold text-text-secondary hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                onClick={onClose}
-                ref={closeButtonRef}
-                type="button"
-              >
-                x
-              </button>
-            </div>
-
-            {item.captionExcerpt ? (
-              <p className="mt-3 text-sm leading-6 text-text-secondary">
-                {item.captionExcerpt}
-              </p>
-            ) : null}
-            <div className="mt-4 grid gap-1 text-sm text-text-muted">
-              {publishedAt ? <p>{publishedAt}</p> : null}
-              {item.authorDisplayName ? (
-                <p>
-                  {item.authorIsAnonymous
-                    ? item.authorDisplayName
-                    : `By ${item.authorDisplayName}`}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <ExploreBookButton href={item.bookingEnabled ? item.bookingHref : null} name={item.salonName} contactHref={item.salonHref} phoneHref={item.phoneHref} />
-            {item.salonHref ? (
-              <Link
-                className={[
-                  "inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-                  item.bookingEnabled && item.bookingHref
-                    ? "bg-surface-muted text-text-primary ring-1 ring-divider-subtle hover:bg-brand-orange-soft focus-visible:outline-brand-orange"
-                    : "bg-text-primary text-white hover:bg-brand-black focus-visible:outline-brand-orange",
-                ].join(" ")}
-                href={item.salonHref}
-              >
-                View salon
-              </Link>
-            ) : null}
-            {item.phoneHref ? (
-              <a
-                className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={item.phoneHref}
-              >
-                Call
-              </a>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function discoveryBadgeLabel(salon: ExploreHomeSalon, fallback: string) {
-  if (salon.distanceMiles !== null) {
-    return "Nearby";
-  }
-
-  if (salon.latestMediaCreatedAt) {
-    return "Fresh";
-  }
-
-  if (salon.homeSection === "new" || salon.isNew) {
-    return "New";
-  }
-
-  if (salon.activeServiceCount >= 5) {
-    return "Service variety";
-  }
-
-  if (buildReylumiTrustSummary(salon).qualityScore !== null) {
-    return "LUMI Truth";
-  }
-
-  return fallback;
-}
-
-function discoveryServiceLabel(salon: ExploreHomeSalon) {
-  return featuredServiceLine(salon);
-}
-
-function recommendedCardLinks(salon: ExploreHomeSalon) {
-  const profileHref =
-    UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-      ? salonProfileHref(salon.id)
-      : null;
-  const bookingHref =
-    salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
-  const viewHref = profileHref ?? bookingHref ?? "/explore";
-
-  return {
-    bookingHref,
-    primaryHref: bookingHref ?? viewHref,
-    primaryLabel: bookingHref ? "Book" : "View Salon",
-    viewHref,
-  };
-}
-
-function RecommendedFeatureCard({
-  salon,
-}: {
-  salon: ExploreHomeSalon;
-}) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
-  const location = displaySalonCity(salon);
-  const displayName = displaySalonName(salon.name);
-  const service = salonPopularPrice(salon) ? null : discoveryServiceLabel(salon);
-  const price = salonPopularPrice(salon);
-  const reason = discoveryBadgeLabel(salon, "Recommended");
-  const { primaryHref, viewHref } = recommendedCardLinks(salon);
-  const showSecondaryViewAction = viewHref !== primaryHref;
-  const trustHref =
-    UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-      ? `${salonProfileHref(salon.id)}#lumi-trust`
-      : null;
-  const imageHref = trustHref ? trustHref.replace(/#lumi-trust$/, "") : viewHref;
-
-  return (
-    <article className="group relative min-h-[19rem] overflow-hidden rounded-[1rem] bg-text-primary shadow-[0_14px_38px_rgba(35,25,22,0.08)] ring-1 ring-divider-subtle/75">
-      <Link
-        aria-label={`View ${displayName}`}
-        className="absolute inset-0 z-[1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href={imageHref}
-      />
-      {imageUrl ? (
-        <Image
-          alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${displayName} salon photo`}
-          className="object-cover transition duration-500 group-hover:scale-[1.02]"
-          fill
-          onError={() => setImageFailed(true)}
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 62vw, 42vw"
-          src={imageUrl}
-        />
-      ) : (
-        <div className="absolute inset-0 grid place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-4xl font-semibold text-brand-orange">
-          {salonInitials(displayName)}
-        </div>
-      )}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,23,27,0.88),rgba(31,23,27,0.56)_42%,rgba(31,23,27,0.08)_100%)]"
-      />
-      <NailIllustrationCredit imageUrl={imageUrl} className="absolute right-3 top-3 z-20" />
-      <div className="relative z-10 grid min-h-[19rem] max-w-[76%] content-end gap-2 p-4 text-white sm:p-5">
-        <div>
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex w-fit rounded-full bg-white/14 px-2.5 py-1 text-[11px] font-semibold text-white ring-1 ring-white/20">
-              Recommended because {reason.toLowerCase()}
-            </span>
-          </div>
-          <h3 className="mt-1 line-clamp-2 text-xl font-semibold leading-tight sm:text-2xl">
-            {displayName} <SalonVerifiedBadge verified={salon.identityVerified}/>
-          </h3>
-          <SalonTrustLine signals={salon} href={viewHref} name={displayName} distance={formatDistance(salon.distanceMiles)} className="text-white/85"/>
-          {location ? (
-            <p className="mt-2 truncate text-xs font-semibold text-white/70">
-              {location}
-            </p>
-          ) : null}
-          {price||service?<p className="text-xs leading-5 text-white/85">{price??service}</p>:null}
-          <SalonOperatingStatusBadge
-            className="mt-2 max-w-full"
-            inverted
-            showDetail
-            status={salon.operatingStatus}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <ExploreBookButton href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={viewHref} phoneHref={salon.phone?`tel:${salon.phone}`:null}/><ExploreSalonLove salonId={salon.id} name={salon.name}/>
-
-          {showSecondaryViewAction ? (
-            <Link
-              className="inline-flex min-h-9 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              href={viewHref}
-            >
-              View salon
-            </Link>
-          ) : null}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function RecommendedMiniTile({
-  active,
-  index,
-  onSelect,
-  salon,
-}: {
-  active: boolean;
-  index: number;
-  onSelect: (index: number) => void;
-  salon: ExploreHomeSalon;
-}) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const displayName = displaySalonName(salon.name);
-  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
-
-  return (
-    <div className="relative"><button
-      aria-label={`Feature ${displayName}`}
-      aria-pressed={active}
-      className={[
-        "group relative aspect-[1.35/1] overflow-hidden rounded-[0.9rem] bg-surface-muted shadow-[0_7px_18px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-        active ? "ring-2 ring-brand-orange" : "",
-      ].join(" ")}
-      onClick={() => onSelect(index)}
-      type="button"
-    >
-      {imageUrl ? (
-        <Image
-          alt=""
-          className="object-cover transition duration-300 group-hover:scale-[1.04]"
-          fill
-          onError={() => setImageFailed(true)}
-          sizes="180px"
-          src={imageUrl}
-        />
-      ) : (
-        <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-xl font-semibold text-brand-orange">
-          {salonInitials(displayName)}
-        </span>
-      )}
-      <span className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(36,27,31,0),rgba(36,27,31,0.18))]" />
-      <NailIllustrationCredit imageUrl={imageUrl} className="absolute bottom-1 right-1" />
-    </button><div className="absolute bottom-1 left-1 right-1 z-20 flex justify-between"><ExploreSalonLove salonId={salon.id} name={salon.name}/><ExploreBookButton compact href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={salonProfileHref(salon.id)} phoneHref={salon.phone?`tel:${salon.phone}`:null}/></div></div>
-  );
-}
-
-function RecommendedForYouSection({
-  description,
-  results,
-  testId,
-  title,
-}: {
-  description: string;
-  results: ExploreHomeSalon[];
-  testId: string;
-  title: string;
-}) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndexWithinBounds =
-    results.length > 0 ? activeIndex % results.length : 0;
-
-  useEffect(() => {
-    if (results.length <= 1) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % results.length);
-    }, 5600);
-
-    return () => window.clearInterval(interval);
-  }, [results.length]);
-
-  if (results.length === 0) {
-    return null;
-  }
-
-  const activeSalon = results[activeIndexWithinBounds] ?? results[0];
-  const miniSalons = results
-    .map((salon, index) => ({ index, salon }))
-    .filter((item) => item.index !== activeIndexWithinBounds)
-    .slice(0, 4);
-
-  return (
-    <section className="grid gap-2.5" data-testid={testId}>
-      <div>
-        <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
-        <p className="mt-1 text-sm leading-6 text-text-secondary">
-          {description}
-        </p>
-      </div>
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,0.72fr)]">
-        <RecommendedFeatureCard salon={activeSalon} />
-        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-1 xl:grid-cols-2">
-          {miniSalons.map(({ index, salon }) => (
-            <RecommendedMiniTile
-              active={index === activeIndexWithinBounds}
-              index={index}
-              key={`${salon.homeSection}:${salon.id}`}
-              onSelect={setActiveIndex}
-              salon={salon}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+function InspirationPreview({ item, onClose }: { item: ExploreInspirationItem; onClose: () => void }) {
+  const { viewer } = useContext(ExplorePostContext);
+  return <SalonPostPreview key={item.contentId} item={item} viewer={viewer} onClose={onClose}
+    location={inspirationLocation(item)} service={inspirationServiceLabel(item)} price={inspirationPriceLabel(item)}
+    duration={inspirationDurationLabel(item)} href={inspirationDetailHref(item)} />;
 }
 
 function NearYouHomeSection({
@@ -3401,7 +2025,7 @@ function PopularServicesSection({
 
 function discoveryResultTitle(kind: ExploreDiscoveryResultKind) {
   if (kind === "available_today") {
-    return "Available today";
+    return "Booking options";
   }
 
   if (kind === "near_you") {
@@ -3413,7 +2037,7 @@ function discoveryResultTitle(kind: ExploreDiscoveryResultKind) {
   }
 
   if (kind === "trending") {
-    return "Trending";
+    return "Fresh looks";
   }
 
   if (kind === "under_60") {
@@ -3425,6 +2049,10 @@ function discoveryResultTitle(kind: ExploreDiscoveryResultKind) {
 
 function ExploreDiscoveryResults({
   content,
+  commentViewer,
+  selectedCategory,
+  location,
+  strictLocation,
   gpsCoordinates,
   kind,
   nearYouSalons,
@@ -3433,6 +2061,10 @@ function ExploreDiscoveryResults({
   searchResults,
 }: {
   content: ExploreHomeContent;
+  commentViewer: PostCommentViewer;
+  selectedCategory: string;
+  location: string;
+  strictLocation: boolean;
   gpsCoordinates: GpsCoordinates | null;
   kind: ExploreDiscoveryResultKind;
   nearYouSalons: ExploreHomeSalon[];
@@ -3440,6 +2072,10 @@ function ExploreDiscoveryResults({
   onCurrentLocation: () => void;
   searchResults: ExploreSearchResult[];
 }) {
+  const discovery = kind === "trending" || kind === "recommended" ? exploreShortcutDiscovery({
+    kind, category: selectedCategory, location, strictLocation, coordinates: gpsCoordinates,
+  }) : null;
+  const discoveryKey = discovery ? `shortcut:${kind}:${JSON.stringify(discovery)}:${commentViewer.userId}` : "";
   const availableResults = availableTodayResults({
     content,
     nearYouSalons,
@@ -3509,12 +2145,12 @@ function ExploreDiscoveryResults({
             }`}
             rankKind="best"
             results={availableResults}
-            title="Available today"
+            title="Booking options"
           />
         ) : (
           <div className="mx-auto w-full max-w-[40rem]">
-            <ExploreNotice title="No open times found yet">
-              Bookable salons will appear here when availability is published.
+            <ExploreNotice title="No booking options match yet">
+              Try another area or compare salon profiles.
             </ExploreNotice>
           </div>
         )
@@ -3527,18 +2163,9 @@ function ExploreDiscoveryResults({
         />
       ) : null}
 
-      {kind === "trending" ? (
-        <TrendingDesignsSection initialPage={content.inspiration} />
-      ) : null}
-
-      {kind === "recommended" ? (
-        <RecommendedForYouSection
-          description="Personalized from public salon details, service fit, and availability context."
-          results={content.recommendedSalons}
-          testId="recommended-discovery-results"
-          title="Recommended salons"
-        />
-      ) : null}
+      {discovery ? <ExploreDiscoveryFeed key={discoveryKey} sessionKey={discoveryKey}
+        discovery={discovery} viewer={commentViewer} showOrderControls={false}
+        emptyMessage="No public content matches this category and area yet. Try another area or category." /> : null}
 
       {kind === "under_60" ? (
         under60Results.length > 0 ? (
@@ -3559,6 +2186,12 @@ function ExploreDiscoveryResults({
           </div>
         )
       ) : null}
+      {!discovery ? <ExploreDiscoveryFeed
+        discovery={{ intent: "discover", category: selectedCategory, location, strictLocation, latitude: gpsCoordinates?.latitude, longitude: gpsCoordinates?.longitude }}
+        sessionKey={`shortcut-continuation:${kind}:${selectedCategory}:${location}:${commentViewer.userId}`}
+        viewer={commentViewer}
+        excludeKeys={(kind === "available_today" ? availableResults : kind === "under_60" ? under60Results : nearYouSalons).map(salon => "salon:" + salon.id)}
+      /> : null}
     </section>
   );
 }
@@ -3600,8 +2233,8 @@ function DesktopDiscoveryFilterBar({
   function applyChip(chip: DesktopPopularFilterChip) {
     if (chip.more === "available_today") {
       update({
-        availability: "today",
-        date: "today",
+        availability: "open_now",
+        date: "any",
       });
       return;
     }
@@ -3638,7 +2271,7 @@ function DesktopDiscoveryFilterBar({
   return (
     <section
       aria-label="Popular Explore keywords"
-      className="rounded-[0.9rem] bg-white p-3 shadow-[0_10px_28px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/75"
+      className="bg-white p-3 rounded-none border-0 shadow-none"
       data-testid="desktop-discovery-filters"
     >
       <div className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto p-0.5">
@@ -3658,29 +2291,11 @@ function DesktopDiscoveryFilterBar({
   );
 }
 
-function DesktopEmptyState({
-  action,
-  children,
-  title,
-}: {
-  action?: ReactNode;
-  children: ReactNode;
-  title: string;
-}) {
-  return (
-    <div className="rounded-[1rem] border border-dashed border-divider-subtle bg-surface-elevated p-6 text-sm text-text-secondary">
-      <h3 className="text-base font-semibold text-text-primary">{title}</h3>
-      <p className="mt-1 max-w-2xl leading-6">{children}</p>
-      {action ? <div className="mt-4">{action}</div> : null}
-    </div>
-  );
-}
-
 function DesktopSectionSkeleton({ title }: { title: string }) {
   return (
     <section
       aria-hidden
-      className="grid gap-3 rounded-[1rem] bg-white p-4 shadow-[0_14px_34px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/70"
+      className="grid gap-3 bg-white p-4 rounded-none border-0 shadow-none"
     >
       <div>
         <div className="h-5 w-44 rounded-full bg-surface-muted" />
@@ -3689,7 +2304,7 @@ function DesktopSectionSkeleton({ title }: { title: string }) {
       <div className="grid gap-3 md:grid-cols-3">
         {[0, 1, 2].map((item) => (
           <div
-            className="grid gap-3 rounded-[0.95rem] bg-surface-muted p-3"
+            className="grid gap-3 bg-surface-muted p-3 rounded-none border-0 shadow-none"
             key={item}
           >
             <div className="aspect-[4/3] rounded-[0.8rem] bg-white/70" />
@@ -3706,12 +2321,20 @@ function DesktopSectionSkeleton({ title }: { title: string }) {
 function DesktopLooksNearYouSection({
   looks,
   mapSalons,
-  onCurrentLocation,
+  category,
+  location,
+  onExplore,
   userCoordinates,
+  mode = "fresh",
+  posts,
 }: {
+  posts?: ExploreFeedItem[];
+  mode?: "fresh" | "recommended";
   looks: ExploreInspirationItem[];
   mapSalons: ExploreMapSalon[];
-  onCurrentLocation: () => void;
+  category: string;
+  location: string;
+  onExplore: () => void;
   userCoordinates: GpsCoordinates | null;
 }) {
   const [mapOpen, setMapOpen] = useState(false);
@@ -3720,6 +2343,9 @@ function DesktopLooksNearYouSection({
   const [preferredSelectedSalonId, setPreferredSelectedSalonId] =
     useState<string | null>(null);
   const mapAvailable = Boolean(MAPTILER_BROWSER_KEY && mapSalons.length > 0);
+  const { viewerId, viewer } = useContext(ExplorePostContext);
+  const hidden = useHiddenPosts(viewerId);
+  const visibleLooks = looks.filter(item => !hidden.includes(postIdentity(inspirationTarget(item)))).filter((item, index, items) => items.findIndex(other => other.imageUrl === item.imageUrl) === index).slice(0, 6);
   const selectedSalonId = mapSalons.some(
     (salon) => salon.id === preferredSelectedSalonId,
   )
@@ -3727,31 +2353,9 @@ function DesktopLooksNearYouSection({
     : mapSalons[0]?.id ?? null;
 
   return (
-    <section className="grid gap-3" data-testid="desktop-looks-near-you">
-      {sectionHeader({
-        subtitle:
-          "Bookable looks with salon, price, LUMI Truth, distance, and availability context.",
-        title: "Looks near you",
-      })}
-      {looks.length > 0 ? (
-        <div
-          className={[
-            "grid gap-3",
-            mapOpen && mapAvailable
-              ? "xl:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]"
-              : "",
-          ].join(" ")}
-        >
-          <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
-            {looks.slice(0, 6).map((item, index) => (
-              <DesktopInspiredCard
-                item={item}
-                key={item.mediaId}
-                onOpen={setSelectedItem}
-                priority={index === 0}
-              />
-            ))}
-          </div>
+    <section className="grid gap-5" data-testid="desktop-looks-near-you">
+      <div className={mapOpen && mapAvailable ? "grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]" : "grid gap-5"}>
+        <ExploreLookEditorial posts={posts?.filter(item=>!hidden.includes(`${item.sourceType === "personal" ? "beauty_post" : item.contentType === "update" ? "salon_profile_update" : "salon_profile_look"}:${item.contentId}`))} viewer={viewer} looks={visibleLooks} category={category} location={location} onExplore={onExplore} onOpen={setSelectedItem} mode={mode}/>
           {mapOpen && mapAvailable ? (
             <div className="sticky top-4 hidden self-start xl:block">
               <ExploreMap
@@ -3764,23 +2368,7 @@ function DesktopLooksNearYouSection({
             </div>
           ) : null}
         </div>
-      ) : (
-        <DesktopEmptyState
-          action={
-            <button
-              className="rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange"
-              onClick={onCurrentLocation}
-              type="button"
-            >
-              Use current location
-            </button>
-          }
-          title="No matching looks yet"
-        >
-          Try a broader price, LUMI Truth, or availability filter.
-        </DesktopEmptyState>
-      )}
-      {mapAvailable && looks.length > 0 ? (
+      {mapAvailable && visibleLooks.length > 0 ? (
         <button
           className="w-fit rounded-full bg-surface-elevated px-4 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           onClick={() => setMapOpen((current) => !current)}
@@ -3799,154 +2387,18 @@ function DesktopLooksNearYouSection({
   );
 }
 
-function DesktopTopSalonsNearYouSection({
-  postHrefBySalonId,
-  salons,
-}: {
-  postHrefBySalonId: ReadonlyMap<string, string>;
-  salons: ExploreSearchResult[];
+function DesktopTopSalonsNearYouSection({salons,category,location}: {
+  postHrefBySalonId: ReadonlyMap<string,string>;
+  salons: ExploreSearchResult[]; category: string; location: string;
 }) {
-  if (salons.length === 0) {
-    return (
-      <section className="grid gap-3" data-testid="top-rated-salons">
-        {sectionHeader({
-          subtitle: "Broaden filters to see rated salons nearby.",
-          title: "Top salons near you",
-        })}
-        <DesktopEmptyState title="No top salons match these filters">
-          Customer feedback, visits, and booking signals will appear here as salons
-          publish more discovery data.
-        </DesktopEmptyState>
-      </section>
-    );
-  }
-
-  return (
-    <section className="grid gap-3" data-testid="top-rated-salons">
-      {sectionHeader({
-        actionHref: "/explore",
-        subtitle: "Based on LUMI Truth, availability and service fit.",
-        title: "Top salons near you",
-      })}
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {salons.slice(0, 8).map((salon, index) => {
-          const rank = searchRankBadge("recommended", index);
-
-          return (
-            <SalonCard
-              featured={index === 0 && salons.length >= 3}
-              imageHref={postHrefBySalonId.get(salon.id)}
-              key={salon.id}
-              rankAriaLabel={rank.ariaLabel}
-              rankLabel={rank.label}
-              salon={salon}
-            />
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <ExploreSalonDirectory salons={salons.filter(salon => salonMatchesDiscoveryCategory(salon,category))} category={category} location={location}/>;
 }
 
-function DesktopAvailableTodayCard({
-  postHref,
-  salon,
-}: {
-  index: number;
-  postHref?: string;
-  salon: ExploreSearchResult;
+function DesktopAvailableTodaySection({salons,contactSalons,category,location}: {
+  postHrefBySalonId: ReadonlyMap<string,string>;
+  salons: ExploreSearchResult[]; contactSalons: ExploreSearchResult[]; category:string; location:string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const displayName = displaySalonName(salon.name);
-  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
-  const service = salon.bookableServiceName ?? cardServiceLabel(salon) ?? "Beauty service";
-  const price = salon.bookableServicePrice == null ? null : formatMoney(salon.bookableServicePrice);
-  const detailHref =
-    postHref ?? (UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-      ? salonProfileHref(salon.id)
-      : "/explore");
-
-  return (
-    <article className="grid overflow-hidden rounded-[1rem] bg-surface-elevated shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75">
-      <Link
-        className="group relative block aspect-[16/10] overflow-hidden bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href={detailHref}
-      >
-        {imageUrl ? (
-          <Image
-            alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${displayName} available today`}
-            className="object-cover transition duration-300 group-hover:scale-[1.025]"
-            fill
-            onError={() => setImageFailed(true)}
-            sizes="(max-width: 1280px) 33vw, 24vw"
-            src={imageUrl}
-          />
-        ) : (
-          <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-2xl font-semibold text-brand-orange">
-            {salonInitials(displayName)}
-          </span>
-        )}
-        <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[11px] font-semibold text-brand-orange shadow-sm ring-1 ring-white/80">
-          {salon.nextAvailabilityLabel ?? "Available today"}
-        </span>
-        <NailIllustrationCredit imageUrl={imageUrl} className="absolute bottom-2 right-2" />
-      </Link>
-      <div className="grid gap-3 p-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-semibold text-text-primary">
-            {displayName} <SalonVerifiedBadge verified={salon.identityVerified}/>
-          </h3>
-          <SalonTrustLine signals={salon} href={salonProfileHref(salon.id)} name={displayName} distance={formatDistance(salon.distanceMiles)} className="text-text-secondary"/>
-          <p className="mt-1 truncate text-sm font-medium text-text-secondary">
-            {service}
-          </p>
-          <p className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary">
-            {price ? <span className="text-text-primary">{price}</span> : null}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <ExploreBookButton href={salon.bookingEnabled ? salon.bookingHref : null} name={salon.name} contactHref={detailHref} phoneHref={salon.phone ? `tel:${salon.phone}` : null} />
-          <ExploreSalonLove salonId={salon.id} name={salon.name}/>
-
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function DesktopAvailableTodaySection({
-  postHrefBySalonId,
-  salons,
-}: {
-  postHrefBySalonId: ReadonlyMap<string, string>;
-  salons: ExploreSearchResult[];
-}) {
-  return (
-    <section className="grid gap-3" data-testid="desktop-available-today">
-      {sectionHeader({
-        actionHref: "/explore?category=Nails",
-        actionLabel: "Search times",
-        subtitle: "Same-day booking options with quick time slots.",
-        title: "Available today",
-      })}
-      {salons.length > 0 ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {salons.slice(0, 8).map((salon, index) => (
-            <DesktopAvailableTodayCard
-              index={index}
-              key={salon.id}
-              postHref={postHrefBySalonId.get(salon.id)}
-              salon={salon}
-            />
-          ))}
-        </div>
-      ) : (
-        <DesktopEmptyState title="No same-day times match these filters">
-          Try another date, remove the time filter, or broaden the price range.
-        </DesktopEmptyState>
-      )}
-    </section>
-  );
+  return <ExploreBookingEditorial salons={salons} contactSalons={contactSalons.filter(salon=>salon.hasPublicProfile && UUID_PATTERN.test(salon.id))} category={category} location={location}/>;
 }
 
 function DesktopTrustValueModule() {
@@ -3968,7 +2420,7 @@ function DesktopTrustValueModule() {
     {
       icon: "calendar",
       label: "Availability up front",
-      text: "Open times and same-day slots surface during discovery.",
+      text: "Check opening hours and request a time with the salon.",
     },
     {
       icon: "heart",
@@ -3979,7 +2431,7 @@ function DesktopTrustValueModule() {
 
   return (
     <section
-      className="grid gap-4 rounded-[1rem] bg-text-primary p-5 text-white shadow-[0_18px_44px_rgba(35,25,22,0.12)] ring-1 ring-black/5"
+      className="grid gap-4 bg-text-primary p-5 text-white rounded-none border-0 shadow-none"
       data-testid="desktop-trust-value"
     >
       <div>
@@ -3993,7 +2445,7 @@ function DesktopTrustValueModule() {
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
         {items.map((item) => (
           <div
-            className="grid gap-3 rounded-[0.9rem] bg-white/8 p-4 ring-1 ring-white/12"
+            className="grid gap-3 bg-white/8 p-4 rounded-none border-0 shadow-none"
             key={item.label}
           >
             <span className="grid h-10 w-10 place-items-center rounded-full bg-white/12 text-orange-200">
@@ -4005,71 +2457,6 @@ function DesktopTrustValueModule() {
             </div>
           </div>
         ))}
-      </div>
-    </section>
-  );
-}
-
-function DesktopPersonalizationCta({
-  isAuthenticated,
-  onSelectCategory,
-}: {
-  isAuthenticated: boolean;
-  onSelectCategory: (category: string) => void;
-}) {
-  return (
-    <section
-      className="grid gap-4 rounded-[1rem] bg-[linear-gradient(135deg,#fff8f4,#f3fbfa)] p-5 shadow-[0_14px_34px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
-      data-testid="desktop-personalization-cta"
-    >
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-orange">
-          {isAuthenticated ? "Personalize Explore" : "Your Reylumi"}
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold text-text-primary">
-          {isAuthenticated
-            ? "Keep shaping your discovery."
-            : "Save looks and book when you are ready."}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-          {isAuthenticated
-            ? "Use your saved looks, bookings, and service preferences to make the next session sharper."
-            : "Browse freely, then create an account when a look, salon, or time slot is worth keeping."}
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2 md:justify-end">
-        {isAuthenticated ? (
-          <>
-            <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              onClick={() => onSelectCategory("Nails")}
-              type="button"
-            >
-              Tune my feed
-            </button>
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href="/my-bookings"
-            >
-              My bookings
-            </Link>
-          </>
-        ) : (
-          <>
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href="/signup"
-            >
-              Create account
-            </Link>
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href="/login"
-            >
-              Sign in
-            </Link>
-          </>
-        )}
       </div>
     </section>
   );
@@ -4136,7 +2523,7 @@ function DesktopProgressiveSections({
   }, [sections.length, visibleSectionCount]);
 
   return (
-    <div className="grid gap-7">
+    <div className="grid gap-12">
       {sections.slice(0, visibleSectionCount).map((section) => (
         <div key={section.key}>{section.render()}</div>
       ))}
@@ -4154,18 +2541,22 @@ function DesktopProgressiveSections({
 
 function DesktopDiscoveryMarketplace({
   activeResults,
+  discoveryShortcuts,
+  onDiscoveryShortcutSelect,
   commentViewer,
   content,
   gpsCoordinates,
   location,
   nearYouSalons,
   onApplySearchShortcut,
-  onCurrentLocation,
   onSelectCategory,
   selectedCategory,
   strictLocation,
 }: {
   activeResults: ExploreSearchResult[];
+  activeDiscoveryResult: ExploreDiscoveryResultKind | null;
+  discoveryShortcuts: ExploreDiscoveryShortcut[];
+  onDiscoveryShortcutSelect: (shortcut: ExploreDiscoveryShortcut) => void;
   commentViewer: PostCommentViewer;
   content: ExploreHomeContent;
   gpsCoordinates: GpsCoordinates | null;
@@ -4182,8 +2573,9 @@ function DesktopDiscoveryMarketplace({
   workspaceLocation: ExploreInitialLocation;
   strictLocation: boolean;
 }) {
+  const alternatingShortcuts = useMemo(() => exploreAlternatingShortcuts(discoveryShortcuts), [discoveryShortcuts]);
   const defaultLocation = formatDisplayLocation(location);
-  const [filters, setFilters] = useState<DesktopDiscoveryFilterState>(() => ({
+  const filters = useMemo<DesktopDiscoveryFilterState>(() => ({
     availability: "any",
     date: "any",
     location: defaultLocation,
@@ -4191,7 +2583,7 @@ function DesktopDiscoveryMarketplace({
     price: "any",
     trust: "any",
     time: "any",
-  }));
+  }), [defaultLocation]);
   const filterResetKey = [
     filters.availability,
     filters.date,
@@ -4245,10 +2637,6 @@ function DesktopDiscoveryMarketplace({
   const topSalons = useMemo(
     () =>
       filteredSalons
-        .filter(
-          (salon) =>
-            buildReylumiTrustSummary(salon).qualityScore !== null,
-        )
         .slice()
         .sort(compareReylumiTrustedSalons)
         .slice(0, 8),
@@ -4285,24 +2673,38 @@ function DesktopDiscoveryMarketplace({
     latitude: gpsCoordinates?.latitude,
     longitude: gpsCoordinates?.longitude,
     strictLocation: strictLocation || filters.location !== defaultLocation,
-  }), [selectedCategory, filters.location, gpsCoordinates, defaultLocation, strictLocation]);
+    maxPrice: hasDesktopMoreFilter(filters, "under_60") ? Math.min(desktopPriceLimit(filters.price) ?? 60, 60) : desktopPriceLimit(filters.price),
+    bookableOnly: filters.availability === "bookable" || hasDesktopMoreFilter(filters, "bookable"),
+    newOnly: hasDesktopMoreFilter(filters, "new"),
+    trendingOnly: hasDesktopMoreFilter(filters, "trending"),
+  }), [selectedCategory, filters, gpsCoordinates, defaultLocation, strictLocation]);
+  const editorialPage = useExploreEditorialFeed(feedDiscovery, commentViewer.userId, "desktop");
+  const editorialPosts = useMemo(()=>selectExploreEditorialPosts(editorialPage?.items ?? []),[editorialPage]);
   const filterFeedItem = useCallback((item: ExploreFeedItem) =>
     feedMatchesDesktopDiscovery(item, filters, selectedCategory) &&
-    !content.inspiration.items.some(look => inspirationDetailHref(look) === item.destination.href),
-    [filters, selectedCategory, content.inspiration.items]);
+    !editorialPosts.some(post => post.contentId === item.contentId && post.contentType === item.contentType),
+    [filters, selectedCategory, editorialPosts]);
   const sections = useMemo(
     () => [
       {
         key: "looks",
         render: () => (
           <DesktopLooksNearYouSection
+            posts={editorialPosts}
             looks={filteredLooks}
             mapSalons={mapSalons}
-            onCurrentLocation={onCurrentLocation}
+            category={selectedCategory}
+            location={filters.location}
+            onExplore={() => onDiscoveryShortcutSelect(alternatingShortcuts[0])}
             userCoordinates={gpsCoordinates}
           />
         ),
-        title: "Looks near you",
+        title: "Fresh looks",
+      },
+      {
+        key: "recommended-looks",
+        title: "Recommended for you",
+        render: () => <DesktopLooksNearYouSection mode="recommended" posts={editorialPosts} looks={filteredLooks} mapSalons={[]} category={selectedCategory} location={filters.location} onExplore={() => onDiscoveryShortcutSelect(alternatingShortcuts[0])} userCoordinates={gpsCoordinates}/>,
       },
       {
         key: "top-salons",
@@ -4310,23 +2712,11 @@ function DesktopDiscoveryMarketplace({
           <DesktopTopSalonsNearYouSection
             postHrefBySalonId={postHrefBySalonId}
             salons={topSalons}
+            category={selectedCategory}
+            location={filters.location}
           />
         ),
-        title: "Top salons near you",
-      },
-      {
-        key: "trending",
-        render: () => (
-          <TrendingDesignsSection
-            initialPage={{
-              ...content.inspiration,
-              items: filteredLooks.length > 0 ? filteredLooks : content.inspiration.items,
-            }}
-            subtitle="Styles people are saving and booking right now."
-            title="Trending styles"
-          />
-        ),
-        title: "Trending styles",
+        title: "Recommended for you",
       },
       {
         key: "available",
@@ -4334,24 +2724,17 @@ function DesktopDiscoveryMarketplace({
           <DesktopAvailableTodaySection
             postHrefBySalonId={postHrefBySalonId}
             salons={availableTodaySalons}
+            contactSalons={filteredSalons}
+            category={selectedCategory}
+            location={filters.location}
           />
         ),
-        title: "Available today",
+        title: "Booking options",
       },
       {
         key: "trust",
         render: () => <DesktopTrustValueModule />,
         title: "Why book on Reylumi?",
-      },
-      {
-        key: "personalization",
-        render: () => (
-          <DesktopPersonalizationCta
-            isAuthenticated={commentViewer.isAuthenticated}
-            onSelectCategory={onSelectCategory}
-          />
-        ),
-        title: "Personalization",
       },
       {
         key: "continue-discovering",
@@ -4360,23 +2743,28 @@ function DesktopDiscoveryMarketplace({
           <section className="grid gap-4" aria-label="More to discover">
             <div><h2 className="text-xl font-semibold text-text-primary">More to discover</h2>
               <p className="mt-1 text-sm text-text-muted">Fresh inspiration, customer looks and more places to explore.</p></div>
-            <ExploreDiscoveryFeed key={filterResetKey} sessionKey={`desktop:${filterResetKey}`} refreshToken={content} discovery={feedDiscovery} viewer={commentViewer} filterItem={filterFeedItem} />
+            <ExploreDiscoveryFeed key={filterResetKey} sessionKey={`desktop:${filterResetKey}`} refreshToken={content} initialPage={editorialPage} commentLeadPosts={editorialPosts} discovery={feedDiscovery} viewer={commentViewer} filterItem={filterFeedItem} discoveryShortcuts={alternatingShortcuts} onDiscoveryShortcutSelect={onDiscoveryShortcutSelect} />
           </section>
         ),
       },
     ],
     [
+      alternatingShortcuts,
+      onDiscoveryShortcutSelect,
       filterResetKey,
       feedDiscovery,
       filterFeedItem,
+      editorialPage,
+      editorialPosts,
       commentViewer,
       availableTodaySalons,
       content,
       filteredLooks,
+      filteredSalons,
+      selectedCategory,
+      filters.location,
       gpsCoordinates,
       mapSalons,
-      onCurrentLocation,
-      onSelectCategory,
       postHrefBySalonId,
       topSalons,
     ],
@@ -4387,24 +2775,13 @@ function DesktopDiscoveryMarketplace({
       className="hidden bg-white px-8 pb-10 xl:block"
       data-testid="desktop-discovery-marketplace"
     >
-      <div className="mx-auto grid w-full max-w-[92rem] gap-5">
-        <DesktopDiscoveryFilterBar
-          filters={filters}
-          inspirationItems={content.inspiration.items}
-          onChange={setFilters}
-          onSearchShortcut={onApplySearchShortcut}
-          onSelectCategory={onSelectCategory}
-          selectedCategory={selectedCategory}
-          services={content.popularServices}
-        />
-
+      <div className="mx-auto grid w-full max-w-none gap-5">
         {content.error ? (
           <ExploreNotice title="Discovery content is limited right now." tone="warning">
             Search still works while this section refreshes.
           </ExploreNotice>
         ) : null}
 
-        <PublicSalonProfilesSection salons={filteredSalons} selectedCategory={selectedCategory} />
         <DesktopProgressiveSections
           key={filterResetKey}
           sessionKey={filterResetKey}
@@ -4420,8 +2797,9 @@ function ExploreHomeSections({
   commentViewer,
   content,
   discoveryShortcuts,
-  gpsMessage,
   initialFeed,
+  initialFeedPromise,
+  startupExtrasPending,
   nearYouSalons,
   onDiscoveryShortcutSelect,
   onSelectCategory,
@@ -4434,8 +2812,9 @@ function ExploreHomeSections({
   commentViewer: PostCommentViewer;
   content: ExploreHomeContent;
   discoveryShortcuts: ExploreDiscoveryShortcut[];
-  gpsMessage: string | null;
   initialFeed: ExploreFeedPage;
+  initialFeedPromise?: Promise<ExploreFeedPage | null>;
+  startupExtrasPending?: boolean;
   nearYouSalons: ExploreHomeSalon[];
   onDiscoveryShortcutSelect: (shortcut: ExploreDiscoveryShortcut) => void;
   onSelectCategory: (category: string) => void;
@@ -4448,6 +2827,9 @@ function ExploreHomeSections({
     latitude: gpsCoordinates?.latitude, longitude: gpsCoordinates?.longitude, strictLocation,
   }), [selectedCategory, location, gpsCoordinates, strictLocation]);
   const feedSessionKey = `mobile:${JSON.stringify(discovery)}`;
+  const editorialPage = useExploreEditorialFeed(discovery, commentViewer.userId, "mobile");
+  const editorialPosts = useMemo(()=>selectExploreEditorialPosts(editorialPage?.items ?? []),[editorialPage]);
+  const filterFeedItem = useCallback((item:ExploreFeedItem)=>!editorialPosts.some(post=>post.contentId===item.contentId && post.contentType===item.contentType),[editorialPosts]);
   const allDiscoverySalons = mergeHomeSalons(
     nearYouSalons,
     content.recommendedSalons,
@@ -4472,13 +2854,13 @@ function ExploreHomeSections({
         </ExploreNotice>
       ) : null}
 
-      {gpsMessage ? (
-        <ExploreNotice title="Location status" tone="warning">
-          {gpsMessage}
-        </ExploreNotice>
-      ) : null}
-      <PublicSalonProfilesSection salons={allDiscoverySalons} selectedCategory={selectedCategory} />
-      <ExploreDiscoveryFeed key={`${feedSessionKey}:${commentViewer.userId}`} sessionKey={feedSessionKey} discovery={discovery} initialPage={selectedCategory === "All" && !strictLocation && !gpsCoordinates ? initialFeed : undefined} viewer={commentViewer} activeDiscoveryResult={activeDiscoveryResult} discoveryShortcuts={discoveryShortcuts} onDiscoveryShortcutSelect={onDiscoveryShortcutSelect} />
+      <div className="grid gap-10 pb-8" data-testid="mobile-editorial-sections">
+        <DesktopLooksNearYouSection posts={editorialPosts} looks={content.inspiration.items.filter(item => lookMatchesDiscoveryCategory(item, selectedCategory) && (!location || [item.salonCity,item.salonState].filter(Boolean).join(", ").toLowerCase().includes(location.toLowerCase())))} mapSalons={[]} category={selectedCategory} location={location} onExplore={() => { const shortcut=exploreAlternatingShortcuts(discoveryShortcuts)[0]; if(shortcut) onDiscoveryShortcutSelect(shortcut); }} userCoordinates={gpsCoordinates}/>
+        <DesktopLooksNearYouSection mode="recommended" posts={editorialPosts} looks={content.inspiration.items.filter(item => lookMatchesDiscoveryCategory(item, selectedCategory) && (!location || [item.salonCity,item.salonState].filter(Boolean).join(", ").toLowerCase().includes(location.toLowerCase())))} mapSalons={[]} category={selectedCategory} location={location} onExplore={() => { const shortcut=exploreAlternatingShortcuts(discoveryShortcuts)[0]; if(shortcut) onDiscoveryShortcutSelect(shortcut); }} userCoordinates={gpsCoordinates}/>
+        <ExploreSalonDirectory salons={allDiscoverySalons.filter(salon=>salonMatchesDiscoveryCategory(salon,selectedCategory))} category={selectedCategory} location={location}/>
+        <ExploreBookingEditorial salons={availableTodayResults({content,nearYouSalons,searchResults:[]}).filter(salon=>salonMatchesDiscoveryCategory(salon,selectedCategory))} contactSalons={allDiscoverySalons.filter(salon=>salonMatchesDiscoveryCategory(salon,selectedCategory))} category={selectedCategory} location={location}/>
+      </div>
+      <ExploreDiscoveryFeed key={`${feedSessionKey}:${commentViewer.userId}`} sessionKey={feedSessionKey} discovery={discovery} filterItem={filterFeedItem} commentLeadPosts={editorialPosts} initialPage={editorialPage ?? (selectedCategory === "All" && !strictLocation && !gpsCoordinates ? initialFeed : undefined)} initialPagePromise={!editorialPage && selectedCategory === "All" && !strictLocation && !gpsCoordinates ? initialFeedPromise : undefined} viewer={commentViewer} activeDiscoveryResult={activeDiscoveryResult} discoveryShortcuts={discoveryShortcuts} onDiscoveryShortcutSelect={onDiscoveryShortcutSelect} />
 
       {initialFeed.items.length === 0 ? (
         <PopularServicesSection
@@ -4488,7 +2870,7 @@ function ExploreHomeSections({
         />
       ) : null}
 
-      {!hasContent && !content.error ? (
+      {!hasContent && !content.error && !startupExtrasPending ? (
         <ExploreNotice title="Explore is getting ready">
           Public salons and services will appear here as soon as they meet the
           Explore requirements.
@@ -4511,11 +2893,11 @@ function ExploreNotice({
 }) {
   const toneClass =
     tone === "warning"
-      ? "bg-amber-50 text-amber-900 ring-1 ring-amber-200/75"
-      : "bg-surface-elevated text-text-secondary ring-1 ring-divider-subtle/80";
+      ? "bg-amber-50 text-amber-900"
+      : "bg-surface-elevated text-text-secondary";
 
   return (
-    <div className={`rounded-2xl p-4 shadow-[var(--shadow-soft)] ${toneClass}`}>
+    <div className={`p-4 ${toneClass}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
@@ -4527,43 +2909,99 @@ function ExploreNotice({
   );
 }
 
-function Pagination({
-  disabled,
-  onPageChange,
-  page,
-  totalPages,
-}: {
-  disabled: boolean;
-  onPageChange: (page: number) => void;
-  page: number;
-  totalPages: number;
+function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea }: {
+  response: ExploreSearchResponse;
+  coordinates: GpsCoordinates | null;
+  viewerId?: string | null;
+  onChooseArea?: () => void;
 }) {
-  if (totalPages <= 1) {
-    return null;
-  }
+  const [salons, setSalons] = useState<ExploreSearchResult[]>([]);
+  const [page, setPage] = useState(response.page);
+  const [hasMore, setHasMore] = useState(response.hasMore ?? response.page < response.totalPages);
+  const [cursor, setCursor] = useState(response.nextCursor ?? null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<ReturnType<typeof classifyExploreSearchError> | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const inFlight = useRef(false);
+  const alive = useRef(true);
+  const seen = useRef(new Set(response.results.map((salon) => salon.id)));
+  const emptyPages = useRef(0);
+  const visibleSalons = useExploreSearchMedia({ results: salons, response, coordinates, viewerId });
+  const onward = exploreSearchOnwardLink(response);
+  useEffect(() => {
+    alive.current = true;
+    return () => { alive.current = false; activeRequest.current?.abort(); };
+  }, []);
+
+  const loadMore = useCallback(async () => {
+    if (inFlight.current || !hasMore) return;
+    inFlight.current = true;
+    setLoading(true);
+    setError(null);
+    setErrorKind(null);
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    try {
+      const next = await fetchExploreSearchPage({
+        query: response.query, category: response.category, location: response.location, filters: response.filters,
+        displayQuery: response.displayQuery, contentQuery: response.contentQuery,
+        queryKind: response.queryKind, locationPriority: response.locationPriority,
+        locationOrigin: response.locationOrigin, intent: response.intent,
+        target: "salons", locationSource: response.locationSource,
+        latitude: coordinates?.latitude, longitude: coordinates?.longitude,
+        page: page + 1, pageSize: response.pageSize,
+        cursor,
+        scopePolicy: response.scope?.policy,
+        sort: response.sort,
+      }, controller.signal);
+      if (!alive.current) return;
+      if (next.error) throw Object.assign(new Error(next.error), { code: next.errorKind === "cursor" ? "22023" : next.errorKind === "timeout" ? "57014" : undefined });
+      const additions = next.results.filter((salon) => {
+        if (seen.current.has(salon.id)) return false;
+        seen.current.add(salon.id);
+        return true;
+      });
+      setSalons((current) => [...current, ...additions]);
+      setPage(next.page);
+      setCursor(next.nextCursor ?? null);
+      emptyPages.current = additions.length ? 0 : emptyPages.current + 1;
+      const repeatedCursor = cursor && next.nextCursor && JSON.stringify(cursor) === JSON.stringify(next.nextCursor);
+      setHasMore(!repeatedCursor && emptyPages.current < 3 && (next.hasMore ?? (next.results.length > 0 && next.page < next.totalPages)));
+    } catch (cause) {
+      if (alive.current && !controller.signal.aborted) { const kind = classifyExploreSearchError(cause); setErrorKind(kind); setError(exploreSearchErrorMessage(kind)); }
+    } finally {
+      inFlight.current = false;
+      if (alive.current) setLoading(false);
+    }
+  }, [coordinates, cursor, hasMore, page, response]);
+
+  const renderSalon = (salon: ExploreSearchResult) => <div key={salon.id} className="space-y-3">
+    <div className="flex items-center gap-3 px-1">
+      <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-surface-muted"><SalonLogoContent salon={salon} size={40} /></div>
+      <div><p className="font-semibold text-text-primary">{salon.name}</p><p className="text-sm text-text-secondary">{formatSalonLocation(salon)}</p></div>
+    </div>
+    <SalonCard featured rankAriaLabel={isExplorePrimarySearchResult(salon) ? "Search match" : "Discover this salon"} rankLabel={isExplorePrimarySearchResult(salon) ? "Match" : "Discover"} salon={salon} />
+  </div>;
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-surface-elevated p-3 shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80">
-      <button
-        className="rounded-full bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange disabled:cursor-not-allowed disabled:opacity-40"
-        disabled={disabled || page <= 1}
-        onClick={() => onPageChange(page - 1)}
-        type="button"
-      >
-        Previous
-      </button>
-      <p className="text-sm font-medium text-text-secondary">
-        Page {page} of {totalPages}
-      </p>
-      <button
-        className="rounded-full bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange disabled:cursor-not-allowed disabled:opacity-40"
-        disabled={disabled || page >= totalPages}
-        onClick={() => onPageChange(page + 1)}
-        type="button"
-      >
-        Next
-      </button>
-    </div>
+    <section className="mx-auto w-full max-w-2xl space-y-6 py-8" aria-label="More salons" data-testid="search-continuation-feed">
+      {visibleSalons.length > 0 ? <>
+        <div className="border-t border-divider-subtle pt-6">
+          <h3 className="text-xl font-semibold text-text-primary">Keep exploring</h3>
+          <p className="mt-1 text-sm text-text-secondary">More salons to discover as you scroll.</p>
+        </div>
+        {visibleSalons.filter(isExplorePrimarySearchResult).map(renderSalon)}
+        <SearchRecommendationSections results={visibleSalons.filter(salon => !isExplorePrimarySearchResult(salon))} location={response.location} renderCards={rows => <div className="space-y-6">{rows.map(renderSalon)}</div>} />
+      </> : null}
+      {hasMore ? <ExploreAutoLoad enabled={!loading && !error} onLoad={loadMore} progressKey={page} /> : null}
+      <div className="flex items-center justify-center" aria-live="polite">
+        {loading ? <p className="text-sm text-text-secondary">Loading more salons…</p> : hasMore ? <div className="text-center">
+          {error ? <p className="mb-3 text-sm text-text-secondary">{error}</p> : null}
+          <button type="button" onClick={() => errorKind === "cursor" ? window.location.reload() : void loadMore()} className={`${error ? "" : "sr-only focus:not-sr-only"} min-h-11 rounded-full bg-surface-muted px-6 py-3 text-sm font-semibold text-text-primary`}>{errorKind === "cursor" ? "Refresh search" : error ? "Try again" : "Load more salons"}</button>
+        </div> : <div className="text-center"><p className="text-sm text-text-secondary">You&apos;ve explored these salons.</p><ExploreSearchOnwardActions {...onward} onChooseArea={onChooseArea} /></div>}
+      </div>
+    </section>
   );
 }
 
@@ -4588,7 +3026,7 @@ function QuickActions({ actions }: { actions: ExploreQuickAction[] }) {
       data-testid="quick-actions"
     >
       <div
-        className="relative grid overflow-hidden rounded-[1.25rem] bg-text-primary p-5 text-white shadow-[0_18px_48px_rgba(35,25,22,0.14)] ring-1 ring-black/5 lg:grid-cols-[minmax(0,0.62fr)_minmax(22rem,1fr)]"
+        className="relative grid overflow-hidden bg-text-primary p-5 text-white lg:grid-cols-[minmax(0,0.62fr)_minmax(22rem,1fr)] rounded-none border-0 shadow-none"
         style={{
           backgroundImage: "url(/explore/quick-actions-dark.png)",
           backgroundPosition: "center",
@@ -4623,7 +3061,7 @@ function QuickActions({ actions }: { actions: ExploreQuickAction[] }) {
               ];
 
             return (
-              <Link
+              <Link prefetch={false}
                 className="group relative grid min-h-24 overflow-hidden rounded-[1rem] bg-white/8 p-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.14)] ring-1 ring-white/14 transition hover:-translate-y-0.5 hover:bg-white/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 href={action.href}
                 key={action.label}
@@ -4662,6 +3100,8 @@ export function ExploreClient({
   hasUrlLocation,
   homeContent,
   initialFeed,
+  initialFeedPromise,
+  startupExtrasPending,
   initialLocationSource,
   initialResponse,
   initialSearchMode,
@@ -4671,119 +3111,267 @@ export function ExploreClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const firstContentRef = useRef<HTMLElement>(null);
+  useExploreFirstContentPaint(firstContentRef);
   const [isPending, startTransition] = useTransition();
-  const [query, setQuery] = useState(initialResponse.query);
+  const [query, setQuery] = useState(initialResponse.displayQuery ?? initialResponse.query);
   const [location, setLocation] = useState(initialResponse.location);
   const [category, setCategory] = useState(
     initialResponse.category || "All",
   );
-  const [, setLocationSource] =
+  const [locationSource, setLocationSource] =
     useState<ExploreLocationSource>(initialLocationSource);
   const [gpsCoordinates, setGpsCoordinates] =
     useState<GpsCoordinates | null>(null);
   const [gpsResponse, setGpsResponse] =
     useState<ExploreSearchResponse | null>(null);
+  // Read/save actions can refresh the server tree. Keep this search's cursor
+  // until its filter key changes or the user explicitly starts another search.
+  const [sessionResponse, setSessionResponse] = useState(initialResponse);
   const [nearYouSalons, setNearYouSalons] = useState<ExploreHomeSalon[]>([]);
   const [gpsStatus, setGpsStatus] = useState<GpsStatus>("idle");
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
+  const [typedSearchFailure, setTypedSearchFailure] = useState<{
+    response: ExploreSearchResponse;
+    kind: ReturnType<typeof classifyExploreSearchError>;
+    message: string;
+  } | null>(null);
+  const [searchAreaOpen, setSearchAreaOpen] = useState(false);
+  const [searchResetVersion, setSearchResetVersion] = useState(0);
+  const [pendingIdeasHeight, setPendingIdeasHeight] = useState<number | null>(null);
   const [explicitSearchMode, setExplicitSearchMode] =
     useState(initialSearchMode);
   const [activeDiscoveryResult, setActiveDiscoveryResult] =
     useState<ExploreDiscoveryResultKind | null>(null);
   const [searchOrderMode, setSearchOrderMode] =
-    useState<SearchOrderMode>("relevance");
+    useState<SearchOrderMode>(initialResponse.sort ?? "relevance");
   const appliedSavedLocation = useRef(false);
+  const gpsArea = useRef<{ coordinates: GpsCoordinates; area: ExploreGpsArea; timestamp: number } | null>(null);
+  const autoLocationChecked = useRef(Boolean(readExploreStartupInteraction(commentViewer.userId)?.gps));
+  const requestLocationRef = useRef<() => void>(() => {});
   const gpsRequestVersion = useRef(0);
-  useEffect(() => () => { gpsRequestVersion.current += 1; }, []);
+  const gpsRequest = useRef<AbortController | null>(null);
+  const typedRequest = useRef<string | null>(null);
+  const [committedGpsContext, setCommittedGpsContext] = useState<ExploreCommittedGpsContext | null>(null);
+  useEffect(() => () => { gpsRequestVersion.current += 1; gpsRequest.current?.abort(); }, []);
 
-  const gpsActive = Boolean(gpsResponse && !location.trim());
+  const gpsActive = Boolean(gpsResponse);
   const searchMode = explicitSearchMode || gpsActive;
   const activeResponse: ExploreSearchResponse =
-    gpsActive && gpsResponse ? gpsResponse : initialResponse;
-  const activeResults = activeResponse.results;
-  const activeSections = useMemo(
-    () => orderedSearchSections(activeResponse.sections, searchOrderMode),
-    [activeResponse.sections, searchOrderMode],
-  );
+    gpsActive && gpsResponse ? gpsResponse : sessionResponse;
+  const committedSearch = useMemo(() => buildExploreCommittedSearchContext(activeResponse, {
+    viewerId: commentViewer.userId,
+    gpsContext: committedGpsContext,
+  }), [activeResponse, commentViewer.userId, committedGpsContext]);
+  const refreshedResults = useExploreSearchMedia({ results: activeResponse.results, response: activeResponse, coordinates: committedSearch.coordinates, viewerId: commentViewer.userId });
+  const activeSections = useMemo(() => {
+    const seen = new Set<string>();
+    const refreshedById = new Map(refreshedResults.map(salon => [salon.id, salon]));
+    const unique = (salons: ExploreSearchResult[]) => salons.flatMap(salon => {
+      const current = refreshedById.get(salon.id);
+      if (!current || seen.has(salon.id)) return [];
+      seen.add(salon.id); return [current];
+    });
+    return {
+      bestMatches: unique(activeResponse.sections.bestMatches),
+      nearby: unique(activeResponse.sections.nearby),
+      recommended: unique(activeResponse.sections.recommended),
+      reference: unique(activeResponse.sections.reference ?? []),
+    };
+  }, [activeResponse, refreshedResults]);
+  const activeResults = [...activeSections.bestMatches, ...activeSections.nearby, ...activeSections.recommended, ...activeSections.reference];
+  const referenceResults = activeResults.filter(salon => !isExplorePrimarySearchResult(salon));
+  const hasPrimaryResults = activeResults.some(isExplorePrimarySearchResult);
+  const onward = exploreSearchOnwardLink(activeResponse);
+  const [nailFilterSelection, setNailFilterSelection] = useState<{ sessionKey: string; filters: NailFilters }>({ sessionKey: committedSearch.sessionKey, filters: {} });
+  const nailFilters = nailFilterSelection.sessionKey === committedSearch.sessionKey ? { ...activeResponse.filters, ...nailFilterSelection.filters } : activeResponse.filters ?? {};
+  if (nailFilterSelection.sessionKey !== committedSearch.sessionKey) {
+    setNailFilterSelection({ sessionKey: committedSearch.sessionKey, filters: {} });
+  }
   const hasBestMatches = activeSections.bestMatches.length > 0;
   const hasNearbyResults = activeSections.nearby.length > 0;
   const hasRecommendedResults = activeSections.recommended.length > 0;
   const hasAnyResults =
-    hasBestMatches || hasNearbyResults || hasRecommendedResults;
+    hasBestMatches || hasNearbyResults || hasRecommendedResults || activeSections.reference.length > 0;
   const selectedCategory = category || "All";
   const normalizedCategory = cleanCategory(selectedCategory);
-  const allDistancesMissing = gpsActive
-    ? activeResults.length > 0 &&
-      activeResults.every((salon) => salon.distanceMiles === null)
-    : false;
   const isSearching = isPending || gpsStatus === "searching" || gpsStatus === "locating";
   const nearbyHasDistance = hasMeasuredDistance(activeSections.nearby);
-  const noDirectMatches = Boolean(
-    query.trim() && activeResponse.groupCounts.bestMatches === 0,
-  );
+  const searchTarget = "salons";
   const discoveryResultMode = !searchMode && activeDiscoveryResult !== null;
   const homeMode = !searchMode && !discoveryResultMode;
-  const hasDiscoveryRail = !homeMode && discoveryContent.shortcuts.length > 0;
-  const displayLocation = formatDisplayLocation(location);
-  const summaryText = resultSummary({
-    bestCount: activeResponse.groupCounts.bestMatches,
-    category: selectedCategory,
+  const hasDiscoveryRail = !homeMode && !searchMode && discoveryContent.shortcuts.length > 0;
+  useEffect(() => {
+    // Guest preferences stay in browser storage. A no-op account action still
+    // queues a server POST and can outlive the page during Safari refresh.
+    if (commentViewer.isAuthenticated && (initialSearchMode || hasUrlLocation)) {
+      void rememberExplorePreferenceAction({ location: initialLocationSource === "manual" ? initialResponse.location : undefined, category: initialResponse.category }).catch(() => {});
+    }
+  }, [commentViewer.isAuthenticated, hasUrlLocation, initialSearchMode, initialLocationSource, initialResponse.location, initialResponse.category]);
+  const activeSearchFailure = !isSearching && typedSearchFailure?.response === activeResponse ? typedSearchFailure : null;
+  const searchUnavailable = !isSearching && Boolean(activeSearchFailure || activeResponse.error || activeResponse.errorKind || activeResponse.lookupFailed);
+  const requiresGps = !isSearching && !searchUnavailable && Boolean(activeResponse.requiresGps);
+  const searchErrorKind = activeSearchFailure?.kind ?? activeResponse.errorKind;
+  const summaryText = searchUnavailable ? "Search is temporarily unavailable" : requiresGps ? "Choose a location to find salons near you" : !hasAnyResults && (isSearching || activeResponse.hasMore) ? "Loading results…" : resultSummary({
+    bestCount: activeSections.bestMatches.length,
+    category: committedSearch.category,
     hasAnyResults,
-    location: displayLocation,
-    nearbyCount: activeResponse.groupCounts.nearby,
-    query,
-    recommendedCount: activeResponse.groupCounts.recommended,
+    hasPrimaryResults,
+    location: formatDisplayLocation(committedSearch.location),
+    nearbyCount: activeSections.nearby.length,
+    query: activeResponse.query,
+    recommendedCount: activeSections.recommended.length,
   });
 
   useEffect(() => {
-    if (appliedSavedLocation.current || hasUrlLocation || initialSearchMode) {
-      return;
+    if (autoLocationChecked.current) return;
+    let active = true;
+    const restore = async () => {
+      const chosenArea = initialResponse.locationOrigin === "manual" || initialResponse.locationOrigin === "query" || initialLocationSource === "manual" || searchParams.get("locationSource") === "none";
+      if (chosenArea) { autoLocationChecked.current = true; return; }
+      let preference = "";
+      try { preference = window.sessionStorage.getItem(GPS_PREFERENCE_KEY) ?? ""; } catch { /* Optional preference. */ }
+      let granted = false;
+      try { granted = (await navigator.permissions?.query({ name: "geolocation" }))?.state === "granted"; } catch { /* Safari can lack the permission query. */ }
+      if (!active) return;
+      autoLocationChecked.current = true;
+      if (preference !== "off" && (initialResponse.requiresGps || granted || preference === "on")) {
+        requestLocationRef.current();
+        return;
+      }
+      if (appliedSavedLocation.current || hasUrlLocation || initialSearchMode || initialLocationSource === "activity" || initialLocationSource === "saved") return;
+      appliedSavedLocation.current = true;
+      let savedLocation = "";
+      try { savedLocation = window.localStorage.getItem(SAVED_LOCATION_KEY)?.trim() ?? ""; } catch { return; }
+      if (!savedLocation || savedLocation === location.trim()) return;
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("locationSource", "saved");
+      startTransition(() => router.replace(buildUrl({ category: selectedCategory, location: savedLocation, page: 1, pathname, query, searchParams: params }), { scroll: false }));
+    };
+    void restore();
+    return () => { active = false; };
+  }, [hasUrlLocation, initialSearchMode, initialLocationSource, initialResponse.locationOrigin, initialResponse.requiresGps, location, pathname, query, router, searchParams, selectedCategory]);
+
+  async function findGpsArea(coordinates: GpsCoordinates, signal: AbortSignal) {
+    const cached = gpsArea.current;
+    if (cached && cached.coordinates.latitude === coordinates.latitude && cached.coordinates.longitude === coordinates.longitude && Date.now() - cached.timestamp < 600000) return cached.area;
+    const area = await fetchExploreGpsArea(coordinates, signal, commentViewer.userId ?? "guest");
+    if (!signal.aborted) gpsArea.current = { coordinates, area, timestamp: Date.now() };
+    return area;
+  }
+
+  function rememberSearchUrl(response: ExploreSearchResponse, rawQuery: string, target: "auto" | "salons" | "posts", scope?: "fixed" | "expandable") {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const key of ["page", "cursor", "browse", "lat", "lng", "latitude", "longitude"]) params.delete(key);
+    if (response.sort && response.sort !== "relevance") params.set("sort", response.sort); else params.delete("sort");
+    if (rawQuery.trim()) params.set("q", rawQuery.trim()); else params.delete("q");
+    if (response.category) params.set("category", response.category); else params.delete("category");
+    params.set("type", "salons");
+    for (const key of ["shape", "length", "color", "finish", "tone", "season", "maxPrice", "bookableOnly", "newOnly", "trendingOnly"] as const) {
+      const value = response.filters?.[key];
+      if (value !== undefined && value !== false && value !== null && value !== "") params.set(key, String(value)); else params.delete(key);
     }
+    if (scope) params.set("scope", scope); else params.delete("scope");
+    if (response.location) {
+      params.set("location", response.location);
+      params.set("locationSource", response.locationOrigin === "query" ? "saved" : response.locationSource ?? locationSource);
+    } else { params.set("location", ""); params.set("locationSource", response.locationSource === "gps" ? "gps" : "none"); }
+    // Next's native history integration updates searchParams without replacing
+    // the active cursor. GPS stays in memory and is reacquired after refresh.
+    window.history.replaceState(null, "", pathname + (params.size ? "?" + params : ""));
+  }
 
-    appliedSavedLocation.current = true;
+  function hasResolvedGpsArea(coordinates: GpsCoordinates) {
+    const cached = gpsArea.current;
+    return Boolean(cached && cached.coordinates.latitude === coordinates.latitude && cached.coordinates.longitude === coordinates.longitude && Date.now() - cached.timestamp < 600000);
+  }
 
-    if (typeof window === "undefined") {
-      return;
+  function recoverUnresolvedGps(
+    searchQuery?: string,
+    searchCategory = normalizedCategory,
+    target: "auto" | "salons" | "posts" = searchTarget,
+    scopePolicy: "fixed" | "expandable" = activeResponse.scope?.policy ?? "expandable",
+  ) {
+    const recoveryLocation = activeResponse.location;
+    const previousGpsContext = committedGpsContext?.response === activeResponse ? committedGpsContext : null;
+    const recoverySource: ExploreLocationSource = !recoveryLocation ? "none"
+      : activeResponse.locationOrigin === "query" ? "saved"
+        : activeResponse.locationOrigin === "manual" ? "manual"
+          : activeResponse.locationSource === "gps" ? "saved"
+            : activeResponse.locationSource ?? locationSource;
+    setGpsCoordinates(previousGpsContext?.coordinates ?? null);
+    setGpsResponse(activeResponse === sessionResponse ? null : activeResponse);
+    setCommittedGpsContext(previousGpsContext);
+    setNearYouSalons([]);
+    setLocation(recoveryLocation);
+    setLocationSource(previousGpsContext ? activeResponse.locationSource ?? "gps" : recoverySource);
+    setGpsMessage("We couldn't find your area. Choose a location or try again.");
+    // A newly typed city must still reach the indexed intent resolver when the
+    // upstream area provider is unavailable. Never keep it bound to failed GPS.
+    if (searchQuery !== undefined && (searchQuery !== query || target !== searchTarget)) {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const key of ["page", "cursor", "latitude", "longitude", "lat", "lng", "sort", "locationSource"]) params.delete(key);
+      params.set("q", searchQuery);
+      params.set("type", "salons");
+      params.set("scope", scopePolicy);
+      if (searchCategory) params.set("category", searchCategory); else params.delete("category");
+      params.set("location", recoveryLocation);
+      if (recoveryLocation) params.set("locationSource", recoverySource);
+      startTransition(() => router.push(pathname + "?" + params, { scroll: false }));
     }
+  }
 
-    let savedLocation: string | undefined;
-    try { savedLocation = window.localStorage.getItem(SAVED_LOCATION_KEY)?.trim(); }
-    catch { return; }
-
-    if (!savedLocation || savedLocation === location.trim()) {
-      return;
-    }
-
-    queueMicrotask(() => {
-      setLocation(savedLocation);
-      setLocationSource("saved");
-      setGpsResponse(null);
-    });
-  }, [hasUrlLocation, initialSearchMode, location]);
+  function prepareSearchTransition() {
+    setTypedSearchFailure(null);
+    if (typeof document === "undefined") return;
+    const height = document.querySelector('[data-testid="explore-content-search"]')?.getBoundingClientRect().height;
+    if (height !== undefined && Number.isFinite(height) && height > 0) setPendingIdeasHeight(height);
+  }
 
   async function runGpsSearch(
     coordinates: GpsCoordinates,
     targetPage = 1,
+    searchQuery = query,
+    sort: SearchOrderMode = searchOrderMode,
+    searchCategory = normalizedCategory,
+    target: "auto" | "salons" | "posts" = searchTarget,
+    scopePolicy: "fixed" | "expandable" = activeResponse.scope?.policy ?? "expandable",
+    filters = activeResponse.filters,
   ) {
+    prepareSearchTransition();
     const version = ++gpsRequestVersion.current;
+    gpsRequest.current?.abort();
+    const controller = new AbortController();
+    gpsRequest.current = controller;
     setGpsStatus("searching");
     setGpsMessage(null);
     setNearYouSalons([]);
     setActiveDiscoveryResult(null);
 
     try {
-      const response = await withRequestTimeout(searchExploreWithGpsAction({
-        category: normalizedCategory,
+      const area = await findGpsArea(coordinates, controller.signal);
+      if (version !== gpsRequestVersion.current) return;
+      const response = await fetchExploreSearchPage({
+        category: searchCategory, target: "salons", filters,
+        location: area.label, locationSource: "gps",
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
         page: targetPage,
         pageSize: initialResponse.pageSize,
-        query,
-      }));
+        query: searchQuery,
+        scopePolicy,
+        sort,
+      }, controller.signal);
       if (version !== gpsRequestVersion.current) return;
 
+      if (!response.error) rememberSearchUrl(response, searchQuery, target, scopePolicy);
+      setCommittedGpsContext(response.error ? null : { response, coordinates: { ...coordinates } });
       setGpsResponse(response);
-      setLocationSource("gps");
+      setSearchOrderMode(response.sort ?? "relevance");
+      setLocation(response.location);
+      setLocationSource(response.locationSource ?? "gps");
+      setCategory(response.category || "All");
+      setGpsCoordinates(response.locationOrigin === "query" || response.locationOrigin === "manual" ? null : coordinates);
       setGpsStatus("idle");
       setExplicitSearchMode(true);
 
@@ -4791,7 +3379,10 @@ export function ExploreClient({
         setGpsMessage("We couldn't load salons for your current location right now.");
       }
     } catch {
-      if (version === gpsRequestVersion.current) setGpsMessage("We couldn't load nearby salons. Please try again.");
+      if (version === gpsRequestVersion.current) {
+        if (!hasResolvedGpsArea(coordinates)) recoverUnresolvedGps(searchQuery, searchCategory, target, scopePolicy);
+        else setGpsMessage("We couldn't load nearby salons. Please try again.");
+      }
     } finally {
       if (version === gpsRequestVersion.current) setGpsStatus("idle");
     }
@@ -4799,40 +3390,65 @@ export function ExploreClient({
 
   async function runHomeNearYou(coordinates: GpsCoordinates) {
     const version = ++gpsRequestVersion.current;
+    gpsRequest.current?.abort();
+    const controller = new AbortController();
+    gpsRequest.current = controller;
     setGpsStatus("searching");
     setGpsMessage(null);
     setGpsResponse(null);
+    setNearYouSalons([]);
 
     try {
-      const response = await withRequestTimeout(loadExploreNearYouAction({
+      const area = await findGpsArea(coordinates, controller.signal);
+      if (version !== gpsRequestVersion.current) return;
+      const response = await fetchExploreSearchPage({
+        location: area.label, locationSource: "gps", target: "salons",
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
-      }));
+        query: "", page: 1, pageSize: 6,
+        scopePolicy: "expandable", sort: "closest",
+      }, controller.signal);
       if (version !== gpsRequestVersion.current) return;
 
-      setNearYouSalons(response.salons);
+      setLocation(response.location || area.label);
+      setGpsCoordinates(coordinates);
+      if (!response.error) rememberSearchUrl(response, "", "auto");
+      const salons: ExploreHomeSalon[] = response.results
+        .filter(salon => salon.searchScope === "A" || salon.searchScope === "B" && salon.distanceMiles !== null && salon.distanceMiles <= 50)
+        .map((salon, index) => ({ ...salon, createdAt: null, updatedAt: null, publicDiscoveryPublishedAt: null, homeRank: index + 1, homeSection: "near_you" }));
+      setNearYouSalons(salons);
       setLocationSource("gps");
       setGpsStatus("idle");
       setExplicitSearchMode(false);
-      setActiveDiscoveryResult("near_you");
+      setActiveDiscoveryResult(null);
 
       if (response.error) {
-        setGpsMessage("We couldn't calculate nearby salons right now.");
+        setGpsMessage("We couldn't load salons in your area right now.");
         return;
       }
 
-      if (response.salons.length === 0) {
-        setGpsMessage("Current location is on, but no salons have mapped coordinates yet.");
+      if (salons.length === 0) {
+        setGpsMessage("No salons found in your area. You can try another location.");
       }
     } catch {
-      if (version === gpsRequestVersion.current) setGpsMessage("We couldn't load nearby salons. Please try again.");
+      if (version === gpsRequestVersion.current) {
+        if (!hasResolvedGpsArea(coordinates)) recoverUnresolvedGps();
+        else setGpsMessage("We couldn't load nearby salons. Please try again.");
+      }
     } finally {
       if (version === gpsRequestVersion.current) setGpsStatus("idle");
     }
   }
 
   function requestCurrentLocation() {
+    const currentSearchQuery = (document.getElementById("explore-search-query") as HTMLInputElement | null)?.value.trim() ?? query;
+    const currentTarget = currentSearchQuery === query ? searchTarget : "auto";
+    setQuery(currentSearchQuery);
+    prepareSearchTransition();
     const version = ++gpsRequestVersion.current;
+    gpsRequest.current?.abort();
+    typedRequest.current = null;
+    try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "on"); } catch { /* Optional preference. */ }
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGpsStatus("unsupported");
       setGpsMessage("Current location is not available in this browser.");
@@ -4842,7 +3458,7 @@ export function ExploreClient({
     setGpsStatus("locating");
     setGpsMessage(null);
     const shouldRunSearch = Boolean(
-      explicitSearchMode || query.trim() || normalizedCategory,
+      explicitSearchMode || currentSearchQuery.trim() || normalizedCategory,
     );
 
     navigator.geolocation.getCurrentPosition(
@@ -4853,19 +3469,17 @@ export function ExploreClient({
           longitude: position.coords.longitude,
         };
 
-        setLocation("");
-        setGpsResponse(null);
-        setLocationSource("gps");
-        setGpsCoordinates(coordinates);
+        // Keep the committed area, cards and cursor together until this GPS
+        // point has resolved and its matching search has completed.
         if (shouldRunSearch) {
-          void runGpsSearch(coordinates, 1);
+          void runGpsSearch(coordinates, 1, currentSearchQuery, currentSearchQuery === query ? searchOrderMode : "relevance", normalizedCategory, currentTarget);
         } else {
           void runHomeNearYou(coordinates);
         }
       },
       (error) => {
         if (version !== gpsRequestVersion.current) return;
-        setGpsCoordinates(null);
+        setGpsCoordinates(committedGpsContext?.response === activeResponse ? committedGpsContext.coordinates : null);
         setGpsStatus(error.code === error.PERMISSION_DENIED ? "denied" : "error");
         setGpsMessage(
           error.code === error.PERMISSION_DENIED
@@ -4881,10 +3495,81 @@ export function ExploreClient({
     );
   }
 
+  useEffect(() => { requestLocationRef.current = requestCurrentLocation; });
+  useEffect(() => {
+    window.addEventListener("reylumi:experience-reset", clearExploreStartupInteraction);
+    return () => window.removeEventListener("reylumi:experience-reset", clearExploreStartupInteraction);
+  }, []);
+  useEffect(() => {
+    const interaction = readExploreStartupInteraction(commentViewer.userId);
+    if (!interaction) return;
+    if (interaction.gps) requestLocationRef.current();
+    clearExploreStartupInteraction();
+  }, [commentViewer.userId]);
+
+  function turnOffCurrentLocation() {
+    try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "off"); } catch { /* Optional preference. */ }
+    gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
+    typedRequest.current = null;
+    appliedSavedLocation.current = true;
+    autoLocationChecked.current = true;
+    gpsArea.current = null;
+    setGpsCoordinates(null);
+    setGpsResponse(null);
+    setCommittedGpsContext(null);
+    setTypedSearchFailure(null);
+    setNearYouSalons([]);
+    setGpsStatus("idle");
+    setGpsMessage(null);
+    setLocation("");
+    setLocationSource("none");
+    setActiveDiscoveryResult(null);
+    const searchQuery = (document.getElementById("explore-search-query") as HTMLInputElement | null)?.value ?? query;
+    setQuery(searchQuery);
+    setExplicitSearchMode(Boolean(searchQuery.trim() || normalizedCategory));
+    try { window.localStorage.removeItem(SAVED_LOCATION_KEY); } catch { /* Storage may be unavailable. */ }
+    const params = new URLSearchParams(searchParams.toString());
+    for (const key of ["cursor", "lat", "lng", "latitude", "longitude", "locationSource"]) params.delete(key);
+    params.set("locationSource", "none");
+    params.set("scope", "expandable");
+    startTransition(() => router.push(buildUrl({
+      category: selectedCategory, location: "", page: 1, pathname, query: searchQuery,
+      searchParams: params,
+    }), { scroll: false }));
+  }
+
+  useEffect(() => {
+    function publishLocationState() {
+      window.dispatchEvent(new CustomEvent("kingpos:explore-location-state", {
+        detail: { enabled: Boolean(gpsCoordinates), pending: gpsStatus === "locating" || gpsStatus === "searching" },
+      }));
+    }
+    publishLocationState();
+    window.addEventListener("kingpos:explore-request-location-state", publishLocationState);
+    return () => {
+      window.removeEventListener("kingpos:explore-request-location-state", publishLocationState);
+      window.dispatchEvent(new CustomEvent("kingpos:explore-location-state", {
+        detail: { enabled: false, pending: false },
+      }));
+    };
+  }, [gpsCoordinates, gpsStatus]);
+
   useEffect(() => {
     function handleHeaderLocationRequest() {
       requestCurrentLocation();
     }
+    function handleHeaderGpsSearch(event: Event) {
+      const detail = (event as CustomEvent<{ query: string; category?: string; target?: "auto" | "salons" | "posts" }>).detail;
+      const searchQuery = detail.query;
+      if (!gpsCoordinates) return;
+      setQuery(searchQuery);
+      if (detail.category !== undefined) setCategory(detail.category || "All");
+      void runGpsSearch(gpsCoordinates, 1, searchQuery, searchOrderMode,
+        detail.category === undefined ? normalizedCategory : cleanCategory(detail.category), "salons");
+    }
+    window.addEventListener("kingpos:explore-clear-current-location", turnOffCurrentLocation);
+    window.addEventListener("kingpos:explore-search-current-location", handleHeaderGpsSearch);
 
     window.addEventListener(
       "kingpos:explore-use-current-location",
@@ -4892,6 +3577,8 @@ export function ExploreClient({
     );
 
     return () => {
+      window.removeEventListener("kingpos:explore-clear-current-location", turnOffCurrentLocation);
+      window.removeEventListener("kingpos:explore-search-current-location", handleHeaderGpsSearch);
       window.removeEventListener(
         "kingpos:explore-use-current-location",
         handleHeaderLocationRequest,
@@ -4900,7 +3587,13 @@ export function ExploreClient({
   });
 
   function clearFilters() {
+    try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "off"); } catch { /* Optional preference. */ }
+    if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ location: "" }).catch(() => {});
     gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
+    typedRequest.current = null;
+    setTypedSearchFailure(null);
+    setCommittedGpsContext(null);
     setGpsStatus("idle");
     setQuery("");
     setLocation("");
@@ -4921,7 +3614,11 @@ export function ExploreClient({
   }
 
   function selectCategory(value: string) {
+    prepareSearchTransition();
+    if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ category: value }).catch(() => {});
     gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
+    typedRequest.current = null;
     setGpsStatus("idle");
     const nextCategory = cleanCategory(value);
     const nextSearchMode = Boolean(
@@ -4929,6 +3626,11 @@ export function ExploreClient({
     );
 
     setCategory(value);
+    if (gpsCoordinates) {
+      if (nextSearchMode) void runGpsSearch(gpsCoordinates, 1, query, searchOrderMode, nextCategory);
+      else void runHomeNearYou(gpsCoordinates);
+      return;
+    }
     setGpsResponse(null);
     setNearYouSalons([]);
     setActiveDiscoveryResult(null);
@@ -4955,17 +3657,41 @@ export function ExploreClient({
     category?: string;
     location?: string;
     query?: string;
+    target?: "auto" | "salons" | "posts";
+    scopePolicy?: "fixed" | "expandable";
+    locationSource?: ExploreLocationSource;
   }) {
+    prepareSearchTransition();
     gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
+    typedRequest.current = null;
     setGpsStatus("idle");
     const nextCategory =
       input.category === undefined ? selectedCategory : input.category;
     const nextLocation =
       input.location === undefined ? location : input.location;
     const nextQuery = input.query === undefined ? query : input.query;
+    const nextLocationSource = input.locationSource ?? (input.location === undefined ? locationSource : nextLocation.trim() ? "manual" : "none");
+    if (gpsCoordinates && input.location === undefined) {
+      setQuery(nextQuery); setCategory(nextCategory);
+      void runGpsSearch(gpsCoordinates, 1, nextQuery, "relevance", cleanCategory(nextCategory), "salons", input.scopePolicy);
+      return;
+    }
+    if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ location: nextLocationSource === "manual" ? nextLocation : undefined, category: nextCategory }).catch(() => {});
 
     setQuery(nextQuery);
     setLocation(nextLocation);
+    if (input.location !== undefined) {
+      setLocationSource(nextLocationSource);
+      setGpsCoordinates(null);
+      setCommittedGpsContext(null);
+      gpsArea.current = null;
+      autoLocationChecked.current = true;
+      appliedSavedLocation.current = true;
+      if (!nextLocation.trim()) {
+        try { window.localStorage.removeItem(SAVED_LOCATION_KEY); } catch { /* Optional preference. */ }
+      }
+    }
     setCategory(nextCategory);
     setGpsResponse(null);
     setNearYouSalons([]);
@@ -4973,13 +3699,22 @@ export function ExploreClient({
     setExplicitSearchMode(true);
     setSearchOrderMode("relevance");
 
+    const shortcutParams = new URLSearchParams(searchParams.toString());
+    for (const key of ["browse", "sort", "page", "cursor", "lat", "lng", "latitude", "longitude"]) shortcutParams.delete(key);
+    shortcutParams.set("type", "salons");
+    if (input.location !== undefined) {
+      shortcutParams.set("locationSource", nextLocation.trim() ? nextLocationSource : "none");
+      shortcutParams.set("scope", input.scopePolicy ?? (nextLocation.trim() ? "fixed" : "expandable"));
+    } else if (input.scopePolicy) {
+      shortcutParams.set("scope", input.scopePolicy);
+    }
     const url = buildUrl({
       category: nextCategory,
       location: nextLocation,
       page: 1,
       pathname,
       query: nextQuery,
-      searchParams: new URLSearchParams(searchParams.toString()),
+      searchParams: shortcutParams,
     });
 
     startTransition(() => {
@@ -4987,47 +3722,145 @@ export function ExploreClient({
     });
   }
 
-  function goToPage(nextPage: number) {
-    gpsRequestVersion.current += 1;
-    setGpsStatus("idle");
-    if (gpsActive && gpsCoordinates) {
-      void runGpsSearch(gpsCoordinates, nextPage);
+  function selectSearchSuggestion(suggestion: ExploreSearchSuggestion, scopePolicy: "fixed" | "expandable", typedLocation: string) {
+    const area = suggestion.kind === "area";
+    applySearchShortcut({
+      query: area ? "" : suggestion.query,
+      category: suggestion.kind === "service" && suggestion.category ? suggestion.category : selectedCategory,
+      target: "salons",
+      ...(area ? { location: suggestion.location ?? suggestion.query, scopePolicy: "fixed" as const }
+        : typedLocation.trim() !== location.trim() ? { location: typedLocation.trim(), scopePolicy }
+          : activeResponse.locationOrigin === "query" ? { location, locationSource: "saved" as const, scopePolicy } : { scopePolicy }),
+    });
+  }
+
+  function applyNailFilters(filters: NailFilters) {
+    setNailFilterSelection({ sessionKey: committedSearch.sessionKey, filters });
+    const nextFilters = { ...activeResponse.filters };
+    for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
+      if (filters[key]) nextFilters[key] = filters[key]; else delete nextFilters[key];
+    }
+    if (committedSearch.coordinates) {
+      void runGpsSearch(committedSearch.coordinates, 1, committedSearch.displayQuery, committedSearch.appliedSort, committedSearch.category, "salons", activeResponse.scope?.policy, nextFilters);
       return;
     }
+    prepareSearchTransition();
+    gpsRequestVersion.current += 1; gpsRequest.current?.abort();
+    typedRequest.current = null;
+    setGpsStatus("idle");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page"); params.delete("cursor"); params.set("type", "salons");
+    for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
+      if (filters[key]) params.set(key, filters[key]); else params.delete(key);
+    }
+    startTransition(() => router.push(pathname + "?" + params, { scroll: false }));
+  }
 
+  function cancelTypedSearch() {
+    typedRequest.current = null;
+    gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
+    setGpsStatus("idle");
+    setTypedSearchFailure(null);
+  }
+
+  async function submitUnifiedSearch(searchQuery: string) {
+    searchQuery = searchQuery.trim();
+    if (typedRequest.current === searchQuery) return;
+    typedRequest.current = searchQuery;
+    autoLocationChecked.current = true;
+    const target = "salons";
+    setQuery(searchQuery);
     setExplicitSearchMode(true);
+    setTypedSearchFailure(null);
+    // The text now chooses the field; an invisible old category must not narrow it.
+    setCategory("All");
+    if (gpsCoordinates) {
+      await runGpsSearch(gpsCoordinates, 1, searchQuery, "relevance", "", target, undefined, searchQuery === query ? activeResponse.filters : {});
+      if (typedRequest.current === searchQuery) typedRequest.current = null;
+      return;
+    }
+    prepareSearchTransition();
+    const version = ++gpsRequestVersion.current;
+    gpsRequest.current?.abort();
+    const controller = new AbortController();
+    gpsRequest.current = controller;
+    setGpsStatus("searching"); setGpsMessage(null);
     setActiveDiscoveryResult(null);
+    const scope = location.trim() ? activeResponse.scope?.policy ?? "expandable" : "expandable";
+    try {
+      const response = await fetchExploreSearchPage({
+        query: searchQuery, category: "", target, location, filters: searchQuery === query ? activeResponse.filters : {},
+        locationSource: !location.trim() ? "none" : activeResponse.locationOrigin === "query" ? "saved" : locationSource,
+        scopePolicy: scope, sort: "relevance", page: 1, pageSize: initialResponse.pageSize,
+      }, controller.signal);
+      if (version !== gpsRequestVersion.current) return;
+      setSessionResponse(response); setGpsResponse(null); setCommittedGpsContext(null);
+      setNearYouSalons([]); setExplicitSearchMode(true);
+      setSearchOrderMode(response.sort ?? "relevance");
+      setLocation(response.location); setLocationSource(response.locationSource ?? locationSource);
+      setCategory(response.category || "All");
+      if (!response.error) rememberSearchUrl(response, searchQuery, target, scope);
+    } catch (cause) {
+      if (version === gpsRequestVersion.current) {
+        const kind = classifyExploreSearchError(cause);
+        const message = exploreSearchErrorMessage(kind);
+        setTypedSearchFailure({ response: activeResponse, kind, message });
+        setGpsMessage(message);
+      }
+    } finally {
+      if (version === gpsRequestVersion.current) { setGpsStatus("idle"); typedRequest.current = null; }
+    }
+  }
 
-    const url = buildUrl({
-      category: selectedCategory,
-      location,
-      page: nextPage,
-      pathname,
-      query,
-      searchParams: new URLSearchParams(searchParams.toString()),
-    });
-
+  function resetExploreHome(replace = false) {
+    cancelTypedSearch();
+    setSearchResetVersion(value => value + 1);
+    setQuery(""); setCategory("All"); setGpsResponse(null); setCommittedGpsContext(null);
+    setExplicitSearchMode(false); setActiveDiscoveryResult(null); setSearchOrderMode("relevance");
+    setGpsMessage(null); setSearchAreaOpen(false);
+    const source = activeResponse.locationOrigin === "query" ? "saved" : locationSource;
+    const url = exploreHomeUrl(location, source);
     startTransition(() => {
-      router.push(url, { scroll: false });
+      if (replace) router.replace(url, { scroll: false }); else router.push(url, { scroll: true });
     });
   }
 
-  function focusHeaderSearch() {
-    const searchInput =
-      document.getElementById("customer-desktop-search") ??
-      document.getElementById("customer-mobile-explore-search");
+  useEffect(() => {
+    function onLogoReset(event: Event) { event.preventDefault(); resetExploreHome(); }
+    window.addEventListener(EXPLORE_HOME_RESET_EVENT, onLogoReset);
+    if (consumeExploreDocumentReload()) {
+      router.replace(exploreHomeUrl(location, activeResponse.locationOrigin === "query" ? "saved" : locationSource), { scroll: false });
+    }
+    return () => window.removeEventListener(EXPLORE_HOME_RESET_EVENT, onLogoReset);
+  });
 
-    searchInput?.focus({ preventScroll: false });
+  function applySearchArea(area: string, scopePolicy: "fixed" | "expandable") {
+    try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "off"); } catch { /* Optional preference. */ }
+    setGpsMessage(null);
+    const searchQuery = (document.getElementById("explore-search-query") as HTMLInputElement | null)?.value.trim() ?? query;
+    applySearchShortcut({ query: searchQuery, target: searchQuery === query ? searchTarget : "auto", location: area, scopePolicy });
   }
 
-  function scrollToPopularServices() {
-    document
-      .querySelector('[data-testid="popular-services"]')
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  function changeSearchOrder(mode: SearchOrderMode) {
+    prepareSearchTransition();
+    setSearchOrderMode(mode);
+    gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
+    typedRequest.current = null;
+    if (gpsActive && gpsCoordinates) {
+      void runGpsSearch(gpsCoordinates, 1, query, mode);
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("sort", mode);
+    params.delete("page");
+    startTransition(() => router.push(buildUrl({ category: selectedCategory, location, page: 1, pathname, query, searchParams: params }), { scroll: false }));
   }
 
   function selectDiscoveryShortcut(shortcut: ExploreDiscoveryShortcut) {
     gpsRequestVersion.current += 1;
+    gpsRequest.current?.abort();
     setGpsStatus("idle");
     if (shortcut.action.type === "category") {
       selectCategory(shortcut.action.category);
@@ -5047,8 +3880,9 @@ export function ExploreClient({
   }
 
   return (
-    <SavePostAuthProvider isAuthenticated={commentViewer.isAuthenticated}>
-    <main className="min-w-0 overflow-x-hidden bg-white">
+    <ExploreSocialProvider viewerId={commentViewer.userId}><SavePostAuthProvider isAuthenticated={commentViewer.isAuthenticated}>
+    <ExplorePostContext.Provider value={{viewerId: commentViewer.userId, viewer: commentViewer, items: homeContent.inspiration.items}}>
+    <main ref={firstContentRef} className="min-w-0 overflow-x-hidden bg-white">
       <div
         className={[
           hasDiscoveryRail
@@ -5060,45 +3894,35 @@ export function ExploreClient({
       >
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
-            <div className="mx-auto grid w-full max-w-[40rem] gap-2 px-4 pb-1 pt-2 sm:px-6 lg:px-3 xl:hidden">
-              <CategoryChips
-                allLabel="For you"
-                category={selectedCategory}
-                onChange={selectCategory}
-                onMore={scrollToPopularServices}
-              />
-
-              {!homeMode ? (
-                <>
-                  <MobileExploreSearch
-                    gpsStatus={gpsStatus}
-                    location={location}
-                    onCurrentLocation={requestCurrentLocation}
-                    query={query}
-                    selectedCategory={selectedCategory}
-                  />
-
-                  <MobileDiscoveryShortcuts
-                    activeResultKind={activeDiscoveryResult}
-                    onSelect={selectDiscoveryShortcut}
-                    shortcuts={discoveryContent.shortcuts}
-                  />
-                </>
-              ) : null}
+            <div data-explore-inline-search className="mx-auto w-full max-w-none px-4 pt-2 sm:px-6 lg:px-3">
+              <ExploreSearchToolbar key={searchResetVersion} query={query} category={normalizedCategory} location={location}
+                initialDraftValue={readExploreStartupInteraction(commentViewer.userId)?.query}
+                restoreInitialFocus={readExploreStartupInteraction(commentViewer.userId)?.focused}
+                locationSource={!location.trim() && !gpsCoordinates ? "none" : activeResponse.locationOrigin === "query" ? "saved" : locationSource}
+                scopePolicy={activeResponse.scope?.policy ?? (locationSource === "manual" ? "fixed" : "expandable")}
+                locating={gpsStatus === "locating"} pending={isSearching}
+                message={gpsMessage} areaOpen={searchAreaOpen} onAreaOpenChange={setSearchAreaOpen}
+                onSearch={submitUnifiedSearch} onDraftChange={cancelTypedSearch} onCurrentLocation={requestCurrentLocation} onAreaApply={applySearchArea}
+                onSuggestionSelect={suggestion => selectSearchSuggestion(suggestion, activeResponse.scope?.policy ?? "expandable", location)} />
+            </div>
+            <div className="mx-auto w-full max-w-[92rem] px-4 sm:px-6 lg:px-3" data-testid="owner-campaign-placement">
+              <OwnerSponsoredPost key={`${commentViewer.userId ?? "guest"}:${searchMode ? committedSearch.sessionKey : "home"}`}
+                query={searchMode ? committedSearch.displayQuery : undefined}
+                location={searchMode ? committedSearch.location : location}
+                latitude={(searchMode ? committedSearch.coordinates : gpsCoordinates)?.latitude}
+                longitude={(searchMode ? committedSearch.coordinates : gpsCoordinates)?.longitude} />
             </div>
             {homeMode ? (
               <DesktopExploreLanding
-                activeDiscoveryResult={activeDiscoveryResult}
                 content={homeContent}
-                discoveryShortcuts={discoveryContent.shortcuts}
-                onExploreClick={focusHeaderSearch}
-                onSelectCategory={selectCategory}
-                onSelectDiscoveryShortcut={selectDiscoveryShortcut}
-                selectedCategory={selectedCategory}
+                salons={[...nearYouSalons, ...activeResults]}
               />
             ) : null}
           </section>
 
+          {searchMode ? <ExploreSearchContext response={activeResponse} pending={isSearching || Boolean(activeSearchFailure)}
+            onAreaSelect={area => applySearchShortcut({ location: area })}
+            onEditLocation={() => setSearchAreaOpen(true)} /> : null}
           {homeMode ? (
             <>
               <div className="xl:hidden">
@@ -5107,8 +3931,9 @@ export function ExploreClient({
                   commentViewer={commentViewer}
                   content={homeContent}
                   discoveryShortcuts={discoveryContent.shortcuts}
-                  gpsMessage={gpsMessage}
                   initialFeed={initialFeed}
+                  initialFeedPromise={initialFeedPromise}
+                  startupExtrasPending={startupExtrasPending}
                   location={location}
                   gpsCoordinates={gpsCoordinates}
                   strictLocation={hasUrlLocation}
@@ -5120,6 +3945,9 @@ export function ExploreClient({
               </div>
               <DesktopDiscoveryMarketplace
                 activeResults={activeResults}
+                activeDiscoveryResult={activeDiscoveryResult}
+                discoveryShortcuts={discoveryContent.shortcuts}
+                onDiscoveryShortcutSelect={selectDiscoveryShortcut}
                 commentViewer={commentViewer}
                 content={homeContent}
                 gpsCoordinates={gpsCoordinates}
@@ -5136,6 +3964,10 @@ export function ExploreClient({
           ) : discoveryResultMode && activeDiscoveryResult ? (
             <ExploreDiscoveryResults
               content={homeContent}
+              commentViewer={commentViewer}
+              selectedCategory={selectedCategory}
+              location={location}
+              strictLocation={(activeResponse.scope?.policy ?? (locationSource === "manual" ? "fixed" : "expandable")) === "fixed"}
               gpsCoordinates={gpsCoordinates}
               kind={activeDiscoveryResult}
               nearYouSalons={nearYouSalons}
@@ -5159,44 +3991,42 @@ export function ExploreClient({
                     </p>
                   ) : null}
                 </div>
-                {searchMode ? (
-                  <button
-                    className="w-fit rounded-full bg-surface-elevated px-4 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                    onClick={clearFilters}
-                    type="button"
-                  >
-                    Clear filters
-                  </button>
-                ) : null}
               </section>
 
-              <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3">
-                {searchMode ? (
+              <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
+                {searchMode && !activeSearchFailure ? (
                   <SearchRefinementBar
-                    category={selectedCategory}
-                    location={location}
-                    mode={searchOrderMode}
-                    onModeChange={setSearchOrderMode}
+                    category={committedSearch.category || "All"}
+                    location={committedSearch.location}
+                    mode={committedSearch.appliedSort}
+                    onModeChange={changeSearchOrder}
+                    onClear={clearFilters}
                     onShortcut={applySearchShortcut}
-                    query={query}
+                    query={committedSearch.displayQuery}
                     workspaceLocation={workspaceLocation}
-                  />
-                ) : null}
-
-                {activeResponse.error ? (
-                  <ExploreNotice
-                    title="We couldn't load salons right now."
-                    tone="warning"
                   >
-                    Please try again in a moment.
+                    {!isSearching && !searchUnavailable && !requiresGps && hasAnyResults ? (
+                      <NailInspirationFilters
+                        key={committedSearch.sessionKey}
+                        filters={nailFilters}
+                        onChange={applyNailFilters}
+                        search={{ salons: activeResults, discovery: { ...committedSearch.discovery, query: activeResponse.query } }}
+                      />
+                    ) : null}
+                  </SearchRefinementBar>
+                ) : null}
+                {committedSearch.fallbackMessage && !isSearching && !searchUnavailable ? <p className="text-sm text-text-secondary" role="status">{committedSearch.fallbackMessage}</p> : null}
+
+                {searchUnavailable ? (
+                  <ExploreNotice
+                    title={searchErrorKind === "timeout" ? "Search took too long" : searchErrorKind === "network" ? "Search connection interrupted" : searchErrorKind === "cursor" ? "Search session expired" : "We couldn't load salons right now."}
+                    tone="warning"
+                    action={<button type="button" onClick={() => void submitUnifiedSearch(query)} className="min-h-11 rounded-full bg-surface-muted px-4 font-semibold">Try again</button>}
+                  >
+                    {activeSearchFailure?.message || activeResponse.error || "Please try again."}
                   </ExploreNotice>
                 ) : null}
 
-                {gpsMessage ? (
-                  <ExploreNotice title="Location status" tone="warning">
-                    {gpsMessage}
-                  </ExploreNotice>
-                ) : null}
 
                 {!searchMode && !location.trim() && !activeResponse.error ? (
                   <ExploreNotice
@@ -5216,112 +4046,84 @@ export function ExploreClient({
                   </ExploreNotice>
                 ) : null}
 
-                {allDistancesMissing ? (
-                  <ExploreNotice title="Distance is not available for these salons yet">
-                    You can still search by city or ZIP to compare area listings.
-                  </ExploreNotice>
-                ) : null}
 
-                {noDirectMatches && !activeResponse.error ? (
-                  <ExploreNotice title={`No exact matches for "${query.trim()}".`}>
-                    {hasNearbyResults && displayLocation
-                      ? `Here are salons in ${displayLocation}.`
-                      : "Here are recommended salons available on Reylumi."}
-                  </ExploreNotice>
-                ) : null}
-
-                {!hasAnyResults && !activeResponse.error ? (
-                  <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-8 text-center shadow-[var(--shadow-soft)]">
-                    <h2 className="text-xl font-semibold text-text-primary">
-                      No salons available yet
-                    </h2>
-                    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-text-secondary">
-                      No active salons match this search right now. Try another
-                      salon, service, city, state, or ZIP.
-                    </p>
-                    <div className="mt-5 flex flex-wrap justify-center gap-2">
-                      {searchMode ? (
-                        <button
-                          className="rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                          onClick={clearFilters}
-                          type="button"
-                        >
-                          Clear filters
-                        </button>
-                      ) : null}
-                      <button
-                        className="rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle hover:text-brand-orange"
-                        onClick={requestCurrentLocation}
-                        type="button"
-                      >
-                        Use current location
-                      </button>
-                    </div>
+                {requiresGps ? <><button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button><ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /></> : null}
+                {!searchUnavailable && !requiresGps ? (!hasAnyResults && !activeResponse.hasMore && !isSearching ? (
+                  <div className="border-dashed border-divider-subtle bg-surface-elevated p-8 text-center rounded-none border-0 shadow-none">
+                    <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} />
                   </div>
                 ) : (
                   <div className="grid gap-6">
                     <ResultSection
+                      hideHeading
                       description={`${activeSections.bestMatches.length} result${
                         activeSections.bestMatches.length === 1 ? "" : "s"
                       }`}
                       rankKind="best"
-                      results={activeSections.bestMatches}
+                      results={activeSections.bestMatches.filter(isExplorePrimarySearchResult)}
                       title={
-                        quotedQuery(query)
-                          ? `Best matches for ${quotedQuery(query)}`
-                          : normalizedCategory
-                            ? `Best matches for ${normalizedCategory}`
+                        quotedQuery(committedSearch.displayQuery)
+                          ? `Best matches for ${quotedQuery(committedSearch.displayQuery)}`
+                          : committedSearch.category
+                            ? `Best matches for ${committedSearch.category}`
                             : "Best matches"
                       }
                     />
                     <ResultSection
+                      hideHeading={activeSections.bestMatches.length === 0}
                       description={`${activeSections.nearby.length} result${
                         activeSections.nearby.length === 1 ? "" : "s"
                       }`}
                       rankKind="area"
-                      results={activeSections.nearby}
+                      results={activeSections.nearby.filter(isExplorePrimarySearchResult)}
                       title={
-                        displayLocation
-                          ? `Salons in ${displayLocation}`
+                        committedSearch.location
+                          ? `Salons in ${formatDisplayLocation(committedSearch.location)}`
                           : gpsActive && nearbyHasDistance
                             ? "Salons near you"
-                            : "Salons in this area"
+                            : "Salons"
                       }
                     />
                     <ResultSection
+                      hideHeading={activeSections.bestMatches.length === 0 && activeSections.nearby.length === 0}
                       description={`${activeSections.recommended.length} result${
                         activeSections.recommended.length === 1 ? "" : "s"
                       }`}
                       rankKind="recommended"
-                      results={activeSections.recommended}
+                      results={activeSections.recommended.filter(isExplorePrimarySearchResult)}
                       title="Recommended for you"
                     />
+                    <SearchRecommendationSections results={referenceResults} location={formatDisplayLocation(committedSearch.location)} />
                   </div>
-                )}
+                )) : null}
 
-                {activeResponse.totalCount > activeResponse.pageSize ? (
-                  <Pagination
-                    disabled={isSearching}
-                    onPageChange={goToPage}
-                    page={activeResponse.page}
-                    totalPages={activeResponse.totalPages}
+                {hasAnyResults && !activeResponse.hasMore && !searchUnavailable && !requiresGps && !isSearching ? <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /> : null}
+
+                {(activeResponse.hasMore ?? activeResponse.totalCount > activeResponse.pageSize) && !searchUnavailable && !requiresGps && !isSearching ? (
+                  <SearchContinuationFeed
+                    key={`${committedSearch.sessionKey}:${JSON.stringify(activeResponse.nextCursor)}`}
+                    response={activeResponse}
+                    coordinates={committedSearch.coordinates}
+                     viewerId={commentViewer.userId}
+                    onChooseArea={() => setSearchAreaOpen(true)}
                   />
                 ) : null}
               </section>
             </>
           )}
 
-          {!homeMode ? <QuickActions actions={quickActions} /> : null}
+          {!homeMode && !searchMode ? <QuickActions actions={quickActions} /> : null}
         </div>
         {hasDiscoveryRail ? (
-          <ExploreDiscoveryRail
+          <ExploreDeferred><ExploreDiscoveryRail
             activeResultKind={activeDiscoveryResult}
             onSelect={selectDiscoveryShortcut}
-            shortcuts={discoveryContent.shortcuts}
-          />
+            shortcuts={discoveryContent.shortcuts.map(shortcut => exploreAlternatingShortcuts(discoveryContent.shortcuts).find(entry => entry.id === shortcut.id) ?? shortcut)}
+          /></ExploreDeferred>
         ) : null}
       </div>
     </main>
-    </SavePostAuthProvider>
+    </ExplorePostContext.Provider>
+    </SavePostAuthProvider></ExploreSocialProvider>
   );
 }

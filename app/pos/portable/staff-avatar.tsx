@@ -1,9 +1,12 @@
 "use client";
+import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useState } from "react";
 
 // Keep photos locally for offline use. Roster changes supply the current URL;
 // reconnection retries missing photos without a timer for every avatar.
 export function StaffAvatar({ src, className }: { src: string | null; className?: string }) {
+  const __vt = useWorkspaceTranslation();
+
   const [image, setImage] = useState<{ source: string; url: string } | null>(null);
   useEffect(() => {
     if (!src) return;
@@ -37,6 +40,6 @@ export function StaffAvatar({ src, className }: { src: string | null; className?
   }, [src]);
   if (!src) return null;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img key={image?.source === src ? image.url : src} alt="" className={className}
+  return <img key={image?.source === src ? image.url : src} alt={__vt("")} className={className}
     src={image?.source === src ? image.url : src} onError={event => { event.currentTarget.style.visibility = "hidden"; }} />;
 }

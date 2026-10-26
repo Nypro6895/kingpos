@@ -1,0 +1,240 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r6-integration-20261021",
+  "status": "needs-integration",
+  "summary": "Integrated two frozen My Work identity and role DTO cache fixes onto R5 with exact c701 timing prerequisites; corrected one existing test dependency map.596matrix+6combined local checks passed with explicit source bindings; quality/build passed. Native live, known-revocation503 cached-display contract, authenticatedPOS and staging gates remain open. Release held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/read-context-scope.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-read-cache.ts",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "lib/read-request-timing.ts",
+    "lib/app-local-role-resources-server.ts",
+    "tests/app-local-read-cancellation.test.mjs"
+  ],
+  "source": {
+    "commit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r6-verified\\functional-source-manifest.json",
+    "sha256": "795cce961cb3bf394eb3e1a94112295f86f65f71c562cecf3facc61e3ca0506d"
+  },
+  "dependencies": [
+    "reylumi-final-r5-integration-20261021"
+  ],
+  "sourceEvents": [
+    "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+    "812ce8f9-478b-4396-89bc-35d0fa622ceb"
+  ],
+  "validation": [
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\campaign-logic\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\campaign-browser\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\campaign-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "owner-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\owner-admission\\attempt-2-escalated\\receipt.json"
+    },
+    {
+      "name": "portable-admission",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\portable-admission\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-continuation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\guest-continuation\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "guest-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\guest-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "idle-web",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\idle-web\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\experience-regression\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "experience-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\experience-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\scope-regression\\attempt-2-fixture-wiring\\receipt.json"
+    },
+    {
+      "name": "payroll-daily",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\payroll-daily\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "daily-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\daily-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "bridge-contracts",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\bridge-contracts\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "native-recovery-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\native-recovery-fixture\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "session-guest-fixture",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\session-guest-fixture\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\lint\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\typecheck\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\build\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\offline-assets\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "staff-read-identity",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\staff-read-identity\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-chromium",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\role-cache-chromium\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "role-cache-webkit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-validation\\role-cache-webkit\\attempt-1\\receipt.json"
+    },
+    {
+      "name": "combined-auth-cache",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-auth-validation\\DELIVERY.json"
+    },
+    {
+      "name": "known-revocation-503-cached-display",
+      "result": "pending",
+      "evidence": "Resolve/review the known-rejection versus temporary-unavailability response contract and immediate withdrawal expectation with auth specialist; verify real context/revocation ordering. Do not claim immediate revocation acceptance from these fixtures."
+    },
+    {
+      "name": "final-native-auth-latency",
+      "result": "pending",
+      "evidence": "Parent transfers this exact functional/metadata hash to existing native coordinator at its checkpoint. Verify real auth/role return/Guest/restart/Today, cold/warm latency and native fallback against actual uploaded binary/bundled source."
+    },
+    {
+      "name": "authenticated-windows-pos",
+      "result": "pending",
+      "evidence": "Parent routes final hash for authorized login/unlock/offline lease/revocation and POS acceptance without financial transaction."
+    },
+    {
+      "name": "staging-acl-jobs-provider",
+      "result": "pending",
+      "evidence": "Validate actual PostgREST/RLS/owner ACL, scheduler/leases, owner-only24h/7d reminder dedupe and provider sandbox callbacks/reconciliation with test sinks/no real charges."
+    },
+    {
+      "name": "legacy-data-and-db-fallback",
+      "result": "pending",
+      "evidence": "Use prepared read-only aggregate inventory to review real legacy pause/end/reserve and unresolved processing states on authorized staging. Retain R5 DB+worker+status contracts as a compatible unit; rehearse forward correction and in-flight reconciliation before fallback."
+    },
+    {
+      "name": "release-baseline-single-release",
+      "result": "pending",
+      "evidence": "Parent reconciles exact currently deployed web and actually uploaded native source, any later frozen handoffs, final gate evidence and rollback before deciding one release."
+    }
+  ],
+  "gates": [
+    {
+      "id": "known-revocation-503-cached-display",
+      "status": "OPEN_NEEDS_AUTH_SPECIALIST_REVIEW_BEFORE_RELEASE",
+      "finding": "A session revoked after fresh destination admission and during the backend read fails final validation with503 and no new DTO. Existing transient503 handling can retain the previously authorized DTO, including a role-vault-restored copy, until explicit authority denial.",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\r6-auth-validation\\DELIVERY.json",
+      "required": "Resolve/review the known-rejection versus temporary-unavailability response contract and immediate withdrawal expectation with auth specialist; verify real context/revocation ordering. Do not claim immediate revocation acceptance from these fixtures.",
+      "scope": "No cache-derived admission or new backend DTO was observed; explicit denial clears scope/view; pre-existing503 policy is extended to restored DTOs by role cache."
+    },
+    {
+      "id": "final-native-auth-latency",
+      "status": "NOT_PASSED_NATIVE_LIVE_LOGIN_AND_FINAL_SOURCE_NOT_TESTED",
+      "ownerThread": "01a155f0-f24b-75f1-b5ff-32f00b8d1aa0",
+      "action": "Parent transfers this exact functional/metadata hash to existing native coordinator at its checkpoint. Verify real auth/role return/Guest/restart/Today, cold/warm latency and native fallback against actual uploaded binary/bundled source.",
+      "limit": "Installed QA source c701 differs from finalR6. Login/manual native checkpoint remains pending per frozenhandoff. No native binary build, installation or upload performed here."
+    },
+    {
+      "id": "authenticated-windows-pos",
+      "status": "PENDING_FINAL_HASH_HOST_SESSION",
+      "ownerThread": "01a15f87-8ec3-726e-b21b-007f4d432013",
+      "action": "Parent routes final hash for authorized login/unlock/offline lease/revocation and POS acceptance without financial transaction.",
+      "limit": "Owner7/Portable8 fixture passes are not installed-host authenticated acceptance. Actual0.6.4/localhost3107 recovery remains separate; no userapp config/profile changed."
+    },
+    {
+      "id": "staging-acl-jobs-provider",
+      "status": "PENDING_AUTHORIZED_STAGING_NO_MUTATIONS_HERE",
+      "action": "Validate actual PostgREST/RLS/owner ACL, scheduler/leases, owner-only24h/7d reminder dedupe and provider sandbox callbacks/reconciliation with test sinks/no real charges.",
+      "limit": "No staging/production data accessed or migrated and no real notification/provider request made by this task."
+    },
+    {
+      "id": "legacy-data-and-db-fallback",
+      "status": "LOCAL_UPGRADE_FIXTURES_PASSED_STAGING_INVENTORY_AND_OPERATIONAL_FALLBACK_PENDING",
+      "action": "Use prepared read-only aggregate inventory to review real legacy pause/end/reserve and unresolved processing states on authorized staging. Retain R5 DB+worker+status contracts as a compatible unit; rehearse forward correction and in-flight reconciliation before fallback.",
+      "limit": "No safe blanket rollback to R4 worker after migrations1000/1100/new processing. Git inverse only supports source rollback before DBapply. No production inventory or rollback performed."
+    },
+    {
+      "id": "release-baseline-single-release",
+      "status": "HELD_BY_USER",
+      "ownerThread": "01a15ce0-fc08-723e-a94a-96c2afa9900b",
+      "action": "Parent reconciles exact currently deployed web and actually uploaded native source, any later frozen handoffs, final gate evidence and rollback before deciding one release.",
+      "limit": "No push/deploy/publish/upload/migration/production notification/real payment authorized or performed here."
+    }
+  ],
+  "id": "e32efba9-d661-4558-8f11-9e605b2383f1",
+  "recordedAt": "2026-10-21T23:03:37.410Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

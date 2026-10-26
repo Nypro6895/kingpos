@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "r6-confirmed-auth-rejection-20261021",
+  "status": "working",
+  "summary": "Preserve opt-in typed confirmed auth rejection through Staff initial/final validation and both named-read/experience My Work routes; keep unknown transient503 and legacy default/null behavior. Adds mixed-known-rejection priority and actual client withdrawal/late reply controls. No client cache, services pilot, frozenR6 or Mac edits.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/supabase/server.ts",
+    "lib/supabase/auth-rejection.ts",
+    "lib/staff-portal-identity.ts",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/app-local-read-auth-rejection.test.mjs",
+    "app/api/experience/my-work/route.ts",
+    "tests/live-workspace-experience.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos-r6-auth-rejection-20261021",
+    "commit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8"
+  },
+  "dependencies": [
+    "reylumi-final-r6-integration-20261021"
+  ],
+  "validation": [
+    {
+      "name": "R6 raw baseline binding3243files plus confirmed-rejection vs transient regression controls",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\baseline-source-proof-r2.json"
+    }
+  ],
+  "id": "0cc06541-ebd9-4788-9634-8bd6a5afb302",
+  "recordedAt": "2026-10-21T23:16:53.123Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

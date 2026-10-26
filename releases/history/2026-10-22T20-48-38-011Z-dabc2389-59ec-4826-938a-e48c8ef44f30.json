@@ -1,0 +1,147 @@
+{
+  "kind": "release",
+  "summary": "R12 composite web source is published and verified with rendered public-page and Guest API smoke; Campaign automatic schedule remains held after approval denial. iOS is pending and not uploaded.",
+  "occurredAt": "2026-10-22T20:44:59.914Z",
+  "releaseId": "reylumi-core-r12-20261022-task6",
+  "changes": [
+    "b1b24e5e-f58a-4372-ae1a-3969479a33e5"
+  ],
+  "sourceCommit": "b823db4bf44f916543f13550c52bd8ac294958dc",
+  "functionalCommit": "4d3276f88829af5a73de6d53aa617dc0e59b6dae",
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DRWAXf6uNf2wpkJVAows9QFmSDej",
+      "baselineDeploymentId": "dpl_Cn4WBJyXoUai3VLuhQGu7uPf76Lv",
+      "sourceSha256": "725944d9ed4679942f8f146fd3071df2e46c4b47850f7b26f415cd8046a9e420",
+      "overlaySha256": "8ef56ef194021a3286245451c7873de25b75c8859bd691329c7bf19342185041",
+      "evidence": {
+        "exactStagedSource": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\ROOT-STAGED-SOURCE-ACCEPTANCE.json",
+          "sha256": "dc2ed10a69f65f026a744c92834c11d2d4e2a9fe5c6526b2ba830e52412e6a40"
+        },
+        "promotionReadback": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\promotion\\READBACK-20261022T204414755297Z.json",
+          "sha256": "7d2335af52b480684432a14b58f376eb2c693afa22968a459a277cb2e312c964"
+        },
+        "combinedPublicSmokeAcceptance": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\COMBINED-PUBLIC-SMOKE-ACCEPTANCE.json",
+          "sha256": "bafccc256c68a1805a4145908327c7d15a8a7a49d867bde75a8a1522815421ec"
+        },
+        "originalSSRFailurePreserved": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\post-promotion-smoke\\20261022T203533087796Z-68a71c41.json",
+          "sha256": "a7d9c57c7eb02f4e5538dfa6e64badf8e56d285580485102284dc44d5769c85b"
+        },
+        "renderedOriginalAssertions": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\rendered-public-smoke\\2026-10-22T20-43-38-775Z-25436\\receipt.json",
+          "sha256": "a4e4b295a5a23756108113c8202578b94be95829828fc8aab0cdddce4c262776"
+        },
+        "databaseMigrations": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\MIGRATIONS-VERIFIED.json",
+          "sha256": "bdf45711a65a9b85f4285c443b54736b7a727e56f1f72529b248fe6159142e7d"
+        }
+      },
+      "operationalQualification": "Web publication does not mean Campaign automatic processing is resumed. Existing Campaign cron job 2 is verified inactive and held; approval-denied resume did not start."
+    }
+  },
+  "sourceHashMeaning": {
+    "sourceSha256": "Full3320-file final source manifest for deployed b823 metadata commit.",
+    "overlaySha256": "Complete composite functional-source manifest bound by the exact ready event; includes retained baseline and selected integrations, not only the three-fixture incremental patch."
+  },
+  "database": {
+    "state": "ALL_11_MIGRATIONS_APPLIED_AND_POSTCOMMIT_VERIFIED",
+    "migrationCount": 11,
+    "postcommitChecks": 140,
+    "evidence": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\MIGRATIONS-VERIFIED.json",
+      "sha256": "bdf45711a65a9b85f4285c443b54736b7a727e56f1f72529b248fe6159142e7d"
+    },
+    "rollback": "Keep completed additive schema and compatible worker. Source inverse is not database restore; encrypted logical backup has snapshot/PITR and restore-drill limitations.",
+    "backupEvidence": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\backup\\attempt-20261022T195545Z-b4050458\\receipt.json",
+      "sha256": "de3f98a99cec3de2f2ed1e3d89fe892830a56da7c62f231613141e86f218ee1a"
+    }
+  },
+  "operationalStatus": {
+    "campaign": {
+      "state": "HELD_PENDING_EXPLICIT_APPROVAL",
+      "projectRef": "bowkoiprvqwjilwaxhda",
+      "cronJobId": 2,
+      "cronJobName": "campaign-credit-queue",
+      "active": false,
+      "held": true,
+      "observedAt": "2026-10-22T20:45:51.234585+00:00",
+      "statusEvidence": {
+        "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\db-cutover-helper-api-v3-b823db4bf44f\\runs\\20261022T204547Z-3e26b070\\RESULT.json",
+        "sha256": "47fb1bc0b587139f92a4cf14388bb132ea79fcdd4a03253bce88e913dd258d88"
+      },
+      "resume": {
+        "state": "AUTOMATIC_APPROVAL_DENIED_BEFORE_EXECUTION",
+        "processStarted": false,
+        "retryCountAfterDenial": 0,
+        "workaroundAttempted": false,
+        "action": "cutover_transport.py resume using immutable API-v3 package d93734c0e9c20c067d914e195fcb1aaec5b111de98c44e7f39624994748bb321",
+        "target": "Production Supabase bowkoiprvqwjilwaxhda, existing cron job 2 campaign-credit-queue, active false to true",
+        "reasonVerbatim": "Resuming the production Campaign cron is a consequential external side effect that can initiate automatic credit/payment processing, and the trusted user instructions do not explicitly authorize this exact resume or override the stated no-real-payments restriction.",
+        "approval": "Explicit user approval requested asynchronously and pending at this receipt; no elapsed-time approval.",
+        "denialEvidence": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\CAMPAIGN-RESUME-APPROVAL-BLOCK.json",
+          "sha256": "9cfe9fbc2c04943d1e664b1ab321a0eab7dda1920d3c568b91d31cd85e20ab41"
+        }
+      },
+      "earlierTechnicalAcceptance": {
+        "evidence": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\ROOT-RESUME-GATE.json",
+          "sha256": "7322c9fa50a8d2bc73b5e27a60ee2ca2117cb6b7a0cd17bf8892ef6238e045b4"
+        },
+        "interpretation": "Earlier root technical acceptance is preserved as history. It is not executed resume evidence and does not override the active automatic approval denial."
+      }
+    }
+  },
+  "pendingChannels": [
+    "ios"
+  ],
+  "native": {
+    "status": "pending-not-uploaded",
+    "uploaded": false,
+    "testflightAvailable": false,
+    "appStorePublished": false,
+    "commit": "b823db4bf44f916543f13550c52bd8ac294958dc",
+    "ci": {
+      "state": "EXACT_SOURCE_SIMULATOR_AND_UNSIGNED_ARCHIVE_VERIFIED",
+      "testsPassed": 205,
+      "runId": 39842952838,
+      "archive": "unsigned",
+      "evidence": {
+        "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\native\\ios-check-39842952838\\VERIFIED-RECEIPT.json",
+        "sha256": "5eb44fa75a57f67cbdc14f5b54c9e6df106ee53875d0ee93b87546d57c063ef8"
+      }
+    },
+    "remaining": "Prepared TestFlight dispatch requires completed cutover including separately verified Campaign resume. No completed-cutover clearance or upload is claimed."
+  },
+  "limits": [
+    "Anonymous public smoke does not prove fresh authenticated backend or R12 live login.",
+    "Original SSR smoke failure remains immutable; combined acceptance uses its two passing Guest API checks and three browser-rendered pages with original assertions.",
+    "Browser request guard blocks API, image optimizer and external assets; screenshots are not complete asset acceptance.",
+    "Single navigations are not latency benchmarks.",
+    "Remote3201 source content UIDs are exact; direct remote byte sizes were unavailable and remain qualified.",
+    "Native205 and unsigned archive are validation evidence, not Apple upload or TestFlight availability.",
+    "Services pilot remains production OFF."
+  ],
+  "preservedHistory": {
+    "publicationPlan": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\PUBLICATION-JOURNAL-PLAN.json",
+      "sha256": "642dea1dea21bd6a07cd338a5a85f1fce43bdb43589ade2f2e96fd3b38b5216b"
+    },
+    "originalFailurePreserved": true,
+    "historicalEventsNotFalselyResolved": true
+  },
+  "outstanding": [
+    "Explicit authorization and separate status verification for restoring existing Campaign schedule; no retry authorized by this manifest.",
+    "Native upload and actual Apple/TestFlight availability remain pending."
+  ],
+  "id": "dabc2389-59ec-4826-938a-e48c8ef44f30",
+  "recordedAt": "2026-10-22T20:48:38.011Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\release-journal-r12"
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "changeId": "staff-invite-preflight-20261016",
+  "files": [
+    "lib/staff-salon-connections.ts"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Completed retry preflight integrated on the shipped manager-only RLS and binding attestation baseline. 23 service checks and current-schema confidentiality tests passed. Existing concurrent creation atomicity remains a separate limitation.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source",
+    "baselineDeploymentId": "dpl_Ejji8CkeAdsjudkYHVpgR9Ycdmoj"
+  },
+  "validation": [
+    {
+      "name": "Final assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/build-release.log"
+    },
+    {
+      "name": "Integrated SQL search, browser, permissions, ledger, native DTO and Help regression checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/validation-summary.json"
+    },
+    {
+      "name": "Isolated current schema staff/payroll security",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/evidence/staff-payroll-current/results.json"
+    }
+  ],
+  "id": "4777cdd1-2a74-49f4-9364-d4c45d599d1d",
+  "recordedAt": "2026-10-17T03:34:52.761Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/staff-salon-connections.ts": "e0e1e781c7808b8ab2a655f83033f04bfc5f3139d844fafcf7828c878bd9d275"
+  }
+}

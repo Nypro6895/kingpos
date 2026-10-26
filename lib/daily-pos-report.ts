@@ -19,7 +19,10 @@ import {
   type SalonActivityBucketSource,
   type SalonBusinessHoursWindow,
 } from "@/lib/salon-business-hours";
-import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createAuthenticatedSupabaseServerClient,
+  getAuthenticatedReadAuthority,
+} from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -89,6 +92,58 @@ type ReportAuthContext = {
   user: NonNullable<CurrentBusinessContext["user"]>;
 };
 
+export type DailyPosReadContext = {
+  read<T>(auth: ReportAuthContext, query: readonly unknown[], read: () => PromiseLike<T>): Promise<T>;
+};
+
+function reportContextIdentity(context: CurrentBusinessContext) {
+  return JSON.stringify([
+    context.user?.id,
+    context.currentAccount?.id,
+    context.currentSalon?.id,
+    context.currentMembership,
+    context.currentWorkspace,
+    context.activeRole,
+    context.permissionCodes,
+    context.permissions,
+    context.salonMode,
+    context.businessMode,
+  ]);
+}
+
+// The caller owns this collector for a single Today financial read. It joins
+// only pending identical raw SELECTs, after each helper's own admission gates.
+// Settled values are discarded so subsequent reads still observe live writes.
+export function createDailyPosReadContext(context: CurrentBusinessContext): DailyPosReadContext {
+  const identity = reportContextIdentity(context);
+  const pending = new Map<string, Promise<unknown>>();
+  return {
+    read<T>(auth: ReportAuthContext, query: readonly unknown[], read: () => PromiseLike<T>): Promise<T> {
+      const authority = getAuthenticatedReadAuthority(auth.supabase);
+      if (!authority || auth.context !== context || reportContextIdentity(auth.context) !== identity) {
+        return Promise.resolve(read());
+      }
+      const key = JSON.stringify([authority, query]);
+      const existing = pending.get(key);
+      if (existing) return existing as Promise<T>;
+      const result = Promise.resolve(read());
+      pending.set(key, result);
+      const clear = () => { if (pending.get(key) === result) pending.delete(key); };
+      void result.then(clear, clear);
+      return result;
+    },
+  };
+}
+
+function readDailyPos<T>(
+  auth: ReportAuthContext,
+  readContext: DailyPosReadContext | undefined,
+  query: readonly unknown[],
+  read: () => PromiseLike<T>,
+): Promise<T> {
+  return readContext ? readContext.read(auth, query, read) : Promise.resolve(read());
+}
+
 type ReportTicketItemTurnPart = {
   amount: number;
   staff_id: string | null;
@@ -97,7 +152,7 @@ type ReportTicketItemTurnPart = {
 };
 
 type ReportTicketItem = {
-  assigned_staff: { display_name: string; id: string } | null;
+  assigned_staff?: { display_name: string; id: string } | null;
   assigned_staff_id: string | null;
   id: string;
   is_removed?: boolean;
@@ -129,7 +184,7 @@ type StaffEarningRow = {
   big_turn_count: number;
   service_total: number;
   small_turn_count: number;
-  staff: { display_name: string; id: string } | null;
+  staff?: { display_name: string; id: string } | null;
   staff_id: string;
   tip_amount: number;
 };
@@ -183,6 +238,7 @@ type FinancialAdjustmentRow = {
 };
 
 export type SaveDailyPosClosingInput = {
+  expectedScope?: string;
   expectedClosing: DailyPosClosingInputs;
   cashAmount: string;
   creditCardAmount: string;
@@ -788,7 +844,9 @@ async function buildSalesComparison(input: {
       if (sameTime && !cutoff)
         throw new Error("Sales comparison is temporarily unavailable.");
       return loadLiveDailyPosReport(date, input.auth, {
+        comparisonOnly: true,
         includeActivityPoints: false,
+        includeClosing: false,
         timeZone: input.timeZone,
         closedBefore: cutoff
           ? new Date(
@@ -978,6 +1036,7 @@ export async function canRequestFinancialCorrections(
 export async function getDailyPosTodayFinancialData(input: {
   businessHours?: SalonBusinessHoursWindow | null;
   context?: CurrentBusinessContext;
+  readContext?: DailyPosReadContext;
   reportDate: string;
   timeZone: string;
 }): Promise<DailyPosTodayFinancialData> {
@@ -993,6 +1052,7 @@ export async function getDailyPosTodayFinancialData(input: {
   );
   const core = await loadLiveDailyPosReport(input.reportDate, auth, {
     businessHours: input.businessHours,
+    readContext: input.readContext,
     timeZone: input.timeZone,
   });
   const salesComparison = await buildSalesComparison({
@@ -1023,8 +1083,11 @@ async function loadLiveDailyPosReport(
   auth: ReportAuthContext,
   options: {
     businessHours?: SalonBusinessHoursWindow | null;
+    comparisonOnly?: boolean;
     includeActivityPoints?: boolean;
+    includeClosing?: boolean;
     closedBefore?: string;
+    readContext?: DailyPosReadContext;
     timeZone?: string;
   } = {},
 ): Promise<DailyReportCore> {
@@ -1033,27 +1096,42 @@ async function loadLiveDailyPosReport(
     reportDate,
     options.timeZone ?? await getContextBusinessTimezone(auth.context),
   );
+  // Historical comparison consumes totals, not payment breakdowns or display
+  // names. Keep tax/tip/item/turn and earning inputs exactly as the live report.
+  const ticketSelection: string = options.comparisonOnly
+    ? "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))"
+    : "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))";
+  const earningsSelection: string = options.comparisonOnly
+    ? "staff_id, service_total, tip_amount, big_turn_count, small_turn_count"
+    : "staff_id, service_total, tip_amount, big_turn_count, small_turn_count, staff:staff(id, display_name)";
 
   const [
     { data: closing, error: closingError },
     { data: tickets, error: ticketsError },
   ] = await Promise.all([
-    supabase
-      .from("pos_daily_closings")
-      .select(POS_DAILY_CLOSING_SELECT)
-      .eq("salon_id", salon.id)
-      .eq("report_date", reportDate)
-      .maybeSingle<PosDailyClosing>(),
-    supabase
+    // Historical sales comparison uses expected totals from tickets/earnings.
+    // Actual closing inputs are not consumed, and must remain live reads for
+    // the full report and every financial write/lock path.
+    options.includeClosing === false
+      ? Promise.resolve({ data: null, error: null })
+      : readDailyPos(auth, options.readContext,
+          ["pos_daily_closings", POS_DAILY_CLOSING_SELECT, salon.id, reportDate],
+          () => supabase
+          .from("pos_daily_closings")
+          .select(POS_DAILY_CLOSING_SELECT)
+          .eq("salon_id", salon.id)
+          .eq("report_date", reportDate)
+          .maybeSingle<PosDailyClosing>()),
+    readDailyPos(auth, options.readContext,
+      ["pos_tickets", ticketSelection, salon.id, bounds.openedFrom, bounds.openedTo, "opened_at.asc"],
+      () => supabase
       .from("pos_tickets")
-      .select(
-        "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
-      )
+      .select(ticketSelection)
       .eq("salon_id", salon.id)
       .gte("opened_at", bounds.openedFrom)
       .lte("opened_at", bounds.openedTo)
       .order("opened_at", { ascending: true })
-      .returns<ReportTicketRow[]>(),
+      .returns<ReportTicketRow[]>()),
   ]);
 
   if (closingError) {
@@ -1098,15 +1176,15 @@ async function loadLiveDailyPosReport(
   let tipAttributionSource: DailyPosTipAttributionSource = "none";
 
   if (finalizedTicketIds.length > 0) {
-    const { data: earnings, error: earningsError } = await supabase
+    const { data: earnings, error: earningsError } = await readDailyPos(auth, options.readContext,
+      ["pos_ticket_staff_earnings", earningsSelection, salon.id, reportDate, finalizedTicketIds],
+      () => supabase
       .from("pos_ticket_staff_earnings")
-      .select(
-        "staff_id, service_total, tip_amount, big_turn_count, small_turn_count, staff:staff(id, display_name)",
-      )
+      .select(earningsSelection)
       .eq("salon_id", salon.id)
       .eq("work_date", reportDate)
       .in("ticket_id", finalizedTicketIds)
-      .returns<StaffEarningRow[]>();
+      .returns<StaffEarningRow[]>());
 
     if (earningsError) {
       console.error("Supabase load daily POS staff earnings failed", {
@@ -2105,6 +2183,7 @@ export async function assertTicketFinancialDateMutable(
 export async function getDailyPosReport(
   reportDateInput: string,
   context?: CurrentBusinessContext,
+  readContext?: DailyPosReadContext,
 ): Promise<DailyPosReport> {
   const auth = await requireReportContext(
     DAILY_POS_REPORT_PERMISSIONS.view,
@@ -2113,7 +2192,7 @@ export async function getDailyPosReport(
   const reportDate = isDateInputValue(reportDateInput)
     ? reportDateInput
     : getTodayDate(await getContextBusinessTimezone(auth.context));
-  const core = await loadLiveDailyPosReport(reportDate, auth);
+  const core = await loadLiveDailyPosReport(reportDate, auth, { readContext });
   const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core);
   const correctionRows = await loadDailyClosingCorrectionRows(auth, reportDate);
   const snapshot = getSnapshotTotalsFromClosing(ensuredClosing);
@@ -2205,6 +2284,10 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
 
   const { context, Account, salon, supabase, user } =
     await requireReportContext(DAILY_POS_REPORT_PERMISSIONS.edit);
+
+  if (input.expectedScope && input.expectedScope !== `${salon.id}:${user.id}`) {
+    throw new Error("The selected salon or account changed. Reopen this report before saving.");
+  }
 
   await assertFinancialDateMutable(input.reportDate, context, {
     requireEditPermission: false,
@@ -2621,4 +2704,28 @@ export async function getPayrollReadyDailyFinancials(
   }
 
   return rows;
+}
+
+export async function loadPayrollReportExpected(auth: ReportAuthContext, start: string, end: string): Promise<Map<string, number>> {
+  const timezone = await getContextBusinessTimezone(auth.context);
+  const first = getUtcBoundsForLocalDate(start, timezone), last = getUtcBoundsForLocalDate(end, timezone);
+  type TicketWithEarnings = ReportTicketRow & { earnings: (StaffEarningRow & { work_date: string })[] };
+  const tickets: TicketWithEarnings[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const {data,error} = await auth.supabase.from("pos_tickets").select("id,opened_at,closed_at,status,discount_type,discount_value,tax_rate,tip_type,tip_value,ticket_items:pos_ticket_items(id,assigned_staff_id,quantity,line_total,is_removed,turn_parts:pos_ticket_item_turn_parts(amount,staff_id,turn_index,turn_type)),earnings:pos_ticket_staff_earnings(staff_id,work_date,service_total,tip_amount,big_turn_count,small_turn_count)")
+      .eq("salon_id",auth.salon.id).eq("status","closed").gte("opened_at",first.openedFrom).lte("opened_at",last.openedTo).order("opened_at").order("id").range(offset,offset+499).returns<TicketWithEarnings[]>();
+    if(error) throw new Error("Daily Report reconciliation could not be loaded.");
+    tickets.push(...data??[]); if(!data||data.length<500)break;
+  }
+  const formatter=new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit"});
+  const groups=new Map<string,TicketWithEarnings[]>();
+  for(const ticket of tickets){const date=formatter.format(new Date(ticket.opened_at));const group=groups.get(date)??[];group.push(ticket);groups.set(date,group);}
+  const result=new Map<string,number>();
+  for(const [date,group] of groups){
+    const earnings=group.flatMap(ticket=>(ticket.earnings??[]).filter(earning=>earning.work_date===date));
+    const staffRows=earnings.length?buildStaffRowsFromEarnings(earnings):buildStaffRowsFromTickets(group);
+    const totals=calculateTicketSummaryCents(group);
+    result.set(date,(sumCents(staffRows.map(row=>toCents(row.totalEarned)))+totals.totalTipCents-totals.totalDiscountCents)/100);
+  }
+  return result;
 }

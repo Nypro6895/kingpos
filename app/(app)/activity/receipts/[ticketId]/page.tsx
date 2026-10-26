@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import {
   getCustomerActivityReceipt,
   type CustomerActivityReceipt,
@@ -188,7 +189,7 @@ function TotalsRow({
   );
 }
 
-export default async function ActivityReceiptPage({
+async function ActivityReceiptPage({
   params,
 }: ActivityReceiptPageProps) {
   const { ticketId } = await params;
@@ -342,3 +343,5 @@ export default async function ActivityReceiptPage({
     </main>
   );
 }
+
+export default withExperiencePage(ActivityReceiptPage);

@@ -8,6 +8,7 @@ import {
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUser } from "@/types/user";
 import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
+import { assertAuthAvailable, AuthAvailabilityError } from "@/lib/supabase/auth-rest";
 
 const USER_SELECT =
   "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, deletion_requested_at, deletion_scheduled_for, deleted_at, anonymized_at, deletion_finalization_started_at, deletion_finalized_at, deletion_finalization_attempts, deletion_finalization_failed_at, deletion_finalization_error, last_login_at, created_at, updated_at";
@@ -79,6 +80,7 @@ async function createMissingKingUser(
       details: error.details,
       hint: error.hint,
     });
+    assertAuthAvailable(error, undefined, "Account profile creation");
   }
 
   const { data: existingUser, error: existingUserError } = await supabase
@@ -95,7 +97,7 @@ async function createMissingKingUser(
       details: existingUserError.details,
       hint: existingUserError.hint,
     });
-    return null;
+    throw new AuthAvailabilityError("Account profile");
   }
 
   return existingUser;
@@ -110,6 +112,7 @@ async function authIdentityWasFinalized(
   });
 
   if (error) {
+    if (error.code !== "42883" && error.code !== "42P01") assertAuthAvailable(error, undefined, "Account status");
     if (error.code !== "42883" && error.code !== "42P01") {
       console.error("Unable to check deleted auth identity tombstone", {
         authUserId: authUser.id,
@@ -152,7 +155,7 @@ export async function getKingUserForAuthUser(
       details: error.details,
       hint: error.hint,
     });
-    return null;
+    throw new AuthAvailabilityError("Account profile");
   }
 
   if (!data && (await authIdentityWasFinalized(supabase, authUser))) {

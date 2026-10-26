@@ -1,6 +1,8 @@
-/* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animations. */
 "use client";
-import { useState, type FormEvent } from "react";
+import { prepareImageUpload } from "@/lib/image-upload-client";
+import { CampaignPreview } from "./campaign-preview";
+/* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animations. */
+import { useState, useEffect, type FormEvent } from "react";
 import { saveCampaignAction, campaignImageUploadAction } from "./actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
@@ -23,6 +25,14 @@ export function CampaignForm({
   const date = (value?: string | null) =>
     value ? new Date(value).toISOString().slice(0, 16) : "";
   const [values, setValues] = useState<Record<string, string>>(() => ({
+    audiences: (
+      campaign?.audiences ?? ["guest", "personal", "staff", "owner"]
+    ).join(","),
+    devices: (campaign?.devices ?? ["desktop", "mobile"]).join(","),
+    placements: (campaign?.placements ?? ["sidebar", "feed"]).join(","),
+    locations: (campaign?.locations ?? ["/explore"]).join("\n"),
+    popupTrigger: campaign?.popupTrigger ?? "delay",
+    scrollPercent: String(campaign?.scrollPercent ?? 35),
     id: campaign?.id ?? "",
     name: campaign?.name ?? "",
     kind: campaign?.kind ?? "popup",
@@ -43,6 +53,14 @@ export function CampaignForm({
   const [closeButton, setCloseButton] = useState(campaign?.closeButton ?? true);
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [previewCampaign, setPreviewCampaign] = useState<Campaign | null>(null);
+  useEffect(
+    () => () => {
+      if (previewCampaign?.imageUrl.startsWith("blob:"))
+        URL.revokeObjectURL(previewCampaign.imageUrl);
+    },
+    [previewCampaign],
+  );
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const change = (key: string, value: string) => {
@@ -112,7 +130,7 @@ export function CampaignForm({
       data.set("id", id);
       change("id", id);
     }
-    if (closeButton) data.set("closeButton", "on");
+    if (closeButton || values.kind === "popup") data.set("closeButton", "on");
     if (values.kind === "ticker") data.set("imageUrl", "");
     else if (file) data.set("imageUrl", "/advertising-upload-pending");
     try {
@@ -129,13 +147,14 @@ export function CampaignForm({
           throw new CampaignValidationError({
             image: "Choose a JPG, PNG, WebP or GIF under 10 MB.",
           });
-        const upload = await campaignImageUploadAction(file.type, file.size);
+        const prepared = await prepareImageUpload(file);
+        const upload = await campaignImageUploadAction(prepared.type, prepared.size);
         const client = createSupabaseBrowserClient();
         if (!client) throw new Error("Image upload is unavailable.");
         const { error } = await client.storage
           .from("explore-advertising")
-          .uploadToSignedUrl(upload.path, upload.token, file, {
-            contentType: file.type,
+          .uploadToSignedUrl(upload.path, upload.token, prepared, {
+            contentType: prepared.type,
           });
         if (error) throw new Error("Image upload failed. Please try again.");
         data.set("imageUrl", upload.url);
@@ -152,7 +171,7 @@ export function CampaignForm({
         return;
       }
       data.set("id", result.id!);
-      onSaved(parseCampaign(data));
+      onSaved(result.campaign ?? parseCampaign(data));
     } catch (error) {
       if (error instanceof CampaignValidationError) setErrors(error.fields);
       setMessage(
@@ -190,6 +209,125 @@ export function CampaignForm({
             ["running", "Running"],
             ["stopped", "Stopped"],
           ])}
+          <div className={styles.full}>
+            <h3>Audience & locations</h3>
+            <p>
+              Choose multiple workspaces, devices and pages. A page path also
+              includes its subpages.
+            </p>
+          </div>
+          {(
+            [
+              [
+                "audiences",
+                "Show to",
+                [
+                  ["guest", "Guest"],
+                  ["personal", "Personal"],
+                  ["staff", "Staff"],
+                  ["owner", "Owner"],
+                ],
+              ],
+              [
+                "devices",
+                "Devices",
+                [
+                  ["desktop", "Desktop"],
+                  ["mobile", "Mobile / app"],
+                ],
+              ],
+              [
+                "placements",
+                "Placement positions",
+                [
+                  ["sidebar", "Desktop sidebar"],
+                  ["feed", "Explore mobile feed"],
+                  ["page-top", "Page start"],
+                  ["page-bottom", "Page end"],
+                ],
+              ],
+            ] as [string, string, [string, string][]][]
+          ).map(([key, label, options]) => (
+            <fieldset key={key} className={styles.targetGroup}>
+              <legend>{label}</legend>
+              {options.map(([value, text]) => (
+                <label key={value} className={styles.checkbox}>
+                  <input
+                    type="checkbox"
+                    checked={values[key].split(",").includes(value)}
+                    onChange={(e) => {
+                      const selected = values[key]
+                        .split(",")
+                        .filter(Boolean)
+                        .filter((item) => item !== value);
+                      if (e.target.checked) selected.push(value);
+                      change(key, selected.join(","));
+                    }}
+                  />
+                  {text}
+                </label>
+              ))}
+              {errors[key] ? (
+                <span className={styles.error}>{errors[key]}</span>
+              ) : null}
+            </fieldset>
+          ))}
+          <div className={styles.full}>
+            {control(
+              "locations",
+              "Page locations (one path per line)",
+              "textarea",
+            )}
+            <p>
+              Examples: /explore, /staff, /bookings, /beauty, /notifications.
+              Use / for all pages. Admin pages are excluded.
+            </p>
+            <div className={styles.locationPresets}>
+              {[
+                "/explore",
+                "/staff",
+                "/bookings",
+                "/salon-profile",
+                "/beauty",
+                "/my-bookings",
+                "/notifications",
+                "/more",
+              ].map((path) => (
+                <button
+                  type="button"
+                  key={path}
+                  onClick={() =>
+                    change(
+                      "locations",
+                      [
+                        ...new Set([
+                          ...values.locations.split(/[\n,]+/).filter(Boolean),
+                          path,
+                        ]),
+                      ].join("\n"),
+                    )
+                  }
+                >
+                  + {path}
+                </button>
+              ))}
+            </div>
+          </div>
+          {values.kind === "popup" ? (
+            <>
+              {control("popupTrigger", "Popup stage", "select", [
+                ["delay", "After arrival delay"],
+                ["scroll", "After scrolling"],
+              ])}
+              {values.popupTrigger === "scroll"
+                ? control("scrollPercent", "Scroll progress (%)", "number")
+                : null}
+              <p>
+                On mobile, announcements appear first. Popups wait at least 8
+                seconds after an announcement.
+              </p>
+            </>
+          ) : null}
           {control("href", "Click destination (optional)")}
           {values.kind !== "ticker" ? (
             <>
@@ -259,7 +397,8 @@ export function CampaignForm({
             <label className={styles.checkbox}>
               <input
                 type="checkbox"
-                checked={closeButton}
+                checked={values.kind === "popup" || closeButton}
+                disabled={values.kind === "popup"}
                 onChange={(e) => setCloseButton(e.target.checked)}
               />
               Show close button
@@ -272,6 +411,34 @@ export function CampaignForm({
           </p>
         ) : null}
         <div className={styles.footer}>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              try {
+                const form = new FormData();
+                for (const [key, value] of Object.entries(values))
+                  form.set(key, value);
+                form.set("name", values.name || "Campaign preview");
+                form.set("status", "draft");
+                if (closeButton || values.kind === "popup") form.set("closeButton", "on");
+                if (file) form.set("imageUrl", "");
+                const preview = parseCampaign(form);
+                if (file) preview.imageUrl = URL.createObjectURL(file);
+                setPreviewCampaign(preview);
+              } catch (error) {
+                if (error instanceof CampaignValidationError)
+                  setErrors(error.fields);
+                setMessage(
+                  error instanceof Error
+                    ? error.message
+                    : "Cannot preview campaign.",
+                );
+              }
+            }}
+          >
+            Preview draft
+          </button>
           <button className={styles.primary} disabled={pending}>
             {pending ? "Saving…" : "Save campaign"}
           </button>
@@ -280,6 +447,12 @@ export function CampaignForm({
           </button>
         </div>
       </form>
+      {previewCampaign ? (
+        <CampaignPreview
+          campaign={previewCampaign}
+          onClose={() => setPreviewCampaign(null)}
+        />
+      ) : null}
     </section>
   );
 }

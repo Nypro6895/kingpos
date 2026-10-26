@@ -44,6 +44,7 @@ export async function loadPostCommentsAction(input: {
 }
 
 export async function createPostCommentAction(input: {
+  workspaceIdentityKey?: string;
   requestId?: string;
   asSalonReply?: boolean;
   body: string;

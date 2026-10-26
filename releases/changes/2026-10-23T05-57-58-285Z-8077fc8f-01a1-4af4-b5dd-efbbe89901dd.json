@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "settings-pos-windows-download-release-20261023",
+  "status": "ready",
+  "summary": "Use the authoritative Windows release resolver in All Settings POS; fixes the stale Test link while preserving access and production release checks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/settings/direct-settings-actions.ts",
+    "tests/settings-pos-windows-download.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-settings-download-20261023",
+    "commit": "de1dcde717b256c6c328580d70b12e79f47b2cc8",
+    "baseline": "b823db4bf44f916543f13550c52bd8ac294958dc"
+  },
+  "validation": [
+    {
+      "name": "Final baseline reproduction",
+      "result": "passed",
+      "detail": "4 pass / 8 expected failures before fix",
+      "exitCode": 1,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\evidence\\settings-download-20261023\\baseline-final-tests.log"
+    },
+    {
+      "name": "Final focused regression tests",
+      "result": "passed",
+      "detail": "12 pass / 0 fail",
+      "exitCode": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\evidence\\settings-download-20261023\\fixed-final-tests.log"
+    },
+    {
+      "name": "Focused ESLint",
+      "result": "passed",
+      "exitCode": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\evidence\\settings-download-20261023\\focused-final-lint.log"
+    },
+    {
+      "name": "Full production build with background dispatch disabled",
+      "result": "passed",
+      "exitCode": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\evidence\\settings-download-20261023\\build-reviewed.log"
+    },
+    {
+      "name": "Independent source and test review",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\evidence\\settings-download-20261023\\independent-review.md"
+    },
+    {
+      "name": "Preserved CRLF whitespace check",
+      "result": "passed",
+      "detail": "git -c core.whitespace=cr-at-eol diff --check",
+      "exitCode": 0
+    }
+  ],
+  "dependencies": [],
+  "releaseHold": true,
+  "id": "8077fc8f-01a1-4af4-b5dd-efbbe89901dd",
+  "recordedAt": "2026-10-23T05:57:58.285Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\candidate-settings-download",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/direct-settings-actions.ts": "66418713061561d4d448b641a567050157b140664b9630a54bdb483555802f64",
+    "tests/settings-pos-windows-download.test.mjs": "2935dc6a0a67e9c6631ec55ecb6fca86a224291fcdcf53ea6aec379939d37738"
+  }
+}

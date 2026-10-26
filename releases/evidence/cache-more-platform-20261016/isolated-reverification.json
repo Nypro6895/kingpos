@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-10-16T19:37:12.420Z",
+  "sourceRoot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\cache-release-20261016\\assembled",
+  "frozenSourceUnchanged": true,
+  "runs": [
+    {
+      "command": "node --test tests/app-local-authority-navigation.test.mjs tests/app-local-resource-races.test.mjs tests/experience-offline-compatibility.test.mjs",
+      "cwd": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\cache-release-20261016\\assembled",
+      "exitCode": 1,
+      "tests": 12,
+      "passed": 11,
+      "failed": 1,
+      "failures": [
+        {
+          "test": "the ten-second single-attempt deadline also aborts a stalled response body",
+          "location": "tests/experience-offline-compatibility.test.mjs:91",
+          "assertion": "the existing full ten-second allowance is preserved",
+          "expected": false,
+          "actual": true
+        }
+      ],
+      "passedCoverage": [
+        "8 authority navigation/Help/reset/hidden Activity cases",
+        "resource deletion and network-timeout authorized view retention",
+        "Safari-compatible authorization renewal/revocation without AbortSignal.any/timeout",
+        "external cancellation and no late accepted grant"
+      ]
+    },
+    {
+      "command": "node --test ../compatibility-paused-clock-diagnostic.test.mjs",
+      "cwd": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\cache-release-20261016\\assembled",
+      "exitCode": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "fixtureOnlyChange": "Pause the installed fake clock before starting the request; keep all original assertions, durations and real production modules."
+    }
+  ],
+  "assessment": "The original test leaves fake time running during the real server wait, then advances9999ms; elapsed time may cross the10s timer before its assertion. A deterministic paused-clock diagnostic passes all3 original compatibility cases. No frozen source/test changed; original failed run is retained honestly.",
+  "sourceHashes": {
+    "compatibilityTest": "2a1713eb0c5e845e14fa4cb3c91b5574b2692ee94705f7b6b8f345e9af89932c",
+    "offlineClient": "5437edd31314b20b330c514a54e27d32969843c5a15ae660cf28293f1ea1293e",
+    "boundedGet": "147dc9fccbfee110a0e40de1ff491e362b2796c9a9d0b4373cef8781a2208e88",
+    "diagnostic": "60e04044104a33eb3366db3837b24821ee9032faa9869c9a9b6199b0fa3e96c4"
+  }
+}

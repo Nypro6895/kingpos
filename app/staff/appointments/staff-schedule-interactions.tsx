@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const ConfirmationContext = createContext<{
@@ -51,8 +52,8 @@ export function StaffScheduleInteractions({ children }: { children: ReactNode })
 
 export function StaffAppointmentStatus({ bookingId, children }: { bookingId: string; children: ReactNode }) {
   const state = useStaffConfirmation();
-  if (state?.noShows.has(bookingId)) return <span className="staff-appointments-status-badge" role="status">{state.noShows.get(bookingId) === "excused" ? "No-show · With reason" : "No-show"}</span>;
+  if (state?.noShows.has(bookingId)) return <span className="staff-appointments-status-badge" role="status"><WorkspaceText text={state.noShows.get(bookingId) === "excused" ? "No-show · With reason" : "No-show"} /></span>;
   return state?.confirmed.has(bookingId)
-    ? <span className="staff-appointments-status-badge staff-appointment-confirmed" role="status">Confirmed</span>
+    ? <span className="staff-appointments-status-badge staff-appointment-confirmed" role="status"><WorkspaceText text="Confirmed" /></span>
     : children;
 }

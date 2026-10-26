@@ -17,6 +17,7 @@ export type NavigationIcon =
   | "people"
   | "plus"
   | "receipt"
+  | "qr"
   | "scissors"
   | "search"
   | "star"
@@ -77,11 +78,13 @@ export type RoleNavigationConfig = {
 export const SHARED_CONTEXT_ROUTE_PREFIXES = [
   "/account",
   "/explore",
+  "/help",
   "/more",
   "/market",
   "/my-place",
   "/notifications",
   "/settings",
+  "/support",
 ] as const;
 
 export function roleNavigationKindForContext(input: {
@@ -104,10 +107,10 @@ const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/my-bookings", icon: "calendar", id: "bookings", label: "Bookings" },
   { href: "/beauty", icon: "user", id: "beauty", label: "Beauty" },
   {
-    href: "/notifications",
-    icon: "bell",
-    id: "notifications",
-    label: "Notifications",
+    href: "/qr",
+    icon: "qr",
+    id: "personal-qr",
+    label: "QR",
   },
   { href: "/more", icon: "more", id: "more", label: "More" },
 ];
@@ -122,10 +125,10 @@ const STAFF_LINKS: NavigationLink[] = [
   },
   { href: "/salon-profile", icon: "store", id: "staff-post", label: "Post" },
   {
-    href: "/notifications",
-    icon: "bell",
-    id: "staff-notifications",
-    label: "Notifications",
+    href: "/staff/scan",
+    icon: "qr",
+    id: "staff-scan",
+    label: "Scan",
   },
   { href: "/more", icon: "more", id: "staff-more", label: "More" },
 ];
@@ -202,11 +205,11 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "receipt",
     },
     {
-      description: "Support updates and customer report history.",
-      href: "/more/reports",
+      description: "Report a problem, contact us and continue your support conversations.",
+      href: "/support",
       icon: "flag",
       id: "personal-reports",
-      label: "Reports",
+      label: "Report / Contact",
       navigationIcon: "list",
     },
   ],
@@ -253,8 +256,9 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
+    { description: "Run ads for your salon.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Advertising", navigationIcon: "star" },
     {
-      description: "Discover sample apps and integrations for your salon.",
+      description: "Add messaging, payroll, rewards, and more to Reylumi.",
       href: "/market",
       icon: "store",
       id: "owner-market",
@@ -336,6 +340,26 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
 };
 
+for (const kind of ["personal", "owner", "staff"] as const) {
+  ROLE_MORE_ITEMS[kind].push({id:`${kind}-help`,href:"/help",icon:"gear",navigationIcon:"list",label:"Help",description:"Read guides for customers, salon owners and staff."});
+}
+
+for (const kind of ["owner", "staff"] as const) {
+  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Report / Contact",description:"Report an issue and view your requests."});
+}
+
+export const OWNER_MORE_GROUPS = [
+  { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
+  { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
+  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-campaigns", "owner-market"] },
+  { id: "settings-support", title: "Settings & support", summary: "Salon setup, workspaces, and help.", ids: ["owner-setting", "owner-my-place", "owner-support", "owner-help"] },
+];
+const ownerPriority = OWNER_MORE_GROUPS.flatMap(group => group.ids);
+ROLE_MORE_ITEMS.owner.sort((a,b) => {
+  const ai=ownerPriority.indexOf(a.id),bi=ownerPriority.indexOf(b.id);
+  return (ai<0?ownerPriority.length:ai)-(bi<0?ownerPriority.length:bi);
+});
+
 function moreNavigationLinks(kind: RoleNavigationKind): NavigationLink[] {
   return ROLE_MORE_ITEMS[kind].map((item) => ({
     href: item.href,
@@ -354,6 +378,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: PERSONAL_LINKS,
     moreLinks: moreNavigationLinks("personal"),
     routePrefixes: [
+      "/qr",
       "/activity",
       "/beauty",
       "/claim",
@@ -376,6 +401,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
       "/staff/appointments",
       "/staff/my-work",
       "/staff/workday",
+      "/staff/scan",
     ],
   },
   owner: {
@@ -386,6 +412,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: OWNER_LINKS,
     moreLinks: moreNavigationLinks("owner"),
     routePrefixes: [
+      "/campaigns",
       "/bookings",
       "/customers",
       "/payroll",

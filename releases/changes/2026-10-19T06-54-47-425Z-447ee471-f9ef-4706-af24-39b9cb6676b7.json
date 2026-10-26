@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "video2-native-authority-boundaries-20261019",
+  "status": "working",
+  "summary": "Integrate completed authorized change into fresh production baseline dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy; preserve Campaign and shipped loading feedback; regenerate native bundle before release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/workspace/open/route.ts",
+    "app/api/app-local/command/route.ts",
+    "app/local-app/entry.tsx",
+    "app/local-app/scope.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "docs/video2-auth-workspace-cache-rca-20261019.md",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-admin-favicon.svg",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/Reylumi/ReylumiCookieAuthority.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityTests.swift",
+    "lib/app-local-page-admission.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/workspace-selection.ts",
+    "releases/evidence/video2-root-cause-20261019/verification.json",
+    "tests/app-local-entry-recovery-ui.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs",
+    "tests/app-local-scope-admission.test.mjs",
+    "tests/app-local-workspace-recovery-ui.test.mjs",
+    "tests/owner-today-progressive-ui.test.mjs",
+    "tests/workspace-selection-contract.test.mjs"
+  ],
+  "source": {
+    "inputEvent": "41223353-491b-476c-ae11-d61d9a74713b",
+    "baselineCommit": "effe174969ca2523e24845156c9d70dce34bc1c4",
+    "baselineDeploymentId": "dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy"
+  },
+  "validation": [
+    {
+      "name": "Combined source integration and release checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "447ee471-f9ef-4706-af24-39b9cb6676b7",
+  "recordedAt": "2026-10-19T06:54:47.425Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\video2-fix-release-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,6 +1,11 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
+
+import { SettingsIconShape } from "@/components/settings-icon";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
   ROLE_MORE_ITEMS,
+  OWNER_MORE_GROUPS,
   roleNavigationKindForContext,
   type RoleMoreIcon,
   type RoleMoreItem,
@@ -65,12 +70,7 @@ function MoreIcon({ name }: { name: MoreIconName }) {
         <path d="M12 8v13M3 12h18M7.5 8A2.5 2.5 0 1 1 12 6a2.5 2.5 0 1 1 4.5 2" />
       </>
     ),
-    gear: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
-      </>
-    ),
+    gear: <SettingsIconShape />,
     grid: (
       <>
         <rect height="7" rx="1.5" width="7" x="3" y="3" />
@@ -169,39 +169,7 @@ function personalMoreItems(): MoreContent {
 
 function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
   if (roleKind === "owner") {
-    return {
-      sections: [
-        {
-          id: "workspace",
-          items: pickMoreItems(ROLE_MORE_ITEMS.owner, ["owner-my-place"]),
-          summary: "Switch salons, staff workplaces, accounts, or Personal mode.",
-          title: "Workspace",
-        },
-        {
-          id: "front-desk",
-          items: pickMoreItems(ROLE_MORE_ITEMS.owner, [
-            "owner-pos",
-            "owner-ticket",
-            "owner-customers",
-            "owner-staff",
-            "owner-services",
-          ]),
-          summary: "Open daily tools for sales, tickets, customers, team, and services.",
-          title: "Front desk",
-        },
-        {
-          id: "business",
-          items: pickMoreItems(ROLE_MORE_ITEMS.owner, [
-            "owner-report",
-            "owner-payroll",
-            "owner-setting",
-            "owner-market",
-          ]),
-          summary: "Review performance, payroll, and salon configuration.",
-          title: "Business",
-        },
-      ],
-    };
+    return { sections: OWNER_MORE_GROUPS.map(group => ({ id: group.id, title: group.title, summary: group.summary, items: pickMoreItems(ROLE_MORE_ITEMS.owner, group.ids) })) };
   }
 
   if (roleKind === "staff") {
@@ -213,6 +181,7 @@ function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
             "staff-my-place",
             "staff-payroll",
             "staff-statistics",
+            "staff-support",
           ]),
           summary: "Switch workplaces and review your pay or performance.",
           title: "Work",
@@ -247,7 +216,7 @@ function MoreItemLink({ item }: { item: MoreItem }) {
       </span>
       <span className="min-w-0">
         <span className="block truncate text-sm font-extrabold text-text-primary">
-          {item.label}
+          <WorkspaceText text={item.label} />
         </span>
         <span className="mt-0.5 block line-clamp-1 text-xs font-semibold text-text-secondary">
           {item.description}
@@ -263,7 +232,7 @@ function MoreItemLink({ item }: { item: MoreItem }) {
   );
 }
 
-export default async function MorePage() {
+async function MorePage() {
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
@@ -292,14 +261,14 @@ export default async function MorePage() {
                     className="text-base font-extrabold text-text-primary"
                     id={`more-${section.id}-title`}
                   >
-                    {section.title}
+                    <WorkspaceText text={section.title} />
                   </h2>
                   <p className="mt-1 text-sm font-semibold text-text-secondary">
                     {section.summary}
                   </p>
                 </div>
                 <p className="text-xs font-bold uppercase text-text-secondary">
-                  {formatItemCount(section.items.length)}
+                  <WorkspaceText text={formatItemCount(section.items.length)} />
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -314,9 +283,11 @@ export default async function MorePage() {
           className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border-subtle bg-surface px-4 text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           href="/settings"
         >
-          View all settings
+          <WorkspaceText text="View all settings" />
         </Link>
       </div>
     </main>
   );
 }
+
+export default withExperiencePage(MorePage);

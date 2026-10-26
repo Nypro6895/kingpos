@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { ForgotPasswordForm } from "@/app/forgot-password/forgot-password-form";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import type { Metadata } from "next";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   description: "Request a ReyLUMI password reset link.",
 };
 
-export default async function ForgotPasswordPage({
+async function ForgotPasswordPage({
   searchParams,
 }: ForgotPasswordPageProps) {
   const { next } = await searchParams;
@@ -57,3 +58,5 @@ export default async function ForgotPasswordPage({
     </main>
   );
 }
+
+export default withExperiencePage(ForgotPasswordPage);

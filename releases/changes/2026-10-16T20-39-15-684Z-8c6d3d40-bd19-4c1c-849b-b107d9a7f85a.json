@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-menu-startup-recovery-20261016",
+  "status": "working",
+  "summary": "Repair shared installed owner navigation, safe bounded cart startup and hidden Check-in presentation clock without interrupting attendance settlement mirroring.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "lib/owner-cart-startup.ts",
+    "tests/owner-pos-recovery-ui.test.mjs"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Actual-entry navigation/recovery and existing attendance-failure browser regressions",
+      "result": "pending"
+    }
+  ],
+  "id": "8c6d3d40-bd19-4c1c-849b-b107d9a7f85a",
+  "recordedAt": "2026-10-16T20:39:15.684Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

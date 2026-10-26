@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { PluginMarketSettings } from "./plugin-market-settings";
 import { WindowsPosDownloadLinks } from "@/components/windows-pos-download";
 import { parseLoginUserAgent } from "@/lib/account-security-shared";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
@@ -23,20 +25,23 @@ export function PosSettingsPanel({
   data: Extract<DirectData, { kind: "pos-display" }>;
   onSaved: () => Promise<void>;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const v = data.view,
     p = normalizeWorkspacePreferences(data.snapshot.workspace_preferences);
   if (!data.canManage)
     return (
       <p className="text-sm text-zinc-500">
-        You do not have permission to change POS settings.
+        <WorkspaceText text="You do not have permission to change POS settings." />
       </p>
     );
   const save = (form: FormData) => saveDirectPosGroup(data.salonId, form);
   return (
     <div className="grid gap-4">
+      {data.canManagePlugins && <PluginMarketSettings key={data.salonId} salonId={data.salonId} group="pos" />}
       <details open>
         <summary className="cursor-pointer font-semibold">
-          Staff check-in & turns
+          <WorkspaceText text="Staff check-in & turns" />
         </summary>
         <SettingsGroupForm
           group="staff"
@@ -45,12 +50,12 @@ export function PosSettingsPanel({
         >
           <Check
             name="staff_check_in_enabled"
-            label="Enable staff check-in"
+            label={__vt("Enable staff check-in")}
             checked={v.staffCheckInEnabled}
           />
           <Field
             name="large_turn_threshold"
-            label="Large turn threshold ($)"
+            label={__vt("Large turn threshold ($)")}
             type="number"
             min={1}
             value={v.largeTurnThreshold}
@@ -60,7 +65,7 @@ export function PosSettingsPanel({
       </details>
       <details>
         <summary className="cursor-pointer font-semibold">
-          Checkout & workspace
+          <WorkspaceText text="Checkout & workspace" />
         </summary>
         <SettingsGroupForm
           group="checkout"
@@ -72,7 +77,7 @@ export function PosSettingsPanel({
               <Field
                 key={i}
                 name={`tip_suggestion_${i + 1}`}
-                label={`Tip suggestion ${i + 1} (%)`}
+                label={__vt(`Tip suggestion ${i + 1} (%)`)}
                 type="number"
                 min={0}
                 max={100}
@@ -83,7 +88,7 @@ export function PosSettingsPanel({
           </div>
           <Check
             name="touch_keyboard_enabled"
-            label="Enable touch keyboard"
+            label={__vt("Enable touch keyboard")}
             checked={v.touchKeyboardEnabled}
           />
           {(
@@ -95,11 +100,11 @@ export function PosSettingsPanel({
               ["showDiscount", "Show discounts"],
             ] as const
           ).map(([name, label]) => (
-            <Check key={name} name={name} label={label} checked={p[name]} />
+            <Check key={name} name={name} label={__vt(label)} checked={p[name]} />
           ))}
           <Field
             name="idleMinutes"
-            label="Idle timeout (minutes)"
+            label={__vt("Idle timeout (minutes)")}
             type="number"
             min={1}
             max={60}
@@ -107,7 +112,7 @@ export function PosSettingsPanel({
           />
           <Field
             name="idleWarningSeconds"
-            label="Idle warning (seconds)"
+            label={__vt("Idle warning (seconds)")}
             type="number"
             min={15}
             max={300}
@@ -117,7 +122,7 @@ export function PosSettingsPanel({
       </details>
       <details>
         <summary className="cursor-pointer font-semibold">
-          Customer display
+          <WorkspaceText text="Customer display" />
         </summary>
         <SettingsGroupForm
           group="display"
@@ -126,28 +131,28 @@ export function PosSettingsPanel({
         >
           <Field
             name="app_download_url"
-            label="Customer app link"
+            label={__vt("Customer app link")}
             type="url"
             value={v.appDownloadUrl}
           />
           <Field
             name="customer_promo_title"
-            label="Welcome title"
+            label={__vt("Welcome title")}
             value={v.customerPromoTitle}
           />
           <Field
             name="customer_promo_body"
-            label="Welcome message"
+            label={__vt("Welcome message")}
             value={v.customerPromoBody}
           />
           <Field
             name="customer_left_ad_text"
-            label="Left promotion text"
+            label={__vt("Left promotion text")}
             value={v.customerLeftAdText}
           />
           <Field
             name="customer_right_ad_text"
-            label="Right promotion text"
+            label={__vt("Right promotion text")}
             value={v.customerRightAdText}
           />
           {(
@@ -183,7 +188,7 @@ export function PosSettingsPanel({
             <Check
               name={name}
               key={name}
-              label={`Show ${label.toLowerCase()}`}
+              label={__vt(`Show ${label.toLowerCase()}`)}
               checked={checked}
             />
           ))}
@@ -216,7 +221,7 @@ export function PosSettingsPanel({
                 value={path ?? ""}
               />
               <label className="grid gap-1 text-sm">
-                {label}
+                <WorkspaceText text={label} />
                 <input
                   className={inputClass}
                   name={`${name}_file`}
@@ -224,19 +229,19 @@ export function PosSettingsPanel({
                   accept="image/png,image/jpeg,image/webp"
                 />
               </label>
-              <Check name={`remove_${name}`} label="Remove saved image" />
+              <Check name={`remove_${name}`} label={__vt("Remove saved image")} />
             </div>
           ))}
         </SettingsGroupForm>
       </details>
       {data.canManagePortable?<details>
         <summary className="cursor-pointer font-semibold">
-          Portable POS access
+          <WorkspaceText text="Portable POS access" />
         </summary>
         <div className="mt-3 grid gap-3">
           {!data.portable.schemaReady ? (
             <p className="text-sm text-amber-800">
-              {data.portable.setupMessage}
+              <WorkspaceText text={data.portable.setupMessage} />
             </p>
           ) : (
             <>
@@ -246,21 +251,21 @@ export function PosSettingsPanel({
                   key={key.id}
                 >
                   <summary className="cursor-pointer text-sm font-semibold">
-                    {key.label ?? key.access_id} ·{" "}
-                    {key.is_active ? "Active" : "Disabled"}
+                    <WorkspaceText text={key.label ?? key.access_id} /> ·{" "}
+                    <WorkspaceText text={key.is_active ? "Active" : "Disabled"} />
                   </summary>
                   <div className="mt-3 grid gap-3">
-                    <dl className="grid gap-1 text-sm text-zinc-600"><div>POS ID: {key.access_id}</div><div>Last device: {key.last_user_agent?parseLoginUserAgent(key.last_user_agent).deviceLabel:'No device has signed in'}</div><div>Last sign-in: {key.last_login_at?new Date(key.last_login_at).toLocaleString('en-US'):'Never'}</div><div>Last used: {key.last_used_at?new Date(key.last_used_at).toLocaleString('en-US'):'Never'}</div><div>Last sign-out: {key.last_logout_at?new Date(key.last_logout_at).toLocaleString('en-US'):'Not recorded'}</div></dl>
-                    <InlineForm save={form=>saveDirectPortableAccess(data.salonId,form)} onSaved={onSaved} label="Rename device"><input type="hidden" name="action" value="label"/><input type="hidden" name="key_id" value={key.id}/><Field name="label" label="Device name" value={key.label}/></InlineForm>
-                    <details><summary className="cursor-pointer text-sm font-semibold">Change passcode & sign out sessions</summary><div className="mt-3"><InlineForm save={form=>saveDirectPortableAccess(data.salonId,form)} onSaved={onSaved} label="Change passcode"><input type="hidden" name="action" value="passcode"/><input type="hidden" name="key_id" value={key.id}/><Field name="passcode" label="New passcode (4–32 characters)" type="password" required/><p className="text-sm text-zinc-500">Devices using this POS ID must sign in again with the new passcode.</p></InlineForm></div></details>
-                    {!key.last_used_at&&!key.last_login_at?<details><summary className="cursor-pointer text-sm font-semibold text-red-700">Delete unused access key</summary><div className="mt-3"><InlineForm danger save={form=>saveDirectPortableAccess(data.salonId,form)} onSaved={onSaved} label="Delete access key"><input type="hidden" name="action" value="delete"/><input type="hidden" name="key_id" value={key.id}/><Check name="confirmed" label={`Permanently delete ${key.label||key.access_id}`} required/></InlineForm></div></details>:null}
+                    <dl className="grid gap-1 text-sm text-zinc-600"><div><WorkspaceText text="POS ID:" /> {key.access_id}</div><div><WorkspaceText text="Last device:" /> <WorkspaceText text={key.last_user_agent?parseLoginUserAgent(key.last_user_agent).deviceLabel:'No device has signed in'} /></div><div><WorkspaceText text="Last sign-in:" /> <WorkspaceText text={key.last_login_at?new Date(key.last_login_at).toLocaleString('en-US'):'Never'} /></div><div><WorkspaceText text="Last used:" /> <WorkspaceText text={key.last_used_at?new Date(key.last_used_at).toLocaleString('en-US'):'Never'} /></div><div><WorkspaceText text="Last sign-out:" /> <WorkspaceText text={key.last_logout_at?new Date(key.last_logout_at).toLocaleString('en-US'):'Not recorded'} /></div></dl>
+                    <InlineForm save={form=>saveDirectPortableAccess(data.salonId,form)} onSaved={onSaved} label={__vt("Rename device")}><input type="hidden" name="action" value="label"/><input type="hidden" name="key_id" value={key.id}/><Field name="label" label={__vt("Device name")} value={key.label}/></InlineForm>
+                    <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Change passcode & sign out sessions" /></summary><div className="mt-3"><InlineForm save={form=>saveDirectPortableAccess(data.salonId,form)} onSaved={onSaved} label={__vt("Change passcode")}><input type="hidden" name="action" value="passcode"/><input type="hidden" name="key_id" value={key.id}/><Field name="passcode" label={__vt("New passcode (4–32 characters)")} type="password" required/><p className="text-sm text-zinc-500"><WorkspaceText text="Devices using this POS ID must sign in again with the new passcode." /></p></InlineForm></div></details>
+                    {!key.last_used_at&&!key.last_login_at?<details><summary className="cursor-pointer text-sm font-semibold text-red-700"><WorkspaceText text="Delete unused access key" /></summary><div className="mt-3"><InlineForm danger save={form=>saveDirectPortableAccess(data.salonId,form)} onSaved={onSaved} label={__vt("Delete access key")}><input type="hidden" name="action" value="delete"/><input type="hidden" name="key_id" value={key.id}/><Check name="confirmed" label={__vt(`Permanently delete ${key.label||key.access_id}`)} required/></InlineForm></div></details>:null}
 
                     <InlineForm
                       save={(form) =>
                         saveDirectPortableAccess(data.salonId, form)
                       }
                       onSaved={onSaved}
-                      label="Save access"
+                      label={__vt("Save access")}
                     >
                       <input type="hidden" name="action" value="capabilities" />
                       <input type="hidden" name="key_id" value={key.id} />
@@ -277,7 +282,7 @@ export function PosSettingsPanel({
                               option.value,
                             )}
                           />
-                          {option.label}
+                          <WorkspaceText text={option.label} />
                         </label>
                       ))}
                     </InlineForm>
@@ -286,7 +291,7 @@ export function PosSettingsPanel({
                         saveDirectPortableAccess(data.salonId, form)
                       }
                       onSaved={onSaved}
-                      label={key.is_active ? "Disable access" : "Enable access"}
+                      label={__vt(key.is_active ? "Disable access" : "Enable access")}
                     >
                       <input type="hidden" name="action" value="status" />
                       <input type="hidden" name="key_id" value={key.id} />
@@ -296,7 +301,7 @@ export function PosSettingsPanel({
                         value={String(!key.is_active)}
                       />
                       <p className="text-sm text-zinc-500">
-                        POS ID: {key.access_id}
+                        <WorkspaceText text="POS ID:" /> {key.access_id}
                       </p>
                     </InlineForm>
                   </div>
@@ -305,14 +310,14 @@ export function PosSettingsPanel({
               <InlineForm
                 save={(form) => saveDirectPortableAccess(data.salonId, form)}
                 onSaved={onSaved}
-                label="Create POS access"
+                label={__vt("Create POS access")}
               >
                 <input type="hidden" name="action" value="create" />
-                <Field name="access_id" label="POS ID" required />
-                <Field name="label" label="Device label (optional)" />
+                <Field name="access_id" label={__vt("POS ID")} required />
+                <Field name="label" label={__vt("Device label (optional)")} />
                 <Field
                   name="passcode"
-                  label="Passcode"
+                  label={__vt("Passcode")}
                   type="password"
                   required
                 />
@@ -327,7 +332,7 @@ export function PosSettingsPanel({
                       value={option.value}
                       defaultChecked={option.defaultEnabled}
                     />
-                    {option.label}
+                    <WorkspaceText text={option.label} />
                   </label>
                 ))}
               </InlineForm>
@@ -337,17 +342,17 @@ export function PosSettingsPanel({
       </details>:null}
       <details>
         <summary className="cursor-pointer font-semibold">
-          Install POS & customer display
+          <WorkspaceText text="Install POS & customer display" />
         </summary>
         <div className="mt-3 grid gap-4">
           {data.installer ? (
             <WindowsPosDownloadLinks href={data.installer}/>
           ) : (
             <p className="text-sm text-zinc-500">
-              Windows download is unavailable.
+              <WorkspaceText text="Windows download is unavailable." />
             </p>
           )}
-          <p className="text-sm text-zinc-600">On the display device, use its POS ID and passcode to pair the customer display. Manage that ID in Portable POS access above.</p>
+          <p className="text-sm text-zinc-600"><WorkspaceText text="On the display device, use its POS ID and passcode to pair the customer display. Manage that ID in Portable POS access above." /></p>
         </div>
       </details>
     </div>

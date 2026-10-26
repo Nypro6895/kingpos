@@ -263,6 +263,10 @@ export type PayrollSummary = {
 };
 
 export type PayrollStaffLineWithDailyTotals = PayrollStaffLine & {
+  /** Legacy audit facts only; never replaces the current live calculation. */
+  ledger?: import("@/lib/payroll-ledger").PayrollLineLedger;
+  dailyIncome?: import("@/lib/payroll-ledger").PayrollDailyIncome[];
+  liveDailyIncome?: import("@/lib/payroll-live-projection").LiveIncomeDay[];
   dailyTotals: PayrollStaffDailyTotal[];
   input: PayrollPeriodStaffInput | null;
   inputHistory?: PayrollPeriodStaffInputHistory[];
@@ -364,6 +368,7 @@ export type PayrollPeriodOption = {
 };
 
 export type PayrollShopDailyRow = {
+  payrollRecord?: {state:"closed"|"adjusted";sourcePeriod:{start:string;end:string};originalStaffNetPay:number;netAdjustment:number;originalTaxWithheld:number;taxAdjustment:number;originalStaffObligation:number;obligationAdjustment:number;originalShopNetIncome:number|null;shopNetAdjustment:number};
   actualIncome: number | null;
   businessDate: string;
   cashAmount: number | null;

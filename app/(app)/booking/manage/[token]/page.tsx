@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { GuestManageClient } from "@/app/booking/manage/[token]/guest-manage-client";
 import { getGuestManagePageData } from "@/lib/public-booking";
 import { getCurrentKingUser } from "@/lib/users/current-user";
@@ -11,7 +12,7 @@ type GuestManagePageProps = {
   }>;
 };
 
-export default async function GuestManagePage({
+async function GuestManagePage({
   params,
   searchParams,
 }: GuestManagePageProps) {
@@ -38,3 +39,5 @@ export default async function GuestManagePage({
     />
   );
 }
+
+export default withExperiencePage(GuestManagePage);

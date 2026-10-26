@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "booking-bootstrap-optional-helper-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Safe optional receipt-helper lookup in historical migration enables fresh bootstrap; upgraded production definitions remain equivalent.",
+  "files": [
+    "supabase/migrations/202609230009_portable_custom_service_snapshot.sql",
+    "tests/portable-custom-service-migration.integration.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\release",
+    "originalEvent": "e04e7e17-e32d-472a-bab9-db7395c3774b"
+  },
+  "validation": [
+    {
+      "name": "Three actual-SQL fresh/upgrade/guard regression tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-bootstrap.json"
+    },
+    {
+      "name": "Complete 260-migration replay and unchanged upgrade definitions/ACL",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/Documents/Codex/2026-10-14/task/booking-bootstrap-verification.json"
+    }
+  ],
+  "id": "145823cc-a295-4e59-8b27-8a2dc08b0fef",
+  "recordedAt": "2026-10-15T03:35:46.034Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/202609230009_portable_custom_service_snapshot.sql": "642851d590c27636affee535c44cb026957b0e72655e68c8117932643e6c5863",
+    "tests/portable-custom-service-migration.integration.test.mjs": "badd9d8598a825d734ef5f6be901024a2518859a1feb6af437236fbcdc73327d"
+  }
+}

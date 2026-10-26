@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { acceptOwnerTransferInviteAction } from "@/app/account/actions";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -33,12 +34,12 @@ export function OwnerTransferAcceptancePanel({
   }
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-soft)]">
+    <section className="min-w-0 bg-surface py-5">
       <h1 className="text-2xl font-extrabold text-text-primary">
-        Owner invitation
+        <WorkspaceText text="Owner invitation" />
       </h1>
       <p className="mt-2 text-sm font-medium leading-6 text-text-secondary">
-        Review and accept this salon ownership invitation.
+        <WorkspaceText text="Review and accept this salon ownership invitation." />
       </p>
       <div className="mt-5">
         <button
@@ -47,17 +48,17 @@ export function OwnerTransferAcceptancePanel({
           onClick={acceptInvite}
           type="button"
         >
-          {pending ? "Accepting..." : "Accept owner invitation"}
+          <WorkspaceText text={pending ? "Accepting..." : "Accept owner invitation"} />
         </button>
       </div>
       {error ? (
         <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
       {message ? (
         <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          {message}
+          <WorkspaceText text={message} />
         </p>
       ) : null}
     </section>

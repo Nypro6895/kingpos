@@ -1,0 +1,164 @@
+{
+  "at": "2026-10-16T19:47:13.591Z",
+  "origin": "https://reylumi.com",
+  "label": "live",
+  "protectionBypassUsed": false,
+  "environment": "Anonymous Chromium; 390/820/1440 viewports; no physical iPhone or authenticated live account measurement",
+  "checks": [
+    {
+      "name": "Market availability",
+      "passed": true
+    },
+    {
+      "name": "Market → Explore → Back keeps document and original input",
+      "passed": true,
+      "elapsedMs": 75,
+      "documentRequestsAfterReturn": 0,
+      "sameDocument": true,
+      "sameNode": true,
+      "query": "booking"
+    },
+    {
+      "name": "Help usable at width 390",
+      "passed": true,
+      "horizontalOverflow": false,
+      "bodyOverflow": "visible",
+      "htmlOverflow": "visible"
+    },
+    {
+      "name": "Help usable at width 820",
+      "passed": true,
+      "horizontalOverflow": false,
+      "bodyOverflow": "visible",
+      "htmlOverflow": "visible"
+    },
+    {
+      "name": "Help usable at width 1440",
+      "passed": true,
+      "horizontalOverflow": false,
+      "bodyOverflow": "visible",
+      "htmlOverflow": "visible"
+    },
+    {
+      "name": "/privacy anonymous availability",
+      "passed": true,
+      "status": 200,
+      "finalPath": "/privacy"
+    },
+    {
+      "name": "/login anonymous availability",
+      "passed": true,
+      "status": 200,
+      "finalPath": "/login"
+    },
+    {
+      "name": "/pos anonymous availability",
+      "passed": true,
+      "status": 200,
+      "finalPath": "/pos"
+    },
+    {
+      "name": "Held login shows immediate pending feedback",
+      "passed": true
+    },
+    {
+      "name": "Pending login does not duplicate the intercepted request",
+      "passed": true
+    },
+    {
+      "name": "Local login failure restores retry",
+      "passed": true
+    },
+    {
+      "name": "Guest context is private/no-store and has no authenticated identity",
+      "passed": true,
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "vary": "Cookie"
+    },
+    {
+      "name": "owner.workspace rejects anonymous wrong scope",
+      "passed": true,
+      "status": 401,
+      "cacheControl": "private, no-store",
+      "vary": "Cookie, If-None-Match"
+    },
+    {
+      "name": "staff.my-work rejects anonymous wrong scope",
+      "passed": true,
+      "status": 401,
+      "cacheControl": "private, no-store",
+      "vary": "Cookie, If-None-Match"
+    },
+    {
+      "name": "page.settings rejects anonymous wrong scope",
+      "passed": true,
+      "status": 409,
+      "cacheControl": "private, no-store",
+      "vary": "Cookie, If-None-Match"
+    },
+    {
+      "name": "Command endpoint cannot run through GET",
+      "passed": true,
+      "status": 405
+    },
+    {
+      "name": "Build asset redirect refreshes its manifest",
+      "passed": true,
+      "status": 307,
+      "cacheControl": "no-store"
+    },
+    {
+      "name": "Build manifest contains bounded digest-pinned assets",
+      "passed": true,
+      "count": 408,
+      "version": "7afe2d2afa89a9c67ae87876f13b2b4ec96bb759d9bd7cd0c24ed6ef41f9bc5e",
+      "deploymentId": "dpl_DzRmvhU35S4yYQigxeR3xwWhSMWd",
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "name": "Immutable asset /_next/static/css/000e4045b30e6c04.css",
+      "passed": true,
+      "status": 200,
+      "exactDigest": true,
+      "cacheControl": "public,max-age=31536000,immutable"
+    },
+    {
+      "name": "Immutable asset /_next/static/media/1b0a17308d612e2c-s.woff2",
+      "passed": true,
+      "status": 200,
+      "exactDigest": true,
+      "cacheControl": "public,max-age=31536000,immutable"
+    },
+    {
+      "name": "Immutable asset /_next/static/build-TfctsWXpff2fKS/_buildManifest.js",
+      "passed": true,
+      "status": 200,
+      "exactDigest": true,
+      "cacheControl": "public,max-age=31536000,immutable"
+    },
+    {
+      "name": "Emitted CSS focuses only the active POS route",
+      "passed": true,
+      "legacyRetainedPOSSelector": false,
+      "activeRouteSelector": true
+    },
+    {
+      "name": "Offline worker is available and revalidatable",
+      "passed": true,
+      "status": 200,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "name": "No unexpected runtime exceptions",
+      "passed": true,
+      "count": 0
+    }
+  ],
+  "suppressedWrites": 0,
+  "localAuthFixtures": 1,
+  "pageErrors": [],
+  "passed": 24,
+  "failed": 0,
+  "limitations": "Guest browser only. Authenticated POS draft/lock, More menus at all sizes, held reads, weak network/outage and account reset are covered separately by isolated original-component tests; native XCTest and physical phone are distinct evidence."
+}

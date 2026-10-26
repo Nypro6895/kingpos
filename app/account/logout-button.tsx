@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { readAuthResponse } from "@/lib/auth-response";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -38,7 +39,7 @@ export function LogoutButton({ children, className }: LogoutButtonProps = {}) {
       onClick={handleLogout}
       type="button"
     >
-      {isSubmitting ? "Logging out..." : (children ?? "Log out")}
+      <WorkspaceText text={isSubmitting ? "Logging out..." : (children ?? "Log out")} />
     </button>
   );
 }

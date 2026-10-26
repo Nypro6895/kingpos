@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import {
   acceptBeautySalonPublicationRequestAction,
   declineBeautySalonPublicationRequestAction,
@@ -205,7 +207,7 @@ function VerificationBadge({
   return (
     <span className={`inline-flex items-center gap-1.5 ${className}`}>
       <VerificationIcon tone={tone} />
-      <span>{label}</span>
+      <span><WorkspaceText text={label} /></span>
     </span>
   );
 }
@@ -246,23 +248,23 @@ function TransformationImage({
     <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100">
       {media?.url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <WorkspaceElement as="img"
           alt={`${label} photo from ${authorName}'s transformation`}
           className="h-full w-full object-cover"
           loading="lazy"
           src={media.url}
         />
       ) : (
-        <div
+        <WorkspaceElement as="div"
           aria-label={`${label} image unavailable`}
           className="grid h-full w-full place-items-center bg-zinc-100 text-xs font-semibold uppercase text-zinc-500"
           role="img"
         >
-          {label}
-        </div>
+          <WorkspaceText text={label} />
+        </WorkspaceElement>
       )}
       <span className="absolute left-2 top-2 rounded-full bg-white/92 px-2.5 py-1 text-[11px] font-semibold uppercase text-zinc-800 shadow-sm ring-1 ring-zinc-200/70">
-        {label}
+        <WorkspaceText text={label} />
       </span>
     </div>
   );
@@ -273,7 +275,7 @@ function CustomerAvatar({ request }: { request: BeautySalonPublicationRequest })
     <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-950 text-xs font-semibold text-white ring-1 ring-zinc-200">
       {request.authorAvatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <WorkspaceElement as="img"
           alt={`${request.authorDisplayName} profile`}
           className="h-full w-full object-cover"
           loading="lazy"
@@ -303,7 +305,7 @@ function RequestCard({
   const postedTime = formatPostedTime(request.postCreatedAt);
 
   return (
-    <article className="overflow-hidden rounded-lg bg-white ring-1 ring-zinc-200">
+    <article className="overflow-hidden border-b border-zinc-200 bg-white">
       <div className="grid grid-cols-2 gap-px bg-zinc-200">
         <TransformationImage
           authorName={request.authorDisplayName}
@@ -324,28 +326,28 @@ function RequestCard({
               <h2 className="truncate text-base font-semibold text-zinc-950">
                 {request.authorDisplayName}
               </h2>
-              <p
+              <WorkspaceElement as="p"
                 className="text-sm text-zinc-500"
                 title={formatDate(request.postCreatedAt)}
               >
-                Posted {postedTime}
-              </p>
+                <WorkspaceText text="Posted" /> {postedTime}
+              </WorkspaceElement>
             </div>
           </div>
           <span className="w-fit rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-600">
-            Feature request
+            <WorkspaceText text="Feature request" />
           </span>
         </div>
 
         <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm font-semibold text-zinc-600">
-          <span>For {salonName}</span>
-          {request.staffName ? <span>with {request.staffName}</span> : null}
+          <span><WorkspaceText text="For" /> {salonName}</span>
+          {request.staffName ? <span><WorkspaceText text="with" /> {request.staffName}</span> : null}
           <VerificationBadge state={request.verificationState} />
         </div>
 
         {request.caption ? (
           <p className="whitespace-pre-wrap text-[15px] leading-7 text-zinc-800">
-            {request.caption}
+            <WorkspaceText text={request.caption} />
           </p>
         ) : null}
 
@@ -382,18 +384,18 @@ function RequestCard({
 
 function EmptyQueue() {
   return (
-    <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-5 py-8 text-center">
+    <div className="border-dashed border-zinc-300 bg-white px-5 py-8 text-center rounded-none border-0 shadow-none">
       <h2 className="text-lg font-semibold text-zinc-950">
-        You&apos;re all caught up
+        <WorkspaceText text="You&apos;re all caught up" />
       </h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-600">
-        New client transformations will appear here when customers tag your salon.
+        <WorkspaceText text="New client transformations will appear here when customers tag your salon." />
       </p>
     </div>
   );
 }
 
-export default async function ClientTransformationsPage({
+async function ClientTransformationsPage({
   searchParams,
 }: ClientTransformationsPageProps) {
   const [{ error, notice }, context] = await Promise.all([
@@ -423,22 +425,22 @@ export default async function ClientTransformationsPage({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-zinc-50 px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <section className="mx-auto grid max-w-3xl gap-4 sm:gap-5">
+      <section className="grid w-full min-w-0 gap-4 sm:gap-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="w-fit rounded-full bg-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-700">
-            {pendingCountLabel(requests.length)}
+            <WorkspaceText text={pendingCountLabel(requests.length)} />
           </span>
           <Link
             className="inline-flex min-h-10 w-fit items-center justify-center rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             href="/salon-profile"
           >
-            Back to profile
+            <WorkspaceText text="Back to profile" />
           </Link>
         </div>
 
         {actionNotice ? <Notice>{actionNotice}</Notice> : null}
-        {actionError ? <Notice tone="danger">{actionError}</Notice> : null}
-        {loadError ? <Notice tone="danger">{loadError}</Notice> : null}
+        {actionError ? <Notice tone="danger"><WorkspaceText text={actionError} /></Notice> : null}
+        {loadError ? <Notice tone="danger"><WorkspaceText text={loadError} /></Notice> : null}
 
         {requests.length > 0 ? (
           <div className="grid gap-4">
@@ -457,3 +459,5 @@ export default async function ClientTransformationsPage({
     </main>
   );
 }
+
+export default withExperiencePage(ClientTransformationsPage);

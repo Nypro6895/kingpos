@@ -1,0 +1,41 @@
+Booking Deposit — By Reylumi — USD $5.90/month per salon
+
+Owner workflow
+Market > Booking Deposit: subscribe, connect the salon's own Stripe account, set an amount and enable the requirement.
+The same settings are included in All Settings > Booking.
+Choose fixed USD deposit, percentage (up to 100%), or full service price.
+Choose card entry in booking, Stripe-hosted checkout, or let customers choose.
+Turning the requirement off preserves settings, billing and receipts. Manage subscription opens Stripe billing separately.
+Salon pays Stripe processing, refund and dispute fees. No additional application fee is added to customer payments.
+
+Customer workflow
+Review services and time, see amount due now and estimated balance, choose checkout and pay.
+Stripe handles card fields. Reylumi never receives raw card data.
+Successful, server-verified payment creates the appointment using existing scheduling and notification rules.
+If scheduling rejects the paid appointment, a database reservation prevents later confirmation and requests a full refund.
+Payments under Stripe's USD $0.50 minimum cannot proceed; customers are directed to contact the salon.
+Receipt and paid/refunded amounts are visible in booking details, customer history and the salon's customer record.
+Appointment cancellation does not automatically refund a deposit; salon owners process refunds in their Stripe dashboard.
+Refund webhooks synchronize the recorded refunded amount.
+
+Required configuration before live use
+Apply supabase/migrations/20261009140031_booking_deposit_plugin.sql.
+BOOKING_STRIPE_SECRET_KEY: Stripe Connect platform secret key.
+NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY: matching publishable key, present at build time.
+BOOKING_STRIPE_CONNECT_CLIENT_ID: OAuth client ID for connecting salon Stripe accounts.
+Register https://reylumi.com/api/booking-payment/connect as an allowed OAuth redirect.
+BOOKING_STRIPE_WEBHOOK_SECRET: Connect webhook signing secret for /api/booking-payment/webhook.
+Enable connected-account events: checkout.session.completed, checkout.session.async_payment_succeeded,
+checkout.session.expired, charge.refunded, account.application.deauthorized.
+MARKET_STRIPE_SECRET_KEY and MARKET_STRIPE_WEBHOOK_SECRET plus enabled Market payment settings are required for the monthly subscription.
+Keep existing Market webhook events, including subscription lifecycle and invoice events, enabled.
+
+Use Stripe sandbox to verify each checkout method, SCA challenge, cancellation, retry, expiration,
+slot conflict with refund, duplicate webhooks, partial/full dashboard refund, and plugin subscription expiry.
+No live charge is needed for these tests.
+
+Release
+This implementation does not deploy or modify live billing configuration.
+For a release to reylumi.com, follow AGENTS.md: capture the current alias deployment, assemble its exact source plus this overlay,
+preserve Explore and unrelated shipped changes, run the assembled production build, verify-production-base immediately
+before promotion, and save baseline/source/overlay hashes in the release receipt.

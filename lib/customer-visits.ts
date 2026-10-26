@@ -1,3 +1,5 @@
+import { getReadAbortSignal } from "@/lib/read-context-scope";
+import type { CustomerIdentityChoice } from "@/types/customer-identity";
 import "server-only";
 
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
@@ -42,6 +44,7 @@ export type CustomerDisplaySubmissionResult =
     }
   | {
       code: string;
+      candidates?: CustomerIdentityChoice[];
       message: string;
       mode?: CustomerDisplaySubmissionMode;
       ok: false;
@@ -238,10 +241,12 @@ export async function getCustomerVisitQueueForSalon(input: {
   salonId: string;
   supabase: CustomerVisitSupabaseClient;
 }) {
-  const { data, error } = await input.supabase.rpc("get_customer_visit_queue", {
+  const read = input.supabase.rpc("get_customer_visit_queue", {
     p_limit: input.limit ?? 25,
     p_salon_id: input.salonId,
   });
+  const signal = getReadAbortSignal();
+  const { data, error } = await (signal ? read.abortSignal(signal) : read);
 
   if (error) {
     throw new Error(error.message);
@@ -267,6 +272,8 @@ export async function getCustomerVisitQueueForSalonOrEmpty(input: {
 }
 
 export async function resolveCustomerDisplaySubmission(input: {
+  identityChoice?: string;
+  newCustomer?: boolean;
   checkInOnly?: boolean;
   customerName?: string | null;
   phone: string;
@@ -275,8 +282,10 @@ export async function resolveCustomerDisplaySubmission(input: {
   token: string;
 }): Promise<CustomerDisplaySubmissionResult> {
   const { data, error } = await input.supabase.rpc(
-    input.checkInOnly ? "resolve_customer_display_check_in" : "resolve_customer_display_submission",
+    input.checkInOnly ? "resolve_customer_display_check_in_identity" : "resolve_customer_display_submission_identity",
     {
+      p_identity_choice: input.identityChoice ?? null,
+      p_new_customer: input.newCustomer ?? false,
       p_customer_name: input.customerName ?? null,
       p_phone: input.phone,
       p_request_id: input.requestId ?? null,
@@ -291,10 +300,9 @@ export async function resolveCustomerDisplaySubmission(input: {
   const payload = readObject(data);
 
   if (payload.ok !== true) {
-    return readErrorResult(
-      payload,
-      "Unable to continue. Please ask the front desk.",
-    );
+    return { ...readErrorResult(payload, "Unable to continue. Please ask the front desk."),
+      candidates: Array.isArray(payload.candidates) ? payload.candidates as CustomerIdentityChoice[] : [],
+    };
   }
 
   const mode =

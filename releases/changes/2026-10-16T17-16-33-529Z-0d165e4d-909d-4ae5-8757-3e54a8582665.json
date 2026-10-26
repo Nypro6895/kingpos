@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "app-local-bounded-file-uploads",
+  "status": "working",
+  "summary": "Extend the single-use staged upload to the actual Campaign Creative and optional three-file POS display settings forms, preserving original5/15MiB per-file limits and one original handler call.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-upload-policy.ts",
+    "lib/app-local-upload-client.ts",
+    "lib/app-local-upload-server.ts",
+    "supabase/migrations/20261016170000_app_local_upload_sessions.sql",
+    "tests/app-local-upload-runtime.test.mjs",
+    "tests/app-local-upload-client.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Original creative/POS handlers and file sizes inspected; extended regression pending",
+      "result": "pending"
+    }
+  ],
+  "id": "0d165e4d-909d-4ae5-8757-3e54a8582665",
+  "recordedAt": "2026-10-16T17:16:33.529Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

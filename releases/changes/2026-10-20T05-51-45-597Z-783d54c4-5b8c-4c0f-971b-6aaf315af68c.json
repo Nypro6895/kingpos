@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "staff-online-access-20261020",
+  "status": "working",
+  "summary": "Use the established iOS18-compatible asynchronous JavaScript test helper in the new Staff bridge regression, preserving assertions and every app/bundle runtime byte.",
+  "channels": [
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "3b7704be1188b34c3fa1265e24abc5248d8ceedd"
+  },
+  "validation": [
+    {
+      "name": "Native test loader compatibility and exact runtime source preservation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "783d54c4-5b8c-4c0f-971b-6aaf315af68c",
+  "recordedAt": "2026-10-20T05:51:45.597Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\staff-online-access-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

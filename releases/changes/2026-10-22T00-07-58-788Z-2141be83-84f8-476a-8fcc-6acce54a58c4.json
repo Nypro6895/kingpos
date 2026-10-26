@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+  "status": "working",
+  "summary": "Integrate verified frozen Services pilot and native wiring onto fully verified auth-only R7 in a separate candidate. Compose immutable6e-to89d source hunks once; preserve R7 real role-cache admission fixture, all auth fixes and earlier features. Pilot off, production blocked. No deploy or real provider actions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/layout.tsx",
+    "app/(app)/services/page.tsx",
+    "app/api/services/catalog-pilot/route.ts",
+    "app/services/services-catalog-native-page.tsx",
+    "app/services/services-catalog-pilot.tsx",
+    "components/services-catalog-cache-lifecycle.tsx",
+    "docs/local-first-services-pilot.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "lib/reset-experience-cache.ts",
+    "lib/services-catalog-admission-server.ts",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-native-flag.ts",
+    "lib/services-catalog-native-runtime.ts",
+    "lib/services-catalog-pilot-flag.ts",
+    "lib/services-catalog-runtime.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/services-catalog-admission.test.mjs",
+    "tests/services-catalog-browser.test.mjs",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs",
+    "tests/services-catalog-host-admission.test.mjs",
+    "tests/services-catalog-native-flag.test.mjs",
+    "tests/services-catalog-native-registry.test.mjs",
+    "tests/services-catalog-native-runtime.test.mjs",
+    "tests/services-catalog-reset-isolation.test.mjs"
+  ],
+  "source": {
+    "commit": "5309ad87303bdb0f5cca7659b2a5ec5981335c20",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r8-pilot-off"
+  },
+  "dependencies": [
+    "reylumi-final-r7-auth-integration-20261021"
+  ],
+  "validation": [
+    {
+      "name": "combined-auth-pilot-off-reset-isolation-services-regression",
+      "result": "pending"
+    },
+    {
+      "name": "authenticated-final-hash-Simulator-backend-transport",
+      "result": "pending"
+    }
+  ],
+  "id": "2141be83-84f8-476a-8fcc-6acce54a58c4",
+  "recordedAt": "2026-10-22T00:07:58.788Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r8-pilot-off",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

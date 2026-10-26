@@ -1,0 +1,73 @@
+SERVICE RELAY — IMPLEMENTATION RECEIPT
+
+Scope
+One work-in-progress ticket per customer visit. Staff accept/decline POS offers,
+send individual service/price lines, and complete their own work. Sequential
+staff share the same customer ticket. Cashier Submit delegates to the existing
+Owner/Portable receipt core, which continues to own settlement, commission,
+turn records and staff income.
+
+Entry points
+Market: Service Relay (initial free listing; no billing integration).
+Staff: My Work / Daily.
+Owner and Portable POS: Service tickets drawer.
+Customer screen: QR for phone check-in and a digital pass after check-in.
+Phone: /check-in/[entry], /visit/[pass]. Signed-in profiles prefill name/phone.
+
+Setup
+Apply these migrations in order before enabling the Market listing:
+20261009150031_service_relay.sql
+20261009150032_service_relay_phone_checkin.sql
+20261009150033_service_relay_pos_projection.sql
+20261009150034_service_relay_notifications.sql
+20261009150035_service_relay_pos_guard.sql
+20261009150036_service_relay_receipt_visit.sql
+
+Use active, POS-enabled staff connected to an account and their existing
+staff_service_assignments. Existing check-in settings determine eligibility.
+Offers expire after 60 seconds and move to another eligible staff member.
+If everyone declines/expires, staff can use Find customer and claim manually.
+No service selection means automatic dispatch waits; manual claiming remains
+available. Existing print-receipt functionality is independent of this plugin.
+
+POS integration
+Pending service lines are projected onto the POS queue using its configured
+large-turn threshold, separately from official submitted turn parts. Accepting
+a customer never adds one turn. POS Submit writes the official receipt and
+records through the existing receipt function. Ordinary POS carts cannot create
+a second ticket for a customer with accepted Service Relay work.
+Uninstall is blocked until accepted tickets have been finished and settled.
+
+Reliability and permissions
+Salon-scoped staff identity, service scope validation, optimistic revisions,
+one active offer per customer/staff, transaction locks, idempotent settlement,
+local preservation of unsent edits, realtime hints and visible-page polling.
+Notifications are in the existing app notification center, not OS push/SMS.
+Public passes expire after 24 hours and exclude phone numbers and price lines.
+Phone check-in QR entry links expire after 8 hours and never expose the paired
+display's checkout token. Camera QR scan depends on BarcodeDetector support;
+manual number/link entry is always available. Screen wake lock is optional.
+No phone proximity pairing, automatic SMS or native-app store build is included.
+
+Validation
+node --test tests/service-relay.integration.test.mjs
+node scripts/qa-service-relay.mjs
+npx eslint app/service-relay app/check-in app/visit app/api/service-relay types/service-relay.ts
+npm run build
+
+Database tests use isolated PostgreSQL-compatible fixtures and stub the existing
+POS settlement core. UI checks use real components with simulated server actions.
+These tests do not claim an end-to-end test against the live salon database.
+The broader existing checks produced two failures outside the modified logic:
+customer-visits-runtime uses appointment fixture times rejected as past by the
+linked database; staff-check-in-contract expects an older POS settings label.
+The five Service Relay database tests, UI checks, lint and production build pass.
+
+Release state
+Released to https://reylumi.com on 2026-10-09 with all six migrations applied.
+Production deployment: dpl_HfPPPDCBx9y3ag9xD8kkRavrGXvv.
+Exact production baseline: dpl_w1fJTaWTHJCXQFyJruexV8STFv15.
+Unrelated production modules were preserved; unreleased Booking Deposit changes
+were excluded. Production source build, Vercel build and public smoke checks pass.
+No authenticated salon checkout end-to-end test was performed on production.
+Source hashes and promotion verification: artifacts/service-relay-release-receipt.json.

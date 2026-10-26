@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "ios-private-business-cache-admission-20261020",
+  "status": "needs-integration",
+  "summary": "Reject incompatible or unrelated cached business contexts before JS admission; await fresh server context for Staff Post and ambiguous scopes. Native baseline regressions reproduced; final195-test native build/run remains pending.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/BusinessContextCacheAdmissionTests.swift",
+    "ios/ReylumiTests/BusinessContextFailureTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/business-cache-7a88853-source",
+    "commit": "7a888538014cc9ae5c816cef164f28429c625abe"
+  },
+  "validation": [
+    {
+      "name": "Actual unchanged-ddbecc faithful baseline10cases:8failed/2passed/0skip; Personal and retainedOwner regressions reproduced; finalizer retired after actual logs",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/business-cache-baseline-tests-v2/actual-1792557625810405000/observed-baseline-red.json"
+    },
+    {
+      "name": "Executed real JS admission and error-classification synthetic proof",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/business-cache-js-admission-proof.json"
+    },
+    {
+      "name": "Peer review + raw original authority/read/commands/generation and legacy path invariants",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/business-cache-implementation-review.json"
+    },
+    {
+      "name": "Native195-test suite and Release simulator build on frozen assembled source",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "macqa-help-background-integration-20261020",
+    "help-context-dismiss-20261020",
+    "ios-background-cookie-authority-20261020"
+  ],
+  "id": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+  "recordedAt": "2026-10-21T04:48:59.573Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-business-cache-admission-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

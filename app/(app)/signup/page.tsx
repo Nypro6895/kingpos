@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { SignupForm } from "@/app/signup/signup-form";
 import { LegalFooter } from "@/components/legal-footer";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
@@ -41,7 +42,7 @@ function BrandLogo({ className = "" }: { className?: string }) {
   );
 }
 
-export default async function SignupPage({ searchParams }: SignupPageProps) {
+async function SignupPage({ searchParams }: SignupPageProps) {
   const { error, next } = await searchParams;
   const nextPath = sanitizeAuthReturnPath(next);
 
@@ -155,18 +156,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
                   place.
                 </p>
 
-                {error ? (
-                  <p
-                    className={[
-                      styles.authNotice,
-                      "rounded-2xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-800",
-                    ].join(" ")}
-                  >
-                    {error}
-                  </p>
-                ) : null}
-
-                <SignupForm nextPath={nextPath} />
+                <SignupForm nextPath={nextPath} initialError={error} />
 
                 <p
                   className={[
@@ -191,3 +181,5 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     </div>
   );
 }
+
+export default withExperiencePage(SignupPage);

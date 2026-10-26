@@ -1,3 +1,4 @@
+import { safetyRequestHeaders } from "@/lib/abuse-context";
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
 import {
@@ -7,6 +8,11 @@ import {
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
+import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
+import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
+import { AuthRejectionError, isConfirmedAuthRejection } from "./auth-rejection";
+import { coalesceReadInFlight, getReadRequestTiming } from "@/lib/read-context-scope";
+import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
@@ -43,6 +49,44 @@ type AccountLoginSessionStatusRow = {
   revoked_at: string | null;
 };
 
+const authUserReadKey = Symbol("read-auth-user");
+const accountStatusReadKey = Symbol("read-account-status");
+const loginSessionReadKey = Symbol("read-login-session-status");
+const authenticatedReadAuthorities = new WeakMap<
+  NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  string
+>();
+
+// Only gated clients receive metadata. The opaque value is for pending read
+// equality, never an authorization decision or a cache of a successful gate.
+export function getAuthenticatedReadAuthority(
+  client: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+): string | undefined {
+  return authenticatedReadAuthorities.get(client);
+}
+
+// Keys live only while the raw read is pending inside an explicit read request.
+// Caller-specific strict/optional handling stays outside the shared transport.
+function authReadAuthority(config: SupabaseConfig, accessToken: string, ...parts: string[]) {
+  return JSON.stringify([config.supabaseUrl, config.supabaseAnonKey, accessToken, ...parts]);
+}
+
+/** Executing SDK operation, including its decode; joined callers do not add a span.
+ * These nested/parallel waits are not additive wall time or database execution. */
+function measureAuthRead<T>(stage: "auth_user" | "auth_status" | "auth_session" | "auth_tombstone", read: () => Promise<T>): Promise<T> {
+  const timing = getReadRequestTiming();
+  return timing ? timing.measure(stage, read) : read();
+}
+
+function readAuthUser(
+  supabase: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  accessToken: string,
+  config: SupabaseConfig | null,
+) {
+  const read = () => measureAuthRead("auth_user", () => supabase.auth.getUser(accessToken));
+  return config ? coalesceReadInFlight(authUserReadKey, authReadAuthority(config, accessToken), read) : read();
+}
+
 type SupabaseCookieWriter = {
   delete: (name: string) => unknown;
 };
@@ -78,6 +122,8 @@ export function clearSupabaseSessionCookieWriter(
 ) {
   cookieStore.delete(ACCESS_TOKEN_COOKIE);
   cookieStore.delete(REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(REMEMBER_LOGIN_COOKIE);
+  cookieStore.delete(ADMIN_SESSION_COOKIE);
   clearPendingMfaSessionCookieWriter(cookieStore);
 
   for (const name of cookieNames.filter(isSupabaseAuthTokenCookieName)) {
@@ -134,6 +180,7 @@ export function createSupabaseServerClient() {
   }
 
   return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -156,6 +203,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -163,7 +211,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
   });
 }
 
-export async function createAuthenticatedSupabaseServerClient() {
+export async function createAuthenticatedSupabaseServerClient(options: { throwOnUnavailable?: boolean; throwOnRejected?: boolean } = {}) {
   const config = getSupabaseConfig();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -174,24 +222,46 @@ export async function createAuthenticatedSupabaseServerClient() {
   const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
     config,
     accessToken,
+    options.throwOnUnavailable,
+    options.throwOnRejected,
   );
 
   if (!accessTokenAllowed) {
     return null;
   }
 
-  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+  const requestHeaders = {
+    Authorization: `Bearer ${accessToken}`,
+    ...await safetyRequestHeaders(),
+  };
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
     },
     global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      fetch: supabaseDeadlineFetch,
+      headers: requestHeaders,
     },
   });
+
+  try {
+    const loginSessionId = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value ?? null;
+    const authority = createHash("sha256").update(JSON.stringify([
+      config.supabaseUrl,
+      config.supabaseAnonKey,
+      accessToken,
+      loginSessionId,
+      Object.entries(requestHeaders).sort(([left], [right]) => left.localeCompare(right)),
+    ])).digest("hex");
+    authenticatedReadAuthorities.set(supabase, authority);
+  } catch {
+    // Metadata is optional: failure preserves the authenticated client and
+    // simply prevents any raw read from joining another client's request.
+  }
+
+  return supabase;
 }
 
 export async function createAuthenticatedSupabaseAuthSessionServerClient() {
@@ -203,6 +273,7 @@ export async function createAuthenticatedSupabaseAuthSessionServerClient() {
   }
 
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: true,
       autoRefreshToken: false,
@@ -240,6 +311,7 @@ export async function createPendingMfaSupabaseAuthSessionServerClient() {
   }
 
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: true,
       autoRefreshToken: false,
@@ -265,6 +337,8 @@ export async function createPendingMfaSupabaseAuthSessionServerClient() {
 async function isAccessTokenAllowedForAppSession(
   config: SupabaseConfig,
   accessToken: string,
+  throwOnUnavailable = false,
+  throwOnRejected = false,
 ) {
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
@@ -273,30 +347,54 @@ async function isAccessTokenAllowedForAppSession(
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     },
   });
 
-  const { data: authData, error: authError } = await supabase.auth.getUser(
-    accessToken,
-  );
+  const { data: authData, error: authError } = await readAuthUser(supabase, accessToken, config);
 
   if (authError || !authData.user) {
+    if (throwOnRejected && authError && isConfirmedAuthRejection(authError, authError.status)) throw new AuthRejectionError(401);
+    if (throwOnUnavailable) assertAuthAvailable(authError, authError?.status, "Authentication");
     return false;
   }
 
-  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = await Promise.all([
-    supabase
+  const statusRead = coalesceReadInFlight(
+    accountStatusReadKey,
+    authReadAuthority(config, accessToken, authData.user.id),
+    () => measureAuthRead("auth_status", async () => await supabase
       .from("users")
       .select("status")
       .eq("auth_user_id", authData.user.id)
-      .maybeSingle<PublicUserStatusRow>(),
-    isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id),
-  ]);
+      .maybeSingle<PublicUserStatusRow>()),
+  );
+  const sessionRead = isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable, throwOnRejected);
+  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = throwOnRejected ? await (async () => {
+    // An unavailable sibling must not hide a successful, conclusive denial.
+    // A proven denial need not wait for that sibling's remaining read budget.
+    const denial = new Promise<never>((_resolve, reject) => {
+      void statusRead.then(({ data, error }) => {
+        if (!error && data?.status && isDeniedKingUserStatus(data.status)) reject(new AuthRejectionError(403));
+      }, () => {});
+      void sessionRead.catch(error => { if (error instanceof AuthRejectionError) reject(error); });
+    });
+    const settled = Promise.allSettled([statusRead, sessionRead]).then(([status, session]) => {
+      if (session.status === "rejected" && session.reason instanceof AuthRejectionError) throw session.reason;
+      if (status.status === "fulfilled" && !status.value.error && status.value.data?.status && isDeniedKingUserStatus(status.value.data.status)) throw new AuthRejectionError(403);
+      if (status.status === "rejected") throw status.reason;
+      if (session.status === "rejected") throw session.reason;
+      return [status.value, session.value] as const;
+    });
+    // Both promises retain handlers after the race; a late unknown failure is
+    // consumed without another decision, replay, or cancelling another reader.
+    return Promise.race([denial, settled]);
+  })() : await Promise.all([statusRead, sessionRead]);
 
   if (userStatusError) {
+    if (throwOnUnavailable) throw new AuthAvailabilityError("Account status");
     console.error("Unable to verify public user status for app session", {
       authUserId: authData.user.id,
       code: userStatusError.code,
@@ -309,6 +407,7 @@ async function isAccessTokenAllowedForAppSession(
 
   if (userStatus?.status) {
     if (isDeniedKingUserStatus(userStatus.status)) {
+      if (throwOnRejected) throw new AuthRejectionError(403);
       return false;
     }
 
@@ -316,11 +415,14 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   const { data: authIdentityDeleted, error: authIdentityDeletedError } =
-    await supabase.rpc("auth_identity_is_deleted", {
+    await measureAuthRead("auth_tombstone", async () => await supabase.rpc("auth_identity_is_deleted", {
       p_auth_user_id: authData.user.id,
-    });
+    }));
 
   if (authIdentityDeletedError) {
+    if (throwOnUnavailable && authIdentityDeletedError.code !== "42883" && authIdentityDeletedError.code !== "42P01") {
+      throw new AuthAvailabilityError("Account status");
+    }
     if (
       authIdentityDeletedError.code !== "42883" &&
       authIdentityDeletedError.code !== "42P01"
@@ -338,6 +440,7 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   if (authIdentityDeleted === true) {
+    if (throwOnRejected) throw new AuthRejectionError(401);
     return false;
   }
 
@@ -362,6 +465,8 @@ async function isAppLoginSessionCookieAllowed(
   config: SupabaseConfig,
   accessToken: string,
   authUserId: string,
+  throwOnUnavailable = false,
+  throwOnRejected = false,
 ) {
   const loginSessionId = (await cookies()).get(
     ACCOUNT_LOGIN_SESSION_COOKIE,
@@ -378,22 +483,28 @@ async function isAppLoginSessionCookieAllowed(
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     },
   });
-  const { data, error } = await supabase
-    .from("account_login_sessions")
-    .select("revoked_at")
-    .eq("id", loginSessionId)
-    .eq("auth_user_id", authUserId)
-    .maybeSingle<AccountLoginSessionStatusRow>();
+  const { data, error } = await coalesceReadInFlight(
+    loginSessionReadKey,
+    authReadAuthority(config, accessToken, authUserId, loginSessionId),
+    () => measureAuthRead("auth_session", async () => await supabase
+      .from("account_login_sessions")
+      .select("revoked_at")
+      .eq("id", loginSessionId)
+      .eq("auth_user_id", authUserId)
+      .maybeSingle<AccountLoginSessionStatusRow>()),
+  );
 
   if (error) {
     if (isAccountLoginSecuritySchemaMissing(error)) {
       return true;
     }
+    if (throwOnUnavailable) throw new AuthAvailabilityError("Session status");
 
     console.error("Unable to verify app login session", {
       code: error.code,
@@ -404,6 +515,7 @@ async function isAppLoginSessionCookieAllowed(
     return false;
   }
 
+  if (data?.revoked_at && throwOnRejected) throw new AuthRejectionError(401);
   return data?.revoked_at ? false : true;
 }
 
@@ -460,17 +572,19 @@ export async function getPendingMfaSessionTokensFromRequest(): Promise<PendingMf
 
 export async function setSupabaseSessionCookies(session: Session) {
   const cookieStore = await cookies();
+  const remember = cookieStore.get(REMEMBER_LOGIN_COOKIE)?.value === "1";
 
   cookieStore.set(
     ACCESS_TOKEN_COOKIE,
     session.access_token,
-    getSupabaseCookieOptions(session.expires_in),
+    sessionCookieOptions(remember),
   );
   cookieStore.set(
     REFRESH_TOKEN_COOKIE,
     session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(remember),
   );
+  cookieStore.set(REMEMBER_LOGIN_COOKIE, remember ? "1" : "0", sessionCookieOptions(remember));
 }
 
 export async function clearSupabaseSessionCookies() {
@@ -481,7 +595,7 @@ export async function clearSupabaseSessionCookies() {
   );
 }
 
-export async function getSupabaseAuthUser() {
+export async function getSupabaseAuthUser(options: { throwOnUnavailable?: boolean } = { throwOnUnavailable: true }) {
   const supabase = createSupabaseServerClient();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -489,11 +603,21 @@ export async function getSupabaseAuthUser() {
     return null;
   }
 
-  const { data, error } = await supabase.auth.getUser(accessToken);
+  const { data, error } = await readAuthUser(supabase, accessToken, getSupabaseConfig());
 
   if (error || !data.user) {
+    if (options.throwOnUnavailable !== false) assertAuthAvailable(error, error?.status, "Authentication");
     return null;
   }
 
   return data.user;
+}
+
+export async function createSafetySupabaseServerClient() {
+  const config = getSupabaseConfig();
+  if (!config) return null;
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: supabaseDeadlineFetch, headers: await safetyRequestHeaders() },
+  });
 }

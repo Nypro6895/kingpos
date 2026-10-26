@@ -28,8 +28,10 @@ function readOptionalString(formData: FormData, key: string) {
 
 function readNumber(formData: FormData, key: string, fallback = 0) {
   const rawValue = readString(formData, key);
+  if (rawValue === "") return fallback;
   const parsed = Number(rawValue);
-  return Number.isFinite(parsed) ? parsed : fallback;
+  if (!Number.isFinite(parsed)) throw new Error("Enter a valid number.");
+  return parsed;
 }
 
 function readBoolean(formData: FormData, key: string) {
@@ -118,6 +120,8 @@ function redirectAfterPayrollMutation(returnPath: string): never {
 export type PayrollStaffInputAutosaveState = {
   message: string | null;
   savedAt: string | null;
+  baseline?: {bonus_amount:number;check_number:string|null;note:string|null};
+  baselineAt?: string;
   status: "idle" | "saved" | "error";
 };
 
@@ -125,8 +129,11 @@ export async function autosavePayrollPeriodStaffInputAction(
   _state: PayrollStaffInputAutosaveState,
   formData: FormData,
 ): Promise<PayrollStaffInputAutosaveState> {
+  let baseline: PayrollStaffInputAutosaveState["baseline"];
+  let baselineAt: string | undefined;
   try {
-    await updatePayrollPeriodStaffInput({
+    const savedInput = await updatePayrollPeriodStaffInput({
+      expected: {bonus_amount: readNumber(formData,"expected_bonus_amount"),check_number:readOptionalString(formData,"expected_check_number"),note:readOptionalString(formData,"expected_note")},
       bonusAmount: readNumber(formData, "bonus_amount"),
       checkNumber: readOptionalString(formData, "check_number"),
       cycleType: readCycleType(formData),
@@ -135,6 +142,8 @@ export async function autosavePayrollPeriodStaffInputAction(
       staffId: readString(formData, "staff_id"),
       startDate: readString(formData, "period_start"),
     });
+    baseline=savedInput?{bonus_amount:savedInput.bonus_amount,check_number:savedInput.check_number,note:savedInput.note}:undefined;
+    baselineAt=savedInput?.updated_at;
   } catch (error) {
     return {
       message:
@@ -151,6 +160,8 @@ export async function autosavePayrollPeriodStaffInputAction(
 
   return {
     message: null,
+    baseline,
+    baselineAt,
     savedAt: new Date().toISOString(),
     status: "saved",
   };
@@ -191,8 +202,10 @@ export async function markLatestPayrollStatementPaidAction(formData: FormData) {
 export async function savePayrollPeriodStaffInputAction(formData: FormData) {
   const returnPath = readReturnPath(formData);
 
+
   try {
     await updatePayrollPeriodStaffInput({
+      expected: {bonus_amount: readNumber(formData,"expected_bonus_amount"),check_number:readOptionalString(formData,"expected_check_number"),note:readOptionalString(formData,"expected_note")},
       bonusAmount: readNumber(formData, "bonus_amount"),
       checkNumber: readOptionalString(formData, "check_number"),
       cycleType: readCycleType(formData),
@@ -234,6 +247,8 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
 
   try {
     await updateStaffPayrollSetting({
+      expectedSettingId:readOptionalString(formData,"expected_setting_id"),
+      expectedUpdatedAt:readOptionalString(formData,"expected_setting_updated_at"),
       applyTaxToFixedPay: readBoolean(formData, "apply_tax_to_fixed_pay"),
       bonusPayoutMethod: readPayoutMethod(
         formData,
@@ -284,3 +299,6 @@ export async function uploadPayrollPaystubAction(formData: FormData) {
 
   redirectAfterPayrollMutation(returnPath);
 }
+
+
+

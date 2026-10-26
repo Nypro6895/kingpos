@@ -1,0 +1,43 @@
+POS More -> View all settings — 2026-10-25 UTC
+
+Yêu cầu: sửa hai lỗi trên iOS, kiểm tra simulator, lưu để gộp deploy và phát hành
+iOS cùng các lần sửa khác. Không deploy, upload hay phát hành trong task này.
+
+Đã sửa:
+- More đóng ngay khi nhấn link, kể cả khi callback điều hướng SPA không chạy.
+- Chặn scroll/resize mở lại menu sau khi đã đóng.
+- Dọn portal khi React Activity ẩn POS, tránh menu nổi trên trang khác.
+- Khi rời Settings tổng, reset màn mobile về danh sách tài khoản/salon cho lần
+  mở /settings kế tiếp; không tự giữ màn chỉnh một salon. Deep link có section
+  vẫn giữ đích cụ thể. Không xóa các bản nháp nội dung của từng panel.
+
+Kiểm tra đã PASS:
+- 13 assertions trên Chrome ở 393px và 1280px.
+- 13 assertions tương tự trên WKWebView thật trong iPhone 17 / iOS 27.0 simulator.
+  XCTest testMoreSettingsRegression PASS, xcodebuild exit 0, không lỗi JavaScript.
+  Simulator riêng: DFF8D61E-F1A4-4476-AC9B-D6E8A93720C0.
+- ESLint ba file ứng dụng và test mới; 10 test Settings/iOS liên quan; diff check.
+
+Giới hạn kiểm tra:
+- Simulator dùng các component thực và React Activity thực, nhưng mock Next Link,
+  route state, dữ liệu salon và các panel con. Không đăng nhập production, không
+  ghi dữ liệu thật. Chưa xác minh end-to-end bản app phát hành đang dùng.
+- Hai test whole-site-navigation cần môi trường riêng bị skip.
+- Test settings-hub-ui.test.mjs cũ không dựng được fixture: stub navigation thiếu
+  dấu đóng và import server-only/Node bị kéo vào bundle browser. Không tính pass.
+- Chưa build toàn bộ baseline release tích hợp; checkout có nhiều sửa khác.
+
+Bàn giao phát hành:
+- Change ID: pos-more-settings-20261025. Trạng thái needs-integration.
+- Patch chỉ của task: artifacts/pos-more-settings-20261025/task-only.patch.
+- Snapshot cố định: artifacts/pos-more-settings-20261025/snapshot/.
+- Evidence: simulator-result.json, simulator-tests.log, simulator.png,
+  chromium-393.json, chromium-1280.json, source-hashes.json cùng thư mục artifacts.
+- Mac evidence: /Users/nytruong/Developer/PosMoreSettings-20261025/Tests.xcresult.
+- Lần deploy tiếp theo phải tích hợp patch vào đúng baseline production hiện tại,
+  giữ các sửa đã ship, chạy build và test luồng POS -> More -> View all settings
+  trên candidate tích hợp; thử quay lại POS và mở Settings lần hai sau khi chọn salon.
+- Đây là thay đổi web, không sửa Swift, native JS/assets hoặc bridge contract.
+  Không cần tăng build iOS chỉ vì patch này. Khi gom với các sửa native khác,
+  xác minh luồng trong binary candidate của đợt phát hành chung.
+- Chưa deploy web, chưa upload TestFlight, chưa phát hành App Store.

@@ -1,0 +1,47 @@
+REYLUMI — SỬA PHIÊN, GUEST VÀ CHUYỂN VAI TRÒ TRÊN iOS
+Ngày 19/10/2026, America/Chicago. Implementation only; chưa deploy.
+
+Nguồn đối chiếu là commit 1647461cd8e820f07da2dcc3048c665fbad32842 của iOS1.0.0(41), cùng nguồn web dpl_PSPG2rQUTEvvyPJhuL82Wqwc3qUQ đã xác minh trong audit. Không lấy toàn bộ checkout chính đang dirty làm nguồn sửa. Bản sửa nằm ở nhánh codex/ios-session-role-stability-20261019.
+
+Hành vi sau sửa
+
+- Một read nhận409 chỉ rút cache/admission của scope bị xung đột. Lượt context hiện tại được giữ để xác minh, thay vì bị hủy bởi một epoch mới do read cũ tạo ra.
+- Native và JavaScript phân biệt local cancellation/supersession với server409. Bridge giữ mã cancellation -999 và lý do stale-scope trong danh sách cho phép; không nhận thông tin lỗi tùy ý làm quyền.
+- Context cùng scope nhưng bắt đầu trước lúc scope bị rút không được khôi phục nó. Native kiểm tra revision qua các lần await/store; entry bỏ event cũ và yêu cầu một GET mới sau conflict. Context server xác minh scope mới vẫn được tiếp nhận.
+- Native dọn thông tin flight ngay trong Task trước khi kết quả hủy được quan sát. Nhiều consumer cùng nhận cancellation có thể join một GET mới, thay vì tiếp tục join Task cũ đã hủy; flight cũ không được xóa flight mới.
+- Read permits/revisions vẫn chặn payload200/304/offline và durable writer cũ. Scope khác không bị xóa bởi một409 không liên quan. Recovery tự động có giới hạn; repeated conflict dừng ở thao tác Try again.
+- Role ACK thành công hoặc thất lạc được gắn với đúng thao tác người dùng. Read cũ trong lúc đổi vai trò không phá kiểm tra trang đích; ACK muộn sau khi người dùng rời trang, kể cả quay lại đường dẫn cũ, không được chiếm điều hướng. Không gửi lại command đã có thể commit.
+- Fresh401/403/unconfirmed rút nội dung private liên quan; timeout/503 thông thường không được biến thành bằng chứng logout. Staff503+offlineState=unconfirmed vẫn bị chặn đúng quy tắc binding.
+- Hết phiên có Continue as guest và có thể hủy hộp thoại để về Explore. Help không giữ modal hết phiên mắc kẹt. Logout chủ động về Explore, không bị gọi là hết phiên.
+- ACK logout native đã xác minh vẫn được chấp nhận sau lúc native rút scope. Không reset hai lần, không đọc context /market dư trước điều hướng guest, không replay logout. Luồng đăng nhập HTTPS/CAPTCHA/MFA giữ nguyên.
+- Callback đăng nhập/kiểm tra phiên cũ sau Continue, Help hoặc logout không thể mở lại modal hoặc ghi lỗi lên phiên mới.
+
+Sửa độc lập lỗi đọc bài đã ẩn
+
+Migration 20261019220000_hidden_posts_actor_reads.sql giữ hàm guest gốc có chữ ký và kết quả hide/block. Nó xác định actor/block edges một lần rồi đọc theo author thay vì kiểm tra identity cho mọi bài không liên quan. Hai author index hỗ trợ các nhánh đó. Không tăng timeout, không bỏ lọc hide/block, không đổi RLS, người sở hữu hàm, grants, dữ liệu hoặc hành vi ghi.
+
+PGlite differential/security regression thực thi SQL cũ/mới trên dữ liệu kiểm soát: guest chữ ký hợp lệ/sai/hết hạn, tách tài khoản, block hai chiều, dedup, item không tồn tại, giữ owner/ACL/service_role/STABLE/SECURITY DEFINER/search_path và zero row changes. Với6000 bài không liên quan, identity calls cũ6011, bản sửa tối đa2; plan dùng author-index/bitmap cho ba nguồn. Đây là kiểm tra local; migration chưa áp dụng production.
+
+Kiểm chứng và bằng chứng
+
+Manifest tổng hợp cuối lưu tại artifacts/session-role-stability-20261019/verification.json. Nó phân biệt kết quả đã đạt với giới hạn, commit/source hashes, native-tree parity, nguồn CI, bundle exact-byte hashes và log từng bộ kiểm tra.
+
+Các kiểm tra hành vi gồm: cold guest; phiên chưa xác minh; hết phiên có cache Owner; logout; login lại; Owner/Staff/Personal; đổi vai trò nhiều vòng; ACK thất lạc; rời Help/quay lại; read409 trước context200; cùng scope cũ/khác scope mới; actual401/403/unconfirmed; weak network/503; cancellation; Today lỗi từng phase; recovery cùng đường dẫn; callback muộn; mutation trong initial read; draft được giữ ở những trường hợp vẫn có quyền.
+
+Regressions đã có bằng chứng RED trước sửa cho guest/modal/logout, bridge reason, entry409 recovery, warm expiry và late ACK. Các fixture chạy component/entry/resource/transport thật tại lớp cần kiểm tra; HTTP/DB/cookie/clock được kiểm soát. Không tạo giao dịch, gửi email/SMS, mời tester hoặc tự thay binding.
+
+Một lượt chạy nhiều build/browser đồng thời có test Chromium timeout khi máy gần cạn RAM; một test WebKit quan sát URL trước React commit. Các log thất bại được giữ. Harness đã sửa để chờ UI Help thực sự ẩn private page trước khi thả ACK; chạy lại tuần tự đạt đủ61/61 trên mỗi Chromium/WebKit. Verification cuối dựa trên những lượt kiểm tra thành công sau đó, không dùng bộ đếm pass từ lượt bị gián đoạn để che lỗi.
+
+Bundle đã tạo lại với345 tài nguyên,96 route,322 command, không thiếu route. IDs và hashes được ghi trong verification.json. Không tăng marketing version/build vì chưa upload bản phân phối; coordinator tương lai phải chọn build hợp lệ mới theo Apple khi được yêu cầu phát hành.
+
+Native CI dùng workflow reylumi-ios-check.yml: simulator tests và unsigned archive, không ký phân phối/upload. Verification ghi đúng commit của lượt CI cuối cùng và kiểm tra exact ios tree/bundle với source hoàn thành. Lượt CI trước khi thêm cleanup concurrent-flight được giữ riêng; không dùng nó để xác minh thay đổi cleanup mới.
+
+Vercel auto-deploy bị tắt riêng cho nhánh kiểm tra này trong vercel.json trước khi push source chạy macOS CI. Không đổi project setting hoặc quy tắc của nhánh khác. Cơ chế được mô tả tại https://vercel.com/docs/project-configuration/git-configuration . Không chạy lệnh deploy/promote, TestFlight upload hoặc App Store submission.
+
+Giới hạn và bàn giao
+
+- Simulator, Chromium và WebKit không thay thế thử nghiệm trên iPhone thật với token/cookie và tài khoản thực tế. Chưa tuyên bố sự cố thiết bị đã hết hoàn toàn.
+- Audit không đủ dữ liệu xác định lý do401 hoặc Staff binding unconfirmed của riêng tài khoản trong JSON; bản sửa giữ nguyên các từ chối có thật.
+- Chưa tối ưu tốc độ cold start. Giữ quyền chính xác và phục hồi hữu hạn được ưu tiên trước.
+- Source ready/frozen và immutable change event phải được dùng khi ghép bản phát hành. Không copy cả checkout chính cũ. Trước deploy cần lấy lại exact production/native baseline theo AGENTS.md và release-policy.txt; rebase các delta hoàn tất, build/verify lại nguồn đã ghép.
+- Web, iOS đang cài và database production chưa nhận bản sửa/migration trong nhiệm vụ này.

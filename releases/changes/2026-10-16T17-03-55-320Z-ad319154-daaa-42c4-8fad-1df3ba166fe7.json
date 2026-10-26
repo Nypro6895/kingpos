@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "app-local-bounded-file-uploads",
+  "status": "needs-integration",
+  "summary": "Single-use private staged uploads for the three original Support/Payroll/Tax actions; current authority and original handlers retained, no automatic write replay.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-upload-policy.ts",
+    "lib/app-local-upload-client.ts",
+    "lib/app-local-upload-server.ts",
+    "supabase/migrations/20261016170000_app_local_upload_sessions.sql",
+    "tests/app-local-upload-runtime.test.mjs",
+    "tests/app-local-upload-client.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\upload-frozen-r1"
+  },
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Thirteen isolated client/original-handler/actual PostgreSQL tests",
+      "result": "passed",
+      "evidence": "node --test --test-concurrency=1 tests/app-local-upload-runtime.test.mjs tests/app-local-upload-client.test.mjs"
+    },
+    {
+      "name": "Targeted ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Full current TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "Parent named broker/manifest/command client integration and assembled native upload compatibility",
+      "result": "pending"
+    }
+  ],
+  "id": "ad319154-daaa-42c4-8fad-1df3ba166fe7",
+  "recordedAt": "2026-10-16T17:03:55.320Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

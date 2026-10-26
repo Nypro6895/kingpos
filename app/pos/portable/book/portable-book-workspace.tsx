@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
@@ -54,6 +56,8 @@ function addDays(value: string, days: number) {
 }
 
 export function PortableBookWorkspace({ action, data, searchCustomersAction, slotsAction, manageAction, hoursAction, staffOptionsAction, refreshAction }: Props) {
+  const __vt = useWorkspaceTranslation();
+
   const rootRef = useRef<HTMLElement>(null);
   const noShowClock = useBookingClock();
   const workspace = usePortableWorkspaceState();
@@ -118,6 +122,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   },[hoursAction,selectedDate]);
   const requestRef = useRef<{ requestId: string; requestedAt: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [customerId, setCustomerId] = useState<string | undefined>();
   const [customerName, setCustomerName] = useState("");
@@ -212,7 +217,8 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   }
 
   function changeStatus(next: "confirm" | "cancel" | "mark_no_show" | "mark_no_show_excused") {
-    if (!manageAction || !latestStatusTarget) return;
+    if (!manageAction || !latestStatusTarget || isPending) return;
+    setPendingStatus(next);
     setError("");
     startTransition(async () => {
       try {
@@ -301,7 +307,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   }, [appointments, data.timezone, query, range, selectedDate, status, view]);
 
   function submitAppointment() {
-    if (editingChanged) return;
+    if (editingChanged || isPending) return;
     setError("");
     startTransition(async () => {
       try {
@@ -347,43 +353,44 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   }
 
   return (
-    <section ref={rootRef} className={styles.workspace} aria-label="Booking">
+    <section ref={rootRef} className={styles.workspace} aria-label={__vt("Booking")}>
       <section className={styles.panel}>
-        <div className={styles.toolbar} aria-label="Booking toolbar" inert={showCreate}>
+        <div className={styles.toolbar} aria-label={__vt("Booking toolbar")} inert={showCreate}>
           <div className={styles.dateControls}>
-            <button type="button" onClick={() => { setSelectedDate(dateKey(new Date().toISOString(), data.timezone)); setRange("day"); setCalendarFocusRequest(value => value + 1); }}>Today</button>
-            <button type="button" aria-label="Previous day" onClick={() => setSelectedDate(current => addDays(current, -1))}>‹</button>
-            <input aria-label="Selected date" type="date" value={selectedDate} onChange={event => { if (event.target.value) setSelectedDate(event.target.value); }} />
-            <button type="button" aria-label="Next day" onClick={() => setSelectedDate(current => addDays(current, 1))}>›</button>
+            <button type="button" onClick={() => { setSelectedDate(dateKey(new Date().toISOString(), data.timezone)); setRange("day"); setCalendarFocusRequest(value => value + 1); }}><WorkspaceText text="Today" /></button>
+            <button type="button" aria-label={__vt("Previous day")} onClick={() => setSelectedDate(current => addDays(current, -1))}>‹</button>
+            <input aria-label={__vt("Selected date")} type="date" value={selectedDate} onChange={event => { if (event.target.value) setSelectedDate(event.target.value); }} />
+            <button type="button" aria-label={__vt("Next day")} onClick={() => setSelectedDate(current => addDays(current, 1))}>›</button>
           </div>
           {searchCustomersAction && data.canCreate ? <CustomerLookup className={styles.search}
-            label="Search appointments" placeholder="Search customer name or phone" value={query} onChange={setQuery}
+            label={__vt("Search appointments")} placeholder={__vt("Search customer name or phone")} value={query} onChange={setQuery}
             search={searchCustomersAction} onSelect={customer => {
               setQuery(""); openCreate(customer);
-            }} /> : <input className={styles.search} type="search" aria-label="Search appointments" placeholder="Search customer, service or staff" value={query} onChange={event => setQuery(event.target.value)} />}
+            }} /> : <input className={styles.search} type="search" aria-label={__vt("Search appointments")} placeholder={__vt("Search customer, service or staff")} value={query} onChange={event => setQuery(event.target.value)} />}
           <details data-dismissible-popover className={styles.filter} ref={filterRef}>
             <summary data-active={status !== "all" || (view === "list" && range !== "day")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-              Filter{status !== "all" || (view === "list" && range !== "day") ? " •" : ""}
+              <WorkspaceText text="Filter" /><WorkspaceText text={status !== "all" || (view === "list" && range !== "day") ? " •" : ""} />
             </summary>
             <div className={styles.filterPanel}>
-              <label>Status<select aria-label="Status" value={status} onChange={event => setStatus(event.target.value)}>
-                <option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option><option value="checked_in">Arrived</option><option value="in_service">In service</option><option value="no_show_unexcused">No-show</option><option value="no_show_excused">No-show with reason</option><option value="no_show">All no-shows</option>
+              <label><WorkspaceText text="Status" /><select aria-label={__vt("Status")} value={status} onChange={event => setStatus(event.target.value)}>
+                <option value="all"><WorkspaceText text="All statuses" /></option><option value="confirmed"><WorkspaceText text="Confirmed" /></option><option value="pending"><WorkspaceText text="Pending" /></option><option value="checked_in"><WorkspaceText text="Arrived" /></option><option value="in_service"><WorkspaceText text="In service" /></option><option value="no_show_unexcused"><WorkspaceText text="No-show" /></option><option value="no_show_excused"><WorkspaceText text="No-show with reason" /></option><option value="no_show"><WorkspaceText text="All no-shows" /></option>
               </select></label>
-              {view === "list" && <label>Date range<select aria-label="Date range" value={range} onChange={event => setRange(event.target.value as Range)}>
-                <option value="day">Selected day</option><option value="next7">Next 7 days</option><option value="all">All loaded appointments</option>
+              {view === "list" && <label><WorkspaceText text="Date range" /><select aria-label={__vt("Date range")} value={range} onChange={event => setRange(event.target.value as Range)}>
+                <option value="day"><WorkspaceText text="Selected day" /></option><option value="next7"><WorkspaceText text="Next 7 days" /></option><option value="all"><WorkspaceText text="All loaded appointments" /></option>
               </select></label>}
-              <button type="button" onClick={() => { setStatus("all"); setRange("day"); setQuery(""); }}>Clear filters</button>
+              <button type="button" onClick={() => { setStatus("all"); setRange("day"); setQuery(""); }}><WorkspaceText text="Clear filters" /></button>
             </div>
           </details>
-          <div className={styles.views} role="group" aria-label="Booking view">
-            <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
-            <button type="button" aria-pressed={view === "calendar"} onClick={() => { setView("calendar"); setCalendarFocusRequest(value => value + 1); }}>Calendar</button>
+          <div className={styles.views} role="group" aria-label={__vt("Booking view")}>
+            <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}><WorkspaceText text="List" /></button>
+            <button type="button" aria-pressed={view === "calendar"} onClick={() => { setView("calendar"); setCalendarFocusRequest(value => value + 1); }}><WorkspaceText text="Calendar" /></button>
           </div>
-          {data.canCreate && <button className={styles.create} type="button" onClick={()=>openCreate()}>+ New appointment</button>}
+          {data.canCreate && <button className={styles.create} type="button" onClick={()=>openCreate()}><WorkspaceText text="+ New appointment" /></button>}
         </div>
-        {data.setupMessage ? <p className="px-3 py-2 text-sm text-amber-800" role="status">{data.setupMessage}</p> : null}
-        {error && !showCreate && !statusTarget && <p role="alert" className="px-3 py-2 text-sm text-red-700">{error}</p>}
+        {isPending && !showCreate && !latestStatusTarget ? <p role="status" className="px-3 py-2 text-sm text-zinc-600"><ActionFeedback pending pendingLabel="Opening appointment…">{null}</ActionFeedback></p> : null}
+        {data.setupMessage ? <p className="px-3 py-2 text-sm text-amber-800" role="status"><WorkspaceText text={data.setupMessage} /></p> : null}
+        {error && !showCreate && !statusTarget && <p role="alert" className="px-3 py-2 text-sm text-red-700"><WorkspaceText text={error} /></p>}
         <div className={styles.bookingBody} data-editing={showCreate}><div className={styles.bookingContent}><BookingViews focusRequest={calendarFocusRequest} openingHours={openingHours} actions={manageAction ? { edit: data.canCreate ? (item, field) => loadAppointment(item, "edit", field) : undefined, status: data.canCreate || data.canCancel ? item => loadAppointment(item, "status") : undefined, ticket: data.canCreateTicket ? item => loadAppointment(item, "ticket") : undefined } : undefined} appointments={visible} data={data} date={selectedDate} view={view} showDates={range !== "day"} /></div>
         {showCreate && <BookingEditor key={editing?.id ?? "new"} data={data} editing={latestEditing} stale={editingChanged} initialField={editorField}
           customerId={customerId} customerName={customerName} customerPhone={customerPhone} customerEmail={customerEmail}
@@ -398,7 +405,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
         </div>
       </section>
 
-      {latestStatusTarget && <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" style={{bottom:"var(--portable-keyboard-height, 0px)"}} role="dialog" aria-modal="true" aria-label="Appointment status"><div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"><h2 className="text-lg font-semibold">{latestStatusTarget.customerName} · {bookingStatusLabel(latestStatusTarget.status, latestStatusTarget.noShowKind)}</h2><label className="mt-3 grid gap-1 text-sm">Note (optional)<input className="h-11 rounded border px-3" value={cancelReason} onChange={e => setCancelReason(e.target.value)} /></label>{error && <p role="alert" className="mt-3 text-red-700">{error}</p>}<div className="mt-4 flex flex-wrap gap-2">{data.canCreate && !latestStatusTarget.ticketId && latestStatusTarget.status === "pending" && <button type="button" className="rounded bg-teal-700 px-4 py-3 text-white" disabled={isPending} onClick={() => changeStatus("confirm")}>Confirm appointment</button>}{data.canCancel && !latestStatusTarget.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(latestStatusTarget.status) && <button type="button" className="rounded border border-red-300 px-4 py-3 text-red-700" disabled={isPending} onClick={() => changeStatus("cancel")}>Cancel appointment</button>}{data.canCancel && !latestStatusTarget.ticketId && ["scheduled","confirmed","no_show"].includes(latestStatusTarget.status) && (latestStatusTarget.status === "no_show" || Date.parse(latestStatusTarget.startAt) <= noShowClock) && <><button type="button" className="min-h-11 rounded border border-orange-300 px-4 py-3 text-orange-800" disabled={isPending} onClick={() => changeStatus("mark_no_show")}>No-show</button><button type="button" className="min-h-11 rounded border px-4 py-3" disabled={isPending} onClick={() => changeStatus("mark_no_show_excused")}>No-show with reason</button></>}<button type="button" className="rounded border px-4 py-3" disabled={isPending} onClick={() => {setStatusTarget(null);setError("");}}>Close</button></div></div></div>}
+      {latestStatusTarget && <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" style={{bottom:"var(--portable-keyboard-height, 0px)"}} role="dialog" aria-modal="true" aria-label={__vt("Appointment status")}><div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"><h2 className="text-lg font-semibold">{latestStatusTarget.customerName} · <WorkspaceText text={bookingStatusLabel(latestStatusTarget.status, latestStatusTarget.noShowKind)} /></h2><label className="mt-3 grid gap-1 text-sm"><WorkspaceText text="Note (optional)" /><input className="h-11 rounded border px-3" value={cancelReason} onChange={e => setCancelReason(e.target.value)} /></label>{error && <p role="alert" className="mt-3 text-red-700"><WorkspaceText text={error} /></p>}<div className="mt-4 flex flex-wrap gap-2">{data.canCreate && !latestStatusTarget.ticketId && latestStatusTarget.status === "pending" && <button type="button" className="rounded bg-teal-700 px-4 py-3 text-white" disabled={isPending} aria-busy={isPending && pendingStatus === "confirm"} onClick={() => changeStatus("confirm")}><ActionFeedback pending={isPending && pendingStatus === "confirm"} pendingLabel="Confirming…"><WorkspaceText text="Confirm appointment" /></ActionFeedback></button>}{data.canCancel && !latestStatusTarget.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(latestStatusTarget.status) && <button type="button" className="rounded border border-red-300 px-4 py-3 text-red-700" disabled={isPending} aria-busy={isPending && pendingStatus === "cancel"} onClick={() => changeStatus("cancel")}><ActionFeedback pending={isPending && pendingStatus === "cancel"} pendingLabel="Cancelling…"><WorkspaceText text="Cancel appointment" /></ActionFeedback></button>}{data.canCancel && !latestStatusTarget.ticketId && ["scheduled","confirmed","no_show"].includes(latestStatusTarget.status) && (latestStatusTarget.status === "no_show" || Date.parse(latestStatusTarget.startAt) <= noShowClock) && <><button type="button" className="min-h-11 rounded border border-orange-300 px-4 py-3 text-orange-800" disabled={isPending} aria-busy={isPending && pendingStatus === "mark_no_show"} onClick={() => changeStatus("mark_no_show")}><ActionFeedback pending={isPending && pendingStatus === "mark_no_show"} pendingLabel="Saving…"><WorkspaceText text="No-show" /></ActionFeedback></button><button type="button" className="min-h-11 rounded border px-4 py-3" disabled={isPending} aria-busy={isPending && pendingStatus === "mark_no_show_excused"} onClick={() => changeStatus("mark_no_show_excused")}><ActionFeedback pending={isPending && pendingStatus === "mark_no_show_excused"} pendingLabel="Saving…"><WorkspaceText text="No-show with reason" /></ActionFeedback></button></>}<button type="button" className="rounded border px-4 py-3" disabled={isPending} onClick={() => {setStatusTarget(null);setError("");}}><WorkspaceText text="Close" /></button></div></div></div>}
 
     </section>
   );

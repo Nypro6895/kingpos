@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "local-first-pos-staff-20261016",
+  "status": "working",
+  "summary": "Preserve offline preparation and fresh authorization on supported Safari16 iPhones by replacing three unavailable browser APIs with equivalent bounded compatible primitives.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "public/experience-offline-worker.js",
+    "lib/experience-offline-client.ts",
+    "tests/experience-offline-foundation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos"
+  },
+  "validation": [
+    {
+      "name": "Missing browser API regression, cancellation and owner revocation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "5f90740f-7fc9-4ffb-9330-28affc20f4f7",
+  "recordedAt": "2026-10-16T05:28:40.969Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

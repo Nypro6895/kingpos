@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+ <title id="title">Payroll before and after adding Payroll Data Download</title>
+ <desc id="desc">Before installation Payroll has its regular reports. After installation a Download section appears at the bottom with date range and financial, staff and customer choices.</desc>
+ <rect width="900" height="560" rx="24" fill="#f0f6f3"/>
+ <g font-family="Arial,sans-serif" fill="#173b32">
+  <text x="40" y="48" font-size="14" letter-spacing="2">REYLUMI · FREE OWNER PLUGIN</text>
+  <text x="40" y="89" font-size="30" font-weight="bold">Your data. Ready to download.</text>
+  <rect x="35" y="123" width="393" height="390" rx="16" fill="white"/>
+  <rect x="472" y="123" width="393" height="390" rx="16" fill="white" stroke="#5f9c82" stroke-width="2"/>
+  <text x="58" y="158" font-size="18" font-weight="bold">Without plugin</text>
+  <text x="495" y="158" font-size="18" font-weight="bold">With plugin</text>
+  <g font-size="14"><text x="58" y="195">Owner → Payroll</text><text x="495" y="195">Owner → Payroll</text></g>
+  <g fill="#edf1ef"><rect x="58" y="214" width="347" height="46" rx="8"/><rect x="495" y="214" width="347" height="46" rx="8"/><rect x="58" y="273" width="347" height="112" rx="8"/><rect x="495" y="273" width="347" height="53" rx="8"/></g>
+  <g font-size="13"><text x="72" y="242">Overview   Staff Income   Shop Income</text><text x="509" y="242">Overview   Staff Income   Shop Income</text><text x="72" y="303">Payroll reports and income</text><text x="509" y="304">Payroll reports and income</text></g>
+  <text x="58" y="432" font-size="16" font-weight="bold">Regular Payroll tools</text>
+  <text x="58" y="461" font-size="14">No Download section</text>
+  <rect x="495" y="343" width="347" height="148" rx="10" fill="#edf8f1" stroke="#80b799"/>
+  <text x="510" y="369" font-size="18" font-weight="bold">Download</text>
+  <text x="510" y="393" font-size="13">From: Oct 01     To: Oct 08</text>
+  <text x="510" y="419" font-size="13">✓ Financial   ✓ Staff   ✓ Customers</text>
+  <rect x="510" y="437" width="178" height="36" rx="7" fill="#173b32"/>
+  <text x="526" y="460" font-size="13" fill="white">Prepare downloads ↓</text>
+  <text x="450" y="540" text-anchor="middle" font-size="13">Illustration · Add plugin → Owner → Payroll → Scroll to Download → Choose dates and data</text>
+ </g>
+</svg>

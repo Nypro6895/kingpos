@@ -1,0 +1,26 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [],
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Exact production baseline and assembled-source verification",
+      "result": "pending"
+    }
+  ],
+  "changeId": "salon-setup-release-integration-20261016",
+  "source": {
+    "snapshot": "artifacts/salon-setup-review-20261016/source"
+  },
+  "summary": "Prepare isolated integration of the reviewed salon setup fixes and inspect completed pending work while another coordinator retains the release lock. No live baseline captured or publication attempted.",
+  "files": [],
+  "status": "working",
+  "id": "b622cb64-a73e-40ff-8d83-0cec4e20fe8f",
+  "recordedAt": "2026-10-16T19:48:44.519Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "phone-claim-conflicts-20261015",
+  "status": "ready",
+  "summary": "First verified owner remains active; later claims use manual support, preserving operational data.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/claim/[salonId]/page.tsx",
+    "app/claim/actions.ts",
+    "app/claim/claim-panel.tsx",
+    "lib/business-claims.ts",
+    "docs/business-claims.md",
+    "supabase/migrations/20261023170000_phone_claim_first_owner.sql",
+    "tests/phone-claim-first-owner.integration.test.mjs",
+    "tests/phone-claim-owner-preservation.test.mjs",
+    "tests/phone-claim-actions.test.mjs",
+    "tests/business-claim-provider.test.mjs",
+    "tests/phone-claim-ui.test.mjs",
+    "tests/phone-claim-postgres.integration.test.mjs",
+    "tests/helpers/phone-claim-fixture.mjs",
+    "tests/helpers/isolated-supabase-fixture.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2\\frozen-source",
+    "baselineDeploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/build-r2.log; C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/lint.log"
+    },
+    {
+      "name": "103 focused regressions and independent full-schema Customer, Phone and Market acceptance",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/focused-tests-r2.log; customer-fullschema.log; phone-fullschema.log; market-fullschema.log"
+    },
+    {
+      "name": "Production baseline preservation and native command pin integration",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/assembly-plan.json; command-pins.json"
+    }
+  ],
+  "supersedesEvents": [
+    "0c6cac0e-acbe-4ed0-9b62-8c7871df05d3"
+  ],
+  "id": "d77f09f8-c84b-48a6-adaa-05d07f4cb28d",
+  "recordedAt": "2026-10-23T18:54:35.353Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/claim/[salonId]/page.tsx": "80a6fbcb6ca1d9213a2f6fadb1d44c51b560e3a49c516d05b32dee781e6174a1",
+    "app/claim/actions.ts": "bb6ae1eb3ccba6982fee8f657914195c4784109e4fe6c23f19778a172873efda",
+    "app/claim/claim-panel.tsx": "f351ba29de5e2a07b60385f9a7a08fd676368f74511b65f6ac4f337d6f3c6fc8",
+    "lib/business-claims.ts": "c5332169e456b3ba0922af350b2a4682d1a27a6c8e923af9e8616b95d044fa2c",
+    "docs/business-claims.md": "ac8cd4f867b0c944827cb238c64b4578e515f696c7a1ce2e82cf78168cd1c82c",
+    "supabase/migrations/20261023170000_phone_claim_first_owner.sql": "e572254b820e9a450f41408dc16da9c8ff289b0fdf01228ce5c0471966b1e8a3",
+    "tests/phone-claim-first-owner.integration.test.mjs": "e82b69997a97ed1b55e783dd4d19fbfab941c4e31698fe21cd93d32bf2120176",
+    "tests/phone-claim-owner-preservation.test.mjs": "f478b57afcdc3de29a02b278c1392fdbaac890bfdad0ff4abebbd1a689505e81",
+    "tests/phone-claim-actions.test.mjs": "edc8f39e12715f1ceed8241fc6eeb52d771b2be5614f3ab8861207d8aa2de5e6",
+    "tests/business-claim-provider.test.mjs": "4d0a8b94b8f4a10e4c04e89c6f75c51d068bcd45d038d5518f00c9899e0a59d2",
+    "tests/phone-claim-ui.test.mjs": "5dc61d0426f592cc58968d26de38047615b2c44eb9e46d0a66ca627eafff415d",
+    "tests/phone-claim-postgres.integration.test.mjs": "6bfad05d8c89732e3568932f05592787a492ebccb28f685b75732f977fd803b1",
+    "tests/helpers/phone-claim-fixture.mjs": "620b0a36ca13fa92c4a5339dbd87d460150916396d286df85a797453067a96f5",
+    "tests/helpers/isolated-supabase-fixture.mjs": "43f891028cf314bb5a7e544b6c29772619f2b712a4d93197fc2f4e859b4da12f"
+  }
+}

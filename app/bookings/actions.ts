@@ -167,8 +167,8 @@ function failure(
   options?: { code?: string; field?: string },
 ): BookingActionResult {
   return {
-    code: options?.code,
-    field: options?.field,
+    ...(options?.code ? { code: options.code } : {}),
+    ...(options?.field ? { field: options.field } : {}),
     message,
     ok: false,
   };
@@ -1247,6 +1247,7 @@ export async function updateBookingSettingsAction(
     }
 
     revalidatePath("/bookings");
+    revalidatePath(`/book/${context.data.salon.id}`);
     after(() => broadcastPosStaffChange(context.data.salon.id, "booking"));
     return success("Booking settings saved.");
   } catch (error) {

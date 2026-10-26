@@ -1,0 +1,78 @@
+STAFF SCAN — 2026-10-25
+Change ID: staff-scan-20261025
+Status: implementation complete locally; NOT DEPLOYED; needs integration with current production source.
+
+Approved flow
+- Staff bottom Notifications tab becomes Scan; the header notification bell remains.
+- Scan QR or tap an unpaid check-in, with no confirmation screen.
+- Show requested services from check-in. Tap to select, enter separate amounts,
+  or find/add another service enabled for this staff member in the salon catalog.
+- Connecting immediately establishes Working + Holding. Stand by keeps that
+  connection without requiring an amount. Cancel releases a new empty connection;
+  on saved work Cancel only discards current unsent edits.
+- Finish amount entry (keyboard completion, leaving the editor, or Stand by with
+  valid amounts) to save to POS and return to Scan. Saving alone does not finish work.
+- Tap the current-work card to edit or Done. Done projects large/small turns once.
+  Holding reserves queue position without counting completed service turns.
+- POS can edit staff, services and amounts and collect payment before phone Done.
+  POS settlement uses the existing receipt/earnings/commission/accounting core.
+- POS ticket linkage is authoritative. Reconnect removes settled work and its
+  draft before any retry. Old revisions cannot reopen or overwrite settled work.
+- Local unsent edits are not visible to POS. They are retained in scoped session
+  drafts while work is open and are never automatically replayed after reconnect.
+- English remains the default; new Staff UI copy follows the installed Vietnamese mode.
+- Teal/green is the main page color. Orange is limited to Holding and Done emphasis.
+
+Implementation and dependencies
+- New migration: supabase/migrations/20261025170000_staff_scan_workspace.sql.
+  Requires the existing Check-in Receipt tables and Service Relay migrations
+  through 20261009150036 (plus their installed later patches).
+- No new plugin purchase is required: an active Check-in Receipt subscription OR
+  installed Phone Checkin enables new connections. Existing accepted work can
+  still be completed if entitlement expires.
+- Explicit scan tickets bypass automatic service-relay dispatch. Legacy automatic
+  offers and their accounting behavior remain available.
+- QR formats: reylumi:checkin:<visit UUID>, or an HTTPS reylumi.com/visit/<pass UUID>.
+  Both resolve within the current salon and authenticated staff identity.
+- Added jsqr 1.4.0, lazily loaded only when Scan opens. Frames stay on the device.
+- Personal QR is now implemented by personal-qr-20261025. Include its QR provider,
+  check-in/POS Ready/history flow and qr-full-flow-20261025 fixes in the same release.
+- No native files or bridge contracts changed. Web implementation only. Verify
+  real Safari/WKWebView camera permissions, keyboard and resume behavior on iPhone
+  before release; native changes/build only if that verification requires them.
+
+Release handling
+- Do not deploy this dirty checkout or copy shared modules wholesale onto production.
+- Before snapshots in artifacts/staff-scan-20261025/before preserve the exact
+  pre-task versions. Final source, file hashes and a scoped patch are stored
+  alongside them. Merge only that task delta into the latest production baseline.
+- Apply the compatible migration with the integrated web release. No database
+  migration, payment, message, push, deployment or iOS upload was performed here.
+- Run database and UI tests after integration and build the assembled release.
+- Recheck receipt attribution, turn projections, POS takeover and phone reconnect
+  against the real integrated schema. The local SQL tests execute actual migration
+  functions in PGlite with a stubbed existing receipt core, not a live payment provider.
+- Do not roll back to an old POS UI that cannot finish open Scan work; first settle
+  open work or retain the new desk handling during rollback.
+
+Validation and artifacts
+- tests/staff-scan.integration.test.mjs: entitlement, salon/staff permissions,
+  Working/Holding, services, amounts, cancellation, Done idempotency, large/small
+  projection, POS takeover, portable capability, settlement and stale-write rejection.
+- tests/staff-scan-code.test.mjs: exact QR validation, actual generated receipt/pass
+  QR decoding, and Staff login/workspace route restoration.
+- tests/staff-scan-ui.test.mjs: actual Staff component with mocked network boundary;
+  selection, services, search/add, save/edit, Stand by, Cancel, Done, offline edits,
+  settlement cleanup, identity reset, and layout at 320/375/390/430/768/1280px.
+- tests/staff-scan-pos-ui.test.mjs: actual POS drawer, edits/reassignment, stale
+  editor protection, and collection without waiting for phone Done.
+- Existing Check-in Receipt, Service Relay, workspace, auth and navigation regressions.
+- Scoped ESLint; fresh production build and TypeScript in an isolated source copy,
+  excluding old generated Help route caches and all environment files.
+- Screenshots: waiting-390.png, services-390.png, saved-390.png in the artifact folder.
+- Follow-up qr-full-flow-20261025 executes 290 migrations and real Auth/PostgREST/
+  RLS/receipt/earnings logic in isolated Supabase. It covers Staff scan, empty
+  Holding cancellation, Done retries, POS/Portable takeover, stale offline writes,
+  linked booking receipts and Staff/Customer history. Local build is validation
+  only; current production baseline assembly, live migration and iPhone QA remain.
+- Deploy all three change IDs together once; see docs/qr-full-flow-deploy-note.txt.

@@ -1,8 +1,10 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -33,6 +35,12 @@ export function useExploreAuthenticated() {
   return useContext(Auth);
 }
 const KEY = "reylumi-explore-account-intent";
+const REFERENCE_FAVORITE_EVENT = "reylumi:reference-favorite";
+const SALON_FAVORITE_EVENT = "reylumi:salon-favorite";
+const FAVORITE_CONNECTION_ERROR = "Connection interrupted. Please try saving again.";
+function announceFavorite(event: string, key: string, active: boolean) {
+  window.dispatchEvent(new CustomEvent(event, { detail: { key, active } }));
+}
 export function clearExploreIntent() {
   try {
     sessionStorage.removeItem(KEY);
@@ -50,6 +58,8 @@ export function ExploreAccountActionsProvider({
   authenticated: boolean;
   children: ReactNode;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
   const [contact, setContact] = useState<BookIntent | null>(null);
   const [message, setMessage] = useState("");
@@ -76,27 +86,30 @@ export function ExploreAccountActionsProvider({
                 setTimeout(() => openQuickBooking(intent.book.href!), 0);
               else setTimeout(() => setContact(intent.book), 0);
             } else if (intent.kind === "reference") {
-              void referenceLoveAction(intent.itemKey, true).then((result) =>
-                setMessage(result.error ?? "Added to your favorites"),
-              );
+              void referenceLoveAction(intent.itemKey, true).then((result) => {
+                setMessage(result.error ?? "Added to your favorites");
+                if (!result.error) announceFavorite(REFERENCE_FAVORITE_EVENT, intent.itemKey, result.active);
+              }).catch(() => setMessage(FAVORITE_CONNECTION_ERROR));
             } else if (intent.kind === "salon") {
-              void salonLoveAction(intent.salonId, true).then((result) =>
-                setMessage(result.error ?? "Salon added to your favorites ♡"),
-              );
+              void salonLoveAction(intent.salonId, true).then((result) => {
+                setMessage(result.error ?? "Salon added to your favorites ♡");
+                if (!result.error) announceFavorite(SALON_FAVORITE_EVENT, intent.salonId, result.active);
+              }).catch(() => setMessage(FAVORITE_CONNECTION_ERROR));
             } else if (intent.kind === "save") {
               void setAccountSavedPostAction(intent.target, true).then(
                 (result) => {
                   setMessage(result.error ?? "Your look has been saved ♡");
-                  window.dispatchEvent(
+                  if (!result.error) window.dispatchEvent(
                     new CustomEvent("reylumi:saved-post-state-change", {
                       detail: {
                         key: `${intent.target.sourceType}:${intent.target.sourceId}`,
                         saved: result.active,
+                        saveCount: result.saveCount,
                       },
                     }),
                   );
                 },
-              );
+              ).catch(() => setMessage(FAVORITE_CONNECTION_ERROR));
             }
           }
         }
@@ -126,14 +139,13 @@ export function ExploreAccountActionsProvider({
       {authPrompt ? (
         <AuthIntentPrompt
           kicker="A little self-care"
-          title="Your next beauty moment ✨"
+          title={__vt("Your next beauty moment ✨")}
           onClose={() => {
             setAuthPrompt(false);
             clearExploreIntent();
           }}
         >
-          Create a free account or log in to book your next visit and keep your
-          favorites together.
+          <WorkspaceText text="Create a free account or log in to book your next visit and keep your favorites together." />
         </AuthIntentPrompt>
       ) : null}
       {message ? (
@@ -141,11 +153,11 @@ export function ExploreAccountActionsProvider({
           role="status"
           className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 rounded-2xl bg-orange-50 p-4 shadow-xl"
         >
-          {message}
+          <WorkspaceText text={message} />
           <button
             className="ml-3"
             onClick={() => setMessage("")}
-            aria-label="Dismiss"
+            aria-label={__vt("Dismiss")}
           >
             ×
           </button>
@@ -154,19 +166,19 @@ export function ExploreAccountActionsProvider({
       {contact
         ? createPortal(
             <div
-              className="fixed inset-0 z-[96] grid place-items-center bg-zinc-950/40 p-5"
+              className="fixed inset-0 z-[130] grid place-items-center bg-zinc-950/40 p-5"
               onClick={() => setContact(null)}
             >
               <section
                 role="dialog"
                 aria-modal="true"
-                aria-label="Contact salon"
+                aria-label={__vt("Contact salon")}
                 className="relative w-full max-w-sm rounded-3xl bg-white p-7 text-center shadow-2xl"
                 onClick={(event) => event.stopPropagation()}
               >
                 <button
                   autoFocus
-                  aria-label="Close"
+                  aria-label={__vt("Close")}
                   className="absolute right-4 top-3 text-2xl"
                   onClick={() => setContact(null)}
                 >
@@ -176,18 +188,17 @@ export function ExploreAccountActionsProvider({
                   <ReylumiIcon name="calendar" className="h-8 w-8" />
                 </div>
                 <h2 className="text-xl font-semibold">
-                  Let’s connect with {contact.name}
+                  <WorkspaceText text="Let’s connect with" /> {contact.name}
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-zinc-600">
-                  This salon hasn’t enabled online booking yet. Contact the
-                  salon directly to arrange your visit.
+                  <WorkspaceText text="This salon hasn’t enabled online booking yet. Contact the salon directly to arrange your visit." />
                 </p>
                 {contact.phoneHref ? (
                   <a
                     className="mt-5 block rounded-full bg-brand-orange p-3 font-semibold text-white"
                     href={contact.phoneHref}
                   >
-                    Call salon
+                    <WorkspaceText text="Call salon" />
                   </a>
                 ) : null}
                 {contact.contactHref ? (
@@ -195,7 +206,7 @@ export function ExploreAccountActionsProvider({
                     className="mt-3 block rounded-full bg-orange-50 p-3 font-semibold text-brand-orange"
                     href={contact.contactHref}
                   >
-                    View salon & contact details
+                    <WorkspaceText text="View salon & contact details" />
                   </a>
                 ) : null}
               </section>
@@ -221,6 +232,8 @@ export function ExploreBookButton({
   className?: string;
   compact?: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const authenticated = useContext(Auth);
   const [prompt, setPrompt] = useState(false);
   const destination =
@@ -232,7 +245,7 @@ export function ExploreBookButton({
     <>
       <button
         type="button"
-        aria-label={`Book ${name}`}
+        aria-label={__vt(`Book ${name}`)}
         className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-brand-orange px-3 text-xs font-semibold text-white shadow-sm ${className}`}
         onClick={(event) => {
           event.preventDefault();
@@ -248,12 +261,12 @@ export function ExploreBookButton({
         }}
       >
         <ReylumiIcon name="calendar" className="h-4 w-4" />
-        {!compact ? "Book" : null}
+        <WorkspaceText text={!compact ? "Book" : null} />
       </button>
       {prompt ? (
         <AuthIntentPrompt
           kicker="A little self-care"
-          title="Your next beauty moment ✨"
+          title={__vt("Your next beauty moment ✨")}
           onClose={() => {
             setPrompt(false);
             try {
@@ -261,8 +274,7 @@ export function ExploreBookButton({
             } catch {}
           }}
         >
-          Create a free account or log in to book your next visit and keep
-          everything you love in one place.
+          <WorkspaceText text="Create a free account or log in to book your next visit and keep everything you love in one place." />
         </AuthIntentPrompt>
       ) : null}
     </>
@@ -278,20 +290,6 @@ export function ExploreSalonLove({
   className?: string;
 }) {
   const authenticated = useContext(Auth);
-  const [prompt, setPrompt] = useState(false);
-  const [active, setActive] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    if (!authenticated || !/^([0-9a-f-]{36})$/i.test(salonId)) return;
-    let mounted = true;
-    void salonLoveAction(salonId).then((result) => {
-      if (mounted && !result.error) setActive(result.active);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [authenticated, salonId]);
   if (salonId.startsWith("showcase-"))
     return (
       <ExploreReferenceLove
@@ -300,104 +298,105 @@ export function ExploreSalonLove({
         className={className}
       />
     );
-  return (
-    <>
-      <button
-        type="button"
-        disabled={busy}
-        aria-label={`Love ${name}`}
-        aria-pressed={active}
-        className={`inline-grid h-8 w-8 place-items-center rounded-full bg-white text-brand-orange shadow-sm ring-1 ring-orange-100 ${className}`}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          if (!authenticated) {
-            rememberExploreIntent({ kind: "salon", salonId });
-            setPrompt(true);
-            return;
-          }
-          setBusy(true);
-          void salonLoveAction(salonId, !active)
-            .then((result) => {
-              if (result.error) setError(result.error);
-              else setActive(result.active ?? false);
-            })
-            .finally(() => setBusy(false));
-        }}
-      >
-        <span className="text-xl" aria-hidden>
-          {active ? "♥" : "♡"}
-        </span>
-      </button>
-      {error ? (
-        <span role="alert" className="text-xs text-red-700">
-          {error}
-        </span>
-      ) : null}
-      {prompt ? (
-        <AuthIntentPrompt
-          kicker="Made for your favorites"
-          title="Keep this salon close ♡"
-          onClose={() => {
-            setPrompt(false);
-            clearExploreIntent();
-          }}
-        >
-          Create a free account or log in to follow {name} and find it again
-          whenever you need a little self-care.
-        </AuthIntentPrompt>
-      ) : null}
-    </>
-  );
+  return <FavoriteLoveButton key={`salon:${salonId}:${authenticated}`} kind="salon" itemKey={salonId} name={name} className={className} authenticated={authenticated} />;
 }
 
 export function ExploreReferenceLove({
   itemKey,
   name,
   className = "",
+  initialActive,
 }: {
   itemKey: string;
   name: string;
   className?: string;
+  initialActive?: boolean;
 }) {
   const authenticated = useContext(Auth);
+  return <FavoriteLoveButton key={`reference:${itemKey}:${authenticated}`} kind="reference" itemKey={itemKey} name={name} className={className} initialActive={initialActive} authenticated={authenticated} />;
+}
+
+function FavoriteLoveButton({ kind, itemKey, name, className, initialActive, authenticated }: {
+  kind: "salon" | "reference";
+  itemKey: string;
+  name: string;
+  className: string;
+  initialActive?: boolean;
+  authenticated: boolean;
+}) {
+  const __vt = useWorkspaceTranslation();
   const [prompt, setPrompt] = useState(false);
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(authenticated && Boolean(initialActive));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const readVersion = useRef(0);
+  const saving = useRef(false);
+  const mounted = useRef(false);
+  const action = kind === "salon" ? salonLoveAction : referenceLoveAction;
+  const eventName = kind === "salon" ? SALON_FAVORITE_EVENT : REFERENCE_FAVORITE_EVENT;
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   useEffect(() => {
     if (!authenticated) return;
-    let mounted = true;
-    void referenceLoveAction(itemKey).then((result) => {
-      if (mounted && !result.error) setActive(result.active);
+    if (initialActive !== undefined) { if (!saving.current) setActive(initialActive); return; }
+    if (kind === "salon" && !/^[0-9a-f-]{36}$/i.test(itemKey)) return;
+    const version = ++readVersion.current;
+    let current = true;
+    void action(itemKey).then(result => {
+      if (!current || version !== readVersion.current) return;
+      if (result.error) setError(result.error);
+      else setActive(result.active);
+    }).catch(() => {
+      if (current && version === readVersion.current) setError("Favorites could not be loaded. Please try again.");
     });
-    return () => {
-      mounted = false;
+    return () => { current = false; };
+  }, [authenticated, itemKey, initialActive, action, kind]);
+  useEffect(() => {
+    const changed = (event: Event) => {
+      const detail = (event as CustomEvent<{ key: string; active: boolean }>).detail;
+      if (authenticated && detail?.key === itemKey && typeof detail.active === "boolean") {
+        readVersion.current += 1;
+        setActive(detail.active);
+        setError("");
+      }
     };
-  }, [authenticated, itemKey]);
+    window.addEventListener(eventName, changed);
+    return () => window.removeEventListener(eventName, changed);
+  }, [authenticated, itemKey, eventName]);
   return (
     <>
       <button
         type="button"
         disabled={busy}
-        aria-label={`Love ${name}`}
+        aria-label={__vt(`Love ${name}`)}
         aria-pressed={active}
         className={`inline-grid h-8 w-8 place-items-center rounded-full bg-white text-brand-orange shadow-sm ring-1 ring-orange-100 ${className}`}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
+          if (saving.current) return;
           if (!authenticated) {
-            rememberExploreIntent({ kind: "reference", itemKey });
+            rememberExploreIntent(kind === "salon" ? { kind, salonId: itemKey } : { kind, itemKey });
             setPrompt(true);
             return;
           }
+          saving.current = true;
+          readVersion.current += 1;
           setBusy(true);
-          void referenceLoveAction(itemKey, !active)
+          setError("");
+          void action(itemKey, !active)
             .then((result) => {
+              if (!mounted.current) return;
               if (result.error) setError(result.error);
-              else setActive(result.active);
+              else {
+                setActive(result.active);
+                announceFavorite(eventName, itemKey, result.active);
+              }
             })
-            .finally(() => setBusy(false));
+            .catch(() => { if (mounted.current) setError(FAVORITE_CONNECTION_ERROR); })
+            .finally(() => { saving.current = false; if (mounted.current) setBusy(false); });
         }}
       >
         <span aria-hidden className="text-xl">
@@ -406,19 +405,19 @@ export function ExploreReferenceLove({
       </button>
       {error ? (
         <span role="alert" className="text-xs text-red-700">
-          {error}
+          <WorkspaceText text={error} />
         </span>
       ) : null}
       {prompt ? (
         <AuthIntentPrompt
-          kicker="A little inspiration"
-          title="Keep what you love"
+          kicker={kind === "salon" ? "Made for your favorites" : "A little inspiration"}
+          title={__vt(kind === "salon" ? "Keep this salon close ♡" : "Keep what you love")}
           onClose={() => {
             setPrompt(false);
             clearExploreIntent();
           }}
         >
-          Create a free account or log in to keep {name} in your favorites.
+          {kind === "salon" ? <><WorkspaceText text="Create a free account or log in to follow" /> {name} <WorkspaceText text="and find it again whenever you need a little self-care." /></> : <><WorkspaceText text="Create a free account or log in to keep" /> {name} <WorkspaceText text="in your favorites." /></>}
         </AuthIntentPrompt>
       ) : null}
     </>

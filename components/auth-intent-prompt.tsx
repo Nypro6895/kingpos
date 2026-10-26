@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import Link from "next/link";
 import { createPortal } from "react-dom";
@@ -33,6 +34,8 @@ export function AuthIntentPrompt({
   showProviderOptions = false,
   title,
 }: AuthIntentPromptProps) {
+  const __vt = useWorkspaceTranslation();
+
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const signupHref = authHrefForCurrentPage("signup");
@@ -89,11 +92,11 @@ export function AuthIntentPrompt({
               {kicker}
             </p>
             <h2 className="mt-1 text-xl font-semibold" id={titleId}>
-              {title}
+              <WorkspaceText text={title} />
             </h2>
           </div>
           <button
-            aria-label="Close"
+            aria-label={__vt("Close")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted text-text-secondary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             onClick={onClose}
             type="button"
@@ -108,13 +111,13 @@ export function AuthIntentPrompt({
               className="inline-flex min-h-12 items-center justify-center rounded-[0.75rem] bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               href={guestHref}
             >
-              {guestLabel}
+              <WorkspaceText text={guestLabel} />
             </Link>
             {showProviderOptions ? (
               <>
                 <div className="flex items-center gap-3 text-center text-xs font-semibold text-text-muted">
                   <span className="h-px flex-1 bg-divider-subtle" />
-                  or
+                  <WorkspaceText text="or" />
                   <span className="h-px flex-1 bg-divider-subtle" />
                 </div>
                 <Link
@@ -124,7 +127,7 @@ export function AuthIntentPrompt({
                   <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-sm font-black text-brand-orange ring-1 ring-divider-subtle">
                     G
                   </span>
-                  Continue with Google
+                  <WorkspaceText text="Continue with Google" />
                 </Link>
                 <Link
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[0.75rem] bg-white px-5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
@@ -134,14 +137,14 @@ export function AuthIntentPrompt({
                     aria-hidden
                     className="h-5 w-5 rounded-full bg-text-primary"
                   />
-                  Continue with Apple
+                  <WorkspaceText text="Continue with Apple" />
                 </Link>
                 <Link
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[0.75rem] bg-white px-5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                   href={loginHref}
                 >
                   <ReylumiIcon className="h-4 w-4" name="message" />
-                  Continue with email
+                  <WorkspaceText text="Continue with email" />
                 </Link>
               </>
             ) : null}
@@ -152,13 +155,13 @@ export function AuthIntentPrompt({
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href={signupHref}
             >
-              {primaryLabel}
+              <WorkspaceText text={primaryLabel} />
             </Link>
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-surface-muted px-5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href={loginHref}
             >
-              Login
+              <WorkspaceText text="Login" />
             </Link>
           </div>
         )}

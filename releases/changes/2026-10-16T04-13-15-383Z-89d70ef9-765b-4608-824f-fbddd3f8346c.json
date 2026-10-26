@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "staff-offline-binding-20261016",
+  "status": "working",
+  "summary": "Owner reconfirmation, protected staff offline binding attestation and participant direct-write closure; preserve existing onboarding and payroll rules.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261016080000_staff_offline_binding_attestation.sql",
+    "lib/staff-offline-binding.ts",
+    "lib/staff-offline-binding-server.ts",
+    "app/staff/offline-binding-actions.ts",
+    "app/staff/staff-offline-binding-control.tsx",
+    "app/(app)/staff/page.tsx",
+    "app/staff/my-work/staff-my-work-client.tsx",
+    "lib/use-staff-read-resource.ts",
+    "app/service-relay/staff-relay.tsx",
+    "tests/staff-offline-binding.integration.test.mjs"
+  ],
+  "dependencies": [
+    "whole-site-local-first-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Full schema isolated auth/RLS onboarding regression",
+      "result": "pending"
+    },
+    {
+      "name": "Owner reconfirmation and scoped server attestation",
+      "result": "pending"
+    }
+  ],
+  "id": "89d70ef9-765b-4608-824f-fbddd3f8346c",
+  "recordedAt": "2026-10-16T04:13:15.383Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

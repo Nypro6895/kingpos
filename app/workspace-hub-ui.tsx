@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   actionKey,
   getWorkspaceOpenAction,
@@ -161,6 +162,8 @@ export function WorkspaceAvatar({
   label: string;
   variant?: WorkspaceHubVariant;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <span
       aria-hidden="true"
@@ -171,7 +174,7 @@ export function WorkspaceAvatar({
     >
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img alt="" className="h-full w-full object-cover" src={imageUrl} />
+        <img alt={__vt("")} className="h-full w-full object-cover" src={imageUrl} />
       ) : (
         initialsFor(label)
       )}
@@ -235,14 +238,14 @@ export function WorkspaceGroup({
                 className="truncate text-sm font-semibold text-zinc-950"
                 id={headingId}
               >
-                {title}
+                <WorkspaceText text={title} />
               </h3>
             ) : (
               <h2
                 className="truncate text-lg font-semibold text-zinc-950"
                 id={headingId}
               >
-                {title}
+                <WorkspaceText text={title} />
               </h2>
             )}
             {typeof count === "number" ? <WorkspaceCountBadge count={count} /> : null}
@@ -289,7 +292,7 @@ export function WorkspaceGroupEmpty({
           <HubIcon className="h-4 w-4" name={icon} />
         </span>
         <div className="min-w-0">
-          <p className="font-semibold text-zinc-800">{title}</p>
+          <p className="font-semibold text-zinc-800"><WorkspaceText text={title} /></p>
           {children ? <p className="mt-0.5 text-zinc-500">{children}</p> : null}
         </div>
       </div>
@@ -313,6 +316,8 @@ export function SearchField({
   refCallback?: (node: HTMLInputElement | null) => void;
   variant?: WorkspaceHubVariant;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <label className="relative block min-w-0">
       <span className="sr-only">{placeholder}</span>
@@ -325,14 +330,14 @@ export function SearchField({
           variant === "panel" ? "h-10" : "h-11",
         )}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
+        placeholder={__vt(placeholder)}
         ref={refCallback}
         type="search"
         value={query}
       />
       {query ? (
         <button
-          aria-label="Clear search"
+          aria-label={__vt("Clear search")}
           className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           onClick={onClear}
           type="button"
@@ -367,6 +372,8 @@ export function WorkspaceActionButton({
   variant?: "menu" | "primary" | "secondary";
   workspace: CurrentWorkspaceOption;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const key = actionKey(workspace, action);
   const isPending = pendingKey === key;
 
@@ -380,7 +387,7 @@ export function WorkspaceActionButton({
         type="button"
       >
         {icon ? <HubIcon className="h-4 w-4 shrink-0" name={icon} /> : null}
-        <span className="truncate">{isPending ? "Opening..." : (label ?? action.label)}</span>
+        <span className="truncate"><WorkspaceText text={isPending ? "Opening..." : (label ?? action.label)} /></span>
       </button>
     );
   }
@@ -389,7 +396,7 @@ export function WorkspaceActionButton({
     return (
       <button
         aria-busy={isPending ? "true" : undefined}
-        aria-label={ariaLabel ?? action.label}
+        aria-label={__vt(ariaLabel ?? action.label)}
         className={cn(
           "grid shrink-0 place-items-center rounded-md transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-wait disabled:opacity-60",
           density === "panel" ? "h-9 w-9" : "h-10 w-10",
@@ -415,7 +422,7 @@ export function WorkspaceActionButton({
       type="button"
     >
       {icon ? <HubIcon className="h-4 w-4 shrink-0" name={icon} /> : null}
-      <span className="truncate">{isPending ? "Opening..." : (label ?? action.label)}</span>
+      <span className="truncate"><WorkspaceText text={isPending ? "Opening..." : (label ?? action.label)} /></span>
     </button>
   );
 }
@@ -460,6 +467,8 @@ export function WorkspaceActionMenu({
   pendingKey: string | null;
   workspace: CurrentWorkspaceOption;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (actions.length === 0) {
     return null;
   }
@@ -467,7 +476,7 @@ export function WorkspaceActionMenu({
   return (
     <details data-dismissible-popover className="relative shrink-0">
       <summary
-        aria-label={label ? undefined : `More actions for ${workspace.label}`}
+        aria-label={__vt(label ? undefined : `More actions for ${workspace.label}`)}
         aria-disabled={pendingKey ? "true" : undefined}
         className={cn(
           "inline-flex cursor-pointer list-none items-center justify-center gap-1.5 rounded-md border border-zinc-300 bg-white text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
@@ -481,7 +490,7 @@ export function WorkspaceActionMenu({
           }
         }}
       >
-        {label ? <span>{label}</span> : null}
+        {label ? <span><WorkspaceText text={label} /></span> : null}
         <HubIcon className="h-4 w-4" name="ellipsis" />
       </summary>
       <div className="absolute right-0 z-40 mt-2 grid max-h-[min(22rem,60vh)] min-w-48 max-w-[calc(100vw-2rem)] gap-1 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-2 shadow-xl">
@@ -512,6 +521,8 @@ export function WorkspaceListItem({
   pendingKey: string | null;
   workspace: CurrentWorkspaceOption;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const openAction = getWorkspaceOpenAction(workspace);
   const primaryAction = workspace.primaryAction;
   const menuActions = workspaceRowMenuActions(workspace);
@@ -533,12 +544,12 @@ export function WorkspaceListItem({
       >
         <WorkspaceAvatar
           imageUrl={workspace.avatarUrl}
-          label={workspace.label}
+          label={__vt(workspace.label)}
           variant={density}
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
-            {workspace.label}
+            <WorkspaceText text={workspace.label} />
           </span>
           {subtitle ? (
             <span
@@ -547,7 +558,7 @@ export function WorkspaceListItem({
                 density === "panel" ? "text-xs" : "text-sm",
               )}
             >
-              {subtitle}
+              <WorkspaceText text={subtitle} />
             </span>
           ) : null}
         </span>
@@ -589,6 +600,8 @@ export function QuickAccessItem({
   pendingKey: string | null;
   shortcut: WorkspaceShortcut;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const key = actionKey(shortcut.workspace, shortcut.action);
   const isPending = pendingKey === key;
   const destination = `${shortcut.action.label}${middleDot()}${workspaceModeLabel(shortcut.workspace)}`;
@@ -608,12 +621,12 @@ export function QuickAccessItem({
     >
       <WorkspaceAvatar
         imageUrl={shortcut.workspace.avatarUrl}
-        label={shortcut.workspace.label}
+        label={__vt(shortcut.workspace.label)}
         variant={density}
       />
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold text-zinc-950">
-          {shortcut.workspace.label}
+          <WorkspaceText text={shortcut.workspace.label} />
         </span>
         <span
           className={cn(
@@ -621,7 +634,7 @@ export function QuickAccessItem({
             density === "panel" ? "text-xs" : "text-sm",
           )}
         >
-          {isPending ? "Opening..." : destination}
+          <WorkspaceText text={isPending ? "Opening..." : destination} />
         </span>
       </span>
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-zinc-400">
@@ -640,6 +653,8 @@ export function CurrentWorkspaceCard({
   onRunAction: RunWorkspaceAction;
   pendingKey: string | null;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const actionGroups = splitWorkspaceActions(currentWorkspace, 3);
   const badge = currentWorkspace.salonMode
     ? workspaceModeLabel(currentWorkspace)
@@ -649,7 +664,7 @@ export function CurrentWorkspaceCard({
   return (
     <section
       aria-labelledby="current-workspace-title"
-      className="grid min-w-0 gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3"
+      className="grid min-w-0 gap-3 bg-zinc-50 p-3"
     >
       <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
         <span className={iconTileClass("panel")}>
@@ -659,18 +674,18 @@ export function CurrentWorkspaceCard({
           className="truncate text-sm font-semibold text-zinc-950"
           id="current-workspace-title"
         >
-          Current Workspace
+          <WorkspaceText text="Current Workspace" />
         </h3>
       </div>
       <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
         <WorkspaceAvatar
           imageUrl={currentWorkspace.avatarUrl}
-          label={currentWorkspace.label}
+          label={__vt(currentWorkspace.label)}
           variant="panel"
         />
         <div className="min-w-0">
           <p className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-950">
-            <span className="truncate">{currentWorkspace.label}</span>
+            <span className="truncate"><WorkspaceText text={currentWorkspace.label} /></span>
             {badge ? (
               <span className="shrink-0 rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-normal text-zinc-600">
                 {badge}
@@ -678,7 +693,7 @@ export function CurrentWorkspaceCard({
             ) : null}
           </p>
           {subtitle ? (
-            <p className="mt-0.5 truncate text-xs text-zinc-500">{subtitle}</p>
+            <p className="mt-0.5 truncate text-xs text-zinc-500"><WorkspaceText text={subtitle} /></p>
           ) : null}
         </div>
       </div>
@@ -698,7 +713,7 @@ export function CurrentWorkspaceCard({
           <WorkspaceActionMenu
             actions={actionGroups.more}
             density="panel"
-            label="More"
+            label={__vt("More")}
             onRunAction={onRunAction}
             pendingKey={pendingKey}
             workspace={currentWorkspace}

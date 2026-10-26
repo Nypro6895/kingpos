@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { SchedulePicker, type ScheduleSelection } from "@/components/booking-ui/schedule-picker";
@@ -33,7 +34,7 @@ export function StaffScheduleCalendar({ date, range = "day", status = "" }: { da
   return <details data-dismissible-popover ref={root} className="staff-schedule-calendar">
     <summary className="staff-schedule-tab">
       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h3M14 15h3"/></svg>
-      <span>Calendar</span>
+      <span><WorkspaceText text="Calendar" /></span>
     </summary>
     <div className="staff-schedule-calendar-panel">
       <SchedulePicker key={date} date={date} range={range} status={status} onChange={navigate}/>

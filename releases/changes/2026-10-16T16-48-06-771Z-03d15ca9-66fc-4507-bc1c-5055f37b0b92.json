@@ -1,0 +1,31 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "validation": [
+    {
+      "name": "Actual raw anchor gestures, local image modal and scope/navigation cleanup",
+      "result": "pending"
+    }
+  ],
+  "summary": "Route original raw anchors through registered local pages or existing HTTPS navigation and show packaged Help images locally",
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "status": "working",
+  "kind": "change",
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "changeId": "app-local-link-navigation-20261016",
+  "files": [
+    "lib/app-local-link-navigation.ts",
+    "tests/app-local-link-navigation.test.mjs"
+  ],
+  "id": "03d15ca9-66fc-4507-bc1c-5055f37b0b92",
+  "recordedAt": "2026-10-16T16:48:06.771Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

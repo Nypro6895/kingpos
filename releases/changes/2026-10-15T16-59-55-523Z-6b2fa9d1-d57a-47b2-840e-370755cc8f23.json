@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "workspace-switch-navigation-20261015",
+  "status": "needs-integration",
+  "summary": "Fix workspace switch race with guarded document handoff; implementation and local validation complete, real-auth smoke and production-source integration pending.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/my-place/my-place-client.tsx",
+    "app/quick-workspace-panel.tsx",
+    "lib/workspace-navigation.ts",
+    "tests/workspace-navigation.test.mjs",
+    "tests/navigation-shell-route-context.test.mjs",
+    "tests/my-place-ui.test.mjs",
+    "docs/qa/workspace-switch-navigation-20261015.txt"
+  ],
+  "dependencies": [
+    "salon-claim-create-fix-20261015"
+  ],
+  "source": {
+    "baseCommit": "282bf429a4c9869b2f66e862a3194372e5c4c11d",
+    "manifestSha256": "3eee0e3736223dd9949a7ce049eec4e9eaef6b22c3629d0f65d3248321a2cb4d",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\workspace-switch-navigation-20261015\\source-v1"
+  },
+  "fileHashes": {
+    "app/navigation-shell.tsx": "4b73e2de91db0bd80aedf6069e3d61021331f94beef8dea900741db310d12ec8",
+    "app/my-place/my-place-client.tsx": "c3462cae2b016593b04260207266ba6149fa589a7e2bec6c961bcce5c8ad24ff",
+    "app/quick-workspace-panel.tsx": "fa5c60112c204802de5577a365ad0095d7d7f34ffee8286f94320d2fe2ff880b",
+    "lib/workspace-navigation.ts": "3db897693d0d09dae80a40f3f2582fd7c021feb1aed9f9a4100dd42c3a890b3d",
+    "tests/workspace-navigation.test.mjs": "1888857ffb3afc90c5ee6d63dcddc6a9f7b43b996bdf32c7bb1e359ab605471f",
+    "tests/navigation-shell-route-context.test.mjs": "955791890f4f71e4ef6ff387dff13fe1f9e71e8d9bd3ed63cba3c7650887548b",
+    "tests/my-place-ui.test.mjs": "5918f6f6e824adc89c34fd757778d2fcc82585f6494023e1503725f9fdcfa91a",
+    "docs/qa/workspace-switch-navigation-20261015.txt": "8019f09d008ecdd933574a2072add2f84df35616ec54f9ab093e85105f9a1f48"
+  },
+  "validation": [
+    {
+      "name": "34 unit and route contract tests",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\workspace-switch-navigation-20261015\\unit-tests.log",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint changed client files and helper",
+      "evidence": "docs/qa/workspace-switch-navigation-20261015.txt",
+      "result": "passed"
+    },
+    {
+      "name": "Full production build and TypeScript",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\workspace-switch-navigation-20261015\\build.log",
+      "result": "passed"
+    },
+    {
+      "name": "Six manual desktop/mobile handoffs using actual UI with simulated auth",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\workspace-switch-navigation-20261015\\ui-http-events.json",
+      "result": "passed"
+    },
+    {
+      "name": "Real login/membership regression smoke and integration with current production source",
+      "evidence": "docs/qa/workspace-switch-navigation-20261015.txt",
+      "result": "pending"
+    }
+  ],
+  "nativeAssessment": "Web-compatible navigation only; no native source, bundled assets, configuration or bridge changes.",
+  "id": "6b2fa9d1-d57a-47b2-840e-370755cc8f23",
+  "recordedAt": "2026-10-15T16:59:55.523Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-claim-create-fix\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,3 +1,7 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { callPlatformAdminRpc } from "@/lib/platform-admin/rpc";
+import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
+import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
 import Link from "next/link";
 import {
   createAdminNoteAction,
@@ -23,17 +27,21 @@ import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { getPlatformAdminLocationDetail } from "@/lib/platform-admin/locations";
 import { listPlatformAdminNotes } from "@/lib/platform-admin/notes";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
+import { getAdminAttentionState } from "@/lib/platform-admin/attention";
+import { AccountRowActions } from "../../dashboard/account-row-actions";
 
 type LocationDetailPageProps = {
   params: Promise<{ locationId: string }>;
 };
 
-export default async function AdminLocationDetailPage({
+async function AdminLocationDetailPage({
   params,
 }: LocationDetailPageProps) {
   const context = await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.locationsRead);
   const { locationId } = await params;
   const detail = await getPlatformAdminLocationDetail(locationId);
+  const owners = hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.usersRead) ? await loadOptionalAdminSection(() => callPlatformAdminRpc<Array<{id:string;name:string;status:string}>>("admin_store_owners", {p_store_id:locationId})) : null;
+  const attention = await loadOptionalAdminSection(() => getAdminAttentionState("location", locationId));
   const canUpdate = hasAdminPermission(
     context,
     PLATFORM_ADMIN_PERMISSIONS.locationsUpdate,
@@ -50,34 +58,38 @@ export default async function AdminLocationDetailPage({
     context,
     PLATFORM_ADMIN_PERMISSIONS.notesCreate,
   );
-  const notes = canReadNotes
-    ? await listPlatformAdminNotes({ targetId: locationId, targetType: "location" })
+  const notesResult = canReadNotes
+    ? await loadOptionalAdminSection(() => listPlatformAdminNotes({ targetId: locationId, targetType: "location" }))
     : null;
+  const notes = notesResult?.data;
 
   return (
     <>
       <AdminPageHeader
-        actions={<SecondaryLink href="/admin/locations">Back to locations</SecondaryLink>}
-        eyebrow="Location"
+        actions={<SecondaryLink href="/admin/locations">Back to businesses</SecondaryLink>}
+        eyebrow="Business"
         title={detail.location.name}
       >
-        Location identity, address, status and internal notes.
+        Business identity, address, status and internal notes.
       </AdminPageHeader>
+      <div className="dashboard-profile-actions"><AccountRowActions id={locationId} name={detail.location.name} kind="location" status={detail.location.status} marked={attention.data ?? false} permissions={context.permissions}/><Link className="dashboard-link" href="/admin/attention?kind=location">Open business attention list →</Link></div>
+      {attention.error && <SectionError message={attention.error}/>}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="grid gap-6">
-          <AdminSection title="Location Details">
+          <AdminSection title="Business details">
             <FieldGrid>
-              <Field label="Location ID" value={detail.location.id} />
+              <Field label="Business ID" value={detail.location.id} />
+              <Field label="Owner" value={owners?.error ? <SectionError message={owners.error}/> : owners?.data ? owners.data.length ? <div>{owners.data.map(owner => <Link key={owner.id} className="block text-orange-700" href={`/admin/users?user=${owner.id}&tab=access`}>{owner.name}</Link>)}</div> : "No linked owner" : "Restricted by your role"}/>
               <Field
-                label="Business"
+                label="Shared access"
                 value={
-                  detail.business ? (
+                  detail.business && hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.businessesRead) ? (
                     <Link
                       className="font-bold text-orange-700"
                       href={`/admin/businesses/${detail.business.id}`}
                     >
-                      {detail.business.name}
+                      Manage shared access
                     </Link>
                   ) : (
                     "-"
@@ -125,15 +137,15 @@ export default async function AdminLocationDetailPage({
           </AdminSection>
 
           {canUpdate ? (
-            <AdminSection title="Safe Location Edit">
-              <form
+            <AdminSection title="Edit business">
+              <AdminActionForm
                 action={updateAdminLocationProfileAction}
                 className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm sm:grid-cols-2"
               >
                 <input name="location_id" type="hidden" value={detail.location.id} />
                 <TextInput
                   defaultValue={detail.location.name}
-                  label="Location name"
+                  label="Business name"
                   name="name"
                   required
                 />
@@ -173,15 +185,15 @@ export default async function AdminLocationDetailPage({
                   <TextArea label="Reason" name="reason" required rows={3} />
                 </div>
                 <div className="sm:col-span-2">
-                  <SubmitButton>Save location</SubmitButton>
+                  <SubmitButton>Save business</SubmitButton>
                 </div>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
           <AdminSection title="Related Reports">
             {detail.related_reports.length === 0 ? (
-              <EmptyState title="No reports tied to this location" />
+              <EmptyState title="No reports tied to this business" />
             ) : (
               <FieldGrid>
                 {detail.related_reports.map((report) => (
@@ -206,14 +218,14 @@ export default async function AdminLocationDetailPage({
         <aside className="grid content-start gap-6">
           {canUpdateStatus ? (
             <AdminSection title="Status">
-              <form
+              <AdminActionForm
                 action={updateAdminLocationStatusAction}
                 className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
               >
                 <input name="location_id" type="hidden" value={detail.location.id} />
                 <SelectInput
                   defaultValue={detail.location.status}
-                  label="Location status"
+                  label="Business status"
                   name="status"
                   options={[
                     { label: "Active", value: "active" },
@@ -222,13 +234,13 @@ export default async function AdminLocationDetailPage({
                 />
                 <TextArea label="Reason" name="reason" required rows={3} />
                 <SubmitButton>Update status</SubmitButton>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
           <AdminSection title="Internal Notes">
             {canCreateNotes ? (
-              <form action={createAdminNoteAction} className="mb-4 grid gap-3">
+              <AdminActionForm action={createAdminNoteAction} className="mb-4 grid gap-3">
                 <input name="target_id" type="hidden" value={detail.location.id} />
                 <input name="target_type" type="hidden" value="location" />
                 <input
@@ -238,9 +250,9 @@ export default async function AdminLocationDetailPage({
                 />
                 <TextArea label="New note" name="body" required />
                 <SubmitButton>Add note</SubmitButton>
-              </form>
+              </AdminActionForm>
             ) : null}
-            {notes && notes.items.length > 0 ? (
+            {notesResult?.error ? <SectionError message={notesResult.error}/> : notes && notes.items.length > 0 ? (
               <div className="grid gap-3">
                 {notes.items.map((note) => (
                   <div
@@ -266,3 +278,5 @@ export default async function AdminLocationDetailPage({
     </>
   );
 }
+
+export default withExperiencePage(AdminLocationDetailPage, { admin: true });

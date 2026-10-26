@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   beginPhoneMfaEnrollmentAction,
   beginTotpEnrollmentAction,
@@ -173,7 +174,7 @@ function StatusBadge({
   children,
   tone = "neutral",
 }: {
-  children: string;
+  children: React.ReactNode;
   tone?: "danger" | "neutral" | "success" | "warning";
 }) {
   return (
@@ -203,7 +204,7 @@ function Section({
 }) {
   return (
     <details className="scroll-mt-6 rounded-lg border border-zinc-200 bg-white" id={id} open={id==='sessions'||undefined}>
-      <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{label}{right?<span className="ml-2">{right}</span>:null}</summary>
+      <summary className="cursor-pointer px-4 py-3 text-sm font-semibold"><WorkspaceText text={label} />{right?<span className="ml-2">{right}</span>:null}</summary>
       <div className="border-t border-zinc-100"><p className="px-4 pt-3 text-xs text-zinc-500">{description}</p>{children}</div>
     </details>
   );
@@ -218,7 +219,7 @@ function Field({
 }) {
   return (
     <label className="grid gap-1.5">
-      <span className="text-sm font-semibold text-zinc-950">{label}</span>
+      <span className="text-sm font-semibold text-zinc-950"><WorkspaceText text={label} /></span>
       {children}
     </label>
   );
@@ -251,13 +252,13 @@ function SessionRow({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-zinc-950">
-              {session.deviceLabel}
+              <WorkspaceText text={session.deviceLabel} />
             </p>
-            {session.isCurrent ? <StatusBadge tone="success">Current</StatusBadge> : null}
-            {isTrusted ? <StatusBadge tone="neutral">Trusted</StatusBadge> : null}
+            {session.isCurrent ? <StatusBadge tone="success"><WorkspaceText text="Current" /></StatusBadge> : null}
+            {isTrusted ? <StatusBadge tone="neutral"><WorkspaceText text="Trusted" /></StatusBadge> : null}
           </div>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            {session.locationLabel} - {relativeTime(session.lastSeenAt)}
+            <WorkspaceText text={session.locationLabel} /> - <WorkspaceText text={relativeTime(session.lastSeenAt)} />
           </p>
           <p className="text-xs text-zinc-400">
             {session.browserName} - {session.osName} - {session.deviceType}
@@ -270,7 +271,7 @@ function SessionRow({
             onClick={onLogOutCurrent}
             type="button"
           >
-            {isBusy ? "Logging out..." : "Log out"}
+            <WorkspaceText text={isBusy ? "Logging out..." : "Log out"} />
           </button>
         ) : session.id ? (
           <button
@@ -279,7 +280,7 @@ function SessionRow({
             onClick={() => onRevoke(session.id as string)}
             type="button"
           >
-            {isBusy ? "Logging out..." : "Log out"}
+            <WorkspaceText text={isBusy ? "Logging out..." : "Log out"} />
           </button>
         ) : null}
       </div>
@@ -302,12 +303,12 @@ function TrustedDeviceRow({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-zinc-950">
-              {device.deviceLabel}
+              <WorkspaceText text={device.deviceLabel} />
             </p>
-            {device.isCurrent ? <StatusBadge tone="success">Current</StatusBadge> : null}
+            {device.isCurrent ? <StatusBadge tone="success"><WorkspaceText text="Current" /></StatusBadge> : null}
           </div>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            {device.locationLabel} - trusted {formatDateTime(device.trustedAt)}
+            <WorkspaceText text={device.locationLabel} /> <WorkspaceText text="- trusted" /> <WorkspaceText text={formatDateTime(device.trustedAt)} />
           </p>
         </div>
         <button
@@ -316,7 +317,7 @@ function TrustedDeviceRow({
           onClick={() => onRemove(device.id)}
           type="button"
         >
-          {isBusy ? "Removing..." : "Remove"}
+          <WorkspaceText text={isBusy ? "Removing..." : "Remove"} />
         </button>
       </div>
     </li>
@@ -325,7 +326,7 @@ function TrustedDeviceRow({
 
 function ActivityList({ activity }: { activity: AccountLoginActivity[] }) {
   if (activity.length === 0) {
-    return <EmptyState>No login activity has been recorded yet.</EmptyState>;
+    return <EmptyState><WorkspaceText text="No login activity has been recorded yet." /></EmptyState>;
   }
 
   return (
@@ -337,14 +338,14 @@ function ActivityList({ activity }: { activity: AccountLoginActivity[] }) {
         >
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-semibold capitalize text-zinc-950">
-              {activityLabel(item.activityType)}
+              <WorkspaceText text={activityLabel(item.activityType)} />
             </p>
             <p className="text-xs font-semibold text-zinc-500">
-              {formatDateTime(item.createdAt)}
+              <WorkspaceText text={formatDateTime(item.createdAt)} />
             </p>
           </div>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            {item.deviceLabel} - {item.locationLabel}
+            <WorkspaceText text={item.deviceLabel} /> - <WorkspaceText text={item.locationLabel} />
           </p>
         </li>
       ))}
@@ -358,7 +359,7 @@ function RecoveryRequestList({
   requests: AccountRecoveryRequest[];
 }) {
   if (requests.length === 0) {
-    return <EmptyState>No recovery requests are open for this account.</EmptyState>;
+    return <EmptyState><WorkspaceText text="No recovery requests are open for this account." /></EmptyState>;
   }
 
   return (
@@ -370,16 +371,16 @@ function RecoveryRequestList({
         >
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-semibold text-zinc-950">
-              {requestTypeLabel(request.requestType)}
+              <WorkspaceText text={requestTypeLabel(request.requestType)} />
             </p>
             <StatusBadge
               tone={request.status === "open" ? "warning" : "neutral"}
             >
-              {request.status}
+              <WorkspaceText text={request.status} />
             </StatusBadge>
           </div>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            {formatDateTime(request.createdAt)}
+            <WorkspaceText text={formatDateTime(request.createdAt)} />
             {request.contactEmail ? ` - ${request.contactEmail}` : ""}
             {request.contactPhone ? ` - ${request.contactPhone}` : ""}
           </p>
@@ -413,7 +414,7 @@ function MfaFactorRow({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-zinc-950">
-            {factor.friendlyName ?? factorLabel}
+            <WorkspaceText text={factor.friendlyName ?? factorLabel} />
           </p>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
             {detail}
@@ -425,7 +426,7 @@ function MfaFactorRow({
           onClick={() => onDisable(factor)}
           type="button"
         >
-          {isBusy ? "Disabling..." : "Disable"}
+          <WorkspaceText text={isBusy ? "Disabling..." : "Disable"} />
         </button>
       </div>
     </li>
@@ -433,6 +434,8 @@ function MfaFactorRow({
 }
 
 export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSecurityPanelProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -630,13 +633,13 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
   }
 
   return (
-    <div className="grid gap-5">
+    <div className="settings-style"><div className="grid gap-5">
       {error ? (
         <p
           className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none"
           role="alert"
         >
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
       {message ? (
@@ -644,7 +647,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
           className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none"
           role="status"
         >
-          {message}
+          <WorkspaceText text={message} />
         </p>
       ) : null}
 
@@ -656,10 +659,10 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
       />
 
       <Section
-        description="Devices and browsers with an active Reylumi app session."
+        description={__vt("Devices and browsers with an active Reylumi app session.")}
         id="sessions"
-        label="Where you're logged in"
-        right={<StatusBadge tone="neutral">{`${overview.sessions.length} session${overview.sessions.length === 1 ? "" : "s"}`}</StatusBadge>}
+        label={__vt("Where you're logged in")}
+        right={<StatusBadge tone="neutral"><WorkspaceText text={`${overview.sessions.length} session${overview.sessions.length === 1 ? "" : "s"}`} /></StatusBadge>}
       >
         <div className="border-b border-zinc-100 bg-zinc-50 px-4 py-3">
           <button
@@ -670,7 +673,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
             }
             type="button"
           >
-            {pendingKey === "session-all" ? "Logging out..." : "Log out all devices"}
+            <WorkspaceText text={pendingKey === "session-all" ? "Logging out..." : "Log out all devices"} />
           </button>
         </div>
         {overview.sessions.length > 0 ? (
@@ -698,20 +701,20 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
           </ul>
         ) : (
           <div className="px-4 py-4">
-            <EmptyState>No active sessions were found.</EmptyState>
+            <EmptyState><WorkspaceText text="No active sessions were found." /></EmptyState>
           </div>
         )}
       </Section>
 
       <Section
-        description="Remembered devices reduce extra checks. Remove trust when a device is shared, sold, or lost."
+        description={__vt("Remembered devices reduce extra checks. Remove trust when a device is shared, sold, or lost.")}
         id="trusted-devices"
-        label="Trusted devices"
+        label={__vt("Trusted devices")}
         right={
           currentDeviceTrusted ? (
-            <StatusBadge tone="success">Current trusted</StatusBadge>
+            <StatusBadge tone="success"><WorkspaceText text="Current trusted" /></StatusBadge>
           ) : (
-            <StatusBadge tone="warning">Current not trusted</StatusBadge>
+            <StatusBadge tone="warning"><WorkspaceText text="Current not trusted" /></StatusBadge>
           )
         }
       >
@@ -724,7 +727,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
             }
             type="button"
           >
-            {pendingKey === "trust-current" ? "Saving..." : "Remember this device"}
+            <WorkspaceText text={pendingKey === "trust-current" ? "Saving..." : "Remember this device"} />
           </button>
         </div>
         {overview.trustedDevices.length > 0 ? (
@@ -744,20 +747,20 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
           </ul>
         ) : (
           <div className="px-4 py-4">
-            <EmptyState>No trusted devices have been saved.</EmptyState>
+            <EmptyState><WorkspaceText text="No trusted devices have been saved." /></EmptyState>
           </div>
         )}
       </Section>
 
       <Section
-        description="Use an authenticator app or SMS code for an extra check when signing in."
+        description={__vt("Use an authenticator app or SMS code for an extra check when signing in.")}
         id="two-factor"
-        label="Two-factor authentication"
+        label={__vt("Two-factor authentication")}
         right={
           hasVerifiedMfa ? (
-            <StatusBadge tone="success">Enabled</StatusBadge>
+            <StatusBadge tone="success"><WorkspaceText text="Enabled" /></StatusBadge>
           ) : (
-            <StatusBadge tone="warning">Not enabled</StatusBadge>
+            <StatusBadge tone="warning"><WorkspaceText text="Not enabled" /></StatusBadge>
           )
         }
       >
@@ -786,7 +789,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
           </ul>
         ) : (
           <div className="px-4 py-4">
-            <EmptyState>No two-factor method is connected.</EmptyState>
+            <EmptyState><WorkspaceText text="No two-factor method is connected." /></EmptyState>
           </div>
         )}
         {!hasVerifiedTotp || !hasVerifiedPhoneMfa ? (
@@ -795,10 +798,10 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               <div className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
                 <div>
                   <p className="text-sm font-semibold text-zinc-950">
-                    Authenticator app
+                    <WorkspaceText text="Authenticator app" />
                   </p>
                   <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    Scan a QR code and enter a rotating code.
+                    <WorkspaceText text="Scan a QR code and enter a rotating code." />
                   </p>
                 </div>
                 <button
@@ -807,9 +810,9 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                   onClick={beginTotpEnrollment}
                   type="button"
                 >
-                  {pendingKey === "mfa-begin"
+                  <WorkspaceText text={pendingKey === "mfa-begin"
                     ? "Starting..."
-                    : "Set up authenticator"}
+                    : "Set up authenticator"} />
                 </button>
               </div>
             ) : null}
@@ -817,10 +820,10 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               <div className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
                 <div>
                   <p className="text-sm font-semibold text-zinc-950">
-                    Phone SMS
+                    <WorkspaceText text="Phone SMS" />
                   </p>
                   <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    Send a one-time code to the phone in your profile.
+                    <WorkspaceText text="Send a one-time code to the phone in your profile." />
                   </p>
                 </div>
                 {overview.account.phone ? (
@@ -829,7 +832,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                   </p>
                 ) : (
                   <p className="content-surface border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
-                    Verify a phone number in Profile before using SMS 2FA.
+                    <WorkspaceText text="Verify a phone number in Profile before using SMS 2FA." />
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2">
@@ -839,16 +842,16 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                     onClick={beginPhoneMfaEnrollment}
                     type="button"
                   >
-                    {pendingKey === "mfa-phone-begin"
+                    <WorkspaceText text={pendingKey === "mfa-phone-begin"
                       ? "Sending..."
-                      : "Send SMS code"}
+                      : "Send SMS code"} />
                   </button>
                   {!overview.account.phone ? (
-                    contactEditor ? <details><summary className="cursor-pointer text-sm font-semibold">Verify phone in Profile</summary><div className="mt-3">{contactEditor}</div></details> : <a
+                    contactEditor ? <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Verify phone in Profile" /></summary><div className="mt-3">{contactEditor}</div></details> : <a
                       className={secondaryButtonClassName}
                       href="/account#profile-contact"
                     >
-                      Open Profile
+                      <WorkspaceText text="Open Profile" />
                     </a>
                   ) : null}
                 </div>
@@ -868,7 +871,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                   {totpEnrollment.qrCode ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      alt="Authenticator QR code"
+                      alt={__vt("Authenticator QR code")}
                       className="h-36 w-36 rounded-md border border-zinc-200 bg-white p-2"
                       src={totpEnrollment.qrCode}
                     />
@@ -877,14 +880,14 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                     {totpEnrollment.secret ? (
                       <div>
                         <p className="text-xs font-semibold uppercase text-zinc-500">
-                          Setup key
+                          <WorkspaceText text="Setup key" />
                         </p>
                         <p className="content-surface mt-1 break-all border-zinc-200 bg-white px-3 py-2 font-mono text-sm text-zinc-950 rounded-none border-y shadow-none">
                           {totpEnrollment.secret}
                         </p>
                       </div>
                     ) : null}
-                    <Field label="Authenticator code">
+                    <Field label={__vt("Authenticator code")}>
                       <input
                         autoComplete="one-time-code"
                         className={inputClassName}
@@ -902,7 +905,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                     disabled={isBusy}
                     type="submit"
                   >
-                    {pendingKey === "mfa-verify" ? "Verifying..." : "Verify and enable"}
+                    <WorkspaceText text={pendingKey === "mfa-verify" ? "Verifying..." : "Verify and enable"} />
                   </button>
                 </div>
               </form>
@@ -928,9 +931,9 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                   value={phoneMfaEnrollment.phone}
                 />
                 <p className="text-sm font-semibold text-zinc-950">
-                  Code sent to {phoneMfaEnrollment.phone}
+                  <WorkspaceText text="Code sent to" /> {phoneMfaEnrollment.phone}
                 </p>
-                <Field label="SMS code">
+                <Field label={__vt("SMS code")}>
                   <input
                     autoComplete="one-time-code"
                     className={inputClassName}
@@ -946,9 +949,9 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                     disabled={isBusy}
                     type="submit"
                   >
-                    {pendingKey === "mfa-phone-verify"
+                    <WorkspaceText text={pendingKey === "mfa-phone-verify"
                       ? "Verifying..."
-                      : "Verify phone 2FA"}
+                      : "Verify phone 2FA"} />
                   </button>
                 </div>
               </form>
@@ -958,14 +961,14 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
       </Section>
 
       <Section
-        description="Recovery contacts and login alerts used when access looks risky."
+        description={__vt("Recovery contacts and login alerts used when access looks risky.")}
         id="recovery-contact"
-        label="Login alerts & recovery contacts"
+        label={__vt("Login alerts & recovery contacts")}
         right={
           overview.preferences.loginAlertsEnabled ? (
-            <StatusBadge tone="success">Alerts on</StatusBadge>
+            <StatusBadge tone="success"><WorkspaceText text="Alerts on" /></StatusBadge>
           ) : (
-            <StatusBadge tone="warning">Alerts off</StatusBadge>
+            <StatusBadge tone="warning"><WorkspaceText text="Alerts off" /></StatusBadge>
           )
         }
       >
@@ -978,7 +981,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               type="checkbox"
             />
             <span>
-              Send an in-app alert when a new login is recorded for this account.
+              <WorkspaceText text="Send an in-app alert when a new login is recorded for this account." />
             </span>
           </label>
           <label className="flex items-start gap-3 text-sm text-zinc-700">
@@ -990,19 +993,19 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               type="checkbox"
             />
             <span>
-              Send an SMS login alert to the phone in Profile
-              {overview.account.phone
+              <WorkspaceText text="Send an SMS login alert to the phone in Profile" />
+              <WorkspaceText text={overview.account.phone
                 ? ` (${maskPhone(overview.account.phone)}).`
-                : " after a phone is verified."}
+                : " after a phone is verified."} />
             </span>
           </label>
           {!overview.smsLoginAlerts.configured && overview.account.phone ? (
             <p className="content-surface border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
-              Text-message login alerts are turned on, but messages cannot be sent right now. Please try again later.
+              <WorkspaceText text="Text-message login alerts are turned on, but messages cannot be sent right now. Please try again later." />
             </p>
           ) : null}
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Recovery email">
+            <Field label={__vt("Recovery email")}>
               <input
                 autoComplete="email"
                 className={inputClassName}
@@ -1011,7 +1014,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                 type="email"
               />
             </Field>
-            <Field label="Recovery phone">
+            <Field label={__vt("Recovery phone")}>
               <input
                 autoComplete="tel"
                 className={inputClassName}
@@ -1027,29 +1030,29 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               disabled={isBusy}
               type="submit"
             >
-              {pendingKey === "preferences" ? "Saving..." : "Save recovery settings"}
+              <WorkspaceText text={pendingKey === "preferences" ? "Saving..." : "Save recovery settings"} />
             </button>
           </div>
         </form>
       </Section>
 
       <Section
-        description="One-time backup codes for account recovery. New codes replace unused old codes."
+        description={__vt("One-time backup codes for account recovery. New codes replace unused old codes.")}
         id="recovery-codes"
-        label="Recovery codes"
+        label={__vt("Recovery codes")}
         right={
           overview.recoveryCodes.unused > 0 ? (
-            <StatusBadge tone="success">{`${overview.recoveryCodes.unused} unused`}</StatusBadge>
+            <StatusBadge tone="success"><WorkspaceText text={`${overview.recoveryCodes.unused} unused`} /></StatusBadge>
           ) : (
-            <StatusBadge tone="warning">None</StatusBadge>
+            <StatusBadge tone="warning"><WorkspaceText text="None" /></StatusBadge>
           )
         }
       >
         <div className="grid gap-4 px-4 py-4">
           <div className="grid gap-2 text-sm text-zinc-600 sm:grid-cols-3">
-            <p>Total: {overview.recoveryCodes.total}</p>
-            <p>Used: {overview.recoveryCodes.used}</p>
-            <p>Last generated: {formatDateTime(overview.recoveryCodes.lastGeneratedAt)}</p>
+            <p><WorkspaceText text="Total:" /> {overview.recoveryCodes.total}</p>
+            <p><WorkspaceText text="Used:" /> {overview.recoveryCodes.used}</p>
+            <p><WorkspaceText text="Last generated:" /> <WorkspaceText text={formatDateTime(overview.recoveryCodes.lastGeneratedAt)} /></p>
           </div>
           <div>
             <button
@@ -1058,13 +1061,13 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               onClick={generateRecoveryCodes}
               type="button"
             >
-              {pendingKey === "recovery-codes" ? "Generating..." : "Generate new codes"}
+              <WorkspaceText text={pendingKey === "recovery-codes" ? "Generating..." : "Generate new codes"} />
             </button>
           </div>
           {recoveryCodes.length > 0 ? (
             <div className="content-surface border-amber-200 bg-amber-50 p-3 rounded-none border-y shadow-none">
               <p className="text-sm font-semibold text-amber-950">
-                Save these codes now. They will not be shown again.
+                <WorkspaceText text="Save these codes now. They will not be shown again." />
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {recoveryCodes.map((code) => (
@@ -1082,26 +1085,26 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
       </Section>
 
       <Section
-        description="Create a recovery case for lost access, a lost device, or a suspected account takeover."
+        description={__vt("Create a recovery case for lost access, a lost device, or a suspected account takeover.")}
         id="account-recovery"
-        label="Account recovery"
-        right={<StatusBadge tone="neutral">{`${overview.recoveryRequests.length} recent`}</StatusBadge>}
+        label={__vt("Account recovery")}
+        right={<StatusBadge tone="neutral"><WorkspaceText text={`${overview.recoveryRequests.length} recent`} /></StatusBadge>}
       >
         <div className="grid gap-4 px-4 py-4">
           <form className="grid gap-3" onSubmit={submitRecoveryRequest}>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Field label="Recovery issue">
+              <Field label={__vt("Recovery issue")}>
                 <select
                   className={inputClassName}
                   name="request_type"
                   defaultValue="lost_access"
                 >
-                  <option value="lost_access">Lost email or phone</option>
-                  <option value="lost_device">Lost device</option>
-                  <option value="account_compromised">Account taken over</option>
+                  <option value="lost_access"><WorkspaceText text="Lost email or phone" /></option>
+                  <option value="lost_device"><WorkspaceText text="Lost device" /></option>
+                  <option value="account_compromised"><WorkspaceText text="Account taken over" /></option>
                 </select>
               </Field>
-              <Field label="Contact email">
+              <Field label={__vt("Contact email")}>
                 <input
                   autoComplete="email"
                   className={inputClassName}
@@ -1110,7 +1113,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                   type="email"
                 />
               </Field>
-              <Field label="Contact phone">
+              <Field label={__vt("Contact phone")}>
                 <input
                   autoComplete="tel"
                   className={inputClassName}
@@ -1120,11 +1123,11 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                 />
               </Field>
             </div>
-            <Field label="Details">
+            <Field label={__vt("Details")}>
               <textarea
                 className={textareaClassName}
                 name="details"
-                placeholder="What happened?"
+                placeholder={__vt("What happened?")}
               />
             </Field>
             <div>
@@ -1133,7 +1136,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                 disabled={isBusy}
                 type="submit"
               >
-                {pendingKey === "recovery-request" ? "Creating..." : "Create recovery request"}
+                <WorkspaceText text={pendingKey === "recovery-request" ? "Creating..." : "Create recovery request"} />
               </button>
             </div>
           </form>
@@ -1142,17 +1145,17 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
       </Section>
 
       <Section
-        description="Use this when you think someone else has access. Other sessions are signed out and trusted devices are removed."
+        description={__vt("Use this when you think someone else has access. Other sessions are signed out and trusted devices are removed.")}
         id="secure-account"
-        label="Secure my account"
-        right={<StatusBadge tone="danger">High impact</StatusBadge>}
+        label={__vt("Secure my account")}
+        right={<StatusBadge tone="danger"><WorkspaceText text="High impact" /></StatusBadge>}
       >
         <form
           className="grid gap-4 bg-red-50/70 px-4 py-4"
           onSubmit={submitSecureAccount}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Safe contact email">
+            <Field label={__vt("Safe contact email")}>
               <input
                 autoComplete="email"
                 className={inputClassName}
@@ -1161,7 +1164,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
                 type="email"
               />
             </Field>
-            <Field label="Safe contact phone">
+            <Field label={__vt("Safe contact phone")}>
               <input
                 autoComplete="tel"
                 className={inputClassName}
@@ -1171,11 +1174,11 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               />
             </Field>
           </div>
-          <Field label="What looks wrong?">
+          <Field label={__vt("What looks wrong?")}>
             <textarea
               className={textareaClassName}
               name="details"
-              placeholder="Unknown login, lost phone, password shared..."
+              placeholder={__vt("Unknown login, lost phone, password shared...")}
             />
           </Field>
           <div>
@@ -1184,22 +1187,22 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
               disabled={isBusy}
               type="submit"
             >
-              {pendingKey === "secure-account" ? "Securing..." : "Secure my account"}
+              <WorkspaceText text={pendingKey === "secure-account" ? "Securing..." : "Secure my account"} />
             </button>
           </div>
         </form>
       </Section>
 
       <Section
-        description="Recent login and security activity for this account."
+        description={__vt("Recent login and security activity for this account.")}
         id="activity"
-        label="Recent login activity"
-        right={<StatusBadge tone="neutral">{`${overview.activity.length} events`}</StatusBadge>}
+        label={__vt("Recent login activity")}
+        right={<StatusBadge tone="neutral"><WorkspaceText text={`${overview.activity.length} events`} /></StatusBadge>}
       >
         <div className="px-4 py-4">
           <ActivityList activity={overview.activity} />
         </div>
       </Section>
-    </div>
+    </div></div>
   );
 }

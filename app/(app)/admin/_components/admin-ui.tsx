@@ -1,9 +1,14 @@
+import { AdminRefresh, AdminResetFilters, AdminSearchContainer } from "./workspace-controls";
+import { LogoutButton } from "@/app/account/logout-button";
+import { DashboardIcon } from "../dashboard/dashboard-icons";
+import { CompactFilters } from "@/components/compact-filters";
 
-import Form from "next/form";
+import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import { SubmitButton as PendingSubmitButton } from "@/components/submit-button";
-import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
+import { AdminNavigation } from "./admin-navigation";
+import { AdminTopbar } from "./admin-topbar";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
 import type {
   PlatformAdminContext,
@@ -13,71 +18,48 @@ import type {
 type AdminShellProps = {
   children: ReactNode;
   context: PlatformAdminContext;
+  counts?: Record<string, number>;
 };
 
 type AdminNavItem = {
   href: string;
   label: string;
   permission: PlatformAdminPermission;
+  group: string;
+  icon: string;
 };
 
 const ADMIN_NAV_ITEMS: AdminNavItem[] = [
-  {href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.businessesUpdate},
-  {href: "/admin/settings/twilio", label: "Twilio settings", permission: PLATFORM_ADMIN_PERMISSIONS.teamManage},
-  {href: "/admin/claims", label: "Business claims", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead},
-  {href: "/admin/verification", label: "Salon verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead},
-  {
-    href: "/admin",
-    label: "Dashboard",
-    permission: PLATFORM_ADMIN_PERMISSIONS.dashboardRead,
-  },
-  {
-    href: "/admin/users",
-    label: "Users",
-    permission: PLATFORM_ADMIN_PERMISSIONS.usersRead,
-  },
-  {
-    href: "/admin/businesses",
-    label: "Businesses",
-    permission: PLATFORM_ADMIN_PERMISSIONS.businessesRead,
-  },
-  {
-    href: "/admin/locations",
-    label: "Locations",
-    permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead,
-  },
-  {
-    href: "/admin/reports",
-    label: "Reports",
-    permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead,
-  },
-  {
-    href: "/admin/recovery",
-    label: "Recovery",
-    permission: PLATFORM_ADMIN_PERMISSIONS.recoveryRead,
-  },
-  {
-    href: "/admin/audit",
-    label: "Audit",
-    permission: PLATFORM_ADMIN_PERMISSIONS.auditRead,
-  },
-  {
-    href: "/admin/team",
-    label: "Team",
-    permission: PLATFORM_ADMIN_PERMISSIONS.teamRead,
-  },
+  { href: "/admin", label: "Dashboard", permission: PLATFORM_ADMIN_PERMISSIONS.dashboardRead, group: "Platform", icon: "⌂" },
+  { href: "/admin/users", label: "Users", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Platform", icon: "♙" },
+  { href: "/admin/locations", label: "Businesses", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Platform", icon: "▦" },
+  { href: "/admin/attention", label: "Attention list", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Support", icon: "△" },
+  { href: "/admin/inbox", label: "Support inbox", permission: PLATFORM_ADMIN_PERMISSIONS.inboxRead, group: "Support", icon: "✉" },
+  { href: "/admin/reports", label: "Support cases", permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead, group: "Support", icon: "☷" },
+  { href: "/admin/claims", label: "Ownership claims", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & safety", icon: "◇" },
+  { href: "/admin/verification", label: "Business verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & safety", icon: "✓" },
+  { href: "/admin/post-safety", label: "Post safety", permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead, group: "Review & safety", icon: "☷" },
+  { href: "/admin/recovery", label: "Recovery", permission: PLATFORM_ADMIN_PERMISSIONS.recoveryRead, group: "Review & safety", icon: "↺" },
+  { href: "/admin/plugins", label: "Plugins", permission: PLATFORM_ADMIN_PERMISSIONS.access, group: "Plugins & content", icon: "▦" },
+  { href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Plugins & content", icon: "◈" },
+  { href: "/admin/notifications", label: "Notifications", permission: PLATFORM_ADMIN_PERMISSIONS.notificationsRead, group: "Plugins & content", icon: "♧" },
+  { href: "/admin/system", label: "System", permission: PLATFORM_ADMIN_PERMISSIONS.teamManage, group: "Administration", icon: "⚙" },
+  { href: "/admin/team", label: "Admin team", permission: PLATFORM_ADMIN_PERMISSIONS.teamRead, group: "Administration", icon: "♙" },
+  { href: "/admin/audit", label: "Audit log", permission: PLATFORM_ADMIN_PERMISSIONS.auditRead, group: "Administration", icon: "◷" },
 ];
 
 function AdminBrandLogo({ className }: { className: string }) {
+  const filterId = useId().replaceAll(":", "");
   return (
-    <Image
-      aria-hidden="true"
-      alt=""
-      className={["h-auto object-contain", className].join(" ")}
-      height={419}
-      src="/brand/reylumi-logo-horizontal.png"
-      width={1527}
-    />
+    <svg aria-hidden="true" className={["h-auto object-contain", className].join(" ")} viewBox="0 0 1527 419" width={1527} height={419}>
+      <defs>
+        <filter id={filterId} colorInterpolationFilters="sRGB">
+          {/* Recolor the existing artwork, preserving its white detail and alpha. */}
+          <feColorMatrix type="matrix" values="1.26502674 -0.95561497 0.69058824 0 0 1.18716578 -2.80481283 2.61764706 0 0 1.18716578 -2.80481283 2.61764706 0 0 0 0 0 1 0" />
+        </filter>
+      </defs>
+      <image href="/brand/reylumi-logo-horizontal.png" width={1527} height={419} filter={`url(#${filterId})`} />
+    </svg>
   );
 }
 
@@ -88,44 +70,27 @@ export function hasAdminPermission(
   return context.permissions.includes(permission);
 }
 
-export function AdminShell({ children, context }: AdminShellProps) {
+export function AdminShell({ children, context, counts = {} }: AdminShellProps) {
   const navItems = ADMIN_NAV_ITEMS.filter((item) =>
     hasAdminPermission(context, item.permission) && (item.href!=="/admin/settings/twilio" || context.roleSlug==="platform_owner"),
-  );
+  ).map(item => ({ ...item, count: counts[item.href] }));
 
   return (
-    <div className="min-h-screen bg-[#f7f4ef] text-zinc-950">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-zinc-200 bg-white/95 px-4 py-5 shadow-sm lg:block">
+    <div className="admin-workspace min-h-screen bg-white text-zinc-950">
+      <aside className="admin-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-zinc-200 bg-white px-4 py-5 lg:block">
         <Link
           aria-label="Reylumi Admin Control Center"
           className="flex min-h-14 flex-col items-start justify-center rounded-lg px-2 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           href="/admin"
         >
-          <AdminBrandLogo className="w-36 max-w-full" />
+          <AdminBrandLogo className="admin-brand-logo w-44 max-w-full" />
           <span className="mt-1 block text-xs font-semibold text-zinc-500">
             Admin Control Center
           </span>
         </Link>
-        <nav aria-label="Admin" className="mt-7 grid gap-1">
-          {navItems.map((item) => (
-            <Link
-              className="rounded-md px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-orange-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-              href={item.href}
-              key={item.href}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="absolute inset-x-4 bottom-5 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            Role
-          </p>
-          <p className="mt-1 text-sm font-bold text-zinc-950">{context.roleName}</p>
-          <p className="mt-1 text-xs text-zinc-500">
-            {context.permissions.length} permissions
-          </p>
-        </div>
+        <AdminNavigation items={navItems} />
+        <Link href="/account" className="admin-sidebar-account"><span className="admin-avatar" aria-hidden="true">{context.roleName.split(" ").map(word => word[0]).slice(0, 2).join("")}</span><span><strong>{context.roleName}</strong><small>Platform administration</small></span></Link>
+        <LogoutButton className="admin-sidebar-logout"><DashboardIcon name="logout"/>Sign out</LogoutButton>
       </aside>
 
       <div className="lg:pl-64">
@@ -145,22 +110,10 @@ export function AdminShell({ children, context }: AdminShellProps) {
               <p className="truncate text-xs text-zinc-500">{context.roleName}</p>
             </div>
           </div>
-          <nav
-            aria-label="Admin mobile"
-            className="mt-3 flex gap-2 overflow-x-auto pb-1"
-          >
-            {navItems.map((item) => (
-              <Link
-                className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700"
-                href={item.href}
-                key={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <AdminNavigation items={navItems} mobile />
         </header>
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <AdminTopbar roleName={context.roleName} canReviewAds={hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.advertisingReview)} canNotifications={hasAdminPermission(context, PLATFORM_ADMIN_PERMISSIONS.notificationsRead)} />
+        <main className="admin-content mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {children}
         </main>
       </div>
@@ -180,7 +133,7 @@ export function AdminPageHeader({
   title: string;
 }) {
   return (
-    <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <header className="admin-page-header flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-700">
           {eyebrow}
@@ -194,7 +147,7 @@ export function AdminPageHeader({
           </div>
         ) : null}
       </div>
-      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+      <div className="admin-header-actions flex flex-wrap gap-2">{actions}<AdminRefresh /></div>
     </header>
   );
 }
@@ -209,7 +162,7 @@ export function AdminSection({
   title: string;
 }) {
   return (
-    <section className="mt-6">
+    <section className="admin-section mt-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-lg font-black text-zinc-950">{title}</h2>
         {action}
@@ -229,7 +182,7 @@ export function AdminMetric({
   value: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <div className="admin-metric rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <dt className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">
         {label}
       </dt>
@@ -242,20 +195,20 @@ export function AdminMetric({
 export function StatusBadge({ value }: { value: string | null | undefined }) {
   const label = value ?? "unknown";
   const color =
-    label === "active" || label === "resolved"
+    label === "active" || label === "resolved" || label === "approved" || label === "delivered" || label === "read"
       ? "border-emerald-200 bg-emerald-50 text-emerald-800"
       : label === "suspended" ||
           label === "urgent" ||
           label === "action_required"
         ? "border-red-200 bg-red-50 text-red-800"
-        : label === "closed" || label === "archived" || label === "revoked"
+        : label === "closed" || label === "archived" || label === "revoked" || label === "deleted" || label === "inactive"
           ? "border-zinc-200 bg-zinc-100 text-zinc-700"
           : "border-orange-200 bg-orange-50 text-orange-800";
 
   return (
     <span
       className={[
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-bold",
+        `admin-status status-${label} inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-bold`,
         color,
       ].join(" ")}
     >
@@ -272,7 +225,7 @@ export function AdminTable({
   columns: ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+    <div className="admin-table overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
       <div className="hidden border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-zinc-500 md:grid">
         {columns}
       </div>
@@ -289,7 +242,7 @@ export function EmptyState({
   title: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-6 text-center">
+    <div className="admin-empty rounded-lg border border-dashed border-zinc-300 bg-white p-6 text-center">
       <h3 className="text-base font-black text-zinc-950">{title}</h3>
       {children ? <div className="mt-2 text-sm text-zinc-600">{children}</div> : null}
     </div>
@@ -308,14 +261,14 @@ export function Field({
   label,
   value,
 }: {
-  label: string;
+  label: ReactNode;
   value: ReactNode;
 }) {
   return (
     <div className="border-b border-zinc-200 py-3 last:border-b-0 sm:grid sm:grid-cols-3 sm:gap-4">
       <dt className="text-sm font-semibold text-zinc-500">{label}</dt>
       <dd className="mt-1 break-words text-sm text-zinc-950 sm:col-span-2 sm:mt-0">
-        {value || "-"}
+        {value ?? "—"}
       </dd>
     </div>
   );
@@ -388,6 +341,7 @@ export function SelectInput({
     <label className="block">
       <span className="text-sm font-semibold text-zinc-700">{label}</span>
       <select
+        aria-label={label}
         className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-950"
         defaultValue={defaultValue ?? ""}
         name={name}
@@ -435,40 +389,44 @@ export function SearchForm({
   children,
   defaultQuery,
   filters,
+  placeholder = "Search by name or keyword",
 }: {
   actionLabel?: string;
   children?: ReactNode;
   defaultQuery?: string | null;
   filters?: ReactNode;
+  placeholder?: string;
 }) {
   const filterContent = children ?? filters;
 
   return (
-    <Form action="" className="mt-5 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+    <AdminSearchContainer>
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-end">
         <label className="block">
           <span className="text-sm font-semibold text-zinc-700">Search</span>
           <input
             className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-950"
             defaultValue={defaultQuery ?? ""}
             name="q"
-            placeholder="Search by name, ID, status, or keyword"
+            placeholder={placeholder}
             type="search"
           />
         </label>
-        <button
+        <SearchSubmitButton
           className="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700"
           type="submit"
         >
-          {actionLabel}
-        </button>
+          <DashboardIcon name="search" />{actionLabel}
+        </SearchSubmitButton>
+        <AdminResetFilters />
+        {filterContent ? <div className="admin-filter-trigger">
+        <CompactFilters label="Search filters">
+          {filterContent ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{filterContent}</div> : null}
+          <SearchSubmitButton pendingLabel="Applying…" type="submit" className="mt-3 min-h-11 rounded-md bg-orange-600 px-4 text-sm font-semibold text-white">Apply filters</SearchSubmitButton>
+        </CompactFilters>
+        </div> : null}
       </div>
-      {filterContent ? (
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {filterContent}
-        </div>
-      ) : null}
-    </Form>
+    </AdminSearchContainer>
   );
 }
 
@@ -502,17 +460,22 @@ export function Pagination({
   };
 
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600">
+    <div role="navigation" aria-label="Pagination" className="admin-pagination mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600">
       <p>
-        Page {page} - {total} total
+        {total === 0 ? "0 results" : `${(page-1)*pageSize+1}–${Math.min(page*pageSize,total)} of ${total}`} · Page {page}
       </p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <FeedbackSearchForm action={basePath} className="admin-page-size flex items-center gap-2">
+          {Object.entries(query ?? {}).filter(([key, value]) => value && key !== "page" && key !== "pageSize").map(([key, value]) => <input key={key} type="hidden" name={key} value={value!} />)}
+          <label className="flex items-center gap-2">Rows<select aria-label="Rows per page" name="pageSize" defaultValue={String(pageSize)}>{[...new Set([10,25,50,100,pageSize])].sort((a,b) => a-b).map(size => <option key={size} value={size}>{size}</option>)}</select></label>
+          <SearchSubmitButton pendingLabel="Applying…" type="submit" className="dashboard-button">Apply</SearchSubmitButton>
+        </FeedbackSearchForm>
         {hasPrevious ? (
           <Link
             className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 font-bold text-zinc-800"
             href={buildHref(page - 1)}
           >
-            Previous
+            <DashboardIcon name="previous" />Previous
           </Link>
         ) : null}
         {hasNext ? (
@@ -520,7 +483,7 @@ export function Pagination({
             className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 font-bold text-zinc-800"
             href={buildHref(page + 1)}
           >
-            Next
+            Next<DashboardIcon name="next" />
           </Link>
         ) : null}
       </div>
@@ -534,11 +497,13 @@ export function formatAdminDateTime(value: string | null | undefined) {
   }
 
   try {
-    return new Intl.DateTimeFormat("en", {
+    return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "short",
-    }).format(new Date(value));
+      timeZone: "America/Chicago",
+    }).format(new Date(value)) + " CT";
   } catch {
     return value;
   }
 }
+

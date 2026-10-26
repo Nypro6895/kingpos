@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   cancelStaffTimeBlockAction,
   createStaffTimeBlockAction,
@@ -111,6 +112,8 @@ function SetupStaffAvatar({
   className?: string;
   staff: AvatarStaff;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const displayName = staff.staff_profile_display_name || staff.display_name;
   const avatarUrl =
     staff.staff_profile_avatar_url ??
@@ -120,7 +123,7 @@ function SetupStaffAvatar({
     <span className={classNames("booking-setup-avatar", className)}>
       {avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img alt="" className="booking-setup-avatar__image" src={avatarUrl} />
+        <img alt={__vt("")} className="booking-setup-avatar__image" src={avatarUrl} />
       ) : (
         getInitials(displayName)
       )}
@@ -142,12 +145,12 @@ function Message({ result }: { result: BookingSetupActionResult | null }) {
           : "border-red-200 bg-red-50 text-red-800",
       )}
     >
-      {result.ok ? "Saved." : result.error ?? "Save failed."}
+      <WorkspaceText text={result.ok ? "Saved." : result.error ?? "Save failed."} />
       {!result.ok && result.conflicts && result.conflicts.length > 0 ? (
         <ul className="mt-2 grid gap-1">
           {result.conflicts.slice(0, 4).map((conflict) => (
             <li key={conflict.booking_line_id}>
-              {conflict.customer_name} / {conflict.status}
+              {conflict.customer_name} / <WorkspaceText text={conflict.status} />
             </li>
           ))}
         </ul>
@@ -189,7 +192,7 @@ function StickySaveBar({
       )}
     >
       <div className="text-sm font-semibold text-zinc-700">
-        {dirtyCount > 0 ? `${dirtyCount} unsaved changes` : "No unsaved changes"}
+        <WorkspaceText text={dirtyCount > 0 ? `${dirtyCount} unsaved changes` : "No unsaved changes"} />
       </div>
       {children}
       {canManage ? (
@@ -200,7 +203,7 @@ function StickySaveBar({
             onClick={onReset}
             type="button"
           >
-            {resetLabel}
+            <WorkspaceText text={resetLabel} />
           </button>
           <button
             className="booking-setup-primary-button disabled:opacity-50"
@@ -208,11 +211,11 @@ function StickySaveBar({
             onClick={onSave}
             type="button"
           >
-            {isPending ? "Saving" : "Save changes"}
+            <WorkspaceText text={isPending ? "Saving" : "Save changes"} />
           </button>
         </div>
       ) : (
-        <p className="text-sm text-zinc-600">View-only access.</p>
+        <p className="text-sm text-zinc-600"><WorkspaceText text="View-only access." /></p>
       )}
     </div>
   );
@@ -447,8 +450,10 @@ function IntervalEditor({
   onRemove: (index: number) => void;
   onUpdate: (index: number, next: Partial<TimeIntervalDraft>) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
-    <div aria-label={label} className="booking-availability-interval-editor">
+    <div aria-label={__vt(label)} className="booking-availability-interval-editor">
       {intervals.length === 0 ? (
         <div className="booking-availability-empty-interval">
           <span>{emptyText}</span>
@@ -458,7 +463,7 @@ function IntervalEditor({
             onClick={onAdd}
             type="button"
           >
-            + {addLabel ?? "Add interval"}
+            + <WorkspaceText text={addLabel ?? "Add interval"} />
           </button>
         </div>
       ) : (
@@ -469,7 +474,7 @@ function IntervalEditor({
               key={`${interval.startsAt}-${interval.endsAt}-${index}`}
             >
               <input
-                aria-label={`${label} start`}
+                aria-label={__vt(`${label} start`)}
                 className="booking-setup-field booking-availability-time-input"
                 disabled={disabled}
                 onChange={(event) =>
@@ -482,7 +487,7 @@ function IntervalEditor({
                 -
               </span>
               <input
-                aria-label={`${label} end`}
+                aria-label={__vt(`${label} end`)}
                 className="booking-setup-field booking-availability-time-input"
                 disabled={disabled}
                 onChange={(event) =>
@@ -492,13 +497,13 @@ function IntervalEditor({
                 value={interval.endsAt}
               />
               <button
-                aria-label={`Remove ${label.toLowerCase()} interval ${
+                aria-label={__vt(`Remove ${label.toLowerCase()} interval ${
                   index + 1
-                }`}
+                }`)}
                 className="booking-availability-icon-button"
                 disabled={disabled}
                 onClick={() => onRemove(index)}
-                title="Remove"
+                title={__vt("Remove")}
                 type="button"
               >
                 <span aria-hidden="true">x</span>
@@ -511,7 +516,7 @@ function IntervalEditor({
             onClick={onAdd}
             type="button"
           >
-            + {addLabel ?? "Add interval"}
+            + <WorkspaceText text={addLabel ?? "Add interval"} />
           </button>
         </>
       )}
@@ -542,6 +547,8 @@ export function StaffAvailabilityEditor({
   timeBlocks: StaffTimeBlock[];
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const firstStaffId = staff[0]?.id ?? "";
   const [editDay, setEditDay] = useState<number | null>(null);
@@ -635,7 +642,7 @@ export function StaffAvailabilityEditor({
         return;
       }
 
-      if (!window.confirm("Discard unsaved availability changes?")) {
+      if (!window.confirm(__vt("Discard unsaved availability changes?"))) {
         event.preventDefault();
         event.stopPropagation();
       }
@@ -678,7 +685,7 @@ export function StaffAvailabilityEditor({
       weekDirty > 0 &&
       expandedStaffId !== nextStaffId &&
       typeof window !== "undefined" &&
-      !window.confirm("Discard unsaved availability changes?")
+      !window.confirm(__vt("Discard unsaved availability changes?"))
     ) {
       return;
     }
@@ -872,7 +879,7 @@ export function StaffAvailabilityEditor({
   function clearWeek() {
     if (
       typeof window !== "undefined" &&
-      !window.confirm("Clear this weekly schedule?")
+      !window.confirm(__vt("Clear this weekly schedule?"))
     ) {
       return;
     }
@@ -885,9 +892,9 @@ export function StaffAvailabilityEditor({
 
   if (staff.length === 0) {
     return (
-      <section className="booking-setup-empty p-5 text-sm">
-        No staff profiles are available.
-      </section>
+      <div className="settings-style"><section className="booking-setup-empty p-5 text-sm">
+        <WorkspaceText text="No staff profiles are available." />
+      </section></div>
     );
   }
 
@@ -899,13 +906,13 @@ export function StaffAvailabilityEditor({
       disabled={!canManage || busy}
       emptyText={target === "working" ? "Off" : "No breaks"}
       intervals={week[dayId][target]}
-      label={`${DAYS.find(day => day.id === dayId)?.label} ${target === "working" ? "working hours" : "breaks"}`}
+      label={__vt(`${DAYS.find(day => day.id === dayId)?.label} ${target === "working" ? "working hours" : "breaks"}`)}
       onAdd={() => updateDay(dayId, target, intervals => [...intervals, target === "working" ? defaultWorkingInterval() : defaultBreakInterval()])}
       onRemove={index => target === "working" && week[dayId].working.length === 1 ? toggleDay(dayId, false) : updateDay(dayId, target, intervals => intervals.filter((_, i) => i !== index))}
       onUpdate={(index, next) => updateDay(dayId, target, intervals => intervals.map((value, i) => i === index ? {...value, ...next} : value))}
     />;
-    return <section className="availability-compact" aria-label="Staff availability">
-      <div className="availability-compact-heading"><span>Choose a professional to edit hours.</span></div>
+    return <div className="settings-style"><section className="availability-compact" aria-label={__vt("Staff availability")}>
+      <div className="availability-compact-heading"><span><WorkspaceText text="Choose a professional to edit hours." /></span></div>
       {staff.map(member => {
         const expanded = member.id === expandedStaffId;
         const serverWeek = weeksByStaffId[member.id];
@@ -916,62 +923,62 @@ export function StaffAvailabilityEditor({
         const online = member.is_active && member.online_booking_enabled;
         return <article key={member.id} className="availability-compact-person" data-testid={`availability-staff-row-${member.id}`}>
           <button type="button" className="availability-person-toggle" aria-expanded={expanded} aria-controls={`compact-staff-${member.id}`} disabled={busy} onClick={() => expandStaff(member.id)}>
-            <SetupStaffAvatar staff={member}/><span className="availability-person-name"><strong>{name}</strong>{!expanded ? <><small>{compactWeeklyHours(memberWeek)}</small>{blocks.length ? <small>Time off · {formatDateRangeText(blocks[0], timezone)}{blocks.length > 1 ? ` +${blocks.length - 1}` : ""}</small> : null}</> : null}</span><span className={online ? "availability-online" : "availability-offline"}>● {online ? "Online" : "Offline"}</span><span aria-hidden="true">{expanded ? "⌃" : "⌄"}</span>
+            <SetupStaffAvatar staff={member}/><span className="availability-person-name"><strong>{name}</strong>{!expanded ? <><small>{compactWeeklyHours(memberWeek)}</small>{blocks.length ? <small><WorkspaceText text="Time off ·" /> <WorkspaceText text={formatDateRangeText(blocks[0], timezone)} />{blocks.length > 1 ? ` +${blocks.length - 1}` : ""}</small> : null}</> : null}</span><span className={online ? "availability-online" : "availability-offline"}>● <WorkspaceText text={online ? "Online" : "Offline"} /></span><span aria-hidden="true">{expanded ? "⌃" : "⌄"}</span>
           </button>
           {expanded ? <div id={`compact-staff-${member.id}`} className="availability-person-editor">
             <Message result={result}/>
-            <div className="availability-compact-title"><h3>Weekly hours</h3>{canManage ? <button type="button" disabled={busy} onClick={() => {setShowCopy(!showCopy); if(copySourceDay === null) setCopySourceDay(orderedDays.find(day => week[day.id].working.length)?.id ?? 1);}}>Copy hours</button> : null}</div>
-            {showCopy && canManage ? <fieldset className="availability-inline-editor" disabled={busy}><legend>Copy hours</legend>
-              <label>From day<select value={copySourceDay ?? 1} onChange={event => {setCopySourceDay(Number(event.target.value)); setCopyTargets([]);}}>{orderedDays.map(day => <option key={day.id} value={day.id}>{day.label}</option>)}</select></label>
-              <div className="availability-copy-days">{orderedDays.filter(day => day.id !== copySourceDay).map(day => <label key={day.id}><input type="checkbox" checked={copyTargets.includes(day.id)} onChange={event => toggleCopyTarget(day.id,event.target.checked)}/>{day.label}</label>)}</div>
-              <button type="button" disabled={!copyTargets.length} onClick={() => {copyDayToTargets(copySourceDay ?? 1);setShowCopy(false);}}>Apply to selected days</button>
-              <button type="button" onClick={() => {setWeekState({key:weekStateKey,week:presetWeekdays()});setShowCopy(false);}}>Use weekdays 9 AM–5 PM</button>
-              <button type="button" className="availability-muted-action" onClick={clearWeek}>Clear week</button>
+            <div className="availability-compact-title"><h3><WorkspaceText text="Weekly hours" /></h3>{canManage ? <button type="button" disabled={busy} onClick={() => {setShowCopy(!showCopy); if(copySourceDay === null) setCopySourceDay(orderedDays.find(day => week[day.id].working.length)?.id ?? 1);}}><WorkspaceText text="Copy hours" /></button> : null}</div>
+            {showCopy && canManage ? <fieldset className="availability-inline-editor" disabled={busy}><legend><WorkspaceText text="Copy hours" /></legend>
+              <label><WorkspaceText text="From day" /><select value={copySourceDay ?? 1} onChange={event => {setCopySourceDay(Number(event.target.value)); setCopyTargets([]);}}>{orderedDays.map(day => <option key={day.id} value={day.id}><WorkspaceText text={day.label} /></option>)}</select></label>
+              <div className="availability-copy-days">{orderedDays.filter(day => day.id !== copySourceDay).map(day => <label key={day.id}><input type="checkbox" checked={copyTargets.includes(day.id)} onChange={event => toggleCopyTarget(day.id,event.target.checked)}/><WorkspaceText text={day.label} /></label>)}</div>
+              <button type="button" disabled={!copyTargets.length} onClick={() => {copyDayToTargets(copySourceDay ?? 1);setShowCopy(false);}}><WorkspaceText text="Apply to selected days" /></button>
+              <button type="button" onClick={() => {setWeekState({key:weekStateKey,week:presetWeekdays()});setShowCopy(false);}}><WorkspaceText text="Use weekdays 9 AM–5 PM" /></button>
+              <button type="button" className="availability-muted-action" onClick={clearWeek}><WorkspaceText text="Clear week" /></button>
             </fieldset> : null}
             {orderedDays.map(day => <div key={day.id} className="availability-compact-day" data-testid={`availability-day-${day.id}`}>
-              <button type="button" className="availability-day-toggle" aria-expanded={editDay === day.id} aria-controls={`compact-day-${member.id}-${day.id}`} disabled={busy} onClick={() => setEditDay(editDay === day.id ? null : day.id)}><strong>{day.label}</strong><span>{week[day.id].working.length ? formatIntervalList(week[day.id].working) : "Off"}{week[day.id].breaks.length ? <small>Break · {formatIntervalList(week[day.id].breaks)}</small> : null}</span><span aria-hidden="true">{editDay === day.id ? "⌃" : week[day.id].working.length ? "›" : "+"}</span></button>
-              {editDay === day.id ? <fieldset id={`compact-day-${member.id}-${day.id}`} className="availability-inline-editor" disabled={!canManage || busy}><legend className="sr-only">{day.label} hours</legend>
+              <button type="button" className="availability-day-toggle" aria-expanded={editDay === day.id} aria-controls={`compact-day-${member.id}-${day.id}`} disabled={busy} onClick={() => setEditDay(editDay === day.id ? null : day.id)}><strong><WorkspaceText text={day.label} /></strong><span><WorkspaceText text={week[day.id].working.length ? formatIntervalList(week[day.id].working) : "Off"} />{week[day.id].breaks.length ? <small><WorkspaceText text="Break ·" /> {formatIntervalList(week[day.id].breaks)}</small> : null}</span><span aria-hidden="true">{editDay === day.id ? "⌃" : week[day.id].working.length ? "›" : "+"}</span></button>
+              {editDay === day.id ? <fieldset id={`compact-day-${member.id}-${day.id}`} className="availability-inline-editor" disabled={!canManage || busy}><legend className="sr-only"><WorkspaceText text={day.label} /> <WorkspaceText text="hours" /></legend>
                 {renderIntervals(day.id,"working")}
-                {week[day.id].working.length ? <><span className="availability-editor-label">Breaks</span>{renderIntervals(day.id,"breaks")}<button type="button" className="availability-muted-action" onClick={() => toggleDay(day.id,false)}>Set day off</button></> : null}
-                <button type="button" disabled={false} onClick={() => setEditDay(null)}>Done</button>
+                {week[day.id].working.length ? <><span className="availability-editor-label"><WorkspaceText text="Breaks" /></span>{renderIntervals(day.id,"breaks")}<button type="button" className="availability-muted-action" onClick={() => toggleDay(day.id,false)}><WorkspaceText text="Set day off" /></button></> : null}
+                <button type="button" disabled={false} onClick={() => setEditDay(null)}><WorkspaceText text="Done" /></button>
               </fieldset> : null}
             </div>)}
-            <div className="availability-compact-title availability-timeoff-title"><h3>Time off</h3>{canManage ? <button type="button" disabled={busy} aria-expanded={showTimeOffForm} onClick={() => {setShowTimeOffForm(!showTimeOffForm);setTimeOffResult(null);}}>+ Add</button> : null}</div>
+            <div className="availability-compact-title availability-timeoff-title"><h3><WorkspaceText text="Time off" /></h3>{canManage ? <button type="button" disabled={busy} aria-expanded={showTimeOffForm} onClick={() => {setShowTimeOffForm(!showTimeOffForm);setTimeOffResult(null);}}><WorkspaceText text="+ Add" /></button> : null}</div>
             <Message result={timeOffResult}/>
-            {!blocks.length ? <p className="availability-empty">No upcoming time off.</p> : blocks.map(block => <details key={block.id} className="availability-timeoff-item"><summary><span aria-hidden="true">▦</span><span><strong>{formatDateRangeText(block, timezone)}</strong>{block.reason ? <small>{block.reason}</small> : null}</span><span aria-hidden="true">›</span></summary><div className="availability-timeoff-detail"><p>{formatDateTime(block.starts_at,timezone)} – {formatDateTime(block.ends_at,timezone)}</p>{canManage ? <button type="button" disabled={busy} onClick={() => cancelTimeOff(block.id)}>Remove time off</button> : null}<small>To change dates, remove this entry and add the corrected range.</small></div></details>)}
+            {!blocks.length ? <p className="availability-empty"><WorkspaceText text="No upcoming time off." /></p> : blocks.map(block => <details key={block.id} className="availability-timeoff-item"><summary><span aria-hidden="true">▦</span><span><strong><WorkspaceText text={formatDateRangeText(block, timezone)} /></strong>{block.reason ? <small>{block.reason}</small> : null}</span><span aria-hidden="true">›</span></summary><div className="availability-timeoff-detail"><p><WorkspaceText text={formatDateTime(block.starts_at,timezone)} /> – <WorkspaceText text={formatDateTime(block.ends_at,timezone)} /></p>{canManage ? <button type="button" disabled={busy} onClick={() => cancelTimeOff(block.id)}><WorkspaceText text="Remove time off" /></button> : null}<small><WorkspaceText text="To change dates, remove this entry and add the corrected range." /></small></div></details>)}
             {showTimeOffForm ? <fieldset className="availability-inline-editor" disabled={!canManage || busy}>
-              <legend>Add time off</legend><div className="availability-date-range"><label>From<input type="date" value={timeOffStartDate} onChange={event => {setTimeOffStartDate(event.target.value);if(event.target.value > timeOffEndDate)setTimeOffEndDate(event.target.value);}}/></label><label>To<input type="date" min={timeOffStartDate} value={timeOffEndDate} onChange={event => setTimeOffEndDate(event.target.value)}/></label></div>
-              <label>Reason (optional)<input value={timeOffReason} onChange={event => setTimeOffReason(event.target.value)}/></label>
-              <button type="button" onClick={() => createTimeOff(false)}>{isTimeOffPending ? "Saving…" : "Add time off"}</button>
-              {!timeOffResult?.ok && timeOffResult?.conflicts?.length ? <button type="button" onClick={() => createTimeOff(true)}>Save time off with override</button> : null}
+              <legend><WorkspaceText text="Add time off" /></legend><div className="availability-date-range"><label><WorkspaceText text="From" /><input type="date" value={timeOffStartDate} onChange={event => {setTimeOffStartDate(event.target.value);if(event.target.value > timeOffEndDate)setTimeOffEndDate(event.target.value);}}/></label><label><WorkspaceText text="To" /><input type="date" min={timeOffStartDate} value={timeOffEndDate} onChange={event => setTimeOffEndDate(event.target.value)}/></label></div>
+              <label><WorkspaceText text="Reason (optional)" /><input value={timeOffReason} onChange={event => setTimeOffReason(event.target.value)}/></label>
+              <button type="button" onClick={() => createTimeOff(false)}><WorkspaceText text={isTimeOffPending ? "Saving…" : "Add time off"} /></button>
+              {!timeOffResult?.ok && timeOffResult?.conflicts?.length ? <button type="button" onClick={() => createTimeOff(true)}><WorkspaceText text="Save time off with override" /></button> : null}
             </fieldset> : null}
-            <p className="availability-empty">{canManage ? "Tap a day to edit hours or add a break." : "You have read-only availability access."}</p>
-            {weekDirty && canManage ? <div className="availability-compact-save"><button type="button" disabled={busy} onClick={saveWeek}>{isPending ? "Saving…" : "Save changes"}</button><span>Unsaved changes</span><button type="button" disabled={busy} className="availability-discard" onClick={() => setWeekState({key:weekStateKey,week:initialWeek})}>Discard</button></div> : null}
+            <p className="availability-empty"><WorkspaceText text={canManage ? "Tap a day to edit hours or add a break." : "You have read-only availability access."} /></p>
+            {weekDirty && canManage ? <div className="availability-compact-save"><button type="button" disabled={busy} onClick={saveWeek}><WorkspaceText text={isPending ? "Saving…" : "Save changes"} /></button><span><WorkspaceText text="Unsaved changes" /></span><button type="button" disabled={busy} className="availability-discard" onClick={() => setWeekState({key:weekStateKey,week:initialWeek})}><WorkspaceText text="Discard" /></button></div> : null}
           </div> : null}
         </article>;
       })}
-    </section>;
+    </section></div>;
   }
 
   return (
-    <section
+    <div className="settings-style"><section
       className="booking-setup-panel"
       data-booking-setup-surface="availability"
       id="staff-availability"
     >
       <div className="booking-availability-head">
         <div>
-          <h3>Staff availability</h3>
+          <h3><WorkspaceText text="Staff availability" /></h3>
 
         </div>
       </div>
       <div className="booking-availability-staff-list">
         <div className="booking-availability-staff-columns" aria-hidden="true">
-          <span>Professional</span>
-          <span>Online booking</span>
-          <span>Weekly schedule</span>
-          <span>Time off</span>
-          <span>Expand</span>
+          <span><WorkspaceText text="Professional" /></span>
+          <span><WorkspaceText text="Online booking" /></span>
+          <span><WorkspaceText text="Weekly schedule" /></span>
+          <span><WorkspaceText text="Time off" /></span>
+          <span><WorkspaceText text="Expand" /></span>
         </div>
         {staff.map((member) => {
           const displayName =
@@ -1024,8 +1031,8 @@ export function StaffAvailabilityEditor({
                   <div>
                     <h4>{displayName}</h4>
                     <p>
-                      {member.job_title || "Staff"} /{" "}
-                      {member.is_active ? "Active" : "Inactive"}
+                      <WorkspaceText text={member.job_title || "Staff"} /> /{" "}
+                      <WorkspaceText text={member.is_active ? "Active" : "Inactive"} />
                     </p>
                   </div>
                 </div>
@@ -1039,27 +1046,27 @@ export function StaffAvailabilityEditor({
                         : "booking-setup-chip--muted",
                     )}
                   >
-                    {onlineStatus.label}
+                    <WorkspaceText text={onlineStatus.label} />
                   </span>
-                  <p>{onlineStatus.detail}</p>
+                  <p><WorkspaceText text={onlineStatus.detail} /></p>
                   <a
                     className="booking-availability-link"
-                    href="/services"
+                    href={expectedSalonId ? `/settings?section=salon-${encodeURIComponent(expectedSalonId)}-services` : "/services"}
                     onClick={(event) => event.stopPropagation()}
                   >
-                    Manage Booking staff
+                    <WorkspaceText text="Manage Booking staff" />
                   </a>
                 </div>
 
                 <div className="booking-availability-staff-cell">
                   <strong>{weeklySummary}</strong>
                   <p>
-                    {readiness?.workingRuleCount ?? 0} working rule
+                    {readiness?.workingRuleCount ?? 0} <WorkspaceText text="working rule" />
                     {(readiness?.workingRuleCount ?? 0) === 1 ? "" : "s"}
                   </p>
                   {setupIssueText ? (
                     <p className="booking-availability-issue">
-                      Needs setup: {setupIssueText}
+                      <WorkspaceText text="Needs setup:" /> {setupIssueText}
                     </p>
                   ) : null}
                 </div>
@@ -1067,7 +1074,7 @@ export function StaffAvailabilityEditor({
                 <div className="booking-availability-staff-cell">
                   <strong>{timeOffSummary}</strong>
                   {timeOffBlocks.length > 1 ? (
-                    <p>Next {formatDateRangeText(timeOffBlocks[0], timezone)}</p>
+                    <p><WorkspaceText text="Next" /> <WorkspaceText text={formatDateRangeText(timeOffBlocks[0], timezone)} /></p>
                   ) : null}
                   <button
                     className="booking-availability-link-button"
@@ -1080,16 +1087,14 @@ export function StaffAvailabilityEditor({
                     }}
                     type="button"
                   >
-                    + Add time off
+                    <WorkspaceText text="+ Add time off" />
                   </button>
                 </div>
 
                 <button
-                  aria-label={
-                    isExpanded
+                  aria-label={__vt(isExpanded
                       ? `Collapse ${displayName}`
-                      : `Expand ${displayName}`
-                  }
+                      : `Expand ${displayName}`)}
                   aria-expanded={isExpanded}
                   className="booking-availability-chevron"
                   onClick={(event) => {
@@ -1110,12 +1115,12 @@ export function StaffAvailabilityEditor({
 
                     <div className="booking-availability-section-head">
                       <div>
-                        <h4>Weekly schedule</h4>
+                        <h4><WorkspaceText text="Weekly schedule" /></h4>
                         <p>{weeklySummary}</p>
                       </div>
                       <div className="booking-availability-toolbar">
                         <details data-dismissible-popover className="booking-availability-menu">
-                          <summary>Apply preset</summary>
+                          <summary><WorkspaceText text="Apply preset" /></summary>
                           <button
                             disabled={!canManage}
                             onClick={() =>
@@ -1126,18 +1131,18 @@ export function StaffAvailabilityEditor({
                             }
                             type="button"
                           >
-                            Weekdays 9-5
+                            <WorkspaceText text="Weekdays 9-5" />
                           </button>
                         </details>
                         <details data-dismissible-popover className="booking-availability-menu">
-                          <summary>More</summary>
+                          <summary><WorkspaceText text="More" /></summary>
                           <button
                             className="booking-availability-danger-action"
                             disabled={!canManage}
                             onClick={clearWeek}
                             type="button"
                           >
-                            Clear week
+                            <WorkspaceText text="Clear week" />
                           </button>
                         </details>
                       </div>
@@ -1145,17 +1150,17 @@ export function StaffAvailabilityEditor({
 
                     {DAYS.every((day) => week[day.id].working.length === 0) ? (
                       <p className="booking-availability-empty-note">
-                        No weekly availability yet.
+                        <WorkspaceText text="No weekly availability yet." />
                       </p>
                     ) : null}
 
                     <div className="booking-availability-week">
                       <div className="booking-availability-day-header">
-                        <span>Day</span>
-                        <span>Status</span>
-                        <span>Working hours</span>
-                        <span>Breaks</span>
-                        <span>Actions</span>
+                        <span><WorkspaceText text="Day" /></span>
+                        <span><WorkspaceText text="Status" /></span>
+                        <span><WorkspaceText text="Working hours" /></span>
+                        <span><WorkspaceText text="Breaks" /></span>
+                        <span><WorkspaceText text="Actions" /></span>
                       </div>
                       {DAYS.map((day) => {
                         const dayDraft = week[day.id];
@@ -1172,13 +1177,13 @@ export function StaffAvailabilityEditor({
                           >
                             <div className="booking-availability-day-cell booking-availability-day-name">
                               <span className="booking-availability-mobile-label">
-                                Day
+                                <WorkspaceText text="Day" />
                               </span>
-                              <strong>{day.label}</strong>
+                              <strong><WorkspaceText text={day.label} /></strong>
                             </div>
                             <div className="booking-availability-day-cell">
                               <span className="booking-availability-mobile-label">
-                                Status
+                                <WorkspaceText text="Status" />
                               </span>
                               <label className="booking-availability-status-toggle">
                                 <input
@@ -1189,19 +1194,19 @@ export function StaffAvailabilityEditor({
                                   }
                                   type="checkbox"
                                 />
-                                <span>{enabled ? "Enabled" : "Off"}</span>
+                                <span><WorkspaceText text={enabled ? "Enabled" : "Off"} /></span>
                               </label>
                             </div>
                             <div className="booking-availability-day-cell">
                               <span className="booking-availability-mobile-label">
-                                Working hours
+                                <WorkspaceText text="Working hours" />
                               </span>
                               {enabled ? (
                                 <IntervalEditor
                                   addLabel="Add interval"
                                   disabled={!canManage}
                                   intervals={dayDraft.working}
-                                  label={`${day.label} working hours`}
+                                  label={__vt(`${day.label} working hours`)}
                                   onAdd={() =>
                                     updateDay(day.id, "working", (intervals) => [
                                       ...intervals,
@@ -1231,7 +1236,7 @@ export function StaffAvailabilityEditor({
                             </div>
                             <div className="booking-availability-day-cell">
                               <span className="booking-availability-mobile-label">
-                                Breaks
+                                <WorkspaceText text="Breaks" />
                               </span>
                               {enabled ? (
                                 <IntervalEditor
@@ -1239,7 +1244,7 @@ export function StaffAvailabilityEditor({
                                   disabled={!canManage}
                                   emptyText="No breaks"
                                   intervals={dayDraft.breaks}
-                                  label={`${day.label} breaks`}
+                                  label={__vt(`${day.label} breaks`)}
                                   onAdd={() =>
                                     updateDay(day.id, "breaks", (intervals) => [
                                       ...intervals,
@@ -1269,7 +1274,7 @@ export function StaffAvailabilityEditor({
                             </div>
                             <div className="booking-availability-day-cell booking-availability-actions-cell">
                               <span className="booking-availability-mobile-label">
-                                Actions
+                                <WorkspaceText text="Actions" />
                               </span>
                               {enabled ? (
                                 <button
@@ -1278,7 +1283,7 @@ export function StaffAvailabilityEditor({
                                   onClick={() => startCopyDay(day.id)}
                                   type="button"
                                 >
-                                  Copy
+                                  <WorkspaceText text="Copy" />
                                 </button>
                               ) : (
                                 <button
@@ -1287,12 +1292,12 @@ export function StaffAvailabilityEditor({
                                   onClick={() => toggleDay(day.id, true)}
                                   type="button"
                                 >
-                                  Enable
+                                  <WorkspaceText text="Enable" />
                                 </button>
                               )}
                               {copySourceDay === day.id ? (
                                 <div className="booking-availability-copy-panel">
-                                  <p>Copy {day.label} to</p>
+                                  <p><WorkspaceText text="Copy" /> <WorkspaceText text={day.label} /> <WorkspaceText text="to" /></p>
                                   <div>
                                     {DAYS.filter(
                                       (targetDay) => targetDay.id !== day.id,
@@ -1311,7 +1316,7 @@ export function StaffAvailabilityEditor({
                                           }
                                           type="checkbox"
                                         />
-                                        {targetDay.label}
+                                        <WorkspaceText text={targetDay.label} />
                                       </label>
                                     ))}
                                   </div>
@@ -1324,7 +1329,7 @@ export function StaffAvailabilityEditor({
                                       onClick={() => copyDayToTargets(day.id)}
                                       type="button"
                                     >
-                                      Apply
+                                      <WorkspaceText text="Apply" />
                                     </button>
                                     <button
                                       className="booking-availability-link-button"
@@ -1334,7 +1339,7 @@ export function StaffAvailabilityEditor({
                                       }}
                                       type="button"
                                     >
-                                      Cancel
+                                      <WorkspaceText text="Cancel" />
                                     </button>
                                   </div>
                                 </div>
@@ -1365,7 +1370,7 @@ export function StaffAvailabilityEditor({
                   >
                     <div className="booking-availability-section-head">
                       <div>
-                        <h4>Time off</h4>
+                        <h4><WorkspaceText text="Time off" /></h4>
                         <p>{timeOffSummary}</p>
                       </div>
                     </div>
@@ -1373,7 +1378,7 @@ export function StaffAvailabilityEditor({
                     <div className="booking-availability-timeoff-list">
                       {expandedTimeOffBlocks.length === 0 ? (
                         <p className="booking-availability-empty-note">
-                          No upcoming time off.
+                          <WorkspaceText text="No upcoming time off." />
                         </p>
                       ) : (
                         expandedTimeOffBlocks.map((block) => (
@@ -1383,26 +1388,26 @@ export function StaffAvailabilityEditor({
                           >
                             <div>
                               <strong>
-                                {formatDateRangeText(block, timezone)}
+                                <WorkspaceText text={formatDateRangeText(block, timezone)} />
                               </strong>
                               <p>
-                                {formatDateTime(block.starts_at, timezone)} -{" "}
-                                {formatDateTime(block.ends_at, timezone)}
+                                <WorkspaceText text={formatDateTime(block.starts_at, timezone)} /> -{" "}
+                                <WorkspaceText text={formatDateTime(block.ends_at, timezone)} />
                               </p>
                               {block.reason ? <p>{block.reason}</p> : null}
                             </div>
                             {canManage ? (
                               <button
-                                aria-label={`Remove time off ${formatDateRangeText(
+                                aria-label={__vt(`Remove time off ${formatDateRangeText(
                                   block,
                                   timezone,
-                                )}`}
+                                )}`)}
                                 className="booking-availability-link-button booking-availability-danger-action"
                                 disabled={isTimeOffPending}
                                 onClick={() => cancelTimeOff(block.id)}
                                 type="button"
                               >
-                                Remove
+                                <WorkspaceText text="Remove" />
                               </button>
                             ) : null}
                           </div>
@@ -1411,7 +1416,7 @@ export function StaffAvailabilityEditor({
                     </div>
                     <div className="booking-availability-timeoff-form">
                       <label>
-                        <span>From date</span>
+                        <span><WorkspaceText text="From date" /></span>
                         <input
                           className="booking-setup-field"
                           disabled={!canManage}
@@ -1423,7 +1428,7 @@ export function StaffAvailabilityEditor({
                         />
                       </label>
                       <label>
-                        <span>To date</span>
+                        <span><WorkspaceText text="To date" /></span>
                         <input
                           className="booking-setup-field"
                           disabled={!canManage}
@@ -1435,12 +1440,12 @@ export function StaffAvailabilityEditor({
                         />
                       </label>
                       <label>
-                        <span>Reason</span>
+                        <span><WorkspaceText text="Reason" /></span>
                         <input
                           className="booking-setup-field"
                           disabled={!canManage}
                           onChange={(event) => setTimeOffReason(event.target.value)}
-                          placeholder="Optional"
+                          placeholder={__vt("Optional")}
                           value={timeOffReason}
                         />
                       </label>
@@ -1450,7 +1455,7 @@ export function StaffAvailabilityEditor({
                         onClick={() => createTimeOff(false)}
                         type="button"
                       >
-                        Add time off
+                        <WorkspaceText text="Add time off" />
                       </button>
                     </div>
                     {!timeOffResult?.ok && timeOffResult?.conflicts?.length ? (
@@ -1460,11 +1465,11 @@ export function StaffAvailabilityEditor({
                         onClick={() => createTimeOff(true)}
                         type="button"
                       >
-                        Save time off with override
+                        <WorkspaceText text="Save time off with override" />
                       </button>
                     ) : null}
                     <p className="booking-availability-timeoff-note">
-                      Edit ranges by removing them and adding the corrected dates.
+                      <WorkspaceText text="Edit ranges by removing them and adding the corrected dates." />
                     </p>
                   </section>
                 </div>
@@ -1473,7 +1478,7 @@ export function StaffAvailabilityEditor({
           );
         })}
       </div>
-    </section>
+    </section></div>
   );
 }
 

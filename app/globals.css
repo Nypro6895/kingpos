@@ -1,5 +1,82 @@
 @import "tailwindcss";
 
+/* One Explore search instance moves into the desktop chrome after hydration. */
+@media (min-width: 1280px) {
+  body:has([data-explore-header-search]) [data-explore-inline-search] { display: none; }
+}
+
+/* The same four actions stay on one row across feeds and post dialogs. */
+.post-action-toolbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+.post-action-toolbar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.post-action-toolbar > span,
+.post-action-toolbar > span > span:first-child { display:flex; min-width:0; }
+.post-action-toolbar > span > span:first-child { width:100%; }
+.post-action-toolbar > :is(button,a),
+.post-action-toolbar > span > :is(button,a),
+.post-action-toolbar > span > span:first-child > button {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; width:100%; min-width:0; min-height:52px; margin:0; padding:5px 2px;
+  border:0; border-radius:6px; background:transparent; box-shadow:none;
+  color:var(--text-secondary,#52525b); font-size:12px; font-weight:400; line-height:16px;
+}
+.post-action-toolbar :is(button,a) span { white-space:nowrap; }
+.post-action-toolbar :is(button,a):has(> [data-post-action-count]) { position:relative; }
+.post-action-toolbar :is(button,a) > [data-post-action-count] {
+  position:absolute; top:5px; left:calc(50% + 15px); font-size:10px; line-height:16px;
+}
+.post-action-toolbar > span > span:first-child > button { position:relative; }
+.post-action-toolbar > span > span:first-child > button > span + span { position:absolute; top:5px; left:calc(50% + 15px); font-size:10px; line-height:16px; }
+.post-action-toolbar :is(button,a):hover { background:#fafafa; }
+
+.post-action-toolbar svg {
+  flex-shrink: 0;
+  width:21px;
+  height:21px;
+}
+
+/* A full-screen backdrop must cover the whole viewport. Older native clients
+   apply a blanket dialog inset that clips backdrops as well as their panels. */
+.fixed.inset-0[role="dialog"]:not(.content-viewer) {
+  max-width: 100dvw !important;
+  max-height: 100dvh !important;
+}
+
+/* Fit browsing panels above the actual mobile bar (including safe-area and
+   landscape sizing). Override the older iOS wrapper's blanket dialog limits. */
+.content-viewer[role="dialog"] {
+  top: var(--content-viewer-top, 0px);
+  bottom: auto;
+  height: var(--content-viewer-height, 100dvh);
+  max-height: var(--content-viewer-height, 100dvh) !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  outline: none;
+}
+
+.content-viewer > * {
+  min-height: 0;
+  max-height: 100%;
+}
+
+@media (max-width: 639px) {
+  .content-viewer > * {
+    max-height: 100% !important;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
 /* Flat content shares a continuous page canvas, including the side gutters.
    Keep text, controls and desktop columns at their existing readable widths. */
 main:has(.content-surface),
@@ -81,6 +158,40 @@ main:has([data-continuous-surface]),
 html {
   min-height: 100%;
   background: var(--background);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* A phone rotated sideways still uses touch navigation. Keep a single page
+   scroll and recover vertical room without switching to a desktop sidebar. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1023px) and (pointer: coarse) {
+  .workspace-mobile-nav {
+    padding-top: 4px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
+  }
+
+  .workspace-mobile-nav > a,
+  .workspace-mobile-nav > details > summary {
+    min-height: 44px;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .workspace-mobile-panel {
+    bottom: calc(61px + env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 73px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    display: flex;
+    flex-direction: column;
+  }
+
+  .workspace-mobile-panel > :first-child { flex-shrink: 0; }
+  .workspace-mobile-panel > .overflow-y-auto { min-height: 0; }
+
+  .customer-desktop-content {
+    padding-bottom: calc(69px + env(safe-area-inset-bottom));
+  }
 }
 
 body {
@@ -382,7 +493,7 @@ body {
 .owner-summary small,.owner-lines small{display:block;color:#71717a;font-size:12px;margin-top:3px}.owner-summary b{font-size:23px}
 .owner-tools [data-pos-customer-shortcuts]{display:flex;gap:8px}.owner-tools [data-pos-customer-shortcuts]>button{min-height:44px;border-radius:10px;padding:8px 12px;font-size:12px}.owner-tools [data-pos-customer-shortcuts]>button>span>span:last-child{display:none}.owner-tools svg{color:#a64b1c}
 .owner-workbench{display:grid;grid-template-columns:minmax(210px,.85fr) minmax(270px,1.5fr) minmax(280px,1fr);gap:12px;align-items:stretch;min-height:570px}
-.owner-receipt,.owner-catalog,.owner-amount{background:#fff;border:1px solid #e9e6e3;border-radius:14px;padding:16px;min-width:0}
+.owner-receipt,.owner-catalog,.owner-amount{background:#fff;border:0;border-radius:0;padding:16px;min-width:0}
 .owner-receipt{display:flex;flex-direction:column}.owner-section-heading{margin-bottom:12px}.owner-checkout .owner-section-heading h2{font-size:16px;font-weight:650;margin:0}.owner-section-heading small{color:#71717a;font-size:12px}.owner-section-heading a{font-size:12px;color:#a64b1c}
 .owner-choice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px}.owner-choice-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;border:1px solid #e4e4e7;border-radius:12px;min-height:84px;font-size:14px;text-align:center;transition:background .15s,border-color .15s}.owner-choice-grid button:hover{background:#fff7ed;border-color:#fdba74}.owner-choice-grid button[aria-pressed=true]{background:#fff1e4;border-color:#ea8a44;color:#883a15}.owner-choice-grid small{color:#71717a;font-size:12px}.owner-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#f4eee8;color:#995632;font-weight:700}.owner-services{margin-top:24px}.owner-skip{display:inline-flex;align-items:center;min-height:44px;color:#a64b1c;font-size:13px;font-weight:600}.owner-back{display:none}.owner-selection{font-size:13px;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .owner-lines{flex:1;overflow:auto}.owner-lines>div{display:flex;align-items:center;gap:8px;padding:14px 0;border-bottom:1px solid #f0eded;font-size:13px}.owner-lines>div>span{flex:1}.owner-lines button{min-width:36px;min-height:44px;color:#b91c1c}.owner-lines>p,.owner-empty{font-size:13px;color:#71717a;padding:16px 0}.owner-total{border-top:1px solid #e4e4e7;padding-top:14px;display:flex;justify-content:space-between;font-size:20px;margin-top:12px}
@@ -399,14 +510,14 @@ body {
 
 /* Settings use aligned rows and a single surface per group. */
 .pos-settings .settings-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.pos-settings .settings-heading h1{font-size:22px;margin:0;font-weight:650}.settings-heading p{font-size:13px;color:#71717a;margin-top:3px}
-.settings-sections{display:grid;gap:10px}.settings-sections>details{border:1px solid #e6e2de;border-radius:12px;background:white;padding:0 18px}.settings-sections>details>summary{padding:16px 0;cursor:pointer;font-size:14px;font-weight:650;list-style:none;display:flex;align-items:center;justify-content:space-between}.settings-sections>details>summary::after{content:'+';font-size:20px;color:#a8a29e;font-weight:400}.settings-sections>details[open]>summary{border-bottom:1px solid #f0edeb}.settings-sections>details[open]>summary::after{content:'−'}.settings-sections>details[open]{padding-bottom:16px}
+.settings-sections{display:grid;gap:10px}.settings-sections>details{border:0;border-bottom:1px solid #e6e2de;border-radius:0;background:white;padding:0 18px}.settings-sections>details>summary{padding:16px 0;cursor:pointer;font-size:14px;font-weight:650;list-style:none;display:flex;align-items:center;justify-content:space-between}.settings-sections>details>summary::after{content:'+';font-size:20px;color:#a8a29e;font-weight:400}.settings-sections>details[open]>summary{border-bottom:1px solid #f0edeb}.settings-sections>details[open]>summary::after{content:'−'}.settings-sections>details[open]{padding-bottom:16px}
 .settings-launch{padding-top:16px}.settings-launch>div{display:grid;grid-template-columns:1fr 1fr;gap:10px}.settings-launch a,.settings-launch>div>span{display:flex;gap:8px;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 12px;border:1px solid #e7d4c5;border-radius:9px;background:#fff8f1;color:#92451f;font-size:13px;font-weight:650}.settings-launch a:hover{background:#ffeddc}.settings-launch small{font-size:11px;color:#78716c;font-weight:400}.settings-launch>p{margin-top:10px;font-size:12px;color:#71717a}.settings-launch>small{display:block;margin-top:3px}
 .settings-section-body{padding:16px 0 0}.pos-settings .settings-section-body h2{font-size:14px;font-weight:650;margin:0}.settings-section-body>div>p{font-size:12px;line-height:1.5}.settings-toggle{display:flex;align-items:center;gap:10px;min-height:42px;padding:8px 0;font-size:13px;color:#52525b;border-bottom:1px solid #f4f1ee}.settings-toggle input{accent-color:#dd6b31;width:16px;height:16px;flex-shrink:0;margin:0}.settings-capability-help{display:block;font-size:11px;color:#8a817b;line-height:1.4;margin-top:2px}.settings-image{padding:12px;background:#faf9f7;border-radius:9px}.pos-settings input:not([type=checkbox]):not([type=hidden]):not([type=file]),.pos-settings textarea{margin-top:5px;border-radius:8px;border-color:#e4e0dd}.pos-settings input:focus,.pos-settings textarea:focus{outline-color:#e99a67}.pos-settings label>span{font-size:13px}.settings-display-setup{padding-bottom:18px;border-bottom:1px solid #f0edeb}.settings-qr{max-width:140px}.settings-qr svg,.settings-qr canvas{max-width:130px;height:auto}.pos-settings form>div:last-child button{min-height:40px;padding-top:8px;padding-bottom:8px;font-size:13px;border-radius:8px}.pos-settings fieldset{gap:14px}
 @media(max-width:600px){.settings-sections>details{padding-left:12px;padding-right:12px}.settings-launch a{flex-wrap:wrap;font-size:12px;gap:3px}.settings-launch a small{width:100%}.settings-display-setup>div{grid-template-columns:1fr}.settings-qr{display:none}.pos-settings .settings-heading h1{font-size:19px}}
 
 .settings-permissions>summary{font-size:13px;color:#a64b1c;cursor:pointer;padding:10px 0}.settings-permissions[open]>summary{border-bottom:1px solid #f0edeb}
 
-@media(max-width:767px){html:has(.owner-checkout),body:has(.owner-checkout){height:100dvh;overflow:hidden}}
+@media(max-width:767px){html:has([data-owner-pos-shell=true]),body:has([data-owner-pos-shell=true]){height:100dvh;overflow:hidden}}
 @media(max-width:767px) and (max-height:700px){
  .owner-checkout{padding:4px 8px}.owner-heading{margin-bottom:4px}.owner-heading nav{padding:2px}.owner-heading nav a{min-height:30px;padding:5px 14px;font-size:12px}.owner-tools{gap:4px;margin-bottom:4px}.owner-summary{padding:4px 8px}.owner-summary b{font-size:18px}.owner-summary small{font-size:10px;margin-top:1px}.owner-tools [data-pos-customer-shortcuts]>button{min-height:28px!important;padding:3px 8px}.owner-steps{margin-bottom:6px;padding:2px}.owner-steps button{min-height:28px}.owner-amount>.owner-section-heading{display:none}.owner-amount-field{padding:4px 10px;margin-bottom:6px}.owner-amount-field>span{display:none}.owner-amount-field input{font-size:28px}.owner-adjustments,.owner-submit{margin-top:5px}.owner-adjustments button{min-height:28px;font-size:12px}.owner-submit button{min-height:40px}
 }
@@ -435,7 +546,7 @@ body {
 
 /* Keep the owner checkout focused; Settings restores the normal owner navigation. */
 [data-owner-pos-shell=true]{padding-left:0!important}[data-owner-pos-shell=true]>header,[data-owner-pos-shell=true]>nav,[data-owner-pos-shell=true]>aside{display:none!important}[data-owner-pos-shell=true]>div.min-h-screen{padding-bottom:0!important}
-[data-testid=customer-desktop-shell]:has(.owner-checkout){grid-template-columns:minmax(0,1fr)!important}[data-testid=customer-desktop-shell]:has(.owner-checkout)>aside,[data-testid=customer-desktop-shell]:has(.owner-checkout)>div>header{display:none!important}
+[data-testid=customer-desktop-shell][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}[data-testid=customer-desktop-shell][data-owner-pos-shell=true]>aside,[data-testid=customer-desktop-shell][data-owner-pos-shell=true]>div>header{display:none!important}
 .owner-workbench{min-height:calc(100dvh - 140px)}
 @media(max-width:767px){.owner-workbench{min-height:0}.owner-checkout{height:var(--owner-height,100dvh)}}
 
@@ -449,8 +560,49 @@ body {
  .owner-inline-rows>div:not([data-selected=true]) .owner-inline-money input{border-color:transparent}
 }
 
-/* The checkout owns the full viewport; navigation slots contain no page copy. */
-[data-testid="customer-desktop-shell"]:has(.owner-checkout){grid-template-columns:minmax(0,1fr)!important}
-[data-testid="customer-desktop-shell"]:has(.owner-checkout)>[data-desktop-sidebar-slot],
-[data-testid="customer-desktop-shell"]:has(.owner-checkout)>div>div:has(>header),
-[data-testid="customer-desktop-shell"]:has(.owner-checkout)>div>div:has(>nav){display:none!important}
+/* Only the active POS route owns the viewport; retained hidden POS stays inert. */
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>[data-desktop-sidebar-slot],
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>header),
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>nav){display:none!important}
+
+/* Compact page chrome only inside the mobile POS workspaces. */
+@media (max-width: 979px) {
+  :is([data-owner-workspace], .portable-kiosk-surface) h1:not([data-ticket-title], [role="dialog"] h1, dialog h1) {
+    display: none;
+  }
+
+  :is([data-owner-workspace], .portable-kiosk-surface) [data-ticket-toolbar] {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 4px 8px 8px;
+  }
+
+  :is([data-owner-workspace], .portable-kiosk-surface) [data-ticket-date] {
+    width: 40%;
+    max-width: 160px;
+    min-width: 0;
+    flex-shrink: 0;
+  }
+
+  :is([data-owner-workspace], .portable-kiosk-surface) [data-ticket-date] > label {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+
+  [data-owner-workspace] [data-ticket-date]:has(h1) > label {
+    justify-content: center;
+    gap: 4px;
+    border: 1px solid var(--border-subtle, #d4d4d8);
+    border-radius: 8px;
+    padding: 0 6px;
+    font-size: 14px;
+  }
+
+  [data-owner-workspace] .owner-workspace-content > main:has([data-ticket-toolbar]),
+  .portable-kiosk-surface [data-portable-pos-page="ticket"] {
+    padding-top: 0;
+  }
+}

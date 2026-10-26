@@ -1,0 +1,26 @@
+Check-in Receipt — By Reylumi
+Price: USD $4.70 per salon per month.
+
+Flow: Customer enters their information and confirms requested services with Done.
+The confirmation issues one daily queue number per visit and prints a receipt with
+the customer's name and a QR identifier. Staff opens POS > Waiting / Customers,
+scans with a USB/Bluetooth QR scanner that types into the scan field, and starts
+the customer's ticket using the existing POS workflow. The scan does not charge
+the customer or close a ticket. Existing service, staff and payment rules apply.
+
+Activation requires migration 202610080007_checkin_receipt_plugin.sql, deployment
+of the web changes, and a rebuilt desktop installer. Market Stripe credentials
+and the existing /api/market/payment-webhook must be connected. Successful
+subscription confirmation activates the plugin; redirect parameters do not.
+No customer payment is taken by the check-in receipt flow.
+
+Windows: use the desktop's paired customer display, set an 80 mm receipt printer
+as the Windows default, and install the updated desktop version. Browser devices
+open a printer dialog. Camera scanning is not included; use a QR-capable scanner.
+Failed printing can be retried from Print again. Queue numbers reset on the
+salon's local business date and are retained on reprint. Automatic reprints are
+suppressed in the running desktop session. Printing requires an online check-in.
+
+Verification: database entitlement/isolation/retry/daily reset tests, billing
+amount and ownership tests, and native receipt escaping/validation tests.
+A physical printer and scanner still need an on-device acceptance check.

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import type { PendingOwnerTransferInvite } from "@/lib/owner-transfer";
 import { respondOwnerInvite } from "./owner-invite-actions";
 import { useRef, useState, useTransition } from "react";
@@ -7,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import { QueryErrorDialog } from "@/app/query-error-dialog";
-import { switchWorkspaceDestination } from "@/app/salons/actions";
+import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import type {
   CurrentWorkspaceAction,
   CurrentWorkspaceOption as Workspace,
@@ -66,6 +67,8 @@ export function MyPlaceClient({
   ownerInvites,
   ownerInvitesError,
 }: Props) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<{
@@ -121,15 +124,7 @@ export function MyPlaceClient({
     setPendingId(workspace.id);
     startTransition(async () => {
       try {
-        const result = await switchWorkspaceDestination({
-          workspaceId: workspace.id,
-          destinationHref: action.href,
-        });
-        if (!result.ok) setNotice({ text: result.message, error: true });
-        else {
-          router.push(result.href);
-          router.refresh();
-        }
+        navigateToWorkspace(workspace.id, action.href);
       } catch {
         setNotice({
           text: "Unable to open this workspace. Please try again.",
@@ -165,7 +160,7 @@ export function MyPlaceClient({
     return items.length ? (
       <details open className="border-t border-[#f1ebe6] px-4 py-2 sm:px-5">
         <summary className="cursor-pointer py-1 text-xs font-semibold text-[#ad542d]">
-          Requests & invitations ({items.length})
+          <WorkspaceText text="Requests & invitations (" />{items.length})
         </summary>
         <div className="divide-y divide-[#f1ebe6]">
           {items.map((r) => (
@@ -201,128 +196,59 @@ export function MyPlaceClient({
       ? [salon.city, salon.state].filter(Boolean).join(", ")
       : "";
     return (
-      <div key={workspace.id} className="px-4 py-3 sm:px-5">
-        <div className="flex flex-wrap items-center gap-3">
+      <div key={workspace.id} className="px-4 py-3 sm:px-5" data-place-salon={workspace.id}>
+        <div className="flex min-w-0 items-start gap-3">
           <Avatar workspace={workspace} />
-          <div className="min-w-0 flex-1 basis-36">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="break-words text-sm font-bold text-[#302a28]">
-                {workspace.label}
-              </h3>
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="min-w-0 break-words text-sm font-medium text-zinc-950"><WorkspaceText text={workspace.label} /></h3>
               {currentWorkspace?.id === workspace.id ? <CurrentBadge /> : null}
             </div>
-            <p className="mt-1 text-xs text-zinc-500">
-              {workspace.roleLabel}
-              {shortAddress ? ` · ${shortAddress}` : ""}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {managing && salon ? (
-              canToggle ? (
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={active}
-                  aria-label={`Salon activity for ${workspace.label}`}
-                  disabled={busy}
-                  onClick={() => setPanel({ type: "activity", workspace })}
-                  className="mr-2 inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f26f3d]"
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`flex h-5 w-9 items-center rounded-full px-0.5 ${active ? "justify-end bg-teal-600" : "justify-start bg-zinc-300"}`}
-                  >
-                    <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
-                  </span>
-                  {active ? "Active" : "Temporarily paused"}
-                </button>
-              ) : (
-                <span className="mr-2 text-xs font-medium text-zinc-500">
-                  {closed
-                    ? "Permanently closed"
-                    : active
-                      ? "Active"
-                      : "Temporarily paused"}
-                </span>
-              )
-            ) : null}
-            <button
-              className={button}
-              disabled={busy}
-              onClick={() => setPanel({ type: "salon", workspace })}
-            >
-              Details
-            </button>
-            {workspace.primaryAction ? (
-              <button
-                className={managing ? primaryButton : button}
-                disabled={busy}
-                onClick={() => run(workspace, workspace.primaryAction!)}
-              >
-                {pendingId === workspace.id ? "Opening…" : "Open workspace"}
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 text-xs text-zinc-500">
+              <span><WorkspaceText text={workspace.roleLabel} /></span>
+              {workspace.primaryAction ? <button className="inline-flex min-h-9 items-center text-xs text-orange-600 disabled:opacity-50" disabled={busy} onClick={() => run(workspace, workspace.primaryAction!)}><WorkspaceText text={pendingId === workspace.id ? "Opening…" : "Switch"} /></button> : null}
+              {shortAddress ? <span>{shortAddress}</span> : null}
+            </div>
+            {managing && salon ? canToggle ? (
+              <button type="button" role="switch" aria-checked={active} aria-label={__vt(`Salon activity for ${workspace.label}`)} disabled={busy}
+                onClick={() => setPanel({ type: "activity", workspace })}
+                className="inline-flex min-h-9 items-center gap-2 text-xs text-zinc-600 disabled:opacity-50">
+                <span aria-hidden="true" className={`h-2 w-2 rounded-full ${active ? "bg-teal-600" : "bg-zinc-400"}`} />
+                <WorkspaceText text={active ? "Active" : "Temporarily paused"} /><span aria-hidden="true">⌄</span>
               </button>
-            ) : null}
+            ) : <span className="block py-1 text-xs text-zinc-500"><WorkspaceText text={closed ? "Permanently closed" : active ? "Active" : "Temporarily paused"} /></span> : null}
           </div>
         </div>
-        <nav
-          aria-label={`Shortcuts for ${workspace.label}`}
-          className="mt-1 flex flex-wrap items-center gap-x-4 sm:pl-14"
-        >
-          {managing && workspace.roleCode === "OWNER" ? (
-            <Link
-              href="/pos/portable"
-              prefetch={false}
-              className={textLink}
-              title="Open Portable using your salon?s Portable ID and access code"
-            >
-              Portable
-            </Link>
-          ) : null}
-          {links.slice(0, 3).map((link) => (
-            <a key={link.label} className={textLink} href={link.href}>
-              {link.label}
-            </a>
-          ))}
-          {links.length > 3 ? (
-            <details className="group">
-              <summary className={`${textLink} cursor-pointer`}>
-                More settings
-              </summary>
-              <div className="flex flex-wrap gap-x-4">
-                {links.slice(3).map((link) => (
-                  <a key={link.label} className={textLink} href={link.href}>
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </details>
-          ) : null}
+        <nav aria-label={__vt(`Shortcuts for ${workspace.label}`)} className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-0" data-place-shortcuts>
+          {managing && workspace.roleCode === "OWNER" ? <Link href="/pos/portable" prefetch={false} className={textLink} title={__vt("Open Portable using your salon’s Portable ID and access code")}><WorkspaceText text="Portable" /></Link> : null}
+          {links.map(link => <a key={link.label} className={textLink} href={link.href}><WorkspaceText text={link.label} /></a>)}
+          <button className={textLink} disabled={busy} onClick={() => setPanel({ type: "salon", workspace })}><WorkspaceText text="Details" /></button>
         </nav>
       </div>
     );
   }
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-5 sm:px-6 lg:px-8">
-      <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <h1 className="text-xl font-bold tracking-tight text-[#302a28]">
-          My Place
+    <main className="mx-auto grid w-full max-w-6xl gap-2 bg-zinc-50 pb-4 sm:px-6 lg:px-8">
+      <header className="flex min-w-0 items-center justify-between gap-3 bg-white px-4 py-3">
+        <h1 className="shrink-0 text-sm font-medium text-zinc-950">
+          <WorkspaceText text="My Place" />
         </h1>
-        <div className="relative w-full sm:max-w-xs">
+        <div className="relative min-w-0 flex-1 sm:max-w-xs">
           <input
-            aria-label="Search My Place"
+            aria-label={__vt("Search My Place")}
             className={`${inputClass} pr-16`}
-            placeholder="Search your places…"
+            placeholder={__vt("Search your places…")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           {query ? (
             <button
-              aria-label="Clear search"
+              aria-label={__vt("Clear search")}
               className="absolute inset-y-0 right-3 text-xs font-semibold text-zinc-600"
               onClick={() => setQuery("")}
             >
-              Clear
+              <WorkspaceText text="Clear" />
             </button>
           ) : null}
         </div>
@@ -336,98 +262,45 @@ export function MyPlaceClient({
           timeZone: "UTC",
         })}
       />
-      {notice?.error ? <QueryErrorDialog key={notice.text} message={notice.text} title="Could not complete this action" primaryLabel="Got it" /> : notice ? <Notice>{notice.text}</Notice> : null}
+      {notice?.error ? <QueryErrorDialog key={notice.text} message={notice.text} title={__vt("Could not complete this action")} primaryLabel="Got it" /> : notice ? <Notice><WorkspaceText text={notice.text} /></Notice> : null}
       {!requests.ok ? (
         <Notice error>
-          Requests could not be loaded. {requests.message}{" "}
+          <WorkspaceText text="Requests could not be loaded." /> <WorkspaceText text={requests.message} />{" "}
           <button className="ml-2 underline" onClick={() => router.refresh()}>
-            Retry
+            <WorkspaceText text="Retry" />
           </button>
         </Notice>
       ) : null}
 
       <Section
-        title="Staff"
-        count={staff.length}
-        action={
-          <div className="flex items-center gap-4">
-            <button
-              className={button}
-              onClick={() => setPanel({ type: "apply" })}
-            >
-              Find a salon
-            </button>
-          </div>
-        }
-      >
-        {staff.length ? (
-          <div className="divide-y divide-[#f1ebe6]">{staff.map(salonRow)}</div>
-        ) : (
-          <p className="px-5 py-3 text-sm text-zinc-500">
-            {normalized
-              ? "No matching staff workplaces."
-              : "Not working at a salon yet? Find a salon to apply."}
-          </p>
-        )}
-        {requestRows(staffRequests)}
-        {historyRequests.length ? (
-          <details className="border-t border-[#f1ebe6] px-5 py-2">
-            <summary className={`${textLink} cursor-pointer`}>
-              Connection history ({historyRequests.length})
-            </summary>
-            {historyRequests.map((r) => (
-              <RequestRow
-                key={r.id}
-                request={r}
-                disabled={busy}
-                pending={false}
-                onAction={requestAction}
-              />
-            ))}
-          </details>
-        ) : null}
-      </Section>
-
-      <Section
-        title="Salon / Business"
+        title={__vt("Businesses")}
         count={owners.length + ownerInvites.length}
         action={
           createAccounts.length ? (
             <button
-              className={button}
+              className="min-h-11 text-xs text-orange-600"
               onClick={() => setPanel({ type: "create" })}
             >
-              ＋ Create salon
+              <WorkspaceText text="＋ Create salon" />
             </button>
           ) : null
         }
       >
         {owners.length ? (
-          [...new Set(owners.map((w) => w.accountId))].map((accountId) => (
-            <div key={accountId ?? "salons"}>
-              {accounts.length > 1 ? (
-                <p className="bg-[#fcfaf8] px-5 py-1.5 text-xs font-semibold text-zinc-500">
-                  {owners.find((w) => w.accountId === accountId)?.accountName}
-                </p>
-              ) : null}
-              <div className="divide-y divide-[#f1ebe6]">
-                {owners.filter((w) => w.accountId === accountId).map(salonRow)}
-              </div>
-            </div>
-          ))
+          <div className="divide-y divide-[#f1ebe6]">{owners.map(salonRow)}</div>
         ) : (
           <p className="px-5 py-3 text-sm text-zinc-500">
-            {normalized
+            <WorkspaceText text={normalized
               ? "No matching salons."
-              : "Your owned and managed salons will appear here."}
+              : "Your owned and managed salons will appear here."} />
           </p>
         )}
-        {ownerInvitesError ? <Notice error>{ownerInvitesError} <button type="button" className="ml-2 underline" onClick={() => router.refresh()}>Retry</button></Notice> : null}
+        {ownerInvitesError ? <Notice error><WorkspaceText text={ownerInvitesError} /> <button type="button" className="ml-2 underline" onClick={() => router.refresh()}><WorkspaceText text="Retry" /></button></Notice> : null}
         {ownerInvites.filter((invite) => !normalized || normalizeSearchText(invite.salonName).includes(normalized)).map((invite) => (
           <div key={invite.id} className="border-t border-[#f1ebe6] px-5 py-4">
             <p className="text-sm font-semibold">{invite.salonName}</p>
-            <p className="mt-1 text-sm text-zinc-500">{invite.mode === "transfer_ownership" ? "Ownership transfer · Needs acceptance" : "Co-owner invitation · Needs acceptance"}</p>
-            {invite.message ? <p className="mt-1 text-sm">{invite.message}</p> : null}
+            <p className="mt-1 text-sm text-zinc-500"><WorkspaceText text={invite.mode === "transfer_ownership" ? "Ownership transfer · Needs acceptance" : "Co-owner invitation · Needs acceptance"} /></p>
+            {invite.message ? <p className="mt-1 text-sm"><WorkspaceText text={invite.message} /></p> : null}
             <div className="mt-3 flex gap-2">
               {(["accept", "ignore"] as const).map((response) => (
                 <button key={response} className={response === "accept" ? primaryButton : button} disabled={busy} onClick={() => {
@@ -440,7 +313,7 @@ export function MyPlaceClient({
                       else complete(response === "accept" ? "Owner invitation accepted." : "Owner invitation ignored.");
                     } finally { lock.current = false; }
                   });
-                }}>{response === "accept" ? "Accept" : "Ignore"}</button>
+                }}><WorkspaceText text={response === "accept" ? "Accept" : "Ignore"} /></button>
               ))}
             </div>
           </div>
@@ -449,7 +322,7 @@ export function MyPlaceClient({
         {accounts.length ? (
           <details className="border-t border-[#f1ebe6] px-5 py-2">
             <summary className={`${textLink} cursor-pointer`}>
-              Business accounts & access
+              <WorkspaceText text="Shared access & invitations" />
             </summary>
             <div className="divide-y divide-[#f1ebe6]">
               {accounts.filter(matches).map((w) => (
@@ -472,6 +345,48 @@ export function MyPlaceClient({
           </details>
         ) : null}
       </Section>
+      <Section
+        title={__vt("Staff")}
+        count={staff.length}
+        action={
+          <div className="flex items-center gap-4">
+            <button
+              className="min-h-11 text-xs text-orange-600"
+              onClick={() => setPanel({ type: "apply" })}
+            >
+              <WorkspaceText text="Find & apply to a salon" />
+            </button>
+          </div>
+        }
+      >
+        {staff.length ? (
+          <div className="divide-y divide-[#f1ebe6]">{staff.map(salonRow)}</div>
+        ) : (
+          <p className="px-5 py-3 text-sm text-zinc-500">
+            <WorkspaceText text={normalized
+              ? "No matching staff workplaces."
+              : "Not working at a salon yet? Find a salon to apply."} />
+          </p>
+        )}
+        {requestRows(staffRequests)}
+        {historyRequests.length ? (
+          <details className="border-t border-[#f1ebe6] px-5 py-2">
+            <summary className={`${textLink} cursor-pointer`}>
+              <WorkspaceText text="Connection history (" />{historyRequests.length})
+            </summary>
+            {historyRequests.map((r) => (
+              <RequestRow
+                key={r.id}
+                request={r}
+                disabled={busy}
+                pending={false}
+                onAction={requestAction}
+              />
+            ))}
+          </details>
+        ) : null}
+      </Section>
+
       {panel?.type === "create" ? (
         <CreateSalonPanel
           accounts={createAccounts}

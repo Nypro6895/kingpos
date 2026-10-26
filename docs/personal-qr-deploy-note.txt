@@ -1,0 +1,92 @@
+PERSONAL QR — 2026-10-25
+Change ID: personal-qr-20261025
+Depends on: staff-scan-20261025 (frozen event 6fe7a780-de60-48a4-add8-2a6b805bdc56).
+Implementation complete locally; NOT DEPLOYED. Integrate into the current production baseline.
+Follow-up: qr-full-flow-20261025 now validates the integrated database and fixes
+receipt numbering, consumed Ready state and the existing eight-service limit.
+Deploy together with Staff Scan and Personal QR, once; see docs/qr-full-flow-deploy-note.txt.
+
+Customer flow
+- Personal bottom Notifications becomes QR; existing notifications remain available.
+- My QR initially shows the opaque Personal ID. No Staff connection tab is added.
+- Scan the paired salon check-in screen QR, choose services and Check in using
+  the signed-in account. Do not repeat the customer's own identity/contact fields.
+- Existing anonymous Phone Checkin stays available when that plugin is installed.
+  Check-in Receipt alone enables authenticated Personal check-in, without
+  enabling anonymous Phone Checkin as a side effect.
+- Each visit provides its existing check-in QR for Staff. Staff may also scan
+  the Personal ID when exactly one unpaid visit exists in their own salon.
+- POS can send Ready with optional staff/chair; the app notification opens the
+  exact visit. Ready is neither Working nor a financial/turn mutation.
+- Show requested services, Working staff and saved amounts. Refresh visible
+  status every five seconds and on resume/reconnect; offline keeps last saved
+  values with a clear indicator, without submitting new check-ins offline.
+- After settlement, show the same canonical closed receipt used by History,
+  including tip, discount and tax. Expire the visit QR; retain Personal ID.
+  History and View receipt link to existing Activity and receipt routes.
+- Teal is primary; orange is reserved for Ready and important status accents.
+  New interface text follows the existing English/Vietnamese mode.
+
+Owner adds Staff
+- Add Staff offers Scan personal QR. After scan, the manual forms are hidden;
+  only the scanned user's name, masked contacts and Cancel / Send remain.
+- Cancel has no write. Send reuses a unique verified-contact unlinked staff
+  profile, preserving that profile's history, or prepares a pending profile.
+  Ambiguous or unverified-contact collisions stop without merging accounts.
+- Sending twice reuses the existing pending request. It does not immediately
+  give Staff/POS access. Existing staff_salon_connection_requests notification
+  and Accept/Decline logic completes the connection, with the same profile ID.
+- Personal ID is an expiring opaque identifier, not a credential. Account,
+  salon and server permissions are checked at each action.
+
+POS, booking, identity and history integration
+- Migration: supabase/migrations/20261025190000_personal_qr.sql.
+  Apply after Staff Scan and existing customer identity, visit requested-services,
+  arrival booking matching, activity receipt and staff invitation migrations.
+- Reuse the installed visit creation, requested services, booking arrival/status
+  event, account/customer linkage and receipt history functions. No second
+  financial ticket or independent history is created by this feature.
+- Verified, uniquely matched existing customer history may link to the account.
+  Shared phones or distinct personal accounts are never automatically merged.
+- Check-in requests are idempotent, even if the response is lost until after
+  payment. An intentional new request after the prior paid visit makes a new visit.
+- Existing Working/Holding, Done/turn count and POS authority come from Staff
+  Scan. POS can edit/settle while staff is offline. Reconnect removes settled
+  work; stale staff writes cannot resurrect it. Portable POS keeps its existing
+  signed capability checks, including Ready.
+- Salon check-in screen refreshes its paired entry QR without requiring reload.
+- History browser regression now waits for the asynchronous dialog close event
+  cleanup before checking restored body scrolling; its assertion is retained.
+
+Validation and remaining release checks
+- See artifacts/personal-qr-20261025/tests-final.log, lint.log and build-final.log.
+- SQL tests execute actual migration functions in isolated PGlite, including
+  installed visit, arrival-booking, receipt-read and invitation acceptance code.
+  The later full-schema suite additionally executes all 290 migrations with
+  real Auth/PostgREST/RLS and the actual receipt/earnings core in isolated
+  Supabase. See artifacts/qr-full-flow-20261025/full-schema.log and its fixture
+  evidence; no payment provider or production database was used.
+- Browser tests render actual Personal, Staff, Owner connector and POS components
+  with mocked network actions. Verify status, prices, offline/reconnect, account
+  reset, history/receipt links and responsive layouts. PNG evidence is alongside.
+- Scoped lint has no errors; the existing Staff page unused-disable warning is
+  outside this change. Fresh isolated production build includes TypeScript.
+- Earlier expanded diagnostics: customer-visits-runtime could not authenticate
+  its linked DB CLI (AccessTokenRequiredError); it made no successful DB call.
+  This diagnostic gap is now covered by the isolated full-schema suite; do not
+  retry destructive tests against production. Baseline assembly remains pending.
+- No environment files were copied into the build snapshot. No production
+  migration, live database mutation, real payment, external notification delivery,
+  email/SMS, deployment or native upload was performed. Assertions use local data.
+- Physical iPhone Safari/WKWebView camera permission, QR reading, keyboard,
+  background/resume and linked device/account behavior still require device QA.
+  No native source or bridge changes were made; assess native build only if
+  actual device testing or release source assembly requires it.
+
+Release handoff
+- Frozen own source, exact before scope, SHA256s and change.patch live under
+  artifacts/personal-qr-20261025. Use only this delta, plus its Staff Scan
+  dependency; shared source files include unrelated work from other chats.
+- Do not deploy this dirty checkout or copy whole shared modules onto live.
+- Register as needs-integration until merged and verified against the exact
+  current production baseline with compatible migrations and physical device QA.

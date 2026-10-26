@@ -1,4 +1,6 @@
 import "server-only";
+import { getSalonDiscoveryReadiness } from "@/lib/salon-publication-readiness";
+export { getSalonDiscoveryReadiness, type SalonDiscoveryReadiness, type SalonDiscoveryReadinessItem } from "@/lib/salon-publication-readiness";
 
 import {
   getCurrentBusinessContext,
@@ -25,30 +27,6 @@ export const SALON_SETTING_PERMISSIONS = {
   manage: "salon_settings.manage",
 } as const;
 
-type DiscoverySettingSnapshot = {
-  address_line1?: string | null;
-  business_description?: string | null;
-  business_name?: string | null;
-  city?: string | null;
-  phone?: string | null;
-  postal_code?: string | null;
-  state?: string | null;
-};
-
-export type SalonDiscoveryReadinessItem = {
-  complete: boolean;
-  href: string;
-  id: string;
-  label: string;
-};
-
-export type SalonDiscoveryReadiness = {
-  activeServiceCount: number;
-  canEnable: boolean;
-  items: SalonDiscoveryReadinessItem[];
-  missingLabels: string[];
-};
-
 function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
     throw new Error("Open Business settings from a Business workspace.");
@@ -65,83 +43,6 @@ function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   return {
     Account: context.currentAccount,
     salon: context.currentSalon,
-  };
-}
-
-function hasText(value: string | null | undefined) {
-  return Boolean(value?.trim());
-}
-
-export function getSalonDiscoveryReadiness(input: {
-  activeServiceCount: number;
-  salonStatus?: string | null;
-  setting: DiscoverySettingSnapshot;
-}): SalonDiscoveryReadiness {
-  const items: SalonDiscoveryReadinessItem[] = [
-    {
-      complete: input.salonStatus === "active",
-      href: "/salons",
-      id: "salon-status",
-      label: "Active salon location",
-    },
-    {
-      complete: hasText(input.setting.business_name),
-      href: "#business-information",
-      id: "business-name",
-      label: "Public business name",
-    },
-    {
-      complete: hasText(input.setting.phone),
-      href: "#business-information",
-      id: "phone",
-      label: "Public phone",
-    },
-    {
-      complete: hasText(input.setting.address_line1),
-      href: "#business-information",
-      id: "address",
-      label: "Street address",
-    },
-    {
-      complete: hasText(input.setting.city),
-      href: "#business-information",
-      id: "city",
-      label: "City",
-    },
-    {
-      complete: hasText(input.setting.state),
-      href: "#business-information",
-      id: "state",
-      label: "State",
-    },
-    {
-      complete: hasText(input.setting.postal_code),
-      href: "#business-information",
-      id: "postal-code",
-      label: "ZIP code",
-    },
-    {
-      complete: hasText(input.setting.business_description),
-      href: "#business-information",
-      id: "description",
-      label: "Public description",
-    },
-    {
-      complete: input.activeServiceCount > 0,
-      href: "/services",
-      id: "active-service",
-      label: "At least one active service",
-    },
-  ];
-  const missingLabels = items
-    .filter((item) => !item.complete)
-    .map((item) => item.label);
-
-  return {
-    activeServiceCount: input.activeServiceCount,
-    canEnable: missingLabels.length === 0,
-    items,
-    missingLabels,
   };
 }
 

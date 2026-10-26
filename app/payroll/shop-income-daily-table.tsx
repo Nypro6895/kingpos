@@ -1,5 +1,7 @@
 "use client";
+import styles from "./payroll-mobile.module.css";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { Fragment, useMemo, useState } from "react";
 import type {
   PayrollCorrectionListItem,
@@ -862,7 +864,7 @@ function DetailMetric({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <dt className="text-zinc-500">{label}</dt>
+      <dt className="text-zinc-500"><WorkspaceText text={label} /></dt>
       <dd className={`whitespace-nowrap font-medium text-zinc-800 ${className}`}>
         {value}
       </dd>
@@ -871,35 +873,37 @@ function DetailMetric({
 }
 
 function DailyDetailsSubRow({ row }: { row: PayrollShopDailyRow }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <tr>
       <td className="bg-zinc-50/80 px-4 py-3" colSpan={5}>
         <div className="grid gap-5 text-xs md:grid-cols-2">
           <section>
-            <h3 className="mb-2 font-semibold text-zinc-800">Reconciliation</h3>
+            <h3 className="mb-2 font-semibold text-zinc-800"><WorkspaceText text="Reconciliation" /></h3>
             <dl className="grid gap-1.5">
-              <DetailMetric label="Actual" value={formatOptionalMoney(row.actualIncome)} />
-              <DetailMetric label="POS" value={formatMoney(row.posIncome)} />
+              <DetailMetric label={__vt("Actual")} value={formatOptionalMoney(row.actualIncome)} />
+              <DetailMetric label={__vt("POS")} value={formatMoney(row.posIncome)} />
               <DetailMetric
                 className={differenceClass(row)}
-                label="Difference"
+                label={__vt("Difference")}
                 value={formatDifference(row)}
               />
             </dl>
           </section>
           <section>
-            <h3 className="mb-2 font-semibold text-zinc-800">Payroll impact</h3>
+            <h3 className="mb-2 font-semibold text-zinc-800"><WorkspaceText text="Payroll impact" /></h3>
             <dl className="grid gap-1.5">
               <DetailMetric
-                label="Staff Production"
+                label={__vt("Staff Production")}
                 value={formatMoney(row.staffProduction)}
               />
               <DetailMetric
-                label="Staff Commission Pay"
+                label={__vt("Staff Commission Pay")}
                 value={formatMoney(row.staffCommissionPay)}
               />
-              <DetailMetric label="Tips" value={formatMoney(row.tips)} />
-              <DetailMetric label="Shop Share" value={formatMoney(row.shopShare)} />
+              <DetailMetric label={__vt("Tips")} value={formatMoney(row.tips)} />
+              <DetailMetric label={__vt("Shop Share")} value={formatMoney(row.shopShare)} />
             </dl>
           </section>
         </div>
@@ -917,7 +921,7 @@ function CorrectionEventList({ events }: { events: CorrectionEvent[] }) {
     <ul className="grid gap-2">
       {events.map((event) => (
         <li
-          className="grid gap-2 rounded-md border border-amber-100 bg-white px-3 py-2 text-xs shadow-sm md:grid-cols-[11rem_1fr_auto] md:items-start"
+          className="grid min-w-0 gap-2 border-b border-amber-100 bg-white px-3 py-2 text-xs md:grid-cols-[11rem_1fr_auto] md:items-start"
           key={event.id}
         >
           <div className="whitespace-nowrap text-zinc-600">{event.correctedAt}</div>
@@ -926,17 +930,17 @@ function CorrectionEventList({ events }: { events: CorrectionEvent[] }) {
               {correctionEventDetails(event)}
             </div>
             {event.reason ? (
-              <div className="mt-1 text-zinc-500">Reason: {event.reason}</div>
+              <div className="mt-1 text-zinc-500"><WorkspaceText text="Reason:" /> {event.reason}</div>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 md:justify-end">
-            <span className="whitespace-nowrap text-zinc-600">by {event.by}</span>
+            <span className="whitespace-nowrap text-zinc-600"><WorkspaceText text="by" /> {event.by}</span>
             <span
               className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${statusClass(
                 event.status,
               )}`}
             >
-              {event.status}
+              <WorkspaceText text={event.status} />
             </span>
           </div>
         </li>
@@ -958,6 +962,8 @@ function CorrectionSubRow({ events }: { events: CorrectionEvent[] }) {
 }
 
 export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) {
+  const __vt = useWorkspaceTranslation();
+
   const [openCorrectionDates, setOpenCorrectionDates] = useState<Set<string>>(
     new Set(),
   );
@@ -1011,9 +1017,9 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+    <div className="min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
-        <h2 className="text-sm font-semibold text-zinc-950">Daily Shop Income</h2>
+        <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Daily Shop Income" /></h2>
         <label className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600">
           <input
             checked={showInactiveDays}
@@ -1021,18 +1027,47 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
             onChange={(event) => setShowInactiveDays(event.target.checked)}
             type="checkbox"
           />
-          Show inactive days
+          <WorkspaceText text="Show inactive days" />
         </label>
       </div>
-      <div className="overflow-x-auto">
+      <div className={styles.mobileDays}>
+        {visibleRows.map(({ row, correctionEvents }) => {
+          const status = statusForRow(row);
+          return <details key={row.businessDate}>
+            <summary>
+              <div className={styles.mobileDayTitle}><strong><WorkspaceText text={formatDailyDate(row.businessDate)} /></strong><span className={`rounded-full border px-2 py-1 text-xs ${statusBadgeClass(status.kind)}`}><WorkspaceText text={status.label} /></span></div>
+              <div className={styles.mobileDayAmounts}><span><WorkspaceText text="Actual" /> <strong>{formatOptionalMoney(row.actualIncome)}</strong></span><span><WorkspaceText text="POS" /> {formatMoney(row.posIncome)}</span></div>
+              {correctionEvents.length > 0 && <p className="mt-2 text-xs text-amber-800">{correctionEvents.length} <WorkspaceText text="corrections" /></p>}
+            </summary>
+            <div className={styles.mobileDayBody}>
+              <dl className={styles.ledger}>
+                <DetailMetric label="Cash" value={formatOptionalMoney(row.cashAmount)} />
+                <DetailMetric label="Credit card" value={formatOptionalMoney(row.creditCardAmount)} />
+                <DetailMetric label="Other" value={formatOptionalMoney(row.otherAmount)} />
+                <DetailMetric label="Difference" value={formatDifference(row)} className={differenceClass(row)} />
+              </dl>
+              <h3 className="text-sm font-semibold"><WorkspaceText text="Payroll impact" /></h3>
+              <dl className={styles.ledger}>
+                <DetailMetric label="Staff Production" value={formatMoney(row.staffProduction)} />
+                <DetailMetric label="Staff Commission Pay" value={formatMoney(row.staffCommissionPay)} />
+                <DetailMetric label="Tips" value={formatMoney(row.tips)} />
+                <DetailMetric label="Shop Share" value={formatMoney(row.shopShare)} />
+              </dl>
+              {correctionEvents.length > 0 && <details><summary><WorkspaceText text="Correction history" /></summary><div className="p-3"><CorrectionEventList events={correctionEvents} /></div></details>}
+            </div>
+          </details>;
+        })}
+        {visibleRows.length === 0 && <p className="py-6 text-sm text-zinc-500"><WorkspaceText text="No active shop income days in this period." /></p>}
+      </div>
+      <div className={`${styles.desktopOnly} overflow-x-auto`}>
         <table className="min-w-full divide-y divide-zinc-200 text-sm">
           <thead className="bg-zinc-50 text-left text-xs font-semibold text-zinc-500">
             <tr>
-              <th className="whitespace-nowrap px-4 py-3">Date</th>
-              <th className="whitespace-nowrap px-4 py-3 text-right">Actual</th>
-              <th className="whitespace-nowrap px-4 py-3 text-right">POS</th>
-              <th className="whitespace-nowrap px-4 py-3">Status</th>
-              <th className="whitespace-nowrap px-4 py-3">Corrections</th>
+              <th className="whitespace-nowrap px-4 py-3"><WorkspaceText text="Date" /></th>
+              <th className="whitespace-nowrap px-4 py-3 text-right"><WorkspaceText text="Actual" /></th>
+              <th className="whitespace-nowrap px-4 py-3 text-right"><WorkspaceText text="POS" /></th>
+              <th className="whitespace-nowrap px-4 py-3"><WorkspaceText text="Status" /></th>
+              <th className="whitespace-nowrap px-4 py-3"><WorkspaceText text="Corrections" /></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -1054,13 +1089,13 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
                         aria-expanded={isDetailsOpen}
                         className="inline-flex items-center gap-2 rounded-md text-left font-medium text-zinc-950 hover:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                         onClick={() => toggleDetailDate(row.businessDate)}
-                        title="Show daily details"
+                        title={__vt("Show daily details")}
                         type="button"
                       >
                         <span className="w-3 text-xs text-zinc-500" aria-hidden>
                           {isDetailsOpen ? "v" : ">"}
                         </span>
-                        {formatDailyDate(row.businessDate)}
+                        <WorkspaceText text={formatDailyDate(row.businessDate)} />
                       </button>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
@@ -1075,7 +1110,7 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
                           status.kind,
                         )}`}
                       >
-                        {status.label}
+                        <WorkspaceText text={status.label} />
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -1088,9 +1123,9 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
                         >
                           <span aria-hidden>{isCorrectionsOpen ? "v" : ">"}</span>
                           {correctionEvents.length}{" "}
-                          {correctionEvents.length === 1
+                          <WorkspaceText text={correctionEvents.length === 1
                             ? "correction"
-                            : "corrections"}
+                            : "corrections"} />
                         </button>
                       ) : (
                         <span className="text-zinc-400">{"\u2014"}</span>
@@ -1110,7 +1145,7 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
                   className="px-4 py-8 text-center text-sm text-zinc-500"
                   colSpan={5}
                 >
-                  No active shop income days in this period.
+                  <WorkspaceText text="No active shop income days in this period." />
                 </td>
               </tr>
             ) : null}

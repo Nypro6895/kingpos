@@ -1,0 +1,124 @@
+{
+  "kind": "change",
+  "changeId": "admin-campaign-plugin-20261018",
+  "status": "ready",
+  "summary": "Separate Plugins and System, consolidate Campaigns, add server-side search/date/status pagination and audited inline ad operations. Preserve credit math, historical terms, source posts and payment consent.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-icon.tsx",
+    "app/(app)/admin/_components/admin-navigation.tsx",
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/(app)/admin/_components/campaign-review-alerts.tsx",
+    "app/(app)/admin/advertising/owner-campaign-settings.tsx",
+    "app/(app)/admin/advertising/owner-settings-actions.ts",
+    "app/(app)/admin/advertising/page.tsx",
+    "app/(app)/admin/advertising/reviews/page.tsx",
+    "app/(app)/admin/market/credits/actions.ts",
+    "app/(app)/admin/market/credits/page.tsx",
+    "app/(app)/admin/market/credits/workspace.tsx",
+    "app/(app)/admin/market/page.tsx",
+    "app/(app)/admin/market/system-workspace.tsx",
+    "app/(app)/admin/market/system.css",
+    "app/(app)/admin/market/tax/page.tsx",
+    "app/(app)/admin/market/tax/tax-workspace.tsx",
+    "app/(app)/admin/page.tsx",
+    "app/(app)/admin/plugins/campaigns/actions.ts",
+    "app/(app)/admin/plugins/campaigns/campaign-list.tsx",
+    "app/(app)/admin/plugins/campaigns/page.tsx",
+    "app/(app)/admin/plugins/campaigns/workspace.css",
+    "app/(app)/admin/plugins/page.tsx",
+    "app/(app)/admin/system/page.tsx",
+    "lib/admin-campaign-filters.ts",
+    "supabase/migrations/20261018230000_campaign_admin_workspace.sql",
+    "tests/admin-campaign-filters.test.mjs",
+    "tests/admin-campaign-page.test.mjs",
+    "tests/admin-campaign-workspace-ui.test.mjs",
+    "tests/admin-campaign-workspace.integration.test.mjs",
+    "tests/fixtures/campaign-test-database.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\admin-campaign-plugin-20261018\\snapshot",
+    "baseCommit": "ea618840b71e35fbd54bd31532f2676d6fd895a6",
+    "branch": "codex/admin-campaign-plugin-20261018"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-campaign-plugin-20261018/web-build.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-campaign-plugin-20261018/lint.log"
+    },
+    {
+      "name": "Database historical terms, atomic refunds, stale requests and permission boundaries",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-campaign-plugin-20261018/database-tests.log"
+    },
+    {
+      "name": "Search/status/date ranges and rendered server query",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-campaign-plugin-20261018/final-tests.log"
+    },
+    {
+      "name": "Inline actions at 320/390/1280px with failures and no production writes",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/admin-campaign-plugin-20261018/ui-tests.log"
+    }
+  ],
+  "dependencies": [],
+  "notes": {
+    "migration": "20261018230000_campaign_admin_workspace.sql; validated locally, not applied to production",
+    "native": "Admin-only web routes; no bundled/native changes required",
+    "publication": "Implementation only, not deployed",
+    "preserved": [
+      "lib/campaign-credit-display.ts",
+      "lib/owner-campaign-rules.ts",
+      "lib/campaign-payments.ts",
+      "lib/owner-campaigns.ts",
+      "types/owner-campaign.ts"
+    ]
+  },
+  "occurredAt": "2026-10-18T23:07:46.109Z",
+  "id": "9481eeff-1c19-41b6-a880-b9ab0dd37daf",
+  "recordedAt": "2026-10-18T23:07:46.491Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\admin-campaign-plugin-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/_components/admin-icon.tsx": "95a9c832d67a9da2c813a764f5b46ccb450daf9beb9f6afaa8d2b1d9825d5a6e",
+    "app/(app)/admin/_components/admin-navigation.tsx": "6dcaf051a0bed439251ab3639593bef459c3086063d5ececbb1c2bafab2ee3b2",
+    "app/(app)/admin/_components/admin-ui.tsx": "0865ea641f2d82817364364651592236803f1a8a90db65996e7b943da33e1b41",
+    "app/(app)/admin/_components/campaign-review-alerts.tsx": "257f37cf0168bbbfd1b51a245c05964fc6eab17f4e0874ae9452edc825e11212",
+    "app/(app)/admin/advertising/owner-campaign-settings.tsx": "421022b93772518af19ca30524b70e80530e4b8af3b9045373d64a60e8484fb1",
+    "app/(app)/admin/advertising/owner-settings-actions.ts": "1d2a82ce81d601d71e1e2a806f3fad87093cd6a8bb7c6c5a1d33e66824e7b7b4",
+    "app/(app)/admin/advertising/page.tsx": "86f68855649eca46e596426f1bc1cf9c76181aa7e22cb3c07ce85708533e7c62",
+    "app/(app)/admin/advertising/reviews/page.tsx": "24b3207fa0b548cc3414317efc89666815f0e66387ac310c81cfbf031774b7b3",
+    "app/(app)/admin/market/credits/actions.ts": "b18c055e0a66e4769c0b3e1021ef4448ab68dde81818da7c9978376d9f571758",
+    "app/(app)/admin/market/credits/page.tsx": "e3809382a12b2e1b7db6ee45285c21cf5eb7ebc04a2a6969d0d37a1c4ffc6661",
+    "app/(app)/admin/market/credits/workspace.tsx": "3a31f908d99d215d9b6013697314ee5bb00a16b2ddf0a49560e9b9a25c440c9c",
+    "app/(app)/admin/market/page.tsx": "6f4506c60df9bf0f247e12f25027c27caf104db6ebcbbf2b1c7ae6f9f09adc8e",
+    "app/(app)/admin/market/system-workspace.tsx": "d7f791d6d2b2543029bcbd4f464738cf2ecbab922c4d09538d433c9a26388f0f",
+    "app/(app)/admin/market/system.css": "a1676c3a9a65ba7bd8c86dc8b99ae5ce54152a7a560fa7232fc53829bef32c60",
+    "app/(app)/admin/market/tax/page.tsx": "e436fd8d31bcd3e7080f2a65b0600b446dd68a12efeae73e3678a57db8353207",
+    "app/(app)/admin/market/tax/tax-workspace.tsx": "436e1468ecbd9676bb781295764c370a797ca32a755a69e8aecff9a16f3e63c3",
+    "app/(app)/admin/page.tsx": "1b5d21014a1d34050fe57952326a30be8d23354824fad2b3c4720a4d766df18a",
+    "app/(app)/admin/plugins/campaigns/actions.ts": "db2af86d5a185dc6ad0abd61e0e58b722819d93be828fb2f1331f2daeb95bf45",
+    "app/(app)/admin/plugins/campaigns/campaign-list.tsx": "b7f7076125993415a92f335ad46ec0d8394b7efa84431c38b06152aa8d40e070",
+    "app/(app)/admin/plugins/campaigns/page.tsx": "15a0db5eec3d74f855c274eef38bacef48e23d5cfa4e624e81f686a9a3103b27",
+    "app/(app)/admin/plugins/campaigns/workspace.css": "a7da02c72d385b964b13018f3f34688903e9deb2f227f6819d41b66163f471f8",
+    "app/(app)/admin/plugins/page.tsx": "2fb5c7e6af08ed3c7c410d306c897ba0b4fd5b5e2b36653e60c7c080d52cff0b",
+    "app/(app)/admin/system/page.tsx": "83d1fcfbf3696825ada35661cd598f6cb3cd5015070482733674baad1220db70",
+    "lib/admin-campaign-filters.ts": "4dd84676dc3ab1fd573c2b59ea2d93e193ac253870e1d2a24a2f7ea2d2ddcfc9",
+    "supabase/migrations/20261018230000_campaign_admin_workspace.sql": "cc88b2fe3f1b4aab29cff0594669df80cef340c7bfba6b3b424ccb6762b3b6c0",
+    "tests/admin-campaign-filters.test.mjs": "1df8062b5160dd4d6dc95f946487249dc2d8da8dabad544eb00ffa76f2571a6b",
+    "tests/admin-campaign-page.test.mjs": "b50b6d023e871aa7b929673530adcd909018f6348f74204864e8aeb546d93713",
+    "tests/admin-campaign-workspace-ui.test.mjs": "793b8f2fc3be2f3331617a2c9ba7d44a89a05810356ba451cee750f800270dd4",
+    "tests/admin-campaign-workspace.integration.test.mjs": "f8f05476ecd861b9d824bedbbe98373dc0aed32a00688fc5c8c6b33001689f64",
+    "tests/fixtures/campaign-test-database.mjs": "a8364b662a75fe3ce0e87d94247730db009b371b22be7f60d3c593b55b4f0460"
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import type {
   LumiTrustLevel,
   ReylumiTrustFact,
@@ -112,11 +113,13 @@ export function LumiTrustMark({
   size?: LumiTrustSparkSize;
   summary: ReylumiTrustSummary;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (summary.level === "empty") return null;
 
   return (
     <span
-      aria-label={summary.mark.ariaLabel}
+      aria-label={__vt(summary.mark.ariaLabel)}
       className={joinClasses(
         presentation === "spark"
           ? "inline-grid min-w-0 place-items-center rounded-full text-brand-orange"
@@ -126,7 +129,7 @@ export function LumiTrustMark({
     >
       <LumiTrustSpark interactive={false} level={summary.level} size={size} />
       {presentation === "label" ? (
-        <span className="truncate">{summary.mark.label}</span>
+        <span className="truncate"><WorkspaceText text={summary.mark.label} /></span>
       ) : null}
     </span>
   );
@@ -139,9 +142,11 @@ export function TrustFactPill({
   className?: string;
   fact: ReylumiTrustFact;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <span
-      aria-label={fact.ariaLabel}
+      aria-label={__vt(fact.ariaLabel)}
       className={joinClasses(
         "inline-flex min-w-0 items-center gap-1 rounded-full text-xs font-semibold",
         className,
@@ -152,7 +157,7 @@ export function TrustFactPill({
           &#9733;
         </span>
       ) : null}
-      <span className="truncate">{reylumiTrustFactLabel(fact)}</span>
+      <span className="truncate"><WorkspaceText text={reylumiTrustFactLabel(fact)} /></span>
     </span>
   );
 }
@@ -169,6 +174,7 @@ export function LumiTrustPopover({
   size = "sm",
   summary,
   title = "LUMI TRUST",
+  triggerLabel,
 }: {
   actionHref?: string | null;
   actionLabel?: string;
@@ -182,7 +188,10 @@ export function LumiTrustPopover({
   size?: LumiTrustSparkSize;
   summary: ReylumiTrustSummary;
   title?: string;
+  triggerLabel?: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [panelPosition, setPanelPosition] = useState({
@@ -191,7 +200,7 @@ export function LumiTrustPopover({
     visible: false,
   });
   const panelId = useId();
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLSpanElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeTimerRef = useRef<number | null>(null);
@@ -230,7 +239,7 @@ export function LumiTrustPopover({
     });
   }
 
-  function closeOnBlur(event: FocusEvent<HTMLDivElement>) {
+  function closeOnBlur(event: FocusEvent<HTMLElement>) {
     const nextTarget = event.relatedTarget;
     const root = rootRef.current;
     const panel = panelRef.current;
@@ -389,6 +398,7 @@ export function LumiTrustPopover({
               "fixed z-[90] max-h-[min(75vh,24rem)] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 text-left text-zinc-700 shadow-[0_18px_54px_rgba(24,24,27,.18)] transition-opacity",
               panelClassName,
             )}
+            data-lumi-trust-panel
             id={panelId}
             onBlur={closeOnBlur}
             onMouseEnter={openPopover}
@@ -403,11 +413,11 @@ export function LumiTrustPopover({
             }}
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-orange">
-              {title}
+              <WorkspaceText text={title} />
             </p>
             {entityLabel ? (
               <p className="mt-1 line-clamp-2 text-sm font-semibold text-zinc-950">
-                {entityLabel}
+                <WorkspaceText text={entityLabel} />
               </p>
             ) : null}
             <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-zinc-950">
@@ -416,7 +426,7 @@ export function LumiTrustPopover({
                 level={summary.level}
                 size="sm"
               />
-              <span>{summary.mark.label}</span>
+              <span><WorkspaceText text={summary.mark.label} /></span>
             </p>
             <p className="mt-1 text-xs leading-5 text-zinc-600">
               {summary.mark.detail}
@@ -433,7 +443,7 @@ export function LumiTrustPopover({
                     </span>
                     <div className="min-w-0">
                       <p className="font-semibold text-zinc-950">
-                        {row.value ? `${row.value} ${row.label}` : row.label}
+                        <WorkspaceText text={row.value ? `${row.value} ${row.label}` : row.label} />
                       </p>
                       <p className="text-zinc-600">{row.detail}</p>
                     </div>
@@ -460,7 +470,7 @@ export function LumiTrustPopover({
                   setOpen(false);
                 }}
               >
-                {actionLabel}
+                <WorkspaceText text={actionLabel} />
               </Link>
             ) : null}
           </div>,
@@ -468,11 +478,9 @@ export function LumiTrustPopover({
         )
       : null;
 
-  if (summary.level === "empty") return null;
-
   return (
     <>
-      <div
+      <span
         className={joinClasses("inline-flex min-w-0", className)}
         onBlur={closeOnBlur}
         onMouseEnter={openPopover}
@@ -483,7 +491,7 @@ export function LumiTrustPopover({
           aria-controls={open ? panelId : undefined}
           aria-expanded={open}
           aria-haspopup="dialog"
-          aria-label={`${summary.mark.ariaLabel}. Show LUMI Trust details.`}
+          aria-label={__vt(`${summary.mark.ariaLabel}. Show LUMI Trust details.`)}
           className={joinClasses(
             presentation === "spark"
               ? "grid min-h-8 min-w-8 place-items-center rounded-full text-brand-orange transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
@@ -500,11 +508,11 @@ export function LumiTrustPopover({
             level={summary.level}
             size={presentation === "spark" ? size : "xs"}
           />
-          {presentation === "label" ? (
-            <span className="truncate">{summary.mark.label}</span>
+          {triggerLabel || presentation === "label" || summary.level === "empty" ? (
+            <span className="truncate"><WorkspaceText text={triggerLabel ?? summary.mark.label} /></span>
           ) : null}
         </button>
-      </div>
+      </span>
       {panel}
     </>
   );

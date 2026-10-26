@@ -1,0 +1,84 @@
+REYLUMI — BÁO CÁO TÌM KIẾM, KHÁM PHÁ VÀ KHU VỰC
+Ngày: 09/10/2026
+
+1) Kết quả của đợt này
+
+Đã bổ sung nhận diện nhu cầu tìm tiệm hay tìm bài đăng; nhận diện khu vực trong câu tìm kiếm; chuyển GPS thành khu vực để tận dụng địa chỉ tiệm đã có; và công cụ bổ sung tọa độ theo từng lượt nhỏ. Năm thay đổi database 120031, 121031, 122031, 123031, 124031 đã được áp dụng và đăng ký lịch sử.
+
+Trạng thái phát hành giao diện: ĐÃ LIVE và được đối chiếu độc lập với alias reylumi.com.
+Deployment cuối: dpl_Gc1Pmag3gerM8zGnHot7qFD19yyo
+URL bản bất biến: https://kingpos-fuqzv1nzj-kingpos.vercel.app
+HTTPS/TLS bình thường, GET Explore trả HTTP 200 lúc 18:35:57.142 UTC ngày 09/10/2026. Lần đo đầu mất 4.914 ms (khoảng 4,91 giây); đây là một mẫu tải trang, không phải p95 hoặc kiểm thử nhiều người đồng thời.
+Kết quả trình duyệt production cuối: ĐẠT 18/18 kịch bản — 9 Chrome và 9 WebKit mô phỏng iPhone 13; không có lỗi JavaScript. Alias production vẫn trỏ đúng bản Gc1 sau kiểm thử.
+
+2) Logic tìm kiếm và vị trí
+
+Tên tiệm được ưu tiên như một tên cụ thể. Câu tìm dịch vụ hướng tới tiệm; câu tìm ý tưởng, mẫu, ảnh hoặc chủ đề hướng tới bài đăng. Người dùng có thể chọn rõ tìm tiệm hoặc bài đăng. Chủ đề bài đăng được tìm trong tiêu đề và nội dung; các từ của cụm tìm kiếm phải cùng khớp, rồi mới lọc vùng và xếp hạng tập ứng viên giới hạn. Không dùng bài không liên quan để lấp đầy kết quả.
+
+Khu vực chủ động chọn có ưu tiên cao nhất. Khu vực trong câu tìm kiếm được nhận diện trước khi dùng vị trí ngữ cảnh. Khi chưa có khu vực cụ thể, hệ thống có thể dùng GPS được cấp quyền, khu vực hoạt động đủ tin cậy hoặc khu vực đã lưu. Không coi một lần đi làm hay sử dụng dịch vụ là nơi cư trú. Thành phố trùng tên giữa nhiều tiểu bang được xác minh qua dữ liệu công khai và có lựa chọn khu vực; tên tiệm trùng với từ chỉ địa điểm không bị tự động biến thành bộ lọc sai.
+
+Ví dụ thực tế đã kiểm tra: nhập riêng “Milwaukee” trả 12 tiệm thuộc nhóm A, không có lỗi. Tên thành phố không còn bắt buộc phải khớp trong tên tiệm. City/state/ZIP sử dụng các trường địa chỉ đã có và chỉ mục, không cần tạo bảng riêng cho từng tiểu bang.
+
+GPS hiện được chuyển thành thành phố/tiểu bang bằng dịch vụ Census khi chưa cấu hình MapTiler. Census không trả ZIP trong lần tra khu vực này nên hệ thống không tự bịa ZIP. Phạm vi hiện hỗ trợ 50 tiểu bang Mỹ và DC. Khi không xác định được khu vực, người dùng vẫn có thể chọn địa điểm thủ công.
+
+Điểm quan trọng: biết “tiệm thuộc Milwaukee” khác với biết “tiệm cách tôi 2 dặm”. Database dùng địa chỉ để gom vùng; chỉ tiệm có tọa độ hợp lệ mới có khoảng cách thật. Khi kết hợp khu vực đã xác minh với GPS, hệ thống giữ GPS thật để tính khoảng cách cho những tiệm đã có tọa độ. Tiệm thiếu tọa độ không được gán tâm ZIP/thành phố hoặc quảng cáo một khoảng cách giả.
+
+3) Bổ sung tọa độ theo từng lượt nhỏ
+
+Đã thử Census trên 5 địa chỉ công khai, chưa được claim: cả 5 có kết quả, 4 đạt gate tự động; 1 địa chỉ dạng lưới Wisconsin được giữ lại để duyệt riêng. Sau đó một lượt production riêng gồm 5 địa chỉ đã áp dụng 3 kết quả đạt chuẩn và từ chối 2 kết quả do định dạng địa chỉ/tên đường không đủ khớp. Chưa chạy toàn bộ danh bạ và chưa cài lịch chạy tự động.
+
+Worker kiểm tra tối đa 256 ID ứng viên, thêm 1 ID để xác định còn trang sau; chỉ xử lý tối đa 5 địa chỉ mỗi lượt, tuần tự và cách nhau ít nhất 1 giây. Mặc định chỉ kiểm tra, không ghi. Không chạy geocoder trong yêu cầu Explore/search, không gọi dịch vụ trả phí hàng loạt.
+
+Trước khi ghi, hệ thống kiểm tra lại địa chỉ chuẩn hóa, trạng thái công khai, claim, suppression và tọa độ đang có. Tiệm đã bị ẩn/xóa hoặc đã có pin không được ghi đè. Lease và dấu vân tay địa chỉ ngăn kết quả cũ ghi lên một địa chỉ mới. Nếu chủ tiệm đang chỉnh sửa, worker nhường ngay; không chờ khóa, không tự gọi lại provider. Lỗi tạm thời được giãn lần thử và giới hạn tối đa 3 lần.
+
+Khi tra khu vực GPS thất bại, giao diện xóa tọa độ/kết quả tạm thời và phục hồi vùng trước đó; thành phố mới người dùng gõ vẫn được gửi qua đường tìm kiếm địa chỉ. Khi đã tra được vùng nhưng truy vấn tiệm thất bại, lỗi truy vấn được phân biệt với lỗi định vị. Bản cuối còn xóa danh sách Near You cũ ngay khi bắt đầu truy vấn vị trí mới, tránh giữ thẻ của vùng cũ dưới vùng mới nếu yêu cầu sau đó thất bại.
+
+Tọa độ Census là nội suy theo đoạn đường, không phải bằng chứng đã xác nhận đúng cửa/rooftop. Suite vẫn giữ nguyên trong địa chỉ và dấu vân tay. Đây là bổ sung dữ liệu vị trí, không xác minh chủ sở hữu hay sự tồn tại thực tế của doanh nghiệp.
+
+Kiểm tra chỉ đọc sau lượt ghi đã hoàn tất bằng hai đối chiếu độc lập REST và SELECT join SQL production: 3/3 tiệm có tọa độ location khớp dữ liệu Explore; 3/3 vẫn công khai và chưa claim; 3/3 địa chỉ chuẩn hóa khớp dấu vân tay trước khi geocode; 3/3 job thành công và ghi nguồn nội suy Census. SQL cũng kiểm tra suppression theo listing và định danh nhập liệu; all_checks_pass = true. Các bước đối chiếu không ghi dữ liệu.
+
+Bằng chứng chỉ chứa số lượng/boolean:
+work/explore-read-model/directory-geocode-production-rest-proof.json
+work/explore-read-model/directory-geocode-production-proof.sql
+work/explore-read-model/directory-geocode-production-sql-proof.json
+
+4) Đo hiệu năng và kiểm thử
+
+Tìm chủ đề trên PostgreSQL local: 100.000 tiệm, 1.000.000 bài và 1.000.000 dòng chỉ mục từ khóa; 21 nhóm đo, 32 mẫu/nhóm, mức đồng thời 1/8/16. Không có lỗi hoặc kết quả trùng trong ma trận này. Ở mức đồng thời 16, p95 trang đầu của các nhánh có kết quả khoảng 262–421 ms; trang tiếp khoảng 153–246 ms. Các trường hợp không có chủ đề trả rỗng rõ ràng, không bị biến thành lỗi hệ thống.
+
+Nhận diện tên tiệm/khu vực trên 1.000.000 salon documents: 20 mẫu tuần tự/nhánh. p95 thành phố duy nhất 30,95 ms; tên tiệm chính xác 2,28 ms; thành phố không có dữ liệu 15,61 ms; thành phố trùng tên có tiểu bang ưu tiên 11,22 ms; thành phố bị giới hạn một tiểu bang 1,33 ms. Kết quả gợi ý tối đa 8 khu vực; các truy vấn tên/thành phố lấy 8 dòng qua chỉ mục, không sắp xếp toàn bộ dữ liệu.
+
+Worker có 15 kiểm thử đạt, ESLint và TypeScript đạt. Kiểm thử PostgreSQL với hai kết nối thật xác nhận lease không trùng, giữ pin của chủ tiệm, địa chỉ đổi làm kết quả cũ bị loại và nhường khóa trong khoảng 1,45 ms ở mẫu đã đo. Truy vấn chọn ID trên fixture 1 triệu tiệm dùng Index Only Scan, đọc 257 dòng, mất 0,214 ms trong mẫu plan.
+
+Riêng bản sửa recovery/GPS và UI có 7/7 kiểm thử đạt, cùng lint đúng phạm vi thay đổi. Bản giao diện đầu của đợt này đã build thành công: biên dịch khoảng 48 giây, TypeScript khoảng 80 giây, tạo 158 trang. Bản cuối Gc1 đã build thành công với biên dịch 35,7 giây, TypeScript 69 giây và 158 trang, sau đó được promote và xác minh alias production.
+
+Các benchmark database ở trên là đo SQL local, không gồm mạng HTTP, Safari, ảnh/CDN hay toàn bộ bước bổ sung dữ liệu nghiệp vụ. Benchmark nhận diện khu vực dùng helper kiểm tra tồn tại theo khóa ở fixture; chưa bao gồm toàn bộ chi phí kiểm tra publication của production. Giới hạn 256 ứng viên để xếp hạng không có nghĩa mọi mục chỉ mục được đọc đều luôn là hằng số. Chưa chứng minh sức tải hàng triệu người dùng hoặc mọi phân bố dữ liệu ngoài các mẫu đã đo.
+
+5) Đối chiếu nguồn và giới hạn xác minh
+
+Nguồn bản phát hành được dựng từ baseline hiện hành 3V, giữ 6 file admin/support mới. Đã đối chiếu 8 module Explore bị lùi về snapshot cũ và khôi phục 29 file Explore đã được phát hành, sau đó thêm các thay đổi khu vực/tìm kiếm mới. Bản đầu của chuỗi này, 3ao, đã được promote. Snapshot cuối Gc1 có 1.354 file nguồn, kế thừa đúng bản đó và chỉ đổi một dòng reset danh sách Near You khi bắt đầu lấy vị trí mới. Receipt cuối đối chiếu khớp hash của 69 file overlay và 24 migration. reylumi.com hiện trỏ đúng deployment Gc1 nêu trên.
+
+Chrome và WebKit production đã đạt 18/18 kiểm tra, không có lỗi JavaScript, sử dụng HTTPS thông thường và dữ liệu/API thật. Không giả lập phản hồi tìm kiếm, bài đăng hoặc provider khu vực; chỉ chặn quảng cáo và sự kiện tương tác để tránh tạo engagement nhân tạo. Cảnh báo WebKit trong lượt harness trước xuất phát từ phạm vi mock/điều hướng, đã được xác định và sửa ở context kiểm thử; không bỏ qua hoặc lọc lỗi chưa giải thích.
+
+Các kịch bản đạt gồm GPS trả 12 kết quả đầu và 12 kết quả tiếp, không trùng và replay đúng; thành phố trong câu tìm hoặc vùng Chicago chọn thủ công đều trả 12; refresh giữ câu tìm thô; chủ đề Christmas không có bài trả 0 đúng và đổi câu tìm hoạt động; hủy yêu cầu cũ thật rồi câu “nail” mới trả 12; tọa độ London qua Census thật không được hỗ trợ và phục hồi tìm Chicago trả 12; từ chối GPS vẫn tìm thành phố được 12, ZIP được 7 và “near me” có nút xin vị trí. WebKit mô phỏng không thay thế kiểm tra trên iPhone Safari thật.
+
+Trong bộ kiểm tra chức năng nhỏ này, 24 mẫu API production đã đọc đầy đủ JSON có p50/p95 889/1.572 ms; không tính warm-up hoặc yêu cầu đã hủy. Tách nhánh: trang đầu 10 mẫu 1.019/1.656 ms; trang tiếp 4 mẫu 786/967 ms; tra khu vực 6 mẫu 130/591 ms; feed 4 mẫu 586/1.072 ms. Cả 4 mẫu feed đều trả 0 bài, nên chưa đại diện hiệu năng feed có nội dung/hydration đầy đủ. Đây là đo trong kiểm thử chức năng, không phải kiểm thử tải production hoặc sức tải nhiều người đồng thời.
+
+Tìm chủ đề hiện dựa vào từ khóa văn bản với chỉ mục tiếng Anh; chưa phải tìm kiếm hiểu nội dung ảnh/video hoặc ngữ nghĩa đa ngôn ngữ. Upload organic hiện hỗ trợ ảnh; chưa có pipeline video tự nhiên hoàn chỉnh. Bộ đo 1 triệu bài là ảnh/văn bản, không chứng minh tải video hay khả năng hoạt động toàn thế giới.
+
+Địa chỉ tiệm đã có vẫn được dùng ngay để gom khu vực. Tọa độ mới chỉ được bổ sung một lượt kiểm soát nhỏ; phần lớn danh bạ còn cần làm giàu từng bước. Dịch vụ tra khu vực bên ngoài không có SLA do ứng dụng kiểm soát; ở quy mô lớn vẫn cần giám sát quota, cache và năng lực provider.
+
+6) Hồ sơ kiểm tra
+
+work/explore-load-results/organic-native-1m.json
+work/explore-read-model/query-entity-native-1m.json
+work/explore-read-model/directory-geocode-first-production-batch.json
+work/explore-read-model/directory-geocode-native-smoke.json
+work/explore-read-model/directory-geocode-index-1m.json
+work/explore-read-model/area-search-overlay-receipt.json
+work/explore-read-model/area-search-release-receipt.json
+work/explore-read-model/area-search-production-health.json
+work/explore-read-model/organic-location-production-final/summary.json
+docs/directory-address-geocoding.md
+docs/explore-gps-area.md
+docs/explore-load-testing.md

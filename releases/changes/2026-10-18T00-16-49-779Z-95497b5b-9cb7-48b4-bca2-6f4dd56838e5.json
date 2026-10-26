@@ -1,0 +1,131 @@
+{
+  "kind": "change",
+  "changeId": "campaign-admin-20261017",
+  "status": "ready",
+  "summary": "Dedicated support ad-review permission and persistent admin alerts; Market credit purchases/activity/balances and verified reconciliation; prospective versioned campaign settings; $1 = 120 displayed credits with original balances and monetary rates preserved",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "types/platform-admin.ts",
+    "types/owner-campaign.ts",
+    "lib/owner-campaigns.ts",
+    "lib/campaign-payments.ts",
+    "lib/campaign-credit-display.ts",
+    "lib/vietnamese-campaign-copy.json",
+    "app/campaigns/actions.ts",
+    "app/campaigns/credit-panel.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "components/owner-campaign-dialog.tsx",
+    "app/(app)/admin/page.tsx",
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/(app)/admin/_components/admin-topbar.tsx",
+    "app/(app)/admin/_components/admin-navigation.tsx",
+    "app/(app)/admin/_components/campaign-review-alerts.tsx",
+    "app/(app)/admin/advertising/page.tsx",
+    "app/(app)/admin/advertising/owner-settings-actions.ts",
+    "app/(app)/admin/advertising/owner-campaign-settings.tsx",
+    "app/(app)/admin/advertising/reviews/actions.ts",
+    "app/(app)/admin/advertising/reviews/page.tsx",
+    "app/(app)/admin/advertising/reviews/review-queue.tsx",
+    "app/(app)/admin/market/system-workspace.tsx",
+    "app/(app)/admin/market/credits/actions.ts",
+    "app/(app)/admin/market/credits/page.tsx",
+    "supabase/migrations/20261017235000_campaign_admin_operations.sql",
+    "tests/campaign-admin-operations.integration.test.mjs",
+    "tests/campaign-admin-payments.test.mjs",
+    "tests/campaign-admin-ui.test.mjs",
+    "tests/fixtures/campaign-test-database.mjs",
+    "tests/campaign-credit-display.test.mjs",
+    "tests/campaign-workspace-runtime.test.mjs",
+    "docs/campaign-admin-20261017.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-admin-20261017\\final-source",
+    "overlaySha256": "d022b126d29071244840515df6b39793f733d1d1c92ad7ecd6abab9565a194f1"
+  },
+  "dependencies": [
+    "campaign-followup-20261017"
+  ],
+  "requiredMigrations": [
+    "20261017235000_campaign_admin_operations.sql"
+  ],
+  "validation": [
+    {
+      "name": "Permission, settings revision, old terms/renewal, notices, decline/refund, payment stop, credit denomination, wallet integration and post query checks",
+      "result": "passed",
+      "evidence": "artifacts/campaign-admin-20261017/final-rule-tests.log: 9 tests; payment-final-test.log rechecks final order-bound fulfillment"
+    },
+    {
+      "name": "Real-component owner and admin browser flows on phone and desktop",
+      "result": "passed",
+      "evidence": "artifacts/campaign-admin-20261017/final-browser-tests.log: 3 tests; admin-alert-final-test.log rechecks final bell; ui screenshots inspected"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/campaign-admin-20261017/lint.log"
+    },
+    {
+      "name": "Frozen-source production build including Next TypeScript checks and new admin routes",
+      "result": "passed",
+      "evidence": "artifacts/campaign-admin-20261017/production-build.log; 224 pages; all 32 overlay files match the build source"
+    }
+  ],
+  "publication": {
+    "status": "not-published",
+    "migrationAppliedToProduction": false,
+    "liveRoleGrantsApplied": false,
+    "livePaymentsOrNotificationsSent": false
+  },
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Compatible web UI and server/database changes; no bundled native assets, bridge contract or native permissions changed"
+  },
+  "limitations": [
+    "Live database/provider behavior is not claimed from local tests; publish migration and web overlay together against the exact production baseline.",
+    "For legacy campaigns whose delivery caps were never stored, snapshots backfill the currently installed caps while retaining their existing monetary terms.",
+    "The emergency delivery switch and source/ownership/installation safety checks remain global; other saved campaign terms stay prospective.",
+    "Financial operations retain existing platform-owner-only Market access; no manual credit grants, refunds or fresh charge retries were added."
+  ],
+  "notes": "User explicitly authorized separate reviews, review alerts, Market credit operations and future-only configuration edits, then selected $1 = 120 displayed credits. Denomination is a consistent tenfold presentation conversion from the previous display, not a change to stored units, balances, monetary amounts or existing card consent. Build harness reuses the prior isolated scoped Tailwind/output-tracing configuration and has no production env file.",
+  "id": "95497b5b-9cb7-48b4-bca2-6f4dd56838e5",
+  "recordedAt": "2026-10-18T00:16:49.779Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "types/platform-admin.ts": "d31af8f25ecb1bd13aabf0a6bf32eecaccdfe88ea78f5ba34efbb23238698de6",
+    "types/owner-campaign.ts": "7e9878c69328c3d4169f72888e3b3abb81b8097dc83b37c87624a0832117fb54",
+    "lib/owner-campaigns.ts": "3b448f3545d9e346f1ea099f6ae2f1f277050f1760360f2ac5ddb0443d59752f",
+    "lib/campaign-payments.ts": "f211934ddd7581f1b5efea5774442d4c51ea5276e1a37f91abec9cf89877cf95",
+    "lib/campaign-credit-display.ts": "806d19705d1e9ec34ee81b8a4fca04bf7d2c5c2a11e756409cece59cf82079a3",
+    "lib/vietnamese-campaign-copy.json": "c4cc5393263b45dfe482caf2771f7518f9d2cb34f11192d6507629ef8b2ef501",
+    "app/campaigns/actions.ts": "abcf40158108cbf041453b073459e54313e4280fe521db81ce2bd2e5533db1b3",
+    "app/campaigns/credit-panel.tsx": "a71b975bec37bcccf39fbce4cac851f842a41e5a5050fb090b803bc2c158236a",
+    "app/campaigns/campaign-workspace.tsx": "0f2b2f78fc76e6fda0e2faae12dfc44f8afb165b49459e97aa26baf7698fad69",
+    "components/owner-campaign-dialog.tsx": "34a27402ce7f7913448a70436717881127303e5409e2d4d80bc0e608fc5f6e0d",
+    "app/(app)/admin/page.tsx": "401b9b25dc901e5eed658e8c18b087e91e4a35e682a69d98250c95d06a2c6bad",
+    "app/(app)/admin/_components/admin-ui.tsx": "69c25666375625764a9f3f00571be1cbc73691e11316d06ee7bd51628a6fd494",
+    "app/(app)/admin/_components/admin-topbar.tsx": "f732679e0c12e178fc2a57be812fbe664486975ae4261902c321cbb771db14b7",
+    "app/(app)/admin/_components/admin-navigation.tsx": "d4f314ba12f0af69a27f4d5beaed4276d05ac42759c2df61ccdfe9eca70b267d",
+    "app/(app)/admin/_components/campaign-review-alerts.tsx": "f337c4ed309f6061680c30aeb3df49caa41c6c77b7f3ffe33687b3b3971731b8",
+    "app/(app)/admin/advertising/page.tsx": "dc4f1f59f4a0386d3006ac15915fdf3b22daa102510fdc3384894f26157861f8",
+    "app/(app)/admin/advertising/owner-settings-actions.ts": "2ba670a2800f23bb5b0943b9a1fe8c23ef059fc804797715f809189fcb64e582",
+    "app/(app)/admin/advertising/owner-campaign-settings.tsx": "8e42c9493ab5c1bc3a9b1be2c5564710fd18c6fc92199c1a9bc841fefa64b3d9",
+    "app/(app)/admin/advertising/reviews/actions.ts": "18f21aa7b05af3719eec6a9481d10fd35d87d20e6898577b3e04a06ba1de7d80",
+    "app/(app)/admin/advertising/reviews/page.tsx": "d592df44101650feae0a87a4d9a05c880de4d98b810dac5e28f5d9b87522123b",
+    "app/(app)/admin/advertising/reviews/review-queue.tsx": "f3f592fe659a6705fa8e320346ff390ac3d71405e94024134915c3777db77a01",
+    "app/(app)/admin/market/system-workspace.tsx": "16abad4c5d09fcda5de8b70d22398e4eb6938bf61ea84c333e10dfd6db740915",
+    "app/(app)/admin/market/credits/actions.ts": "07586caf83a3dd1bd519bc5ecc7501297a5d8790c3e0a035e0cf11c38bcde254",
+    "app/(app)/admin/market/credits/page.tsx": "dc08c890ac2ab8724c53e8747bde9ad1b5cf6a79527eff732e90a214eb934377",
+    "supabase/migrations/20261017235000_campaign_admin_operations.sql": "34317b30a5ca795d41af2814cda8662b6b1683705fc8efb806d147e5335e79fb",
+    "tests/campaign-admin-operations.integration.test.mjs": "916573d1af5c793b35859e05a152c6b35010d5a22339183876c1bfc2894b8487",
+    "tests/campaign-admin-payments.test.mjs": "9f1dd596583e63879c063c3812faee38a206c348089d667441bbcc8718aa0b39",
+    "tests/campaign-admin-ui.test.mjs": "bd995367f5dacece72ece54c86909b45443ed3223c36db48e6c8c75f4e8e54b4",
+    "tests/fixtures/campaign-test-database.mjs": "a8364b662a75fe3ce0e87d94247730db009b371b22be7f60d3c593b55b4f0460",
+    "tests/campaign-credit-display.test.mjs": "17814eef770a3fb0001aaec3970b6e9d017100ee2db82acfb7e75af05d95f6c6",
+    "tests/campaign-workspace-runtime.test.mjs": "ca18c1eec453c5bf679df6230e0c6b9eca20bcbfaf043eb108d1593513d0b211",
+    "docs/campaign-admin-20261017.md": "cead55381597a5bcc0cd753b2d58793a3b07893aaea9abb607631ae7e64ed461"
+  }
+}

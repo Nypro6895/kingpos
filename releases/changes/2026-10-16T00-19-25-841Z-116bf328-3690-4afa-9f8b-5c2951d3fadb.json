@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "performance-coldlaunch-feedback-completion-20261015",
+  "status": "working",
+  "summary": "Owner authorizes finishing remaining feedback groups, optimizing useful cold first frame, restoring Lumi orbit and coordinated web/native release after validation.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "baseCommit": "98db9a652f04b6e6977514a87760b381b5034baf"
+  },
+  "files": [
+    "components/feedback-search-form.tsx",
+    "app/(app)/admin/_components/workspace-controls.tsx",
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/(app)/pos/portable/report/page.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/staff/copy-invite-link-button.tsx",
+    "components/explore-social.tsx",
+    "app/(app)/layout.tsx",
+    "app/(app)/loading.tsx",
+    "components/workspace-language.tsx",
+    "components/app-startup-shell.tsx",
+    "components/startup-ready.tsx",
+    "components/lumi-loading-mark.tsx",
+    "components/lumi-loading-mark.module.css",
+    "ios/Reylumi/ReylumiLaunchView.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/SecurityChallengeWebViewTests.swift",
+    "ios/.gitignore"
+  ],
+  "dependencies": [
+    "whole-site-action-feedback-20261015",
+    "pos-instant-tab-navigation-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Production assembly, fixtures, simulator tests and live checks",
+      "result": "pending"
+    }
+  ],
+  "notes": [
+    "Exact completed scope and channel file sets recorded in separate immutable ready events.",
+    "Shared release lock acquired before fresh live baseline capture; do not publish blocked unrelated patches."
+  ],
+  "id": "116bf328-3690-4afa-9f8b-5c2951d3fadb",
+  "recordedAt": "2026-10-16T00:19:25.841Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

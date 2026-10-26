@@ -1,3 +1,6 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
 import { LoginSecurityPanel } from "@/app/settings/login-security/login-security-panel";
 import { loadLoginSecurityOverview } from "@/lib/account-security";
 import Link from "next/link";
@@ -29,7 +32,9 @@ function accountStatusClass(status: string) {
     : "bg-amber-50 text-amber-700 ring-amber-200";
 }
 
-export default async function LoginSecurityPage() {
+async function LoginSecurityPage() {
+  const __vt = await getWorkspaceTranslation();
+
   const overview = await loadLoginSecurityOverview();
 
   if (!overview) {
@@ -40,20 +45,20 @@ export default async function LoginSecurityPage() {
   const statusLabel = accountStatusLabel(overview.account.status);
 
   return (
-    <main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
+    <div className="settings-style settings-style-page"><main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-6xl gap-5">
         <header className="rounded-lg border border-border-subtle bg-white px-4 py-4 sm:px-5">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase text-zinc-500">
-                  Account security
+                  <WorkspaceText text="Account security" />
                 </p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950">
-                  Login Security
+                  <WorkspaceText text="Login Security" />
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-                  Quick edits first, detailed setup below.
+                  <WorkspaceText text="Quick edits first, detailed setup below." />
                 </p>
               </div>
               <div className="grid gap-2 sm:justify-items-end">
@@ -63,7 +68,7 @@ export default async function LoginSecurityPage() {
                     accountStatusClass(overview.account.status),
                   ].join(" ")}
                 >
-                  {statusLabel}
+                  <WorkspaceText text={statusLabel} />
                 </span>
                 <p className="max-w-64 truncate text-sm font-semibold text-zinc-500">
                   {accountLabel}
@@ -71,7 +76,7 @@ export default async function LoginSecurityPage() {
               </div>
             </div>
             <nav
-              aria-label="Login security sections"
+              aria-label={__vt("Login security sections")}
               className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]"
             >
               {LOGIN_SECURITY_SECTIONS.map((section) => (
@@ -80,14 +85,14 @@ export default async function LoginSecurityPage() {
                   href={section.href}
                   key={section.href}
                 >
-                  {section.label}
+                  <WorkspaceText text={section.label} />
                 </a>
               ))}
               <Link
                 className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
                 href="/settings"
               >
-                All settings
+                <WorkspaceText text="All settings" />
               </Link>
             </nav>
           </div>
@@ -95,6 +100,8 @@ export default async function LoginSecurityPage() {
 
         <LoginSecurityPanel overview={overview} />
       </div>
-    </main>
+    </main></div>
   );
 }
+
+export default withExperiencePage(LoginSecurityPage);

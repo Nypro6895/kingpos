@@ -1,0 +1,20 @@
+export type AdminPostSafetyCase = {
+ support_preview?:import('@/lib/admin-report-presentation').AdminReportPreview|null;
+ id: string; origin: "user" | "automatic"; reason: string; status: string; created_at: string;
+ source_type: "beauty_post" | "salon_profile_look" | "salon_profile_update"; source_id: string;
+ author_user_id: string | null; author_name: string | null; reporter_user_id: string | null; reporter_name: string | null;
+ can_restrict_guest: boolean; platform_report_id: string | null; matched_keywords: string[];
+ content_snapshot: AdminReviewPost;
+ current_post: AdminReviewPost | null;
+ author_status?: string | null; reporter_status?: string | null; author_created_at?: string | null;
+ salon_name?: string | null; post_visibility?: string; hidden_for_reporter?: boolean;
+ related_post_count?: number; related_author_count?: number; related_reporter_count?: number; automatic_pending_count?: number;
+ reviewed_at?: string | null; resolution?: string | null;
+ support_report_id?: string; communication_status?: string; reporter_responded?: boolean;
+ related_cases?: Array<{id:string;origin:string;reason:string;status:string;created_at:string}>;
+ decisions?: Array<{id:string;case_id:string;action:string;reason:string;created_at:string;actor_name:string|null}>;
+ restrictions?: Array<{id:string;scope:string;mode:string;reason:string;expires_at:string;target:string}>;
+ media: Array<{bucket: string; path: string; mime?: string; url?: string | null}>;
+};
+export type AdminReviewPost = {title?:string;caption?:string;salon_id?:string;profile_id?:string;created_at?:string;published_at?:string;safety_hold?:boolean;deleted_at?:string;status?:string;visibility?:string;moderation_status?:string};
+export type AdminPostReviewWorkspace = {cases:AdminPostSafetyCase[];user_count:number;automatic_count:number;total_count:number;has_more:boolean};

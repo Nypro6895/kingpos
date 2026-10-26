@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 import { useEffect,useState,type ReactNode } from 'react';
 // Web Locks are released by the browser even after a tab/process crashes.
 // Different browser profiles/native app stores remain independent workspaces.
@@ -25,5 +26,5 @@ export function SingleWorkspaceWindow({id,children}:{id:string;children:ReactNod
     return()=>{active=false;release?.();};
   },[id,attempt]);
   if(state==='ready')return children;
-  return <section className="grid min-h-64 place-items-center p-6 text-center"><div><h2 className="text-lg font-semibold">{state==='opening'?'Opening POS…':state==='occupied'?'POS is already open in another window':'Open POS in a supported browser'}</h2>{state==='occupied'?<><p className="mt-2 text-sm text-zinc-600">Continue in that window, or close it before opening POS here. Your saved work stays on this device.</p><button className="mt-4 min-h-12 rounded-xl bg-orange-600 px-5 font-semibold text-white" onClick={()=>setAttempt(v=>v+1)}>Open here</button></>:null}</div></section>;
+  return <section className="grid min-h-64 place-items-center p-6 text-center"><div><h2 className="text-lg font-semibold"><WorkspaceText text={state==='opening'?'Opening POS…':state==='occupied'?'POS is already open in another window':'Open POS in a supported browser'} /></h2>{state==='occupied'?<><p className="mt-2 text-sm text-zinc-600"><WorkspaceText text="Continue in that window, or close it before opening POS here. Your saved work stays on this device." /></p><button className="mt-4 min-h-12 rounded-xl bg-orange-600 px-5 font-semibold text-white" onClick={()=>setAttempt(v=>v+1)}><WorkspaceText text="Open here" /></button></>:null}</div></section>;
 }

@@ -74,7 +74,10 @@ test("credential auth forms post natively and routes keep JSON fetch behavior", 
   assert.match(loginForm, /Two-factor verification/);
   assert.match(loginForm, /showRecoveryHelpInitially = false/);
   assert.match(loginForm, /setShowRecoveryHelp\(true\)/);
-  assert.match(loginForm, /fetch\("\/api\/auth\/mfa\/verify"/);
+  // The shipped login form uses the bounded transport; keep endpoint and
+  // single-attempt deadline guarantees instead of requiring the old spelling.
+  assert.match(loginForm, /fetchWithDeadline\("\/api\/auth\/mfa\/verify"/);
+  assert.match(loginForm, /timeoutMs:\s*30_?000,\s*totalTimeoutMs:\s*30_?000,\s*maxAttempts:\s*1/);
   assert.match(signupForm, /action="\/api\/auth\/signup"/);
   assert.match(signupForm, /method="post"/);
   assert.match(signupForm, /Accept: "application\/json"/);
@@ -86,7 +89,7 @@ test("credential auth forms post natively and routes keep JSON fetch behavior", 
   assert.match(loginRoute, /setPendingMfaSessionCookieWriter/);
   assert.match(loginRoute, /factor\.factor_type === "phone"/);
   assert.match(loginRoute, /channel: "sms"/);
-  assert.match(loginRoute, /rememberLogin \? data\.session\.expires_in : undefined/);
+  assert.match(loginRoute, /rememberLogin \? REMEMBERED_LOGIN_MAX_AGE_SECONDS : undefined/);
   assert.match(loginRoute, /rememberLogin\s*\?\s*REMEMBERED_LOGIN_MAX_AGE_SECONDS\s*:\s*undefined/);
   assert.match(loginRoute, /NextResponse\.redirect\(new URL\(path, request\.url\), 303\)/);
   assert.match(mfaVerifyRoute, /createPendingMfaSupabaseAuthSessionServerClient/);

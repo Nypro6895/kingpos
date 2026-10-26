@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "refresh-session-availability-tests-20261021",
+  "status": "needs-integration",
+  "summary": "Verify unknown refresh400/408 stops actual proxy/context as503; preserve confirmed rejections and Remember cookie policy",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/refresh-session-availability.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\test-source"
+  },
+  "validation": [
+    {
+      "name": "Original refresh classifier baseline6 cases: unknown400/408 fail, four controls pass",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\initial-refresh-baseline.json"
+    },
+    {
+      "name": "Final9 tests against original e817 refresh module: three expected assertion failures, six controls pass, no skip",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\baseline-verification.json"
+    },
+    {
+      "name": "Current narrow refresh fix and actual proxy/context integration: nine pass, no failure/skip",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\fixed-verification.json"
+    },
+    {
+      "name": "Integration with full PC candidate and release validation",
+      "result": "pending"
+    }
+  ],
+  "id": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+  "recordedAt": "2026-10-21T07:13:38.222Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-pc-reliability-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

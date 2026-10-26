@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 import { updateCustomer } from "@/app/customers/actions";
 import { CustomerForm } from "@/app/customers/customer-form";
 import { getCurrentSalonCustomer } from "@/lib/customers";
@@ -15,7 +17,7 @@ type EditCustomerPageProps = {
   }>;
 };
 
-export default async function EditCustomerPage({
+async function EditCustomerPage({
   params,
   searchParams,
 }: EditCustomerPageProps) {
@@ -48,8 +50,10 @@ export default async function EditCustomerPage({
         className="mt-6 inline-flex text-sm font-medium text-zinc-950 underline"
         href={`/customers/${customer.id}`}
       >
-        Back to Customer
+        <WorkspaceText text="Back to Customer" />
       </Link>
     </main>
   );
 }
+
+export default withExperiencePage(EditCustomerPage);

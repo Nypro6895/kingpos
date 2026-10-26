@@ -1,5 +1,6 @@
 "use client";
 
+import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback, useEffect, useState } from "react";
 import { desktopDevice } from "@/lib/portable-device-storage";
 
@@ -18,6 +19,8 @@ function FullscreenIcon() {
 }
 
 export function PortableFullscreenButton() {
+  const __vt = useWorkspaceTranslation();
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
 
@@ -63,12 +66,12 @@ export function PortableFullscreenButton() {
 
   return (
     <button
-      aria-label={isFullscreen ? "Exit full view" : "Enter full view"}
+      aria-label={__vt(isFullscreen ? "Exit full view" : "Enter full view")}
       aria-pressed={isFullscreen}
       className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-emerald-700"
       data-portable-fullscreen-button
       onClick={enterFullscreen}
-      title={isFullscreen ? "Exit full view" : "Full view"}
+      title={__vt(isFullscreen ? "Exit full view" : "Full view")}
       type="button"
     >
       <FullscreenIcon />

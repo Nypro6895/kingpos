@@ -1,11 +1,13 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
 import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
+import { fetchWithDeadline } from "@/lib/bounded-get";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
 const inputClassName =
   "mt-2 min-h-[52px] w-full rounded-2xl border bg-white px-4 text-base font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 motion-reduce:transition-none";
@@ -76,36 +78,60 @@ export function LoginForm({
   showRecoveryHelpInitially?: boolean;
   onAuthenticated?: () => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [showRecoveryHelp, setShowRecoveryHelp] = useState(
     showRecoveryHelpInitially,
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionPhase, setSubmissionPhase] = useState<"login" | "verify" | "opening" | null>(null);
+  const isSubmitting = submissionPhase !== null;
   const [mfaChallenge, setMfaChallenge] = useState<AuthResponse["mfa"] | null>(
     null,
   );
   const [showPassword, setShowPassword] = useState(false);
+  const submitting = useRef(false);
+  const request = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
+
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      request.current?.abort();
+      request.current = null;
+      submitting.current = false;
+      setSubmissionPhase(null);
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || !mounted.current) return;
     if (!navigator.onLine) {
       setError(AUTH_OFFLINE_MESSAGE);
       return;
     }
     setError(null);
-    setIsSubmitting(true);
+    const controller = new AbortController();
+    request.current = controller;
+    submitting.current = true;
+    setSubmissionPhase("login");
     setMfaChallenge(null);
+    let navigating = false;
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetchWithDeadline("/api/auth/login", {
         headers: {
           Accept: "application/json",
         },
         method: "POST",
         body: new FormData(event.currentTarget),
-      });
+        signal: controller.signal,
+      }, { timeoutMs: 30_000, totalTimeoutMs: 30_000, maxAttempts: 1 });
       const result = await readAuthResponse(response, "Unable to log in.");
+      if (controller.signal.aborted || !mounted.current || request.current !== controller) return;
 
       if (!response.ok || result.error) {
         setError(result.error ?? "Unable to log in.");
@@ -124,18 +150,28 @@ export function LoginForm({
         router.refresh();
         return;
       }
+      navigating = true;
+      setSubmissionPhase("opening");
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
-      setShowRecoveryHelp(true);
+      navigating = false;
+      if (!controller.signal.aborted && mounted.current && request.current === controller) {
+        setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
+        setShowRecoveryHelp(true);
+      }
     } finally {
-      setIsSubmitting(false);
+      if (!controller.signal.aborted && mounted.current && request.current === controller && !navigating) {
+        request.current = null;
+        submitting.current = false;
+        setSubmissionPhase(null);
+      }
     }
   }
 
   async function handleMfaSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || !mounted.current) return;
     if (!navigator.onLine) {
       setError(AUTH_OFFLINE_MESSAGE);
       return;
@@ -147,7 +183,11 @@ export function LoginForm({
     }
 
     setError(null);
-    setIsSubmitting(true);
+    const controller = new AbortController();
+    request.current = controller;
+    submitting.current = true;
+    setSubmissionPhase("verify");
+    let navigating = false;
 
     try {
       const formData = new FormData(event.currentTarget);
@@ -155,17 +195,19 @@ export function LoginForm({
       formData.set("challenge_id", mfaChallenge.challengeId);
       formData.set("next", nextPath);
 
-      const response = await fetch("/api/auth/mfa/verify", {
+      const response = await fetchWithDeadline("/api/auth/mfa/verify", {
         headers: {
           Accept: "application/json",
         },
         method: "POST",
         body: formData,
-      });
+        signal: controller.signal,
+      }, { timeoutMs: 30_000, totalTimeoutMs: 30_000, maxAttempts: 1 });
       const result = await readAuthResponse(
         response,
         "Unable to verify two-factor code.",
       );
+      if (controller.signal.aborted || !mounted.current || request.current !== controller) return;
 
       if (!response.ok || result.error) {
         setError(result.error ?? "Unable to verify two-factor code.");
@@ -178,13 +220,22 @@ export function LoginForm({
         router.refresh();
         return;
       }
+      navigating = true;
+      setSubmissionPhase("opening");
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
-      setShowRecoveryHelp(true);
+      navigating = false;
+      if (!controller.signal.aborted && mounted.current && request.current === controller) {
+        setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
+        setShowRecoveryHelp(true);
+      }
     } finally {
-      setIsSubmitting(false);
+      if (!controller.signal.aborted && mounted.current && request.current === controller && !navigating) {
+        request.current = null;
+        submitting.current = false;
+        setSubmissionPhase(null);
+      }
     }
   }
 
@@ -197,7 +248,7 @@ export function LoginForm({
           id="login-form-error"
           role="alert"
         >
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
@@ -205,26 +256,27 @@ export function LoginForm({
         <form
           key="mfa"
           aria-describedby={error ? "login-form-error" : undefined}
+          aria-busy={isSubmitting}
           className="relative z-10 mt-6 space-y-5"
           onSubmit={handleMfaSubmit}
         >
           <div>
             <p className="text-xs font-extrabold uppercase text-brand-orange">
-              Two-factor verification
+              <WorkspaceText text="Two-factor verification" />
             </p>
             <h3 className="mt-2 text-xl font-semibold tracking-normal text-text-primary">
-              Enter your security code
+              <WorkspaceText text="Enter your security code" />
             </h3>
             <p className="mt-2 text-sm leading-6 text-text-secondary">
-              {mfaChallenge.factorType === "phone"
+              <WorkspaceText text={mfaChallenge.factorType === "phone"
                 ? `We sent an SMS code to ${maskPhone(mfaChallenge.phone)}.`
-                : "Use the 6-digit code from your authenticator app."}
+                : "Use the 6-digit code from your authenticator app."} />
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-extrabold text-text-primary" htmlFor="mfa_code">
-              Security code
+              <WorkspaceText text="Security code" />
             </label>
             <input
               aria-invalid={Boolean(error)}
@@ -252,7 +304,7 @@ export function LoginForm({
                 isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
               ].join(" ")}
             />
-            {isSubmitting ? "Verifying..." : "Verify and log in"}
+            <WorkspaceText text={submissionPhase === "opening" ? "Opening your account..." : isSubmitting ? "Verifying..." : "Verify and log in"} />
           </button>
 
           <button
@@ -262,9 +314,10 @@ export function LoginForm({
               setMfaChallenge(null);
               setShowRecoveryHelp(false);
             }}
+            disabled={isSubmitting}
             type="button"
           >
-            Use a different account
+            <WorkspaceText text="Use a different account" />
           </button>
         </form>
       ) : (
@@ -272,6 +325,7 @@ export function LoginForm({
         key="login"
         action="/api/auth/login"
         aria-describedby={error ? "login-form-error" : undefined}
+        aria-busy={isSubmitting}
         className="relative z-10 mt-6 space-y-5"
         method="post"
         onSubmit={handleSubmit}
@@ -279,7 +333,7 @@ export function LoginForm({
         <input name="next" type="hidden" value={nextPath} />
         <div>
           <label className="block text-sm font-extrabold text-text-primary" htmlFor="email">
-            Email
+            <WorkspaceText text="Email" />
           </label>
           <input
             aria-invalid={Boolean(error)}
@@ -295,13 +349,13 @@ export function LoginForm({
         <div>
           <div className="flex items-center justify-between gap-3">
             <label className="block text-sm font-extrabold text-text-primary" htmlFor="password">
-              Password
+              <WorkspaceText text="Password" />
             </label>
             <Link
               className="text-sm font-extrabold text-brand-orange underline-offset-4 transition hover:text-brand-orange-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
               href={`/forgot-password?next=${encodeURIComponent(nextPath)}`}
             >
-              Forgot password?
+              <WorkspaceText text="Forgot password?" />
             </Link>
           </div>
           <div className="relative">
@@ -315,7 +369,7 @@ export function LoginForm({
               required
             />
             <button
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={__vt(showPassword ? "Hide password" : "Show password")}
               className="absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
@@ -331,7 +385,7 @@ export function LoginForm({
             name="remember_me"
             type="checkbox"
           />
-          <span>Remember me</span>
+          <span><WorkspaceText text="Remember me" /></span>
         </label>
 
         <button
@@ -347,7 +401,7 @@ export function LoginForm({
               isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
             ].join(" ")}
           />
-          {isSubmitting ? "Logging in..." : "Log in"}
+          <WorkspaceText text={submissionPhase === "opening" ? "Opening your account..." : isSubmitting ? "Logging in..." : "Log in"} />
         </button>
         </form>
       )}
@@ -357,7 +411,7 @@ export function LoginForm({
           className="mt-5 inline-flex w-full justify-center text-sm font-extrabold text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
           href={`/account-recovery?next=${encodeURIComponent(nextPath)}`}
         >
-          Lost access or recovery code?
+          <WorkspaceText text="Lost access or recovery code?" />
         </Link>
       ) : null}
     </div>

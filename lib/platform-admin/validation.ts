@@ -17,7 +17,7 @@ import type { LocationStatus } from "@/types/location";
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const USER_STATUSES = ["active", "inactive", "suspended", "deleted"] as const;
+const USER_STATUSES = ["active", "inactive", "suspended", "pending_deletion", "deleted"] as const;
 const BUSINESS_STATUSES = ["active", "inactive", "suspended", "archived"] as const;
 const LOCATION_STATUSES = ["active", "inactive"] as const;
 

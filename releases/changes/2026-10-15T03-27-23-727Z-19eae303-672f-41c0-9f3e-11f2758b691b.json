@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "booking-concurrency-cache-review-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Integrated and verified completed booking-concurrency-cache-review-20261015 against current web source; concurrency migration applied and privileges verified.",
+  "files": [
+    "app/book/[salonId]/public-booking-client.tsx",
+    "tests/public-booking-cache-scope-ui.test.mjs",
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\release",
+    "originalEvent": "1c69136d-f923-43a7-a1df-6b243a098c89",
+    "originalSnapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-source"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\production-build.log"
+    },
+    {
+      "name": "main: 195 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-main.json"
+    },
+    {
+      "name": "built: 4 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-built.json"
+    },
+    {
+      "name": "regression: 59 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-regression.json"
+    },
+    {
+      "name": "Isolated PostgreSQL concurrency and production migration verification",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\booking-migration-verification.json"
+    }
+  ],
+  "dependencies": [
+    "booking-flow-local-audit-20261015"
+  ],
+  "id": "19eae303-672f-41c0-9f3e-11f2758b691b",
+  "recordedAt": "2026-10-15T03:27:23.727Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/book/[salonId]/public-booking-client.tsx": "7ecad2ff1a4410c2a206aeba511df5596498b2269197ad14512d6a8624212f78",
+    "tests/public-booking-cache-scope-ui.test.mjs": "9adffa2782aed74e3bde673a5725829057307a066ba1566117958459d396cfbf",
+    "tests/booking-concurrency.integration.test.mjs": "17071008063a344914d5e39537e00766450f010b5735bfa67c4cad68c7333d33",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql": "e1ae76d43fa57fa21d61633423828146014016cc9fade3af79e12d45c35e6f64"
+  }
+}

@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 /* eslint-disable @next/next/no-img-element -- Public profile media URLs. */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./website-photo-feed.module.css";
@@ -23,12 +24,15 @@ export function selectWebsiteFeedPhotos<T extends WebsiteLibraryPhoto>(photos: T
 
 const PAGE_SIZE = 6;
 
-export function WebsitePhotoFeed({ photos, onOpen, renderActions }: {
+export function WebsitePhotoFeed({ photos, onOpen, renderActions, renderEngagement }: {
   photos: WebsiteLibraryPhoto[];
   onOpen: (photo: WebsiteLibraryPhoto) => void;
   renderActions?: (photo: WebsiteLibraryPhoto) => ReactNode;
+  renderEngagement?: (photo: WebsiteLibraryPhoto) => ReactNode;
 }) {
-  const [visibleCount, setVisibleCount] = useState(0);
+  const __vt = useWorkspaceTranslation();
+
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
@@ -60,20 +64,21 @@ export function WebsitePhotoFeed({ photos, onOpen, renderActions }: {
   if (!available.length) return null;
   return <div className={styles.feed}>
     {visibleCount > 0 ? <>
-      <header className={styles.heading}><h3>More from the salon</h3><p>Explore the salon’s photo library</p></header>
+      <header className={styles.heading}><h3><WorkspaceText text="More from the salon" /></h3><p><WorkspaceText text="Explore the salon’s photo library" /></p></header>
       <div className={styles.grid}>{available.slice(0, visibleCount).map(photo => <article key={photo.id} className={styles.card}>
-        <button type="button" className={styles.open} onClick={() => onOpen(photo)} aria-label={`Open ${photo.title || "salon photo"}`}>
-          <img src={photo.imageUrl} alt={photo.title || "Salon photo"} loading="lazy" decoding="async" width={640} height={480}
+        <button type="button" className={styles.open} onClick={() => onOpen(photo)} aria-label={__vt(`Open ${photo.title || "salon photo"}`)}>
+          <img src={photo.imageUrl} alt={__vt(photo.title || "Salon photo")} loading="lazy" decoding="async" width={640} height={480}
             onError={() => setFailedUrls(urls => urls.includes(photo.imageUrl) ? urls : [...urls, photo.imageUrl])}/>
-          {photo.title ? <strong>{photo.title}</strong> : null}
+          {photo.title ? <strong><WorkspaceText text={photo.title} /></strong> : null}
         </button>
         {renderActions ? <div className={styles.actions}>{renderActions(photo)}</div> : null}
+        {renderEngagement?.(photo)}
       </article>)}</div>
     </> : null}
     {hasMore ? <div ref={sentinelRef} className={styles.sentinel}>
       <button type="button" onClick={() => setVisibleCount(count => Math.min(count + PAGE_SIZE, available.length))}>
-        {visibleCount ? "Load more photos" : "Explore more photos"}
+        <WorkspaceText text={visibleCount ? "Load more photos" : "Explore more photos"} />
       </button>
-    </div> : <p role="status" className={styles.end}>You’ve seen all photos in this library.</p>}
+    </div> : <p role="status" className={styles.end}><WorkspaceText text="You’ve seen all photos in this library." /></p>}
   </div>;
 }

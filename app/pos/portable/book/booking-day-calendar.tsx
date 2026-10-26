@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
@@ -15,6 +16,8 @@ export function BookingDayCalendar({appointments,data,date,openingHours,select,f
   appointments: PortableBookAppointment[]; data: PortableBookData; date: string; openingHours?: BookingOpeningHours;
   select: (item: PortableBookAppointment) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [now,setNow]=useState<string|null>(null);
   const [zoom,setZoom]=useState(112);
   const [scaleReady,setScaleReady]=useState(false);
@@ -70,27 +73,27 @@ export function BookingDayCalendar({appointments,data,date,openingHours,select,f
   },[date,focusRequest,now,nowMinute,scaleReady,start,pxPerMinute]);
   function show(item:PortableBookAppointment,element:HTMLElement){const rect=element.getBoundingClientRect();setHover({item,x:Math.max(8,Math.min(globalThis.innerWidth-328,rect.left+8)),y:Math.max(8,Math.min(globalThis.innerHeight-330,rect.top+Math.min(rect.height,40)))});}
   return <>
-    {scheduleWindow.closed && !appointments.length && nowMinute===null ? <p className={styles.emptyCalendar}>The salon is closed on this date.</p> : !columns.length ? <p className={styles.emptyCalendar}>No matching professionals.</p> : <div className={styles.calendarScroll} ref={scroller} aria-label="Day schedule" tabIndex={0} onScroll={()=>setHover(null)}>
+    {scheduleWindow.closed && !appointments.length && nowMinute===null ? <p className={styles.emptyCalendar}><WorkspaceText text="The salon is closed on this date." /></p> : !columns.length ? <p className={styles.emptyCalendar}><WorkspaceText text="No matching professionals." /></p> : <div className={styles.calendarScroll} ref={scroller} aria-label={__vt("Day schedule")} tabIndex={0} onScroll={()=>setHover(null)}>
       <div className={styles.calendar} style={{minWidth:64+columns.length*160,gridTemplateColumns:`64px repeat(${columns.length}, minmax(160px, 1fr))`,"--booking-hour-height":`${zoom}px`} as CSSProperties}>
-        <div className={styles.timeHeading} data-calendar-time-heading><span>Time</span><button type="button" className={styles.scaleHandle} aria-label="Drag to stretch time scale" onPointerDown={e=>{drag.current={y:e.clientY,zoom};e.currentTarget.setPointerCapture(e.pointerId);}} onPointerMove={e=>{if(drag.current)scale(drag.current.zoom+e.clientY-drag.current.y);}} onPointerUp={e=>{drag.current=null;e.currentTarget.releasePointerCapture(e.pointerId);}} onPointerCancel={()=>{drag.current=null;}} onKeyDown={e=>{if(e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();scale(zoom+(e.key==="ArrowUp"?8:-8));}}}>↕</button></div>
+        <div className={styles.timeHeading} data-calendar-time-heading><span><WorkspaceText text="Time" /></span><button type="button" className={styles.scaleHandle} aria-label={__vt("Drag to stretch time scale")} onPointerDown={e=>{drag.current={y:e.clientY,zoom};e.currentTarget.setPointerCapture(e.pointerId);}} onPointerMove={e=>{if(drag.current)scale(drag.current.zoom+e.clientY-drag.current.y);}} onPointerUp={e=>{drag.current=null;e.currentTarget.releasePointerCapture(e.pointerId);}} onPointerCancel={()=>{drag.current=null;}} onKeyDown={e=>{if(e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();scale(zoom+(e.key==="ArrowUp"?8:-8));}}}>↕</button></div>
         {columns.map(column=><div className={styles.staffHeading} key={column.id}>{column.name}</div>)}
-        <div className={styles.timeScale} style={{height}}>{ticks.map(minute=><span key={minute} style={{top:(minute-start)*pxPerMinute}}>{label(minute).replace(":00","")}</span>)}</div>
+        <div className={styles.timeScale} style={{height}}>{ticks.map(minute=><span key={minute} style={{top:(minute-start)*pxPerMinute}}><WorkspaceText text={label(minute).replace(":00","")} /></span>)}</div>
         {columns.map(column=><div className={styles.staffColumn} key={column.id} style={{height}}>
-          {closedBands.map((band,index)=><div className={styles.closedHours} key={index} style={{top:(band.start-start)*pxPerMinute,height:(band.end-band.start)*pxPerMinute}} aria-label="Outside opening hours" />)}
+          {closedBands.map((band,index)=><div className={styles.closedHours} key={index} style={{top:(band.start-start)*pxPerMinute,height:(band.end-band.start)*pxPerMinute}} aria-label={__vt("Outside opening hours")} />)}
           {column.rows.map(({item,start:from,end:to,lane,lanes})=>{const cardHeight=(to-from)*pxPerMinute;const original=segments.find(segment=>segment.id===item.id)?.booking??item;return <button key={item.id} type="button" className={styles.appointment} data-status={item.status} data-compact={cardHeight<44}
             style={{top:(from-start)*pxPerMinute,height:cardHeight,left:`calc(${lane/lanes*100}% + 3px)`,width:`calc(${100/lanes}% - 6px)`}}
-            aria-label={`${displayBookingTime(item.startAt,data.timezone)}, ${item.customerName||"Walk-in customer"}, ${item.serviceNames.join(", ")}, ${column.name}, ${(item.status === "no_show" ? bookingStatusLabel(item.status,item.noShowKind) : statusLabel(item.status))}`}
+            aria-label={__vt(`${displayBookingTime(item.startAt,data.timezone)}, ${item.customerName||"Walk-in customer"}, ${item.serviceNames.join(", ")}, ${column.name}, ${(item.status === "no_show" ? bookingStatusLabel(item.status,item.noShowKind) : statusLabel(item.status))}`)}
             onPointerEnter={e=>{if(e.pointerType!=="touch")show(original,e.currentTarget);}} onPointerLeave={()=>setHover(null)} onFocus={e=>show(original,e.currentTarget)} onBlur={()=>setHover(null)} onClick={()=>{setHover(null);select(original);}}>
             <strong><CustomerName name={item.customerName} fallback="Walk-in customer" /></strong>
-            {cardHeight>=44 && <span>{displayBookingTime(item.startAt,data.timezone)} · {Math.round((to-from))} min</span>}
+            {cardHeight>=44 && <span>{displayBookingTime(item.startAt,data.timezone)} · {Math.round((to-from))} <WorkspaceText text="min" /></span>}
             {cardHeight>=64 && <span>{item.serviceNames.join(", ")}</span>}
-            {cardHeight>=84 && <span>{(item.status === "no_show" ? bookingStatusLabel(item.status,item.noShowKind) : statusLabel(item.status))}</span>}
+            {cardHeight>=84 && <span><WorkspaceText text={(item.status === "no_show" ? bookingStatusLabel(item.status,item.noShowKind) : statusLabel(item.status))} /></span>}
             {cardHeight>=110 && item.notes && <span>{item.notes}</span>}
           </button>;})}
         </div>)}
-        {nowMinute!==null&&<div className={styles.nowLine} data-booking-current-time style={{gridColumn:"1 / -1",gridRow:2,top:(nowMinute-start)*pxPerMinute,left:64}} aria-label={`Current time ${displayBookingTime(now!,data.timezone)}`}><span className={styles.nowLabel}>{displayBookingTime(now!,data.timezone)}</span></div>}
+        {nowMinute!==null&&<div className={styles.nowLine} data-booking-current-time style={{gridColumn:"1 / -1",gridRow:2,top:(nowMinute-start)*pxPerMinute,left:64}} aria-label={__vt(`Current time ${displayBookingTime(now!,data.timezone)}`)}><span className={styles.nowLabel}>{displayBookingTime(now!,data.timezone)}</span></div>}
       </div>
     </div>}
-    {hover && hovered && createPortal(<div className={styles.calendarPreview} role="tooltip" style={{left:hover.x,top:hover.y}}><strong><CustomerName name={hovered.customerName} fallback="Walk-in customer" /></strong><small>{hovered.customerPhone}</small><p>{displayBookingTime(hovered.startAt,data.timezone)} – {displayBookingTime(hovered.endAt,data.timezone)} · {(hovered.status === "no_show" ? bookingStatusLabel(hovered.status,hovered.noShowKind) : statusLabel(hovered.status))}</p>{hovered.lines?.length ? hovered.lines.map(line=><p key={line.id}>{line.serviceName}<small>{line.staffName||data.staff.find(s=>s.id===line.staffId)?.display_name}</small></p>) : <p>{hovered.serviceNames.join(", ")}<small>{hovered.staffName}</small></p>}{hovered.notes&&<p>{hovered.notes}</p>}<small>Click or tap to view and edit</small></div>,document.body)}
+    {hover && hovered && createPortal(<div className={styles.calendarPreview} role="tooltip" style={{left:hover.x,top:hover.y}}><strong><CustomerName name={hovered.customerName} fallback="Walk-in customer" /></strong><small>{hovered.customerPhone}</small><p>{displayBookingTime(hovered.startAt,data.timezone)} – {displayBookingTime(hovered.endAt,data.timezone)} · <WorkspaceText text={(hovered.status === "no_show" ? bookingStatusLabel(hovered.status,hovered.noShowKind) : statusLabel(hovered.status))} /></p>{hovered.lines?.length ? hovered.lines.map(line=><p key={line.id}>{line.serviceName}<small>{line.staffName||data.staff.find(s=>s.id===line.staffId)?.display_name}</small></p>) : <p>{hovered.serviceNames.join(", ")}<small>{hovered.staffName}</small></p>}{hovered.notes&&<p>{hovered.notes}</p>}<small><WorkspaceText text="Click or tap to view and edit" /></small></div>,document.body)}
   </>;
 }

@@ -1,9 +1,9 @@
 .page {
-  font-family: Arial, Helvetica, sans-serif;
-  max-width: 1200px;
+  font-family: inherit;
+  max-width: none;
   margin: auto;
-  padding: 36px 28px;
-  color: #27252c;
+  padding: 0;
+  color: var(--admin-ink);
 }
 .heading,
 .editorHeading {
@@ -16,18 +16,18 @@
 .eyebrow {
   font-size: 11px;
   letter-spacing: 0.18em;
-  color: #8c728b;
+  color: var(--admin-muted);
   font-weight: 700;
 }
 .heading h1 {
-  font-size: 34px;
+  font-size: var(--admin-title-size);
   font-weight: 700;
   letter-spacing: -0.04em;
   margin: 5px 0;
 }
 .heading p,
 .editorHeading p {
-  color: #7b7782;
+  color: var(--admin-muted);
   font-size: 14px;
 }
 .page button {
@@ -44,31 +44,31 @@
   cursor: wait;
 }
 .page button:focus-visible {
-  outline: 2px solid #997bb2;
+  outline: 2px solid var(--admin-link);
   outline-offset: 3px;
 }
 .page .primary {
-  background: #29212f;
+  background: var(--admin-link);
   color: white;
   border-radius: 6px;
-  padding: 12px 18px;
+  padding: 8px 12px;
 }
 .tabs {
   display: flex;
   gap: 24px;
-  border-bottom: 1px solid #e8e5eb;
+  border-bottom: 1px solid var(--admin-border);
   margin-bottom: 20px;
   overflow: auto;
 }
 .tabs button {
   white-space: nowrap;
   padding: 14px 0;
-  color: #87808d;
+  color: var(--admin-muted);
   border-bottom: 2px solid transparent;
 }
 .tabs button[aria-current] {
-  color: #352a42;
-  border-bottom-color: #78528f;
+  color: var(--admin-ink);
+  border-bottom-color: var(--admin-link);
 }
 .tabs span {
   margin-left: 8px;
@@ -78,13 +78,13 @@
 }
 .notice {
   padding: 10px 0;
-  color: #665372;
+  color: var(--admin-muted);
   font-size: 14px;
 }
 .listHeader {
   display: flex;
   justify-content: space-between;
-  color: #8b8392;
+  color: var(--admin-muted);
   font-size: 12px;
   padding: 14px 0;
 }
@@ -92,8 +92,8 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  border-bottom: 1px solid #eeeaf0;
-  padding: 22px 0;
+  border-bottom: 1px solid var(--admin-border);
+  padding: 12px 0;
 }
 .thumbnail {
   width: 72px;
@@ -122,22 +122,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #8d8593;
+  color: var(--admin-muted);
   font-size: 12px;
   margin: 4px 0;
 }
 .identity span {
   font-size: 11px;
-  color: #775c8b;
+  color: var(--admin-link);
 }
 .schedule {
   max-width: 260px;
   font-size: 12px;
-  color: #696170;
+  color: var(--admin-muted);
 }
 .schedule small {
   display: block;
-  color: #99909f;
+  color: var(--admin-muted);
   margin-top: 5px;
 }
 .actions {
@@ -145,14 +145,14 @@
   gap: 3px;
 }
 .actions button {
-  color: #665073;
+  color: var(--admin-link);
 }
 .actions .delete {
-  color: #a67b80;
+  color: var(--admin-danger);
 }
 .empty {
   text-align: center;
-  padding: 80px 10px;
+  padding: 32px 10px;
 }
 .empty > span {
   font-size: 32px;
@@ -164,12 +164,12 @@
   margin: 15px 0 8px;
 }
 .empty p {
-  color: #928998;
+  color: var(--admin-muted);
   font-size: 14px;
 }
 .empty button {
   margin-top: 20px;
-  color: #79568f;
+  color: var(--admin-link);
 }
 .editor {
   padding: 16px 0;
@@ -182,7 +182,7 @@
 .fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px 28px;
+  gap: 14px 20px;
   border: 0;
   padding: 0;
   min-width: 0;
@@ -198,7 +198,7 @@
 .field textarea,
 .field select {
   border: 0;
-  border-bottom: 1px solid #dcd7e1;
+  border-bottom: 1px solid var(--admin-border);
   background: #faf9fb;
   padding: 11px 10px;
   width: 100%;
@@ -210,11 +210,11 @@
 .field textarea:focus,
 .field select:focus {
   outline: none;
-  border-bottom-color: #806090;
-  box-shadow: 0 1px #806090;
+  border-bottom-color: var(--admin-link);
+  box-shadow: 0 1px var(--admin-link);
 }
 .field [aria-invalid="true"] {
-  border-bottom-color: #c45867;
+  border-bottom-color: var(--admin-danger);
 }
 .field input[type="color"] {
   height: 44px;
@@ -226,7 +226,7 @@
 }
 .field span {
   font-size: 11px;
-  color: #928797;
+  color: var(--admin-muted);
 }
 .full {
   grid-column: 1/-1;
@@ -242,30 +242,56 @@
   gap: 10px;
   font-size: 13px;
 }
+.targetGroup {
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.targetGroup legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.locationPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.locationPresets button {
+  color: var(--admin-link);
+  background: #f7f3f9;
+}
+.full p {
+  font-size: 12px;
+  color: var(--admin-muted);
+  margin-top: 6px;
+}
 .checkbox input {
-  accent-color: #78528f;
+  accent-color: var(--admin-link);
 }
 .footer {
   display: flex;
   gap: 16px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #eeeaf0;
+  border-top: 1px solid var(--admin-border);
 }
 .error,
 .field .error {
-  color: #b44555;
+  color: var(--admin-danger);
   font-size: 12px;
 }
 @media (max-width: 800px) {
   .page {
-    padding: 24px 16px;
+    padding: 0;
   }
   .heading {
     align-items: flex-start;
   }
   .heading h1 {
-    font-size: 28px;
+    font-size: var(--admin-title-size);
   }
   .heading p {
     max-width: 240px;
@@ -315,4 +341,190 @@
   .editorHeading p {
     max-width: 230px;
   }
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
+  margin: 30px 0;
+}
+.metrics span {
+  display: block;
+  font-size: 12px;
+  color: var(--admin-muted);
+}
+.metrics strong {
+  display: block;
+  font-size: 30px;
+  font-weight: 650;
+  margin-top: 10px;
+  letter-spacing: -0.04em;
+}
+.sectionTitle {
+  font-size: 22px;
+  font-weight: 650;
+  margin: 32px 0 18px;
+}
+.metricHelp {
+  font-size: 12px;
+  color: var(--admin-muted);
+  line-height: 1.7;
+  margin: 14px 0 22px;
+}
+.reportScroll {
+  overflow: auto;
+}
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+}
+.reportTable th {
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.reportTable th,
+.reportTable td {
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--admin-border);
+}
+.previewPanel {
+  margin: 24px 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--admin-border);
+}
+.previewControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 20px 0;
+}
+.previewControls label {
+  font-size: 12px;
+  color: var(--admin-muted);
+  display: grid;
+  gap: 8px;
+}
+.previewControls select,
+.previewControls input {
+  padding: 9px;
+  background: #f8f6fa;
+  border: 0;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 13px;
+  color: var(--admin-ink);
+}
+.previewPanel > p {
+  font-size: 12px;
+  color: var(--admin-muted);
+  margin: 15px 0;
+}
+.previewViewport {
+  position: relative;
+  overflow: auto;
+  background: #faf8fb;
+  border: 1px solid #e6dfe9;
+  margin: 20px auto;
+  font-size: 14px;
+}
+.previewNav {
+  padding: 20px;
+  background: white;
+  font-weight: 700;
+}
+.previewNav span {
+  float: right;
+  font-size: 11px;
+  color: var(--admin-muted);
+  font-weight: 400;
+}
+.previewContent {
+  padding: 24px;
+}
+.previewContent h3 {
+  font-size: 22px;
+  font-weight: 650;
+}
+.previewContent p {
+  color: #938299;
+  font-size: 13px;
+  margin: 12px 0;
+}
+.sampleContent {
+  background: #efe9f3;
+  padding: 40px 20px;
+  color: #a695af;
+  margin: 20px 0;
+}
+.previewBackdrop {
+  position: absolute;
+  inset: 0;
+  background: #21171f80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.previewPopup {
+  position: relative;
+  width: 90%;
+  max-width: 420px;
+}
+.previewClose {
+  position: absolute;
+  right: -8px;
+  top: -12px;
+  background: white;
+  padding: 7px 12px;
+  border-radius: 50%;
+}
+.previewTicker {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  height: 38px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.previewTicker span {
+  padding-left: 100%;
+  white-space: nowrap;
+  min-width: 100%;
+  animation: previewMarquee linear infinite;
+}
+.previewTicker b {
+  position: absolute;
+  right: 10px;
+}
+@keyframes previewMarquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@media (max-width: 700px) {
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .previewControls {
+    gap: 12px;
+  }
+  .previewViewport {
+    height: 550px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .previewTicker span {
+    animation: none;
+    padding-left: 12px;
+  }
+}
+
+.previewViewportWrap {
+  max-width: 100%;
+  overflow: auto;
 }
