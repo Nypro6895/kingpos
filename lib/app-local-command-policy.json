@@ -31,7 +31,9 @@
       "saveServiceRelay",
       "setServiceRelayPlugin",
       "submitServiceRelay",
-      "issueServiceRelayPass"
+      "issueServiceRelayPass",
+      "saveServiceRelayAtDesk",
+      "notifyPersonalReady"
     ],
     "app/bookings/actions.ts": [
       "createBookingPosTicketAction",
@@ -475,6 +477,9 @@
     "app/activity/customer-merge-actions.ts": [
       "getMyCustomerMergeGroups",
       "mergeMyCustomerProfiles"
+    ],
+    "app/payroll/current-payroll-download-actions.ts": [
+      "downloadMyCurrentPayroll"
     ]
   }
 }
