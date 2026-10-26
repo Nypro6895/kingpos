@@ -1,0 +1,78 @@
+{
+  "kind": "change",
+  "changeId": "qr-full-flow-20261025",
+  "status": "needs-integration",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [
+    "staff-scan-20261025",
+    "personal-qr-20261025"
+  ],
+  "summary": "Full QR/check-in/Staff/POS/History verified through 290 migrations and real Supabase financial core; fixes daily receipt issuance, stale Ready and service limit. Queue all three dependent changes for ONE combined release.",
+  "files": [
+    "app/qr/personal-qr-client.tsx",
+    "lib/vietnamese-personal-qr.json",
+    "supabase/migrations/20261025200000_qr_flow_integration.sql",
+    "tests/helpers/personal-qr-fixture.mjs",
+    "tests/personal-qr-full-schema.integration.test.mjs",
+    "tests/personal-qr-ui.test.mjs",
+    "docs/personal-qr-deploy-note.txt",
+    "docs/staff-scan-deploy-note.txt",
+    "docs/qr-full-flow-deploy-note.txt"
+  ],
+  "source": {
+    "snapshot": "artifacts/qr-full-flow-20261025/source",
+    "beforeSnapshot": "artifacts/qr-full-flow-20261025/scope-before",
+    "patch": "artifacts/qr-full-flow-20261025/change.patch",
+    "patchSha256": "fbd82cd37e5ddf7bfb6cfb66d23053dfc56a5b548855885f96c5f6bf550cdda6",
+    "fileHashes": "artifacts/qr-full-flow-20261025/source-hashes.json"
+  },
+  "validation": [
+    {
+      "name": "12 full-schema tests (11 flow scenarios plus parent); 290 migrations; real Auth/PostgREST/RLS and financial core; zero skipped",
+      "result": "passed",
+      "evidence": "artifacts/qr-full-flow-20261025/full-schema.log"
+    },
+    {
+      "name": "52 QR/Staff/POS/History/UI/navigation/auth regressions; zero skipped",
+      "result": "passed",
+      "evidence": "artifacts/qr-full-flow-20261025/regressions.log"
+    },
+    {
+      "name": "Fresh isolated Next production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/qr-full-flow-20261025/build.log"
+    },
+    {
+      "name": "Scoped ESLint: zero errors or warnings",
+      "result": "passed",
+      "evidence": "artifacts/qr-full-flow-20261025/lint.log"
+    },
+    {
+      "name": "Frozen 9-file patch applies exactly; 21 runtime build hashes and all 290 tested migration hashes match",
+      "result": "passed",
+      "evidence": "artifacts/qr-full-flow-20261025/source-hashes.json"
+    },
+    {
+      "name": "Isolated fixture cleanup; no external network or host ports; prior containers preserved",
+      "result": "passed",
+      "evidence": "artifacts/qr-full-flow-20261025/qr-full-flow-fixture.json"
+    },
+    {
+      "name": "Assemble all three dependent changes against exact current production baseline for one release",
+      "result": "pending",
+      "evidence": "Queued only. No deployment or production migration performed; see docs/qr-full-flow-deploy-note.txt."
+    },
+    {
+      "name": "Physical iPhone Safari/WKWebView camera/keyboard/resume and two-device QA",
+      "result": "pending",
+      "evidence": "Requires physical devices during release QA. No native source/bridge changes."
+    }
+  ],
+  "id": "60b87cd6-3146-4091-9da5-2ac28a4368e4",
+  "recordedAt": "2026-10-26T01:33:43.568Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,112 @@
+{
+  "kind": "change",
+  "changeId": "live-qa-audit-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Local QA audit fixes and per-finding Vietnamese report; requires production-source reconciliation and full-schema staging validation before release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/bookings/actions.ts",
+    "app/bookings/booking-workspace-client.tsx",
+    "lib/booking-domain/errors.ts",
+    "lib/booking-domain/customer-identity.ts",
+    "lib/booking-domain/mutations.ts",
+    "supabase/migrations/20261025060000_owner_booking_atomic.sql",
+    "lib/dashboard-deadline.ts",
+    "lib/today-dashboard.ts",
+    "lib/daily-pos-report.ts",
+    "app/api/experience/today/route.ts",
+    "app/staff/today/today-dashboard-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "lib/customer-date-time.ts",
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx",
+    "lib/staff-payroll-period.ts",
+    "lib/payroll.ts",
+    "app/(app)/payroll/page.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/services/services-manager.tsx",
+    "app/my-place/my-place-client.tsx",
+    "app/(app)/my-bookings/page.tsx",
+    "components/salon-introduction.tsx",
+    "app/salon-profile/salon-website-home.tsx",
+    "lib/booking-count.ts",
+    "lib/booking-phone-display.ts",
+    "tests/live-qa-audit-20261025.test.mjs",
+    "tests/live-qa-audit-ui.test.mjs",
+    "tests/today-progressive.test.mjs",
+    "tests/today-progressive-ui.test.mjs",
+    "tests/staff-pay-analysis.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integratesEvent": "51338a40-a082-41ba-b4c5-f26c2dbcd419",
+  "excludedNonruntimeEvidence": [
+    "artifacts/live-qa-audit-20261025/AUDIT-VI.md"
+  ],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "58beec50-94db-4c20-ab99-3e09489a8913",
+  "recordedAt": "2026-10-26T19:46:26.639Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/bookings/actions.ts": "fe9aa71b5b564c544533db4773f11f67305740c280554f20da906a458252f329",
+    "app/bookings/booking-workspace-client.tsx": "1e1dc7e478acb357afb58b103dbfbd78fb4396db22447f2f0a399ef51cf9459b",
+    "lib/booking-domain/errors.ts": "a2408a707eb034a2d5ba09b01cdeef603daf71a26b876c08dcc78e7d9f964035",
+    "lib/booking-domain/customer-identity.ts": "8d58e4ceae212d4186781ee3655c9a63ddefc49cbc211aaa3a8de5995612dd4d",
+    "lib/booking-domain/mutations.ts": "115b9bc82946696e00c8abb363792cbf693477298eadc74b07fb9e35d1abd457",
+    "supabase/migrations/20261025060000_owner_booking_atomic.sql": "928a8ed75d5099897c855fad5d35cc283758f5a6fb4129dd68f3ba06203b75db",
+    "lib/dashboard-deadline.ts": "e0ad5f6a3a606af72aef00ffd77cfd19c90173ffe5ad2b749cdd5a2e124a9585",
+    "lib/today-dashboard.ts": "1ac346d1f2508b8bdfbfca9157a970e2bc5457bc43d0fe4bf5fe7057cd9163ef",
+    "lib/daily-pos-report.ts": "0677a8d52c42ea2d830f216fa3838f8122693b47a76ae4925dcec47ccfe4644d",
+    "app/api/experience/today/route.ts": "6f2f99a26f36442dabb0dcee3ccc933dbf9cfdaa2e484cc0e714727ac6ffe797",
+    "app/staff/today/today-dashboard-client.tsx": "f1e4c8d88170393cf9ca7b31dcb1536bab85de032c6ebf5305a1681a54c99fe3",
+    "app/staff/today/today-dashboard-view.tsx": "2f0cafea241a393abbd1546d471d01d0eccd71f26533af7cd44db7efdac72d30",
+    "lib/customer-date-time.ts": "c7bd02aa0849e9a4fbd2ac9481756e4c4823053e5d10b9bcfc4e0f6b776b297f",
+    "app/(app)/customers/page.tsx": "4238cb5baa41755a18786d4c9dba3827aa16e3ae18df1aeb0a6b8810dba3e74e",
+    "app/(app)/customers/[customerId]/page.tsx": "5eec1bace8f50a41c8d873b0ca380fbb97da0f7289dcb57af83e39bcc3dd2271",
+    "lib/staff-payroll-period.ts": "e2d9e1a84fad449bad59413db1098f6912bf02f10ea88bc77a6d2000c84d2efb",
+    "lib/payroll.ts": "32a1c9d0280afa98c82cb3ab67cd5adaa79007ddb342700e3b565e67b885d7b3",
+    "app/(app)/payroll/page.tsx": "34d29af09d6a39f1e5573f61a3d0c6de2eb87ded1d817fbf9ac3267b8581e9ed",
+    "app/staff/my-work/staff-pay-analysis.tsx": "921f5b890d7211c3e979927cab32ad6bf518544b14699577c731b81b9a47aaf9",
+    "app/services/services-manager.tsx": "27a8bafb3dbcbd85f66433705506c27e5cdb52be5b9d160eee53f7eef91b05b1",
+    "app/my-place/my-place-client.tsx": "878f1353a16705fac904f3ae14cf60576bba7b4bd9f4a1dbdc9507fb8efa8424",
+    "app/(app)/my-bookings/page.tsx": "a4f036245f13ac4cdc6ccbeb83204e590dd46bcacb3eb0f15ecb6311068c29af",
+    "components/salon-introduction.tsx": "026a565091f5c16727265a6fa74d6ed08a5342be9341f5769be3c82333507322",
+    "app/salon-profile/salon-website-home.tsx": "056b89634fc3f249b50ff22a49f41d0bdd796640e867710b8a67991045fa32eb",
+    "lib/booking-count.ts": "c47cf173e46eb2209470ae1441c4d7712c16954335227e7fea930107a9b04f5b",
+    "lib/booking-phone-display.ts": "133e1d856f7a0a2ce8bebf8a166e47adde42b753bdba121271926bc067c5e59e",
+    "tests/live-qa-audit-20261025.test.mjs": "bfebd6b8c642a2d42ed7797328221f391dc031f89387741936ccf7746f1c42e6",
+    "tests/live-qa-audit-ui.test.mjs": "5438114a0cdc733a22c5355bb13502bba745b4f6921194def0b09e1bc1d296b1",
+    "tests/today-progressive.test.mjs": "17a00caac96841b489c2f938a7886a9a99f80304134b716f4c373379bc7c0bd0",
+    "tests/today-progressive-ui.test.mjs": "afea6e4be1e84ae38c22e437b997ca921af2b355602e3ee227faa4979ed8e6b1",
+    "tests/staff-pay-analysis.test.mjs": "226fb336753bbf10480f72a9cb4d5c0dce45851721abde1296ff7ca4e9b9dbe4"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "ledgerCount": 308,
+  "approvedMigrations": 8,
+  "historyRealtime": true,
+  "closingValueMismatches": null,
+  "verified": true,
+  "privateQrDirectAccess": null,
+  "newTableRlsFailures": null,
+  "sourceMismatches": null,
+  "at": "2026-10-26T19:28:43.5639722Z",
+  "actualPaymentsMd5": "37a6259cc0c1dae299a7866489dff0bd",
+  "closingEnteredAtMissing": 0
+}

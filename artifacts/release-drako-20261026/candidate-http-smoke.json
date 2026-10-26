@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-26T19:39:38.059Z",
+  "passed": true,
+  "method": "Existing Vercel CLI automatic authenticated preview access; read-only GET, no app login or mutation",
+  "checks": [
+    {
+      "route": "/login",
+      "status": 200,
+      "redirect": null,
+      "passed": true
+    },
+    {
+      "route": "/signup",
+      "status": 200,
+      "redirect": null,
+      "passed": true
+    },
+    {
+      "route": "/explore",
+      "status": 200,
+      "redirect": null,
+      "passed": true
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "redirect": null,
+      "passed": true
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "redirect": null,
+      "passed": true
+    },
+    {
+      "route": "/payroll",
+      "status": 200,
+      "redirect": null,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "qr-full-flow-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Full QR/check-in/Staff/POS/History verified through 290 migrations and real Supabase financial core; fixes daily receipt issuance, stale Ready and service limit. Queue all three dependent changes for ONE combined release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/qr/personal-qr-client.tsx",
+    "lib/vietnamese-personal-qr.json",
+    "supabase/migrations/20261025200000_qr_flow_integration.sql",
+    "tests/helpers/personal-qr-fixture.mjs",
+    "tests/personal-qr-full-schema.integration.test.mjs",
+    "tests/personal-qr-ui.test.mjs",
+    "docs/personal-qr-deploy-note.txt",
+    "docs/staff-scan-deploy-note.txt",
+    "docs/qr-full-flow-deploy-note.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [
+    "staff-scan-20261025",
+    "personal-qr-20261025"
+  ],
+  "supersedesEvents": [],
+  "integratesEvent": "60b87cd6-3146-4091-9da5-2ac28a4368e4",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "368e6f16-2a3e-4fbc-b9f5-cdb9c9fd5e88",
+  "recordedAt": "2026-10-26T19:46:31.645Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/qr/personal-qr-client.tsx": "060b2fa9a0d957d4ce614e9d0027df38c53deb599198df55219dc28d38b82a8b",
+    "lib/vietnamese-personal-qr.json": "e9ef6fc17c8b163996ffdc30406fcf4d28100bd71a6436c3090b83a4014c5a9a",
+    "supabase/migrations/20261025200000_qr_flow_integration.sql": "3fcbf871ac91bcd3f4812eca4e83f5a61a63122524fff890a0913ede50ebc921",
+    "tests/helpers/personal-qr-fixture.mjs": "c59fa3ab7cac88ef678814396cd30a1cb616b6e3b642dcdeec9442996c0101e4",
+    "tests/personal-qr-full-schema.integration.test.mjs": "bda353f1a38bfe89a00dfb770cfc4bed2e4a6a6703cb2a4e9cb02bbb0f7c016c",
+    "tests/personal-qr-ui.test.mjs": "2da728ef72536ad7b36bed6dc69c45803912b65a7669ffb004d61c31f8b75d29",
+    "docs/personal-qr-deploy-note.txt": "aea86cd92ec41da3058789a0effdd1d0db4f025fde5e0aa4f97297318769f421",
+    "docs/staff-scan-deploy-note.txt": "57ce0544534cc00f91fd3556499ca8a08a9b64e79cf32aa7e07c96a528c1bae9",
+    "docs/qr-full-flow-deploy-note.txt": "47a084b00988aea907abbfab2392bab65bffa5683cb8ba079fd41f65b6c00a6f"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "validation": [
+    {
+      "name": "Financial and responsive regression",
+      "result": "pending"
+    }
+  ],
+  "files": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025"
+  },
+  "kind": "change",
+  "status": "working",
+  "changeId": "payroll-live-overview-20261025",
+  "summary": "Implement approved Payroll Overview and separate Analytics on shared mobile/desktop live data; owner-only edits with scoped history/notifications and current downloads. No production changes or deployment.",
+  "id": "46c74c31-51f3-47e9-912e-af85519360be",
+  "recordedAt": "2026-10-25T13:58:12.464Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

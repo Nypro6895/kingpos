@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "live-qa-audit-20261025",
+  "status": "needs-integration",
+  "summary": "Local QA audit fixes and per-finding Vietnamese report; requires production-source reconciliation and full-schema staging validation before release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/bookings/actions.ts",
+    "app/bookings/booking-workspace-client.tsx",
+    "lib/booking-domain/errors.ts",
+    "lib/booking-domain/customer-identity.ts",
+    "lib/booking-domain/mutations.ts",
+    "supabase/migrations/20261025060000_owner_booking_atomic.sql",
+    "lib/dashboard-deadline.ts",
+    "lib/today-dashboard.ts",
+    "lib/daily-pos-report.ts",
+    "app/api/experience/today/route.ts",
+    "app/staff/today/today-dashboard-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "lib/customer-date-time.ts",
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx",
+    "lib/staff-payroll-period.ts",
+    "lib/payroll.ts",
+    "app/(app)/payroll/page.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/services/services-manager.tsx",
+    "app/my-place/my-place-client.tsx",
+    "app/(app)/my-bookings/page.tsx",
+    "components/salon-introduction.tsx",
+    "app/salon-profile/salon-website-home.tsx",
+    "lib/booking-count.ts",
+    "lib/booking-phone-display.ts",
+    "tests/live-qa-audit-20261025.test.mjs",
+    "tests/live-qa-audit-ui.test.mjs",
+    "tests/today-progressive.test.mjs",
+    "tests/today-progressive-ui.test.mjs",
+    "tests/staff-pay-analysis.test.mjs",
+    "artifacts/live-qa-audit-20261025/AUDIT-VI.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/live-qa-audit-20261025/snapshot"
+  },
+  "validation": [
+    {
+      "name": "43 targeted tests including Chrome UI and PGlite SQL",
+      "result": "passed",
+      "evidence": "43 passed; 0 failed; 0 skipped"
+    },
+    {
+      "name": "TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint selected 9 helper/domain modules",
+      "result": "passed"
+    },
+    {
+      "name": "Full Supabase Auth/PostgREST/RLS integration",
+      "result": "pending",
+      "evidence": "Docker daemon is unavailable; no production/staging data used"
+    }
+  ],
+  "dependencies": [],
+  "id": "51338a40-a082-41ba-b4c5-f26c2dbcd419",
+  "recordedAt": "2026-10-25T05:23:27.877Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

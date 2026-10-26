@@ -1,0 +1,69 @@
+{
+  "source": {
+    "hashManifest": "artifacts/signup-phone-history-20261025/frozen-files.json",
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\signup-phone-history-20261025\\source",
+    "patch": "artifacts/signup-phone-history-20261025/task.patch"
+  },
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "kind": "change",
+  "summary": "Implemented required signup phone, OTP onboarding and selected shared-phone history; 67 tests and webpack compile passed; not deployed, full typecheck blocked by unrelated Help cache/payroll errors",
+  "files": [
+    "app/signup/signup-form.tsx",
+    "app/(app)/api/auth/signup/route.ts",
+    "app/(app)/api/auth/login/route.ts",
+    "app/(app)/api/auth/callback/route.ts",
+    "app/(app)/api/auth/mfa/verify/route.ts",
+    "app/account/actions.ts",
+    "app/account/account-profile-editor.tsx",
+    "lib/auth-routing.ts",
+    "lib/customer-identity-claims.ts",
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "lib/signup-phone-routing.ts",
+    "app/(app)/welcome/phone/page.tsx",
+    "app/signup/phone/actions.ts",
+    "app/signup/phone/signup-phone-form.tsx",
+    "supabase/migrations/20261025110000_signup_phone_history.sql",
+    "tests/signup-phone-history-db.test.mjs",
+    "tests/signup-phone-routing-runtime.test.mjs",
+    "tests/signup-phone-history-full-schema.integration.test.mjs",
+    "tests/signup-phone-ui.test.mjs"
+  ],
+  "validation": [
+    {
+      "evidence": "artifacts/signup-phone-history-20261025/report.json",
+      "result": "passed",
+      "name": "67 regression/browser/full-schema tests"
+    },
+    {
+      "evidence": "artifacts/signup-phone-history-20261025/full-schema.log",
+      "result": "passed",
+      "name": "287 migrations and real Auth/PostgREST/RLS in isolated fixture"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped ESLint"
+    },
+    {
+      "evidence": "artifacts/signup-phone-history-20261025/compile.log",
+      "result": "passed",
+      "name": "Next webpack compile-only"
+    },
+    {
+      "evidence": "artifacts/signup-phone-history-20261025/typecheck.log; unrelated stale Help cache and lib/payroll.ts",
+      "result": "failed",
+      "name": "Full project TypeScript"
+    }
+  ],
+  "changeId": "signup-phone-history-20261025",
+  "dependencies": [
+    "customer-identity-auto-merge-20261023"
+  ],
+  "id": "b1392bad-61b5-4b33-962c-dacbd8a96c76",
+  "recordedAt": "2026-10-25T14:25:05.880Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

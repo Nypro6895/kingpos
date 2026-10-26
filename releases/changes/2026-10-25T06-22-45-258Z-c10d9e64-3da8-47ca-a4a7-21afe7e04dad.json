@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "kiosk-recognition-back-20261025",
+  "status": "needs-integration",
+  "summary": "Resolved Ticket test mock with minimal useRouter export; prepared guarded local-only kiosk UI E2E. Dedicated backend unavailable; active simulator DB untouched. Product patch unchanged, no deploy.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "docs/release-notes/kiosk-recognition-back-20261025.md",
+    "lib/kiosk-request-guard.ts",
+    "supabase/migrations/20261025090000_kiosk_phone_recognition.sql",
+    "tests/kiosk-phone-recognition.integration.test.mjs",
+    "tests/kiosk-request-navigation.test.mjs",
+    "docs/release-notes/kiosk-recognition-back-verification-20261025.md",
+    "tests/portable-ticket-live-sync.test.mjs",
+    "tests/kiosk-local-target.mjs",
+    "tests/kiosk-local-target.test.mjs",
+    "tests/kiosk-checkin-local.e2e.mjs",
+    "docs/release-notes/kiosk-local-e2e-status-20261025.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/kiosk-recognition-back-20261025/local-e2e/source",
+    "applicationPatch": "artifacts/kiosk-recognition-back-20261025/kiosk-recognition-back.patch",
+    "testPatch": "artifacts/kiosk-recognition-back-20261025/local-e2e/test-only.patch",
+    "receipt": "artifacts/kiosk-recognition-back-20261025/local-e2e/receipt.json"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Ticket browser fixture",
+      "result": "passed",
+      "evidence": "1/1, missing useRouter mock fixed without weakening assertions"
+    },
+    {
+      "name": "Local-only E2E target guards",
+      "result": "passed",
+      "evidence": "2/2; external URLs/other-task/stopped/unisolated DB rejected"
+    },
+    {
+      "name": "Full local check-in E2E",
+      "result": "pending",
+      "evidence": "Prepared, not run; dedicated QA stack stopped, only another task simulator running"
+    },
+    {
+      "name": "Prior build/native/runtime/SQL checks",
+      "result": "passed",
+      "evidence": "Application bytes unchanged; see previous verification receipts"
+    }
+  ],
+  "id": "c10d9e64-3da8-47ca-a4a7-21afe7e04dad",
+  "recordedAt": "2026-10-25T06:22:45.258Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

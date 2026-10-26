@@ -1,0 +1,133 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/payroll/tax-company/page.tsx",
+    "app/payroll/actions.ts",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css",
+    "app/payroll/payroll-change-history.tsx",
+    "app/payroll/payroll-live-refresh.tsx",
+    "app/payroll/current-payroll-download.tsx",
+    "app/payroll/current-payroll-download-actions.ts",
+    "app/payroll/data-download-actions.ts",
+    "app/payroll/data-download-panel.tsx",
+    "app/payroll/staff-income-autosave-inputs.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/daily-report-history.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/navigation-shell.tsx",
+    "app/pos-tickets/actions.ts",
+    "lib/payroll.ts",
+    "lib/payroll-live-dashboard.ts",
+    "lib/payroll-live-money.ts",
+    "lib/payroll-live-projection.ts",
+    "lib/payroll-live-history.ts",
+    "lib/payroll-period-navigation.ts",
+    "lib/daily-closing-server.ts",
+    "lib/daily-pos-report.ts",
+    "lib/pos-ticket-staff-earnings.ts",
+    "lib/staff-my-work-experience.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "types/payroll.ts",
+    "types/payroll-live-history.ts",
+    "supabase/migrations/20261025143000_payroll_live_history.sql",
+    "tests/payroll-live-dashboard.test.mjs",
+    "tests/payroll-live-history.integration.test.mjs",
+    "tests/staff-pay-analysis.test.mjs",
+    "app/staff/my-work/staff-my-work-client.tsx",
+    "lib/use-staff-payroll-updates.ts",
+    "tests/payroll-data-download.test.mjs"
+  ],
+  "kind": "change",
+  "summary": "Approved live Payroll Overview and separate Analytics, matching mobile/desktop financial content. Owner-only live edits, append-only scoped history/notifications, current downloads, exact-cent and arbitrary-range reconciliation. Supersedes immutable-period workflow; no production/schema mutation or deployment.",
+  "supersedes": [
+    "payroll-period-ledger-20261015"
+  ],
+  "status": "ready",
+  "changeId": "payroll-live-overview-20261025",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\frozen"
+  },
+  "validation": [
+    {
+      "evidence": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\tests-frozen.txt",
+      "result": "passed",
+      "name": "46 financial/history/access/download regressions on frozen source"
+    },
+    {
+      "evidence": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\responsive-results.json",
+      "result": "passed",
+      "name": "63 responsive tab checks, empty/missing states and chart controls"
+    },
+    {
+      "evidence": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\build-final.txt",
+      "result": "passed",
+      "name": "Isolated production build"
+    },
+    {
+      "evidence": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\typecheck-final.txt",
+      "result": "passed",
+      "name": "TypeScript"
+    },
+    {
+      "evidence": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\lint-final.txt",
+      "result": "passed",
+      "name": "Scoped ESLint"
+    }
+  ],
+  "id": "dfeb5206-de30-4a06-8d9a-1d99f4ec8b74",
+  "recordedAt": "2026-10-25T15:06:45.564Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "3ffd52563ff6ba016aae472ac549d6e13dca63bebec9136ed1d54ede790a277f",
+    "app/(app)/payroll/tax-company/page.tsx": "4ee82b85a17ea052ec7ae84b1395da2c6b7cabb618ceb020cd0f9a9e6119e979",
+    "app/payroll/actions.ts": "3ef1ee5a8393150ba4ce38b450ee3475aa37f83cf464edec0947ee02a3803b03",
+    "app/payroll/payroll-mobile.module.css": "ef03aceafd2d78cf423536380acc469ad57e3ffe9b2d71948b08d9d35ed62282",
+    "app/payroll/payroll-dashboard.tsx": "cb480f50f3e764014c63cb34b4f8a6e9def493fe8a038758eb9e7ee02909fb33",
+    "app/payroll/payroll-dashboard.module.css": "c869c3a5f5deab748cf983dbe4abe7bcd5f402b208c363883d78c82fb1e92638",
+    "app/payroll/payroll-change-history.tsx": "6aa25dcef1bd5cc4862fb1e710417a3afb67cdded36cef07d8c047c3013947a6",
+    "app/payroll/payroll-live-refresh.tsx": "dfa554a2d115334d64ed5ccc8d2413a2f3ed3471924d4ba1a9dbf7e9e1868a67",
+    "app/payroll/current-payroll-download.tsx": "14973df5e58b4e2f3d05d33116d7cc5670b99e08a891874018524609fa8fde8d",
+    "app/payroll/current-payroll-download-actions.ts": "cf1baecbaf8925698d8514a9c691f5edf38d490d7116d12c6c6970964e6a4604",
+    "app/payroll/data-download-actions.ts": "e985c753787cf9e256063007894102f91bf89589e3fddfb4199b2372b206309f",
+    "app/payroll/data-download-panel.tsx": "bd9130728beed1781a7e9e2b22637b4bb9046afe3d1692c6ce936b5d033f317a",
+    "app/payroll/staff-income-autosave-inputs.tsx": "3fe2cc3184be36685c8088e331f014fbeb8731dfd19b68e7ce34abedd41a4df2",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx": "acd861ea6c0cf41effcbd40ff050c54abcc4b604308c6a2c85cfa11790eb7e80",
+    "app/reports/daily-closing-form.tsx": "aaeb5affc03249c84d6d83b33ef7d95376778d2be175ccb61b0ca361dea03d88",
+    "app/reports/daily-report-history.tsx": "5c0ade518cf5916b04ea4aa4204fa8546238935994b7015ec364c700c1674caa",
+    "app/staff/my-work/staff-pay-analysis.tsx": "7a3353ac1fda9e6669c96fd4f66240c7756643bb425ed5e5d7f609f25f2fd934",
+    "app/settings/team-payroll-panels.tsx": "af6bb24788e4ac22cff0c368e16b8c3d7ee808c133febeb4bb447f812bddabbb",
+    "app/navigation-shell.tsx": "d1932c3707cb56dc88dcbbbb20993209ad419f5964f2a2c9521a5a6ecdeb9794",
+    "app/pos-tickets/actions.ts": "738275d63b6208338cdb100cccd94a8439fa6b8b25a717bece44cdd2ff1d19e1",
+    "lib/payroll.ts": "94901676e7fd41248f54792e2fb94b1f0412918a1487ae53f6c02ce7f7e553bd",
+    "lib/payroll-live-dashboard.ts": "bb07c1dad145104aad4f99be21b198eca7133b08102c9d69089c5e9952140df0",
+    "lib/payroll-live-money.ts": "c1448fff1522a882de252668b8ac48e674b702a922045dde39de1a71888816ab",
+    "lib/payroll-live-projection.ts": "07cfdae1009abb1f593b1f97653765ae2aeb59b879b4c2abe562598274395253",
+    "lib/payroll-live-history.ts": "e0b25314665e3143b1d1d8f69e2dce2b48e7040636bfab823b74763acb3a5d23",
+    "lib/payroll-period-navigation.ts": "73d16df9c0c641b812a5edb913b818025942f82bc97ce40a8640a8407ae0a91d",
+    "lib/daily-closing-server.ts": "adc1aaa81321e4da0ebcc3bed7bf0f09955819a968dd95e5722418dcc030d790",
+    "lib/daily-pos-report.ts": "4b1cdf1667a560d3ab34422a1ae5fa6fe1c73d5044514312233b29b18f47819f",
+    "lib/pos-ticket-staff-earnings.ts": "ba4164cff861ddeca19adf732012d5a31a68c0d5d6270a68947cb62d7965a893",
+    "lib/staff-my-work-experience.ts": "074f987a7881b5fa5ec526e72315acc64c5e16c66140919b7af8b3836e1279c3",
+    "lib/staff-my-work-resource-server.ts": "f6328522f2efdfa8274f489fc8bb2e1f294441b716935193cad702761feed34d",
+    "types/payroll.ts": "67c209461408eb43ca3da5ff0f42b56e506ec5382bd2a223d7a0d2528da830a2",
+    "types/payroll-live-history.ts": "b6001236e93a7f043e34ce6865d82efbba544de0362753e5a8c23a142e7e9494",
+    "supabase/migrations/20261025143000_payroll_live_history.sql": "13d3965779f6c349ebb2b2f574a491e9b2d0355e71979e3a220236e23862e793",
+    "tests/payroll-live-dashboard.test.mjs": "2c9eccb3862e1f5ebc209b4f21a2657a49036b8df1b6f40506d86e1c392385b2",
+    "tests/payroll-live-history.integration.test.mjs": "ae3282dd71ae6f7d9d63378c307d14a140bcc70d1ac6103168572f3b3d7cb3e5",
+    "tests/staff-pay-analysis.test.mjs": "6fb15d8d45f05c003a1dd232954d2dd036d980c8c945f3e347d990f3b5b70205",
+    "app/staff/my-work/staff-my-work-client.tsx": "2e94f1e1db74a768db432c6acab22d19c87e291a1b4d1408b8c5b99810fb0a3e",
+    "lib/use-staff-payroll-updates.ts": "486a7fa85010be09ced98e47e15c4a37dc132d8ab4bfcb79f30ecaa284e98387",
+    "tests/payroll-data-download.test.mjs": "bb25862a5d883ce87d22bc346112d5df129d9a6d519668f55e3d1f7447965303"
+  }
+}

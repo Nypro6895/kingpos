@@ -1,0 +1,26 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Audit iOS POS More settings entry and dismiss retained portal on navigation",
+  "changeId": "pos-more-settings-20261025",
+  "dependencies": [],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "iOS simulator"
+    }
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "components/role-more-content.tsx"
+  ],
+  "status": "working",
+  "kind": "change",
+  "id": "33f969cf-547f-495e-bb2d-6e28525f91f2",
+  "recordedAt": "2026-10-25T05:11:57.227Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

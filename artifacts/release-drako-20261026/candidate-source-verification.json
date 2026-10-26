@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-26T19:35:17.769Z",
+  "label": "candidate",
+  "deploymentId": "dpl_CTdA1SDeK9YxEjo7cDT6Js8eMZWz",
+  "url": "kingpos-agiqabeom-kingpos.vercel.app",
+  "readyState": "READY",
+  "aliasDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+  "allHashesMatch": true,
+  "files": 3325,
+  "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+  "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5",
+  "deploySourceSha256": "94f9ad11fec74b73d044a8438f88ec25617a696ce1ff0a51524921b99991ad2d",
+  "baselineDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+  "baselineSourceSha256": "dc9a63ddb0a53c24dcb9f99790e917bd81573ab4783e9f0e9c0a2fb611a0c86e",
+  "overlaySha256": "9f05c5280191c5822e7cd29bf9ad747f7a789ed8161c2fcbe675ebc3244cbfa3"
+}

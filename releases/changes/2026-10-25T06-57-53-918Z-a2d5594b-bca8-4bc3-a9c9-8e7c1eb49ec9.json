@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "customer-merge-all-conflicts-20261025",
+  "status": "needs-integration",
+  "summary": "Fix Merge all conflict handling; 55 tests passed including full-schema Auth/PostgREST/RLS. Frozen source requires reconciliation with the current production baseline before publication.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/customers/actions.ts",
+    "app/customers/manual-merge-picker.tsx",
+    "app/customers/duplicate-merge-forms.tsx",
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx",
+    "lib/customers.ts",
+    "supabase/migrations/20261025100000_customer_merge_suggestions.sql",
+    "tests/customer-identity-merge.test.mjs",
+    "tests/customer-management-contract.test.mjs",
+    "tests/customer-merge-actions.test.mjs",
+    "tests/customer-merge-suggestions-ui.test.mjs",
+    "tests/customer-merge-suggestions.integration.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/customer-merge-all-20261025/frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Targeted SQL, action, browser and regression tests",
+      "result": "passed",
+      "evidence": "artifacts/customer-merge-all-20261025/targeted-tests.txt: 50 passed, no failures or skips"
+    },
+    {
+      "name": "Full schema, real Auth/PostgREST/RLS merge tests",
+      "result": "passed",
+      "evidence": "artifacts/customer-merge-all-20261025/full-schema-merge/customer-merge-suggestions-results.json: 5 passed; 285 migrations; final migration SHA256 verified; owned containers removed"
+    },
+    {
+      "name": "ESLint changed modules and new tests",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript source check",
+      "result": "passed",
+      "evidence": "No source diagnostics after excluding stale generated .next-readiness-check types; default tsc still fails on removed Help routes in that generated directory"
+    }
+  ],
+  "dependencies": [
+    "customer-identity-auto-merge-20261023"
+  ],
+  "id": "a2d5594b-bca8-4bc3-a9c9-8e7c1eb49ec9",
+  "recordedAt": "2026-10-25T06:57:53.918Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

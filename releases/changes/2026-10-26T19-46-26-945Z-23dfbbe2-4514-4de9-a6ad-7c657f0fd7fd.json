@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "kiosk-recognition-back-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Resolved Ticket test mock with minimal useRouter export; prepared guarded local-only kiosk UI E2E. Dedicated backend unavailable; active simulator DB untouched. Product patch unchanged, no deploy.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "docs/release-notes/kiosk-recognition-back-20261025.md",
+    "lib/kiosk-request-guard.ts",
+    "supabase/migrations/20261025090000_kiosk_phone_recognition.sql",
+    "tests/kiosk-phone-recognition.integration.test.mjs",
+    "tests/kiosk-request-navigation.test.mjs",
+    "docs/release-notes/kiosk-recognition-back-verification-20261025.md",
+    "tests/portable-ticket-live-sync.test.mjs",
+    "tests/kiosk-local-target.mjs",
+    "tests/kiosk-local-target.test.mjs",
+    "tests/kiosk-checkin-local.e2e.mjs",
+    "docs/release-notes/kiosk-local-e2e-status-20261025.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integratesEvent": "c10d9e64-3da8-47ca-a4a7-21afe7e04dad",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "23dfbbe2-4514-4de9-a6ad-7c657f0fd7fd",
+  "recordedAt": "2026-10-26T19:46:26.945Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/pos/customer-display/customer-display-client.tsx": "b1a8e1c0f13a40d10e8d575df02ff4efe6747297f9a95966371c7bd6d5413aff",
+    "docs/release-notes/kiosk-recognition-back-20261025.md": "d5a961bb6dc8ff66f4147df5a139183a7b497340d0e4a63a10581aaa3a1eb306",
+    "lib/kiosk-request-guard.ts": "c2a5a2b75c5396b8be35efe882717aefec8a96d511aa12d6c185b9631b265b1e",
+    "supabase/migrations/20261025090000_kiosk_phone_recognition.sql": "c776c05e87e17fccbcdab538c591b23c926e0b4d0d705f0e78263fca85c06da5",
+    "tests/kiosk-phone-recognition.integration.test.mjs": "b4bbddf338157f234fba383c451a52599eb78fa65ecd1f094b5e85b99df064d7",
+    "tests/kiosk-request-navigation.test.mjs": "52ba7b1e8a957ed6e690643d3358b81b041f0394795817088649d5c67547ea29",
+    "docs/release-notes/kiosk-recognition-back-verification-20261025.md": "f3d4799cb921b2c8b5ae2ac8811d91d7256ec25c50eeb0de46a8644fc8a0e099",
+    "tests/portable-ticket-live-sync.test.mjs": "eb093e229840f484412eb6cabccdeb41536efd4bcb34c0381724d4e90719ca57",
+    "tests/kiosk-local-target.mjs": "073675d328dc3c407227607373896867ececc1544250a001660b8c4465f17229",
+    "tests/kiosk-local-target.test.mjs": "b682f3aa0381212a4c8e9c2a9c95ef8cfe37217c69e6a8f8ad5c2a8a2818fe3a",
+    "tests/kiosk-checkin-local.e2e.mjs": "05f7ed80f9b9bf9b43c72143b3ec10dfd2e4d1c77c19a45d7e2430dfd83128a9",
+    "docs/release-notes/kiosk-local-e2e-status-20261025.md": "91c49b818fa0f7980fd9208dadfdc26f7ef2347fee2e8390d1d7afefeea3fae8"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "kiosk-recognition-back-20261025",
+  "status": "working",
+  "summary": "Repair kiosk phone recognition, Back navigation and retry safety; no visual redesign or deployment.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "supabase/migrations/20261025090000_kiosk_phone_recognition.sql"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "synthetic runtime and database tests",
+      "result": "pending"
+    }
+  ],
+  "id": "a34775c4-b96c-47bc-bec3-3111570980c5",
+  "recordedAt": "2026-10-25T05:58:29.721Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

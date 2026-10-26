@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "validation": [],
+  "changeId": "customer-name-unicode-normalization-20261023",
+  "files": [
+    "lib/customer-identity-match.ts",
+    "tests/customer-name-unicode.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\.migration-20261023\\unicode-fix-before"
+  },
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "working",
+  "summary": "Normalize canonically equivalent customer names before matching; small regression fix during new-machine readiness verification.",
+  "id": "b846b36a-4ba8-42b6-b09d-36ac933ace90",
+  "recordedAt": "2026-10-23T23:53:25.282Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,37 @@
+{
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-helper\\frozen"
+  },
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "artifacts/release-drako-helper/console.json",
+      "name": "Windows PowerShell 5.1 tokenless validation, AST parse and eight source hash checks"
+    },
+    {
+      "result": "pending",
+      "evidence": "Single owned PID 3708 awaits local masked input; no SQL queued",
+      "name": "Fixed-project authentication and actual SQL outcome"
+    }
+  ],
+  "files": [
+    "artifacts/release-drako-helper/prepare-runner.mjs",
+    "artifacts/release-drako-helper/Start-GuardedSql.ps1",
+    "artifacts/release-drako-helper/Bootstrap.ps1",
+    "artifacts/release-drako-helper/pins.json",
+    "artifacts/release-drako-helper/review.json"
+  ],
+  "changeId": "drako-guarded-release-runner-20261026",
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "summary": "Owner stopped temporary PAT helper path. Helper PID3708 closed before input with no SQL or verification. Existing authenticated Supabase SQL Editor recovered and read-only query passed; reuse established connection, Vercel and GitHub release routes. No product source changes.",
+  "dependencies": [],
+  "status": "abandoned",
+  "id": "6159005e-a56d-4fe0-8a04-bd9edeec9d5e",
+  "recordedAt": "2026-10-26T18:43:32.025Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

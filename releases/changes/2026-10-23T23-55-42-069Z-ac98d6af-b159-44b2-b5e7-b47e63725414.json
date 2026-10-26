@@ -1,0 +1,30 @@
+{
+  "channels": [
+    "web"
+  ],
+  "changeId": "customer-name-unicode-normalization-20261023",
+  "validation": [
+    {
+      "evidence": "C:\\Reylumi\\.migration-20261023\\extended-small-fix-verification.json",
+      "name": "Regression failed before fix and all 20 targeted local tests passed after fix",
+      "result": "passed"
+    }
+  ],
+  "kind": "change",
+  "source": {
+    "preimage": "C:\\Reylumi\\.migration-20261023\\unicode-fix-before",
+    "snapshot": "C:\\Reylumi\\.migration-20261023\\unicode-fix-source"
+  },
+  "status": "needs-integration",
+  "files": [
+    "lib/customer-identity-match.ts",
+    "tests/customer-name-unicode.test.mjs"
+  ],
+  "dependencies": [],
+  "summary": "Fixed NFC/NFD customer-name mismatch with one normalization line; 20 local tests passed. Frozen patch awaits integration against the exact release baseline.",
+  "id": "ac98d6af-b159-44b2-b5e7-b47e63725414",
+  "recordedAt": "2026-10-23T23:55:42.069Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

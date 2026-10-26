@@ -1,0 +1,33 @@
+{
+  "status": "ready",
+  "dependencies": [],
+  "channels": [
+    "web"
+  ],
+  "changeId": "windows-production-guard-command-20261026",
+  "summary": "Repair Windows production alias guard command resolution to use existing npx.cmd without changing execution policy or credentials; release tooling only",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-20261026\\guard-frozen"
+  },
+  "validation": [
+    {
+      "evidence": "2/2 passed; CLI npx.cmd uses existing login without policy change",
+      "result": "passed",
+      "name": "Focused production baseline rejection/Windows CLI tests"
+    }
+  ],
+  "files": [
+    "scripts/verify-production-base.mjs",
+    "tests/verify-production-base.test.mjs"
+  ],
+  "kind": "change",
+  "id": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+  "recordedAt": "2026-10-26T18:48:05.259Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "scripts/verify-production-base.mjs": "f9d822a0f1a5fbff34256664f18fcd3c4a33115227dd3b33d3c9ffd66d7cd92f",
+    "tests/verify-production-base.test.mjs": "9265dd0a0e1ef573efe46bf99a38d8afab600054b76e1225676218d89b304737"
+  }
+}

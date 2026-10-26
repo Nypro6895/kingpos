@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "owner-ticket-single-row-20261025",
+  "status": "needs-integration",
+  "summary": "Ticket Owner: một hàng tiêu đề/ngày/tìm kiếm/menu, bỏ bố cục tiêu đề trên ngày; lưu chờ deploy chung, chưa publish.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/globals.css",
+    "docs/owner-ticket-single-row-deploy-note.txt",
+    "docs/pos-mobile-compact-deploy-note.txt"
+  ],
+  "source": {
+    "snapshot": "artifacts/owner-ticket-single-row-20261025/source",
+    "patch": "artifacts/owner-ticket-single-row-20261025/change.patch",
+    "hashes": "artifacts/owner-ticket-single-row-20261025/source-hashes.json",
+    "baselineSnapshot": "artifacts/owner-ticket-single-row-20261025/before",
+    "nativeAssessment": "Web presentation only; no native source or bridge changes."
+  },
+  "dependencies": [
+    "ticket-toolbar-20261017",
+    "compact-ticket-layout-20261017",
+    "pos-mobile-compact-20261024"
+  ],
+  "validation": [
+    {
+      "name": "Chromium actual components with mocked data: responsive layout 320/375/390/430/768/979/980/1280",
+      "result": "passed",
+      "evidence": "artifacts/owner-ticket-single-row-20261025/layout-results.json"
+    },
+    {
+      "name": "Search/date/menu/edit/cancel/totals browser regression",
+      "result": "passed",
+      "evidence": "artifacts/owner-ticket-single-row-20261025/qa-result.json"
+    },
+    {
+      "name": "ESLint TicketFilters",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped TypeScript including imported dependencies",
+      "result": "passed",
+      "evidence": "artifacts/owner-ticket-single-row-20261025/tsconfig.json"
+    },
+    {
+      "name": "Whole-checkout TypeScript",
+      "result": "failed",
+      "evidence": "Six pre-existing TS2307 errors in .next-readiness-check/types for moved Help routes; regenerate release cache during integration."
+    },
+    {
+      "name": "Assembled release production build and authenticated iPhone QA",
+      "result": "pending"
+    }
+  ],
+  "integration": "Apply task change.patch after earlier ticket toolbar and POS mobile changes. Patch contains only product deltas; docs are in snapshot. Do not overlay complete globals.css or dirty checkout. See docs/owner-ticket-single-row-deploy-note.txt.",
+  "id": "14f7d3be-ca3d-4436-86d9-113eca9177d5",
+  "recordedAt": "2026-10-25T07:04:30.264Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

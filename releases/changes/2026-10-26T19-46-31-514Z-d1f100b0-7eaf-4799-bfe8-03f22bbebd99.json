@@ -1,0 +1,108 @@
+{
+  "kind": "change",
+  "changeId": "personal-qr-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Implemented Personal identity QR, signed-in salon check-in, POS Ready and canonical History receipt; owner scans user info then Send/Cancel using existing staff invitation acceptance.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "lib/auth-routing.ts",
+    "app/(app)/staff/page.tsx",
+    "app/check-in/[entry]/page.tsx",
+    "app/service-relay/customer-relay.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/actions.ts",
+    "app/pos/portable/actions.ts",
+    "app/(app)/pos/portable/page.tsx",
+    "app/staff/scan/actions.ts",
+    "app/staff/scan/qr-scanner.tsx",
+    "types/service-relay.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-personal-qr.json",
+    "supabase/migrations/20261025190000_personal_qr.sql",
+    "types/personal-qr.ts",
+    "lib/personal-qr.ts",
+    "app/qr/actions.ts",
+    "app/(app)/qr/page.tsx",
+    "app/qr/personal-qr.module.css",
+    "app/qr/personal-qr-client.tsx",
+    "app/staff/personal-qr-connector.tsx",
+    "tests/staff-scan-pos-ui.test.mjs",
+    "tests/helpers/personal-qr-fixture.mjs",
+    "tests/personal-qr.integration.test.mjs",
+    "tests/personal-qr-code.test.mjs",
+    "tests/personal-qr-ui.test.mjs",
+    "docs/personal-qr-deploy-note.txt",
+    "tests/customer-history-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [
+    "staff-scan-20261025"
+  ],
+  "supersedesEvents": [],
+  "integratesEvent": "54bbc355-1409-479e-bf5f-27b50edb6f2f",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "d1f100b0-7eaf-4799-bfe8-03f22bbebd99",
+  "recordedAt": "2026-10-26T19:46:31.514Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/role-navigation.ts": "4c4e26711f1d9e04e96b4dde3d5b093ef0f4c50b8d3a2a1cf3e94e4bcba3dc62",
+    "lib/auth-routing.ts": "a4f246ddb669dd4e162bc258aca41fdc62118a795a38ba6acb9e936a765b2935",
+    "app/(app)/staff/page.tsx": "accca8329e15d26c9cb0f1302b8834d404ead282ebfbd82b7f22bd7c1d8e4fe1",
+    "app/check-in/[entry]/page.tsx": "ee5d0784bf5fece1aefb5162fede8648877076bb5f940be9208bfda653c013a0",
+    "app/service-relay/customer-relay.tsx": "f5af0949efdc95bfa564931fed221e22d738399684ae4b3f5d4b6da1be0b55d6",
+    "app/service-relay/desk-relay.tsx": "d96c9464a20a7500b5096d8d0e4a3921cd5093306dfd19786a750317a6aa290a",
+    "app/service-relay/actions.ts": "97fbb493eb3a2ffc9fd2e74581ad73dfa4a79533e7301a1548e53b4612d7819d",
+    "app/pos/portable/actions.ts": "764eca404ef14f3fb14fbe6897e4b76e95fe6ba47767b81b57675491635a8011",
+    "app/(app)/pos/portable/page.tsx": "262289e986830f9ee7b3d8ded4725c5fd67efe4b457dcd436c3f04e344af0a93",
+    "app/staff/scan/actions.ts": "ffa6f283e303251c97b9b944f66777435f11fbe2e9a926b3f1d2d2feb6e01364",
+    "app/staff/scan/qr-scanner.tsx": "989bd6aeb8c1f55b4b05faf612259bcb1fd8ffcc14cc738f6506304d496c70c5",
+    "types/service-relay.ts": "91385dab5c0a0a64d00444d5d7404ff2f74be402576e8ecb80019dc0ac520fad",
+    "lib/vietnamese-dictionary.ts": "3b64d2b4c5eec9d6ef21ae8c5082038ecfaec9281528600164a94341d21626bb",
+    "lib/vietnamese-personal-qr.json": "e9ef6fc17c8b163996ffdc30406fcf4d28100bd71a6436c3090b83a4014c5a9a",
+    "supabase/migrations/20261025190000_personal_qr.sql": "f0280bbf3ffcd868144c4adfa7bcdae085b277a35dc4c1ff14e2e3d2d3785654",
+    "types/personal-qr.ts": "66311becf575e7e5659eeb54217b2ce9e488d4d17c1fc925a8236aed2040affd",
+    "lib/personal-qr.ts": "1c7f7f412b223d3193143accc6d3cf495464af071ce75321e7db545cdfd3d158",
+    "app/qr/actions.ts": "bb7fe120a5a37c43c20ec2725ae704a75ee0c3033dbd50256ba57ad8030b6dfb",
+    "app/(app)/qr/page.tsx": "e8a7c66924d38bdcf25ae447c6cb997d70caa07f57e95255cc65673ccd1811e2",
+    "app/qr/personal-qr.module.css": "9b6eea25014128d9965747aab5d76b3fca6e0c00705aeeff67ff87f01643c03f",
+    "app/qr/personal-qr-client.tsx": "060b2fa9a0d957d4ce614e9d0027df38c53deb599198df55219dc28d38b82a8b",
+    "app/staff/personal-qr-connector.tsx": "d234c2201b860fb76b1782e34d6c326acc6d62483f3162939f4f5fc58dc45743",
+    "tests/staff-scan-pos-ui.test.mjs": "dbccbc8e22efa3459d20bd71973aa4a350db95a7cc75b44055708958f901a0fd",
+    "tests/helpers/personal-qr-fixture.mjs": "c59fa3ab7cac88ef678814396cd30a1cb616b6e3b642dcdeec9442996c0101e4",
+    "tests/personal-qr.integration.test.mjs": "c5ede5e6751a3a47c65a41a6b670438e3333860a237dcbd4b7fd8480cf624fd2",
+    "tests/personal-qr-code.test.mjs": "46b010bf8777849a0d88da8ba72f715c1c79fae656843740dcfdc89902ede622",
+    "tests/personal-qr-ui.test.mjs": "2da728ef72536ad7b36bed6dc69c45803912b65a7669ffb004d61c31f8b75d29",
+    "docs/personal-qr-deploy-note.txt": "aea86cd92ec41da3058789a0effdd1d0db4f025fde5e0aa4f97297318769f421",
+    "tests/customer-history-ui.test.mjs": "7dfbd56e573df5afda9440ebc3b959c554b6b97b5ab2ef2bf9726a1ca1e27b83"
+  }
+}

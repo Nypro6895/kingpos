@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-26T19:42:11.371Z",
+  "origin": "https://reylumi.com",
+  "passed": true,
+  "checks": [
+    {
+      "path": "/login",
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "path": "/signup",
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "path": "/explore",
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "path": "/help",
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "path": "/payroll",
+      "status": 200,
+      "location": null,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "customer-merge-all-conflicts-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Fix Merge all conflict handling; 55 tests passed including full-schema Auth/PostgREST/RLS. Frozen source requires reconciliation with the current production baseline before publication.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/customers/actions.ts",
+    "app/customers/manual-merge-picker.tsx",
+    "app/customers/duplicate-merge-forms.tsx",
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx",
+    "lib/customers.ts",
+    "supabase/migrations/20261025100000_customer_merge_suggestions.sql",
+    "tests/customer-identity-merge.test.mjs",
+    "tests/customer-management-contract.test.mjs",
+    "tests/customer-merge-actions.test.mjs",
+    "tests/customer-merge-suggestions-ui.test.mjs",
+    "tests/customer-merge-suggestions.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [
+    "customer-identity-auto-merge-20261023"
+  ],
+  "supersedesEvents": [],
+  "integratesEvent": "a2d5594b-bca8-4bc3-a9c9-8e7c1eb49ec9",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "65a42495-2cf3-4cbe-8ee6-e061f98a853b",
+  "recordedAt": "2026-10-26T19:46:28.961Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/customers/actions.ts": "761840fc9c7354f5d727fb3ba2d1cc6947f14244dab8442bae06eaa8e47157c9",
+    "app/customers/manual-merge-picker.tsx": "c6cc26aa879f543b2b704db2ebb4930e41b72036b74d6f685b909af72bbff7b9",
+    "app/customers/duplicate-merge-forms.tsx": "dfb207db20d7a5639115d58b7440a5fdf3afb6b21f538cbf8f677b21bb913504",
+    "app/(app)/customers/page.tsx": "4238cb5baa41755a18786d4c9dba3827aa16e3ae18df1aeb0a6b8810dba3e74e",
+    "app/(app)/customers/[customerId]/page.tsx": "5eec1bace8f50a41c8d873b0ca380fbb97da0f7289dcb57af83e39bcc3dd2271",
+    "lib/customers.ts": "0e2a98639667240edb5be14e1e3947f67d69cfe1bf9b05b64efd25b3c86e384f",
+    "supabase/migrations/20261025100000_customer_merge_suggestions.sql": "23ce5c3986ac0181d25e14ce8729962a5572ce0708fb53d66ee3e804ea65bce4",
+    "tests/customer-identity-merge.test.mjs": "59b7b02a7e5e7e881b60420970dfa2be8eee06c968e184d003ba7245ceacd0c4",
+    "tests/customer-management-contract.test.mjs": "dd76050f987d793029f5638de860a68d1050189766ec919485922b92e7a73bd1",
+    "tests/customer-merge-actions.test.mjs": "67105c1bd4b585358d7cf96587042a6d6ebf582166da2e3f5973169815a55adc",
+    "tests/customer-merge-suggestions-ui.test.mjs": "fec5b7b73fd521e08fa51f0e5a1a70fbe5680e0a9d75c447c3cf57fe6e11df6b",
+    "tests/customer-merge-suggestions.integration.test.mjs": "000d336f6473c77e324ee10adc8ff108dfad306f23e703b10f02591684a01951"
+  }
+}

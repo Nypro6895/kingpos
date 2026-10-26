@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Publish verified Reylumi internal TestFlight 1.0.0 (53) on the established distribution channel; Apple VALID/IN_BETA_TESTING. Web and eight approved migrations are already verified live.",
+  "changes": [
+    "432a21a0-e7b4-43ea-a757-c760a8eab9b6",
+    "d2bd9584-2fd3-4c6f-9db1-837118e85d9b",
+    "ed27269d-02e3-4b58-991b-152c09dd3448"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "53",
+      "commit": "df972323ddb12bae01f8e60934d1aa62b9d21597",
+      "sourceSha256": "ad7dd5f94914285f6ebbe132afac7cde2123ee6e902e230b0e5769a4276ce2e4",
+      "bundleSha256": "24384abb8cea0a30d2f7100529627d247bd9b79e8f99519b02133c43be47064f",
+      "baselineCommit": "064f3774d457621eae476767a22c19c8b1eaecb3",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/release-drako-20261026/native-final-verification.json",
+        "C:/Reylumi/kingpos/artifacts/release-drako-20261026/native-ci-source-equivalence.json",
+        "C:/Reylumi/kingpos/artifacts/release-drako-20261026/native-attempt2/testflight-receipt.json",
+        "C:/Reylumi/kingpos/artifacts/release-drako-20261026/native-attempt2/testflight-processing.json",
+        "https://github.com/Nypro6895/kingpos/actions/runs/40387976925"
+      ]
+    }
+  },
+  "appStoreSubmitted": false,
+  "testersOrGroupsChanged": false,
+  "relatedWebReleaseEvent": "5fdad43d-af7e-4ccc-a5fa-36ee6681d2cc",
+  "id": "8b6c0098-9eb3-4fe8-9a00-1ddb0e6541af",
+  "recordedAt": "2026-10-26T20:07:16.485Z",
+  "worktree": "C:\\Reylumi\\kingpos"
+}

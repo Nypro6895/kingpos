@@ -1,0 +1,185 @@
+{
+  "releaseId": "drako-existing-route-20261026-r108",
+  "completedAt": "2026-10-26T20:07:18.647Z",
+  "web": {
+    "url": "https://reylumi.com",
+    "deploymentId": "dpl_CTdA1SDeK9YxEjo7cDT6Js8eMZWz",
+    "baselineDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+    "sourceCommit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5",
+    "deploySourceSha256": "94f9ad11fec74b73d044a8438f88ec25617a696ce1ff0a51524921b99991ad2d",
+    "baselineSourceSha256": "dc9a63ddb0a53c24dcb9f99790e917bd81573ab4783e9f0e9c0a2fb611a0c86e",
+    "overlaySha256": "9f05c5280191c5822e7cd29bf9ad747f7a789ed8161c2fcbe675ebc3244cbfa3",
+    "verified": true,
+    "releaseEventId": "5fdad43d-af7e-4ccc-a5fa-36ee6681d2cc"
+  },
+  "database": {
+    "migrations": 8,
+    "ledgerCount": 308,
+    "sourceHashesVerified": true,
+    "protectedPaymentsAndClosingValuesPreserved": true
+  },
+  "ios": {
+    "at": "2026-10-26T20:06:03.985Z",
+    "workflowRun": 40387976925,
+    "workflowAttempt": 2,
+    "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/40387976925",
+    "commit": "df972323ddb12bae01f8e60934d1aa62b9d21597",
+    "baselineUploadedCommit": "064f3774d457621eae476767a22c19c8b1eaecb3",
+    "sourceCommit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceTree": "88f57f1069d6731fff1359015388a2feb7542d0f",
+    "version": "1.0.0",
+    "build": "53",
+    "bundle": "com.reylumi.ios",
+    "xcode": "Xcode 26.3\nBuild version 17C529",
+    "simulatorTests": {
+      "passed": 205,
+      "failed": 0
+    },
+    "upload": "accepted",
+    "appleBuildId": "ddfce826-86f3-4dfb-87e2-a48555e461c7",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "appleCheckedAt": "2026-10-26T20:02:52.345Z",
+    "sourceSha256": "ad7dd5f94914285f6ebbe132afac7cde2123ee6e902e230b0e5769a4276ce2e4",
+    "webSealedSourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5",
+    "lineEndingOnlySourceDifferences": 68,
+    "generatedBridgeMappingsMatchWeb": true,
+    "publicConfigurationMatchesWeb": true,
+    "bundleSha256": "24384abb8cea0a30d2f7100529627d247bd9b79e8f99519b02133c43be47064f",
+    "uploadedBundleFilesVerified": 346,
+    "nativeSourceFilesVerified": 25,
+    "testedSourceFilesCompared": 371,
+    "servicesPilot": false,
+    "appStoreSubmitted": false,
+    "testersOrGroupsChanged": false,
+    "passed": true
+  },
+  "changes": [
+    {
+      "changeId": "settings-pos-windows-download-release-20261023",
+      "inputEventId": "8077fc8f-01a1-4af4-b5dd-efbbe89901dd",
+      "eventId": "875741e1-0c46-4d5a-8970-1ac053aca08d",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "customer-name-unicode-normalization-20261023",
+      "inputEventId": "ac98d6af-b159-44b2-b5e7-b47e63725414",
+      "eventId": "289ce2e4-43ec-4fa2-9098-63ac783b58fd",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pos-mobile-compact-20261024",
+      "inputEventId": "2e4dd0e4-2ed3-421c-8f99-3a3dabb2774c",
+      "eventId": "7494540f-3d0f-44ba-a72a-1427dd6d2a38",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "live-qa-audit-20261025",
+      "inputEventId": "51338a40-a082-41ba-b4c5-f26c2dbcd419",
+      "eventId": "58beec50-94db-4c20-ab99-3e09489a8913",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pos-more-settings-20261025",
+      "inputEventId": "606a4970-dcd1-4021-9971-a0c724b5af73",
+      "eventId": "d2bd9584-2fd3-4c6f-9db1-837118e85d9b",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "kiosk-recognition-back-20261025",
+      "inputEventId": "c10d9e64-3da8-47ca-a4a7-21afe7e04dad",
+      "eventId": "23dfbbe2-4514-4de9-a6ad-7c657f0fd7fd",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "help-session-english-compact-20261025",
+      "inputEventId": "c1ed916e-b9dc-41fe-9960-a1fac29db9d1",
+      "eventId": "1db27dee-64cf-41c1-b792-7379ab45a1b0",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "customer-merge-all-conflicts-20261025",
+      "inputEventId": "a2d5594b-bca8-4bc3-a9c9-8e7c1eb49ec9",
+      "eventId": "65a42495-2cf3-4cbe-8ee6-e061f98a853b",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "owner-ticket-single-row-20261025",
+      "inputEventId": "14f7d3be-ca3d-4436-86d9-113eca9177d5",
+      "eventId": "079a8f12-c02a-4ede-aab7-bac09b717a19",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "signup-phone-history-20261025",
+      "inputEventId": "b1392bad-61b5-4b33-962c-dacbd8a96c76",
+      "eventId": "ca5a75b0-95c6-43b8-9b7a-540ef9ee9e4e",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "payroll-live-overview-20261025",
+      "inputEventId": "dfeb5206-de30-4a06-8d9a-1d99f4ec8b74",
+      "eventId": "ed27269d-02e3-4b58-991b-152c09dd3448",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "staff-scan-20261025",
+      "inputEventId": "6fe7a780-de60-48a4-add8-2a6b805bdc56",
+      "eventId": "2ae6ec83-ae27-4967-b284-2974c22ed5f2",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "personal-qr-20261025",
+      "inputEventId": "54bbc355-1409-479e-bf5f-27b50edb6f2f",
+      "eventId": "d1f100b0-7eaf-4799-bfe8-03f22bbebd99",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "qr-full-flow-20261025",
+      "inputEventId": "60b87cd6-3146-4091-9da5-2ac28a4368e4",
+      "eventId": "368e6f16-2a3e-4fbc-b9f5-cdb9c9fd5e88",
+      "channels": [
+        "web"
+      ]
+    }
+  ],
+  "iosReleaseEventId": "8b6c0098-9eb3-4fe8-9a00-1ddb0e6541af",
+  "excluded": [
+    "Market/Pilot/Pet/phase two",
+    "public App Store submission"
+  ],
+  "importantFixes": [
+    "Windows guard invokes npx.cmd under the existing execution policy",
+    "SQL editor uses exact-text paste; ambiguous outcomes inspected before retry",
+    "One unchanged-source iOS failed-job retry after isolated local WebKit startup timeout"
+  ],
+  "evidenceRoot": "C:/Reylumi/kingpos/artifacts/release-drako-20261026"
+}

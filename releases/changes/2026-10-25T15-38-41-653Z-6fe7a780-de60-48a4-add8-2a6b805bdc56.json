@@ -1,0 +1,130 @@
+{
+  "kind": "change",
+  "changeId": "staff-scan-20261025",
+  "status": "needs-integration",
+  "summary": "Staff Scan replaces bottom Notifications; check-in service selection/search, amount auto-save, Working/Holding/Done and POS takeover with settlement/reconnect cleanup; teal UI",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/pos/portable/page.tsx",
+    "app/(app)/staff/scan/page.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/portable/actions.ts",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/pos-rapid-mobile-bridge.tsx",
+    "app/role-navigation.ts",
+    "app/service-relay/actions.ts",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/staff-relay.tsx",
+    "app/staff/scan/actions.ts",
+    "app/staff/scan/qr-scanner.tsx",
+    "app/staff/scan/scan.module.css",
+    "app/staff/scan/staff-scan-client.tsx",
+    "components/workspace-navigation-icon.tsx",
+    "docs/staff-scan-deploy-note.txt",
+    "lib/auth-routing.ts",
+    "lib/pos-desk.ts",
+    "lib/staff-scan.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-staff-scan.json",
+    "package-lock.json",
+    "package.json",
+    "supabase/migrations/20261025170000_staff_scan_workspace.sql",
+    "tests/helpers/service-relay-fixture.mjs",
+    "tests/service-relay.integration.test.mjs",
+    "tests/staff-scan-code.test.mjs",
+    "tests/staff-scan-pos-ui.test.mjs",
+    "tests/staff-scan-ui.test.mjs",
+    "tests/staff-scan.integration.test.mjs",
+    "types/pos-desk.ts",
+    "types/service-relay.ts",
+    "types/staff-scan.ts"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-scan-20261025/source"
+  },
+  "fileHashes": {
+    "app/(app)/pos/portable/page.tsx": "7460b76409a18d29bd0f639b5bf456212677c2e454043f69c3815eedd81980bb",
+    "app/(app)/staff/scan/page.tsx": "97d9fd0ca6ebd3ca69e4b02a68aebbc4a44a65b015ecf3c6061288c79d09dbe6",
+    "app/pos/owner-pos-client.tsx": "754b94e6d4c39306bbce3be4e6b2172d977c0d935538d0ebdbb14df2569df49e",
+    "app/pos/portable/actions.ts": "199135920e83e5a318bfffc91a9b9e1efadd87271a9127188e6b54d16da761f2",
+    "app/pos/pos-desk-client.tsx": "422fea78f29f62aebc3c2ce2c8359308a625d36c98dcc74f3bada50df3d08222",
+    "app/pos/pos-rapid-mobile-bridge.tsx": "5e8ae7401d6376b87da98af3df7be0d0404dcdf361a1330bfb21b3dd981d4cf5",
+    "app/role-navigation.ts": "c855155fb729e17b689ce3a8ee959c10675e2e93b34357d07dd423b55f3f748d",
+    "app/service-relay/actions.ts": "af1066485802799f457502be6804ee0f582b8d1becb1821852cad84cef44fb04",
+    "app/service-relay/desk-relay.tsx": "f0255b24087ad20ba30c805e828c5678ffd301e7b6aaf3337102ec5765ccd42b",
+    "app/service-relay/staff-relay.tsx": "8fe436d63074ac102d8ac9fcf04010868b39d0e5db38de53105f5a6be173b400",
+    "app/staff/scan/actions.ts": "a5d8d2dcfb9e2d3841eafc374c4357bf2546518e9629dc45a200cb870c94d70c",
+    "app/staff/scan/qr-scanner.tsx": "a9fbca21b8b95c7564148096a6db11940ca5727500b1bcf1944adb41d2ac484c",
+    "app/staff/scan/scan.module.css": "340351962d1ebd1c6a6c9b78c7dd2618700b4652cd2b5ae95a4b0ffd95a684dd",
+    "app/staff/scan/staff-scan-client.tsx": "e99be626e75b0c53b49d6dcceb6a960b895c09178858dbcc90fff34b292e91da",
+    "components/workspace-navigation-icon.tsx": "7e004079e3b46af0acdc266f7bd23710dfb31d99f690658a318bfbf233565346",
+    "docs/staff-scan-deploy-note.txt": "9d1f75c331daccd14deec7249d504aa8e6fc7039fd0066dd572bf4e7dea8fb85",
+    "lib/auth-routing.ts": "260e67a747662ac33f1b69abfa428df5605ac184105d94b71552078479146b9f",
+    "lib/pos-desk.ts": "534e4b6cb7490eb23c0b9760fd13f85cb7043427d880ee6988df54ed6f1233d7",
+    "lib/staff-scan.ts": "40626707f8df6686d914a84ebc31759f8ecd14b70ad292ad4d89c16fc866068b",
+    "lib/vietnamese-dictionary.ts": "e11bf683c67191a2dc57e92e1b7ecd7f560a76dbbf5abbf7720011ddb310a3c8",
+    "lib/vietnamese-staff-scan.json": "d9de0009fa4ac93055062e5c0ae2e9c33fa7972be69e20b8967b0032980296ff",
+    "package-lock.json": "c835fa21555dd5f707d3bec490eee8503c27b807a30dd502d81b285a1aa2838c",
+    "package.json": "e58cb996960dc60fe554a1b7c3cd2ddbf045370a05128eca92ec26d3bb87ff7a",
+    "supabase/migrations/20261025170000_staff_scan_workspace.sql": "1b09f95b5b486efac1a91bea040637911eb2f246053573006e7bf2e870630a0f",
+    "tests/helpers/service-relay-fixture.mjs": "bae7a8c8d08eaeb757da4fbedb7ac2b1251607c739151b4f18bee33d65af9eed",
+    "tests/service-relay.integration.test.mjs": "a6f081df25def694f080a9cb679eefc4386cbf46d797403f031de6ec86695cc0",
+    "tests/staff-scan-code.test.mjs": "f5fd93df8b217f07847443ec5bf14408e4507ecccd5419004a938448d985fd13",
+    "tests/staff-scan-pos-ui.test.mjs": "abb72c99e18c21aed574751077d08df06761988c5e55852c693a5e4b75da57cc",
+    "tests/staff-scan-ui.test.mjs": "48d07205f2a9f67645b4ba3cf8393540697ee287fe95e19d71f55f5895c15f5e",
+    "tests/staff-scan.integration.test.mjs": "7eabf6de687946cf43db31c71d61995434d2c834544af5b5e064d26b8155ae72",
+    "types/pos-desk.ts": "b8bc4a3dc033951b7aceb91c27c90aac881a69f80892161898e8057f6ff23f17",
+    "types/service-relay.ts": "cc43fa27eb867d1ad1f7c1c6e51bf6ed45a7384f4e62166fa6a164fe4d65ad92",
+    "types/staff-scan.ts": "01ebb2c6ccfa26432f78d3861378f6beeb3f4a7fa0d10d392b3782644cc06c73"
+  },
+  "validation": [
+    {
+      "name": "41 SQL, Staff/POS browser, QR, navigation and auth tests",
+      "result": "passed",
+      "evidence": "artifacts/staff-scan-20261025/tests.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/staff-scan-20261025/lint.log"
+    },
+    {
+      "name": "Fresh Next production build and TypeScript, exact runtime hashes verified",
+      "result": "passed",
+      "evidence": "artifacts/staff-scan-20261025/build.log"
+    },
+    {
+      "name": "Scoped patch applies to before snapshot; all frozen file hashes verified",
+      "result": "passed",
+      "evidence": "artifacts/staff-scan-20261025/source-hashes.json"
+    },
+    {
+      "name": "Physical iPhone Safari/WKWebView camera and keyboard QA before publication",
+      "result": "pending",
+      "evidence": "Requires actual device after integration; no native source changed."
+    }
+  ],
+  "dependencies": [],
+  "integrationRequirements": [
+    "Merge scoped patch against current production baseline; preserve unrelated changes",
+    "Apply compatible staff_scan migration with integrated web release",
+    "Physical iPhone camera/keyboard/resume QA before publication"
+  ],
+  "artifacts": {
+    "patch": "artifacts/staff-scan-20261025/change.patch",
+    "before": "artifacts/staff-scan-20261025/before",
+    "note": "docs/staff-scan-deploy-note.txt",
+    "screenshots": [
+      "artifacts/staff-scan-20261025/waiting-390.png",
+      "artifacts/staff-scan-20261025/services-390.png",
+      "artifacts/staff-scan-20261025/saved-390.png"
+    ]
+  },
+  "id": "6fe7a780-de60-48a4-add8-2a6b805bdc56",
+  "recordedAt": "2026-10-25T15:38:41.653Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

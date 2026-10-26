@@ -1,0 +1,38 @@
+{
+  "changeId": "pos-mobile-compact-20261024",
+  "dependencies": [],
+  "kind": "change",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "ESLint ticket-filters"
+    },
+    {
+      "result": "passed",
+      "name": "Git diff whitespace"
+    },
+    {
+      "evidence": "artifacts/pos-mobile-compact-20261024/layout-check.json",
+      "name": "Chrome layout fixture at 320, 390, 430 and 980px",
+      "result": "passed"
+    }
+  ],
+  "files": [
+    "app/globals.css",
+    "app/pos-tickets/ticket-filters.tsx"
+  ],
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "source": {
+    "snapshot": "artifacts/pos-mobile-compact-20261024/source"
+  },
+  "summary": "Mobile POS: one-row date/search toolbar, reduced spacing, hidden page titles; preserve dialog titles and desktop layout",
+  "integrationNotes": "Checkout contains prior unrelated changes. Integrate only mobile-only.css appended block and data-ticket-date attribute into current release baseline. Existing TicketFilters already replaces legacy Date/Search/Search/Today form; preserve that dependency. No authenticated app or production verification; not deployed.",
+  "id": "2e4dd0e4-2ed3-421c-8f99-3a3dabb2774c",
+  "recordedAt": "2026-10-25T04:43:41.713Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,87 @@
+{
+  "kind": "change",
+  "changeId": "personal-qr-20261025",
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "dependencies": [
+    "staff-scan-20261025"
+  ],
+  "summary": "Implemented Personal identity QR, signed-in salon check-in, POS Ready and canonical History receipt; owner scans user info then Send/Cancel using existing staff invitation acceptance.",
+  "files": [
+    "app/role-navigation.ts",
+    "lib/auth-routing.ts",
+    "app/(app)/staff/page.tsx",
+    "app/check-in/[entry]/page.tsx",
+    "app/service-relay/customer-relay.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/actions.ts",
+    "app/pos/portable/actions.ts",
+    "app/(app)/pos/portable/page.tsx",
+    "app/staff/scan/actions.ts",
+    "app/staff/scan/qr-scanner.tsx",
+    "types/service-relay.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-personal-qr.json",
+    "supabase/migrations/20261025190000_personal_qr.sql",
+    "types/personal-qr.ts",
+    "lib/personal-qr.ts",
+    "app/qr/actions.ts",
+    "app/(app)/qr/page.tsx",
+    "app/qr/personal-qr.module.css",
+    "app/qr/personal-qr-client.tsx",
+    "app/staff/personal-qr-connector.tsx",
+    "tests/staff-scan-pos-ui.test.mjs",
+    "tests/helpers/personal-qr-fixture.mjs",
+    "tests/personal-qr.integration.test.mjs",
+    "tests/personal-qr-code.test.mjs",
+    "tests/personal-qr-ui.test.mjs",
+    "docs/personal-qr-deploy-note.txt",
+    "tests/customer-history-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/personal-qr-20261025/source",
+    "beforeSnapshot": "artifacts/personal-qr-20261025/scope-before",
+    "patch": "artifacts/personal-qr-20261025/change.patch",
+    "patchSha256": "949b76095ee0a83c74f2fd33c411bf68f950acf04d7d439a7b9a4af710b07193",
+    "fileHashes": "artifacts/personal-qr-20261025/source-hashes.json"
+  },
+  "validation": [
+    {
+      "name": "52 local SQL, Personal/Owner/Staff/POS browser, History, booking, QR, navigation and auth tests; zero skipped",
+      "result": "passed",
+      "evidence": "artifacts/personal-qr-20261025/tests-final.log"
+    },
+    {
+      "name": "Scoped ESLint: zero errors; one pre-existing Staff warning",
+      "result": "passed",
+      "evidence": "artifacts/personal-qr-20261025/lint.log"
+    },
+    {
+      "name": "Fresh isolated Next production build and TypeScript; final build source hashes verified",
+      "result": "passed",
+      "evidence": "artifacts/personal-qr-20261025/build-final.log"
+    },
+    {
+      "name": "29 frozen files; scoped patch applies to exact before snapshot; 21 runtime build hashes match",
+      "result": "passed",
+      "evidence": "artifacts/personal-qr-20261025/source-hashes.json"
+    },
+    {
+      "name": "Integrated current production schema and existing finance/capability core verification",
+      "result": "pending",
+      "evidence": "No migration applied. Local SQL uses isolated permission and financial-core fixtures. Linked runtime CLI unavailable (AccessTokenRequiredError); see artifacts/personal-qr-20261025/regressions.log"
+    },
+    {
+      "name": "Physical iPhone Safari/WKWebView camera, keyboard, background/resume and linked devices",
+      "result": "pending",
+      "evidence": "Requires physical device after integration; no native source or bridge changed."
+    }
+  ],
+  "id": "54bbc355-1409-479e-bf5f-27b50edb6f2f",
+  "recordedAt": "2026-10-26T00:46:34.093Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,25 @@
+{
+  "summary": "Require signup phone, verify during onboarding, connect historical profiles with shared-phone selection",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/signup/signup-form.tsx",
+    "app/(app)/api/auth/signup/route.ts"
+  ],
+  "kind": "change",
+  "changeId": "signup-phone-history-20261025",
+  "status": "working",
+  "validation": [
+    {
+      "name": "implementation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "a9781b73-78ae-4bf7-8e72-40b4702ae19d",
+  "recordedAt": "2026-10-25T14:11:45.843Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

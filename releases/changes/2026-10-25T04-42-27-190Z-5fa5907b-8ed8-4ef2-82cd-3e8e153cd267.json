@@ -1,0 +1,25 @@
+{
+  "summary": "Compact mobile POS ticket filters and hide mobile page titles",
+  "channels": [
+    "web"
+  ],
+  "changeId": "pos-mobile-compact-20261024",
+  "status": "working",
+  "files": [
+    "app/globals.css",
+    "app/pos-tickets/ticket-filters.tsx"
+  ],
+  "dependencies": [],
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Implementation",
+      "result": "pending"
+    }
+  ],
+  "id": "5fa5907b-8ed8-4ef2-82cd-3e8e153cd267",
+  "recordedAt": "2026-10-25T04:42:27.190Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

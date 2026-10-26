@@ -1,0 +1,54 @@
+{
+  "summary": "Fix iOS POS More dismissal and reset All Settings hub; simulator checks passed; hold for combined release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "needs-integration",
+  "kind": "change",
+  "dependencies": [],
+  "source": {
+    "patchSha256": "c4c06a75f4482f2193fd220b938fa7e6ba0a04a8229b31fb16eccf98bcdcacc7",
+    "patch": "artifacts/pos-more-settings-20261025/task-only.patch",
+    "snapshot": "artifacts/pos-more-settings-20261025/snapshot"
+  },
+  "validation": [
+    {
+      "name": "iOS 27.0 iPhone 17 WKWebView XCTest fixture",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-settings-20261025/simulator-result.json; 13 assertions; source hashes verified"
+    },
+    {
+      "name": "Chrome mobile and desktop fixture",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-settings-20261025/chromium-393.json; artifacts/pos-more-settings-20261025/chromium-1280.json"
+    },
+    {
+      "result": "passed",
+      "name": "ESLint and 10 related Settings/iOS tests"
+    },
+    {
+      "name": "Existing settings-hub-ui fixture",
+      "result": "failed",
+      "evidence": "Pre-existing fixture syntax and browser server-module import errors; see handoff note"
+    },
+    {
+      "name": "Integrated production build and authenticated app E2E",
+      "result": "pending",
+      "evidence": "Required when assembling combined release; no deployment or upload requested"
+    }
+  ],
+  "changeId": "pos-more-settings-20261025",
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "components/role-more-content.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/pos-more-settings-browser.mjs",
+    "docs/pos-more-settings-20261025.txt"
+  ],
+  "id": "606a4970-dcd1-4021-9971-a0c724b5af73",
+  "recordedAt": "2026-10-25T05:40:17.443Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,37 @@
+{
+  "summary": "Staff Scan: QR/waiting selection, requested services and amounts, Holding/Done, POS authority and reconnect cleanup",
+  "changeId": "staff-scan-20261025",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "components/workspace-navigation-icon.tsx",
+    "types/service-relay.ts",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/staff-relay.tsx",
+    "lib/pos-desk.ts",
+    "types/pos-desk.ts",
+    "app/pos/portable/actions.ts",
+    "app/pos/owner-pos-client.tsx",
+    "package.json",
+    "package-lock.json"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-scan-20261025/before"
+  },
+  "validation": [
+    {
+      "name": "Implementation and verification",
+      "result": "pending"
+    }
+  ],
+  "kind": "change",
+  "dependencies": [],
+  "status": "working",
+  "id": "caeb9b52-7b51-4324-aa9f-3b74e2bc07a1",
+  "recordedAt": "2026-10-25T15:10:20.968Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

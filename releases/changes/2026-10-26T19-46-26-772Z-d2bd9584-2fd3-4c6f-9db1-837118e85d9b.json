@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "pos-more-settings-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Fix iOS POS More dismissal and reset All Settings hub; simulator checks passed; hold for combined release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "components/role-more-content.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/pos-more-settings-browser.mjs",
+    "docs/pos-more-settings-20261025.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integratesEvent": "606a4970-dcd1-4021-9971-a0c724b5af73",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "d2bd9584-2fd3-4c6f-9db1-837118e85d9b",
+  "recordedAt": "2026-10-26T19:46:26.772Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/pos/owner-pos-tabs.tsx": "b1f47d051d5b34399e12fd3c4d36f7fe7f374ebc27c1d2c8195bcf28a910501d",
+    "components/role-more-content.tsx": "18c96d924070d9fb793cf48dab0815ebdaf29076937d7ef859ef94eadb5b8a20",
+    "app/settings/settings-hub-client.tsx": "b701116d3530e67dbb2149dc2b7f5c3de1fa91a6627ba5ea02a74f38b0d5be7f",
+    "tests/pos-more-settings-browser.mjs": "4ec1441d7977c2955fa1d7a3c0b25e9d795fc4b2dd631e19ebb449d5662c4e38",
+    "docs/pos-more-settings-20261025.txt": "dbc70479c67b83838c4a38474ce5ac556d32fdff5b26a23e588552994e6b331b"
+  }
+}

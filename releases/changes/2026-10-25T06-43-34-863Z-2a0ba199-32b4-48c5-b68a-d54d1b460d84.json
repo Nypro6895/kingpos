@@ -1,0 +1,35 @@
+{
+  "dependencies": [],
+  "summary": "Fix Help session header, use explicit English default, and simplify duplicated Help navigation and walkthroughs",
+  "kind": "change",
+  "status": "working",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx",
+    "app/(legal)/help/page.tsx",
+    "app/(legal)/help/[slug]/page.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "app/help/help-copy.json",
+    "tests/help-draft.test.mjs",
+    "tests/help-bilingual-ui.test.mjs",
+    "tests/mobile-landscape-legal-runtime.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Implementation and targeted verification",
+      "result": "pending"
+    }
+  ],
+  "changeId": "help-session-english-compact-20261025",
+  "id": "2a0ba199-32b4-48c5-b68a-d54d1b460d84",
+  "recordedAt": "2026-10-25T06:43:34.863Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

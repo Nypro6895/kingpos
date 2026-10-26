@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "kiosk-recognition-back-20261025",
+  "status": "needs-integration",
+  "summary": "Implemented salon-scoped canonical-phone recognition without account creation, safe duplicate ambiguity, retry/concurrency protection and editable Back; existing UI preserved. Tested locally; await combined release build and Windows acceptance. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "lib/kiosk-request-guard.ts",
+    "supabase/migrations/20261025090000_kiosk_phone_recognition.sql",
+    "tests/kiosk-phone-recognition.integration.test.mjs",
+    "tests/kiosk-request-navigation.test.mjs",
+    "docs/release-notes/kiosk-recognition-back-20261025.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/kiosk-recognition-back-20261025/source",
+    "patch": "artifacts/kiosk-recognition-back-20261025/kiosk-recognition-back.patch",
+    "patchSha256": "a5af6196648e75c0b1725a526c39466151e2bd359ec3ef0606e2a3cf20738f23",
+    "receipt": "artifacts/kiosk-recognition-back-20261025/receipt.json"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Real isolated PostgreSQL synthetic resolver/visit/concurrency suite",
+      "result": "passed",
+      "evidence": "10/10, artifacts/kiosk-recognition-back-20261025/postgres-tests.txt"
+    },
+    {
+      "name": "Canonical source client runtime plus customer visit/identity/management contracts",
+      "result": "passed",
+      "evidence": "36/36; includes 7 new handler tests; no real customer data"
+    },
+    {
+      "name": "TypeScript changed client/helper and imported dependencies",
+      "result": "passed",
+      "evidence": "0 diagnostics; artifacts/kiosk-recognition-back-20261025/typecheck-results.json"
+    },
+    {
+      "name": "Exact patch rollback applicability",
+      "result": "passed",
+      "evidence": "git apply --reverse --check task patch: exit 0, no writes"
+    },
+    {
+      "name": "Combined release production-base integration/build and native Windows paired-display acceptance",
+      "result": "pending",
+      "evidence": "Intentionally deferred to later combined release; no production migration, push or deployment"
+    }
+  ],
+  "id": "e28fd902-1531-43d8-8123-ea4dd6b54754",
+  "recordedAt": "2026-10-25T06:09:35.850Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

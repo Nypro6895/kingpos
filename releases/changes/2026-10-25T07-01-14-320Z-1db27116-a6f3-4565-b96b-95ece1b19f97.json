@@ -1,0 +1,31 @@
+{
+  "status": "working",
+  "dependencies": [
+    "compact-ticket-toolbar-20261017"
+  ],
+  "source": {
+    "snapshot": "artifacts/owner-ticket-single-row-20261025/before"
+  },
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/globals.css"
+  ],
+  "summary": "Gộp tiêu đề Ticket Owner, ngày, tìm kiếm và menu thành một hàng; lưu chờ deploy chung.",
+  "changeId": "owner-ticket-single-row-20261025",
+  "validation": [
+    {
+      "name": "Implementation and responsive browser check",
+      "result": "pending"
+    }
+  ],
+  "kind": "change",
+  "id": "1db27116-a6f3-4565-b96b-95ece1b19f97",
+  "recordedAt": "2026-10-25T07:01:14.320Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

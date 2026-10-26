@@ -1,0 +1,51 @@
+{
+  "candidate": "d88fdab7f267f8e678cd650ab3a2c62216b046cd",
+  "baseline": "6e230018c44eab3a518725d1bf221c7157c471aa",
+  "review": "Read-only frozen producer/source review; LF normalization for text comparisons. No old assembly replay. Historical test absence is distinct from runtime omission.",
+  "olderProducers": {
+    "ios-workspace-cookie-deletion": "Retained transport cookie fix; later authority/cache/tracing changes",
+    "auth-session-missing-rejection": "Retained in auth-rejection.ts; five old tests absent",
+    "ios-background-cookie-authority": "Runtime baseline exact; later native test",
+    "help-context-dismiss": "Retained with later guest continuation and Reports layout",
+    "ios-private-business-cache-admission": "Three baseline exact; selected business fencing retained",
+    "online-authority-refresh": "One baseline exact; reference selection/denied rotation/matching lease retained",
+    "pc-ios-today-session-reliability": "Three baseline exact; bounded timing/rejection extended; eight old tests absent",
+    "payroll-hide-review-notices": "Superseded by explicitly approved live Payroll with notes",
+    "daily-closing-conflict-notice": "Both product files baseline exact; old test absent",
+    "pc-ios-causal-contracts": "Recovery/cache/cancellation retained; bounded Today and identity RPC extensions",
+    "flat-section-canvas": "All nine baseline exact",
+    "pc-ios-explicit-guest-continuation": "Present in entry and shell",
+    "campaign-causal-settlement-reporting": "Later reserve hold/status/payment reference reconciliation; do not restore earlier disabled payments",
+    "windows-portable-startup-offline-admission": "Two baseline exact; later visibility/focus handling",
+    "campaign-pending-claim-demand": "Product baseline exact; other inputs tests/journal",
+    "windows-portable-owner-startup": "Owner admission retained with visibility handling",
+    "campaign-credit-lifecycle-r5": "Six product baseline exact; later guarded Run again/payment blocked; Pause/Resume/Cancel retained",
+    "ios-my-work-critical-path": "Timing retained with final validation and new Payroll DTO",
+    "staff-my-work-verified-read-identity": "Two baseline exact; confirmed rejection/measured resolution; final revalidation retained",
+    "ios-same-tenant-role-dto-reuse": "Later scoped invalidation and principal boundaries",
+    "r6-confirmed-auth-rejection": "Two baseline exact; later timing only",
+    "ios-auth-observability-qa": "19 baseline exact; entry superseded reset pending; ten old tests absent",
+    "r10-native-bundle-provenance": "All seven baseline exact",
+    "auth-request-finite-deadline": "Runtime baseline exact; old test absent",
+    "r10-native-reset-pending": "Retained; only two repaired mojibake ellipses",
+    "ios-readiness-bundle-xcresult": "Operational replacement by r52 pinned full byte provenance; positive xcresult summary must be verified. Generic sourceInputs/freshness guards not integrated."
+  },
+  "historicalAssemblies": {
+    "macqa-help-background-integration": "Native-only snapshot; four baseline exact, three later; declared web/test files absent by snapshot design",
+    "campaign-pc-common-integration": "89 baseline exact; later Campaign/UI/native lineage",
+    "combined-ui-payroll-daily-local": "85 baseline exact; later customer/navigation/report/style composition",
+    "pc-campaign-common-candidate": "98 baseline exact; later producer lineage",
+    "unified-windows-portable-integration": "Two product baseline exact; scope superseded visibility handling",
+    "unified-owner-guest-integration": "One baseline exact; both fixes retained",
+    "reylumi-final-r5-integration": "Six baseline exact; guarded Run again/payment blocked supersession",
+    "reylumi-final-r6-integration": "Three baseline exact; later identity/role/timing/reset",
+    "reylumi-final-r7-auth-integration": "Two baseline exact; later timing",
+    "reylumi-final-r8-pilot-off-integration": "13 baseline exact; six Pilot lineage paths excluded from replay, preserve disabled",
+    "reylumi-final-r9-observability-integration": "19 baseline exact; reset pending supersession",
+    "reylumi-final-r10-services-invariants-integration": "Nine baseline exact; Pilot registry excluded; disconnect-before-listener withdrawal retained"
+  },
+  "reviewedNormalizedHashes": {
+    "nativeTransport": "9276162cb0e0f4c735389d44ae565b145e62b308e53449941cdbb4cad2acc828",
+    "nativeEntry": "82d77477de1c0f2f9e3130306788179fb8a51ba11a76949902d378e2a5a4cc4e"
+  }
+}

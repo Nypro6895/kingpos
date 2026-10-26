@@ -1,0 +1,28 @@
+{
+  "channels": [
+    "web"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-helper"
+  },
+  "validation": [
+    {
+      "name": "Tokenless local runner validation",
+      "result": "pending"
+    }
+  ],
+  "kind": "change",
+  "status": "working",
+  "dependencies": [],
+  "changeId": "drako-guarded-release-runner-20261026",
+  "summary": "Prepare fixed-project RAM-only SQL release helper with exact eight migration hashes, transaction drift guards, atomic ledger and protected-payment postconditions; no product changes or publication",
+  "files": [
+    "artifacts/release-drako-helper/prepare-runner.mjs",
+    "artifacts/release-drako-helper/Start-GuardedSql.ps1"
+  ],
+  "id": "f29fe02a-3d41-4e29-90cb-a145c5d42c15",
+  "recordedAt": "2026-10-26T18:26:44.764Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

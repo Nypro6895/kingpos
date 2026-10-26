@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "kiosk-recognition-back-20261025",
+  "status": "needs-integration",
+  "summary": "Kiosk patch unchanged; full credential-free local QA build and native paired-window bridge tests passed. Added migration reconciliation evidence and documented remaining full-flow/physical acceptance and unrelated Ticket fixture failure. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "docs/release-notes/kiosk-recognition-back-20261025.md",
+    "lib/kiosk-request-guard.ts",
+    "supabase/migrations/20261025090000_kiosk_phone_recognition.sql",
+    "tests/kiosk-phone-recognition.integration.test.mjs",
+    "tests/kiosk-request-navigation.test.mjs",
+    "docs/release-notes/kiosk-recognition-back-verification-20261025.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/kiosk-recognition-back-20261025/verification/source",
+    "patch": "artifacts/kiosk-recognition-back-20261025/kiosk-recognition-back.patch",
+    "patchSha256": "a5af6196648e75c0b1725a526c39466151e2bd359ec3ef0606e2a3cf20738f23",
+    "receipt": "artifacts/kiosk-recognition-back-20261025/verification/receipt.json"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Full Next webpack production build in isolated QA copy",
+      "result": "passed",
+      "evidence": "build exit 0; cloud env removed, QA notification worker disabled"
+    },
+    {
+      "name": "Native Windows desktop and paired window bridge; browser local transport",
+      "result": "passed",
+      "evidence": "Three fixture tests passed; real main/preloads/DPAPI/local transport, synthetic local data"
+    },
+    {
+      "name": "Migration version reconciliation",
+      "result": "passed",
+      "evidence": "284 unique versions including the three newer canonical migrations; two pre-existing canonical duplicates require prior reconciliation"
+    },
+    {
+      "name": "Existing Ticket live sync fixture",
+      "result": "failed",
+      "evidence": "Mock next/navigation lacks useRouter; unchanged unrelated test"
+    },
+    {
+      "name": "Combined production baseline integration and full-flow/physical acceptance",
+      "result": "pending",
+      "evidence": "No production write or deploy; existing full E2E scripts use --linked database and were not run"
+    }
+  ],
+  "id": "e2311aba-9389-495b-a815-8d674d1c961f",
+  "recordedAt": "2026-10-25T06:17:01.241Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

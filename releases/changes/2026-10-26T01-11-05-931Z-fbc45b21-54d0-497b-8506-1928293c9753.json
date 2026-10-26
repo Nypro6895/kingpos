@@ -1,0 +1,32 @@
+{
+  "dependencies": [
+    "personal-qr-20261025",
+    "staff-scan-20261025"
+  ],
+  "changeId": "qr-full-flow-20261025",
+  "summary": "Full-schema real Auth/PostgREST/RLS validation of Personal QR to check-in, Staff, POS and History; fix integration issues and queue for one combined release",
+  "source": {
+    "snapshot": "artifacts/qr-full-flow-20261025/before"
+  },
+  "status": "working",
+  "validation": [
+    {
+      "name": "Isolated Supabase full migration and financial core flow",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "tests/personal-qr-full-schema.integration.test.mjs",
+    "docs/personal-qr-deploy-note.txt",
+    "docs/staff-scan-deploy-note.txt"
+  ],
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "id": "fbc45b21-54d0-497b-8506-1928293c9753",
+  "recordedAt": "2026-10-26T01:11:05.931Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

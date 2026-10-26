@@ -1,0 +1,400 @@
+{
+  "at": "2026-10-26T19:40:30.132Z",
+  "integrationEventId": "432a21a0-e7b4-43ea-a757-c760a8eab9b6",
+  "producerEvents": [
+    {
+      "eventId": "8077fc8f-01a1-4af4-b5dd-efbbe89901dd",
+      "changeId": "settings-pos-windows-download-release-20261023",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-settings-download-20261023",
+        "commit": "de1dcde717b256c6c328580d70b12e79f47b2cc8",
+        "baseline": "b823db4bf44f916543f13550c52bd8ac294958dc"
+      },
+      "fileHashes": {
+        "app/settings/direct-settings-actions.ts": "66418713061561d4d448b641a567050157b140664b9630a54bdb483555802f64",
+        "tests/settings-pos-windows-download.test.mjs": "2935dc6a0a67e9c6631ec55ecb6fca86a224291fcdcf53ea6aec379939d37738"
+      }
+    },
+    {
+      "eventId": "ac98d6af-b159-44b2-b5e7-b47e63725414",
+      "changeId": "customer-name-unicode-normalization-20261023",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "preimage": "C:\\Reylumi\\.migration-20261023\\unicode-fix-before",
+        "snapshot": "C:\\Reylumi\\.migration-20261023\\unicode-fix-source"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "2e4dd0e4-2ed3-421c-8f99-3a3dabb2774c",
+      "changeId": "pos-mobile-compact-20261024",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/pos-mobile-compact-20261024/source"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "51338a40-a082-41ba-b4c5-f26c2dbcd419",
+      "changeId": "live-qa-audit-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/live-qa-audit-20261025/snapshot"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "606a4970-dcd1-4021-9971-a0c724b5af73",
+      "changeId": "pos-more-settings-20261025",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "patchSha256": "c4c06a75f4482f2193fd220b938fa7e6ba0a04a8229b31fb16eccf98bcdcacc7",
+        "patch": "artifacts/pos-more-settings-20261025/task-only.patch",
+        "snapshot": "artifacts/pos-more-settings-20261025/snapshot"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "c10d9e64-3da8-47ca-a4a7-21afe7e04dad",
+      "changeId": "kiosk-recognition-back-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/kiosk-recognition-back-20261025/local-e2e/source",
+        "applicationPatch": "artifacts/kiosk-recognition-back-20261025/kiosk-recognition-back.patch",
+        "testPatch": "artifacts/kiosk-recognition-back-20261025/local-e2e/test-only.patch",
+        "receipt": "artifacts/kiosk-recognition-back-20261025/local-e2e/receipt.json"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "c1ed916e-b9dc-41fe-9960-a1fac29db9d1",
+      "changeId": "help-session-english-compact-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "overlayHashes": "artifacts/help-cleanup-20261025/changed-file-hashes.json",
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\help-cleanup-20261025\\validation-source"
+      },
+      "fileHashes": {
+        "app/(app)/help/page.tsx": null,
+        "app/(app)/help/[slug]/page.tsx": null,
+        "app/(legal)/help/page.tsx": "45427978057bd2001a04fcf892d182342a64d23e9b54ce55dcfd19416759d448",
+        "app/(legal)/help/[slug]/page.tsx": "6e28d2a6036a0e42b8687b01714604d27280968ad229f996c0dfbc954bb847b4",
+        "app/help/help-content.tsx": "9520af954b17ccd6162e127d7c839e972a7789254513b4411549dfc15807c1f0",
+        "app/help/help-language.tsx": "32c36ecf0d9e8348a254367c8ac46910357e58e235c2e2300dabcaf5a4bc4f25",
+        "app/help/help-catalog.tsx": "054de2ab79ea3673db4f64375c116b0d7a53d788aa88183f4c964158fe92b40a",
+        "app/help/help.module.css": "cb8fc90efce6b707aaeaf8b4acd6a918fef6e5ac930ff67aedfb837bb5b73086",
+        "app/help/help-copy.json": "dd1bde9351fb6ce7aa981f184218a2828f6faf8fdf63c3c835edd9cd0eb874ec",
+        "tests/help-draft.test.mjs": "60652f8aa40cfb91fae98444ab14e9bc5b6196582a9b307cae2afe808a3181da",
+        "tests/help-bilingual-ui.test.mjs": "35108ac776836775cf443c1d22e28e445767935a25bb63135a0546e2f781fa01",
+        "tests/mobile-landscape-legal-runtime.test.mjs": "2e013a9f0e8cf6d92c148e4ed5a127e8984b83fea065bd7bbd69a90d34e89391"
+      }
+    },
+    {
+      "eventId": "a2d5594b-bca8-4bc3-a9c9-8e7c1eb49ec9",
+      "changeId": "customer-merge-all-conflicts-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/customer-merge-all-20261025/frozen-source"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "14f7d3be-ca3d-4436-86d9-113eca9177d5",
+      "changeId": "owner-ticket-single-row-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/owner-ticket-single-row-20261025/source",
+        "patch": "artifacts/owner-ticket-single-row-20261025/change.patch",
+        "hashes": "artifacts/owner-ticket-single-row-20261025/source-hashes.json",
+        "baselineSnapshot": "artifacts/owner-ticket-single-row-20261025/before",
+        "nativeAssessment": "Web presentation only; no native source or bridge changes."
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "b1392bad-61b5-4b33-962c-dacbd8a96c76",
+      "changeId": "signup-phone-history-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "hashManifest": "artifacts/signup-phone-history-20261025/frozen-files.json",
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\signup-phone-history-20261025\\source",
+        "patch": "artifacts/signup-phone-history-20261025/task.patch"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "dfeb5206-de30-4a06-8d9a-1d99f4ec8b74",
+      "changeId": "payroll-live-overview-20261025",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\payroll-live-overview-20261025\\frozen"
+      },
+      "fileHashes": {
+        "app/(app)/payroll/page.tsx": "3ffd52563ff6ba016aae472ac549d6e13dca63bebec9136ed1d54ede790a277f",
+        "app/(app)/payroll/tax-company/page.tsx": "4ee82b85a17ea052ec7ae84b1395da2c6b7cabb618ceb020cd0f9a9e6119e979",
+        "app/payroll/actions.ts": "3ef1ee5a8393150ba4ce38b450ee3475aa37f83cf464edec0947ee02a3803b03",
+        "app/payroll/payroll-mobile.module.css": "ef03aceafd2d78cf423536380acc469ad57e3ffe9b2d71948b08d9d35ed62282",
+        "app/payroll/payroll-dashboard.tsx": "cb480f50f3e764014c63cb34b4f8a6e9def493fe8a038758eb9e7ee02909fb33",
+        "app/payroll/payroll-dashboard.module.css": "c869c3a5f5deab748cf983dbe4abe7bcd5f402b208c363883d78c82fb1e92638",
+        "app/payroll/payroll-change-history.tsx": "6aa25dcef1bd5cc4862fb1e710417a3afb67cdded36cef07d8c047c3013947a6",
+        "app/payroll/payroll-live-refresh.tsx": "dfa554a2d115334d64ed5ccc8d2413a2f3ed3471924d4ba1a9dbf7e9e1868a67",
+        "app/payroll/current-payroll-download.tsx": "14973df5e58b4e2f3d05d33116d7cc5670b99e08a891874018524609fa8fde8d",
+        "app/payroll/current-payroll-download-actions.ts": "cf1baecbaf8925698d8514a9c691f5edf38d490d7116d12c6c6970964e6a4604",
+        "app/payroll/data-download-actions.ts": "e985c753787cf9e256063007894102f91bf89589e3fddfb4199b2372b206309f",
+        "app/payroll/data-download-panel.tsx": "bd9130728beed1781a7e9e2b22637b4bb9046afe3d1692c6ce936b5d033f317a",
+        "app/payroll/staff-income-autosave-inputs.tsx": "3fe2cc3184be36685c8088e331f014fbeb8731dfd19b68e7ce34abedd41a4df2",
+        "app/payroll/staff-payroll-setting-inline-edit.tsx": "acd861ea6c0cf41effcbd40ff050c54abcc4b604308c6a2c85cfa11790eb7e80",
+        "app/reports/daily-closing-form.tsx": "aaeb5affc03249c84d6d83b33ef7d95376778d2be175ccb61b0ca361dea03d88",
+        "app/reports/daily-report-history.tsx": "5c0ade518cf5916b04ea4aa4204fa8546238935994b7015ec364c700c1674caa",
+        "app/staff/my-work/staff-pay-analysis.tsx": "7a3353ac1fda9e6669c96fd4f66240c7756643bb425ed5e5d7f609f25f2fd934",
+        "app/settings/team-payroll-panels.tsx": "af6bb24788e4ac22cff0c368e16b8c3d7ee808c133febeb4bb447f812bddabbb",
+        "app/navigation-shell.tsx": "d1932c3707cb56dc88dcbbbb20993209ad419f5964f2a2c9521a5a6ecdeb9794",
+        "app/pos-tickets/actions.ts": "738275d63b6208338cdb100cccd94a8439fa6b8b25a717bece44cdd2ff1d19e1",
+        "lib/payroll.ts": "94901676e7fd41248f54792e2fb94b1f0412918a1487ae53f6c02ce7f7e553bd",
+        "lib/payroll-live-dashboard.ts": "bb07c1dad145104aad4f99be21b198eca7133b08102c9d69089c5e9952140df0",
+        "lib/payroll-live-money.ts": "c1448fff1522a882de252668b8ac48e674b702a922045dde39de1a71888816ab",
+        "lib/payroll-live-projection.ts": "07cfdae1009abb1f593b1f97653765ae2aeb59b879b4c2abe562598274395253",
+        "lib/payroll-live-history.ts": "e0b25314665e3143b1d1d8f69e2dce2b48e7040636bfab823b74763acb3a5d23",
+        "lib/payroll-period-navigation.ts": "73d16df9c0c641b812a5edb913b818025942f82bc97ce40a8640a8407ae0a91d",
+        "lib/daily-closing-server.ts": "adc1aaa81321e4da0ebcc3bed7bf0f09955819a968dd95e5722418dcc030d790",
+        "lib/daily-pos-report.ts": "4b1cdf1667a560d3ab34422a1ae5fa6fe1c73d5044514312233b29b18f47819f",
+        "lib/pos-ticket-staff-earnings.ts": "ba4164cff861ddeca19adf732012d5a31a68c0d5d6270a68947cb62d7965a893",
+        "lib/staff-my-work-experience.ts": "074f987a7881b5fa5ec526e72315acc64c5e16c66140919b7af8b3836e1279c3",
+        "lib/staff-my-work-resource-server.ts": "f6328522f2efdfa8274f489fc8bb2e1f294441b716935193cad702761feed34d",
+        "types/payroll.ts": "67c209461408eb43ca3da5ff0f42b56e506ec5382bd2a223d7a0d2528da830a2",
+        "types/payroll-live-history.ts": "b6001236e93a7f043e34ce6865d82efbba544de0362753e5a8c23a142e7e9494",
+        "supabase/migrations/20261025143000_payroll_live_history.sql": "13d3965779f6c349ebb2b2f574a491e9b2d0355e71979e3a220236e23862e793",
+        "tests/payroll-live-dashboard.test.mjs": "2c9eccb3862e1f5ebc209b4f21a2657a49036b8df1b6f40506d86e1c392385b2",
+        "tests/payroll-live-history.integration.test.mjs": "ae3282dd71ae6f7d9d63378c307d14a140bcc70d1ac6103168572f3b3d7cb3e5",
+        "tests/staff-pay-analysis.test.mjs": "6fb15d8d45f05c003a1dd232954d2dd036d980c8c945f3e347d990f3b5b70205",
+        "app/staff/my-work/staff-my-work-client.tsx": "2e94f1e1db74a768db432c6acab22d19c87e291a1b4d1408b8c5b99810fb0a3e",
+        "lib/use-staff-payroll-updates.ts": "486a7fa85010be09ced98e47e15c4a37dc132d8ab4bfcb79f30ecaa284e98387",
+        "tests/payroll-data-download.test.mjs": "bb25862a5d883ce87d22bc346112d5df129d9a6d519668f55e3d1f7447965303"
+      }
+    },
+    {
+      "eventId": "6fe7a780-de60-48a4-add8-2a6b805bdc56",
+      "changeId": "staff-scan-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/staff-scan-20261025/source"
+      },
+      "fileHashes": {
+        "app/(app)/pos/portable/page.tsx": "7460b76409a18d29bd0f639b5bf456212677c2e454043f69c3815eedd81980bb",
+        "app/(app)/staff/scan/page.tsx": "97d9fd0ca6ebd3ca69e4b02a68aebbc4a44a65b015ecf3c6061288c79d09dbe6",
+        "app/pos/owner-pos-client.tsx": "754b94e6d4c39306bbce3be4e6b2172d977c0d935538d0ebdbb14df2569df49e",
+        "app/pos/portable/actions.ts": "199135920e83e5a318bfffc91a9b9e1efadd87271a9127188e6b54d16da761f2",
+        "app/pos/pos-desk-client.tsx": "422fea78f29f62aebc3c2ce2c8359308a625d36c98dcc74f3bada50df3d08222",
+        "app/pos/pos-rapid-mobile-bridge.tsx": "5e8ae7401d6376b87da98af3df7be0d0404dcdf361a1330bfb21b3dd981d4cf5",
+        "app/role-navigation.ts": "c855155fb729e17b689ce3a8ee959c10675e2e93b34357d07dd423b55f3f748d",
+        "app/service-relay/actions.ts": "af1066485802799f457502be6804ee0f582b8d1becb1821852cad84cef44fb04",
+        "app/service-relay/desk-relay.tsx": "f0255b24087ad20ba30c805e828c5678ffd301e7b6aaf3337102ec5765ccd42b",
+        "app/service-relay/staff-relay.tsx": "8fe436d63074ac102d8ac9fcf04010868b39d0e5db38de53105f5a6be173b400",
+        "app/staff/scan/actions.ts": "a5d8d2dcfb9e2d3841eafc374c4357bf2546518e9629dc45a200cb870c94d70c",
+        "app/staff/scan/qr-scanner.tsx": "a9fbca21b8b95c7564148096a6db11940ca5727500b1bcf1944adb41d2ac484c",
+        "app/staff/scan/scan.module.css": "340351962d1ebd1c6a6c9b78c7dd2618700b4652cd2b5ae95a4b0ffd95a684dd",
+        "app/staff/scan/staff-scan-client.tsx": "e99be626e75b0c53b49d6dcceb6a960b895c09178858dbcc90fff34b292e91da",
+        "components/workspace-navigation-icon.tsx": "7e004079e3b46af0acdc266f7bd23710dfb31d99f690658a318bfbf233565346",
+        "docs/staff-scan-deploy-note.txt": "9d1f75c331daccd14deec7249d504aa8e6fc7039fd0066dd572bf4e7dea8fb85",
+        "lib/auth-routing.ts": "260e67a747662ac33f1b69abfa428df5605ac184105d94b71552078479146b9f",
+        "lib/pos-desk.ts": "534e4b6cb7490eb23c0b9760fd13f85cb7043427d880ee6988df54ed6f1233d7",
+        "lib/staff-scan.ts": "40626707f8df6686d914a84ebc31759f8ecd14b70ad292ad4d89c16fc866068b",
+        "lib/vietnamese-dictionary.ts": "e11bf683c67191a2dc57e92e1b7ecd7f560a76dbbf5abbf7720011ddb310a3c8",
+        "lib/vietnamese-staff-scan.json": "d9de0009fa4ac93055062e5c0ae2e9c33fa7972be69e20b8967b0032980296ff",
+        "package-lock.json": "c835fa21555dd5f707d3bec490eee8503c27b807a30dd502d81b285a1aa2838c",
+        "package.json": "e58cb996960dc60fe554a1b7c3cd2ddbf045370a05128eca92ec26d3bb87ff7a",
+        "supabase/migrations/20261025170000_staff_scan_workspace.sql": "1b09f95b5b486efac1a91bea040637911eb2f246053573006e7bf2e870630a0f",
+        "tests/helpers/service-relay-fixture.mjs": "bae7a8c8d08eaeb757da4fbedb7ac2b1251607c739151b4f18bee33d65af9eed",
+        "tests/service-relay.integration.test.mjs": "a6f081df25def694f080a9cb679eefc4386cbf46d797403f031de6ec86695cc0",
+        "tests/staff-scan-code.test.mjs": "f5fd93df8b217f07847443ec5bf14408e4507ecccd5419004a938448d985fd13",
+        "tests/staff-scan-pos-ui.test.mjs": "abb72c99e18c21aed574751077d08df06761988c5e55852c693a5e4b75da57cc",
+        "tests/staff-scan-ui.test.mjs": "48d07205f2a9f67645b4ba3cf8393540697ee287fe95e19d71f55f5895c15f5e",
+        "tests/staff-scan.integration.test.mjs": "7eabf6de687946cf43db31c71d61995434d2c834544af5b5e064d26b8155ae72",
+        "types/pos-desk.ts": "b8bc4a3dc033951b7aceb91c27c90aac881a69f80892161898e8057f6ff23f17",
+        "types/service-relay.ts": "cc43fa27eb867d1ad1f7c1c6e51bf6ed45a7384f4e62166fa6a164fe4d65ad92",
+        "types/staff-scan.ts": "01ebb2c6ccfa26432f78d3861378f6beeb3f4a7fa0d10d392b3782644cc06c73"
+      }
+    },
+    {
+      "eventId": "54bbc355-1409-479e-bf5f-27b50edb6f2f",
+      "changeId": "personal-qr-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/personal-qr-20261025/source",
+        "beforeSnapshot": "artifacts/personal-qr-20261025/scope-before",
+        "patch": "artifacts/personal-qr-20261025/change.patch",
+        "patchSha256": "949b76095ee0a83c74f2fd33c411bf68f950acf04d7d439a7b9a4af710b07193",
+        "fileHashes": "artifacts/personal-qr-20261025/source-hashes.json"
+      },
+      "fileHashes": null
+    },
+    {
+      "eventId": "60b87cd6-3146-4091-9da5-2ac28a4368e4",
+      "changeId": "qr-full-flow-20261025",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/qr-full-flow-20261025/source",
+        "beforeSnapshot": "artifacts/qr-full-flow-20261025/scope-before",
+        "patch": "artifacts/qr-full-flow-20261025/change.patch",
+        "patchSha256": "fbd82cd37e5ddf7bfb6cfb66d23053dfc56a5b548855885f96c5f6bf550cdda6",
+        "fileHashes": "artifacts/qr-full-flow-20261025/source-hashes.json"
+      },
+      "fileHashes": null
+    }
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi/release-drako-20261026/Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5",
+    "bundleSha256": "ac0fce1232231002d34da930dffc7873ae7bb1a40a40c9fccf1be2729356b66a",
+    "baselineDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c"
+  },
+  "sourceFiles": 2890,
+  "integratedProducerEvents": [
+    {
+      "changeId": "settings-pos-windows-download-release-20261023",
+      "inputEventId": "8077fc8f-01a1-4af4-b5dd-efbbe89901dd",
+      "eventId": "875741e1-0c46-4d5a-8970-1ac053aca08d",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "customer-name-unicode-normalization-20261023",
+      "inputEventId": "ac98d6af-b159-44b2-b5e7-b47e63725414",
+      "eventId": "289ce2e4-43ec-4fa2-9098-63ac783b58fd",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pos-mobile-compact-20261024",
+      "inputEventId": "2e4dd0e4-2ed3-421c-8f99-3a3dabb2774c",
+      "eventId": "7494540f-3d0f-44ba-a72a-1427dd6d2a38",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "live-qa-audit-20261025",
+      "inputEventId": "51338a40-a082-41ba-b4c5-f26c2dbcd419",
+      "eventId": "58beec50-94db-4c20-ab99-3e09489a8913",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pos-more-settings-20261025",
+      "inputEventId": "606a4970-dcd1-4021-9971-a0c724b5af73",
+      "eventId": "d2bd9584-2fd3-4c6f-9db1-837118e85d9b",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "kiosk-recognition-back-20261025",
+      "inputEventId": "c10d9e64-3da8-47ca-a4a7-21afe7e04dad",
+      "eventId": "23dfbbe2-4514-4de9-a6ad-7c657f0fd7fd",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "help-session-english-compact-20261025",
+      "inputEventId": "c1ed916e-b9dc-41fe-9960-a1fac29db9d1",
+      "eventId": "1db27dee-64cf-41c1-b792-7379ab45a1b0",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "customer-merge-all-conflicts-20261025",
+      "inputEventId": "a2d5594b-bca8-4bc3-a9c9-8e7c1eb49ec9",
+      "eventId": "65a42495-2cf3-4cbe-8ee6-e061f98a853b",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "owner-ticket-single-row-20261025",
+      "inputEventId": "14f7d3be-ca3d-4436-86d9-113eca9177d5",
+      "eventId": "079a8f12-c02a-4ede-aab7-bac09b717a19",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "signup-phone-history-20261025",
+      "inputEventId": "b1392bad-61b5-4b33-962c-dacbd8a96c76",
+      "eventId": "ca5a75b0-95c6-43b8-9b7a-540ef9ee9e4e",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "payroll-live-overview-20261025",
+      "inputEventId": "dfeb5206-de30-4a06-8d9a-1d99f4ec8b74",
+      "eventId": "ed27269d-02e3-4b58-991b-152c09dd3448",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "staff-scan-20261025",
+      "inputEventId": "6fe7a780-de60-48a4-add8-2a6b805bdc56",
+      "eventId": "2ae6ec83-ae27-4967-b284-2974c22ed5f2",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "personal-qr-20261025",
+      "inputEventId": "54bbc355-1409-479e-bf5f-27b50edb6f2f",
+      "eventId": "d1f100b0-7eaf-4799-bfe8-03f22bbebd99",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "qr-full-flow-20261025",
+      "inputEventId": "60b87cd6-3146-4091-9da5-2ac28a4368e4",
+      "eventId": "368e6f16-2a3e-4fbc-b9f5-cdb9c9fd5e88",
+      "channels": [
+        "web"
+      ]
+    }
+  ]
+}

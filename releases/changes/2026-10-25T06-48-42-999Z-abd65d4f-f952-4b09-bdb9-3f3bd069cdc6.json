@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "files": [],
+  "dependencies": [],
+  "status": "working",
+  "source": {
+    "snapshot": "artifacts/customer-merge-all-20261025"
+  },
+  "summary": "Make bulk customer merge handle incompatible suggested records without merging personal accounts",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Regression and UI verification"
+    }
+  ],
+  "changeId": "customer-merge-all-conflicts-20261025",
+  "id": "abd65d4f-f952-4b09-bdb9-3f3bd069cdc6",
+  "recordedAt": "2026-10-25T06:48:42.999Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

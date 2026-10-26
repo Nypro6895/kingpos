@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "help-session-english-compact-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Help uses session-aware public navigation, opens in English unless Vietnamese is explicitly selected, lists each guide once and collapses detailed walkthroughs",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx",
+    "app/(legal)/help/page.tsx",
+    "app/(legal)/help/[slug]/page.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "app/help/help-copy.json",
+    "tests/help-draft.test.mjs",
+    "tests/help-bilingual-ui.test.mjs",
+    "tests/mobile-landscape-legal-runtime.test.mjs"
+  ],
+  "deletedFiles": [
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [
+    "whole-site-progressive-cache"
+  ],
+  "supersedesEvents": [
+    "c1ed916e-b9dc-41fe-9960-a1fac29db9d1"
+  ],
+  "integratesEvent": "c1ed916e-b9dc-41fe-9960-a1fac29db9d1",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "1db27dee-64cf-41c1-b792-7379ab45a1b0",
+  "recordedAt": "2026-10-26T19:46:27.072Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/(app)/help/page.tsx": null,
+    "app/(app)/help/[slug]/page.tsx": null,
+    "app/(legal)/help/page.tsx": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+    "app/(legal)/help/[slug]/page.tsx": "4f9d2c519a31df4b14e24abf484ccd5bf8a13ca531064c975303fe0ab4a75558",
+    "app/help/help-content.tsx": "fdfb8a27f6ba7a474d0f36b7307f6d5c53b5eb8a8502848b396a8ed280b5d52b",
+    "app/help/help-language.tsx": "5bdb211d42af50567b00c20790950fee9723ee65bfa94c139408db5d419b5868",
+    "app/help/help-catalog.tsx": "d46bccf0fd5848e78a8a43caff80aaa56222e4863be1dbd464774cbac5ae3e3e",
+    "app/help/help.module.css": "4fdcc4f4338ad6f194d72c2fb26c5e68912bb54a89c7d528a61ebb973b0f0d9a",
+    "app/help/help-copy.json": "0f7335459b1c4f99160dfd3cada1f0a4221a12d898aef099cfd4a864ce17707c",
+    "tests/help-draft.test.mjs": "7ae1b1534fdbcced5c0aca690f95e1beeec7e3bfff418265e0a3bdfceed17ef2",
+    "tests/help-bilingual-ui.test.mjs": "49daf59d68b2ebf610476a1dee94116b5e44726caf117fc71b6e321e8b776045",
+    "tests/mobile-landscape-legal-runtime.test.mjs": "33ff3ce4649e1bb546e08f7360675760919e0158bee2738257d73b1cf72093c6"
+  }
+}

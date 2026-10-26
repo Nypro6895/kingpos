@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "live-qa-audit-20261025",
+  "status": "working",
+  "summary": "Audit live QA findings, beginning with booking atomicity, validation and salon timezone",
+  "channels": [
+    "web"
+  ],
+  "files": [],
+  "source": {
+    "snapshot": "artifacts/live-qa-audit-20261025"
+  },
+  "validation": [
+    {
+      "name": "audit",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "d1fac4d6-cd9d-49eb-a7db-e1f496a5254e",
+  "recordedAt": "2026-10-25T05:03:28.085Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,91 @@
+{
+  "status": "ready",
+  "summary": "Help uses session-aware public navigation, opens in English unless Vietnamese is explicitly selected, lists each guide once and collapses detailed walkthroughs",
+  "dependencies": [
+    "whole-site-progressive-cache"
+  ],
+  "channels": [
+    "web"
+  ],
+  "kind": "change",
+  "limitations": [
+    "Implementation only; no deployment, push or native upload. No native source changed; web-compatible update.",
+    "Authenticated header states verified using server-session fixtures, not a real customer or iPhone session.",
+    "Preserve existing auth-aware app/(legal)/layout.tsx, app/legal/legal-navigation-shell.tsx and app/guest-navigation-shell.tsx from shared navigation dependency when integrating. Do not copy the entire validation source over a newer production baseline.",
+    "An initial broad run hit an unrelated existing mobile landscape Notifications popover timeout. The unchanged phone-rotation test was not part of the final Help acceptance checks.",
+    "Main-checkout tsc encountered stale .next-readiness-check references to the old Help route; fresh snapshot production build and its TypeScript check passed without old generated types."
+  ],
+  "source": {
+    "overlayHashes": "artifacts/help-cleanup-20261025/changed-file-hashes.json",
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\help-cleanup-20261025\\validation-source"
+  },
+  "changeId": "help-session-english-compact-20261025",
+  "validation": [
+    {
+      "evidence": "artifacts/help-cleanup-20261025/help-content-tests.log: 6 passed",
+      "result": "passed",
+      "name": "Help content, routes, bilingual coverage, search and illustrations"
+    },
+    {
+      "evidence": "artifacts/help-cleanup-20261025/help-ui-tests.log: 1 passed; qa/measurements.json",
+      "result": "passed",
+      "name": "Bilingual responsive UI at 320,375,390,430,768,1280 pixels, explicit language persistence, no duplicate guides, accordion interaction"
+    },
+    {
+      "evidence": "artifacts/help-cleanup-20261025/help-session-tests.log: 1 passed",
+      "result": "passed",
+      "name": "Help and article headers with authenticated, guest and auth-unavailable fixtures"
+    },
+    {
+      "evidence": "No errors or warnings for modified Help TSX and relocated routes",
+      "result": "passed",
+      "name": "Scoped ESLint"
+    },
+    {
+      "evidence": "artifacts/help-cleanup-20261025/build.log: compile, TypeScript and route generation passed",
+      "result": "passed",
+      "name": "Fresh production build and TypeScript"
+    },
+    {
+      "evidence": "artifacts/help-cleanup-20261025/smoke-result.json",
+      "result": "passed",
+      "name": "Real Next production server browser smoke"
+    }
+  ],
+  "deletedFiles": [
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx"
+  ],
+  "files": [
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx",
+    "app/(legal)/help/page.tsx",
+    "app/(legal)/help/[slug]/page.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "app/help/help-copy.json",
+    "tests/help-draft.test.mjs",
+    "tests/help-bilingual-ui.test.mjs",
+    "tests/mobile-landscape-legal-runtime.test.mjs"
+  ],
+  "id": "c1ed916e-b9dc-41fe-9960-a1fac29db9d1",
+  "recordedAt": "2026-10-25T06:51:24.593Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/help/page.tsx": null,
+    "app/(app)/help/[slug]/page.tsx": null,
+    "app/(legal)/help/page.tsx": "45427978057bd2001a04fcf892d182342a64d23e9b54ce55dcfd19416759d448",
+    "app/(legal)/help/[slug]/page.tsx": "6e28d2a6036a0e42b8687b01714604d27280968ad229f996c0dfbc954bb847b4",
+    "app/help/help-content.tsx": "9520af954b17ccd6162e127d7c839e972a7789254513b4411549dfc15807c1f0",
+    "app/help/help-language.tsx": "32c36ecf0d9e8348a254367c8ac46910357e58e235c2e2300dabcaf5a4bc4f25",
+    "app/help/help-catalog.tsx": "054de2ab79ea3673db4f64375c116b0d7a53d788aa88183f4c964158fe92b40a",
+    "app/help/help.module.css": "cb8fc90efce6b707aaeaf8b4acd6a918fef6e5ac930ff67aedfb837bb5b73086",
+    "app/help/help-copy.json": "dd1bde9351fb6ce7aa981f184218a2828f6faf8fdf63c3c835edd9cd0eb874ec",
+    "tests/help-draft.test.mjs": "60652f8aa40cfb91fae98444ab14e9bc5b6196582a9b307cae2afe808a3181da",
+    "tests/help-bilingual-ui.test.mjs": "35108ac776836775cf443c1d22e28e445767935a25bb63135a0546e2f781fa01",
+    "tests/mobile-landscape-legal-runtime.test.mjs": "2e013a9f0e8cf6d92c148e4ed5a127e8984b83fea065bd7bbd69a90d34e89391"
+  }
+}

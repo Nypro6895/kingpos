@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "pos-mobile-compact-20261024",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Mobile POS: one-row date/search toolbar, reduced spacing, hidden page titles; preserve dialog titles and desktop layout",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/globals.css",
+    "app/pos-tickets/ticket-filters.tsx"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integratesEvent": "2e4dd0e4-2ed3-421c-8f99-3a3dabb2774c",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "7494540f-3d0f-44ba-a72a-1427dd6d2a38",
+  "recordedAt": "2026-10-26T19:46:26.510Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/globals.css": "580ffacad142985d38ea312be513f8c371a929b0c633610797bb35db48ce2e66",
+    "app/pos-tickets/ticket-filters.tsx": "a61c30fd83f8703ec8c31b3bac8c761d3cd850d95d7567f2526ed48db7a654d9"
+  }
+}

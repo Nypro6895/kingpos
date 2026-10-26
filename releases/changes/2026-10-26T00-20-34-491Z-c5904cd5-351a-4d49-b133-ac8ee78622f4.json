@@ -1,0 +1,39 @@
+{
+  "changeId": "personal-qr-20261025",
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [
+    "staff-scan-20261025"
+  ],
+  "source": {
+    "snapshot": "artifacts/personal-qr-20261025/before"
+  },
+  "status": "working",
+  "summary": "Personal identity QR, account check-in, live visit prices/history and POS Ready; owner scans then Send/Cancel using existing staff invitations",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Implementation and integration checks"
+    }
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "lib/auth-routing.ts",
+    "app/(app)/staff/page.tsx",
+    "app/(app)/check-in/[entry]/page.tsx",
+    "app/service-relay/customer-relay.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/actions.ts",
+    "app/pos/portable/actions.ts",
+    "app/(app)/pos/portable/page.tsx",
+    "app/staff/scan/actions.ts",
+    "lib/vietnamese-dictionary.ts"
+  ],
+  "id": "c5904cd5-351a-4d49-b133-ac8ee78622f4",
+  "recordedAt": "2026-10-26T00:20:34.491Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,28 @@
+{
+  "status": "working",
+  "dependencies": [],
+  "channels": [
+    "web"
+  ],
+  "changeId": "windows-production-guard-command-20261026",
+  "summary": "Repair Windows production alias guard command resolution to use existing npx.cmd without changing execution policy or credentials; release tooling only",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-20261026\\guard-before"
+  },
+  "validation": [
+    {
+      "name": "Focused production-base guard checks",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "scripts/verify-production-base.mjs",
+    "tests/verify-production-base.test.mjs"
+  ],
+  "kind": "change",
+  "id": "0f8bf013-95c3-4445-91ee-2e0e0fefff73",
+  "recordedAt": "2026-10-26T18:46:47.945Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

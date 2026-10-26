@@ -1,0 +1,88 @@
+{
+  "kind": "change",
+  "changeId": "signup-phone-history-20261025",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Implemented required signup phone, OTP onboarding and selected shared-phone history; 67 tests and webpack compile passed; not deployed, full typecheck blocked by unrelated Help cache/payroll errors",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/signup/signup-form.tsx",
+    "app/(app)/api/auth/signup/route.ts",
+    "app/(app)/api/auth/login/route.ts",
+    "app/(app)/api/auth/callback/route.ts",
+    "app/(app)/api/auth/mfa/verify/route.ts",
+    "app/account/actions.ts",
+    "app/account/account-profile-editor.tsx",
+    "lib/auth-routing.ts",
+    "lib/customer-identity-claims.ts",
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "lib/signup-phone-routing.ts",
+    "app/(app)/welcome/phone/page.tsx",
+    "app/signup/phone/actions.ts",
+    "app/signup/phone/signup-phone-form.tsx",
+    "supabase/migrations/20261025110000_signup_phone_history.sql",
+    "tests/signup-phone-history-db.test.mjs",
+    "tests/signup-phone-routing-runtime.test.mjs",
+    "tests/signup-phone-history-full-schema.integration.test.mjs",
+    "tests/signup-phone-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [
+    "customer-identity-auto-merge-20261023"
+  ],
+  "supersedesEvents": [],
+  "integratesEvent": "b1392bad-61b5-4b33-962c-dacbd8a96c76",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "ca5a75b0-95c6-43b8-9b7a-540ef9ee9e4e",
+  "recordedAt": "2026-10-26T19:46:29.222Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/signup/signup-form.tsx": "98bba53b524dc4307e8ef7276a1802979c546b12c2bb76796f18095764bb6911",
+    "app/(app)/api/auth/signup/route.ts": "a531e0decf5b6b3037825fc9be9746817f7015ce0d78b8dcdb28a6a0686e038b",
+    "app/(app)/api/auth/login/route.ts": "5ed3826ac52ed59053165b587ff5ffb01f9331de89a13f15ddbe0008c0cbb613",
+    "app/(app)/api/auth/callback/route.ts": "1d005ebf8a9783a95e0ffc833ad938773931a34aa8c56e7b68dde7158ff41fb4",
+    "app/(app)/api/auth/mfa/verify/route.ts": "e1e297c6b40625cdd3aa9cd1a84d72308c22c256fe11a4144efdb81f7e9415db",
+    "app/account/actions.ts": "5f88557f0af3f0d0414386ae270daa2223e7dec80d7a200ba5f05b6b4bcf5c96",
+    "app/account/account-profile-editor.tsx": "885c32a57d54150e4cd9f79a8b1f96224535f3cb92684e0326a866f0bf31605a",
+    "lib/auth-routing.ts": "a4f246ddb669dd4e162bc258aca41fdc62118a795a38ba6acb9e936a765b2935",
+    "lib/customer-identity-claims.ts": "752184f9ad4d2d47d8fe9e8c04f4a731dc7068ac82431ddf1ec1d6488b267754",
+    "tests/helpers/isolated-supabase-fixture.mjs": "6dd79a9f03341f0f92cc677295e77190e182f4a4e175135ff9c573e0ec4820ee",
+    "lib/signup-phone-routing.ts": "39d7baef9fdac93b6736a0f9acf37cc17799c5d8e188db5ad59b4775fe81749f",
+    "app/(app)/welcome/phone/page.tsx": "9c752d76a31a7d343ccb30692cac791a54515fb92e525fe8a12046d6bd53f536",
+    "app/signup/phone/actions.ts": "f1e8402459f3699d67bba7415d09eba52f2fc1f3399d00f1b9c44e610e22827e",
+    "app/signup/phone/signup-phone-form.tsx": "76f518fdf9bffa1fd0164c689860a3ac5a86ecc1c567b13161451ec555e8ec5a",
+    "supabase/migrations/20261025110000_signup_phone_history.sql": "eee869dca52e52129b4ea6b7d20062bf00de8cfebbed35565dac3bc3f4c39033",
+    "tests/signup-phone-history-db.test.mjs": "830475ead0b26a88b83ad07605076b5c3b07e8523de5e9363df6b7ac1aa20bdd",
+    "tests/signup-phone-routing-runtime.test.mjs": "779a61d1115588811ea4f6ab745e6e2e55e580f15ce1fb007eef89049baf348b",
+    "tests/signup-phone-history-full-schema.integration.test.mjs": "a8fa075d765d847710643c80df9fd001946315c65d69597f8cc0b498cbee7d5d",
+    "tests/signup-phone-ui.test.mjs": "748f4be146ce1a1b20fcc084ffa00992b5f6b1a65e2dbed06b93f25b08034ec9"
+  }
+}

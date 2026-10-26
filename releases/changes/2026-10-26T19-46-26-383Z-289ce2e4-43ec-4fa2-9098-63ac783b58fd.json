@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "customer-name-unicode-normalization-20261023",
+  "status": "ready",
+  "summary": "Integrated and validated in sealed combined source: Fixed NFC/NFD customer-name mismatch with one normalization line; 20 local tests passed. Frozen patch awaits integration against the exact release baseline.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/customer-identity-match.ts",
+    "tests/customer-name-unicode.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\release-drako-20261026\\Source",
+    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "sourceSha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integratesEvent": "ac98d6af-b159-44b2-b5e7-b47e63725414",
+  "excludedNonruntimeEvidence": [],
+  "validation": [
+    {
+      "name": "Exact assembled source full gates and Simulator",
+      "result": "passed",
+      "evidence": "FINAL-CHECKPOINT-r78.json: default188pass/4optional, build/typecheck, Simulator205/205; unchanged sealed source"
+    },
+    {
+      "name": "Production-compatible metadata rehearsal",
+      "result": "passed",
+      "evidence": "PRODUCTION-APPROVAL-r91.json:15/15"
+    },
+    {
+      "name": "Live integrated publication and production migration postflight",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-source-verification.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/live-http-smoke.json; C:/Reylumi/kingpos/artifacts/release-drako-20261026/database-postflight.json"
+    },
+    {
+      "name": "Preserved older production/native features and deliberate Help relocation",
+      "result": "passed",
+      "evidence": "audit-20261026/source-inclusion-r53.json; frozen source manifest c6874be1"
+    }
+  ],
+  "id": "289ce2e4-43ec-4fa2-9098-63ac783b58fd",
+  "recordedAt": "2026-10-26T19:46:26.383Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "lib/customer-identity-match.ts": "a894526ebe078961e139f424a55c57ab8ae0d333a00ba830a71d4d5aa4f1a4a3",
+    "tests/customer-name-unicode.test.mjs": "f6765e2bdca90e67044e458407aff5643605c3b4c8748fdf3ef03c9952a3baf7"
+  }
+}
