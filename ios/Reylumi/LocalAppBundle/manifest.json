@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "a9436da6c80ef48dca89f60a29a5a201f07ba557bb541c302e5cbfb70b22ea28",
+  "buildId": "1aaddd4ad201277efb1599dcfb2e198c9b6e1355f2b391b909d506a0edfb90ab",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 590142,
-      "sha256": "cc5acef63bfed4022acb0d19974d55b15baf6859558e351cca15bb312d307178",
+      "bytes": 598338,
+      "sha256": "876594f27dddea70d2b664c65cf1d28ae2566ebc0d19b9b6216fa9ce76b6beb3",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4374343,
-      "sha256": "216b6db622dfa54a80649243eba36177fbd5f145d2aae1678d5547e89cc251c3",
+      "bytes": 4395725,
+      "sha256": "6bc0044a61a60d793f6be1f701bdb24d310260eb02790ccbcb5fe50bc182d669",
       "mime": "text/javascript"
     },
     {
@@ -4866,6 +4866,13 @@
     },
     {
       "name": "action.f0183755b41ce958178dcfd5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6db89069f554f5e17880233a",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
