@@ -1,0 +1,40 @@
+ĐÃ PHÁT HÀNH — 26/10/2026, America/Chicago
+Web: https://reylumi.com
+Windows: 0.7.3 — https://reylumi.com/download/windows
+Live deployment: dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa
+Source commit: 457188e51e0ade0bbe03193876da17fcd0a6992c
+
+CÁC BẢN SỬA VỪA GOM
+- POS: giá mặc định của dịch vụ; services liền mạch theo category/màu; staff và services tự chia hàng/co ô rồi mới cuộn.
+- Bàn phím bổ sung mặc định tắt, nhớ riêng từng máy; giữ bàn phím số POS, PIN thợ và bàn phím khách.
+- Chặn form chỉnh turn khi chưa được cấp quyền và hướng dẫn admin bật đúng POS ID.
+- Check-in nhận diện theo điện thoại, chào khách/chọn dịch vụ/xác nhận; QR điện thoại và staff dùng lại lượt, không tạo trùng.
+- Customer Display thích ứng cửa sổ nhỏ; tip nhập 5 là $5, không đổi sang cents.
+- Scan thông báo rõ chủ tiệm chưa kích hoạt; Help Windows chung Anh/Việt, có mục Help trong menu ba chấm.
+- Windows 0.7.3 tự kiểm tra cập nhật, cho tải/giữ bản hiện tại và tải-cài an toàn có checksum.
+
+ĐÃ CÓ TRÊN LIVE VÀ ĐƯỢC GIỮ LẠI
+- Header Staff/Owner và Report Windows xanh ngọc, nền trắng, chỉ ngày hiện tại.
+- Các sửa POS mobile, More/settings, Help giữ đăng nhập, Payroll, signup/phone và QR đã có trong đợt phát hành trước.
+
+KIỂM TRA
+- Build production sạch với TypeScript; 3.364 file nguồn trên live khớp hash, không mất file baseline.
+- 26 kiểm thử database hoàn chỉnh; thêm 10 kiểm thử migration qua CRLF Windows.
+- POS/keyboard/Help/browser, 3 bài Owner với CSS thật, 7 kích thước Customer Display đều đạt.
+- Engine cập nhật từ chính gói app: tải/checksum/cache/file lỗi/handoff đạt; 10 file native trong app.asar khớp nguồn.
+- Tải trọn bộ cài 111.708.400 bytes từ domain Reylumi, SHA256 khớp.
+
+DATABASE
+- Migration đã áp dụng, ledger 309; có bản sao dữ liệu trước khi chạy.
+- Tiền ticket, dịch vụ, closing và payroll payment giữ nguyên; 2 booking nối đúng tài khoản.
+- 6 hồ sơ trùng số điện thoại đã liên kết với 2 tài khoản riêng được giữ tách biệt. Không có hồ sơ bị ép gộp trong đợt này.
+
+CẦN LÀM TRÊN MÁY TIỆM
+- Đóng/mở lại hoặc tải lại app để nhận phần web.
+- Máy đang 0.7.2 cần cài 0.7.3 một lần để có updater mới và menu Help.
+- Không cần bản iOS native mới.
+
+GIỚI HẠN
+Camera điện thoại thật, máy in, màn hình touch và DPI Windows 125%/150% chưa thử trên phần cứng. Các thao tác POS/scan/thanh toán đã kiểm thử trong fixture cô lập; không tạo giao dịch thật trên production.
+Các chat chỉ audit/đề xuất, công việc đang làm và plugin khác không được biến thành mã sản phẩm để phát hành.
+Receipt đầy đủ: C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/RELEASE-RECEIPT.json
