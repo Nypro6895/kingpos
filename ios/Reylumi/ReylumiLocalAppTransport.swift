@@ -135,7 +135,9 @@ final class ReylumiLocalAppTransport {
         }
         return candidate
     }
-    private func reconcileCookies(original: CookieSnapshot?, updates: [HTTPCookie], epoch: Int, responseDeniesDisplay: Bool = false) async throws -> CookieSnapshot {
+    private func reconcileCookies(original: CookieSnapshot?, updates: [HTTPCookie], epoch: Int, responseDeniesDisplay: Bool = false,
+                                  category: ReylumiLocalDiagnostics.Category, trace: ReylumiLocalDiagnostics.RequestTrace?) async throws -> CookieSnapshot {
+        let began = ProcessInfo.processInfo.systemUptime
         let previous = cookieCommitTask, id = UUID()
         cookieCommitID = id
         let task = Task { @MainActor [weak self] () throws -> CookieSnapshot in
@@ -149,7 +151,6 @@ final class ReylumiLocalAppTransport {
             // Capture outgoing headers through the same short queue, so a new
             // request cannot start from half of a multi-cookie refresh.
             guard let original else {
-                self.diagnostics.record(.cookieCapture, category: .context, operation: self.cookieAuthorityRevision)
                 return CookieSnapshot(values: currentCookies, revision: self.cookieAuthorityRevision)
             }
             let expected = self.cookieIdentity(self.responseCookieSet(original.values, updates: updates))
@@ -172,6 +173,11 @@ final class ReylumiLocalAppTransport {
                 self.diagnostics.record(.cookieMismatch, category: .context, outcome: .invalidated, reason: .externalCookies, operation: original.revision)
                 await self.reset(reason: .externalCookies); throw self.failure(409, "Your access has changed. Please try again.")
             }
+            // The fresh response-time jar above still detects external account
+            // changes and stale concurrent rotations. Without response writes
+            // there is no partial transaction to verify with another WebKit
+            // round trip; no suspension occurs between that check and return.
+            if updates.isEmpty { return CookieSnapshot(values: currentCookies, revision: self.cookieAuthorityRevision) }
             for cookie in updates { await self.setCookie(cookie); try self.ensureCurrent(epoch) }
             let committedCookies = await self.cookies(), committed = self.cookieIdentity(committedCookies)
             try self.ensureCurrent(epoch)
@@ -189,7 +195,18 @@ final class ReylumiLocalAppTransport {
         }
         cookieCommitTask = task
         defer { if cookieCommitID == id { cookieCommitTask = nil; cookieCommitID = nil } }
-        return try await task.value
+        // Include queue wait and WebKit callbacks, which sit outside the HTTP
+        // timing. Reconciliation completes even when no cookie was committed.
+        let event: ReylumiLocalDiagnostics.Event = original == nil ? .cookieCapture : .cookieReconcile
+        do {
+            let value = try await task.value
+            diagnostics.record(event, category: category, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000, operation: value.revision, trace: trace)
+            return value
+        } catch {
+            let cancelled = error is CancellationError || (error as NSError).code == NSURLErrorCancelled
+            diagnostics.record(event, category: category, outcome: cancelled ? .cancelled : .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000, trace: trace)
+            throw error
+        }
     }
     private func loadSession() async {
         guard !loadedSession else { return }; loadedSession = true
@@ -368,7 +385,8 @@ final class ReylumiLocalAppTransport {
         var components = URLComponents(url: origin, resolvingAgainstBaseURL: false)!
         components.path = path; components.queryItems = query.isEmpty ? nil : query; components.fragment = nil
         guard let url = components.url, NavigationPolicy(origin: origin).isInternal(url), path.hasPrefix("/api/app-local/") else { throw failure(400, "Unsupported app request.") }
-        let snapshot = try await reconcileCookies(original: nil, updates: [], epoch: epoch); try ensureCurrent(epoch)
+        let timingCategory: ReylumiLocalDiagnostics.Category = path == "/api/app-local/context" ? .context : path == "/api/app-local/read" ? .read : .command
+        let snapshot = try await reconcileCookies(original: nil, updates: [], epoch: epoch, category: timingCategory, trace: trace); try ensureCurrent(epoch)
         let originalCookies = snapshot.values
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 12)
         request.httpMethod = body == nil ? "GET" : "POST"
@@ -387,7 +405,6 @@ final class ReylumiLocalAppTransport {
             return url.host?.lowercased() == domain.lowercased() && url.path.hasPrefix(cookie.path) && (!cookie.isSecure || url.scheme == "https") && (cookie.expiresDate ?? .distantFuture) > Date()
         }
         HTTPCookie.requestHeaderFields(with: applicable).forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
-        let timingCategory: ReylumiLocalDiagnostics.Category = path == "/api/app-local/context" ? .context : path == "/api/app-local/read" ? .read : .command
         let began = ProcessInfo.processInfo.systemUptime
         diagnostics.record(.httpStart, category: timingCategory, outcome: .started, trace: trace)
         let data: Data, response: HTTPURLResponse
@@ -417,7 +434,7 @@ final class ReylumiLocalAppTransport {
         // successful context authority are installed by this classification.
         let deniesDisplay = [401, 403, 409].contains(response.statusCode)
             || contextDeniesDisplay(data, response: response, path: path)
-        _ = try await reconcileCookies(original: snapshot, updates: updates, epoch: epoch, responseDeniesDisplay: deniesDisplay)
+        _ = try await reconcileCookies(original: snapshot, updates: updates, epoch: epoch, responseDeniesDisplay: deniesDisplay, category: timingCategory, trace: trace?.acceptsResponse(response) == true ? trace : nil)
         try ensureCurrent(epoch)
         if response.statusCode == 401 { await reset(reason: .unauthenticated); throw failure(401, "Please reconnect and check your access.") }
         return (data, response)
@@ -553,7 +570,13 @@ final class ReylumiLocalAppTransport {
                 && previous?.compatible(path: path) == true && previous?.valid(generation: expectedGeneration) == true ? previous : nil)
             self.onlineContext = denied ? nil : object
             self.onlineCheckedAt = denied ? .distantPast : Date()
-            if let next { await self.store.accept(next) }
+            if let next {
+                let persisted = ProcessInfo.processInfo.systemUptime
+                await self.store.accept(next)
+                // This is the awaited cache pipeline, including coalescing or
+                // an unchanged-envelope no-op, not proof of a disk write.
+                self.diagnostics.record(.cachePersist, category: .context, durationMs: (ProcessInfo.processInfo.systemUptime - persisted) * 1000, trace: trustedTrace)
+            }
             else if denied {
                 let status = object["grantStatus"] as? Int ?? 403
                 self.diagnostics.record(.displayRevoke, category: .context, outcome: .invalidated, status: status, reason: status == 409 ? .workspaceChanged : .displayDenied)
@@ -799,7 +822,9 @@ final class ReylumiLocalAppTransport {
             try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
             if rule.cacheable, onlineLease(scope: scope) != nil, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") {
                 try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch)
+                let persisted = ProcessInfo.processInfo.systemUptime
                 await store.put(key, payload: data, session: lease, resourceName: name, permit: permit)
+                diagnostics.record(.cachePersist, category: ReylumiLocalDiagnostics.category(resource: name), durationMs: (ProcessInfo.processInfo.systemUptime - persisted) * 1000, trace: trustedTrace)
             }
             try await ensureResourceReadCurrent(permit, key: key, scope: scope, epoch: epoch); object["offline"] = false
             object["__reylumiReadTrace"] = trace.bridgeMetadata(response: response)

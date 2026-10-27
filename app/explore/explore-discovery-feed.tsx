@@ -18,6 +18,7 @@ type ExploreDiscoveryFeedProps = {
   initialPagePromise?: Promise<ExploreFeedPage | null>;
   viewer: PostCommentViewer;
   sessionKey: string;
+  prepareAheadKey?: string;
   filterItem?: (item: ExploreFeedItem) => boolean;
   activeDiscoveryResult?: ExploreDiscoveryResultKind | null;
   discoveryShortcuts?: ExploreDiscoveryShortcut[];
@@ -80,6 +81,7 @@ function ExploreDiscoveryStage(props: ExploreDiscoveryFeedProps & {
     <ExploreDiscoveryFeedContent {...props}
       discovery={stage.discovery}
       sessionKey={props.sessionKey + ":stage:" + props.stageIndex}
+      prepareAheadKey={props.prepareAheadKey ?? props.sessionKey}
       feedId={props.stageIndex === 0 ? props.feedId : (props.feedId ?? "explore-feed") + "-stage-" + props.stageIndex}
       initialPage={props.stageIndex === 0 ? props.initialPage : undefined}
       heading={stage.label || (props.stageIndex === 0 ? props.firstHeading ?? "" : "")} description={stage.description}
@@ -95,7 +97,7 @@ function ExploreDiscoveryStage(props: ExploreDiscoveryFeedProps & {
   </div>;
 }
 
-function ExploreDiscoveryFeedContent({ commentLeadPosts, discovery, initialPage, viewer, sessionKey, filterItem, activeDiscoveryResult, discoveryShortcuts, onDiscoveryShortcutSelect, allowRestore, feedId, supplementaryPosts, supplementaryFooter, endContent, errorContent, maxEmptyPages, heading, description }: ExploreDiscoveryFeedProps & {
+function ExploreDiscoveryFeedContent({ commentLeadPosts, discovery, initialPage, viewer, sessionKey, prepareAheadKey, filterItem, activeDiscoveryResult, discoveryShortcuts, onDiscoveryShortcutSelect, allowRestore, feedId, supplementaryPosts, supplementaryFooter, endContent, errorContent, maxEmptyPages, heading, description }: ExploreDiscoveryFeedProps & {
   endContent: (items: ExploreFeedItem[]) => ReactNode; errorContent: ReactNode;
   maxEmptyPages?: number; heading: string; description: string;
 }) {
@@ -133,6 +135,7 @@ function ExploreDiscoveryFeedContent({ commentLeadPosts, discovery, initialPage,
   return <div ref={anchor} data-testid="explore-discovery-continuation">
     {page ? <ExploreFeed commentLeadPosts={commentLeadPosts} initialPage={page} allowRestore={allowRestore}
       viewer={viewer} discovery={discovery} sessionKey={sessionKey} filterItem={filterItem}
+      prepareAheadKey={prepareAheadKey}
       activeDiscoveryResult={activeDiscoveryResult} discoveryShortcuts={discoveryShortcuts} onDiscoveryShortcutSelect={onDiscoveryShortcutSelect}
       emptyMessage="" feedId={feedId} supplementaryPosts={supplementaryPosts} supplementaryFooter={supplementaryFooter}
       endContent={endContent} errorContent={errorContent} maxEmptyPages={maxEmptyPages} heading={heading} description={description} /> : <>

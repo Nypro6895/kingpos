@@ -12,7 +12,7 @@ final class ReylumiLocalDiagnostics {
         case contextRequest, contextJoin, contextCacheHit, contextCacheMiss, contextEnvelope, contextDelivered, contextFailure
         case contextBarrierStart, contextBarrierEnd, scopeReset, authorityRotate, pageInvalidate, displayRevoke, portableLock
         case readCacheHit, readCacheMiss, readDelivered, httpStart, httpEnd, httpFailure, serverTiming
-        case cookieCapture, cookieCommit, cookieStale, cookieMismatch
+        case cookieCapture, cookieReconcile, cookieCommit, cookieStale, cookieMismatch, cachePersist
         case commandStart, commandPreflight, commandEnd, commandFailure
     }
     enum Category: String, Codable {
@@ -110,7 +110,7 @@ final class ReylumiLocalDiagnostics {
         sequence += 1
         let operation = operation.flatMap { (0...1_000_000_000).contains($0) ? $0 : nil }
         let elapsed = (now() - origin) * 1000
-        let traceEvents: [Event] = [.httpStart, .httpEnd, .httpFailure, .serverTiming, .commandStart, .commandPreflight, .commandEnd, .commandFailure, .contextEnvelope, .contextDelivered, .readDelivered]
+        let traceEvents: [Event] = [.httpStart, .httpEnd, .httpFailure, .serverTiming, .cookieCapture, .cookieReconcile, .cachePersist, .commandStart, .commandPreflight, .commandEnd, .commandFailure, .contextEnvelope, .contextDelivered, .readDelivered]
         let traceAllowed = traceEvents.contains(event)
         let backend = event == .serverTiming && stage.map { [Stage.backendAuth, .backendRest, .backendRPC].contains($0) } == true
         let safeCount: (Int?) -> Int? = { value in value.flatMap { (0...1_000_000_000).contains($0) ? $0 : nil } }

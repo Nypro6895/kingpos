@@ -12,6 +12,7 @@ import { recordReadRequest, readResourceCategory } from "./read-request-metrics"
 import { nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceFields } from "./experience-trace";
 import { appLocalContextFailureReason, isAppLocalContextCancellation } from "./app-local-context-recovery";
 import { appLocalReadTraceFields } from "./read-request-trace-protocol";
+import { readPriorityScheduler } from "./read-priority-scheduler";
 
 function traceResource(name: string, args: Record<string, unknown>): Pick<ExperienceTraceFields, "area" | "phase"> {
   const phase = ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].includes(String(args.phase)) ? args.phase as ExperienceTraceFields["phase"] : "none";
@@ -23,7 +24,7 @@ function traceResource(name: string, args: Record<string, unknown>): Pick<Experi
 // access. Native resets still cancel every retained local request below.
 export const appLocalResourceCache = createExperienceResourceCache({ canUse: () => typeof window !== "undefined" });
 
-export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; loading: boolean; refreshing: boolean; error?: string; accessDenied?: boolean };
+export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; loading: boolean; refreshing: boolean; error?: string; accessDenied?: boolean; offline?: boolean };
 // Cells contain React view state only. Request ownership, freshness, conditional
 // responses and failure cooldown belong to the shared scoped read cache.
 type Cell = { context: ExperienceResourceContext; state: AppLocalResourceState<unknown>; listeners: Set<() => void>; active: number; validatedAt: number; invalidated?: boolean; epoch: number; revision: number; deliveryRevision: number; revalidate?: boolean; hydrated?: Promise<void>; pending?: Promise<void> };
@@ -42,7 +43,7 @@ function cellFor(scope: string, name: string, args: unknown) {
     if (cells.size >= 128) for (const [id, existing] of cells) if (!existing.listeners.size && !existing.pending) { cells.delete(id); break; }
     const context = { scope: scope || "unavailable", key: "app-local:" + JSON.stringify([name, stable(args)]) };
     const retained = appLocalResourceCache.get<AppLocalRead<unknown>>(context), saved = retained?.data;
-    cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, loading: !saved, refreshing: false }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0, deliveryRevision: 0 }; cells.set(key, cell);
+    cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, loading: !saved, refreshing: false, offline: saved?.offline }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0, deliveryRevision: 0 }; cells.set(key, cell);
   }
   return { key, cell };
 }
@@ -104,7 +105,7 @@ export function reconcileAppLocalRoleResources(value: AppLocalContext, generatio
     // Fresh context proves access, not DTO freshness. Revalidate in background;
     // skip an older durable hydration and preserve the original DTO timestamp.
     cell.invalidated = true; cell.validatedAt = 0; cell.hydrated = Promise.resolve(); cell.deliveryRevision++;
-    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
   }
 }
 function resourceDomain(name: string) {
@@ -118,6 +119,7 @@ function resourceDomain(name: string) {
 export function resetAppLocalResources(scope?: string) {
   recordExperienceTrace("cache.reset", { source: "app-local", reason: "reset" });
   if (!scope) epoch++;
+  readPriorityScheduler.cancelScope(scope);
   appLocalResourceCache.reset(scope);
   for (const [key, cell] of cells) {
     if (scope && cell.context.scope !== scope) continue;
@@ -204,7 +206,7 @@ export async function hydrateAppLocalResource<T>(scope: string, name: string, ar
       const snapshot: AppLocalRead<T> = { schemaVersion: 1, status: 200, scope, data: saved.data, etag: saved.revision ?? "", updatedAt: saved.updatedAt, offline: true };
       appLocalResourceCache.seed(cell.context, snapshot, {}, saved.updatedAt, saved.revision);
       cell.validatedAt = Math.max(cell.validatedAt, saved.updatedAt);
-      emit(cell, { data: saved.data, etag: saved.revision, updatedAt: saved.updatedAt, loading: false, accessDenied: false });
+      emit(cell, { data: saved.data, etag: saved.revision, updatedAt: saved.updatedAt, loading: false, accessDenied: false, offline: true });
     }
   })().catch(() => {}).finally(() => { if (traceOperation) recordExperienceTrace("cache.restore.end", { source: "app-local", operation: traceOperation, durationMs: performance.now() - traceStarted, ...traceResource(name, args) }); if (epoch === started && cells.get(key) === cell && cell.state.data === undefined) emit(cell, { loading: false }); });
   return cell.hydrated;
@@ -212,16 +214,23 @@ export async function hydrateAppLocalResource<T>(scope: string, name: string, ar
 export function seedAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown>, snapshot: AppLocalRead<T>) {
   if (snapshot.scope !== scope || snapshot.status !== 200 || snapshot.data === undefined) return;
   const { cell } = cellFor(scope, name, args);
-  if (snapshot.updatedAt >= cell.state.updatedAt && appLocalResourceCache.isAvailable(cell.context)) {
+  if ((snapshot.updatedAt >= cell.state.updatedAt || cell.state.offline && !snapshot.offline) && appLocalResourceCache.isAvailable(cell.context)) {
     appLocalResourceCache.seed(cell.context, snapshot, {}, snapshot.offline ? snapshot.updatedAt : Date.now(), snapshot.etag);
     cell.validatedAt = snapshot.offline ? snapshot.updatedAt : Date.now();
     cell.invalidated = false;
     cell.deliveryRevision++;
-    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
   }
 }
-export async function refreshAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}, options: { force?: boolean; freshForMs?: number } = {}): Promise<void> {
-  const { key, cell } = cellFor(scope, name, args); if (cell.pending) return cell.pending;
+type ReadOptions = { force?: boolean; freshForMs?: number; route?: string; priority?: number; background?: boolean; signal?: AbortSignal };
+export async function refreshAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}, options: ReadOptions = {}): Promise<void> {
+  if (options.signal?.aborted) return;
+  const { key, cell } = cellFor(scope, name, args);
+  const route = options.route ?? (typeof location === "undefined" || name.startsWith("shell.") ? undefined : location.pathname + location.search);
+  if (cell.pending) {
+    if (!options.background) readPriorityScheduler.promote(scope, cell.context.key, route, options.priority ?? 0);
+    return cell.pending;
+  }
   if (!appLocalResourceCache.isAvailable(cell.context)) return;
   if (options.force === false && !canAutomaticallyRefreshRead()) return;
   // Oversize DTOs and recently evicted entries can remain in a retained view.
@@ -246,11 +255,12 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     && new URLSearchParams({ name, args: JSON.stringify(stable(args)), scope }).toString().length <= 1000;
   recordExperienceTrace("cache.refresh", { source: "app-local", fresh: Boolean(retained?.fresh), trigger: options.force === false ? "unknown" : "manual", ...traceResource(name, args) });
   emit(cell, { refreshing: true, error: undefined });
+  let deniedRead: unknown;
   cell.pending = (async () => {
     // Oversize/evicted data can remain in a mounted view. Supply that snapshot
     // for a conditional read without claiming it is fresh merely by showing it.
     if (!appLocalResourceCache.get(cell.context) && cell.state.data !== undefined) {
-      appLocalResourceCache.seed(cell.context, { schemaVersion: 1, status: 200, scope, data: cell.state.data, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt } satisfies AppLocalRead<unknown>, { freshForMs: 0 }, cell.state.updatedAt, cell.state.etag);
+      appLocalResourceCache.seed(cell.context, { schemaVersion: 1, status: 200, scope, data: cell.state.data, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt, offline: cell.state.offline } satisfies AppLocalRead<unknown>, { freshForMs: 0 }, cell.state.updatedAt, cell.state.etag);
     }
     let transportValidatedAt: number | undefined;
     let acceptedReadTrace: ReturnType<typeof appLocalReadTraceFields> = {}, acceptedReadStatus: number | undefined;
@@ -260,7 +270,21 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
       recordExperienceTrace("cache.read.start", { source: "app-local", operation, ...traceResource(name, args) });
       try {
         let revalidatedCancellation = false;
-        const read = () => host.read<T>(name, args, { scope, etag: etag ?? cell.state.etag, signal });
+        const read = async () => {
+          const controller = new AbortController();
+          const cancel = () => controller.abort();
+          // A foreground observer joining a preload now owns that same read.
+          const cancelSpeculation = () => { if (!cell.active) controller.abort(); };
+          signal.addEventListener("abort", cancel, { once: true });
+          options.signal?.addEventListener("abort", cancelSpeculation, { once: true });
+          if (signal.aborted || options.signal?.aborted && !cell.active) controller.abort();
+          const phase = ["staff", "bookings", "waiting", "financials", "extras"].indexOf(String(args.phase));
+          const priority = options.priority ?? (name === "shell.navigation" ? 5 : name.startsWith("shell.") ? 40 : phase >= 0 ? 10 + phase : 0);
+          try { return await readPriorityScheduler.run({ scope, key: cell.context.key, route,
+            priority, background: options.background,
+            signal: controller.signal, run: queuedSignal => host.read<T>(name, args, { scope, etag: etag ?? cell.state.etag, signal: queuedSignal }) });
+          } finally { signal.removeEventListener("abort", cancel); options.signal?.removeEventListener("abort", cancelSpeculation); }
+        };
         const next = await read().catch(error => {
           if (!isAppLocalContextCancellation(error)) throw error;
           if (!currentCancellationRead(signal)) throw new ExperienceResourceInvalidatedError();
@@ -274,7 +298,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
         if (epoch !== started || cell.epoch !== started || cell.revision !== revision || cells.get(key) !== cell || next.scope !== scope) throw new ExperienceResourceInvalidatedError();
         acceptedReadTrace = appLocalReadTraceFields(next); acceptedReadStatus = next.status;
         transportValidatedAt = next.offline ? next.updatedAt : Date.now();
-        const previous = cached ?? (cell.state.data === undefined ? undefined : { schemaVersion: 1, status: 200, scope, data: cell.state.data as T, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt } as AppLocalRead<T>);
+        const previous = cached ?? (cell.state.data === undefined ? undefined : { schemaVersion: 1, status: 200, scope, data: cell.state.data as T, etag: cell.state.etag ?? "", updatedAt: cell.state.updatedAt, offline: cell.state.offline } as AppLocalRead<T>);
         if (next.status === 304) {
           if (!previous) throw new Error("The saved page must be loaded again");
           recordReadRequest(category, "not-modified", Date.now() - began);
@@ -282,7 +306,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
         }
         if (next.data === undefined) throw new Error("The page update was incomplete");
         // A delayed transport cannot replace a newer accepted page seed.
-        const accepted = previous && previous.updatedAt > next.updatedAt ? previous : next;
+        const accepted = previous && !previous.offline && previous.updatedAt > next.updatedAt ? previous : next;
         recordReadRequest(category, "network", Date.now() - began);
         return { data: accepted, etag: accepted.etag, validatedAt: transportValidatedAt };
       } catch (error) {
@@ -295,9 +319,9 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (epoch !== started || cell.revision !== revision || cells.get(key) !== cell || !appLocalResourceCache.isAvailable(cell.context)) return;
     cell.invalidated = false;
     cell.validatedAt = appLocalResourceCache.get(cell.context)?.updatedAt ?? transportValidatedAt ?? cell.validatedAt;
-    if (snapshot.updatedAt >= cell.state.updatedAt) {
+    if (snapshot.updatedAt >= cell.state.updatedAt || cell.state.offline && !snapshot.offline) {
       cell.deliveryRevision++;
-      emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false });
+      emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
       recordExperienceTrace("cache.accept", { source: "app-local", status: acceptedReadStatus, offline: Boolean(snapshot.offline), ...traceResource(name, args), ...acceptedReadTrace });
     }
     // Native retains only envelopes it fetched and authorized itself. JavaScript
@@ -305,6 +329,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });
   })().catch(error => {
     if (epoch !== started || cell.revision !== revision || error instanceof ExperienceResourceInvalidatedError || cells.get(key) !== cell) return;
+    if ([401, 403, 409].includes(error?.status)) deniedRead = error;
     // 403 remains conservative: it may denote account suspension as well as
     // a relationship denial. Only unambiguous scoped outcomes are narrowed.
     if ([401, 403].includes(error?.status)) clearAppLocalRoleResources();
@@ -331,9 +356,37 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
       if (error.status === 403) window.dispatchEvent(new CustomEvent("reylumi:app-local-revalidate-access", { detail: { scope } }));
       return;
     }
+    if ((error as { name?: string })?.name === "AbortError") { emit(cell, { loading: false, refreshing: false }); return; }
     emit(cell, { error: isAppLocalContextCancellation(error) ? "The app changed while loading. Please try again." : error instanceof Error ? error.message : "Could not update this page", loading: false, refreshing: false });
   }).finally(() => { if (epoch === started && cells.get(key) === cell) { cell.pending = undefined; if (cell.state.refreshing) emit(cell, { refreshing: false }); if (cell.revalidate) { cell.revalidate = false; if (cell.active) void refreshAppLocalResource(scope, name, args); } } });
-  return cell.pending;
+  await cell.pending;
+  if (options.background && deniedRead) throw deniedRead;
+}
+
+/** Local restoration gets a short head start, never a 25s bridge callback gate.
+ * Its delivery revision still prevents a late disk snapshot replacing a new read.
+ */
+async function restoreBeforeRefresh(scope: string, name: string, args: Record<string, unknown>) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([hydrateAppLocalResource(scope, name, args), new Promise<void>(resolve => { timer = setTimeout(resolve, 60); })]);
+  if (timer) clearTimeout(timer);
+}
+
+/** Named, scoped reads only. Returns the accepted DTO for dependent prefetch work. */
+export async function prefetchAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}, options: ReadOptions = {}): Promise<T | undefined> {
+  if (!appLocalReadIsDurable(name) || options.signal?.aborted) return undefined;
+  const started = epoch, original = cellFor(scope, name, args);
+  await restoreBeforeRefresh(scope, name, args);
+  if (started !== epoch || options.signal?.aborted || cells.get(original.key) !== original.cell) throw new DOMException("Read context changed", "AbortError");
+  await refreshAppLocalResource<T>(scope, name, args, { ...options, force: false, background: true, priority: options.priority ?? 100 });
+  const { cell, key } = original;
+  if (started !== epoch || options.signal?.aborted || cells.get(key) !== cell) throw new DOMException("Read context changed", "AbortError");
+  if (cell.state.accessDenied) throw Object.assign(new Error("Access changed"), { status: 403 });
+  const accepted = appLocalResourceCache.get<AppLocalRead<T>>(cell.context);
+  // A failed online shell refresh may leave useful older UI on screen, but
+  // must not fan out date/permission-dependent reads from that stale snapshot.
+  if (cell.state.error || !accepted?.fresh || accepted.data.offline) return undefined;
+  return cell.state.data as T | undefined;
 }
 
 export function useAppLocalResource<T>(scope: string | undefined, name: string, args: Record<string, unknown> = {}, options: { enabled?: boolean; refreshAfterMs?: number } = {}) {
@@ -355,7 +408,7 @@ export function useAppLocalResource<T>(scope: string | undefined, name: string, 
       if (!alive || !canAutomaticallyRefreshRead()) return;
       void refreshAppLocalResource<T>(actualScope, name, JSON.parse(signature), { force: false, freshForMs: options.refreshAfterMs });
     };
-    void hydrateAppLocalResource<T>(actualScope, name, JSON.parse(signature)).then(ensureFresh);
+    void restoreBeforeRefresh(actualScope, name, JSON.parse(signature)).then(ensureFresh);
     const unsubscribe = subscribeReadRefresh(ensureFresh);
     return () => { alive = false; release(); unsubscribe(); };
   }, [actualScope, name, signature, options.enabled, options.refreshAfterMs, cell, refresh, available]);
