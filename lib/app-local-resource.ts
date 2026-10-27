@@ -375,6 +375,7 @@ async function restoreBeforeRefresh(scope: string, name: string, args: Record<st
 /** Named, scoped reads only. Returns the accepted DTO for dependent prefetch work. */
 export async function prefetchAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown> = {}, options: ReadOptions = {}): Promise<T | undefined> {
   if (!appLocalReadIsDurable(name) || options.signal?.aborted) return undefined;
+  try {
   const started = epoch, original = cellFor(scope, name, args);
   await restoreBeforeRefresh(scope, name, args);
   if (started !== epoch || options.signal?.aborted || cells.get(original.key) !== original.cell) throw new DOMException("Read context changed", "AbortError");
@@ -387,6 +388,12 @@ export async function prefetchAppLocalResource<T>(scope: string, name: string, a
   // must not fan out date/permission-dependent reads from that stale snapshot.
   if (cell.state.error || !accepted?.fresh || accepted.data.offline) return undefined;
   return cell.state.data as T | undefined;
+  } finally {
+    // Unvisited DTOs belong to the bounded read cache. React cells must not
+    // accidentally keep an evicted/oversize background response alive forever.
+    // Mounted and Activity-retained views keep their existing state and drafts.
+    for (const [key, cell] of cells) if (!cell.active && !cell.listeners.size && !cell.pending && !appLocalResourceCache.get(cell.context)) cells.delete(key);
+  }
 }
 
 export function useAppLocalResource<T>(scope: string | undefined, name: string, args: Record<string, unknown> = {}, options: { enabled?: boolean; refreshAfterMs?: number } = {}) {

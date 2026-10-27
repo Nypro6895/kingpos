@@ -181,6 +181,28 @@ test('held disk hydration cannot gate the foreground online read beyond its shor
   assert.ok(facts.read.started - facts.cache.started >= 45 && facts.read.started - facts.cache.started < 1500, JSON.stringify(facts));
 });
 
+test('an unvisited oversize preload does not retain an invisible DTO after bounded cache rejection', options, async t => {
+  const page = await fixture(t), value = context('customer');
+  await page.evaluate(scope => {
+    window.holdRead('page.beauty'); window.startDirect(scope, 'page.beauty');
+  }, value.context.scope);
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.beauty'));
+  await page.evaluate(() => window.releaseRead(window.h.reads.find(row => row.name === 'page.beauty').id, {
+    data: { marker: 'unvisited-oversize', padding: 'x'.repeat(3 * 1024 * 1024) },
+  }));
+  await page.waitForFunction(() => window.direct.settled);
+  assert.equal(await page.evaluate(scope => Boolean(window.cached(scope, 'page.beauty')), value.context.scope), false, 'UTF-16 accounting rejects this payload above the 5 MiB cache budget');
+  await page.evaluate(() => window.holdRead('page.beauty'));
+  await page.evaluate(cfg => window.configure(cfg), { context: value, path: '/beauty', foreground: { name: 'page.beauty' }, runtime: false });
+  await page.waitForFunction(() => window.h.reads.filter(row => row.name === 'page.beauty').length === 2);
+  assert.equal(await page.getByTestId('foreground').innerText(), 'opening', 'an unmounted preload cell must not preserve data rejected by the bounded cache');
+  await page.evaluate(() => window.releaseRead(window.h.reads.filter(row => row.name === 'page.beauty')[1].id, {
+    data: { marker: 'mounted-foreground-large', padding: 'x'.repeat(3 * 1024 * 1024) },
+  }));
+  await page.getByTestId('foreground').filter({ hasText: 'mounted-foreground-large' }).waitFor();
+  assert.equal(await page.evaluate(scope => Boolean(window.cached(scope, 'page.beauty')), value.context.scope), false);
+});
+
 for (const order of ['before', 'after']) test(`clock-skewed disk arriving ${order} online cannot replace the fresh network DTO`, options, async t => {
   const page = await fixture(t), value = context('customer');
   await page.evaluate(order => { window.holdCache('page.beauty'); if (order === 'before') window.holdRead('page.beauty'); }, order);
