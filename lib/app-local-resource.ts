@@ -302,7 +302,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
         if (next.status === 304) {
           if (!previous) throw new Error("The saved page must be loaded again");
           recordReadRequest(category, "not-modified", Date.now() - began);
-          return { data: { ...previous, offline: next.offline }, etag: next.etag || previous.etag, validatedAt: transportValidatedAt };
+          return { data: { ...previous, ...(previous.offline && !next.offline ? { updatedAt: next.updatedAt } : {}), offline: next.offline }, etag: next.etag || previous.etag, validatedAt: transportValidatedAt };
         }
         if (next.data === undefined) throw new Error("The page update was incomplete");
         // A delayed transport cannot replace a newer accepted page seed.

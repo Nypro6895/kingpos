@@ -222,3 +222,19 @@ for (const order of ['before', 'after']) test(`clock-skewed disk arriving ${orde
   const saved = await page.evaluate(scope => window.cached(scope, 'page.beauty')?.data, value.context.scope);
   assert.equal(saved.offline, false); assert.ok(!saved.data.marker.includes('skewed-disk'));
 });
+
+test('a 304 validation clears a disk clock skew before a later changed network response', options, async t => {
+  const page = await fixture(t), value = context('customer');
+  await page.evaluate(() => { window.holdCache('page.beauty'); window.holdRead('page.beauty'); });
+  await page.evaluate(cfg => window.configure(cfg), { context: value, path: '/beauty', foreground: { name: 'page.beauty' }, runtime: false });
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.beauty'));
+  await page.evaluate(() => window.releaseCache(window.h.caches.find(row => row.name === 'page.beauty').id, { data: { marker: 'disk-unchanged' }, revision: 'old-disk', updatedAt: Date.now() + 3600000 }));
+  await page.getByTestId('foreground').filter({ hasText: 'disk-unchanged' }).waitFor();
+  await page.evaluate(() => window.releaseRead(window.h.reads.find(row => row.name === 'page.beauty').id, { status: 304, data: undefined, etag: 'old-disk', updatedAt: Date.now() }));
+  await page.waitForFunction(scope => window.cached(scope, 'page.beauty')?.data.offline === false, value.context.scope);
+  assert.ok(await page.evaluate(scope => window.cached(scope, 'page.beauty').data.updatedAt <= Date.now(), value.context.scope));
+  await page.evaluate(() => { window.holdRead('page.beauty'); void window.foregroundState.refresh(); });
+  await page.waitForFunction(() => window.h.reads.filter(row => row.name === 'page.beauty').length === 2);
+  await page.evaluate(() => window.releaseRead(window.h.reads.filter(row => row.name === 'page.beauty').at(-1).id, { data: { marker: 'later-network-change' }, updatedAt: Date.now() }));
+  await page.getByTestId('foreground').filter({ hasText: 'later-network-change' }).waitFor();
+});
