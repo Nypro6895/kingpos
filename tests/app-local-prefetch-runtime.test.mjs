@@ -143,6 +143,28 @@ test('aborting the preload consumer preserves a mounted foreground observer of t
   assert.equal(await page.evaluate(() => window.direct.error?.name), 'AbortError');
 });
 
+test('same-scope display lease recovery preserves an unplanned foreground read', options, async t => {
+  const page = await fixture(t), initial = context('owner'), recovered = context('owner');
+  initial.grant = null;
+  await page.evaluate(() => window.holdRead('page.settings'));
+  await page.evaluate(cfg => window.configure(cfg), { context: initial, path: '/settings', foreground: { name: 'page.settings' }, runtime: true });
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.settings'));
+  const held = await page.evaluate(() => window.h.reads.find(row => row.name === 'page.settings').id);
+  // Entry keeps this unchanged account/scope mounted when a temporary grant
+  // outage recovers. Settings is intentionally outside the background plan.
+  await page.evaluate(value => window.configure({ context: value }), recovered);
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.my-place'));
+  const observed = await page.evaluate(id => ({
+    aborted: window.h.reads.find(row => row.id === id).aborted,
+    reads: window.h.reads.filter(row => row.name === 'page.settings').length,
+    visible: document.querySelector('[data-testid=foreground]').textContent,
+  }), held);
+  assert.equal(observed.aborted, false, JSON.stringify(observed));
+  await page.evaluate(id => window.releaseRead(id, { data: { marker: 'settings-after-lease-recovery' } }), held);
+  await page.getByTestId('foreground').filter({ hasText: 'settings-after-lease-recovery' }).waitFor();
+  assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.settings').length), 1);
+});
+
 test('account scope switch cancels old work and rejects a transport that resolves late', options, async t => {
   const page = await fixture(t), previous = context('owner', 'a'), next = context('owner', 'b');
   next.context.viewerId = '00000000-0000-4000-8000-000000000005'; next.grant.viewerId = next.context.viewerId;

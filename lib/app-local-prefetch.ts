@@ -80,7 +80,9 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
     return () => {
       active = false; controller.abort(); clearTimeout(timer);
       if (wake.current === lifecycle) wake.current = undefined;
-      readPriorityScheduler.cancelScope(scope);
+      // This effect owns only its preload consumer. A same-scope admission
+      // renewal must not cancel the current page's foreground read. Actual
+      // scope changes are fenced by setActiveScope and resource resets.
       document.removeEventListener("visibilitychange", lifecycle);
       window.removeEventListener("online", lifecycle); window.removeEventListener("offline", lifecycle);
       window.removeEventListener("reylumi:foreground", lifecycle); network?.removeEventListener("change", lifecycle);
