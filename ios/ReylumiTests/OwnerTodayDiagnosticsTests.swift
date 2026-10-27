@@ -168,20 +168,36 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
             let delivered = run.trace.snapshot().filter { $0.event == .contextDelivered }.count
             // Observe the real installed bridge without replacing its handler,
             // transport, context events, request promises or admission rules.
+            // Diagnostics is a capped ring: its length is not a cursor after
+            // prefetch has filled it. Preserve real rows by sequence, including
+            // at the native event boundary before later resource work can evict
+            // the early handoff rejection from the production ring.
             _ = try await run.web.evaluateJavaScript("""
             window.__handoffContextEvents=[];
-            window.addEventListener('reylumi:app-local-context',e=>window.__handoffContextEvents.push(e.detail.contextPath));
-            window.__handoffTraceStart=window.__reylumiDiagnostics.snapshot().length;
-            window.__handoffAccepts=window.__reylumiDiagnostics.snapshot().filter(e=>e.event==='context.accept').length;
+            window.__handoffTraceStart=window.__reylumiDiagnostics.snapshot().reduce((last,e)=>Math.max(last,e.sequence),0);
+            window.__handoffTraceRows=new Map();
+            window.__captureHandoffTrace=()=>{
+              for(const row of window.__reylumiDiagnostics.snapshot())if(row.sequence>window.__handoffTraceStart)window.__handoffTraceRows.set(row.sequence,row);
+              return [...window.__handoffTraceRows.values()].sort((a,b)=>a.sequence-b.sequence);
+            };
+            window.addEventListener('reylumi:app-local-context',e=>{
+              window.__handoffContextEvents.push(e.detail.contextPath);
+              window.__captureHandoffTrace();
+            });
             window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/today'}}));true
             """)
-            try await self.wait("window.__reylumiDiagnostics.snapshot().filter(e=>e.event==='context.accept').length>window.__handoffAccepts && " + self.fullReady + " && !document.querySelector('[data-context-failure]')", in: run.web)
+            try await self.wait("window.__captureHandoffTrace().some(e=>e.event==='context.accept') && " + self.fullReady + " && !document.querySelector('[data-context-failure]')", in: run.web)
+            _ = try await run.web.evaluateJavaScript("window.__captureHandoffTrace();true")
             try await Task.sleep(nanoseconds: 250_000_000)
             let after = await run.http.contextPaths()
             XCTAssertEqual(Array(after.dropFirst(before.count)), ["/staff/today"], "The requested valid Today context must not be aborted for a neutral home lookup")
             let events = try await run.web.evaluateJavaScript("window.__handoffContextEvents") as? [String]
             XCTAssertEqual(events, ["/staff/today"], "The installed native emitter must deliver the requested context")
-            let handoffTrace = try await run.web.evaluateJavaScript("window.__reylumiDiagnostics.snapshot().slice(window.__handoffTraceStart)") as? [[String: Any]] ?? []
+            let handoffTrace = try await run.web.evaluateJavaScript("window.__captureHandoffTrace()") as? [[String: Any]] ?? []
+            let anchorValue = try await run.web.evaluateJavaScript("window.__handoffTraceStart") as? Int
+            let anchor = try XCTUnwrap(anchorValue)
+            let sequences = handoffTrace.compactMap { $0["sequence"] as? Int }
+            XCTAssertEqual(sequences, sequences.indices.map { anchor + $0 + 1 }, "The passive observer must retain the complete handoff trace despite production ring rollover")
             let earlyEvent = handoffTrace.firstIndex { $0["event"] as? String == "context.reject" && $0["contextReason"] as? String == "handoff" }
             let requestedReply = handoffTrace.firstIndex { $0["event"] as? String == "context.accept" }
             XCTAssertNotNil(earlyEvent, "Exercise an actual native event arriving while the requested handoff is pending")
