@@ -10,6 +10,7 @@ do $$declare d text; old_guard text := $guard$if actor is null or (not user_has_
  exists(select 1 from customers where id=any(ids) and customer_user_id is distinct from actor))
  then raise exception 'Customer merge access required' using errcode='42501'; end if;$guard$;
 begin
+ old_guard:=replace(old_guard,chr(13),'');
  d:=replace(pg_get_functiondef('public.merge_customer_records(uuid,uuid,uuid[],text)'::regprocedure),chr(13),'');
  if position(old_guard in d)=0 then raise exception 'Review customer merge authorization before upgrade'; end if;
  d:=replace(d,'public.merge_customer_records(','public.merge_customer_records_phone_internal(');

@@ -122,7 +122,10 @@ export async function startIsolatedSupabase(labelPrefix = 'booking-access', imag
       // checkout. PL/pgSQL pg_get_functiondef guards compare literal newlines;
       // raw Windows CRLF inside an earlier function body must not invalidate a
       // later unchanged guard. Preserve both hashes in the test receipt.
-      const executed = bytes.toString().replaceAll('\r\n', '\n');
+      const normalized = bytes.toString().replaceAll('\r\n', '\n');
+      // Exercise the Windows SQL editor transport for this guarded migration.
+      const executed = file === '20261026230000_phone_customer_consolidation.sql'
+        ? normalized.replaceAll('\n', '\r\n') : normalized;
       sql(`begin;\n${executed}\n;\ncommit;`); evidence.migrationHashes.push({ file, sha256: hash(bytes), executedSha256: hash(executed), lineEndingNormalization: 'CRLF to LF only', transactionBoundary: 'Explicit final statement delimiter, including EOF-terminated SQL files' });
       if (evidence.migrationHashes.length % 50 === 0) console.log(`Isolated fixture: ${evidence.migrationHashes.length} migrations`);
     }
