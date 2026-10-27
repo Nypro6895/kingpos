@@ -1,3 +1,4 @@
+import {deviceSettingsFixture} from './helpers/device-settings-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -11,7 +12,7 @@ test('Windows login defaults to native input and can enable a persisted suppleme
   const result = await build({
     stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LoginForm}from'./app/login/login-form';createRoot(document.getElementById('root')).render(<LoginForm/>);`, resolveDir: process.cwd(), loader: 'tsx' },
     bundle: true, write: false, outdir: 'out', jsx: 'automatic', loader: { '.css': 'css' },
-    plugins: [{ name: 'next-test', setup(builder) {
+    plugins: [deviceSettingsFixture(),{ name: 'next-test', setup(builder) {
       builder.onResolve({ filter: /^next\/(link|navigation)$/ }, args => ({ path: args.path, namespace: 'next-test' }));
       builder.onLoad({ filter: /.*/, namespace: 'next-test' }, args => ({ contents: args.path === 'next/link' ? `import React from 'react';export default function Link(p){return <a {...p}/>}` : `export const useRouter=()=>({push(){},refresh(){}});export const usePathname=()=>'/login';`, loader: 'jsx', resolveDir: process.cwd() }));
     } }],
@@ -40,8 +41,8 @@ test('Windows login defaults to native input and can enable a persisted suppleme
         continue;
       }
       await page.getByRole('button', { name: 'Device settings', exact: true }).click();
-      await page.getByLabel('Enable supplemental app keyboard').check();
-      await page.getByRole('dialog').getByRole('button', { name: 'Done', exact: true }).click();
+      await page.getByLabel('Keyboard').check();
+      await page.getByRole('dialog').getByRole('button', { name: 'Close settings', exact: true }).click();
       await page.getByLabel('Email', { exact: true }).click();
       const key = name => keyboard.getByRole('button', { name, exact: true }).click();
       await key('a'); await key('123 / @'); await key('@'); await key('ABC');

@@ -1,7 +1,7 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { PluginMarketSettings } from "./plugin-market-settings";
-import { DeviceInputSettings } from "@/app/pos/portable/device-input-settings";
+import { DeviceInputSettings, CustomerDisplayPreferencesEditor } from "@/app/pos/portable/device-input-settings";
 import { WindowsPosDownloadLinks } from "@/components/windows-pos-download";
 import { parseLoginUserAgent } from "@/lib/account-security-shared";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
@@ -120,6 +120,7 @@ export function PosSettingsPanel({
         <summary className="cursor-pointer font-semibold">
           <WorkspaceText text="Customer display" />
         </summary>
+        <CustomerDisplayPreferencesEditor />
         <SettingsGroupForm
           group="display"
           snapshot={data.snapshot}

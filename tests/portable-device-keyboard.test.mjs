@@ -1,3 +1,4 @@
+import {deviceSettingsFixture} from './helpers/device-settings-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
@@ -21,16 +22,16 @@ test('device input: default off, persist/reopen, cross-window sync, device isola
       {custom&&<CustomServiceDialog showKeyboard={enabled} onCancel={()=>setCustom(false)} onDone={()=>setCustom(false)}/>}
       <PortableTouchKeyboard/></main>};createRoot(document.getElementById('root')).render(<App/>);
   ` }, bundle: true, write: false, outdir: 'out', jsx: 'automatic', loader: { '.css': 'css' },
-    plugins: [{name:'next-fixture',setup(builder){
+    plugins: [deviceSettingsFixture(),{name:'next-fixture',setup(builder){
       builder.onResolve({filter:/^next\/navigation$/},()=>({path:'navigation',namespace:'fixture'}));
-      builder.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:`export const usePathname=()=>'/pos/portable';`}));
+      builder.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:`export const usePathname=()=>'/pos/portable';export const useRouter=()=>({refresh(){},push(){}});`}));
     }}],
   });
   const js = built.outputFiles.find(f=>f.path.endsWith('.js')).text;
   const sources='@source "'+resolve('app').split(String.fromCharCode(92)).join('/')+'";';
   const globals = (await readFile('app/globals.css','utf8')).replace('@import "tailwindcss";', '@import "tailwindcss" source(none);\n'+sources);
   const global = await postcss([tailwindcss()]).process(globals,{from:resolve('app/globals.css')});
-  assert.ok(global.css.includes('.max-w-md'),'Render the real device settings utilities');
+  assert.ok(global.css.includes('.h-10'),'Render the real device settings utilities');
   const css = global.css + '\n' + built.outputFiles.find(f=>f.path.endsWith('.css')).text;
   if(process.env.KEYBOARD_QA_DIR)await writeFile(resolve(process.env.KEYBOARD_QA_DIR,'rendered-settings.css'),css);
   const server = createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/app.js'?'text/javascript':req.url==='/app.css'?'text/css':'text/html');res.end(req.url==='/app.js'?js:req.url==='/app.css'?css:'<link rel="stylesheet" href="/app.css"><div id="root"></div><script src="/app.js"></script>');});
@@ -44,8 +45,8 @@ test('device input: default off, persist/reopen, cross-window sync, device isola
     await page.goto(url);await other.goto(url);
     const keyboard=page.getByRole('group',{name:'Touch keyboard'});
     const open=()=>page.getByRole('button',{name:'Device settings',exact:true}).click();
-    const close=()=>page.getByRole('dialog',{name:'Device settings'}).getByRole('button',{name:'Done',exact:true}).click();
-    const toggle=page.getByLabel('Enable supplemental app keyboard');
+    const close=()=>page.getByRole('dialog',{name:'Device settings'}).getByRole('button',{name:'Close settings',exact:true}).click();
+    const toggle=page.getByLabel('Keyboard');
     await page.getByLabel('Customer',{exact:true}).click();
     await page.keyboard.type('Maya');assert.equal(await page.getByLabel('Customer',{exact:true}).inputValue(),'Maya');
     assert.equal(await keyboard.count(),0);assert.equal(await page.getByLabel('Customer',{exact:true}).getAttribute('inputmode'),'text');
@@ -80,8 +81,8 @@ test('device input: default off, persist/reopen, cross-window sync, device isola
     // Read errors fail closed; write errors remain visible and do not claim a save.
     const unavailable=await browser.newContext();await unavailable.addInitScript(()=>{Storage.prototype.getItem=()=>{throw Error('blocked')};Storage.prototype.setItem=()=>{throw Error('disk full')};});
     const blocked=await unavailable.newPage();await blocked.goto(url);await blocked.getByRole('button',{name:'Device settings',exact:true}).click();
-    await blocked.getByLabel('Enable supplemental app keyboard').click();
-    await blocked.getByRole('alert').waitFor();assert.equal(await blocked.getByLabel('Enable supplemental app keyboard').isChecked(),false);await unavailable.close();
+    await blocked.getByLabel('Keyboard').click();
+    await blocked.getByRole('alert').waitFor();assert.equal(await blocked.getByLabel('Keyboard').isChecked(),false);await unavailable.close();
     await open();await toggle.uncheck();await close();await page.reload();await page.waitForFunction(()=>document.querySelector('output').textContent==='false');
     await open();
     for(const viewport of [{width:1024,height:768},{width:390,height:844}]){
@@ -103,7 +104,7 @@ test('staff PIN keypad remains visible and accepts digits with supplemental keyb
     import{portableBusinessDate}from'./lib/portable-business-day';
     const data={checkInEnabled:true,salonId:'fixture',salonLogoUrl:null,salonName:'Fixture',today:portableBusinessDate('America/Chicago'),timezone:'America/Chicago',staff:[{id:'alex',displayName:'Alex',avatarUrl:null,checkInAt:null,checkInSequence:null,isPasscodeDefault:false,jobTitle:null,queueTurnCount:0,status:'not_checked_in'}]};
     createRoot(document.getElementById('root')).render(<main data-portable-shell><DeviceInputSettings/><PortableCheckInClient data={data} action={async()=>{throw Error('Unexpected submit')}}/><PortableTouchKeyboard/></main>);
-  `},bundle:true,write:false,outdir:'out',jsx:'automatic',define:{'process.env':'{}'},loader:{'.css':'css'},plugins:[{name:'fixture',setup(b){
+  `},bundle:true,write:false,outdir:'out',jsx:'automatic',define:{'process.env':'{}'},loader:{'.css':'css'},plugins:[deviceSettingsFixture(),{name:'fixture',setup(b){
     b.onResolve({filter:/^next\/navigation$/},()=>({path:'nav',namespace:'fixture'}));
     b.onResolve({filter:/supabase\/browser$/},()=>({path:'supabase',namespace:'fixture'}));
     b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({contents:path==='nav'?`export const usePathname=()=>'/pos/portable/check-in';const router={refresh(){}};export const useRouter=()=>router;`:`export const createSupabaseBrowserClient=()=>null;`}));
@@ -114,7 +115,7 @@ test('staff PIN keypad remains visible and accepts digits with supplemental keyb
   const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
   try{const page=await browser.newPage();page.setDefaultTimeout(5000);const errors=[];page.on('pageerror',e=>{errors.push(e.message);process.stderr.write(e.message+'\n');});await page.goto(`http://127.0.0.1:${server.address().port}`);
     for(const enabled of [false,true]){
-      await page.getByLabel('Enable supplemental app keyboard').setChecked(enabled);
+      await page.getByLabel('Keyboard').setChecked(enabled);
       await page.getByRole('button',{name:/Alex/}).click();const dialog=page.getByRole('dialog');
       await dialog.getByRole('button',{name:'1',exact:true}).click();await dialog.getByRole('button',{name:'2',exact:true}).click();
       assert.equal(await dialog.getByRole('textbox',{name:'Passcode',exact:true}).textContent(),'••');

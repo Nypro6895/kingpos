@@ -10,6 +10,9 @@ import { exploreAlternatingShortcuts, exploreShortcutIndex } from "@/lib/explore
 import { FeedLoadingSkeleton } from "@/components/loading-feedback";
 import { currentExplorePrefetchPolicy, recordExploreLoadDuration } from "@/lib/explore-viewport-priority";
 import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
+import { isExploreAheadCancellation, watchExploreAheadAvailability } from "@/lib/explore-ahead-buffer";
+import { readPriorityScheduler } from "@/lib/read-priority-scheduler";
+import { useExperienceScope } from "@/components/experience-scope";
 import { PostIdentity } from "@/components/post-identity";
 
 import { exploreFeedErrorMessage, fetchExploreFeedPage, requestExploreFeed } from "@/lib/explore-feed-client";
@@ -1411,6 +1414,7 @@ type ExploreFeedProps = {
   discovery?: ExploreFeedDiscoveryOptions;
   filterItem?: (item: ExploreFeedItem) => boolean;
   sessionKey?: string;
+  prepareAheadKey?: string;
   allowRestore?: boolean;
   emptyContent?: ReactNode;
   emptyMessage?: string;
@@ -1425,15 +1429,18 @@ type ExploreFeedProps = {
 };
 
 export function ExploreFeed(props: ExploreFeedProps) {
+  const scope = useExperienceScope()?.context.scope;
+  const identity = JSON.stringify([scope, props.sessionKey, props.discovery]);
   const [snapshot, setSnapshot] = useState({
     page: props.initialPage,
     viewerId: props.viewer.userId,
+    identity,
     revision: 0,
   });
   // A new server payload starts a new pagination session. React discards this
   // render and retries before committing children, so old pages cannot mix in.
-  if (snapshot.page !== props.initialPage || snapshot.viewerId !== props.viewer.userId) {
-    setSnapshot({ page: props.initialPage, viewerId: props.viewer.userId, revision: snapshot.revision + 1 });
+  if (snapshot.page !== props.initialPage || snapshot.viewerId !== props.viewer.userId || snapshot.identity !== identity) {
+    setSnapshot({ page: props.initialPage, viewerId: props.viewer.userId, identity, revision: snapshot.revision + 1 });
   }
   return <ExploreFeedContent key={snapshot.revision} {...props} restoreSession={props.allowRestore !== false && snapshot.revision === 0} />;
 }
@@ -1451,6 +1458,7 @@ function ExploreFeedContent({
   discovery,
   filterItem,
   sessionKey = "",
+  prepareAheadKey,
   emptyContent,
   emptyMessage,
   endContent,
@@ -1460,6 +1468,8 @@ function ExploreFeedContent({
   description,
   feedId = "explore-feed",
 }: ExploreFeedProps & { restoreSession: boolean }) {
+  const readScope = useExperienceScope()?.context.scope ?? `explore:${viewer.userId ?? "guest"}`;
+  const aheadKey = JSON.stringify([readScope, viewer.userId, prepareAheadKey ?? sessionKey, prepareAheadKey ? null : discovery]);
   const [items, setItems] = useState(initialPage.items);
   const [sessionCursor, setSessionCursor] = useState(initialPage.sessionCursor ?? null);
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -1524,7 +1534,7 @@ function ExploreFeedContent({
   }, []);
 
   const loadNextPage = useCallback(
-    async (options: { retry?: boolean } = {}) => {
+    async (options: { retry?: boolean; background?: boolean } = {}) => {
       if (
         !cursor ||
         !hasMore ||
@@ -1546,10 +1556,13 @@ function ExploreFeedContent({
       const controller = new AbortController();
       activeRequest.current?.abort();
       activeRequest.current = controller;
+      const stopWatching = options.background ? watchExploreAheadAvailability(controller) : () => {};
       const startedAt = performance.now();
+      let cancelled = false;
 
       try {
-        const page = await requestExploreFeed<ExploreFeedPage>({ mode: "page", cursor, discovery: discovery ?? {}, limit: currentExplorePrefetchPolicy().limit }, controller.signal);
+        const read = (signal: AbortSignal) => requestExploreFeed<ExploreFeedPage>({ mode: "page", cursor, discovery: discovery ?? {}, limit: currentExplorePrefetchPolicy().limit }, signal);
+        const page = options.background ? await readPriorityScheduler.run({ key: `explore-feed:${aheadKey}:${cursor}`, scope: readScope, route: location.pathname + location.search, priority: 80, background: true, signal: controller.signal, run: read }) : await read(controller.signal);
 
         if (!mountedRef.current || controller.signal.aborted) {
           return;
@@ -1569,19 +1582,22 @@ function ExploreFeedContent({
         setCursor(exhausted ? null : page.nextCursor);
         setHasMore(page.hasMore && !exhausted);
       } catch (cause) {
-        if (mountedRef.current && !controller.signal.aborted) {
+        cancelled = isExploreAheadCancellation(cause);
+        if (mountedRef.current && !controller.signal.aborted && !cancelled) {
           requestedCursorsRef.current.delete(cursor);
           setPaginationError(exploreFeedErrorMessage(cause));
         }
       } finally {
-        if (!controller.signal.aborted) recordExploreLoadDuration(performance.now() - startedAt);
+        stopWatching();
+        if (controller.signal.aborted || cancelled) requestedCursorsRef.current.delete(cursor);
+        if (!controller.signal.aborted && !cancelled) recordExploreLoadDuration(performance.now() - startedAt);
         if (mountedRef.current && activeRequest.current === controller) {
           loadingMoreRef.current = false;
           setLoadingMore(false);
         }
       }
     },
-    [cursor, hasMore, paginationError, discovery, filterItem, items, maxEmptyPages],
+    [cursor, hasMore, paginationError, discovery, filterItem, items, maxEmptyPages, aheadKey, readScope],
   );
 
   async function refreshFeed() {
@@ -1942,11 +1958,11 @@ function ExploreFeedContent({
       ) : null}
 
       <div aria-hidden className="h-4" ref={sentinelRef}>
-        <ExploreAutoLoad enabled={hasMore && !loadingMore && !paginationError && !isRestoring} onLoad={loadNextPage} progressKey={cursor} />
+        <ExploreAutoLoad enabled={hasMore && !loadingMore && !paginationError && !isRestoring} onLoad={loadNextPage} progressKey={cursor} prepareAheadKey={aheadKey} />
       </div>
 
       {hasMore && !loadingMore && !paginationError ? (
-        <button type="button" onClick={() => void loadNextPage()} className="sr-only mx-auto rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-text-primary focus:not-sr-only">Explore more</button>
+        <button type="button" onClick={() => void loadNextPage()} className={`${memoizedItems.length ? "sr-only focus:not-sr-only" : ""} mx-auto rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-text-primary`}>Explore more</button>
       ) : null}
       {!endContent && !hasMore && !loadingMore && !isRestoring && supplementaryPosts.length === 0 && !(isEmpty && emptyContent != null) ? (
         <div className="grid justify-items-center gap-2 py-5 text-center text-sm text-text-muted">

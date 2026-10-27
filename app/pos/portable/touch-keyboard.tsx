@@ -127,5 +127,5 @@ function TouchKeyboard({ scopeSelector, desktopOnly }: { scopeSelector: string; 
       {editor instanceof HTMLTextAreaElement && <button type="button" onClick={() => insert("\n")}><WorkspaceText text="New line" /></button>}
       <button type="button" onClick={() => setEditor(null)}><WorkspaceText text="Done" /></button>
     </div></>}
-  </div>, document.body);
+  </div>, editor.closest("dialog[open]") ?? document.body);
 }

@@ -133,6 +133,7 @@ xcodebuild test-without-building \
   -destination "platform=iOS Simulator,id=$task_simulator_id" \
   -derivedDataPath "$task_run_dir/DerivedData" \
   -resultBundlePath "$task_run_dir/SimulatorTests.xcresult" \
+  -collect-test-diagnostics never \
   "${task_simulator_signing[@]}" 2>&1 | tee build/test.log
 
 xcodebuild archive \

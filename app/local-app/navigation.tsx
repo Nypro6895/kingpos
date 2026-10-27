@@ -4,11 +4,15 @@ import { createContext, useContext, useMemo, type AnchorHTMLAttributes, type For
 import { appLocalPath } from "@/lib/app-local-host";
 type Navigation = { path: string; navigate(path: string, replace?: boolean): void; refresh(): void };
 const Context = createContext<Navigation>({ path: "/help", navigate() {}, refresh() {} });
-export function AppLocalNavigationProvider({ value, children }: { value: Navigation; children: ReactNode }) { return <Context.Provider value={value}>{children}</Context.Provider>; }
+export function AppLocalNavigationProvider({ value, children }: { value: Navigation; children: ReactNode }) {
+  const { path, navigate, refresh } = value;
+  const stable = useMemo(() => ({ path, navigate, refresh }), [path, navigate, refresh]);
+  return <Context.Provider value={stable}>{children}</Context.Provider>;
+}
 export function usePathname() { return new URL(useContext(Context).path, "https://reylumi.com").pathname; }
 export function useSearchParams() { const { path } = useContext(Context); return useMemo(() => new URL(path, "https://reylumi.com").searchParams, [path]); }
 export function useLinkStatus() { return { pending: false }; }
-export function useRouter() { const current = useContext(Context); return useMemo(() => ({ push: (path: string) => current.navigate(appLocalPath(path)), replace: (path: string) => current.navigate(appLocalPath(path), true), back: () => history.back(), forward: () => history.forward(), refresh: current.refresh, prefetch: () => Promise.resolve() }), [current]); }
+export function useRouter() { const { navigate, refresh } = useContext(Context); return useMemo(() => ({ push: (path: string) => navigate(appLocalPath(path)), replace: (path: string) => navigate(appLocalPath(path), true), back: () => history.back(), forward: () => history.forward(), refresh, prefetch: () => Promise.resolve() }), [navigate, refresh]); }
 export function useParams() { return {}; }
 export function useSelectedLayoutSegment() { return usePathname().split("/").filter(Boolean).at(-1) ?? null; }
 export function useSelectedLayoutSegments() { return usePathname().split("/").filter(Boolean); }

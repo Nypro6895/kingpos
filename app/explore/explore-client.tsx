@@ -22,6 +22,9 @@ import { ExploreDeferred } from "./explore-deferred";
 import { useExploreFirstContentPaint } from "@/lib/explore-viewport-priority";
 import { ExploreDiscoveryFeed } from "@/app/explore/explore-discovery-feed";
 import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
+import { isExploreAheadCancellation, watchExploreAheadAvailability } from "@/lib/explore-ahead-buffer";
+import { readPriorityScheduler } from "@/lib/read-priority-scheduler";
+import { useExperienceScope } from "@/components/experience-scope";
 import { ExploreEditorialHeading } from "./explore-editorial";
 import { ExploreLookEditorial, ExploreSalonDirectory, ExploreBookingEditorial } from "./explore-editorial-sections";
 import { exploreEditorialHref } from "@/lib/explore-editorial";
@@ -2915,6 +2918,19 @@ function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea 
   viewerId?: string | null;
   onChooseArea?: () => void;
 }) {
+  const scope = useExperienceScope()?.context.scope;
+  const identity = JSON.stringify([scope, viewerId, response.query, response.category, response.location, response.filters, response.nextCursor, coordinates]);
+  return <SearchContinuationFeedReady key={identity} response={response} coordinates={coordinates} viewerId={viewerId} onChooseArea={onChooseArea} />;
+}
+
+function SearchContinuationFeedReady({ response, coordinates, viewerId, onChooseArea }: {
+  response: ExploreSearchResponse;
+  coordinates: GpsCoordinates | null;
+  viewerId?: string | null;
+  onChooseArea?: () => void;
+}) {
+  const readScope = useExperienceScope()?.context.scope ?? `explore:${viewerId ?? "guest"}`;
+  const aheadKey = JSON.stringify([readScope, viewerId, response.query, response.category, response.location, response.filters, response.nextCursor, coordinates]);
   const [salons, setSalons] = useState<ExploreSearchResult[]>([]);
   const [page, setPage] = useState(response.page);
   const [hasMore, setHasMore] = useState(response.hasMore ?? response.page < response.totalPages);
@@ -2934,7 +2950,7 @@ function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea 
     return () => { alive.current = false; activeRequest.current?.abort(); };
   }, []);
 
-  const loadMore = useCallback(async () => {
+  const loadMore = useCallback(async (options: { background?: boolean } = {}) => {
     if (inFlight.current || !hasMore) return;
     inFlight.current = true;
     setLoading(true);
@@ -2942,8 +2958,9 @@ function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea 
     setErrorKind(null);
     const controller = new AbortController();
     activeRequest.current = controller;
+    const stopWatching = options.background ? watchExploreAheadAvailability(controller) : () => {};
     try {
-      const next = await fetchExploreSearchPage({
+      const read = (signal: AbortSignal) => fetchExploreSearchPage({
         query: response.query, category: response.category, location: response.location, filters: response.filters,
         displayQuery: response.displayQuery, contentQuery: response.contentQuery,
         queryKind: response.queryKind, locationPriority: response.locationPriority,
@@ -2954,8 +2971,9 @@ function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea 
         cursor,
         scopePolicy: response.scope?.policy,
         sort: response.sort,
-      }, controller.signal);
-      if (!alive.current) return;
+      }, signal);
+      const next = options.background ? await readPriorityScheduler.run({ key: `explore-search:${aheadKey}:${page + 1}`, scope: readScope, route: location.pathname + location.search, priority: 80, background: true, signal: controller.signal, run: read }) : await read(controller.signal);
+      if (!alive.current || controller.signal.aborted) return;
       if (next.error) throw Object.assign(new Error(next.error), { code: next.errorKind === "cursor" ? "22023" : next.errorKind === "timeout" ? "57014" : undefined });
       const additions = next.results.filter((salon) => {
         if (seen.current.has(salon.id)) return false;
@@ -2969,12 +2987,13 @@ function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea 
       const repeatedCursor = cursor && next.nextCursor && JSON.stringify(cursor) === JSON.stringify(next.nextCursor);
       setHasMore(!repeatedCursor && emptyPages.current < 3 && (next.hasMore ?? (next.results.length > 0 && next.page < next.totalPages)));
     } catch (cause) {
-      if (alive.current && !controller.signal.aborted) { const kind = classifyExploreSearchError(cause); setErrorKind(kind); setError(exploreSearchErrorMessage(kind)); }
+      if (alive.current && !controller.signal.aborted && !isExploreAheadCancellation(cause)) { const kind = classifyExploreSearchError(cause); setErrorKind(kind); setError(exploreSearchErrorMessage(kind)); }
     } finally {
+      stopWatching();
       inFlight.current = false;
       if (alive.current) setLoading(false);
     }
-  }, [coordinates, cursor, hasMore, page, response]);
+  }, [coordinates, cursor, hasMore, page, response, aheadKey, readScope]);
 
   const renderSalon = (salon: ExploreSearchResult) => <div key={salon.id} className="space-y-3">
     <div className="flex items-center gap-3 px-1">
@@ -2994,7 +3013,7 @@ function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea 
         {visibleSalons.filter(isExplorePrimarySearchResult).map(renderSalon)}
         <SearchRecommendationSections results={visibleSalons.filter(salon => !isExplorePrimarySearchResult(salon))} location={response.location} renderCards={rows => <div className="space-y-6">{rows.map(renderSalon)}</div>} />
       </> : null}
-      {hasMore ? <ExploreAutoLoad enabled={!loading && !error} onLoad={loadMore} progressKey={page} /> : null}
+      {hasMore ? <ExploreAutoLoad enabled={!loading && !error} onLoad={loadMore} progressKey={page} prepareAheadKey={aheadKey} /> : null}
       <div className="flex items-center justify-center" aria-live="polite">
         {loading ? <p className="text-sm text-text-secondary">Loading more salons…</p> : hasMore ? <div className="text-center">
           {error ? <p className="mb-3 text-sm text-text-secondary">{error}</p> : null}

@@ -1,0 +1,56 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { readFile, mkdir } from 'node:fs/promises';
+import { resolve, dirname, join } from 'node:path';
+import { build } from 'esbuild';
+import postcss from 'postcss';
+import tailwind from '@tailwindcss/postcss';
+import { chromium } from 'playwright-core';
+
+test('actual customer display: responsive app QR, keyboard, promotions, checkout priority, compact settings and shared device preferences',{timeout:90000},async()=>{
+ const bundle=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`
+ import{personalSalonEntry}from'./lib/personal-qr';window.parseSalonEntry=personalSalonEntry;import React,{useState}from'react';import{createRoot}from'react-dom/client';import jsQR from'jsqr';window.decodeQr=jsQR;
+ import{CustomerDisplayClient}from'./app/pos/customer-display/customer-display-client';import{DeviceInputSettingsButton}from'./app/pos/portable/device-input-settings';
+ import{saveCustomerDisplayPreferences}from'./lib/customer-display-preferences';window.savePreferences=saveCustomerDisplayPreferences;
+ const snapshot={completed_at:null,customer:null,customer_handoff_started_at:null,customer_version:0,discount:0,id:'draft',last_customer_action_id:null,last_tip_action_id:null,receipt_version:0,reset_at:null,selected_staff_id:null,salon_id:'salon',server_now:new Date().toISOString(),staff_lines:[],status:'draft',subtotal:0,tax:0,tip:0,token:'fixture-token',total:0,total_before_tip:0,updated_at:new Date().toISOString(),version:1};window.snapshot=snapshot;
+ const settings={appDownloadUrl:'https://reylumi.com',customerBackgroundImageUrl:"/background.svg",customerLeftAdImageUrl:'/sample.svg',customerRightAdImageUrl:'/sample2.svg',customerLeftAdText:'A beautiful new look',customerRightAdText:'Choose your favorite nail style',customerPromoTitle:'Welcome',customerPromoBody:'Welcome to the salon',customerShowBarcode:true,customerShowCustomerName:true,customerShowReceiptStatus:true,customerShowSalonName:true,customerShowServiceName:true,customerShowStaffName:true,salonLogoUrl:null,salonName:'Fixture Nails',tipSuggestions:[5,10,15,20]};
+ function App(){const[token,setToken]=useState('fixture-token');return <><div style={{position:'fixed',top:0,right:0,zIndex:90}}><DeviceInputSettingsButton/><button onClick={()=>setToken('different-token')}>Switch device</button></div><CustomerDisplayClient settings={settings} serviceCatalog={[]} token={token}/></>};createRoot(document.getElementById('root')).render(<App/>);
+ `},bundle:true,write:false,outdir:'out',jsx:'automatic',define:{'process.env':'{}'},loader:{'.css':'css'},plugins:[{name:'isolate-server',setup(b){
+ b.onResolve({filter:/^next\/(navigation|link|image)$/},a=>({path:a.path,namespace:'fixture'}));
+ b.onResolve({filter:/supabase\/browser$/},()=>({path:'browser',namespace:'fixture'}));
+ b.onResolve({filter:/actions$/},a=>({path:resolve(a.path.startsWith('@/')?a.path.slice(2):join(dirname(a.importer),a.path))+'.ts',namespace:'actions'}));
+ b.onLoad({filter:/.*/,namespace:'actions'},async({path})=>{const s=await readFile(path,'utf8');const names=[...s.matchAll(/export\s+(?:async\s+)?function\s+(\w+)/g)].map(m=>m[1]);return{contents:names.map(name=>`export async function ${name}(...args){${name==='getPosLiveDraft'?'return {ok:true,data:structuredClone(window.snapshot)}':name==='loadDeviceDisplayAppearance'?`return {error:'Sign in to Owner Settings to manage salon images and promotions.'}`:name==='getCustomerDisplayLiveDraftTipOptions'?'return {ok:true,data:[]}':`throw Error('Unexpected server action: ${name}')`}}`).join('\n')};});
+ b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({loader:'tsx',resolveDir:process.cwd(),contents:path==='browser'?'export const createSupabaseBrowserClient=()=>null;':path==='next/navigation'?`export const usePathname=()=>'/pos/customer-display';const router={refresh(){},push(){}};export const useRouter=()=>router;`:path==='next/image'?`export default function Image({fill,priority,...p}){return <img {...p}/>}`:`export default function Link({children,...p}){return <a {...p}>{children}</a>}`}));
+ }}]});
+ const js=bundle.outputFiles.find(f=>f.path.endsWith('.js')).text;
+ const source=resolve('app').split(String.fromCharCode(92)).join('/');
+ const globals=(await readFile('app/globals.css','utf8')).replace('@import "tailwindcss";','@import "tailwindcss" source(none);\n@source "'+source+'";');
+ const css=(await postcss([tailwind()]).process(globals,{from:resolve('app/globals.css')})).css+'\n'+bundle.outputFiles.find(f=>f.path.endsWith('.css')).text;
+ let invalid=false,requests=[];const id='00000000-0000-4000-8000-000000000123';
+ const server=createServer((req,res)=>{if(req.url.startsWith('/api/service-relay/entry')){requests.push(req.url);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({entry:invalid?null:id}));return;}if(req.url.endsWith('.svg')){res.setHeader('Content-Type','image/svg+xml');res.end('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800"><rect width="800" height="800" fill="#e8cabe"/></svg>');return;}if(req.url.startsWith('/api/')){res.setHeader('Content-Type','application/json');res.end('{}');return;}res.setHeader('Content-Type',req.url==='/a.js'?'text/javascript':req.url==='/a.css'?'text/css':'text/html');res.end(req.url==='/a.js'?js:req.url==='/a.css'?css:'<link rel="stylesheet" href="/a.css"><div id="root"></div><script src="/a.js"></script>');});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
+ try{const context=await browser.newContext();const page=await context.newPage();await page.clock.install();page.setDefaultTimeout(6000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);await page.getByRole('img',{name:'Scan to check in with your app'}).waitFor();
+ assert.equal(await page.getByRole('region',{name:'Salon promotion'}).count(),0,'Default idle delay keeps check-in immediately available');assert.ok((await page.locator('.customer-idle-screen').evaluate(el=>el.style.backgroundImage)).includes('/background.svg'),'Use the configured check-in background before input');
+ await page.evaluate(()=>window.savePreferences({adsEnabled:true,idleSeconds:0,slideSeconds:8,layout:'split'}));await page.getByRole('region',{name:'Salon promotion'}).waitFor();
+ const out=process.env.DISPLAY_QA_DIR;if(out)await mkdir(out,{recursive:true});
+ for(const size of [{width:1920,height:1080},{width:1600,height:900},{width:1366,height:768},{width:1024,height:600},{width:900,height:650},{width:768,height:1024},{width:600,height:800},{width:390,height:844},{width:320,height:568}]){
+  await page.setViewportSize(size);const layout=await page.locator('.customer-idle-screen').evaluate(el=>({client:el.clientWidth,scroll:el.scrollWidth}));assert.ok(layout.scroll<=layout.client+1,'No horizontal clipping at '+JSON.stringify(size));
+  const qr=page.getByRole('img',{name:'Scan to check in with your app'});await qr.scrollIntoViewIfNeeded();const box=await qr.boundingBox();if(out)await page.screenshot({path:resolve(out,'debug-'+size.width+'.png')});assert.ok(box.width>=160&&box.height>=160,'QR stays scannable '+JSON.stringify({size,box}));
+  const key=page.locator('.customer-idle-phone').getByRole('button',{name:'Digit 1',exact:true});await key.scrollIntoViewIfNeeded();const kb=await key.boundingBox();assert.ok(kb.width>=43&&kb.height>=43,'Keep touch targets at '+JSON.stringify(size));
+  if(out&&[1920,1024,768,390].includes(size.width))await page.screenshot({path:resolve(out,'welcome-'+size.width+'.png')});
+ }
+ const initialImage=await page.locator('.customer-idle-ad>img').getAttribute('src');await page.clock.runFor(8500);assert.notEqual(await page.locator('.customer-idle-ad>img').getAttribute('src'),initialImage,'Rotate the configured second image');
+ // Decode the actual rendered QR, rather than asserting a URL string in source.
+ const decoded=await page.getByRole('img',{name:'Scan to check in with your app'}).evaluate(async el=>{const svg=new XMLSerializer().serializeToString(el);const img=new Image();img.src='data:image/svg+xml;base64,'+btoa(svg);await img.decode();const c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,300,300);x.drawImage(img,20,20,260,260);const d=x.getImageData(0,0,300,300);return window.decodeQr(d.data,300,300)?.data;});assert.equal(decoded,'https://reylumi.com/check-in/'+id);assert.equal(await page.evaluate(code=>window.parseSalonEntry(code),decoded),id,'The actual customer app scanner accepts the displayed QR');assert.ok(!decoded.includes('fixture-token'));
+ await page.setViewportSize({width:1024,height:768});await page.evaluate(()=>window.savePreferences({adsEnabled:true,idleSeconds:0,slideSeconds:8,layout:'full'}));await page.getByRole('button',{name:'Touch to check in',exact:true}).waitFor();assert.equal(await page.locator('.customer-idle-phone').isVisible(),false);await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.customer-idle-phone').isVisible(),true);await page.evaluate(()=>window.savePreferences({adsEnabled:true,idleSeconds:0,slideSeconds:8,layout:'split'}));
+ await page.setViewportSize({width:1024,height:768});await page.getByRole('button',{name:'Device settings',exact:true}).click();let dialog=page.getByRole('dialog',{name:'Device settings'});const box=await dialog.boundingBox();assert.ok(box.width<=380&&box.x>0&&box.x+box.width<1024);await dialog.getByText('Customer display',{exact:true}).click();await dialog.getByLabel('Idle promotions').uncheck();await page.getByRole('button',{name:'Close settings',exact:true}).click();assert.equal(await page.getByRole('region',{name:'Salon promotion'}).count(),0);
+ const second=await context.newPage();await second.goto(origin);await second.getByRole('img',{name:'Scan to check in with your app'}).waitFor();assert.equal(await second.getByRole('region',{name:'Salon promotion'}).count(),0);await second.close();
+ // Typing starts the real phone flow and takes priority over promotions.
+ await page.locator('.customer-idle-phone').getByRole('button',{name:'Digit 2',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.customer-idle-screen'));assert.equal(await page.getByRole('region',{name:'Salon promotion'}).count(),0);
+ await page.getByRole('img',{name:'Scan to check in with your app'}).waitFor();await context.setOffline(true);await page.clock.runFor(95000);assert.equal(await page.getByRole('img',{name:'Scan to check in with your app'}).count(),0,'Hide an expired QR after disconnect');await context.setOffline(false);
+ // A new paired token never renders the previous QR after an invalid server response.
+ invalid=true;await page.getByRole('button',{name:'Switch device'}).click();await page.waitForFunction(()=>!document.querySelector('.customer-entry-qr'));assert.ok(requests.some(url=>url.includes('different-token')));
+ assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

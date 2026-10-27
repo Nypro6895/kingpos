@@ -1,0 +1,88 @@
+{
+  "channels": [
+    "web"
+  ],
+  "changeId": "portable-customer-display-settings-qr-20261027",
+  "dependencies": [
+    "portable-device-supplemental-keyboard-20261026",
+    "qr-full-flow-20261025"
+  ],
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\output\\portable-customer-display-20261027\\final-tests.log",
+      "name": "36 browser, server permission, QR flow, keyboard, POS, staff PIN, Booking and native Windows persistence regressions"
+    },
+    {
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\output\\portable-customer-display-20261027\\background-final.log",
+      "name": "Final custom check-in background and nine-size actual display QR browser test"
+    },
+    {
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\output\\portable-customer-display-20261027\\typecheck.log",
+      "name": "Final source TypeScript"
+    },
+    {
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\output\\portable-customer-display-20261027\\lint-final.log",
+      "name": "Scoped ESLint zero errors"
+    },
+    {
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\output\\portable-customer-display-20261027\\next-compile-final.log; C:\\Reylumi\\output\\portable-customer-display-20261027\\compile-source-hashes.json",
+      "name": "Isolated full-route Next webpack compile; final background prop separately typechecked/browser tested"
+    },
+    {
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\output\\portable-customer-display-20261027\\task-only.patch",
+      "name": "Scoped patch apply check against captured pre-task source with ignore-space-change"
+    },
+    {
+      "result": "pending",
+      "evidence": "Shared release coordinator; no production publication in this task",
+      "name": "Current production baseline assembly, full production generation, live QA and physical phone camera/native DPI"
+    }
+  ],
+  "kind": "change",
+  "source": {
+    "patchSha256": "7987405c7852cf7e05b15baa5dd5c9579bfb1dac265f495e68ccefdab6a14afc",
+    "baseline": "C:\\Reylumi\\output\\portable-customer-display-20261027\\before",
+    "snapshot": "C:\\Reylumi\\output\\portable-customer-display-20261027\\frozen",
+    "hashes": "C:\\Reylumi\\output\\portable-customer-display-20261027\\hashes.json",
+    "patch": "C:\\Reylumi\\output\\portable-customer-display-20261027\\task-only.patch"
+  },
+  "status": "needs-integration",
+  "summary": "Compact gear settings; device keyboard default off; responsive customer check-in with app-compatible QR, idle promotions and authorized salon appearance editor. Validated locally; shared release only.",
+  "files": [
+    "lib/customer-display-preferences.ts",
+    "lib/customer-entry-link.ts",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/service-relay/customer-entry-qr.tsx",
+    "app/service-relay/customer-relay.tsx",
+    "app/pos/portable/device-input-settings.tsx",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/portable/device-input-settings.css",
+    "app/pos/portable/desktop-tools.tsx",
+    "app/pos/portable/touch-keyboard.tsx",
+    "app/pos/settings/device-appearance.tsx",
+    "app/pos/settings/actions.ts",
+    "app/(app)/pos/settings/page.tsx",
+    "app/settings/pos-settings-panel.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/customer-idle-settings-ui.test.mjs",
+    "tests/device-appearance-actions.test.mjs",
+    "tests/helpers/device-settings-fixture.mjs",
+    "tests/portable-device-keyboard.test.mjs",
+    "tests/login-touch-keyboard.test.mjs",
+    "tests/portable-touch-keyboard.test.mjs",
+    "docs/portable-customer-display-settings-qr-deploy-note-20261027.txt"
+  ],
+  "id": "5d59df97-663e-4c19-8c36-74a89fa2c3fe",
+  "recordedAt": "2026-10-27T17:51:12.613Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

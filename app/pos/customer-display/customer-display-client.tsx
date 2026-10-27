@@ -1,5 +1,7 @@
 "use client";
 import "./customer-display-responsive.css";
+import { CustomerIdleScreen } from "./customer-idle-screen";
+import { CUSTOMER_DISPLAY_APPEARANCE_CHANGED } from "@/lib/customer-display-preferences";
 import { createKioskRequestGuard } from "@/lib/kiosk-request-guard";
 import { AccountSelectionPanel as CustomerIdentityChoices } from "./check-in-panels";
 import type { CustomerIdentityChoice } from "@/types/customer-identity";
@@ -79,7 +81,6 @@ type CheckInState = Extract<CustomerDisplayPhoneResult, { mode: "check_in" }>;
 type CustomerDisplayService = CustomerVisitRequestedService;
 
 const CHECKIN_SUCCESS_RESET_MS = 5500;
-const SLIDESHOW_INTERVAL_MS = 7000;
 
 const PHONE_KEYPAD_STYLE = {
   "--customer-display-key-size": "clamp(80px, min(9.6vh, 6.8vw), 94px)",
@@ -470,112 +471,6 @@ function ReylumiCornerLogo({
         src="/brand/reylumi-logo-horizontal.png"
       />
     </div>
-  );
-}
-
-function AttractScreen({
-  token,
-  currentSlide,
-  error,
-  images,
-  isFullscreen,
-  onBegin,
-  onFullscreen,
-  settings,
-}: {
-  token: string;
-  currentSlide: number;
-  error: string | null;
-  images: string[];
-  isFullscreen: boolean;
-  onBegin: () => void;
-  onFullscreen: () => void;
-  settings: CustomerDisplaySettings;
-}) {
-  const __vt = useWorkspaceTranslation();
-
-  const displayName = settings.salonName?.trim() || "Your salon";
-
-  return (
-    <section
-      aria-label={__vt("Customer display attract screen")}
-      className="relative h-full w-full overflow-hidden bg-zinc-950 text-white"
-      data-customer-display-attract
-      onClick={onBegin}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onBegin();
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      {images.map((imageUrl, index) => (
-        <img
-          alt={__vt("")}
-          aria-hidden="true"
-          className={[
-            "absolute inset-0 h-full w-full object-contain transition-opacity duration-1000",
-            index === currentSlide % images.length ? "opacity-100" : "opacity-0",
-          ].join(" ")}
-          data-customer-display-ad-image={
-            index === currentSlide % images.length ? "active" : undefined
-          }
-          key={`${imageUrl}-${index}`}
-          src={imageUrl}
-        />
-      ))}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(9,9,11,0.62), rgba(9,9,11,0.18) 45%, rgba(9,9,11,0.72))",
-        }}
-      />
-
-      <FullscreenButton hidden={isFullscreen} onClick={onFullscreen} />
-      <ReylumiCornerLogo />
-
-      <div
-        className="relative z-10 grid h-full min-h-0 px-6 py-6 sm:px-8"
-        style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
-      >
-        <header className="flex min-w-0 items-center justify-between gap-4 pr-14">
-          <SalonBrand
-            logoUrl={settings.salonLogoUrl}
-            name={settings.salonName}
-            showName={settings.customerShowSalonName}
-            tone="light"
-          />
-        </header>
-
-        <div className="grid min-h-0 place-items-center text-center">
-          <div className="max-w-3xl">
-            <p className="text-base font-semibold uppercase tracking-normal text-white/70">
-              {displayName}
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              <WorkspaceText text="Welcome!" />
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-white/82">
-              {settings.customerRightAdText || settings.customerLeftAdText}
-            </p>
-            {error ? (
-              <p className="mx-auto mt-5 max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                <WorkspaceText text={error} />
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <footer className="grid justify-items-center gap-4 pb-2 text-center">
-          <CustomerRelayEntry token={token} />
-          <p className="text-lg font-semibold text-white"><WorkspaceText text="Or touch the screen to check in here" /></p>
-        </footer>
-      </div>
-    </section>
   );
 }
 
@@ -1728,6 +1623,20 @@ export function CustomerDisplayClient({
   const seededSnapshot = initialSnapshot?.token === token ? initialSnapshot : null;
   const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(seededSnapshot);
   const [settings,setSettings]=useState(initialSettings);
+  useEffect(() => {
+    let alive = true;
+    const controller = new AbortController();
+    async function refresh() {
+      try {
+        const response = await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token), {cache:'no-store', signal:AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])});
+        if (response.ok) {const next = await response.json();if (alive && next.salonName) setSettings(next);}
+      } catch { /* Keep the last confirmed salon appearance. */ }
+    }
+    const storage = (event: StorageEvent) => {if(event.key===CUSTOMER_DISPLAY_APPEARANCE_CHANGED)void refresh();};
+    window.addEventListener(CUSTOMER_DISPLAY_APPEARANCE_CHANGED,refresh);
+    window.addEventListener('storage',storage);
+    return () => {alive=false;controller.abort();window.removeEventListener(CUSTOMER_DISPLAY_APPEARANCE_CHANGED,refresh);window.removeEventListener('storage',storage);};
+  }, [token]);
   usePosResourceRefresh(liveDraft?.salon_id,'settings',async()=>{
     const response=await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token),{cache:'no-store',signal:AbortSignal.timeout(8000)});
     if(response.ok){const next=await response.json();if(next.salonName)setSettings(next);}
@@ -1760,7 +1669,6 @@ export function CustomerDisplayClient({
   const [isTipPending, setIsTipPending] = useState(false);
   const [resetSeconds, setResetSeconds] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [serverOffsetMs, setServerOffsetMs] = useState(0);
   const [serverTipOptions, setServerTipOptions] = useState<TipOption[] | null>(
@@ -1779,13 +1687,7 @@ export function CustomerDisplayClient({
   const versionRef = useRef<number | null>(seededSnapshot?.version ?? null);
   const completedResetInFlightRef = useRef(false);
 
-  const attractImages = useMemo(
-    () => [
-      settings.customerLeftAdImageUrl ??
-        DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL,
-    ],
-    [settings.customerLeftAdImageUrl],
-  );
+  const attractImages = useMemo(() => [settings.customerLeftAdImageUrl ?? DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL, settings.customerRightAdImageUrl].filter((value): value is string => Boolean(value)), [settings.customerLeftAdImageUrl, settings.customerRightAdImageUrl]);
   const backgroundImageUrl =
     settings.customerBackgroundImageUrl ??
     DEFAULT_CUSTOMER_DISPLAY_RECEIPT_BACKGROUND_URL;
@@ -2215,19 +2117,7 @@ export function CustomerDisplayClient({
   }, []);
 
   useEffect(() => {
-    if (attractImages.length <= 1 || displayMode !== "attract") {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setSlideIndex((current) => (current + 1) % attractImages.length);
-    }, SLIDESHOW_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [attractImages.length, displayMode]);
-
-  useEffect(() => {
-    const nextImage = attractImages[(slideIndex + 1) % attractImages.length];
+    const nextImage = attractImages[1] ?? attractImages[0];
 
     if (!nextImage || typeof window === "undefined") {
       return;
@@ -2235,7 +2125,7 @@ export function CustomerDisplayClient({
 
     const image = new window.Image();
     image.src = nextImage;
-  }, [attractImages, slideIndex]);
+  }, [attractImages]);
 
   useEffect(() => {
     function handleFullscreenChange() {
@@ -2800,16 +2690,13 @@ export function CustomerDisplayClient({
       ) : null}
       <div className="customer-display-auto-scale h-full w-full">
         {displayMode === "attract" ? (
-          <AttractScreen
-            token={token}
-            currentSlide={slideIndex}
-            error={error}
-            images={attractImages}
-            isFullscreen={isFullscreen}
-            onBegin={beginFromAttract}
-            onFullscreen={enterFullscreen}
-            settings={settings}
-          />
+          <CustomerIdleScreen token={token} images={attractImages} salonName={settings.salonName ?? "Welcome"} backgroundImageUrl={settings.customerBackgroundImageUrl ?? undefined}
+            title={settings.customerLeftAdText} body={settings.customerRightAdText} onBegin={beginFromAttract} fullscreenControl={<FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />}>
+            <PhoneEntryPanel customerResults={customerResults} customerStatus={customerStatus}
+              disabled={!token || liveDraftStatus !== "draft"} isCustomerPending={isCustomerPending} isSearching={isSearching}
+              onConfirmCustomer={confirmCustomer} onPhoneInput={handlePhoneInput} onSkipToTip={continueToTipAsGuest}
+              onSubmitPhone={() => void submitPhoneLookup(phoneInput)} phoneInput={phoneInput} showTipShortcut={false} />
+          </CustomerIdleScreen>
         ) : displayMode === "completed" ? (
           <CompletedScreen
             backgroundImageUrl={backgroundImageUrl}
@@ -2916,6 +2803,7 @@ export function CustomerDisplayClient({
                 phone={confirmedPhone ?? phoneInput}
               /></>
             ) : (
+              <div className="customer-phone-with-qr">
               <PhoneEntryPanel
                 customerResults={customerResults}
                 customerStatus={customerStatus}
@@ -2929,6 +2817,8 @@ export function CustomerDisplayClient({
                 phoneInput={phoneInput}
                 showTipShortcut={hasCheckoutHandoff}
               />
+              {!hasCheckoutHandoff && <CustomerRelayEntry token={token} />}
+              </div>
             )}
           </CheckInShell>
         )}

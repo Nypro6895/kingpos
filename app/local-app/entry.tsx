@@ -47,6 +47,8 @@ import { appLocalAdmissionError, appLocalContextFailureReason, classifyAppLocalC
 import { appLocalPageAdmissionReason, canAdmitAppLocalPage } from "@/lib/app-local-page-admission";
 import { installExperienceTraceLifecycle, nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTraceTrigger } from "@/lib/experience-trace";
 import { appLocalReadTraceFields, captureAppLocalReadTrace } from "@/lib/read-request-trace-protocol";
+import { useAppLocalPrefetch } from "@/lib/app-local-prefetch";
+import { readPriorityScheduler } from "@/lib/read-priority-scheduler";
 
 installExperienceTraceLifecycle();
 recordExperienceTrace("boot.start", { source: "app-local", durationMs: typeof window.__reylumiBundleParseStartedAt === "number" ? performance.now() - window.__reylumiBundleParseStartedAt : undefined });
@@ -358,6 +360,7 @@ function App() {
     } else setHelpPresentation(null);
     if (previous !== destination) { finishNativeResetPending(); contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; recoveryAttempts.current.clear(); setError(false); }
     current.current = destination;
+    readPriorityScheduler.setActiveRoute(destination);
     const target = admitted.current[authorityFamily(destination)];
     setAppLocalCommandScope(!isPublic(destination) && usable(target, destination) ? target.value.context.scope : undefined);
     setVisited(paths => [...new Set([...paths, previous, destination])].slice(-16)); setPath(destination);
@@ -587,6 +590,8 @@ function App() {
     return () => { clearTimeout(accessCheck); window.removeEventListener("reylumi:app-local-workspace-start", startWorkspace); window.removeEventListener("reylumi:app-local-workspace-finish", finishWorkspace); window.removeEventListener("reylumi:app-local-workspace-handoff", handoff); window.removeEventListener("reylumi:app-local-workspace-resolve", resolveWorkspace); window.removeEventListener("reylumi:app-local-page-resolve", resolveWorkspace); window.removeEventListener("reylumi:app-local-workspace-retry", retryWorkspace); window.removeEventListener("reylumi:app-local-revalidate-access", revalidateAccess); window.removeEventListener("reylumi:app-local-scope-conflict", scopeConflict); window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
   }, [navigate, accept, verify, transition, recoverPage, finishNativeResetPending]);
   const activeAdmission = admissions[authorityFamily(path)], context = !isPublic(path) && usable(activeAdmission) ? activeAdmission.value : null;
+  useAppLocalPrefetch(context, path);
+  const refreshNavigation = useCallback(() => { void verify(); }, [verify]);
   const checkSession = useCallback(() => verify({ fresh: true, trigger: "interval" }), [verify]);
   const diagnosticBlocked = !isPublic(path) && !context;
   useLayoutEffect(() => { recordExperienceTrace(diagnosticBlocked ? "gate.hide" : "gate.show", { source: "app-local", blocked: diagnosticBlocked }); }, [diagnosticBlocked]);
@@ -643,7 +648,7 @@ function App() {
   const owner = ownerContext?.grant?.kind === "owner" || Boolean(ownerContext && !ownerContext.offline && ownerContext.access?.ownerWorkspace);
   const windows=new Map<string,string>();for(const href of [...visited,path])if(!isPublic(href)&&getAppLocalPage(href))windows.set(pageKey(href),href);
   const ownerVisited=ownerPaths.has(path.split("?")[0])||visited.some(href=>ownerPaths.has(href.split("?")[0]));
-  return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation}>
+  return <AppLocalNavigationProvider value={{ path, navigate, refresh: refreshNavigation }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
       {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}{typeof window.__reylumiExportDiagnostics === "function" ? <button type="button" className="mt-4 block rounded border px-4 py-2" onClick={() => window.__reylumiExportDiagnostics?.()}>Save diagnostic report</button> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
@@ -653,7 +658,7 @@ function App() {
         {[...windows].map(([key,href]) => {
           const page = getAppLocalPage(href), admission = admissions[authorityFamily(href)], ownContext = admission?.value ?? null;
           const active = key === pageKey(path) && (usable(admission) || !admission && !page?.requiresContext);
-          return page && (ownContext || !page.requiresContext) ? <Activity mode={active ? "visible" : "hidden"} key={page.requiresContext || ownContext?.context.authenticated ? key + ":" + privateAdmissionKey(admission) : key}><div className="app-local-page"><AppLocalNavigationProvider value={{path:href,navigate,refresh:()=>void verify()}}><ExperienceScopeProvider context={ownContext?.context ?? publicExperience} guardForms={false}><PageBoundary recover={() => void verify()}><page.Component context={ownContext} path={href} navigate={navigate} /></PageBoundary></ExperienceScopeProvider></AppLocalNavigationProvider></div></Activity> : null;
+          return page && (ownContext || !page.requiresContext) ? <Activity mode={active ? "visible" : "hidden"} key={page.requiresContext || ownContext?.context.authenticated ? key + ":" + privateAdmissionKey(admission) : key}><div className="app-local-page"><AppLocalNavigationProvider value={{path:href,navigate,refresh:refreshNavigation}}><ExperienceScopeProvider context={ownContext?.context ?? publicExperience} guardForms={false}><PageBoundary recover={() => void verify()}><page.Component context={ownContext} path={href} navigate={navigate} /></PageBoundary></ExperienceScopeProvider></AppLocalNavigationProvider></div></Activity> : null;
         })}
     </div>
   </AppLocalShell></ExperienceScopeProvider></AppLocalNavigationProvider>;

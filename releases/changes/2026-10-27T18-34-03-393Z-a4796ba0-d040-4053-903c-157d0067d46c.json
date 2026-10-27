@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "combined-prefetch-display-release-20261027",
+  "status": "working",
+  "summary": "Integrate the latest completed iOS priority prefetch and portable Customer Display/settings/QR changes on the exact current live web source, preserve native53 and Windows0.7.3, validate and publish together.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "snapshot": "C:/Reylumi/kingpos-release-prefetch-20261027",
+    "commit": "699101149dbf5614ae17ab601b5e306ed311664c"
+  },
+  "validation": [
+    {
+      "name": "Combined build, regression, live and Apple verification",
+      "result": "pending"
+    }
+  ],
+  "integration": {
+    "baselineDeploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+    "producerEvents": [
+      "d6c3e8d2-8193-4be8-bad7-7d567abc884e",
+      "5d59df97-663e-4c19-8c36-74a89fa2c3fe"
+    ]
+  },
+  "id": "a4796ba0-d040-4053-903c-157d0067d46c",
+  "recordedAt": "2026-10-27T18:34:03.393Z",
+  "worktree": "C:\\Reylumi\\kingpos-release-prefetch-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

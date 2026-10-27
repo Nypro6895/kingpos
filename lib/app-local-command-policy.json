@@ -315,6 +315,7 @@
     ],
     "app/pos/settings/actions.ts": [
       "createPortablePosAccessAction",
+      "loadDeviceDisplayAppearance",
       "savePosSettingsGroup",
       "updatePortablePosAccessCapabilitiesAction",
       "updatePortablePosAccessStatusAction"

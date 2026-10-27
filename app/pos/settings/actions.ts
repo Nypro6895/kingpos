@@ -16,13 +16,25 @@ import {
   PORTABLE_POS_CAPABILITIES,
   type PortablePosCapability,
 } from "@/lib/pos-portable-capabilities";
-import { POS_DISPLAY_MEDIA_BUCKET, POS_SETTING_DEFAULTS } from "@/lib/pos-settings";
+import { POS_DISPLAY_MEDIA_BUCKET, POS_SETTING_DEFAULTS, getCurrentSalonPosSettings } from "@/lib/pos-settings";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
 const POS_DISPLAY_IMAGE_LIMIT = 15 * 1024 * 1024;
+
+export async function loadDeviceDisplayAppearance(expectedSalonId?: string) {
+  const context = await getCurrentBusinessContext();
+  if (!context.user || !isSalonManageContext(context) || !context.currentSalon || !(await hasPermission(POS_TICKET_PERMISSIONS.manage, context)))
+    return { error: 'Sign in to Owner Settings to manage salon images and promotions.' };
+  if (expectedSalonId && context.currentSalon.id !== expectedSalonId) return { error: 'Choose this salon in Owner Settings first.' };
+  const supabase = await createAuthenticatedSupabaseServerClient();
+  if (!supabase) return { error: 'Reconnect to load salon settings.' };
+  const { data, error } = await supabase.from('pos_settings').select('customer_background_image_path,customer_left_ad_image_path,customer_right_ad_image_path,customer_left_ad_text,customer_right_ad_text').eq('salon_id', context.currentSalon.id).maybeSingle();
+  if (error) return { error: 'Unable to load salon appearance.' };
+  return { salonId: context.currentSalon.id, settings: await getCurrentSalonPosSettings(context), snapshot: data ?? {} };
+}
 
 export async function savePosSettingsGroup(formData: FormData): Promise<{ok:boolean;error?:string;snapshot?:Record<string,unknown>;conflict?:Record<string,unknown>}> {
   const {salon,supabase}=await requirePosSettingsMutationContext("settings");
@@ -35,6 +47,15 @@ export async function savePosSettingsGroup(formData: FormData): Promise<{ok:bool
       ...Object.fromEntries(['showStaff','showServices','showCustomer','showTip','showDiscount','serviceCategoriesEnabled'].map(k=>[k,readBoolean(formData,k)])),
       serviceCategoryColors: {...normalizeWorkspacePreferences(expected.workspace_preferences).serviceCategoryColors,...Object.fromEntries([...formData.entries()].filter(([key])=>key.startsWith('serviceCategoryColor:')).map(([key,value])=>[key.slice('serviceCategoryColor:'.length),value]))},
       idleMinutes:readNumber(formData,'idleMinutes',3),idleWarningSeconds:readNumber(formData,'idleWarningSeconds',60)})};
+    else if(group==='appearance') {
+      if (String(formData.get('salon_id')) !== salon.id) throw Error('Open settings for this salon first.');
+      const uploaded = await Promise.all((['background','left-ad','right-ad'] as const).map(kind => uploadPosDisplayImage({file:getUploadedFile(formData, `appearance_${kind}`), kind, salonId:salon.id, supabase})));
+      for (const [index,name] of ['customer_background_image','customer_left_ad_image','customer_right_ad_image'].entries()) {
+        values[name+'_path']=getNextImagePath({currentPath:typeof expected[name+'_path']==='string'?String(expected[name+'_path']):null,remove:readBoolean(formData,'remove_'+name),uploadedPath:uploaded[index]});
+      }
+      values.customer_left_ad_text=readOptionalString(formData,'customer_left_ad_text')?.slice(0,160) ?? null;
+      values.customer_right_ad_text=readOptionalString(formData,'customer_right_ad_text')?.slice(0,500) ?? null;
+    }
     else if(group==='display') {
       const [background,left,right]=await Promise.all([
         uploadPosDisplayImage({file:getUploadedFile(formData,'customer_background_image_file'),kind:'background',salonId:salon.id,supabase}),

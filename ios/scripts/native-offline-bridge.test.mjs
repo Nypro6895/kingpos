@@ -112,9 +112,12 @@ test('offline support preserves first-frame readiness and duplicate nonce protec
   f.frame();
   assert.equal(f.messages.length, 0);
   f.frame();
-  assert.equal(f.messages[0].action, 'screen-ready');
+  assert.deepEqual(f.messages.map(message => message.action), ['screen-ready', 'route-ready']);
+  assert.equal(f.messages[1].path, f.location.pathname + f.location.search + f.location.hash);
+  assert.equal(f.messages[0].nonce, f.messages[1].nonce, 'route and first-frame acknowledgements belong to the same document');
   f.event('reylumi:screen-ready'); f.frame(); f.frame();
-  assert.equal(f.messages.length, 1);
+  assert.equal(f.messages.filter(message => message.action === 'screen-ready').length, 1);
+  assert.equal(f.messages.filter(message => message.action === 'route-ready').length, 1);
   f.event('reylumi:offline-ready', lease('/pos'));
-  assert.equal(f.messages[1].action, 'offline-ready');
+  assert.equal(f.messages[2].action, 'offline-ready');
 });

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "d22e8161124d3ea46e0f3d3155786b0ed70c074868f1170296ee23e017c7553b",
+  "buildId": "a9436da6c80ef48dca89f60a29a5a201f07ba557bb541c302e5cbfb70b22ea28",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 590122,
-      "sha256": "026089b6d05ee4de0e8fb80ce970a333a5c0442e9b3490f9eaf578b0503ed47f",
+      "bytes": 590142,
+      "sha256": "cc5acef63bfed4022acb0d19974d55b15baf6859558e351cca15bb312d307178",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4296681,
-      "sha256": "d4c3c5e96f8929ec735987f2102e0d66cc9368d4e20ffe9cc0dabb260b152730",
+      "bytes": 4374343,
+      "sha256": "216b6db622dfa54a80649243eba36177fbd5f145d2aae1678d5547e89cc251c3",
       "mime": "text/javascript"
     },
     {
@@ -3633,13 +3633,6 @@
       ]
     },
     {
-      "name": "action.4937915331dbcee8bb3c0ff5",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
       "name": "action.7e782fa906349d994c1d7257",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5745,6 +5738,7 @@
   "help": {
     "version": "2026-10-17.1:local-1",
     "slugs": [
+      "windows-portable",
       "overview",
       "owner-tips",
       "account",

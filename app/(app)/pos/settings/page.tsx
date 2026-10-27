@@ -7,7 +7,7 @@ import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
 import { serviceCategoryColor } from "@/lib/pos-service-catalog";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { DesktopDownloadPanel } from "@/app/pos/settings/desktop-download-panel";
-import { DeviceInputSettings } from "@/app/pos/portable/device-input-settings";
+import { DeviceInputSettings, CustomerDisplayPreferencesEditor } from "@/app/pos/portable/device-input-settings";
 /* eslint-disable @next/next/no-img-element */
 import { CustomerDisplayInstallPanel } from "@/app/pos/settings/customer-display-install-panel";
 import {
@@ -450,7 +450,7 @@ function CustomerDisplaySettingsSection({
             currentUrl={settings.customerBackgroundImageUrl}
             description="Checkout and thank-you screens."
             fallbackUrl={DEFAULT_CUSTOMER_DISPLAY_RECEIPT_BACKGROUND_URL}
-            label="Receipt background image"
+            label="Check-in & checkout background"
             name="customer_background_image"
           />
           <ImageUploadField
@@ -461,11 +461,8 @@ function CustomerDisplaySettingsSection({
             label="Reylumi promotional slide"
             name="customer_left_ad_image"
           />
-          <input
-            name="current_customer_right_ad_image_path"
-            type="hidden"
-            value={settings.customerRightAdImagePath ?? ""}
-          />
+          <ImageUploadField currentPath={settings.customerRightAdImagePath} currentUrl={settings.customerRightAdImageUrl}
+            description="Shown while the display is idle." label="Second promotion image" name="customer_right_ad_image" />
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
@@ -601,7 +598,7 @@ async function PosSettingsPage({
           <div className="grid gap-3 sm:grid-cols-2"><Field name="idleMinutes" label={__vt("Idle reminder (minutes)")} defaultValue={preferences.idleMinutes} min={1} type="number"/><Field name="idleWarningSeconds" label={__vt("Response time (seconds)")} defaultValue={preferences.idleWarningSeconds} min={15} type="number"/></div>
           <p className="text-sm text-zinc-500"><WorkspaceText text="Unfinished entries clear after the countdown. Saved and submitted tickets stay." /></p>
         </SettingsGroupForm></details>
-        <details><summary><WorkspaceText text="Customer Display" /></summary><CustomerDisplayInstallPanel activeAccessKeyCount={portableAccessState.keys.filter(key=>key.is_active).length} displayPath="/pos/customer-display" schemaReady={portableAccessState.schemaReady} setupPath="/pos/customer-display/setup"/><CustomerDisplaySettingsSection settings={settings} snapshot={snapshot}/></details>
+        <details><summary><WorkspaceText text="Customer Display" /></summary><CustomerDisplayPreferencesEditor/><CustomerDisplayInstallPanel activeAccessKeyCount={portableAccessState.keys.filter(key=>key.is_active).length} displayPath="/pos/customer-display" schemaReady={portableAccessState.schemaReady} setupPath="/pos/customer-display/setup"/><CustomerDisplaySettingsSection settings={settings} snapshot={snapshot}/></details>
         <details><summary><WorkspaceText text="Data &amp; sync" /></summary><div className="mt-3 space-y-3 text-sm leading-6 text-zinc-600"><p><WorkspaceText text="Tickets save on the device and upload when connected. Check the sync icon for progress." /></p><p><WorkspaceText text="Reports update after each device reconnects." /></p><p><WorkspaceText text="Closing the app keeps saved tickets. Do not clear app or browser data before upload finishes." /></p>{portableAccessState.keys.map(key=><div key={key.id} className="flex justify-between gap-4 border-t py-3"><strong><WorkspaceText text={key.label||key.access_id} /></strong><span><WorkspaceText text="Last contact:" /> <WorkspaceText text={formatAccessDate(key.last_used_at)} /></span></div>)}</div></details>
       </div>
     </main></div>

@@ -177,7 +177,7 @@ test("portable check-in migration updates capability constraint before backfill"
   );
   const constraintBlock =
     migration.match(
-      /add constraint pos_portable_access_keys_capabilities_valid[\s\S]*?\);\n\nalter table public\.pos_portable_access_keys\nalter column capabilities set default/,
+      /add constraint pos_portable_access_keys_capabilities_valid[\s\S]*?\);\r?\n\r?\nalter table public\.pos_portable_access_keys\r?\nalter column capabilities set default/,
     )?.[0] ?? "";
   const defaultBlock =
     migration.match(
