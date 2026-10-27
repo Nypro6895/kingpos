@@ -1,0 +1,56 @@
+{
+  "kind": "release",
+  "summary": "Publish combined role-priority preparation/Explore ahead loading and portable display/settings/customer-entry QR on preserved live source; Windows stays0.7.3; native upload verified separately.",
+  "changes": [
+    "8ad17808-0d1d-44eb-a3f5-4414e70c2661",
+    "b67a78ca-1c14-491f-8f07-f763ebe69735",
+    "9397270f-302e-42d4-b8ce-dccac6464458"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_83qAybRN5CaEJ21nhdz2iUvR7zs3",
+      "baselineDeploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+      "sourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+      "overlaySha256": "39a44693889bd67b0a52b8e8fd71aa735e1e2a813fe306b2710cfbf941c774d1",
+      "evidence": [
+        "C:/Reylumi/output/combined-prefetch-release-20261027/live-verified.json",
+        "C:/Reylumi/output/combined-prefetch-release-20261027/live-http.json",
+        "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http.json",
+        "C:/Reylumi/output/combined-prefetch-release-20261027/final-freeze-review.json"
+      ]
+    }
+  },
+  "source": {
+    "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+    "snapshot": "C:/Reylumi/output/combined-prefetch-release-20261027/web-deploy-source",
+    "patchSnapshot": "C:/Reylumi/output/combined-prefetch-release-20261027/frozen-patch"
+  },
+  "producerEvents": [
+    "d6c3e8d2-8193-4be8-bad7-7d567abc884e",
+    "5d59df97-663e-4c19-8c36-74a89fa2c3fe"
+  ],
+  "native": {
+    "required": true,
+    "status": "pending-signed-pipeline",
+    "baselineVersion": "1.0.0",
+    "baselineBuild": "53",
+    "workflowRun": 40563109818
+  },
+  "windows": {
+    "version": "0.7.3",
+    "binaryChanged": false
+  },
+  "data": {
+    "productionMigrations": [],
+    "productionDataMutation": false
+  },
+  "rollback": {
+    "deploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+    "condition": "Only if current alias is still this release; run production guard and preserve any later external release."
+  },
+  "id": "a83729b7-35cd-4e65-9b8b-56a3eb5e04b6",
+  "recordedAt": "2026-10-27T18:56:10.596Z",
+  "worktree": "C:\\Reylumi\\kingpos-release-prefetch-20261027"
+}
