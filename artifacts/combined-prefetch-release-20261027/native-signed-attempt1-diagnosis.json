@@ -1,0 +1,39 @@
+{
+  "run": 40563109818,
+  "attempt": 1,
+  "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "result": "failed before signing/upload",
+  "simulatorTests": 210,
+  "simulatorFailures": 1,
+  "failure": {
+    "test": "NativeCookieAuthorityWKTests.testAuthorityCookieExpiryStillRejectsBeforeResponseCookieWrites",
+    "file": "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift",
+    "line": 31,
+    "error": "NSURLErrorDomain -1001",
+    "stage": "isolated WK owner about:blank constant local HTML navigation bootstrap",
+    "budgetSeconds": 5,
+    "productionTransportReached": false,
+    "cookieSeedingReached": false
+  },
+  "otherSameFixtureTestsPassed": 5,
+  "allNewCookiePipelineTestsPassed": true,
+  "actualNativeEventHandoffPassed": true,
+  "signingUploadStep": "skipped",
+  "priorPassingEvidence": {
+    "run": 40557254859,
+    "commit": "2a4fb9d058dffcd367872df1ba1137ebae47bcdb",
+    "sameTestPassedSeconds": 2.744,
+    "sameFixtureBlob": "9e7650d52a3a2162958a7b0eee0617546ae9b857",
+    "sameWKTestBlob": "62b493463eeac66981acfd15b53e821d5c062298",
+    "sameProductionTransportBlob": "d4230631156719a5aa6faad454eafe00557dd531"
+  },
+  "diagnosis": "One observed isolated WebKit fixture bootstrap timeout, before production transport behavior. Other five fixture tests and prior exact fixture/transport passed; root authorized one full failed-job retry on unchanged source. No assertion, test budget, skip or product source was changed. A repeated failure requires stopping and further diagnosis.",
+  "retry": {
+    "authorizedBy": "root coordinator",
+    "requestedAt": "2026-10-27T18:54:41Z",
+    "sameRun": 40563109818,
+    "expectedAttempt": 2,
+    "sourceUnchanged": true,
+    "limit": "one"
+  }
+}

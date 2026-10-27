@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-10-27T19:07:06.794Z",
+  "workflowRun": "40563109818",
+  "workflowAttempt": 2,
+  "workflowJob": 122401410080,
+  "artifactId": 12763555592,
+  "artifactSha256": "sha256:936b6f5f47d8faf726a87d07d69f754b4688ed7171173eec80d8936f6585524f",
+  "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "sourceSha256": "c7f1bbb740e476cabe6e1bbb1c54946fdbbc9213bb07b80467d46f4514545377",
+  "gitSourceFiles": 2589,
+  "gitSourceMismatches": [],
+  "localSourceSha256": "b7f6cb194953aa07ff8aaca7a2cd6f919f8ed8f67a4355f53277b1d4a017a08e",
+  "checkoutCrlfOnlyDifferences": 122,
+  "checkoutOtherDifferences": 0,
+  "publicConfiguration": [
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL",
+      "equal": true
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "equal": true
+    },
+    {
+      "name": "NEXT_PUBLIC_MAPTILER_KEY",
+      "equal": true
+    },
+    {
+      "name": "NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY",
+      "equal": true
+    }
+  ],
+  "bundleSha256": "3de49126ac2d328837f7d345200b984cb44b3ead2673f96d5e181f147c43fcd3",
+  "bundleBuildId": "1aaddd4ad201277efb1599dcfb2e198c9b6e1355f2b391b909d506a0edfb90ab",
+  "bundleManifestSha256": "cda5de5aa30315218630b2dd01288c38ece34b303a843b4f4e5392134ad9a592",
+  "bundleFiles": 346,
+  "localBundleDifferences": [],
+  "applicationJsExact": true,
+  "nativeDigestEntriesVerified": 786,
+  "simulatorTests": "passed",
+  "simulatorTestCount": 210,
+  "simulatorFailures": 0,
+  "actualNativeEventHandoffPassed": true,
+  "deviceArchive": "unsigned",
+  "simulatorSigning": "ad-hoc; own application-identifier and Keychain access group verified",
+  "unsignedArchive": "passed",
+  "signedArchive": "passed",
+  "export": "passed",
+  "distributionSigningIdentity": "Apple Distribution: NY TRUONG (WJ4VQ4529Z)",
+  "version": "1.0.0",
+  "build": "54",
+  "bundle": "com.reylumi.ios",
+  "upload": "accepted",
+  "appleProcessing": {
+    "build": "54",
+    "buildId": "1048fed6-ed12-41ee-8465-d858973f5cc5",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-10-27T19:05:24.759Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "servicesCatalogPilot": false
+}

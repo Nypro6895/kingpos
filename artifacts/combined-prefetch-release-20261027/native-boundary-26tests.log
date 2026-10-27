@@ -1,0 +1,36 @@
+✔ integer builds retain exact identity and existing-group proof across legacy and integer baselines (2.7333ms)
+✔ processing checker accepts integer builds before credential validation and rejects malformed identifiers (347.9756ms)
+✔ positive existing-group association and fresh valid build prove availability (0.4534ms)
+✔ automatic distribution without positive new association remains unconfirmed (0.3356ms)
+✔ unrelated group without previous access is not borrowed (0.1706ms)
+✔ expired, processing and not-in-testing builds cannot pass (0.6066ms)
+✔ marketing version mismatch fails exact build resolution (0.555ms)
+✔ a new marketing version retains proof of access to the prior uploaded version (0.4033ms)
+✔ explicit existing group ID cannot silently fall back to another group (0.2869ms)
+✔ reader is GET only, fixed Apple origin and refuses mutation/resource endpoints (18.6149ms)
+✔ foreign pagination cannot carry an Apple authorization header elsewhere (0.45ms)
+{"checkedAt":"2026-10-16T20:00:00.000Z","operation":"GET requests only; no groups/testers/invitations/notifications/metadata changes","appId":"6821394475","marketingVersion":"1.0.1","build":"33","baselineBuild":"32.1","availableToExistingInternalGroup":false,"status":"not-yet-confirmed","error":"Apple availability could not be confirmed by this read-only audit.","limitations":["A failed or incomplete read does not prove that Apple has rejected the build.","No distribution settings were changed."]}
+{"checkedAt":"2026-10-16T20:00:00.000Z","operation":"GET requests only; no groups/testers/invitations/notifications/metadata changes","appId":"6821394475","marketingVersion":"1.0.1","baselineMarketingVersion":"1.0.1","build":"33","buildId":"new-build","baselineBuild":"32.1","baselineBuildId":"old-build","processingState":"PROCESSING","expired":false,"expirationDate":"2027-01-10T00:00:00Z","internalBuildState":"IN_BETA_TESTING","availableToExistingInternalGroup":false,"groups":[{"id":"existing-group","name":"Reylumi Internal","isInternalGroup":true,"hasAccessToAllBuilds":true,"hadBaseline":true,"preexistingAutomaticGroup":true,"hasNewBuild":true,"existingDistributionGroup":true,"associationConfirmed":true}],"status":"not-yet-confirmed","limitations":["This confirms Apple group access, not installation or automatic update on a particular phone.","An automatic-distribution flag without the new build association is not reported as confirmed availability.","External TestFlight and App Store publication are separate."]}
+✔ failed or pending reads still write a sanitized nonconfirmed artifact (11.3137ms)
+✔ ordinary readiness never persists a protected route; complete ACK is nonce scoped (2.4552ms)
+✔ pre-commit ACK waits for native context and reset discards an older prepared route (1.1895ms)
+✔ expired, absent grant expiry, wrong route, callback and excluded ACKs are refused (1.8954ms)
+✔ SPA route changes cannot flush an ACK from the previous page (0.575ms)
+✔ HTTP bridge is refused except explicit localhost simulator injection (2.0111ms)
+✔ background register and drain require committed context and forward only the fixed contract (0.6143ms)
+✔ offline support preserves first-frame readiness and duplicate nonce protection (0.6742ms)
+✔ higher TestFlight builds do not impersonate an App Store approval (0.7451ms)
+✔ approved but unreleased versions still prevent a lower upload (0.1915ms)
+✔ numeric version comparison and upload retry choose an unused integer (0.2309ms)
+✔ audit uses GET only and restricts pagination to the Apple API (17.3035ms)
+✔ appearance read keeps original owner/workspace/permission and expected-salon boundaries (79.4817ms)
+✔ appearance read loads only the selected salon's explicit appearance fields and preserves errors (16.3837ms)
+✔ installed generator resolves exact appearance read without granting it to a paired portable device (283.7453ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 603.42

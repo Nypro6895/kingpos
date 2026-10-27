@@ -1,0 +1,231 @@
+{
+  "auditedAt": "2026-10-27T18:58:40.799Z",
+  "readOnly": true,
+  "outcome": "passed",
+  "blockers": [],
+  "checks": {
+    "threeExactReadyEvents": true,
+    "receiptWebOnly": true,
+    "receiptSourceMatchesLive": true,
+    "liveEvidencePassed": true,
+    "priorFrozenAuditPassed": true,
+    "nativeNotClearedByWeb": true,
+    "noNewUnreviewedCompletedEvents": true,
+    "scopedRegressionsPassed": true
+  },
+  "web": {
+    "releaseEventId": "a83729b7-35cd-4e65-9b8b-56a3eb5e04b6",
+    "recordedAt": "2026-10-27T18:56:10.596Z",
+    "publishedEventIds": [
+      "8ad17808-0d1d-44eb-a3f5-4414e70c2661",
+      "b67a78ca-1c14-491f-8f07-f763ebe69735",
+      "9397270f-302e-42d4-b8ce-dccac6464458"
+    ],
+    "sourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+    "baselineDeploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+    "deploymentId": "dpl_83qAybRN5CaEJ21nhdz2iUvR7zs3",
+    "sourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+    "overlaySha256": "39a44693889bd67b0a52b8e8fd71aa735e1e2a813fe306b2710cfbf941c774d1",
+    "liveSourceHashFiles": 3388,
+    "httpChecks": {
+      "checks": 14,
+      "passed": 14,
+      "failed": []
+    },
+    "events": [
+      {
+        "eventId": "8ad17808-0d1d-44eb-a3f5-4414e70c2661",
+        "changeId": "ios-role-priority-prefetch-20261027",
+        "status": "ready",
+        "channels": [
+          "web"
+        ],
+        "fileCount": 28,
+        "fileHashesMatchFrozen": true,
+        "mismatches": [],
+        "allFilesInScope": true,
+        "sourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+        "sourcePatchSha256": "540da959cb363d378854eb586d91c452b3298325433a70f99b7de527c903c148",
+        "deploySourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+        "sourceMatchesRelease": true,
+        "allValidationPassed": true,
+        "supersedesEvents": [
+          "d6c3e8d2-8193-4be8-bad7-7d567abc884e"
+        ],
+        "dependencies": [],
+        "exactEventPresent": true,
+        "publishedInReceipt": true,
+        "pendingChannels": []
+      },
+      {
+        "eventId": "b67a78ca-1c14-491f-8f07-f763ebe69735",
+        "changeId": "portable-customer-display-settings-qr-20261027",
+        "status": "ready",
+        "channels": [
+          "web"
+        ],
+        "fileCount": 23,
+        "fileHashesMatchFrozen": true,
+        "mismatches": [],
+        "allFilesInScope": true,
+        "sourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+        "sourcePatchSha256": "540da959cb363d378854eb586d91c452b3298325433a70f99b7de527c903c148",
+        "deploySourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+        "sourceMatchesRelease": true,
+        "allValidationPassed": true,
+        "supersedesEvents": [],
+        "dependencies": [],
+        "exactEventPresent": true,
+        "publishedInReceipt": true,
+        "pendingChannels": []
+      },
+      {
+        "eventId": "9397270f-302e-42d4-b8ce-dccac6464458",
+        "changeId": "combined-prefetch-display-release-20261027",
+        "status": "ready",
+        "channels": [
+          "web"
+        ],
+        "fileCount": 64,
+        "fileHashesMatchFrozen": true,
+        "mismatches": [],
+        "allFilesInScope": true,
+        "sourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+        "sourcePatchSha256": "540da959cb363d378854eb586d91c452b3298325433a70f99b7de527c903c148",
+        "deploySourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+        "sourceMatchesRelease": true,
+        "allValidationPassed": true,
+        "supersedesEvents": [],
+        "dependencies": [
+          "ios-role-priority-prefetch-20261027",
+          "portable-customer-display-settings-qr-20261027"
+        ],
+        "exactEventPresent": true,
+        "publishedInReceipt": true,
+        "pendingChannels": []
+      }
+    ]
+  },
+  "native": {
+    "required": true,
+    "webReceiptClaimsNativePublication": false,
+    "receiptStatus": "pending-signed-pipeline",
+    "receiptWorkflowRun": 40563109818,
+    "baselineVersion": "1.0.0",
+    "baselineBuild": "53",
+    "pendingEvent": {
+      "eventId": "d6c3e8d2-8193-4be8-bad7-7d567abc884e",
+      "changeId": "ios-role-priority-prefetch-20261027",
+      "pendingChannels": [
+        "ios"
+      ],
+      "sourceCommit": "2a4fb9d058dffcd367872df1ba1137ebae47bcdb"
+    },
+    "boundary": "Original ready revision remains pending on iOS only. Before claiming the combined native release, record an iOS ready revision bound to the integrated signed payload, explicitly supersede d6c3e8d2 for iOS, and verify actual archive/upload/Apple processing/TestFlight availability. This audit did not query CI or Apple."
+  },
+  "windows": {
+    "binaryRequired": false,
+    "version": "0.7.3",
+    "binaryChanged": false,
+    "verificationLimit": {
+      "fullBinaryDownloaded": false,
+      "executed": false,
+      "rangeBytes": 1024,
+      "previousFullDownloadReceipt": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-download.json",
+      "previousFullBinarySha256": "eb5de4c5548288d5b0fda5be743f7f3135585c4b2f2d04245753d834b7c0597f",
+      "note": "Live updater metadata exactly matches candidate and the1024-byte range SHA256 also matches candidate. Full binary checksum was not rerun."
+    }
+  },
+  "recentDiscovery": {
+    "since": "2026-10-27T18:34:03.000Z",
+    "method": "Fresh readJournal over registered Git worktrees, with immutable-copy conflict detection; filtered newly recorded events only. Existing 56 historical records were not re-audited.",
+    "newEvents": [
+      {
+        "id": "a4796ba0-d040-4053-903c-157d0067d46c",
+        "kind": "change",
+        "changeId": "combined-prefetch-display-release-20261027",
+        "status": "working",
+        "recordedAt": "2026-10-27T18:34:03.393Z",
+        "channels": [
+          "web",
+          "ios"
+        ]
+      },
+      {
+        "id": "8ad17808-0d1d-44eb-a3f5-4414e70c2661",
+        "kind": "change",
+        "changeId": "ios-role-priority-prefetch-20261027",
+        "status": "ready",
+        "recordedAt": "2026-10-27T18:52:58.195Z",
+        "channels": [
+          "web"
+        ]
+      },
+      {
+        "id": "b67a78ca-1c14-491f-8f07-f763ebe69735",
+        "kind": "change",
+        "changeId": "portable-customer-display-settings-qr-20261027",
+        "status": "ready",
+        "recordedAt": "2026-10-27T18:53:04.637Z",
+        "channels": [
+          "web"
+        ]
+      },
+      {
+        "id": "9397270f-302e-42d4-b8ce-dccac6464458",
+        "kind": "change",
+        "changeId": "combined-prefetch-display-release-20261027",
+        "status": "ready",
+        "recordedAt": "2026-10-27T18:53:04.762Z",
+        "channels": [
+          "web"
+        ]
+      },
+      {
+        "id": "a83729b7-35cd-4e65-9b8b-56a3eb5e04b6",
+        "kind": "release",
+        "recordedAt": "2026-10-27T18:56:10.596Z"
+      }
+    ],
+    "newOutsideSelectedRelease": [],
+    "newUnreviewedCompletedChanges": [],
+    "coverageLimit": "Journal-based completion discovery; no new broad dirty-checkout adoption or automatic integration."
+  },
+  "preservation": {
+    "priorSourceFreezeReview": "final-freeze-review.json",
+    "liveSourceMatchesFrozenCandidate": true,
+    "productionDataMutations": false,
+    "productionMigrations": [],
+    "note": "Earlier independent 64-file frozen-patch and 3388-file candidate audit remains applicable; current live receipt has the same source SHA. No main dirty checkout was adopted in this audit."
+  },
+  "validation": [
+    {
+      "file": "prefetch-merged-40tests.log",
+      "tests": 40,
+      "passed": true
+    },
+    {
+      "file": "portable-merged-36tests-final.log",
+      "tests": 36,
+      "passed": true
+    },
+    {
+      "file": "native-boundary-26tests.log",
+      "tests": 26,
+      "passed": true
+    }
+  ],
+  "evidence": [
+    "web-ready-events.json",
+    "scope.json",
+    "frozen-patch.json",
+    "deploy-source.json",
+    "live-verified.json",
+    "live-http.json",
+    "candidate-http.json",
+    "final-freeze-review.json",
+    "journal-pending-review.json",
+    "audit-recent.json",
+    "audit-historical.json"
+  ]
+}

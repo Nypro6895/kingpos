@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-10-27T19:08:25.513Z",
+  "workflowRun": 40563109818,
+  "attempt": 2,
+  "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "status": "completed",
+  "conclusion": "success",
+  "job": 122401410080,
+  "artifactId": 12763555592,
+  "artifactName": "reylumi-testflight-60-2",
+  "artifactBytes": 226882,
+  "artifactSha256": "936b6f5f47d8faf726a87d07d69f754b4688ed7171173eec80d8936f6585524f",
+  "allBindingsMatch": true
+}

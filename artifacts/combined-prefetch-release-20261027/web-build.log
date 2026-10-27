@@ -1,0 +1,320 @@
+{"mode":"combined-release-build","publicConfigured":[{"key":"NEXT_PUBLIC_SUPABASE_URL","present":true},{"key":"NEXT_PUBLIC_SUPABASE_ANON_KEY","present":true},{"key":"NEXT_PUBLIC_MAPTILER_KEY","present":false},{"key":"NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY","present":false}]}
+▲ Next.js 16.2.9 (webpack)
+- Environments: .env.production.local
+- Cache Components enabled
+- Experiments (use with caution):
+  ⨯ cssChunking
+  ⨯ runtimeServerDeploymentId
+  · serverActions
+
+  Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (117kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+✓ Compiled successfully in 51s
+  Running TypeScript ...
+  Finished TypeScript in 23.9s ...
+  Collecting page data using 31 workers ...
+  Generating static pages using 31 workers (0/246) ...
+  Generating static pages using 31 workers (61/246) 
+  Generating static pages using 31 workers (122/246) 
+  Generating static pages using 31 workers (184/246) 
+✓ Generating static pages using 31 workers (246/246) in 1666ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ◐ /
+├ ○ /_not-found
+├ ◐ /accept-invite
+├ ◐ /account
+├ ◐ /account-recovery
+├ ◐ /activity
+├ ◐ /activity/receipts/[ticketId]
+│ └ /activity/receipts/[ticketId]
+├ ◐ /admin
+├ ◐ /admin/advertising
+├ ◐ /admin/advertising/reviews
+├ ƒ /admin/api/support-activity
+├ ƒ /admin/api/support-conversation
+├ ◐ /admin/attention
+├ ◐ /admin/audit
+├ ◐ /admin/businesses
+├ ◐ /admin/businesses/[businessId]
+│ └ /admin/businesses/[businessId]
+├ ◐ /admin/claims
+├ ƒ /admin/dashboard/detail
+├ ƒ /admin/dashboard/record
+├ ƒ /admin/dashboard/search
+├ ◐ /admin/inbox
+├ ◐ /admin/inbox/[threadId]
+│ └ /admin/inbox/[threadId]
+├ ◐ /admin/locations
+├ ◐ /admin/locations/[locationId]
+│ └ /admin/locations/[locationId]
+├ ƒ /admin/locations/workspace
+├ ƒ /admin/lookup
+├ ◐ /admin/market
+├ ◐ /admin/market/credits
+├ ƒ /admin/market/ledger/export
+├ ◐ /admin/market/tax
+├ ƒ /admin/market/tax/export
+├ ◐ /admin/notifications
+├ ◐ /admin/plugins
+├ ◐ /admin/plugins/[pluginId]
+│ └ /admin/plugins/[pluginId]
+├ ◐ /admin/plugins/campaigns
+├ ◐ /admin/post-safety
+├ ◐ /admin/post-safety/spam
+├ ◐ /admin/recovery
+├ ◐ /admin/reports
+├ ◐ /admin/reports/[reportId]
+│ └ /admin/reports/[reportId]
+├ ◐ /admin/search
+├ ◐ /admin/settings
+├ ◐ /admin/settings/support-email
+├ ◐ /admin/settings/twilio
+├ ◐ /admin/system
+├ ◐ /admin/team
+├ ◐ /admin/users
+├ ◐ /admin/users/[userId]
+│ └ /admin/users/[userId]
+├ ƒ /admin/users/evidence
+├ ƒ /admin/users/export
+├ ƒ /admin/users/workspace
+├ ◐ /admin/verification
+├ ƒ /api/account/erase-due
+├ ƒ /api/app-local/command
+├ ƒ /api/app-local/context
+├ ƒ /api/app-local/read
+├ ƒ /api/auth/admin-activity
+├ ƒ /api/auth/callback
+├ ƒ /api/auth/forgot-password
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/mfa/verify
+├ ƒ /api/auth/session
+├ ƒ /api/auth/signup
+├ ƒ /api/auth/sms-hook
+├ ƒ /api/booking-payment/connect
+├ ƒ /api/booking-payment/status
+├ ƒ /api/booking-payment/test-confirm
+├ ƒ /api/booking-payment/webhook
+├ ƒ /api/business-claims/matches
+├ ƒ /api/campaigns/delivery
+├ ƒ /api/campaigns/payment-webhook
+├ ƒ /api/contact-support
+├ ƒ /api/experience/context
+├ ƒ /api/experience/customer
+├ ƒ /api/experience/market
+├ ƒ /api/experience/my-work
+├ ○ /api/experience/offline-assets
+├ ƒ /api/experience/offline-context
+├ ƒ /api/experience/staff
+├ ƒ /api/experience/today
+├ ƒ /api/explore/advertising
+├ ƒ /api/explore/area
+├ ƒ /api/explore/feed
+├ ƒ /api/explore/salon-social
+├ ƒ /api/explore/search
+├ ƒ /api/explore/suggestions
+├ ƒ /api/explore/wisconsin/export
+├ ƒ /api/internal/booking-messages
+├ ƒ /api/internal/campaign-credits
+├ ƒ /api/internal/explore-ranking
+├ ƒ /api/market/payment-webhook
+├ ƒ /api/notifications
+├ ƒ /api/notifications/preferences
+├ ƒ /api/payments/reconcile
+├ ƒ /api/payments/webhook
+├ ƒ /api/payroll/close-due
+├ ƒ /api/pos/closing
+├ ○ /api/pos/connection
+├ ƒ /api/pos/customer-display/settings
+├ ƒ /api/pos/owner/bookings
+├ ƒ /api/pos/owner/check-in
+├ ƒ /api/pos/owner/operations
+├ ƒ /api/pos/owner/reports
+├ ƒ /api/pos/owner/tickets
+├ ƒ /api/pos/owner/workspace
+├ ƒ /api/pos/portable/device
+├ ƒ /api/pos/portable/draft
+├ ƒ /api/pos/portable/offline-staff
+├ ƒ /api/pos/portable/operations
+├ ƒ /api/pos/portable/staff
+├ ƒ /api/pos/portable/tickets
+├ ƒ /api/pos/portable/waiting
+├ ƒ /api/pos/portable/workspace
+├ ƒ /api/pos/windows-download
+├ ƒ /api/pos/windows-update/latest.yml
+├ ƒ /api/post-comments
+├ ƒ /api/public-booking/availability
+├ ƒ /api/public-booking/confirm
+├ ƒ /api/public-booking/context
+├ ƒ /api/public-booking/inspiration-times
+├ ƒ /api/public/salons/operating-status
+├ ƒ /api/salon-profile/content
+├ ƒ /api/security/challenge
+├ ƒ /api/security/cleanup
+├ ƒ /api/service-relay/entry
+├ ƒ /api/service-relay/pass/[pass]
+├ ○ /api/services/catalog-pilot
+├ ƒ /api/staff/booking-preferences
+├ ƒ /api/staff/confirm-booking
+├ ƒ /api/staff/create-appointment
+├ ƒ /api/staff/invite/signup
+├ ƒ /api/staff/report-no-show
+├ ƒ /api/vendor/maplibre-gl
+├ ○ /apple-icon.png
+├ ◐ /beauty
+├ ◐ /book/[salonId]
+│ └ /book/[salonId]
+├ ◐ /booking-payment/[token]
+│ └ /booking-payment/[token]
+├ ◐ /booking/manage/[token]
+│ └ /booking/manage/[token]
+├ ◐ /bookings
+├ ◐ /business-terms
+├ ◐ /businesses
+├ ◐ /businesses/create
+├ ◐ /businesses/new
+├ ◐ /campaigns
+├ ◐ /check-in/[entry]
+│ └ /check-in/[entry]
+├ ◐ /claim/[salonId]
+│ └ /claim/[salonId]
+├ ◐ /claim/customer
+├ ◐ /community
+├ ◐ /contact-support
+├ ◐ /customers
+├ ◐ /customers/[customerId]
+│ └ /customers/[customerId]
+├ ◐ /customers/[customerId]/edit
+│ └ /customers/[customerId]/edit
+├ ◐ /customers/new
+├ ◐ /deletion-status/[token]
+│ └ /deletion-status/[token]
+├ ◐ /developers/market
+├ ƒ /download/windows
+├ ◐ /explore
+├ ◐ /explore/beauty/[profileId]
+│ └ /explore/beauty/[profileId]
+├ ◐ /explore/beauty/[profileId]/posts/[postId]
+│ └ /explore/beauty/[profileId]/posts/[postId]
+├ ◐ /explore/campaigns/[campaignId]
+│ └ /explore/campaigns/[campaignId]
+├ ◐ /explore/favorites
+├ ◐ /explore/inspiration/[lookId]
+│ └ /explore/inspiration/[lookId]
+├ ◐ /explore/looks/[lookId]
+│ └ /explore/looks/[lookId]
+├ ◐ /explore/salons/[salonId]
+│ └ /explore/salons/[salonId]
+├ ◐ /explore/wisconsin
+├ ◐ /explore/wisconsin/[businessId]
+│ └ /explore/wisconsin/[businessId]
+├ ◐ /forgot-password
+├ ◐ /help
+├ ◐ /help/[slug]
+│ └ /help/[slug]
+├ ○ /icon.png
+├ ◐ /legal
+├ ◐ /login
+├ ○ /manifest.webmanifest
+├ ◐ /market
+├ ◐ /market-review
+├ ◐ /market/booking-deposit
+├ ◐ /market/booking-deposit/payment
+├ ◐ /market/booking-deposit/settings
+├ ◐ /market/orders/[orderId]
+│ └ /market/orders/[orderId]
+├ ◐ /market/payment-return
+├ ◐ /more
+├ ◐ /more/[section]
+│ └ /more/[section]
+├ ◐ /my-bookings
+├ ◐ /my-bookings/[bookingId]
+│ └ /my-bookings/[bookingId]
+├ ◐ /my-place
+├ ◐ /notifications
+├ ◐ /notifications/visits/[visitId]
+│ └ /notifications/visits/[visitId]
+├ ◐ /ownership/invite/[token]
+│ └ /ownership/invite/[token]
+├ ◐ /payroll
+├ ◐ /payroll/tax-company
+├ ◐ /payroll/tax-company/settings
+├ ◐ /permissions
+├ ◐ /pos
+├ ◐ /pos-tickets
+├ ◐ /pos-tickets/[ticketId]
+│ └ /pos-tickets/[ticketId]
+├ ◐ /pos/book
+├ ◐ /pos/check-in
+├ ◐ /pos/customer-display
+├ ◐ /pos/customer-display/setup
+├ ◐ /pos/more
+├ ◐ /pos/portable
+├ ◐ /pos/portable/book
+├ ◐ /pos/portable/check-in
+├ ◐ /pos/portable/report
+├ ◐ /pos/portable/ticket
+├ ◐ /pos/portable/today
+├ ◐ /pos/report
+├ ◐ /pos/settings
+├ ◐ /pos/ticket
+├ ◐ /pos/ticket/[ticketId]
+│ └ /pos/ticket/[ticketId]
+├ ◐ /privacy
+├ ◐ /qr
+├ ◐ /reports
+├ ◐ /reset-password
+├ ◐ /roles
+├ ◐ /salon-profile
+├ ◐ /salon-profile/client-transformations
+├ ◐ /salon-settings
+├ ◐ /salons
+├ ◐ /salons/new
+├ ◐ /security-check
+├ ◐ /services
+├ ◐ /settings
+├ ◐ /settings/login-security
+├ ◐ /settings/recovery-back-office
+├ ◐ /signup
+├ ◐ /staff
+├ ◐ /staff/appointments
+├ ◐ /staff/connections
+├ ◐ /staff/invite/[token]
+│ └ /staff/invite/[token]
+├ ◐ /staff/my-work
+├ ◐ /staff/scan
+├ ◐ /staff/today
+├ ◐ /staff/workday
+├ ◐ /support
+├ ◐ /support/[caseId]
+│ └ /support/[caseId]
+├ ◐ /support/guest/[threadId]
+│ └ /support/guest/[threadId]
+├ ◐ /tax-company
+├ ◐ /tax-company/[salonId]
+│ └ /tax-company/[salonId]
+├ ◐ /tax-company/install
+├ ◐ /terms
+├ ◐ /visit/[pass]
+│ └ /visit/[pass]
+├ ◐ /welcome/phone
+└ ƒ /workspace/open
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+
+{"version":"6a0925d2893b6155d901ad524ea75b50ea3060c7647ccea8d26230bd1fec7ead","assets":457,"totalBytes":9054626}

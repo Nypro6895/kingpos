@@ -1,0 +1,44 @@
+✔ actual Back restores editable phone and suppresses unchanged auto-submit; editing submits once (46.9747ms)
+✔ pending lookup response after Back cannot advance the screen (17.6452ms)
+✔ polling snapshot with previous customer cannot cancel Back/edit mode (15.3622ms)
+✔ editing ignores old response while new request remains pending (16.3453ms)
+✔ double-submit is gated, failed transport retries retain ID and canonical payload across +1 (24.1622ms)
+✔ repeated Confirm invokes one save, and Back rejects obsolete save response (11.3605ms)
+✔ successful Confirm ignores repeated stale handler without another save (11.3056ms)
+✔ Personal identity QR and salon entry QR have distinct exact formats; Personal routing restores the correct role (16.7133ms)
+✔ Front desk: searchable service rows, direct edits, real touch keyboard, calendar scale and opening hours (2535.8153ms)
+✔ Portable keyboard updates controlled fields, caret, search, notes, date, and respects disabled setting (1253.9974ms)
+✔ actual customer display: responsive app QR, keyboard, promotions, checkout priority, compact settings and shared device preferences (4673.1409ms)
+✔ appearance reads deny unsigned users, wrong salons and users without settings permission (0.8909ms)
+✔ appearance writes preserve checkout/privacy fields and validate current salon before uploading (11.0775ms)
+✔ appearance mutation keeps existing owner permission gate (0.3244ms)
+✔ Windows login defaults to native input and can enable a persisted supplemental keyboard for credentials and MFA (2166.9616ms)
+✔ Personal QR, account check-in, Ready/prices/history and owner scan → info → Send/Cancel stay connected (6241.4535ms)
+✔ Windows app: native encrypted tickets, logout, restart, abrupt exit and storage boundary (1746.7193ms)
+✔ device input: default off, persist/reopen, cross-window sync, device isolation, native typing, custom service and storage failure (29485.4454ms)
+✔ staff PIN keypad remains visible and accepts digits with supplemental keyboard off and on (947.5057ms)
+✔ compact POS keeps Submit visible and edits adjustments with a touch dialog (2520.1247ms)
+✔ staff check-in migration creates the operational queue and audit surface (0.5589ms)
+✔ manual turn adjustment only changes staff_workdays queue counts (0.2073ms)
+✔ receipt submit preserves turn facts and increments the queue counter (0.0842ms)
+✔ large turn queue increment does not bootstrap from the same ticket turn parts (0.1064ms)
+✔ large turn queue increment preserves historical missing-row facts without double-counting the current event (0.0948ms)
+✔ portable access exposes check-in by default but keeps turn adjustment gated (0.0935ms)
+✔ portable check-in migration updates capability constraint before backfill (0.2114ms)
+✔ portable access capability constraint remains a strict allow-list (0.1592ms)
+✔ standard POS rejects non-working staff when check-in is enabled (0.1246ms)
+✔ POS settings exposes a dedicated staff check-in save path (0.1817ms)
+✔ staff passcodes are hashed and raw passcodes are not returned by staff service selects (0.1284ms)
+✔ late check-in and same-day re-check-in use the requested queue formula (0.0699ms)
+✔ leave and return catch-up is based on the leave cohort, not the current global minimum (0.1084ms)
+✔ POS workspace mutations broadcast realtime invalidations after commits (0.19ms)
+✔ latency-sensitive check-in and POS submits do not await refresh broadcasts (0.1913ms)
+✔ portable POS staff-card long press has cancellation and keyboard contracts (0.1621ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 54076.4571

@@ -1,0 +1,47 @@
+{
+  "verifiedAt": "2026-10-27T19:07:40.605Z",
+  "status": "available-to-existing-internal-group",
+  "nativeCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "nativeRun": 40563109818,
+  "nativeAttempt": 2,
+  "appId": "6821394475",
+  "version": "1.0.0",
+  "build": "54",
+  "buildId": "1048fed6-ed12-41ee-8465-d858973f5cc5",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "appleCheckedAt": "2026-10-27T19:06:16.032Z",
+  "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+  "workflowRun": 40566016501,
+  "workflowAttempt": 1,
+  "workflowSourceCommit": "0557de21fddae619c62a334ecb34de7d057a0d93",
+  "workflowConclusion": "success",
+  "workflowJob": 122407352731,
+  "artifactId": 12762762884,
+  "artifactSha256": "sha256:16c197b93198461557102ade248daf6289c902f9e85865eb766ea58a47c21d83",
+  "resultSha256": "f21c50e7b8759b67fa8e4e5c7c1946d14b2f17b3e29a171d124b901aa6433f69",
+  "groups": [
+    {
+      "id": "afe80011-9371-4a4c-afda-025b624f3275",
+      "name": "Reylumi Internal",
+      "isInternalGroup": true,
+      "hasAccessToAllBuilds": true,
+      "hadBaseline": true,
+      "preexistingAutomaticGroup": true,
+      "hasNewBuild": true,
+      "existingDistributionGroup": true,
+      "associationConfirmed": true
+    },
+    {
+      "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+      "name": "Reylumi support",
+      "isInternalGroup": true,
+      "hasAccessToAllBuilds": true,
+      "hadBaseline": true,
+      "preexistingAutomaticGroup": true,
+      "hasNewBuild": true,
+      "existingDistributionGroup": true,
+      "associationConfirmed": true
+    }
+  ]
+}

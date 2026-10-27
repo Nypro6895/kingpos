@@ -1,0 +1,46 @@
+{
+  "kind": "release",
+  "summary": "Verified combined native update available to the existing internal TestFlight group; no App Store submission or distribution changes.",
+  "changes": [
+    "8f2286da-19c7-4a22-8258-4592a4b2d61b",
+    "54eecbcc-1c28-42d0-baee-6f70e4ed1c9a",
+    "2f75ec9a-9491-4366-a9d7-dd429b657c1b"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "54",
+      "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+      "evidence": [
+        "C:/Reylumi/output/combined-prefetch-release-20261027/native-signed-verification.json",
+        "C:/Reylumi/output/combined-prefetch-release-20261027/native-testflight-availability.json",
+        "C:/Reylumi/output/combined-prefetch-release-20261027/native-signed-source-comparison.json"
+      ]
+    }
+  },
+  "workflow": {
+    "run": 40563109818,
+    "attempt": 2
+  },
+  "nativeSource": {
+    "sourceSha256": "c7f1bbb740e476cabe6e1bbb1c54946fdbbc9213bb07b80467d46f4514545377",
+    "bundleSha256": "3de49126ac2d328837f7d345200b984cb44b3ead2673f96d5e181f147c43fcd3",
+    "buildId": "1aaddd4ad201277efb1599dcfb2e198c9b6e1355f2b391b909d506a0edfb90ab"
+  },
+  "appStore": {
+    "submitted": false
+  },
+  "baseline": {
+    "version": "1.0.0",
+    "build": "53"
+  },
+  "priorAttempt": {
+    "status": "fixture-bootstrap-timeout-before-product-code",
+    "evidence": "C:/Reylumi/output/combined-prefetch-release-20261027/native-signed-attempt1-diagnosis.json"
+  },
+  "id": "238bc924-7ef5-4715-8545-9b6d9ab029e8",
+  "recordedAt": "2026-10-27T19:07:40.409Z",
+  "worktree": "C:\\Reylumi\\kingpos-release-prefetch-20261027"
+}

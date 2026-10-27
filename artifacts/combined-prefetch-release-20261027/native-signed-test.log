@@ -1,0 +1,697 @@
+Command line invocation:
+    /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug -destination "platform=iOS Simulator,id=DC4CD8B3-4457-4153-9087-A0D7A2F9BFD9" -derivedDataPath /Users/runner/work/kingpos/kingpos/ios/build/check.bzR0C8/DerivedData -resultBundlePath /Users/runner/work/kingpos/kingpos/ios/build/check.bzR0C8/SimulatorTests.xcresult -collect-test-diagnostics never CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- CODE_SIGN_ENTITLEMENTS=/Users/runner/work/kingpos/kingpos/ios/ReylumiTests/Simulator.entitlements
+
+Build settings from command line:
+    CODE_SIGN_ENTITLEMENTS = /Users/runner/work/kingpos/kingpos/ios/ReylumiTests/Simulator.entitlements
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGN_STYLE = Manual
+    CODE_SIGNING_ALLOWED = YES
+    CODE_SIGNING_REQUIRED = YES
+
+Writing result bundle at path:
+	/Users/runner/work/kingpos/kingpos/ios/build/check.bzR0C8/SimulatorTests.xcresult
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, arch:arm64, id:DC4CD8B3-4457-4153-9087-A0D7A2F9BFD9, OS:18.5, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:x86_64, id:DC4CD8B3-4457-4153-9087-A0D7A2F9BFD9, OS:18.5, name:iPhone 16 Pro }
+2026-10-27 18:58:21.993877+0000 Reylumi[7152:24967] [library] load_eligibility_plist: Failed to open /Users/runner/Library/Developer/CoreSimulator/Devices/DC4CD8B3-4457-4153-9087-A0D7A2F9BFD9/data/Containers/Data/Application/864581FB-12D7-4A39-B7F1-31D64D69470B/private/var/db/eligibilityd/eligibility.plist: No such file or directory(2)
+Test Suite 'All tests' started at 2026-10-27 18:58:23.519.
+Test Suite 'ReylumiTests.xctest' started at 2026-10-27 18:58:23.520.
+Test Suite 'AppViewportTests' started at 2026-10-27 18:58:23.520.
+Test Case '-[ReylumiTests.AppViewportTests testBundledViewportInWebKit]' started.
+2026-10-27 18:58:25.012950+0000 Reylumi[7152:24967] [ResourceLoadStatistics] Failed to request storage access quirks from WebPrivacy.
+2026-10-27 18:58:25.013083+0000 Reylumi[7152:24967] [ResourceLoadStatistics] Failed to request storage access user agent string quirks from WebPrivacy.
+2026-10-27 18:58:25.027931+0000 Reylumi[7152:24967] [Process] WebContent process (0x11f000d00) took 1.365464 seconds to launch
+2026-10-27 18:58:25.725678+0000 Reylumi[7152:25214] [default] Failed to resolve host network app id to config: bundleID: com.apple.WebKit.Networking instance ID: Optional([_EXExtensionInstanceIdentifier: C179378D-1445-4A31-A316-9B3EDAD11F01])
+2026-10-27 18:58:25.787727+0000 Reylumi[7152:24967] [Process] GPU process (0x11f002300) took 2.091782 seconds to launch
+2026-10-27 18:58:27.026101+0000 Reylumi[7152:24967] [Process] Networking process (0x11f005650) took 3.303534 seconds to launch
+2026-10-27 18:58:27.757021+0000 Reylumi[7152:24967] [ResourceLoadStatistics] Failed to request query parameters from WebPrivacy.
+2026-10-27 18:58:28.147641+0000 Reylumi[7152:24967] [Process] WebContent process (0x11f0061d0) took 4.415409 seconds to launch
+2026-10-27 18:58:28.208750+0000 Reylumi[7152:24967] [ResourceLoadStatistics] Failed to request query parameters from WebPrivacy.
+2026-10-27 18:58:29.144773+0000 Reylumi[7152:24967] [ResourceLoadStatistics] Failed to request allowed query parameters from WebPrivacy.
+2026-10-27 18:58:29.205274+0000 Reylumi[7152:24967] [ResourceLoadStatistics] Failed to request restricted opener domains from WebPrivacy
+Test Case '-[ReylumiTests.AppViewportTests testBundledViewportInWebKit]' passed (5.715 seconds).
+Test Case '-[ReylumiTests.AppViewportTests testNativePageZoomAndKeyboardLayout]' started.
+Test Case '-[ReylumiTests.AppViewportTests testNativePageZoomAndKeyboardLayout]' passed (0.012 seconds).
+Test Suite 'AppViewportTests' passed at 2026-10-27 18:58:29.247.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 5.726 (5.727) seconds
+Test Suite 'AuthLifecycleTransportTests' started at 2026-10-27 18:58:29.247.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testActualNormalGuestPublicContextAndSeparatelyLabeledLeaseOutageRemainReadable]' started.
+2026-10-27 18:58:29.284590+0000 Reylumi[7152:25217] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 7211 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 7211 does not exist}>
+2026-10-27 18:58:29.284988+0000 Reylumi[7152:25217] [ProcessSuspension] 0x11f014700 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=7211, error: (null)
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testActualNormalGuestPublicContextAndSeparatelyLabeledLeaseOutageRemainReadable]' passed (0.144 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testActualSerializedCookieRefreshCancelsOnlyStaleDeliveryAndRetainsNewState]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testActualSerializedCookieRefreshCancelsOnlyStaleDeliveryAndRetainsNewState]' passed (0.549 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdOnlineContextDuringLeaseOutageReadsWithoutPersistingOrCommandAuthority]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdOnlineContextDuringLeaseOutageReadsWithoutPersistingOrCommandAuthority]' passed (0.011 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExplicitDeniedOrUnconfirmedLeaseNeverAcquiresAnOfflineLeaseOrCommandAuthority]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExplicitDeniedOrUnconfirmedLeaseNeverAcquiresAnOfflineLeaseOrCommandAuthority]' passed (0.035 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExplicitHTTPDenialsRemainDenialsAfterAnotherResponseRefreshesCookies]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExplicitHTTPDenialsRemainDenialsAfterAnotherResponseRefreshesCookies]' passed (0.237 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExternalWorkspaceChangeAfterInternalWorkspaceCommitStillRevokesAuthority]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExternalWorkspaceChangeAfterInternalWorkspaceCommitStillRevokesAuthority]' passed (0.081 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP200ContextDenialSurvivesInternalCookieRefreshAndRevokesStoredDisplay]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP200ContextDenialSurvivesInternalCookieRefreshAndRevokesStoredDisplay]' passed (0.514 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP401AndSignOutPreserveTypedResetWireContract]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP401AndSignOutPreserveTypedResetWireContract]' passed (0.010 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP403WithdrawsAnOnlineOnlyContextBeforeAnyLaterReadCanUseItsBarrier]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP403WithdrawsAnOnlineOnlyContextBeforeAnyLaterReadCanUseItsBarrier]' passed (0.010 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testOwnerLeaseDenialRevokesOnlyThatScopeAndCannotRestoreItsOfflineSnapshot]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testOwnerLeaseDenialRevokesOnlyThatScopeAndCannotRestoreItsOfflineSnapshot]' passed (0.104 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testPossiblyCommittedCommandWithStaleCookieReplyIsNeverAutomaticallyReplayed]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testPossiblyCommittedCommandWithStaleCookieReplyIsNeverAutomaticallyReplayed]' passed (0.124 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testStaleContextTaskFinishesBeforeTheNextFreshGETCanStart]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testStaleContextTaskFinishesBeforeTheNextFreshGETCanStart]' passed (0.120 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testTemporaryLeaseOutagePreservesOriginalLeaseAndSnapshotWithoutExtendingThem]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testTemporaryLeaseOutagePreservesOriginalLeaseAndSnapshotWithoutExtendingThem]' passed (0.075 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testUnknownExternalChangesAfterInternalCommitStillRevokeCurrentAuthority]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testUnknownExternalChangesAfterInternalCommitStillRevokeCurrentAuthority]' passed (0.259 seconds).
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testWorkspaceSwitchCannotUseDisplayOnly503AsItsCommandGrant]' started.
+Test Case '-[ReylumiTests.AuthLifecycleTransportTests testWorkspaceSwitchCannotUseDisplayOnly503AsItsCommandGrant]' passed (0.009 seconds).
+Test Suite 'AuthLifecycleTransportTests' passed at 2026-10-27 18:58:31.742.
+	 Executed 15 tests, with 0 failures (0 unexpected) in 2.281 (2.495) seconds
+Test Suite 'BackgroundCookieAuthorityWKTests' started at 2026-10-27 18:58:31.742.
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testBackgroundContextDeletionRemovesTheActualStoredParentDomainCookie]' started.
+2026-10-27 18:58:32.418108+0000 Reylumi[7152:24967] [Process] 0x11f002300 - GPUProcessProxy::gpuProcessExited: reason=IdleExit
+2026-10-27 18:58:32.418213+0000 Reylumi[7152:24967] [Process] 0x11f000d00 - [PID=7229] WebProcessProxy::gpuProcessExited: reason=IdleExit
+2026-10-27 18:58:32.418294+0000 Reylumi[7152:24967] [ProcessSuspension] ProcessAssertion::remainingRunTimeInSeconds failed to get identifier for process with PID=0
+2026-10-27 18:58:32.421837+0000 Reylumi[7152:25211] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 7198 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 7198 does not exist}>
+2026-10-27 18:58:32.421961+0000 Reylumi[7152:25211] [ProcessSuspension] 0x11f00f710 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=7198, error: (null)
+2026-10-27 18:58:32.423341+0000 Reylumi[7152:25211] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 7198 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 7198 does not exist}>
+2026-10-27 18:58:32.477915+0000 Reylumi[7152:25211] [ProcessSuspension] 0x11f00f7d0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'GPUProcess Background Assertion' for process with PID=0, error: (null)
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testBackgroundContextDeletionRemovesTheActualStoredParentDomainCookie]' passed (0.854 seconds).
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testBackgroundReplacementPreservesDifferentCookieDomainsPathsAndNames]' started.
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testBackgroundReplacementPreservesDifferentCookieDomainsPathsAndNames]' passed (0.751 seconds).
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testBackgroundResourceReplacementCollapsesHostAndParentDomainAliases]' started.
+2026-10-27 18:58:33.362714+0000 Reylumi[7152:25295] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 7234 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 7234 does not exist}>
+2026-10-27 18:58:33.362870+0000 Reylumi[7152:25295] [ProcessSuspension] 0x11f013ce0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=7234, error: (null)
+2026-10-27 18:58:35.165822+0000 Reylumi[7152:24967] [Process] GPU process (0x11f002300) took 2.563477 seconds to launch
+2026-10-27 18:58:35.917545+0000 Reylumi[7152:24967] [Process] WebContent process (0x11f000d00) took 2.564765 seconds to launch
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testBackgroundResourceReplacementCollapsesHostAndParentDomainAliases]' passed (2.632 seconds).
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testCancellationWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot]' started.
+2026-10-27 18:58:35.999034+0000 Reylumi[7152:25217] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 7244 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 7244 does not exist}>
+2026-10-27 18:58:35.999225+0000 Reylumi[7152:25217] [ProcessSuspension] 0x11f014bc0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=7244, error: (null)
+2026-10-27 18:58:37.036022+0000 Reylumi[7152:24967] [Process] WebContent process (0x11f0061d0) took 1.052178 seconds to launch
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testCancellationWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot]' passed (1.142 seconds).
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testClearWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot]' started.
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testClearWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot]' passed (0.870 seconds).
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testConcurrentExternalAuthorityChangeRejectsBeforeBackgroundCookieApplication]' started.
+Test Case '-[ReylumiTests.BackgroundCookieAuthorityWKTests testConcurrentExternalAuthorityChangeRejectsBeforeBackgroundCookieApplication]' passed (1.000 seconds).
+Test Suite 'BackgroundCookieAuthorityWKTests' passed at 2026-10-27 18:58:38.993.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 7.249 (7.251) seconds
+Test Suite 'BackgroundSyncTests' started at 2026-10-27 18:58:38.993.
+Test Case '-[ReylumiTests.BackgroundSyncTests testAuthCookieRotationIsDeliveredToWebKitAndLateOldCookieReadIsIgnored]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testAuthCookieRotationIsDeliveredToWebKitAndLateOldCookieReadIsIgnored]' passed (0.031 seconds).
+Test Case '-[ReylumiTests.BackgroundSyncTests testFreshScopedReadCanBeDrainedWithoutAnyWriteOrCredentialPersistence]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testFreshScopedReadCanBeDrainedWithoutAnyWriteOrCredentialPersistence]' passed (0.014 seconds).
+Test Case '-[ReylumiTests.BackgroundSyncTests testLateOldAccountUnauthorizedResponseCannotClearNewAccountRegistration]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testLateOldAccountUnauthorizedResponseCannotClearNewAccountRegistration]' passed (0.031 seconds).
+Test Case '-[ReylumiTests.BackgroundSyncTests testLateReadAfterLogoutOrTaskCancellationNeverRestoresSnapshot]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testLateReadAfterLogoutOrTaskCancellationNeverRestoresSnapshot]' passed (0.054 seconds).
+Test Case '-[ReylumiTests.BackgroundSyncTests testOnlyCompleteKnownReadEndpointsAndExactScopeAreAccepted]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testOnlyCompleteKnownReadEndpointsAndExactScopeAreAccepted]' passed (0.003 seconds).
+Test Case '-[ReylumiTests.BackgroundSyncTests testSnapshotValidatorRejectsPartialInvalidFutureOrOversizedPayloads]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testSnapshotValidatorRejectsPartialInvalidFutureOrOversizedPayloads]' passed (0.003 seconds).
+Test Case '-[ReylumiTests.BackgroundSyncTests testUnavailableOrNoCookieDoesNotInventOrUploadDataAndBoundedStoreRejectsOverflow]' started.
+Test Case '-[ReylumiTests.BackgroundSyncTests testUnavailableOrNoCookieDoesNotInventOrUploadDataAndBoundedStoreRejectsOverflow]' passed (0.002 seconds).
+Test Suite 'BackgroundSyncTests' passed at 2026-10-27 18:58:39.135.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.137 (0.142) seconds
+Test Suite 'BusinessContextCacheAdmissionTests' started at 2026-10-27 18:58:39.135.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testColdNonNeutralBusinessRouteAwaitsFreshRatherThanGuessingRetainedOwner]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testColdNonNeutralBusinessRouteAwaitsFreshRatherThanGuessingRetainedOwner]' passed (0.077 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testCurrentStaffRootCanReuseMatchingSalonCustomerWithoutPersonalFallback]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testCurrentStaffRootCanReuseMatchingSalonCustomerWithoutPersonalFallback]' passed (0.066 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testNeutralHomeEstablishesOwnerAndPreservesItsOfflineBusinessContext]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testNeutralHomeEstablishesOwnerAndPreservesItsOfflineBusinessContext]' passed (0.043 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testOnlineOnlyStaffUsesCurrentOnlineScopeInsteadOfRetainedOwnerLease]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testOnlineOnlyStaffUsesCurrentOnlineScopeInsteadOfRetainedOwnerLease]' passed (0.082 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testPersonalCustomerCannotAdmitAnyBusinessPageButItsAccountPagesRemainCompatible]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testPersonalCustomerCannotAdmitAnyBusinessPageButItsAccountPagesRemainCompatible]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testPersonalToStaffFirstPostAwaitsFreshRootInsteadOfPersonalLease]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testPersonalToStaffFirstPostAwaitsFreshRootInsteadOfPersonalLease]' passed (0.113 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testPortableAndExpiredOrWrongGenerationLeasesKeepTheirExistingBoundaries]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testPortableAndExpiredOrWrongGenerationLeasesKeepTheirExistingBoundaries]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testResetWhileFreshPostIsPendingCannotDeliverOrRestoreOldAuthority]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testResetWhileFreshPostIsPendingCannotDeliverOrRestoreOldAuthority]' passed (0.081 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testRetainedOwnerCannotReplaceSelectedStaffWhilePostIsPending]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testRetainedOwnerCannotReplaceSelectedStaffWhilePostIsPending]' passed (0.111 seconds).
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testServerShapedStaffRootCustomerAllowsOnlySharedSalonProfileAmongBusinessPages]' started.
+Test Case '-[ReylumiTests.BusinessContextCacheAdmissionTests testServerShapedStaffRootCustomerAllowsOnlySharedSalonProfileAmongBusinessPages]' passed (0.003 seconds).
+Test Suite 'BusinessContextCacheAdmissionTests' passed at 2026-10-27 18:58:39.719.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.581 (0.583) seconds
+Test Suite 'BusinessContextFailureTests' started at 2026-10-27 18:58:39.719.
+Test Case '-[ReylumiTests.BusinessContextFailureTests testExplicitUnconfirmedRepeatedContextCannotResurrectRetainedOwner]' started.
+Test Case '-[ReylumiTests.BusinessContextFailureTests testExplicitUnconfirmedRepeatedContextCannotResurrectRetainedOwner]' passed (0.074 seconds).
+Test Case '-[ReylumiTests.BusinessContextFailureTests testFreshStaffPostUsesOriginalOnlineReadWithoutBorrowingOwnerOfflineAuthority]' started.
+Test Case '-[ReylumiTests.BusinessContextFailureTests testFreshStaffPostUsesOriginalOnlineReadWithoutBorrowingOwnerOfflineAuthority]' passed (0.082 seconds).
+Test Case '-[ReylumiTests.BusinessContextFailureTests testFreshUnavailableOrActualDenialNeverFallsBackToAnotherRole]' started.
+Test Case '-[ReylumiTests.BusinessContextFailureTests testFreshUnavailableOrActualDenialNeverFallsBackToAnotherRole]' passed (0.210 seconds).
+Test Case '-[ReylumiTests.BusinessContextFailureTests testGenericOwnerDisplayLeaseOutageKeepsItsMatchingValidOfflineLease]' started.
+Test Case '-[ReylumiTests.BusinessContextFailureTests testGenericOwnerDisplayLeaseOutageKeepsItsMatchingValidOfflineLease]' passed (0.038 seconds).
+Test Case '-[ReylumiTests.BusinessContextFailureTests testIdenticalScopeRetainedOwnerCannotAuthorizeSelectedStaffBusinessCache]' started.
+2026-10-27 18:58:40.171816+0000 Reylumi[7152:24967] [Process] 0x11f002300 - GPUProcessProxy::gpuProcessExited: reason=IdleExit
+Test Case '-[ReylumiTests.BusinessContextFailureTests testIdenticalScopeRetainedOwnerCannotAuthorizeSelectedStaffBusinessCache]' passed (0.213 seconds).
+Test Suite 'BusinessContextFailureTests' passed at 2026-10-27 18:58:40.338.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.618 (0.619) seconds
+Test Suite 'CampaignReadTransportTests' started at 2026-10-27 18:58:40.338.
+Test Case '-[ReylumiTests.CampaignReadTransportTests testCampaignCoordinatesUsePrivateReadBodyAndNeverEnterURLOrReadCache]' started.
+2026-10-27 18:58:59.297737+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c529d0 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:58:59.302753+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c50900 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:02.435076+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c4d140 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:02.629550+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c4cde0 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:03.376598+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c56be0 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:06.009160+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c52760 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:07.156057+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c50f60 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:08.027246+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c53f90 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:09.027265+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c55500 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+2026-10-27 18:59:10.187980+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c57cf0 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+Test Case '-[ReylumiTests.CampaignReadTransportTests testCampaignCoordinatesUsePrivateReadBodyAndNeverEnterURLOrReadCache]' passed (36.527 seconds).
+Test Suite 'CampaignReadTransportTests' passed at 2026-10-27 18:59:16.868.
+	 Executed 1 test, with 0 failures (0 unexpected) in 36.527 (36.530) seconds
+Test Suite 'CommandDiagnosticsTransportTests' started at 2026-10-27 18:59:16.868.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testHTTP503AndURLSessionTimeoutRemainDistinctWithoutWriteRetry]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testHTTP503AndURLSessionTimeoutRemainDistinctWithoutWriteRetry]' passed (0.080 seconds).
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testJoinedContextSharesActualHTTPIDAndCachedContextCannotClaimIt]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testJoinedContextSharesActualHTTPIDAndCachedContextCannotClaimIt]' passed (0.061 seconds).
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testLegacyAndMismatchedReadEchoPreserveNumericTimingWithoutCorrelationOrChangingResults]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testLegacyAndMismatchedReadEchoPreserveNumericTimingWithoutCorrelationOrChangingResults]' passed (0.202 seconds).
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testOverlappingCommandsKeepTheirOwnRequestIDsWhenResponsesFinishOutOfOrder]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testOverlappingCommandsKeepTheirOwnRequestIDsWhenResponsesFinishOutOfOrder]' passed (0.078 seconds).
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testPreflight503CarriesCommandTimingWithoutSendingCommandPOST]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testPreflight503CarriesCommandTimingWithoutSendingCommandPOST]' passed (0.006 seconds).
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testUnknownFailureCodeIsIgnoredAndMalformedCallerCannotCreateDiagnosticAuthority]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testUnknownFailureCodeIsIgnoredAndMalformedCallerCannotCreateDiagnosticAuthority]' passed (0.036 seconds).
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testUntrustedResponseMetadataCannotReplaceLocalIDOrChangeSuccessfulCommandResult]' started.
+Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testUntrustedResponseMetadataCannotReplaceLocalIDOrChangeSuccessfulCommandResult]' passed (0.110 seconds).
+Test Suite 'CommandDiagnosticsTransportTests' passed at 2026-10-27 18:59:17.443.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.573 (0.575) seconds
+Test Suite 'LaunchAppearanceTests' started at 2026-10-27 18:59:17.443.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testBrandedOrbitFitsBeforeWebKitWithoutPlaceholderControls]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testBrandedOrbitFitsBeforeWebKitWithoutPlaceholderControls]' passed (0.027 seconds).
+Test Case '-[ReylumiTests.LaunchAppearanceTests testDisplayedShellStartsWebKitThroughFramesAndSurvivesEarlyBackground]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testDisplayedShellStartsWebKitThroughFramesAndSurvivesEarlyBackground]' passed (1.021 seconds).
+Test Case '-[ReylumiTests.LaunchAppearanceTests testErrorStopsLoadingAndRetryRestoresIt]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testErrorStopsLoadingAndRetryRestoresIt]' passed (0.015 seconds).
+Test Case '-[ReylumiTests.LaunchAppearanceTests testExplicitStartupAndReturnIntentsSurviveBrandedLoading]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testExplicitStartupAndReturnIntentsSurviveBrandedLoading]' passed (0.011 seconds).
+Test Case '-[ReylumiTests.LaunchAppearanceTests testOrbitGeometryStaysInsideItsBoundsWhenResized]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testOrbitGeometryStaysInsideItsBoundsWhenResized]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.LaunchAppearanceTests testReadinessStopsOrbitWithoutMinimumDelayAndRetryRestoresIt]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testReadinessStopsOrbitWithoutMinimumDelayAndRetryRestoresIt]' passed (0.023 seconds).
+Test Case '-[ReylumiTests.LaunchAppearanceTests testWhiteCanvasBeforeNetworkResponseEvenInDarkMode]' started.
+Test Case '-[ReylumiTests.LaunchAppearanceTests testWhiteCanvasBeforeNetworkResponseEvenInDarkMode]' passed (0.011 seconds).
+Test Suite 'LaunchAppearanceTests' passed at 2026-10-27 18:59:18.553.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 1.108 (1.110) seconds
+Test Suite 'LocalAppTransportTests' started at 2026-10-27 18:59:18.553.
+Test Case '-[ReylumiTests.LocalAppTransportTests testActualInstalledExploreBoundsTransientContextRecoveryBeforeUserRetry]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testActualInstalledExploreBoundsTransientContextRecoveryBeforeUserRetry]' passed (3.139 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testAuthoritative404EvictsOnlyExactReadBut503RetainsOtherSnapshot]' started.
+2026-10-27 18:59:21.710569+0000 Reylumi[7152:25212] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9652 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9652 does not exist}>
+2026-10-27 18:59:21.710879+0000 Reylumi[7152:25212] [ProcessSuspension] 0x11f00de80 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=9652, error: (null)
+2026-10-27 18:59:21.713813+0000 Reylumi[7152:25212] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9652 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9652 does not exist}>
+2026-10-27 18:59:21.725202+0000 Reylumi[7152:25212] [ProcessSuspension] 0x11f013b60 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess Background Assertion' for process with PID=9652, error: (null)
+Test Case '-[ReylumiTests.LocalAppTransportTests testAuthoritative404EvictsOnlyExactReadBut503RetainsOtherSnapshot]' passed (0.123 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testCachedAuthorityRotationAdmitsSelectedLeaseWithoutCancellingItsOwnContextRead]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testCachedAuthorityRotationAdmitsSelectedLeaseWithoutCancellingItsOwnContextRead]' passed (0.148 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst]' passed (0.156 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks]' passed (0.131 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testForbiddenReadEvictsOnlyItsSnapshotWithoutResettingOtherPages]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testForbiddenReadEvictsOnlyItsSnapshotWithoutResettingOtherPages]' passed (0.102 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testFullSessionResetStillRevokesCachedAuthorityAndRejectsOldGeneration]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testFullSessionResetStillRevokesCachedAuthorityAndRejectsOldGeneration]' passed (0.069 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testLateReadAfterConfirmedWorkspaceCookieCommitIsDiscardedWithoutReset]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testLateReadAfterConfirmedWorkspaceCookieCommitIsDiscardedWithoutReset]' passed (0.081 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testLateReadAfterResetCannotReturnOrPersistOldAccountData]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testLateReadAfterResetCannotReturnOrPersistOldAccountData]' passed (0.048 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay]' passed (0.067 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testOnlyNamedReadsUseFixedEndpointAndCommandsAreSingleAttempt]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testOnlyNamedReadsUseFixedEndpointAndCommandsAreSingleAttempt]' passed (0.109 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testPartialLeaseFailurePreservesOnlyUnchangedAuthorityAndNeverAllowsCommands]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testPartialLeaseFailurePreservesOnlyUnchangedAuthorityAndNeverAllowsCommands]' passed (0.276 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testPortableLockPersistsOriginalHTTPSCookieAndOnlyRevokesDeviceDisplayLease]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testPortableLockPersistsOriginalHTTPSCookieAndOnlyRevokesDeviceDisplayLease]' passed (0.096 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact]' passed (0.065 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testResponseCookieProofRejectsUnrelatedWorkspaceAccountAndLogoutChanges]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testResponseCookieProofRejectsUnrelatedWorkspaceAccountAndLogoutChanges]' passed (0.190 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testSameScopeStaffMarketStaffRetainsDOMAuthorityAndStaffCacheUntilBindingChanges]' started.
+2026-10-27 18:59:23.379284+0000 Reylumi[7152:24967] [Process] 0x11f002300 - GPUProcessProxy::gpuProcessExited: reason=IdleExit
+Test Case '-[ReylumiTests.LocalAppTransportTests testSameScopeStaffMarketStaffRetainsDOMAuthorityAndStaffCacheUntilBindingChanges]' passed (0.217 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testStaffAndOwnerContextsSelectMatchingLeaseAndDeniedScopeDoesNotEraseOtherRole]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testStaffAndOwnerContextsSelectMatchingLeaseAndDeniedScopeDoesNotEraseOtherRole]' passed (0.136 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testUnavailableContextKeepsCachedReadButExplicitDenialStillRevokesIt]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testUnavailableContextKeepsCachedReadButExplicitDenialStillRevokesIt]' passed (0.179 seconds).
+Test Case '-[ReylumiTests.LocalAppTransportTests testUnusedDefaultTransportsReleaseWithoutCreatingADeinitializingSessionDelegate]' started.
+Test Case '-[ReylumiTests.LocalAppTransportTests testUnusedDefaultTransportsReleaseWithoutCreatingADeinitializingSessionDelegate]' passed (0.307 seconds).
+Test Suite 'LocalAppTransportTests' passed at 2026-10-27 18:59:24.198.
+	 Executed 19 tests, with 0 failures (0 unexpected) in 5.639 (5.644) seconds
+Test Suite 'LocalAppWebViewTests' started at 2026-10-27 18:59:24.198.
+Test Case '-[ReylumiTests.LocalAppWebViewTests testActualInstalledPOSInitializerRetainsMoneyAndOutboxAcrossColdWebView]' started.
+2026-10-27 18:59:25.092667+0000 Reylumi[7152:31962] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9825 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9825 does not exist}>
+2026-10-27 18:59:25.093097+0000 Reylumi[7152:31962] [ProcessSuspension] 0x11f014940 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9825, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testActualInstalledPOSInitializerRetainsMoneyAndOutboxAcrossColdWebView]' passed (1.623 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testActualPackagedHelpCatalogAndArticleAreUsableOfflineBeforeSignIn]' started.
+2026-10-27 18:59:25.871611+0000 Reylumi[7152:31959] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9829 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9829 does not exist}>
+2026-10-27 18:59:25.876679+0000 Reylumi[7152:31959] [ProcessSuspension] 0x11f014580 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=9829, error: (null)
+2026-10-27 18:59:25.881773+0000 Reylumi[7152:31959] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9829 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9829 does not exist}>
+2026-10-27 18:59:26.130639+0000 Reylumi[7152:31959] [ProcessSuspension] 0x11f014940 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess Background Assertion' for process with PID=9829, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testActualPackagedHelpCatalogAndArticleAreUsableOfflineBeforeSignIn]' passed (0.677 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testCustomOriginHasActualExclusiveWebLocksForOriginalPOSWriterGuard]' started.
+2026-10-27 18:59:26.524531+0000 Reylumi[7152:25211] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9833 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9833 does not exist}>
+2026-10-27 18:59:26.524783+0000 Reylumi[7152:25211] [ProcessSuspension] 0x11f014940 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9833, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testCustomOriginHasActualExclusiveWebLocksForOriginalPOSWriterGuard]' passed (0.357 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testCustomOriginHasCryptographicRandomAndDurableStrictIndexedDBBeforeOutboxUse]' started.
+2026-10-27 18:59:26.883551+0000 Reylumi[7152:31961] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9835 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9835 does not exist}>
+2026-10-27 18:59:26.884474+0000 Reylumi[7152:31961] [ProcessSuspension] 0x11f016ab0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9835, error: (null)
+2026-10-27 18:59:27.261231+0000 Reylumi[7152:31680] [assertion] Error acquiring assertion: <Error Domain=RBSServiceErrorDomain Code=1 "((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))" UserInfo={NSLocalizedFailureReason=((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))}>
+2026-10-27 18:59:27.261369+0000 Reylumi[7152:31680] [ProcessSuspension] 0x11f016b70 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9836, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testCustomOriginHasCryptographicRandomAndDurableStrictIndexedDBBeforeOutboxUse]' passed (0.762 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testCustomOriginSupportsActualOfflineStaffDigestPBKDF2AndRSAEncryption]' started.
+2026-10-27 18:59:27.643320+0000 Reylumi[7152:31959] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9839 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9839 does not exist}>
+2026-10-27 18:59:27.643594+0000 Reylumi[7152:31959] [ProcessSuspension] 0x11f01da10 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9839, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testCustomOriginSupportsActualOfflineStaffDigestPBKDF2AndRSAEncryption]' passed (0.480 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testExistingMapProviderCanUseItsLocalBlobWorkerWithoutRemoteScripts]' started.
+Test Case '-[ReylumiTests.LocalAppWebViewTests testExistingMapProviderCanUseItsLocalBlobWorkerWithoutRemoteScripts]' passed (0.379 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace]' started.
+Test Case '-[ReylumiTests.LocalAppWebViewTests testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace]' passed (0.435 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testInstalledClassicClientWorksWithoutAnySuccessfulNetworkRead]' started.
+2026-10-27 18:59:28.939343+0000 Reylumi[7152:33214] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9844 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9844 does not exist}>
+2026-10-27 18:59:28.939789+0000 Reylumi[7152:33214] [ProcessSuspension] 0x11d2700c0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9844, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testInstalledClassicClientWorksWithoutAnySuccessfulNetworkRead]' passed (0.353 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel]' started.
+Test Case '-[ReylumiTests.LocalAppWebViewTests testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel]' passed (0.359 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testLogoutAcknowledgesNewMetadataAndClearsPrivateLeaseBeforeOfflineContext]' started.
+2026-10-27 18:59:29.647612+0000 Reylumi[7152:33214] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9846 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9846 does not exist}>
+2026-10-27 18:59:29.648486+0000 Reylumi[7152:33214] [ProcessSuspension] 0x11d270240 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9846, error: (null)
+2026-10-27 18:59:29.652320+0000 Reylumi[7152:24967] [Process] 0x11f002300 - GPUProcessProxy::gpuProcessExited: reason=IdleExit
+2026-10-27 18:59:29.653735+0000 Reylumi[7152:31680] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9826 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9826 does not exist}>
+2026-10-27 18:59:29.696546+0000 Reylumi[7152:31680] [ProcessSuspension] 0x11d270300 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=9826, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testLogoutAcknowledgesNewMetadataAndClearsPrivateLeaseBeforeOfflineContext]' passed (0.627 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testNativeBackForwardRestoresActualHistoryWithoutReplacingTheDraftDocument]' started.
+2026-10-27 18:59:30.279005+0000 Reylumi[7152:25212] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9849 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9849 does not exist}>
+2026-10-27 18:59:30.279286+0000 Reylumi[7152:25212] [ProcessSuspension] 0x11d270240 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9849, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testNativeBackForwardRestoresActualHistoryWithoutReplacingTheDraftDocument]' passed (0.472 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope]' started.
+2026-10-27 18:59:30.754564+0000 Reylumi[7152:31961] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9851 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9851 does not exist}>
+2026-10-27 18:59:30.754971+0000 Reylumi[7152:31961] [ProcessSuspension] 0x11d270480 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9851, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope]' passed (0.355 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testNotReadyManifestPreservesOriginalHTTPSController]' started.
+Test Case '-[ReylumiTests.LocalAppWebViewTests testNotReadyManifestPreservesOriginalHTTPSController]' passed (0.010 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testOriginalLocalPhotoProcessingCanLoadItsTemporaryBlobImage]' started.
+Test Case '-[ReylumiTests.LocalAppWebViewTests testOriginalLocalPhotoProcessingCanLoadItsTemporaryBlobImage]' passed (0.715 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testProgrammaticHostedCheckoutAndSignInKeepTheirOriginalNativeBoundary]' started.
+2026-10-27 18:59:31.831779+0000 Reylumi[7152:25212] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9869 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9869 does not exist}>
+2026-10-27 18:59:31.832034+0000 Reylumi[7152:25212] [ProcessSuspension] 0x11d270600 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9869, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testProgrammaticHostedCheckoutAndSignInKeepTheirOriginalNativeBoundary]' passed (0.499 seconds).
+Test Case '-[ReylumiTests.LocalAppWebViewTests testProgrammaticLocalNavigationRetainsSameDocumentAndUnsentInput]' started.
+2026-10-27 18:59:32.329957+0000 Reylumi[7152:31961] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 9910 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 9910 does not exist}>
+2026-10-27 18:59:32.330276+0000 Reylumi[7152:31961] [ProcessSuspension] 0x11d2706c0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=9910, error: (null)
+Test Case '-[ReylumiTests.LocalAppWebViewTests testProgrammaticLocalNavigationRetainsSameDocumentAndUnsentInput]' passed (0.391 seconds).
+Test Suite 'LocalAppWebViewTests' passed at 2026-10-27 18:59:32.696.
+	 Executed 16 tests, with 0 failures (0 unexpected) in 8.492 (8.498) seconds
+Test Suite 'LocalBundleTests' started at 2026-10-27 18:59:32.696.
+Test Case '-[ReylumiTests.LocalBundleTests testActualInstalledManifestAndEveryDeclaredResourceAreComplete]' started.
+Test Case '-[ReylumiTests.LocalBundleTests testActualInstalledManifestAndEveryDeclaredResourceAreComplete]' passed (0.265 seconds).
+Test Case '-[ReylumiTests.LocalBundleTests testCoreResourcesAreVerifiedOffMainThreadOnceAndOnlyWithinMemoryBounds]' started.
+Test Case '-[ReylumiTests.LocalBundleTests testCoreResourcesAreVerifiedOffMainThreadOnceAndOnlyWithinMemoryBounds]' passed (0.007 seconds).
+Test Case '-[ReylumiTests.LocalBundleTests testManifestCannotEnableAnArbitraryNetworkProxy]' started.
+Test Case '-[ReylumiTests.LocalBundleTests testManifestCannotEnableAnArbitraryNetworkProxy]' passed (0.004 seconds).
+Test Case '-[ReylumiTests.LocalBundleTests testManifestResourcesAndActualRouteAreVerifiedWithoutNetwork]' started.
+Test Case '-[ReylumiTests.LocalBundleTests testManifestResourcesAndActualRouteAreVerifiedWithoutNetwork]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.LocalBundleTests testStoppedSchemeTaskCannotReceiveLateAssetCallbacks]' started.
+Test Case '-[ReylumiTests.LocalBundleTests testStoppedSchemeTaskCannotReceiveLateAssetCallbacks]' passed (0.119 seconds).
+Test Case '-[ReylumiTests.LocalBundleTests testTamperedMissingAndOutsideBundleFilesFailClosed]' started.
+Test Case '-[ReylumiTests.LocalBundleTests testTamperedMissingAndOutsideBundleFilesFailClosed]' passed (0.003 seconds).
+Test Suite 'LocalBundleTests' passed at 2026-10-27 18:59:33.098.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.400 (0.401) seconds
+Test Suite 'LocalDiagnosticsTests' started at 2026-10-27 18:59:33.098.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testArbitraryRouteAndResourceInputsBecomeFixedCategoriesOnly]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testArbitraryRouteAndResourceInputsBecomeFixedCategoriesOnly]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testCommandTraceRequiresManifestRuleAndStrictRandomRequestID]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testCommandTraceRequiresManifestRuleAndStrictRandomRequestID]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testDisabledByDefaultAndBoundedWhenExplicitlyEnabled]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testDisabledByDefaultAndBoundedWhenExplicitlyEnabled]' passed (0.000 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testNativeCommandMetadataCannotBeInjectedThroughJavaScriptExport]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testNativeCommandMetadataCannotBeInjectedThroughJavaScriptExport]' passed (0.008 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testOnlyFixedServerTimingLabelsAndFiniteNumbersAreRetained]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testOnlyFixedServerTimingLabelsAndFiniteNumbersAreRetained]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testReadEchoMetadataAndNestedStagesDoNotCreateAuthority]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testReadEchoMetadataAndNestedStagesDoNotCreateAuthority]' passed (0.016 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testUserExportIsBoundedAndDoesNotAcceptMetadataFromPage]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testUserExportIsBoundedAndDoesNotAcceptMetadataFromPage]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testUserExportRevalidatesJavaScriptAndOmitsIdentifiersAndPayloads]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testUserExportRevalidatesJavaScriptAndOmitsIdentifiersAndPayloads]' passed (0.003 seconds).
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testUTCAnchorAndBothReportRingsRemainBoundedWithValidatedNumbers]' started.
+Test Case '-[ReylumiTests.LocalDiagnosticsTests testUTCAnchorAndBothReportRingsRemainBoundedWithValidatedNumbers]' passed (0.013 seconds).
+Test Suite 'LocalDiagnosticsTests' passed at 2026-10-27 18:59:33.145.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.045 (0.047) seconds
+Test Suite 'LocalHostedReturnTests' started at 2026-10-27 18:59:33.145.
+Test Case '-[ReylumiTests.LocalHostedReturnTests testAutomaticXCTestSceneCannotBootAProductionWebView]' started.
+Test Case '-[ReylumiTests.LocalHostedReturnTests testAutomaticXCTestSceneCannotBootAProductionWebView]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.LocalHostedReturnTests testColdLaunchIgnoresSavedRouteAndDoesNotOpenHostedModal]' started.
+2026-10-27 18:59:33.169634+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c65920 {Error Domain=RBSRequestErrorDomain Code=3 "No such process found" UserInfo={NSLocalizedFailureReason=No such process found}}}
+Test Case '-[ReylumiTests.LocalHostedReturnTests testColdLaunchIgnoresSavedRouteAndDoesNotOpenHostedModal]' passed (0.320 seconds).
+Test Case '-[ReylumiTests.LocalHostedReturnTests testHostedReturnAcceptsOnlyCompleteOrdinaryBareRoutes]' started.
+Test Case '-[ReylumiTests.LocalHostedReturnTests testHostedReturnAcceptsOnlyCompleteOrdinaryBareRoutes]' passed (0.003 seconds).
+Test Case '-[ReylumiTests.LocalHostedReturnTests testHostedSPAWaitsForNewRouteReadinessAndRejectsStaleNonce]' started.
+2026-10-27 18:59:33.494791+0000 Reylumi[7152:31961] [] nw_listener_socket_inbox_create_socket setsockopt SO_NECP_LISTENUUID failed [2: No such file or directory]
+Test Case '-[ReylumiTests.LocalHostedReturnTests testHostedSPAWaitsForNewRouteReadinessAndRejectsStaleNonce]' passed (0.664 seconds).
+Test Case '-[ReylumiTests.LocalHostedReturnTests testHostedViewStaysUsableUntilFreshContextAndItsInstalledFrameAreReady]' started.
+2026-10-27 18:59:34.138098+0000 Reylumi[7152:31959] [] nw_listener_socket_inbox_create_socket setsockopt SO_NECP_LISTENUUID failed [2: No such file or directory]
+2026-10-27 18:59:35.431960+0000 Reylumi[7152:25212] [Query] Error for queryMetaDataSync: 2
+2026-10-27 18:59:35.433954+0000 Reylumi[7152:25212] [Query] Error for queryMetaDataSync: 2
+2026-10-27 18:59:35.435971+0000 Reylumi[7152:25212] [Query] Error for queryMetaDataSync: 2
+2026-10-27 18:59:36.628608+0000 Reylumi[7152:33214] [CandidateGeneration] Result accumulator timeout: 0.250000, exceeded.
+Test Case '-[ReylumiTests.LocalHostedReturnTests testHostedViewStaysUsableUntilFreshContextAndItsInstalledFrameAreReady]' passed (2.603 seconds).
+Test Suite 'LocalHostedReturnTests' passed at 2026-10-27 18:59:36.739.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 3.592 (3.593) seconds
+Test Suite 'LocalReadStoreTests' started at 2026-10-27 18:59:36.739.
+Test Case '-[ReylumiTests.LocalReadStoreTests testBareCustomerDisplaySelectsDeviceLeaseWithoutBorrowingOwnerOrPublicTokenAuthority]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testBareCustomerDisplaySelectsDeviceLeaseWithoutBorrowingOwnerOrPublicTokenAuthority]' passed (0.062 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testClearDuringBatchedCommitCannotResurrectPrivateData]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testClearDuringBatchedCommitCannotResurrectPrivateData]' passed (0.075 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testConcurrentSnapshotsShareOneDurableCommitAndIdenticalLeaseDoesNotRewriteIt]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testConcurrentSnapshotsShareOneDurableCommitAndIdenticalLeaseDoesNotRewriteIt]' passed (0.065 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testEncryptedColdReadIsGrantScopeRevisionGenerationAndExpiryBound]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testEncryptedColdReadIsGrantScopeRevisionGenerationAndExpiryBound]' passed (0.090 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testNeutralHomeAdmitsAccountLeasesWithoutGrantingAnotherRoleOrDeviceAuthority]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testNeutralHomeAdmitsAccountLeasesWithoutGrantingAnotherRoleOrDeviceAuthority]' passed (0.003 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testNoCredentialOrCommandPayloadCanEnterReadCache]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testNoCredentialOrCommandPayloadCanEnterReadCache]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testPairedDisplayCapabilityCanOnlyPersistInExactEncryptedPortableWorkspace]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testPairedDisplayCapabilityCanOnlyPersistInExactEncryptedPortableWorkspace]' passed (0.066 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testPermissionRevisionOnlyReplacesRelatedScopeAndDifferentViewerClearsAll]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testPermissionRevisionOnlyReplacesRelatedScopeAndDifferentViewerClearsAll]' passed (0.121 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testPortableAuthorityIsExactDeviceScopeAndCannotImpersonateAnAccountLease]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testPortableAuthorityIsExactDeviceScopeAndCannotImpersonateAnAccountLease]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testResourceRemovalAtomicallyFencesBothWriteOrdersAndPreservesOtherKeysAndScopes]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testResourceRemovalAtomicallyFencesBothWriteOrdersAndPreservesOtherKeysAndScopes]' passed (0.146 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testSameViewerLeasesCoexistWithoutRenewingStaffExpiryAndRevocationIsScoped]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testSameViewerLeasesCoexistWithoutRenewingStaffExpiryAndRevocationIsScoped]' passed (0.125 seconds).
+Test Case '-[ReylumiTests.LocalReadStoreTests testScopeRevocationPermissionReplacementAndClearInvalidateTheirPendingPermits]' started.
+Test Case '-[ReylumiTests.LocalReadStoreTests testScopeRevocationPermissionReplacementAndClearInvalidateTheirPendingPermits]' passed (0.119 seconds).
+Test Suite 'LocalReadStoreTests' passed at 2026-10-27 18:59:37.618.
+	 Executed 12 tests, with 0 failures (0 unexpected) in 0.876 (0.879) seconds
+Test Suite 'NativeCookieAuthorityTests' started at 2026-10-27 18:59:37.618.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAdvertisingCookieRotationCannotRevokeConcurrentRead]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAdvertisingCookieRotationCannotRevokeConcurrentRead]' passed (0.138 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAllAuditedNonAuthorityMarkersStayStoredWithoutRevokingParallelRead]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAllAuditedNonAuthorityMarkersStayStoredWithoutRevokingParallelRead]' passed (0.955 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAuthorityProjectionUsesOriginAndDomainLabelBoundaries]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAuthorityProjectionUsesOriginAndDomainLabelBoundaries]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAuthWorkspaceAbuseAndUnknownPrefixedCookieChangesStillRevoke]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testAuthWorkspaceAbuseAndUnknownPrefixedCookieChangesStillRevoke]' passed (0.926 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testBackgroundReadStillDiscardsChangedAuthAndUnknownOriginCookies]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testBackgroundReadStillDiscardsChangedAuthAndUnknownOriginCookies]' passed (0.087 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testBackgroundReadUsesSameBenignCookieBoundary]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testBackgroundReadUsesSameBenignCookieBoundary]' passed (0.020 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testExactMarkerNamesCannotExcludeUnknownOrDifferentlyCasedAuthority]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testExactMarkerNamesCannotExcludeUnknownOrDifferentlyCasedAuthority]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testExistingValidAdvertisingCookieValueAndReversedReplyOrderControls]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testExistingValidAdvertisingCookieValueAndReversedReplyOrderControls]' passed (0.270 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testExplicitResourceRemovalFencesPendingReadAndItsOfflineFallback]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testExplicitResourceRemovalFencesPendingReadAndItsOfflineFallback]' passed (0.085 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testMissingAdvertisingCookieInsertionCannotRevokeConcurrentRead]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testMissingAdvertisingCookieInsertionCannotRevokeConcurrentRead]' passed (0.137 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testUnknownUnprefixedOriginCookieRemainsConservativelyAuthoritative]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testUnknownUnprefixedOriginCookieRemainsConservativelyAuthoritative]' passed (0.079 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testUnrelatedDomainCookieCannotInvalidateThisOrigin]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityTests testUnrelatedDomainCookieCannotInvalidateThisOrigin]' passed (0.135 seconds).
+Test Suite 'NativeCookieAuthorityTests' passed at 2026-10-27 18:59:40.454.
+	 Executed 12 tests, with 0 failures (0 unexpected) in 2.833 (2.836) seconds
+Test Suite 'NativeCookieAuthorityWKTests' started at 2026-10-27 18:59:40.454.
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testAuthorityCookieExpiryStillRejectsBeforeResponseCookieWrites]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testAuthorityCookieExpiryStillRejectsBeforeResponseCookieWrites]' passed (2.584 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testExternalWorkspaceEditStillRejectsWithoutReplayingTheCommand]' started.
+2026-10-27 18:59:43.066231+0000 Reylumi[7152:31962] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 10399 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 10399 does not exist}>
+2026-10-27 18:59:43.066516+0000 Reylumi[7152:31962] [ProcessSuspension] 0x11d270900 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=10399, error: (null)
+2026-10-27 18:59:43.147731+0000 Reylumi[7152:24967] [Process] 0x11f002300 - GPUProcessProxy::gpuProcessExited: reason=IdleExit
+2026-10-27 18:59:43.147963+0000 Reylumi[7152:24967] [Process] 0x11f0140b0 - [PID=0] WebProcessProxy::gpuProcessExited: reason=IdleExit
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testExternalWorkspaceEditStillRejectsWithoutReplayingTheCommand]' passed (0.412 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testHostOnlyPersonalSwitchCommitsTheAcknowledgedDestination]' started.
+2026-10-27 18:59:43.470075+0000 Reylumi[7152:31962] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 10414 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 10414 does not exist}>
+2026-10-27 18:59:43.470268+0000 Reylumi[7152:31962] [ProcessSuspension] 0x11d270540 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=10414, error: (null)
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testHostOnlyPersonalSwitchCommitsTheAcknowledgedDestination]' passed (0.401 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testNonAuthorityCookieExpiryDoesNotResetThePersonalSwitch]' started.
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testNonAuthorityCookieExpiryDoesNotResetThePersonalSwitch]' passed (2.621 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination]' started.
+2026-10-27 18:59:46.504022+0000 Reylumi[7152:33216] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 10423 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 10423 does not exist}>
+2026-10-27 18:59:46.505039+0000 Reylumi[7152:33216] [ProcessSuspension] 0x11d270a80 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=10423, error: (null)
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination]' passed (0.347 seconds).
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testReplacementCollapsesAliasesAndPreservesDifferentDomainsPathsAndNames]' started.
+2026-10-27 18:59:46.839331+0000 Reylumi[7152:25211] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 10440 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 10440 does not exist}>
+2026-10-27 18:59:46.839824+0000 Reylumi[7152:25211] [ProcessSuspension] 0x11d270f00 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=10440, error: (null)
+Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testReplacementCollapsesAliasesAndPreservesDifferentDomainsPathsAndNames]' passed (0.735 seconds).
+Test Suite 'NativeCookieAuthorityWKTests' passed at 2026-10-27 18:59:47.557.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 7.100 (7.102) seconds
+Test Suite 'NativeCookiePipelineTests' started at 2026-10-27 18:59:47.557.
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testCookieWritesRetainPostWriteVerificationAndStaleNoUpdateReadIsCancelled]' started.
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testCookieWritesRetainPostWriteVerificationAndStaleNoUpdateReadIsCancelled]' passed (0.093 seconds).
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testLegacyResponseCannotAcquireCorrelatedPostResponseTiming]' started.
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testLegacyResponseCannotAcquireCorrelatedPostResponseTiming]' passed (0.067 seconds).
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testNoCookieUpdatesUseTwoSnapshotsAndExposeNonHTTPDeliveryStages]' started.
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testNoCookieUpdatesUseTwoSnapshotsAndExposeNonHTTPDeliveryStages]' passed (0.091 seconds).
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testNoUpdateFastPathStillRejectsExternalWorkspaceChangeBeforeDelivering]' started.
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testNoUpdateFastPathStillRejectsExternalWorkspaceChangeBeforeDelivering]' passed (0.049 seconds).
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testRevalidatedResponseStillChecksAuthorityWithoutPersistingAnotherSnapshot]' started.
+Test Case '-[ReylumiTests.NativeCookiePipelineTests testRevalidatedResponseStillChecksAuthorityWithoutPersistingAnotherSnapshot]' passed (0.067 seconds).
+Test Suite 'NativeCookiePipelineTests' passed at 2026-10-27 18:59:47.925.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.367 (0.369) seconds
+Test Suite 'NavigationPolicyTests' started at 2026-10-27 18:59:47.926.
+Test Case '-[ReylumiTests.NavigationPolicyTests testAdministrationCannotBeNavigatedTo]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testAdministrationCannotBeNavigatedTo]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.NavigationPolicyTests testChallengeExceptionCannotExpandToOtherOriginsOrRoutes]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testChallengeExceptionCannotExpandToOtherOriginsOrRoutes]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.NavigationPolicyTests testMarketReturnIsNavigationOnly]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testMarketReturnIsNavigationOnly]' passed (0.003 seconds).
+Test Case '-[ReylumiTests.NavigationPolicyTests testOnlyRecognizedSecurityChallengeDocumentsAreAllowed]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testOnlyRecognizedSecurityChallengeDocumentsAreAllowed]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.NavigationPolicyTests testPaymentsOpenOnlyTrustedHostedOrigins]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testPaymentsOpenOnlyTrustedHostedOrigins]' passed (0.000 seconds).
+Test Case '-[ReylumiTests.NavigationPolicyTests testUntrustedOriginsAndSchemes]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testUntrustedOriginsAndSchemes]' passed (0.000 seconds).
+Test Case '-[ReylumiTests.NavigationPolicyTests testWorkspacesRemainAvailable]' started.
+Test Case '-[ReylumiTests.NavigationPolicyTests testWorkspacesRemainAvailable]' passed (0.000 seconds).
+Test Suite 'NavigationPolicyTests' passed at 2026-10-27 18:59:47.935.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+Test Suite 'OfflineRouteTests' started at 2026-10-27 18:59:47.940.
+Test Case '-[ReylumiTests.OfflineRouteTests testColdStartupQueuesHomeAndExplicitAuthReturnStillTakesPrecedence]' started.
+Test Case '-[ReylumiTests.OfflineRouteTests testColdStartupQueuesHomeAndExplicitAuthReturnStillTakesPrecedence]' passed (0.011 seconds).
+Test Case '-[ReylumiTests.OfflineRouteTests testHostAppCanUseItsOwnDeviceProtectedKeychain]' started.
+Test Case '-[ReylumiTests.OfflineRouteTests testHostAppCanUseItsOwnDeviceProtectedKeychain]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.OfflineRouteTests testLeaseIsCappedAndExpiryCannotBeExtendedByRestore]' started.
+Test Case '-[ReylumiTests.OfflineRouteTests testLeaseIsCappedAndExpiryCannotBeExtendedByRestore]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.OfflineRouteTests testOnlyExactPublicAndPreparedRoleRoutesCanBeRestored]' started.
+Test Case '-[ReylumiTests.OfflineRouteTests testOnlyExactPublicAndPreparedRoleRoutesCanBeRestored]' passed (0.004 seconds).
+Test Case '-[ReylumiTests.OfflineRouteTests testProtectedKeychainHintIsOriginBoundAndClearedOnExpiryOrReset]' started.
+Test Case '-[ReylumiTests.OfflineRouteTests testProtectedKeychainHintIsOriginBoundAndClearedOnExpiryOrReset]' passed (0.015 seconds).
+Test Suite 'OfflineRouteTests' passed at 2026-10-27 18:59:47.974.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.033 (0.035) seconds
+Test Suite 'OfflineWebViewTests' started at 2026-10-27 18:59:47.975.
+Test Case '-[ReylumiTests.OfflineWebViewTests testExplicitPOSOpenRestoresDurableDraftAfterNewAppStartsAtHome]' started.
+2026-10-27 18:59:47.976625+0000 Reylumi[7152:25211] [] nw_listener_socket_inbox_create_socket setsockopt SO_NECP_LISTENUUID failed [2: No such file or directory]
+2026-10-27 18:59:48.593948+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:48.609673+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:48.610148+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+Test Case '-[ReylumiTests.OfflineWebViewTests testExplicitPOSOpenRestoresDurableDraftAfterNewAppStartsAtHome]' passed (1.350 seconds).
+Test Suite 'OfflineWebViewTests' passed at 2026-10-27 18:59:49.325.
+	 Executed 1 test, with 0 failures (0 unexpected) in 1.350 (1.351) seconds
+Test Suite 'OnlineAuthorityRefreshTests' started at 2026-10-27 18:59:49.326.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testChangedOnlineIdentityStillInvalidatesPendingWorkspacePreflight]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testChangedOnlineIdentityStillInvalidatesPendingWorkspacePreflight]' passed (0.170 seconds).
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testGeneric503CannotSelectUnrelatedPersonalLeaseForReadConflictRevocation]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testGeneric503CannotSelectUnrelatedPersonalLeaseForReadConflictRevocation]' passed (0.051 seconds).
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testIdenticalExplicitOnlineStaffRefreshDoesNotCancelWorkspacePreflight]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testIdenticalExplicitOnlineStaffRefreshDoesNotCancelWorkspacePreflight]' passed (0.052 seconds).
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testIdenticalGenericLeaseOutageDoesNotBorrowPersonalLeaseOrCancelPreflight]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testIdenticalGenericLeaseOutageDoesNotBorrowPersonalLeaseOrCancelPreflight]' passed (0.050 seconds).
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testOuterCancellationAndResetStillCannotPostAfterPreflightReturns]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testOuterCancellationAndResetStillCannotPostAfterPreflightReturns]' passed (0.095 seconds).
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testUnconfirmedCurrentOnlineStaffWithNoStoredLeaseStillInvalidatesPendingCommand]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testUnconfirmedCurrentOnlineStaffWithNoStoredLeaseStillInvalidatesPendingCommand]' passed (0.016 seconds).
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testUnconfirmedOrInvalidStaffProofStillBlocksPendingWorkspaceCommand]' started.
+Test Case '-[ReylumiTests.OnlineAuthorityRefreshTests testUnconfirmedOrInvalidStaffProofStillBlocksPendingWorkspaceCommand]' passed (0.102 seconds).
+Test Suite 'OnlineAuthorityRefreshTests' passed at 2026-10-27 18:59:49.865.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.537 (0.540) seconds
+Test Suite 'OwnerTodayDiagnosticsTests' started at 2026-10-27 18:59:49.865.
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodayColdFromEncryptedCache]' started.
+2026-10-27 18:59:50.466114+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+REYLUMI_STARTUP_MEASUREMENT {"bridgeToEntryStartMs":167,"candidateBase":"2ef993b","firstVisibleAtMs":449,"nativeDocuments":1,"passed":true,"scenario":"cold_encrypted_cache","syntheticTransport":true}
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodayColdFromEncryptedCache]' passed (1.254 seconds).
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodayColdWithoutCacheAndWarmRevisit]' started.
+2026-10-27 18:59:51.150430+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:51.150826+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:51.718705+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+REYLUMI_STARTUP_MEASUREMENT {"bridgeToEntryStartMs":null,"candidateBase":"2ef993b","firstVisibleAtMs":391,"nativeDocuments":1,"passed":true,"scenario":"cold_empty_warm_revisit","syntheticTransport":true}
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodayColdWithoutCacheAndWarmRevisit]' passed (1.458 seconds).
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodaySameRouteHandoffAcceptsNativeEventAndRequestedReply]' started.
+2026-10-27 18:59:52.602499+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:52.602913+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.termi2026-10-27 18:59:52.620831+0000 Reylumi[7152:25212] [assertion] Error acquiring assertion: <Error Domain=RBSServiceErrorDomain Code=1 "((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))" UserInfo={NSLocalizedFailureReason=((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))}>
+nateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:52.623869+0000 Reylumi[7152:25212] [ProcessSuspension] 0x11d270b40 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=11004, error: (null)
+2026-10-27 18:59:52.625262+0000 Reylumi[7152:25212] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 11004 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 11004 does not exist}>
+2026-10-27 18:59:52.625343+0000 Reylumi[7152:25212] [ProcessSuspension] 0x11d270cc0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=11004, error: (null)
+2026-10-27 18:59:53.395388+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+REYLUMI_STARTUP_MEASUREMENT {"bridgeToEntryStartMs":null,"candidateBase":"2ef993b","firstVisibleAtMs":394,"nativeDocuments":1,"passed":true,"scenario":"same_route_owner_handoff","syntheticTransport":true}
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodaySameRouteHandoffAcceptsNativeEventAndRequestedReply]' passed (1.176 seconds).
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodaySixtySecondsVisibleThenTouchAndForeground]' started.
+2026-10-27 18:59:53.777224+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:53.777610+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:55.102085+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:55.868938+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:56.538229+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:56.894802+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:57.252994+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:57.656472+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:58.138299+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:58.503783+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:58.949528+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:59.310089+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:59.364853+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:59.365275+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:59.654269+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 18:59:59.666574+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:00.290044+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:00.767076+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:01.127544+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:01.845635+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:02.341866+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:02.991646+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:03.514294+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:04.176187+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:06.757304+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:06.770207+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:13.073329+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:13.163545+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:13.484028+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:13.884648+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:16.510533+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:16.852849+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:17.592141+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:18.624009+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:21.143904+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:22.618207+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:23.791589+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:29.381025+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+REYLUMI_STARTUP_MEASUREMENT {"bridgeToEntryStartMs":null,"candidateBase":"2ef993b","firstVisibleAtMs":356,"nativeDocuments":1,"passed":true,"scenario":"idle_visible_60s_touch_foreground","syntheticTransport":true}
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodaySixtySecondsVisibleThenTouchAndForeground]' passed (62.574 seconds).
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodayTransient503RecoversOnceWithoutCommands]' started.
+2026-10-27 19:00:56.372186+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:56.372714+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+REYLUMI_STARTUP_MEASUREMENT {"bridgeToEntryStartMs":134,"candidateBase":"2ef993b","firstVisibleAtMs":627,"nativeDocuments":1,"passed":true,"scenario":"cold_transient_503","syntheticTransport":true}
+Test Case '-[ReylumiTests.OwnerTodayDiagnosticsTests testInstalledOwnerTodayTransient503RecoversOnceWithoutCommands]' passed (1.191 seconds).
+Test Suite 'OwnerTodayDiagnosticsTests' passed at 2026-10-27 19:00:57.520.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 67.653 (67.655) seconds
+Test Suite 'ScopeConflictTransportTests' started at 2026-10-27 19:00:57.521.
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testConflictRecoveryPreservesHTTPDenialsUnavailableAndUnconfirmedEnvelope]' started.
+2026-10-27 19:00:57.541473+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:57.541876+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testConflictRecoveryPreservesHTTPDenialsUnavailableAndUnconfirmedEnvelope]' passed (0.567 seconds).
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testDepartingRead409AfterWorkspaceSwitchCannotWithdrawTheVerifiedDestination]' started.
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testDepartingRead409AfterWorkspaceSwitchCannotWithdrawTheVerifiedDestination]' passed (0.087 seconds).
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testOldScopeConflictCannotWithdrawADifferentAlreadyVerifiedScope]' started.
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testOldScopeConflictCannotWithdrawADifferentAlreadyVerifiedScope]' passed (0.102 seconds).
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testPageSupersessionCancelsOldDeliveryWithoutFabricatingWorkspaceDenial]' started.
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testPageSupersessionCancelsOldDeliveryWithoutFabricatingWorkspaceDenial]' passed (0.049 seconds).
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testPreConflictSameScopeResponseIsCancelledAndOnlyNewAuthorityGETCanReauthorizeIt]' started.
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testPreConflictSameScopeResponseIsCancelledAndOnlyNewAuthorityGETCanReauthorizeIt]' passed (0.138 seconds).
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testRead409BeforeContext200WithdrawsOldScopeAndPreservesCurrentAuthorityFlight]' started.
+Test Case '-[ReylumiTests.ScopeConflictTransportTests testRead409BeforeContext200WithdrawsOldScopeAndPreservesCurrentAuthorityFlight]' passed (0.137 seconds).
+Test Suite 'ScopeConflictTransportTests' passed at 2026-10-27 19:00:58.602.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 1.079 (1.082) seconds
+Test Suite 'SecurityChallengeWebViewTests' started at 2026-10-27 19:00:58.602.
+Test Case '-[ReylumiTests.SecurityChallengeWebViewTests testOrdinaryErrorStillCancelsAndCannotRevealThroughLateCompletion]' started.
+Test Case '-[ReylumiTests.SecurityChallengeWebViewTests testOrdinaryErrorStillCancelsAndCannotRevealThroughLateCompletion]' passed (0.021 seconds).
+Test Case '-[ReylumiTests.SecurityChallengeWebViewTests testProviderDocumentIsVisibleAtCommitWithoutAppReadinessOrDidFinish]' started.
+2026-10-27 19:00:58.724099+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+Test Case '-[ReylumiTests.SecurityChallengeWebViewTests testProviderDocumentIsVisibleAtCommitWithoutAppReadinessOrDidFinish]' passed (0.393 seconds).
+Test Suite 'SecurityChallengeWebViewTests' passed at 2026-10-27 19:00:59.018.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.415 (0.415) seconds
+Test Suite 'StaffOnlineAccessTransportTests' started at 2026-10-27 19:00:59.018.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testActualCacheBridgeAllowsOnlyRemovalWithFreshOnlineStaffProof]' started.
+2026-10-27 19:00:59.022380+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:59.022740+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:59.029881+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:59.030536+0000 Reylumi[7152:24967] [Process] 0x11f002300 - GPUProcessProxy::gpuProcessExited: reason=IdleExit
+2026-10-27 19:00:59.031857+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:59.036096+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testActualCacheBridgeAllowsOnlyRemovalWithFreshOnlineStaffProof]' passed (0.513 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testExplicitOnlineOnlyPurgesSameScopeStaffLeaseAndSnapshotInsteadOfTemporaryOutageReuse]' started.
+2026-10-27 19:00:59.550639+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+2026-10-27 19:00:59.551007+0000 Reylumi[7152:24967] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 "(null)" UserInfo={NSUnderlyingError=0x600000c955c0 {Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.terminateprocess, NSLocalizedFailureReason=Client not entitled, RBSPermanent=true}}}
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testExplicitOnlineOnlyPurgesSameScopeStaffLeaseAndSnapshotInsteadOfTemporaryOutageReuse]' passed (0.109 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testExplicitStaffOnlineProofReadsFreshWithoutOfflineOrBackgroundAuthority]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testExplicitStaffOnlineProofReadsFreshWithoutOfflineOrBackgroundAuthority]' passed (0.010 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testGeneric503UnconfirmedAndNonHTTPSCannotAcquireNewStaffCommandOrRemovalAuthority]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testGeneric503UnconfirmedAndNonHTTPSCannotAcquireNewStaffCommandOrRemovalAuthority]' passed (0.034 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testMalformedStaleWrongIdentityAndWrongRouteOnlineProofsRemainDenied]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testMalformedStaleWrongIdentityAndWrongRouteOnlineProofsRemainDenied]' passed (0.728 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testOnlineOnlyCommandsUseFreshBoundedStaffPreflightAndNeverReplayServerDenial]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testOnlineOnlyCommandsUseFreshBoundedStaffPreflightAndNeverReplayServerDenial]' passed (0.023 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testOnlineOnlyResourceDenialsAndEvictionNeverRequireOrCreateAReadLease]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testOnlineOnlyResourceDenialsAndEvictionNeverRequireOrCreateAReadLease]' passed (2.068 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testPinnedStaffActionIDsExistInActuallyInstalledManifest]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testPinnedStaffActionIDsExistInActuallyInstalledManifest]' passed (0.011 seconds).
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testPreResetHeldOnlineProofCannotRestoreStaffAuthorityOrRemoveNewScopeData]' started.
+Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testPreResetHeldOnlineProofCannotRestoreStaffAuthorityOrRemoveNewScopeData]' passed (0.009 seconds).
+Test Suite 'StaffOnlineAccessTransportTests' passed at 2026-10-27 19:01:02.526.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 3.505 (3.508) seconds
+Test Suite 'StartupStateTests' started at 2026-10-27 19:01:02.526.
+Test Case '-[ReylumiTests.StartupStateTests testChallengeStateDoesNotLeakIntoNextPageOrRecoverRejectedErrors]' started.
+Test Case '-[ReylumiTests.StartupStateTests testChallengeStateDoesNotLeakIntoNextPageOrRecoverRejectedErrors]' passed (0.000 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testHTTPErrorCannotBeMarkedReadyByLateBridgeOrDidFinish]' started.
+Test Case '-[ReylumiTests.StartupStateTests testHTTPErrorCannotBeMarkedReadyByLateBridgeOrDidFinish]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testLateReadinessAfterSoftFailureCanRecoverTheSameDocument]' started.
+Test Case '-[ReylumiTests.StartupStateTests testLateReadinessAfterSoftFailureCanRecoverTheSameDocument]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testOldReadinessCannotHideTheNextNavigation]' started.
+Test Case '-[ReylumiTests.StartupStateTests testOldReadinessCannotHideTheNextNavigation]' passed (0.000 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testProcessTerminationClearsReadinessAndBoundsAutomaticRecovery]' started.
+Test Case '-[ReylumiTests.StartupStateTests testProcessTerminationClearsReadinessAndBoundsAutomaticRecovery]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testProvisionalFailurePreservesTheWorkingDocumentButCommittedFailureDoesNot]' started.
+Test Case '-[ReylumiTests.StartupStateTests testProvisionalFailurePreservesTheWorkingDocumentButCommittedFailureDoesNot]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testReadyRequiresCommittedDocumentAndMatchingNonceAndGeneration]' started.
+Test Case '-[ReylumiTests.StartupStateTests testReadyRequiresCommittedDocumentAndMatchingNonceAndGeneration]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testRetryConstructsAFreshBoundedGetAndNeverReplaysMutationBodies]' started.
+Test Case '-[ReylumiTests.StartupStateTests testRetryConstructsAFreshBoundedGetAndNeverReplaysMutationBodies]' passed (0.001 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testRetryRejectsExternalAdminAndOneUseAuthenticationOrPaymentUrls]' started.
+Test Case '-[ReylumiTests.StartupStateTests testRetryRejectsExternalAdminAndOneUseAuthenticationOrPaymentUrls]' passed (0.002 seconds).
+Test Case '-[ReylumiTests.StartupStateTests testSecurityChallengeRevealsAtCommitWithoutBridgeOrLoadCompletion]' started.
+Test Case '-[ReylumiTests.StartupStateTests testSecurityChallengeRevealsAtCommitWithoutBridgeOrLoadCompletion]' passed (0.000 seconds).
+Test Suite 'StartupStateTests' passed at 2026-10-27 19:01:02.552.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.007 (0.026) seconds
+Test Suite 'WorkspaceSwitchTests' started at 2026-10-27 19:01:02.553.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testCancelledOrResetPreflightCannotReachCommandPost]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testCancelledOrResetPreflightCannotReachCommandPost]' passed (0.108 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testConcurrentWorkspaceWritesAreRejectedAndCookieVerificationStillFencesDelivery]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testConcurrentWorkspaceWritesAreRejectedAndCookieVerificationStillFencesDelivery]' passed (0.099 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testCookieCommittedButUnreadableAcknowledgmentRecoversByNeutralReadsWithOneCommand]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testCookieCommittedButUnreadableAcknowledgmentRecoversByNeutralReadsWithOneCommand]' passed (0.110 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testOrdinaryCommandStillRequiresItsCurrentStaffContextAndUnavailableRootCannotSwitch]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testOrdinaryCommandStillRequiresItsCurrentStaffContextAndUnavailableRootCannotSwitch]' passed (0.045 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testSwitchUsesFreshRootIdentityWhenOldStaffBindingIsUnavailableWithoutAdoptingPreflight]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testSwitchUsesFreshRootIdentityWhenOldStaffBindingIsUnavailableWithoutAdoptingPreflight]' passed (0.077 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testTargetDenialCannotSelectOwnerAndRecoveryNeverReplaysTheWrite]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testTargetDenialCannotSelectOwnerAndRecoveryNeverReplaysTheWrite]' passed (0.075 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testTwentyOwnerStaffRoundTripsKeepFreshScopesAndOneWritePerSelection]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testTwentyOwnerStaffRoundTripsKeepFreshScopesAndOneWritePerSelection]' passed (1.423 seconds).
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testWrongScopeOrChangedAccountCannotSendWorkspaceCommand]' started.
+Test Case '-[ReylumiTests.WorkspaceSwitchTests testWrongScopeOrChangedAccountCannotSendWorkspaceCommand]' passed (0.090 seconds).
+Test Suite 'WorkspaceSwitchTests' passed at 2026-10-27 19:01:04.582.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 2.027 (2.029) seconds
+Test Suite 'ReylumiTests.xctest' passed at 2026-10-27 19:01:04.582.
+	 Executed 210 tests, with 0 failures (0 unexpected) in 160.757 (161.062) seconds
+Test Suite 'All tests' passed at 2026-10-27 19:01:04.582.
+	 Executed 210 tests, with 0 failures (0 unexpected) in 160.757 (161.063) seconds
+2026-10-27 19:01:05.701 xcodebuild[4054:16487] [MT] IDETestOperationsObserverDebug: 227.824 elapsed -- Testing started completed.
+2026-10-27 19:01:05.702 xcodebuild[4054:16487] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-27 19:01:05.702 xcodebuild[4054:16487] [MT] IDETestOperationsObserverDebug: 227.824 sec, +227.824 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/runner/work/kingpos/kingpos/ios/build/check.bzR0C8/SimulatorTests.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

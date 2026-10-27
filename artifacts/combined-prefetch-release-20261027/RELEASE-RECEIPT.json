@@ -1,0 +1,255 @@
+{
+  "releaseId": "combined-prefetch-release-20261027",
+  "verifiedAt": "2026-10-27T19:08:38.735Z",
+  "codeCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "branch": "codex/combined-prefetch-release-20261027",
+  "producerEvents": [
+    "d6c3e8d2-8193-4be8-bad7-7d567abc884e",
+    "5d59df97-663e-4c19-8c36-74a89fa2c3fe"
+  ],
+  "scope": [
+    "Role-aware prioritized read preparation for Owner/Staff/Personal and bounded Explore ahead loading",
+    "Portable Customer Display responsive idle layout, compact per-device settings and trusted public entry QR",
+    "Native action authorization boundary, cookie pipeline/cache timing and native source provenance"
+  ],
+  "web": {
+    "status": "published",
+    "verified": true,
+    "deploymentId": "dpl_83qAybRN5CaEJ21nhdz2iUvR7zs3",
+    "baselineDeploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+    "sourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+    "overlaySha256": "39a44693889bd67b0a52b8e8fd71aa735e1e2a813fe306b2710cfbf941c774d1",
+    "evidence": [
+      "C:/Reylumi/output/combined-prefetch-release-20261027/live-verified.json",
+      "C:/Reylumi/output/combined-prefetch-release-20261027/live-http.json",
+      "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http.json",
+      "C:/Reylumi/output/combined-prefetch-release-20261027/final-freeze-review.json"
+    ],
+    "url": "https://reylumi.com",
+    "releaseEventId": "a83729b7-35cd-4e65-9b8b-56a3eb5e04b6",
+    "readyEventIds": [
+      "8ad17808-0d1d-44eb-a3f5-4414e70c2661",
+      "b67a78ca-1c14-491f-8f07-f763ebe69735",
+      "9397270f-302e-42d4-b8ce-dccac6464458"
+    ],
+    "sourceFiles": 3388,
+    "sourceDelta": {
+      "modified": 28,
+      "added": 24,
+      "removed": 0,
+      "privateEnvFiles": 0
+    },
+    "httpChecks": 14
+  },
+  "ios": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.0",
+    "build": "54",
+    "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+    "evidence": [
+      "C:/Reylumi/output/combined-prefetch-release-20261027/native-signed-verification.json",
+      "C:/Reylumi/output/combined-prefetch-release-20261027/native-testflight-availability.json",
+      "C:/Reylumi/output/combined-prefetch-release-20261027/native-signed-source-comparison.json"
+    ],
+    "releaseEventId": "238bc924-7ef5-4715-8545-9b6d9ab029e8",
+    "readyEventIds": [
+      "8f2286da-19c7-4a22-8258-4592a4b2d61b",
+      "54eecbcc-1c28-42d0-baee-6f70e4ed1c9a",
+      "2f75ec9a-9491-4366-a9d7-dd429b657c1b"
+    ],
+    "workflow": "https://github.com/Nypro6895/kingpos/actions/runs/40563109818",
+    "attempt": 2,
+    "sourceSha256": "c7f1bbb740e476cabe6e1bbb1c54946fdbbc9213bb07b80467d46f4514545377",
+    "bundleSha256": "3de49126ac2d328837f7d345200b984cb44b3ead2673f96d5e181f147c43fcd3",
+    "gitSourceFiles": 2589,
+    "gitSourceMismatches": 0,
+    "bundleResources": 346,
+    "localCiPackageDifferences": 0,
+    "simulatorTests": 210,
+    "simulatorFailures": 0,
+    "appleProcessing": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "existingGroupAssociationConfirmed": true,
+    "appStoreSubmitted": false
+  },
+  "windows": {
+    "version": "0.7.3",
+    "binaryChanged": false,
+    "installerSize": 111708400,
+    "metadataAndBoundedDownloadVerified": true
+  },
+  "validation": {
+    "prefetchAndExplore": {
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0
+    },
+    "portableDisplayAndSettings": {
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0
+    },
+    "nativeBoundaryBridgeVersion": {
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "overlap": "7 bridge tests also occur in the40-test suite; counts are not summed as unique tests"
+    },
+    "productionBuildAndTypeScript": "passed",
+    "candidateHttp": {
+      "passed": 14,
+      "failed": 0
+    },
+    "liveHttp": {
+      "passed": 14,
+      "failed": 0
+    },
+    "nativeSimulator": {
+      "passed": 210,
+      "failed": 0
+    },
+    "nativeUnsignedArchive": "passed",
+    "nativeSignedArchiveAndExport": "passed",
+    "nativeUpload": "accepted",
+    "appleExistingGroupAccess": "confirmed"
+  },
+  "data": {
+    "productionMigrations": [],
+    "pricingChanges": false
+  },
+  "limitations": [
+    "Physical iPhone latency and percentage speed-up have not been measured.",
+    "Availability proves Apple access for the existing group, not installation on a particular iPhone.",
+    "Native Windows DPI, touch and physical camera scanning remain device QA layers."
+  ],
+  "retry": {
+    "attempt1": "Local isolated WebKit fixture bootstrap timeout before production transport; retained diagnosis. Exactly one complete rerun on unchanged source; no assertion, budget or test skip changes."
+  },
+  "rollback": {
+    "deploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+    "condition": "Only if current alias is still this release; run production guard and preserve any later external release."
+  },
+  "evidence": [
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/deploy-source.json",
+      "sha256": "c30b689e55ff1cba673bf278a74c6af349d3a0c6b9f710241c8acff7916cd69d"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/frozen-patch.json",
+      "sha256": "60327fbabe17812a0e88baac2a49d3187972f7c0566664fe365818beb031580a"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/frozen-native-patch.json",
+      "sha256": "407dd87356806f353e95c49a4a6a69a6952ef9ed7a977e99b30a4cdb2ec2c6e2"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/candidate-verified.json",
+      "sha256": "58248fd75d2b8cb8f2f213f80c008f4f63a44bcbf459608823cf9e60a33e1d52"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/live-verified.json",
+      "sha256": "6099a8d033ee4a44e7c0c1c1aeba02370b8be5e5c237544deee6f7461111dfe2"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/candidate-http.json",
+      "sha256": "8b4ab1f4b7a18e138f8c8ccb8a114a7272fc3c3ddb0a5acbc6d53fdc010fbea4"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/live-http.json",
+      "sha256": "a22f012987dd5e31b2daa6c92472f3faa846a1370765c7fe9510c5f28030b603"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/final-freeze-review.json",
+      "sha256": "7329a7d7ccfbae4db9dbca534edca266f1671edc607753dd5405c9aa35d61440"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/release-journal-review.json",
+      "sha256": "4ca920c08dc6c5430db0dd79b5051f310bb87ce140b6427ccfe572e25fa42983"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-attempt1-diagnosis.json",
+      "sha256": "719cee070a4e0f0e039290c5a8e03a81ad63cf8b9cc0def1660f7465fcdc5789"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-build-receipt.json",
+      "sha256": "6f14f484b586c9d0bd7544a929b1b756d48bd2dea4b5d80344d9a5de9112c009"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-local-bundle-provenance.json",
+      "sha256": "f0b410bce0ee5aa2a81c968a4d6aea6abff596e3b0ae7d0c20abdc4332efad90"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-testflight-receipt.json",
+      "sha256": "e1a19bd11b0b0ed15b2f2ac5194669649beb3bd2b8608a63f6a872e38057ab60"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-testflight-processing.json",
+      "sha256": "67b4aa7e2d7e860e6199df8e0aea9741b41834aee63f4518ae567df888be1b65"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-verification.json",
+      "sha256": "2644355453b4d05c33c1b0e71841267294cbae88b075bf79bf454813f90639be"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-source-comparison.json",
+      "sha256": "0a488178e5aca51ce2d3a9fcddbe0b6fbf0a387f65d2bbc10983ee19d23266e3"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-workflow-verification.json",
+      "sha256": "d5688a3f21e6b268d881148e207bff6041dfde03e84a37b9c2b3a42394cfc06b"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-testflight-availability.json",
+      "sha256": "f21c50e7b8759b67fa8e4e5c7c1946d14b2f17b3e29a171d124b901aa6433f69"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-testflight-availability-verification.json",
+      "sha256": "682ed85ac61547e348b33c807fa313ee59cc1fde98854884d7d2aa8b676634ad"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-test.log",
+      "sha256": "52a759d76e7d17a8afc0b97bd5983a67541febe77c98486282e39f0131bee233"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-archive.log",
+      "sha256": "8d1e67668606191d49e24a0dbaeabe91755821e298f9f2b795cd76105ebed6cd"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-testflight-archive.log",
+      "sha256": "ce656875915538fab7d709739ac9aaf597fbdad318de2d7b00abe4efdcab7548"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-testflight-export.log",
+      "sha256": "96e81092f491976553f99fee9024c836654f6edfb88142bacf97a28fc80e978b"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-signed-testflight-upload.log",
+      "sha256": "b84de87b3ea9f7bdf27a77cfe97aa4f73542d78918214270731398b5bf2a41d9"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/prefetch-merged-40tests.log",
+      "sha256": "77473ec191a2f5af541563426d840eab2b4db7b01cbf53b927ed5d9718189fb3"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/portable-merged-36tests-final.log",
+      "sha256": "56c9fdd1b2a66ec2613687bc3ece01499658d027ecfd75b178ee1fec1e5151ff"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/native-boundary-26tests.log",
+      "sha256": "83159ece25c31ebf4fff9504252c7baa8a4067cad2ef5c1188f2ff4631d7410b"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/web-build.log",
+      "sha256": "050bae8ba3ddbc6be02594363a530fc42adc50b23a7a4f160f8ac37f1fcd49d4"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/web-promotion.log",
+      "sha256": "21445d9bcf69b89e053f591c3a2cb660151431b8f9fa130da0e8d7ef142589ec"
+    },
+    {
+      "file": "artifacts/combined-prefetch-release-20261027/promotion-base-guard.log",
+      "sha256": "353a65f58dde2d82826310d17c85f0a821ec0aaa53e6b3c0e7930cd9b3d5a938"
+    }
+  ]
+}

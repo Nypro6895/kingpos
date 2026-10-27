@@ -1,0 +1,48 @@
+✔ ordinary readiness never persists a protected route; complete ACK is nonce scoped (2.2494ms)
+✔ pre-commit ACK waits for native context and reset discards an older prepared route (1.1051ms)
+✔ expired, absent grant expiry, wrong route, callback and excluded ACKs are refused (1.8532ms)
+✔ SPA route changes cannot flush an ACK from the previous page (0.5498ms)
+✔ HTTP bridge is refused except explicit localhost simulator injection (1.8664ms)
+✔ background register and drain require committed context and forward only the fixed contract (0.6087ms)
+✔ offline support preserves first-frame readiness and duplicate nonce protection (0.6872ms)
+✔ owner priority matches real mounted cache keys and ordinary default views (2.1665ms)
+✔ staff plans bind every staff DTO to the trusted current staff; Post uses salon-profile (5.4808ms)
+✔ personal and guest plans never pull salon or another role resources (0.4124ms)
+✔ accepted authority is never inferred from display role, arbitrary online proof or old leases (0.6301ms)
+✔ current route comes first with component-exact query arguments and deduplicates the default (0.9742ms)
+✔ forms, recovery and sensitive callbacks cannot start speculative work (0.3218ms)
+✔ Today sections use only accepted server date and exact permission-filtered phase cache keys (0.4226ms)
+✔ planned descriptors are retained named reads with declared argument keys, never actions or control reads (5.78ms)
+✔ accepted owner, staff and personal plans prepare ordinary tabs without a click or hidden UI trees (1360.9445ms)
+✔ selecting the held preload reuses and promotes its one read (346.1381ms)
+✔ a different foreground tab preempts a held speculative transport and ignores its late result (391.6413ms)
+✔ aborting the preload consumer preserves a mounted foreground observer of the same read (335.2836ms)
+✔ same-scope display lease recovery preserves an unplanned foreground read (385.5572ms)
+✔ account scope switch cancels old work and rejects a transport that resolves late (399.2968ms)
+✔ an explicit 403 ends the speculative chain across repeated foreground events (608.9403ms)
+✔ held disk hydration cannot gate the foreground online read beyond its short head start (267.5579ms)
+✔ an unvisited oversize preload does not retain an invisible DTO after bounded cache rejection (207.0678ms)
+✔ clock-skewed disk arriving before online cannot replace the fresh network DTO (294.9117ms)
+✔ clock-skewed disk arriving after online cannot replace the fresh network DTO (283.3065ms)
+✔ a 304 validation clears a disk clock skew before a later changed network response (270.8626ms)
+✔ Explore prepares a bounded continuation without scrolling and cancels stale or constrained reads (3045.9551ms)
+✔ the real discovery feed cancels old cursors on account, query or area changes (768.5611ms)
+✔ native cookie and persistence waits remain separate from HTTP and cannot certify rendering (2.4044ms)
+✔ new native stages still require coverage and bounded durations (0.2584ms)
+✔ only one speculative read runs; foreground outranks remaining queue (3.2779ms)
+✔ foreground preempts background and late ignored-abort result cannot settle it (0.743ms)
+✔ same scoped key shares work and cancelling one consumer keeps another alive (1.1461ms)
+✔ scope change cancels old queued and running work without accepting its late reply (0.858ms)
+✔ pause yields speculative reads and resumes without rerunning completed reads (1.7035ms)
+✔ navigation promotes queued destination and demotes previous route (0.3985ms)
+✔ failed item releases queue and does not block subsequent reads (0.227ms)
+✔ active-route speculation remains below visible section priority (0.7088ms)
+✔ a speculative join cannot move a foreground read to another route (0.4026ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5602.0548

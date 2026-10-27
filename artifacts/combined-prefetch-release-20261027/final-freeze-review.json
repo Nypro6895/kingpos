@@ -1,0 +1,118 @@
+{
+  "auditedAt": "2026-10-27T18:55:12.360Z",
+  "readOnly": true,
+  "outcome": "passed",
+  "blockers": [],
+  "baselineDeploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+  "baselineSourceSha256": "c466564a25a8b504a55e6b02984c356123bc2c63c094396fcc6475b3ba494655",
+  "candidateDeploymentId": "dpl_83qAybRN5CaEJ21nhdz2iUvR7zs3",
+  "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "frozenPatch": {
+    "snapshot": "C:/Reylumi/output/combined-prefetch-release-20261027/frozen-patch",
+    "files": 64,
+    "sha256": "540da959cb363d378854eb586d91c452b3298325433a70f99b7de527c903c148",
+    "mismatches": []
+  },
+  "candidateSource": {
+    "snapshot": "C:/Reylumi/output/combined-prefetch-release-20261027/web-deploy-source",
+    "files": 3388,
+    "changed": 52,
+    "added": 24,
+    "modified": 28,
+    "removed": 0,
+    "unchanged": 3336,
+    "sourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+    "overlaySha256": "39a44693889bd67b0a52b8e8fd71aa735e1e2a813fe306b2710cfbf941c774d1",
+    "mismatches": [],
+    "sha1Mismatches": [],
+    "environmentFiles": [],
+    "unexpectedChanges": []
+  },
+  "checks": {
+    "all64PatchFilesMatch": true,
+    "patchAggregateMatches": true,
+    "all3388CandidateSnapshotFilesMatch": true,
+    "sourceAggregateMatches": true,
+    "overlayAggregateMatches": true,
+    "baselineAggregateMatches": true,
+    "noBaselineFilesRemoved": true,
+    "all52ChangesAuthorized": true,
+    "allUnscopedBaselineBytesPreserved": true,
+    "noEnvironmentFiles": true,
+    "patchExactlyMatches64FileScope": true,
+    "patchWebFilesMatchCandidateSource": true,
+    "baselineProductFeaturesPreserved": true,
+    "exploreModulesPreserved": true,
+    "noSQLDesktopOrDatasetChanges": true,
+    "receiptConsistent": true,
+    "remoteCandidateInventoryMatches": true,
+    "productFrozenCommitSemanticsMatch": true,
+    "generatedReceiptRefreshClassified": true
+  },
+  "preservation": {
+    "hardenedAccountSelection": true,
+    "hardenedCheckinPanels": true,
+    "relayPublicOrigin": true,
+    "ownerSettingsMenu": true,
+    "vietnameseLocalFirst": true,
+    "continueAsGuest": true
+  },
+  "scope": {
+    "producerEvents": [
+      "d6c3e8d2-8193-4be8-bad7-7d567abc884e",
+      "5d59df97-663e-4c19-8c36-74a89fa2c3fe"
+    ],
+    "portableFiles": 23,
+    "prefetchFiles": 28,
+    "integrationOnly": [
+      "lib/app-local-command-policy.json",
+      "tests/app-local-device-appearance-boundary.test.mjs",
+      "tests/staff-check-in-contract.test.mjs",
+      "docs/combined-prefetch-display-release-20261027.md"
+    ],
+    "carriedBookkeeping": [
+      "docs/release-notes/all-recent-chats-20261026.txt",
+      "releases/changes/2026-10-26T23-55-25-370Z-d954866d-29f6-49e6-906e-e8ea993a8104.json",
+      "releases/changes/2026-10-26T23-55-38-062Z-638fa92b-cf32-4fb2-9bc9-406d916a3d48.json",
+      "releases/history/2026-10-27T00-10-14-286Z-cc030d01-c923-4aa1-abf2-9ea3fa07a0cf.json"
+    ],
+    "windowsBinaryRequired": false
+  },
+  "remote": {
+    "checkedAt": "2026-10-27T18:53:32.555Z",
+    "deploymentId": "dpl_83qAybRN5CaEJ21nhdz2iUvR7zs3",
+    "state": "READY",
+    "sourceFiles": 3388,
+    "mismatches": [],
+    "sourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+    "liveAliasDeploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa"
+  },
+  "boundary": "This audit verifies frozen bytes, source scope, preserved baseline and candidate inventory via read-only Vercel GETs. It does not claim HTTP journey QA, native signing/upload success, physical-device scanning/DPI or final live promotion. No source files, existing receipts, aliases or production data were modified.",
+  "provenanceReceipt": {
+    "path": "ios/build/local-bundle-provenance.json",
+    "classification": "Generated source-bound receipt refreshed after code commit; product payload drift absent",
+    "committedOldReceiptSourceCommit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
+    "currentReceiptSourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+    "oldReceiptSha256": "8f8d26fa33f5d9762b04c1a9d0baabd8b0916eabaafcbd38a0ed86ff3a01f2e3",
+    "currentReceiptSha256": "e3d3b8426b46ca63fd33ffcd4968741370084e866b830b99975cfeb6d376133b",
+    "createdAt": "2026-10-27T18:43:18.369Z",
+    "currentReceiptCopiesEqual": true,
+    "sourceInventoryAggregateMatches": true,
+    "sourceInputCount": 2589,
+    "sourceInputsExcludeSelfAndBundle": true,
+    "bundleBuildId": "1aaddd4ad201277efb1599dcfb2e198c9b6e1355f2b391b909d506a0edfb90ab",
+    "bundleInventoryAggregateMatches": true,
+    "bundleManifestBuildIdMatches": true,
+    "bundleManifestHashMatches": true,
+    "bundleResourceCount": 346,
+    "bundleResourceMismatches": [],
+    "generatedMappingMismatches": [],
+    "nativeVerifyReceiptMatches": true,
+    "generatorArguments": [
+      "--activate"
+    ],
+    "publicConfigurationUnchanged": true,
+    "basis": "All other63 frozen patch files are Git7b7d079-equivalent after LF/CRLF normalization, including actual app.js,app.css,manifest and generated server mappings. Preparer intentionally excludes ios/build,LocalAppBundle and generated mappings from source inventory to avoid self-reference. Current receipt now binds7b7d079 and the unchanged committed payload; old committed receipt still described6c653e7. No source edit was performed by this audit.",
+    "limit": "Per-file2589 native source Git-blob proof and signed archive status are handled independently by native CI/agent; this audit does not substitute for them."
+  }
+}

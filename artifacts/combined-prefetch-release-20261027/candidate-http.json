@@ -1,0 +1,300 @@
+{
+  "at": "2026-10-27T18:53:06.887Z",
+  "deployment": "dpl_83qAybRN5CaEJ21nhdz2iUvR7zs3",
+  "url": "https://kingpos-lcp15or2z-kingpos.vercel.app",
+  "sourceCommit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+  "sourceSha256": "0a9ae940665459b54078c25a45fdafb4caec121711255029933ae6b6e48d92ca",
+  "method": "GET/HEAD only through existing npx --offline vercel curl --deployment protection bypass; no cookies reused between calls, JS execution, browser, POST, ad-view execution, auth/data mutation, installer execution or full binary download.",
+  "passed": true,
+  "summary": {
+    "checks": 14,
+    "passed": 14,
+    "failed": []
+  },
+  "checks": [
+    {
+      "name": "explore",
+      "route": "/explore",
+      "kind": "public",
+      "status": 200,
+      "expected": "200 HTML with the expected public page content.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 221847,
+      "bodySha256": "7be2f55b255278205d3578abe4f2606df9dbfd75e8b088bc655b4be3a7a95312",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/explore.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/explore.headers.txt"
+    },
+    {
+      "name": "login",
+      "route": "/login",
+      "kind": "public",
+      "status": 200,
+      "expected": "200 HTML with the expected public page content.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 103037,
+      "bodySha256": "a3762a078e7bbb64e3ded5659ab4ef54a378c7cce767a71998e92a38f0a8bea3",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/login.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/login.headers.txt"
+    },
+    {
+      "name": "signup",
+      "route": "/signup",
+      "kind": "public",
+      "status": 200,
+      "expected": "200 HTML with the expected public page content.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 96112,
+      "bodySha256": "bd45e8bd30f5217f4a9e630773d9f0514657ee9b16ddcb743faf1ef8926021b2",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/signup.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/signup.headers.txt"
+    },
+    {
+      "name": "privacy",
+      "route": "/privacy",
+      "kind": "public",
+      "status": 200,
+      "expected": "200 HTML with the expected public page content.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 215203,
+      "bodySha256": "134b4dac726ef8703c391067c0627f086b2334797b76c25be3e23cdf45ad61ef",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/privacy.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/privacy.headers.txt"
+    },
+    {
+      "name": "help-en",
+      "route": "/help",
+      "kind": "help-en",
+      "status": 200,
+      "expected": "200 English shared Help, default English heading and task-guide copy.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 64112,
+      "bodySha256": "db8be035ae1880c59804bd1697ae2974dd13c95db2f31998d06c4507aeec1808",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-en.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-en.headers.txt"
+    },
+    {
+      "name": "help-vi",
+      "route": "/help?lang=vi",
+      "kind": "help-vi",
+      "status": 200,
+      "expected": "200 Vietnamese shared Help selected by ?lang=vi.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 65188,
+      "bodySha256": "a152bf226a80909a650f12f9a57ed5e884a04cb1b1e04f2b7ed53abf3264ed51",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-vi.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-vi.headers.txt"
+    },
+    {
+      "name": "help-windows-en",
+      "route": "/help/windows-portable",
+      "kind": "windows-help-en",
+      "status": 200,
+      "expected": "200 HTML with the expected public page content.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 140820,
+      "bodySha256": "c93ff9e8944d65020c29ddbce416e313a03a35de98ec5111cda1feea74d8aeca",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-windows-en.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-windows-en.headers.txt"
+    },
+    {
+      "name": "help-windows-vi",
+      "route": "/help/windows-portable?lang=vi",
+      "kind": "windows-help-vi",
+      "status": 200,
+      "expected": "200 HTML with the expected public page content.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 146714,
+      "bodySha256": "29198823d3b57c3effd4feeaa594e389411732cae5d18ff5383276c41c316d83",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-windows-vi.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/help-windows-vi.headers.txt"
+    },
+    {
+      "name": "pos-settings",
+      "route": "/pos/settings",
+      "kind": "protected",
+      "status": 200,
+      "expected": "Anonymous access redirects to login; streamed Next.js 200 with explicit NEXT_REDIRECT307/meta refresh is acceptable.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 79907,
+      "bodySha256": "216827aa4f4dbe17aacbbcca0eca61a522a0f779823f4c940c9dcf49d0c3e2f0",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/pos-settings.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/pos-settings.headers.txt",
+      "loginRedirect": "/login?next=%2Fpos%2Fsettings",
+      "nextRedirectDigest": true,
+      "streamedResponse": true
+    },
+    {
+      "name": "payroll",
+      "route": "/payroll",
+      "kind": "protected",
+      "status": 200,
+      "expected": "Anonymous access redirects to login; streamed Next.js 200 with explicit NEXT_REDIRECT307/meta refresh is acceptable.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 80801,
+      "bodySha256": "3bdf9efcb33aa9f119017d6dfeee37d8e20c3124cfe7ba9d2448e3fccce93d8e",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/payroll.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/payroll.headers.txt",
+      "loginRedirect": "/login?next=%2Fpayroll",
+      "nextRedirectDigest": true,
+      "streamedResponse": true
+    },
+    {
+      "name": "staff-scan",
+      "route": "/staff/scan",
+      "kind": "protected",
+      "status": 200,
+      "expected": "Anonymous access redirects to login; streamed Next.js 200 with explicit NEXT_REDIRECT307/meta refresh is acceptable.",
+      "passed": true,
+      "contentType": "text/html; charset=utf-8",
+      "contentDisposition": "inline",
+      "bodyBytes": 81221,
+      "bodySha256": "40072458694e817cdf5478ec62a75e4c72a70accb33144efff02723fe646e9c9",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/staff-scan.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/staff-scan.headers.txt",
+      "loginRedirect": "/login",
+      "nextRedirectDigest": true,
+      "streamedResponse": true
+    },
+    {
+      "name": "windows-update",
+      "route": "/api/pos/windows-update/latest.yml",
+      "kind": "metadata",
+      "status": 200,
+      "expected": "200; production Windows0.7.3 metadata points to /download/windows,111708400 bytes, valid SHA512; no direct storage URL.",
+      "passed": true,
+      "contentType": "application/yaml",
+      "contentLength": "301",
+      "contentDisposition": "inline",
+      "bodyBytes": 301,
+      "bodySha256": "4d696c53882777ad90f57b5ca383afc2d9cd9d2619e5f96818fd1c714145d8fc",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/windows-update.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/windows-update.headers.txt",
+      "metadata": {
+        "version": "0.7.3",
+        "path": "/download/windows",
+        "sha512": "DE23NrQxyictJWTj8kknuQT3GiApNJmqNugGszlkk7sKgeuzttQDH3hGSOLPMtracUwFvWsIaASCChhwcX2h5w==",
+        "files": [
+          {
+            "url": "/download/windows",
+            "sha512": "DE23NrQxyictJWTj8kknuQT3GiApNJmqNugGszlkk7sKgeuzttQDH3hGSOLPMtracUwFvWsIaASCChhwcX2h5w==",
+            "size": 111708400
+          }
+        ]
+      }
+    },
+    {
+      "name": "windows-head",
+      "route": "/download/windows",
+      "kind": "installer-head",
+      "status": 200,
+      "expected": "HEAD200; octet-stream attachment KingPOS-Portable-Setup-0.7.3.exe; total111708400; no external Location.",
+      "passed": true,
+      "contentType": "application/octet-stream",
+      "contentLength": "111708400",
+      "contentDisposition": "attachment; filename=\"KingPOS-Portable-Setup-0.7.3.exe\"",
+      "bodyBytes": 541,
+      "bodySha256": "9c3252d75925f369acb9d1190526c16c0efc7bc087f002fc3ac920d03474e9b6",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/windows-head.body",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/windows-head.headers.txt",
+      "method": "HEAD",
+      "installerBytesDownloaded": 0
+    },
+    {
+      "name": "windows-range",
+      "route": "/download/windows",
+      "kind": "installer-range",
+      "status": 206,
+      "expected": "GET Range0-1023 yields206, exactly1024 bytes, Content-Range0-1023/111708400, MZ executable header; no storage redirect.",
+      "passed": true,
+      "contentType": "application/octet-stream",
+      "contentLength": "1024",
+      "contentRange": "bytes 0-1023/111708400",
+      "contentDisposition": "attachment; filename=\"KingPOS-Portable-Setup-0.7.3.exe\"",
+      "bodyBytes": 1024,
+      "bodySha256": "a02ac76d536e7502d02f83778ea8581392cb17f1cfd14a027812e403cd52d970",
+      "bodyFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/windows-range.bin",
+      "headersFile": "C:/Reylumi/output/combined-prefetch-release-20261027/candidate-http/windows-range.headers.txt",
+      "method": "GET",
+      "range": "bytes=0-1023",
+      "installerBytesDownloaded": 1024,
+      "magic": "MZ"
+    }
+  ],
+  "sourcePreservation": [
+    {
+      "file": "app/staff/scan/staff-scan-client.tsx",
+      "candidateSourceSha256": "44a15ef77c0fa6b3b5553970a74ec18f61b1adc93ad79b62a530e545768bd7b3",
+      "baselineSha256": "44a15ef77c0fa6b3b5553970a74ec18f61b1adc93ad79b62a530e545768bd7b3",
+      "unchangedFromLive": true
+    },
+    {
+      "file": "lib/vietnamese-staff-scan.json",
+      "candidateSourceSha256": "72d682d55d3033e1ce8fc37e6de2a5af1d5872165f2047e90904fadfbabb6d5b",
+      "baselineSha256": "72d682d55d3033e1ce8fc37e6de2a5af1d5872165f2047e90904fadfbabb6d5b",
+      "unchangedFromLive": true
+    },
+    {
+      "file": "app/help/help-content.tsx",
+      "candidateSourceSha256": "fdfb8a27f6ba7a474d0f36b7307f6d5c53b5eb8a8502848b396a8ed280b5d52b",
+      "baselineSha256": "fdfb8a27f6ba7a474d0f36b7307f6d5c53b5eb8a8502848b396a8ed280b5d52b",
+      "unchangedFromLive": true
+    },
+    {
+      "file": "app/help/help-copy.json",
+      "candidateSourceSha256": "0f7335459b1c4f99160dfd3cada1f0a4221a12d898aef099cfd4a864ce17707c",
+      "baselineSha256": "0f7335459b1c4f99160dfd3cada1f0a4221a12d898aef099cfd4a864ce17707c",
+      "unchangedFromLive": true
+    },
+    {
+      "file": "app/(legal)/help/page.tsx",
+      "candidateSourceSha256": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+      "baselineSha256": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+      "unchangedFromLive": true
+    },
+    {
+      "file": "lib/browser-public-origin.ts",
+      "candidateSourceSha256": "ea2b4dab06855814212e0fa76132c50f41d92dfb01a3a11f217c86ddb9e6713b",
+      "baselineSha256": "ea2b4dab06855814212e0fa76132c50f41d92dfb01a3a11f217c86ddb9e6713b",
+      "unchangedFromLive": true
+    }
+  ],
+  "staffScanOwnerDisabledCopy": {
+    "english": "Your salon owner has not enabled Scan yet.",
+    "vietnamese": "Chủ tiệm chưa kích hoạt chức năng Quét.",
+    "evidence": [
+      "app/staff/scan/staff-scan-client.tsx:112",
+      "lib/vietnamese-staff-scan.json:27"
+    ],
+    "verification": "Preserved exact baseline source hashes in the candidate manifest; not claimed observed in authenticated HTML. Root independently verified all3388 candidate source hashes."
+  },
+  "windowsVerificationLimit": {
+    "fullBinaryDownloaded": false,
+    "executed": false,
+    "rangeBytes": 1024,
+    "previousFullDownloadReceipt": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-download.json",
+    "previousFullBinarySha256": "eb5de4c5548288d5b0fda5be743f7f3135585c4b2f2d04245753d834b7c0597f",
+    "note": "Current metadata version/size and bounded executable prefix verified. This is not a fresh full-file checksum."
+  },
+  "headers": "Set-Cookie values redacted in saved response headers; no authentication credentials stored.",
+  "next": "Await coordinator promotion instruction before any live alias QA."
+}
