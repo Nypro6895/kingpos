@@ -152,10 +152,12 @@ function mapItem(row: HydratedRow, candidate: SocialFeedCandidate, signals: Expl
   };
 }
 
-async function hydrate(client: FeedClient, input: FeedInput, cursor: Cursor, candidates: SocialFeedCandidate[], timings?: FeedTimings) {
+type InitialFeedBatch={version:1;page:Record<string,unknown>;rows:unknown[];metadata:{salonIds:string[]}};
+async function hydrate(client: FeedClient, input: FeedInput, cursor: Cursor, candidates: SocialFeedCandidate[], timings?: FeedTimings,initial?:InitialFeedBatch) {
   if (!candidates.length) return [];
   const runner = async (name: string, args: Record<string, unknown>) => {
     if (input.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+    if(initial && name === "get_public_explore_card_metadata_v1" && Array.isArray(args.target_salon_ids) && JSON.stringify([...args.target_salon_ids].sort())===JSON.stringify([...initial.metadata.salonIds].sort()))return {data:initial.metadata as unknown,error:null};
     const startedAt = Date.now();
     const query = client.rpc(name, args);
     try {
@@ -173,13 +175,13 @@ async function hydrate(client: FeedClient, input: FeedInput, cursor: Cursor, can
   };
   // Public display metadata can overlap selected-item hydration. Only the
   // canonical hydrated rows may become feed items; removed/blocked rows stay out.
-  const prefetchedIds = [...new Set(candidates.flatMap(item=>item.salonId ? [item.salonId] : []))];
+  const prefetchedIds = [...new Set([...candidates.flatMap(item=>item.salonId ? [item.salonId] : []),...(initial?.rows??[]).flatMap(row=>{const id=string(record(record(row).document).salon_id);return id?[id]:[]})])];
   const metadata = (ids:string[]) => Promise.all([
     measure(timings,"decisionSignalsMs",()=>getExploreDecisionSignalsBySalonId(runner,ids)),
     measure(timings,"operatingStatusMs",()=>getPublicSalonOperatingStatusesBySalonId(ids,runner)),
   ]);
   const [payload,[signals,statuses]] = await Promise.all([
-    measure(timings,"selectedHydrationMs",()=>rpc(client,"hydrate_explore_social_feed_items",{p_actor_key:input.visitorKey,p_cursor:cursor,p_keys:candidates.map(item=>item.contentKey)},input.signal)),
+    initial ? Promise.resolve(initial.rows) : measure(timings,"selectedHydrationMs",()=>rpc(client,"hydrate_explore_social_feed_items",{p_actor_key:input.visitorKey,p_cursor:cursor,p_keys:candidates.map(item=>item.contentKey)},input.signal)),
     metadata(prefetchedIds),
   ]);
   const rows = Array.isArray(payload) ? payload.map(record) : [];
@@ -207,24 +209,37 @@ export async function getExploreSocialFeedPage(input: FeedInput): Promise<Explor
   try {
   const client = clientFor(input), filters = filtersFor(input);
   let cursor = decodeExploreSocialFeedCursor(input.cursor);
+  let initial:InitialFeedBatch|undefined;
+  const limit = Number.isFinite(input.limit) ? Math.min(12, Math.max(1, Math.floor(input.limit!))) : 12;
   if (!cursor) {
     const pool = await measure(timings, "selectMs", () => rpc(client, "get_explore_social_candidate_pool", { p_actor_key: input.visitorKey, p_filters: filters }, input.signal)) as SocialFeedPool;
     timings.candidateCount = Object.values(pool.lanes).reduce((count, lane) => count + lane.length, 0);
     const queueStartedAt = Date.now();
     const queue = buildExploreSocialFeedQueue(pool, filters.intent, 384, filters.query);
     timings.queueMs += Date.now() - queueStartedAt;
+    try {
+      const result=record(await measure(timings,"queueMs",()=>rpc(client,"start_explore_social_feed_page_v1",{p_actor_key:input.visitorKey,p_filters:filters,p_as_of:pool.asOf,p_region:pool.region,p_queue:queue,p_limit:limit},input.signal)));
+      if(result.version!==1 || !result.page || !Array.isArray(result.rows) || !Array.isArray(record(result.metadata).salonIds))throw Error("Invalid initial feed snapshot");
+      initial=result as unknown as InitialFeedBatch;
+      const c=record(initial.page.cursor);
+      if(c.version!==1 || typeof c.session!=="string" || !UUID.test(c.session) || !Number.isInteger(c.after))throw Error("Invalid initial feed cursor");
+      cursor={version:1,session:c.session,after:Number(c.after)};
+    }catch(error){
+      if(!["PGRST202","42883"].includes(String((error as {code?:unknown})?.code)))throw error;
+    }
+    if(!initial){
     const session = record(await measure(timings, "queueMs", () => rpc(client, "create_explore_social_feed_session", { p_actor_key: input.visitorKey, p_filters: filters, p_as_of: pool.asOf, p_region: pool.region, p_queue: queue }, input.signal)));
     const sessionId = string(session.id);
     if (!sessionId || !UUID.test(sessionId)) throw new Error("Discovery session could not be created.");
     cursor = { version: 1, session: sessionId, after: 0 };
+    }
   }
-  const frozenCursor = cursor;
-  const limit = Number.isFinite(input.limit) ? Math.min(12, Math.max(1, Math.floor(input.limit!))) : 12;
-  const page = record(await measure(timings, "pageMs", () => rpc(client, "get_explore_social_feed_page", { p_actor_key: input.visitorKey, p_filters: filters, p_cursor: frozenCursor, p_limit: limit }, input.signal)));
+  const frozenCursor = cursor!;
+  const page = initial?.page ?? record(await measure(timings, "pageMs", () => rpc(client, "get_explore_social_feed_page", { p_actor_key: input.visitorKey, p_filters: filters, p_cursor: frozenCursor, p_limit: limit }, input.signal)));
   const persistent = record(page.cursor) as unknown as Cursor;
   const sessionCursor = encode(persistent);
   const candidates = (Array.isArray(page.keys) ? page.keys : []) as SocialFeedCandidate[];
-  const items = await measure(timings, "hydrateMs", () => hydrate(client, input, persistent, candidates.slice(0, 20), timings));
+  const items = await measure(timings, "hydrateMs", () => hydrate(client, input, persistent, candidates.slice(0, 20), timings,initial));
   timings.returnedItems = items.length;
   const scopes = new Set(items.map(item => item.discoveryScope));
   return { error: null, items, hasMore: page.hasMore === true, nextCursor: page.hasMore === true ? sessionCursor : null, sessionCursor,

@@ -2586,8 +2586,8 @@ async function calculateScheduledPayrollForAuth(
   };
 }
 
-async function calculateLivePayrollForAuth(auth:PayrollAuthContext,period:PayrollPeriod,seed:{staffRows?:Staff[];staffSettings?:StaffPayrollSetting[]}={}):Promise<PayrollLiveSnapshot> {
-  const setting=await loadSalonPayrollSetting(auth);
+async function calculateLivePayrollForAuth(auth:PayrollAuthContext,period:PayrollPeriod,seed:{staffRows?:Staff[];staffSettings?:StaffPayrollSetting[];salonSetting?:SalonPayrollSetting}={}):Promise<PayrollLiveSnapshot> {
+  const setting=seed.salonSetting??await loadSalonPayrollSetting(auth);
   const first=staffPeriodAt(setting,period.startDate);
   if(first.startDate===period.startDate&&first.endDate===period.endDate)return calculateScheduledPayrollForAuth(auth,{...period,cycleType:first.cycleType},seed);
   // Arbitrary month/download ranges are projections of the SAME scheduled
@@ -4242,17 +4242,18 @@ export async function getPayrollPageData(input: {
 
 type StaffPeriodInput = { payPeriodStart?: string | null };
 
-async function loadStaffPortalPeriod(auth: PayrollAuthContext, input: StaffPeriodInput, publishedRuns?: PayrollRun[]) {
-  const [salonPayrollSetting, dateResult] = await Promise.all([
+async function loadStaffPortalPeriod(auth: PayrollAuthContext, input: StaffPeriodInput, publishedRuns?: PayrollRun[]|Promise<PayrollRun[]>) {
+  const [salonPayrollSetting, dateResult, runs] = await Promise.all([
     loadSalonPayrollSetting(auth),
     auth.supabase.rpc("get_salon_business_date", { p_salon_id: auth.salon.id }),
+    publishedRuns ?? null,
   ]);
   if (dateResult.error || typeof dateResult.data !== "string" || !isDateInputValue(dateResult.data)) {
     throw new Error("Salon business date is unavailable.");
   }
   const today = dateResult.data;
   const scheduled = staffPeriodHistory(salonPayrollSetting, today);
-  const payChoices = publishedRuns ? staffPayPeriodChoices(salonPayrollSetting, today, publishedRuns) : null;
+  const payChoices = runs ? staffPayPeriodChoices(salonPayrollSetting, today, runs) : null;
   const periods = payChoices?.periods ?? scheduled;
   const period = periods.find(item => staffPeriodKey(item) === input.payPeriodStart)
     ?? periods.find(item => item.startDate === input.payPeriodStart)
@@ -4267,23 +4268,24 @@ export async function getCurrentStaffPayrollPortalData(input: StaffPeriodInput):
   const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
   const emptyStatus: PayrollStatusView = { kind: "live", label: "In progress", statementVersion: null };
   if (!auth || !staff) return { context, staff, history: [], settings: [], dailyRows: [], latestStatement: null, line: null, paystub: null, period: null, periodOptions: [], salonPayrollSetting: null, status: emptyStatus };
-  const { data: runData, error: runsError } = await auth.supabase.rpc("get_my_staff_payroll_runs", { p_salon_id: auth.salon.id });
-  if (runsError) throw new Error(runsError.message);
-  const publishedRuns = (runData ?? []) as PayrollRun[];
-  const { salonPayrollSetting, today, period, periodOptions } = await loadStaffPortalPeriod(auth, input, publishedRuns);
-  const allSettings=await loadStaffPayrollSettings(auth);
-  const live=await calculateLivePayrollForAuth(auth,period,{staffRows:[staff],staffSettings:allSettings});
-  const line=live.lines.find(item=>item.staff_id===staff.id)??null;
+  const runs=Promise.resolve(auth.supabase.rpc("get_my_staff_payroll_runs",{p_salon_id:auth.salon.id})).then(({data,error})=>{if(error)throw new Error(error.message);return(data??[]) as PayrollRun[];});
+  const [periodData,allSettings,publishedRuns]=await Promise.all([loadStaffPortalPeriod(auth,input,runs),loadStaffPayrollSettings(auth),runs]);
+  const {salonPayrollSetting,today,period,periodOptions}=periodData;
   const documentRun=publishedRuns.find(run=>run.period_start===period.startDate&&run.period_end===period.endDate);
-  const paystub=documentRun?(await loadPayrollPaystubs(auth,documentRun,[staff.id]))[0]??null:null;
-  const history=await loadPayrollLiveHistory(auth.supabase,auth.salon.id,period.startDate,period.endDate,staff.id);
+  const [live,paystub,history,recordedFacts]=await Promise.all([
+    calculateLivePayrollForAuth(auth,period,{staffRows:[staff],staffSettings:allSettings,salonSetting:salonPayrollSetting}),
+    documentRun?loadPayrollPaystubs(auth,documentRun,[staff.id]).then(rows=>rows[0]??null):Promise.resolve(null),
+    loadPayrollLiveHistory(auth.supabase,auth.salon.id,period.startDate,period.endDate,staff.id),
+    loadPayrollRecordedFacts(auth.supabase,auth.salon.id,period.startDate,period.endDate),
+  ]);
+  const line=live.lines.find(item=>item.staff_id===staff.id)??null;
   const settings = allSettings.filter(setting => setting.staff_id === staff.id && setting.effective_from <= (today < period.endDate ? today : period.endDate) && (!setting.effective_to || setting.effective_to >= period.startDate));
   const dailyRows = (line?.dailyTotals ?? []).map<StaffPayrollPortalDailyRow>(day => ({
     businessDate: day.business_date, commissionGross: dailyStaffPay(day), id: day.id,
     shopGross: numberValue(day.gross_sales), tipAmount: numberValue(day.tip_amount),
   }));
   const status: PayrollStatusView={kind:"live",label:history.length?"Updated":"Live",statementVersion:null};
-  const paymentEvidence={markedPaidStatements:publishedRuns.filter(run=>run.period_start===period.startDate&&run.period_end===period.endDate&&run.status==="paid").map(run=>({runId:run.id,version:run.version,paidAt:run.paid_at})),recordedFacts:await loadPayrollRecordedFacts(auth.supabase,auth.salon.id,period.startDate,period.endDate)};
+  const paymentEvidence={markedPaidStatements:publishedRuns.filter(run=>run.period_start===period.startDate&&run.period_end===period.endDate&&run.status==="paid").map(run=>({runId:run.id,version:run.version,paidAt:run.paid_at})),recordedFacts};
   return {context,staff,history,settings,dailyRows,latestStatement:null,line,paystub,period,periodOptions,salonPayrollSetting,status,paymentEvidence};
 }
 
@@ -4364,7 +4366,6 @@ export async function getPayrollTaxCompanyData(input: {
     summary: taxCompany.summary,
   };
 }
-
 
 
 

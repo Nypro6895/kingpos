@@ -36,6 +36,23 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
       const args = {staffId:identity.staff.id,...Object.fromEntries(["tab","payPeriodStart"].filter(key=>url.searchParams.has(key)).map(key=>[key,url.searchParams.get(key)!]))};
       add("staff.my-work",args,await readAppLocalRoleResource("staff.my-work",args,{scope}));
     }
+  } else if(url.pathname === "/staff/appointments") {
+    const allowed=["range","status","bookingId","date","quickId","view"];
+    if([...url.searchParams.keys()].some(key=>!allowed.includes(key)))return [];
+    const identity=await getStaffPortalIdentity();
+    if(identity.staff && identity.context.user?.id===value.context.viewerId) {
+      const args={staffId:identity.staff.id,...Object.fromEntries(allowed.filter(key=>url.searchParams.has(key)).map(key=>[key,url.searchParams.get(key)!]))};
+      add("staff.schedule",args,await readAppLocalRoleResource("staff.schedule",args,{scope}));
+    }
+  } else if(url.pathname === "/staff/workday" && !url.search && readInitial) {
+    // Attendance retains its own original identity and fresh final checks.
+    const identity=await readInitial("page.staff-identity",{view:"workday"},scope);
+    const details=identity?.data as {resourceScope?:string;staffId?:string}|undefined;
+    if(identity?.status===200 && identity.scope===scope && details?.resourceScope===scope && details.staffId) {
+      add("page.staff-identity",{view:"workday"},identity);
+      const args={staffId:details.staffId};
+      add("staff.workday",args,await readAppLocalRoleResource("staff.workday",args,{scope}));
+    }
   } else if (url.pathname === "/explore" && !url.search) {
     const args = {query:""};
     const results = await Promise.all(["page.explore","page.explore-feed"].map(async name => ({name,result:await readAppLocalExploreResource(name,args,{scope})})));

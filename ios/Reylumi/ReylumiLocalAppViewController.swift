@@ -46,6 +46,9 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         self.transport = transport ?? ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest)
         super.init(nibName: nil, bundle: nil)
         self.transport.diagnostics.record(.controllerCreate)
+        if let first=URL(string:self.startPath,relativeTo:URL(string:"reylumi-app://bundle")), bundle.owns(first), bundle.routeAccess(first.path) == "scoped" {
+            self.transport.beginInitialContext(path:first.path,initialPath:first.query.map{first.path+"?"+$0})
+        }
     }
     required init?(coder: NSCoder) { fatalError("Use init(bundle:)") }
     override func viewDidLoad() {
@@ -114,9 +117,6 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             Task { @MainActor in await self?.transport.reset() }
         }
         transport.diagnostics.record(.webViewCreateEnd, durationMs: (ProcessInfo.processInfo.systemUptime - creationStarted) * 1000)
-        if let first=URL(string:startPath,relativeTo:URL(string:"reylumi-app://bundle")), bundle.owns(first), bundle.routeAccess(first.path) == "scoped" {
-            transport.beginInitialContext(path:first.path,initialPath:first.query.map{first.path+"?"+$0})
-        }
         loadBundle()
     }
     private func loadBundle(path: String? = nil) {
