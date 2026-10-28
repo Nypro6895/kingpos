@@ -14,6 +14,7 @@ import { loadSettingsHub, type SettingsHubIndex } from "./settings-hub-actions";
 import "./settings-hub.css";
 import Link from "next/link";
 import {BlockedUsersPanel} from "./blocked-users-panel";
+import { SettingContent } from "./setting-content";
 
 const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owner?:boolean}[]=[
  {kind:"salon-profile",label:"Salon information & opening hours",permission:"salon_settings.view"},
@@ -29,11 +30,6 @@ const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owne
 ];
 type SettingItem = {id:string; label:string; content:ReactNode};
 type SettingGroup = {id:string; label:string; description?:string; items:SettingItem[]; owners?:ReactNode};
-function SettingContent({active,children}:{active:boolean;children:ReactNode}) {
- const [visited,setVisited]=useState(active);
- if(active&&!visited)setVisited(true);
- return visited||active?<div hidden={!active}>{children}</div>:null;
-}
 export function SettingsHubClient({user,createdAtLabel,index:initial,initialSection="",initialQuery=""}: {user:KingUser;createdAtLabel:string;index:SettingsHubIndex;initialSection?:string;initialQuery?:string}) {
   const __vt = useWorkspaceTranslation();
 
