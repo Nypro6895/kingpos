@@ -1,0 +1,48 @@
+{
+  "files": [
+    "lib/staff-account.ts",
+    "tests/staff-account-roundtrip.test.mjs"
+  ],
+  "channels": [
+    "web"
+  ],
+  "source": {
+    "commit": "4ac2a19",
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\staff267-selected-frozen"
+  },
+  "kind": "change",
+  "summary": "Bounded ordered OR read resolves ordinary Staff account/nullable legacy links in one round trip. Original account priority, duplicate rejection and ambiguous cross-link sequential fallback preserved. UUID-only raw OR syntax; RLS and final fresh authority probes unchanged. No cache, migration or weakened guard.",
+  "changeId": "staff-account-one-roundtrip267",
+  "status": "ready",
+  "validation": [
+    {
+      "name": "1024 dataset combinations preserve original resolution; actual SDK URL verifies nulls-last order and limit2; denial and fresh re-read cases",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\staff267-after.log"
+    },
+    {
+      "name": "19 combined resolver, request-identity, revocation and date tests",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\staff267-after.log"
+    },
+    {
+      "name": "Fresh TypeScript noEmit",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\staff267-types.log"
+    }
+  ],
+  "releasePrerequisites": [
+    "Apply only selected frozen files to exact latest live baseline",
+    "Fresh production build/source verification and live/device first-load measurement",
+    "Ambiguous cross-links may use three total reads; no blanket one-query performance claim"
+  ],
+  "id": "81d8dba9-44eb-4aaa-9dcd-3adc2a4f5379",
+  "recordedAt": "2026-10-28T23:11:32.337Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/staff-account.ts": "d2baf8293f7a1eb03c7ec72de1cbac32fa11fec7749ef3a903fc9277c22427a9",
+    "tests/staff-account-roundtrip.test.mjs": "396e0b1c90562e107b75a9726bf9d684d913617d0949b320a21a2b2de4fb7a28"
+  }
+}
