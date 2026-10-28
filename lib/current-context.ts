@@ -15,6 +15,7 @@ import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
   createUserScopedSupabaseServerClient,
+  getAccessTokenFromRequest,
 } from "@/lib/supabase/server";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
@@ -1525,10 +1526,26 @@ export function getCurrentBusinessContext(options: CurrentBusinessContextOptions
 async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
   if (scoped && !options.accessToken && !options.cookieStore) return scoped;
-  const auth = await getCurrentBusinessContextAuth(
+  const authRead = getCurrentBusinessContextAuth(
     options.accessToken,
   );
-  const snapshot = auth.supabase && auth.user ? await loadWorkspaceReadGraph(auth.supabase, auth.user.id) : null;
+  // Only ordinary scoped reads may stage this self-only, SECURITY INVOKER RPC.
+  // Writes, explicit selector inputs and final revocation probes keep the
+  // original sequential gate. Staged rows are never authority on their own.
+  const staged = getReusableReadValidationToken() && !options.accessToken && !options.cookieStore
+    ? (async()=>{
+        const token=await getAccessTokenFromRequest();
+        const client=token?createUserScopedSupabaseServerClient(token):null;
+        if(!client)return undefined;
+        return loadWorkspaceReadGraph(client,authRead.then(auth=>auth.supabase?auth.user?.id??null:null,()=>null));
+      })().then(value=>({value}),error=>({error})) : null;
+  const auth=await authRead;
+  let snapshot:Awaited<ReturnType<typeof loadWorkspaceReadGraph>>=null;
+  if(auth.supabase && auth.user) {
+    const prepared=staged?await staged:null;
+    if(prepared && "error" in prepared)throw prepared.error;
+    snapshot=prepared?.value!==undefined?prepared.value:await loadWorkspaceReadGraph(auth.supabase,auth.user.id);
+  }
   const context = await runWithWorkspaceReadGraph(snapshot ?? undefined, () => buildCurrentBusinessContext(auth, options));
   const token = getReusableReadValidationToken();
   if(token && snapshot && context.user?.id === snapshot.userId) verifiedWorkspaceSnapshots.set(context,{token,auth,snapshot});

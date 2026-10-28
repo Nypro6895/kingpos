@@ -27,9 +27,13 @@ export function runWithWorkspaceReadGraph<T>(value: WorkspaceReadGraph | undefin
 
 /** Fresh SQL snapshot per context load. Never shared across requests or writes.
  * Only a missing migration falls back; denied/unavailable reads fail closed. */
-export async function loadWorkspaceReadGraph(client: SupabaseClient, userId: string): Promise<WorkspaceReadGraph | null> {
+export async function loadWorkspaceReadGraph(client: SupabaseClient, verifiedUserId: string | Promise<string | null>): Promise<WorkspaceReadGraph | null> {
   if (process.env.KINGPOS_WORKSPACE_DAL_RPC === "0") return null;
   const {data,error} = await client.rpc("read_my_workspace_graph_v1");
+  // Transport may overlap authentication, but no rows or graph errors escape
+  // before the original complete account/session validation has succeeded.
+  const userId=await verifiedUserId;
+  if(!userId)return null;
   if (error) {
     if (["PGRST202","42883"].includes(error.code)) return null;
     throw new Error("Workspace verification is temporarily unavailable.");
