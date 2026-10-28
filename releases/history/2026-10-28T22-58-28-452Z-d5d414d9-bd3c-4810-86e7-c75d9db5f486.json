@@ -1,0 +1,22 @@
+{
+  "changes": [
+    "7f73958d-9d79-4b33-aeeb-967fed1ff20f",
+    "8ec55807-166e-4c72-94fb-25981fb3114d"
+  ],
+  "targets": {
+    "web": {
+      "sourceSha256": "af0940ae89440d57e0776b8c47bd9f6eee289e6c949644bbefa005c410a6fcae",
+      "verified": true,
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\release260-web-archive-verified.json; C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\release260-live-smoke.json",
+      "baselineDeploymentId": "dpl_Y4HMk5SsD1aybsozeqaNd9wtcsPj",
+      "deploymentId": "dpl_EhtnZKQCPxN96Ey79s2RqsuA4MyG",
+      "overlaySha256": "b38ed819568609bdd8d551597f1d9a79db5df55d5c26bb46e3f1987ac82f6ef6",
+      "status": "published"
+    }
+  },
+  "kind": "release",
+  "summary": "Publish two verified UI corrections: booking modal portal follows retained panel lifetime, native Help return remains available after decorative chrome expires. Exact deployed archive 3433 files verified; production build, four regressions and public route/origin smoke pass. Native update and physical regression acceptance remain pending.",
+  "id": "d5d414d9-bd3c-4810-86e7-c75d9db5f486",
+  "recordedAt": "2026-10-28T22:58:28.452Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028"
+}
