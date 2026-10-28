@@ -529,6 +529,10 @@ final class ReylumiLocalAppTransport {
                 throw self.failure(response.statusCode, "Please reconnect and check your access.")
             }
             var object = try self.decode(data, response: response)
+            // Initial DTOs are transient. Do not persist them inside a display lease,
+            // especially a neutral root lease from another authority family.
+            let bootstrap = object.removeValue(forKey: "bootstrap")
+            let homeAdmission = object.removeValue(forKey: "homeAdmission") as? [String: Any]
             guard object["schemaVersion"] as? Int == 1, let context = object["context"] as? [String: Any], let scope = context["scope"] as? String else { throw self.failure(502, "App access could not be checked.") }
             // This flight can outlive a read's discovery that its exact scope
             // was obsolete. Its pre-conflict snapshot cannot reauthorize that
@@ -632,6 +636,11 @@ final class ReylumiLocalAppTransport {
             // Never store diagnostic IDs in a lease or use them for authority.
             // onlineContext/store.accept above retain the original envelope.
             object["__reylumiReadTrace"] = trace.bridgeMetadata(response: response)
+            if let bootstrap { object["bootstrap"] = bootstrap }
+            if !denied, path == "/", let home = object["home"] as? String, home != "/", home.hasPrefix("/"), !home.hasPrefix("//"),
+               let homeAdmission, (homeAdmission["context"] as? [String: Any])?["viewerId"] as? String == viewer {
+                self.preparedWorkspaceContext = (home, try JSONSerialization.data(withJSONObject:homeAdmission), response, self.scopeEpoch, self.cookieAuthorityRevision, Date().addingTimeInterval(5))
+            }
             self.onEvent?("reylumi:app-local-context", object)
             // Delivery is not the React entry's admission decision. The
             // separate JS context.accept trace records that later boundary.

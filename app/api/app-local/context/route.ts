@@ -68,7 +68,13 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
     }
     const result: AppLocalContext = { schemaVersion: 1, workspaceHandoffVersion: 2, context, home:selected.user?selected.defaultRouteForCurrentContext:"/explore", grant, grantStatus: response.status, ...(staffOnlineAccess ? { offlineState: "online-only", staffOnlineAccess } : lease?.offlineState === "unconfirmed" ? { offlineState: "unconfirmed" } : {}), display: { name: selected.user?.display_name ?? "", language: selected.user?.language ?? "en", role: selected.activeRole?.code ?? selected.salonRole ?? selected.accountRole ?? "guest" }, access: { ownerWorkspace: Boolean(selected.user && selected.currentSalon && isSalonManageContext(selected)), staffWorkspace: Boolean(selected.user && selected.currentSalon && selected.salonMode === "staff") }, onlineValidatedAt: Date.now() };
     if(request.headers.get("X-Reylumi-Initial-Data") === "1") {
-      try { result.bootstrap = await readAppLocalBootstrap(result,path); } catch { /* Admission stands; page readers retain their own retry and denial gates. */ }
+      try {
+        if(path === "/" && result.home && result.home !== "/" && selected.user && ![401,403,409].includes(result.grantStatus ?? 0) && result.offlineState !== "unconfirmed") {
+          const targetURL = new URL(url);targetURL.searchParams.set("path",result.home);
+          const target = await GET(new Request(targetURL,{headers:request.headers}));
+          if(target.ok) result.homeAdmission = await target.json();
+        } else result.bootstrap = await readAppLocalBootstrap(result,path);
+      } catch { /* Admission stands; page readers retain their own retry and denial gates. */ }
     }
     return json(result, {headers:responseHeaders});
   } catch(error) { const status=error&&typeof error==="object"&&"status"in error&&[400,401,403,409].includes(Number(error.status))?Number(error.status):503;return json({ error: "Connect to verify your account" }, { status, headers: responseHeaders }); }

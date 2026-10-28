@@ -24,6 +24,7 @@ private actor WorkspaceSwitchHTTP: ReylumiLocalHTTPClient {
     static let staffScope = "v3:" + String(repeating: "b", count: 64)
     static let staffRootScope = "v3:" + String(repeating: "c", count: 64)
     private var staffUnavailable = false, loseAcknowledgment = false, holdRoot = false, holdCommand = false, denyTarget = false
+    private var batchProtocol = false
     private var rootStatus = 200
     private var viewer = "00000000-0000-4000-8000-000000000001"
     private var held: (Data, HTTPURLResponse, CheckedContinuation<(Data, HTTPURLResponse), Error>)?
@@ -34,6 +35,7 @@ private actor WorkspaceSwitchHTTP: ReylumiLocalHTTPClient {
         self.rootStatus = rootStatus
         if changedViewer { viewer = "00000000-0000-4000-8000-000000000009" }
     }
+    func enableBatchProtocol() { batchProtocol = true }
     func isHeld() -> Bool { held != nil }
     func release() { guard let (data, response, continuation) = held else { return }; held = nil; continuation.resume(returning: (data, response)) }
     static func context(generation: String, role: String, root: Bool = false, viewer: String = "00000000-0000-4000-8000-000000000001") -> [String: Any] {
@@ -57,7 +59,11 @@ private actor WorkspaceSwitchHTTP: ReylumiLocalHTTPClient {
             if path == "/staff/my-work", staffUnavailable { throw URLError(.timedOut) }
             let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
             if path == "/", rootStatus != 200 { status = rootStatus; data = try JSONSerialization.data(withJSONObject: ["error": "Synthetic root session unavailable"]) }
-            else { data = try JSONSerialization.data(withJSONObject: Self.context(generation: generation, role: path == "/staff/my-work" ? "staff" : role, root: path == "/", viewer: viewer)) }
+            else {
+                var value = Self.context(generation:generation,role:path == "/staff/my-work" ? "staff" : role,root:path == "/",viewer:viewer)
+                if batchProtocol { value["workspaceHandoffVersion"] = 2 }
+                data = try JSONSerialization.data(withJSONObject:value)
+            }
             shouldHold = path == "/" && holdRoot
         } else {
             guard url.path == "/api/app-local/command", request.httpMethod == "POST" else { throw URLError(.unsupportedURL) }
@@ -65,14 +71,22 @@ private actor WorkspaceSwitchHTTP: ReylumiLocalHTTPClient {
             guard body["name"] as? String == "shell.switch-workspace", let args = body["args"] as? [String: Any], let target = args["workspaceId"] as? String, ["owner", "staff"].contains(target) else { throw URLError(.unsupportedURL) }
             let scope = body["scope"] as? String ?? ""
             commands += 1; postedScopes.append(scope)
-            XCTAssertEqual(scope, role == "owner" ? Self.ownerScope : Self.staffRootScope, "The command is bound to the freshly validated root workspace")
+            XCTAssertEqual(scope, role == "owner" ? Self.ownerScope : batchProtocol ? Self.staffScope : Self.staffRootScope, "The command is bound to the freshly validated root workspace")
             if denyTarget { status = 403; data = try JSONSerialization.data(withJSONObject: ["ok": false]) }
             else {
                 headers["Set-Cookie"] = "kingpos-selected-workspace=\(target); Path=/; Secure; SameSite=Lax"
                 // Native commits verified response cookies before decoding.
                 // An invalid/lost application acknowledgment must not replay.
                 if loseAcknowledgment { data = Data("Synthetic unreadable acknowledgment".utf8) }
-                else { data = try JSONSerialization.data(withJSONObject: ["ok": true, "data": ["path": target == "owner" ? "/staff/today" : "/staff/my-work"]]) }
+                else {
+                    var selected:[String:Any] = ["path":target == "owner" ? "/staff/today" : "/staff/my-work"]
+                    if batchProtocol, let generation = body["generation"] as? String {
+                        XCTAssertEqual(body["protocol"] as? Int,2)
+                        var admission = Self.context(generation:generation,role:target,viewer:viewer)
+                        admission["workspaceHandoffVersion"] = 2;selected["admission"] = admission
+                    }
+                    data = try JSONSerialization.data(withJSONObject:["ok":true,"data":selected])
+                }
             }
             shouldHold = holdCommand
         }
@@ -104,6 +118,21 @@ final class WorkspaceSwitchTests: XCTestCase {
     private func waitHeld(_ http: WorkspaceSwitchHTTP) async throws {
         for _ in 0..<200 { if await http.isHeld() { return }; try await Task.sleep(nanoseconds: 10_000_000) }
         XCTFail("Synthetic workspace preflight did not reach its held boundary"); throw URLError(.timedOut)
+    }
+
+    func testNegotiatedSelectionReusesOnlyItsAcknowledgedTargetAdmission() async throws {
+        let f = try await fixture(); defer { try? FileManager.default.removeItem(at:f.directory) }
+        await f.http.enableBatchProtocol()
+        _ = try await f.transport.freshContext(path:"/staff/my-work")
+        let result = try await f.transport.command(name:"shell.switch-workspace",args:["workspaceId":"owner"],requestID:UUID().uuidString,path:"/staff/my-work",requestedScope:WorkspaceSwitchHTTP.staffScope)
+        XCTAssertEqual(result["ok"] as? Bool,true)
+        let before = await f.http.contextPaths; XCTAssertEqual(before,["/staff/my-work"])
+        let admitted = try await f.transport.freshContext(path:"/staff/today")
+        XCTAssertEqual((admitted["context"] as? [String:Any])?["scope"] as? String,WorkspaceSwitchHTTP.ownerScope)
+        let after = await f.http.contextPaths; XCTAssertEqual(after,before,"No second destination HTTPS trip")
+        _ = try await f.transport.freshContext(path:"/staff/today")
+        let repeated = await f.http.contextPaths; XCTAssertEqual(repeated.count,before.count+1,"Prepared admission is consumed once")
+        await f.transport.reset()
     }
 
     func testSwitchUsesFreshRootIdentityWhenOldStaffBindingIsUnavailableWithoutAdoptingPreflight() async throws {

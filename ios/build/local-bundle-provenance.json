@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-10-26T05:48:10.002Z",
+  "createdAt": "2026-10-27T18:43:18.369Z",
   "source": {
-    "commit": "6c653e77c32b098c5fb692d4a9d1873245bfd396",
-    "sha256": "c6874be1ba9d404b9a7f8dc1f4976f673f37bd4cc48af072ca5ea149e2696ea5",
+    "commit": "7b7d0795ca375f798ce0b800ce7aa95b8a5b374f",
+    "sha256": "b7f6cb194953aa07ff8aaca7a2cd6f919f8ed8f67a4355f53277b1d4a017a08e",
     "files": [
       {
         "path": ".gitattributes",
@@ -29,11 +29,6 @@
         "path": ".github/workflows/reylumi-testflight-status.yml",
         "bytes": 2445,
         "sha256": "ab78d3032b209ee2cbc54449242ef9bd819f0d165343c0eb3e51156ef0b8c271"
-      },
-      {
-        "path": ".gitignore",
-        "bytes": 137,
-        "sha256": "d1527d55fa2c6f6fca3de89ba12b2f2dd780b9aefcb7127b5517dfa2f091a9f0"
       },
       {
         "path": ".vercelignore",
@@ -1202,8 +1197,8 @@
       },
       {
         "path": "app/(app)/pos/portable/layout.tsx",
-        "bytes": 6529,
-        "sha256": "29afdc24be86548a5fd4971b659b07e1b29d1fa6e4a9b5750c971be4cc496eb7"
+        "bytes": 6492,
+        "sha256": "3817f0fb13f0641ad165bea74eb26d10d765a1b680e32d82b1f3d750fdf08d48"
       },
       {
         "path": "app/(app)/pos/portable/loading.tsx",
@@ -1212,13 +1207,13 @@
       },
       {
         "path": "app/(app)/pos/portable/page.tsx",
-        "bytes": 3940,
-        "sha256": "262289e986830f9ee7b3d8ded4725c5fd67efe4b457dcd436c3f04e344af0a93"
+        "bytes": 3997,
+        "sha256": "7ac574eae5c9ee24d35229d1c71d726c8b8c9ba5a0c524dceb5c7647252c4030"
       },
       {
         "path": "app/(app)/pos/portable/report/page.tsx",
-        "bytes": 3649,
-        "sha256": "db1e678b67d6a2f0a2c1ba3e9b08f2744f4ae7f12c0d42a57971f6be88b7fe7c"
+        "bytes": 2140,
+        "sha256": "8dc77b78a1458c8223b5118f4e494bbead9fe4e83ddb672977b04639dd9c0074"
       },
       {
         "path": "app/(app)/pos/portable/ticket/page.tsx",
@@ -1232,13 +1227,13 @@
       },
       {
         "path": "app/(app)/pos/settings/page.tsx",
-        "bytes": 24500,
-        "sha256": "41aebbfb5347452b8b841bbc2352af0e1eecd73b57faa284cc3ebc45c1fdffe5"
+        "bytes": 25771,
+        "sha256": "3016ef09487e5ab50a0baa31e6efd97b4433f01f7f67417c47b7c15e15ace8e0"
       },
       {
         "path": "app/(app)/qr/page.tsx",
-        "bytes": 1253,
-        "sha256": "e8a7c66924d38bdcf25ae447c6cb997d70caa07f57e95255cc65673ccd1811e2"
+        "bytes": 1297,
+        "sha256": "5c2c5263d1f4d4a958ab64a17e47d8bac16887fedb99bbcbb572b47f769f90ec"
       },
       {
         "path": "app/(app)/reports/error.tsx",
@@ -1896,6 +1891,11 @@
         "sha256": "0914a319f5347d88b093036a4bc9eb08b23e1aff2085a13f66bc5acf6c53f7d4"
       },
       {
+        "path": "app/api/pos/windows-update/latest.yml/route.ts",
+        "bytes": 992,
+        "sha256": "9a91b7a63046f021e81258690c294de12450d2530d1982915d526e473fbd8e5a"
+      },
+      {
         "path": "app/api/post-comments/route.ts",
         "bytes": 1260,
         "sha256": "e7cab1382f1dfccc18fb128d7a842b25ff467773afe0d029372efcc87c9bd990"
@@ -2132,8 +2132,8 @@
       },
       {
         "path": "app/check-in/[entry]/page.tsx",
-        "bytes": 1230,
-        "sha256": "ee5d0784bf5fece1aefb5162fede8648877076bb5f940be9208bfda653c013a0"
+        "bytes": 944,
+        "sha256": "6da14b6a6163a1117176d9b96e364af914c66411379543b7adb809843fb72db2"
       },
       {
         "path": "app/check-in/[entry]/phone-checkin.tsx",
@@ -2192,8 +2192,8 @@
       },
       {
         "path": "app/download/windows/route.ts",
-        "bytes": 377,
-        "sha256": "846782426838a863e88de45fcc8681c9f1ed415ba67ece1a72fdc1b1e6421a8a"
+        "bytes": 2197,
+        "sha256": "4850c8b8fcf41bae49217c5e12bdd18042f24aefd14fed1124fc5f0156a69c84"
       },
       {
         "path": "app/error.tsx",
@@ -2232,13 +2232,13 @@
       },
       {
         "path": "app/explore/explore-auto-load.tsx",
-        "bytes": 2104,
-        "sha256": "e31be3d2f02e4d49be1920497cf750602778e18221b31c0ed809a5525e3bd895"
+        "bytes": 3382,
+        "sha256": "68d974e19bc826f44500f300e1fe63099f6ab488c6f1938503e7b3a9a78667d1"
       },
       {
         "path": "app/explore/explore-client.tsx",
-        "bytes": 156473,
-        "sha256": "b38d6597f76ad1c5e8fb1a45529dcc840332800bfcb398c195eb028cb48307fc"
+        "bytes": 158155,
+        "sha256": "cb11edd630634198c9370d3a7442da90e00b8a0c8555240ac0f038afc7e6363c"
       },
       {
         "path": "app/explore/explore-comment-preview.tsx",
@@ -2252,8 +2252,8 @@
       },
       {
         "path": "app/explore/explore-discovery-feed.tsx",
-        "bytes": 9015,
-        "sha256": "17aca00f331a92227986fb18a7b8ef251c274fea90be89c8500f611c439b9438"
+        "bytes": 9169,
+        "sha256": "8a8e405e6e4d3dc4a6473f58ad7ebdc543e80c74ccfde36f06b6cefb92000a77"
       },
       {
         "path": "app/explore/explore-editorial-sections.module.css",
@@ -2272,8 +2272,8 @@
       },
       {
         "path": "app/explore/explore-feed.tsx",
-        "bytes": 76044,
-        "sha256": "6bcca6bb5d2551ee22458b1da44eb58a2aa8dee0be80a54314bb391078f7746c"
+        "bytes": 77501,
+        "sha256": "4e59a73dad939656d027fc56e24ae51ce114e22814af449c39dbec80fecc297d"
       },
       {
         "path": "app/explore/explore-header-search-slot.tsx",
@@ -2432,8 +2432,8 @@
       },
       {
         "path": "app/globals.css",
-        "bytes": 32244,
-        "sha256": "580ffacad142985d38ea312be513f8c371a929b0c633610797bb35db48ce2e66"
+        "bytes": 32825,
+        "sha256": "697f6342c39b13c57f56cfa9b568e150353c5eb771e4a8ccbcc11b35eb0af90b"
       },
       {
         "path": "app/guest-navigation-shell.module.css",
@@ -2476,6 +2476,11 @@
         "sha256": "4fdcc4f4338ad6f194d72c2fb26c5e68912bb54a89c7d528a61ebb973b0f0d9a"
       },
       {
+        "path": "app/help/windows-portable-copy.json",
+        "bytes": 30609,
+        "sha256": "81b4c147d091af34ca0a488b7cb14646daac827e350bc14543d3a0020e5cb66c"
+      },
+      {
         "path": "app/icon.png",
         "bytes": 17900,
         "sha256": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f"
@@ -2512,8 +2517,8 @@
       },
       {
         "path": "app/local-app/entry.tsx",
-        "bytes": 62481,
-        "sha256": "e81c2a195669d187f1d8b1b4ea7c8989b4e34326ae8312858cfb43e358bf3127"
+        "bytes": 62789,
+        "sha256": "fc6b1f73b5043ed390682695351c8448c8f940a6cd9bd2d32b53b22986b7db12"
       },
       {
         "path": "app/local-app/index.html",
@@ -2522,8 +2527,8 @@
       },
       {
         "path": "app/local-app/navigation.tsx",
-        "bytes": 4453,
-        "sha256": "7d93a4cf23de6e371b49b7e31fee35e96a283ed8f08e996742cf40bb795780f7"
+        "bytes": 4586,
+        "sha256": "d84c88a46cd6e1ed7ad494ae07a18736f93d58a14e09734688a026ec6bf183d5"
       },
       {
         "path": "app/local-app/scope.tsx",
@@ -2532,8 +2537,8 @@
       },
       {
         "path": "app/login/login-form.tsx",
-        "bytes": 16182,
-        "sha256": "22c90f6407d1de7e08058861b9dbf77daa143524bcd6e231097aa118f70bfc1e"
+        "bytes": 16350,
+        "sha256": "2014071c8aee0191e9d13b64b643668d6a982463931ab82435c9acf16a130210"
       },
       {
         "path": "app/manifest.ts",
@@ -2762,8 +2767,8 @@
       },
       {
         "path": "app/navigation-shell.tsx",
-        "bytes": 102665,
-        "sha256": "2f26572cebe60dec42085a95b505ceef1f42cbc607ecf21954c93ff172915cbd"
+        "bytes": 103253,
+        "sha256": "c3c9a9e65da0ffac9912259b5de20dd338035ad446c197969c0c0b765632476b"
       },
       {
         "path": "app/notifications/actions.ts",
@@ -2956,6 +2961,16 @@
         "sha256": "76cb63569f1c0b8e7e3960e4f14dff4c2626bbfc51f5743da6c894fd86130fb9"
       },
       {
+        "path": "app/pos/adaptive-pos-workspace.css",
+        "bytes": 2383,
+        "sha256": "8230ba53941fd3dfd473f29b7c6e476a10e9b1aaf89f0cd4d1e44f591d592f33"
+      },
+      {
+        "path": "app/pos/adaptive-pos-workspace.tsx",
+        "bytes": 1769,
+        "sha256": "e462405fa2c375ad2eb6462322ce4359978593521aff77cb54e62787330b94c1"
+      },
+      {
         "path": "app/pos/checkin-receipt-actions.ts",
         "bytes": 774,
         "sha256": "7314217ddf56e716dfcbbdffb8fd91849b7e18e9242a4b9bc48a2d91aa2c13c0"
@@ -2972,18 +2987,38 @@
       },
       {
         "path": "app/pos/custom-service-dialog.tsx",
-        "bytes": 4168,
-        "sha256": "4eabeddb06f78c2a2797f914ed07533fc6e22329e7e84f78c7e0f5c356033b67"
+        "bytes": 4257,
+        "sha256": "b6c91a078b8685893e5053a2d4f07fd9f7faa1501f64dbe293252291465d1eb3"
+      },
+      {
+        "path": "app/pos/customer-display/check-in-panels.tsx",
+        "bytes": 5996,
+        "sha256": "0c103b29410143452bde1366f4c1c9524d9b810e1aa4bf99f8a7936d9969e7d5"
       },
       {
         "path": "app/pos/customer-display/checkin-receipt-panel.tsx",
-        "bytes": 4644,
-        "sha256": "f786e1d2addf7ec1fd9c18d110ff562fd7d8c92b13f3689e78dcbf1d27d35c99"
+        "bytes": 4873,
+        "sha256": "66565af0fa061a104d7adbdc3ba14c40ea150fd05b18afbe4d60b9af7dbbacbf"
       },
       {
         "path": "app/pos/customer-display/customer-display-client.tsx",
-        "bytes": 101704,
-        "sha256": "b1a8e1c0f13a40d10e8d575df02ff4efe6747297f9a95966371c7bd6d5413aff"
+        "bytes": 96809,
+        "sha256": "c5fa34c8adfbf434d70a263eee175de94a13ca475dc3ba181c262ac8e8edfa43"
+      },
+      {
+        "path": "app/pos/customer-display/customer-display-responsive.css",
+        "bytes": 5924,
+        "sha256": "f1c026f6c51629ed2fc0566bcffa9e29938e6400b83baafb8b20e7666f308328"
+      },
+      {
+        "path": "app/pos/customer-display/customer-idle-screen.css",
+        "bytes": 6112,
+        "sha256": "9fd5a0c0bd11a2540b0498ec72505aeb3492a98aa1cc4a1670a9daf6fa90cda9"
+      },
+      {
+        "path": "app/pos/customer-display/customer-idle-screen.tsx",
+        "bytes": 2604,
+        "sha256": "ca50056a69ba95cff578453e9d35d27e81926ce161282bf0d730b7134800c897"
       },
       {
         "path": "app/pos/owner-check-in-actions.ts",
@@ -3002,8 +3037,8 @@
       },
       {
         "path": "app/pos/owner-pos-client.tsx",
-        "bytes": 30193,
-        "sha256": "f656206132f308f776d87d8651b56388085d2b33276d41d670f07753a404f941"
+        "bytes": 30333,
+        "sha256": "45ef01caeeb9b159ae39adf5bb18ee48866e7497d67e6aad32baecb0b4dc9722"
       },
       {
         "path": "app/pos/owner-pos-icon.tsx",
@@ -3037,8 +3072,8 @@
       },
       {
         "path": "app/pos/portable/actions.ts",
-        "bytes": 93160,
-        "sha256": "764eca404ef14f3fb14fbe6897e4b76e95fe6ba47767b81b57675491635a8011"
+        "bytes": 93828,
+        "sha256": "045dc627e74393b15eb21d26bbdb34d2feb6ab144c54de8fa9d9ca8fe53963f7"
       },
       {
         "path": "app/pos/portable/book/booking-day-calendar.tsx",
@@ -3077,13 +3112,28 @@
       },
       {
         "path": "app/pos/portable/desktop-tools.tsx",
-        "bytes": 2112,
-        "sha256": "0e581682f56be071a06fca2c43dd9124004765962610bca7f1008c263da0b7e9"
+        "bytes": 1706,
+        "sha256": "7d437645bbb319d1027c02484f484904bc3bfc39001c0b6f832ce015541e82ad"
       },
       {
         "path": "app/pos/portable/desktop-update.tsx",
-        "bytes": 3448,
-        "sha256": "cf774f480f15268836080a1474f4af7bdaa1fd0b84cbc0fdff1fdb5910578b6e"
+        "bytes": 4322,
+        "sha256": "2698a53324823c7b7f7717c7acf193776056e7fa5747ef4dc835a2ada833ad17"
+      },
+      {
+        "path": "app/pos/portable/device-input-settings.css",
+        "bytes": 2370,
+        "sha256": "1d4e03f143754ef1c4e6f0d14919e74ad1a6020ff07498044034b27b50e41568"
+      },
+      {
+        "path": "app/pos/portable/device-input-settings.tsx",
+        "bytes": 140,
+        "sha256": "230675646fcef3093a1fd1b87ae3a948b15240a48dca1964d92132effeab4f89"
+      },
+      {
+        "path": "app/pos/portable/device-settings-panel.tsx",
+        "bytes": 5098,
+        "sha256": "8d04c619ab05cebdadee00dab9abb1d9518ead6692bc038bc7a04d8c7bd08033"
       },
       {
         "path": "app/pos/portable/load-panel.tsx",
@@ -3107,8 +3157,8 @@
       },
       {
         "path": "app/pos/portable/portable-draft-controls.tsx",
-        "bytes": 10739,
-        "sha256": "3d9fc555caa22e26aace35898c5963e97c19e0b94f9a0a6c168ff058de026195"
+        "bytes": 10796,
+        "sha256": "dd0bef665a30dceee508f47a47562256bf5d89c8724c8df48614796a1b7e55a4"
       },
       {
         "path": "app/pos/portable/portable-floating-nav.tsx",
@@ -3127,8 +3177,8 @@
       },
       {
         "path": "app/pos/portable/portable-login-form.tsx",
-        "bytes": 3998,
-        "sha256": "39c572318a4b08c45b43da622bf0ec59e2838c88c50bb6df09768ef5ee4cdcca"
+        "bytes": 4312,
+        "sha256": "0baf5b915d94604f787e30242d7474e2dcd08e5359a960e4e591f86192cb4c32"
       },
       {
         "path": "app/pos/portable/portable-offline-shell.tsx",
@@ -3157,8 +3207,8 @@
       },
       {
         "path": "app/pos/portable/portable-workspace-tabs.tsx",
-        "bytes": 10411,
-        "sha256": "1d9717df3bb5784ab04603ff93fcdf8f1c87f165b63c0a0c93cd021de655abc0"
+        "bytes": 10547,
+        "sha256": "ce0c6e4c7fe6de0b74d4e931c4ad11e0f59fec5e1604e0391e81b68aba1791d5"
       },
       {
         "path": "app/pos/portable/prepare-workspace-device.tsx",
@@ -3167,8 +3217,8 @@
       },
       {
         "path": "app/pos/portable/report/portable-report-closing-form.tsx",
-        "bytes": 14719,
-        "sha256": "b67dba8da3ddafd86edffeec29fb5f91975289e222a7bfa033f05348b96bdea7"
+        "bytes": 15142,
+        "sha256": "8f016b989cff04ccecc826befa06684d0006f6ad80d6a0b6d1ab27783b11e726"
       },
       {
         "path": "app/pos/portable/staff-avatar.tsx",
@@ -3187,8 +3237,8 @@
       },
       {
         "path": "app/pos/portable/touch-keyboard.tsx",
-        "bytes": 8905,
-        "sha256": "ff70c87aa40cd41aa97a63fac91a843499988d5a92a040a4877ce140741614d8"
+        "bytes": 9128,
+        "sha256": "aab1cbdbdcc4a383a51abf78791379bfb12fe85d34f263c8f74e4e7391e035e5"
       },
       {
         "path": "app/pos/portable/use-portable-close-guard.ts",
@@ -3202,8 +3252,8 @@
       },
       {
         "path": "app/pos/pos-desk-client.tsx",
-        "bytes": 173921,
-        "sha256": "9970f4d3021eff4648cfec3b71a114d17d5a288beb5ac4a3b7946ecea735cdb8"
+        "bytes": 171266,
+        "sha256": "686671d025bbf1129677ff0bfbb34dc60e6d35733f14496b60b0dd25bd032db5"
       },
       {
         "path": "app/pos/pos-rapid-mobile-bridge.tsx",
@@ -3226,9 +3276,14 @@
         "sha256": "9111b671adc13a67a333497cd7a559f24f568f31830fb1fc7c6ef2714c67d2f4"
       },
       {
+        "path": "app/pos/service-catalog.tsx",
+        "bytes": 1865,
+        "sha256": "29f338728fbc51c304e66ce8d0dcb0c08242196ca87220450297527a840f7003"
+      },
+      {
         "path": "app/pos/settings/actions.ts",
-        "bytes": 19422,
-        "sha256": "200951a5aa28879fe187a866be818aa7a922e480134b91a82a5ca7f623adfffb"
+        "bytes": 21754,
+        "sha256": "6bc4e33c7a09c363c59501bf358ac21d868fad70615161e3cc0cee675adb4d4b"
       },
       {
         "path": "app/pos/settings/customer-display-install-panel.tsx",
@@ -3241,9 +3296,14 @@
         "sha256": "c63dfd93ed25e067015c8eeae38df47b9b00e4f0e1897142385d8b2da5cd178d"
       },
       {
+        "path": "app/pos/settings/device-appearance.tsx",
+        "bytes": 3672,
+        "sha256": "52ef6a47a73b6987f7b74f6ec960a96f22d95792730db168631e47929990382f"
+      },
+      {
         "path": "app/pos/settings/settings-group-form.tsx",
-        "bytes": 4810,
-        "sha256": "b91b8196fba9af4f8e6577f81b6f2cf8a8f275f857fc48cfe6eb29a38a110838"
+        "bytes": 5035,
+        "sha256": "79753d6073499ae5e6522b35b7730617caeb487cb05cf5306efc4580cf99b750"
       },
       {
         "path": "app/pos/settings/settings-save-broadcast.tsx",
@@ -3302,8 +3362,8 @@
       },
       {
         "path": "app/qr/personal-qr-client.tsx",
-        "bytes": 13986,
-        "sha256": "060b2fa9a0d957d4ce614e9d0027df38c53deb599198df55219dc28d38b82a8b"
+        "bytes": 14533,
+        "sha256": "33f196ca3fdd66c2595f2753b43598c515e6bd6ebf134eb3f1d9131a2a3473e2"
       },
       {
         "path": "app/qr/personal-qr.module.css",
@@ -3571,9 +3631,14 @@
         "sha256": "97fbb493eb3a2ffc9fd2e74581ad73dfa4a79533e7301a1548e53b4612d7819d"
       },
       {
+        "path": "app/service-relay/customer-entry-qr.tsx",
+        "bytes": 2419,
+        "sha256": "48e0f25ce9b2c35eb12abcba2a399f42133a751b2bdc8956d15325fc18b4ac88"
+      },
+      {
         "path": "app/service-relay/customer-relay.tsx",
-        "bytes": 2507,
-        "sha256": "f5af0949efdc95bfa564931fed221e22d738399684ae4b3f5d4b6da1be0b55d6"
+        "bytes": 1289,
+        "sha256": "07954b15455e92039f5e8995209223c17597551b0899790d6e27ad2db2f56978"
       },
       {
         "path": "app/service-relay/desk-relay.tsx",
@@ -3777,8 +3842,8 @@
       },
       {
         "path": "app/settings/pos-settings-panel.tsx",
-        "bytes": 15223,
-        "sha256": "15da1ac727152cbcbbccbf0b13d5b0a98ee16cc91e2160b2a35da858ee26d7f7"
+        "bytes": 15239,
+        "sha256": "ad344215de890139ccf130dbb3bcc517659a90fbbc29efb7a0b40b8b6ab37db4"
       },
       {
         "path": "app/settings/recovery-back-office/actions.ts",
@@ -4042,8 +4107,8 @@
       },
       {
         "path": "app/staff/scan/staff-scan-client.tsx",
-        "bytes": 19934,
-        "sha256": "e99be626e75b0c53b49d6dcceb6a960b895c09178858dbcc90fff34b292e91da"
+        "bytes": 19913,
+        "sha256": "44a15ef77c0fa6b3b5553970a74ec18f61b1adc93ad79b62a530e545768bd7b3"
       },
       {
         "path": "app/staff/staff-directory-editor.tsx",
@@ -4971,6 +5036,121 @@
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       {
+        "path": "desktop/README.md",
+        "bytes": 9134,
+        "sha256": "1731637d111192a5324b5f595d7abd0164ff3e181690f6268a7cd4e3b3f8b968"
+      },
+      {
+        "path": "desktop/RELEASE-NOTES-0.7.2.md",
+        "bytes": 2536,
+        "sha256": "a3aa90aec0c5bd7bc5d280e31e626fcd4ec2281559f4ea75b56a741f181ed1bf"
+      },
+      {
+        "path": "desktop/RELEASE-NOTES-0.7.3.md",
+        "bytes": 2915,
+        "sha256": "2d5d5184e8058c8816bf7c4b7225803398e1d12a3db9466d731ef298ad0368f4"
+      },
+      {
+        "path": "desktop/build.cjs",
+        "bytes": 3463,
+        "sha256": "8aeaa8b1d122d853cdeca1f206a68683394d3cbfe905cc0e06b4f86b002efd5e"
+      },
+      {
+        "path": "desktop/checkin-receipt.cjs",
+        "bytes": 1448,
+        "sha256": "84b0af5159f0aebdbba44d55d48c918b72c913a3922b20efa01aad0397da2f8b"
+      },
+      {
+        "path": "desktop/config.json",
+        "bytes": 91,
+        "sha256": "fc256c1e886c0e907427333913ca439e404d768ab97b1c45d4792602aac77d69"
+      },
+      {
+        "path": "desktop/display-preload.cjs",
+        "bytes": 464,
+        "sha256": "6aede070a8b55e233046562b2bc48cce57ea398c47245dbb5e9c0809fae99a3f"
+      },
+      {
+        "path": "desktop/installer-check.nsh",
+        "bytes": 1200,
+        "sha256": "2310290c511b62a0c0b1bc42e73e8f78aff0526c99ad9b1fc75fb35d71ebd08a"
+      },
+      {
+        "path": "desktop/installer-template.cjs",
+        "bytes": 1505,
+        "sha256": "3ad86c79b3a15292dea5902ddccfe27902bc318197a9d5a5ff30350b1bc155bd"
+      },
+      {
+        "path": "desktop/main.cjs",
+        "bytes": 25705,
+        "sha256": "ffb01483242bfd18e93ac5ed216341162a227fad029080496e60a7746529a09e"
+      },
+      {
+        "path": "desktop/offline-shell.cjs",
+        "bytes": 6458,
+        "sha256": "5eb87f2f277ddc482b1aee3b70f65bfa8ed5eb4407df12732a59ac878020f58c"
+      },
+      {
+        "path": "desktop/package-lock.json",
+        "bytes": 133171,
+        "sha256": "ce3e82ab3be8f08ba9e5e0f56da41cd97680c1b4e7406a494361a2a89ad06edb"
+      },
+      {
+        "path": "desktop/package.json",
+        "bytes": 761,
+        "sha256": "bce020e407db1eeea65723ea922fa990f53956add3351a2dc958ccd63276a755"
+      },
+      {
+        "path": "desktop/policy.cjs",
+        "bytes": 1802,
+        "sha256": "0f7937de7920bfa1151e1f67b005e9b988f79afd9fdcbf61e234b91926102ad6"
+      },
+      {
+        "path": "desktop/preload.cjs",
+        "bytes": 2206,
+        "sha256": "773c0f8a76c1e5318b22ccc23a3f9c4e6877586c36586083b6aee11549b60b18"
+      },
+      {
+        "path": "desktop/tests/help-menu.test.cjs",
+        "bytes": 1636,
+        "sha256": "eccace8c6d547ffa08126c36abf10467084b7e80c54af176c40a07d984a393e9"
+      },
+      {
+        "path": "desktop/tests/installer-smoke.cjs",
+        "bytes": 6105,
+        "sha256": "ee5f6770d56ad4cc50aed69e7d4376ac870475880bbfcc020d19feee3202b255"
+      },
+      {
+        "path": "desktop/tests/online-updater.electron.cjs",
+        "bytes": 5047,
+        "sha256": "642472a19cbe80979820d023255f349a18222b6fea8211187b45c3539a3f69e2"
+      },
+      {
+        "path": "desktop/tests/update-flow.test.cjs",
+        "bytes": 5790,
+        "sha256": "2ae8e6781a02274f55f418cfc065136ba99f03fd71beaf9339b2b6946e04bf40"
+      },
+      {
+        "path": "desktop/unavailable.html",
+        "bytes": 1011,
+        "sha256": "63408abd35832438d7772cc96e6f11a6f06edfcdb3ceb7bcbfc52103f34b0041"
+      },
+      {
+        "path": "desktop/unavailable.js",
+        "bytes": 253,
+        "sha256": "61bd4c2be9bc885d788674b36df65e0cc2395b118736b19876dd2fce46ca6117"
+      },
+      {
+        "path": "desktop/update-plan.cjs",
+        "bytes": 864,
+        "sha256": "ed7ba4d8951eec3e986958bcc052076e7efe12653e76b878364962b7187a08f7"
+      },
+      {
+        "path": "desktop/vault.cjs",
+        "bytes": 5069,
+        "sha256": "00f340c6e38d628b53d1d23357319aaa76c34e581e7a3288582d266b353ee54a"
+      },
+      {
         "path": "docs/action-feedback-audit.txt",
         "bytes": 9475,
         "sha256": "1edf30a3d5a041275ee1cc445d0dd3c26dd872ad83da4f6c1d28e5ea373ce7b0"
@@ -5034,6 +5214,11 @@
         "path": "docs/cold-network-critical-resources-20261015.txt",
         "bytes": 1592,
         "sha256": "4271de45284685ee684de92a2b0fbef8ff3c4ebacdac7ccb769c1a75983557e9"
+      },
+      {
+        "path": "docs/combined-prefetch-display-release-20261027.md",
+        "bytes": 2031,
+        "sha256": "e49d89af5e058ab9524ed2a88fbe9fa99f899176387af590abb5b2c57a75719f"
       },
       {
         "path": "docs/default-nail-images.md",
@@ -5114,6 +5299,11 @@
         "path": "docs/ios-acceptance-measurement.md",
         "bytes": 17920,
         "sha256": "becf09e0da7cdbcbaefc5176317fd84f2966c8f09ce8383436ae2784c2872c62"
+      },
+      {
+        "path": "docs/ios-priority-prefetch-deploy-note-20261027.md",
+        "bytes": 3207,
+        "sha256": "af6b8ae4504a9db7c82578f47f9e9b770f96c9512a2ebb71e83b16c40e74f045"
       },
       {
         "path": "docs/ios-session-role-stability-20261019.txt",
@@ -5211,9 +5401,39 @@
         "sha256": "aea86cd92ec41da3058789a0effdd1d0db4f025fde5e0aa4f97297318769f421"
       },
       {
+        "path": "docs/phone-checkin-auto-merge-deploy-note.txt",
+        "bytes": 2816,
+        "sha256": "27fdc24134c9e738c4eeef492558b1d2e329bea107015eab20301e853ef88de7"
+      },
+      {
+        "path": "docs/phone-checkin-scan-continuity-deploy-note.txt",
+        "bytes": 2420,
+        "sha256": "08e07bfec3809847d3e86ae1bee9efbfee4c24875979399770d22bb1490999ed"
+      },
+      {
         "path": "docs/portable-cold-start-offline.md",
         "bytes": 6523,
         "sha256": "07ec1cf31a1ce04b9788f4533c59ad63daade5c90ca6181c010e4c94fc2f5338"
+      },
+      {
+        "path": "docs/portable-customer-display-settings-qr-deploy-note-20261027.txt",
+        "bytes": 3252,
+        "sha256": "0667d1b13c273c3bbdf52cb394660fbb5d8def59eaec0c41258551418f8cc407"
+      },
+      {
+        "path": "docs/portable-device-keyboard-deploy-note-20261026.txt",
+        "bytes": 3988,
+        "sha256": "f478313449c35b878e6ec8a73c31b8275c6d00f77ec9cdcde63ffc83bcf54c0d"
+      },
+      {
+        "path": "docs/portable-report-flat-today-deploy-note.txt",
+        "bytes": 3673,
+        "sha256": "0a9d27345a678d88d3fe53df18fab014621e34a0dafc04ca543a229094ce51c2"
+      },
+      {
+        "path": "docs/pos-adaptive-categories-20261026-deploy-note.txt",
+        "bytes": 2651,
+        "sha256": "e69d2775619096d7da78ff34d321bbc2e3e2feb9ffd9a8cbbd341f34790af8ee"
       },
       {
         "path": "docs/pos-mobile-compact-deploy-note.txt",
@@ -5229,6 +5449,11 @@
         "path": "docs/pos-navigation-performance.txt",
         "bytes": 5239,
         "sha256": "4dbdfcab5207252ef0ef8c845c86ffe7e53b1811e2e15c382235514ff1e13f15"
+      },
+      {
+        "path": "docs/pos-service-categories-20261026-deploy-note.txt",
+        "bytes": 2226,
+        "sha256": "5cec6023ddc3153c47cad099143a65d72183a603c5da8bf58054622a99a80102"
       },
       {
         "path": "docs/post-identity-standard.txt",
@@ -5264,6 +5489,11 @@
         "path": "docs/release-notes/ads-post-actions-20261017.txt",
         "bytes": 2669,
         "sha256": "4cb23016fb8a3b4328002213dbf91995ca9492a0b5fd5aa90d41006ae4e3be99"
+      },
+      {
+        "path": "docs/release-notes/all-recent-chats-20261026.txt",
+        "bytes": 3117,
+        "sha256": "500cc50ed88e2af8e8d86a68643dfa8694871cb1ca93873de380b250a7d5a1f5"
       },
       {
         "path": "docs/release-notes/kiosk-local-e2e-status-20261025.md",
@@ -5384,6 +5614,11 @@
         "path": "docs/video2-auth-workspace-cache-rca-20261019.md",
         "bytes": 10152,
         "sha256": "8a385bf47b1c511b860b41427adf1667db8c34b62a5f3f8f7065758bc1f4394c"
+      },
+      {
+        "path": "docs/windows-portable-help-release-note-20261026.txt",
+        "bytes": 2854,
+        "sha256": "eedd823f72a545f9932223f6df306913eb6470d7f16e4f48b1841dec4e2302c8"
       },
       {
         "path": "docs/wisconsin-beauty-expansion.md",
@@ -5512,8 +5747,8 @@
       },
       {
         "path": "ios/Reylumi/ReylumiLocalAppTransport.swift",
-        "bytes": 70185,
-        "sha256": "b8fe91505b33d958ce403e8dce3a728f95bbd16576c4114b9b7c74251b3de4c3"
+        "bytes": 71418,
+        "sha256": "36a0cf48cc9c3dfa414f42dbc5e27b8023087b67c6bee62d3e3d2ad1a4c93a51"
       },
       {
         "path": "ios/Reylumi/ReylumiLocalAppViewController.swift",
@@ -5527,8 +5762,8 @@
       },
       {
         "path": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
-        "bytes": 16213,
-        "sha256": "b5a571756e7bc49cde77560e6e52247b40e95f5a92ba1ec9b5738128059d04a8"
+        "bytes": 16086,
+        "sha256": "843ad8fe2ab71120670cbc04db8a4ef9f6e46b24c77c23e666fe58f9d1fca728"
       },
       {
         "path": "ios/Reylumi/ReylumiLocalReadStore.swift",
@@ -5656,6 +5891,11 @@
         "sha256": "ad738af155a1bda265edcf6c94e66da6f14ce64cd97ed2005820ce5ecd866fd6"
       },
       {
+        "path": "ios/ReylumiTests/NativeCookiePipelineTests.swift",
+        "bytes": 11849,
+        "sha256": "d183929e18e6e3ec989113f33011aa637c431584c615b48ac309e7c552b9b2c3"
+      },
+      {
         "path": "ios/ReylumiTests/NavigationPolicyTests.swift",
         "bytes": 5108,
         "sha256": "a1466ab0848172dcf6f3d72cb4360125527a9785490227f2b314b70bc0b9a3dc"
@@ -5677,8 +5917,8 @@
       },
       {
         "path": "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
-        "bytes": 24103,
-        "sha256": "ce5011d6be30693d16e8eacac574582fc471b28517440518578ddd226c64e263"
+        "bytes": 24906,
+        "sha256": "f9e9414ff0bbb5b543d7bd46e1cc34944ee6474c8cfaaaabc856243c5206b618"
       },
       {
         "path": "ios/ReylumiTests/OwnerTodayMeasurementFixture.json",
@@ -5732,8 +5972,8 @@
       },
       {
         "path": "ios/scripts/check-build.sh",
-        "bytes": 9385,
-        "sha256": "8404550c141306a2b3bf5c78618e54ae4f9d1d2e80adb13405cd4160c622297f"
+        "bytes": 9421,
+        "sha256": "a1225ec5acd4964fe0be8457eacda286992d1e1cb95a97997062865c6af3acbd"
       },
       {
         "path": "ios/scripts/check-testflight-availability.mjs",
@@ -5747,8 +5987,8 @@
       },
       {
         "path": "ios/scripts/native-offline-bridge.test.mjs",
-        "bytes": 5949,
-        "sha256": "f6377ece0c54770b2a1bb37d9079f985fc1d4122b842dc92df6d2dd96a8be402"
+        "bytes": 6237,
+        "sha256": "8db6fad3005d582215cfbaeba2134449fceda76acc5488d53faf4334dcd8d238"
       },
       {
         "path": "ios/scripts/release-version-preflight.mjs",
@@ -5917,8 +6157,8 @@
       },
       {
         "path": "lib/app-local-command-policy.json",
-        "bytes": 15299,
-        "sha256": "ab642d3067462d2e553c0c7acf95e5ad5850ef567cd85f2b7febe1d146531927"
+        "bytes": 15336,
+        "sha256": "6116701426298685b674bbea945bb0188ff7a22e3926f20e538ea8307c9f2f85"
       },
       {
         "path": "lib/app-local-command-trace-protocol.ts",
@@ -6191,6 +6431,16 @@
         "sha256": "73e02b12ce1b4f7a27345f24b3e0341568166d75d97c8b4f29c7d30ffdeb96a1"
       },
       {
+        "path": "lib/app-local-prefetch-plan.ts",
+        "bytes": 11994,
+        "sha256": "d48d49aa29ec6ecc827ea349caa34b7c5b6f4592df330b2cfd10d7c99ad32514"
+      },
+      {
+        "path": "lib/app-local-prefetch.ts",
+        "bytes": 5437,
+        "sha256": "4888489097cf2bdcc14e452de681dcf5f073b86f32e9bc2c3d6da1859591e80b"
+      },
+      {
         "path": "lib/app-local-public-http-client.ts",
         "bytes": 4149,
         "sha256": "5b6cd427ebde7719b2dcf16f8d777c19b4cb636fba4e9cd2c4aeb24c00eae412"
@@ -6227,8 +6477,8 @@
       },
       {
         "path": "lib/app-local-resource.ts",
-        "bytes": 29533,
-        "sha256": "b1b79ceca750eea123a19abd88a98acc27bdca778bc913da179c084a427d3cdb"
+        "bytes": 34261,
+        "sha256": "f67404df9aacb2ad9dd2d875581cc340e0c96e14810cd95f67dade44876ca55d"
       },
       {
         "path": "lib/app-local-role-http-client.ts",
@@ -6631,6 +6881,16 @@
         "sha256": "c7bd02aa0849e9a4fbd2ac9481756e4c4823053e5d10b9bcfc4e0f6b776b297f"
       },
       {
+        "path": "lib/customer-display-preferences.ts",
+        "bytes": 2352,
+        "sha256": "18ead35fca1ea74fd4a4870f7fb6f5d6d3e4f6e5ed26f61da746695a226a78d0"
+      },
+      {
+        "path": "lib/customer-entry-link.ts",
+        "bytes": 489,
+        "sha256": "ac726a230450e855bb1d00a1c8d15dbe987163313f8e03775b0106624b1ad2c7"
+      },
+      {
         "path": "lib/customer-experience-resource-server.ts",
         "bytes": 1612,
         "sha256": "3a09462a4d2b65235d5b5cd760de4bfbc78f024370404965f726c86ad8073e85"
@@ -6804,6 +7064,11 @@
         "path": "lib/explore-advertising.ts",
         "bytes": 1899,
         "sha256": "1abe9dd3fc1364b3adb3247bcc58653f24fa1233faf56695410e82ec4fadd310"
+      },
+      {
+        "path": "lib/explore-ahead-buffer.ts",
+        "bytes": 2024,
+        "sha256": "ed6aa52308d497914c7ae11ed171e6424f293fb69716b9c281f95538abf19566"
       },
       {
         "path": "lib/explore-comment-identity.ts",
@@ -7037,8 +7302,8 @@
       },
       {
         "path": "lib/help-guides.ts",
-        "bytes": 79538,
-        "sha256": "04255481b14a75bcb1f16f49153c8d0098c5e51441102384896d84bea5f615b9"
+        "bytes": 79696,
+        "sha256": "f79d63f2ce5bbbb00b66023ac5caae3270ede99d7612eff3d92d0171f7e65bec"
       },
       {
         "path": "lib/help-illustrations.json",
@@ -7047,13 +7312,13 @@
       },
       {
         "path": "lib/help-language.ts",
-        "bytes": 701,
-        "sha256": "977771ecd9c85971b6d4179b1a771c6a37455df495478970eeac7e537604eb27"
+        "bytes": 790,
+        "sha256": "1792912fdacb7c1f32b21f91c3c86e9f1ece7bcc63cee35427950a3afa82a41d"
       },
       {
         "path": "lib/help-search.ts",
-        "bytes": 1287,
-        "sha256": "37eee3fce1e69f36d58f5b69f998bf2bc1c66a4756d42d1cba6329bec34f318b"
+        "bytes": 1376,
+        "sha256": "d49bf2a72d217da3e977cc6101d77ed35eaf05fa2bbdcc064479911e82609ece"
       },
       {
         "path": "lib/image-policy.ts",
@@ -7647,8 +7912,13 @@
       },
       {
         "path": "lib/portable-device-storage.ts",
-        "bytes": 1805,
-        "sha256": "62904aa29437dd62a3c5d845814d94f4e5e45dd877a7b2bc8392967ad8a99357"
+        "bytes": 1892,
+        "sha256": "d820d1f7f3431b9600f5ae9b6ac4a90df3c0b90a9dc6b5dd8bace28b849fe575"
+      },
+      {
+        "path": "lib/portable-keyboard-preference.ts",
+        "bytes": 1235,
+        "sha256": "6e963757447d55626726568d6ad4e49d51d47780ccd7a59cfc885c4d23ec0ef5"
       },
       {
         "path": "lib/portable-offline-admission.ts",
@@ -7689,6 +7959,11 @@
         "path": "lib/portable-waiting.ts",
         "bytes": 336,
         "sha256": "f8882b4b52d81335a177db527dac6b184a0028927d3f619cbd7bb8ae51546a9f"
+      },
+      {
+        "path": "lib/pos-adaptive-layout.ts",
+        "bytes": 1468,
+        "sha256": "b97f8428ed621fc12db355163a639c77f3218ebdbb6d811e016e4934ad4760be"
       },
       {
         "path": "lib/pos-desk-amounts.ts",
@@ -7737,13 +8012,18 @@
       },
       {
         "path": "lib/pos-portable-capabilities.ts",
-        "bytes": 2481,
-        "sha256": "1afdac72503a158aad9f9a916057c67db6e96c969037e5c6a04c29666ae34ed3"
+        "bytes": 2706,
+        "sha256": "85c8960bc774d7d23ba0ea5829c598e2bae7501975fac0587ab43341a1ac0363"
       },
       {
         "path": "lib/pos-portable-routes.ts",
         "bytes": 1301,
         "sha256": "10d06d8058f26c9d3f409af9493afdc29658f5040b8003ab74a17808f5229be3"
+      },
+      {
+        "path": "lib/pos-service-catalog.ts",
+        "bytes": 648,
+        "sha256": "c29915205953034de582fe42724d28b0e8faac404bc2c69dae40bffa349b1a5d"
       },
       {
         "path": "lib/pos-settings.ts",
@@ -7797,8 +8077,8 @@
       },
       {
         "path": "lib/pos-workspace-preferences.ts",
-        "bytes": 931,
-        "sha256": "1e64d677c8db4ba3d203ae76d273f36cc46b473aca7737c474ca7afc3f9cdb4c"
+        "bytes": 1394,
+        "sha256": "22adf34bcf391a3b7a13c5dd82f9baca26ffa35a0f19b26e357f6e285768c9e2"
       },
       {
         "path": "lib/pos-workspace-sync.ts",
@@ -7869,6 +8149,11 @@
         "path": "lib/read-context-scope.ts",
         "bytes": 3951,
         "sha256": "97ef6e3a0895a2c6790797d7e38d83752e68f41932126ea8e88a4a73b5039554"
+      },
+      {
+        "path": "lib/read-priority-scheduler.ts",
+        "bytes": 6709,
+        "sha256": "1c633a7a34f9bdc167da58ef02429f72cfae562d180f2394b3ef663d09d5ab92"
       },
       {
         "path": "lib/read-refresh-scheduler.ts",
@@ -8402,8 +8687,8 @@
       },
       {
         "path": "lib/vietnamese-dictionary.ts",
-        "bytes": 21431,
-        "sha256": "3b64d2b4c5eec9d6ef21ae8c5082038ecfaec9281528600164a94341d21626bb"
+        "bytes": 23763,
+        "sha256": "beb5d6ea85ed46b1cf10e358d32f9c22306d12b5e5314aea6fe439c0c23d57bc"
       },
       {
         "path": "lib/vietnamese-help-copy.json",
@@ -8442,18 +8727,23 @@
       },
       {
         "path": "lib/vietnamese-staff-scan.json",
-        "bytes": 3338,
-        "sha256": "d9de0009fa4ac93055062e5c0ae2e9c33fa7972be69e20b8967b0032980296ff"
+        "bytes": 3287,
+        "sha256": "72d682d55d3033e1ce8fc37e6de2a5af1d5872165f2047e90904fadfbabb6d5b"
       },
       {
         "path": "lib/vietnamese-workspace-copy.json",
-        "bytes": 507306,
-        "sha256": "4f7b71bb35da2eb6f343c8694fa2d52de210c4a41f2f0f03df7eb84981b90e3d"
+        "bytes": 507671,
+        "sha256": "8708a475b3ed324de03857de8e9207253083bd68cae256374752e9537b0ac875"
+      },
+      {
+        "path": "lib/windows-portable-help.ts",
+        "bytes": 15804,
+        "sha256": "e8efac8e540c35b73af20d9fd8e76d2d2108aa86059a9c759a6cc21b816ba016"
       },
       {
         "path": "lib/windows-pos-release.ts",
-        "bytes": 1489,
-        "sha256": "a7160ab97411b9567c9bf96b8e17b4e298d77a96a2bded0eb7e47d8c5dc86b58"
+        "bytes": 1720,
+        "sha256": "47e50289b235fd9866a45840e2cdacee32275ea604bdfb03e769f245f99019dd"
       },
       {
         "path": "lib/wisconsin-directory.ts",
@@ -10392,8 +10682,8 @@
       },
       {
         "path": "scripts/ios/acceptance-report.mjs",
-        "bytes": 23895,
-        "sha256": "ddc71e79102fd7c3722f9783c653efd054b392d467c18e2c56a269e1c5dab408"
+        "bytes": 24145,
+        "sha256": "b562148cacea201a050f3b258e91f3101cdb695e02b20eea1d40dbff6a74aec2"
       },
       {
         "path": "scripts/ios/local-bundle-release.mjs",
@@ -12151,249 +12441,194 @@
         "sha256": "3fcbf871ac91bcd3f4812eca4e83f5a61a63122524fff890a0913ede50ebc921"
       },
       {
-        "path": "tests/auth-routing-contract.test.mjs",
-        "bytes": 8152,
-        "sha256": "4f6629b485cb455c58a9dc8a91cd095a6f63d1e2c7ac23376f0cf94a9c887c0f"
+        "path": "supabase/migrations/20261026230000_phone_customer_consolidation.sql",
+        "bytes": 22771,
+        "sha256": "260233a1649daf1fc6f167f223cfb154ff0399461ecfc62d72450297f9c9612c"
       },
       {
-        "path": "tests/booking-deposit-read-lifecycle.browser.mjs",
-        "bytes": 5573,
-        "sha256": "2f654ea35331514791ed0df0f61ed93b688c67af5e2f687a568fb7862813fdce"
+        "path": "tests/app-local-device-appearance-boundary.test.mjs",
+        "bytes": 7714,
+        "sha256": "acccc157fb647a2cb6604cd965838d78dffa04678f7d998424371a9eef13fd3f"
       },
       {
-        "path": "tests/combined-integration-guards.test.mjs",
-        "bytes": 3428,
-        "sha256": "dd0c97b5efa5accf339d6ff109c81e87bbf074e4c67589cfdefef0c36481b362"
+        "path": "tests/app-local-prefetch-plan.test.mjs",
+        "bytes": 11096,
+        "sha256": "7d724a886ecc3fd824cc59ccad0d39fe3cd88e27f97b5f850bd9e6cd632f2c1b"
       },
       {
-        "path": "tests/customer-history-ui.test.mjs",
-        "bytes": 11148,
-        "sha256": "7dfbd56e573df5afda9440ebc3b959c554b6b97b5ab2ef2bf9726a1ca1e27b83"
+        "path": "tests/app-local-prefetch-runtime.test.mjs",
+        "bytes": 24493,
+        "sha256": "fc7ad10bf8adb6a62e6fb6aa13f7bc1826a193f8627719162229042f91581f3a"
       },
       {
-        "path": "tests/customer-identity-merge.test.mjs",
-        "bytes": 26889,
-        "sha256": "59b7b02a7e5e7e881b60420970dfa2be8eee06c968e184d003ba7245ceacd0c4"
+        "path": "tests/combined-display-browser.mjs",
+        "bytes": 2100,
+        "sha256": "e884c9ceb8e374ac0431468d7e19398075bb87625a0eb5f36f4c370d120de5c3"
       },
       {
-        "path": "tests/customer-management-contract.test.mjs",
-        "bytes": 2049,
-        "sha256": "dd76050f987d793029f5638de860a68d1050189766ec919485922b92e7a73bd1"
+        "path": "tests/customer-display-tip-format.test.mjs",
+        "bytes": 1204,
+        "sha256": "b413779dbe4e7c3ede6926b89c24944863b10f9b3512911b2e388cc27ef95356"
       },
       {
-        "path": "tests/customer-merge-actions.test.mjs",
-        "bytes": 4025,
-        "sha256": "67105c1bd4b585358d7cf96587042a6d6ebf582166da2e3f5973169815a55adc"
+        "path": "tests/customer-idle-settings-ui.test.mjs",
+        "bytes": 11268,
+        "sha256": "d65c6823468f79dfa881865973d75b5691c11dcb91378897798e3270c376ad82"
       },
       {
-        "path": "tests/customer-merge-suggestions-ui.test.mjs",
-        "bytes": 5174,
-        "sha256": "fec5b7b73fd521e08fa51f0e5a1a70fbe5680e0a9d75c447c3cf57fe6e11df6b"
+        "path": "tests/device-appearance-actions.test.mjs",
+        "bytes": 4413,
+        "sha256": "7b5567ad5ab28415c02035a06f84eef288e5c2219f80df6f4bf763ce0ccb0848"
       },
       {
-        "path": "tests/customer-merge-suggestions.integration.test.mjs",
-        "bytes": 4560,
-        "sha256": "000d336f6473c77e324ee10adc8ff108dfad306f23e703b10f02591684a01951"
+        "path": "tests/explore-ahead-buffer.test.mjs",
+        "bytes": 11983,
+        "sha256": "d80260ff61d0beda04c093a6c3719f4c1ec6b6c1d325c192240933bc828595cd"
       },
       {
-        "path": "tests/customer-name-unicode.test.mjs",
-        "bytes": 1293,
-        "sha256": "f6765e2bdca90e67044e458407aff5643605c3b4c8748fdf3ef03c9952a3baf7"
-      },
-      {
-        "path": "tests/daily-owner-session.test.mjs",
-        "bytes": 3407,
-        "sha256": "742516c84625427f93bfb85c8717b6365795b548cb9dffca157cd5cbf4650c7b"
+        "path": "tests/fixtures/customer-display-responsive-preview.mjs",
+        "bytes": 8229,
+        "sha256": "ce7bf287e3074e30ba5c0ef759f96fe5b482648ad3e0e693fcea2764cb63e5ea"
       },
       {
         "path": "tests/help-bilingual-ui.test.mjs",
-        "bytes": 11828,
-        "sha256": "49daf59d68b2ebf610476a1dee94116b5e44726caf117fc71b6e321e8b776045"
+        "bytes": 12886,
+        "sha256": "2680052625888160f49417968a308b32670ce0d437254440e79d9bc7850c38f8"
       },
       {
         "path": "tests/help-draft.test.mjs",
-        "bytes": 8233,
-        "sha256": "7ae1b1534fdbcced5c0aca690f95e1beeec7e3bfff418265e0a3bdfceed17ef2"
+        "bytes": 8896,
+        "sha256": "428184ab2d28b25e8df7aad4bfad93f53c9fa4961a301a81e49f824ba6d17338"
+      },
+      {
+        "path": "tests/helpers/device-settings-fixture.mjs",
+        "bytes": 791,
+        "sha256": "4370efaadccbe31d1856232d58980da3074da96aa9a98a9e4062c20aabbef496"
       },
       {
         "path": "tests/helpers/isolated-supabase-fixture.mjs",
-        "bytes": 11700,
-        "sha256": "6dd79a9f03341f0f92cc677295e77190e182f4a4e175135ff9c573e0ec4820ee"
+        "bytes": 12060,
+        "sha256": "94cbf690eafa7ae0fe6b0a5c755e49452cacc817d9bfdebe53f43061a45432cd"
       },
       {
         "path": "tests/helpers/personal-qr-fixture.mjs",
-        "bytes": 8873,
-        "sha256": "c59fa3ab7cac88ef678814396cd30a1cb616b6e3b642dcdeec9442996c0101e4"
+        "bytes": 8947,
+        "sha256": "0ce1549c2cb57b184037b13bcc873038b0e58e4d519769cc9f6ed2ba831702c7"
+      },
+      {
+        "path": "tests/helpers/post-comment-identity-fixture.mjs",
+        "bytes": 5903,
+        "sha256": "61d3586ac21a7e79d78bfd0c7d9508b7a6349eb2d7fc03346c3cde112ce93779"
       },
       {
         "path": "tests/helpers/qr-capability-retention-cases.mjs",
-        "bytes": 12952,
-        "sha256": "37630d069a59df211823bd871e25adaccd5ab1fc21fc734d068570f63b446312"
+        "bytes": 13033,
+        "sha256": "68a571e40c1b99bae3a8229653d79d897d1cec744a3239a7938779fbf56f9e63"
       },
       {
         "path": "tests/helpers/service-relay-fixture.mjs",
-        "bytes": 7398,
-        "sha256": "bae7a8c8d08eaeb757da4fbedb7ac2b1251607c739151b4f18bee33d65af9eed"
+        "bytes": 7457,
+        "sha256": "0cbb2caa1ad54efd9456087e60da0c2dca6cb0394c642dc1271721cfa2094d13"
       },
       {
-        "path": "tests/kiosk-checkin-local.e2e.mjs",
-        "bytes": 6469,
-        "sha256": "05f7ed80f9b9bf9b43c72143b3ec10dfd2e4d1c77c19a45d7e2430dfd83128a9"
+        "path": "tests/ios-native-pipeline-report.test.mjs",
+        "bytes": 3020,
+        "sha256": "def1539b0f2657a919f8db8cc48dea8ff81908878f25f1a20e18137bf0513617"
       },
       {
-        "path": "tests/kiosk-local-target.mjs",
-        "bytes": 1263,
-        "sha256": "073675d328dc3c407227607373896867ececc1544250a001660b8c4465f17229"
+        "path": "tests/login-touch-keyboard.test.mjs",
+        "bytes": 5042,
+        "sha256": "0fd7ec9166fd0e664d4d9443d3f7a0888491439124800e582f18770ff2ac46fd"
       },
       {
-        "path": "tests/kiosk-local-target.test.mjs",
-        "bytes": 1224,
-        "sha256": "b682f3aa0381212a4c8e9c2a9c95ef8cfe37217c69e6a8f8ad5c2a8a2818fe3a"
-      },
-      {
-        "path": "tests/kiosk-phone-recognition.integration.test.mjs",
-        "bytes": 9962,
-        "sha256": "b4bbddf338157f234fba383c451a52599eb78fa65ecd1f094b5e85b99df064d7"
-      },
-      {
-        "path": "tests/kiosk-request-navigation.test.mjs",
-        "bytes": 6868,
-        "sha256": "52ba7b1e8a957ed6e690643d3358b81b041f0394795817088649d5c67547ea29"
-      },
-      {
-        "path": "tests/live-qa-audit-20261025.test.mjs",
-        "bytes": 9812,
-        "sha256": "bfebd6b8c642a2d42ed7797328221f391dc031f89387741936ccf7746f1c42e6"
-      },
-      {
-        "path": "tests/live-qa-audit-ui.test.mjs",
-        "bytes": 8700,
-        "sha256": "5438114a0cdc733a22c5355bb13502bba745b4f6921194def0b09e1bc1d296b1"
-      },
-      {
-        "path": "tests/mobile-landscape-legal-runtime.test.mjs",
-        "bytes": 12261,
-        "sha256": "33ff3ce4649e1bb546e08f7360675760919e0158bee2738257d73b1cf72093c6"
-      },
-      {
-        "path": "tests/payroll-data-download.test.mjs",
-        "bytes": 3671,
-        "sha256": "2490be5e2333bb2034b8c592419fbd3db7f8ee3bf81cf0a011e2c61330888e45"
-      },
-      {
-        "path": "tests/payroll-history-attribution.test.mjs",
-        "bytes": 2956,
-        "sha256": "6deebc704b3584d32001ab30d9503c882ff5bdaaa62280588c2067191acd737a"
-      },
-      {
-        "path": "tests/payroll-live-dashboard.test.mjs",
-        "bytes": 10851,
-        "sha256": "2c9eccb3862e1f5ebc209b4f21a2657a49036b8df1b6f40506d86e1c392385b2"
-      },
-      {
-        "path": "tests/payroll-live-history.integration.test.mjs",
-        "bytes": 17916,
-        "sha256": "a3ab69c7647f4d67c59e0c1bfc6c0d9bfca1707ad3ea1759272df2214261cd6f"
-      },
-      {
-        "path": "tests/payroll-recorded-facts.test.mjs",
-        "bytes": 3325,
-        "sha256": "9f2b52d14ad6d7778191e885f90afbc749922532a36f71f6f940b67538215678"
-      },
-      {
-        "path": "tests/personal-qr-code.test.mjs",
-        "bytes": 1465,
-        "sha256": "46b010bf8777849a0d88da8ba72f715c1c79fae656843740dcfdc89902ede622"
+        "path": "tests/owner-workspace-ui.test.mjs",
+        "bytes": 30208,
+        "sha256": "6793f1b568059d9c436dade862ded19ff250b0151a7547161f8e4f3b328326ae"
       },
       {
         "path": "tests/personal-qr-full-schema.integration.test.mjs",
-        "bytes": 20258,
-        "sha256": "bda353f1a38bfe89a00dfb770cfc4bed2e4a6a6703cb2a4e9cb02bbb0f7c016c"
+        "bytes": 23366,
+        "sha256": "c3634c9853e06a665f20ea1abff769e78cd4209af5c08238199e4fcc4c8ab3c8"
       },
       {
         "path": "tests/personal-qr-ui.test.mjs",
-        "bytes": 12252,
-        "sha256": "2da728ef72536ad7b36bed6dc69c45803912b65a7669ffb004d61c31f8b75d29"
+        "bytes": 12325,
+        "sha256": "0a209bbee0791c70fd0baf7c66859efa4539e4efc7016d222db1becc0884b251"
       },
       {
-        "path": "tests/personal-qr.integration.test.mjs",
-        "bytes": 11500,
-        "sha256": "c5ede5e6751a3a47c65a41a6b670438e3333860a237dcbd4b7fd8480cf624fd2"
+        "path": "tests/phone-checkin-auth-return.test.mjs",
+        "bytes": 2822,
+        "sha256": "b04a6419c11e133900e606a329f428f4ed8ff433132b910c0488b2aa3dd68078"
       },
       {
-        "path": "tests/portable-ticket-live-sync.test.mjs",
-        "bytes": 5010,
-        "sha256": "eb093e229840f484412eb6cabccdeb41536efd4bcb34c0381724d4e90719ca57"
+        "path": "tests/phone-checkin-camera.test.mjs",
+        "bytes": 7121,
+        "sha256": "13dbc5e151a108f768dc3fb1353a57fe1cd8bb1955dfd932dfe3a1ae0f861b7d"
       },
       {
-        "path": "tests/pos-more-settings-browser.mjs",
-        "bytes": 7736,
-        "sha256": "4ec1441d7977c2955fa1d7a3c0b25e9d795fc4b2dd631e19ebb449d5662c4e38"
+        "path": "tests/phone-checkin-consolidation.integration.test.mjs",
+        "bytes": 8926,
+        "sha256": "098186a78c7f340216b9c716159bd80975438451f3693923dc77c58a0cc63264"
       },
       {
-        "path": "tests/service-relay.integration.test.mjs",
-        "bytes": 9361,
-        "sha256": "a6f081df25def694f080a9cb679eefc4386cbf46d797403f031de6ec86695cc0"
+        "path": "tests/phone-checkin-ui.test.mjs",
+        "bytes": 9891,
+        "sha256": "c644f09ebe42e1878e592e5b639975ae7d0f7ebbbf2813e8553027cb26e33797"
       },
       {
-        "path": "tests/settings-pos-windows-download.test.mjs",
-        "bytes": 8961,
-        "sha256": "2935dc6a0a67e9c6631ec55ecb6fca86a224291fcdcf53ea6aec379939d37738"
+        "path": "tests/portable-booking-pos-ui.test.mjs",
+        "bytes": 5138,
+        "sha256": "ee9334a5fc4e50f5ef70703dbc63c8e989e0141c4f7fc88622ad6bb0939d2778"
       },
       {
-        "path": "tests/signup-phone-history-db.test.mjs",
-        "bytes": 8851,
-        "sha256": "830475ead0b26a88b83ad07605076b5c3b07e8523de5e9363df6b7ac1aa20bdd"
+        "path": "tests/portable-desktop.test.mjs",
+        "bytes": 6964,
+        "sha256": "a72962f0db2666502203d2898ff05a1cd905980f356f55e9818366cb0a42fe47"
       },
       {
-        "path": "tests/signup-phone-history-full-schema.integration.test.mjs",
-        "bytes": 3582,
-        "sha256": "a8fa075d765d847710643c80df9fd001946315c65d69597f8cc0b498cbee7d5d"
+        "path": "tests/portable-device-keyboard.test.mjs",
+        "bytes": 12000,
+        "sha256": "096cdc59f6b7d6a92ef22662cb4c6e1a07305d5eb11d0f899e372a13f521886c"
       },
       {
-        "path": "tests/signup-phone-routing-runtime.test.mjs",
-        "bytes": 7220,
-        "sha256": "779a61d1115588811ea4f6ab745e6e2e55e580f15ce1fb007eef89049baf348b"
+        "path": "tests/portable-report-today.test.mjs",
+        "bytes": 13707,
+        "sha256": "95a3e1ac344718f49b87b1ae3dff0bca80cb090c2b3a5993160834869cde626a"
       },
       {
-        "path": "tests/signup-phone-ui.test.mjs",
-        "bytes": 8271,
-        "sha256": "748f4be146ce1a1b20fcc084ffa00992b5f6b1a65e2dbed06b93f25b08034ec9"
+        "path": "tests/portable-turn-permission.test.mjs",
+        "bytes": 2600,
+        "sha256": "8743a7c4fd51ead78cbdf80eb93e900c118185701edcaf719d2f80acd3c737c4"
       },
       {
-        "path": "tests/staff-pay-analysis.test.mjs",
-        "bytes": 12227,
-        "sha256": "226fb336753bbf10480f72a9cb4d5c0dce45851721abde1296ff7ca4e9b9dbe4"
+        "path": "tests/pos-adaptive-layout.test.mjs",
+        "bytes": 1370,
+        "sha256": "bedb9f83708c289ddedc5685e6175518cbdbaf58a3be42e51efe467e2eefb2e6"
       },
       {
-        "path": "tests/staff-scan-code.test.mjs",
-        "bytes": 3860,
-        "sha256": "f5fd93df8b217f07847443ec5bf14408e4507ecccd5419004a938448d985fd13"
+        "path": "tests/pos-compact-checkout-ui.test.mjs",
+        "bytes": 11309,
+        "sha256": "3b8132baceb56673d47bedf5c6654c55db228de9eb1a5dc3d390675788d29293"
       },
       {
-        "path": "tests/staff-scan-pos-ui.test.mjs",
-        "bytes": 5184,
-        "sha256": "dbccbc8e22efa3459d20bd71973aa4a350db95a7cc75b44055708958f901a0fd"
+        "path": "tests/pos-service-catalog-ui.test.mjs",
+        "bytes": 7018,
+        "sha256": "7aeced459780ee69f9a86300faeb16e3ec6f1a12b7e3091c24af48dc2a45b8ae"
       },
       {
-        "path": "tests/staff-scan-ui.test.mjs",
-        "bytes": 11425,
-        "sha256": "48d07205f2a9f67645b4ba3cf8393540697ee287fe95e19d71f55f5895c15f5e"
+        "path": "tests/read-priority-scheduler.test.mjs",
+        "bytes": 5690,
+        "sha256": "ebd53b35360853239c78e8d7261a9b30802f6bbaff48709fed96e6ef93864ef7"
       },
       {
-        "path": "tests/staff-scan.integration.test.mjs",
-        "bytes": 10251,
-        "sha256": "7eabf6de687946cf43db31c71d61995434d2c834544af5b5e064d26b8155ae72"
+        "path": "tests/staff-check-in-contract.test.mjs",
+        "bytes": 15758,
+        "sha256": "8fec9426310a629160702a9fa67b8865e646c91d0ce5ac331faeafed9ac9c3f9"
       },
       {
-        "path": "tests/today-progressive-ui.test.mjs",
-        "bytes": 9199,
-        "sha256": "afea6e4be1e84ae38c22e437b997ca921af2b355602e3ee227faa4979ed8e6b1"
-      },
-      {
-        "path": "tests/today-progressive.test.mjs",
-        "bytes": 8643,
-        "sha256": "17a00caac96841b489c2f938a7886a9a99f80304134b716f4c373379bc7c0bd0"
+        "path": "tests/windows-update-feed.test.mjs",
+        "bytes": 2014,
+        "sha256": "7a6690063368c99592894dd00f460af4769700b9a071c50c947948b830fbd87e"
       },
       {
         "path": "tsconfig.json",
@@ -12718,9 +12953,9 @@
     ]
   },
   "bundle": {
-    "buildId": "d22e8161124d3ea46e0f3d3155786b0ed70c074868f1170296ee23e017c7553b",
-    "manifestSha256": "fb2300c3ccf01e884a82063c8d046eb5375ddc1ce3668127680f40650ed72c94",
-    "sha256": "ac0fce1232231002d34da930dffc7873ae7bb1a40a40c9fccf1be2729356b66a",
+    "buildId": "1aaddd4ad201277efb1599dcfb2e198c9b6e1355f2b391b909d506a0edfb90ab",
+    "manifestSha256": "cda5de5aa30315218630b2dd01288c38ece34b303a843b4f4e5392134ad9a592",
+    "sha256": "3de49126ac2d328837f7d345200b984cb44b3ead2673f96d5e181f147c43fcd3",
     "files": [
       {
         "path": "api/vendor/maplibre-gl",
@@ -12729,13 +12964,13 @@
       },
       {
         "path": "app.css",
-        "bytes": 590122,
-        "sha256": "026089b6d05ee4de0e8fb80ce970a333a5c0442e9b3490f9eaf578b0503ed47f"
+        "bytes": 598338,
+        "sha256": "876594f27dddea70d2b664c65cf1d28ae2566ebc0d19b9b6216fa9ce76b6beb3"
       },
       {
         "path": "app.js",
-        "bytes": 4296681,
-        "sha256": "d4c3c5e96f8929ec735987f2102e0d66cc9368d4e20ffe9cc0dabb260b152730"
+        "bytes": 4395725,
+        "sha256": "6bc0044a61a60d793f6be1f701bdb24d310260eb02790ccbcb5fe50bc182d669"
       },
       {
         "path": "brand/reylumi-admin-favicon.svg",
@@ -14194,8 +14429,8 @@
       },
       {
         "path": "manifest.json",
-        "bytes": 158316,
-        "sha256": "fb2300c3ccf01e884a82063c8d046eb5375ddc1ce3668127680f40650ed72c94"
+        "bytes": 158342,
+        "sha256": "cda5de5aa30315218630b2dd01288c38ece34b303a843b4f4e5392134ad9a592"
       },
       {
         "path": "market/booking-deposit/booking.jpg",
@@ -14457,8 +14692,8 @@
   "generatedMappings": [
     {
       "path": "lib/app-local-commands-server.generated.ts",
-      "bytes": 70043,
-      "sha256": "0888321bd6272e89a260cef3e58bfcfb75aa3481b79049bef2e6e39549105593"
+      "bytes": 70256,
+      "sha256": "92827705ef00ee38883fdcba00f773f5fd0f02f2884edd1cc19efc7b723d656a"
     },
     {
       "path": "lib/app-local-command-trace-names.generated.json",
