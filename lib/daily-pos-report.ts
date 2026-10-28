@@ -815,7 +815,7 @@ function buildHourlyActivityPoints(input: {
 async function buildSalesComparison(input: {
   auth: ReportAuthContext;
   reportDate: string;
-  selectedTotal: number;
+  selectedTotal: number | (() => Promise<number>);
   timeZone: string;
 }): Promise<DailyPosSalesComparison> {
   const now = new Date();
@@ -868,7 +868,7 @@ async function buildSalesComparison(input: {
       )
         ? []
         : cores.map((core) => core.totals.expectedTotal),
-    selectedTotal: input.selectedTotal,
+    selectedTotal: typeof input.selectedTotal === "function" ? await input.selectedTotal() : input.selectedTotal,
     historyDays: cores.filter((core) =>
       core.allTickets.some((ticket) => ticket.status === "closed"),
     ).length,
@@ -1050,15 +1050,15 @@ export async function getDailyPosTodayFinancialData(input: {
     ],
     input.context,
   );
-  const core = await loadLiveDailyPosReport(input.reportDate, auth, {
+  const coreRead = loadLiveDailyPosReport(input.reportDate, auth, {
     businessHours: input.businessHours,
     readContext: input.readContext,
     timeZone: input.timeZone,
   });
-  const salesComparison = await buildSalesComparison({
+  const comparisonRead = buildSalesComparison({
     auth,
     reportDate: input.reportDate,
-    selectedTotal: core.totals.expectedTotal,
+    selectedTotal: () => coreRead.then(core=>core.totals.expectedTotal),
     timeZone: input.timeZone,
   }).catch((error) => {
     console.error("Today sales comparison unavailable", {
@@ -1067,6 +1067,8 @@ export async function getDailyPosTodayFinancialData(input: {
     });
     return null;
   });
+
+  const [core,salesComparison] = await Promise.all([coreRead,comparisonRead]);
 
   return {
     activityPoints: core.activityPoints,
@@ -2186,7 +2188,7 @@ export async function getDailyPosReport(
   reportDateInput: string,
   context?: CurrentBusinessContext,
   readContext?: DailyPosReadContext,
-  options: { includeCorrectionDetails?: boolean } = {},
+  options: { includeCorrectionDetails?: boolean; timeZone?: string; businessHours?: SalonBusinessHoursWindow | null } = {},
 ): Promise<DailyPosReport> {
   const auth = await requireReportContext(
     DAILY_POS_REPORT_PERMISSIONS.view,
@@ -2198,7 +2200,7 @@ export async function getDailyPosReport(
   // Independent reads share this request's already verified authority. Never
   // serialize the clock/corrections behind loading all ticket rows.
   const [core, correctionRows, businessDate] = await Promise.all([
-    loadLiveDailyPosReport(reportDate, auth, { readContext }),
+    loadLiveDailyPosReport(reportDate, auth, { readContext, timeZone:options.timeZone, businessHours:options.businessHours }),
     loadDailyClosingCorrectionRows(auth, reportDate),
     getCurrentBusinessDate(auth.context),
   ]);

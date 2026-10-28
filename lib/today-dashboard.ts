@@ -627,10 +627,12 @@ async function loadReportDashboardData(input: {
   context: CurrentBusinessContext;
   date: string;
   readContext?: DailyPosReadContext;
+  timeZone?: string;
+  businessHours?: SalonBusinessHoursWindow | null;
 }): Promise<DashboardData<DailyPosReport>> {
   try {
     return {
-      data: await measureTodayRead("financial_report", () => getDailyPosReport(input.date, input.context, input.readContext, {includeCorrectionDetails: false})),
+      data: await measureTodayRead("financial_report", () => getDailyPosReport(input.date, input.context, input.readContext, {includeCorrectionDetails: false,timeZone:input.timeZone,businessHours:input.businessHours})),
       error: null,
     };
   } catch (error) {
@@ -1692,8 +1694,7 @@ export async function getTodayDashboard(
   }));
   // Operations do not need business hours until their chart is assembled. Start
   // both reads together; the financial loader still receives resolved hours.
-  let businessHoursResult: DashboardData<SalonBusinessHoursWindow> = readFinancials
-    ? await businessHoursRead : { data: unavailableBusinessHours, error: null };
+  let businessHoursResult: DashboardData<SalonBusinessHoursWindow> = { data: unavailableBusinessHours, error: null };
   let businessHours =
     businessHoursResult.data ??
     unavailableSalonBusinessHours({
@@ -1766,23 +1767,23 @@ export async function getTodayDashboard(
           error: null,
         }),
     readFinancials && permissions.canViewReports
-      ? loadReportDashboardData({ context, date: clock.date, readContext: financialReads })
+      ? businessHoursRead.then(result=>loadReportDashboardData({ context, date: clock.date, readContext: financialReads, timeZone:clock.timezone, businessHours:result.data }))
       : Promise.resolve({ data: null, error: null }),
     readFinancials && permissions.canViewStaffFinancials
-      ? loadFinancialDashboardData({
-          businessHours,
+      ? businessHoursRead.then(result=>loadFinancialDashboardData({
+          businessHours: result.data ?? businessHours,
           context,
           date: clock.date,
           timezone: clock.timezone,
           readContext: financialReads,
-        })
+        }))
       : Promise.resolve({ data: null, error: null }),
     readExtras && dayView.isCurrentDate
       ? measureTodayRead("extras", () => loadNotificationAttentionItems(context))
       : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
     readExtras ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context)) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
   ]);
-  if (!readFinancials && readHours) {
+  if (readHours) {
     businessHoursResult = await businessHoursRead;
     businessHours = businessHoursResult.data ?? unavailableSalonBusinessHours({
       date: clock.date,
