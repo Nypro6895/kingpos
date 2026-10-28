@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
 async function readContext(request: Request, timing: ReadRequestTiming) {
   await connection();
-  const responseHeaders = { "Cache-Control": "private, no-store", Vary: "Cookie" };
+  const responseHeaders = { "Cache-Control": "private, no-store", Vary: "Cookie", "X-Reylumi-Compute-Region": process.env.VERCEL_REGION ?? "local" };
   const json = (data: unknown, init: ResponseInit) => timing.finish(timing.measureSync("serialize", () => Response.json(data, init)));
   if ((await timing.measure("auth", () => headers())).get("x-reylumi-auth-unavailable") === "1") return json({ error: "Please try again" }, { status: 503, headers: responseHeaders });
   const url = new URL(request.url), generation = url.searchParams.get("generation") ?? "";
