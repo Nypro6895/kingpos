@@ -1372,9 +1372,13 @@ function findMembershipForWorkspace(input: {
   return null;
 }
 
-export async function getCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
+const staffBusinessReadKey = Symbol("staff-business-context");
+export function getCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
-  if (scoped?.salonMode === "staff") return scoped;
+  if (scoped?.salonMode === "staff") return Promise.resolve(scoped);
+  return memoizeReadContext(staffBusinessReadKey,loadCurrentStaffBusinessContext);
+}
+async function loadCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
   const context = await getCurrentBusinessContext();
   const staffWorkspaces = context.workspaceOptions.filter(
     (workspace) => workspace.salonMode === "staff",

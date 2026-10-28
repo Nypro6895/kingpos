@@ -5,7 +5,7 @@ import { getCurrentStaffBusinessContext, type CurrentBusinessContext } from "@/l
 import { createAuthenticatedSupabaseServerClient, getAuthenticatedReadAuthority } from "@/lib/supabase/server";
 import { resolveStaffAccountForSalon, CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE } from "@/lib/staff-account";
 import { getExperienceContext } from "@/lib/experience-context";
-import { getReadAbortSignal, getReadContextToken, getReadRequestTiming, runWithFreshReadValidation } from "@/lib/read-context-scope";
+import { getReadAbortSignal, getReadContextToken, getReadRequestTiming, runWithFreshReadValidation, memoizeReadValidation } from "@/lib/read-context-scope";
 
 type StaffPortalIdentity = Awaited<ReturnType<typeof readStaffPortalIdentity>>;
 type ReadCapability = { token: object; context: CurrentBusinessContext; staff: StaffPortalIdentity["staff"]; supabase: StaffPortalIdentity["supabase"]; fingerprint: string; authority: string };
@@ -37,8 +37,14 @@ async function readStaffPortalIdentity(targetContext?: CurrentBusinessContext, s
 // React cache is scoped to this server render, never shared between users or
 // retained across POS refreshes. All Today tabs use the same verified identity.
 const cachedStaffPortalIdentity = cache(readStaffPortalIdentity);
-export function getStaffPortalIdentity(targetContext?: CurrentBusinessContext, strict = false) {
-  return cachedStaffPortalIdentity(targetContext ?? scopedBusinessContext(), strict);
+const staffIdentityReadKeys = new WeakMap<CurrentBusinessContext,symbol>();
+export async function getStaffPortalIdentity(targetContext?: CurrentBusinessContext, strict = false) {
+  const selected = targetContext ?? scopedBusinessContext();
+  if (!getReadContextToken()) return cachedStaffPortalIdentity(selected, strict);
+  const context = selected ?? await getCurrentStaffBusinessContext();
+  let key = staffIdentityReadKeys.get(context);
+  if(!key) { key = Symbol("staff-portal-identity"); staffIdentityReadKeys.set(context,key); }
+  return memoizeReadValidation(key,strict ? "strict" : "ordinary",()=>readStaffPortalIdentity(context,strict));
 }
 export type { StaffPortalIdentity };
 
