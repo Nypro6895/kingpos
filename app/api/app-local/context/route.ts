@@ -73,7 +73,13 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
           const targetURL = new URL(url);targetURL.searchParams.set("path",result.home);
           const target = await GET(new Request(targetURL,{headers:request.headers}));
           if(target.ok) result.homeAdmission = await target.json();
-        } else result.bootstrap = await readAppLocalBootstrap(result,path);
+        } else result.bootstrap = await readAppLocalBootstrap(result,url.searchParams.get("path") ?? path,async (name,args,scope) => {
+          const {GET:readInitial} = await import("@/app/api/app-local/read/route");
+          const resourceURL = new URL("/api/app-local/read",url.origin);
+          resourceURL.search = new URLSearchParams({name,scope,args:JSON.stringify(args)}).toString();
+          const resource = await readInitial(new Request(resourceURL,{headers:request.headers}));
+          return resource.ok ? await resource.json() : null;
+        });
       } catch { /* Admission stands; page readers retain their own retry and denial gates. */ }
     }
     return json(result, {headers:responseHeaders});
