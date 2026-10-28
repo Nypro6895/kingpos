@@ -1,0 +1,20 @@
+{
+  "kind": "release",
+  "summary": "Internal TestFlight58 VALID and available to both existing groups, 230 native tests, 2635 runtime source and 346 archived bundle hashes verified. Native single-post admission for three audited pure getters shipped; physical after-test and full cold under1s objective remain unfinished.",
+  "changes": [
+    "3a85c46e-2f93-47ae-9fd6-d40a204d85fb"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "58",
+      "commit": "2f03c612f842a1c92f39514a41fc8e6ee325c116",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/native58-release-receipt.json"
+    }
+  },
+  "id": "19c46e09-e226-4082-87da-41a4d26d234e",
+  "recordedAt": "2026-10-28T21:22:10.764Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-focus-release-20261028"
+}
