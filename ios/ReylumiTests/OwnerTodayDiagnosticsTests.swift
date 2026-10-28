@@ -90,7 +90,7 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
 
 @MainActor
 final class OwnerTodayDiagnosticsTests: XCTestCase {
-    private let fullReady = "Boolean(document.querySelector('[data-today-dashboard=\"owner-manager\"]')) && Boolean(document.querySelector('nav[aria-label=\"Owner\"]')) && ['staff','bookings','waiting','financials','extras'].every(p=>window.__reylumiDiagnostics?.snapshot().some(x=>x.event==='data.visible'&&x.area==='today'&&x.phase===p))"
+    private let fullReady = "Boolean(document.querySelector('[data-today-dashboard=\"owner-manager\"]')) && Boolean(document.querySelector('nav[aria-label=\"Owner\"]')) && (window.__reylumiDiagnostics?.snapshot().some(x=>x.event==='data.visible'&&x.area==='today'&&x.phase==='full') || ['staff','bookings','waiting','financials','extras'].every(p=>window.__reylumiDiagnostics?.snapshot().some(x=>x.event==='data.visible'&&x.area==='today'&&x.phase===p)))"
 
     func testInstalledOwnerTodayColdWithoutCacheAndWarmRevisit() async throws {
         try await scenario("cold_empty_warm_revisit") { run in
@@ -236,6 +236,7 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
             let seed = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: seedStore, client: http, defaults: defaults, cookies: { [] })
             _ = try await seed.freshContext(path: "/staff/today")
             for name in ["shell.navigation", "shell.configuration", "shell.summary", "shell.notice"] { _ = try await seed.read(name: name, args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+            _ = try await seed.read(name: "page.owner-today", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope)
             _ = try await seed.read(name: "page.owner-today", args: ["phase": "shell"], etag: nil, requestedScope: AppLocalTestFixture.scope)
             for phase in ["staff", "bookings", "waiting", "financials", "extras"] {
                 _ = try await seed.read(name: "page.owner-today", args: ["date": "2026-10-18", "phase": phase], etag: nil, requestedScope: AppLocalTestFixture.scope)

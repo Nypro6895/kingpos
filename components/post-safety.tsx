@@ -2,7 +2,7 @@
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { loadHiddenPostIdentitiesAction, postModerationAction } from "@/app/post-moderation/actions";
 import type { PostCommentTarget } from "@/types/post-comments";
@@ -29,13 +29,19 @@ export function notifyUserBlocksChanged() {
   try { localStorage.setItem("reylumi:block-change", String(Date.now())); } catch { /* Optional cross-tab refresh. */ }
 }
 export function postIdentity(target: PostCommentTarget) { return `${target.sourceType}:${target.sourceId}`; }
+const HiddenPostsInitialContext = createContext<{viewerId:string;ids:string[]}|null>(null);
+export function HiddenPostsInitialProvider({viewerId,ids,children}:{viewerId:string|null|undefined;ids:string[]|undefined;children:ReactNode}) {
+ return <HiddenPostsInitialContext.Provider value={viewerId&&ids?{viewerId,ids}:null}>{children}</HiddenPostsInitialContext.Provider>;
+}
 export function useHiddenPosts(viewerId?: string | null, keepArchived = false) {
-  const [hidden, setHidden] = useState<string[]>([]);
+  const supplied = useContext(HiddenPostsInitialContext);
+  const initial = supplied && supplied.viewerId===viewerId ? supplied.ids : undefined;
+  const [hidden, setHidden] = useState<string[]>(initial ?? []);
   useEffect(() => {
     let active = true;
     const key = storageKey(viewerId);
     const local = () => { try { const value: unknown = JSON.parse(localStorage.getItem(key) ?? "[]"); return Array.isArray(value) ? value.filter((id): id is string => typeof id === "string") : []; } catch { return []; } };
-    let remote: string[] = [];
+    let remote: string[] = initial ?? [];
     const removed = new Set<string>();
     let requestVersion = 0;
     const read = () => setHidden([...new Set([...local(), ...remote, ...removed])]);
@@ -60,12 +66,12 @@ export function useHiddenPosts(viewerId?: string | null, keepArchived = false) {
         removed.add(postIdentity(change.target)); read();
       }
     };
-    read(); sync();
+    read(); if(!initial)sync();
     window.addEventListener(POST_CHANGED_EVENT, mutated);
     window.addEventListener("reylumi:post-hidden", changed); window.addEventListener("storage", changed);
     window.addEventListener("reylumi:user-blocks-changed", changed); window.addEventListener("focus", changed);
     return () => { active=false; window.removeEventListener(POST_CHANGED_EVENT, mutated); window.removeEventListener("reylumi:post-hidden", changed); window.removeEventListener("storage", changed); window.removeEventListener("reylumi:user-blocks-changed", changed); window.removeEventListener("focus", changed); };
-  }, [viewerId, keepArchived]);
+  }, [viewerId, keepArchived, initial]);
   return hidden;
 }
 

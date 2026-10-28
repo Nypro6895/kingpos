@@ -28,6 +28,7 @@ private actor WorkspaceSwitchHTTP: ReylumiLocalHTTPClient {
     private var rootStatus = 200
     private var viewer = "00000000-0000-4000-8000-000000000001"
     private var held: (Data, HTTPURLResponse, CheckedContinuation<(Data, HTTPURLResponse), Error>)?
+    private(set) var initialPaths: [String] = []
     private(set) var contextPaths: [String] = [], postedScopes: [String] = [], commands = 0
     func configure(staffUnavailable: Bool = false, loseAcknowledgment: Bool = false, holdRoot: Bool = false, holdCommand: Bool = false, denyTarget: Bool = false, changedViewer: Bool = false, rootStatus: Int = 200) {
         self.staffUnavailable = staffUnavailable; self.loseAcknowledgment = loseAcknowledgment
@@ -56,12 +57,13 @@ private actor WorkspaceSwitchHTTP: ReylumiLocalHTTPClient {
         if url.path == "/api/app-local/context" {
             let path = query.first { $0.name == "path" }?.value ?? ""
             contextPaths.append(path)
+            initialPaths.append(query.first { $0.name == "initialPath" }?.value ?? "")
             if path == "/staff/my-work", staffUnavailable { throw URLError(.timedOut) }
             let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
             if path == "/", rootStatus != 200 { status = rootStatus; data = try JSONSerialization.data(withJSONObject: ["error": "Synthetic root session unavailable"]) }
             else {
                 var value = Self.context(generation:generation,role:path == "/staff/my-work" ? "staff" : role,root:path == "/",viewer:viewer)
-                if batchProtocol { value["workspaceHandoffVersion"] = 2 }
+                if batchProtocol { value["workspaceHandoffVersion"] = 2; if path == "/" { value["homeAdmission"] = Self.context(generation:generation,role:role,viewer:viewer) } }
                 data = try JSONSerialization.data(withJSONObject:value)
             }
             shouldHold = path == "/" && holdRoot
@@ -118,6 +120,17 @@ final class WorkspaceSwitchTests: XCTestCase {
     private func waitHeld(_ http: WorkspaceSwitchHTTP) async throws {
         for _ in 0..<200 { if await http.isHeld() { return }; try await Task.sleep(nanoseconds: 10_000_000) }
         XCTFail("Synthetic workspace preflight did not reach its held boundary"); throw URLError(.timedOut)
+    }
+
+    func testNeutralBootSuppliesOneUseRouteSpecificHomeAdmission() async throws {
+        let f = try await fixture(); defer { try? FileManager.default.removeItem(at:f.directory) }
+        await f.http.enableBatchProtocol()
+        let neutral = try await f.transport.freshContext(path:"/")
+        XCTAssertNil(neutral["homeAdmission"],"Nested page authority is never exposed as a persisted neutral lease")
+        let home = try await f.transport.freshContext(path:"/staff/my-work")
+        XCTAssertEqual((home["context"] as? [String:Any])?["scope"] as? String,WorkspaceSwitchHTTP.staffScope)
+        let paths = await f.http.contextPaths; XCTAssertEqual(paths,["/"])
+        await f.transport.reset()
     }
 
     func testNegotiatedSelectionReusesOnlyItsAcknowledgedTargetAdmission() async throws {
@@ -243,4 +256,13 @@ final class WorkspaceSwitchTests: XCTestCase {
         let commands = await f.http.commands; XCTAssertEqual(commands, 1)
         await f.transport.reset()
     }
+    func testInitialFiltersStaySeparateFromStaffAuthorityPath() async throws {
+        let f = try await fixture(); defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try await f.transport.freshContext(path: "/staff/my-work", initialPath: "/staff/my-work?tab=payroll")
+        let paths = await f.http.contextPaths, initial = await f.http.initialPaths
+        XCTAssertEqual(paths, ["/staff/my-work"])
+        XCTAssertEqual(initial, ["/staff/my-work?tab=payroll"])
+        await f.transport.reset()
+    }
+
 }

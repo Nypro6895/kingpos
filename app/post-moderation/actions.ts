@@ -1,4 +1,5 @@
 "use server";
+import {readHiddenPostIdentities} from "@/lib/post-hidden-server";
 import { requireCampaignOwner } from "@/lib/owner-campaigns";
 import { getCurrentBusinessContext, isOwnerMembership, isSalonManageContext } from "@/lib/current-context";
 import { assertAbuseRequest } from "@/lib/abuse-server";
@@ -11,11 +12,7 @@ import { updateBeautyProfile } from "@/lib/beauty";
 import { cookies } from "next/headers";
 
 export async function loadHiddenPostIdentitiesAction() {
-  const client = await createAuthenticatedSupabaseServerClient() ?? await createSafetySupabaseServerClient();
-  if (!client) throw new Error("Unable to load hidden posts.");
-  const { data, error } = await client.rpc("get_my_hidden_posts");
-  if (error) throw new Error("Unable to load hidden posts.");
-  return (data ?? []).map((row: {source_type: string; source_id: string}) => `${row.source_type}:${row.source_id}`);
+  return readHiddenPostIdentities();
 }
 
 export async function postModerationAction(target: PostCommentTarget, action: string, payload: Record<string, unknown> = {}) {

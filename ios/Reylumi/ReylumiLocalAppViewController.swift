@@ -200,8 +200,9 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                 case "context":
                     let path = args["path"] as? String ?? self.webView.url?.path ?? self.startPath
                     guard let parsed = URL(string: path, relativeTo: URL(string: "reylumi-app://bundle")), self.bundle.owns(parsed), self.bundle.routeExists(parsed.path) else { throw NSError(domain: "ReylumiLocalApp", code: 400) }
-                    if args["fresh"] as? Bool == true { result = try await self.transport.freshContext(path: parsed.path) }
-                    else { result = try await self.transport.context(path: parsed.path) }
+                    let initialPath = parsed.query.map { parsed.path + "?" + $0 }
+                    if args["fresh"] as? Bool == true { result = try await self.transport.freshContext(path: parsed.path, initialPath: initialPath) }
+                    else { result = try await self.transport.context(path: parsed.path, initialPath: initialPath) }
                 case "read":
                     var original = args; original.removeValue(forKey: "etag"); original.removeValue(forKey: "scope")
                     result = try await self.transport.read(name: name, args: original, etag: body["etag"] as? String ?? args["etag"] as? String, requestedScope: args["scope"] as? String)

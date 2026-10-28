@@ -450,7 +450,7 @@ export async function searchExploreSalons(
           .filter((row) => !(row.logo_image_path ?? row.logo_path))
           .map((row) => row.salon_id),
       }),
-      getPublicSalonOperatingStatusesBySalonId(salonIds),
+      getPublicSalonOperatingStatusesBySalonId(salonIds,rpc),
     ]);
     const results = rows.map((row) =>
       ({ ...mapExploreRow(
