@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 export function readProductionAlias({ spawnProcess=spawn, platform=process.platform }={}) {
  return new Promise((resolveAlias,reject)=>{
   const args=platform==='win32'
-   ? ['-NoProfile','-NonInteractive','-Command',"npx vercel api '/v4/aliases/reylumi.com' --raw"]
+   ? ['-NoProfile','-NonInteractive','-Command',"npx.cmd vercel api '/v4/aliases/reylumi.com' --raw"]
    : ['vercel','api','/v4/aliases/reylumi.com','--raw'];
   const child=spawnProcess(platform==='win32'?'powershell.exe':'npx',args,{windowsHide:true,stdio:['ignore','pipe','pipe']});
   let output='';const timer=setTimeout(()=>{child.kill();reject(new Error('Production alias verification timed out.'));},30_000);
