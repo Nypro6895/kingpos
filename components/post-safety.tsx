@@ -23,6 +23,9 @@ export const REPORT_REASONS = [
 
 function storageKey(viewerId?: string | null) { return `reylumi-hidden-posts:${viewerId ?? "guest"}`; }
 const hiddenRequests = new Map<string, Promise<string[]>>();
+// Every mounted feed subscribes to the same browser event. Invalidate once per
+// viewer and event so later subscribers reuse the fresh in-flight server read.
+const hiddenInvalidations = new WeakMap<Event, Set<string>>();
 export function notifyUserBlocksChanged() {
   hiddenRequests.clear();
   window.dispatchEvent(new Event("reylumi:user-blocks-changed"));
@@ -57,7 +60,14 @@ export function useHiddenPosts(viewerId?: string | null, keepArchived = false) {
         read();
       }).catch(() => { hiddenRequests.delete(key); });
     };
-    const changed = () => { hiddenRequests.delete(key); read(); sync(); };
+    const changed = (event: Event) => {
+      if (event instanceof StorageEvent && event.key !== null
+        && event.key !== key && event.key !== "reylumi:block-change") return;
+      let invalidated = hiddenInvalidations.get(event);
+      if (!invalidated) { invalidated = new Set(); hiddenInvalidations.set(event, invalidated); }
+      if (!invalidated.has(key)) { invalidated.add(key); hiddenRequests.delete(key); }
+      read(); sync();
+    };
     const mutated = (event: Event) => {
       const detail = (event as CustomEvent<{ change: PostChange; viewerId: string | null }>).detail;
       if (!detail?.change || detail.viewerId !== (viewerId ?? null)) return;
