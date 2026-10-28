@@ -1,5 +1,6 @@
 import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
+import {getReusableReadValidationToken,memoizeReadContext} from "@/lib/read-context-scope";
 
 import {
   getCurrentBusinessContext,
@@ -294,7 +295,15 @@ export async function getCurrentStaffForSalon(
   throw new Error(CURRENT_STAFF_NOT_FOUND_MESSAGE);
 }
 
-export async function getTodaysStaffWorkday(
+const staffTodayReadKey=Symbol("staff-attendance-today-read");
+export function getTodaysStaffWorkday(context?:CurrentBusinessContext,options:StaffResolutionOptions={}) {
+  // Identity bootstrap and the attendance DTO consume the same original read.
+  // Explicit identities, mutations outside read scope and final probes stay fresh.
+  return !context && Object.keys(options).length===0 && getReusableReadValidationToken()
+    ? memoizeReadContext(staffTodayReadKey,()=>loadTodaysStaffWorkday())
+    : loadTodaysStaffWorkday(context,options);
+}
+async function loadTodaysStaffWorkday(
   context?: CurrentBusinessContext,
   options: StaffResolutionOptions = {},
 ) {
