@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Staff self-snapshot date removes preliminary timezone/date round trip; preserves original amounts, fallback and final revocation probes. Existing bootstrap timing stages now observable. Source and live smoke verified; real iPhone after deployment still pending.",
+  "changes": [
+    "55ae5f3e-6fe1-452f-909e-fe8bbb7316eb"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Y4HMk5SsD1aybsozeqaNd9wtcsPj",
+      "baselineDeploymentId": "dpl_D9wZQaDMbF47ynGg1TxRn258BJhS",
+      "sourceSha256": "3dc43b5626bbab1afdac958561c85c6d60d056ff32ea76f81ba50c895ae166ee",
+      "overlaySha256": "1d21f6d82ab8cca145ff812957d4f9d07159743d94f8c5865c99d6b1ba8ac754",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/staff173-source-verified.json; C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/staff173-live-check.json"
+    }
+  },
+  "id": "5a7a8626-821d-4de7-aeef-3c3122fea87b",
+  "recordedAt": "2026-10-28T21:21:52.811Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028"
+}
