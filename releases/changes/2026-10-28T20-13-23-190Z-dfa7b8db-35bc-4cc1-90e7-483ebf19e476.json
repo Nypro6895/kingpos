@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "iphone-settings-inactive-effects-20261028",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/setting-content.tsx",
+    "tests/settings-retained-activity.test.mjs"
+  ],
+  "summary": "Pause inactive retained Settings section effects with nested Activity; preserve unsaved drafts, refresh a section on actual reveal, and discard state on parent viewer replacement. Physical released55 reproduction confirmed; overall cold under1s objective unfinished.",
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\dal144-selected-frozen",
+    "commit": "cbc5d02df52c54ab9b6d82eab268e132c28b2a09"
+  },
+  "validation": [
+    {
+      "name": "23 focused regressions passed on assembled live-based source: permission denial, target salon, fresh revocation, no partial failures, write separation, first reader sharing, hidden-section lifecycle and draft retention",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false passed on assembled source",
+      "result": "passed"
+    }
+  ],
+  "id": "dfa7b8db-35bc-4cc1-90e7-483ebf19e476",
+  "recordedAt": "2026-10-28T20:13:23.190Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/settings-hub-client.tsx": "69f09a6b4209533cf52edbf419b3ad778c4fca56c5a4ad3a09b0ee35978280ee",
+    "app/settings/setting-content.tsx": "f365add5c4170da9f80064306ceaab3937a043dea61f4df3bd28667cc777dc8a",
+    "tests/settings-retained-activity.test.mjs": "c3348e2100b7fc9d65f00688143fd20430baa22737d4ccac538ec33db9853551"
+  }
+}
