@@ -7,6 +7,7 @@ import { bookSmsState } from "@/lib/booksms";
 import { saveBookingPolicy } from "@/app/market/booking-policy-actions";
 import { saveBookSms } from "@/app/market/booksms-actions";
 import { withSettingsTarget } from "@/lib/settings-target-context";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 async function checkSalon(salonId: string) {
   const scope = await marketPluginContext();
@@ -16,7 +17,7 @@ async function checkSalon(salonId: string) {
 function errorMessage(error: unknown) { return error instanceof Error ? error.message : "Settings could not load."; }
 
 export async function loadBookingRulesSettingsAction(salonId: string) {
-  try { return await withSettingsTarget(salonId, async () => { await checkSalon(salonId); return { state: await bookingPolicySubscription(salonId) }; }); }
+  try { return await runWithReadContext(() => withSettingsTarget(salonId, async () => { await checkSalon(salonId); return { state: await bookingPolicySubscription(salonId) }; })); }
   catch (error) { return { error: errorMessage(error) }; }
 }
 
@@ -36,7 +37,7 @@ export async function saveBookingRulesSettingsAction(salonId: string, content: s
 }
 
 export async function loadBookSmsSettingsAction(salonId: string) {
-  try { return await withSettingsTarget(salonId, async () => { await checkSalon(salonId); return { state: await bookSmsState() }; }); }
+  try { return await runWithReadContext(() => withSettingsTarget(salonId, async () => { await checkSalon(salonId); return { state: await bookSmsState() }; })); }
   catch (error) { return { error: errorMessage(error) }; }
 }
 

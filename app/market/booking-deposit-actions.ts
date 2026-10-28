@@ -9,12 +9,13 @@ import { bookingDepositPayment } from "@/lib/booking-deposit-subscription";
 import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
 import type { BookingDepositSettings, BookingDepositState } from "@/types/booking-deposit";
 import { withSettingsTarget } from "@/lib/settings-target-context";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 type DepositResult = { state?: BookingDepositState; error?: string };
 type RedirectResult = { url?: string; error?: string };
 
 export async function loadBookingDepositAction(salonId?: string): Promise<DepositResult> {
-  try { return await withSettingsTarget(salonId, async () => { const scope = await marketPluginContext(); return { state: await bookingDepositState(scope.salonId) }; }, "manage"); }
+  try { return await runWithReadContext(() => withSettingsTarget(salonId, async () => { const scope = await marketPluginContext(); return { state: await bookingDepositState(scope.salonId) }; }, "manage")); }
   catch (error) { return { error: error instanceof Error ? error.message : "Settings could not load." }; }
 }
 export async function saveBookingDepositAction(settings: BookingDepositSettings, salonId?: string): Promise<DepositResult> {
