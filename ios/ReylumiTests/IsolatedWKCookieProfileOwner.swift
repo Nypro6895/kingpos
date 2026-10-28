@@ -9,6 +9,7 @@ import WebKit
 final class IsolatedWKCookieProfileOwner: NSObject, WKNavigationDelegate {
     private let webView: WKWebView
     private let window: UIWindow
+    private weak var previousKeyWindow: UIWindow?
     private var continuation: CheckedContinuation<Void, Error>?
     private var timeout: Task<Void, Never>?
 
@@ -27,7 +28,10 @@ final class IsolatedWKCookieProfileOwner: NSObject, WKNavigationDelegate {
     }
 
     func prepare() async throws {
-        window.isHidden = false
+        // A visible non-key window can remain behind a prior WK test window.
+        // Own foreground focus while this isolated profile starts its process.
+        previousKeyWindow = window.windowScene?.windows.first(where: { $0.isKeyWindow })
+        window.makeKeyAndVisible()
         try await withCheckedThrowingContinuation { (pending: CheckedContinuation<Void, Error>) in
             continuation = pending
             timeout = Task { @MainActor [weak self] in
@@ -55,6 +59,11 @@ final class IsolatedWKCookieProfileOwner: NSObject, WKNavigationDelegate {
     func close() {
         finish(CancellationError())
         webView.stopLoading(); webView.navigationDelegate = nil
+        let restoreFocus = window.isKeyWindow
         window.isHidden = true; window.rootViewController = nil
+        if restoreFocus, let previousKeyWindow, previousKeyWindow.rootViewController != nil {
+            previousKeyWindow.makeKeyAndVisible()
+        }
+        previousKeyWindow = nil
     }
 }
