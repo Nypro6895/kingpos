@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Web transport read scope for three audited Booking plugin getters published; original session/scope/Owner/target checks retained. Physical retest and full-page under1s target remain pending.",
+  "changes": [
+    "5c7ebe3a-0144-4a01-8c6a-922fe449202e"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_4wSjQH9A1qr87Z1ngTMJJW5yxgXz",
+      "baselineDeploymentId": "dpl_5M9SQW7rWA2wdRsPv7Wsw5VmDq64",
+      "sourceSha256": "5fb81a4c261cfb4cea84d23461f8f566e7538961df0340e15693261e074b664b",
+      "overlaySha256": "c079a8144cd36359d9a134ff7ca088dbf501dad2eeb53d19d09ef140b1e0fd0e",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/getter153-source-verified.json; C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/getter153-live-check.json"
+    }
+  },
+  "id": "c49572d2-32e4-4261-a44b-2c55896a0cc3",
+  "recordedAt": "2026-10-28T20:44:10.260Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028"
+}
