@@ -2,6 +2,9 @@
 
 import { WorkspaceText } from "@/components/workspace-language";
 import { useEffect, useState } from "react";
+import {getAppLocalHost} from "@/lib/app-local-host";
+import {getAppLocalCommandScope} from "@/lib/app-local-command-client";
+import {useAppLocalResource} from "@/lib/app-local-resource";
 import { AccountDeletionPanel } from "@/app/account/account-deletion-panel";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import { LoginSecurityPanel } from "./login-security/login-security-panel";
@@ -9,6 +12,9 @@ import { SettingsLoading } from "./settings-loading";
 import { loadPersonalSettingsSection } from "./load-personal-section";
 
 export function DeferredPersonalSection({kind}:{kind:"security"|"deletion"}) {
+  return getAppLocalHost().isNative?<NativePersonalSection kind={kind}/>:<WebPersonalSection kind={kind}/>;
+}
+function WebPersonalSection({kind}:{kind:"security"|"deletion"}) {
   const [content,setContent]=useState<Awaited<ReturnType<typeof loadPersonalSettingsSection>>|null>(null);
   const [error,setError]=useState("");
   const [retry,setRetry]=useState(0);
@@ -33,4 +39,13 @@ export function DeferredDeletionSection({initialOpen=false}:{initialOpen?:boolea
     <summary className="cursor-pointer font-semibold"><WorkspaceText text="Danger Zone · account backup & deletion" /></summary>
     {open ? <DeferredPersonalSection kind="deletion"/> : null}
   </details>;
+}
+
+function NativePersonalSection({kind}:{kind:"security"|"deletion"}) {
+ const scope=getAppLocalCommandScope();
+ const state=useAppLocalResource<Awaited<ReturnType<typeof loadPersonalSettingsSection>>>(scope,"settings.personal",{kind},{refreshAfterMs:15_000});
+ const content=state.available&&!state.accessDenied?state.data:undefined;
+ if(content&&content.kind===kind)return content.kind==="deletion"?<AccountDeletionPanel impact={content.impact} onSaved={()=>void state.refresh()}/>:<LoginSecurityPanel overview={content.overview} onSaved={()=>void state.refresh()} contactEditor={<AccountProfileEditor embedded sectionId="settings-security-profile-contact" user={content.user} createdAtLabel={new Date(content.user.created_at).toLocaleDateString("en-US")}/>}/>;
+ const error=!scope||state.accessDenied?"Your account has changed. Please open the page again.":state.error;
+ return <div role="status">{error?<><p><WorkspaceText text={error}/></p><button type="button" onClick={()=>void state.refresh()}><WorkspaceText text="Try again"/></button></>:<SettingsLoading label="Loading account details…"/>}</div>;
 }

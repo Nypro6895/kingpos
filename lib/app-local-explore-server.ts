@@ -64,10 +64,13 @@ async function loadStartupRouting(context: Awaited<ReturnType<typeof getRequestB
 /** The original core waits for search plus its small initial-home read only.
  * Full rails, personal utility, quick actions and feed have independent reads. */
 async function explorePage(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams): Promise<AppLocalExploreCore> {
-  const hiddenPromise = readHiddenPostIdentities().catch(()=>undefined);
-  const homePromise = explicitSearch(params) ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000).catch(() => emptyHomeContent());
-  const { explicit, hasLocationParam, workspaceLocation, routing, sort } = await startupRouting(context, params);
-  const [searchResponse, homeContent, initialHiddenPosts] = await Promise.all([searchExploreSalons({ category: routing.category, location: routing.location, page: 1, pageSize: explicit ? EXPLORE_PAGE_SIZE : 4, query: routing.query, scopePolicy: routing.scopePolicy, sort, target: routing.target, locationSource: routing.locationSource }, { routing }), homePromise, hiddenPromise]);
+  const marks:Record<string,number>={};
+  const measure = async<T>(name:string,work:()=>Promise<T>)=>{const began=performance.now();try{return await work();}finally{marks[name]=Math.round(performance.now()-began);}};
+  const hiddenPromise = measure("hidden",()=>readHiddenPostIdentities()).catch(()=>undefined);
+  const homePromise = explicitSearch(params) ? Promise.resolve(emptyHomeContent()) : measure("home",()=>runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000)).catch(() => emptyHomeContent());
+  const { explicit, hasLocationParam, workspaceLocation, routing, sort } = await measure("routing",()=>startupRouting(context, params));
+  const [searchResponse, homeContent, initialHiddenPosts] = await Promise.all([measure("search",()=>searchExploreSalons({ category: routing.category, location: routing.location, page: 1, pageSize: explicit ? EXPLORE_PAGE_SIZE : 4, query: routing.query, scopePolicy: routing.scopePolicy, sort, target: routing.target, locationSource: routing.locationSource }, { routing })), homePromise, hiddenPromise]);
+  console.info("Explore initial page timing",marks);
   const initialFeed = emptyFeedPage(), utilityContent = emptyUtility();
   const discoveryContent = buildExploreDiscoveryContent({ homeContent, initialFeed, searchResponse, utilityContent, workspaceLocation });
   const showcase = enrichExploreShowcaseContent({ discoveryContent, homeContent, initialFeed, searchResponse });

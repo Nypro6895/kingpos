@@ -41,6 +41,16 @@ enum AppLocalTestFixture {
 }
 
 final class LocalBundleTests: XCTestCase {
+    @MainActor func testStartupQueryKeepsDeclaredRouteAndRejectsOtherOrigins() throws {
+        let (bundle,directory)=try AppLocalTestFixture.bundle();defer {try? FileManager.default.removeItem(at:directory)}
+        for path in ["/help?lang=vi","/help/windows-portable?lang=vi"] {
+            XCTAssertEqual(ReylumiLocalAppViewController(bundle:bundle,startPath:path).currentPath,path)
+        }
+        for path in ["//evil.invalid/help","https://evil.invalid/help","/help#unexpected","/missing?tab=payroll"] {
+            XCTAssertEqual(ReylumiLocalAppViewController(bundle:bundle,startPath:path).currentPath,"/explore")
+        }
+    }
+
     func testCoreResourcesAreVerifiedOffMainThreadOnceAndOnlyWithinMemoryBounds() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
         let cache = ReylumiLocalResourceCache(bundle: bundle)

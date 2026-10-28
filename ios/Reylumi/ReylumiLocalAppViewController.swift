@@ -37,7 +37,12 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     private func reportReady() { if !reportedReady { reportedReady = true; onReady?() } }
 
     init(bundle: ReylumiLocalBundle, origin: URL = URL(string: "https://reylumi.com")!, startPath: String = "/explore", transport: ReylumiLocalAppTransport? = nil) {
-        self.bundle = bundle; self.origin = origin; self.startPath = bundle.routeExists(startPath) ? startPath : "/explore"
+        self.bundle = bundle; self.origin = origin
+        if startPath.hasPrefix("/"), !startPath.hasPrefix("//"), startPath.utf8.count <= 4096,
+           let requested = URL(string: startPath, relativeTo: URL(string: "reylumi-app://bundle")),
+           bundle.owns(requested), requested.fragment == nil, bundle.routeExists(requested.path) {
+            self.startPath = requested.path + (requested.query.map { "?" + $0 } ?? "")
+        } else { self.startPath = "/explore" }
         self.transport = transport ?? ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest)
         super.init(nibName: nil, bundle: nil)
         self.transport.diagnostics.record(.controllerCreate)

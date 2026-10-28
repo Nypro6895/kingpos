@@ -104,6 +104,10 @@ async function readAppLocalPlatformResourceInContext(name: string, input: unknow
       } catch { /* Keep the original public product behavior; checkout rechecks its authority. */ }
     }
     data = { salonId: context.currentSalon?.id, installed };
+  } else if (name === "settings.personal") {
+    if(!["security","deletion"].includes(args.kind) || Object.keys(args).some(key=>key!=="kind"))throw new AppLocalRoleReadError(400,"Invalid account section");
+    const {loadPersonalSettingsSection}=await import("@/app/settings/load-personal-section");
+    data=await runReadWithDeadline(loadPersonalSettingsSection(args.kind as "security"|"deletion"),15000);
   } else if (name === "settings.direct") {
     const kinds = ["salon-profile", "public-profile", "shortcuts", "services", "booking", "staff-team", "payroll", "pos-display", "ownership", "close-salon", "staff-workspace", "staff-schedule"];
     if (!kinds.includes(args.kind) || !/^[a-f0-9-]{36}$/i.test(args.salonId ?? "")) throw new AppLocalRoleReadError(400, "Invalid settings panel");

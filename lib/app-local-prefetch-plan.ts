@@ -83,6 +83,8 @@ function currentJobs(role: Audience, value: AppLocalContext, url: URL): Job[] {
   const path = url.pathname + url.search, pathname = url.pathname;
   if(role !== "guest" && ["/settings","/settings/login-security","/account","/roles","/permissions","/staff/connections"].includes(pathname)) {
     const jobs = [read(path,"page.settings")];
+    const personalSection = pathname === "/settings/login-security" ? "login-security" : url.searchParams.get("section");
+    if(["login-security","delete-account"].includes(personalSection ?? ""))jobs.push(read(path,"settings.personal",{kind:personalSection === "delete-account"?"deletion":"security"}));
     const salonId = value.context.salonId, section = url.searchParams.get("section") ?? "";
     const prefix = `salon-${salonId}-`, kind = section.startsWith(prefix) ? section.slice(prefix.length) : "";
     if(role === "owner" && salonId && ["salon-profile","public-profile","services","booking","staff-team","payroll","pos-display","shortcuts","ownership","close-salon"].includes(kind)) {

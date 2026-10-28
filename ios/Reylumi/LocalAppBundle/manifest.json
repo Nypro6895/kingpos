@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "672f9e0bc4c1af4b2bf822d92d7d490d4b3f97ece57cc830826f38ca949b6674",
+  "buildId": "512adceec25bea6137b0e251fe62a8555d4d0ae718b0fa457e8ba4f5b8b33781",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -23,8 +23,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 4401112,
-      "sha256": "a8080eebcb2f3ebd107651f8b10602165edf459779d71348aa57271e0d726414",
+      "bytes": 4403197,
+      "sha256": "63435d7df7141fa2f38facb77ecc032eb51ef2bf04fef578a3c253a2d5fd46be",
       "mime": "text/javascript"
     },
     {
@@ -2687,6 +2687,15 @@
       "argumentKeys": [],
       "access": "scoped",
       "cacheable": true
+    },
+    {
+      "name": "settings.personal",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "kind"
+      ],
+      "access": "scoped",
+      "cacheable": false
     },
     {
       "name": "settings.direct",
