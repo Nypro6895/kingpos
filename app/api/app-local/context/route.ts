@@ -8,8 +8,7 @@ import { getExperienceOfflinePath } from "@/lib/experience-offline-policy";
 import { GET as offlineContext } from "@/app/api/experience/offline-context/route";
 import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
 import { getCurrentStaffBusinessContext, isSalonManageContext } from "@/lib/current-context";
-import { readAppLocalPortableContext } from "@/lib/app-local-portable-context-server";
-import { readAppLocalDisplayContext } from "@/lib/app-local-display-server";
+import { APP_LOCAL_PORTABLE_ROUTES } from "@/lib/app-local-portable-metadata";
 import { runWithReadContext } from "@/lib/read-context-scope";
 import { createReadRequestTiming, type ReadRequestTiming } from "@/lib/read-request-timing";
 import { getStaffOnlineOnlyAccess } from "@/lib/staff-online-access-server";
@@ -28,10 +27,20 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
   const url = new URL(request.url), generation = url.searchParams.get("generation") ?? "";
   if (!timing.measureSync("validate", () => /^[\w-]{16,100}$/.test(generation))) return json({ error: "Invalid device generation" }, { status: 400, headers: responseHeaders });
   try {
-    const display=await timing.measure("validate", () => readAppLocalDisplayContext(url.searchParams.get("path")??"/market",generation,request.headers));
-    if(display)return json(display,{headers:responseHeaders});
-    const device=await timing.measure("validate", () => readAppLocalPortableContext(url.searchParams.get("path")??"/market",generation,request.headers));
-    if(device)return json(device,{headers:responseHeaders});
+    const requestedPath=url.searchParams.get("path")??"/market";
+    // Device handlers keep their original gates; ordinary phone startup need
+    // not initialize their POS commands, relay and pairing dependencies.
+    if(requestedPath==="/pos/customer-display") {
+      const {readAppLocalDisplayContext}=await import("@/lib/app-local-display-server");
+      const display=await timing.measure("validate",()=>readAppLocalDisplayContext(requestedPath,generation,request.headers));
+      if(display)return json(display,{headers:responseHeaders});
+    }
+    const portablePath=getExperienceOfflinePath(requestedPath,"https://reylumi.com");
+    if(portablePath && (APP_LOCAL_PORTABLE_ROUTES as readonly string[]).includes(portablePath.split("?")[0])) {
+      const {readAppLocalPortableContext}=await import("@/lib/app-local-portable-context-server");
+      const device=await timing.measure("validate",()=>readAppLocalPortableContext(requestedPath,generation,request.headers));
+      if(device)return json(device,{headers:responseHeaders});
+    }
     const business = await timing.measure("auth", () => getRequestBusinessContext());
     const requested = getExperienceOfflinePath(url.searchParams.get("path") ?? "/market", url.origin);
     // These are display leases from the existing authorization endpoint. They
@@ -74,6 +83,10 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
           const target = await GET(new Request(targetURL,{headers:request.headers}));
           if(target.ok) result.homeAdmission = await target.json();
         } else result.bootstrap = await readAppLocalBootstrap(result,validatedInitialPath(url,path),async (name,args,scope) => {
+          if(name==="shell.navigation") {
+            const {readAppLocalShellResource}=await import("@/lib/app-local-shell-server");
+            return readAppLocalShellResource(name,args,{scope,signal:request.signal});
+          }
           const {GET:readInitial} = await import("@/app/api/app-local/read/route");
           const resourceURL = new URL("/api/app-local/read",url.origin);
           resourceURL.search = new URLSearchParams({name,scope,args:JSON.stringify(args)}).toString();
