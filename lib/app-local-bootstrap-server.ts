@@ -22,6 +22,11 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
   const add = (name:string,args:Record<string,unknown>,result:AppLocalRead|null) => {
     if(result?.status === 200 && result.scope === scope && result.data !== undefined) rows.push({name,args,value:result});
   };
+  // Initial page admission already verified this request's identity and graph.
+  // Load the original navigation reader alongside the page so the account menu
+  // does not require another network round trip after content appears.
+  const navigation = readInitial && ["/staff/today","/staff/my-work","/staff/appointments","/staff/workday","/explore"].includes(url.pathname)
+    ? readInitial("shell.navigation",{},scope).then(result=>({result}),error=>({error})) : null;
   if (url.pathname === "/staff/today") {
     const args = url.searchParams.has("date") ? {date:url.searchParams.get("date")!} : {};
     const today = await readAppLocalRoleResource("owner.today",args,{scope});
@@ -72,6 +77,11 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     const jobs = appLocalPrefetchPlan(value,path).filter(job=>job.path === path).slice(0,2);
     const loaded = await Promise.all(jobs.map(async job=>({job,result:await readInitial(job.name,job.args,scope)})));
     for(const {job,result} of loaded) add(job.name,job.args,result);
+  }
+  if(navigation) {
+    const settled=await navigation;
+    if("error" in settled)throw settled.error;
+    add("shell.navigation",{},settled.result);
   }
   return rows;
 }
