@@ -50,10 +50,10 @@ function ExplorePage({ path, context }: AppLocalPageProps) {
   const feedPending = useDeferred<ExploreFeedPage | null>(pendingKey);
   const extras = useMemo(() => {
     if (!data || !extrasResource.data) return undefined;
-    const { homeContent, utilityContent, quickActions } = extrasResource.data;
-    const discoveryContent = buildExploreDiscoveryContent({ homeContent, utilityContent, searchResponse: data.initialResponse, initialFeed: data.initialFeed, workspaceLocation: data.workspaceLocation });
+    const { homeContent, utilityContent, quickActions, homeSearchResponse } = extrasResource.data;
+    const discoveryContent = buildExploreDiscoveryContent({ homeContent, utilityContent, searchResponse: homeSearchResponse ?? data.initialResponse, initialFeed: data.initialFeed, workspaceLocation: data.workspaceLocation });
     const enriched = enrichExploreShowcaseContent({ discoveryContent, homeContent, initialFeed: data.initialFeed, searchResponse: data.initialResponse }, data.deferred?.showcase ?? false);
-    return { homeContent: enriched.homeContent, discoveryContent: enriched.discoveryContent, quickActions };
+    return { homeContent: enriched.homeContent, discoveryContent: enriched.discoveryContent, quickActions, homeSearchResponse };
   }, [extrasResource.data, data]);
   useEffect(() => {
     if (extras) extrasPending.resolve(extras);

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ExploreDiscoveryContent, ExploreFeedPage, ExploreHomeContent } from "@/types/explore";
+import type { ExploreDiscoveryContent, ExploreFeedPage, ExploreHomeContent, ExploreSearchResponse } from "@/types/explore";
 import { ExploreClient, type ExploreClientProps, type ExploreQuickAction } from "./explore-client";
 
-export type ExploreStartupExtras = { discoveryContent: ExploreDiscoveryContent; homeContent: ExploreHomeContent; quickActions: ExploreQuickAction[] };
+export type ExploreStartupExtras = { discoveryContent: ExploreDiscoveryContent; homeContent: ExploreHomeContent; quickActions: ExploreQuickAction[]; homeSearchResponse?:ExploreSearchResponse };
 
 export function ExploreProgressiveClient({ initial, extras, feed }: {
   initial: ExploreClientProps;

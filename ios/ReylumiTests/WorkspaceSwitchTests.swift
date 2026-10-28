@@ -265,4 +265,34 @@ final class WorkspaceSwitchTests: XCTestCase {
         await f.transport.reset()
     }
 
+    func testStartupNetworkBeginsBeforeJSAndIsConsumedOnceWithoutEarlyAdmission() async throws {
+        let f=try await fixture();defer {try? FileManager.default.removeItem(at:f.directory)}
+        await f.http.configure(holdRoot:true)
+        var delivered=0
+        f.transport.onEvent={name,_ in if name=="reylumi:app-local-context" {delivered += 1}}
+        f.transport.beginInitialContext(path:"/")
+        try await waitHeld(f.http)
+        XCTAssertEqual(delivered,0,"Receiving network data is not page admission")
+        let context=Task { @MainActor in try await f.transport.freshContext(path:"/") }
+        await f.http.release()
+        _=try await context.value
+        let paths=await f.http.contextPaths;XCTAssertEqual(paths,["/"]);XCTAssertEqual(delivered,1)
+        _=try await f.transport.freshContext(path:"/staff/my-work")
+        let after=await f.http.contextPaths;XCTAssertEqual(after,["/","/staff/my-work"])
+        await f.transport.reset()
+    }
+    func testStartupNetworkCannotSurviveAccountReset() async throws {
+        let f=try await fixture();defer {try? FileManager.default.removeItem(at:f.directory)}
+        await f.http.configure(holdRoot:true)
+        f.transport.beginInitialContext(path:"/")
+        try await waitHeld(f.http)
+        await f.transport.reset()
+        await f.http.release()
+        await f.http.configure()
+        let selected=try await f.transport.freshContext(path:"/staff/my-work")
+        XCTAssertEqual((selected["context"] as? [String:Any])?["scope"] as? String,WorkspaceSwitchHTTP.staffScope)
+        let paths=await f.http.contextPaths;XCTAssertEqual(paths,["/","/staff/my-work"])
+        await f.transport.reset()
+    }
+
 }

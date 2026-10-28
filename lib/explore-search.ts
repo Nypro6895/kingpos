@@ -542,3 +542,5 @@ export async function getExploreWorkspaceLocation(
   }
   return { label: "", source: "none" };
 }
+
+export {emptyResponse as emptyExploreSearchResponse};

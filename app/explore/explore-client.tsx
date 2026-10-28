@@ -107,6 +107,8 @@ export type ExploreClientProps = {
   startupExtrasPending?: boolean;
   initialLocationSource: ExploreLocationSource;
   initialResponse: ExploreSearchResponse;
+  homeSearchPending?:boolean;
+  homeSearchResponse?:ExploreSearchResponse;
   initialSearchMode: boolean;
   quickActions: ExploreQuickAction[];
   workspaceLocation: ExploreInitialLocation;
@@ -3123,6 +3125,8 @@ export function ExploreClient({
   startupExtrasPending,
   initialLocationSource,
   initialResponse,
+  homeSearchPending,
+  homeSearchResponse,
   initialSearchMode,
   quickActions,
   workspaceLocation,
@@ -3174,6 +3178,11 @@ export function ExploreClient({
   const [committedGpsContext, setCommittedGpsContext] = useState<ExploreCommittedGpsContext | null>(null);
   useEffect(() => () => { gpsRequestVersion.current += 1; gpsRequest.current?.abort(); }, []);
 
+  useEffect(()=>{
+    if(homeSearchPending && homeSearchResponse && !explicitSearchMode && !gpsResponse && sessionResponse===initialResponse) {
+      setSessionResponse(homeSearchResponse);
+    }
+  },[homeSearchPending,homeSearchResponse,explicitSearchMode,gpsResponse,sessionResponse,initialResponse]);
   const gpsActive = Boolean(gpsResponse);
   const searchMode = explicitSearchMode || gpsActive;
   const activeResponse: ExploreSearchResponse =

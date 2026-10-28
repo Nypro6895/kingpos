@@ -114,6 +114,9 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             Task { @MainActor in await self?.transport.reset() }
         }
         transport.diagnostics.record(.webViewCreateEnd, durationMs: (ProcessInfo.processInfo.systemUptime - creationStarted) * 1000)
+        if let first=URL(string:startPath,relativeTo:URL(string:"reylumi-app://bundle")), bundle.owns(first), bundle.routeAccess(first.path) == "scoped" {
+            transport.beginInitialContext(path:first.path,initialPath:first.query.map{first.path+"?"+$0})
+        }
         loadBundle()
     }
     private func loadBundle(path: String? = nil) {

@@ -65,6 +65,7 @@ final class ReylumiLocalAppTransport {
     private var freshContextTask: Task<[String: Any], Error>?
     private var freshContextID: UUID?
     private var preparedWorkspaceContext: (path: String, data: Data, response: HTTPURLResponse, epoch: Int, revision: Int, expires: Date)?
+    private var initialContextFlight: (path:String,epoch:Int,expires:Date,trace:ReylumiLocalDiagnostics.RequestTrace,task:Task<(Data,HTTPURLResponse,Int),Error>)?
     private var freshContextPath: String?
     private var scopeConflictRevision = 0
     private var pendingScopeConflicts: [String: Int] = [:]
@@ -242,6 +243,7 @@ final class ReylumiLocalAppTransport {
         scopeEpoch += 1; nonce = UUID().uuidString
         if rotateGeneration { generation = UUID().uuidString; defaults.set(generation, forKey: generationKey) }
         preparedWorkspaceContext = nil
+        initialContextFlight?.task.cancel(); initialContextFlight = nil
         freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
         pendingScopeConflicts.removeAll()
         session = nil; loadedSession = true; onlineContext = nil; onlineCheckedAt = .distantPast
@@ -371,7 +373,7 @@ final class ReylumiLocalAppTransport {
         if await matchesCachedScope(scope) { return true }
         return matchesStaffOnlineScope(scope)
     }
-    func invalidatePage() { diagnostics.record(.pageInvalidate, category: .context, outcome: .invalidated); scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
+    func invalidatePage() { initialContextFlight?.task.cancel(); initialContextFlight = nil; diagnostics.record(.pageInvalidate, category: .context, outcome: .invalidated); scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
     private func revokeDisplay(scope: String?, staffFamily: Bool = false, status: Int = 403) async {
         let onlineScope = (onlineContext?["context"] as? [String: Any])?["scope"] as? String
         let reason: ReylumiLocalDiagnostics.Reason = status == 409 ? .workspaceChanged : .displayDenied
@@ -486,6 +488,20 @@ final class ReylumiLocalAppTransport {
               let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw failure(response.statusCode, "Couldn't read this page. Please try again.") }
         return object
     }
+    /// Begin the first HTTPS read alongside signed bundle loading. No response
+    /// is admitted or displayed until the ordinary context pipeline consumes it.
+    func beginInitialContext(path:String,initialPath:String? = nil) {
+        guard onlineContext == nil, initialContextFlight == nil, freshContextTask == nil else {return}
+        let epoch=scopeEpoch, expectedGeneration=generation, trace=ReylumiLocalDiagnostics.RequestTrace(read:.context)
+        let query=[URLQueryItem(name:"path",value:path),URLQueryItem(name:"generation",value:expectedGeneration)] + (initialPath.map{[URLQueryItem(name:"initialPath",value:$0)]} ?? [])
+        let task=Task { @MainActor [weak self] () throws -> (Data,HTTPURLResponse,Int) in
+            guard let self else {throw CancellationError()}
+            let(data,response)=try await self.send(path:"/api/app-local/context",query:query,epoch:epoch,trace:trace)
+            try self.ensureCurrent(epoch)
+            return(data,response,self.cookieAuthorityRevision)
+        }
+        initialContextFlight=(initialPath ?? path,epoch,Date().addingTimeInterval(5),trace,task)
+    }
     func freshContext(path: String, initialPath: String? = nil) async throws -> [String: Any] {
         let requestKey = initialPath ?? path
         if let task = freshContextTask, freshContextPath == requestKey {
@@ -499,7 +515,10 @@ final class ReylumiLocalAppTransport {
         // A staff request must never receive an unrelated owner context result.
         freshContextTask?.cancel()
         let epoch = scopeEpoch, expectedGeneration = generation, requestID = UUID(), conflictRevision = scopeConflictRevision
-        let trace = ReylumiLocalDiagnostics.RequestTrace(read: .context)
+        let initial = initialContextFlight.flatMap { $0.path == requestKey && $0.epoch == epoch && $0.expires > Date() ? $0 : nil }
+        if initial == nil { initialContextFlight?.task.cancel() }
+        initialContextFlight = nil
+        let trace = initial?.trace ?? ReylumiLocalDiagnostics.RequestTrace(read: .context)
         freshContextID = requestID; freshContextPath = requestKey
         let task = Task { @MainActor [weak self] () throws -> [String: Any] in
             guard let self else { throw CancellationError() }
@@ -514,7 +533,12 @@ final class ReylumiLocalAppTransport {
                 }
             }
             let data: Data, response: HTTPURLResponse
-            if let prepared = self.preparedWorkspaceContext, prepared.path == requestKey, prepared.epoch == epoch,
+            if let initial {
+                let raw = try await initial.task.value
+                try self.ensureCurrent(epoch)
+                guard raw.2 == self.cookieAuthorityRevision else {throw CancellationError()}
+                data=raw.0; response=raw.1
+            } else if let prepared = self.preparedWorkspaceContext, prepared.path == requestKey, prepared.epoch == epoch,
                prepared.revision == self.cookieAuthorityRevision, prepared.expires > Date() {
                 self.preparedWorkspaceContext = nil
                 data = prepared.data; response = prepared.response

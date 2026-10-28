@@ -93,15 +93,16 @@ struct ReylumiLocalBundle: Sendable {
     func owns(_ url: URL) -> Bool {
         url.scheme == Self.scheme && url.host == Self.host && url.port == nil && url.user == nil && url.password == nil
     }
-    func routeExists(_ path: String) -> Bool {
-        guard Self.safeRoute(path) else { return false }
+    func routeExists(_ path:String)->Bool { routeAccess(path) != nil }
+    func routeAccess(_ path: String) -> String? {
+        guard Self.safeRoute(path) else { return nil }
         let actual = path.split(separator: "/")
-        return manifest.routes.contains { route in
+        return manifest.routes.first { route in
             let pattern = route.path.split(separator: "/")
             return pattern.count == actual.count && zip(pattern, actual).allSatisfy { expected, received in
                 expected == received || (expected.hasPrefix(":") && !received.isEmpty)
             }
-        }
+        }?.access
     }
     /// A hosted auth flow may return only to a complete ordinary installed
     /// route. Keep one-use returns, security settings and open forms hosted.

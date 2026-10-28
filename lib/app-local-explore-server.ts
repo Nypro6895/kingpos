@@ -7,7 +7,7 @@ import { NextRequest } from "next/server";
 import { getRequestBusinessContext } from "./request-business-context";
 import { getExperienceContext } from "./experience-context";
 import { buildQuickActions, buildExploreDiscoveryContent, getExploreUtilityContent } from "./explore-page-resource-server";
-import { EXPLORE_PAGE_SIZE, getExploreWorkspaceLocation, searchExploreSalons } from "./explore-search";
+import { EXPLORE_PAGE_SIZE, getExploreWorkspaceLocation, searchExploreSalons, emptyExploreSearchResponse } from "./explore-search";
 import { emptyFeedPage } from "./explore-feed";
 import { resolveExploreQueryRouting } from "./explore-query-routing";
 import { getExploreHomeContent, emptyHomeContent } from "./explore-home";
@@ -69,21 +69,25 @@ async function explorePage(context: Awaited<ReturnType<typeof getRequestBusiness
   const hiddenPromise = measure("hidden",()=>readHiddenPostIdentities()).catch(()=>undefined);
   const homePromise = explicitSearch(params) ? Promise.resolve(emptyHomeContent()) : measure("home",()=>runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000)).catch(() => emptyHomeContent());
   const { explicit, hasLocationParam, workspaceLocation, routing, sort } = await measure("routing",()=>startupRouting(context, params));
-  const [searchResponse, homeContent, initialHiddenPosts] = await Promise.all([measure("search",()=>searchExploreSalons({ category: routing.category, location: routing.location, page: 1, pageSize: explicit ? EXPLORE_PAGE_SIZE : 4, query: routing.query, scopePolicy: routing.scopePolicy, sort, target: routing.target, locationSource: routing.locationSource }, { routing })), homePromise, hiddenPromise]);
+  const homeSearchPending=params.size===0;
+  const pendingSearch={...emptyExploreSearchResponse({category:routing.category,location:routing.location,page:1,pageSize:4,query:routing.query}),displayQuery:routing.displayQuery,locationOrigin:routing.locationOrigin,locationSource:routing.locationSource,requiresGps:routing.requiresGps};
+  const [searchResponse, homeContent, initialHiddenPosts] = await Promise.all([homeSearchPending?Promise.resolve(pendingSearch):measure("search",()=>searchExploreSalons({ category: routing.category, location: routing.location, page: 1, pageSize: explicit ? EXPLORE_PAGE_SIZE : 4, query: routing.query, scopePolicy: routing.scopePolicy, sort, target: routing.target, locationSource: routing.locationSource }, { routing })), homePromise, hiddenPromise]);
   console.info("Explore initial page timing",marks);
   const initialFeed = emptyFeedPage(), utilityContent = emptyUtility();
   const discoveryContent = buildExploreDiscoveryContent({ homeContent, initialFeed, searchResponse, utilityContent, workspaceLocation });
   const showcase = enrichExploreShowcaseContent({ discoveryContent, homeContent, initialFeed, searchResponse });
-  return { ...(initialHiddenPosts ? {initialHiddenPosts} : {}), commentViewer: { identity: exploreCommentIdentity(context), canModerate: false, canReplyAsSalon: false, isAuthenticated: Boolean(context.user), userId: context.user?.id ?? null }, initialSearchMode: explicit, initialLocationSource: routing.locationSource as ExploreLocationSource, initialResponse: showcase.searchResponse, discoveryContent: showcase.discoveryContent, homeContent: showcase.homeContent, hasUrlLocation: hasLocationParam || routing.locationOrigin === "query", initialFeed: showcase.initialFeed, quickActions: [], workspaceLocation, deferred: { extras: true, feed: !explicit && !hasLocationParam && routing.locationOrigin !== "query", showcase: process.env.EXPLORE_ENABLE_DEMO_CONTENT === "true" } };
+  return { homeSearchPending, ...(initialHiddenPosts ? {initialHiddenPosts} : {}), commentViewer: { identity: exploreCommentIdentity(context), canModerate: false, canReplyAsSalon: false, isAuthenticated: Boolean(context.user), userId: context.user?.id ?? null }, initialSearchMode: explicit, initialLocationSource: routing.locationSource as ExploreLocationSource, initialResponse: showcase.searchResponse, discoveryContent: showcase.discoveryContent, homeContent: showcase.homeContent, hasUrlLocation: hasLocationParam || routing.locationOrigin === "query", initialFeed: showcase.initialFeed, quickActions: [], workspaceLocation, deferred: { extras: true, feed: !explicit && !hasLocationParam && routing.locationOrigin !== "query", showcase: process.env.EXPLORE_ENABLE_DEMO_CONTENT === "true" } };
 }
 async function exploreExtras(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams): Promise<AppLocalExploreExtras> {
   const explicit = explicitSearch(params);
-  const [homeContent, utilityContent, quickActions] = await Promise.all([
+  const homeSearch = params.size===0 ? startupRouting(context,params).then(({routing,sort})=>searchExploreSalons({category:routing.category,location:routing.location,page:1,pageSize:4,query:routing.query,scopePolicy:routing.scopePolicy,sort,target:routing.target,locationSource:routing.locationSource},{routing})) : Promise.resolve(undefined);
+  const [homeContent, utilityContent, quickActions, homeSearchResponse] = await Promise.all([
     explicit ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent()),
     explicit ? Promise.resolve(emptyUtility()) : runReadWithDeadline(getExploreUtilityContent(context), 10_000).catch(() => emptyUtility()),
     runReadWithDeadline(buildQuickActions(context), 10_000).catch(() => []),
+    homeSearch,
   ]);
-  return { homeContent, utilityContent, quickActions };
+  return { homeContent, utilityContent, quickActions, homeSearchResponse };
 }
 async function exploreFeed(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams) {
   if (explicitSearch(params) || params.has("location")) return null;
