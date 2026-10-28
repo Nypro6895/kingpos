@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "iphone-staff-authoritative-date-read-pipeline-20261028",
+  "status": "working",
+  "summary": "Remove preliminary timezone/date round trip only for a branded verified Staff read whose self snapshot supplies the authoritative date; preserve legacy fallbacks and final fresh revocation probes. Reuse request-local timezone helper and propagate existing timing stages into bootstrap.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "lib/app-local-bootstrap-server.ts",
+    "tests/staff-authoritative-date-read.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Real released Staff context remains above 1s with 7 RPCs; inspected original snapshot date overwrite and duplicate timezone call",
+      "result": "passed"
+    },
+    {
+      "name": "Boundary, midnight, malformed snapshot, fallback and final revocation regression tests",
+      "result": "pending"
+    }
+  ],
+  "id": "03d4c2cf-6227-43ec-818a-b7ce2a580532",
+  "recordedAt": "2026-10-28T21:02:45.861Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

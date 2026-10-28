@@ -7,6 +7,7 @@ import type { ReadRequestTiming, ReadStage } from "@/lib/read-request-timing";
 import { getStaffProfileAvatarUrl, getStaffProfileDisplayName } from "@/lib/staff-profile";
 import { getCurrentStaffAssignedWork, getTodaysStaffWorkday, STAFF_WORKDAY_STATUS_LABELS } from "@/lib/staff-workdays";
 import { staffMyWorkActiveTab, staffMyWorkStringParam, type StaffMyWorkSearchParams, type StaffMyWorkResource } from "./staff-my-work-experience";
+import { getSalonBusinessTimezone } from "./salon-business-clock";
 
 export async function loadStaffMyWorkResource(
   identity: Awaited<ReturnType<typeof getStaffPortalIdentity>>,
@@ -31,12 +32,11 @@ export async function loadStaffMyWorkResource(
   const [work, attendance, timezone, history, tabData] = await Promise.all([
     assignedWork,
     assignedWork.then(({ today }) => measure("staff_attendance", () => getTodaysStaffWorkday(context, { allowEmailFallback: false, workDate: today, readIdentity }))),
-    measure("staff_timezone", async () => await supabase.rpc("get_salon_business_timezone", { p_salon_id: salonId })),
+    measure("staff_timezone", () => getSalonBusinessTimezone(salonId)),
     measure("staff_greeting", async () => await supabase.rpc("get_my_staff_greeting_context", { p_salon_id: salonId }).then(result => result.error ? null : result.data, () => null)),
     selectedResult,
   ]);
   const { excludedTicketCount, today, workTickets } = work;
-  if (timezone.error || typeof timezone.data !== "string") throw new Error("Salon timezone unavailable");
   if (tabData && (tabData.staff?.id !== staff.id || getExperienceContext(tabData.context).scope !== getExperienceContext(context).scope)) {
     throw new Error("Staff pay tab identity could not be verified");
   }
@@ -47,7 +47,7 @@ export async function loadStaffMyWorkResource(
   return {
     salonId: context.currentSalon.id, staff, today, workTickets, excludedTicketCount,
     workStatus, workStatusLabel: STAFF_WORKDAY_STATUS_LABELS[workStatus],
-    salonTimezone: timezone.data, greetingHistory: history,
+    salonTimezone: timezone, greetingHistory: history,
     staffDisplayName: getStaffProfileDisplayName(staff, context.user),
     staffAvatarUrl: getStaffProfileAvatarUrl({ accountAvatarUrl: context.user.avatar_url, staffProfilePhotoPath: staff.public_profile_photo_path }),
     payrollData: payroll ? {

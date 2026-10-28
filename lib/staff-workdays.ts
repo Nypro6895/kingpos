@@ -541,7 +541,13 @@ export async function getCurrentStaffAssignedWork(
   const identity = options.readIdentity ? requireStaffPortalReadIdentity(options.readIdentity, context ?? options.readIdentity.context)
     : context ? null : await getStaffPortalIdentity();
   const resolvedContext = context ?? identity!.context;
-  let today = await getContextBusinessDate(resolvedContext);
+  // A branded read identity already binds this active Staff/salon. The self
+  // snapshot below supplies its authoritative date, so do not serialize a
+  // preliminary timezone RPC before it. Legacy/empty identity paths still
+  // need their original fallback date, and invalid snapshots still fail closed.
+  const snapshotSuppliesDate = Boolean(options.readIdentity && identity?.staff
+    && resolvedContext.user && resolvedContext.currentAccount && resolvedContext.currentSalon);
+  let today = snapshotSuppliesDate ? "" : await getContextBusinessDate(resolvedContext);
 
   if (!resolvedContext.user) {
     return {
