@@ -812,6 +812,31 @@ function buildHourlyActivityPoints(input: {
   return points;
 }
 
+type DailyPosComparisonInputs={tickets:ReportTicketRow[];earnings:Array<StaffEarningRow&{ticket_id:string;work_date:string}>};
+async function loadDailyPosComparisonInputs(auth:ReportAuthContext,dates:string[],timeZone:string) {
+  const bounds=dates.map(date=>({date,...getUtcBoundsForLocalDate(date,timeZone)}));
+  const result=new Map<string,DailyPosComparisonInputs>(dates.map(date=>[date,{tickets:[],earnings:[]}]));
+  if(!bounds.length)return result;
+  const from=bounds.map(row=>row.openedFrom).sort()[0],to=bounds.map(row=>row.openedTo).sort().at(-1)!;
+  type Row=ReportTicketRow&{earnings:Array<StaffEarningRow&{work_date:string}>};
+  for(let offset=0;;offset+=500) {
+    const {data,error}=await auth.supabase.from("pos_tickets")
+      .select("id,opened_at,closed_at,status,discount_type,discount_value,tax_rate,tip_type,tip_value,ticket_items:pos_ticket_items(id,assigned_staff_id,quantity,line_total,is_removed,turn_parts:pos_ticket_item_turn_parts(amount,staff_id,turn_index,turn_type)),earnings:pos_ticket_staff_earnings(staff_id,work_date,service_total,tip_amount,big_turn_count,small_turn_count)")
+      .eq("salon_id",auth.salon.id).gte("opened_at",from).lte("opened_at",to)
+      .order("opened_at",{ascending:true}).order("id",{ascending:true}).range(offset,offset+499).returns<Row[]>();
+    if(error)throw new Error(error.message);
+    for(const row of data??[]) {
+      if(!Array.isArray(row.earnings))throw new Error("Comparison earnings are unavailable.");
+      const instant=Date.parse(row.opened_at);
+      const day=bounds.find(bound=>instant>=Date.parse(bound.openedFrom)&&instant<=Date.parse(bound.openedTo));
+      if(!day)continue;
+      const group=result.get(day.date)!;group.tickets.push(row);
+      group.earnings.push(...row.earnings.filter(earning=>earning.work_date===day.date).map(earning=>({...earning,ticket_id:row.id})));
+    }
+    if(!data||data.length<500)break;
+  }
+  return result;
+}
 async function buildSalesComparison(input: {
   auth: ReportAuthContext;
   reportDate: string;
@@ -832,8 +857,10 @@ async function buildSalesComparison(input: {
     parts.find((item) => item.type === key)?.value ?? "00";
   const currentDate = `${part("year")}-${part("month")}-${part("day")}`;
   const sameTime = currentDate === input.reportDate;
+  const dates=recentComparisonDates(input.reportDate);
+  const prepared=await loadDailyPosComparisonInputs(input.auth,dates,input.timeZone);
   const cores = await Promise.all(
-    recentComparisonDates(input.reportDate).map((date) => {
+    dates.map((date) => {
       const cutoff = sameTime
         ? zonedDateTimeToUtcIso({
             date,
@@ -845,6 +872,7 @@ async function buildSalesComparison(input: {
         throw new Error("Sales comparison is temporarily unavailable.");
       return loadLiveDailyPosReport(date, input.auth, {
         comparisonOnly: true,
+        comparisonInputs:prepared.get(date),
         includeActivityPoints: false,
         includeClosing: false,
         timeZone: input.timeZone,
@@ -1086,6 +1114,7 @@ async function loadLiveDailyPosReport(
   options: {
     businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
     comparisonOnly?: boolean;
+    comparisonInputs?: DailyPosComparisonInputs;
     includeActivityPoints?: boolean;
     includeClosing?: boolean;
     closedBefore?: string;
@@ -1124,7 +1153,7 @@ async function loadLiveDailyPosReport(
           .eq("salon_id", salon.id)
           .eq("report_date", reportDate)
           .maybeSingle<PosDailyClosing>()),
-    readDailyPos(auth, options.readContext,
+    options.comparisonInputs?Promise.resolve({data:options.comparisonInputs.tickets,error:null}):readDailyPos(auth, options.readContext,
       ["pos_tickets", ticketSelection, salon.id, bounds.openedFrom, bounds.openedTo, "opened_at.asc"],
       () => supabase
       .from("pos_tickets")
@@ -1178,7 +1207,9 @@ async function loadLiveDailyPosReport(
   let tipAttributionSource: DailyPosTipAttributionSource = "none";
 
   if (finalizedTicketIds.length > 0) {
-    const { data: earnings, error: earningsError } = await readDailyPos(auth, options.readContext,
+    const { data: earnings, error: earningsError } = options.comparisonInputs
+      ? {data:options.comparisonInputs.earnings.filter(row=>finalizedTicketIds.includes(row.ticket_id)&&row.work_date===reportDate),error:null}
+      : await readDailyPos(auth, options.readContext,
       ["pos_ticket_staff_earnings", earningsSelection, salon.id, reportDate, finalizedTicketIds],
       () => supabase
       .from("pos_ticket_staff_earnings")

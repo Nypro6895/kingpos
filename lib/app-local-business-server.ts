@@ -92,10 +92,20 @@ export async function readAppLocalBusinessResource(name: string, args: Record<st
 }
 
 async function loadManagedSalonProfile(context: CurrentBusinessContext): Promise<AppLocalSalonProfileData> {
+  const salonId=context.currentSalon?.id;
+  // Public display facts are independent of the management form read. They
+  // never establish its capabilities, which still come from the original gate.
+  const publicRead=salonId?getPublicSalonProfileData(salonId).then(data=>({data}),error=>({error})):null;
+  const operatingRead=getCurrentSalonOperatingStatus(context).catch(()=>defaultSalonOperatingStatus());
   const data = await getCurrentSalonProfileManageData(context);
   if (!data.canViewProfile) throw new AppLocalBusinessReadError(403, "You do not have permission to view Salon Profile.");
-  const [operatingStatus, publicData] = await Promise.all([getCurrentSalonOperatingStatus(context).catch(() => defaultSalonOperatingStatus()), getPublicSalonProfileData(data.setting.salon_id)]);
-  const attribution = await loadSalonPostAttribution([...data.looks, ...data.updates].map(post => post.id));
+  const [operatingStatus, publicResult, attribution] = await Promise.all([
+    operatingRead,
+    salonId===data.setting.salon_id && publicRead?publicRead:getPublicSalonProfileData(data.setting.salon_id).then(data=>({data}),error=>({error})),
+    loadSalonPostAttribution([...data.looks, ...data.updates].map(post => post.id)),
+  ]);
+  if("error" in publicResult)throw publicResult.error;
+  const publicData=publicResult.data;
   const previewData = buildPreviewData({ attribution, ...data, accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "", operatingStatus });
   const managedSalonName = data.context.currentSalon?.name ?? previewData.profile.name;
   const viewData = publicData ? withManagedPreviewStaff(withManagedSalonName(publicData, managedSalonName), previewData) : previewData;
