@@ -8,7 +8,7 @@ import { fetchLiveExperienceResource } from "@/lib/fetch-live-experience-resourc
 import type { LiveResourceSnapshot } from "@/lib/experience-live-resource";
 import type { PosResource } from "@/lib/pos-workspace-sync";
 import type { TodayDashboard } from "@/lib/today-dashboard";
-import { TODAY_DASHBOARD_SECTIONS, getTodayDashboardPermissionsIdentity, getTodayDashboardSections, mergeTodayDashboardSection, type TodayDashboardSection } from "@/lib/today-dashboard-sections";
+import { TODAY_DASHBOARD_SECTIONS, failTodayDashboardSection, getTodayDashboardPermissionsIdentity, getTodayDashboardSections, mergeTodayDashboardSection, type TodayDashboardSection } from "@/lib/today-dashboard-sections";
 import { useExperienceResource } from "@/lib/use-experience-resource";
 import { useLiveExperienceRefresh } from "@/lib/use-live-experience-refresh";
 import { TodayDashboardView } from "./today-dashboard-view";
@@ -22,7 +22,7 @@ const tags: Record<TodayDashboardSection, readonly PosResource[]> = {
 const titles: Record<TodayDashboardSection, string> = { staff: "Team", bookings: "Appointments", waiting: "Waiting", financials: "Performance", extras: "Quick access and notifications" };
 type PageData = { dashboard: TodayDashboard; isOwner: boolean };
 type Recovery = { run(): Promise<void>; busy: boolean; error: boolean };
-type ReaderProps = { scope: string; salonId: string; date: string; currentDate: string; section: TodayDashboardSection; accept: (section: TodayDashboardSection, dashboard: TodayDashboard) => void; deny: () => void };
+type ReaderProps = { scope: string; salonId: string; date: string; currentDate: string; section: TodayDashboardSection; accept: (section: TodayDashboardSection, dashboard: TodayDashboard) => void; fail: (section: TodayDashboardSection) => void; deny: () => void };
 
 function ReadFailure({ section, error, retry, refreshing }: { section: TodayDashboardSection; error: unknown; retry: () => unknown; refreshing: boolean }) {
   if (!error || refreshing) return null;
@@ -32,7 +32,7 @@ function ReadFailure({ section, error, retry, refreshing }: { section: TodayDash
   </div>;
 }
 
-function WebSectionReader({ scope, salonId, date, currentDate, section, accept, deny }: ReaderProps) {
+function WebSectionReader({ scope, salonId, date, currentDate, section, accept, fail, deny }: ReaderProps) {
   const endpoint = `/api/experience/today?${new URLSearchParams({ date, phase: section })}`;
   const key = `today-section:${date}:${currentDate}:${section}`;
   const resource = useExperienceResource<LiveResourceSnapshot<TodayDashboard> | undefined>({
@@ -52,13 +52,15 @@ function WebSectionReader({ scope, salonId, date, currentDate, section, accept, 
   useLiveExperienceRefresh(salonId, tags[section], refresh, resource.available, { automaticRefresh: resource.ensureFresh });
   useEffect(() => { if (resource.data) accept(section, resource.data.data); }, [accept, section, resource.data]);
   useEffect(() => { if (!resource.available) deny(); }, [deny, resource.available]);
+  useEffect(() => { if (resource.error && !resource.refreshing && resource.available) fail(section); }, [fail, section, resource.error, resource.refreshing, resource.available]);
   return <ReadFailure section={section} error={resource.error || Boolean(resource.data?.data.loadErrors.length)} retry={resource.refresh} refreshing={resource.refreshing} />;
 }
 
-function NativeSectionReader({ scope, date, section, accept, deny }: ReaderProps) {
+function NativeSectionReader({ scope, date, section, accept, fail, deny }: ReaderProps) {
   const state = useAppLocalResource<PageData>(scope, "page.owner-today", { date, phase: section });
   useEffect(() => { if (state.data) accept(section, state.data.dashboard); }, [accept, section, state.data]);
   useEffect(() => { if (!state.available || state.accessDenied) deny(); }, [deny, state.available, state.accessDenied]);
+  useEffect(() => { if (state.error && !state.refreshing && state.available && !state.accessDenied) fail(section); }, [fail, section, state.error, state.refreshing, state.available, state.accessDenied]);
   return <ReadFailure section={section} error={state.error || Boolean(state.data?.dashboard.loadErrors.length)} retry={state.refresh} refreshing={state.refreshing} />;
 }
 
@@ -76,6 +78,7 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
   const [clockChanged, setClockChanged] = useState(false);
   const permissionsIdentity = getTodayDashboardPermissionsIdentity(initialDashboard.permissions);
   const deny = useCallback(() => setBlocked(true), []);
+  const fail = useCallback((section: TodayDashboardSection) => setDashboard(previous => failTodayDashboardSection(previous, section)), []);
   const accept = useCallback((section: TodayDashboardSection, next: TodayDashboard) => {
     const olderThanShell = Date.parse(next.generatedAt) < Date.parse(initialDashboard.generatedAt);
     if (next.noAccess || getTodayDashboardPermissionsIdentity(next.permissions) !== permissionsIdentity) {
@@ -108,7 +111,7 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
   if (blocked) return <main className="p-6" role="status"><p>Your workspace access must be checked again.</p>{recovery ? <><button type="button" disabled={recovery.busy} onClick={() => void recovery.run()}>Open Today</button>{recovery.error && <p>Access could not be confirmed. Please try again.</p>}</> : <a href="/staff/today">Open Today</a>}</main>;
   const Reader = native ? NativeSectionReader : WebSectionReader;
   return <>
-    {getTodayDashboardSections(initialDashboard).map(section => <Reader key={section} scope={scope} salonId={salonId} date={dashboard.date} currentDate={dashboard.dayView.currentDate} section={section} accept={accept} deny={deny} />)}
+    {getTodayDashboardSections(initialDashboard).map(section => <Reader key={section} scope={scope} salonId={salonId} date={dashboard.date} currentDate={dashboard.dayView.currentDate} section={section} accept={accept} fail={fail} deny={deny} />)}
     {clockChanged && <p role="status" data-today-clock-refresh className="px-4 py-3 text-sm">The business day or time zone has changed. <a href="/staff/today" className="underline">Open Today</a> to refresh.</p>}
     <TodayDashboardView dashboard={dashboard} isOwner={isOwner} />
   </>;

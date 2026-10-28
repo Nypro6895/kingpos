@@ -630,7 +630,7 @@ async function loadReportDashboardData(input: {
 }): Promise<DashboardData<DailyPosReport>> {
   try {
     return {
-      data: await measureTodayRead("financial_report", () => getDailyPosReport(input.date, input.context, input.readContext)),
+      data: await measureTodayRead("financial_report", () => getDailyPosReport(input.date, input.context, input.readContext, {includeCorrectionDetails: false})),
       error: null,
     };
   } catch (error) {

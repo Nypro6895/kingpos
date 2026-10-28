@@ -34,6 +34,7 @@ export const APP_LOCAL_PLATFORM_READS = {
   "page.market": { argumentKeys: [], retention: "scoped" },
   "page.market-deposit": { argumentKeys: [], retention: "scoped" },
   "page.settings": { argumentKeys: [], retention: "scoped" },
+  "settings.direct": { argumentKeys: ["kind", "salonId"], retention: "none" },
   "page.owner-today": { argumentKeys: ["date", "phase"], retention: "scoped" },
   "page.customer-bookings": { argumentKeys: ["tab", "details", "bookingId"], retention: "scoped" },
   "page.customer-receipt": { argumentKeys: ["ticketId"], retention: "scoped" },
@@ -51,6 +52,8 @@ export const APP_LOCAL_PLATFORM_READS = {
 export const ROLE_READS = {
   "http.staff.creation": { method: "GET", path: "/api/staff/create-appointment", argumentKeys: ["salonId", "catalog"], access: "scoped", cacheable: false },
   "http.notifications.preferences": { method: "GET", path: "/api/notifications/preferences", argumentKeys: [], access: "scoped", cacheable: false },
+  "http.owner.closing": { method: "GET", path: "/api/pos/closing", argumentKeys: ["mode", "salonId", "expectedScope", "date", "requestId"], access: "scoped", cacheable: false },
+  "http.owner.closing-history": { method: "GET", path: "/api/pos/closing/history", argumentKeys: ["salonId", "date"], access: "scoped", cacheable: false },
 } as const;
 export const ROLE_COMMANDS = {
   "http.staff.create-appointment": { method: "POST", path: "/api/staff/create-appointment", argumentKeys: ["input"] },
@@ -58,4 +61,5 @@ export const ROLE_COMMANDS = {
   "http.staff.confirm-booking": { method: "POST", path: "/api/staff/confirm-booking", argumentKeys: ["input"] },
   "http.staff.booking-preferences": { method: "POST", path: "/api/staff/booking-preferences", argumentKeys: ["input"] },
   "http.notifications.preferences": { method: "POST", path: "/api/notifications/preferences", argumentKeys: ["input"] },
+  "http.owner.closing": { method: "POST", path: "/api/pos/closing", argumentKeys: ["input"] },
 } as const;

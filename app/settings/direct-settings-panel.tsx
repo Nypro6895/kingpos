@@ -29,6 +29,10 @@ import { staffBookingPreferencesAction } from "@/app/staff/appointments/staff-pr
 import "@/app/services/services.css";
 import "./direct-settings.css";
 import { SettingsLoading } from "./settings-loading";
+import { getAppLocalHost } from "@/lib/app-local-host";
+import { getAppLocalCommandScope } from "@/lib/app-local-command-client";
+import { useAppLocalResource } from "@/lib/app-local-resource";
+import { useExperienceScope } from "@/components/experience-scope";
 import { ShortcutsSettingsPanel } from "./shortcuts-settings-panel";
 
 function OwnPreferences({ salonId }: { salonId: string }) {
@@ -187,20 +191,52 @@ function Content({
       );
   }
 }
-export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: DirectSettingsKind; salonId?: string; onChanged?:()=>void|Promise<void> }) {
+type DirectPanelProps = { kind: DirectSettingsKind; salonId?: string; onChanged?:()=>void|Promise<void> };
+
+function NativeDirectSettingsPanel({kind,salonId,onChanged}: DirectPanelProps & {salonId:string}) {
+  const scope = getAppLocalCommandScope();
+  // Reuse the existing bounded, scoped memory cache. This resource remains
+  // retention:none: no settings form is persisted to native/disk storage.
+  const state = useAppLocalResource<DirectData>(scope, "settings.direct", {kind,salonId}, {refreshAfterMs:15_000});
+  const refresh = state.refresh;
+  const reload = useCallback(async () => { try { await refresh(); } finally { await onChanged?.(); } }, [refresh,onChanged]);
+  const error = !scope || !state.available || state.accessDenied ? "Your account has changed. Please open the page again." : state.error;
+  const data = scope && state.available && !state.accessDenied ? state.data : undefined;
+  return <div className="settings-style"><div className="settings-direct-panel grid gap-4">
+    {error && <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800"><p><WorkspaceText text={error}/></p><button type="button" className={`${buttonClass} mt-2`} onClick={() => void state.refresh()}><WorkspaceText text="Retry"/></button></div>}
+    {data && data.kind === kind && "salonId" in data && data.salonId === salonId ? <Content data={data} reload={reload}/> : !error && <SettingsLoading/>}
+  </div></div>;
+}
+
+export function DirectSettingsPanel(props: DirectPanelProps) {
+  if (getAppLocalHost().isNative && props.salonId && !["recovery-back-office","roles","permissions"].includes(props.kind)) return <NativeDirectSettingsPanel {...props} salonId={props.salonId}/>;
+  return <LegacyDirectSettingsPanel {...props}/>;
+}
+
+function LegacyDirectSettingsPanel({ kind, salonId, onChanged }: DirectPanelProps) {
+  const gate = useExperienceScope(), scope = gate?.context.scope;
   const [data, setData] = useState<DirectData | null>(null),
     [error, setError] = useState(""),
     [retry, setRetry] = useState(0);
+  const read = useCallback(async (signal?: AbortSignal) => {
+    if (scope && salonId && !["recovery-back-office","roles","permissions"].includes(kind)) {
+      const response = await getAppLocalHost().read<DirectData>("settings.direct", {kind,salonId}, {scope,signal});
+      if (response.scope !== scope || !response.data) throw new Error("Your account has changed. Please open the page again.");
+      return response.data;
+    }
+    return loadDirectSettings(kind, salonId);
+  }, [kind, salonId, scope]);
   const reload = useCallback(async () => {
     try {
-      const value = await loadDirectSettings(kind, salonId);
+      const value = await read();
       setData(value);
       setError("");
     } finally { await onChanged?.(); }
-  }, [kind, salonId, onChanged]);
+  }, [read, onChanged]);
   useEffect(() => {
     let active = true;
-    loadDirectSettings(kind, salonId)
+    const controller = new AbortController();
+    read(controller.signal)
       .then((value) => {
         if (active) {
           setData(value);
@@ -213,8 +249,9 @@ export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: Direct
       });
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [kind, salonId, retry]);
+  }, [read, retry]);
   return (
     <div className="settings-style"><div className="settings-direct-panel grid gap-4">
       {error && (

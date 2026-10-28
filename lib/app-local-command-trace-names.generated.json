@@ -4,6 +4,7 @@
     "http.explore.feed-events",
     "http.notifications.preferences",
     "http.notifications.viewed",
+    "http.owner.closing",
     "http.public-booking.confirm",
     "http.shell.advertising-event",
     "http.shell.campaign-event",

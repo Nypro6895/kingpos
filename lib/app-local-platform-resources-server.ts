@@ -5,6 +5,7 @@ import { getRequestBusinessContext } from "./request-business-context";
 import { getExperienceContext } from "./experience-context";
 import { loadMarketExperienceData } from "./market-experience-data";
 import { loadSettingsHub } from "@/app/settings/settings-hub-actions";
+import { loadDirectSettings, type DirectSettingsKind } from "@/app/settings/direct-settings-actions";
 import { getCustomerActivity, getCustomerActivityReceipt } from "./customer-activity";
 import { getStaffPortalIdentity } from "./staff-portal-identity";
 import { getTodaysStaffWorkday } from "./staff-workdays";
@@ -103,6 +104,12 @@ async function readAppLocalPlatformResourceInContext(name: string, input: unknow
       } catch { /* Keep the original public product behavior; checkout rechecks its authority. */ }
     }
     data = { salonId: context.currentSalon?.id, installed };
+  } else if (name === "settings.direct") {
+    const kinds = ["salon-profile", "public-profile", "shortcuts", "services", "booking", "staff-team", "payroll", "pos-display", "ownership", "close-salon", "staff-workspace", "staff-schedule"];
+    if (!kinds.includes(args.kind) || !/^[a-f0-9-]{36}$/i.test(args.salonId ?? "")) throw new AppLocalRoleReadError(400, "Invalid settings panel");
+    // Original target-salon and per-panel authorization remains authoritative.
+    // This read does not need the mutation bridge's separate network preflight.
+    data = await runReadWithDeadline(loadDirectSettings(args.kind as DirectSettingsKind, args.salonId), 15000);
   } else if (name === "page.settings") {
     const index = await runReadWithDeadline(loadSettingsHub(), 15000);
     // KingUser contains profile metadata only. Do not extend this with security/PIN/session DTOs.

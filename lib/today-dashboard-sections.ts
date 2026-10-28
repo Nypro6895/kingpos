@@ -33,6 +33,12 @@ function ownsError(error: TodayLoadError, section: TodayDashboardSection) {
   return error.section ? error.section === section : ERROR_AREAS[section].includes(error.area);
 }
 
+/** A failed transport must settle the shell's placeholder without inventing
+ * financial values or throwing away the last successfully loaded section. */
+export function failTodayDashboardSection(base: TodayDashboard, section: TodayDashboardSection): TodayDashboard {
+  return mergeTodayDashboardSection(base, {...base, loadErrors: [{area: ERROR_AREAS[section][0], section, message: "Data temporarily unavailable"}]}, section);
+}
+
 function ownsAttention(id: string, section: TodayDashboardSection) {
   return section === "bookings" ? id === "pending-bookings"
     : section === "waiting" ? id === "waiting-clients"

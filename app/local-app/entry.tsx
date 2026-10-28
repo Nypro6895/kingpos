@@ -1,5 +1,6 @@
 import { Activity, Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { appLocalPageKey, rememberAppLocalPaths } from "@/lib/app-local-page-key";
 import { AppLocalHelp } from "@/components/app-local-help";
 import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 import { LegalDocumentPage, LegalHub } from "@/app/legal/legal-components";
@@ -68,7 +69,7 @@ installAppLocalDisplayHttpClient(getAppLocalCommandScope);
 installAppLocalPortableHttpClient(getAppLocalCommandScope);
 for(const method of ["pushState","replaceState"] as const){const original=history[method];history[method]=function(...args){const result=original.apply(this,args);window.dispatchEvent(new Event("reylumi:app-local-history"));return result;};}
 function getAppLocalPage(path:string){return getGeneralAppLocalPage(path)??getAppLocalPersonalPage(path)??getAppLocalExplorePage(path)??getAppLocalOwnerPage(path)??getAppLocalBusinessPage(path)??getAppLocalPublicPage(path)??getAppLocalDailyPage(path)??getAppLocalSecondaryPage(path)??getAppLocalPayrollTaxPage(path)??getAppLocalCommercePage(path)??getAppLocalPortablePage(path)??getAppLocalDisplayPage(path);}
-function pageKey(path:string){const id=getAppLocalPage(path)?.id;return id==="explore"||id==="market"||id==="portable"?"family:"+id:path;}
+function pageKey(path:string){return appLocalPageKey(path,getAppLocalPage(path)?.id);}
 
 const legalByPath: Record<string, keyof typeof legalDocuments> = { "/privacy": "privacy", "/terms": "terms", "/community": "community", "/business-terms": "business" };
 const ownerPaths = new Set(["/pos", "/pos/check-in", "/pos/book", "/pos/ticket", "/pos/report"]);
@@ -162,6 +163,7 @@ function App() {
   const [admissions, setAdmissions] = useState<Partial<Record<AuthorityFamily, Admission>>>({}), [error, setError] = useState<false | AppLocalContextFailure>(false), [visited, setVisited] = useState<string[]>([]);
   const [helpPresentation, setHelpPresentation] = useState<Admission | null>(null);
   const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<ContextCheck | null>(null);
+  const scrollPositions = useRef(new Map<string, number>());
   const recoveryAttempts = useRef(new Set<string>());
   const nativeResetPending = useRef<NativeResetPending | null>(null);
   const finishNativeResetPending = useCallback(() => {
@@ -349,6 +351,7 @@ function App() {
   useEffect(() => () => { finishNativeResetPending(); contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); }, [finishNativeResetPending]);
   const transition = useCallback((destination: string) => {
     const previous = current.current;
+    if (pageKey(previous) !== pageKey(destination)) scrollPositions.current.set(pageKey(previous), window.scrollY);
     if (previous !== destination && pageRecovery.current?.target !== destination) pageRecovery.current = null;
     if (handoffPath.current && handoffPath.current !== destination) { handoffPath.current = null; setSwitchingWorkspace(false); }
     if (isHelp(destination)) {
@@ -363,7 +366,7 @@ function App() {
     readPriorityScheduler.setActiveRoute(destination);
     const target = admitted.current[authorityFamily(destination)];
     setAppLocalCommandScope(!isPublic(destination) && usable(target, destination) ? target.value.context.scope : undefined);
-    setVisited(paths => [...new Set([...paths, previous, destination])].slice(-16)); setPath(destination);
+    setVisited(paths => rememberAppLocalPaths(paths, [previous, destination], pageKey)); setPath(destination);
   }, [finishNativeResetPending]);
   const navigate = useCallback((value: string, replace = false) => {
     let destination: string; try { destination = appLocalPath(value); } catch { return; }
@@ -642,7 +645,15 @@ function App() {
     const timer = setTimeout(() => setHelpPresentation(previous => previous === captured ? null : previous), Math.max(0, Math.min(remaining, 2147483647)));
     return () => clearTimeout(timer);
   }, [presentationContext, helpPresentation]);
-  useLayoutEffect(() => { recordExperienceTrace("route.reveal", { source: "app-local" }); window.dispatchEvent(new Event("reylumi:screen-ready")); }, [path]);
+  const previousScrollKey = useRef(pageKey(path));
+  useLayoutEffect(() => {
+    const key = pageKey(path);
+    if (previousScrollKey.current !== key) {
+      previousScrollKey.current = key;
+      window.scrollTo(0, scrollPositions.current.get(key) ?? 0);
+    }
+    recordExperienceTrace("route.reveal", { source: "app-local" }); window.dispatchEvent(new Event("reylumi:screen-ready"));
+  }, [path]);
   useLayoutEffect(() => { recordExperienceTrace("boot.ready", { source: "app-local" }); }, []);
   const ownerAdmission = admissions.account, ownerContext = ownerAdmission?.value;
   const owner = ownerContext?.grant?.kind === "owner" || Boolean(ownerContext && !ownerContext.offline && ownerContext.access?.ownerWorkspace);
@@ -654,7 +665,7 @@ function App() {
       {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}{typeof window.__reylumiExportDiagnostics === "function" ? <button type="button" className="mt-4 block rounded border px-4 py-2" onClick={() => window.__reylumiExportDiagnostics?.()}>Save diagnostic report</button> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" key={"owner:" + privateAdmissionKey(ownerAdmission)} hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
-        {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
+        {!isPublic(path) && !context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
         {[...windows].map(([key,href]) => {
           const page = getAppLocalPage(href), admission = admissions[authorityFamily(href)], ownContext = admission?.value ?? null;
           const active = key === pageKey(path) && (usable(admission) || !admission && !page?.requiresContext);

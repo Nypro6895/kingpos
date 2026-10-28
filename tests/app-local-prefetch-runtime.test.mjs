@@ -79,6 +79,28 @@ async function fixture(t) {
   return page;
 }
 
+test('settings memory reuse stays scoped, refreshes after writes, and never restores a durable settings form', options, async t => {
+  const page = await fixture(t), value = context('owner');
+  const args = {kind:'salon-profile',salonId:salon};
+  await page.evaluate(cfg => window.configure(cfg), {context:value,path:'/settings',foreground:{name:'settings.direct',args},runtime:false});
+  await page.getByTestId('foreground').filter({hasText:'settings.direct:'+value.context.scope}).waitFor();
+  await page.evaluate(()=>window.configure({foreground:null}));
+  await page.getByTestId('foreground').waitFor({state:'detached'});
+  await page.evaluate(args=>window.configure({foreground:{name:'settings.direct',args}}),args);
+  await page.getByTestId('foreground').filter({hasText:'settings.direct:'+value.context.scope}).waitFor();
+  assert.equal(await page.evaluate(()=>window.h.reads.filter(r=>r.name==='settings.direct').length),1,'reopening a recently verified panel reuses its memory snapshot');
+  assert.equal(await page.evaluate(()=>window.h.caches.filter(r=>r.name==='settings.direct').length),0,'retention:none never restores a form from native storage');
+  await page.evaluate(scope=>window.dispatchEvent(new CustomEvent('reylumi:app-local-command-complete',{detail:{scope,source:'app/settings/direct-settings-actions.ts'}})),value.context.scope);
+  await page.waitForFunction(()=>window.h.reads.filter(r=>r.name==='settings.direct').length===2);
+  const other=context('owner','b');
+  await page.evaluate(cfg=>window.configure(cfg),{context:other,foreground:{name:'settings.direct',args},runtime:false});
+  await page.getByTestId('foreground').filter({hasText:'settings.direct:'+other.context.scope}).waitFor();
+  assert.equal(await page.evaluate(()=>window.h.reads.filter(r=>r.name==='settings.direct').length),3,'a different account or permission scope cannot borrow the old form');
+  await page.evaluate(()=>{window.holdRead('settings.direct',{status:403});void window.foregroundState.refresh();});
+  await page.waitForFunction(()=>window.foregroundState.accessDenied===true);
+  assert.equal(await page.evaluate(()=>window.foregroundState.data),undefined,'confirmed revocation withdraws cached settings');
+});
+
 test('accepted owner, staff and personal plans prepare ordinary tabs without a click or hidden UI trees', options, async t => {
   const cases = [
     ['owner', '/staff/today', { name: 'page.owner-today', args: { phase: 'shell' } }, 'page.owner-payroll'],

@@ -6,6 +6,7 @@ type ReadScope = {
   token: object;
   controller: AbortController;
   memoized: Map<symbol, Promise<unknown>>;
+  validations: Map<symbol, Map<string, Promise<unknown>>>;
   pending: Map<symbol, Map<string, Promise<unknown>>>;
   timing?: ReadRequestTiming;
 };
@@ -45,7 +46,23 @@ export function getReadAbortSignal(): AbortSignal | undefined {
 
 /** Opt in only around a read request. Never retain identity across requests or writes. */
 export function runWithReadContext<T>(read: () => Promise<T>, timing?: ReadRequestTiming): Promise<T> {
-  return reads.getStore() ? read() : reads.run({ token: Object.freeze({}), controller: new AbortController(), memoized: new Map(), pending: new Map(), timing }, read);
+  return reads.getStore() ? read() : reads.run({ token: Object.freeze({}), controller: new AbortController(), memoized: new Map(), validations: new Map(), pending: new Map(), timing }, read);
+}
+
+/** One verified session decision per authority in this read request. Never used
+ * outside an explicit read scope; final revocation checks always bypass it. */
+export function memoizeReadValidation<T>(key: symbol, authority: string, read: () => Promise<T>): Promise<T> {
+  const scope = reads.getStore();
+  if (!scope || freshValidation.getStore()) return read();
+  let values = scope.validations.get(key);
+  if (!values) { values = new Map(); scope.validations.set(key, values); }
+  const previous = values.get(authority);
+  if (previous) return previous as Promise<T>;
+  const pending = Promise.resolve().then(read);
+  values.set(authority, pending);
+  // An unavailable validation must not become a successful cached admission.
+  void pending.catch(() => { if (values.get(authority) === pending) values.delete(authority); });
+  return pending;
 }
 
 /** Diagnostic owner only; nested readers keep the outer request's authority. */

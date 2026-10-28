@@ -1,0 +1,23 @@
+{
+  "kind": "change",
+  "changeId": "iphone-real-performance-fixes-20261027",
+  "status": "working",
+  "summary": "Fix physical iPhone audit failures and reduce repeated navigation reads without weakening server authorization; compare web and app on the same QA data",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "validation": [
+    {
+      "name": "physical before baseline build 54",
+      "result": "passed",
+      "evidence": "C:/Reylumi/output/iphone-real-audit-20261027/real-device-report.md"
+    }
+  ],
+  "id": "6e61621b-74de-45c9-b378-4b731f003a5d",
+  "recordedAt": "2026-10-28T00:27:33.512Z",
+  "worktree": "C:\\Reylumi\\kingpos-iphone-performance-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

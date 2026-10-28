@@ -11,7 +11,7 @@ import { cookies, headers } from "next/headers";
 import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
 import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
 import { AuthRejectionError, isConfirmedAuthRejection } from "./auth-rejection";
-import { coalesceReadInFlight, getReadRequestTiming } from "@/lib/read-context-scope";
+import { coalesceReadInFlight, getReadRequestTiming, memoizeReadValidation } from "@/lib/read-context-scope";
 import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -52,6 +52,7 @@ type AccountLoginSessionStatusRow = {
 const authUserReadKey = Symbol("read-auth-user");
 const accountStatusReadKey = Symbol("read-account-status");
 const loginSessionReadKey = Symbol("read-login-session-status");
+const appSessionValidationKey = Symbol("read-app-session-validation");
 const authenticatedReadAuthorities = new WeakMap<
   NonNullable<ReturnType<typeof createSupabaseServerClient>>,
   string
@@ -219,12 +220,13 @@ export async function createAuthenticatedSupabaseServerClient(options: { throwOn
     return null;
   }
 
-  const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
-    config,
-    accessToken,
-    options.throwOnUnavailable,
-    options.throwOnRejected,
-  );
+  const loginSessionId = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value ?? null;
+  const validationAuthority = createHash("sha256").update(JSON.stringify([
+    config.supabaseUrl, config.supabaseAnonKey, accessToken, loginSessionId,
+    Boolean(options.throwOnUnavailable), Boolean(options.throwOnRejected),
+  ])).digest("hex");
+  const accessTokenAllowed = await memoizeReadValidation(appSessionValidationKey, validationAuthority, () =>
+    isAccessTokenAllowedForAppSession(config, accessToken, options.throwOnUnavailable, options.throwOnRejected));
 
   if (!accessTokenAllowed) {
     return null;

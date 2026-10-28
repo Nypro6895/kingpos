@@ -1285,8 +1285,9 @@ async function getLockInfo(
   context: CurrentBusinessContext,
   closing: PosDailyClosing | null,
   liveTotalsDifferFromSnapshot = false,
+  knownBusinessDate?: string,
 ): Promise<DailyClosingLockInfo> {
-  const currentBusinessDate = await getCurrentBusinessDate(context);
+  const currentBusinessDate = knownBusinessDate ?? await getCurrentBusinessDate(context);
   const status = closing?.status ?? "draft";
   const isPastDate = reportDate < currentBusinessDate;
 
@@ -1573,8 +1574,9 @@ async function loadStaffSnapshotRows(
 async function ensureDailyClosingSnapshotFromCore(
   auth: ReportAuthContext,
   core: DailyReportCore,
+  knownBusinessDate?: string,
 ) {
-  const currentBusinessDate = await getCurrentBusinessDate(auth.context);
+  const currentBusinessDate = knownBusinessDate ?? await getCurrentBusinessDate(auth.context);
 
   if (core.reportDate >= currentBusinessDate) {
     return core.closing;
@@ -2184,6 +2186,7 @@ export async function getDailyPosReport(
   reportDateInput: string,
   context?: CurrentBusinessContext,
   readContext?: DailyPosReadContext,
+  options: { includeCorrectionDetails?: boolean } = {},
 ): Promise<DailyPosReport> {
   const auth = await requireReportContext(
     DAILY_POS_REPORT_PERMISSIONS.view,
@@ -2192,15 +2195,21 @@ export async function getDailyPosReport(
   const reportDate = isDateInputValue(reportDateInput)
     ? reportDateInput
     : getTodayDate(await getContextBusinessTimezone(auth.context));
-  const core = await loadLiveDailyPosReport(reportDate, auth, { readContext });
-  const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core);
-  const correctionRows = await loadDailyClosingCorrectionRows(auth, reportDate);
+  // Independent reads share this request's already verified authority. Never
+  // serialize the clock/corrections behind loading all ticket rows.
+  const [core, correctionRows, businessDate] = await Promise.all([
+    loadLiveDailyPosReport(reportDate, auth, { readContext }),
+    loadDailyClosingCorrectionRows(auth, reportDate),
+    getCurrentBusinessDate(auth.context),
+  ]);
+  const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core, businessDate);
   const snapshot = getSnapshotTotalsFromClosing(ensuredClosing);
   const lock = await getLockInfo(
     reportDate,
     auth.context,
     ensuredClosing,
     snapshotDiffersFromLive(snapshot, core),
+    businessDate,
   );
   const effective = buildEffectiveTotalsResult({
     adjustmentRows: correctionRows.adjustments,
@@ -2209,13 +2218,10 @@ export async function getDailyPosReport(
     lock,
     requestRows: correctionRows.requests,
   });
-  const corrections = await decorateDailyClosingCorrections(
-    auth,
-    correctionRows,
-  );
-  const staffSnapshotRows = lock.isLocked
-    ? await loadStaffSnapshotRows(auth, ensuredClosing?.id ?? null, reportDate)
-    : [];
+  const [corrections, staffSnapshotRows] = await Promise.all([
+    options.includeCorrectionDetails === false ? Promise.resolve({requests: [], adjustments: []}) : decorateDailyClosingCorrections(auth, correctionRows),
+    lock.isLocked ? loadStaffSnapshotRows(auth, ensuredClosing?.id ?? null, reportDate) : Promise.resolve([]),
+  ]);
 
   return {
     adjustmentTotals: effective.adjustmentTotals,

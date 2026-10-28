@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "1aaddd4ad201277efb1599dcfb2e198c9b6e1355f2b391b909d506a0edfb90ab",
+  "buildId": "eab4117db4d7a2c9bf07efe364cd7888ae9de7c10a4015abde301c0c81132e7b",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 598338,
-      "sha256": "876594f27dddea70d2b664c65cf1d28ae2566ebc0d19b9b6216fa9ce76b6beb3",
+      "bytes": 598681,
+      "sha256": "1681c5ee8111c3d20d22f28a11d3c6785ceb32d5a2e4274d674ad14c4321b097",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4395725,
-      "sha256": "6bc0044a61a60d793f6be1f701bdb24d310260eb02790ccbcb5fe50bc182d669",
+      "bytes": 4398293,
+      "sha256": "b27543bf5a9c9d065d6b8845012965a09ee164dc1b7f1a41e19373f97706287f",
       "mime": "text/javascript"
     },
     {
@@ -2689,6 +2689,16 @@
       "cacheable": true
     },
     {
+      "name": "settings.direct",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "kind",
+        "salonId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "page.owner-today",
       "path": "/api/app-local/read",
       "argumentKeys": [
@@ -2866,6 +2876,29 @@
       "name": "http.notifications.preferences",
       "path": "/api/app-local/read",
       "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.owner.closing",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "mode",
+        "salonId",
+        "expectedScope",
+        "date",
+        "requestId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.owner.closing-history",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "date"
+      ],
       "access": "scoped",
       "cacheable": false
     },
@@ -5636,6 +5669,13 @@
     },
     {
       "name": "http.notifications.preferences",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.owner.closing",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "input"

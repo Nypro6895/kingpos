@@ -3352,7 +3352,7 @@ function AppointmentRowEditDialog({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  const [booking]=useState(serverBooking);
+  const booking = serverBooking;
   
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -4880,7 +4880,7 @@ function DetailDrawer({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  const [booking]=useState(serverBooking);
+  const booking = serverBooking;
   const [pendingAction, setPendingAction] = useState("");
   
   const [result, setResult] = useState<BookingActionResult | null>(null);
@@ -5141,6 +5141,7 @@ function DetailDrawer({
               <a
                 className="inline-flex min-h-10 items-center rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white"
                 href={`/pos-tickets/${booking.posTicket.id}`}
+                onClick={onClose}
               >
                 <WorkspaceText text="Open POS ticket" />
               </a>

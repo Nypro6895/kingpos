@@ -10,6 +10,8 @@ import { POST as noShowPOST } from "@/app/api/staff/report-no-show/route";
 import { POST as confirmPOST } from "@/app/api/staff/confirm-booking/route";
 import { POST as staffPreferencesPOST } from "@/app/api/staff/booking-preferences/route";
 import { GET as preferencesGET, POST as preferencesPOST } from "@/app/api/notifications/preferences/route";
+import { GET as closingGET, POST as closingPOST } from "@/app/api/pos/closing/route";
+import { GET as closingHistoryGET } from "@/app/api/pos/closing/history/route";
 import { ROLE_READS, ROLE_COMMANDS } from "./app-local-platform-types";
 import type { AppLocalRead } from "./app-local-host";
 import type { AppLocalHttpResponse } from "./app-local-http-client";
@@ -39,7 +41,8 @@ export async function readAppLocalRoleHttpResource(name: string, args: Record<st
   if (options.signal?.aborted) throw options.signal.reason;
   const current = await authorized(options.scope), url = new URL(rule.path, "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
   const forwarded = new Headers(); if (current.get("cookie")) forwarded.set("cookie", current.get("cookie")!);
-  const response = name === "http.staff.creation" ? await creationGET(new Request(url, { headers: forwarded, signal: options.signal })) : await preferencesGET();
+  const readRequest = new Request(url, { headers: forwarded, signal: options.signal });
+  const response = name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
   const result = await wire(response);
   if (options.signal?.aborted) throw options.signal.reason;
   // These control DTOs are never retained by native. Preserve their actual wire status/body.
@@ -54,7 +57,7 @@ export async function runAppLocalRoleHttpCommand(name: string, args: Record<stri
   const body = JSON.stringify(args.input); if (body.length > 64 * 1024) fail(413, "This request is too large.");
   const current = await authorized(scope), forwarded = new Headers({ "Content-Type": "application/json", Origin: origin });
   const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);
-  const handlers = { "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST };
+  const handlers = { "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST, "http.owner.closing": closingPOST };
   const rule = ROLE_COMMANDS[name as keyof typeof ROLE_COMMANDS], handler = handlers[name as keyof typeof handlers];
   const result = await wire(await handler(new Request(new URL(rule.path, origin), { method: "POST", headers: forwarded, body })));
   return { handled: true, data: result, status: result.status };

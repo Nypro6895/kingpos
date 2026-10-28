@@ -94,6 +94,7 @@ import { getTodayQuickAccessConfiguration } from "@/lib/today-quick-accesses";
 import { getSalonProfileMediaUrl, getCurrentSalonProfileIdentitySettings } from "@/lib/salon-profile";
 import { getSettingsOwnerHistory } from "@/lib/settings-owner-history";
 import { getWindowsPosRelease } from "@/lib/windows-pos-release";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 export type DirectSettingsKind =
   | "salon-profile"
@@ -129,7 +130,7 @@ async function salonContext(expectedSalonId?: string) {
 }
 
 export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId?: string) {
- return withSettingsTarget(targetSalonId, async () => {
+ return runWithReadContext(() => withSettingsTarget(targetSalonId, async () => {
   if (kind === "recovery-back-office") {
     const overview = await loadRecoveryBackOfficeOverview();
     if (!overview?.authorized)
@@ -351,7 +352,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
       throw new Error("Unknown settings section.");
   }
 
- }, kind === "staff-workspace" || kind === "staff-schedule" ? "staff" : "manage");
+ }, kind === "staff-workspace" || kind === "staff-schedule" ? "staff" : "manage"));
 }
 
 export async function saveDirectSalonProfile(
