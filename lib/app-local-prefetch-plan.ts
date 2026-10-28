@@ -62,7 +62,7 @@ function defaultJobs(role: Audience, value: AppLocalContext): Job[] {
   const common = [read("/notifications", "page.notifications", { filter: "all" }), read("/more", "page.more"), read("/my-place", "page.my-place")];
   if (role === "guest") return exploreJobs();
   if (role === "owner") return [
-    read("/staff/today", "page.owner-today", { phase: "shell" }), ownerPanel("/pos/book"), read("/salon-profile", "owner.salon-profile"), common[0],
+    read("/staff/today", "page.owner-today"), ownerPanel("/pos/book"), read("/salon-profile", "owner.salon-profile"), common[0],
     ownerPanel("/pos"), ownerPanel("/pos/ticket"), ownerPanel("/pos/report"), read("/customers", "page.owner-customers"),
     read("/staff", "page.owner-staff"), read("/services", "page.services"), read("/payroll", "page.owner-payroll", payrollReadArgs("/payroll")), ...common.slice(1),
   ];
@@ -84,7 +84,7 @@ function currentJobs(role: Audience, value: AppLocalContext, url: URL): Job[] {
   if (pathname === "/notifications" && role !== "guest") return [read(path, "page.notifications", { filter: url.searchParams.get("filter") === "unread" ? "unread" : "all" })];
   if (["/more", "/my-place"].includes(pathname) && role !== "guest") return [read(path, pathname === "/more" ? "page.more" : "page.my-place")];
   if (role === "owner") {
-    if (pathname === "/staff/today") return [read(path, "page.owner-today", { ...query(url, ["date"]), phase: "shell" })];
+    if (pathname === "/staff/today") return [read(path, "page.owner-today", query(url, ["date"]))];
     const alias: Record<string, string> = { "/bookings": "/pos/book", "/pos-tickets": "/pos/ticket", "/reports": "/pos/report" };
     if (alias[pathname]) return [{ ...ownerPanel(alias[pathname] + url.search), path }];
     if (["/pos", "/pos/book", "/pos/ticket", "/pos/report", "/pos/check-in"].includes(pathname)) return [pathname === "/pos" ? ownerPanel("/pos") : ownerPanel(path)];

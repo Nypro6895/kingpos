@@ -22,6 +22,7 @@ import { servicesCatalogNativePilotEnabled } from "./services-catalog-native-fla
 import { installServicesCatalogNativeLifecycle } from "./services-catalog-native-runtime";
 import { marketBrowseFromQuery } from "@/app/market/market-browse";
 import { useAppLocalResource } from "./app-local-resource";
+import { appLocalStaffOnlineIdentity } from "./app-local-staff-online-access";
 import { AppLocalStaffRelay } from "./app-local-staff-relay";
 import { getAppLocalHost, type AppLocalHost, type AppLocalContext } from "./app-local-host";
 import { getAppLocalHelpGuide } from "./app-local-reference-content";
@@ -93,23 +94,24 @@ function FollowingPage(props: AppLocalPageProps) {
 }
 function FavoritesPage(props: AppLocalPageProps) { return <ReadView<AppLocalFavoritesData> {...props} name="customer.favorites" args={queryFor(props.path, ["salons", "after"])} title="Your favorites">{data => <AppLocalFavorites data={data} />}</ReadView>; }
 
-/** The trusted lease supplies identity immediately offline. Unapproved legacy users retain online-only resolution. */
+/** Both trusted leases and fresh online-only proofs already resolve identity. */
 function useStaffIdentity(props: AppLocalPageProps, view: string) {
   const scope = props.context?.context.scope, grant = props.context?.grant, binding = grant?.staffBinding;
   const leased = grant?.kind === "staff" && scope && grant.scopes.includes(scope) && binding && binding.viewerId === props.context?.context.viewerId && binding.salonId === grant.salonId
     ? { resourceScope: scope, staffId: binding.staffId, salonId: binding.salonId } : null;
-  const hasLease = Boolean(leased), validatedAt = props.context?.onlineValidatedAt;
+  const supplied = leased ?? appLocalStaffOnlineIdentity(props.context, {path:props.path,online:typeof navigator !== "undefined" && navigator.onLine});
+  const hasIdentity = Boolean(supplied), validatedAt = props.context?.onlineValidatedAt;
   const [loaded, setLoaded] = useState<{ scope: string; view: string; data?: AppLocalStaffIdentityData; error?: string } | null>(null);
   useEffect(() => {
-    if (!scope || hasLease || !navigator.onLine) return;
+    if (!scope || hasIdentity || !navigator.onLine) return;
     const controller = new AbortController(), host = props.host ?? getAppLocalHost();
     void host.read<AppLocalStaffIdentityData>("page.staff-identity", { view }, { scope, signal: controller.signal }).then(response => {
       if (!controller.signal.aborted && response.scope === scope && response.data) setLoaded({ scope, view, data: response.data });
     }).catch(error => { if (!controller.signal.aborted) setLoaded({ scope, view, error: error instanceof Error ? error.message : "Staff profile could not be loaded." }); });
     return () => controller.abort();
-  }, [scope, view, hasLease, props.host, validatedAt]);
+  }, [scope, view, hasIdentity, props.host, validatedAt]);
   const current = loaded && loaded.scope === scope && loaded.view === view ? loaded : null;
-  return { data: leased ?? current?.data, error: current?.error };
+  return { data: supplied ?? current?.data, error: current?.error };
 }
 function StaffPage(props: AppLocalPageProps) {
   const path = urlFor(props.path).pathname, view = path === "/staff/workday" ? "workday" : path === "/staff/appointments" ? "schedule" : "my-work";

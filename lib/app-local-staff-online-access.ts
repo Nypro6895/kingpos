@@ -17,3 +17,13 @@ export function isAppLocalStaffOnlineAccess(value: AppLocalContext, options: { p
   return typeof value.onlineValidatedAt === "number" && Number.isFinite(value.onlineValidatedAt)
     && value.onlineValidatedAt > 0 && value.onlineValidatedAt <= now + 60_000 && now - value.onlineValidatedAt < 30_000;
 }
+
+/** The admitted server proof already resolved this staff identity. Reuse it for
+ * the first foreground read, never for offline restoration or background work.
+ * Workday retains its separate attendance identity resolver. */
+export function appLocalStaffOnlineIdentity(value: AppLocalContext | null, options: {path:string;online:boolean;now?:number}) {
+  if (!value || !/^\/staff\/(?:my-work|appointments)$/.test(options.path.split("?")[0])
+    || !isAppLocalStaffOnlineAccess(value, options)) return null;
+  const proof = value.staffOnlineAccess!;
+  return {resourceScope:proof.scope,staffId:proof.staffId,salonId:proof.salonId};
+}

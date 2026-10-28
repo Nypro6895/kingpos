@@ -12,16 +12,25 @@ type ReadScope = {
 };
 const reads = new AsyncLocalStorage<ReadScope>();
 const readAborts = new AsyncLocalStorage<AbortSignal>();
-const freshValidation = new AsyncLocalStorage<boolean>();
+type ValidationScope = Pick<ReadScope, "validations" | "pending">;
+const freshValidation = new AsyncLocalStorage<ValidationScope>();
 
 /** Opaque request identity; never an authorization decision or cross-request cache. */
 export function getReadContextToken(): object | undefined {
   return reads.getStore()?.token;
 }
 
+/** Reuse of verified rows is forbidden for explicit final revocation probes. */
+export function getReusableReadValidationToken(): object | undefined {
+  return freshValidation.getStore() ? undefined : getReadContextToken();
+}
+
 /** Final read validation must not join another caller's pending identity gate. */
 export function runWithFreshReadValidation<T>(read: () => Promise<T>): Promise<T> {
-  return freshValidation.run(true, read);
+  // Each final probe starts from empty authority cells. Its own callers may
+  // share that new check; they cannot borrow the earlier page admission or
+  // join a different final probe, even when both run concurrently.
+  return freshValidation.run({validations:new Map(),pending:new Map()}, read);
 }
 
 /** Transport cancellation is request-local and separate from identity memoization.
@@ -52,8 +61,8 @@ export function runWithReadContext<T>(read: () => Promise<T>, timing?: ReadReque
 /** One verified session decision per authority in this read request. Never used
  * outside an explicit read scope; final revocation checks always bypass it. */
 export function memoizeReadValidation<T>(key: symbol, authority: string, read: () => Promise<T>): Promise<T> {
-  const scope = reads.getStore();
-  if (!scope || freshValidation.getStore()) return read();
+  const scope = freshValidation.getStore() ?? reads.getStore();
+  if (!scope) return read();
   let values = scope.validations.get(key);
   if (!values) { values = new Map(); scope.validations.set(key, values); }
   const previous = values.get(authority);
@@ -82,8 +91,8 @@ export function memoizeReadContext<T>(key: symbol, read: () => Promise<T>): Prom
 
 /** Join concurrent raw reads only. Settled results never authorize a later read. */
 export function coalesceReadInFlight<T>(key: symbol, authority: string, read: () => Promise<T>): Promise<T> {
-  const scope = reads.getStore();
-  if (!scope || freshValidation.getStore()) return read();
+  const scope = freshValidation.getStore() ?? reads.getStore();
+  if (!scope) return read();
   let requests = scope.pending.get(key);
   if (!requests) {
     requests = new Map();

@@ -22,7 +22,7 @@ const shell = (changes = {}) => ({ dashboard: { date: '2026-10-26', noAccess: fa
 test('owner priority matches real mounted cache keys and ordinary default views', () => {
   const jobs = plan(context('owner'), '/', now);
   assert.deepEqual(jobs.slice(0, 11).map(row => row.name), ['page.owner-today', 'owner.bookings', 'owner.salon-profile', 'page.notifications', 'owner.workspace', 'owner.tickets', 'owner.reports', 'page.owner-customers', 'page.owner-staff', 'page.services', 'page.owner-payroll']);
-  assert.deepEqual(jobs[0].args, { phase: 'shell' }, 'salon business date comes from its server shell');
+  assert.deepEqual(jobs[0].args, {}, 'omitting phase selects the original complete endpoint response');
   for (const name of ['owner.bookings', 'owner.workspace', 'owner.tickets', 'owner.reports']) assert.deepEqual(jobs.find(row => row.name === name).args, { query: '' });
   assert.deepEqual(jobs.find(row => row.name === 'page.owner-payroll').args, { tab: 'overview' });
   assert.ok(jobs.some(row => row.name === 'page.more') && jobs.some(row => row.name === 'page.my-place'));

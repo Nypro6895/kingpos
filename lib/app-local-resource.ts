@@ -396,7 +396,7 @@ export async function prefetchAppLocalResource<T>(scope: string, name: string, a
   }
 }
 
-export function useAppLocalResource<T>(scope: string | undefined, name: string, args: Record<string, unknown> = {}, options: { enabled?: boolean; refreshAfterMs?: number } = {}) {
+export function useAppLocalResource<T>(scope: string | undefined, name: string, args: Record<string, unknown> = {}, options: { enabled?: boolean; refreshAfterMs?: number; initialOnly?: boolean } = {}) {
   const signature = JSON.stringify(stable(args)), actualScope = scope ?? "", { cell } = cellFor(actualScope, name, args);
   const subscribe = useCallback((changed: () => void) => {
     cell.listeners.add(changed);
@@ -405,10 +405,14 @@ export function useAppLocalResource<T>(scope: string | undefined, name: string, 
   }, [cell]);
   const snapshot = useCallback(() => cell.state as AppLocalResourceState<T>, [cell]);
   const state = useSyncExternalStore(subscribe, snapshot, snapshot);
+  // A complete initial frame can hand refresh ownership to its section readers.
+  // Durable/offline hydration still needs an online read; writes cannot restart
+  // a second full reader alongside those already mounted section readers.
+  const initialSatisfied = Boolean(options.initialOnly && (state.data !== undefined && !state.offline || state.error));
   const available = appLocalResourceCache.isAvailable(cell.context);
   const refresh = useCallback(() => actualScope ? refreshAppLocalResource<T>(actualScope, name, JSON.parse(signature)) : Promise.resolve(), [actualScope, name, signature]);
   useEffect(() => {
-    if (!actualScope || !available || options.enabled === false) return;
+    if (!actualScope || !available || options.enabled === false || initialSatisfied) return;
     const release = retainActiveResource(cell);
     let alive = true;
     const ensureFresh = () => {
@@ -418,6 +422,6 @@ export function useAppLocalResource<T>(scope: string | undefined, name: string, 
     void restoreBeforeRefresh(actualScope, name, JSON.parse(signature)).then(ensureFresh);
     const unsubscribe = subscribeReadRefresh(ensureFresh);
     return () => { alive = false; release(); unsubscribe(); };
-  }, [actualScope, name, signature, options.enabled, options.refreshAfterMs, cell, refresh, available]);
+  }, [actualScope, name, signature, options.enabled, options.refreshAfterMs, cell, refresh, available, initialSatisfied]);
   return { ...state, data: available ? state.data : undefined, refresh, available };
 }

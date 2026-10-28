@@ -175,7 +175,6 @@ test('same-scope display lease recovery preserves an unplanned foreground read',
   // Entry keeps this unchanged account/scope mounted when a temporary grant
   // outage recovers. Settings is intentionally outside the background plan.
   await page.evaluate(value => window.configure({ context: value }), recovered);
-  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.my-place'));
   const observed = await page.evaluate(id => ({
     aborted: window.h.reads.find(row => row.id === id).aborted,
     reads: window.h.reads.filter(row => row.name === 'page.settings').length,
@@ -184,6 +183,7 @@ test('same-scope display lease recovery preserves an unplanned foreground read',
   assert.equal(observed.aborted, false, JSON.stringify(observed));
   await page.evaluate(id => window.releaseRead(id, { data: { marker: 'settings-after-lease-recovery' } }), held);
   await page.getByTestId('foreground').filter({ hasText: 'settings-after-lease-recovery' }).waitFor();
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.my-place'));
   assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.settings').length), 1);
 });
 
@@ -281,4 +281,20 @@ test('a 304 validation clears a disk clock skew before a later changed network r
   await page.waitForFunction(() => window.h.reads.filter(row => row.name === 'page.beauty').length === 2);
   await page.evaluate(() => window.releaseRead(window.h.reads.filter(row => row.name === 'page.beauty').at(-1).id, { data: { marker: 'later-network-change' }, updatedAt: Date.now() }));
   await page.getByTestId('foreground').filter({ hasText: 'later-network-change' }).waitFor();
+});
+
+test('workspace gesture stops old speculative HTTP before command preflight; foreground and new identity continue', options, async t => {
+  const page=await fixture(t), previous=context('owner'), next=context('staff','b');
+  await page.evaluate(()=>window.holdRead('owner.bookings',{ignoreAbort:true}));
+  await page.evaluate(cfg=>window.configure(cfg),{context:previous,path:'/staff/today',foreground:{name:'page.owner-today',args:{}},runtime:true});
+  await page.waitForFunction(()=>h.reads.some(r=>r.name==='owner.bookings'));
+  await page.evaluate(scope=>window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-start',{detail:{scope}})),previous.context.scope);
+  await page.waitForFunction(()=>h.reads.find(r=>r.name==='owner.bookings').aborted);
+  const count=await page.evaluate(()=>h.reads.length);await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>h.reads.length),count);
+  await page.evaluate(()=>window.configure({path:'/customers',foreground:{name:'page.owner-customers'}}));
+  await page.getByTestId('foreground').filter({hasText:'page.owner-customers:'+previous.context.scope}).waitFor();
+  await page.evaluate(cfg=>window.configure(cfg),{context:next,path:'/staff/my-work',foreground:{name:'staff.my-work',args:{staffId:staff}},runtime:true});
+  await page.getByTestId('foreground').filter({hasText:'staff.my-work:'+next.context.scope}).waitFor();
+  await page.waitForFunction(scope=>h.reads.some(r=>r.scope===scope&&r.name==='staff.schedule'),next.context.scope);
+  assert.deepEqual(await page.evaluate(()=>h.commands),[]);
 });

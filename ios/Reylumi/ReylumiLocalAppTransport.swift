@@ -52,6 +52,8 @@ final class ReylumiLocalAppTransport {
     private let cookies: () async -> [HTTPCookie]
     private let setCookie: (HTTPCookie) async -> Void
     private let defaults: UserDefaults
+    private let workspacePreference: ReylumiWorkspacePreference?
+    private var restoredWorkspacePreference = false
     private let generationKey: String
     private(set) var nonce = UUID().uuidString
     private(set) var scopeEpoch = 0
@@ -80,9 +82,12 @@ final class ReylumiLocalAppTransport {
     init(origin: URL, manifest: ReylumiLocalBundle.Manifest, store: ReylumiLocalReadStore? = nil,
          client: ReylumiLocalHTTPClient? = nil, defaults: UserDefaults = .standard,
          cookies: (() async -> [HTTPCookie])? = nil, setCookie: ((HTTPCookie) async -> Void)? = nil,
-         diagnostics: ReylumiLocalDiagnostics? = nil) {
+         diagnostics: ReylumiLocalDiagnostics? = nil, workspacePreference: ReylumiWorkspacePreference? = nil) {
         self.diagnostics = diagnostics ?? ReylumiLocalDiagnostics(enabled: true)
         self.origin = origin; self.manifest = manifest; self.store = store ?? ReylumiLocalReadStore(origin: origin)
+        // Injected stores belong to isolated tests/consumers; never touch a
+        // real app preference file unless the production store is in use.
+        self.workspacePreference = workspacePreference ?? (store == nil ? ReylumiWorkspacePreference(origin: origin) : nil)
         self.client = client ?? ReylumiLocalURLClient(); self.defaults = defaults
         self.generationKey = "reylumi.local-app.generation." + SHA256.hash(data: Data(origin.absoluteString.utf8)).map { String(format: "%02x", $0) }.joined()
         self.generation = defaults.string(forKey: generationKey) ?? UUID().uuidString
@@ -146,8 +151,22 @@ final class ReylumiLocalAppTransport {
             // no observer sees half of another response's auth rotation.
             if let previous { _ = try? await previous.value }
             try self.ensureCurrent(epoch)
-            let currentCookies = await self.cookies()
+            var currentCookies = await self.cookies()
             try self.ensureCurrent(epoch)
+            if original == nil && !self.restoredWorkspacePreference {
+                self.restoredWorkspacePreference = true
+                if let choice = self.workspacePreference?.choiceToRestore(cookies: currentCookies) {
+                    let expected = self.cookieIdentity(self.responseCookieSet(currentCookies, updates: [choice]))
+                    await self.setCookie(choice); try self.ensureCurrent(epoch)
+                    currentCookies = await self.cookies(); try self.ensureCurrent(epoch)
+                    guard self.cookieIdentity(currentCookies) == expected else {
+                        await self.reset(reason: .externalCookies)
+                        throw self.failure(409, "Your access has changed. Please try again.")
+                    }
+                    self.cookieAuthorityRevision += 1
+                    self.lastCommittedCookieIdentity = expected
+                }
+            }
             // Capture outgoing headers through the same short queue, so a new
             // request cannot start from half of a multi-cookie refresh.
             guard let original else {
@@ -216,6 +235,7 @@ final class ReylumiLocalAppTransport {
         session = cached
     }
     func reset(rotateGeneration: Bool = true, reason: ReylumiLocalDiagnostics.Reason = .explicitReset) async {
+        workspacePreference?.clear()
         diagnostics.record(.scopeReset, category: .cache, outcome: .invalidated, reason: reason)
         cookieAuthorityRevision += 1; lastCommittedCookieIdentity = nil
         scopeEpoch += 1; nonce = UUID().uuidString
@@ -490,6 +510,7 @@ final class ReylumiLocalAppTransport {
             let (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch, trace: trace)
             let trustedTrace = trace.acceptsResponse(response) ? trace : nil
             if [403, 409].contains(response.statusCode) {
+                self.workspacePreference?.clear()
                 let visibleScope = self.session?.scope ?? ((self.onlineContext?["context"] as? [String: Any])?["scope"] as? String)
                 await self.revokeDisplay(scope: visibleScope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
                 throw self.failure(response.statusCode, "Please reconnect and check your access.")
@@ -548,6 +569,8 @@ final class ReylumiLocalAppTransport {
                 self.onEvent?("reylumi:app-local-reset", self.metadata.merging(["reason": "context"]) { _, new in new })
             }
             let acceptedEpoch = self.scopeEpoch
+            if viewerChanged || denied { self.workspacePreference?.clear() }
+            else if path == "/" { self.workspacePreference?.reconcileRoot(workspaceId: context["workspaceId"] as? String) }
             if viewerChanged { await self.store.clear(); ReylumiBackgroundSync.shared.clear() }
             try self.ensureContextCurrent(epoch: acceptedEpoch, scope: scope, conflictRevision: conflictRevision)
             if explicitStaffOnline {
@@ -946,6 +969,11 @@ final class ReylumiLocalAppTransport {
             }
             let result = try decode(data, response: response)
             try ensureCurrent(epoch)
+            if workspaceSwitch && result["ok"] as? Bool == true && workspacePreference != nil {
+                let committed = try await reconcileCookies(original: nil, updates: [], epoch: epoch, category: .command, trace: trace)
+                try ensureCurrent(epoch)
+                workspacePreference?.saveAcknowledgedChoice(cookies: committed.values)
+            }
             diagnostics.record(.commandEnd, category: .command, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - commandBegan) * 1000, trace: trace)
             return result
         } catch {

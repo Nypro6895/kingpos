@@ -1,0 +1,20 @@
+{
+  "status": "working",
+  "validation": [],
+  "dependencies": [
+    "iphone-real-performance-fixes-20261027"
+  ],
+  "summary": "Reduce cold first-load and workspace-switch round trips with request-local DAL and self-scoped RPC; preserve server authorization; compare physical iPhone cold loads against QA63",
+  "files": [],
+  "changeId": "iphone-first-load-dal-rpc-20261027",
+  "kind": "change",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "id": "38c5c791-fe16-4757-835f-25bb56793f48",
+  "recordedAt": "2026-10-28T02:00:47.235Z",
+  "worktree": "C:\\Reylumi\\kingpos-iphone-performance-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

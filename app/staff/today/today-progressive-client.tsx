@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { discardAppLocalResources, refreshAppLocalResource, useAppLocalResource } from "@/lib/app-local-resource";
+import { discardAppLocalResources, refreshAppLocalResource, seedAppLocalResource, useAppLocalResource } from "@/lib/app-local-resource";
 import { useExperienceScope } from "@/components/experience-scope";
 import { experienceResourceCache } from "@/lib/experience-resource-cache";
 import { fetchLiveExperienceResource } from "@/lib/fetch-live-experience-resource";
 import type { LiveResourceSnapshot } from "@/lib/experience-live-resource";
 import type { PosResource } from "@/lib/pos-workspace-sync";
 import type { TodayDashboard } from "@/lib/today-dashboard";
-import { TODAY_DASHBOARD_SECTIONS, failTodayDashboardSection, getTodayDashboardPermissionsIdentity, getTodayDashboardSections, mergeTodayDashboardSection, type TodayDashboardSection } from "@/lib/today-dashboard-sections";
+import { TODAY_DASHBOARD_SECTIONS, failTodayDashboardSection, getTodayDashboardPermissionsIdentity, getTodayDashboardSections, hasTodayDashboardSectionError, mergeTodayDashboardSection, type TodayDashboardSection } from "@/lib/today-dashboard-sections";
 import { useExperienceResource } from "@/lib/use-experience-resource";
 import { useLiveExperienceRefresh } from "@/lib/use-live-experience-refresh";
 import { TodayDashboardView } from "./today-dashboard-view";
@@ -22,7 +22,7 @@ const tags: Record<TodayDashboardSection, readonly PosResource[]> = {
 const titles: Record<TodayDashboardSection, string> = { staff: "Team", bookings: "Appointments", waiting: "Waiting", financials: "Performance", extras: "Quick access and notifications" };
 type PageData = { dashboard: TodayDashboard; isOwner: boolean };
 type Recovery = { run(): Promise<void>; busy: boolean; error: boolean };
-type ReaderProps = { scope: string; salonId: string; date: string; currentDate: string; section: TodayDashboardSection; accept: (section: TodayDashboardSection, dashboard: TodayDashboard) => void; fail: (section: TodayDashboardSection) => void; deny: () => void };
+type ReaderProps = { scope: string; salonId: string; date: string; currentDate: string; section: TodayDashboardSection; initialReadPending?: boolean; accept: (section: TodayDashboardSection, dashboard: TodayDashboard) => void; fail: (section: TodayDashboardSection) => void; deny: () => void };
 
 function ReadFailure({ section, error, retry, refreshing }: { section: TodayDashboardSection; error: unknown; retry: () => unknown; refreshing: boolean }) {
   if (!error || refreshing) return null;
@@ -56,15 +56,15 @@ function WebSectionReader({ scope, salonId, date, currentDate, section, accept, 
   return <ReadFailure section={section} error={resource.error || Boolean(resource.data?.data.loadErrors.length)} retry={resource.refresh} refreshing={resource.refreshing} />;
 }
 
-function NativeSectionReader({ scope, date, section, accept, fail, deny }: ReaderProps) {
-  const state = useAppLocalResource<PageData>(scope, "page.owner-today", { date, phase: section });
+function NativeSectionReader({ scope, date, section, initialReadPending, accept, fail, deny }: ReaderProps) {
+  const state = useAppLocalResource<PageData>(scope, "page.owner-today", { date, phase: section }, {enabled:!initialReadPending});
   useEffect(() => { if (state.data) accept(section, state.data.dashboard); }, [accept, section, state.data]);
   useEffect(() => { if (!state.available || state.accessDenied) deny(); }, [deny, state.available, state.accessDenied]);
   useEffect(() => { if (state.error && !state.refreshing && state.available && !state.accessDenied) fail(section); }, [fail, section, state.error, state.refreshing, state.available, state.accessDenied]);
-  return <ReadFailure section={section} error={state.error || Boolean(state.data?.dashboard.loadErrors.length)} retry={state.refresh} refreshing={state.refreshing} />;
+  return <ReadFailure section={section} error={state.error || Boolean(state.data && hasTodayDashboardSectionError(state.data.dashboard,section))} retry={state.refresh} refreshing={state.refreshing} />;
 }
 
-function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false, recovery }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean; recovery?: Recovery }) {
+function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false, nativeInitialPending, recovery }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery }) {
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [blocked, setBlocked] = useState(false);
   const tracedSections = useRef<readonly TodayDashboardSection[] | null>(null);
@@ -111,21 +111,39 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
   if (blocked) return <main className="p-6" role="status"><p>Your workspace access must be checked again.</p>{recovery ? <><button type="button" disabled={recovery.busy} onClick={() => void recovery.run()}>Open Today</button>{recovery.error && <p>Access could not be confirmed. Please try again.</p>}</> : <a href="/staff/today">Open Today</a>}</main>;
   const Reader = native ? NativeSectionReader : WebSectionReader;
   return <>
-    {getTodayDashboardSections(initialDashboard).map(section => <Reader key={section} scope={scope} salonId={salonId} date={dashboard.date} currentDate={dashboard.dayView.currentDate} section={section} accept={accept} fail={fail} deny={deny} />)}
+    {getTodayDashboardSections(initialDashboard).map(section => <Reader key={section} scope={scope} salonId={salonId} date={dashboard.date} currentDate={dashboard.dayView.currentDate} section={section} initialReadPending={nativeInitialPending} accept={accept} fail={fail} deny={deny} />)}
     {clockChanged && <p role="status" data-today-clock-refresh className="px-4 py-3 text-sm">The business day or time zone has changed. <a href="/staff/today" className="underline">Open Today</a> to refresh.</p>}
     <TodayDashboardView dashboard={dashboard} isOwner={isOwner} />
   </>;
 }
 
-export function TodayProgressiveClient(props: { initialDashboard: TodayDashboard; scope: string; salonId: string; requestedDate?: string; isOwner: boolean; native?: boolean; recovery?: Recovery }) {
+export function TodayProgressiveClient(props: { initialDashboard: TodayDashboard; scope: string; salonId: string; requestedDate?: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery }) {
   const identity = `${props.scope}:${props.initialDashboard.date}:${props.initialDashboard.dayView.currentDate}:${props.initialDashboard.timezone}:${props.initialDashboard.salonName}:${getTodayDashboardPermissionsIdentity(props.initialDashboard.permissions)}:${props.initialDashboard.noAccess}`;
   return <TodaySections key={identity} {...props} />;
 }
 
 /** Native uses the existing named-read bridge and its signed argument policy. */
 export function AppLocalTodayClient({ scope, requestedDate }: { scope: string; requestedDate?: string }) {
-  const args = useMemo(() => ({ ...(requestedDate ? { date: requestedDate } : {}), phase: "shell" }), [requestedDate]);
-  const state = useAppLocalResource<PageData>(scope, "page.owner-today", args);
+  return <NativeTodayFrame scope={scope} requestedDate={requestedDate} completeFirst />;
+}
+
+function NativeTodayFrame({scope,requestedDate,completeFirst}: {scope:string;requestedDate?:string;completeFirst:boolean}) {
+  // The original endpoint selects the complete response when phase is omitted.
+  const args = useMemo(() => ({ ...(requestedDate ? { date: requestedDate } : {}), ...(!completeFirst ? {phase:"shell"} : {}) }), [requestedDate,completeFirst]);
+  const state = useAppLocalResource<PageData>(scope, "page.owner-today", args, {initialOnly:completeFirst});
+  useLayoutEffect(() => {
+    const age = Date.now() - state.updatedAt;
+    if (!completeFirst || !state.data || state.accessDenied || !state.available || state.offline || age < -60_000 || age >= 15_000) return;
+    // These are projections of the freshly authorized full response, not warm
+    // reads. Seed the ordinary section cells before their automatic effects;
+    // retries, mutation invalidation and fresh authority checks stay unchanged.
+    for (const phase of getTodayDashboardSections(state.data.dashboard)) {
+      seedAppLocalResource(scope, "page.owner-today", {date:state.data.dashboard.date,phase}, {
+        schemaVersion:1,status:200,scope,etag:`"full-${state.updatedAt}-${phase}"`,
+        updatedAt:state.updatedAt,data:state.data,offline:state.offline,
+      });
+    }
+  }, [completeFirst,scope,state.data,state.updatedAt,state.offline,state.accessDenied,state.available]);
   const gate = useExperienceScope();
   const active = useRef({ epoch: 0, mounted: false }), pending = useRef<object | null>(null), needsRecovery = useRef(false), recoveryDate = useRef(requestedDate);
   const [recovering, setRecovering] = useState(false), [recoveryError, setRecoveryError] = useState(false);
@@ -148,8 +166,7 @@ export function AppLocalTodayClient({ scope, requestedDate }: { scope: string; r
       recoveryDate.current = date;
       const discarded = await discardAppLocalResources(scope, "page.owner-today", [args, ...TODAY_DASHBOARD_SECTIONS.map(phase => ({ date, phase }))]);
       if (!discarded || !current() || window.__reylumiAppLocalContext?.scopeEpoch !== hostEpoch || window.__reylumiAppLocalContext?.generation !== generation) return;
-      // The cleared shell mounts once from a fresh authorized read. Its sections
-      // then load independently; unrelated pages and their drafts stay retained.
+      // Reload the complete frame once; individual section retries stay scoped.
       await refreshAppLocalResource(scope, "page.owner-today", args);
     } catch {
       if (current()) setRecoveryError(true);
@@ -157,8 +174,11 @@ export function AppLocalTodayClient({ scope, requestedDate }: { scope: string; r
       if (pending.current === attempt) { pending.current = null; setRecovering(false); }
     }
   };
+  // The complete endpoint rejects partial upstream failures. Fall back to the
+  // original independent sections rather than blanking every working section.
+  if (completeFirst && state.error && !state.data && state.available && !state.accessDenied) return <NativeTodayFrame scope={scope} requestedDate={requestedDate} completeFirst={false} />;
   if (!state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">Today</h1>
     {state.error || !state.loading && !state.refreshing ? <div role="status"><p>{state.error ?? "Connect to load Today."}</p><button type="button" disabled={recovering} onClick={() => void (needsRecovery.current ? recover() : state.refresh())}>Try again</button></div> : <p role="status">Opening…</p>}
   </main>;
-  return <TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native recovery={{ run: recover, busy: recovering, error: recoveryError }} />;
+  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} /></>;
 }

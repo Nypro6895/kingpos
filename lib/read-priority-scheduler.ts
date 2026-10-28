@@ -89,6 +89,10 @@ export function createReadPriorityScheduler(concurrency = 2) {
       }
       running = [...jobs.values()].filter(job => job.running);
       if (running.length >= limit) return;
+      // Spare capacity belongs to the visible page while any of its reads are
+      // pending. Starting another page here competes for the same auth/DB pool
+      // and can delay the next progressive section despite its higher rank.
+      if (speculative(next) && [...jobs.values()].some(job => !speculative(job))) continue;
       if (speculative(next) && running.some(speculative)) continue;
       start(next);
     }

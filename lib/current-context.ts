@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { scopedBusinessContext } from "./scoped-business-context";
 import { memoizeReadContext } from "./read-context-scope";
+import { currentWorkspaceReadGraph, loadWorkspaceReadGraph, runWithWorkspaceReadGraph } from "./workspace-read-graph";
 
 import { routes } from "@/lib/routes";
 import { loadMembershipPermissionCodes } from "@/lib/membership-permissions";
@@ -538,7 +539,8 @@ async function loadSalonWorkspaceProfiles(input: {
     return new Map<string, SalonWorkspaceProfile>();
   }
 
-  const { data, error } = await input.supabase
+  const graph = currentWorkspaceReadGraph();
+  const { data, error } = graph ? {data:graph.profiles.filter(row=>salonIds.includes(row.salon_id)),error:null} : await input.supabase
     .from("salon_settings")
     .select("salon_id, public_profile_logo_path")
     .in("salon_id", salonIds)
@@ -868,6 +870,18 @@ async function loadCurrentMemberships(input: {
     };
   }
 
+  const graph = currentWorkspaceReadGraph();
+  if (graph) {
+    const accounts = new Map(graph.accounts.map(row=>[row.id,row]));
+    const roles = new Map(graph.roles.map(row=>[row.id,row]));
+    const salons = new Map(graph.locations.map(row=>[row.id,row]));
+    return {
+      accountMemberships: graph.accountMemberships.map(row=>({...row,account:accounts.get(row.account_id)??null,role:row.role_id?roles.get(row.role_id)??null:null})),
+      salonMemberships: graph.salonMemberships.map(row=>({...row,account:accounts.get(row.account_id)??null,role:row.role_id?roles.get(row.role_id)??null:null,salon:salons.get(row.salon_id)??null})),
+      user,
+    };
+  }
+
   const { error: accountBootstrapError } = await supabase.rpc(
     "ensure_personal_account_for_current_user",
     {
@@ -1072,6 +1086,11 @@ async function loadMissingAccounts(input: {
   accountIds: string[];
   supabase: SupabaseContextClient | null;
 }) {
+  const graph = currentWorkspaceReadGraph();
+  if (graph) {
+    for (const row of graph.accounts) if (input.accountIds.includes(row.id)) input.accountsById.set(row.id,row);
+    return;
+  }
   const missingAccountIds = input.accountIds.filter(
     (accountId) => !input.accountsById.has(accountId),
   );
@@ -1118,7 +1137,8 @@ async function loadStaffSalons(input: {
     };
   }
 
-  const { data: staffRows, error: staffError } = await input.supabase
+  const graph = currentWorkspaceReadGraph();
+  const { data: staffRows, error: staffError } = graph ? {data:graph.staff,error:null} : await input.supabase
     .from("staff")
     .select("id, salon_id")
     .eq("account_user_id", input.user.id)
@@ -1164,7 +1184,7 @@ async function loadStaffSalons(input: {
     };
   }
 
-  const { data: staffSalons, error: staffSalonsError } = await input.supabase
+  const { data: staffSalons, error: staffSalonsError } = graph ? {data:graph.locations.filter(row=>salonIds.includes(row.id)&&row.status==="active"),error:null} : await input.supabase
     .from("locations")
     .select(LOCATION_SELECT)
     .in("id", salonIds)
@@ -1486,6 +1506,11 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
   const auth = await getCurrentBusinessContextAuth(
     options.accessToken,
   );
+  const snapshot = auth.supabase && auth.user ? await loadWorkspaceReadGraph(auth.supabase, auth.user.id) : null;
+  return runWithWorkspaceReadGraph(snapshot ?? undefined, () => buildCurrentBusinessContext(auth, options));
+}
+
+async function buildCurrentBusinessContext(auth: Awaited<ReturnType<typeof getCurrentBusinessContextAuth>>, options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
   const { accountMemberships, salonMemberships, user } =
     await loadCurrentMemberships(auth);
 
@@ -1518,7 +1543,8 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
     accountMemberships.map((membership) => [membership.account_id, membership]),
   );
   const accountIds = memberAccounts.map((account) => account.id);
-  const accountSalonResult =
+  const graph = currentWorkspaceReadGraph();
+  const accountSalonResult = graph ? {data:graph.locations.filter(row=>accountIds.includes(row.account_id)),error:null} :
     accountIds.length > 0
       ? await supabase
           .from("locations")

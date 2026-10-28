@@ -1,0 +1,191 @@
+{
+  "measuredAt": "2026-10-28T03:55:24.752Z",
+  "device": "Physical iPhone 12 Pro Max, iOS 27",
+  "method": "New app process and cleared encrypted read snapshots per trial; login preserved; DOM ready plus two animation frames; first target visits only; warm returns excluded",
+  "baseline": {
+    "commit": "392212aac573d4516743eeaf889efb8bf0a4a86f",
+    "nativeQaBuild": 65,
+    "backend": "dpl_F2D9H9sreasSd1VEu7HvNeFRd39j",
+    "region": "iad1"
+  },
+  "candidate": {
+    "nativeQaBuild": 76,
+    "buildId": "7ad10a4b3f1a61018933eb00c36e2a340050a3c850c769e6bb7f1c5ba5ec345b",
+    "appJsSha256": "b16e038f075b08e082ce5a29d1679880256f36053ff008cb034273599a146a93",
+    "hashes": {
+      "manifest.json": "88263327f12a2a94f93333c0dccc28117ad1b0c65aab2ccd63e6a18a818bc75c",
+      "app.js": "b16e038f075b08e082ce5a29d1679880256f36053ff008cb034273599a146a93",
+      "app.css": "d8ecf619fa347a5265fe3f15f8a7cd6b5c8a61454c5f95b26ad70ca0408d5a86"
+    },
+    "backend": "dpl_DajPmKsowVnwE3m3aXiXKGHmVdXE",
+    "region": "pdx1"
+  },
+  "metrics": [
+    {
+      "name": "Hồ sơ tiệm và giờ mở cửa",
+      "before": {
+        "n": 3,
+        "samples": [
+          2807,
+          2583,
+          2589
+        ],
+        "median": 2589,
+        "minimum": 2583,
+        "maximum": 2807
+      },
+      "after": {
+        "n": 3,
+        "samples": [
+          991,
+          1011,
+          942
+        ],
+        "median": 991,
+        "minimum": 942,
+        "maximum": 1011
+      },
+      "improvementPercent": 61.7,
+      "afterUnderOneSecond": 2
+    },
+    {
+      "name": "Dịch vụ: 4 dịch vụ, 2 nhân viên",
+      "before": {
+        "n": 3,
+        "samples": [
+          2573,
+          3634,
+          2209
+        ],
+        "median": 2573,
+        "minimum": 2209,
+        "maximum": 3634
+      },
+      "after": {
+        "n": 3,
+        "samples": [
+          794,
+          757,
+          894
+        ],
+        "median": 794,
+        "minimum": 757,
+        "maximum": 894
+      },
+      "improvementPercent": 69.1,
+      "afterUnderOneSecond": 3
+    },
+    {
+      "name": "Owner → Staff, có dữ liệu My Work",
+      "before": {
+        "n": 3,
+        "samples": [
+          13247,
+          9762,
+          10950
+        ],
+        "median": 10950,
+        "minimum": 9762,
+        "maximum": 13247
+      },
+      "after": {
+        "n": 3,
+        "samples": [
+          2928,
+          2998,
+          3027
+        ],
+        "median": 2998,
+        "minimum": 2928,
+        "maximum": 3027
+      },
+      "improvementPercent": 72.6,
+      "afterUnderOneSecond": 0
+    },
+    {
+      "name": "Owner → Personal, có nội dung feed",
+      "before": {
+        "n": 3,
+        "samples": [
+          8100,
+          8165,
+          8101
+        ],
+        "median": 8101,
+        "minimum": 8100,
+        "maximum": 8165
+      },
+      "after": {
+        "n": 3,
+        "samples": [
+          4433,
+          3845,
+          3828
+        ],
+        "median": 3845,
+        "minimum": 3828,
+        "maximum": 4433
+      },
+      "improvementPercent": 52.5,
+      "afterUnderOneSecond": 0
+    },
+    {
+      "name": "Khởi động lạnh Owner → Sales Today",
+      "before": {
+        "n": 6,
+        "samples": [
+          11872,
+          10474,
+          10745,
+          10346,
+          11151,
+          11046
+        ],
+        "median": 10895.5,
+        "minimum": 10346,
+        "maximum": 11872
+      },
+      "after": {
+        "n": 6,
+        "samples": [
+          2071,
+          1958,
+          2720,
+          2081,
+          3011,
+          2108
+        ],
+        "median": 2094.5,
+        "minimum": 1958,
+        "maximum": 3011
+      },
+      "improvementPercent": 80.8,
+      "afterUnderOneSecond": 0
+    }
+  ],
+  "incorrectFinalOwnerStarts": 0,
+  "priorAnomaly": {
+    "build": 73,
+    "wrongRoleAfterColdLaunch": 1,
+    "trials": 6,
+    "reproductionBuild": 74,
+    "reproductionTrials": 8,
+    "reproductionFailures": 0,
+    "fixedInBuild": 76,
+    "rootCause": "Confirmed selected workspace cookie reverted after process restart; same-login non-authoritative preference now restores the acknowledged selection before fresh HTTPS validation",
+    "realRestartTrialsAfterFix": 8,
+    "realRestartFailuresAfterFix": 0
+  },
+  "dataset": {
+    "activeServices": 4,
+    "staff": 2,
+    "tickets": 34,
+    "ticketItems": 46,
+    "bookings": 11,
+    "bookingLines": 14,
+    "dailyClosings": 9,
+    "todayClosedTickets": 2,
+    "todaySales": 75
+  },
+  "acceptedAllFlowsBelowOneSecond": false
+}

@@ -4,14 +4,14 @@ import {
   createUserScopedSupabaseServerClient,
   getAccessTokenFromRequest,
   getSupabaseAuthUser,
+  readPublicUserProfileForAuthIdentity,
 } from "@/lib/supabase/server";
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUser } from "@/types/user";
 import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
 import { assertAuthAvailable, AuthAvailabilityError } from "@/lib/supabase/auth-rest";
 
-const USER_SELECT =
-  "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, deletion_requested_at, deletion_scheduled_for, deleted_at, anonymized_at, deletion_finalization_started_at, deletion_finalized_at, deletion_finalization_attempts, deletion_finalization_failed_at, deletion_finalization_error, last_login_at, created_at, updated_at";
+import { USER_SELECT } from "./user-select";
 
 function readMetadataString(metadata: SupabaseAuthUser["user_metadata"], key: string) {
   const value = metadata[key];
@@ -141,11 +141,7 @@ export async function getKingUserForAuthUser(
     return null;
   }
 
-  const { data, error } = await supabase
-    .from("users")
-    .select(USER_SELECT)
-    .eq("auth_user_id", authUser.id)
-    .maybeSingle<KingUser>();
+  const { data, error } = await readPublicUserProfileForAuthIdentity(supabase, accessToken ?? "", authUser.id);
 
   if (error) {
     console.error("Unable to load public.users record for auth user", {

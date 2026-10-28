@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { currentWorkspaceReadGraph } from "./workspace-read-graph";
 
 type MembershipRole = { id: string; role_id: string | null };
 type RolePermission = { role_id: string; permission_id: string };
@@ -12,6 +13,11 @@ export async function loadMembershipPermissionCodes(
   const result = new Map(memberships.map((membership) => [membership.id, new Set<string>()]));
   const roleIds = [...new Set(memberships.map((membership) => membership.role_id).filter((id): id is string => Boolean(id)))];
   if (!supabase || roleIds.length === 0) return result;
+  const graph = currentWorkspaceReadGraph();
+  if (graph) {
+    for (const membership of memberships) result.set(membership.id,new Set(graph.grants.filter(row=>row.role_id===membership.role_id).map(row=>row.code)));
+    return result;
+  }
 
   const rolePermissionsResult = await supabase
     .from("role_permissions")

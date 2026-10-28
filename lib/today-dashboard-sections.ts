@@ -33,6 +33,10 @@ function ownsError(error: TodayLoadError, section: TodayDashboardSection) {
   return error.section ? error.section === section : ERROR_AREAS[section].includes(error.area);
 }
 
+export function hasTodayDashboardSectionError(dashboard: Pick<TodayDashboard,"loadErrors">, section: TodayDashboardSection) {
+  return dashboard.loadErrors.some(error => ownsError(error,section));
+}
+
 /** A failed transport must settle the shell's placeholder without inventing
  * financial values or throwing away the last successfully loaded section. */
 export function failTodayDashboardSection(base: TodayDashboard, section: TodayDashboardSection): TodayDashboard {

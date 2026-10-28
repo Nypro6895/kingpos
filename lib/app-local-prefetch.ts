@@ -62,11 +62,18 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
       } finally { working = false; }
     };
     const lifecycle = () => {
-      readPriorityScheduler.setPaused(!canPrefetchAppLocalReads());
+      readPriorityScheduler.setPaused(denied || !canPrefetchAppLocalReads());
       const latest = current.current.context;
       if (!active || denied || !latest || identityOf(latest) !== identity) return;
       append(appLocalPrefetchPlan(latest, current.current.path));
       void run();
+    };
+    const workspaceStart = () => {
+      // Workspace commands use their own fresh authority transport. They do
+      // not enter the read queue, so explicitly stop old-workspace speculation
+      // before their preflight. A newly admitted identity owns the next queue.
+      denied = true; pending.clear(); controller.abort();
+      readPriorityScheduler.setPaused(true);
     };
     wake.current = lifecycle;
     // Give the foreground page its first frame and initial read effects first.
@@ -76,6 +83,7 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
     document.addEventListener("visibilitychange", lifecycle);
     window.addEventListener("online", lifecycle); window.addEventListener("offline", lifecycle);
     window.addEventListener("reylumi:foreground", lifecycle); network?.addEventListener("change", lifecycle);
+    window.addEventListener("reylumi:app-local-workspace-start", workspaceStart);
     readPriorityScheduler.setPaused(!canPrefetchAppLocalReads());
     return () => {
       active = false; controller.abort(); clearTimeout(timer);
@@ -86,6 +94,7 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
       document.removeEventListener("visibilitychange", lifecycle);
       window.removeEventListener("online", lifecycle); window.removeEventListener("offline", lifecycle);
       window.removeEventListener("reylumi:foreground", lifecycle); network?.removeEventListener("change", lifecycle);
+      window.removeEventListener("reylumi:app-local-workspace-start", workspaceStart);
     };
   }, [identity]);
 }

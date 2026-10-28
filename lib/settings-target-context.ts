@@ -1,6 +1,7 @@
 import "server-only";
 import { getCurrentBusinessContext, isOwnerMembership, getCurrentRolePermissionCodesForMembership, type CurrentBusinessContext, type SalonMode } from "./current-context";
 import { runInBusinessContext } from "./scoped-business-context";
+import { getReusableReadValidationToken } from "./read-context-scope";
 
 export async function resolveSettingsTarget(salonId: string, mode: SalonMode | "auto" = "auto"): Promise<CurrentBusinessContext> {
   const context = await getCurrentBusinessContext();
@@ -16,7 +17,9 @@ export async function resolveSettingsTarget(salonId: string, mode: SalonMode | "
   const accountMembership=context.accountMemberships.find(m=>m.account_id===salon.account_id&&m.status==='active');
   const membership=resolvedMode==='manage'?(isOwnerMembership(directMembership??null)?directMembership:isOwnerMembership(accountMembership??null)?accountMembership:directMembership??accountMembership)??null:null;
   if (resolvedMode === "manage" && !membership) throw new Error("You do not have management access to this salon.");
-  const permissionCodes = membership ? await getCurrentRolePermissionCodesForMembership(membership) : [];
+  const sameVerifiedTarget = getReusableReadValidationToken() && membership?.id === context.currentMembership?.id
+    && context.currentSalon?.id === salonId && context.salonMode === resolvedMode;
+  const permissionCodes = sameVerifiedTarget ? [...context.permissionCodes] : membership ? await getCurrentRolePermissionCodesForMembership(membership) : [];
   return {
     ...context, accountId: account.id, accountName: account.name, currentAccount: account,
     salonId: salon.id, salonName: salon.name, currentSalon: salon,

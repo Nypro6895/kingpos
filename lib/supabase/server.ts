@@ -6,12 +6,13 @@ import {
   isAccountLoginSessionId,
 } from "@/lib/account-security-shared";
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
-import type { KingUserStatus } from "@/types/user";
+import type { KingUser } from "@/types/user";
+import { USER_SELECT } from "@/lib/users/user-select";
 import { cookies, headers } from "next/headers";
 import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
 import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
 import { AuthRejectionError, isConfirmedAuthRejection } from "./auth-rejection";
-import { coalesceReadInFlight, getReadRequestTiming, memoizeReadValidation } from "@/lib/read-context-scope";
+import { getReadRequestTiming, memoizeReadValidation } from "@/lib/read-context-scope";
 import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -39,10 +40,6 @@ type SupabaseEnvStatus = {
 type SupabaseConfig = {
   supabaseAnonKey: string;
   supabaseUrl: string;
-};
-
-type PublicUserStatusRow = {
-  status: KingUserStatus;
 };
 
 type AccountLoginSessionStatusRow = {
@@ -85,7 +82,15 @@ function readAuthUser(
   config: SupabaseConfig | null,
 ) {
   const read = () => measureAuthRead("auth_user", () => supabase.auth.getUser(accessToken));
-  return config ? coalesceReadInFlight(authUserReadKey, authReadAuthority(config, accessToken), read) : read();
+  return config ? memoizeReadValidation(authUserReadKey, authReadAuthority(config, accessToken), read) : read();
+}
+
+/** Raw identity/profile result shared only in this read request. Strict denial
+ * policy remains with each caller; fresh revocation checks bypass this memo. */
+export function readPublicUserProfileForAuthIdentity(client: NonNullable<ReturnType<typeof createSupabaseServerClient>>, accessToken: string, authUserId: string) {
+  const config = getSupabaseConfig();
+  const read = () => measureAuthRead("auth_status", async () => await client.from("users").select(USER_SELECT).eq("auth_user_id",authUserId).maybeSingle<KingUser>());
+  return config ? memoizeReadValidation(accountStatusReadKey, authReadAuthority(config, accessToken, authUserId), read) : read();
 }
 
 type SupabaseCookieWriter = {
@@ -364,15 +369,7 @@ async function isAccessTokenAllowedForAppSession(
     return false;
   }
 
-  const statusRead = coalesceReadInFlight(
-    accountStatusReadKey,
-    authReadAuthority(config, accessToken, authData.user.id),
-    () => measureAuthRead("auth_status", async () => await supabase
-      .from("users")
-      .select("status")
-      .eq("auth_user_id", authData.user.id)
-      .maybeSingle<PublicUserStatusRow>()),
-  );
+  const statusRead = readPublicUserProfileForAuthIdentity(supabase, accessToken, authData.user.id);
   const sessionRead = isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable, throwOnRejected);
   const [{ data: userStatus, error: userStatusError }, sessionAllowed] = throwOnRejected ? await (async () => {
     // An unavailable sibling must not hide a successful, conclusive denial.
@@ -491,7 +488,7 @@ async function isAppLoginSessionCookieAllowed(
       },
     },
   });
-  const { data, error } = await coalesceReadInFlight(
+  const { data, error } = await memoizeReadValidation(
     loginSessionReadKey,
     authReadAuthority(config, accessToken, authUserId, loginSessionId),
     () => measureAuthRead("auth_session", async () => await supabase

@@ -1,0 +1,138 @@
+{
+  "kind": "change",
+  "changeId": "iphone-first-load-dal-rpc-20261027",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated cold-read DAL/RPC, colocated backend, Today first-response batching and bound workspace preference; physical iPhone improves 52.5–80.8%, but boot/workspace remain above 1 second and require further handoff batching before performance acceptance",
+  "files": [
+    "app/staff/today/today-progressive-client.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-prefetch-plan.ts",
+    "lib/app-local-prefetch.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-staff-online-access.ts",
+    "lib/current-context.ts",
+    "lib/membership-permissions.ts",
+    "lib/read-context-scope.ts",
+    "lib/read-priority-scheduler.ts",
+    "lib/settings-target-context.ts",
+    "lib/supabase/server.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/users/current-user.ts",
+    "tests/app-local-prefetch-plan.test.mjs",
+    "tests/app-local-prefetch-runtime.test.mjs",
+    "tests/read-priority-scheduler.test.mjs",
+    "vercel.json",
+    "ios/Reylumi/ReylumiWorkspacePreference.swift",
+    "ios/ReylumiTests/WorkspacePreferenceTests.swift",
+    "lib/users/user-select.ts",
+    "lib/workspace-read-graph.ts",
+    "supabase/migrations/20261028021000_workspace_context_read_snapshot.sql",
+    "supabase/migrations/20261028024000_workspace_context_read_snapshot_sequential.sql",
+    "tests/app-local-staff-online-identity.test.mjs",
+    "tests/native-today-first-load.test.mjs",
+    "tests/read-identity-dal.test.mjs",
+    "tests/workspace-read-graph.integration.test.mjs",
+    "tests/workspace-read-graph.test.mjs",
+    "docs/iphone-first-load-dal-rpc-20261027.md",
+    "docs/iphone-first-load-dal-rpc-20261027.json"
+  ],
+  "dependencies": [
+    "iphone-real-performance-fixes-20261027"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-dal-rpc-20261027\\ready-source",
+    "commit": "392212aac573d4516743eeaf889efb8bf0a4a86f"
+  },
+  "fileHashes": {
+    "app/staff/today/today-progressive-client.tsx": "8de4a93b1c5169139cbe64d48adb92b549711bf56a683220935c44e7e57e6957",
+    "ios/Reylumi/LocalAppBundle/app.css": "d8ecf619fa347a5265fe3f15f8a7cd6b5c8a61454c5f95b26ad70ca0408d5a86",
+    "ios/Reylumi/LocalAppBundle/app.js": "b16e038f075b08e082ce5a29d1679880256f36053ff008cb034273599a146a93",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "88263327f12a2a94f93333c0dccc28117ad1b0c65aab2ccd63e6a18a818bc75c",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "babd37c54dc1d88c58c7baacceb4e9e99002e6e9132cacc9bfc70264decc8d1e",
+    "lib/app-local-page-registry.tsx": "90201850f29379d08adb92ee9b98f39abe6a9aec4cdd49d75dc6e33a889cf88d",
+    "lib/app-local-prefetch-plan.ts": "a58e0ca6d1129cc9034593f2097bacd1e7fd1587b10afe36c2556a022d3b3b86",
+    "lib/app-local-prefetch.ts": "b09ab0dd3975c5f910c907ed12509d157ba447712f9bffab608fbd32abbd1cee",
+    "lib/app-local-resource.ts": "61094179bee9f51cce7c45f73f2e6cd216ef0ba6904423e7b8f9e9a6dd0d8e2b",
+    "lib/app-local-staff-online-access.ts": "d0a0e8347e81081e856129bf44293b342879dd2c425ddfe240d42fa9e3bd1eed",
+    "lib/current-context.ts": "2f61b2849691ded7126e5a716d5d1f2477969ee2d5dd40ce8210dd2588f35247",
+    "lib/membership-permissions.ts": "92a6ce3d29120fb93e1749b394f1599fad857ad5e6a42affb8a5912b8d142954",
+    "lib/read-context-scope.ts": "cd197e1cae1045a9b05752ab843a63201ff47c904815c9c9ac59850cc38e1123",
+    "lib/read-priority-scheduler.ts": "ea851e37da45f3aa9201098d08ee499e27a0c477623b4dd2ab5440fc145910ac",
+    "lib/settings-target-context.ts": "d35c91e9e677bb05b42166a03a57fb83a9f032a37eb4d0e1d92d3dde3da6c416",
+    "lib/supabase/server.ts": "a537d562f46492f05c0e334ff230d0b49cdf0547f119232d156484039a3992dd",
+    "lib/today-dashboard-sections.ts": "3b2f6c3cc321b7635881647ece11a725ff82bc1b932bec0ff2c50cdad10a307b",
+    "lib/users/current-user.ts": "995af9f080c2cc269fd9af6612fdc9379fa41b7bdd5f456abfb324a42182c53d",
+    "tests/app-local-prefetch-plan.test.mjs": "69d7ec248dd64d5eb2065e9efdee7b0c72e33dc55a304ae06b42834fb3dab73b",
+    "tests/app-local-prefetch-runtime.test.mjs": "9c6ba86e7a14104249ba2364a5c69ee9d520e2637964a9e196406ca43d57bebc",
+    "tests/read-priority-scheduler.test.mjs": "b069b5e892867de6d9d85c078e84306548feb3ba2fbc3c539373c42eef1b2445",
+    "vercel.json": "d5c19d8bf945d6196db3506b03e54484983cc6caf08e58f14ec975c89ae40fec",
+    "ios/Reylumi/ReylumiWorkspacePreference.swift": "107f73f92c71a24bb5517629f33b479c4868abff0eef3cc3c6ae4825e7e10cae",
+    "ios/ReylumiTests/WorkspacePreferenceTests.swift": "15259908e78a5e0171b58e2146edcd83889add4e56b02e1e0b79382b17fc60da",
+    "lib/users/user-select.ts": "998618a76f85a8b33e7779a7b1a2c2307ae1da322a99e11679ae10e4f9af25b1",
+    "lib/workspace-read-graph.ts": "19985c953d647689e46d39789ff96d218388db7bfd84ce39edd908c2b2915592",
+    "supabase/migrations/20261028021000_workspace_context_read_snapshot.sql": "179f810f6cb4c23ce5c708a15f67231bf19c5e0e537c77a6b486042f997e18bd",
+    "supabase/migrations/20261028024000_workspace_context_read_snapshot_sequential.sql": "392bbc131843af873c80440108a8882cffda8fb0fbc53dba915d9cbfea18bf54",
+    "tests/app-local-staff-online-identity.test.mjs": "2b38424313c49a4801c82cb9b5208a01abf7848168dcff17ee26c742dcc3c205",
+    "tests/native-today-first-load.test.mjs": "4616973cf58937ede26b271eaf8bb18e891b629d112bc72e2c0fecf655f84217",
+    "tests/read-identity-dal.test.mjs": "2383970f3d20ec7cf731bdab05d7ea5106bd347ccd7d89114b63d69354212835",
+    "tests/workspace-read-graph.integration.test.mjs": "c869f346b41aab60563acecafafae0ac37496a318d4391fddb5f950c4346f7cc",
+    "tests/workspace-read-graph.test.mjs": "cb3d6d67f0469c111cb094e0542d3437e278f14a067fdb609804e03f76210466",
+    "docs/iphone-first-load-dal-rpc-20261027.md": "87236ba16954f7931ff0d60e59945d2cdc7bb2adae21313128056bde9ea230fe",
+    "docs/iphone-first-load-dal-rpc-20261027.json": "bd67ac031b5210d22f4e7dcc151b7414962b661729d4c5b0867e47de59a57614"
+  },
+  "validation": [
+    {
+      "name": "48 runtime and regression tests",
+      "result": "passed",
+      "evidence": "artifacts/iphone-dal-rpc-20261027/all-tests75.log"
+    },
+    {
+      "name": "44 native cookie/authority tests",
+      "result": "passed",
+      "evidence": "artifacts/iphone-dal-rpc-20261027/FixCandidate/test-workspace-security-final2.log"
+    },
+    {
+      "name": "Isolated migration replay and RLS self-scope",
+      "result": "passed",
+      "evidence": "artifacts/iphone-dal-rpc-20261027/sql-sequential-tests-final.log"
+    },
+    {
+      "name": "Fresh production build, TypeScript and lint",
+      "result": "passed",
+      "evidence": "artifacts/iphone-dal-rpc-20261027/production-build-exact75.log"
+    },
+    {
+      "name": "Physical iPhone cold comparison and 8 restart correctness checks",
+      "result": "passed",
+      "evidence": "docs/iphone-first-load-dal-rpc-20261027.json"
+    },
+    {
+      "name": "All first loads below 1 second",
+      "result": "failed",
+      "evidence": "Staff 2.998s, Personal 3.845s, cold Owner 2.0945s median; profile 2/3 below threshold"
+    },
+    {
+      "name": "Protected DB facts unchanged after physical testing",
+      "result": "passed",
+      "evidence": "artifacts/iphone-dal-rpc-20261027/db-final-facts-ui.txt"
+    }
+  ],
+  "notes": [
+    "Two additive migrations already applied to draft DB; anonymous RPC execution denied; RLS and fresh server authority retained.",
+    "QA preview only; no public promotion or TestFlight upload. Native rebuild required.",
+    "Integrate with exact release baseline and dependency; do not publish dirty checkout."
+  ],
+  "id": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+  "recordedAt": "2026-10-28T03:56:24.404Z",
+  "worktree": "C:\\Reylumi\\kingpos-iphone-performance-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,2 @@
+// Server-side profile projection shared by identity and status validation.
+export const USER_SELECT = "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, deletion_requested_at, deletion_scheduled_for, deleted_at, anonymized_at, deletion_finalization_started_at, deletion_finalized_at, deletion_finalization_attempts, deletion_finalization_failed_at, deletion_finalization_error, last_login_at, created_at, updated_at";

@@ -8,6 +8,16 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 const spec = (key, run, extra = {}) => ({ scope: 'owner-A', key, priority: 100, background: true, run, ...extra });
 
+test('spare connection never starts another page while the visible page is loading', async () => {
+  const q = createReadPriorityScheduler(2), gate = deferred(), seen = [];
+  q.setActiveRoute('/today');
+  const visible = q.run(spec('visible', () => { seen.push('visible'); return gate.promise; }, {route:'/today',background:false,priority:0}));
+  const ahead = q.run(spec('ahead', async () => { seen.push('ahead'); return 2; }, {route:'/reports'}));
+  await tick(); await tick(); assert.deepEqual(seen,['visible']);
+  gate.resolve(1); assert.equal(await visible,1); assert.equal(await ahead,2);
+  assert.deepEqual(seen,['visible','ahead']);
+});
+
 test('only one speculative read runs; foreground outranks remaining queue', async () => {
   const q = createReadPriorityScheduler(), first = deferred(), seen = [];
   const a = q.run(spec('a', () => { seen.push('a'); return first.promise; }));
