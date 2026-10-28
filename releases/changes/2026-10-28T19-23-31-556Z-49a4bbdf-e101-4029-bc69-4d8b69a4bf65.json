@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "iphone-hidden-post-focus-fanout-20261028",
+  "status": "ready",
+  "summary": "Verified component fix: one fresh hidden-post reader per viewer and browser event across subscribers; unrelated storage events ignored. Original server authorization retained. Overall sub-second/full-page objective remains unfinished.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/post-safety.tsx",
+    "tests/hidden-posts-initial.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\focus131-frozen",
+    "commit": "5d54ad2992eb423e5137c5a734f11f1fdd3fbe9f"
+  },
+  "validation": [
+    {
+      "name": "18-subscriber browser reproduction: before 18 reads; after 1 read for focus/post-hidden/block events; unrelated storage before18 after0; cross-viewer isolation retained; 4 tests passed on exact native55-based source",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false on exact native55-based source",
+      "result": "passed"
+    },
+    {
+      "name": "Installed TestFlight55 diagnostic maps at least18 retained identical commandPreflight events to loadHiddenPostIdentitiesAction",
+      "result": "passed"
+    }
+  ],
+  "id": "49a4bbdf-e101-4029-bc69-4d8b69a4bf65",
+  "recordedAt": "2026-10-28T19:23:31.556Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/post-safety.tsx": "47f1c8f2171f7f5bb5090c2a6e32b8610a1e09e99571eeedc88636180b4c49e1",
+    "tests/hidden-posts-initial.test.mjs": "16ba6575f254d66b71755a02898ac168eb3f807eb2b76d2b3452e4376f779bc7"
+  }
+}
