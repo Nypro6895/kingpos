@@ -20,7 +20,7 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
   } else if (url.pathname === "/staff/my-work") {
     const identity = await getStaffPortalIdentity();
     if (identity.staff && identity.context.user?.id === value.context.viewerId) {
-      const args = {staffId:identity.staff.id,tab:"daily"};
+      const args = {staffId:identity.staff.id,...Object.fromEntries(["tab","payPeriodStart"].filter(key=>url.searchParams.has(key)).map(key=>[key,url.searchParams.get(key)!]))};
       add("staff.my-work",args,await readAppLocalRoleResource("staff.my-work",args,{scope}));
     }
   } else if (url.pathname === "/explore" && !url.search) {
