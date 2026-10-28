@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {ExploreInitialEditorialProvider} from "@/app/explore/explore-initial-editorial";
 import {HiddenPostsInitialProvider} from "@/components/post-safety";
 import { ExploreProgressiveClient } from "@/app/explore/explore-progressive-client";
 import { ExploreStartupShell } from "@/app/explore/explore-startup-shell";
@@ -65,7 +66,7 @@ function ExplorePage({ path, context }: AppLocalPageProps) {
   const extrasPromise = useMemo(() => extras ? Promise.resolve(extras) : extrasPending.promise, [extras, extrasPending]);
   const source = params.get("locationSource");
   const locationSource: ExploreLocationSource = source === "gps" || source === "activity" || source === "saved" || source === "workspace" ? source : params.get("location") ? "manual" : "none";
-  return data ? <HiddenPostsInitialProvider viewerId={context?.context.viewerId} ids={data.initialHiddenPosts}><ExploreProgressiveClient initial={data} extras={extrasPromise} feed={feedEnabled ? feedPending.promise : undefined} /></HiddenPostsInitialProvider> : <>
+  return data ? <ExploreInitialEditorialProvider viewerId={context?.context.viewerId} discovery={{category:data.initialResponse.category,location:data.initialResponse.location}} page={!resource.offline && !context?.offline ? data.initialFeed : undefined} checkedAt={resource.updatedAt}><HiddenPostsInitialProvider viewerId={context?.context.viewerId} ids={data.initialHiddenPosts}><ExploreProgressiveClient initial={data} extras={extrasPromise} feed={feedEnabled ? feedPending.promise : undefined} /></HiddenPostsInitialProvider></ExploreInitialEditorialProvider> : <>
     <ExploreStartupShell query={params.get("q") ?? ""} category={params.get("category") || "All"} location={params.get("location") ?? ""} source={locationSource} viewerId={context?.context.viewerId ?? null} />
     {resource.error ? <div role="status" className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3"><p>Could not open Explore. Please try again.</p><button type="button" onClick={() => void resource.refresh()}>Try again</button></div> : null}
   </>;

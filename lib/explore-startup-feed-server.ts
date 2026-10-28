@@ -19,7 +19,7 @@ export async function prepareExploreStartupFeed(context: CurrentBusinessContext,
   }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
-  try { return await getExploreSocialFeedPage({ visitorKey, discovery, limit: 4, signal: controller.signal }); }
+  try { return await getExploreSocialFeedPage({ visitorKey, discovery, limit: 12, signal: controller.signal }); }
   catch { return null; }
   finally { clearTimeout(timer); }
 }

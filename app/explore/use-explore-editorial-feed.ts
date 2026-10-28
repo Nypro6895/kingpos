@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import {useExploreInitialEditorial} from "./explore-initial-editorial";
 import { fetchExploreFeedPage, requestExploreFeed } from "@/lib/explore-feed-client";
 import type { ExploreFeedValidation } from "@/lib/explore-feed-revisions";
 import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
@@ -8,6 +9,7 @@ import type { ExploreFeedPage } from "@/types/explore";
 /** Fresh tiles and the continuation share one bounded regional feed session. */
 export function useExploreEditorialFeed(discovery: ExploreFeedDiscoveryOptions, viewerId: string | null, surface: "mobile" | "desktop") {
   const signature = JSON.stringify({ discovery, viewerId });
+  const initial = useExploreInitialEditorial(discovery,viewerId);
   const [result, setResult] = useState<{ signature: string; page: ExploreFeedPage } | null>(null);
   useEffect(() => {
     const controller = new AbortController();
@@ -16,6 +18,7 @@ export function useExploreEditorialFeed(discovery: ExploreFeedDiscoveryOptions, 
     const filters = JSON.parse(signature).discovery as ExploreFeedDiscoveryOptions;
     const load = async () => {
     if (started || viewport.matches !== (surface === "desktop")) return;
+    if(initial){started=true;setResult({signature,page:initial});return;}
     started = true;
     const key = "reylumi-editorial-v1:" + signature;
     try {
@@ -42,6 +45,6 @@ export function useExploreEditorialFeed(discovery: ExploreFeedDiscoveryOptions, 
     };
     void load(); viewport.addEventListener("change", load);
     return () => { controller.abort(); viewport.removeEventListener("change", load); };
-  }, [signature, surface]);
-  return result?.signature === signature ? result.page : undefined;
+  }, [signature, surface, initial]);
+  return result?.signature === signature ? result.page : initial;
 }
