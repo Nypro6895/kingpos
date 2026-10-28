@@ -1,5 +1,7 @@
 "use client";
 import{useEffect}from"react";
+import{getAppLocalHost}from"./app-local-host";
+import{completeWorkspaceHandoff}from"./app-local-shell-workspace-navigation";
 import{OwnerPanel}from"@/app/pos/owner-local-panels";
 import{OwnerPosMore}from"@/app/pos/owner-pos-more";
 import{ownerLocalHref}from"./owner-local-workspace";
@@ -35,7 +37,8 @@ function RegularBusinessPage({path,context,navigate}:AppLocalPageProps) {
 }
 function RedirectPage({path,context,navigate}:AppLocalPageProps){
  const destination=path==="/"?context?.home??(context?.access?.ownerWorkspace?"/staff/today":context?.access?.staffWorkspace?"/staff/my-work":"/explore"):appLocalRouteAlias(path);
- useEffect(()=>{if(destination&&(path!=="/"||context))navigate(destination);},[destination,path,context,navigate]);
+ const batchedHome = path==="/" && !context?.offline && context?.workspaceHandoffVersion===2 && getAppLocalHost().isNative && navigator.onLine;
+ useEffect(()=>{if(destination&&(path!=="/"||context)){if(batchedHome)completeWorkspaceHandoff(destination);else navigate(destination);}},[destination,path,context,navigate,batchedHome]);
  return <main className="p-6" aria-busy="true"><h1 className="text-2xl font-semibold">Reylumi</h1></main>;
 }
 function ShowcasePage({path}:AppLocalPageProps){const look=getExploreShowcaseLookPage(decodeURIComponent(new URL(path,"https://reylumi.com").pathname.split("/").at(-1)!));return look?<AppLocalShowcaseLook look={look}/>:<main className="p-6"><h1>This look is no longer available.</h1></main>;}

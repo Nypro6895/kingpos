@@ -1,4 +1,5 @@
 import "server-only";
+import {publicExploreCardRpc} from "./public-explore-card-rpc";
 
 import {
   addLocalDays,
@@ -657,7 +658,8 @@ export async function getPublicSalonOperatingStatusesBySalonId(
   }
 
   const rpc = rpcRunner ?? (supabase!.rpc.bind(supabase) as unknown as RpcRunner);
-  const { data, error } = await rpc("get_public_salon_operating_status_inputs", {
+  const batch = await publicExploreCardRpc(rpc,ids);
+  const { data, error } = await batch("get_public_salon_operating_status_inputs", {
     target_salon_ids: ids,
   });
 

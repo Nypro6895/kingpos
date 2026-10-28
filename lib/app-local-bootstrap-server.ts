@@ -1,7 +1,9 @@
 import "server-only";
 import type { AppLocalContext, AppLocalRead } from "./app-local-host";
 import { readAppLocalRoleResource } from "./app-local-role-resources-server";
-import { readAppLocalPlatformResource } from "./app-local-platform-resources-server";
+import { createHash } from "node:crypto";
+import { getRequestBusinessContext } from "./request-business-context";
+import { isOwnerMembership } from "./current-context";
 import { appLocalPrefetchPlan } from "./app-local-prefetch-plan";
 import { readAppLocalExploreResource } from "./app-local-explore-server";
 import { getStaffPortalIdentity } from "./staff-portal-identity";
@@ -19,7 +21,12 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
   };
   if (url.pathname === "/staff/today") {
     const args = url.searchParams.has("date") ? {date:url.searchParams.get("date")!} : {};
-    add("page.owner-today",args,await readAppLocalPlatformResource("page.owner-today",args,{scope}));
+    const today = await readAppLocalRoleResource("owner.today",args,{scope});
+    if(today?.status === 200 && today.data !== undefined) {
+      const context = await getRequestBusinessContext();
+      const data = {dashboard:today.data,isOwner:isOwnerMembership(context.currentMembership)};
+      add("page.owner-today",args,{...today,data,etag:'"bootstrap-'+createHash("sha256").update(JSON.stringify([scope,"page.owner-today",args,data])).digest("hex")+'"'});
+    }
   } else if (url.pathname === "/staff/my-work") {
     const identity = await getStaffPortalIdentity();
     if (identity.staff && identity.context.user?.id === value.context.viewerId) {
@@ -30,11 +37,21 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     const args = {query:""};
     const results = await Promise.all(["page.explore","page.explore-feed"].map(async name => ({name,result:await readAppLocalExploreResource(name,args,{scope})})));
     for(const {name,result} of results) add(name,args,result);
+    const core = rows.find(row=>row.name === "page.explore"), feed = rows.find(row=>row.name === "page.explore-feed");
+    const coreData = core?.value.data as {deferred?:Record<string,unknown>}|undefined;
+    const feedData = feed?.value.data as {items?:unknown[]}|undefined;
+    if(core && coreData?.deferred && feedData && Array.isArray(feedData.items)) {
+      // The feed is already freshly hydrated for this same viewer. Supply it as
+      // the initial page, avoiding an unnecessary client Suspense promise cycle.
+      const data = {...coreData,initialFeed:feedData,deferred:{...coreData.deferred,feed:false}};
+      core.value = {...core.value,data,etag:'"bootstrap-'+createHash("sha256").update(JSON.stringify([scope,core.name,args,data])).digest("hex")+'"'};
+    }
   } else if(readInitial) {
     // Only the shared plan's exact current-page contract; never speculative
     // pages, arbitrary endpoints, edit flows or command-shaped operations.
-    const job = appLocalPrefetchPlan(value,path).find(job=>job.path === path);
-    if(job) add(job.name,job.args,await readInitial(job.name,job.args,scope));
+    const jobs = appLocalPrefetchPlan(value,path).filter(job=>job.path === path).slice(0,2);
+    const loaded = await Promise.all(jobs.map(async job=>({job,result:await readInitial(job.name,job.args,scope)})));
+    for(const {job,result} of loaded) add(job.name,job.args,result);
   }
   return rows;
 }

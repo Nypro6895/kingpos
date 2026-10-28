@@ -81,6 +81,18 @@ function defaultJobs(role: Audience, value: AppLocalContext): Job[] {
 }
 function currentJobs(role: Audience, value: AppLocalContext, url: URL): Job[] {
   const path = url.pathname + url.search, pathname = url.pathname;
+  if(role !== "guest" && ["/settings","/settings/login-security","/account","/roles","/permissions","/staff/connections"].includes(pathname)) {
+    const jobs = [read(path,"page.settings")];
+    const salonId = value.context.salonId, section = url.searchParams.get("section") ?? "";
+    const prefix = `salon-${salonId}-`, kind = section.startsWith(prefix) ? section.slice(prefix.length) : "";
+    if(role === "owner" && salonId && ["salon-profile","public-profile","services","booking","staff-team","payroll","pos-display","shortcuts","ownership","close-salon"].includes(kind)) {
+      jobs.push(read(path,"settings.direct",{kind,salonId}));
+    }
+    return jobs;
+  }
+  if(role !== "guest" && pathname === "/support") return [read(path,"page.support")];
+  if(pathname === "/market") return [read(path,"page.market")];
+  if(role !== "guest" && ["/salons","/businesses"].includes(pathname)) return [read(path,"customer.salons")];
   if (pathname === "/notifications" && role !== "guest") return [read(path, "page.notifications", { filter: url.searchParams.get("filter") === "unread" ? "unread" : "all" })];
   if (["/more", "/my-place"].includes(pathname) && role !== "guest") return [read(path, pathname === "/more" ? "page.more" : "page.my-place")];
   if (role === "owner") {

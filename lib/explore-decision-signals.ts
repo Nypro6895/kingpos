@@ -1,4 +1,5 @@
 import "server-only";
+import {publicExploreCardRpc} from "./public-explore-card-rpc";
 import { getSalonIdentityById } from "@/lib/salon-identity-data";
 import { EMPTY_SALON_IDENTITY,type SalonIdentity } from "@/lib/salon-identity";
 import { getLumiTrustEvidenceBySalonId } from "@/lib/lumi-trust-data";
@@ -177,6 +178,7 @@ export async function getExploreDecisionSignalsBySalonId(
     return new Map<string, ExploreDecisionSignals>();
   }
 
+  rpc = await publicExploreCardRpc(rpc,uniqueSalonIds);
   const [{ data, error }, evidenceBySalon, identityBySalon, reputationResponses] = await Promise.all([
     rpc("get_public_explore_decision_signals", { target_salon_ids: uniqueSalonIds }),
     getLumiTrustEvidenceBySalonId(rpc, uniqueSalonIds),
