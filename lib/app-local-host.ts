@@ -19,6 +19,7 @@ export type AppLocalContext = {
   onlineValidatedAt: number;
   offline?: boolean;
   workspaceHandoffVersion?: 2;
+  getterAdmissionVersion?: 1;
   homeAdmission?: AppLocalContext;
   bootstrap?: {name:string;args:Record<string,unknown>;value:AppLocalRead}[];
 };

@@ -985,6 +985,13 @@ final class ReylumiLocalAppTransport {
         do {
             let workspaceSwitch = name == "shell.switch-workspace"
             let batchedWorkspaceSwitch = workspaceSwitch && onlineContext?["workspaceHandoffVersion"] as? Int == 2
+            // Only these audited pure getters negotiate one fresh server POST.
+            // Never infer this from names, invalidation flags or caller input.
+            let singlePostGetter = onlineContext?["getterAdmissionVersion"] as? Int == 1 && [
+                "action.efc196d40c1355cb97795327",
+                "action.d14797e33bdffa7d9940f9f4",
+                "action.71559420db869529e30eabcb"
+            ].contains(name)
             if workspaceSwitch {
                 guard workspaceCommandID == nil else { throw failure(409, "A workspace change is already being checked.") }
                 workspaceCommandID = requestID
@@ -994,18 +1001,22 @@ final class ReylumiLocalAppTransport {
             let context: [String: Any], scope: String
             let preflightBegan = ProcessInfo.processInfo.systemUptime
             do {
-                if batchedWorkspaceSwitch {
+                if batchedWorkspaceSwitch || singlePostGetter {
                     await loadSession(); try ensureCurrent(expectedEpoch)
                     let displayed = (onlineContext?["context"] as? [String: Any]) ?? (session?.object["context"] as? [String: Any])
                     guard let requestedScope, requestedScope == displayed?["scope"] as? String,
                           displayed?["authenticated"] as? Bool == true else { throw failure(409, "Your workspace changed. Please try again.") }
+                    if singlePostGetter {
+                        guard let viewer = displayed?["viewerId"] as? String, !viewer.isEmpty,
+                              workspaceCommandID == nil else { throw failure(409, "Your account is changing. Please try again.") }
+                    }
                     // This local binding is not authorization. The single POST
                     // freshly validates identity, current scope and target access.
                     context = ["context": displayed!]
                 }
                 else if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
                 else { context = try await freshContext(path: path) }
-                if !batchedWorkspaceSwitch { try requireCommandGrant(context, name: name, path: path) }
+                if !batchedWorkspaceSwitch && !singlePostGetter { try requireCommandGrant(context, name: name, path: path) }
                 try ensureCurrent(expectedEpoch)
                 guard let currentScope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
                 if context["offlineState"] as? String == "online-only" {
