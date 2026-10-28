@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "iphone-cold-filtered-bootstrap-forwarding-20261028",
+  "status": "ready",
+  "summary": "Native cold context cache misses retain selected pay tab or schedule date through initialPath. Canonical authority path, server filters, reset and revocation behavior remain unchanged. Two tests fail before the fix and all 23 selected native tests pass after. Not released or physically accepted yet.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/WorkspaceSwitchTests.swift"
+  ],
+  "validation": [
+    {
+      "name": "Native cache miss source drops initialPath; real Schedule next-day navigation needed fresh admission before selected data",
+      "result": "passed"
+    },
+    {
+      "name": "Native cold-miss filters reproduce before, pass after, canonical authority remains unchanged",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\filters184-after.log"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\filters184-selected-frozen"
+  },
+  "id": "2c5cb2e6-f823-46ad-b124-846232a82ce4",
+  "recordedAt": "2026-10-28T21:36:32.038Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "4b8479f3e72441f06cb7c7621d0375122d5e348298cd28a5ff7b1abf5c3bcfe0",
+    "ios/ReylumiTests/WorkspaceSwitchTests.swift": "963c53d7a83f4ea6e6de98c0a0af4afafbf9784f94c041cb11a5b01c8c2aaafd"
+  }
+}

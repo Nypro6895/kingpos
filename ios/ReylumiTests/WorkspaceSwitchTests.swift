@@ -265,6 +265,26 @@ final class WorkspaceSwitchTests: XCTestCase {
         await f.transport.reset()
     }
 
+    func testColdContextMissKeepsSelectedPayTabWithoutChangingAuthorityPath() async throws {
+        let f = try await fixture(); defer { try? FileManager.default.removeItem(at:f.directory) }
+        await f.transport.reset()
+        _ = try await f.transport.context(path:"/staff/my-work",initialPath:"/staff/my-work?tab=analysis")
+        let paths = await f.http.contextPaths, initial = await f.http.initialPaths
+        XCTAssertEqual(paths,["/staff/my-work"])
+        XCTAssertEqual(initial,["/staff/my-work?tab=analysis"])
+        await f.transport.reset()
+    }
+
+    func testColdContextMissKeepsSelectedScheduleDateWithoutChangingAuthorityPath() async throws {
+        let f = try await fixture(); defer { try? FileManager.default.removeItem(at:f.directory) }
+        await f.transport.reset()
+        _ = try await f.transport.context(path:"/staff/appointments",initialPath:"/staff/appointments?date=2026-10-29&view=day")
+        let paths = await f.http.contextPaths, initial = await f.http.initialPaths
+        XCTAssertEqual(paths,["/staff/appointments"])
+        XCTAssertEqual(initial,["/staff/appointments?date=2026-10-29&view=day"])
+        await f.transport.reset()
+    }
+
     func testStartupNetworkBeginsBeforeJSAndIsConsumedOnceWithoutEarlyAdmission() async throws {
         let f=try await fixture();defer {try? FileManager.default.removeItem(at:f.directory)}
         await f.http.configure(holdRoot:true)

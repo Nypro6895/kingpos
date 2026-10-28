@@ -77,7 +77,7 @@ function ReylumiLogo({ prefetch }: { prefetch?: boolean } = {}) {
   );
 }
 
-export function GuestNavigationShell({ children, authenticated = false }: { children: ReactNode; authenticated?: boolean | null }) {
+export function GuestNavigationShell({ children, authenticated = false, accountFallback }: { children: ReactNode; authenticated?: boolean | null; accountFallback?: ReactNode }) {
   const __vt = useWorkspaceTranslation();
 
   const pathname = usePathname();
@@ -200,6 +200,7 @@ export function GuestNavigationShell({ children, authenticated = false }: { chil
               <WorkspaceText text="My account" />
             </Link>
           ) : null}
+          {accountFallback}
           {!isExploreBrowsePage && authenticated === false ? (
             <div className="flex shrink-0 items-center justify-end gap-2 lg:self-auto">
               {!isLoginPage ? (

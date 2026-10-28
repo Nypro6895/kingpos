@@ -1,0 +1,48 @@
+{
+  "changeId": "iphone-booking-modal245",
+  "status": "ready",
+  "source": {
+    "commit": "2d7033a",
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\modal245-selected-frozen"
+  },
+  "summary": "Effect-owned booking modal portal container is removed when retained Activity hides; body scroll restored",
+  "releasePrerequisites": [
+    "Assemble with current production and uploaded native source",
+    "New native bundle and physical retest; released58 failure remains"
+  ],
+  "kind": "change",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "validation": [
+    {
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\modal245-before.log",
+      "name": "Exact native58 source fails hidden Activity portal regression",
+      "result": "passed"
+    },
+    {
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\modal245-after.log",
+      "name": "Portal lifecycle and seven history regressions: eight pass",
+      "result": "passed"
+    },
+    {
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\modal245-types.log",
+      "name": "Fresh TypeScript noEmit",
+      "result": "passed"
+    }
+  ],
+  "files": [
+    "app/bookings/booking-workspace-client.tsx",
+    "tests/booking-modal-activity.test.mjs"
+  ],
+  "id": "8ec55807-166e-4c72-94fb-25981fb3114d",
+  "recordedAt": "2026-10-28T22:38:23.029Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/bookings/booking-workspace-client.tsx": "a29a68b6695e2d4a5f4d192b263bee7eb180c2352356170cb2707c9fb2522b61",
+    "tests/booking-modal-activity.test.mjs": "4188685e901351e9908ad079b236767e554b0312071ac13dbb079248f56e7e20"
+  }
+}

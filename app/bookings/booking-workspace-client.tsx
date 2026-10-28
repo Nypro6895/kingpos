@@ -12,7 +12,7 @@ import { ContextualSupport } from "@/components/contextual-support";
 import { SettingsIcon as SharedSettingsIcon } from "@/components/settings-icon";
 import "./booking-workspace.css";
 import { SchedulePicker } from "@/components/booking-ui/schedule-picker";
-import { useCloseOnNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { HistoryLinkControl } from "@/app/activity/history-link-control";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
@@ -2648,6 +2648,21 @@ function Message({ result }: { result: BookingActionResult | null }) {
   );
 }
 
+function useBookingModalPortalHost() {
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    // Activity preserves this panel's state while tearing down effects. A
+    // portal into document.body otherwise remains visible outside the hidden
+    // panel. Give each modal an effect-owned container that disappears too.
+    const container = document.createElement("div");
+    container.dataset.bookingModalHost = "true";
+    document.body.appendChild(container);
+    setHost(container);
+    return () => container.remove();
+  }, []);
+  return host;
+}
+
 function ModalFrame({
   children,
   label,
@@ -2663,7 +2678,7 @@ function ModalFrame({
 
   useCloseOnNavigation(onClose);
   const frameRef = useRef<HTMLDivElement | null>(null);
-  const portalHost = useOverlayPortalHost();
+  const portalHost = useBookingModalPortalHost();
 
   useEffect(() => {
     if (!portalHost) return;
