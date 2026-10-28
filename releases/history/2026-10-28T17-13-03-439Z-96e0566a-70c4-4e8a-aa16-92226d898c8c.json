@@ -1,0 +1,20 @@
+{
+  "kind": "release",
+  "summary": "Internal TestFlight 1.0.0 (55) verified VALID and IN_BETA_TESTING with actual associations in both baseline54 internal groups; 222 CI tests and source verified. Performance/full-page task remains open.",
+  "changes": [
+    "9cd0d024-57ab-46b5-ac64-c32f66d83b16"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "55",
+      "commit": "ca1f348da9269b6aa31f5b41dae63de4a0696aaf",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/native55-release-receipt.json"
+    }
+  },
+  "id": "96e0566a-70c4-4e8a-aa16-92226d898c8c",
+  "recordedAt": "2026-10-28T17:13:03.439Z",
+  "worktree": "C:\\Reylumi\\kingpos-release-iphonecold-20261028"
+}
