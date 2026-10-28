@@ -29,6 +29,10 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
   const scope = context?.context.scope ?? (presentationOnly ? presentationContext?.context.scope : undefined);
   const deviceContext = context?.grant?.kind === "portable" || route === "/pos/portable" || route.startsWith("/pos/portable/");
   const publicInitial = !context && /^\/(?:help(?:\/|$)|legal$|privacy$|terms$|community$|business-terms$)/.test(route);
+  const neutralHelp = publicInitial && /^\/help(?:\/|$)/.test(route);
+  // A public Help page has no private authority. Expiry of decorative Staff
+  // chrome is not a confirmed logout; return through the ordinary home gate.
+  const helpReturn = neutralHelp ? <button type="button" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary" onClick={() => router.push("/")}>{new URLSearchParams((path ?? pathname).split("?")[1] ?? "").get("lang") === "en" ? "Back to app" : "Quay lại ứng dụng"}</button> : undefined;
   const accountEnabled = !publicInitial && !deviceContext;
   const navigation = useAppLocalResource<AppLocalShellNavigation>(scope, "shell.navigation", {}, { enabled: accountEnabled });
   const configuration = useAppLocalResource<AppLocalShellConfiguration>(scope, "shell.configuration", {}, { enabled: accountEnabled, refreshAfterMs: 60_000 });
@@ -80,7 +84,7 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
               || event.target.method.toLowerCase() === "get" || !event.target.closest("#customer-context-sheet,#customer-desktop-account-menu")) return;
             event.preventDefault(); event.stopPropagation(); router.push("/my-place");
           }}>
-            {menu?.navigation ? <NavigationShell {...menu.navigation} passive={presentationOnly}>{body}</NavigationShell> : <GuestNavigationShell authenticated={context ? context.context.authenticated : publicInitial ? false : null}>{body}</GuestNavigationShell>}
+            {menu?.navigation ? <NavigationShell {...menu.navigation} passive={presentationOnly}>{body}</NavigationShell> : <GuestNavigationShell authenticated={context ? context.context.authenticated : neutralHelp ? null : publicInitial ? false : null} accountFallback={helpReturn}>{body}</GuestNavigationShell>}
           </div>
           {bodyHost ? createPortal(children, bodyHost) : children}
         </ExploreAdvertising>
