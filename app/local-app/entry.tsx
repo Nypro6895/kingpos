@@ -6,7 +6,7 @@ import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 import { LegalDocumentPage, LegalHub } from "@/app/legal/legal-components";
 import { legalDocuments } from "@/lib/legal-policies";
 import { getAppLocalHost, appLocalPath, appLocalRequestId, type AppLocalContext } from "@/lib/app-local-host";
-import { resetAppLocalResources, useAppLocalResource, rememberAppLocalRoleResources, reconcileAppLocalRoleResources, clearAppLocalRoleResources, invalidateAppLocalRoleResources } from "@/lib/app-local-resource";
+import { seedAppLocalResource, resetAppLocalResources, useAppLocalResource, rememberAppLocalRoleResources, reconcileAppLocalRoleResources, clearAppLocalRoleResources, invalidateAppLocalRoleResources } from "@/lib/app-local-resource";
 import { getAppLocalCommandScope, setAppLocalCommandScope } from "@/lib/app-local-command-client";
 import { getAppLocalPage as getGeneralAppLocalPage } from "@/lib/app-local-page-registry";
 import { getAppLocalPersonalPage } from "@/lib/app-local-personal-registry";
@@ -257,6 +257,10 @@ function App() {
     reconcileAppLocalRoleResources(value, generation, restoreRole);
     if (!value.offline && (restoreRole || !workspaceGesture.current && !handoffPath.current)) roleReturn.current = null;
     finishNativeResetPending();
+    // Admit before seeding; bootstrap payloads never establish authority themselves.
+    if (!value.offline) for (const row of value.bootstrap ?? []) {
+      if (row.value?.scope === value.context.scope) seedAppLocalResource(value.context.scope, row.name, row.args, row.value);
+    }
     admitted.current = { ...admitted.current, [family]: next }; setAdmissions(admitted.current);
     if (!value.offline) staleScopes.current.delete(value.context.scope);
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;

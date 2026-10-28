@@ -58,6 +58,11 @@ export function runWithReadContext<T>(read: () => Promise<T>, timing?: ReadReque
   return reads.getStore() ? read() : reads.run({ token: Object.freeze({}), controller: new AbortController(), memoized: new Map(), validations: new Map(), pending: new Map(), timing }, read);
 }
 
+/** A completed selector write starts a new read phase. Never borrow prewrite cells. */
+export function runWithNewReadContext<T>(read: () => Promise<T>): Promise<T> {
+  return reads.run({ token: Object.freeze({}), controller: new AbortController(), memoized: new Map(), validations: new Map(), pending: new Map() }, read);
+}
+
 /** One verified session decision per authority in this read request. Never used
  * outside an explicit read scope; final revocation checks always bypass it. */
 export function memoizeReadValidation<T>(key: symbol, authority: string, read: () => Promise<T>): Promise<T> {

@@ -18,6 +18,8 @@ export type AppLocalContext = {
   access?: { ownerWorkspace: boolean; staffWorkspace: boolean; portableWorkspace?: boolean };
   onlineValidatedAt: number;
   offline?: boolean;
+  workspaceHandoffVersion?: 2;
+  bootstrap?: {name:string;args:Record<string,unknown>;value:AppLocalRead}[];
 };
 export type AppLocalRead<T = unknown> = {
   schemaVersion: 1; status: 200 | 304; scope: string; etag: string; updatedAt: number; data?: T; offline?: boolean;

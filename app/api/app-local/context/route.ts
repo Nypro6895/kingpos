@@ -1,3 +1,5 @@
+import { readAppLocalBootstrap } from "@/lib/app-local-bootstrap-server";
+import type { AppLocalContext } from "@/lib/app-local-host";
 import { headers } from "next/headers";
 import { connection } from "next/server";
 import { getRequestBusinessContext } from "@/lib/request-business-context";
@@ -64,6 +66,10 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
         // withdrawn instead of being treated as an ordinary lease-service503.
       }
     }
-    return json({ schemaVersion: 1, context, home:selected.user?selected.defaultRouteForCurrentContext:"/explore", grant, grantStatus: response.status, ...(staffOnlineAccess ? { offlineState: "online-only", staffOnlineAccess } : lease?.offlineState === "unconfirmed" ? { offlineState: "unconfirmed" } : {}), display: { name: selected.user?.display_name ?? "", language: selected.user?.language ?? "en", role: selected.activeRole?.code ?? selected.salonRole ?? selected.accountRole ?? "guest" }, access: { ownerWorkspace: Boolean(selected.user && selected.currentSalon && isSalonManageContext(selected)), staffWorkspace: Boolean(selected.user && selected.currentSalon && selected.salonMode === "staff") }, onlineValidatedAt: Date.now() }, { headers: responseHeaders });
+    const result: AppLocalContext = { schemaVersion: 1, workspaceHandoffVersion: 2, context, home:selected.user?selected.defaultRouteForCurrentContext:"/explore", grant, grantStatus: response.status, ...(staffOnlineAccess ? { offlineState: "online-only", staffOnlineAccess } : lease?.offlineState === "unconfirmed" ? { offlineState: "unconfirmed" } : {}), display: { name: selected.user?.display_name ?? "", language: selected.user?.language ?? "en", role: selected.activeRole?.code ?? selected.salonRole ?? selected.accountRole ?? "guest" }, access: { ownerWorkspace: Boolean(selected.user && selected.currentSalon && isSalonManageContext(selected)), staffWorkspace: Boolean(selected.user && selected.currentSalon && selected.salonMode === "staff") }, onlineValidatedAt: Date.now() };
+    if(request.headers.get("X-Reylumi-Initial-Data") === "1") {
+      try { result.bootstrap = await readAppLocalBootstrap(result,path); } catch { /* Admission stands; page readers retain their own retry and denial gates. */ }
+    }
+    return json(result, {headers:responseHeaders});
   } catch(error) { const status=error&&typeof error==="object"&&"status"in error&&[400,401,403,409].includes(Number(error.status))?Number(error.status):503;return json({ error: "Connect to verify your account" }, { status, headers: responseHeaders }); }
 }

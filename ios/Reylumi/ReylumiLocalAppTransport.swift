@@ -64,6 +64,7 @@ final class ReylumiLocalAppTransport {
     private var onlineCheckedAt = Date.distantPast
     private var freshContextTask: Task<[String: Any], Error>?
     private var freshContextID: UUID?
+    private var preparedWorkspaceContext: (path: String, data: Data, response: HTTPURLResponse, epoch: Int, revision: Int, expires: Date)?
     private var freshContextPath: String?
     private var scopeConflictRevision = 0
     private var pendingScopeConflicts: [String: Int] = [:]
@@ -240,6 +241,7 @@ final class ReylumiLocalAppTransport {
         cookieAuthorityRevision += 1; lastCommittedCookieIdentity = nil
         scopeEpoch += 1; nonce = UUID().uuidString
         if rotateGeneration { generation = UUID().uuidString; defaults.set(generation, forKey: generationKey) }
+        preparedWorkspaceContext = nil
         freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
         pendingScopeConflicts.removeAll()
         session = nil; loadedSession = true; onlineContext = nil; onlineCheckedAt = .distantPast
@@ -413,7 +415,10 @@ final class ReylumiLocalAppTransport {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         // Protocol negotiation only; the server still proves the current
         // Staff identity. Older binaries keep the explicit unconfirmed result.
-        if path == "/api/app-local/context" { request.setValue("1", forHTTPHeaderField: "X-Reylumi-Staff-Online-Access") }
+        if path == "/api/app-local/context" {
+            request.setValue("1", forHTTPHeaderField: "X-Reylumi-Staff-Online-Access")
+            if onlineContext == nil { request.setValue("1", forHTTPHeaderField: "X-Reylumi-Initial-Data") }
+        }
         request.setValue("ReylumiIOS/1.0", forHTTPHeaderField: "User-Agent")
         request.setValue(origin.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/")), forHTTPHeaderField: "Origin")
         request.setValue("1", forHTTPHeaderField: "X-Reylumi-App-Local")
@@ -507,7 +512,15 @@ final class ReylumiLocalAppTransport {
                     self.pendingScopeConflicts.removeAll()
                 }
             }
-            let (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch, trace: trace)
+            let data: Data, response: HTTPURLResponse
+            if let prepared = self.preparedWorkspaceContext, prepared.path == path, prepared.epoch == epoch,
+               prepared.revision == self.cookieAuthorityRevision, prepared.expires > Date() {
+                self.preparedWorkspaceContext = nil
+                data = prepared.data; response = prepared.response
+            } else {
+                self.preparedWorkspaceContext = nil
+                (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch, trace: trace)
+            }
             let trustedTrace = trace.acceptsResponse(response) ? trace : nil
             if [403, 409].contains(response.statusCode) {
                 self.workspacePreference?.clear()
@@ -937,6 +950,7 @@ final class ReylumiLocalAppTransport {
         commandIDs.insert(requestID); defer { commandIDs.remove(requestID) }
         do {
             let workspaceSwitch = name == "shell.switch-workspace"
+            let batchedWorkspaceSwitch = workspaceSwitch && onlineContext?["workspaceHandoffVersion"] as? Int == 2
             if workspaceSwitch {
                 guard workspaceCommandID == nil else { throw failure(409, "A workspace change is already being checked.") }
                 workspaceCommandID = requestID
@@ -946,9 +960,18 @@ final class ReylumiLocalAppTransport {
             let context: [String: Any], scope: String
             let preflightBegan = ProcessInfo.processInfo.systemUptime
             do {
-                if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
+                if batchedWorkspaceSwitch {
+                    await loadSession(); try ensureCurrent(expectedEpoch)
+                    let displayed = (onlineContext?["context"] as? [String: Any]) ?? (session?.object["context"] as? [String: Any])
+                    guard let requestedScope, requestedScope == displayed?["scope"] as? String,
+                          displayed?["authenticated"] as? Bool == true else { throw failure(409, "Your workspace changed. Please try again.") }
+                    // This local binding is not authorization. The single POST
+                    // freshly validates identity, current scope and target access.
+                    context = ["context": displayed!]
+                }
+                else if workspaceSwitch { context = try await workspaceCommandContext(scope: requestedScope, epoch: expectedEpoch) }
                 else { context = try await freshContext(path: path) }
-                try requireCommandGrant(context, name: name, path: path)
+                if !batchedWorkspaceSwitch { try requireCommandGrant(context, name: name, path: path) }
                 try ensureCurrent(expectedEpoch)
                 guard let currentScope = (context["context"] as? [String: Any])?["scope"] as? String else { throw failure(403, "Please sign in to continue.") }
                 if context["offlineState"] as? String == "online-only" {
@@ -962,7 +985,9 @@ final class ReylumiLocalAppTransport {
                 throw error
             }
             let epoch = scopeEpoch
-            let (data, response) = try await send(path: rule.path, body: ["name": name, "args": args, "requestId": requestID, "scope": scope], epoch: epoch, trace: trace)
+            var body: [String: Any] = ["name": name, "args": args, "requestId": requestID, "scope": scope]
+            if batchedWorkspaceSwitch { body["protocol"] = 2; body["generation"] = generation }
+            let (data, response) = try await send(path: rule.path, body: body, epoch: epoch, trace: trace)
             if [403, 409].contains(response.statusCode) {
                 await revokeDisplay(scope: scope, staffFamily: path.hasPrefix("/staff/") && path != "/staff/today", status: response.statusCode)
                 throw failure(response.statusCode, "Please reconnect and check your access.")
@@ -973,6 +998,14 @@ final class ReylumiLocalAppTransport {
                 let committed = try await reconcileCookies(original: nil, updates: [], epoch: epoch, category: .command, trace: trace)
                 try ensureCurrent(epoch)
                 workspacePreference?.saveAcknowledgedChoice(cookies: committed.values)
+            }
+            if workspaceSwitch, result["ok"] as? Bool == true,
+               let selected = result["data"] as? [String: Any], let target = selected["path"] as? String,
+               target.hasPrefix("/"), !target.hasPrefix("//"),
+               let admission = selected["admission"] as? [String: Any], admission["schemaVersion"] as? Int == 1,
+               let context = admission["context"] as? [String: Any],
+               context["viewerId"] as? String == ((onlineContext?["context"] as? [String: Any]) ?? (session?.object["context"] as? [String: Any]))?["viewerId"] as? String {
+                preparedWorkspaceContext = (target, try JSONSerialization.data(withJSONObject: admission), response, epoch, cookieAuthorityRevision, Date().addingTimeInterval(5))
             }
             diagnostics.record(.commandEnd, category: .command, status: response.statusCode, durationMs: (ProcessInfo.processInfo.systemUptime - commandBegan) * 1000, trace: trace)
             return result

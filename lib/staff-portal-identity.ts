@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { scopedBusinessContext } from "./scoped-business-context";
 import { getCurrentStaffBusinessContext, type CurrentBusinessContext } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient, getAuthenticatedReadAuthority } from "@/lib/supabase/server";
 import { resolveStaffAccountForSalon, CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE } from "@/lib/staff-account";
@@ -35,7 +36,10 @@ async function readStaffPortalIdentity(targetContext?: CurrentBusinessContext, s
 
 // React cache is scoped to this server render, never shared between users or
 // retained across POS refreshes. All Today tabs use the same verified identity.
-export const getStaffPortalIdentity = cache(readStaffPortalIdentity);
+const cachedStaffPortalIdentity = cache(readStaffPortalIdentity);
+export function getStaffPortalIdentity(targetContext?: CurrentBusinessContext, strict = false) {
+  return cachedStaffPortalIdentity(targetContext ?? scopedBusinessContext(), strict);
+}
 export type { StaffPortalIdentity };
 
 export function canReuseStaffPortalReadIdentity(identity: StaffPortalIdentity, context: CurrentBusinessContext): boolean {

@@ -1,0 +1,20 @@
+{
+  "kind": "change",
+  "changeId": "iphone-batched-handoff-release-20261028",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "dependencies": [
+    "iphone-first-load-dal-rpc-20261027",
+    "iphone-real-performance-fixes-20261027"
+  ],
+  "summary": "Batch workspace selection and admission on server, optimize first-load boot/Staff/Personal, physical first-visit audit per page/tab, coordinated web and existing iOS distribution release",
+  "id": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+  "recordedAt": "2026-10-28T04:33:08.167Z",
+  "worktree": "C:\\Reylumi\\kingpos-iphone-performance-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,3 +1,8 @@
+import { runWithReadContext, runWithNewReadContext } from "@/lib/read-context-scope";
+import { getCurrentBusinessContext } from "@/lib/current-context";
+import { cookies } from "next/headers";
+import { runInBusinessContext } from "@/lib/scoped-business-context";
+import { GET as readSelectedContext } from "@/app/api/app-local/context/route";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { getRequestBusinessContext } from "@/lib/request-business-context";
@@ -67,6 +72,32 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
       if(!portableActions.ids.includes(input.name)||Object.keys(input.args).some(key=>key!=="values"))return failure(403,"This POS device cannot perform that action.");
       const values=decodeAppLocalValue(input.args.values);if(!Array.isArray(values)||values.length>20)return failure(400,"Invalid form.");
       return Response.json({ok:true,data:{value:await trace.measure("handler", () => runAppLocalCommand(input.name,values))}},{headers:responseHeaders});
+    }
+    if (input.name === "shell.switch-workspace") {
+      const shell = await runWithReadContext(async () => {
+        const business = await trace.measure("auth", () => getRequestBusinessContext());
+        return runAppLocalShellCommand(input.name,input.args,request,input.scope,business);
+      });
+      if(!shell.handled) return failure(400,"Choose a workspace.");
+      const data = shell.data as {path:string;admission?:unknown};
+      // Old binaries keep their normal separate destination admission. The new
+      // protocol binds its response to the native generation, after cookie commit.
+      if(input.protocol === 2 && typeof input.generation === "string" && /^[\w-]{16,100}$/.test(input.generation)) {
+        try {
+          data.admission = await runWithNewReadContext(async () => {
+            const target = await getCurrentBusinessContext({cookieStore:await cookies()});
+            return runInBusinessContext(target,async () => {
+              const targetURL = new URL("/api/app-local/context",origin);
+              targetURL.search = new URLSearchParams({path:data.path,generation:input.generation}).toString();
+              const forwarded = new Headers(request.headers);
+              forwarded.set("X-Reylumi-Staff-Online-Access","1");forwarded.set("X-Reylumi-Initial-Data","1");
+              const response = await readSelectedContext(new Request(targetURL,{headers:forwarded}));
+              return response.ok ? await response.json() : undefined;
+            });
+          });
+        } catch { /* Selection may already be committed; never replay the write. */ }
+      }
+      return Response.json({ok:true,data},{headers:responseHeaders});
     }
     const business = await trace.measure("auth", () => getRequestBusinessContext());
     const upload=await trace.measure("handler", () => runAppLocalUploadCommand(input.name,input.args,input.scope));
