@@ -1,0 +1,22 @@
+{
+  "kind": "release",
+  "summary": "Publish guarded one-roundtrip Staff account resolution on exact production baseline. 19 regression tests and fresh production build passed; 3433 deployed files match frozen source. Final revocation/RLS guards retained. Physical cold-load before/after measurement continues on installed TestFlight59; no sub-second claim.",
+  "changes": [
+    "81d8dba9-44eb-4aaa-9dcd-3adc2a4f5379"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_3qcCysobZizUGofe8w5MaBQz6Qt6",
+      "baselineDeploymentId": "dpl_EhtnZKQCPxN96Ey79s2RqsuA4MyG",
+      "sourceSha256": "4c1b273d682f3e8be8f459c4d2a2a9f034197870ea46450e4d70d88315b09f2a",
+      "overlaySha256": "8784b854ac4e1d8a4dbeffc85955020efe6aab89cc018108cbefe0da1f236015",
+      "commit": "64a7ef0",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/staff273-source-verified.json; C:/Reylumi-worktrees/iphone-dal-webrelease-20261028/artifacts/staff273-exact-build.log; C:/Reylumi-worktrees/iphone-dal-webrelease-20261028/artifacts/staff273-tests.log; C:/Reylumi-worktrees/iphone-dal-webrelease-20261028/artifacts/staff273-live-smoke.json"
+    }
+  },
+  "id": "fbc4e225-ed7d-439f-98b0-1b46c30264c5",
+  "recordedAt": "2026-10-28T23:31:03.210Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028"
+}
