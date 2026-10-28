@@ -21,7 +21,7 @@ import { GET as bookingGET } from "@/app/api/public-booking/context/route";
 import { GET as advertisingGET, POST as advertisingPOST } from "@/app/api/explore/advertising/route";
 import { GET as campaignGET, POST as campaignPOST } from "@/app/api/campaigns/delivery/route";
 import { APP_LOCAL_SHELL_READS } from "./app-local-shell-metadata";
-import type { AppLocalShellConfiguration, AppLocalShellNavigation, AppLocalShellSummary, AppLocalShellNotice } from "./app-local-shell-metadata";
+import type { AppLocalShellConfiguration, AppLocalShellNavigation, AppLocalShellSummary, AppLocalShellNotice, AppLocalShellAuxiliary, AppLocalShellPart } from "./app-local-shell-metadata";
 import type { AppLocalRead } from "./app-local-host";
 import type { AppLocalHttpResponse } from "./app-local-http-client";
 
@@ -88,19 +88,41 @@ async function configuration(context: Awaited<ReturnType<typeof getRequestBusine
   return { scope, language: languageValue, campaign: campaignValue };
 }
 
-export async function readAppLocalShellResource(name: string, args: Record<string, unknown> = {}, options: { scope?: string; etag?: string; signal?: AbortSignal } = {}): Promise<AppLocalRead<AppLocalShellNavigation | AppLocalShellConfiguration | AppLocalShellSummary | AppLocalShellNotice | AppLocalHttpResponse> | null> {
+async function pendingSummary(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, scope: string): Promise<AppLocalShellSummary> {
+  const [summary, translate] = await Promise.all([runReadWithDeadline(getWorkspacePendingSummary(context), 8_000), runReadWithDeadline(getWorkspaceTranslation(), 8_000)]);
+  return { scope, notificationScope: `${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`, summary: translate(summary) };
+}
+
+async function auxiliaryPart<T>(read: () => Promise<T>): Promise<AppLocalShellPart<T>> {
+  try { return { data: await read() }; }
+  catch (error) {
+    const status = error && typeof error === "object" && "status" in error ? Number(error.status) : 0;
+    // An authoritative denial withdraws the entire response. A transient
+    // optional-field outage retains the original independent-reader fallback.
+    if ([401, 403, 409].includes(status)) throw error;
+    return { unavailable: true };
+  }
+}
+
+export async function readAppLocalShellResource(name: string, args: Record<string, unknown> = {}, options: { scope?: string; etag?: string; signal?: AbortSignal } = {}): Promise<AppLocalRead<AppLocalShellNavigation | AppLocalShellConfiguration | AppLocalShellSummary | AppLocalShellNotice | AppLocalShellAuxiliary | AppLocalHttpResponse> | null> {
   const rule = APP_LOCAL_SHELL_READS.find(value => value.name === name); if (!rule) return null;
   const allowed: readonly string[] = rule.argumentKeys;
   if (Object.entries(args).some(([key, value]) => !allowed.includes(key) || typeof value !== "string" || value.length > 512)) fail(400, "Unsupported shell request.");
   if (options.signal?.aborted) throw options.signal.reason;
   const { context, current } = await authorized(options.scope); const scope = options.scope!;
-  let data: AppLocalShellNavigation | AppLocalShellConfiguration | AppLocalShellSummary | AppLocalShellNotice | AppLocalHttpResponse;
+  let data: AppLocalShellNavigation | AppLocalShellConfiguration | AppLocalShellSummary | AppLocalShellNotice | AppLocalShellAuxiliary | AppLocalHttpResponse;
   if (name === "shell.navigation") {
     data = { scope, authenticated: Boolean(context.user), navigation: await getSalonSwitcherProps(context), ownerQueueScope: isSalonManageContext(context) && context.currentSalon && context.user ? `owner:${context.currentSalon.id}:${context.user.id}` : null, audience: !context.user ? "guest" : context.workspaceType === "salon" ? context.salonMode === "staff" ? "staff" : "owner" : "personal" };
+  } else if (name === "shell.auxiliary") {
+    const [config, summary, notice] = await Promise.all([
+      auxiliaryPart(() => configuration(context, scope)),
+      context.user ? auxiliaryPart(() => pendingSummary(context, scope)) : Promise.resolve({ unavailable: true } as const),
+      auxiliaryPart(async () => ({ scope, mode: await runReadWithDeadline(getAbuseNoticeData(context.user?.id ?? null), 6_000) })),
+    ]);
+    data = { scope, configuration: config, summary, notice };
   } else if (name === "shell.configuration") data = await configuration(context, scope);
   else if (name === "shell.summary") {
-    const [summary, translate] = await Promise.all([runReadWithDeadline(getWorkspacePendingSummary(context), 8_000), runReadWithDeadline(getWorkspaceTranslation(), 8_000)]);
-    data = { scope, notificationScope: `${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`, summary: translate(summary) };
+    data = await pendingSummary(context, scope);
   }
   else if (name === "shell.notice") data = { scope, mode: await runReadWithDeadline(getAbuseNoticeData(context.user?.id ?? null), 6_000) };
   else if (name === "http.shell.campaigns") {

@@ -18,7 +18,7 @@ import { AbuseNoticeView } from "./abuse-notice-view";
 import { WorkspaceSummarySeed } from "@/app/notifications/workspace-summary-seed";
 import { useAppLocalResource } from "@/lib/app-local-resource";
 import type { AppLocalContext } from "@/lib/app-local-host";
-import type { AppLocalShellNavigation, AppLocalShellConfiguration, AppLocalShellSummary, AppLocalShellNotice } from "@/lib/app-local-shell-metadata";
+import type { AppLocalShellNavigation, AppLocalShellConfiguration, AppLocalShellSummary, AppLocalShellNotice, AppLocalShellAuxiliary } from "@/lib/app-local-shell-metadata";
 
 /** One shell around the retained page registry, never a shell per hidden page. */
 export function AppLocalShell({ context, presentationContext, children, path, checkContext, onContinueAsGuest, guestContinuation = 0 }: { context: AppLocalContext | null; presentationContext?: AppLocalContext | null; children: ReactNode; path?: string; checkContext?: () => Promise<void>; onContinueAsGuest?: () => void; guestContinuation?: number }) {
@@ -35,12 +35,18 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
   const helpReturn = neutralHelp ? <button type="button" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary" onClick={() => router.push("/")}>{new URLSearchParams((path ?? pathname).split("?")[1] ?? "").get("lang") === "en" ? "Back to app" : "Quay lại ứng dụng"}</button> : undefined;
   const accountEnabled = !publicInitial && !deviceContext;
   const navigation = useAppLocalResource<AppLocalShellNavigation>(scope, "shell.navigation", {}, { enabled: accountEnabled });
-  const configuration = useAppLocalResource<AppLocalShellConfiguration>(scope, "shell.configuration", {}, { enabled: accountEnabled, refreshAfterMs: 60_000 });
-  const pending = useAppLocalResource<AppLocalShellSummary>(scope, "shell.summary", {}, { enabled: accountEnabled && Boolean(context?.context.authenticated), refreshAfterMs: 60_000 });
-  const notice = useAppLocalResource<AppLocalShellNotice>(scope, "shell.notice", {}, { enabled: accountEnabled });
+  const auxiliary = useAppLocalResource<AppLocalShellAuxiliary>(scope, "shell.auxiliary", {}, { enabled: accountEnabled, refreshAfterMs: 60_000 });
+  const bundle = auxiliary.data?.scope === scope ? auxiliary.data : undefined;
+  const fallback = accountEnabled && !auxiliary.accessDenied && Boolean(auxiliary.error);
+  const configuration = useAppLocalResource<AppLocalShellConfiguration>(scope, "shell.configuration", {}, { enabled: fallback || accountEnabled && Boolean(bundle && "unavailable" in bundle.configuration), refreshAfterMs: 60_000 });
+  const pending = useAppLocalResource<AppLocalShellSummary>(scope, "shell.summary", {}, { enabled: Boolean(context?.context.authenticated) && (fallback || accountEnabled && Boolean(bundle && "unavailable" in bundle.summary)), refreshAfterMs: 60_000 });
+  const notice = useAppLocalResource<AppLocalShellNotice>(scope, "shell.notice", {}, { enabled: fallback || accountEnabled && Boolean(bundle && "unavailable" in bundle.notice) });
   const menu = navigation.data?.scope === scope ? navigation.data : undefined;
-  const config = configuration.data?.scope === scope ? configuration.data : undefined;
-  const pendingSummary = pending.data && pending.data.scope === scope ? pending.data : undefined;
+  const configData = bundle && "data" in bundle.configuration ? bundle.configuration.data : configuration.data;
+  const summaryData = bundle && "data" in bundle.summary ? bundle.summary.data : pending.data;
+  const noticeData = bundle && "data" in bundle.notice ? bundle.notice.data : notice.data;
+  const config = configData?.scope === scope ? configData : undefined;
+  const pendingSummary = summaryData?.scope === scope ? summaryData : undefined;
   const [error, setError] = useState("");
   const [bodyHost] = useState(() => typeof document === "undefined" ? null : document.createElement("div"));
   const attachBody = useCallback((slot: HTMLDivElement | null) => { if (slot && bodyHost && bodyHost.parentNode !== slot) slot.appendChild(bodyHost); }, [bodyHost]);
@@ -61,7 +67,7 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
       <AppLocalSessionExpiryPrompt key={guestContinuation} authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} checkContext={checkContext} onContinueAsGuest={onContinueAsGuest} />
       {!publicInitial && menu ? <OwnerQueueRuntime scope={menu.ownerQueueScope} /> : null}
       {!publicInitial && menu && pendingSummary ? <WorkspaceSummarySeed scope={pendingSummary.notificationScope} summary={pendingSummary.summary} /> : null}
-      {notice.data?.scope === scope ? <AbuseNoticeView mode={notice.data?.mode ?? null} /> : null}
+      {noticeData?.scope === scope ? <AbuseNoticeView mode={noticeData?.mode ?? null} /> : null}
       {!publicInitial && config?.campaign.runtime ? <OwnerCampaignRuntime {...config.campaign.runtime} /> : null}
       <ExploreAccountActionsProvider authenticated={context?.context.authenticated ?? false}>
         <ExploreAdvertising audience={menu?.audience ?? "guest"} enabled={!publicInitial}>
