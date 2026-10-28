@@ -89,6 +89,12 @@ test('transient whole-batch failure enables original readers; a different scope 
   const f=uiFixture();f.states['shell.auxiliary']={error:'Unavailable'};render();assert.deepEqual(enabled(f),['shell.auxiliary','shell.configuration','shell.navigation','shell.notice','shell.summary']);
   const next=uiFixture('old-scope');render();assert.equal(next.language,false);
 });
+test('a failed refresh uses newly revalidated fallback data ahead of the retained older batch',()=>{
+  const f=uiFixture();f.states['shell.auxiliary'].error='Refresh unavailable';
+  const old=f.states['shell.auxiliary'].data.configuration.data;
+  f.states['shell.configuration']={data:{...old,language:{...old.language,enabled:false}}};
+  render();assert.equal(f.language,false);
+});
 test('public Help does not issue private reads and check-in invalidates bundled notification state',()=>{
   const f=uiFixture();f.path='/help?lang=en';render(null);assert.deepEqual(enabled(f),[]);
   assert.equal(ui.appLocalCommandAffectsResource('shell.auxiliary','app/pos/owner-check-in-actions.ts'),true);

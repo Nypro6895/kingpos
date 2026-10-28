@@ -42,9 +42,9 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
   const pending = useAppLocalResource<AppLocalShellSummary>(scope, "shell.summary", {}, { enabled: Boolean(context?.context.authenticated) && (fallback || accountEnabled && Boolean(bundle && "unavailable" in bundle.summary)), refreshAfterMs: 60_000 });
   const notice = useAppLocalResource<AppLocalShellNotice>(scope, "shell.notice", {}, { enabled: fallback || accountEnabled && Boolean(bundle && "unavailable" in bundle.notice) });
   const menu = navigation.data?.scope === scope ? navigation.data : undefined;
-  const configData = bundle && "data" in bundle.configuration ? bundle.configuration.data : configuration.data;
-  const summaryData = bundle && "data" in bundle.summary ? bundle.summary.data : pending.data;
-  const noticeData = bundle && "data" in bundle.notice ? bundle.notice.data : notice.data;
+  const configData = fallback && configuration.data ? configuration.data : bundle && "data" in bundle.configuration ? bundle.configuration.data : configuration.data;
+  const summaryData = fallback && pending.data ? pending.data : bundle && "data" in bundle.summary ? bundle.summary.data : pending.data;
+  const noticeData = fallback && notice.data ? notice.data : bundle && "data" in bundle.notice ? bundle.notice.data : notice.data;
   const config = configData?.scope === scope ? configData : undefined;
   const pendingSummary = summaryData?.scope === scope ? summaryData : undefined;
   const [error, setError] = useState("");
