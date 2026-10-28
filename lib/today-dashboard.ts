@@ -628,7 +628,7 @@ async function loadReportDashboardData(input: {
   date: string;
   readContext?: DailyPosReadContext;
   timeZone?: string;
-  businessHours?: SalonBusinessHoursWindow | null;
+  businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
 }): Promise<DashboardData<DailyPosReport>> {
   try {
     return {
@@ -653,7 +653,7 @@ async function loadReportDashboardData(input: {
 }
 
 async function loadFinancialDashboardData(input: {
-  businessHours: SalonBusinessHoursWindow;
+  businessHours: SalonBusinessHoursWindow | Promise<SalonBusinessHoursWindow>;
   context: CurrentBusinessContext;
   date: string;
   timezone: string;
@@ -1767,16 +1767,16 @@ export async function getTodayDashboard(
           error: null,
         }),
     readFinancials && permissions.canViewReports
-      ? businessHoursRead.then(result=>loadReportDashboardData({ context, date: clock.date, readContext: financialReads, timeZone:clock.timezone, businessHours:result.data }))
+      ? loadReportDashboardData({ context, date: clock.date, readContext: financialReads, timeZone:clock.timezone, businessHours:businessHoursRead.then(result=>result.data) })
       : Promise.resolve({ data: null, error: null }),
     readFinancials && permissions.canViewStaffFinancials
-      ? businessHoursRead.then(result=>loadFinancialDashboardData({
-          businessHours: result.data ?? businessHours,
+      ? loadFinancialDashboardData({
+          businessHours: businessHoursRead.then(result=>result.data ?? businessHours),
           context,
           date: clock.date,
           timezone: clock.timezone,
           readContext: financialReads,
-        }))
+        })
       : Promise.resolve({ data: null, error: null }),
     readExtras && dayView.isCurrentDate
       ? measureTodayRead("extras", () => loadNotificationAttentionItems(context))

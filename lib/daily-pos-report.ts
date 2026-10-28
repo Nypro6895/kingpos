@@ -1034,7 +1034,7 @@ export async function canRequestFinancialCorrections(
 }
 
 export async function getDailyPosTodayFinancialData(input: {
-  businessHours?: SalonBusinessHoursWindow | null;
+  businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
   context?: CurrentBusinessContext;
   readContext?: DailyPosReadContext;
   reportDate: string;
@@ -1072,7 +1072,7 @@ export async function getDailyPosTodayFinancialData(input: {
 
   return {
     activityPoints: core.activityPoints,
-    businessHours: input.businessHours ?? null,
+    businessHours: await input.businessHours ?? null,
     salesComparison,
     staffAttributionSource: core.staffAttributionSource,
     staffRows: core.staffRows,
@@ -1084,7 +1084,7 @@ async function loadLiveDailyPosReport(
   reportDate: string,
   auth: ReportAuthContext,
   options: {
-    businessHours?: SalonBusinessHoursWindow | null;
+    businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
     comparisonOnly?: boolean;
     includeActivityPoints?: boolean;
     includeClosing?: boolean;
@@ -1244,7 +1244,7 @@ async function loadLiveDailyPosReport(
       options.includeActivityPoints === false
         ? []
         : buildHourlyActivityPoints({
-            businessHours: options.businessHours,
+            businessHours: await options.businessHours,
             reportDate,
             tickets: finalizedTickets,
             timeZone: options.timeZone ?? await getContextBusinessTimezone(auth.context),
@@ -2188,7 +2188,7 @@ export async function getDailyPosReport(
   reportDateInput: string,
   context?: CurrentBusinessContext,
   readContext?: DailyPosReadContext,
-  options: { includeCorrectionDetails?: boolean; timeZone?: string; businessHours?: SalonBusinessHoursWindow | null } = {},
+  options: { includeCorrectionDetails?: boolean; timeZone?: string; businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null> } = {},
 ): Promise<DailyPosReport> {
   const auth = await requireReportContext(
     DAILY_POS_REPORT_PERMISSIONS.view,
