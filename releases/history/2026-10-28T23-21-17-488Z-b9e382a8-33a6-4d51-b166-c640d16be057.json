@@ -1,0 +1,23 @@
+{
+  "kind": "release",
+  "summary": "TestFlight 1.0.0 (59) available and installed on physical iPhone. Exact source and archive hashes verified; 232 native tests pass. Physical booking modal close/navigation and history visit/upcoming detail regressions pass. Full cold-page speed acceptance remains pending.",
+  "changes": [
+    "7f73958d-9d79-4b33-aeeb-967fed1ff20f",
+    "2c5cb2e6-f823-46ad-b124-846232a82ce4",
+    "f4314ea1-b39c-46c9-bfe6-d09550e7e0e2",
+    "8ec55807-166e-4c72-94fb-25981fb3114d"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "59",
+      "commit": "4ab83c86c0bb4ef842dd47f1566db8069a4ed8a5",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/release270-native-verified.json; C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/release59-installed270.json; C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/released59-qa270.json; physical FixCandidate/released59-qa270"
+    }
+  },
+  "id": "b9e382a8-33a6-4d51-b166-c640d16be057",
+  "recordedAt": "2026-10-28T23:21:17.488Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-focus-release-20261028"
+}
