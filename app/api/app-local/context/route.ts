@@ -73,7 +73,7 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
           const targetURL = new URL(url);targetURL.searchParams.set("path",result.home);
           const target = await GET(new Request(targetURL,{headers:request.headers}));
           if(target.ok) result.homeAdmission = await target.json();
-        } else result.bootstrap = await readAppLocalBootstrap(result,url.searchParams.get("path") ?? path,async (name,args,scope) => {
+        } else result.bootstrap = await readAppLocalBootstrap(result,validatedInitialPath(url,path),async (name,args,scope) => {
           const {GET:readInitial} = await import("@/app/api/app-local/read/route");
           const resourceURL = new URL("/api/app-local/read",url.origin);
           resourceURL.search = new URLSearchParams({name,scope,args:JSON.stringify(args)}).toString();
@@ -84,4 +84,12 @@ async function readContext(request: Request, timing: ReadRequestTiming) {
     }
     return json(result, {headers:responseHeaders});
   } catch(error) { const status=error&&typeof error==="object"&&"status"in error&&[400,401,403,409].includes(Number(error.status))?Number(error.status):503;return json({ error: "Connect to verify your account" }, { status, headers: responseHeaders }); }
+}
+
+// Filters select initial DTO arguments only; authority always uses the original path.
+function validatedInitialPath(url:URL,fallback:string) {
+ const authorityPath=url.searchParams.get("path") ?? fallback;
+ const initial=url.searchParams.get("initialPath");
+ if(!initial || initial.length>2048 || !initial.startsWith("/") || initial.startsWith("//") || /[\\\u0000-\u001f]/.test(initial))return authorityPath;
+ try {const candidate=new URL(initial,url.origin),authority=new URL(authorityPath,url.origin);return candidate.origin===url.origin && candidate.pathname===authority.pathname && !candidate.hash ? candidate.pathname+candidate.search : authorityPath;}catch{return authorityPath;}
 }

@@ -486,8 +486,9 @@ final class ReylumiLocalAppTransport {
               let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw failure(response.statusCode, "Couldn't read this page. Please try again.") }
         return object
     }
-    func freshContext(path: String) async throws -> [String: Any] {
-        if let task = freshContextTask, freshContextPath == path {
+    func freshContext(path: String, initialPath: String? = nil) async throws -> [String: Any] {
+        let requestKey = initialPath ?? path
+        if let task = freshContextTask, freshContextPath == requestKey {
             diagnostics.record(.contextJoin, category: ReylumiLocalDiagnostics.category(path: path), outcome: .joined)
             var joined = try await task.value
             if var metadata = joined["__reylumiReadTrace"] as? [String: Any] { metadata["source"] = "joined"; joined["__reylumiReadTrace"] = metadata }
@@ -499,7 +500,7 @@ final class ReylumiLocalAppTransport {
         freshContextTask?.cancel()
         let epoch = scopeEpoch, expectedGeneration = generation, requestID = UUID(), conflictRevision = scopeConflictRevision
         let trace = ReylumiLocalDiagnostics.RequestTrace(read: .context)
-        freshContextID = requestID; freshContextPath = path
+        freshContextID = requestID; freshContextPath = requestKey
         let task = Task { @MainActor [weak self] () throws -> [String: Any] in
             guard let self else { throw CancellationError() }
             // Every joiner observes task completion independently. Release this
@@ -513,13 +514,13 @@ final class ReylumiLocalAppTransport {
                 }
             }
             let data: Data, response: HTTPURLResponse
-            if let prepared = self.preparedWorkspaceContext, prepared.path == path, prepared.epoch == epoch,
+            if let prepared = self.preparedWorkspaceContext, prepared.path == requestKey, prepared.epoch == epoch,
                prepared.revision == self.cookieAuthorityRevision, prepared.expires > Date() {
                 self.preparedWorkspaceContext = nil
                 data = prepared.data; response = prepared.response
             } else {
                 self.preparedWorkspaceContext = nil
-                (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)], epoch: epoch, trace: trace)
+                (data, response) = try await self.send(path: "/api/app-local/context", query: [URLQueryItem(name: "path", value: path), URLQueryItem(name: "generation", value: expectedGeneration)] + (initialPath.map { [URLQueryItem(name: "initialPath", value: $0)] } ?? []), epoch: epoch, trace: trace)
             }
             let trustedTrace = trace.acceptsResponse(response) ? trace : nil
             if [403, 409].contains(response.statusCode) {
@@ -693,7 +694,7 @@ final class ReylumiLocalAppTransport {
                 String(access?["ownerWorkspace"] as? Bool ?? false), String(access?["staffWorkspace"] as? Bool ?? false),
                 object["offlineState"] as? String ?? "", String(object["grantStatus"] as? Int ?? 0)]
     }
-    func context(path: String) async throws -> [String: Any] {
+    func context(path: String, initialPath: String? = nil) async throws -> [String: Any] {
         let epoch = scopeEpoch, expectedGeneration = generation
         let began = ProcessInfo.processInfo.systemUptime
         let business = ReylumiLocalSession.businessAuthority(path: path) != nil
@@ -723,7 +724,7 @@ final class ReylumiLocalAppTransport {
             object["host"] = metadata; object["offline"] = true; object["contextPath"] = path
             object["__reylumiReadTrace"] = ["version": 1, "kind": "context", "source": "cache"]
             if path == "/pos/customer-display", cached.authority == "portable", cached.compatible(path: path) { object["displayAuthority"] = ["kind": "portable"] }
-            Task { @MainActor [weak self] in _ = try? await self?.freshContext(path: path) }
+            Task { @MainActor [weak self] in _ = try? await self?.freshContext(path: path, initialPath: initialPath) }
             return object
         }
         return try await freshContext(path: path)

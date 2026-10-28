@@ -15,6 +15,9 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     || value.offlineState === "unconfirmed") return [];
   if(!path.startsWith("/") || path.startsWith("//") || /[\\\u0000-\u001f]/.test(path)) return [];
   const scope = value.context.scope, url = new URL(path, "https://reylumi.com");
+  if([...url.searchParams.keys()].some(key=>/token|secret|password|callback|redirect|returnTo/i.test(key)))return [];
+  if(url.pathname === "/staff/today" && [...url.searchParams.keys()].some(key=>key!=="date"))return [];
+  if(url.pathname === "/staff/my-work" && [...url.searchParams.keys()].some(key=>!["tab","payPeriodStart"].includes(key)))return [];
   const rows: {name:string;args:Record<string,unknown>;value:AppLocalRead}[] = [];
   const add = (name:string,args:Record<string,unknown>,result:AppLocalRead|null) => {
     if(result?.status === 200 && result.scope === scope && result.data !== undefined) rows.push({name,args,value:result});
