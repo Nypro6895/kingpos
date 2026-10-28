@@ -2,7 +2,7 @@
 export function appLocalCommandAffectsResource(resource: string, source?: string): boolean {
   if (source === "app/pos/owner-check-in-actions.ts") {
     return resource.startsWith("owner.") || resource.startsWith("staff.")
-      || ["page.owner-staff", "page.owner-today", "page.owner-payroll", "shell.summary"].includes(resource);
+      || ["page.owner-staff", "page.owner-today", "page.owner-payroll", "shell.summary", "shell.auxiliary"].includes(resource);
   }
   if (source === "app/explore/social-actions.ts") {
     return resource.startsWith("page.explore") || resource.startsWith("http.explore.")

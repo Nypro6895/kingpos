@@ -17,8 +17,16 @@ export type AppLocalShellConfiguration = {
 };
 export type AppLocalShellSummary = { scope: string; notificationScope: string; summary: CustomerNotificationSummary };
 export type AppLocalShellNotice = { scope: string; mode: string | null };
+export type AppLocalShellPart<T> = { data: T } | { unavailable: true };
+export type AppLocalShellAuxiliary = {
+  scope: string;
+  configuration: AppLocalShellPart<AppLocalShellConfiguration>;
+  summary: AppLocalShellPart<AppLocalShellSummary>;
+  notice: AppLocalShellPart<AppLocalShellNotice>;
+};
 export const APP_LOCAL_SHELL_READS = [
   { name: "shell.navigation", argumentKeys: [], retain: true },
+  { name: "shell.auxiliary", argumentKeys: [], retain: true },
   { name: "shell.configuration", argumentKeys: [], retain: true },
   { name: "shell.summary", argumentKeys: [], retain: true },
   { name: "shell.notice", argumentKeys: [], retain: true },

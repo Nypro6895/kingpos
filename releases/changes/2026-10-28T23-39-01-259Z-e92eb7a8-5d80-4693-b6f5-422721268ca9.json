@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "app-local-shell-auxiliary-batch275",
+  "status": "ready",
+  "summary": "One scoped auxiliary shell request replaces separate configuration, pending summary and account notice reads. Individual readers remain for transient field failures; authoritative denial withdraws batch, guests do not read pending state, and check-in invalidates the combined summary. Requires server plus packaged native update; no speed claim before physical measurement.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/app-local-shell.tsx",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "tests/app-local-shell-auxiliary.test.mjs"
+  ],
+  "source": {
+    "commit": "303a432",
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\shell275-selected-frozen"
+  },
+  "validation": [
+    {
+      "name": "21 actual shell server/render, Help, history and retained-modal regressions",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/iphone-next-server-20261028/artifacts/shell275-combined.log"
+    },
+    {
+      "name": "Fresh TypeScript noEmit",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/iphone-next-server-20261028/artifacts/shell275-types-final.log"
+    }
+  ],
+  "releasePrerequisites": [
+    "Assemble only frozen files on current deployed web and actually uploaded native59 sources",
+    "Fresh production build and native test/archive/upload verification",
+    "Physical cold first-load comparison; preserve original readers and failure evidence"
+  ],
+  "id": "e92eb7a8-5d80-4693-b6f5-422721268ca9",
+  "recordedAt": "2026-10-28T23:39:01.259Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/app-local-shell.tsx": "25f6238b33ed519e89792d4253a76ca5f0ec3342c6496ff97864ada113ce4311",
+    "lib/app-local-shell-metadata.ts": "0ebaf252f40ad93b2f5d95d3e85c924a3bbe1edc8c6174b8ecbd3163147be3ec",
+    "lib/app-local-shell-server.ts": "f65c5b0ae300389ffd2927e1cd68576e036f1d30d95dba0eb8fb7d5e68690e39",
+    "lib/app-local-resource-invalidation.ts": "ce5c3ad6f3711429af4f78b0b6aa354ef76b1cee8a251d483b9ef095a5362aa3",
+    "tests/app-local-shell-auxiliary.test.mjs": "edb0f7a1ad3aaaaf58df9e4cd03f3e9d3b44a1a1031726dcde1328fb149ddf9e"
+  }
+}
