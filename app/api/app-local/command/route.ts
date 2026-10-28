@@ -1,5 +1,5 @@
-import { runWithReadContext, runWithNewReadContext } from "@/lib/read-context-scope";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { runWithReadContext } from "@/lib/read-context-scope";
+import { getCurrentBusinessContext, projectSelectedWorkspaceRead } from "@/lib/current-context";
 import { cookies } from "next/headers";
 import { runInBusinessContext } from "@/lib/scoped-business-context";
 import { GET as readSelectedContext } from "@/app/api/app-local/context/route";
@@ -76,17 +76,17 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
     if (input.name === "shell.switch-workspace") {
       const shell = await runWithReadContext(async () => {
         const business = await trace.measure("auth", () => getRequestBusinessContext());
-        return runAppLocalShellCommand(input.name,input.args,request,input.scope,business);
-      });
-      if(!shell.handled) return failure(400,"Choose a workspace.");
-      const data = shell.data as {path:string;admission?:unknown};
-      // Old binaries keep their normal separate destination admission. The new
-      // protocol binds its response to the native generation, after cookie commit.
-      if(input.protocol === 2 && typeof input.generation === "string" && /^[\w-]{16,100}$/.test(input.generation)) {
-        try {
-          data.admission = await runWithNewReadContext(async () => {
-            const target = await getCurrentBusinessContext({cookieStore:await cookies()});
-            return runInBusinessContext(target,async () => {
+        const result = await runAppLocalShellCommand(input.name,input.args,request,input.scope,business);
+        const data = result.data as {path:string;admission?:unknown}|undefined;
+        if(result.handled && data && input.protocol === 2 && typeof input.generation === "string" && /^[\w-]{16,100}$/.test(input.generation)) {
+          try {
+            // The selector changes cookies, never membership or business data.
+            // Re-project the same fresh self graph; original page readers and
+            // their final revocation probes still own their authorization.
+            let target;
+            try { target = await projectSelectedWorkspaceRead(business,input.args.workspaceId); }
+            catch { target = await getCurrentBusinessContext({cookieStore:await cookies()}); }
+            data.admission = await runInBusinessContext(target,async () => {
               const targetURL = new URL("/api/app-local/context",origin);
               targetURL.search = new URLSearchParams({path:data.path,generation:input.generation}).toString();
               const forwarded = new Headers(request.headers);
@@ -94,10 +94,12 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
               const response = await readSelectedContext(new Request(targetURL,{headers:forwarded}));
               return response.ok ? await response.json() : undefined;
             });
-          });
-        } catch { /* Selection may already be committed; never replay the write. */ }
-      }
-      return Response.json({ok:true,data},{headers:responseHeaders});
+          } catch { /* Selection may be committed; never replay the write. */ }
+        }
+        return result;
+      });
+      if(!shell.handled) return failure(400,"Choose a workspace.");
+      return Response.json({ok:true,data:shell.data},{headers:responseHeaders});
     }
     const business = await trace.measure("auth", () => getRequestBusinessContext());
     const upload=await trace.measure("handler", () => runAppLocalUploadCommand(input.name,input.args,input.scope));

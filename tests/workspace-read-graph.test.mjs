@@ -43,3 +43,25 @@ test('target permission reuse stays inside ordinary read request; writes and fin
  });
  f.rest=0;await api.resolveSettingsTarget('salon');assert(f.rest>=2);
 });
+test('selected workspace projection equals original fresh builder without reloading identity or grants',async()=>{
+ const f=fixture();
+ for(const id of ['personal','account:account','manage:salon','staff:salon']){
+  let projected;
+  await api.runWithReadContext(async()=>{
+   const source=await api.getCurrentBusinessContext();const rpc=f.rpc,rest=f.rest;
+   projected=await api.projectSelectedWorkspaceRead(source,id);
+   assert.equal(f.rpc,rpc);assert.equal(f.rest,rest);
+   await assert.rejects(api.runWithFreshReadValidation(()=>api.projectSelectedWorkspaceRead(source,id)),/fresh workspace/);
+  });
+  f.cookie[api.SELECTED_WORKSPACE_COOKIE]=id;
+  const independent=await api.runWithReadContext(()=>api.getCurrentBusinessContext());assert.deepEqual(projected,independent,id);
+ }
+});
+test('projection cannot cross request, impersonate a context or select removed workspaces',async()=>{
+ const f=fixture();let saved;
+ await api.runWithReadContext(async()=>{saved=await api.getCurrentBusinessContext();await assert.rejects(api.projectSelectedWorkspaceRead({...saved},'manage:salon'),/fresh workspace/);await assert.rejects(api.projectSelectedWorkspaceRead(saved,'manage:other'),/fresh workspace/);});
+ await api.runWithReadContext(()=>assert.rejects(api.projectSelectedWorkspaceRead(saved,'manage:salon'),/fresh workspace/));
+ await assert.rejects(api.projectSelectedWorkspaceRead(saved,'manage:salon'),/fresh workspace/);
+ f.graph.locations.length=0;f.graph.staff.length=0;
+ await api.runWithReadContext(async()=>{const next=await api.getCurrentBusinessContext();await assert.rejects(api.projectSelectedWorkspaceRead(next,'manage:salon'),/fresh workspace/);});
+});

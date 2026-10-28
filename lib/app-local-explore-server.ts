@@ -1,4 +1,5 @@
 import "server-only";
+import { memoizeReadValidation } from "./read-context-scope";
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
@@ -46,7 +47,11 @@ function explicitSearch(params: URLSearchParams) {
   return Boolean((params.get("q") ?? "").trim() || (params.get("location") ?? "").trim() && params.get("browse") !== "1" || (params.get("category") ?? "").trim() || ["posts", "salons"].includes(params.get("type") ?? ""));
 }
 const emptyUtility = (): ExploreUtilityContent => ({ bookingLoadError: false, notificationLoadError: false, notifications: [], unreadNotificationCount: 0, upcomingBooking: null });
-async function startupRouting(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams) {
+const startupRoutingKey = Symbol("explore-initial-routing");
+function startupRouting(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams) {
+  return memoizeReadValidation(startupRoutingKey,JSON.stringify([getExperienceContext(context).scope,params.toString()]),()=>loadStartupRouting(context,params));
+}
+async function loadStartupRouting(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams) {
   const explicit = explicitSearch(params), hasLocationParam = params.has("location");
   const workspaceLocation = await runReadWithDeadline(getExploreWorkspaceLocation(context), 8_000);
   const rawSource = params.get("locationSource"), locationInputSource = rawSource === "gps" || rawSource === "activity" || rawSource === "saved" || rawSource === "workspace" ? rawSource : undefined;

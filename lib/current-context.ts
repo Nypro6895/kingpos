@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { scopedBusinessContext } from "./scoped-business-context";
-import { memoizeReadContext } from "./read-context-scope";
+import { memoizeReadContext, getReusableReadValidationToken } from "./read-context-scope";
 import { currentWorkspaceReadGraph, loadWorkspaceReadGraph, runWithWorkspaceReadGraph } from "./workspace-read-graph";
 
 import { routes } from "@/lib/routes";
@@ -1491,6 +1491,24 @@ async function getCurrentBusinessContextAuth(
 
 const getDefaultBusinessContext = cache(() => loadCurrentBusinessContext({}));
 const businessReadKey = Symbol("business-context");
+const verifiedWorkspaceSnapshots = new WeakMap<CurrentBusinessContext, {token:object;auth:Awaited<ReturnType<typeof getCurrentBusinessContextAuth>>;snapshot:NonNullable<Awaited<ReturnType<typeof loadWorkspaceReadGraph>>>}>();
+
+/** A selector writes only UI cookies. Project its already verified, self-scoped
+ * graph through the original context builder, once in this request. This is not
+ * a capability for later requests, final revocation probes or business writes. */
+export async function projectSelectedWorkspaceRead(context: CurrentBusinessContext, workspaceId: string): Promise<CurrentBusinessContext> {
+  const capability = verifiedWorkspaceSnapshots.get(context);
+  const workspace = context.workspaceOptions.find(option=>option.id === workspaceId);
+  if(!capability || capability.token !== getReusableReadValidationToken() || !workspace || !context.user
+    || context.user.id !== capability.snapshot.userId) throw new Error("A fresh workspace snapshot is required.");
+  const values = new Map<string,string>();
+  writeNormalizedWorkspaceContextCookies({set:(name,value)=>values.set(name,value),delete:name=>values.delete(name)},workspace);
+  const cookieStore: CookieReader = {get: input => {
+    const name = typeof input === "string" ? input : input.name;
+    return values.has(name) ? {name,value:values.get(name)!} : undefined;
+  }};
+  return runWithWorkspaceReadGraph(capability.snapshot,()=>buildCurrentBusinessContext(capability.auth,{cookieStore}));
+}
 
 export function getCurrentBusinessContext(options: CurrentBusinessContextOptions = {}): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
@@ -1507,7 +1525,10 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
     options.accessToken,
   );
   const snapshot = auth.supabase && auth.user ? await loadWorkspaceReadGraph(auth.supabase, auth.user.id) : null;
-  return runWithWorkspaceReadGraph(snapshot ?? undefined, () => buildCurrentBusinessContext(auth, options));
+  const context = await runWithWorkspaceReadGraph(snapshot ?? undefined, () => buildCurrentBusinessContext(auth, options));
+  const token = getReusableReadValidationToken();
+  if(token && snapshot && context.user?.id === snapshot.userId) verifiedWorkspaceSnapshots.set(context,{token,auth,snapshot});
+  return context;
 }
 
 async function buildCurrentBusinessContext(auth: Awaited<ReturnType<typeof getCurrentBusinessContextAuth>>, options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
