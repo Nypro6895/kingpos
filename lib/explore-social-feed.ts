@@ -154,9 +154,6 @@ function mapItem(row: HydratedRow, candidate: SocialFeedCandidate, signals: Expl
 
 async function hydrate(client: FeedClient, input: FeedInput, cursor: Cursor, candidates: SocialFeedCandidate[], timings?: FeedTimings) {
   if (!candidates.length) return [];
-  const payload = await measure(timings, "selectedHydrationMs", () => rpc(client, "hydrate_explore_social_feed_items", { p_actor_key: input.visitorKey, p_cursor: cursor, p_keys: candidates.map(item => item.contentKey) }, input.signal));
-  const rows = Array.isArray(payload) ? payload.map(record) : [];
-  const salonIds = [...new Set(rows.flatMap(row => string(record(row.document).salon_id) ? [string(record(row.document).salon_id)!] : []))];
   const runner = async (name: string, args: Record<string, unknown>) => {
     if (input.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
     const startedAt = Date.now();
@@ -174,10 +171,25 @@ async function hydrate(client: FeedClient, input: FeedInput, cursor: Cursor, can
       }
     }
   };
-  const [signals, statuses] = await Promise.all([
-    measure(timings, "decisionSignalsMs", () => getExploreDecisionSignalsBySalonId(runner, salonIds)),
-    measure(timings, "operatingStatusMs", () => getPublicSalonOperatingStatusesBySalonId(salonIds, runner)),
+  // Public display metadata can overlap selected-item hydration. Only the
+  // canonical hydrated rows may become feed items; removed/blocked rows stay out.
+  const prefetchedIds = [...new Set(candidates.flatMap(item=>item.salonId ? [item.salonId] : []))];
+  const metadata = (ids:string[]) => Promise.all([
+    measure(timings,"decisionSignalsMs",()=>getExploreDecisionSignalsBySalonId(runner,ids)),
+    measure(timings,"operatingStatusMs",()=>getPublicSalonOperatingStatusesBySalonId(ids,runner)),
   ]);
+  const [payload,[signals,statuses]] = await Promise.all([
+    measure(timings,"selectedHydrationMs",()=>rpc(client,"hydrate_explore_social_feed_items",{p_actor_key:input.visitorKey,p_cursor:cursor,p_keys:candidates.map(item=>item.contentKey)},input.signal)),
+    metadata(prefetchedIds),
+  ]);
+  const rows = Array.isArray(payload) ? payload.map(record) : [];
+  const actualIds = [...new Set(rows.flatMap(row=>string(record(row.document).salon_id)?[string(record(row.document).salon_id)!]:[]))];
+  const missingIds = actualIds.filter(id=>!prefetchedIds.includes(id));
+  if(missingIds.length) {
+    const [extraSignals,extraStatuses] = await metadata(missingIds);
+    for(const [id,value] of extraSignals) signals.set(id,value);
+    for(const [id,value] of extraStatuses) statuses.set(id,value);
+  }
   const rowMap = new Map(rows.map(row => [string(row.contentKey), row]));
   return candidates.flatMap(candidate => {
     const row = rowMap.get(candidate.contentKey);
