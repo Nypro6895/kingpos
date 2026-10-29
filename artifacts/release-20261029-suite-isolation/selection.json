@@ -1,0 +1,14 @@
+{
+  "ready": "172a18b3-1eca-4b0d-8ebb-77b0425c0840",
+  "files": [
+    "ios/scripts/check-build.sh",
+    ".github/workflows/reylumi-ios-testflight.yml"
+  ],
+  "sourceCommit": "a43900a0cd46fcfc9fa1edcc4fd0a03d1cf41955",
+  "productSourceCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "nativeBaseline": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "baselineBuild": "70",
+  "sourceTests": 235,
+  "suites": 30,
+  "hostInvocations": 14
+}

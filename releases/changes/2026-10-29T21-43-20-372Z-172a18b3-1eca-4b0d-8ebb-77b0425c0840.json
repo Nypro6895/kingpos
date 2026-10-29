@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "native-suite-host-isolation-20261029",
+  "status": "ready",
+  "summary": "Run unchanged235 XCTest cases via13 isolated UIKit/WebKit hosts plus pure-state host; enforce every source case started/passed exactly once before archive, preserving source test bodies and timing budgets",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-build.sh",
+    ".github/workflows/reylumi-ios-testflight.yml"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029-suite-isolation\\frozen",
+    "commit": "a43900a0cd46fcfc9fa1edcc4fd0a03d1cf41955",
+    "productSourceCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485"
+  },
+  "dependencies": [
+    "staff-my-pay-native-integration-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Actual embedded Python inventory and coverage checks:11 positive/negative controls, prior actual235-case inventory comparison",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-suite-isolation/runner-validation.json"
+    },
+    {
+      "name": "Bash syntax and batch splitting selects all30 suites exactly once across14 hosts",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-suite-isolation/shell-validation.json"
+    },
+    {
+      "name": "Git review confirms no app/Swift/test body changes and no assertion/timeout edits",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-suite-isolation/review.json"
+    }
+  ],
+  "notes": "Full exact-source235-case native runtime/archive/sign/upload and independent Apple readback remain mandatory before publication; root cause of prior process launch delays not established.",
+  "id": "172a18b3-1eca-4b0d-8ebb-77b0425c0840",
+  "recordedAt": "2026-10-29T21:43:20.372Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/scripts/check-build.sh": "cc538943bcbedf6ed7c6eaca2501ed8f3c08c5a9f6d596ec1b5c60f259c61a6e",
+    ".github/workflows/reylumi-ios-testflight.yml": "e7362b1394438874b9ef8faec996e6febb06fde69b35a1d9be6443f2084df5c9"
+  }
+}

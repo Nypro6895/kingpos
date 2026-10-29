@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-29T21:43:20.374Z",
+  "files": [
+    "ios/scripts/check-build.sh",
+    ".github/workflows/reylumi-ios-testflight.yml"
+  ],
+  "productAndSwiftTestBodiesUnchanged": true,
+  "assertionsAndBudgetsUnchanged": true,
+  "hostTermination": "Only current job Simulator com.reylumi.ios; no persistent data erasure; non-ESRCH errors fatal",
+  "coverage": "Every source test must start/pass once;235 expected,30 suites,14 hosts; no skip or automatic retry",
+  "reference": "https://developer.apple.com/documentation/xcode/running-tests-and-interpreting-results",
+  "causeNotEstablished": true
+}

@@ -1,0 +1,52 @@
+{
+  "passed": 11,
+  "failed": 0,
+  "runtimeAcceptanceForNewSource": false,
+  "notes": "Local validation of actual embedded inventory/coverage code only; new full native CI still required",
+  "checks": [
+    {
+      "check": "All235 source cases match prior actual XCTest runtime;30 suites/14 hosts",
+      "passed": true
+    },
+    {
+      "check": "Accept all235 exact started/passed cases and14 completed invocations",
+      "passed": true
+    },
+    {
+      "check": "Reject missing started case",
+      "passed": true
+    },
+    {
+      "check": "Reject missing passed case or empty only-testing selection",
+      "passed": true
+    },
+    {
+      "check": "Reject duplicate case start",
+      "passed": true
+    },
+    {
+      "check": "Reject duplicate case pass",
+      "passed": true
+    },
+    {
+      "check": "Reject skipped case",
+      "passed": true
+    },
+    {
+      "check": "Reject explicit failed case even with all expected pass lines",
+      "passed": true
+    },
+    {
+      "check": "Reject unexpected runtime case",
+      "passed": true
+    },
+    {
+      "check": "Reject missing successful host invocation",
+      "passed": true
+    },
+    {
+      "check": "Reject actual235-case failed hosted-handoff log",
+      "passed": true
+    }
+  ]
+}
