@@ -4,7 +4,7 @@ import WebKit
 
 // Diagnostic fixture: retain a real, foreground WK owner for the same unique
 // persistent profile. The document is constant local HTML with no resources.
-// This changes no cookie assertion, transport, authority rule or test budget.
+// This changes no cookie assertion, transport, authority rule or behavior deadline.
 @MainActor
 final class IsolatedWKCookieProfileOwner: NSObject, WKNavigationDelegate {
     private let webView: WKWebView
@@ -35,7 +35,11 @@ final class IsolatedWKCookieProfileOwner: NSObject, WKNavigationDelegate {
         try await withCheckedThrowingContinuation { (pending: CheckedContinuation<Void, Error>) in
             continuation = pending
             timeout = Task { @MainActor [weak self] in
-                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                // This bounds only cold process/document setup. Callers seed
+                // cookies and begin authority/expiry checks after prepare()
+                // returns, so their timing contracts remain unchanged. CI has
+                // observed a 31.7s WebContent process launch; never wait forever.
+                try? await Task.sleep(nanoseconds: 45_000_000_000)
                 if !Task.isCancelled { self?.finish(URLError(.timedOut)) }
             }
             webView.loadHTMLString("<!doctype html><meta http-equiv='Content-Security-Policy' content=\"default-src 'none'\"><title>Isolated cookie fixture</title>", baseURL: nil)

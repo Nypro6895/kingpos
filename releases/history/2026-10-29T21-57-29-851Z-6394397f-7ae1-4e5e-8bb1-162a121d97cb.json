@@ -1,0 +1,28 @@
+{
+  "kind": "release",
+  "summary": "Isolated-host native candidate stopped correctly at213 started/212 passed cases: a different isolated cookie-profile setup hit its5s blank-document startup limit; no archive or upload",
+  "changes": [
+    "172a18b3-1eca-4b0d-8ebb-77b0425c0840"
+  ],
+  "targets": {
+    "ios": {
+      "status": "failed",
+      "verified": false,
+      "commit": "b76b5181d93bab8fca115df4849eb8bfd84c2989",
+      "evidence": "artifacts/release-20261029-suite-isolation/native-evidence/test.log"
+    }
+  },
+  "failure": {
+    "test": "NativeCookieAuthorityWKTests.testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination",
+    "startedCases": 213,
+    "passedCases": 212,
+    "fixtureStartup": "5s bound before any cookie seeding/assertions",
+    "previousHostedReturnSuite": "passed",
+    "remainingCasesNotRun": 22,
+    "upload": "skipped"
+  },
+  "nextAction": "Change only the isolated blank-document fixture setup budget to45s; keep all app code,235 test bodies and functional/authority deadlines unchanged; all235 must still pass under14 hosts",
+  "id": "6394397f-7ae1-4e5e-8bb1-162a121d97cb",
+  "recordedAt": "2026-10-29T21:57:29.851Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}
