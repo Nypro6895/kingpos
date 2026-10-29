@@ -1,0 +1,117 @@
+{
+  "at": "2026-10-29T22:25:31.448Z",
+  "project": "kingpos",
+  "deployment": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+  "host": "reylumi.com",
+  "operation": "Existing CDN request records read-only; no logger or configuration changes",
+  "windows": [
+    {
+      "window": "explore-window-scoped",
+      "summary": {
+        "type": "summary",
+        "recordsReturned": 17,
+        "timeRange": {
+          "start": "2026-10-29T22:22:20.000Z",
+          "end": "2026-10-29T22:22:45.000Z"
+        },
+        "pagination": {
+          "hasMore": false,
+          "next": null
+        },
+        "excludedIntervals": []
+      },
+      "recordsReturned": 17,
+      "rawSha256": "addebd8c89838573d2eb7761b3c3d767c49df4e0cf00ad239a021ae3227ff7ec",
+      "routes": [
+        {
+          "route": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cache": "MISS",
+          "uaFamily": "native/CFNetwork",
+          "count": 14,
+          "timestamps": [
+            "2026-10-29T22:22:31.083Z",
+            "2026-10-29T22:22:31.068Z",
+            "2026-10-29T22:22:30.561Z",
+            "2026-10-29T22:22:30.540Z",
+            "2026-10-29T22:22:30.153Z",
+            "2026-10-29T22:22:29.716Z",
+            "2026-10-29T22:22:29.183Z",
+            "2026-10-29T22:22:28.006Z",
+            "2026-10-29T22:22:27.986Z",
+            "2026-10-29T22:22:27.986Z",
+            "2026-10-29T22:22:26.141Z",
+            "2026-10-29T22:22:25.969Z",
+            "2026-10-29T22:22:25.887Z",
+            "2026-10-29T22:22:25.881Z"
+          ]
+        },
+        {
+          "route": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cache": "MISS",
+          "uaFamily": "native/CFNetwork",
+          "count": 1,
+          "timestamps": [
+            "2026-10-29T22:22:27.986Z"
+          ]
+        },
+        {
+          "route": "/api/app-local/read",
+          "method": "POST",
+          "status": 200,
+          "cache": "MISS",
+          "uaFamily": "native/CFNetwork",
+          "count": 2,
+          "timestamps": [
+            "2026-10-29T22:22:27.970Z",
+            "2026-10-29T22:22:25.881Z"
+          ]
+        }
+      ],
+      "serverErrorRecords": 0
+    },
+    {
+      "window": "security-window-scoped",
+      "summary": {
+        "type": "summary",
+        "recordsReturned": 1,
+        "timeRange": {
+          "start": "2026-10-29T22:21:05.000Z",
+          "end": "2026-10-29T22:21:10.000Z"
+        },
+        "pagination": {
+          "hasMore": false,
+          "next": null
+        },
+        "excludedIntervals": []
+      },
+      "recordsReturned": 1,
+      "rawSha256": "5d18d25d9ca395f6a1252d53d873bdbde71a902561d26c3f57c361b87be6bfc6",
+      "routes": [
+        {
+          "route": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cache": "MISS",
+          "uaFamily": "native/CFNetwork",
+          "count": 1,
+          "timestamps": [
+            "2026-10-29T22:21:05.168Z"
+          ]
+        }
+      ],
+      "serverErrorRecords": 0
+    }
+  ],
+  "attribution": "Deployment/host/exact UTC window only; UA-family hints do not identify a unique session",
+  "limitations": [
+    "CDN requests do not reveal backend RPC fanout or hidden component/DTO work",
+    "Vercel CLI always excludes background function executions",
+    "No more pages or excludedIntervals were reported for these windows, but this does not prove complete device/network coverage",
+    "Do not interpret unavailable or missing records as zero reads",
+    "First unscoped read attempts failed not_linked; corrected with existing scope/project, no link or settings mutation"
+  ]
+}

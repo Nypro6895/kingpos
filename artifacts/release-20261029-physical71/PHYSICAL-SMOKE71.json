@@ -1,0 +1,75 @@
+{
+  "recordedAt": "2026-10-29T22:32:38.517Z",
+  "publicationReceipt": "67f21d58-f623-4745-a065-13bac2d79655",
+  "metadataOnlyNoNewDeployment": true,
+  "status": "targeted-physical-smoke-passed",
+  "version": "1.0.0",
+  "build": "71",
+  "nativeSource": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+  "webDeployment": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+  "bundleIdentifier": "com.reylumi.ios",
+  "actualInstalledStart": "71",
+  "actualInstalledEnd": "71",
+  "sameBundleContainerStartEnd": true,
+  "distribution": "Normal TestFlight Update after owned70 controller stopped and archive frozen",
+  "ownership": "Only owning iPhone audit worker controlled device; root had no controller or install",
+  "lab": "latest71-331",
+  "controllerStopped": true,
+  "controllerExit": "TEST SUCCEEDED as owning worker reports, no owned xcodebuild left",
+  "archive": {
+    "path": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/personal71-331.zip",
+    "sha256": "8a57be475f7c18a3a17fd25618132efc6a9a9f0756d990cf6c5adcc33fd96977",
+    "independentlyRehashedByCoordinator": true,
+    "rawPrivateArchiveCommitted": false
+  },
+  "cases": [
+    {
+      "name": "Staff MyPay71 release smoke",
+      "status": "PASS",
+      "evidence": [
+        "mypay71-ready.png",
+        "mypay-analysis331.png",
+        "mypay-return-ready331-result.json"
+      ]
+    }
+  ],
+  "checks": {
+    "myPayToAnalysisToMyPay": true,
+    "removedLongDisclosureAndRecordedFactsPanelAbsent": true,
+    "calculatedAndUpdatedRetainedIntentionally": true,
+    "sameDisplayedCurrencyTokensOnReturn": true,
+    "currencyTokenCount": 14,
+    "noCrossPeriodOrOldDatasetFinancialEqualityClaim": true,
+    "periodTransitionAccepted": false,
+    "editsOrPaymentsInvoked": false
+  },
+  "rawFinancialValuesPersisted": false,
+  "allAppOrAllPersonalAcceptance": false,
+  "scope": "Only release-specific Staff MyPay/Analysis/return read smoke; broader Personal coverage/findings stay in owning audit report",
+  "coverageLimits": [
+    "No period transition acceptance",
+    "No edits, adjustments or payment operations",
+    "No first-uncached/sub1s performance claim",
+    "Do not transfer evidence70/68 to71",
+    "CDN window metadata cannot prove hidden backend work absent"
+  ],
+  "artifactHashes": {
+    "installed-audit-end-final.json": "9de8e294d34d18467f36c3dc454c8cecdf11510fc59becc687a146937742e0c1",
+    "mypay71-ready.png": "ed88f2729b9938a7505676ebec155ae65ab79751c490f638e396932615aad765",
+    "installed-audit-start.json": "65f02fa5fe9430ec5afcad7b1c6608138dda196fe46c9f8747133874fab5cb70",
+    "audit-manifest.json": "c274c9e5a464646ee6a20c6fb063ec1a9d36d0d68ef0e10025d33ed96a725db8",
+    "build-proof.json": "21137c03059a80aabb2b5e08ab2099330f00873ce463b2dc1dbae2f901f7a0b5",
+    "mypay-analysis331-stdout.txt": "163d5ccad7e18b5a1b9fb6e42191035879e2792a6f09a356d82600001cb71757",
+    "mypay-analysis331.png": "e3b52374b9a53d27ee6a8c7e8473759b7d4d4433ded32822ffc34853c935e076",
+    "mypay-return-ready331-stdout.txt": "893ea66e5c4d353c7f8a154450b28fab80b525a773422892d4501b0beede8828",
+    "mypay71-ready-stdout.txt": "d6f0470d77d770574600bae61c81246886bc90b463f74bf26eef3829de7b5367"
+  },
+  "cdnSummary": "artifacts/release-20261029-physical71/CDN-WINDOWS-SUMMARY.json",
+  "lateFix": {
+    "changeId": "personal-bookings-copy-parity-20261029",
+    "event": "949f8123-0eb4-4282-a811-aa99409a1027",
+    "status": "needs-integration",
+    "notIn71": true,
+    "noNewReleaseAuthorizedByThisAddendum": true
+  }
+}

@@ -19,3 +19,7 @@ Receipt: 67f21d58-f623-4745-a065-13bac2d79655
 
 Audit queue/freeze và lý do fixture: artifacts/release-20261029-fixture-startup/FINAL-QUEUE-AUDIT.json
 Còn 92 journal rows lịch sử/WIP/chưa đủ gate; không tuyên bố đã xóa toàn backlog.
+
+Physical addendum 926b7049-f108-4135-8ca6-8852286d4d8b: actual iPhone71 start/end cùng bundle đã xác minh; archiveSHA2568a57be475f7c18a3a17fd25618132efc6a9a9f0756d990cf6c5adcc33fd96977 khớp. Staff MyPay→Analysis→MyPay read smoke đạt; panel đã bỏ, Calculated/Updated giữ đúng; currency tokens không đổi khi quay lại cùng flow. Không chấp nhận đổi kỳ, không edits/payments, không so với dataset cũ; không lưu số tiền trong receipt. Đây là narrow smoke, không phải acceptance toànapp. Controller331 đã dừng.
+Evidence: artifacts/release-20261029-physical71/PHYSICAL-SMOKE71.json
+Bản váBookingcopy949f8123/56b5d6e phát sinh saufreeze: needs-integration cho đợt chung sau, không ở71.

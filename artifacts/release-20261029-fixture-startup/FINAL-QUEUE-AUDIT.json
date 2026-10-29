@@ -90,5 +90,21 @@
       ],
       "disposition": "New working Personal audit fix after release freeze; not in71; retained for next completed combined batch"
     }
-  ]
+  ],
+  "latestPostPublicationQueueReview": {
+    "at": "2026-10-29T22:36:32.369Z",
+    "remainingRows": 92,
+    "publishedSelectionsPending": 0,
+    "lateAuditFix": {
+      "eventId": "949f8123-0eb4-4282-a811-aa99409a1027",
+      "changeId": "personal-bookings-copy-parity-20261029",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "New completed-needs-integration Personal audit fix after freeze; product56b5d6e; NOT in71; next combined batch"
+    }
+  },
+  "physicalAddendum": "926b7049-f108-4135-8ca6-8852286d4d8b"
 }

@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-29T22:16:08.951Z",
+  "at": "2026-10-29T22:27:37.535Z",
   "releaseReceipt": "67f21d58-f623-4745-a065-13bac2d79655",
   "selectedEventsPending": 0,
   "wholeBacklogClaimedCleared": false,
@@ -859,14 +859,14 @@
       "disposition": "History logic requires owner agreement; previous display-only scope already shipped"
     },
     {
-      "eventId": "e5be4aea-06be-4dde-bb98-15c2f6eecfdb",
+      "eventId": "949f8123-0eb4-4282-a811-aa99409a1027",
       "changeId": "personal-bookings-copy-parity-20261029",
-      "status": "working",
+      "status": "needs-integration",
       "pendingChannels": [
         "web",
         "ios"
       ],
-      "disposition": "New working Personal audit fix after release freeze; not in71; retained for next completed combined batch"
+      "disposition": "New completed-needs-integration Personal audit fix after freeze; product56b5d6e; NOT in71; next combined batch"
     }
   ]
 }
