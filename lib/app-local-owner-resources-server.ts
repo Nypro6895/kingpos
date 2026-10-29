@@ -7,8 +7,8 @@ import type { SalonManagePageContext } from "@/lib/route-context-guards";
 import { hasPermission } from "@/lib/permissions";
 import { getCurrentSalonBookingWorkspace, BOOKING_PERMISSIONS, localDateTimeToUtcIso } from "@/lib/bookings";
 import { getCurrentSalonPosTickets, getCurrentSalonPosTicketOptions, POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
-import { canApplyFinancialCorrections, canEditDailyPosClosing, FINANCIAL_CORRECTION_PERMISSIONS, DAILY_POS_REPORT_PERMISSIONS, getDailyPosReport, getDefaultReportDate, isDailyClosingLocked, isDateInputValue, normalizeReportDate } from "@/lib/daily-pos-report";
-import { getOperationalReport } from "@/lib/operational-report";
+import { canApplyFinancialCorrections, FINANCIAL_CORRECTION_PERMISSIONS, DAILY_POS_REPORT_PERMISSIONS, isDailyClosingLocked } from "@/lib/daily-pos-report";
+import { loadOwnerReportsRead } from "@/lib/owner-reports-read";
 import { getCurrentSalonPosDeskData } from "@/lib/pos-desk";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
@@ -80,10 +80,8 @@ export async function readAppLocalOwnerResource(name: string, args: Record<strin
   } else if (name === "owner.reports") {
     if (!await hasPermission(DAILY_POS_REPORT_PERMISSIONS.view, context)) data = denied("You do not have permission to view reports.");
     else {
-      const reportOverview = await getOperationalReport(query, context);
-      const selectedDate = await normalizeReportDate(isDateInputValue(query.date) ? query.date : reportOverview.range.endDate, context);
-      const [today, report, canEditPermission, canRequestCorrection, canApplyCorrection] = await Promise.all([getDefaultReportDate(context), getDailyPosReport(selectedDate, context), canEditDailyPosClosing(context), hasPermission(DAILY_POS_REPORT_PERMISSIONS.requestCorrection, context), canApplyFinancialCorrections(context)]);
-      data = { view: "reports", props: { viewerId: context.user.id, salonId: context.currentSalon.id, salonName: context.currentSalon.name, today, report, reportOverview, canEdit: canEditPermission && !report.lock.isLocked, canApplyCorrection, canRequestCorrection } };
+      const reports = await loadOwnerReportsRead(query, context);
+      data = { view: "reports", props: { viewerId: context.user.id, salonId: context.currentSalon.id, salonName: context.currentSalon.name, ...reports } };
     }
   } else {
     if (!await hasPermission(POS_TICKET_PERMISSIONS.view, context)) data = denied("You do not have permission to view POS tickets.");

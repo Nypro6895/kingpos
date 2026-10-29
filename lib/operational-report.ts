@@ -1550,16 +1550,29 @@ function withPreviousRange(
   };
 }
 
-export async function getOperationalReport(
+export async function prepareOperationalReport(
   params: OperationalReportSearchParams = {},
   context?: CurrentBusinessContext,
-): Promise<OperationalReportData> {
+) {
   const auth = await requireOperationalReportContext(context);
   const [permissions, clock] = await Promise.all([
     getReportPermissions(auth.context),
     loadBusinessClock(auth),
   ]);
   const { dataGaps: rangeGaps, range } = resolveReportRange(params, clock);
+  let report: Promise<OperationalReportData> | undefined;
+  return {
+    range: Object.freeze({ ...range }),
+    load: () => report ??= loadOperationalReportFacts(auth, permissions, range, rangeGaps),
+  };
+}
+
+async function loadOperationalReportFacts(
+  auth: ReportAuthContext,
+  permissions: OperationalReportData["permissions"],
+  range: OperationalReportRange,
+  rangeGaps: string[],
+): Promise<OperationalReportData> {
   const previousRange = withPreviousRange(range);
   const [currentFacts, previousFacts] = await Promise.all([
     loadReportFacts({
@@ -1599,4 +1612,11 @@ export async function getOperationalReport(
     totals: currentFacts.totals,
     trend: currentFacts.trend,
   };
+}
+
+export async function getOperationalReport(
+  params: OperationalReportSearchParams = {},
+  context?: CurrentBusinessContext,
+): Promise<OperationalReportData> {
+  return (await prepareOperationalReport(params, context)).load();
 }

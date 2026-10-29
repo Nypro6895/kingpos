@@ -94,6 +94,31 @@ final class LocalAppWebViewTests: XCTestCase {
         XCTAssertEqual(retained, true)
     }
     @MainActor
+    func testLostStartupResetRecoversContextWithoutReplayingCommands() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP()
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.startup." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.startup." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help", transport: transport)
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        _ = try await web.evaluateJavaScript("window.startupOldHost={...window.__reylumiAppLocalContext};true")
+        await transport.reset()
+        // Reproduce document-start metadata surviving a reset whose DOM event
+        // was lost before document commit, without needing timing-based sleeps.
+        let recovered = try await evaluateAsync("""
+        (async()=>{
+          window.__reylumiAppLocalContext=window.startupOldHost;
+          const raw=await window.webkit.messageHandlers.appLocal.postMessage({id:'00000000-0000-4000-8000-000000000091',version:1,nonce:startupOldHost.nonce,scopeEpoch:startupOldHost.scopeEpoch,kind:'command',name:'shell.logout',args:{}});
+          if(raw.__hostError?.status!==403)throw Error('Stale command was admitted');
+          const reply=await window.__reylumiAppLocalTransport.request({id:'00000000-0000-4000-8000-000000000092',kind:'context',name:'context',args:{path:'/help'}});
+          return reply.__hostResynced===true&&reply.offline===false&&reply.host.scopeEpoch>startupOldHost.scopeEpoch&&reply.host.nonce===window.__reylumiAppLocalContext.nonce;
+        })()
+        """, in: web) as? Bool
+        XCTAssertEqual(recovered, true)
+    }
+    @MainActor
     func testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
         let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP(), nextScope = "v3:" + String(repeating: "b", count: 64)

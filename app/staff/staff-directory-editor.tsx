@@ -589,8 +589,8 @@ export function StaffDirectoryEditor({
   return (
     <>
       <div className="mb-3 flex items-center justify-between gap-3 md:hidden"><h1 className="text-lg font-semibold tracking-tight text-zinc-950"><WorkspaceText text="Staff" /></h1><span className="text-xs text-zinc-500">{activeStaff.length} <WorkspaceText text="active ·" /> {hiddenStaff.length} <WorkspaceText text="hidden" /></span></div>
-      <div className="flex min-w-0 flex-wrap items-center gap-2 md:flex-nowrap border-b border-zinc-200 pb-3">
-        <div className="relative min-w-0 basis-full sm:basis-auto sm:flex-1 sm:max-w-sm md:flex-1">
+      <div className="flex min-w-0 items-center gap-2 border-b border-zinc-200 pb-3">
+        <div className="relative min-w-0 flex-1 sm:max-w-sm">
           <label className="sr-only" htmlFor="staff-search"><WorkspaceText text="Search staff" /></label>
           <input id="staff-search" type="search" disabled={busy}
             className="h-11 w-full min-w-0 rounded-lg border border-zinc-300 bg-white pl-3 pr-8 text-sm outline-none focus:border-teal-600"

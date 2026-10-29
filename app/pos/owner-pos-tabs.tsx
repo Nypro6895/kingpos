@@ -9,6 +9,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { OwnerPosIcon, type OwnerPosIconName } from "./owner-pos-icon";
 import { PortableSyncIndicator } from "./portable/portable-sync-indicator";
 import "./owner-pos.css";
+import { OwnerNotebookMenu } from "./owner-notebook-menu";
 
 const shortcuts: { id: string; href: string; label: string; icon: OwnerPosIconName }[] = [
   { id: "pos", href: "/pos", label: "POS", icon: "pos" },
@@ -115,8 +116,9 @@ export function OwnerPosNavigation({ active, syncScope }: { active: OwnerTab; sy
 export function OwnerPosTabs({ active }: { active: OwnerTab }) {
   const translate = useWorkspaceTranslation();
   const pathname = usePathname();
-  return <nav className="owner-top-nav" aria-label={translate("Owner POS")}>
+  const mobile = <OwnerNotebookMenu key={`notebook:${pathname ?? active}`} active={active} more={<OwnerMoreMenu key={pathname ?? active} />} />;
+  return <>{mobile}<nav className="owner-top-nav owner-notebook-desktop" aria-label={translate("Owner POS")}>
     <OwnerMoreMenu key={pathname ?? active} />
     {shortcuts.map(item => <Link className="owner-nav-item" data-owner-tab={item.id} href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}
-  </nav>;
+  </nav></>;
 }

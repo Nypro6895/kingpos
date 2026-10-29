@@ -2818,7 +2818,7 @@ export function NavigationShell({
                 currentWorkspace={routeCurrentWorkspace} isCustomerShell notificationSummary={notificationSummary}
                 pathname={pathname} searchParams={searchParams} workspaceOptions={workspaceOptions} workspaceSections={[]} />
             </div>
-            <div className={`customer-desktop-content min-w-0 ${desktopShellBreakpoint === "lg" ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0" : "pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:pb-0"}`}>
+            <div className={`customer-desktop-content min-w-0 ${isSalonManageRoute && !pathname.startsWith("/pos") ? "max-md:px-[max(16px,env(safe-area-inset-left))] max-md:pr-[max(16px,env(safe-area-inset-right))]" : ""} ${desktopShellBreakpoint === "lg" ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0" : "pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:pb-0"}`}>
               <ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" />
             </div>
             <div className={`${mobileDisplay} [&>nav]:!grid`}>

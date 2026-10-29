@@ -214,7 +214,7 @@ export function OwnerLiveReports(initial:Props){
  if(!retained.available)return null;
   return (
     <main className={styles.page}>
-      <h1 className={styles.title}><WorkspaceText text="Reports" /></h1>
+      <h1 className="sr-only"><WorkspaceText text="Reports" /></h1>
       <ReportTabs
         onViewChange={onViewChange}
         overviewTools={<ReportRangeFilter key={`${reportOverview.range.preset}:${reportOverview.range.startDate}:${reportOverview.range.endDate}`} report={reportOverview} selectedClosingDate={report.reportDate} />}

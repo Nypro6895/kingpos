@@ -8,7 +8,16 @@
   if (window.__reylumiDiagnosticsEnabled === true) window.__reylumiBundleParseStartedAt = performance.now();
   const request = async (input) => {
     const context = window.__reylumiAppLocalContext;
-    const reply = await handler.postMessage({ ...input, version: 1, nonce: context.nonce, scopeEpoch: context.scopeEpoch });
+    let reply = await handler.postMessage({ ...input, version: 1, nonce: context.nonce, scopeEpoch: context.scopeEpoch });
+    // Only context reads can recover a lost pre-commit reset event. Never
+    // replay writes or accept old response data across this boundary.
+    const freshHost = reply?.__hostError?.reason === 'stale-host' && input.kind === 'context' ? reply.host : null;
+    if (freshHost?.version === 1 && typeof freshHost.nonce === 'string' && typeof freshHost.generation === 'string' && Number.isSafeInteger(freshHost.scopeEpoch) && freshHost.scopeEpoch > context.scopeEpoch && freshHost.scopeEpoch >= window.__reylumiAppLocalContext.scopeEpoch) {
+      window.__reylumiAppLocalContext = freshHost;
+      window.dispatchEvent(new CustomEvent('reylumi:app-local-reset', { detail: { ...freshHost, reason: 'context' } }));
+      reply = await handler.postMessage({ ...input, args: { ...input.args, fresh: true }, version: 1, nonce: freshHost.nonce, scopeEpoch: freshHost.scopeEpoch });
+      if (reply && !reply.__hostError) reply.__hostResynced = true;
+    }
     if (reply?.__hostError) {
       const error = new Error(reply.__hostError.message || 'Please try again.');
       error.status = reply.__hostError.status;

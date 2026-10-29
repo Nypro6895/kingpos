@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "combined-five-preparation-20261028",
+  "status": "needs-integration",
+  "summary": "Five-scope integrated source with POS retained-navigation repair; owner authorized coordinated release; native/archive/device acceptance pending",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/operational-report.ts",
+    "lib/owner-reports-read.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "app/(app)/reports/page.tsx",
+    "tests/owner-reports-read.test.mjs",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "lib/app-local-host.ts",
+    "tests/ios-startup-cookie-recovery.test.mjs",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt",
+    "app/navigation-shell.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "source": {
+    "snapshot": "artifacts/combined-five-prep/frozen"
+  },
+  "dependencies": [
+    "payroll-remove-source-notice-20261028",
+    "iphone-reports-overlap-20261028",
+    "ios-startup-cookie-recovery-20261028",
+    "mobile-page-spacing-20261028",
+    "mobile-notebook-menu-20261028"
+  ],
+  "validation": [
+    {
+      "name": "81 focused Node regression tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/regression-tests.log"
+    },
+    {
+      "name": "8 actual workspace/tab/More integration checks with inert providers",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/notebook-integration.json"
+    },
+    {
+      "name": "TypeScript and scoped lint",
+      "result": "passed"
+    },
+    {
+      "name": "Final production build/native WK/archive/Apple/groups/device",
+      "result": "pending"
+    }
+  ],
+  "id": "363c5ddc-950c-4968-982f-6a045ff9a9d6",
+  "recordedAt": "2026-10-29T03:30:51.247Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

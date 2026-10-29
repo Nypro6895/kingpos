@@ -187,9 +187,18 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
         guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url, bundle.owns(url),
               let body = message.body as? [String: Any], body["version"] as? Int == 1,
-              body["nonce"] as? String == transport.nonce, body["scopeEpoch"] as? Int == transport.scopeEpoch,
               let id = body["id"] as? String, UUID(uuidString: id) != nil, let kind = body["kind"] as? String,
               pending[id] == nil, pending.count < 100 else { replyHandler(["__hostError": ["status": 403, "message": "App request is not available."]], nil); return }
+        guard body["nonce"] as? String == transport.nonce, body["scopeEpoch"] as? Int == transport.scopeEpoch else {
+            // A speculative startup context can reset before document-start
+            // scripts run. Events emitted before document commit may be lost.
+            // Return no data or authority; only a fresh context read may retry.
+            if kind == "context", let epoch = body["scopeEpoch"] as? Int, epoch < transport.scopeEpoch,
+               let nonce = body["nonce"] as? String, UUID(uuidString: nonce) != nil {
+                replyHandler(["__hostError": ["status": 409, "reason": "stale-host", "message": "Please check your session again."], "host": transport.metadata], nil)
+            } else { replyHandler(["__hostError": ["status": 403, "message": "App request is not available."]], nil) }
+            return
+        }
         let name = body["name"] as? String ?? "", args = body["args"] as? [String: Any] ?? [:]
         if kind == "cache", name == "hosted-return-ready" {
             guard let token = args["token"] as? String, token == hostedReturnToken, hostedReturnEpoch == transport.scopeEpoch else { replyHandler(["ok": false], nil); return }

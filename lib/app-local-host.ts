@@ -97,7 +97,8 @@ async function nativeRequest<T>(kind: AppLocalBridgeRequest["kind"], name: strin
     const accepted = kind === "context" && value && typeof value === "object" ? (value as { host?: typeof current }).host : undefined;
     const logout = kind === "command" && name === "shell.logout" && value && typeof value === "object" && (value as {signedOut?:boolean}).signedOut === true ? (value as {host?:typeof current}).host : undefined;
     const logoutAccepted=Boolean(current&&logout&&logout.scopeEpoch===current.scopeEpoch&&logout.nonce===current.nonce&&logout.generation===current.generation);
-    if ((current?.generation !== generation || current?.scopeEpoch !== epoch) && !logoutAccepted && !(current?.generation===generation&&accepted?.scopeEpoch === current?.scopeEpoch && accepted?.nonce === current?.nonce && accepted?.generation === current?.generation)) throw new Error("Your account has changed. Please open the page again.");
+    const resynced = kind === "context" && (value as { __hostResynced?: boolean } | null)?.__hostResynced === true;
+    if ((current?.generation !== generation || current?.scopeEpoch !== epoch) && !logoutAccepted && !((current?.generation===generation || resynced)&&accepted?.scopeEpoch === current?.scopeEpoch && accepted?.nonce === current?.nonce && accepted?.generation === current?.generation)) throw new Error("Your account has changed. Please open the page again.");
     return value;
   } finally { if (deadline !== undefined) clearTimeout(deadline); if (cancel) signal?.removeEventListener("abort", cancel); }
 }

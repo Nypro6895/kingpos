@@ -1,0 +1,45 @@
+IOS STARTUP RECOVERY - COMBINED RELEASE QUEUE
+
+Owner instruction: fix startup denial and queue for one combined deployment.
+No standalone deployment, upload, or scheduled deployment is authorized here.
+Change ID: ios-startup-cookie-recovery-20261028
+Branch: codex/ios-startup-recovery-build62-20261029
+Baseline: uploaded iOS 1.0.0(62), commit 2e1bd5143bcd840d80e6401cdf820c86ef2c08e5.
+This revision integrates the earlier recovery onto native62, preserving its
+History reader and other shipped changes. Do not copy the old build55 tree.
+
+Evidence: supplied build60 report shows context HTTP200, external cookie
+mismatch, scopeReset and cookieReconcile409 before documentCommit, then
+repeated immediate JS403. Lost document-start host metadata causes the loop.
+
+Repair: validate owned main frame and request shape first. Only context reads
+from an older epoch can receive current transport metadata with stale-host409.
+JS adopts that metadata and retries once with fresh=true. All ordinary server
+authorization remains required. Writes, reads, cache and online navigation
+are not replayed. Host acceptance rejects superseded response metadata.
+
+Local validation: 28 Node tests passed (startup recovery, root handoff, home
+admission, staff identity and shipped native History); diff whitespace passed.
+Added deterministic WebKit integration test for lost reset and stale command
+denial in LocalAppWebViewTests.swift; NOT RUN on Windows.
+
+MANDATORY FOR NEXT COMBINED RELEASE:
+1. Include this change ID and freeze its latest event/source hashes alongside
+   the other selected pending changes. This is not already shipped in build62.
+2. Merge scoped changes onto the then-current uploaded native baseline, retain
+   History and all shipped features, and rerun the listed Node regression suite.
+3. Regenerate LocalAppBundle with production public configuration through the
+   existing native build workflow. The committed build62 bundle is unchanged;
+   it is NOT a generated bundle for this recovery revision. Verify bundle and
+   archive provenance includes the updated lib/app-local-host.ts.
+4. Run Xcode tests including testLostStartupResetRecoversContextWithoutReplayingCommands,
+   compile/archive, and test cold start/resume on iPhone with existing cookies,
+   guest, sign-in/out and workspace switching. Real permission denial stays denied.
+5. Publish once with the authorized combined release. Use a valid build newer
+   than the then-current Apple build and verify TestFlight availability.
+6. Close only this exact event/channel in a verified release receipt. A passing
+   web deployment or higher build number alone does not close this iOS item.
+
+Status: source integrated and locally tested; needs-integration because native
+WebKit test, packaging, Xcode and physical-device acceptance remain pending.
+No production changes, native upload, account changes or data deletion performed.
