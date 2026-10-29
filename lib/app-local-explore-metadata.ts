@@ -1,5 +1,6 @@
 export const APP_LOCAL_EXPLORE_PATHS = ["/explore"] as const;
 export const APP_LOCAL_EXPLORE_READS = [
+  { name: "http.explore.post-comments", path: "/api/post-comments", method: "GET", argumentKeys: ["sourceType", "sourceId", "offset", "pageSize"], retain: false },
   { name: "page.explore", argumentKeys: ["query"], retain: true },
   { name: "page.explore-extras", argumentKeys: ["query"], retain: true },
   { name: "page.explore-feed", argumentKeys: ["query"], retain: true },

@@ -169,8 +169,8 @@
 .owner-workspace-content{flex:1;min-height:0;overflow:auto}
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>[data-desktop-sidebar-slot],
-[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>header),
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>nav){display:none!important}
+
 
 @media(min-width:980px){
  .owner-top-nav{align-items:center;padding:6px 0;gap:4px}
@@ -263,3 +263,10 @@
 @media(prefers-reduced-motion:reduce){
  .owner-checkout[data-owner-reference] .owner-keypad button{transition:none}
 }
+
+/* Keep the add action immediately after the receipt entries. */
+.owner-checkout[data-owner-reference] .owner-add-line{display:block;flex-shrink:0;width:100%;min-height:48px;margin:8px 0;padding:10px 14px;border:1px dashed #1d807c;border-radius:10px;background:#edf6f5;color:#1d807c;font-size:15px;font-weight:600;text-align:center}
+.owner-checkout[data-owner-reference] .owner-add-line:disabled{opacity:.45}
+.owner-checkout[data-owner-reference] .owner-submit button:only-child{flex:1;background:var(--brand-orange);color:var(--brand-black)}
+
+.owner-workspace-panel{height:var(--owner-panel-height,calc(100dvh - 72px))}

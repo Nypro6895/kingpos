@@ -202,6 +202,7 @@ function Section({
   label: string;
   right?: React.ReactNode;
 }) {
+  if (["sessions","trusted-devices","two-factor"].includes(id)) return <section className="rounded-lg border border-zinc-200 bg-white" id={id}><h3 className="flex flex-wrap items-center gap-2 px-4 py-3 text-sm font-semibold">{label}{right}</h3>{children}</section>;
   return (
     <details className="scroll-mt-6 rounded-lg border border-zinc-200 bg-white" id={id} open={id==='sessions'||undefined}>
       <summary className="cursor-pointer px-4 py-3 text-sm font-semibold"><WorkspaceText text={label} />{right?<span className="ml-2">{right}</span>:null}</summary>
@@ -248,7 +249,7 @@ function SessionRow({
 
   return (
     <li className="border-b border-zinc-100 px-4 py-3 last:border-b-0">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-zinc-950">
@@ -260,13 +261,11 @@ function SessionRow({
           <p className="mt-1 text-sm leading-6 text-zinc-500">
             <WorkspaceText text={session.locationLabel} /> - <WorkspaceText text={relativeTime(session.lastSeenAt)} />
           </p>
-          <p className="text-xs text-zinc-400">
-            {session.browserName} - {session.osName} - {session.deviceType}
-          </p>
+
         </div>
         {session.isCurrent ? (
           <button
-            className={secondaryButtonClassName}
+            className={secondaryButtonClassName+" shrink-0 whitespace-nowrap"}
             disabled={isBusy}
             onClick={onLogOutCurrent}
             type="button"
@@ -275,7 +274,7 @@ function SessionRow({
           </button>
         ) : session.id ? (
           <button
-            className={secondaryButtonClassName}
+            className={secondaryButtonClassName+" shrink-0 whitespace-nowrap"}
             disabled={isBusy}
             onClick={() => onRevoke(session.id as string)}
             type="button"
@@ -438,6 +437,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
 
   const router = useRouter();
   const [error, setError] = useState("");
+  const [phoneProfileOpen,setPhoneProfileOpen]=useState(false);
   const [message, setMessage] = useState("");
   const [pendingKey, setPendingKey] = useState<PendingKey | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
@@ -551,6 +551,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
   }
 
   function beginPhoneMfaEnrollment() {
+    if(!overview.account.phone){setPhoneProfileOpen(true);return;}
     setError("");
     setMessage("");
     setTotpEnrollment(null);
@@ -727,7 +728,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
             }
             type="button"
           >
-            <WorkspaceText text={pendingKey === "trust-current" ? "Saving..." : "Remember this device"} />
+            <WorkspaceText text={pendingKey === "trust-current" ? "Saving..." : currentDeviceTrusted ? "Trusted" : "Trust this device"} />
           </button>
         </div>
         {overview.trustedDevices.length > 0 ? (
@@ -793,70 +794,10 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
           </div>
         )}
         {!hasVerifiedTotp || !hasVerifiedPhoneMfa ? (
-          <div className="grid gap-4 border-t border-zinc-100 px-4 py-4 lg:grid-cols-2">
-            {!hasVerifiedTotp ? (
-              <div className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-950">
-                    <WorkspaceText text="Authenticator app" />
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    <WorkspaceText text="Scan a QR code and enter a rotating code." />
-                  </p>
-                </div>
-                <button
-                  className={primaryButtonClassName}
-                  disabled={isBusy}
-                  onClick={beginTotpEnrollment}
-                  type="button"
-                >
-                  <WorkspaceText text={pendingKey === "mfa-begin"
-                    ? "Starting..."
-                    : "Set up authenticator"} />
-                </button>
-              </div>
-            ) : null}
-            {!hasVerifiedPhoneMfa ? (
-              <div className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-950">
-                    <WorkspaceText text="Phone SMS" />
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    <WorkspaceText text="Send a one-time code to the phone in your profile." />
-                  </p>
-                </div>
-                {overview.account.phone ? (
-                  <p className="content-surface border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 rounded-none border-y shadow-none">
-                    {maskPhone(overview.account.phone)}
-                  </p>
-                ) : (
-                  <p className="content-surface border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
-                    <WorkspaceText text="Verify a phone number in Profile before using SMS 2FA." />
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={primaryButtonClassName}
-                    disabled={isBusy || !overview.account.phone}
-                    onClick={beginPhoneMfaEnrollment}
-                    type="button"
-                  >
-                    <WorkspaceText text={pendingKey === "mfa-phone-begin"
-                      ? "Sending..."
-                      : "Send SMS code"} />
-                  </button>
-                  {!overview.account.phone ? (
-                    contactEditor ? <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Verify phone in Profile" /></summary><div className="mt-3">{contactEditor}</div></details> : <a
-                      className={secondaryButtonClassName}
-                      href="/account#profile-contact"
-                    >
-                      <WorkspaceText text="Open Profile" />
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
+          <div>
+            {!hasVerifiedTotp?<div className="settings-security-row"><div><WorkspaceText text="Authenticator app"/></div><button className={primaryButtonClassName} disabled={isBusy} onClick={beginTotpEnrollment} type="button"><WorkspaceText text={pendingKey==="mfa-begin"?"Starting...":"Set up"}/></button></div>:null}
+            {!hasVerifiedPhoneMfa?<div className="settings-security-row"><div><WorkspaceText text="Phone SMS"/>{overview.account.phone?<p className="text-xs text-zinc-500">{maskPhone(overview.account.phone)}</p>:null}</div><button className={primaryButtonClassName} disabled={isBusy} onClick={beginPhoneMfaEnrollment} type="button"><WorkspaceText text={pendingKey==="mfa-phone-begin"?"Sending...":"Send"}/></button></div>:null}
+            {phoneProfileOpen?<div className="settings-security-dialog" role="dialog" aria-modal="true" aria-label={__vt("Add phone")}><section><div className="flex items-center justify-between gap-3"><h3><WorkspaceText text="Add phone"/></h3><button type="button" className={secondaryButtonClassName} onClick={()=>setPhoneProfileOpen(false)}><WorkspaceText text="Close"/></button></div>{contactEditor||<a href="/settings?section=personal-profile"><WorkspaceText text="Open Profile"/></a>}<button className={secondaryButtonClassName} type="button" onClick={()=>{setPhoneProfileOpen(false);void onSaved?.();}}><WorkspaceText text="Done"/></button></section></div>:null}
             {totpEnrollment ? (
               <form
                 className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 lg:col-span-2 rounded-none border-y shadow-none"

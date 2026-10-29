@@ -329,6 +329,8 @@ import {loadCampaignPreviewAction as action325} from "@/app/campaigns/preview-ac
 import {getMyCustomerMergeGroups as action326} from "@/app/activity/customer-merge-actions";
 import {mergeMyCustomerProfiles as action327} from "@/app/activity/customer-merge-actions";
 import {downloadMyCurrentPayroll as action328} from "@/app/payroll/current-payroll-download-actions";
+import {authorizePhoneChangeAction as action329} from "@/app/account/phone-change-actions";
+import {manageCheckWriterSubscription as action330} from "@/app/market/check-writer-actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.cd9e45d5fdc4291bdc97f8ad": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.d06245d954e31f5b8be168de": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -659,5 +661,7 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.10c2df65d7601ab7a291d3aa": (values: unknown[]) => (action326 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.59d4487eb01643b82c1e02d9": (values: unknown[]) => (action327 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.84de4a64ca07b333163b0f3c": (values: unknown[]) => (action328 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.37bba759b979c3cc4237a556": (values: unknown[]) => (action329 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.ab51fff38ee5ec82fa599d3f": (values: unknown[]) => (action330 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}

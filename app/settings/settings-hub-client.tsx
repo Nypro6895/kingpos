@@ -33,14 +33,16 @@ const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owne
 ];
 type SettingItem = {id:string; label:string; content:ReactNode};
 type SettingGroup = {id:string; label:string; description?:string; items:SettingItem[]; owners?:ReactNode};
+
 export function SettingsHubClient({user,createdAtLabel,index:initial,initialSection="",initialQuery=""}: {user:KingUser;createdAtLabel:string;index:SettingsHubIndex;initialSection?:string;initialQuery?:string}) {
   const __vt = useWorkspaceTranslation();
 
  const [index,setIndex]=useState(initial),[query,setQuery]=useState(initialQuery),[error,setError]=useState(""),[busy,setBusy]=useState(false);
  async function reload(){setBusy(true);setError("");try{setIndex(await loadSettingsHub());}catch(e){setError(e instanceof Error?e.message:"Could not reload your salons.");}finally{setBusy(false);}}
- const groups:SettingGroup[]=[{id:"personal",label:"Personal account",description:user.email||user.display_name||undefined,items:[
+ const groups:SettingGroup[]=[{id:"personal",label:user.display_name||[user.first_name,user.last_name].filter(Boolean).join(" ")||user.email||"Personal",description:user.email||undefined,items:[
+
   {id:"personal-profile",label:"Profile & contact",content:<AccountProfileEditor user={user} createdAtLabel={createdAtLabel} embedded/>},
-  {id:"personal-public",label:"Public profile & visibility",content:<PersonalPublicProfilePanel/>},
+  {id:"personal-public",label:"Public profile & visibility",content:<PersonalPublicProfilePanel user={user} createdAtLabel={createdAtLabel}/>},
   {id:"login-security",label:"Login, devices & security",content:<DeferredPersonalSection kind="security"/>},
   {id:"notifications",label:"Notifications",content:<NotificationPreferencesPanel/>},
   {id:"connections",label:"Connections & invitations",content:<ConnectionsPanel onChanged={reload} onManageSalon={(id,mode)=>reveal(mode==="manage"?`salon-${id}-salon-profile`:`staff-${id}-profile`)}/>},
@@ -78,8 +80,10 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  }
  function reveal(id:string){const group=groups.find(g=>g.items.some(i=>i.id===id));if(group)navigate(group.id,id);}
  useEffect(()=>()=>{
-  if(initialSection)return;
-  setLocation({group:"personal",item:"",step:"home"});setQuery(initialQuery);
+  // Preserve navigation when Next updates searchParams after pushState.
+ // Reset only when this retained page is deactivated on a plain hub entry.
+ if(initialSection||new URLSearchParams(window.location.search).has("section"))return;
+ setLocation({group:"personal",item:"",step:"home"});setQuery(initialQuery);
  },[initialSection,initialQuery]);
  useEffect(()=>{
   const restore=()=>{
@@ -91,6 +95,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
   return()=>window.removeEventListener("popstate",restore);
   // eslint-disable-next-line react-hooks/exhaustive-deps
  },[index]);
+
  const areas=[
   {id:"personal",label:"Personal",groups:groups.filter(g=>g.id==="personal")},
   {id:"managed",label:"Salons I manage",groups:groups.filter(g=>g.id.startsWith("salon-")||g.id==="create")},
@@ -129,9 +134,9 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
     })}</section>)}
    </nav>
    <main className="settings-editor" hidden={!!search}>
-    <button type="button" className="settings-back" onClick={goBack}>‹ <WorkspaceText text={detail&&!singleItemGroup?activeGroup.label:"All Settings"}/></button>
-    <header className="settings-context-header">
-     <p className="settings-breadcrumb"><WorkspaceText text="All Settings"/> / <WorkspaceText text={activeGroup.label}/>{detail?<> / <WorkspaceText text={selectedMeta!.label}/></>:null}</p>
+    <button type="button" className="settings-back" onClick={goBack}>‹ <WorkspaceText text={detail&&!singleItemGroup?(activeGroup.id==="personal"?"Personal":activeGroup.label):"All Settings"}/></button>
+    <header className={detail||activeGroup.id==="personal"?"sr-only":"settings-context-header"}>
+
      <div className="settings-context-title"><h2 id="settings-view-heading" tabIndex={-1}><WorkspaceText text={detail?selectedMeta!.label:activeGroup.label}/></h2>{meta.role?<span className="settings-role"><WorkspaceText text={meta.role}/></span>:null}{meta.status?<span className={meta.status==="active"?"settings-active":"settings-status"}><WorkspaceText text={meta.status.replaceAll("_"," ")}/></span>:null}</div>
      <p className="settings-context-description">{detail?<><WorkspaceText text={activeGroup.label}/>{meta.address?` · ${meta.address}`:""}</>:meta.address||activeGroup.description||<WorkspaceText text="Choose a setting to get started"/>}</p>
      {detail?<p className="settings-context-description"><WorkspaceText text={selectedMeta!.description}/></p>:null}
@@ -139,7 +144,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
     {!detail?<nav className="settings-category-grid" aria-label={__vt("Settings sections")}>
      {categories(activeGroup).map(c=><section key={c.title} className="settings-category"><h3><WorkspaceText text={c.title}/></h3><div className="settings-category-rows">{c.items.map(i=>{
       const copy=getSettingCopy(activeGroup.id,i.id);
-      return <button type="button" key={i.id} className={copy.danger?"settings-danger-row":undefined} onClick={()=>reveal(i.id)}><SettingsIcon name={copy.icon}/><span className="settings-row-label"><strong><WorkspaceText text={copy.label}/></strong><small><WorkspaceText text={copy.description}/></small></span><span className="settings-row-chevron" aria-hidden="true">›</span></button>;
+      return <button type="button" key={i.id} className={copy.danger?"settings-danger-row":undefined} onClick={()=>reveal(i.id)}><SettingsIcon name={copy.icon}/><span className="settings-row-label"><strong><WorkspaceText text={copy.label}/></strong></span><span className="settings-row-chevron" aria-hidden="true">›</span></button>;
      })}</div></section>)}
     </nav>:null}
     <div className="settings-inline-sections" hidden={!detail}>
@@ -148,6 +153,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
       return visited.includes(i.id)?<section key={i.id} id={i.id} className="settings-inline-editor" hidden={!active} aria-label={__vt(getSettingCopy(g.id,i.id).label)}><SettingContent active={active}>{i.content}</SettingContent></section>:null;
      }))}
     </div>
+
    </main>
    {search?<div className="settings-results" aria-label={__vt("Matching settings")}><h2><WorkspaceText text="Search results"/></h2>{groups.flatMap(g=>g.items.filter(i=>matching(g,i)).map(i=>{
     const copy=getSettingCopy(g.id,i.id);

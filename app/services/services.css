@@ -1153,6 +1153,7 @@
 .service-editor__actions > div { display: flex; gap: 8px; }
 .services-save-bar { bottom: var(--app-bottom-nav-height, 0px); }
 @media(max-width:767px) {
+  .services-page:not(.settings-inline-services) { background: var(--surface, #fff); }
   .services-save-bar { bottom: var(--app-bottom-nav-height, calc(64px + env(safe-area-inset-bottom))); }
   .services-page__content { padding-bottom: calc(240px + env(safe-area-inset-bottom)); }
   .services-page__frame { width: 100%; }

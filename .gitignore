@@ -1,0 +1,8 @@
+/node_modules/
+/.next*/
+/artifacts/
+/work/check-writer-*/
+/ios/build/
+/ios/Reylumi/LocalAppBundle/
+/ios/Reylumi.xcodeproj/
+/ios/Reylumi.xcworkspace/

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "pageCount": 134,
-  "layoutCount": 16,
+  "pageCount": 146,
+  "layoutCount": 17,
   "routes": [
     {
       "route": "/",
@@ -361,12 +361,6 @@
       "onlineReason": "Administrative authority and private records require the existing fresh online page.",
       "clientModules": [
         {
-          "source": "app/(app)/admin/advertising/owner-campaign-settings.tsx",
-          "exports": [
-            "OwnerCampaignSettingsPanel"
-          ]
-        },
-        {
           "source": "app/(app)/admin/advertising/campaign-manager.tsx",
           "exports": [
             "CampaignManager"
@@ -382,6 +376,40 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(app)/admin/advertising/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/admin/advertising/reviews",
+      "source": "app/(app)/admin/advertising/reviews/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Administrative authority and private records require the existing fresh online page.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/advertising/reviews/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -845,6 +873,40 @@
       "authority": "server-validated-context-and-resource-ownership"
     },
     {
+      "route": "/admin/market/credits",
+      "source": "app/(app)/admin/market/credits/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Administrative authority and private records require the existing fresh online page.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/market/credits/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
       "route": "/admin/market/tax",
       "source": "app/(app)/admin/market/tax/page.tsx",
       "layouts": [
@@ -939,6 +1001,125 @@
       "authority": "server-validated-context-and-resource-ownership"
     },
     {
+      "route": "/admin/plugins",
+      "source": "app/(app)/admin/plugins/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Administrative authority and private records require the existing fresh online page.",
+      "clientModules": [],
+      "propsLoaders": [
+        "@/lib/platform-admin/auth#requirePlatformAdmin"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/plugins/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/admin/plugins/[pluginId]",
+      "source": "app/(app)/admin/plugins/[pluginId]/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Administrative authority and private records require the existing fresh online page.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/plugins/[pluginId]/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/admin/plugins/campaigns",
+      "source": "app/(app)/admin/plugins/campaigns/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Administrative authority and private records require the existing fresh online page.",
+      "clientModules": [
+        {
+          "source": "app/(app)/admin/advertising/owner-campaign-settings.tsx",
+          "exports": [
+            "OwnerCampaignSettingsPanel"
+          ]
+        },
+        {
+          "source": "app/(app)/admin/plugins/campaigns/campaign-list.tsx",
+          "exports": [
+            "CampaignList"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/platform-admin/auth#requirePlatformAdmin"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/plugins/campaigns/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
       "route": "/admin/post-safety",
       "source": "app/(app)/admin/post-safety/page.tsx",
       "layouts": [
@@ -1006,6 +1187,12 @@
       "readResources": [],
       "onlineReason": "Administrative authority and private records require the existing fresh online page.",
       "clientModules": [
+        {
+          "source": "components/workspace-language.tsx",
+          "exports": [
+            "WorkspaceText"
+          ]
+        },
         {
           "source": "app/(app)/admin/_components/action-form.tsx",
           "exports": [
@@ -1303,6 +1490,40 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(app)/admin/settings/twilio/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/admin/system",
+      "source": "app/(app)/admin/system/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Administrative authority and private records require the existing fresh online page.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/system/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -1966,20 +2187,54 @@
       "rendererId": null,
       "readResources": [],
       "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/check-in/[entry]/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/check-writer",
+      "source": "app/(app)/check-writer/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "owner"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
       "clientModules": [
         {
-          "source": "app/check-in/[entry]/phone-checkin.tsx",
+          "source": "app/check-writer/check-writer.tsx",
           "exports": [
-            "PhoneRelayCheckin"
+            "CheckWriter"
           ]
         }
       ],
       "propsLoaders": [
-        "@/lib/current-context#getCurrentBusinessContext"
+        "@/lib/experience-context#getExperienceContext",
+        "@/lib/route-context-guards#requireSalonManagePageContext"
       ],
       "ui": {
         "availability": "local-module-registration",
-        "source": "app/check-in/[entry]/page.tsx",
+        "source": "app/(app)/check-writer/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -2198,6 +2453,7 @@
       "propsLoaders": [
         "@/lib/customers#getCurrentSalonCustomerList",
         "@/lib/route-context-guards#requireSalonManagePageContext",
+        "@/lib/salon-business-clock#getContextBusinessTimezone",
         "@/lib/workspace-language-server#getWorkspaceTranslation"
       ],
       "ui": {
@@ -2235,6 +2491,12 @@
       "onlineReason": null,
       "clientModules": [
         {
+          "source": "app/customers/manual-merge-picker.tsx",
+          "exports": [
+            "ManualMergePicker"
+          ]
+        },
+        {
           "source": "components/workspace-language.tsx",
           "exports": [
             "WorkspaceText"
@@ -2245,6 +2507,7 @@
         "@/lib/beauty-relationship#resolveBeautyProfileForSalonCustomer",
         "@/lib/customers#getCurrentSalonCustomerDetail",
         "@/lib/route-context-guards#requireSalonManagePageContext",
+        "@/lib/salon-business-clock#getContextBusinessTimezone",
         "@/lib/workspace-language-server#getWorkspaceTranslation"
       ],
       "ui": {
@@ -2377,6 +2640,46 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(legal)/deletion-status/[token]/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/developers/market",
+      "source": "app/(market-private)/developers/market/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(market-private)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [
+        {
+          "source": "components/market-registry/developer-workspace.tsx",
+          "exports": [
+            "DeveloperWorkspace"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/market-registry/server#loadDeveloperWorkspace"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(market-private)/developers/market/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -2889,10 +3192,10 @@
     },
     {
       "route": "/help",
-      "source": "app/(app)/help/page.tsx",
+      "source": "app/(legal)/help/page.tsx",
       "layouts": [
         "app/layout.tsx",
-        "app/(app)/layout.tsx"
+        "app/(legal)/layout.tsx"
       ],
       "classification": "public-static",
       "roles": [
@@ -2912,7 +3215,7 @@
       ],
       "ui": {
         "availability": "local-module-registration",
-        "source": "app/(app)/help/page.tsx",
+        "source": "app/(legal)/help/page.tsx",
         "bundledContent": true,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -2927,10 +3230,10 @@
     },
     {
       "route": "/help/[slug]",
-      "source": "app/(app)/help/[slug]/page.tsx",
+      "source": "app/(legal)/help/[slug]/page.tsx",
       "layouts": [
         "app/layout.tsx",
-        "app/(app)/layout.tsx"
+        "app/(legal)/layout.tsx"
       ],
       "classification": "public-static",
       "roles": [
@@ -2950,7 +3253,7 @@
       ],
       "ui": {
         "availability": "local-module-registration",
-        "source": "app/(app)/help/[slug]/page.tsx",
+        "source": "app/(legal)/help/[slug]/page.tsx",
         "bundledContent": true,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -3092,6 +3395,46 @@
       "data": {
         "policy": "public-content",
         "scope": "public",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/market-review",
+      "source": "app/(market-private)/market-review/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(market-private)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [
+        {
+          "source": "components/market-registry/review-workspace.tsx",
+          "exports": [
+            "ReviewWorkspace"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/market-registry/server#loadReviewQueue"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(market-private)/market-review/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
         "requiresFreshServerAuthorityForWrites": true
       },
       "actions": "existing-online-confirmation",
@@ -3731,22 +4074,21 @@
       "onlineReason": null,
       "clientModules": [
         {
-          "source": "app/payroll/payroll-ledger-panel.tsx",
+          "source": "app/payroll/payroll-dashboard.tsx",
           "exports": [
-            "PayrollLedgerPanel"
+            "PayrollDashboard"
           ]
         },
         {
-          "source": "components/navigation-form.tsx",
+          "source": "app/payroll/payroll-period-rail.tsx",
           "exports": [
-            "NavigationForm",
-            "NavigationSubmitButton"
+            "PayrollPeriodRail"
           ]
         },
         {
-          "source": "app/payroll/payroll-disclosure.tsx",
+          "source": "app/payroll/payroll-change-history.tsx",
           "exports": [
-            "PayrollDisclosure"
+            "PayrollChangeHistory"
           ]
         },
         {
@@ -3756,10 +4098,15 @@
           ]
         },
         {
+          "source": "app/payroll/payroll-disclosure.tsx",
+          "exports": [
+            "PayrollDisclosure"
+          ]
+        },
+        {
           "source": "app/payroll/payroll-edit-boundary.tsx",
           "exports": [
-            "PayrollEditBoundary",
-            "PayrollOutputGuard"
+            "PayrollEditBoundary"
           ]
         },
         {
@@ -3767,12 +4114,6 @@
           "exports": [
             "WorkspaceText",
             "WorkspaceElement"
-          ]
-        },
-        {
-          "source": "components/contextual-support.tsx",
-          "exports": [
-            "ContextualSupport"
           ]
         },
         {
@@ -3786,18 +4127,6 @@
           "exports": [
             "PluginActivationPrompt",
             "PluginActivationButton"
-          ]
-        },
-        {
-          "source": "components/submit-button.tsx",
-          "exports": [
-            "SubmitButton"
-          ]
-        },
-        {
-          "source": "app/payroll/payroll-filter-toolbar.tsx",
-          "exports": [
-            "PayrollFilterToolbar"
           ]
         },
         {
@@ -3823,19 +4152,11 @@
           "exports": [
             "StaffPayrollSettingInlineEdit"
           ]
-        },
-        {
-          "source": "app/payroll/payroll-mismatch-controls.tsx",
-          "exports": [
-            "DismissPayrollMismatchButton",
-            "MarkPaidButton"
-          ]
         }
       ],
       "propsLoaders": [
         "@/lib/payroll#getPayrollPageData",
-        "@/lib/route-context-guards#requireSalonManagePageContext",
-        "@/lib/workspace-language-server#getWorkspaceTranslation"
+        "@/lib/route-context-guards#requireSalonManagePageContext"
       ],
       "ui": {
         "availability": "local-module-registration",
@@ -4569,13 +4890,6 @@
       "onlineReason": null,
       "clientModules": [
         {
-          "source": "components/navigation-form.tsx",
-          "exports": [
-            "NavigationForm",
-            "NavigationSubmitButton"
-          ]
-        },
-        {
           "source": "components/workspace-language.tsx",
           "exports": [
             "WorkspaceText"
@@ -4758,6 +5072,13 @@
           ]
         },
         {
+          "source": "app/pos/portable/device-input-settings.tsx",
+          "exports": [
+            "DeviceInputSettings",
+            "CustomerDisplayPreferencesEditor"
+          ]
+        },
+        {
           "source": "app/pos/settings/customer-display-install-panel.tsx",
           "exports": [
             "CustomerDisplayInstallPanel"
@@ -4904,6 +5225,53 @@
       "authority": "server-validated-context-and-resource-ownership"
     },
     {
+      "route": "/qr",
+      "source": "app/(app)/qr/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "guest",
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [
+        {
+          "source": "app/qr/personal-qr-client.tsx",
+          "exports": [
+            "PersonalQrClient"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/app/qr/actions#loadPersonalQr",
+        "@/app/qr/actions#loadPersonalQrCatalog",
+        "@/lib/users/current-user#getCurrentKingUser"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/qr/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
       "route": "/reports",
       "source": "app/(app)/reports/page.tsx",
       "layouts": [
@@ -4936,9 +5304,7 @@
         }
       ],
       "propsLoaders": [
-        "@/lib/daily-pos-report#getDailyPosReport",
-        "@/lib/daily-pos-report#getDefaultReportDate",
-        "@/lib/operational-report#getOperationalReport",
+        "@/lib/owner-reports-read#loadOwnerReportsRead",
         "@/lib/route-context-guards#requireSalonManagePageContext"
       ],
       "ui": {
@@ -5081,8 +5447,7 @@
         "@/lib/salon-post-attribution#loadSalonPostAttribution",
         "@/lib/salon-profile#getCurrentSalonProfileManageData",
         "@/lib/salon-profile#getPublicSalonProfileData",
-        "@/lib/salon-profile#getSalonProfileHref",
-        "@/lib/salon-profile#getSalonProfileMediaUrl"
+        "@/lib/salon-profile#getSalonProfileHref"
       ],
       "ui": {
         "availability": "local-module-registration",
@@ -5403,9 +5768,16 @@
           "exports": [
             "ServicesManager"
           ]
+        },
+        {
+          "source": "app/services/services-catalog-pilot.tsx",
+          "exports": [
+            "ServicesCatalogPilot"
+          ]
         }
       ],
       "propsLoaders": [
+        "@/lib/experience-context#getExperienceContext",
         "@/lib/route-context-guards#requireSalonManagePageContext",
         "@/lib/services#getCurrentSalonServicesWorkspace"
       ],
@@ -5634,6 +6006,12 @@
       "readResources": [],
       "onlineReason": null,
       "clientModules": [
+        {
+          "source": "app/staff/personal-qr-connector.tsx",
+          "exports": [
+            "PersonalQrStaffConnector"
+          ]
+        },
         {
           "source": "components/workspace-language.tsx",
           "exports": [
@@ -5916,6 +6294,49 @@
       "authority": "server-validated-context-and-resource-ownership"
     },
     {
+      "route": "/staff/scan",
+      "source": "app/(app)/staff/scan/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "staff"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [
+        {
+          "source": "app/staff/scan/staff-scan-client.tsx",
+          "exports": [
+            "StaffScanClient"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/app/staff/scan/actions#loadStaffScan",
+        "@/lib/staff-portal-identity#getStaffPortalIdentity"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/staff/scan/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
       "route": "/staff/today",
       "source": "app/(app)/staff/today/page.tsx",
       "layouts": [
@@ -6041,7 +6462,8 @@
         {
           "source": "app/support/support-ui.tsx",
           "exports": [
-            "SupportRequestForm"
+            "SupportRequestForm",
+            "SupportRequestDate"
           ]
         }
       ],
@@ -6373,6 +6795,52 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/visit/[pass]/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/welcome/phone",
+      "source": "app/(app)/welcome/phone/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "guest",
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [
+        {
+          "source": "app/signup/phone/signup-phone-form.tsx",
+          "exports": [
+            "SignupPhoneForm"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/supabase/server#getSupabaseAuthUser",
+        "@/lib/users/current-user#getCurrentKingUser"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/welcome/phone/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."

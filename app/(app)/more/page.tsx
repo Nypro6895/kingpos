@@ -1,3 +1,4 @@
+import styles from "./more-layout.module.css";
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText } from "@/components/workspace-language";
 
@@ -207,18 +208,18 @@ function MoreItemLink({ item }: { item: MoreItem }) {
 
   return (
     <Link
-      className="content-surface group grid min-h-[88px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border-subtle bg-surface px-4 text-left transition hover:border-brand-orange/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+      className={`${styles.item} group grid min-h-[64px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border-subtle bg-surface px-4 text-left transition hover:border-brand-orange/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange`}
       data-saved-post-target={isSavedPostItem ? "true" : undefined}
       href={item.href}
     >
-      <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-orange-soft text-brand-orange transition group-hover:bg-brand-orange group-hover:text-white">
+      <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-orange-soft text-brand-orange transition group-hover:bg-brand-orange group-hover:text-white">
         <MoreIcon name={item.icon} />
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-sm font-extrabold text-text-primary">
+        <span className="block text-sm font-semibold text-text-primary">
           <WorkspaceText text={item.label} />
         </span>
-        <span className="mt-0.5 block line-clamp-1 text-xs font-semibold text-text-secondary">
+        <span className="mt-0.5 block text-xs font-normal leading-4 text-text-secondary">
           {item.description}
         </span>
       </span>
@@ -246,32 +247,33 @@ async function MorePage() {
   const more = roleMoreItems(roleKind);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
+    <main className={`${styles.page} min-h-screen px-4 py-5 sm:px-6 lg:px-8`}>
       <div className="mx-auto grid w-full max-w-5xl gap-5">
-        <div className="grid gap-7">
+        <h1 className="text-xl font-semibold text-text-primary"><WorkspaceText text="More" /></h1>
+        <div className="grid gap-5">
           {more.sections.map((section) => (
             <section
               aria-labelledby={`more-${section.id}-title`}
-              className="grid gap-3"
+              className="grid gap-2"
               key={section.id}
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2
-                    className="text-base font-extrabold text-text-primary"
+                    className="text-xs font-semibold uppercase tracking-wide text-text-secondary"
                     id={`more-${section.id}-title`}
                   >
                     <WorkspaceText text={section.title} />
                   </h2>
-                  <p className="mt-1 text-sm font-semibold text-text-secondary">
+                  <p className="sr-only">
                     {section.summary}
                   </p>
                 </div>
-                <p className="text-xs font-bold uppercase text-text-secondary">
+                <p className="sr-only">
                   <WorkspaceText text={formatItemCount(section.items.length)} />
                 </p>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className={styles.group}>
                 {section.items.map((item) => (
                   <MoreItemLink item={item} key={item.href} />
                 ))}

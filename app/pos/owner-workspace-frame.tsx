@@ -132,4 +132,5 @@ function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
       </div>
     </section>
   </div>;
+
 }

@@ -88,7 +88,6 @@ export function NotificationPreferencesPanel() {
   }
   return (
     <div className="settings-style"><div className="space-y-4">
-      <p className="text-xs text-zinc-500"><WorkspaceText text="Applies to new in-app notifications in every workspace. Support replies, claim decisions and requests for more information are always delivered." /></p>
       {error && (
         <p
           role="alert"

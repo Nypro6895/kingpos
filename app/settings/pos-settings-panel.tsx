@@ -44,7 +44,7 @@ export function PosSettingsPanel({
         <summary className="cursor-pointer font-semibold">
           <WorkspaceText text="Staff check-in & turns" />
         </summary>
-        <SettingsGroupForm
+        <SettingsGroupForm showCancel
           group="staff"
           snapshot={data.snapshot}
           saveAction={save}
@@ -68,7 +68,7 @@ export function PosSettingsPanel({
         <summary className="cursor-pointer font-semibold">
           <WorkspaceText text="Checkout & workspace" />
         </summary>
-        <SettingsGroupForm
+        <SettingsGroupForm showCancel
           group="checkout"
           snapshot={data.snapshot}
           saveAction={save}
@@ -121,7 +121,7 @@ export function PosSettingsPanel({
           <WorkspaceText text="Customer display" />
         </summary>
         <CustomerDisplayPreferencesEditor />
-        <SettingsGroupForm
+        <SettingsGroupForm showCancel
           group="display"
           snapshot={data.snapshot}
           saveAction={save}
@@ -283,7 +283,7 @@ export function PosSettingsPanel({
                         </label>
                       ))}
                     </InlineForm>
-                    <InlineForm
+                    <InlineForm actionOnly
                       save={(form) =>
                         saveDirectPortableAccess(data.salonId, form)
                       }

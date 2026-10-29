@@ -24,8 +24,9 @@ function WebPersonalSection({kind}:{kind:"security"|"deletion"}) {
       .catch(()=>{if(active)setError("This section could not load. Please try again.");});
     return()=>{active=false;};
   },[kind,retry]);
-  if(content)return <>{error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /><button type="button" className="ml-2 underline" onClick={()=>{setError("");setRetry(v=>v+1);}}><WorkspaceText text="Reload section" /></button></p>:null}{content.kind==="deletion"?<AccountDeletionPanel impact={content.impact} onSaved={()=>setRetry(v=>v+1)}/>:<LoginSecurityPanel overview={content.overview} onSaved={()=>setRetry(v=>v+1)} contactEditor={<AccountProfileEditor embedded sectionId="settings-security-profile-contact" user={content.user} createdAtLabel={new Date(content.user.created_at).toLocaleDateString("en-US")}/>}/>}</>;
+  if(content)return <>{error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /><button type="button" className="ml-2 underline" onClick={()=>{setError("");setRetry(v=>v+1);}}><WorkspaceText text="Reload section" /></button></p>:null}{content.kind==="deletion"?<AccountDeletionPanel impact={content.impact} onSaved={()=>setRetry(v=>v+1)}/>:<LoginSecurityPanel overview={content.overview} onSaved={()=>setRetry(v=>v+1)} contactEditor={<AccountProfileEditor embedded phoneOnly sectionId="settings-security-profile-contact" user={content.user} createdAtLabel={new Date(content.user.created_at).toLocaleDateString("en-US")}/>}/>}</>;
   return <div role="status">{error ? <><p><WorkspaceText text={error} /></p><button type="button" onClick={()=>{setError("");setRetry(value=>value+1);}}><WorkspaceText text="Try again" /></button></> : <SettingsLoading label="Loading account details…"/>}</div>;
+
 }
 
 export function DeferredDeletionSection({initialOpen=false}:{initialOpen?:boolean}) {

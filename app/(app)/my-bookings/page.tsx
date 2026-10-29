@@ -229,7 +229,7 @@ function BookingRow({ booking, initialOpen }: { booking: CustomerBookingSummary;
           </span>
           <span className={listStyles.schedule}>
             <strong>{dateParts.weekday}</strong>
-            <span>{formatTime(booking.start_at, timezone)} ? {formatTime(booking.end_at, timezone)}</span>
+            <span>{formatTime(booking.start_at, timezone)} – {formatTime(booking.end_at, timezone)}</span>
 
           </span>
         </span>

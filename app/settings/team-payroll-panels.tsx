@@ -9,6 +9,10 @@ import {
 import {
   Field,
   SettingsFieldGroup,
+  SettingsEditSection,
+  SettingsReadRow,
+  SettingsIdentity,
+
   Check,
   Select,
   InlineForm,
@@ -163,17 +167,7 @@ export function TeamSettingsPanel({
         <p className="text-sm text-zinc-500"><WorkspaceText text="No staff yet." /></p>
       )}
       {data.staff.map((staff) => (
-        <details
-          className="rounded-lg border border-zinc-200 bg-white p-4"
-          key={staff.id}
-        >
-          <summary className="cursor-pointer font-semibold">
-            {staff.staff_profile_display_name || staff.display_name}
-            <span className="ml-2 text-xs font-normal text-zinc-500">
-              <WorkspaceText text={staff.job_title ?? "Staff"} /> ·{" "}
-              <WorkspaceText text={staff.is_active ? "Active" : "Inactive"} />
-            </span>
-          </summary>
+        <SettingsEditSection key={staff.id} title={staff.staff_profile_display_name||staff.display_name} action={data.canManage?"Manage":"View"} closeOnSave={false} heading={<SettingsIdentity name={staff.staff_profile_display_name||staff.display_name} imageUrl={staff.staff_profile_avatar_url} subtitle={[__vt(staff.job_title||"Staff"),__vt(staff.is_active?"Active":"Inactive")].join(" · ")}/>}>
           <div className="mt-3 grid gap-3">
             <p className="text-sm text-zinc-600"><WorkspaceText text={staff.connected_user?`${staff.connected_user.email||staff.connected_user.display_name||staff.connected_user.id} is linked to this staff profile`:`No app account is linked${staff.email?` · Contact: ${staff.email}`:""}`} /></p>
             {data.canManage ? (
@@ -208,7 +202,7 @@ export function TeamSettingsPanel({
               <p className="text-sm text-zinc-500"><WorkspaceText text="Read-only for your role." /></p>
             )}
           </div>
-        </details>
+        </SettingsEditSection>
       ))}
       {data.requests
         .filter((r) => r.status === "pending")
@@ -233,12 +227,12 @@ export function TeamSettingsPanel({
             </p>
             {request.message && <p className="text-sm"><WorkspaceText text={request.message} /></p>}
             {data.canManage && (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="settings-request-actions">
                 {(request.direction === "staff_application"
                   ? (["accept", "decline"] as const)
                   : (["resend", "revoke"] as const)
                 ).map((action) => (
-                  <InlineForm
+                  <InlineForm actionOnly
                     key={action}
                     label={__vt({
                         accept: "Accept",
@@ -282,6 +276,7 @@ export function PayrollSettingsPanel({
     );
   return (
     <div className="grid gap-4">
+      <SettingsEditSection title={__vt("Pay cycle")} preview={<><SettingsReadRow label="Pay cycle" value={__vt(data.schedule.cycle_type==="biweekly"?"Every two weeks":data.schedule.cycle_type==="semi_monthly"?"Twice monthly":"Monthly")}/>{data.schedule.biweekly_anchor_date?<SettingsReadRow label="Anchor date" value={data.schedule.biweekly_anchor_date}/>:null}</>}>
       <InlineForm
         label={__vt("Save pay cycle")}
         save={(form) =>
@@ -310,16 +305,11 @@ export function PayrollSettingsPanel({
           value={data.schedule.biweekly_anchor_date}
         />
       </InlineForm>
+      </SettingsEditSection>
       {data.staff.map((row) => {
         const s = row.setting;
         return (
-          <details
-            className="rounded-lg border border-zinc-200 bg-white p-4"
-            key={row.staff.id}
-          >
-            <summary className="cursor-pointer font-semibold">
-              {row.staffProfileDisplayName || row.staff.display_name}
-            </summary>
+          <SettingsEditSection key={row.staff.id} title={row.staffProfileDisplayName||row.staff.display_name} heading={<SettingsIdentity name={row.staffProfileDisplayName||row.staff.display_name} subtitle={s?.pay_type==="fixed"?__vt("Fixed pay"):__vt("Commission")+" · "+(s?.commission_rate??60)+"%"}/>}>
             <div className="mt-3">
               <InlineForm
                 save={(form) =>
@@ -458,7 +448,7 @@ export function PayrollSettingsPanel({
                 </SettingsFieldGroup>
               </InlineForm>
             </div>
-          </details>
+          </SettingsEditSection>
         );
       })}
     </div>

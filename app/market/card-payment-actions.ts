@@ -3,12 +3,14 @@ import {marketPluginContext} from '@/lib/market-plugins';
 import {marketServiceClient} from '@/lib/market-payments';
 import {paymentConfig,paymentStripe} from '@/lib/platform-payment';
 import {syncCardSubscription} from '@/lib/market-card';
+import {checkWriterSalesReady} from "@/lib/check-writer-readiness";
 import {CARD_PLUGINS} from '@/lib/market-card-rules';
 import {applyMarketTaxToCheckout} from '@/lib/market-tax';
 import {revalidatePath} from 'next/cache';
 import {isMarketCheckoutURL} from '@/lib/market-checkout-url';
 type CheckoutResult={clientSecret?:string;publishableKey?:string;checkoutUrl?:string;message?:string;complete?:boolean};
 export async function startCardCheckout(pluginId:string,external=false):Promise<CheckoutResult> {
+ if(pluginId==="print-check"&&!checkWriterSalesReady())return {message:"Check Writer is being configured. Please try again later."};
  return prepareCardCheckout(pluginId,external===true,0);
 }
 async function prepareCardCheckout(pluginId:string,external:boolean,attempt:number):Promise<CheckoutResult> {

@@ -4,18 +4,112 @@
   "groups": [
     {
       "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product.",
-      "routes": ["/admin", "/admin/advertising", "/admin/attention", "/admin/audit", "/admin/businesses", "/admin/businesses/:businessId", "/admin/claims", "/admin/inbox", "/admin/inbox/:threadId", "/admin/locations", "/admin/locations/:locationId", "/admin/market", "/admin/market/tax", "/admin/notifications", "/admin/post-safety", "/admin/post-safety/spam", "/admin/recovery", "/admin/reports", "/admin/reports/:reportId", "/admin/search", "/admin/settings", "/admin/settings/support-email", "/admin/settings/twilio", "/admin/team", "/admin/users", "/admin/users/:userId", "/admin/verification"]
+      "routes": [
+        "/admin",
+        "/admin/advertising",
+        "/admin/attention",
+        "/admin/audit",
+        "/admin/businesses",
+        "/admin/businesses/:businessId",
+        "/admin/claims",
+        "/admin/inbox",
+        "/admin/inbox/:threadId",
+        "/admin/locations",
+        "/admin/locations/:locationId",
+        "/admin/market",
+        "/admin/market/tax",
+        "/admin/notifications",
+        "/admin/post-safety",
+        "/admin/post-safety/spam",
+        "/admin/recovery",
+        "/admin/reports",
+        "/admin/reports/:reportId",
+        "/admin/search",
+        "/admin/settings",
+        "/admin/settings/support-email",
+        "/admin/settings/twilio",
+        "/admin/team",
+        "/admin/users",
+        "/admin/users/:userId",
+        "/admin/verification",
+        "/admin/advertising/reviews",
+        "/admin/market/credits",
+        "/admin/plugins",
+        "/admin/plugins/:pluginId",
+        "/admin/plugins/campaigns",
+        "/admin/system"
+      ]
     },
     {
       "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL.",
-      "routes": ["/accept-invite", "/account-recovery", "/forgot-password", "/login", "/reset-password", "/security-check", "/settings/recovery-back-office", "/signup", "/ownership/invite/:token", "/staff/invite/:token", "/claim/:salonId", "/claim/customer", "/deletion-status/:token"]
+      "routes": [
+        "/accept-invite",
+        "/account-recovery",
+        "/forgot-password",
+        "/login",
+        "/reset-password",
+        "/security-check",
+        "/settings/recovery-back-office",
+        "/signup",
+        "/ownership/invite/:token",
+        "/staff/invite/:token",
+        "/claim/:salonId",
+        "/claim/customer",
+        "/deletion-status/:token"
+      ]
     },
     {
       "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability.",
-      "routes": ["/booking-payment/:token", "/booking/manage/:token", "/check-in/:entry", "/market/booking-deposit/payment", "/market/payment-return", "/visit/:pass", "/support/guest/:threadId", "/contact-support"]
+      "routes": [
+        "/booking-payment/:token",
+        "/booking/manage/:token",
+        "/check-in/:entry",
+        "/market/booking-deposit/payment",
+        "/market/payment-return",
+        "/visit/:pass",
+        "/support/guest/:threadId",
+        "/contact-support"
+      ]
+    },
+    {
+      "reason": "Check Writer uses the original HTTPS Owner/session/MFA, server-only bank encryption and one-time output authority. Financial setup/output is not a retained local page or offline read; old clients keep PDF fallback.",
+      "routes": [
+        "/check-writer"
+      ]
+    },
+    {
+      "reason": "Existing signed-in personal QR wallet and entry/visit capabilities use their original permission-aware HTTPS page; no unreviewed local QR renderer or offline financial/customer capability is introduced.",
+      "routes": [
+        "/qr"
+      ]
+    },
+    {
+      "reason": "Existing staff-bound scan and signup-phone verification retain their original HTTPS authority. No new local renderer, camera permission, invitation, SMS or write is introduced by this inventory correction.",
+      "routes": [
+        "/staff/scan",
+        "/welcome/phone"
+      ]
+    },
+    {
+      "reason": "Private Market developer/review routes already present in the published baseline remain excluded from the distributed native product; no Market implementation or approval/feature setting is changed or enabled in this wave.",
+      "routes": [
+        "/developers/market",
+        "/market-review"
+      ]
     }
   ],
   "boundedFamilies": {
-    "/more/:section": ["/more/saved-post", "/more/saved-posts", "/more/saved-designs", "/more/following", "/more/favorite-shop", "/more/favorite-customer", "/more/memberships", "/more/reviews", "/more/gift-cards", "/more/reports"]
+    "/more/:section": [
+      "/more/saved-post",
+      "/more/saved-posts",
+      "/more/saved-designs",
+      "/more/following",
+      "/more/favorite-shop",
+      "/more/favorite-customer",
+      "/more/memberships",
+      "/more/reviews",
+      "/more/gift-cards",
+      "/more/reports"
+    ]
   }
 }

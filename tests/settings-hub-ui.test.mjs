@@ -8,7 +8,7 @@ const executablePath=process.env.TEST_BROWSER_PATH||['C:/Program Files/Google/Ch
 const salon=(id,owner=true)=>({id,name:`Salon ${id}`,address:`${id} Main St`,role:owner?'Owner':'Manager',status:'active',owner,permissions:owner?{}:{'services.view':true},owners:[]});
 const index={managed:[salon('one'),salon('two'),salon('limited',false)],staff:[{id:'work',name:'My work salon',address:'3 Main St'}],accounts:[{id:'business',canCreate:true}],hasBusinessWorkspace:true};
 async function fixture(){
- return build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{SettingsHubClient}from'./app/settings/settings-hub-client';window.calls=[];window.saved=[];window.index=${JSON.stringify(index)};window.vi=new URLSearchParams(location.search).has('vi');createRoot(document.getElementById('root')).render(<SettingsHubClient user={{email:'alex@example.com'}} createdAtLabel="Today" index={window.index} initialSection={new URLSearchParams(location.search).get('section')||''}/>);`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'settings-fixture',setup(b){
+ return build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{SettingsHubClient}from'./app/settings/settings-hub-client';window.calls=[];window.saved=[];window.index=${JSON.stringify(index)};window.vi=new URLSearchParams(location.search).has('vi');const root=createRoot(document.getElementById('root'));window.renderSettings=section=>root.render(<SettingsHubClient user={{email:'alex@example.com'}} createdAtLabel="Today" index={window.index} initialSection={section}/>);window.renderSettings(new URLSearchParams(location.search).get('section')||'');`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'settings-fixture',setup(b){
   b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'fixture'}));
   b.onResolve({filter:/components\/workspace-language$/},()=>({path:'language',namespace:'fixture'}));
   b.onResolve({filter:/(?:\.\/|app\/settings\/)(direct-settings-panel|settings-hub-actions|deferred-personal-section|personal-public-profile-panel|connections-panel|salon-list-panel|blocked-users-panel)$/},a=>({path:a.path.split('/').at(-1),namespace:'fixture'}));
@@ -19,6 +19,7 @@ async function fixture(){
    :path==='direct-settings-panel'?`import{useEffect}from'react';import{InlineForm,Field,Check,SettingsFieldGroup}from'./app/settings/direct-settings-ui';export function DirectSettingsPanel({kind,salonId}){useEffect(()=>{window.calls.push({kind,salonId})},[]);return <InlineForm save={async form=>{window.saved.push({kind,salonId,value:form.get('value'),enabled:form.get('enabled')});return {ok:true}}} onSaved={()=>{}}><SettingsFieldGroup title="Fixture preferences"><Field name="value" label="Fixture setting" value={salonId}/><Check name="enabled" label="Fixture option" checked/></SettingsFieldGroup></InlineForm>}`
    :path==='salon-list-panel'?`export const SalonListPanel=()=> <p>Create salon in place</p>`
    :`export const ${({'profile':'AccountProfileEditor','deferred-personal-section':'DeferredPersonalSection','personal-public-profile-panel':'PersonalPublicProfilePanel','connections-panel':'ConnectionsPanel','blocked-users-panel':'BlockedUsersPanel'})[path]}=()=> <p>Fixture ${path}</p>`}));
+
  }}]});
 }
 const css=['app/settings/settings-hub.css','app/settings/settings-controls.css'].map(p=>readFileSync(p,'utf8')).join('\n');
@@ -41,7 +42,7 @@ test('grouped Settings retains drafts, scopes saves, uses distinct icons, and re
  try{for(const width of [320,390,768,1280]){
   const {page,errors}=await open(browser,bundle,width);
   assert.deepEqual(await page.evaluate(()=>window.calls),[],'opening Settings must not load every editor');
-  await group(page,'Personal account');
+  await group(page,'alex@example.com');
   const nav=page.getByRole('navigation',{name:'Settings sections'});
   const icons=await nav.locator('[data-settings-icon]').evaluateAll(nodes=>nodes.map(n=>n.dataset.settingsIcon));assert.equal(new Set(icons).size,icons.length);
   assert.equal(await nav.getByRole('button').count(),7);assert.equal(await nav.locator('h3 svg').count(),0);await noOverflow(page);
@@ -62,6 +63,7 @@ test('grouped Settings retains drafts, scopes saves, uses distinct icons, and re
   await group(page,'Legal & Privacy');await page.getByRole('link',{name:'Privacy Policy',exact:true}).waitFor();
   await group(page,'Help & support');await page.getByRole('link',{name:'Account recovery',exact:true}).waitFor();
   await noOverflow(page);assert.deepEqual(errors,[]);await page.close();
+
  }}finally{await browser.close();}
 });
 
@@ -88,3 +90,6 @@ test('notification groups share switches and preserve state after a failed save'
   assert.equal(await page.getByRole('switch').count(),8);assert.equal(await booking.getAttribute('aria-checked'),'true');await booking.click();await page.getByRole('alert').waitFor();assert.equal(await booking.getAttribute('aria-checked'),'true');await booking.click();await page.waitForFunction(()=>document.querySelector('[role=switch]').getAttribute('aria-checked')==='false');assert.equal(writes,2);await noOverflow(page);assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 });
+
+test('one tap remains open when Next synchronizes search params after pushState',{skip:!executablePath,timeout:15000},async()=>{const built=await fixture(),browser=await chromium.launch({executablePath,headless:true});try{const {page,errors}=await open(browser,built,390);await page.getByRole('navigation',{name:'Settings accounts and salons'}).getByRole('button',{name:'alex@example.com'}).click();await page.evaluate(()=>window.renderSettings('personal'));await page.waitForTimeout(100);assert.equal(await page.locator('.settings-hub').getAttribute('data-mobile-step'),'group');assert.equal(await page.locator('.settings-context-header:visible').count(),0);await page.getByRole('navigation',{name:'Settings sections'}).getByRole('button',{name:/^Profile & contact/}).click();await page.evaluate(()=>window.renderSettings('personal-profile'));await page.waitForTimeout(100);assert.equal(await page.locator('.settings-hub').getAttribute('data-mobile-step'),'detail');await page.locator('#personal-profile:visible').waitFor();assert.deepEqual(errors,[]);}finally{await browser.close();}});
+

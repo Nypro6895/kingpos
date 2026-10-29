@@ -12,6 +12,7 @@ import { ContextualSupport } from "@/components/contextual-support";
 
 import { SettingsIcon as SharedSettingsIcon } from "@/components/settings-icon";
 import "./booking-workspace.css";
+import proposalStyles from "./appointment-progress.module.css";
 import { SchedulePicker } from "@/components/booking-ui/schedule-picker";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { HistoryLinkControl } from "@/app/activity/history-link-control";
@@ -5601,24 +5602,23 @@ function AppointmentDrawer({
           x
         </button>
       </div>
-      <div className="border-b border-zinc-200 px-5 py-3">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className={proposalStyles.progress}>
+        <nav className={proposalStyles.steps} aria-label={__vt("New appointment")}>
           {steps.map((label, index) => (
             <button
-              className={classNames(
-                "min-h-9 rounded-md border px-3 text-sm font-semibold",
-                step === index
-                  ? "border-[#f26f3d] bg-[#f26f3d] text-white"
-                  : "border-zinc-300 text-zinc-700",
-              )}
+              className={classNames(proposalStyles.step, step === index && proposalStyles.active)}
+              aria-label={__vt(label)}
+              aria-current={step === index ? "step" : undefined}
               key={label}
               onClick={() => setStep(index)}
               type="button"
             >
-              {index + 1}. <WorkspaceText text={label} />
+              <span className={proposalStyles.number}>{index + 1}</span>
+              <span className={proposalStyles.label}><WorkspaceText text={label} /></span>
             </button>
           ))}
-        </div>
+        </nav>
+        <p className={proposalStyles.current}><WorkspaceText text={steps[step]} /> <span>{step + 1} / {steps.length}</span></p>
       </div>
       <div className="flex-1 overflow-y-auto px-5 py-5">
         <Message result={result} />

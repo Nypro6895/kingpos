@@ -1,3 +1,4 @@
+import checkWriterCopy from "@/lib/vietnamese-check-writer.json";
 import helpCopy from "@/lib/vietnamese-help-copy.json";
 import salonSetupCopy from "@/lib/vietnamese-salon-setup.json";
 import payrollMobileCopy from "@/lib/vietnamese-payroll-mobile.json";
@@ -66,6 +67,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   ...campaignCopy,
   ...staffScanCopy,
   ...personalQrCopy,
+  ...checkWriterCopy,
   "Salons I manage": "Tiệm tôi quản lý",
   "My staff workspaces": "Nơi tôi làm việc",
   "Services & booking": "Dịch vụ & đặt lịch",

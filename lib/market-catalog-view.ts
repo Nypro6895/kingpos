@@ -27,6 +27,7 @@ export function marketAppsWithBankPricing(apps: MarketApp[], catalog: CatalogPri
     const old = MARKET_PRICE_DEFAULTS[app.id];
     if (!plan) return app;
     const name = plan.name?.trim() || app.name, publisher = plan.publisher?.trim() || app.publisher;
+    if (app.id === "print-check" && (!plan.fulfillment_ready || plan.price_cents === 0)) return {...app, name, publisher, price:plan.price_cents>0?monthlyPrice(plan):"$4.90 / month", available:false, trial:"Paid sales are not available yet", plans:[]};
     const price = monthlyPrice(plan);
     if (app.id === "booksms") return {...app,available:plan.published && plan.fulfillment_ready,price:plan.fulfillment_ready?monthlyPrice(plan):"Price pending",trial:plan.fulfillment_ready?`Monthly paid access · ${plan.monthly_sms_limit??0} SMS per calendar month (UTC)`:"Price and SMS allowance are being prepared; purchases are closed"};
     if (old === undefined) {

@@ -1,3 +1,4 @@
+import {checkWriterMarketState} from "@/lib/check-writer-market";
 import "server-only";
 import {bookSmsState} from "@/lib/booksms";
 import { taxCompanySubscription } from "@/lib/tax-company-subscription";
@@ -23,7 +24,7 @@ export async function loadMarketExperienceData(context: CurrentBusinessContext, 
   // These are independent reads. Keep their error precedence deterministic while
   // avoiding a serial chain of optional subscription/settings requests.
   const [installationCounts, bankBillingState, relayInstalled, payroll, campaign, language,
-    checkinReceipt, bookingPolicy, bookingDeposit, cardConfig, automaticTax, taxCompany, booksms] = await Promise.all([
+    checkinReceipt, bookingPolicy, bookingDeposit, cardConfig, automaticTax, taxCompany, booksms, checkWriter] = await Promise.all([
     marketInstallationCounts(),
     marketBankBillingState(context.currentSalon?.id ?? null),
     context.currentSalon ? serviceRelayInstalled(context.currentSalon.id).catch(() => false) : Promise.resolve(false),
@@ -46,10 +47,11 @@ export async function loadMarketExperienceData(context: CurrentBusinessContext, 
     marketTaxCheckoutSettings().catch(() => undefined),
     context.currentSalon ? taxCompanySubscription(context.currentSalon.id).catch(() => ({ active: false, subscribed: false })) : Promise.resolve({ active: false, subscribed: false }),
     bookSmsState().catch(() => undefined),
+    checkWriterMarketState(),
   ]);
   let error = query.bookingStripe === "failed" ? "Stripe connection could not be completed. Check that your salon account can receive payments and pays its own processing fees, then try connecting again." : "";
   if (payroll.error) error = payroll.error;
   error ||= language.error;
   const paymentsAvailable = bankBillingState.settings.version === 0 && language.enabled && marketPaymentReady();
-  return { automaticTax, cardReady: Boolean(cardConfig?.enabled && cardConfig.mode === "live" && cardConfig.webhookSecret), booksms, experienceScope: getExperienceContext(context).scope, taxCompany, bankBillingState, paymentsAvailable, paymentReturn: query.payment === "received" || query.payment === "cancelled" ? query.payment : undefined, serviceRelayInstalled: relayInstalled, bookingDeposit, bookingPolicy, installationCounts, checkinReceipt, vietnameseState: language.vietnamese, vietnamesePublished: language.published, campaignInstalled: campaign?.installed ?? false, payrollDownloadInstalled: payroll.installed, pluginLoadError: error };
+  return { checkWriter, automaticTax, cardReady: Boolean(cardConfig?.enabled && cardConfig.mode === "live" && cardConfig.webhookSecret), booksms, experienceScope: getExperienceContext(context).scope, taxCompany, bankBillingState, paymentsAvailable, paymentReturn: query.payment === "received" || query.payment === "cancelled" ? query.payment : undefined, serviceRelayInstalled: relayInstalled, bookingDeposit, bookingPolicy, installationCounts, checkinReceipt, vietnameseState: language.vietnamese, vietnamesePublished: language.published, campaignInstalled: campaign?.installed ?? false, payrollDownloadInstalled: payroll.installed, pluginLoadError: error };
 }

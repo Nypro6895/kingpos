@@ -92,6 +92,8 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: ["*.trycloudflare.com"],
   outputFileTracingIncludes: {
+    "/api/check-writer": ["./assets/check-writer/*"],
+    "/api/check-writer/pdf": ["./assets/check-writer/*"],
     "/api/security/challenge": ["./app/fonts/GeistMono.ttf", "./app/fonts/Geist-OFL.txt"],
   },
   images: {

@@ -10,6 +10,9 @@ import {
   Field,
   Check,
   InlineForm,
+  SettingsEditSection,
+  SettingsIdentity,
+  SettingsReadRow,
   buttonClass,
   type DirectData,
 } from "./direct-settings-ui";
@@ -26,28 +29,20 @@ export function OwnershipSettingsPanel({
     <div className="grid gap-4">
       <div className="divide-y divide-zinc-100 rounded-lg border border-zinc-200 bg-white">
         {data.roster.owners.map((owner) => (
-          <div className="p-4" key={owner.id}>
-            <p className="text-sm font-semibold">
-              {owner.email ?? owner.name ?? owner.id} <WorkspaceText text="owns" /> {data.salonName}
-              <WorkspaceText text={owner.isCurrentUser ? " · You" : ""} />
-            </p>
-            {owner.name && owner.email && (
-              <p className="mt-1 text-sm text-zinc-500">{owner.email}</p>
-            )}
-          </div>
+          <div className="settings-owner-row" key={owner.id}><SettingsIdentity name={owner.name||owner.email||owner.id} subtitle={owner.email||undefined}/>{owner.isCurrentUser?<span className="settings-state-badge"><WorkspaceText text="You"/></span>:null}</div>
         ))}
       </div>
       <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Former owners" /></summary><div className="mt-3 grid gap-2">
         {data.historyError?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={data.historyError} /></p>:data.history.length?data.history.map(owner=><p key={owner.id} className="text-sm"><WorkspaceText text={owner.email||owner.name||`Deleted account ${owner.accountId}`} /> <WorkspaceText text="left ownership of" /> {data.salonName} <WorkspaceText text="on" /> <WorkspaceText text={new Date(owner.date).toLocaleString("en-US")} />{owner.reason?` · ${owner.reason}`:""}.</p>):<p className="text-sm text-zinc-500"><WorkspaceText text="No former owners are recorded for" /> {data.salonName}.</p>}
       </div></details>
-      {([['add_co_owner','Add co-owner'],['transfer_ownership','Transfer ownership']] as const).map(([mode,label])=><details key={mode}><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text={label} /></summary><div className="mt-3">
+      {([['add_co_owner','Add co-owner'],['transfer_ownership','Transfer ownership']] as const).map(([mode,label])=><SettingsEditSection key={mode} title={__vt(label)} action={mode==='add_co_owner'?"Invite":"Start"}><div className="mt-3">
        <InlineForm save={form=>runDirectOwnership(data.salonId,form)} onSaved={onSaved} label={__vt("Send invitation")}>
         <input type="hidden" name="action" value="invite"/><input type="hidden" name="mode" value={mode}/>
         <Field name="email" label={__vt("Recipient email")} type="email" required/><Field name="message" label={__vt("Message (optional)")}/>
         {mode==='transfer_ownership'?<Check name="relinquish" label={__vt("Remove my ownership after this account accepts")} checked/>:null}
-       </InlineForm></div></details>)}
+       </InlineForm></div></SettingsEditSection>)}
       {data.invites.map((invite) => (
-        <InlineForm
+        <InlineForm actionOnly
           key={invite.id}
           save={(form) => runDirectOwnership(data.salonId, form)}
           onSaved={onSaved}
@@ -107,9 +102,7 @@ export function LifecycleSettingsPanel({
   const status = data.lifecycle.lifecycleStatus;
   return (
     <div className="grid gap-4">
-      <p className="text-sm font-semibold">
-        <WorkspaceText text="Salon status:" /> <WorkspaceText text={status.replaceAll("_", " ")} />
-      </p>
+      <SettingsReadRow label="Salon status" value={<span className="settings-state-badge"><WorkspaceText text={status.replaceAll("_", " ")}/></span>}/>
       <button
         type="button"
         className={`${buttonClass} justify-self-start`}
@@ -150,6 +143,7 @@ export function LifecycleSettingsPanel({
         </p>
       ) : (
         <>
+          <SettingsEditSection title={__vt(status==="active"?"Temporarily disable salon":"Reactivate salon")} action="Review" danger={status==="active"}>
           <InlineForm
             save={(form) =>
               runDirectLifecycle(
@@ -173,6 +167,7 @@ export function LifecycleSettingsPanel({
               required
             />
           </InlineForm>
+          </SettingsEditSection>
           <details>
             <summary className="cursor-pointer text-sm font-semibold text-red-700">
               <WorkspaceText text="Permanently close salon" />

@@ -19,6 +19,7 @@ import { POST as searchPOST } from "@/app/api/explore/search/route";
 import { POST as feedPOST } from "@/app/api/explore/feed/route";
 import { POST as areaPOST } from "@/app/api/explore/area/route";
 import { GET as suggestionsGET } from "@/app/api/explore/suggestions/route";
+import { GET as postCommentsGET } from "@/app/api/post-comments/route";
 import { GET as salonSocialGET } from "@/app/api/explore/salon-social/route";
 import { APP_LOCAL_EXPLORE_QUERY_KEYS } from "./app-local-explore-metadata";
 import type { AppLocalExploreCore, AppLocalExploreExtras } from "./app-local-explore-types";
@@ -100,7 +101,7 @@ async function wire(response: Response): Promise<AppLocalHttpResponse> {
   for (const name of ["content-type", "cache-control", "etag", "server-timing"]) { const value = response.headers.get(name); if (value) selected[name] = value; }
   return { status: response.status, headers: selected, body: await response.text() };
 }
-const reads = new Set(["http.explore.search", "http.explore.feed-page", "http.explore.feed-updates", "http.explore.feed-validate", "http.explore.area", "http.explore.suggestions", "http.explore.salon-social"]);
+const reads = new Set(["http.explore.post-comments", "http.explore.search", "http.explore.feed-page", "http.explore.feed-updates", "http.explore.feed-validate", "http.explore.area", "http.explore.suggestions", "http.explore.salon-social"]);
 /** POST-shaped original search/feed reads remain named GET resources on the host. */
 export async function readAppLocalExploreResource(name: string, args: Record<string, unknown> = {}, options: { scope?: string; etag?: string; signal?: AbortSignal } = {}): Promise<AppLocalRead<AppLocalExploreCore | AppLocalExploreExtras | ExploreFeedPage | null | AppLocalHttpResponse> | null> {
   if (!["page.explore", "page.explore-extras", "page.explore-feed"].includes(name) && !reads.has(name)) return null;
@@ -115,12 +116,13 @@ export async function readAppLocalExploreResource(name: string, args: Record<str
   }
   const requestHeaders = new Headers(); if (current.get("cookie")) requestHeaders.set("cookie", current.get("cookie")!);
   let response: Response;
-  if (name === "http.explore.suggestions" || name === "http.explore.salon-social") {
-    const social = name === "http.explore.salon-social", keys = social ? ["ids"] : ["q", "location", "category"];
+  if (name === "http.explore.post-comments" || name === "http.explore.suggestions" || name === "http.explore.salon-social") {
+    const comments = name === "http.explore.post-comments", social = name === "http.explore.salon-social";
+    const keys = comments ? ["sourceType", "sourceId", "offset", "pageSize"] : social ? ["ids"] : ["q", "location", "category"];
     if (Object.entries(args).some(([key, value]) => !keys.includes(key) || typeof value !== "string" || value.length > (social ? 8192 : 512))) fail(400, "Unsupported Explore request");
-    const url = new URL(social ? "/api/explore/salon-social" : "/api/explore/suggestions", "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
+    const url = new URL(comments ? "/api/post-comments" : social ? "/api/explore/salon-social" : "/api/explore/suggestions", "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
     const request = new NextRequest(url, { headers: requestHeaders, signal: options.signal });
-    response = await (social ? salonSocialGET : suggestionsGET)(request);
+    response = await (comments ? postCommentsGET : social ? salonSocialGET : suggestionsGET)(request);
   } else {
     if (Object.keys(args).some(key => key !== "input") || !args.input || typeof args.input !== "object" || Array.isArray(args.input)) fail(400, "Invalid Explore request");
     const input = args.input as Record<string, unknown>, body = JSON.stringify(input);

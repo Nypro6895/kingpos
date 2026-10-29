@@ -24,6 +24,7 @@ import {
   recordCustomerPhoneOtpVerificationFailure,
   recordCustomerVerifiedPhoneFromAuth,
 } from "@/lib/customer-phone-verification";
+import { phoneChangeAuthorized } from "@/lib/account-phone-change";
 import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
 import {
   sendPhoneVerificationOtp,
@@ -209,6 +210,7 @@ export async function updateAccountProfileAction(
 
   const currentProfilePhone = normalizePhoneForIdentity(user.phone);
   const phoneChanged = normalizedPhone !== currentProfilePhone;
+  if(!await phoneChangeAuthorized(user,normalizedPhone))return {error:"Verify your account email before changing your phone."};
   let phoneClaim:
     | AccountProfileActionResult["phoneClaim"]
     | undefined;
@@ -511,6 +513,8 @@ export async function sendAccountPhoneVerificationOtpAction(
     return { error: "Enter a valid phone number." };
   }
 
+  const profileUser=await getCurrentKingUser();
+  if(!profileUser||!await phoneChangeAuthorized(profileUser,normalizedPhone))return {error:"Verify your account email before changing your phone."};
   const supabase = await createAuthenticatedSupabaseAuthSessionServerClient();
 
   if (!supabase) {
@@ -636,6 +640,7 @@ export async function verifyAccountPhoneOtpAction(
     return sessionExpiredOtpResult(normalizedPhone);
   }
 
+  if(!await phoneChangeAuthorized(user,normalizedPhone))return {error:"Verify your account email before changing your phone."};
   const challenge = await beginCustomerPhoneOtpVerification(normalizedPhone);
 
   if (!challenge.ok) {

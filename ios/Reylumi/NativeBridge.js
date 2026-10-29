@@ -1,5 +1,6 @@
 (() => {
   Object.defineProperty(window, '__reylumiNativePayments', {value: 1});
+  Object.defineProperty(window, '__reylumiCheckWriterPDF', {value: 2});
   const send = (message) => window.webkit.messageHandlers.reylumi.postMessage(message);
   window.print = () => send({ action: 'print' });
   // Restrict these UI entries as well as native/server navigation enforcement.

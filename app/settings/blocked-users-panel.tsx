@@ -11,7 +11,7 @@ export function BlockedUsersPanel() {
  function load(){return loadBlockedUsers().then(nextUsers=>{setUsers(nextUsers);setLoaded(true);}).catch(()=>{setError('Blocked users could not be loaded. Please retry.');});}
  useEffect(()=>{void load();},[]);
  async function unblock(id:string){setBusy(id);setError('');try{const result=await setUserBlocked(id,false);if(result.error)throw Error(result.error);setUsers(current=>current.filter(user=>user.user_id!==id));notifyUserBlocksChanged();router.refresh();}catch(e){setError(e instanceof Error?e.message:'Could not unblock this user.');}finally{setBusy('');}}
- return <section className="grid gap-4"><p><WorkspaceText text="Blocked users cannot interact with you through posts, comments or follows while signed in. You will not see each other's social content. Public content may still be accessible when signed out. Salon bookings and business records are not affected."/></p>
+ return <section className="grid gap-4">
  {error?<div role="alert"><p><WorkspaceText text={error}/></p><button onClick={()=>{setError('');void load();}} className="underline"><WorkspaceText text="Try again"/></button></div>:null}
  {!loaded&&!error?<p role="status"><WorkspaceText text="Loading…"/></p>:null}
  {loaded&&users.length===0?<p><WorkspaceText text="You have not blocked anyone."/></p>:null}

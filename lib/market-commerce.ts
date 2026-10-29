@@ -1,5 +1,6 @@
 // Money is stored in cents; rates are basis points (100 = 1%).
 export const MARKET_PRICE_DEFAULTS: Record<string, number> = {
+  "print-check": 490, // Owner-approved USD 4.90 per salon per month.
   "tax-company": 790,
   "vietnamese-language": 399, "booking-policy": 99,
   "booking-deposit": 590, "checkin-receipt": 470,

@@ -7,9 +7,13 @@ import { BEAUTY_ALLOWED_IMAGE_TYPES, BEAUTY_IMAGE_LIMIT, encodeStoragePath } fro
 import { updateBeautyProfileAction, getBeautyMediaUploadSessionAction, deleteBeautyMediaAction } from "@/app/beauty/actions";
 import { loadPersonalPublicProfileSettings } from "./personal-public-profile-actions";
 import { InlineForm, Select, inputClass, buttonClass } from "./direct-settings-ui";
-export function PersonalPublicProfilePanel() {
+import { AccountProfileEditor } from "@/app/account/account-profile-editor";
+import type { KingUser } from "@/types/user";
+export function PersonalPublicProfilePanel({user,createdAtLabel}:{user:KingUser;createdAtLabel:string}) {
   const __vt = useWorkspaceTranslation();
 
+  const [avatarOpen,setAvatarOpen]=useState(false);
+  const [coverName,setCoverName]=useState("");
   const [profile,setProfile]=useState<BeautyProfileSummary|null>(null),[error,setError]=useState("");
   async function reload(){setProfile(await loadPersonalPublicProfileSettings());setError("");}
   useEffect(()=>{let active=true;loadPersonalPublicProfileSettings().then(p=>{if(active)setProfile(p);}).catch(e=>{if(active)setError(e instanceof Error?e.message:"Your public profile could not be loaded.");});return()=>{active=false;};},[]);
@@ -29,12 +33,12 @@ export function PersonalPublicProfilePanel() {
       if(result.error)throw new Error(result.error);
       return {ok:true};
     }catch(e){if(coverMediaPath)await deleteBeautyMediaAction(coverMediaPath).catch(()=>{});return {ok:false,error:e instanceof Error?e.message:'Could not save your public profile.'};}
-  }} onSaved={reload}>
-    <p className="text-sm font-semibold">{profile.displayName}</p>
-    <Select name="visibility" label={__vt("Public profile visibility")} value={profile.visibility} options={[["public","Public"],["self","Only me"]]}/>
-    {profile.coverImageUrl?<NextImage src={profile.coverImageUrl} alt={__vt("Current public profile cover")} width={800} height={320} unoptimized className="max-h-48 w-full rounded-md object-cover"/>:null}
-    <label className="grid gap-1 text-sm"><WorkspaceText text="Cover image" /><input name="cover_image" type="file" accept="image/jpeg,image/png,image/webp" className={inputClass}/></label>
+  }} onSaved={async()=>{await reload();setCoverName("");}} onCancel={()=>setCoverName("")}>
+    <div className="settings-public-cover">{profile.coverImageUrl?<NextImage src={profile.coverImageUrl} alt={__vt("Current public profile cover")} width={800} height={320} unoptimized/>:null}</div>
+    <div className="settings-public-identity">{profile.avatarUrl?<NextImage src={profile.avatarUrl} alt={__vt("Avatar")} width={64} height={64} unoptimized className="settings-public-avatar"/>:<span className="settings-public-avatar grid place-items-center">{profile.initials}</span>}<strong>{profile.displayName}</strong></div>
+    <div className="settings-public-media-actions"><label><WorkspaceText text="Change cover"/><input name="cover_image" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={e=>setCoverName(e.currentTarget.files?.[0]?.name||"")}/><small className="max-w-28 truncate">{coverName}</small></label><button type="button" onClick={()=>setAvatarOpen(true)}><WorkspaceText text="Change avatar"/></button></div>
     {profile.coverMediaPath?<label className="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_cover"/><WorkspaceText text="Remove saved cover image" /></label>:null}
-    <label className="grid gap-1 text-sm"><WorkspaceText text="Bio" /><textarea name="bio" className={inputClass} rows={3} maxLength={500} defaultValue={profile.bio||""}/></label>
-  </InlineForm></div>;
+    <label className="grid gap-1 text-sm"><WorkspaceText text="Bio" /><textarea aria-label={__vt("Bio")} name="bio" className={inputClass} rows={3} maxLength={500} defaultValue={profile.bio||""}/></label>
+    <Select name="visibility" label={__vt("Public profile visibility")} value={profile.visibility} options={[["public","Public"],["self","Only me"]]}/>
+  </InlineForm>{avatarOpen?<div className="settings-security-dialog" role="dialog" aria-modal="true" aria-label={__vt("Change avatar")}><section><button className={buttonClass} type="button" onClick={()=>setAvatarOpen(false)}><WorkspaceText text="Close"/></button><AccountProfileEditor user={{...user,avatar_url:profile.avatarUrl}} createdAtLabel={createdAtLabel} embedded avatarOnly onSaved={()=>{setAvatarOpen(false);void reload().catch(()=>setError("Could not reload your profile."));}}/></section></div>:null}</div>;
 }

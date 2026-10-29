@@ -15,3 +15,54 @@
 /* Retain touch and keyboard affordances from the shipped shell. */
 .settings-hub :where(button,a,summary){-webkit-tap-highlight-color:#ffedd5;touch-action:manipulation}
 .settings-hub summary:focus-visible{outline:2px solid var(--settings-accent);outline-offset:3px}
+/* Personal settings: comfortable iPhone targets and compact row actions. */
+.settings-back{min-height:48px;font-size:17px;font-weight:600;padding:10px 8px;margin-left:-8px}
+.settings-account-copy small{overflow-wrap:anywhere}
+.settings-hub .personal-profile-heading{display:flex;flex-direction:row;align-items:center;gap:12px}
+.settings-hub .personal-profile-heading>div:first-child{flex:1;min-width:0}
+.settings-hub .personal-profile-heading>div:last-child{flex-shrink:0}
+.settings-public-cover{position:relative;min-height:140px;border-radius:12px;background:linear-gradient(120deg,#f5d8c7,#e8e5ec);overflow:hidden}
+.settings-public-cover>img{width:100%;height:180px;object-fit:cover}
+.settings-public-identity{display:flex;align-items:center;gap:12px;padding:12px 0}
+.settings-public-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#fff;border:3px solid #fff;margin-top:-36px;position:relative}
+.settings-public-media-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.settings-public-media-actions>label,.settings-public-media-actions>button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--settings-line);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
+.settings-security-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--settings-line)}
+.settings-security-row>div{min-width:0;flex:1}.settings-security-row>button{flex-shrink:0}
+.settings-security-dialog{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:#0006}.settings-security-dialog>section{width:min(100%,520px);max-height:85dvh;overflow:auto;background:white;border-radius:16px;padding:20px}
+/* One presentation for Settings on phones, narrow Windows windows and wide desktops. */
+.settings-hub{max-width:1600px;margin-inline:auto}
+.settings-editor{max-width:1080px;width:100%}
+.settings-inline-editor .settings-direct-panel{container-type:inline-size}
+.settings-inline-editor .settings-direct-panel>.settings-style{min-width:0}
+.settings-hub .settings-direct-panel details{padding:0;border:1px solid var(--settings-line);border-radius:12px;background:#fff;min-width:0;overflow:clip}
+.settings-hub .settings-direct-panel summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;min-height:56px;list-style:none}
+.settings-hub .settings-direct-panel summary::-webkit-details-marker{display:none}
+.settings-hub .settings-direct-panel summary::after{content:'›';font-size:22px;font-weight:400;color:#92929e;flex:none}
+.settings-hub .settings-direct-panel details[open]>summary::after{transform:rotate(90deg)}
+.settings-hub .settings-direct-panel details[open]>summary{border-bottom:1px solid var(--settings-line)}
+.settings-hub .settings-direct-panel details>div{margin-top:0;padding:14px 16px}
+.settings-hub .settings-direct-panel details .settings-inline-form{box-shadow:none}
+.settings-salon-public>.settings-public-cover{border-radius:12px 12px 0 0;min-height:160px}
+.settings-salon-public>.settings-identity{padding-left:16px}.settings-salon-public>.settings-identity .settings-identity-avatar{margin-top:-36px;border:3px solid white;width:64px;height:64px;position:relative}
+.settings-salon-media-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
+.settings-hub .settings-direct-panel .settings-media-picker{flex:1 1 130px;min-width:0;border-radius:9px}
+.settings-hub .settings-direct-panel .settings-media-picker>summary{min-height:44px;font-size:13px;padding:10px 12px}
+.settings-hub .settings-direct-panel .settings-media-picker-content{padding:12px}
+.settings-shortcut-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:12px 0;border-bottom:1px solid var(--settings-line,#e4e4e7);min-width:0}
+.settings-shortcut-name{flex:1 1 110px;min-width:0;font-size:14px}.settings-shortcut-row button{padding-inline:10px;flex:none;min-height:44px}.settings-shortcut-choices{display:flex;flex-wrap:wrap;gap:8px}
+.settings-request-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.settings-request-actions .settings-action-form{display:block;padding:0;border:0;background:transparent}.settings-request-actions .settings-action-form>fieldset{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.settings-hub .settings-category button{min-height:60px}.settings-category-grid{gap:22px}
+@media(min-width:1101px){.settings-accounts{position:sticky;top:16px;max-height:calc(100dvh - 32px);overflow:auto}.settings-hub{padding-inline:32px}.settings-workbench{gap:36px}}
+@container(max-width:640px){.settings-booking-columns{grid-template-columns:1fr}.settings-booking-timing{border-left:0;border-top:1px solid var(--settings-line);padding:16px 0 0}.settings-direct-panel :where(.sm\:grid-cols-2,.md\:grid-cols-2,.lg\:grid-cols-2){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:767px){.settings-inline-sections{padding:0;background:transparent;border-radius:0}.settings-section-heading{padding:14px}.settings-read-row{padding:13px 14px}.settings-read-row>span{flex-basis:38%}.settings-read-row>div{flex-basis:64%}.settings-form-actions button{flex:none}.settings-edit-section>div>.settings-inline-form>.settings-form-actions{position:sticky;bottom:0;z-index:3;background:#fffffff5;backdrop-filter:blur(8px);padding-bottom:max(10px,env(safe-area-inset-bottom))}.settings-hub .settings-direct-panel :where(input,select,textarea){font-size:16px}.settings-hub .settings-direct-panel .settings-inline-form{padding:14px}.settings-inline-editor .services-page{padding-inline:0}}
+.settings-hub .settings-style{--settings-green:var(--settings-accent);--settings-green-soft:var(--settings-accent-soft);--settings-line:#e4e4e7}
+/* Opt the new cards out of legacy Settings surface flattening. */
+.settings-hub .settings-edit-section{border:1px solid var(--settings-line)!important;border-radius:12px!important;background:#fff!important;padding:0!important}
+.settings-hub .settings-section-heading{border:0!important;background:transparent!important;padding:14px 16px!important;border-radius:0!important}
+.settings-hub .settings-edit-section .settings-inline-form{padding:16px!important}
+.settings-hub .settings-salon-public{border:1px solid var(--settings-line)!important;border-radius:12px!important;background:#fff!important;padding:0!important;overflow:hidden}
+.settings-hub .settings-salon-public>.settings-inline-form{padding:16px!important}
+.settings-hub .settings-edit-danger{border-color:#edd3d5!important}
+

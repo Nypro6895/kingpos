@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { authorizePhoneChangeAction } from "@/app/account/phone-change-actions";
 import { TimeZoneSelect } from "@/components/time-zone-select";
 import {
   getAccountAvatarUploadSessionAction,
@@ -46,6 +47,9 @@ type AccountProfileEditorProps = {
   embedded?: boolean;
   sectionId?: string;
   phoneVerified?: boolean;
+  avatarOnly?: boolean;
+  phoneOnly?: boolean;
+  onSaved?: ()=>void;
 };
 
 type VerificationPhoneClaimState = Extract<
@@ -272,6 +276,7 @@ function EditableField({
   const instanceId = useId();
   const fieldId = `account-profile-${instanceId}-${name}`;
 
+
   return (
     <div className="settings-profile-row grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <label
@@ -468,6 +473,10 @@ export function AccountProfileEditor({
   compact = false,
   embedded = false,
   sectionId = "profile-contact",
+  avatarOnly = false,
+  phoneOnly = false,
+  onSaved,
+
   phoneVerified = false,
 }: AccountProfileEditorProps) {
   const __vt = useWorkspaceTranslation();
@@ -479,8 +488,14 @@ export function AccountProfileEditor({
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(
     safeAccountAvatarUrl(user.avatar_url),
   );
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(avatarOnly||phoneOnly);
+  const [emailVerificationOpen,setEmailVerificationOpen]=useState(false);
+  const [emailCode,setEmailCode]=useState("");
+  const [emailSent,setEmailSent]=useState(false);
+  const [emailAuthorizedPhone,setEmailAuthorizedPhone]=useState<string|null>(null);
+  const [emailBusy,setEmailBusy]=useState(false);
   const profileSaveLock = useRef(false);
+
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [phoneClaim, setPhoneClaim] = useState<PhoneClaimState | null>(null);
@@ -566,7 +581,8 @@ export function AccountProfileEditor({
     setAvatarUrl(snapshotAvatarUrl);
     setAvatarPreviewUrl(safeAccountAvatarUrl(snapshotAvatarUrl));
     setValues(snapshotValues);
-    setEditing(false);
+    setEditing(avatarOnly||phoneOnly);
+    setEmailVerificationOpen(false);setEmailSent(false);setEmailCode("");setEmailAuthorizedPhone(null);
   }
 
   function removeAvatar() {
@@ -653,8 +669,14 @@ export function AccountProfileEditor({
     }, 900);
   }
 
+  async function authorizeEmail(){
+    setEmailBusy(true);setError("");
+    try{const result=await authorizePhoneChangeAction({phone:values.phone,code:emailSent?emailCode:undefined});if(result.error){setError(result.error);return;}if(result.verified){setEmailAuthorizedPhone(values.phone);setEmailVerificationOpen(false);setEmailCode("");setEmailSent(false);setNotice("Email verified. Save to continue verifying your new phone.");}else setEmailSent(true);}catch{setError("Could not verify your email. Try again.");}finally{setEmailBusy(false);}
+  }
   function saveProfile() {
+    if(values.phone!==snapshotValues.phone&&snapshotValues.phone&&emailAuthorizedPhone!==values.phone){setEmailVerificationOpen(true);setError("");return;}
     if (uploading || profileSaveLock.current) {
+
       return;
     }
 
@@ -686,6 +708,7 @@ export function AccountProfileEditor({
       setEditing(false);
       setPhoneClaim(result.phoneClaim ?? null);
       setNotice(result.phoneClaim?.message ?? "Profile saved.");
+      onSaved?.();
       if (result.phoneClaim?.status === "connected" && result.phoneClaim.selectionRequired) {
         router.push("/welcome/phone?next=/activity");
       }
@@ -866,15 +889,16 @@ export function AccountProfileEditor({
   function onEditorKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
-      saveProfile();
+      if(editing && !busy)saveProfile();
     }
   }
 
   return (
     <div className={compact ? "settings-style bg-white px-4 py-3" : "settings-style"}><section
       className={`scroll-mt-6${embedded ? " settings-content-root" : ""}`}
-      id={sectionId}
+      id={embedded?undefined:sectionId}
       data-profile-editing={editing}
+
       onKeyDown={onEditorKeyDown}
     >
       {!embedded ? <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
@@ -887,7 +911,7 @@ export function AccountProfileEditor({
       </div> : null}
 
       <div className={compact ? "bg-white" : "overflow-hidden rounded-lg border border-border-subtle bg-white"}>
-        <div className={compact ? "relative flex min-w-0 items-start justify-between gap-2 py-1" : "flex flex-col gap-4 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"}>
+        {!phoneOnly ? <div className={compact ? "relative flex min-w-0 items-start justify-between gap-2 py-1" : "personal-profile-heading flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-4"}>
           <div className={compact ? "flex min-w-0 flex-1 items-start gap-3" : "flex min-w-0 items-center gap-4"}>
             <span className={compact ? "grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-50 text-sm text-orange-700" : "grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange"}>
               {avatarPreviewUrl ? (
@@ -905,9 +929,9 @@ export function AccountProfileEditor({
               <p className={compact ? "truncate text-sm font-medium text-zinc-950" : "truncate text-xl font-semibold text-zinc-950"}>
                 {currentName}
               </p>
-              <p className={compact ? "mt-1 truncate text-xs text-zinc-500" : "mt-1 truncate text-sm font-semibold text-zinc-500"}>
+              {!embedded ? <p className={compact ? "mt-1 truncate text-xs text-zinc-500" : "mt-1 truncate text-sm font-semibold text-zinc-500"}>
                 <WorkspaceText text={user.email ?? "Personal account"} />
-              </p>
+              </p> : null}
               {compact && !editing ? <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
                 {values.phone ? <span>{values.phone}</span> : null}
                 {values.phone && ((phoneVerified && values.phone === user.phone) || (phoneClaim?.status === "connected" && phoneClaim.normalizedPhone === values.phone)) ? <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700"><WorkspaceText text="Verified ✓" /></span>
@@ -923,7 +947,7 @@ export function AccountProfileEditor({
               onClick={beginEdit}
               type="button"
             >
-              {compact ? <span aria-hidden="true">⋯</span> : <WorkspaceText text="Edit profile" />}
+              {compact ? <span aria-hidden="true">⋯</span> : <WorkspaceText text="Edit" />}
             </button>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -956,12 +980,12 @@ export function AccountProfileEditor({
               ) : null}
             </div>
           )}
-        </div>
-
+        </div> : null}
         {compact ? <nav aria-label={__vt("Personal settings")} className="flex flex-wrap items-center gap-x-4 text-xs text-zinc-600"><Link className="inline-flex min-h-9 items-center hover:text-orange-600" href="/account"><WorkspaceText text="Account settings" /></Link><Link className="inline-flex min-h-9 items-center hover:text-orange-600" href="/settings/login-security"><WorkspaceText text="Security" /></Link></nav> : null}
         {editing ? (
           <>
-            <div>
+            {!avatarOnly ? <div>
+              {!phoneOnly ? <>
               <EditableField
                 autoComplete="name"
                 label={__vt("Display name")}
@@ -969,29 +993,16 @@ export function AccountProfileEditor({
                 onChange={updateValue}
                 value={values.display_name}
               />
-              <ReadonlyField label={__vt("Email")} value={user.email} />
-              <EditableField
-                autoComplete="given-name"
-                label={__vt("First name")}
-                name="first_name"
-                onChange={updateValue}
-                value={values.first_name}
-              />
-              <EditableField
-                autoComplete="family-name"
-                label={__vt("Last name")}
-                name="last_name"
-                onChange={updateValue}
-                value={values.last_name}
-              />
-              <EditableField
+              <ReadonlyField label={__vt("Email")} value={user.email} /></> : null}
+<EditableField
                 autoComplete="tel"
                 label={__vt("Phone")}
                 name="phone"
                 onChange={updateValue}
                 value={values.phone}
               />
-              <ReadonlyField label={__vt("Status")} value={user.status} />
+              {!phoneOnly ? <>
+              <div className="grid gap-2 border-b border-zinc-100 px-4 py-3"><span className="text-sm font-semibold"><WorkspaceText text="Full name"/></span><div className="grid grid-cols-2 gap-2"><label className="grid gap-1 text-xs"><WorkspaceText text="First & middle names"/><input className="min-h-11 min-w-0 rounded-md border px-3" autoComplete="given-name" value={values.first_name} placeholder={__vt("First · middle")} onChange={e=>updateValue("first_name",e.target.value)}/></label><label className="grid gap-1 text-xs"><WorkspaceText text="Last name"/><input className="min-h-11 min-w-0 rounded-md border px-3" autoComplete="family-name" value={values.last_name} placeholder={__vt("Last")} onChange={e=>updateValue("last_name",e.target.value)}/></label></div></div>
               <EditableField
                 label={__vt("Language")}
                 name="language"
@@ -1004,10 +1015,10 @@ export function AccountProfileEditor({
                 onChange={updateValue}
                 value={values.timezone}
               />
-              <ReadonlyField label={__vt("Created")} value={createdAtLabel} />
-            </div>
+              <ReadonlyField label={__vt("Created")} value={createdAtLabel} /></> : null}
+            </div> : null}
             <div className="sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="flex items-center justify-end gap-2">
                 <button
                   className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
                   disabled={busy}
@@ -1027,7 +1038,7 @@ export function AccountProfileEditor({
               </div>
             </div>
           </>
-        ) : !compact ? (
+        ) : !compact&&!phoneOnly ? (
           <dl>
             <ProfileField
               label={__vt("Display name")}
@@ -1040,16 +1051,7 @@ export function AccountProfileEditor({
               onEdit={beginEdit}
               value={values.phone}
             />
-            <ProfileField
-              label={__vt("First name")}
-              onEdit={beginEdit}
-              value={values.first_name}
-            />
-            <ProfileField
-              label={__vt("Last name")}
-              onEdit={beginEdit}
-              value={values.last_name}
-            />
+            <ProfileField label={__vt("Full name")} onEdit={beginEdit} value={[values.first_name,values.last_name].filter(Boolean).join(" ")||__vt("First · last · middle")}/>
             <ProfileField
               label={__vt("Language")}
               onEdit={beginEdit}
@@ -1060,7 +1062,7 @@ export function AccountProfileEditor({
               onEdit={beginEdit}
               value={values.timezone}
             />
-            <ProfileField label={__vt("Status")} value={user.status} />
+
             <ProfileField label={__vt("Created")} value={createdAtLabel} />
           </dl>
         ) : null}
@@ -1077,6 +1079,7 @@ export function AccountProfileEditor({
         </p>
       ) : null}
 
+      {emailVerificationOpen?<div className="settings-security-dialog" role="dialog" aria-modal="true" aria-label={__vt("Verify phone change")}><section className="grid gap-4"><h3><WorkspaceText text="Verify phone change"/></h3><p><WorkspaceText text="Verify your account email before replacing or removing your phone."/> {user.email}</p>{emailSent?<label className="grid gap-2"><WorkspaceText text="Email code"/><input autoComplete="one-time-code" inputMode="numeric" className="min-h-11 rounded-md border px-3" value={emailCode} onChange={e=>setEmailCode(e.target.value)} /></label>:null}{error?<p role="alert">{error}</p>:null}<div className="flex gap-2"><button type="button" disabled={emailBusy} className="min-h-11 rounded-md border px-4" onClick={()=>{setEmailVerificationOpen(false);setEmailSent(false);setEmailCode("");}}><WorkspaceText text="Cancel"/></button><button type="button" disabled={emailBusy||(emailSent&&!emailCode.trim())} className="min-h-11 rounded-md border px-4" onClick={()=>void authorizeEmail()}><WorkspaceText text={emailBusy?"Please wait…":emailSent?"Verify":"Send email code"}/></button></div></section></div>:null}
       {phoneVerificationClaim ? (
         <PhoneVerificationDialog
           busy={busy}

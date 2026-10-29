@@ -3,6 +3,8 @@ import WebKit
 import SafariServices
 
 final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, WKDownloadDelegate {
+    private var checkWriterPrintInFlight = false
+    private var checkWriterPrintJobs = Set<String>()
     private var marketReturnSequence = 0
     func returnToMarket(sequence: Int) {
         guard sequence > marketReturnSequence else { return }
@@ -497,8 +499,49 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             UIApplication.shared.open(paymentURL, options: [:]) { [weak self] opened in
                 if !opened { self?.alert("Secure payment could not open. Please try again.") }
             }
-        case "print":
+        case "print-check-pdf":
+            guard url.path == "/check-writer", !checkWriterPrintInFlight,
+                  let jobID = body["jobId"] as? String, UUID(uuidString: jobID) != nil,
+                  !checkWriterPrintJobs.contains(jobID),
+                  let value = body["data"] as? String, value.count < 16_000_000,
+                  let data = Data(base64Encoded: value),
+                  data.starts(with: Data("%PDF-".utf8)),
+                  UIPrintInteractionController.canPrint(data) else { return }
+            checkWriterPrintInFlight = true
+            if checkWriterPrintJobs.count >= 256 { checkWriterPrintJobs.removeAll() }
+            checkWriterPrintJobs.insert(jobID)
             let controller = UIPrintInteractionController.shared
+            controller.printingItem = nil
+            controller.printingItems = nil
+            controller.printFormatter = nil
+            controller.printPageRenderer = nil
+            let info = UIPrintInfo(dictionary: nil)
+            info.outputType = .general
+            info.jobName = "Reylumi Check Writer"
+            info.duplex = .none
+            controller.printInfo = info
+            controller.printingItem = data
+            controller.showsNumberOfCopies = false
+            let completion: UIPrintInteractionController.CompletionHandler = { [weak self] controller, _, error in
+                self?.checkWriterPrintInFlight = false
+                controller.printingItem = nil
+                controller.printInfo = nil
+                if error != nil { self?.alert("Printing failed. Keep the check number and retry from History.") }
+            }
+            let presented: Bool
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                presented = controller.present(from: CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1), in: view, animated: true, completionHandler: completion)
+            } else {
+                presented = controller.present(animated: true, completionHandler: completion)
+            }
+            if !presented { checkWriterPrintInFlight = false; controller.printingItem = nil }
+
+        case "print":
+            guard !checkWriterPrintInFlight else { return }
+            let controller = UIPrintInteractionController.shared
+            controller.printingItem = nil
+            controller.printingItems = nil
+            controller.printPageRenderer = nil
             controller.printFormatter = webView.viewPrintFormatter()
             controller.present(animated: true, completionHandler: nil)
         case "share":

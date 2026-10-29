@@ -15,7 +15,8 @@ export type ExperienceRoutePolicy = {
 const HANDLER_PATH = /^(?:\/api(?:\/|$)|\/download\/windows\/?$|\/workspace\/open\/?$|\/admin\/api(?:\/|$)|\/admin\/lookup\/?$|\/admin\/users\/(?:workspace|export|evidence)\/?$|\/admin\/locations\/workspace\/?$|\/admin\/dashboard\/(?:search|record|detail)\/?$|\/admin\/market\/(?:tax|ledger)\/export\/?$)/;
 const AUTH_PATH = /^\/(?:login|signup|account-recovery|forgot-password|reset-password|security-check|accept-invite|ownership\/invite|staff\/invite)(?:\/|$)/;
 const SECRET_PATH = /^\/(?:booking-payment|booking\/manage|deletion-status|market\/payment-return|check-in|visit|support\/guest|claim)(?:\/|$)/;
-const PAYMENT_PATH = /^\/(?:market\/(?:orders|booking-deposit\/(?:payment|settings))|settings\/(?:login-security|recovery-back-office)|admin\/(?:recovery|settings\/twilio|settings\/support-email))(?:\/|$)/;
+const PAYMENT_PATH = /^\/(?:check-writer|market\/(?:orders|booking-deposit\/(?:payment|settings))|settings\/(?:login-security|recovery-back-office)|admin\/(?:recovery|settings\/twilio|settings\/support-email))(?:\/|$)/;
+
 const ACTIVE_PATH = /(?:^|\/)(?:new|create|edit|setup|delete|remove|cancel|confirm|checkout|transfer|accept|reset)(?:\/|$)/;
 const SECRET_QUERY = /^(?:access_token|refresh_token|token|code|pass|password|secret|signature|session|session_id|client_secret|payment|bookingStripe|payment_intent|payment_intent_client_secret|setup_intent|setup_intent_client_secret|redirect_status|checkout|ticket|key|invitation|invite|authorization|redirect|redirectto|returnurl|next)$/i;
 const ACTIVE_QUERY = /^(?:payment|checkout|security|login-security|recovery-back-office|edit|new|create|delete|cancel|confirm)$/i;

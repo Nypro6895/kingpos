@@ -482,7 +482,7 @@ export function ApplyPanel({
             >
               <input
                 aria-label={__vt("Salon name or address")}
-                className={inputClass}
+                className={`${inputClass} min-w-0 flex-1`}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={__vt("Salon name or address")}
@@ -491,7 +491,7 @@ export function ApplyPanel({
                 required
                 disabled={busy}
               />
-              <button className={primaryButton} disabled={busy} type="submit">
+              <button className={`${primaryButton} shrink-0 whitespace-nowrap`} disabled={busy} type="submit">
                 <WorkspaceText text={busy ? "Searching…" : "Search"} />
               </button>
             </form>

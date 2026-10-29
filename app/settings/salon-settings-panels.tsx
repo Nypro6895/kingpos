@@ -15,6 +15,10 @@ import {
 import {
   Field,
   SettingsFieldGroup,
+  SettingsEditSection,
+  SettingsReadRow,
+  SettingsIdentity,
+
   Check,
   Select,
   InlineForm,
@@ -141,13 +145,18 @@ function OperatingHours({
   );
 }
 function PublicIdentity({data,onSaved}:{data:Extract<DirectData,{kind:"public-profile"}>;onSaved:()=>Promise<void>}){
-  const __vt = useWorkspaceTranslation();
-
+ const __vt=useWorkspaceTranslation();
  const [paths,setPaths]=useState<{logo:string|null;cover:string|null}>({logo:null,cover:null}),[removed,setRemoved]=useState({logo:false,cover:false}),[uploading,setUploading]=useState({logo:false,cover:false}),[reset,setReset]=useState(0);
- return <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Tagline, story, logo & cover" /></summary><div className="mt-3"><InlineForm disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
- <Field name="tagline" label={__vt("Tagline")} value={data.profileIdentity?.public_profile_tagline}/><label className="grid gap-1 text-sm"><WorkspaceText text="Salon story" /><textarea className={inputClass} name="story" rows={4} defaultValue={data.profileIdentity?.public_profile_story||''}/></label>
- {(['logo','cover'] as const).map(kind=><div key={kind}><input type="hidden" name={`${kind}_path`} value={paths[kind]||''}/><input type="hidden" name={`remove_${kind}`} value={String(removed[kind])}/><SalonMediaUploader key={`${kind}-${reset}`} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={__vt(kind==='logo'?'Salon logo':'Cover image')} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div>)}
- </InlineForm></div></details>;
+ return <section className="settings-salon-public">
+  <div className="settings-public-cover">{data.coverUrl?
+   // eslint-disable-next-line @next/next/no-img-element
+   <img src={data.coverUrl} alt={__vt("Cover image")}/>:null}</div>
+  <SettingsIdentity name={data.setting.business_name||__vt("Salon")} imageUrl={data.logoUrl}/>
+  <InlineForm disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
+   <div className="settings-salon-media-row">{(['cover','logo'] as const).map(kind=><details className="settings-media-picker" key={kind}><summary><WorkspaceText text={kind==='logo'?'Change logo':'Change cover'}/></summary><div className="settings-media-picker-content"><input type="hidden" name={kind+'_path'} value={paths[kind]||''}/><input type="hidden" name={'remove_'+kind} value={String(removed[kind])}/><SalonMediaUploader key={kind+'-'+reset} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={__vt(kind==='logo'?'Salon logo':'Cover image')} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div></details>)}</div>
+   <Field name="tagline" label={__vt("Tagline")} value={data.profileIdentity?.public_profile_tagline}/><label className="settings-field"><WorkspaceText text="Salon story"/><textarea className={inputClass} name="story" rows={4} defaultValue={data.profileIdentity?.public_profile_story||''}/></label>
+  </InlineForm>
+ </section>;
 }
 export function SalonDetailsPanel({
   data,
@@ -168,11 +177,12 @@ export function SalonDetailsPanel({
   if (data.kind === "public-profile")
     return (
       <div className="grid gap-4">
+        <PublicIdentity data={data} onSaved={onSaved}/>
         {data.publicProfileAvailable === null ? <p role="status" className="text-sm text-zinc-600"><WorkspaceText text="Public visibility could not be checked. Reload this section before sharing a link." /></p>
           : data.publicProfileAvailable || !s.public_discovery_enabled ? <SalonPublicationStatus publicHref={data.publicProfileAvailable ? `/explore/salons/${encodeURIComponent(data.salonId)}` : null} />
           : <p role="status" className="text-sm text-amber-800"><WorkspaceText text="Public visibility is enabled, but the profile is unavailable. Check the salon status before sharing a link." /></p>}
-        <PublicIdentity data={data} onSaved={onSaved}/>
-        {data.canManageSalon?<InlineForm
+
+        {data.canManageSalon?<SettingsEditSection title={__vt("Visibility")} preview={<><SettingsReadRow label="Public discovery" value={__vt(s.public_discovery_enabled?"On":"Off")}/><SettingsReadRow label="Staff applications" value={__vt(s.allow_staff_applications?"On":"Off")}/></>}><InlineForm
           save={(form) =>
             saveDirectSalonProfile(data.salonId, {
               business_name: s.business_name,
@@ -202,13 +212,14 @@ export function SalonDetailsPanel({
           <details open={!data.readiness.canEnable}><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Required when enabling visibility from Settings" /></summary>
             <ul className="mt-2 grid gap-2 text-sm">{data.readiness.items.map(item => <li key={item.id} className="flex flex-wrap justify-between gap-2"><WorkspaceText text={item.label} /><span className={item.complete ? "text-emerald-800" : "text-amber-800"}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span></li>)}</ul>
           </details>
-        </InlineForm>:null}
-        <SalonProfilePreferencesPanel expectedSalonId={data.salonId} />
+        </InlineForm></SettingsEditSection>:null}
+        <SettingsEditSection title={__vt("Website appearance & verification")} action="Manage" closeOnSave={false}><SalonProfilePreferencesPanel expectedSalonId={data.salonId}/></SettingsEditSection>
       </div>
     );
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-zinc-600"><WorkspaceText text="An active salon is available in your workspace. Public visibility and booking are configured separately." /></p>
+
+      <SettingsEditSection title={s.business_name||__vt("Salon information")} heading={<SettingsIdentity name={s.business_name||__vt("Salon")} subtitle={[s.city,s.state].filter(Boolean).join(", ")}/>} preview={<div><SettingsReadRow label="Phone" value={s.phone}/><SettingsReadRow label="Email" value={s.email}/><SettingsReadRow label="Website" value={s.website}/><SettingsReadRow label="Address" value={[s.address_line1,s.address_line2,s.city,s.state,s.postal_code,s.country].filter(Boolean).join(", ")}/>{s.business_description?<SettingsReadRow label="Description" value={s.business_description}/>:null}<SettingsReadRow label="Time zone" value={data.hours.timeZone}/></div>}>
       <InlineForm
         save={(form) =>
           saveDirectSalonProfile(data.salonId, {
@@ -264,7 +275,9 @@ export function SalonDetailsPanel({
         </div>
         </SettingsFieldGroup>
       </InlineForm>
+      </SettingsEditSection>
       {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? <SalonAddressSummary address={data.mapLocation.address} /> : <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
+
         <InlineForm disabled={!data.mapLocation.refreshEnabled} save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
           <p className="text-sm">{[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")}</p>
           {data.mapLocation.coordinates?<p className="text-xs text-zinc-500"><WorkspaceText text="Latitude" /> {data.mapLocation.coordinates.latitude} <WorkspaceText text="· Longitude" /> {data.mapLocation.coordinates.longitude}</p>:null}
@@ -272,17 +285,8 @@ export function SalonDetailsPanel({
           <p className="text-sm text-zinc-600"><WorkspaceText text="Save your address above before updating the map." /></p>
         </InlineForm>
       </div></details>}
-      <details>
-        <summary className="cursor-pointer text-sm font-semibold">
-          <WorkspaceText text="Opening hours" />
-        </summary>
-        <div className="mt-3">
-          <OperatingHours
-            data={data}
-            onSaved={onSaved}
-          />
-        </div>
-      </details>
+      <SettingsEditSection title={__vt("Opening hours")} preview={<div className="settings-hours-preview">{days.map((day,dayOfWeek)=>{const windows=data.hours.weeklyHours.filter(w=>w.dayOfWeek===dayOfWeek);return <SettingsReadRow key={day} label={day} value={windows.length?windows.map(w=>w.opensAtLocal.slice(0,5)+" – "+w.closesAtLocal.slice(0,5)).join(" · "):__vt("Closed")}/>;})}</div>}><OperatingHours data={data} onSaved={onSaved}/></SettingsEditSection>
+
       <details>
         <summary className="cursor-pointer text-sm font-semibold">
           <WorkspaceText text="Holiday & special hours" />
@@ -367,8 +371,8 @@ export function BookingSettingsPanel({
   const s = data.settings;
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-zinc-600"><WorkspaceText text="Booking needs its own enabled settings, bookable services and available staff. Public visibility or opening hours alone do not make appointments available." /></p>
-      <p className="text-sm text-zinc-600"><WorkspaceText text="Start in Services, prices & booking staff: enable online services and assign staff. Then set staff working hours and time off below. A public booking link also requires a published profile; a map is not required." /></p>
+
+
       {data.canManage ? (
         <InlineForm
           className="settings-booking-form"

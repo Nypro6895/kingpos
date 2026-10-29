@@ -481,6 +481,12 @@
     ],
     "app/payroll/current-payroll-download-actions.ts": [
       "downloadMyCurrentPayroll"
+    ],
+    "app/account/phone-change-actions.ts": [
+      "authorizePhoneChangeAction"
+    ],
+    "app/market/check-writer-actions.ts": [
+      "manageCheckWriterSubscription"
     ]
   }
 }

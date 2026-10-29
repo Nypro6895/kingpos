@@ -18,9 +18,9 @@ function classify(route) {
     classification = 'public-static'; renderStrategy = 'bundled-content'; rendererId = route === '/help' ? 'help.home' : 'help.guide';
   } else if (legal.has(route)) classification = 'public-static';
   else if (auth.has(route) || /^\/(?:booking-payment|booking\/manage|deletion-status|ownership\/invite|staff\/invite|check-in|visit|claim)(?:\/|$)/.test(route)
-    || route.startsWith('/admin') || creation.has(route) || ['/market/payment-return', '/market/orders/[orderId]', '/market/booking-deposit/payment', '/market/booking-deposit/settings', '/settings/login-security', '/settings/recovery-back-office', '/pos/customer-display', '/pos/customer-display/setup', '/support/guest/[threadId]', '/contact-support', '/payroll/tax-company/settings'].includes(route)) {
+    || route.startsWith('/admin') || creation.has(route) || ['/check-writer', '/qr', '/staff/scan', '/welcome/phone', '/developers/market', '/market-review', '/market/payment-return', '/market/orders/[orderId]', '/market/booking-deposit/payment', '/market/booking-deposit/settings', '/settings/login-security', '/settings/recovery-back-office', '/pos/customer-display', '/pos/customer-display/setup', '/support/guest/[threadId]', '/contact-support', '/payroll/tax-company/settings'].includes(route)) {
     classification = 'sensitive-writes'; scope = 'none'; renderStrategy = 'online-only'; rendererId = null;
-    roles = route.startsWith('/admin') ? ['admin'] : allRoles;
+    roles = ['/developers/market','/market-review'].includes(route) ? [] : route.startsWith('/admin') ? ['admin'] : route === '/check-writer' ? ['owner'] : route === '/staff/scan' ? ['staff'] : allRoles;
     onlineReason = route.startsWith('/admin') ? 'Administrative authority and private records require the existing fresh online page.' : 'Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.';
   } else if (route === '/explore' || route.startsWith('/explore/') && route !== '/explore/favorites') {
     classification = 'business-catalog';

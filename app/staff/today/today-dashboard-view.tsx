@@ -1,3 +1,4 @@
+import styles from "./today-layout.module.css";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { backlogTone, type MetricTone } from "@/lib/today-metric-assessment";
@@ -729,12 +730,14 @@ function MetricCard({ metric, pending = false }: { metric: TodayMetric; pending?
   const body = (
     <div
       className={classNames(
-        "flex h-full min-h-28 min-w-0 flex-col justify-between border-b p-3 transition sm:min-h-32 sm:p-4",
+        styles.metric,
+        "flex h-full min-h-28 min-w-0 flex-col justify-between rounded-xl border p-3 shadow-[0_8px_24px_rgba(24,24,27,0.04)] transition sm:min-h-32 sm:p-4",
+
         metricToneClass(metric),
         metric.href ? "hover:bg-zinc-50" : null,
       )}
     >
-      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+      <div className={`${styles.metricHeading} flex flex-col items-start gap-2 sm:flex-row sm:items-center`}>
         <span
           className={classNames(
             "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
@@ -747,7 +750,7 @@ function MetricCard({ metric, pending = false }: { metric: TodayMetric; pending?
           <WorkspaceText text={metric.label} />
         </p>
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_6.5rem] sm:items-end">
+      <div className={`${styles.metricBody} mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_6.5rem] sm:items-end`}>
         <div className="min-w-0">
           <p className="text-2xl font-semibold leading-none text-zinc-950 sm:text-3xl">
             {pending ? <span aria-label="Loading" className="inline-block h-7 w-20 rounded bg-zinc-100" /> : metric.value}
@@ -1804,30 +1807,27 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
   return (
     <main
-      className="min-h-screen bg-[#fbfaf8] px-4 py-6 sm:px-6 lg:px-8"
+      className={`${styles.page} min-h-screen bg-[#fbfaf8] px-4 py-6 sm:px-6 lg:px-8`}
       data-today-dashboard="owner-manager"
     >
       <div className="flex w-full min-w-0 flex-col gap-5">
 
-        <header>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <header className={styles.header}>
+          <div className={styles.greeting}>
             <div className="min-w-0">
-              <h1 className="break-words text-3xl font-semibold tracking-normal text-zinc-950 sm:text-4xl">
+              <h1 className="break-words text-xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
                 <WorkspaceText text={getGreeting(dashboard.timezone)} />, {dashboard.greetingName}{" "}
                 <span aria-hidden="true">{"\uD83D\uDC4B"}</span>
               </h1>
             </div>
-            <div className="shrink-0 self-start">
-              <DayViewControl dayView={dashboard.dayView} />
-            </div>
+
           </div>
-          <div className="mt-2 flex flex-col gap-1 text-sm font-medium text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className={styles.metadata}>
             <p className="min-w-0 break-words">
-              {dashboard.salonName}
-              {" \u00B7 "}
               <WorkspaceText text={formatDashboardDate(dashboard.date)} />
             </p>
-            <p className="shrink-0 text-xs text-zinc-400 sm:text-sm">
+            <DayViewControl dayView={dashboard.dayView} />
+            <p className={styles.updated}>
               <WorkspaceText text="Updated" /> <WorkspaceText text={formatTime(dashboard.generatedAt, dashboard.timezone)} />
             </p>
           </div>

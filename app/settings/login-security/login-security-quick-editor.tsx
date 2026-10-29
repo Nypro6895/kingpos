@@ -235,7 +235,9 @@ function QuickActionRow({
   onAction,
   status,
   tone = "neutral",
+  compact = false,
 }: {
+  compact?: boolean;
   actionLabel?: string;
   children?: ReactNode;
   description: string;
@@ -248,13 +250,13 @@ function QuickActionRow({
 }) {
   return (
     <div className="border-b border-zinc-100 px-4 py-3 last:border-b-0">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text={label} /></p>
-            <StatusBadge tone={tone}><WorkspaceText text={status} /></StatusBadge>
+            {!compact?<StatusBadge tone={tone}><WorkspaceText text={status} /></StatusBadge>:null}
           </div>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
+          {!compact?<p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>:null}
         </div>
         {href ? (
           <Link className={secondaryButtonClassName} href={href}>
@@ -727,6 +729,7 @@ export function LoginSecurityQuickEditor({
         ) : null}
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
           <QuickActionRow
+            compact={passwordOnly}
             actionLabel="Change"
             description={__vt("Update the email password. Other sessions are signed out after saving.")}
             disabled={isBusy || !overview.account.email}
