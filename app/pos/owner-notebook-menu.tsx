@@ -16,6 +16,10 @@ const pages: { id: string; label: string; icon: OwnerPosIconName; href?: string 
   { id: "more", label: "More", icon: "more" },
 ];
 
+function isMorePopupEvent(target: EventTarget | null) {
+  return target instanceof Element && target.closest("[data-owner-more-popover]") !== null;
+}
+
 export function OwnerNotebookMenu({ active, more }: { active: string; more: ReactNode }) {
   const translate = useWorkspaceTranslation();
   const root = useRef<HTMLElement>(null);
@@ -60,6 +64,9 @@ export function OwnerNotebookMenu({ active, more }: { active: string; more: Reac
     else root.current?.querySelector<HTMLButtonElement>(".owner-more-button")?.click();
   }
   function down(event: PointerEvent<HTMLElement>) {
+    // React portal events still bubble through this nav although the popup is
+    // outside its DOM. Its links must keep their ordinary click/navigation.
+    if (isMorePopupEvent(event.target)) return;
     if (!event.isPrimary || event.button !== 0) return;
     // The existing More trigger retains its own accessible popover behavior.
     const index = indexAt(event.clientY);
@@ -90,11 +97,11 @@ export function OwnerNotebookMenu({ active, more }: { active: string; more: Reac
 
   return <nav ref={root} className="owner-notebook" aria-label={translate("Owner POS")} tabIndex={-1}
     data-open={open} data-dragging={dragging} onPointerDown={down} onPointerMove={move}
-    onClickCapture={event => { if (event.detail > 0) { event.preventDefault(); event.stopPropagation(); } }}
+    onClickCapture={event => { if (!isMorePopupEvent(event.target) && event.detail > 0) { event.preventDefault(); event.stopPropagation(); } }}
     onPointerUp={event => finish(event)} onPointerCancel={event => finish(event, true)}
     onLostPointerCapture={() => { if (gesture.current) { clearHold(); gesture.current = null; setDragging(false); setFocus(null); setOpen(false); } }}
     onContextMenu={event => event.preventDefault()}
-    onFocusCapture={event => { if (event.target !== event.currentTarget) setOpen(true); }}
+    onFocusCapture={event => { if (!isMorePopupEvent(event.target) && event.target !== event.currentTarget) setOpen(true); }}
     onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) { setOpen(false); setFocus(null); } }}>
     {pages.map((page, index) => {
       const distance = focus === null ? 99 : Math.abs(index - focus);

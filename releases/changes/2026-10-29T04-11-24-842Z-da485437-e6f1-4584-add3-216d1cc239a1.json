@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "mobile-notebook-menu-20261028",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-tabs.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\portal-fix-frozen",
+    "baseCommit": "509985dec00091f285c28b7dcb079460da104249",
+    "fileHashes": {
+      "app/pos/owner-notebook-menu.tsx": "923f2ab23d201aa97db3ee14d25f3dc35d458c08ecdb94854a51bcbc0806aefa",
+      "app/pos/owner-notebook-menu.css": "175dc0e92e033ed81aa54b3659ec7a9a2d2341c9816b5ef1204fb1d3e306f125",
+      "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc"
+    }
+  },
+  "dependencies": [],
+  "reportedBy": "Physical64 functional smoke316 after owner updated through TestFlight",
+  "relatesToEvents": [
+    "7060bfc1-031e-4a4a-9b67-0c732e4dc0fb"
+  ],
+  "limitations": [
+    "No new web or native repair deployment in this checkpoint. Published64 still has popup-link regression.",
+    "Native rebuild and exact installed-build physical retest required before calling this repair published."
+  ],
+  "status": "working",
+  "summary": "Post-publication notebook More popup link regression: prepare causal test and narrow event-boundary fix; do not classify tool failure",
+  "id": "da485437-e6f1-4584-add3-216d1cc239a1",
+  "recordedAt": "2026-10-29T04:11:24.842Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
