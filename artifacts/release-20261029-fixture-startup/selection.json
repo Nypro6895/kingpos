@@ -1,0 +1,16 @@
+{
+  "ready": "bb980f4e-efe5-4360-95d4-c79b5156d3fa",
+  "files": [
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift"
+  ],
+  "commit": "65efdc09e6e855fa03d5cc87498801fae37cff16",
+  "productSourceCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "nativeBaseline": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "baselineBuild": "70",
+  "alsoVerifyReady": "172a18b3-1eca-4b0d-8ebb-77b0425c0840",
+  "fixtureBootstrapSeconds": {
+    "before": 5,
+    "after": 45
+  },
+  "functionalDeadlinesUnchanged": true
+}
