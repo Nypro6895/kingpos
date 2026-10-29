@@ -1,0 +1,48 @@
+{
+  "kind": "release",
+  "summary": "Combined web published and TestFlight61 uploaded/available; physical History regression blocks native acceptance pending restoration of shipped native reader",
+  "changes": [
+    "0c48502f-d534-4f60-942f-266bc56f53bb",
+    "0129f09b-ead4-49e9-a692-9a10d7ae5ccb",
+    "1c3657a3-5b07-4309-ab23-303c0dcbdea3",
+    "cb12e52e-278b-4a45-b1d1-a203be2cb776",
+    "4c473e6b-1aec-4e25-8993-614f64120f5f",
+    "c974de4c-f380-4e77-bdfc-d4431bb1e9e5",
+    "65539f49-9d0f-4550-8e9b-f53225de14da",
+    "3feac64b-66cb-43ac-b7b7-5507d6bcc225",
+    "9b195530-4081-437f-8bdf-50ea9d407ce1",
+    "cde99526-8a43-4fbf-9b05-592372417202",
+    "3b9acf8a-2f42-4541-a03f-615583216eb0",
+    "4d45160c-9083-4777-88e6-3170da1725e1",
+    "130cabb0-ed74-4181-a958-4ea50f0b8133",
+    "5aa131d3-8cca-4e4c-a61c-e27b5f233734"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_FbJLZhbJFV9LxgTiJpc1pNpeNMdy",
+      "baselineDeploymentId": "dpl_43heZjrRn8eGRQPeaojtBJ7MpsSZ",
+      "sourceSha256": "324b7bd50d5753bd2d43bbe0531de02a50574ad99c78c94775010e6a20409afc",
+      "overlaySha256": "74377b30b2bfdf55e18b2dabea652aa48a5126ad9be7ccd992df78da0782464d",
+      "evidence": "artifacts/combined-ui13/web-js-live-source-verified.json; artifacts/combined-ui13/web-js-live-http-smoke.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "version": "1.0.0",
+      "build": "61",
+      "commit": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+      "upload": "accepted",
+      "appleProcessing": "VALID",
+      "existingGroupsAvailable": true,
+      "evidence": "artifacts/combined-ui13/native-final-verified.json; artifacts/combined-ui13/testflight61-availability.json",
+      "blocker": "Physical History Details falls back to web API because shipped native60 named reader was omitted; no acceptance claimed"
+    }
+  },
+  "repairChangeId": "combined-native-history-preservation-20261028",
+  "sourceCommit": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+  "id": "6f0a4e07-57a6-471d-9a72-0b901641dafd",
+  "recordedAt": "2026-10-29T01:24:03.436Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028"
+}

@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "combined-native-history-preservation-20261028",
+  "status": "working",
+  "summary": "Restore shipped native60 customer.history scoped read omitted while assembling the combined web/native source; preserve web endpoint and existing guards",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/customer-history-client.ts",
+    "tests/app-local-customer-history.test.mjs"
+  ],
+  "source": {
+    "baselineNativeCommit": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec",
+    "currentUploadedCommit": "e33b5f5fd13dc81c546536c0bc10209e36e92659"
+  },
+  "validation": [
+    {
+      "name": "Physical61 History regression",
+      "result": "failed",
+      "evidence": "Mac FixCandidate/released61-qa297/history-confirmed.txt; native60 vs e33 source diff"
+    }
+  ],
+  "id": "bd8ed93f-077f-4ff8-b544-dbfdb1782594",
+  "recordedAt": "2026-10-29T01:23:25.990Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
