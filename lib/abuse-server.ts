@@ -36,6 +36,7 @@ export function abuseServiceClient() {
 }
 export async function assertAbuseRequest(action: "post" | "comment" | "report" | "signup" | "login" | "recovery", subject?: string) {
   const context = await getSafetyContext();
+  const social = ["post", "comment", "report"].includes(action);
   const user = ["signup", "login", "recovery"].includes(action) ? null : await getCurrentKingUser();
   const { data, error } = await abuseServiceClient().rpc("abuse_preflight", {
     p_action: action, p_user_id: user?.id ?? null, p_device: context.deviceHash,
@@ -56,13 +57,29 @@ export async function assertAbuseRequest(action: "post" | "comment" | "report" |
     try {
       verification = await checkBotId({ advancedOptions: { checkLevel: "basic" } });
     } catch {
+      if (social) {
+        try {
+          await abuseServiceClient().rpc("record_social_safety_signal", {
+            p_action: action, p_user_id: user?.id ?? null, p_device: context.deviceHash,
+            p_ip: context.ipHash || null, p_country: context.country || null, p_reason: "Safety detector unavailable",
+          });
+        } catch { /* Advisory telemetry must never prevent publishing. */ }
+        return context;
+      }
       throw new AbuseRequestError("security_unavailable", SECURITY_UNAVAILABLE);
     }
     if (verification.isBot) {
-      const result = await abuseServiceClient().rpc("record_abuse_bot_event", {
-        p_action: action, p_user_id: user?.id ?? null, p_device: context.deviceHash,
-        p_ip: context.ipHash || null, p_country: context.country || null,
-      });
+      let result;
+      try {
+        result = await abuseServiceClient().rpc("record_abuse_bot_event", {
+          p_action: action, p_user_id: user?.id ?? null, p_device: context.deviceHash,
+          p_ip: context.ipHash || null, p_country: context.country || null,
+        });
+      } catch {
+        if (social) return context;
+        throw new AbuseRequestError("security_unavailable", SECURITY_UNAVAILABLE);
+      }
+      if (social) return context;
       if (result.error) throw new AbuseRequestError("security_unavailable", SECURITY_UNAVAILABLE);
       if (!result.data) throw new AbuseRequestError("security_check_required", CHALLENGE_REQUIRED);
     }

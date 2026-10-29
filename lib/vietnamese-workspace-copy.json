@@ -5508,5 +5508,7 @@
   "Next, review your salon details, add services and staff, then set booking hours and rules.": "Tiếp theo, kiểm tra thông tin tiệm, thêm dịch vụ và nhân viên, rồi cài giờ và quy tắc nhận lịch.",
   "Continue salon setup": "Tiếp tục cài đặt tiệm",
   "Set up booking": "Thiết lập đặt lịch",
-  "Start in Services, prices & booking staff: enable online services and assign staff. Then set staff working hours and time off below. A public booking link also requires a published profile; a map is not required.": "Bắt đầu ở Dịch vụ, giá & nhân viên nhận lịch: bật dịch vụ trực tuyến và phân công nhân viên. Sau đó cài giờ làm việc và thời gian nghỉ bên dưới. Link đặt lịch công khai còn cần hồ sơ đã xuất bản; không cần bản đồ."
+  "Start in Services, prices & booking staff: enable online services and assign staff. Then set staff working hours and time off below. A public booking link also requires a published profile; a map is not required.": "Bắt đầu ở Dịch vụ, giá & nhân viên nhận lịch: bật dịch vụ trực tuyến và phân công nhân viên. Sau đó cài giờ làm việc và thời gian nghỉ bên dưới. Link đặt lịch công khai còn cần hồ sơ đã xuất bản; không cần bản đồ.",
+  "Social activity is monitored only. Posting and comment thresholds notify admin; they do not automatically block users. Signup and login protections remain active.": "Hoạt động đăng bài và bình luận chỉ được theo dõi. Vượt ngưỡng sẽ được ghi nhận cho admin, không tự động chặn người dùng. Bảo vệ đăng ký và đăng nhập vẫn hoạt động.",
+  "Monitor only": "Chỉ theo dõi"
 }

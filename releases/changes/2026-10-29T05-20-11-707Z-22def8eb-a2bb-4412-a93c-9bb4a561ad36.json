@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "combined-security-web-integration-20261029",
+  "status": "working",
+  "summary": "Owner newly approved Supabase social-monitor migration and exact security-check WAF challenge-to-log; combine server/admin-compatible security with frozen POS/Payroll in same coordinator wave",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/abuse-server.ts",
+    "lib/post-comments.ts",
+    "app/(app)/admin/post-safety/spam/page.tsx",
+    "lib/vietnamese-workspace-copy.json",
+    "supabase/migrations/20261029021000_social_monitor_only.sql",
+    "tests/social-monitor-server.test.mjs",
+    "tests/social-monitor-only.integration.test.mjs",
+    "tests/comment-idempotency-runtime.test.mjs",
+    "tests/abuse-prevention.integration.test.mjs",
+    "tests/abuse-signals.test.mjs",
+    "tests/fixtures/social-monitor-apply.sql",
+    "tests/fixtures/social-monitor-production-functions.json"
+  ],
+  "source": {
+    "commit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b"
+  },
+  "dependencies": [
+    "social-monitor-only-20261029",
+    "combined-pos-payroll-release-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Fresh source merge/tests/build, guarded production SQL and exact WAF readback",
+      "result": "pending"
+    }
+  ],
+  "id": "22def8eb-a2bb-4412-a93c-9bb4a561ad36",
+  "recordedAt": "2026-10-29T05:20:11.707Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-security-web-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
