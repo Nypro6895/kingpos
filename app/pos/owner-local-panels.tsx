@@ -19,19 +19,14 @@ import { saveOwnerLocalSnapshot, useOwnerLocalWorkspace } from "./owner-local-wo
 type Navigate = (href: string) => void;
 type AttendanceAction = typeof ownerSubmitAttendance;
 /** Serializable DTO in, existing business view out. Native can inject its named action. */
-export function OwnerLocalPanelBody({ data, snapshotAt, query, navigate, attendanceAction = ownerSubmitAttendance, onAttendanceSettled, active=true, ticketsPath="/pos/ticket" }: { data: OwnerLocalPanelData; snapshotAt: number; query: string; navigate: Navigate; attendanceAction?: AttendanceAction; onAttendanceSettled?: () => void; active?: boolean; ticketsPath?: string }) {
+export function OwnerLocalPanelBody({ data, snapshotAt, query, attendanceAction = ownerSubmitAttendance, onAttendanceSettled, active=true, ticketsPath="/pos/ticket" }: { data: OwnerLocalPanelData; snapshotAt: number; query: string; navigate: Navigate; attendanceAction?: AttendanceAction; onAttendanceSettled?: () => void; active?: boolean; ticketsPath?: string }) {
   const workspace = useOwnerLocalWorkspace();
   if (data.view === "denied") return <p className="p-6"><WorkspaceText text={data.message} /></p>;
   if (data.view === "check-in") return <PortableCheckInClient data={data.props.data} action={attendanceAction} workspacePath="/pos/check-in" staffEndpoint="/api/pos/owner/check-in" managedRead businessDate={workspace?.businessDate} onDataChange={workspace?.attendance} onAttendanceSettled={onAttendanceSettled} active={active} />;
   if (data.view === "bookings") return <OwnerLiveBookingWorkspace {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "reports") return <OwnerLiveReports {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "tickets") return <main className="mx-auto w-full max-w-7xl px-4 py-4 text-zinc-950 sm:px-6">
-    {ticketsPath === "/pos-tickets" ? <WorkLogFilters query={data.props.searchQuery} selectedDate={data.props.selectedDate} todayHref={ticketsPath + "?date=" + data.props.today} /> : <form action={ticketsPath} method="get" className="mb-4 flex flex-wrap gap-3" onSubmit={event => { event.preventDefault(); const filters = new URLSearchParams(); new FormData(event.currentTarget).forEach((value, key) => { if (typeof value === "string") filters.append(key, value); }); navigate(ticketsPath + "?" + filters); }}>
-      <label><WorkspaceText text="Date" /><input aria-label="Work log date" className="block rounded border p-2" type="date" name="date" defaultValue={data.props.selectedDate} /></label>
-      <label><WorkspaceText text="Search" /><input aria-label="Search work log" className="block rounded border p-2" type="search" name="q" defaultValue={data.props.searchQuery} /></label>
-      <button type="submit" className="self-end rounded bg-zinc-950 px-4 py-2 text-white"><WorkspaceText text="Search" /></button>
-      <a className="self-end rounded border px-4 py-2" href={ticketsPath + "?date=" + data.props.today}><WorkspaceText text="Today" /></a>
-    </form>}
+    {ticketsPath === "/pos-tickets" ? <WorkLogFilters query={data.props.searchQuery} selectedDate={data.props.selectedDate} todayHref={ticketsPath + "?date=" + data.props.today} /> : null}
     {new URLSearchParams(query).get("error") ? <p role="alert" className="text-rose-700">{new URLSearchParams(query).get("error")}</p> : null}
     <OwnerLiveTickets {...data.props} returnTo={ticketsPath + "?" + new URLSearchParams({ date: data.props.selectedDate, ...(data.props.searchQuery ? { q: data.props.searchQuery } : {}) })} managedRead snapshotAt={snapshotAt} />
   </main>;

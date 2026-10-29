@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-29T09:14:42.869Z",
+  "status": "deferred-closed",
+  "productionPreflight": "../wave66/checkwriter-production-preflight.json",
+  "encryptionKeyPresent": false,
+  "salesFlagPresent": false,
+  "migrationsApplied": [],
+  "reason": "Production has no Check Writer tables/catalog entry or encryption key. Three module migrations include payment-reservation function extension; preserve live billing guards and avoid introducing inactive financial dependency into this UI release. Source ships with sales default closed; DB/provider/real printing activation remains separate acceptance. Owner parent explicitly authorized compatible disabled code without waiting for a new DB/key decision.",
+  "canonicalPayrollChanged": false,
+  "developerMarketIncluded": false
+}

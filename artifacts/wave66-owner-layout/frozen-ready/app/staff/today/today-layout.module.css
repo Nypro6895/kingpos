@@ -1,0 +1,21 @@
+.header { min-width:0; }
+.greeting { min-width:0; }
+.metadata { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; margin-top:8px; color:#71717a; font-size:13px; font-weight:500; }
+.metadata > p:first-child { margin:0; min-width:0; }
+.metadata summary { min-height:44px; font-size:13px; box-shadow:none; }
+.updated { flex-basis:100%; margin:0; color:#71717a; font-size:11px; }
+.metric { min-width:0; }
+@media (max-width:639px) {
+  .page { padding-top:16px; }
+  .page > div { gap:16px; }
+  .metric { justify-content:flex-start; padding:12px; box-shadow:none; }
+  .metricHeading { gap:4px; }
+  .metricHeading > span { width:28px; height:28px; }
+  .metricHeading > p { min-height:40px; font-size:13px; line-height:20px; }
+  .metricBody { margin-top:4px; gap:4px; }
+  .metricBody > div:first-child > p:first-child { font-size:26px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+  .metricBody > div:first-child > p:nth-child(2) { margin-top:6px; font-size:11px; line-height:16px; }
+  .metricBody svg { max-height:28px; }
+  .metric > p, .metric > div:last-child:not(.metricBody):not(.metricHeading) { margin-top:6px; font-size:11px; line-height:15px; }
+}
+@media (min-width:640px) { .updated { flex-basis:auto; margin-left:auto; } }

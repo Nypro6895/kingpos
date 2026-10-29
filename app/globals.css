@@ -575,7 +575,6 @@ body {
 /* Only the active POS route owns the viewport; retained hidden POS stays inert. */
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>[data-desktop-sidebar-slot],
-[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>header),
 [data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>nav){display:none!important}
 
 /* Compact page chrome only inside the mobile POS workspaces. */

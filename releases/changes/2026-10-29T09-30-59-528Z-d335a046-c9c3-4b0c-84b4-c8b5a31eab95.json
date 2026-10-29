@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "settings-image-runtime-build-fix-20261029",
+  "status": "ready",
+  "summary": "Remove redundant Node.js route config that conflicts with Cache Components; production build and image/Safari security regressions pass. Queue only, not deployed.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/images/normalize/route.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "4145c173-b4c8-4db1-bb30-1c8d337a083a"
+  ],
+  "integration": {
+    "originalEvents": [
+      "4145c173-b4c8-4db1-bb30-1c8d337a083a"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "d335a046-c9c3-4b0c-84b4-c8b5a31eab95",
+  "recordedAt": "2026-10-29T09:30:59.528Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/api/images/normalize/route.ts": "216561f248d8682adfbe4a61f97ec7b0e4084258c2378d3183c7b18bc9a22d8d"
+  }
+}

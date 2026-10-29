@@ -46,7 +46,7 @@ function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
   useEffect(() => {
     const resize = () => {
       const panel = document.querySelector<HTMLElement>('[data-owner-workspace]>.owner-workspace-panel');
-      if (!panel || panel.hidden || !panel.getClientRects().length || document.documentElement.dataset.ownerDevice === 'desktop') return;
+      if (!panel || panel.hidden || !panel.getClientRects().length) return;
       const viewport = window.visualViewport;
       const nav = Array.from(document.querySelectorAll<HTMLElement>('.owner-device-nav')).find(n => n.getClientRects().length > 0);
       const bottom = document.documentElement.dataset.ownerDevice === 'phone' ? (nav?.getBoundingClientRect().height ?? 62) : 0;

@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "payroll-compact-display-only-20261029",
+  "status": "ready",
+  "summary": "Display-only compact Payroll period rail and Date/Gross/Tip listing on web/native; preserve all history, calculations and actions. Original partial history event remains pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-daily-listing.tsx",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "2a895c72-1390-4570-8108-d0d0ad55a012"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "c84379a7-3168-4058-8b68-b3fd3855c7d5",
+  "recordedAt": "2026-10-29T09:31:10.256Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "ba908a7156fac930640cd03e19b82c938f965b9041edff8cda2f310b13e1f8aa",
+    "app/payroll/payroll-daily-listing.tsx": "e817427979d896b7e346b60c13a4aa8e3f63def14232786b97c2eceefae0838c",
+    "app/payroll/payroll-period-rail.tsx": "71203687190e5a368c699c6587a09c93364fa40ad0c500db730edaf31a625800",
+    "app/payroll/payroll-mobile.module.css": "66f8e79cbea4e3cf05a7c09317c25e0933cbc45df48735ec825f8873a8df8a4e",
+    "lib/app-local-owner-payroll-view.tsx": "36853592bf70c1368787466fa7568179f1edd059eb2a46e90b9a2ff47b550460"
+  }
+}

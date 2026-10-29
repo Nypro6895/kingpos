@@ -51,10 +51,8 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
 
   useEffect(()=>{
     const resize=()=>{
-      const element=document.querySelector<HTMLElement>('[data-pos-owner-page]');if(!element)return;
-      if(document.documentElement.dataset.ownerDevice==='tablet')return;
+      const element=document.querySelector<HTMLElement>('[data-pos-owner-page]');if(!element||!element.getClientRects().length)return;
       if(document.documentElement.dataset.ownerDevice==='phone'){
-        if(!element.getClientRects().length)return;
         const viewport=window.visualViewport;
         const nav=Array.from(document.querySelectorAll<HTMLElement>('.owner-device-nav')).find(n=>n.getClientRects().length>0);
         const bottom=nav?.getBoundingClientRect().height??62;
@@ -63,7 +61,8 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
       }
       const nav=Array.from(document.querySelectorAll('nav')).find(n=>getComputedStyle(n).position==='fixed'&&n.getBoundingClientRect().bottom>=window.innerHeight-2);
       const bottom=nav?.getBoundingClientRect().height??0;
-      element.style.setProperty('--owner-height',`${Math.max(280,window.innerHeight-element.getBoundingClientRect().top-bottom-8)}px`);
+      const viewport=window.visualViewport;
+      element.style.setProperty('--owner-height',`${Math.max(160,(viewport?.height??window.innerHeight)+(viewport?.offsetTop??0)-element.getBoundingClientRect().top-bottom-8)}px`);
     };
     resize();window.addEventListener('resize',resize);window.visualViewport?.addEventListener('resize',resize);
     return()=>{window.removeEventListener('resize',resize);window.visualViewport?.removeEventListener('resize',resize);};

@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "ios-explore-comments-transport",
+  "status": "ready",
+  "summary": "Physical iPhone acceptance passed for Nene quick comment and post preview; queue validated read transport fix for a later coordinated web+iOS release only.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "lib/app-local-explore-server.ts",
+    "tests/app-local-comments-transport.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "d5a9b81c-796c-42d0-9181-811904a337fb"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "8fbbe92f-f1b8-4ecc-bac5-504b81351d8c",
+  "recordedAt": "2026-10-29T09:31:10.126Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/app-local-explore-http-client.ts": "0c563de2cd017a8d1eb30f3d6efd744d9df265b711da6f03c242916eac72e207",
+    "lib/app-local-explore-metadata.ts": "1398a0fefeb8ba25e6c6d3814062bee096a2c999cee0e0fade7c8889d0879ef8",
+    "lib/app-local-explore-server.ts": "50d1f41b8f48e40207547c4dd3b99f684a3842e2fb39407c3b15571c82cdcecf",
+    "tests/app-local-comments-transport.test.mjs": "21142212d10bce7d955ee7f8e75ded86cac60c6c30a05fdc20977be7260f80b7"
+  }
+}

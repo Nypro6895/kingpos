@@ -66,3 +66,7 @@ html:is([data-owner-device=phone],[data-owner-device=tablet]) .owner-checkout[da
 .owner-ios-label{display:none}
 html:is([data-owner-device=phone],[data-owner-device=tablet]) .owner-ios-label{display:inline}
 html:is([data-owner-device=phone],[data-owner-device=tablet]) .owner-desktop-label{display:none}
+
+/* Shared role header consumes viewport space; retain the measured checkout height on iPad. */
+html[data-owner-device=tablet] .owner-checkout[data-owner-reference]{height:var(--owner-height,calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 16px))}
+html[data-owner-device=tablet] [data-owner-workspace]>.owner-workspace-panel{height:var(--owner-panel-height,calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 16px))}

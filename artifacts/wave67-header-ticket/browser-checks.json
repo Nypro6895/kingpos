@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-29T09:43:44.404Z",
+  "results": [
+    "phone 390 checkout header and Submit fit",
+    "phone 390 Ticket panel fits",
+    "tablet 768 checkout header and Submit fit",
+    "tablet 768 Ticket panel fits",
+    "tablet 1024 checkout header and Submit fit",
+    "tablet 1024 Ticket panel fits",
+    "desktop 1440 checkout header and Submit fit",
+    "desktop 1440 Ticket panel fits",
+    "Causal before/after: original global rule hides header, patched CSS restores it",
+    "Single native Ticket toolbar, query and date functional 320",
+    "Single native Ticket toolbar, query and date functional 390",
+    "Single native Ticket toolbar, query and date functional 768",
+    "Single native Ticket toolbar, query and date functional 1280",
+    "Classic Work log branch preserved"
+  ],
+  "passed": 14,
+  "errors": [],
+  "realData": false
+}
