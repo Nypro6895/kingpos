@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "security-check-edge-monitor-20261029",
+  "status": "ready",
+  "summary": "Owner-approved exact security-check WAF rule challenge-to-log applied and active readback verified; global firewall and all other configuration preserved",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "artifacts/social-monitor-release/firewall-monitor-patch.json",
+    "artifacts/social-monitor-release/firewall-review.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\artifacts\\security-combined\\frozen-waf",
+    "commit": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f"
+  },
+  "integratesEvents": [
+    "c29b0240-329f-4dba-bb6c-39e4d1dcf0fd"
+  ],
+  "validation": [
+    {
+      "name": "Only approved GET security-check WAF action log active; firewall/conditions/other rules preserved",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\artifacts\\security-combined\\waf-verified.json"
+    }
+  ],
+  "limitations": [
+    "No other rule, BotID, auth, OWASP or project protection setting changed."
+  ],
+  "id": "e8e3c185-653e-44b1-bfeb-45ae51635615",
+  "recordedAt": "2026-10-29T05:33:13.321Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-security-web-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "artifacts/social-monitor-release/firewall-monitor-patch.json": "00359902e1298375ea6d4534a707ff21c7b82e7222916ec693b4b38506f95640",
+    "artifacts/social-monitor-release/firewall-review.json": "cff5a6f2c0f9364809c27ef1b4ce79950b500af754ef9b78e5941f3389a74252"
+  }
+}

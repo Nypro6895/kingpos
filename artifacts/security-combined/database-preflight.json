@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-29T05:25:35.760Z",
+  "project": "bowkoiprvqwjilwaxhda",
+  "source": "Observed Supabase SQL Editor result in coordinator-owned tab 1085351448; one read-only SELECT",
+  "database": "postgres",
+  "migrationApplied": false,
+  "signalRpcExists": false,
+  "functions": {
+    "post_safety_scan": "87df5f9a0fdd1adbde68d5966cb935fa",
+    "abuse_guard_actor": "f66dfbf8f9f65a9f6510346dbc981da5",
+    "abuse_guard_content": "d8ea4c246300b62ccd0ccf9d24c5868b",
+    "abuse_guard_image": "d817c5c8361edc0adc50d8c52b8f9a6e",
+    "abuse_preflight": "425eb91186265c81ba962129d4b9ec44",
+    "get_abuse_notice": "01913fd5dadde57b514b9a369ad952e9",
+    "record_abuse_bot_event": "7c734667d4ccf47361ece71f2904b04d"
+  },
+  "failures": []
+}

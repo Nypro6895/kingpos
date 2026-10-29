@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-29T05:27:14.563Z",
+  "activeId": "waf_MkE7ll3LuJZi",
+  "version": 1,
+  "rule": "rule_authentication_flood_protection_QLruha",
+  "project": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5#active",
+  "owner": "team_ULSTdpFlZPtXKEMzbSrMFXAL",
+  "firewallEnabled": true,
+  "from": "challenge",
+  "to": "log",
+  "scopedRuleOnly": true,
+  "draftAbsent": true,
+  "failures": []
+}

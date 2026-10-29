@@ -1,0 +1,119 @@
+{
+  "at": "2026-10-29T05:32:45.972Z",
+  "source": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "events": [
+    {
+      "changeId": "pos-ios-tablet-layout-20261028",
+      "eventId": "f9b8968e-2780-428d-bff6-8a7f82eea2a5",
+      "supersededSourceReady": "c75b5d1c-6351-423c-af0a-1b059d8aaafe",
+      "originalEvent": "6ef0ead8-caaf-40a6-aba4-1fd53ff82773",
+      "files": [
+        "app/pos/owner-notebook-menu.tsx",
+        "app/pos/owner-notebook-menu.css",
+        "app/pos/owner-pos-tabs.tsx",
+        "app/pos/owner-pos-client.tsx",
+        "app/pos/owner-workspace-frame.tsx",
+        "app/pos/owner-windows-compact-menu.tsx",
+        "app/pos/owner-windows-compact-menu.css"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-31-36-019Z-f9b8968e-2780-428d-bff6-8a7f82eea2a5.json"
+    },
+    {
+      "changeId": "pos-ios-custom-service-20261028",
+      "eventId": "fef490f6-1270-4d18-9679-364dc6de5e70",
+      "supersededSourceReady": "8057e995-936c-461d-8aac-b4247c4ad4c4",
+      "originalEvent": "204750d6-d9f5-4df8-80d0-ba56345b22c9",
+      "files": [
+        "app/pos/owner-pos-client.tsx",
+        "app/pos/owner-notebook-menu.css"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-31-45-896Z-fef490f6-1270-4d18-9679-364dc6de5e70.json"
+    },
+    {
+      "changeId": "mobile-notebook-menu-20261028",
+      "eventId": "670dc320-f55f-4af4-97b7-19bfa336b0b0",
+      "supersededSourceReady": "8182e0be-10eb-4f74-8c89-b6f1e339c958",
+      "originalEvent": "953f5a12-69a8-4051-90f3-ebcca2e482d8",
+      "files": [
+        "app/pos/owner-notebook-menu.tsx",
+        "app/pos/owner-windows-compact-menu.tsx",
+        "app/pos/owner-windows-compact-menu.css"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-31-56-021Z-670dc320-f55f-4af4-97b7-19bfa336b0b0.json"
+    },
+    {
+      "changeId": "payroll-staff-scroll-ui-20261029",
+      "eventId": "4d25c651-07bc-4937-8f82-885d05c5aa13",
+      "supersededSourceReady": "80fe26a1-e95f-4872-84c3-5b3fcbec9a24",
+      "originalEvent": "33368695-5bea-4108-a7dc-b7166e01c991",
+      "files": [
+        "app/(app)/payroll/page.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "app/payroll/payroll-disclosure.tsx",
+        "app/payroll/payroll-period-rail.tsx",
+        "app/payroll/payroll-tabs.tsx",
+        "app/payroll/staff-income-card.tsx",
+        "lib/payroll-period-rail.ts",
+        "lib/staff-payroll-display.ts",
+        "tests/payroll-staff-scroll-display.test.mjs",
+        "lib/app-local-owner-payroll-view.tsx"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-32-06-578Z-4d25c651-07bc-4937-8f82-885d05c5aa13.json"
+    },
+    {
+      "changeId": "payroll-charts-20261028",
+      "eventId": "8752016c-05ab-43c8-9351-ddbc0d352552",
+      "supersededSourceReady": "7f15a87b-0c6b-4af7-b440-27826312afb9",
+      "originalEvent": "f12d2f0e-0b5a-41de-b129-ebf1df68a07f",
+      "files": [
+        "app/payroll/payroll-dashboard.tsx",
+        "app/payroll/payroll-dashboard.module.css"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-32-17-077Z-8752016c-05ab-43c8-9351-ddbc0d352552.json"
+    },
+    {
+      "changeId": "combined-pos-device-integration-20261028",
+      "eventId": "a3517f4d-cea8-4b91-b6b8-e83951c239df",
+      "supersededSourceReady": "655b3535-ddf8-4bde-a828-bbe5bfef9103",
+      "originalEvent": "9c2d6032-2009-43f8-a067-4bab7ab93748",
+      "files": [
+        "app/pos/owner-notebook-menu.tsx",
+        "app/pos/owner-notebook-menu.css",
+        "app/pos/owner-pos-tabs.tsx",
+        "app/pos/owner-pos-client.tsx",
+        "app/pos/owner-workspace-frame.tsx",
+        "app/pos/owner-windows-compact-menu.tsx",
+        "app/pos/owner-windows-compact-menu.css"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-32-27-175Z-a3517f4d-cea8-4b91-b6b8-e83951c239df.json"
+    },
+    {
+      "changeId": "combined-pos-payroll-release-20261028",
+      "eventId": "7897633f-10db-432b-bd75-33b500b0cea4",
+      "supersededSourceReady": "6d329072-e5c1-446e-82de-d1e0b556f846",
+      "originalEvent": null,
+      "files": [
+        "app/pos/owner-notebook-menu.tsx",
+        "app/pos/owner-notebook-menu.css",
+        "app/pos/owner-pos-tabs.tsx",
+        "app/pos/owner-pos-client.tsx",
+        "app/pos/owner-workspace-frame.tsx",
+        "app/pos/owner-windows-compact-menu.tsx",
+        "app/pos/owner-windows-compact-menu.css",
+        "app/(app)/payroll/page.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "app/payroll/payroll-disclosure.tsx",
+        "app/payroll/payroll-period-rail.tsx",
+        "app/payroll/payroll-tabs.tsx",
+        "app/payroll/staff-income-card.tsx",
+        "lib/payroll-period-rail.ts",
+        "lib/staff-payroll-display.ts",
+        "tests/payroll-staff-scroll-display.test.mjs",
+        "app/payroll/payroll-dashboard.tsx",
+        "app/payroll/payroll-dashboard.module.css",
+        "lib/app-local-owner-payroll-view.tsx"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-32-36-519Z-7897633f-10db-432b-bd75-33b500b0cea4.json"
+    }
+  ]
+}

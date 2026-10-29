@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-29T05:31:30.993Z",
+  "deployment": "dpl_Gv64Dt919UZ5Pf76BwSerpqTqpAj",
+  "role": "existing Owner",
+  "checks": [
+    {
+      "name": "Fresh authenticated Payroll source scripts bind new deployment after loading",
+      "passed": true
+    },
+    {
+      "name": "Payroll month and scheduled period rails rendered",
+      "passed": true
+    },
+    {
+      "name": "Staff payroll cards render Check/Cash/Tip summaries",
+      "passed": true
+    },
+    {
+      "name": "Daily collections and service mix chart plus staff performance render",
+      "passed": true
+    },
+    {
+      "name": "POS More contains Exit POS and View all settings",
+      "passed": true
+    },
+    {
+      "name": "Click Exit POS reaches root Owner page",
+      "passed": true
+    },
+    {
+      "name": "Click View all settings reaches Settings heading",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Initial immediate browser observation used previous cached JB shell; after cache-busted navigation and load, new deployment scripts and intended UI were verified.",
+    "Admin visual preview not accepted: current Owner session is not an active Admin session; admin route redirected to login. No account switch or permission change. Server/admin source and guarded SQL/WAF are verified separately.",
+    "No financial/customer amounts or names retained in this proof; no production transaction or draft edit.",
+    "Desktop browser finite smoke does not substitute for exact installed iPhone65 physical checks."
+  ],
+  "writes": 0
+}

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-29T05:28:20.028Z",
+  "project": "bowkoiprvqwjilwaxhda",
+  "uiWrapperNormalizedSha256": "c99767c43c34f69dc66bcdbf2d3bcbd642b0c9fc1612b73966c3ec566ddbf251",
+  "result": {
+    "recorded": true,
+    "migration": "20261029021000",
+    "anonSignalExecute": false,
+    "authenticatedSignalExecute": false,
+    "automaticSocialRestrictionsIgnored": true
+  }
+}

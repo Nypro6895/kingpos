@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-29T05:33:35.805Z",
+  "webBaseline": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+  "webBaselineSourceSha256": "aefdfb1f36afd10f280fb857521e30c02dac4b5e31d6e62eac07154be685fed4",
+  "nativeBaseline": "509985dec00091f285c28b7dcb079460da104249",
+  "nativeSource": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "webSource": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f",
+  "webFileCount": 3488,
+  "posPayrollRuntimeOverlays": 18,
+  "securityRuntimeOverlays": 5,
+  "allUnrelatedWebFilesPreserved": true,
+  "allUnrelatedNativeFilesPreserved": true,
+  "channelCompatibility": {
+    "nativeSource": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+    "nativeRun": 40820981797,
+    "newNativeDispatch": false,
+    "scope": "Security ready event explicitly web-only. Changed handlers are server-only; admin page and its two added translation keys are admin-only, outside supported native app-local roles/screens. RPC signatures and client command/bridge contracts unchanged. Existing native64 and in-flight native POS/Payroll build use updated server behavior. No security client screen or Swift/bridge payload change required or claimed embedded in native."
+  },
+  "securitySQL": {
+    "at": "2026-10-29T05:28:35.012Z",
+    "project": "bowkoiprvqwjilwaxhda",
+    "functions": {
+      "abuse_preflight": "bc59a8396a74ed0b7b04b85a06cb5f61",
+      "get_abuse_notice": "587974492a8a85946fad47d75f39e9a6",
+      "post_safety_scan": "40c9b14617a190b0692abc6e09708209",
+      "abuse_guard_actor": "32ee018370596b9c4bf7cd25162e1aeb",
+      "abuse_guard_image": "b76740c2bd9708aaaa7a11a3453d4ef1",
+      "abuse_guard_content": "23e4a47cc3cf5f4797910f91e8bcae37",
+      "record_abuse_bot_event": "15c4eb58ed98edd5412453de1e8cb886"
+    },
+    "migrationRecorded": true,
+    "socialFlagsIgnored": true,
+    "automaticNoticeCount": 0,
+    "signalRpcServiceOnly": true,
+    "migrationSourceMatches": true
+  },
+  "waf": {
+    "at": "2026-10-29T05:28:06.746Z",
+    "project": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5",
+    "rule": "rule_authentication_flood_protection_QLruha",
+    "from": "challenge",
+    "to": "log",
+    "activeVerified": true,
+    "activeId": "waf_MkE7ll3LuJZi",
+    "oldVersion": 1,
+    "newVersion": 2,
+    "globalFirewallEnabled": true,
+    "allOtherRulesAndCrsPreserved": true,
+    "conditionsPreserved": true,
+    "nullMetadataNormalized": true,
+    "activation": "Scoped PATCH applied directly to active config; readback version2, no draft. No activation POST needed or issued.",
+    "failures": []
+  },
+  "productionFinancialWrites": 0,
+  "failures": []
+}

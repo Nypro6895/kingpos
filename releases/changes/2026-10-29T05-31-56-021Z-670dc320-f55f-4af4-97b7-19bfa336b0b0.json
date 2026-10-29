@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "mobile-notebook-menu-20261028",
+  "status": "ready",
+  "summary": "Verified integrated mobile-notebook-menu-20261028 on exact liveJB/native64 baseline; committed v3 f4e6104f and current web/TestFlight distribution verified; finite physical acceptance separately reported",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/owner-windows-compact-menu.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v3",
+    "commit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b"
+  },
+  "supersedesEvents": [
+    "8182e0be-10eb-4f74-8c89-b6f1e339c958"
+  ],
+  "integratesEvents": [
+    "953f5a12-69a8-4051-90f3-ebcca2e482d8"
+  ],
+  "validation": [
+    {
+      "name": "Frozen v3 Git source and unrelated baseline preserved; finite local display/state tests and production build pass",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/frozen-manifest-v3.json"
+    },
+    {
+      "name": "235native simulator tests, source-bound bundle, signed and unsigned archive hashes and upload",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/native-verified.json"
+    },
+    {
+      "name": "Apple VALID and both existing TestFlight groups; exact canonical live source",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/availability-verified.json"
+    },
+    {
+      "name": "Authenticated live Owner read/navigation UI smoke",
+      "result": "passed",
+      "evidence": "artifacts/security-combined/live-browser-smoke.json"
+    }
+  ],
+  "limitations": [
+    "Finite physical smoke result belongs only to exact installed new build, separately recorded; no full product/performance/provider acceptance inferred.",
+    "Original v2 local-ready source was not published and is explicitly superseded.",
+    "Owner directly approved top Add/Reset and Services below. Server/admin security is web-compatible and bound separately to security events/source; native source remains f4e."
+  ],
+  "id": "670dc320-f55f-4af4-97b7-19bfa336b0b0",
+  "recordedAt": "2026-10-29T05:31:56.021Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-security-web-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-notebook-menu.tsx": "f8c09a52909eec628140e6d4541da3b731265bb89df75852c86b502e45af540c",
+    "app/pos/owner-windows-compact-menu.tsx": "806367ebebef5bcf6951db8750a564ad90951b9d5f22d02c9562bd4a8020e73d",
+    "app/pos/owner-windows-compact-menu.css": "7ba7afa499e34af9ee0995763f7377d7136cf6360def03b451f611dd6971a44c"
+  }
+}

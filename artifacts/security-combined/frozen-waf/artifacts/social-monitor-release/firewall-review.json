@@ -1,0 +1,12 @@
+{
+  "versionBefore": 1,
+  "configBefore": "waf_MkE7ll3LuJZi",
+  "rule": "rule_authentication_flood_protection_QLruha",
+  "path": "/security-check",
+  "method": "GET",
+  "before": "challenge",
+  "after": "log",
+  "scope": "Only this custom rule; preserve firewallEnabled, all other rules, OWASP configuration and auth controls",
+  "reason": "The security-check page itself was challenged again by the edge; candidate GET returned429 checkpoint",
+  "documentation": "https://vercel.com/docs/rest-api/security/update-firewall-configuration"
+}

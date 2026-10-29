@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-29T05:21:05.329Z",
+  "runtimeFiles": 5,
+  "proof": [
+    {
+      "file": "lib/abuse-server.ts",
+      "before": "aec8c3333c435b79c448563bc5c78d819d0b724a7b1101dedfa877b04b8a97ce",
+      "producer": "e7546e2535fac1bd0acd7d640da2440eb70d851b93fd6a98375c628cc234b6db",
+      "integrated": "e7546e2535fac1bd0acd7d640da2440eb70d851b93fd6a98375c628cc234b6db",
+      "channel": "web"
+    },
+    {
+      "file": "lib/post-comments.ts",
+      "before": "ad03ece2cea7020b9e7befe10bd6c8e55d8c6d614a406c613c5861ec445d61db",
+      "producer": "00a2d47ca757184b3fd92e21df85d7a93ce99565738d6c1e1e4aa5a725e5e000",
+      "integrated": "00a2d47ca757184b3fd92e21df85d7a93ce99565738d6c1e1e4aa5a725e5e000",
+      "channel": "web"
+    },
+    {
+      "file": "app/(app)/admin/post-safety/spam/page.tsx",
+      "before": "8db910213c54c9ca42cac010b1f79c6cb9688aaa1524800a0ae30f4872a9e56d",
+      "producer": "f91a922f091b5fec75f7835bd520edad45044eb393e7f13459834a222a2058ad",
+      "integrated": "f04f408aa6384b2704e38ceef7c7f786b43e023fc17429b69c7a0491b6fc34d7",
+      "channel": "web"
+    },
+    {
+      "file": "lib/vietnamese-workspace-copy.json",
+      "before": "6163cc2a9b4f1b5c7841bf1511d51992a00d70ce9c6c79ba101141bcdc91dc81",
+      "producer": "d3b380c1a6d10326d92a2ff29c276b9a30311d680efbdf50336d746fa14b476e",
+      "integrated": "1e4a1b4d125a86db5caa662bb24edd09c9332af7be1330b8fa00409eb3fba454",
+      "channel": "web"
+    },
+    {
+      "file": "supabase/migrations/20261029021000_social_monitor_only.sql",
+      "before": null,
+      "producer": "7d015d8cfa0d800ef8dacbaef1eb75aedc4dd1efd13aec803be4a12f1c7ef0de",
+      "integrated": "7d015d8cfa0d800ef8dacbaef1eb75aedc4dd1efd13aec803be4a12f1c7ef0de",
+      "channel": "web"
+    },
+    {
+      "file": "tests/social-monitor-server.test.mjs",
+      "before": null,
+      "producer": "3b6e77dbdece7245adcfa6fea9a9d2390894e5c71a38e6e44edd98fe83f97bd5",
+      "integrated": "52e75a7495292ce078611dc93db11d5089facf4679ce13124372debbf79ae1fa",
+      "channel": "web"
+    },
+    {
+      "file": "tests/social-monitor-only.integration.test.mjs",
+      "before": null,
+      "producer": "a34a94d20be81520ea768e7f70b083d1d343004e25a92041f5a6127f6dee8edb",
+      "integrated": "d09ff07c9da168074d66218b1d9c45f2c26ff7aa4136c8a9f5660d66f354ae63",
+      "channel": "web"
+    },
+    {
+      "file": "tests/comment-idempotency-runtime.test.mjs",
+      "before": null,
+      "producer": "30717c52e8556cf9d90ef4df944fe35d532c93ef43e1d8a7439e852f98baec73",
+      "integrated": "c70efa23c3a6f3001e72b347f61c55e987c2ea3a399e8c4d8c8e791a6623a8c5",
+      "channel": "web"
+    },
+    {
+      "file": "tests/abuse-prevention.integration.test.mjs",
+      "before": null,
+      "producer": "b0d7f5489b554a721abaa536d88134f927e7bbc2135bd67d9dc90766e918de59",
+      "integrated": "476e4c622aa05de8025dcccb35b9f5044864ab9631ac0d7dff550fce732f5fd5",
+      "channel": "web"
+    },
+    {
+      "file": "tests/abuse-signals.test.mjs",
+      "before": null,
+      "producer": "8e276f605b306dbfb20938405359aca176c0cedbf0280015c258b5a5d545ce14",
+      "integrated": "8e276f605b306dbfb20938405359aca176c0cedbf0280015c258b5a5d545ce14",
+      "channel": "web"
+    },
+    {
+      "file": "tests/fixtures/social-monitor-apply.sql",
+      "before": null,
+      "producer": "c99767c43c34f69dc66bcdbf2d3bcbd642b0c9fc1612b73966c3ec566ddbf251",
+      "integrated": "c99767c43c34f69dc66bcdbf2d3bcbd642b0c9fc1612b73966c3ec566ddbf251",
+      "channel": "web"
+    },
+    {
+      "file": "tests/fixtures/social-monitor-production-functions.json",
+      "before": null,
+      "producer": "2d98a9fa292fb169f511f090b121723b11dfbd0bba03b91dfa5a8e3e553d906b",
+      "integrated": "2d98a9fa292fb169f511f090b121723b11dfbd0bba03b91dfa5a8e3e553d906b",
+      "channel": "web"
+    }
+  ],
+  "nativeAssessment": {
+    "nativeSource": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+    "nativeRun": 40820981797,
+    "newNativeDispatch": false,
+    "scope": "Security ready event explicitly web-only. Changed handlers are server-only; admin page and its two added translation keys are admin-only, outside supported native app-local roles/screens. RPC signatures and client command/bridge contracts unchanged. Existing native64 and in-flight native POS/Payroll build use updated server behavior. No security client screen or Swift/bridge payload change required or claimed embedded in native."
+  }
+}

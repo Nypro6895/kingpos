@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-29T05:28:06.746Z",
+  "project": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5",
+  "rule": "rule_authentication_flood_protection_QLruha",
+  "from": "challenge",
+  "to": "log",
+  "activeVerified": true,
+  "activeId": "waf_MkE7ll3LuJZi",
+  "oldVersion": 1,
+  "newVersion": 2,
+  "globalFirewallEnabled": true,
+  "allOtherRulesAndCrsPreserved": true,
+  "conditionsPreserved": true,
+  "nullMetadataNormalized": true,
+  "activation": "Scoped PATCH applied directly to active config; readback version2, no draft. No activation POST needed or issued.",
+  "failures": []
+}

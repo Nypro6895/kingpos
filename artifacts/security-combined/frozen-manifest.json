@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-29T05:26:07.598Z",
+  "snapshot": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\artifacts\\security-combined\\frozen-integrated",
+  "baselineNative": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "files": [
+    {
+      "file": "lib/abuse-server.ts",
+      "sha256": "e7546e2535fac1bd0acd7d640da2440eb70d851b93fd6a98375c628cc234b6db",
+      "bytes": 5060
+    },
+    {
+      "file": "lib/post-comments.ts",
+      "sha256": "00a2d47ca757184b3fd92e21df85d7a93ce99565738d6c1e1e4aa5a725e5e000",
+      "bytes": 19766
+    },
+    {
+      "file": "app/(app)/admin/post-safety/spam/page.tsx",
+      "sha256": "f04f408aa6384b2704e38ceef7c7f786b43e023fc17429b69c7a0491b6fc34d7",
+      "bytes": 12332
+    },
+    {
+      "file": "lib/vietnamese-workspace-copy.json",
+      "sha256": "1e4a1b4d125a86db5caa662bb24edd09c9332af7be1330b8fa00409eb3fba454",
+      "bytes": 503490
+    },
+    {
+      "file": "supabase/migrations/20261029021000_social_monitor_only.sql",
+      "sha256": "7d015d8cfa0d800ef8dacbaef1eb75aedc4dd1efd13aec803be4a12f1c7ef0de",
+      "bytes": 21465
+    },
+    {
+      "file": "tests/social-monitor-server.test.mjs",
+      "sha256": "52e75a7495292ce078611dc93db11d5089facf4679ce13124372debbf79ae1fa",
+      "bytes": 2412
+    },
+    {
+      "file": "tests/social-monitor-only.integration.test.mjs",
+      "sha256": "d09ff07c9da168074d66218b1d9c45f2c26ff7aa4136c8a9f5660d66f354ae63",
+      "bytes": 12189
+    },
+    {
+      "file": "tests/comment-idempotency-runtime.test.mjs",
+      "sha256": "c70efa23c3a6f3001e72b347f61c55e987c2ea3a399e8c4d8c8e791a6623a8c5",
+      "bytes": 7259
+    },
+    {
+      "file": "tests/abuse-prevention.integration.test.mjs",
+      "sha256": "476e4c622aa05de8025dcccb35b9f5044864ab9631ac0d7dff550fce732f5fd5",
+      "bytes": 25324
+    },
+    {
+      "file": "tests/abuse-signals.test.mjs",
+      "sha256": "8e276f605b306dbfb20938405359aca176c0cedbf0280015c258b5a5d545ce14",
+      "bytes": 2154
+    },
+    {
+      "file": "tests/fixtures/social-monitor-apply.sql",
+      "sha256": "c99767c43c34f69dc66bcdbf2d3bcbd642b0c9fc1612b73966c3ec566ddbf251",
+      "bytes": 46833
+    },
+    {
+      "file": "tests/fixtures/social-monitor-production-functions.json",
+      "sha256": "2d98a9fa292fb169f511f090b121723b11dfbd0bba03b91dfa5a8e3e553d906b",
+      "bytes": 18506
+    }
+  ]
+}

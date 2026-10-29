@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "payroll-charts-20261028",
+  "status": "ready",
+  "summary": "Verified integrated payroll-charts-20261028 on exact liveJB/native64 baseline; committed v3 f4e6104f and current web/TestFlight distribution verified; finite physical acceptance separately reported",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v3",
+    "commit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b"
+  },
+  "supersedesEvents": [
+    "7f15a87b-0c6b-4af7-b440-27826312afb9"
+  ],
+  "integratesEvents": [
+    "f12d2f0e-0b5a-41de-b129-ebf1df68a07f"
+  ],
+  "validation": [
+    {
+      "name": "Frozen v3 Git source and unrelated baseline preserved; finite local display/state tests and production build pass",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/frozen-manifest-v3.json"
+    },
+    {
+      "name": "235native simulator tests, source-bound bundle, signed and unsigned archive hashes and upload",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/native-verified.json"
+    },
+    {
+      "name": "Apple VALID and both existing TestFlight groups; exact canonical live source",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/availability-verified.json"
+    },
+    {
+      "name": "Authenticated live Owner read/navigation UI smoke",
+      "result": "passed",
+      "evidence": "artifacts/security-combined/live-browser-smoke.json"
+    }
+  ],
+  "limitations": [
+    "Finite physical smoke result belongs only to exact installed new build, separately recorded; no full product/performance/provider acceptance inferred.",
+    "Original v2 local-ready source was not published and is explicitly superseded.",
+    "Owner directly approved top Add/Reset and Services below. Server/admin security is web-compatible and bound separately to security events/source; native source remains f4e."
+  ],
+  "id": "8752016c-05ab-43c8-9351-ddbc0d352552",
+  "recordedAt": "2026-10-29T05:32:17.077Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-security-web-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/payroll/payroll-dashboard.tsx": "052753aae0741d415d1d52ad5d758cb07b114d484635bdb54fcbee173c11de15",
+    "app/payroll/payroll-dashboard.module.css": "076404b633d0f08ff59cf12100cf7996ca46bd306548cd5026490828b03315b4"
+  }
+}

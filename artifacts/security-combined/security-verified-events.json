@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-29T05:33:13.459Z",
+  "source": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f",
+  "events": [
+    {
+      "eventId": "49859059-3208-47ac-a15c-f334bb2700c8",
+      "changeId": "social-monitor-only-20261029",
+      "files": [
+        "lib/abuse-server.ts",
+        "lib/post-comments.ts",
+        "app/(app)/admin/post-safety/spam/page.tsx",
+        "lib/vietnamese-workspace-copy.json",
+        "supabase/migrations/20261029021000_social_monitor_only.sql",
+        "tests/social-monitor-server.test.mjs",
+        "tests/social-monitor-only.integration.test.mjs",
+        "tests/comment-idempotency-runtime.test.mjs",
+        "tests/abuse-prevention.integration.test.mjs",
+        "tests/abuse-signals.test.mjs",
+        "tests/fixtures/social-monitor-apply.sql",
+        "tests/fixtures/social-monitor-production-functions.json"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-33-03-980Z-49859059-3208-47ac-a15c-f334bb2700c8.json"
+    },
+    {
+      "eventId": "e8e3c185-653e-44b1-bfeb-45ae51635615",
+      "changeId": "security-check-edge-monitor-20261029",
+      "files": [
+        "artifacts/social-monitor-release/firewall-monitor-patch.json",
+        "artifacts/social-monitor-release/firewall-review.json"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-33-13-321Z-e8e3c185-653e-44b1-bfeb-45ae51635615.json"
+    },
+    {
+      "eventId": "d7f3d0da-ed71-4fa3-883e-58b759f37d21",
+      "changeId": "combined-security-web-integration-20261029",
+      "files": [
+        "lib/abuse-server.ts",
+        "lib/post-comments.ts",
+        "app/(app)/admin/post-safety/spam/page.tsx",
+        "lib/vietnamese-workspace-copy.json",
+        "supabase/migrations/20261029021000_social_monitor_only.sql",
+        "tests/social-monitor-server.test.mjs",
+        "tests/social-monitor-only.integration.test.mjs",
+        "tests/comment-idempotency-runtime.test.mjs",
+        "tests/abuse-prevention.integration.test.mjs",
+        "tests/abuse-signals.test.mjs",
+        "tests/fixtures/social-monitor-apply.sql",
+        "tests/fixtures/social-monitor-production-functions.json"
+      ],
+      "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\changes\\2026-10-29T05-33-13-455Z-d7f3d0da-ed71-4fa3-883e-58b759f37d21.json"
+    }
+  ]
+}

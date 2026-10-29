@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-29T05:28:35.012Z",
+  "project": "bowkoiprvqwjilwaxhda",
+  "functions": {
+    "abuse_preflight": "bc59a8396a74ed0b7b04b85a06cb5f61",
+    "get_abuse_notice": "587974492a8a85946fad47d75f39e9a6",
+    "post_safety_scan": "40c9b14617a190b0692abc6e09708209",
+    "abuse_guard_actor": "32ee018370596b9c4bf7cd25162e1aeb",
+    "abuse_guard_image": "b76740c2bd9708aaaa7a11a3453d4ef1",
+    "abuse_guard_content": "23e4a47cc3cf5f4797910f91e8bcae37",
+    "record_abuse_bot_event": "15c4eb58ed98edd5412453de1e8cb886"
+  },
+  "migrationRecorded": true,
+  "socialFlagsIgnored": true,
+  "automaticNoticeCount": 0,
+  "signalRpcServiceOnly": true,
+  "migrationSourceMatches": true
+}

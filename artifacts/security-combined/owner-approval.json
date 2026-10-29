@@ -1,0 +1,22 @@
+{
+  "recordedAtUtc": "2026-10-29T05:15:39.8800044Z",
+  "sourceThread": "01a18451-d381-7f92-8478-20e5fd5f9afe",
+  "coordinatorThread": "01a18466-5543-71e1-bcd3-e934f324aaae",
+  "authority": "direct human user message",
+  "exactUserInstruction": "Tôi xác nhận áp dụng migration Supabase và đổi rule WAF /security-check từ challenge sang log. Gộp phần sửa này vào lượt deploy chung do coordinator thực hiện, kiểm tra kỹ và giữ các bảo vệ tài khoản, không phát hành riêng.",
+  "supabaseProject": "bowkoiprvqwjilwaxhda",
+  "migration": "20261029021000_social_monitor_only.sql",
+  "migrationSha256": "7d015d8cfa0d800ef8dacbaef1eb75aedc4dd1efd13aec803be4a12f1c7ef0de",
+  "wafProject": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5",
+  "wafRule": "rule_authentication_flood_protection_QLruha",
+  "wafChange": "GET /security-check: challenge to log only; retain conditions, enabled firewall and all other rules",
+  "sourceCommit": "98e6651b740c4a81391e99ba48a471548774e77f",
+  "readyEvent": "9e718f86-ade3-423a-a9dd-db77d0e40b8b",
+  "constraints": [
+    "shared coordinator combined release only",
+    "revalidate current production baseline and database fingerprints",
+    "preserve account protections and manual restrictions",
+    "this approval record does not prove application or publication"
+  ],
+  "sourceArtifacts": "C:\\Reylumi-worktrees\\social-monitor-release-20261029\\artifacts\\social-monitor-release"
+}

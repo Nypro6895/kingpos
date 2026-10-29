@@ -1,0 +1,29 @@
+{
+  "action": "rules.update",
+  "id": "rule_authentication_flood_protection_QLruha",
+  "value": {
+    "name": "Suspicious session security check",
+    "active": true,
+    "conditionGroup": [
+      {
+        "conditions": [
+          {
+            "type": "path",
+            "op": "eq",
+            "value": "/security-check"
+          },
+          {
+            "type": "method",
+            "value": "GET",
+            "op": "eq"
+          }
+        ]
+      }
+    ],
+    "action": {
+      "mitigate": {
+        "action": "log"
+      }
+    }
+  }
+}

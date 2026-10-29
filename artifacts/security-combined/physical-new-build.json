@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-29T05:34:48.856Z",
+  "version": "1.0.0",
+  "build": "65",
+  "sourceCommit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "installed": true,
+  "finiteSmokeVerified": false,
+  "status": "in-progress-interrupted-harness-recovery",
+  "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/prepare65-318/installed-after.json",
+  "worker": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
+  "limitation": "Exact65 installation confirmed via TestFlight/CoreDevice. Finite QA opened Owner More then XCTest reported app not running; crash versus external termination unresolved. Worker preserving evidence and checking process/relaunching harness once. No POS/Payroll functional cases relabeled passed; no64 acceptance reused."
+}

@@ -1,0 +1,277 @@
+{
+  "kind": "release",
+  "summary": "Combined owner-approved POS device layout/custom Services, Payroll staff/period/charts and compatible social security: exact live web, guarded Supabase/WAF and TestFlight65 verified; finite physical scope separately stated",
+  "changes": [
+    "f9b8968e-2780-428d-bff6-8a7f82eea2a5",
+    "fef490f6-1270-4d18-9679-364dc6de5e70",
+    "670dc320-f55f-4af4-97b7-19bfa336b0b0",
+    "4d25c651-07bc-4937-8f82-885d05c5aa13",
+    "8752016c-05ab-43c8-9351-ddbc0d352552",
+    "a3517f4d-cea8-4b91-b6b8-e83951c239df",
+    "7897633f-10db-432b-bd75-33b500b0cea4",
+    "49859059-3208-47ac-a15c-f334bb2700c8",
+    "e8e3c185-653e-44b1-bfeb-45ae51635615",
+    "d7f3d0da-ed71-4fa3-883e-58b759f37d21"
+  ],
+  "sourceCommit": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f",
+  "nativeSourceCommit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "ownerAuthorization": {
+    "deploy": "Direct combined deploy/iOS request; user-approved iPhone coordination",
+    "layout": "Direct human approved Add/Reset at top, Services pencil below",
+    "security": {
+      "recordedAtUtc": "2026-10-29T05:15:39.8800044Z",
+      "sourceThread": "01a18451-d381-7f92-8478-20e5fd5f9afe",
+      "coordinatorThread": "01a18466-5543-71e1-bcd3-e934f324aaae",
+      "authority": "direct human user message",
+      "exactUserInstruction": "Tôi xác nhận áp dụng migration Supabase và đổi rule WAF /security-check từ challenge sang log. Gộp phần sửa này vào lượt deploy chung do coordinator thực hiện, kiểm tra kỹ và giữ các bảo vệ tài khoản, không phát hành riêng.",
+      "supabaseProject": "bowkoiprvqwjilwaxhda",
+      "migration": "20261029021000_social_monitor_only.sql",
+      "migrationSha256": "7d015d8cfa0d800ef8dacbaef1eb75aedc4dd1efd13aec803be4a12f1c7ef0de",
+      "wafProject": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5",
+      "wafRule": "rule_authentication_flood_protection_QLruha",
+      "wafChange": "GET /security-check: challenge to log only; retain conditions, enabled firewall and all other rules",
+      "sourceCommit": "98e6651b740c4a81391e99ba48a471548774e77f",
+      "readyEvent": "9e718f86-ade3-423a-a9dd-db77d0e40b8b",
+      "constraints": [
+        "shared coordinator combined release only",
+        "revalidate current production baseline and database fingerprints",
+        "preserve account protections and manual restrictions",
+        "this approval record does not prove application or publication"
+      ],
+      "sourceArtifacts": "C:\\Reylumi-worktrees\\social-monitor-release-20261029\\artifacts\\social-monitor-release"
+    }
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Gv64Dt919UZ5Pf76BwSerpqTqpAj",
+      "baselineDeploymentId": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+      "sourceSha256": "3e6405c161d2f10d9127db008548a7c2f2598371941aa7a69390683c08d17a50",
+      "overlaySha256": "51f1588f56782236710bffd68fd05473617e57e1fb7a1b8919537bd5c5f93151",
+      "commit": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f",
+      "evidence": {
+        "source": "artifacts/security-combined/web-live-source-verified.json",
+        "alias": "artifacts/security-combined/web-final-alias.json",
+        "http": "artifacts/security-combined/http-live.json",
+        "authenticated": "artifacts/security-combined/live-browser-smoke.json",
+        "migration": "artifacts/security-combined/database-postflight.json",
+        "waf": "artifacts/security-combined/waf-verified.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "65",
+      "commit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+      "baselineBuild": "64",
+      "baselineCommit": "509985dec00091f285c28b7dcb079460da104249",
+      "sourceSha256": "dd6aebccfc6bd2927b3f3e333799b4bb279af343cf02f0c0ef5669ab58e92a61",
+      "bundleSha256": "a3491f730711368db489a3387722f3988d211cf9939685c7736a445e03a250dd",
+      "run": 40820981797,
+      "evidence": {
+        "archive": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/native-verified.json",
+        "existingGroups": "C:/Reylumi-worktrees/combined-pos-device-layout-20261028/artifacts/wave65-audit/availability-verified.json"
+      },
+      "appStore": "No App Store submission/publication claimed"
+    }
+  },
+  "channelCompatibility": {
+    "nativeSource": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+    "nativeRun": 40820981797,
+    "newNativeDispatch": false,
+    "scope": "Security ready event explicitly web-only. Changed handlers are server-only; admin page and its two added translation keys are admin-only, outside supported native app-local roles/screens. RPC signatures and client command/bridge contracts unchanged. Existing native64 and in-flight native POS/Payroll build use updated server behavior. No security client screen or Swift/bridge payload change required or claimed embedded in native."
+  },
+  "checks": {
+    "payrollNode": 19,
+    "payrollSharedBrowser": 12,
+    "actualNativePayrollBrowser": 12,
+    "workspacePortal": 13,
+    "compactWindowsPortal": 3,
+    "checkoutCapturedReceipt": 9,
+    "windows1440And820MatchActual64": true,
+    "securitySqlRuntime": 28,
+    "identityComment": 35,
+    "productionBuildAssets": 459,
+    "nativeTests": 235,
+    "nativeFailures": 0,
+    "nativeSourceFiles": 2698,
+    "webSourceFiles": 3488,
+    "sourceMismatches": 0,
+    "liveOwnerChecks": [
+      {
+        "name": "Fresh authenticated Payroll source scripts bind new deployment after loading",
+        "passed": true
+      },
+      {
+        "name": "Payroll month and scheduled period rails rendered",
+        "passed": true
+      },
+      {
+        "name": "Staff payroll cards render Check/Cash/Tip summaries",
+        "passed": true
+      },
+      {
+        "name": "Daily collections and service mix chart plus staff performance render",
+        "passed": true
+      },
+      {
+        "name": "POS More contains Exit POS and View all settings",
+        "passed": true
+      },
+      {
+        "name": "Click Exit POS reaches root Owner page",
+        "passed": true
+      },
+      {
+        "name": "Click View all settings reaches Settings heading",
+        "passed": true
+      }
+    ],
+    "securityMigration": {
+      "at": "2026-10-29T05:28:35.012Z",
+      "project": "bowkoiprvqwjilwaxhda",
+      "functions": {
+        "abuse_preflight": "bc59a8396a74ed0b7b04b85a06cb5f61",
+        "get_abuse_notice": "587974492a8a85946fad47d75f39e9a6",
+        "post_safety_scan": "40c9b14617a190b0692abc6e09708209",
+        "abuse_guard_actor": "32ee018370596b9c4bf7cd25162e1aeb",
+        "abuse_guard_image": "b76740c2bd9708aaaa7a11a3453d4ef1",
+        "abuse_guard_content": "23e4a47cc3cf5f4797910f91e8bcae37",
+        "record_abuse_bot_event": "15c4eb58ed98edd5412453de1e8cb886"
+      },
+      "migrationRecorded": true,
+      "socialFlagsIgnored": true,
+      "automaticNoticeCount": 0,
+      "signalRpcServiceOnly": true,
+      "migrationSourceMatches": true
+    },
+    "waf": {
+      "at": "2026-10-29T05:28:06.746Z",
+      "project": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5",
+      "rule": "rule_authentication_flood_protection_QLruha",
+      "from": "challenge",
+      "to": "log",
+      "activeVerified": true,
+      "activeId": "waf_MkE7ll3LuJZi",
+      "oldVersion": 1,
+      "newVersion": 2,
+      "globalFirewallEnabled": true,
+      "allOtherRulesAndCrsPreserved": true,
+      "conditionsPreserved": true,
+      "nullMetadataNormalized": true,
+      "activation": "Scoped PATCH applied directly to active config; readback version2, no draft. No activation POST needed or issued.",
+      "failures": []
+    }
+  },
+  "physical": {
+    "at": "2026-10-29T05:34:48.856Z",
+    "version": "1.0.0",
+    "build": "65",
+    "sourceCommit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+    "installed": true,
+    "finiteSmokeVerified": false,
+    "status": "in-progress-interrupted-harness-recovery",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/prepare65-318/installed-after.json",
+    "worker": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
+    "limitation": "Exact65 installation confirmed via TestFlight/CoreDevice. Finite QA opened Owner More then XCTest reported app not running; crash versus external termination unresolved. Worker preserving evidence and checking process/relaunching harness once. No POS/Payroll functional cases relabeled passed; no64 acceptance reused."
+  },
+  "selected": [
+    {
+      "event": "f9b8968e-2780-428d-bff6-8a7f82eea2a5",
+      "changeId": "pos-ios-tablet-layout-20261028"
+    },
+    {
+      "event": "fef490f6-1270-4d18-9679-364dc6de5e70",
+      "changeId": "pos-ios-custom-service-20261028"
+    },
+    {
+      "event": "670dc320-f55f-4af4-97b7-19bfa336b0b0",
+      "changeId": "mobile-notebook-menu-20261028"
+    },
+    {
+      "event": "4d25c651-07bc-4937-8f82-885d05c5aa13",
+      "changeId": "payroll-staff-scroll-ui-20261029"
+    },
+    {
+      "event": "8752016c-05ab-43c8-9351-ddbc0d352552",
+      "changeId": "payroll-charts-20261028"
+    },
+    {
+      "event": "a3517f4d-cea8-4b91-b6b8-e83951c239df",
+      "changeId": "combined-pos-device-integration-20261028"
+    },
+    {
+      "event": "7897633f-10db-432b-bd75-33b500b0cea4",
+      "changeId": "combined-pos-payroll-release-20261028"
+    },
+    {
+      "event": "49859059-3208-47ac-a15c-f334bb2700c8",
+      "changeId": "social-monitor-only-20261029"
+    },
+    {
+      "event": "e8e3c185-653e-44b1-bfeb-45ae51635615",
+      "changeId": "security-check-edge-monitor-20261029"
+    },
+    {
+      "event": "d7f3d0da-ed71-4fa3-883e-58b759f37d21",
+      "changeId": "combined-security-web-integration-20261029"
+    }
+  ],
+  "excluded": [
+    {
+      "scope": "Market",
+      "reason": "Owner explicitly separate branch"
+    },
+    {
+      "scope": "Check Writer",
+      "reason": "Provider/staging/native/physical print acceptance gates; sales closed"
+    },
+    {
+      "scope": "Automatic customer merge",
+      "reason": "Current schema/full destructive consolidation acceptance remains gated, no production customer data operation authorized in this wave"
+    },
+    {
+      "scope": "Historical divergent assemblies and deep performance",
+      "reason": "Preserve uploaded64 current features; deep performance explicitly deferred"
+    },
+    {
+      "scope": "New appointment text wrapping",
+      "reason": "Known64 cosmetic defect without completed source in this wave; not claimed repaired"
+    }
+  ],
+  "safety": {
+    "productionMigrations": 1,
+    "wafChanges": 1,
+    "newCredentials": 0,
+    "newPermissions": 0,
+    "productionFinancialWrites": 0,
+    "customerMergeOperations": 0,
+    "realPosts": 0,
+    "mediaUploads": 0,
+    "SMS": 0,
+    "securityScope": "Only approved social advisory policy and exact security-check challenge-to-log. Auth/manual restrictions/RLS/account protections preserved."
+  },
+  "limitations": [
+    "Initial immediate browser observation used previous cached JB shell; after cache-busted navigation and load, new deployment scripts and intended UI were verified.",
+    "Admin visual preview not accepted: current Owner session is not an active Admin session; admin route redirected to login. No account switch or permission change. Server/admin source and guarded SQL/WAF are verified separately.",
+    "No financial/customer amounts or names retained in this proof; no production transaction or draft edit.",
+    "Desktop browser finite smoke does not substitute for exact installed iPhone65 physical checks.",
+    "Native65 bundles POS/Payroll source f4e; compatible server/admin security lives in web8ede and production SQL/WAF, not falsely claimed embedded in native.",
+    "Initial incorrect HTTP /resource route404 retained; acceptance uses actual read route401.",
+    "Local captured fake receipt is not production payment/provider acceptance.",
+    "Full product/performance matrix and physical social posting not inferred."
+  ],
+  "rollback": {
+    "webBaseline": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+    "nativeBaseline": "64",
+    "databaseBeforeDefinitions": "artifacts/security-combined/production-function-definitions.json",
+    "wafBefore": "artifacts/security-combined/waf-preflight.json",
+    "performed": false
+  },
+  "id": "9adc36dd-2d40-4bba-bad9-b46cbb041828",
+  "recordedAt": "2026-10-29T05:34:51.327Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-security-web-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\combined-security-web-20261029\\releases\\history\\2026-10-29T05-34-51-327Z-9adc36dd-2d40-4bba-bad9-b46cbb041828.json"
+}
