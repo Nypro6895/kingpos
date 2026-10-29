@@ -8,6 +8,7 @@ import {
 } from "./direct-settings-actions";
 import {
   Field,
+  SettingsFieldGroup,
   Check,
   Select,
   InlineForm,
@@ -75,6 +76,7 @@ export function TeamSettingsPanel({
           );
         }}
       >
+        <SettingsFieldGroup title="Staff identity & contact">
         <Field
           name="display_name"
           label={__vt("Display name")}
@@ -92,6 +94,8 @@ export function TeamSettingsPanel({
           <Field name="phone" label={__vt("Phone")} type="tel" value={staff?.phone} />
         </div>
         <Field name="job_title" label={__vt("Position")} value={staff?.job_title} />
+        </SettingsFieldGroup>
+        <SettingsFieldGroup title="Staff access & booking">
         <Check
           name="is_active"
           label={__vt("Active staff")}
@@ -116,6 +120,7 @@ export function TeamSettingsPanel({
             />
           </>
         )}
+        </SettingsFieldGroup>
       </InlineForm>
     );
   }
@@ -347,6 +352,7 @@ export function PayrollSettingsPanel({
                 }
                 onSaved={onSaved}
               >
+                <SettingsFieldGroup title="Pay details">
                 <Field
                   name="effective_from"
                   label={__vt("Effective from")}
@@ -397,6 +403,8 @@ export function PayrollSettingsPanel({
                   value={s?.check_rate ?? 60}
                   required
                 />
+                </SettingsFieldGroup>
+                <SettingsFieldGroup title="Tax company settings">
                 <Field
                   name="tax_rate"
                   label={__vt("Tax company rate (%)")}
@@ -427,6 +435,8 @@ export function PayrollSettingsPanel({
                   label={__vt("Apply tax company rate to fixed pay")}
                   checked={s?.apply_tax_to_fixed_pay}
                 />
+                </SettingsFieldGroup>
+                <SettingsFieldGroup title="Tip & bonus payouts">
                 <Select
                   name="tip_payout_method"
                   label={__vt("Tip payout")}
@@ -445,6 +455,7 @@ export function PayrollSettingsPanel({
                     ["check", "Check"],
                   ]}
                 />
+                </SettingsFieldGroup>
               </InlineForm>
             </div>
           </details>

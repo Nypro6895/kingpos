@@ -1,0 +1,50 @@
+STAFF POST IMAGE UPLOAD — 2026-10-28
+
+Request: fix staff posting error and queue with the next combined deployment.
+Change ID: staff-post-safari-webp-fallback
+Status: locally tested; needs integration with exact production baseline; NOT deployed.
+
+Cause:
+The screenshot message comes from compressImageCanvas in lib/image-upload-client.ts.
+It rejects canvas output unless its MIME type is image/webp. A browser may decode
+WebP but lack canvas WebP encoding, returning PNG instead. This fails before the
+post is submitted; changing staff authorization would not fix this error.
+The affected physical iPhone has not been tested in this task.
+
+Fix:
+- Keep native WebP encoding on browsers that support it.
+- Send fallback cropped PNG/JPEG pixels to authenticated POST /api/images/normalize.
+- Reuse normalizeImage for genuine WebP, metadata stripping, pixel and byte limits.
+- Check response MIME, size and dimensions before uploading. Do not relabel PNG as WebP.
+- Stream-limit server input to 10 MB, reject cross-site requests, disable response caching.
+- If fallback PNG exceeds 10 MB, shrink the canvas and retry before conversion.
+- Existing post/storage authorization is unchanged. No migration or native bridge change.
+
+Files to integrate:
+lib/image-upload-client.ts
+app/api/images/normalize/route.ts
+tests/image-upload-safari.test.mjs
+docs/staff-post-safari-webp-deploy-note-20261028.txt
+
+Dependencies already present in the working source:
+lib/image-policy.ts, lib/normalize-image.ts, lib/supabase/server.ts, sharp.
+The first two and image-upload-client.ts are untracked in this canonical checkout.
+Preserve production helper behavior; merge the fallback block rather than replacing
+an entire newer production helper. Dependency copies in the frozen handoff are
+reference material, not authorization to overwrite production.
+
+Validation:
+PASS: node --test tests/image-upload-safari.test.mjs tests/ad-image-normalization.test.mjs (7 tests).
+PASS: npx eslint lib/image-upload-client.ts app/api/images/normalize/route.ts tests/image-upload-safari.test.mjs.
+Full TypeScript check blocked by existing unrelated .next-readiness-check Help
+TS2307 references and duplicate 'Pay month' TS2783 in lib/vietnamese-dictionary.ts.
+No errors in the changed files were reported. No production build/live claim.
+
+Release coordinator:
+Use the completion journal source snapshot and hashes. Integrate with the exact
+current production source, run required build/checks and publish with other ready
+changes in one release. This is a web-compatible fix; no native rebuild required
+for this change alone. Verify the new POST endpoint is included in route inventory.
+After release, verify staff photo posting on the affected iPhone, including crop,
+booking details and final post media; also verify native-WebP browsers and denied
+staff publication paths. Do not publish a real customer post as an automated test.

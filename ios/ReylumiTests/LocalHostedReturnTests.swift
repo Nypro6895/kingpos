@@ -28,6 +28,42 @@ private actor HostedReturnHTTP: ReylumiLocalHTTPClient {
 
 final class LocalHostedReturnTests: XCTestCase {
     @MainActor
+    func testOrdinaryHostedPagesHaveNoTaskChromeAndIdentityTasksUseTextExit() async throws {
+        let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        let local = try XCTUnwrap(container.local)
+        for path in ["/staff/scan", "/staff/scan/", "/staff/scan?view=waiting", "/explore/salons/fixture#customer-experiences", "/beauty", "/payroll", "/pos", "/staff/appointments", "/settings", "/help", "/login"] {
+            container.openOnline(path)
+            let navigation = try XCTUnwrap(container.presentedViewController as? UINavigationController)
+            let hosted = try XCTUnwrap(navigation.viewControllers.first as? ReylumiViewController)
+            let ordinary = path != "/login"
+            XCTAssertEqual(navigation.isNavigationBarHidden, ordinary, path)
+            XCTAssertEqual(hosted.navigationItem.leftBarButtonItem == nil, ordinary, path)
+            if ordinary {
+                hosted.onNavigationFailure?()
+                XCTAssertFalse(navigation.isNavigationBarHidden, "A failed hosted load must keep an explicit text exit")
+                XCTAssertNotNil(hosted.navigationItem.leftBarButtonItem?.title)
+                hosted.onUsableDestination?(try XCTUnwrap(URL(string: "/staff/scan", relativeTo: server.origin)))
+                XCTAssertTrue(navigation.isNavigationBarHidden, "Recovery must remove temporary task chrome")
+            }
+            if !ordinary {
+                XCTAssertNotNil(hosted.navigationItem.leftBarButtonItem?.title, "Use an explicit text exit instead of the system Done checkmark")
+                hosted.onUsableDestination?(try XCTUnwrap(URL(string: "/staff/scan", relativeTo: server.origin)))
+                XCTAssertTrue(navigation.isNavigationBarHidden, "Task chrome cannot follow the user onto an ordinary page")
+                XCTAssertNil(hosted.navigationItem.leftBarButtonItem)
+            }
+            XCTAssertTrue(container.local === local, "Presenting a hosted tab must preserve the installed page and drafts")
+            XCTAssertNotNil(hosted.onUsableDestination, "Later installed tabs must keep the verified return callback")
+            for _ in 0..<100 { if !navigation.isBeingPresented { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                container.dismiss(animated: false) { continuation.resume() }
+            }
+        }
+    }
+
+    @MainActor
     func testAutomaticXCTestSceneCannotBootAProductionWebView() {
         XCTAssertTrue(ReylumiExecutionEnvironment.isXCTestHost)
         let roots = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows).filter { !$0.isHidden }.compactMap(\.rootViewController)

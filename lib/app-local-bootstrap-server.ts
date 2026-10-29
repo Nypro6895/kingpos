@@ -7,6 +7,7 @@ import { isOwnerMembership } from "./current-context";
 import { appLocalPrefetchPlan } from "./app-local-prefetch-plan";
 import { readAppLocalExploreResource } from "./app-local-explore-server";
 import { getStaffPortalIdentity } from "./staff-portal-identity";
+import { getReadRequestTiming } from "./read-context-scope";
 
 /** Fresh data from the existing readers in this request; never an offline grant.
  * Only fixed initial page reads are permitted, with their original authorization. */
@@ -29,7 +30,7 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     ? readInitial("shell.navigation",{},scope).then(result=>({result}),error=>({error})) : null;
   if (url.pathname === "/staff/today") {
     const args = url.searchParams.has("date") ? {date:url.searchParams.get("date")!} : {};
-    const today = await readAppLocalRoleResource("owner.today",args,{scope});
+    const today = await readAppLocalRoleResource("owner.today",args,{scope,timing:getReadRequestTiming()});
     if(today?.status === 200 && today.data !== undefined) {
       const context = await getRequestBusinessContext();
       const data = {dashboard:today.data,isOwner:isOwnerMembership(context.currentMembership)};
@@ -39,7 +40,7 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     const identity = await getStaffPortalIdentity();
     if (identity.staff && identity.context.user?.id === value.context.viewerId) {
       const args = {staffId:identity.staff.id,...Object.fromEntries(["tab","payPeriodStart"].filter(key=>url.searchParams.has(key)).map(key=>[key,url.searchParams.get(key)!]))};
-      add("staff.my-work",args,await readAppLocalRoleResource("staff.my-work",args,{scope}));
+      add("staff.my-work",args,await readAppLocalRoleResource("staff.my-work",args,{scope,timing:getReadRequestTiming()}));
     }
   } else if(url.pathname === "/staff/appointments") {
     const allowed=["range","status","bookingId","date","quickId","view"];
@@ -47,7 +48,7 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     const identity=await getStaffPortalIdentity();
     if(identity.staff && identity.context.user?.id===value.context.viewerId) {
       const args={staffId:identity.staff.id,...Object.fromEntries(allowed.filter(key=>url.searchParams.has(key)).map(key=>[key,url.searchParams.get(key)!]))};
-      add("staff.schedule",args,await readAppLocalRoleResource("staff.schedule",args,{scope}));
+      add("staff.schedule",args,await readAppLocalRoleResource("staff.schedule",args,{scope,timing:getReadRequestTiming()}));
     }
   } else if(url.pathname === "/staff/workday" && !url.search && readInitial) {
     // Attendance retains its own original identity and fresh final checks.
@@ -56,7 +57,7 @@ export async function readAppLocalBootstrap(value: AppLocalContext, path: string
     if(identity?.status===200 && identity.scope===scope && details?.resourceScope===scope && details.staffId) {
       add("page.staff-identity",{view:"workday"},identity);
       const args={staffId:details.staffId};
-      add("staff.workday",args,await readAppLocalRoleResource("staff.workday",args,{scope}));
+      add("staff.workday",args,await readAppLocalRoleResource("staff.workday",args,{scope,timing:getReadRequestTiming()}));
     }
   } else if (url.pathname === "/explore" && !url.search) {
     const args = {query:""};

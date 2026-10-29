@@ -1,4 +1,5 @@
 "use client";
+import { hasAppLocalPublicAnchor } from "./app-local-public-anchor";
 import { useEffect } from "react";
 import Link from "next/link";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
@@ -14,7 +15,7 @@ import type { AppLocalPublicData } from "./app-local-public-types";
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 function descriptor(path: string): { name: string; args: Record<string, string>; title: string } | null {
   if (!path.startsWith("/") || path.startsWith("//") || /[\\\u0000-\u001f]/.test(path) || path.length > 4096) return null;
-  const url = new URL(path, "https://reylumi.com"), parts = url.pathname.split("/").filter(Boolean); if (url.hash || [...url.searchParams].some(([key, value]) => value.length > 512 || url.searchParams.getAll(key).length !== 1)) return null;
+  const url = new URL(path, "https://reylumi.com"), parts = url.pathname.split("/").filter(Boolean); if (url.hash && !hasAppLocalPublicAnchor(path) || [...url.searchParams].some(([key, value]) => value.length > 512 || url.searchParams.getAll(key).length !== 1)) return null;
   if (parts.length === 3 && parts[0] === "explore" && parts[1] === "salons" && uuid.test(parts[2]) && !url.search) return { name: "public.salon", args: { salonId: parts[2] }, title: "Salon" };
   if (parts.length === 3 && parts[0] === "explore" && parts[1] === "beauty" && uuid.test(parts[2]) && [...url.searchParams.keys()].every(key => key === "customerId") && (!url.searchParams.has("customerId") || uuid.test(url.searchParams.get("customerId")!))) return { name: "public.beauty", args: { profileId: parts[2], ...(url.searchParams.has("customerId") ? { customerId: url.searchParams.get("customerId")! } : {}) }, title: "Beauty" };
   if (parts.length === 5 && parts[0] === "explore" && parts[1] === "beauty" && parts[3] === "posts" && uuid.test(parts[2]) && uuid.test(parts[4]) && !url.search) return { name: "public.beauty-post", args: { profileId: parts[2], postId: parts[4] }, title: "Beauty post" };
@@ -27,7 +28,19 @@ function OnlineHandoff({ href, reason }: { href: string; reason: "payment" | "ow
   return <main className="mx-auto grid max-w-xl gap-4 p-6"><h1>{reason === "payment" ? "Book an appointment" : "Your salon"}</h1><p>{reason === "payment" ? "Opening secure booking and payment…" : "Opening your salon…"}</p><button type="button" onClick={() => void getAppLocalHost().openOnline(href)}>Continue</button></main>;
 }
 /** Full original views; private relationship and social state stay scoped to the viewer. */
-export function AppLocalPublicView({ data }: { data: AppLocalPublicData }) {
+export function AppLocalPublicView({ data, path }: { data: AppLocalPublicData; path?: string }) {
+  useEffect(() => {
+    if (!path) return;
+    const expected = new URL(path, "https://reylumi.com");
+    const current = location.pathname + location.search + location.hash;
+    if (expected.pathname + expected.search !== location.pathname + location.search || !hasAppLocalPublicAnchor(current)) return;
+    const frame = requestAnimationFrame(() => {
+      // Salon tabs own their own activation, filtering and Trust disclosure.
+      if (data.view !== "beauty-post") return;
+      document.getElementById("comments")?.scrollIntoView({ block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [data, path]);
   if (data.view === "salon") return <main><SalonProfileView {...data.props} /></main>;
   if (data.view === "beauty") return <BeautyProfileReadView page={data.page} />;
   if (data.view === "beauty-post") return <BeautyPostReadView item={data.item} commentViewer={data.commentViewer} profileId={data.profileId} postId={data.postId} />;
@@ -38,6 +51,6 @@ export function AppLocalPublicView({ data }: { data: AppLocalPublicData }) {
 }
 function PublicPage({ path, context }: AppLocalPageProps) {
   const entry = descriptor(path)!, resource = useAppLocalResource<AppLocalPublicData>(context?.context.scope, entry.name, entry.args, { enabled: Boolean(context) });
-  return resource.data ? <AppLocalPublicView data={resource.data} /> : <main className="mx-auto grid max-w-4xl gap-4 p-6"><h1 className="text-2xl font-semibold">{entry.title}</h1><p role="status">{resource.error ? "Could not open this page. Please try again." : "Opening…"}</p>{resource.error ? <button type="button" onClick={() => void resource.refresh()}>Try again</button> : null}</main>;
+  return resource.data ? <AppLocalPublicView data={resource.data} path={path} /> : <main className="mx-auto grid max-w-4xl gap-4 p-6"><h1 className="text-2xl font-semibold">{entry.title}</h1><p role="status">{resource.error ? "Could not open this page. Please try again." : "Opening…"}</p>{resource.error ? <button type="button" onClick={() => void resource.refresh()}>Try again</button> : null}</main>;
 }
 export function getAppLocalPublicPage(path: string): AppLocalPage | null { try { const entry = descriptor(path); return entry ? { id: entry.name, title: entry.title, requiresContext: false, Component: PublicPage, features: ["original-complete-view", "same-viewer-readmodel", "original-visibility-guards", "existing-online-actions", "live-only-availability", "explicit-https-payment"] } : null; } catch { return null; } }

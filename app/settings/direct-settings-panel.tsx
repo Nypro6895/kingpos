@@ -9,6 +9,7 @@ import {
   buttonClass,
   InlineForm,
   Check,
+  SettingsFieldGroup,
   type DirectData,
 } from "./direct-settings-ui";
 import {
@@ -135,6 +136,7 @@ function Content({
     case "staff-workspace":
       return (
         <div className="grid gap-4">
+          <SettingsFieldGroup title="Public staff profile">
           <StaffPublicProfileEditor
             expectedSalonId={data.salonId}
             onSaved={reload}
@@ -145,7 +147,10 @@ function Content({
             jobTitle={data.staff.job_title}
             specialties={data.staff.specialties}
           />
+          </SettingsFieldGroup>
+          <SettingsFieldGroup title="Booking preferences">
           <OwnPreferences salonId={data.salonId} />
+          </SettingsFieldGroup>
         </div>
       );
     case "staff-schedule":

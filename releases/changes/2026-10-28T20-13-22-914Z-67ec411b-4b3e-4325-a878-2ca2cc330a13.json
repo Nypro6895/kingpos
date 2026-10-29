@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "iphone-clock-booking-concurrency-20261028",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/salon-business-clock.ts",
+    "app/settings/direct-settings-actions.ts",
+    "tests/salon-clock-request-read.test.mjs",
+    "tests/booking-settings-concurrency.test.mjs"
+  ],
+  "summary": "Share only authenticated same-request clocks and overlap original Booking settings/setup reads after permission approval; preserve fresh final probes and failure behavior.",
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\dal144-selected-frozen",
+    "commit": "cbc5d02df52c54ab9b6d82eab268e132c28b2a09"
+  },
+  "validation": [
+    {
+      "name": "23 focused regressions passed on assembled live-based source: permission denial, target salon, fresh revocation, no partial failures, write separation, first reader sharing, hidden-section lifecycle and draft retention",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false passed on assembled source",
+      "result": "passed"
+    }
+  ],
+  "id": "67ec411b-4b3e-4325-a878-2ca2cc330a13",
+  "recordedAt": "2026-10-28T20:13:22.914Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/salon-business-clock.ts": "31c80cffbf4595b500e47c64c0ed7244f8b977d25069bbd4214eee82af06f208",
+    "app/settings/direct-settings-actions.ts": "69134b18b6ab3ad53d62fb595e9aff38edfcf5c66b8a392fbe8fd0dc23c521a9",
+    "tests/salon-clock-request-read.test.mjs": "0687dd588572b6be5891ee1979a9fa61f884224f02e2546050d8a7159930265d",
+    "tests/booking-settings-concurrency.test.mjs": "61e9ae422672094e2e12017ccf5e2b577868f7cdc38afb2bea6490ea77bc68d5"
+  }
+}

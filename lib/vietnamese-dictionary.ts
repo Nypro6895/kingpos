@@ -3,6 +3,7 @@ import salonSetupCopy from "@/lib/vietnamese-salon-setup.json";
 import payrollMobileCopy from "@/lib/vietnamese-payroll-mobile.json";
 import loadingCopy from "@/lib/vietnamese-loading-copy.json";
 import workspaceCopy from "@/lib/vietnamese-workspace-copy.json";
+import settingsCopy from "@/lib/vietnamese-settings-copy.json";
 import bookingDepositMarketCopy from "@/lib/vietnamese-booking-deposit-market.json";
 import localFirstCopy from "@/lib/vietnamese-local-first-copy.json";
 import campaignCopy from "@/lib/vietnamese-campaign-copy.json";
@@ -10,6 +11,18 @@ import staffScanCopy from "@/lib/vietnamese-staff-scan.json";
 import personalQrCopy from "@/lib/vietnamese-personal-qr.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
+  "Payroll update": "Cập nhật thu nhập",
+  "Payroll updated": "Thu nhập đã cập nhật",
+  "Updated by": "Người cập nhật:",
+  "Owner’s note": "Ghi chú của chủ tiệm",
+  "Previous note": "Ghi chú trước",
+  "Note removed": "Đã xoá ghi chú",
+  "Already included in your current pay.": "Đã được tính trong thu nhập hiện tại của bạn.",
+  "changed to": "đổi thành",
+  "Swipe left for the next period, right for the previous period. Tap to choose a month or pay period.": "Vuốt trái để xem kỳ sau, vuốt phải để xem kỳ trước. Chạm để chọn tháng hoặc kỳ trả lương.",
+  "Calculated": "Tạm tính",
+  "Payment details & history": "Thanh toán và lịch sử",
+  "Select pay period": "Chọn kỳ trả lương",
   "Keyboard": "Bàn phím",
   "Idle promotions": "Quảng cáo lúc rảnh",
   "Layout": "Bố cục",
@@ -45,6 +58,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   ...helpCopy,
   ...salonSetupCopy,
   ...workspaceCopy,
+  ...settingsCopy,
   ...payrollMobileCopy,
   ...loadingCopy,
   ...bookingDepositMarketCopy,

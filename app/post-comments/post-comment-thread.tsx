@@ -383,6 +383,7 @@ function PostCommentThreadContent({
   const hasRenderedPageRef = useRef(false);
   const draftVersionRef = useRef(0);
   const [loadError, setLoadError] = useState(false);
+  const [loadStatus, setLoadStatus] = useState("");
   const key = targetKey(target);
 
   useEffect(() => {
@@ -564,6 +565,7 @@ function PostCommentThreadContent({
           setNextOffset(page.nextOffset);
           setLoaded(true);
           setLoadError(false);
+          setLoadStatus("");
           if (!page.hasMore || page.nextOffset === null || page.nextOffset <= next) break;
           next = page.nextOffset;
         } while (replace && next < through);
@@ -574,9 +576,10 @@ function PostCommentThreadContent({
         setNextOffset(page.nextOffset);
         setLoaded(true);
         setLoadError(false);
+        setLoadStatus("");
       } catch (error) {
         if (mountedRef.current && version === loadVersionRef.current) {
-          setStatus(error instanceof Error ? error.message : "Comments could not be loaded. Please try again.");
+          setLoadStatus(error instanceof Error ? error.message : "Comments could not be loaded. Please try again.");
           setLoaded(true);
           setLoadError(!hasRenderedPageRef.current);
         }
@@ -725,6 +728,11 @@ function PostCommentThreadContent({
         ),
       );
       setTotalCount(result.totalCount);
+      // A confirmed mutation is readable content even if the first GET failed.
+      hasRenderedPageRef.current = true;
+      setLoaded(true);
+      setLoadError(false);
+      setLoadStatus("");
       setStatus("Comment posted.");
     });
   }
@@ -847,7 +855,7 @@ function PostCommentThreadContent({
           <p className="rounded-lg bg-white px-3 py-2.5 text-sm text-zinc-600">
             <WorkspaceText text="Loading comments..." />
           </p>
-        ) : loadError ? (
+        ) : loadError && comments.length === 0 ? (
           <button type="button" className={buttonClass()} onClick={() => loadPage(0, true)} disabled={loading}>
             <WorkspaceText text="Retry loading comments" />
           </button>
@@ -932,10 +940,10 @@ function PostCommentThreadContent({
             <WorkspaceText text="Reply as salon" />
           </label>
         ) : null}
-        <div className="flex items-center justify-between gap-3" hidden={inlineComposer && !status}>
+        <div className="flex items-center justify-between gap-3" hidden={inlineComposer && !status && !loadStatus}>
           {!inlineComposer && !viewer.isAuthenticated ? <Link className="text-xs text-brand-orange" href="/login?next=%2Fexplore"><WorkspaceText text="Sign in to comment." /></Link> : null}
           <p aria-live="polite" className="min-h-5 text-sm text-zinc-600">
-            <WorkspaceText text={status} />
+            <WorkspaceText text={status || loadStatus} />
           </p>
           {status?.includes("/security-check") ? <a href="/security-check" className="text-sm underline"><WorkspaceText text="Open security check" /></a> : null}
           {!inlineComposer ? <button className={buttonClass("primary")} disabled={!canSubmit} type="submit">

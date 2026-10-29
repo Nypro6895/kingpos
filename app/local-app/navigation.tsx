@@ -22,7 +22,7 @@ export function AppLocalLink({ href, children, onClick, replace, prefetch: _pref
   void [_prefetch, _scroll];
   const router = useRouter();
   const path = typeof href === "string" ? href : (href.pathname ?? "/") + (href.query ? "?" + new URLSearchParams(href.query) : "");
-  return <a {...props} href={path} onClick={event => { onClick?.(event); if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || props.target || props.download || !path.startsWith("/") || path.startsWith("//")) return; event.preventDefault(); (replace ? router.replace : router.push)(path); }}>{children}</a>;
+  return <a {...props} href={path} onClick={event => { onClick?.(event); if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || props.target || props.download || !path.startsWith("/") || path.startsWith("//")) return; const url = new URL(path, "https://reylumi.com"); if (url.hash && url.pathname + url.search === location.pathname + location.search) return; event.preventDefault(); (replace ? router.replace : router.push)(path); }}>{children}</a>;
 }
 export function AppLocalImage({ src, alt, fill, priority: _priority, unoptimized: _unoptimized, quality: _quality, loader: _loader, ...props }: Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> & { src: string | { src: string }; alt: string; fill?: boolean; priority?: boolean; unoptimized?: boolean; quality?: number; loader?: unknown }) {
   void [_priority, _unoptimized, _quality, _loader];

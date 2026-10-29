@@ -457,14 +457,30 @@ final class ReylumiAppContainer: UIViewController {
         guard presentedViewController == nil, let url = URL(string: path, relativeTo: origin)?.absoluteURL,
               NavigationPolicy(origin: origin).isInternal(url), !NavigationPolicy(origin: origin).isExcluded(url) else { return }
         let controller = ReylumiViewController(origin: origin, initialURL: url)
+        controller.onNavigationFailure = { [weak self, weak controller] in
+            guard let self, let controller else { return }
+            // A failed/empty hosted page must not trap the user without an exit.
+            self.updateHostedControls(controller, url: url, showExit: true)
+        }
         controller.onUsableDestination = { [weak self, weak controller] url in
-            guard let self, let controller, let destination = self.local?.bundle.hostedReturnPath(url, origin: self.origin) else { return }
+            guard let self, let controller else { return }
+            self.updateHostedControls(controller, url: url)
+            guard let destination = self.local?.bundle.hostedReturnPath(url, origin: self.origin) else { return }
             self.returnToInstalledApp(path: destination, from: controller)
         }
         let navigation = UINavigationController(rootViewController: controller)
-        controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(closeOnline))
+        updateHostedControls(controller, url: url)
         navigation.modalPresentationStyle = .fullScreen
         present(navigation, animated: true)
+    }
+    private func updateHostedControls(_ controller: ReylumiViewController, url: URL, showExit: Bool = false) {
+        let task = showExit || NavigationPolicy(origin: origin).needsHostedTaskControls(url)
+        // Never use .done here: iOS renders it as a floating blue checkmark.
+        // Explicit identity/capability tasks still have an understandable exit.
+        let title = Locale.preferredLanguages.first?.hasPrefix("vi") == true ? "Trở về app" : "Back to app"
+        controller.navigationItem.leftBarButtonItem = task
+            ? UIBarButtonItem(title: title, style: .plain, target: self, action: #selector(closeOnline)) : nil
+        controller.navigationController?.setNavigationBarHidden(!task, animated: false)
     }
     @objc private func closeOnline() {
         guard let controller = (presentedViewController as? UINavigationController)?.viewControllers.first as? ReylumiViewController, let local else { return }

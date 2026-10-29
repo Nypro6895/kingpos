@@ -186,7 +186,7 @@ function customerWorkspaceLabel(
   }
 
   if (workspace.type === "salon") {
-    if (workspace.salonMode === "staff") return accountLabel;
+    if (workspace.salonMode === "staff") return workspace.staffDisplayName || "Staff";
     return workspace.salonName ?? workspace.businessName ?? workspace.label;
   }
 
@@ -603,9 +603,9 @@ function WorkspaceAvatar({
   if (workspace?.type === "personal" || (workspace?.type === "salon" && workspace.salonMode === "staff")) {
     return (
       <AccountAvatar
-        avatarUrl={accountAvatarUrl}
+        avatarUrl={workspace?.salonMode === "staff" ? workspace.staffAvatarUrl ?? null : accountAvatarUrl}
         className={className}
-        label={__vt(accountLabel)}
+        label={__vt(workspace?.salonMode === "staff" ? workspace.staffDisplayName || "Staff" : accountLabel)}
       />
     );
   }
@@ -1931,13 +1931,13 @@ function CustomerDesktopHeader({
             href={staffWorkspace ? "/staff/my-work?profile=1" : "/settings"}
           >
             <AccountAvatar
-              avatarUrl={accountAvatarUrl}
+              avatarUrl={staffWorkspace ? currentWorkspace?.staffAvatarUrl ?? null : accountAvatarUrl}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
-              label={__vt(accountLabel)}
+              label={__vt(staffWorkspace ? currentWorkspace?.staffDisplayName || "Staff" : accountLabel)}
             />
             <span className="min-w-0">
               <span className="block max-w-32 truncate text-sm font-semibold text-text-primary">
-                {accountLabel}
+                {staffWorkspace ? currentWorkspace?.staffDisplayName || "Staff" : accountLabel}
               </span>
               <span className="block text-xs font-normal text-text-secondary">
                 {accountSubtitle}

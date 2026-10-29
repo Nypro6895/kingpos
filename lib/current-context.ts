@@ -4,6 +4,7 @@ import { scopedBusinessContext } from "./scoped-business-context";
 import { memoizeReadContext, getReusableReadValidationToken } from "./read-context-scope";
 import { currentWorkspaceReadGraph, loadWorkspaceReadGraph, runWithWorkspaceReadGraph } from "./workspace-read-graph";
 
+import { getStaffProfilePhotoUrl } from "@/lib/staff-profile";
 import { routes } from "@/lib/routes";
 import { loadMembershipPermissionCodes } from "@/lib/membership-permissions";
 import {
@@ -60,6 +61,8 @@ export type CurrentWorkspaceAction = {
 };
 
 export type CurrentWorkspaceOption = {
+  staffDisplayName?: string | null;
+  staffAvatarUrl?: string | null;
   accountId: string | null;
   accountName: string | null;
   avatarUrl: string | null;
@@ -172,6 +175,8 @@ type CurrentBusinessContextOptions = {
 
 
 type StaffContextSalonRow = {
+  display_name: string | null;
+  public_profile_photo_path: string | null;
   id: string;
   salon_id: string;
 };
@@ -792,6 +797,7 @@ function buildManageWorkspaceOption(input: {
 }
 
 function buildStaffWorkspaceOption(input: {
+  staff: StaffContextSalonRow | null;
   account: Account | null;
   avatarUrl: string | null;
   salon: Location;
@@ -799,6 +805,8 @@ function buildStaffWorkspaceOption(input: {
   const actionSet = buildStaffWorkspaceActions();
 
   return {
+    staffDisplayName: input.staff?.display_name?.trim() || null,
+    staffAvatarUrl: getStaffProfilePhotoUrl(input.staff?.public_profile_photo_path),
     accountId: input.account?.id ?? input.salon.account_id ?? null,
     accountName: input.account?.name ?? null,
     avatarUrl: input.avatarUrl,
@@ -1139,9 +1147,11 @@ async function loadStaffSalons(input: {
   }
 
   const graph = currentWorkspaceReadGraph();
-  const { data: staffRows, error: staffError } = graph ? {data:graph.staff,error:null} : await input.supabase
+  // The deployed graph includes linked IDs only. Read the same self-scoped active
+  // rows for header profile fields; an empty verified graph needs no extra read.
+  const { data: staffRows, error: staffError } = graph && graph.staff.length === 0 ? {data:[] as StaffContextSalonRow[],error:null} : await input.supabase
     .from("staff")
-    .select("id, salon_id")
+    .select("id, salon_id, display_name, public_profile_photo_path")
     .eq("account_user_id", input.user.id)
     .eq("is_active", true)
     .returns<StaffContextSalonRow[]>();
@@ -1236,6 +1246,10 @@ async function loadStaffSalons(input: {
     staffSalons: salons,
     workspaceOptions: salons.map((salon) =>
       buildStaffWorkspaceOption({
+        // Ambiguous links must not display an arbitrary employee identity.
+        staff: (staffRows ?? []).filter(row => row.salon_id === salon.id).length === 1
+          ? (staffRows ?? []).find(row => row.salon_id === salon.id) ?? null
+          : null,
         account: salon.account_id
           ? (input.accountsById.get(salon.account_id) ?? null)
           : null,

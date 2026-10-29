@@ -76,13 +76,21 @@ export function installAppLocalLinkNavigation(options: AppLocalLinkNavigation): 
     const path = url.pathname + url.search;
     if (url.hash && path === location.pathname + location.search) {
       let id: string; try { id = decodeURIComponent(url.hash.slice(1)); } catch { return; }
-      const target = document.getElementById(id); if (!target || target.closest("[hidden]")) return;
-      event.preventDefault(); close(); target.scrollIntoView({ block: "start" }); history.pushState(null, "", path + url.hash); return;
+      const target = document.getElementById(id);
+      // Tab-specific anchors can be hidden until the hash listener selects the
+      // tab. pushState alone emits no hashchange and used to leave Trust closed.
+      event.preventDefault(); close();
+      const oldURL = location.href;
+      history.pushState(null, "", path + url.hash);
+      window.dispatchEvent(new HashChangeEvent("hashchange", { oldURL, newURL: location.href }));
+      if (target && !target.closest("[hidden]")) target.scrollIntoView({ block: "start" });
+      return;
     }
-    // A hash with a different page is handed to the existing online document;
-    // never invent a readiness timeout or remount a local view to find its node.
-    const local = !url.hash && options.isLocalRoute(path);
-    event.preventDefault(); close(); if (local) run(() => options.navigate(path)); else run(() => options.openOnline(path + url.hash));
+    // The registry admits only explicitly supported public fragments. Unknown
+    // or capability-bearing links retain their original hosted boundary.
+    const destination = path + url.hash;
+    const local = options.isLocalRoute(destination);
+    event.preventDefault(); close(); if (local) run(() => options.navigate(destination)); else run(() => options.openOnline(destination));
   };
   const resetEvents = ["popstate", "reylumi:app-local-reset", "reylumi:experience-reset", "reylumi:offline-clear", "reylumi:app-local-access-changed", "reylumi:experience-access-changed"];
   document.addEventListener("click", imageClick, true); document.addEventListener("click", click);

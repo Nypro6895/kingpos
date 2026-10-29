@@ -33,6 +33,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private let initialURL: URL?
     private var offlineEpoch = 0
     var onUsableDestination: ((URL) -> Void)?
+    var onNavigationFailure: (() -> Void)?
     private var notifiedDestination: String?
     var hostedNavigationIdentity: String { startup.nonce + "|" + (webView?.url?.absoluteString ?? "") }
     private func notifyUsableDestination() {
@@ -289,6 +290,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     private func showNavigationError(rejectCompletion: Bool = false) {
+        onNavigationFailure?()
         navigationWatchdog?.cancel()
         startup.fail(rejectCompletion: rejectCompletion)
         progress.isHidden = true

@@ -28,6 +28,21 @@ struct NavigationPolicy {
             && url.user == nil && url.password == nil
     }
 
+    /// Presentation only; server authorization and installed-route admission
+    /// remain independent. Ordinary pages use their own app navigation.
+    func needsHostedTaskControls(_ url: URL) -> Bool {
+        guard isInternal(url), !isExcluded(url) else { return false }
+        let path = url.path.lowercased()
+        return ["/login", "/signup", "/account-recovery", "/forgot-password",
+                "/reset-password", "/security-check", "/accept-invite",
+                "/ownership/invite", "/staff/invite", "/claim", "/deletion-status",
+                "/booking-payment", "/booking/manage", "/check-in", "/visit",
+                "/market/booking-deposit/payment", "/market/payment-return",
+                "/support/guest", "/contact-support"].contains {
+            path == $0 || path.hasPrefix($0 + "/")
+        }
+    }
+
     /// A provider challenge is an interactive document, not an application error.
     /// Keep this exception limited to the dedicated check on our own origin.
     func isSecurityChallengeResponse(_ response: HTTPURLResponse, isMainFrame: Bool, canShowMIMEType: Bool) -> Bool {

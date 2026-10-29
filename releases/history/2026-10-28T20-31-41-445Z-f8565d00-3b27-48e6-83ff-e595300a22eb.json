@@ -1,0 +1,25 @@
+{
+  "kind": "release",
+  "summary": "Web DAL request scope, booking concurrency, hidden-post focus deduplication and inactive Settings effects published from exact live byte baseline. Physical performance target remains unfinished; native56 includes only focus fix.",
+  "changes": [
+    "67ec411b-4b3e-4325-a878-2ca2cc330a13",
+    "09e4c6c1-53fe-458a-8b02-c20152601f59",
+    "dfa7b8db-35bc-4cc1-90e7-483ebf19e476",
+    "49a4bbdf-e101-4029-bc69-4d8b69a4bf65"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_5M9SQW7rWA2wdRsPv7Wsw5VmDq64",
+      "baselineDeploymentId": "dpl_BAXERnjvJCT9QrjGEFiVMKAwXkYe",
+      "sourceSha256": "e478be998e353b555e57efd17c4d4c47a4456519b7c4dd35c1d553f07b784623",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/dal144-source-verified.json; C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/dal144-live-check.json",
+      "overlaySha256": "5daead1c5ecc5bf887c7f0fc2c45e1af2c885b382c0e0ee9fb7c4b77cdf0aaa0",
+      "overlayHashFormat": "SHA256 JSON selected file metadata ordered by file"
+    }
+  },
+  "id": "f8565d00-3b27-48e6-83ff-e595300a22eb",
+  "recordedAt": "2026-10-28T20:31:41.445Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028"
+}

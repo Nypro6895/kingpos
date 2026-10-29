@@ -1,4 +1,5 @@
 "use client";
+import { salonProfileAnchor } from "@/lib/salon-profile-anchor";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
 import { PublicationPanel } from "./publication-panel";
@@ -114,7 +115,8 @@ function ProfileCustomerIdentity({ post }: { post: PublicSalonProfileBeautyPost 
 }
 function ProfilePostAvatar() {
   const salon = useContext(ProfileSalonIdentityContext);
-  return <Avatar logoUrl={salon.logoUrl} name={salon.name} size="sm" />;
+  const avatar = <Avatar logoUrl={salon.logoUrl} name={salon.name} size="sm" />;
+  return salon.href ? <a href={salon.href} aria-label={salon.name} className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-brand-orange">{avatar}</a> : avatar;
 }
 const ProfilePreferencesContext = createContext<SalonProfilePreferences>(DEFAULT_PROFILE_PREFERENCES);
 
@@ -2154,17 +2156,7 @@ function FeedCard({
             </TimelineActionButton>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <TimelineActionButton
-            aria-label={__vt("View post")}
-            icon="open"
-            onClick={() => onOpenPost(item)}
-            title={__vt("View post")}
-          >
-            <WorkspaceText text="View" />
-          </TimelineActionButton>
-          {capabilities.canBook ? <InspirationAvailability href={`/book/${item.salonId}?inspiration=${item.id}&source=public_profile`} /> : null}
-        </div>
+        {capabilities.canBook ? <InspirationAvailability href={`/book/${item.salonId}?inspiration=${item.id}&source=public_profile`} /> : null}
         {commentsExpanded && preferences.allow_comments ? (
           <div
             className="border-zinc-200 bg-zinc-50/75 p-3 rounded-none border-0 shadow-none"
@@ -2406,7 +2398,9 @@ function ExperienceSummaryPanel({ summary }: { summary: PublicSalonProfileData["
   const trustSummary = profileTrustSummary(summary);
   const evidence = summary.trustEvidence;
   return (
-    <section aria-labelledby="lumi-trust-profile-title" className="border-zinc-200 bg-white p-4 rounded-none border-0 shadow-none" id="lumi-trust">
+    <details id="lumi-trust" className="scroll-mt-24 border-zinc-200 bg-white p-4">
+      <summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="LUMI Trust" /></summary>
+    <section aria-labelledby="lumi-trust-profile-title" className="border-zinc-200 bg-white p-4 rounded-none border-0 shadow-none">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold text-brand-orange"><WorkspaceText text="LUMI Trust" /></p>
@@ -2430,6 +2424,7 @@ function ExperienceSummaryPanel({ summary }: { summary: PublicSalonProfileData["
       {evidence ? <p className="mt-3 text-xs text-zinc-500"><WorkspaceText text="Feedback window:" /> {evidence.feedbackDays} <WorkspaceText text="days. Return cohort:" /> {evidence.cohortDays} <WorkspaceText text="days, ending" /> {evidence.returnDays} <WorkspaceText text="days ago. Updated" /> <WorkspaceText text={new Date(evidence.asOf).toLocaleDateString("en-US", { timeZone: "UTC" })} />.</p> : null}
       <a className="mt-3 inline-flex min-h-9 items-center text-xs font-semibold text-brand-orange underline" href="#customer-experiences"><WorkspaceText text="Read customer experiences" /></a>
     </section>
+    </details>
   );
 }
 
@@ -3402,7 +3397,7 @@ export function SalonProfileView({
           setSelectedTab(nextTab);
           if(window.location.hash==="#feedback-good")setExperienceFilter("good");
           else if(window.location.hash==="#feedback-issue")setExperienceFilter("issues");
-          else if(window.location.hash==="#customer-experiences")setExperienceFilter("all");
+          else if(["#customer-experiences", "#reviews"].includes(window.location.hash))setExperienceFilter("all");
         }
       }, 0);
     }
@@ -3420,19 +3415,20 @@ export function SalonProfileView({
       return undefined;
     }
 
-    const hash = window.location.hash.replace(/^#/, "");
-
-    if (!["lumi-trust","lumi-trust-details","customer-experiences","feedback-good","feedback-issue"].includes(hash)) {
-      return undefined;
+    let frame = 0;
+    function scrollToAnchor() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const anchor = salonProfileAnchor(window.location.hash);
+        if (!anchor) return;
+        const target = document.getElementById(anchor.targetId);
+        if (anchor.expandTrust && target instanceof HTMLDetailsElement) target.open = true;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     }
-
-    const timer = window.setTimeout(() => {
-      document
-        .getElementById("lumi-trust")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
-
-    return () => window.clearTimeout(timer);
+    scrollToAnchor();
+    window.addEventListener("hashchange", scrollToAnchor);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", scrollToAnchor); };
   }, [selectedTab]);
 
   const [isFollowing, setFollowing] = useState(profile.isFollowing);
@@ -4157,8 +4153,8 @@ export function SalonProfileView({
 
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.45fr)]">
-        <div className="grid gap-4">
-          <ExperienceSummaryPanel summary={__vt(data.reputationSummary)} />
+        <div className="grid gap-4 scroll-mt-24" id="customer-experiences">
+          <h3 className="text-lg font-semibold"><WorkspaceText text="Customer experiences" /></h3>
           <div className="flex flex-wrap gap-2">
             {(["all", "verified", "good", "issues"] as const).map((filter) => (
               <button
@@ -4182,7 +4178,7 @@ export function SalonProfileView({
             ))}
           </div>
           {visibleExperiences.length > 0 ? (
-            <div className="grid gap-3" id="customer-experiences">
+            <div className="grid gap-3">
               {visibleExperiences.map((experience) => (
                 <ExperienceCard
                   canReplyAsSalon={capabilities.canReplyAsSalon}
@@ -4213,6 +4209,7 @@ export function SalonProfileView({
           <p className="mt-2 text-sm leading-6 text-zinc-600">
             <WorkspaceText text="Customers see Good / Had an issue in their Activity after a completed POS ticket is linked to their active account. Details are optional." />
           </p>
+          <ExperienceSummaryPanel summary={__vt(data.reputationSummary)} />
         </aside>
       </div>
     );

@@ -2,6 +2,7 @@
 import { ActionFeedback } from "@/components/action-feedback";
 import { countBookedAppointments } from "@/lib/booking-count";
 import { bookingPhoneDisplay } from "@/lib/booking-phone-display";
+import { bookingHintCalendarDates, bookingHintStaff, generateBookingSlotHints } from "@/lib/booking-slot-hints";
 import { defaultBookingStart } from "@/lib/booking-time-policy";
 import { portableBookingTime as localDateTimeToUtcIso } from "@/lib/portable-booking-time";
 import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
@@ -2657,6 +2658,8 @@ function useBookingModalPortalHost() {
     const container = document.createElement("div");
     container.dataset.bookingModalHost = "true";
     document.body.appendChild(container);
+    // Synchronize the React portal target with the DOM node owned by this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHost(container);
     return () => container.remove();
   }, []);
@@ -5411,10 +5414,8 @@ function actionSetForStatus(status: string) {
   }
 }
 
-function staffForService(
-  options: BookingWorkspaceClientProps["options"],
-) {
-  return options.staff.filter((staff) => staff.is_active);
+function staffForService(options: BookingWorkspaceClientProps["options"]) {
+  return options.staff.filter(staff => staff.is_active);
 }
 
 function selectedServices(options: BookingWorkspaceClientProps["options"], lines: DraftLine[]) {
@@ -5443,113 +5444,8 @@ function totalDraftPrice(options: BookingWorkspaceClientProps["options"], lines:
   );
 }
 
-function lineConflicts(
-  bookings: BookingWorkspaceItem[],
-  blocks: BookingWorkspaceClientProps["options"]["timeBlocks"],
-  staffId: string,
-  startIso: string,
-  endIso: string,
-) {
-  const startMs = new Date(startIso).getTime();
-  const endMs = new Date(endIso).getTime();
-  const overlaps = (leftStart: string, leftEnd: string) =>
-    new Date(leftStart).getTime() < endMs && new Date(leftEnd).getTime() > startMs;
-  const bookingConflict = bookings.some(
-    (booking) =>
-      booking.normalizedStatus !== "cancelled" &&
-      booking.normalizedStatus !== "no_show" &&
-      booking.lines.some(
-        (line) =>
-          line.assigned_staff_id === staffId &&
-          line.scheduled_start_at &&
-          line.scheduled_end_at &&
-          overlaps(line.scheduled_start_at, line.scheduled_end_at),
-      ),
-  );
-  const blockConflict = blocks.some(
-    (block) =>
-      block.is_active !== false &&
-      (!block.staff_id || block.staff_id === staffId) &&
-      overlaps(block.starts_at, block.ends_at),
-  );
-
-  return bookingConflict || blockConflict;
-}
-
-function generateRealSlots(input: {
-  bookings: BookingWorkspaceItem[];
-  date: string;
-  lines: DraftLine[];
-  options: BookingWorkspaceClientProps["options"];
-  slotIntervalMinutes: number;
-  timezone: string;
-}) {
-  const selectedLines = input.lines.filter((line) => line.serviceId);
-
-  if (selectedLines.length === 0 || selectedLines.some((line) => !line.staffId)) {
-    return [];
-  }
-
-  const firstStaffId = selectedLines[0].staffId;
-
-  if (!firstStaffId) {
-    return [];
-  }
-
-  const day = new Date(`${input.date}T12:00:00Z`).getUTCDay();
-  const rules = input.options.availabilityRules.filter(
-    (rule) =>
-      rule.is_active &&
-      rule.day_of_week === day &&
-      rule.rule_type === "working" &&
-      (!rule.staff_id || rule.staff_id === firstStaffId),
-  );
-  const totalMinutes = totalDraftMinutes(input.options, selectedLines, 0);
-  const slots: string[] = [];
-
-  for (const rule of rules) {
-    const startsAt = zonedDateTimeToUtcIso(input.date, rule.starts_at_local.slice(0, 5), input.timezone);
-    const endsAt = zonedDateTimeToUtcIso(input.date, rule.ends_at_local.slice(0, 5), input.timezone);
-    let cursorMs = new Date(startsAt).getTime();
-    const endMs = new Date(endsAt).getTime();
-
-    while (cursorMs + totalMinutes * 60000 <= endMs) {
-      const startIso = new Date(cursorMs).toISOString();
-      let lineCursorMs = cursorMs;
-      const hasConflict = selectedLines.some((line) => {
-        const service = input.options.services.find(
-          (candidate) => candidate.id === line.serviceId,
-        );
-        const lineEndIso = new Date(
-          lineCursorMs + (service?.duration_minutes ?? 0) * 60000,
-        ).toISOString();
-        const lineStartIso = new Date(lineCursorMs).toISOString();
-
-        lineCursorMs = new Date(lineEndIso).getTime();
-
-        return line.staffId
-          ? lineConflicts(
-              input.bookings,
-              input.options.timeBlocks,
-              line.staffId,
-              lineStartIso,
-              lineEndIso,
-            )
-          : true;
-      });
-
-      if (!hasConflict) {
-        slots.push(toLocalInputValue(startIso, input.timezone));
-      }
-
-      cursorMs += input.slotIntervalMinutes * 60000;
-    }
-  }
-
-  return [...new Set(slots)].sort();
-}
-
 function AppointmentDrawer({
+  loadedDates,
   bookings,
   onClose,
   onCreated,
@@ -5558,6 +5454,7 @@ function AppointmentDrawer({
   settings,
   timezone,
 }: {
+  loadedDates: readonly string[];
   bookings: BookingWorkspaceItem[];
   onClose: () => void;
   onCreated: () => void;
@@ -5605,7 +5502,11 @@ function AppointmentDrawer({
   const selectedDate = startLocal.slice(0, 10);
   const slots = useMemo(
     () =>
-      generateRealSlots({
+      generateBookingSlotHints({
+        loadedDates,
+        cleanupBufferMinutes: settings.default_cleanup_buffer_minutes,
+        toUTC: zonedDateTimeToUtcIso,
+        toLocal: toLocalInputValue,
         bookings,
         date: selectedDate,
         lines,
@@ -5613,7 +5514,7 @@ function AppointmentDrawer({
         slotIntervalMinutes: settings.slot_interval_minutes,
         timezone,
       }),
-    [bookings, lines, options, selectedDate, settings.slot_interval_minutes, timezone],
+    [bookings, lines, options, selectedDate, loadedDates, settings.slot_interval_minutes, settings.default_cleanup_buffer_minutes, timezone],
   );
   const duplicateWarning = useMemo(() => {
     const phone = customerPhone.replace(/[^0-9]/g, "");
@@ -5839,7 +5740,7 @@ function AppointmentDrawer({
               const service = options.services.find(
                 (candidate) => candidate.id === line.serviceId,
               );
-              const eligibleStaff = staffForService(options);
+              const eligibleStaff = bookingHintStaff(options, line.serviceId, selectedDate);
 
               return (
                 <label className="grid gap-1" key={`${line.serviceId}-${index}`}>
@@ -5880,11 +5781,11 @@ function AppointmentDrawer({
               />
             </label>
             <div className="grid gap-2">
-              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Real available slots" /></h3>
-              <p className="text-xs text-zinc-500"><WorkspaceText text="Start times follow the professional's working hours and selected service duration. Salon opening hours can be longer." /></p>
+              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Suggested start times" /></h3>
+              <p className="text-xs text-zinc-500"><WorkspaceText text="Suggested times use the loaded calendar. Availability is checked again when saving." /></p>
               {slots.length === 0 ? (
                 <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                  <WorkspaceText text="No slot can be generated from configured staff availability for this selection. Manual time remains available for owner review and will still be validated by the booking domain." />{" "}
+                  <WorkspaceText text={loadedDates.includes(selectedDate) ? "No suggested time fits the selected services and loaded schedule. Manual time will be validated when saving." : "Complete calendar data for this date is not loaded. Open this date without filters for suggestions, or enter a manual time for server validation."} />{" "}
                   <a
                     className="font-semibold underline"
                     href={`/bookings?tab=availability${
@@ -7355,6 +7256,8 @@ export function BookingWorkspaceClient({
   );
   const [drawerPrefill, setDrawerPrefill] = useState<DraftPrefill | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const calendarHintDates = useMemo(() => bookingHintCalendarDates(range, filters),
+    [range, filters]);
   const [createdNotice, setCreatedNotice] = useState(false);
   const [timeline, setTimeline] = useState(false);
   const navigation = useRef<HTMLDivElement>(null);
@@ -7539,6 +7442,7 @@ export function BookingWorkspaceClient({
       {createdNotice ? <div role="status" className="fixed bottom-24 right-4 z-50 rounded-lg bg-emerald-800 px-4 py-3 text-white"><WorkspaceText text="Appointment created." /><button type="button" aria-label="Dismiss appointment confirmation" onClick={() => setCreatedNotice(false)} className="ml-4">×</button></div> : null}
       {showCreate ? (
         <AppointmentDrawer
+          loadedDates={calendarHintDates}
           onCreated={() => setCreatedNotice(true)}
           bookings={bookings}
           onClose={() => setShowCreate(false)}

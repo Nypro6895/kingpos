@@ -1,12 +1,12 @@
 import { PayrollChangeHistory } from "@/app/payroll/payroll-change-history";
 import { PayrollRecordedFactsPanel } from "@/app/payroll/payroll-recorded-facts";
-import { CurrentStaffPayrollDownload } from "@/app/payroll/current-payroll-download";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { StaffPayPeriodPicker } from "./staff-pay-period-picker";
 import type { StaffPayrollPortalData } from "@/lib/payroll";
 import type { StaffPayrollView, StaffAnalysisView } from "@/lib/staff-my-work-experience";
 import { staffPayRules } from "@/lib/staff-payroll-display";
 import { shiftStaffDate } from "@/lib/staff-payroll-period";
+import { StaffPayChangeNotice } from "@/app/staff/my-work/staff-pay-change-notice";
 import styles from "./staff-pay-analysis.module.css";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
@@ -15,9 +15,7 @@ const date = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short
 
 function Period({ data, tab }: { data: Pick<StaffPayrollPortalData, "period" | "periodOptions">; tab: "payroll" | "analysis" }) {
   if (!data.period) return null;
-  return <div className={`${styles.period} ${styles.payPeriod}`}><p>{tab === "payroll" ? <WorkspaceText text="Pay period" /> : <WorkspaceText text="Period" />} · <strong><WorkspaceText text={date(data.period.startDate)} />–<WorkspaceText text={date(data.period.endDate)} />, {data.period.endDate.slice(0, 4)}</strong></p>
-    <StaffPayPeriodPicker tab={tab} options={data.periodOptions} selected={`${data.period.startDate}:${data.period.endDate}`} />
-  </div>;
+  return <div className={styles.payPeriod}><StaffPayPeriodPicker tab={tab} options={data.periodOptions} selected={`${data.period.startDate}:${data.period.endDate}`} /></div>;
 }
 
 function PayRules({ data }: { data: StaffPayrollView }) {
@@ -45,12 +43,10 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
     ? "An earlier statement for this period was marked paid. This historical flag does not confirm that the current live amount was paid."
     : "Current income is a live calculation. Review recorded payment evidence separately; no payment status is inferred.";
   return <section className={styles.portal}><Period data={data} tab="payroll" />
-    <p className={styles.note}><WorkspaceText text="Current live payroll. Changes are reflected immediately." /></p>
-    <PayrollRecordedFactsPanel staffNames={line?{[line.staff_id]:line.staff_display_name_snapshot}:{}} facts={data.paymentEvidence?.recordedFacts??{status:"unavailable",message:"Recorded payment history is unavailable. Live income does not confirm a payment."}}/>
-    {data.history?.length>0&&<PayrollChangeHistory compact changes={data.history} />}
-    {line&&<CurrentStaffPayrollDownload periodStart={data.period.startDate} periodEnd={data.period.endDate} salonId={line.salon_id} staffId={line.staff_id}/>}
-    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text={data.status.label} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
+    <PayrollRecordedFactsPanel showExports={false} staffNames={line?{[line.staff_id]:line.staff_display_name_snapshot}:{}} facts={data.paymentEvidence?.recordedFacts??{status:"unavailable",message:"Recorded payment history is unavailable. Live income does not confirm a payment."}}/>
+    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text="Calculated" /> · <WorkspaceText text={data.status.label} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
       <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
+    <StaffPayChangeNotice changes={data.history ?? []} staffId={line?.staff_id} />
     <div className={styles.columns}>{line && <section><h2><WorkspaceText text="Pay breakdown" /></h2><dl>
       <div className={styles.row}><dt><WorkspaceText text="Service pay" /><small>{money(line.gross_sales)} <WorkspaceText text="in services" /></small></dt><dd>{money(line.staff_commission_gross)}</dd></div>
       <div className={styles.row}><dt><WorkspaceText text="Tips" /></dt><dd>{money(line.tip_amount)}</dd></div>
@@ -63,8 +59,7 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
         <p className={styles.note}><WorkspaceText text="Total = service pay + tip, before tax and period bonus." /></p>
         {rows.length ? <table className={styles.table}><thead><tr><th scope="col"><WorkspaceText text="Date" /></th><th scope="col"><WorkspaceText text="Tip" /></th><th scope="col"><WorkspaceText text="Total" /></th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td><WorkspaceText text={date(row.businessDate)} /></td><td>{money(row.tipAmount)}</td><td><strong>{money(row.commissionGross + row.tipAmount)}</strong></td></tr>)}</tbody><tfoot><tr><td><strong><WorkspaceText text="Total" /></strong></td><td><strong>{money(tipTotal)}</strong></td><td><strong>{money(dailyTotal)}</strong></td></tr></tfoot></table> : <p className={styles.note}><WorkspaceText text="No daily payroll entries yet." /></p>}
       </details>
-      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary><p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /><WorkspaceText text={data.paystub ? "" : " Paystub not posted for this statement."} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
-      {data.paystub?.view_url ? <><a className={styles.action} href={data.paystub.view_url} target="_blank" rel="noreferrer"><WorkspaceText text="View uploaded paystub →" /></a><p className={styles.note}><WorkspaceText text="Uploaded document. Use Download current payroll for the latest calculated amounts."/></p></> : data.paystub ? <p className={styles.note}><WorkspaceText text="Paystub is posted, but its download is temporarily unavailable." /></p> : null}
+      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details & history" /></summary><p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}{data.history?.length > 0 && <PayrollChangeHistory compact changes={data.history} />}</details>
     </section></div>
   </section>;
 }
@@ -83,13 +78,12 @@ export function StaffMyAnalysis({ data, today }: { data: StaffAnalysisView; toda
     <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text="Service sales" /></p><small><WorkspaceText text="Through" /> <WorkspaceText text={date(end)} /> <WorkspaceText text="· completed tickets" /></small></div><strong>{money(performance.serviceTotal)}</strong></div>
       <dl className={styles.stats}><div><dt><WorkspaceText text="Turns" /></dt><dd>{number(performance.totalTurns)}</dd><small><WorkspaceText text="Big" /> {number(performance.bigTurns)} <WorkspaceText text="· Small" /> {number(performance.smallTurns)}</small></div><div><dt><WorkspaceText text="Tips" /></dt><dd>{money(performance.tipAmount)}</dd><small><WorkspaceText text="Your tickets" /></small></div><div><dt><WorkspaceText text="Avg / ticket" /></dt><dd>{money(performance.averageTicket)}</dd><small>{performance.ticketCount} <WorkspaceText text="tickets" /></small></div></dl>
     </div>
-    {comparison && <div className={styles.comparison}><span className={comparison.deltaAmount >= 0 ? styles.positive : styles.negative}><WorkspaceText text={comparison.deltaPercent === null ? "No percentage comparison yet" : `${comparison.deltaAmount >= 0 ? "↑" : "↓"} ${number(Math.abs(comparison.deltaPercent))}% services vs previous period`} /></span><details><summary><WorkspaceText text="Comparison dates" /></summary><small>{comparison.currentLabel} <WorkspaceText text="vs" /> <WorkspaceText text={comparison.previousLabel} /><WorkspaceText text=". Equal calendar-day windows." /><WorkspaceText text={comparison.deltaPercent === null ? " Previous window has no completed sales." : ""} /></small></details></div>}
+    {comparison && <div className={styles.comparison}><span className={comparison.deltaAmount >= 0 ? styles.positive : styles.negative}><WorkspaceText text={comparison.deltaPercent === null ? "No percentage comparison yet" : `${comparison.deltaAmount >= 0 ? "↑" : "↓"} ${number(Math.abs(comparison.deltaPercent))}% services vs previous period`} /></span><details><summary><span aria-hidden="true">ⓘ</span><span className={styles.srOnly}><WorkspaceText text="Comparison dates" /></span></summary><small>{comparison.currentLabel} <WorkspaceText text="vs" /> <WorkspaceText text={comparison.previousLabel} /><WorkspaceText text=". Equal calendar-day windows." /><WorkspaceText text={comparison.deltaPercent === null ? " Previous window has no completed sales." : ""} /></small></details></div>}
     <div className={styles.columns}><section><h2><WorkspaceText text="Services by day" /></h2>{rows.length ? <figure className={styles.chart}>
       <WorkspaceElement as="div" className={styles.bars} role="img" aria-label={`Daily service sales in USD from ${date(data.period.startDate)} to ${date(end)}. Full amounts in daily activity below.`}>{days.map(day => <div key={day} className={styles.bar} style={{ height: `${Math.max(0, (byDay.get(day)?.serviceTotal ?? 0) / max * 100)}%` }} />)}</WorkspaceElement>
-      <div className={styles.axis}><span><WorkspaceText text={date(data.period.startDate)} /></span><span><WorkspaceText text={date(end)} /></span></div><figcaption className={styles.note}><WorkspaceText text="USD · peak" /> {money(max)} <WorkspaceText text="· zero = no completed sales" /></figcaption>
+      <div className={styles.axis}><span><WorkspaceText text={date(data.period.startDate)} /></span><span><WorkspaceText text={date(end)} /></span></div><figcaption className={styles.note}>USD</figcaption>
     </figure> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No completed services in this period yet." /></p>}
       <details className={styles.disclosure}><summary><WorkspaceText text="Daily activity ·" /> {rows.length} <WorkspaceText text="active days" /></summary>{rows.length > 0 && <table className={styles.table}><thead><tr><th scope="col"><WorkspaceText text="Date" /></th><th scope="col"><WorkspaceText text="Turns" /></th><th scope="col"><WorkspaceText text="Tip" /></th><th scope="col"><WorkspaceText text="Sales" /></th></tr></thead><tbody>{[...rows].reverse().map(row => <tr key={row.businessDate}><td><WorkspaceText text={date(row.businessDate)} /></td><td>{number(row.turns)}</td><td>{money(row.tipAmount)}</td><td>{money(row.serviceTotal)}</td></tr>)}</tbody></table>}</details>
-    </section><section><h2><WorkspaceText text="Top services" /></h2>{performance.topServices.length ? <dl>{performance.topServices.map((service, index) => <div className={styles.row} key={`${service.serviceId}-${index}`}><dt>{service.serviceName}<small>{number(service.count)} <WorkspaceText text="services" /></small></dt><dd>{money(service.revenue)}</dd></div>)}</dl> : <p className={styles.note}><WorkspaceText text="No completed services yet." /></p>}<small><WorkspaceText text="Service counts can exceed ticket counts." /></small></section></div>
+    </section><section><details className={styles.disclosure}><summary><WorkspaceText text="Top services" /></summary>{performance.topServices.length ? <dl>{performance.topServices.map((service, index) => <div className={styles.row} key={`${service.serviceId}-${index}`}><dt>{service.serviceName}<small>{number(service.count)} <WorkspaceText text="services" /></small></dt><dd>{money(service.revenue)}</dd></div>)}</dl> : <p className={styles.note}><WorkspaceText text="No completed services yet." /></p>}<small><WorkspaceText text="Service counts can exceed ticket counts." /></small></details></section></div>
   </section>;
 }
-

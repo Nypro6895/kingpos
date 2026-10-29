@@ -85,7 +85,7 @@ function safeNotificationHref(href: string | null | undefined) {
 }
 
 function matchesPath(href: string, path: string) {
-  const [pathname] = href.split("?");
+  const [pathname] = href.split(/[?#]/);
 
   return pathname === path || pathname.startsWith(`${path}/`);
 }
@@ -109,10 +109,12 @@ export function resolveAppNotificationDestination(
     };
   }
 
-  const href =
+  let href =
     notification.notification_type === "owner_transfer_invite"
       ? "/my-place"
       : safeNotificationHref(notification.href);
+  if (notification.notification_type === "payroll_updated" && notification.recipient_kind === "staff" &&
+    href.split(/[?#]/)[0] === "/staff/my-work") href = `${href.split("#")[0]}#payroll-changes`;
   const shouldOpenManageWorkspace =
     notification.recipient_kind === "owner_manager" &&
     Boolean(notification.salon_id) &&
@@ -130,7 +132,7 @@ export function resolveAppNotificationDestination(
         ? getManageWorkspaceId(notification.salon_id)
         : notification.recipient_kind === "staff" &&
             notification.salon_id &&
-            matchesPath(href, "/staff/appointments")
+            (matchesPath(href, "/staff/appointments") || matchesPath(href, "/staff/my-work"))
           ? getStaffWorkspaceId(notification.salon_id)
           : null,
   };

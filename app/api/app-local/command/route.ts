@@ -24,6 +24,7 @@ import { isAppLocalScopeId, isAppLocalPortableScopeId } from "@/lib/app-local-sc
 import portableActions from "@/lib/app-local-portable-actions.generated.json";
 import { authorizeAppLocalDisplayCommand } from "@/lib/app-local-display-server";
 import { APP_LOCAL_GUEST_HIDDEN_POSTS_READ } from "@/lib/app-local-guest-read-policy";
+import { runWithAppLocalGetterReadScope } from "@/lib/app-local-getter-read-scope";
 import { AuthAvailabilityError } from "@/lib/supabase/auth-rest";
 import { createAppLocalCommandTrace, type AppLocalCommandTrace } from "@/lib/app-local-command-trace";
 import type { AppLocalCommandFailureCode } from "@/lib/app-local-command-trace-protocol";
@@ -101,42 +102,44 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
       if(!shell.handled) return failure(400,"Choose a workspace.");
       return Response.json({ok:true,data:shell.data},{headers:responseHeaders});
     }
-    const business = await trace.measure("auth", () => getRequestBusinessContext());
-    const upload=await trace.measure("handler", () => runAppLocalUploadCommand(input.name,input.args,input.scope));
-    if(upload.handled)return Response.json({ok:true,data:upload.data},{headers:responseHeaders});
-    if (!business.user && input.name === APP_LOCAL_GUEST_HIDDEN_POSTS_READ) {
-      if (getExperienceContext(business).scope !== input.scope) return failure(409, "Your account has changed.");
-      // The unchanged original handler binds this read to the abuse-signed
-      // guest device. It accepts no supplied identity or moderation operation.
-      return Response.json({ ok: true, data: { value: await trace.measure("handler", () => runAppLocalCommand(input.name, [])) } }, { headers: responseHeaders });
-    }
-    if(input.name==="http.explore.feed-events"&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalExploreHttpCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
-    if(input.name==="http.public-booking.confirm"&&getExperienceContext(business).scope===input.scope){const booking=await trace.measure("handler", () => runAppLocalPublicHttpCommand(input.name,input.args,request,input.scope));if(booking.handled)return Response.json({ok:true,data:booking.data},{headers:responseHeaders});}
-    if(["http.shell.advertising-event","http.shell.campaign-event"].includes(input.name)&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalShellCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
-    if (!business.user) return failure(401, "Please sign in again.", "access_denied", "auth");
-    if (getExperienceContext(business).scope !== input.scope) {
-      const staff = await trace.measure("workspace", () => getStaffPortalIdentity());
-      if (staff.context.user?.id !== business.user.id || !staff.staff || getExperienceContext(staff.context).scope !== input.scope) {
-        const workday=await trace.measure("workspace", () => getCurrentStaffBusinessContext());
-        if(workday.user?.id!==business.user.id||getExperienceContext(workday).scope!==input.scope)return failure(409,"Your workspace changed. Please open the form again.");
+    return await runWithAppLocalGetterReadScope(input.name, async () => {
+      const business = await trace.measure("auth", () => getRequestBusinessContext());
+      const upload=await trace.measure("handler", () => runAppLocalUploadCommand(input.name,input.args,input.scope));
+      if(upload.handled)return Response.json({ok:true,data:upload.data},{headers:responseHeaders});
+      if (!business.user && input.name === APP_LOCAL_GUEST_HIDDEN_POSTS_READ) {
+        if (getExperienceContext(business).scope !== input.scope) return failure(409, "Your account has changed.");
+        // The unchanged original handler binds this read to the abuse-signed
+        // guest device. It accepts no supplied identity or moderation operation.
+        return Response.json({ ok: true, data: { value: await trace.measure("handler", () => runAppLocalCommand(input.name, [])) } }, { headers: responseHeaders });
       }
-    }
-    const originalHTTP = await trace.measure("handler", () => runAppLocalHttpCommand(input.name, input.args, request, input.scope));
-    const shell=await trace.measure("handler", () => runAppLocalShellCommand(input.name,input.args,request,input.scope,input.name==="shell.switch-workspace"?business:undefined));
-    if(shell.handled)return Response.json({ok:true,data:shell.data},{headers:responseHeaders});
-    if (originalHTTP.handled) return Response.json({ ok: true, data: originalHTTP.data }, { headers: responseHeaders });
-    const roleHTTP = await trace.measure("handler", () => runAppLocalRoleHttpCommand(input.name, input.args, request, input.scope));
-    if (roleHTTP.handled) return Response.json({ ok: true, data: roleHTTP.data }, { headers: responseHeaders });
-    const personalHTTP=await trace.measure("handler", () => runAppLocalPersonalCommand(input.name,input.args,request,input.scope));
-    if(personalHTTP.handled)return Response.json({ok:true,data:personalHTTP.data},{headers:responseHeaders});
-    if (!/^action\.[a-f0-9]{24}$/.test(input.name) || Object.keys(input.args).some(key => key !== "values")) return failure(400, "Invalid form.");
-    const values = decodeAppLocalValue(input.args.values);
-    if (!Array.isArray(values) || values.length > 20) return failure(400, "Invalid form.");
-    // Each compile-pinned original handler performs its own current permissions,
-    // record ownership, PIN and business validation. This transport never queues
-    // or retries writes; the original idempotent POS outbox remains separate.
-    const value = await trace.measure("handler", () => runAppLocalCommand(input.name, values));
-    return Response.json({ ok: true, data: { value } }, { headers: responseHeaders });
+      if(input.name==="http.explore.feed-events"&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalExploreHttpCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
+      if(input.name==="http.public-booking.confirm"&&getExperienceContext(business).scope===input.scope){const booking=await trace.measure("handler", () => runAppLocalPublicHttpCommand(input.name,input.args,request,input.scope));if(booking.handled)return Response.json({ok:true,data:booking.data},{headers:responseHeaders});}
+      if(["http.shell.advertising-event","http.shell.campaign-event"].includes(input.name)&&getExperienceContext(business).scope===input.scope){const events=await trace.measure("handler", () => runAppLocalShellCommand(input.name,input.args,request,input.scope));if(events.handled)return Response.json({ok:true,data:events.data},{headers:responseHeaders});}
+      if (!business.user) return failure(401, "Please sign in again.", "access_denied", "auth");
+      if (getExperienceContext(business).scope !== input.scope) {
+        const staff = await trace.measure("workspace", () => getStaffPortalIdentity());
+        if (staff.context.user?.id !== business.user.id || !staff.staff || getExperienceContext(staff.context).scope !== input.scope) {
+          const workday=await trace.measure("workspace", () => getCurrentStaffBusinessContext());
+          if(workday.user?.id!==business.user.id||getExperienceContext(workday).scope!==input.scope)return failure(409,"Your workspace changed. Please open the form again.");
+        }
+      }
+      const originalHTTP = await trace.measure("handler", () => runAppLocalHttpCommand(input.name, input.args, request, input.scope));
+      const shell=await trace.measure("handler", () => runAppLocalShellCommand(input.name,input.args,request,input.scope,input.name==="shell.switch-workspace"?business:undefined));
+      if(shell.handled)return Response.json({ok:true,data:shell.data},{headers:responseHeaders});
+      if (originalHTTP.handled) return Response.json({ ok: true, data: originalHTTP.data }, { headers: responseHeaders });
+      const roleHTTP = await trace.measure("handler", () => runAppLocalRoleHttpCommand(input.name, input.args, request, input.scope));
+      if (roleHTTP.handled) return Response.json({ ok: true, data: roleHTTP.data }, { headers: responseHeaders });
+      const personalHTTP=await trace.measure("handler", () => runAppLocalPersonalCommand(input.name,input.args,request,input.scope));
+      if(personalHTTP.handled)return Response.json({ok:true,data:personalHTTP.data},{headers:responseHeaders});
+      if (!/^action\.[a-f0-9]{24}$/.test(input.name) || Object.keys(input.args).some(key => key !== "values")) return failure(400, "Invalid form.");
+      const values = decodeAppLocalValue(input.args.values);
+      if (!Array.isArray(values) || values.length > 20) return failure(400, "Invalid form.");
+      // Each compile-pinned original handler performs its own current permissions,
+      // record ownership, PIN and business validation. This transport never queues
+      // or retries writes; the original idempotent POS outbox remains separate.
+      const value = await trace.measure("handler", () => runAppLocalCommand(input.name, values));
+      return Response.json({ ok: true, data: { value } }, { headers: responseHeaders });
+    });
   } catch (error) {
     trace.error(error, error instanceof AuthAvailabilityError ? "auth_unavailable" : error instanceof AppLocalUploadError ? "upload_error" : undefined);
     if(error instanceof AppLocalUploadError)return failure(error.status,error.message);

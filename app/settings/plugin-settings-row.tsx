@@ -48,7 +48,7 @@ export function PluginSettingsRow({ label, pluginName, marketHref, installed, en
       <button type="button" role="switch" aria-label={t(label)} aria-checked={enabled} className={styles.toggle} disabled={disabled || saving} onClick={() => {
         if (!enabled && (!installed || !canEnable)) { setActivation(true); return; }
         setActivation(false); onToggle(!enabled);
-      }}><span className={styles.track} aria-hidden="true"><span className={styles.thumb} /></span><span aria-hidden="true">{t(enabled ? "On" : "Off")}</span></button>
+      }}><span className={`${styles.track} settings-switch-track`} aria-hidden="true"><span className={`${styles.thumb} settings-switch-thumb`} /></span><span aria-hidden="true">{t(enabled ? "On" : "Off")}</span></button>
       {installed && onSave && <button type="button" className={styles.save} disabled={disabled || saving} onClick={onSave}>{t(saving ? "Saving…" : "Save")}</button>}
     </div>
     <PluginActivationDialog open={activation} onClose={() => setActivation(false)} pluginName={pluginName} marketHref={marketHref} />

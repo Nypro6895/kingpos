@@ -15,9 +15,18 @@ export async function fetchPostCommentsPage(input: {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch(`/api/post-comments?${params}`, {
+    const read = () => fetch(`/api/post-comments?${params}`, {
       cache: "no-store", credentials: "same-origin", signal: controller.signal,
     });
+    // Safari can interrupt a read when returning to the app. Retry the GET once
+    // within the same timeout; mutations continue to use explicit idempotent sends.
+    let response: Response;
+    try {
+      response = await read();
+    } catch (error) {
+      if (controller.signal.aborted || !(error instanceof TypeError)) throw error;
+      response = await read();
+    }
     const page = await response.json();
     if (!response.ok || page.error) {
       throw new Error(page.error || "Comments could not be loaded. Please try again.");
@@ -25,6 +34,7 @@ export async function fetchPostCommentsPage(input: {
     return page as PostCommentPage;
   } catch (error) {
     if (controller.signal.aborted) throw new Error("The request took too long. Please try again.");
+    if (error instanceof TypeError) throw new Error("Comments could not be loaded. Please try again.");
     throw error;
   } finally {
     clearTimeout(timer);

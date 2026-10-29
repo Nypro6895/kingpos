@@ -34,7 +34,25 @@ export async function compressImageCanvas(source: HTMLCanvasElement, bounds: Ima
     for (const quality of [.8, .72, .62]) {
       const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(
         value => value ? resolve(value) : reject(new Error("Image could not be processed.")), "image/webp", quality));
-      if (blob.type !== "image/webp") throw new Error("Please use a browser that supports WebP uploads.");
+      // Safari can decode WebP while canvas.toBlob silently returns PNG.
+      // Convert the cropped pixels on the server, preserving transparency and
+      // the WebP storage contract used by all upload callers.
+      if (blob.type !== "image/webp") {
+        if (blob.size > IMAGE_POLICY.maxInputBytes) break;
+        const response = await fetch("/api/images/normalize", {
+          method: "POST", credentials: "same-origin", body: blob,
+          headers: { "Content-Type": blob.type },
+        });
+        if (!response.ok) throw new Error("Image could not be processed. Please try again.");
+        const converted = await response.blob();
+        const width = Number(response.headers.get("X-Image-Width"));
+        const height = Number(response.headers.get("X-Image-Height"));
+        if (converted.type !== "image/webp" || !converted.size || converted.size > IMAGE_POLICY.maxBytes ||
+          !Number.isInteger(width) || width < 1 || width > canvas.width ||
+          !Number.isInteger(height) || height < 1 || height > canvas.height)
+          throw new Error("Image could not be processed. Please try again.");
+        return { blob: converted, width, height };
+      }
       if (blob.size <= target || (quality === .62 && blob.size <= IMAGE_POLICY.maxBytes))
         return { blob, width: canvas.width, height: canvas.height };
     }

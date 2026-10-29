@@ -72,7 +72,38 @@ async function resolveByField(input: {
   return data ?? [];
 }
 
-export async function resolveStaffAccountForSalon({
+export async function resolveStaffAccountForSalon(input: ResolveStaffAccountForSalonInput): Promise<StaffAccountResolution> {
+  const { context, supabase } = input;
+  const user = context.user;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // OR uses raw PostgREST syntax. Keep older/non-UUID identity paths on the
+  // original escaped eq filters rather than interpolating an unsafe value.
+  if (!user || !context.currentSalon || !uuid.test(user.id) || !user.auth_user_id || !uuid.test(user.auth_user_id)) {
+    return resolveStaffAccountSequential(input);
+  }
+  const { data, error } = await supabase.from("staff").select(STAFF_ACCOUNT_SELECT)
+    .eq("salon_id", context.currentSalon.id).eq("is_active", true)
+    .or(`account_user_id.eq.${user.id},user_id.eq.${user.auth_user_id}`)
+    .order("account_user_id", { ascending: false, nullsFirst: false })
+    .limit(2).returns<Staff[]>();
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+  // Non-null account links sort before nullable legacy links. Thus two nullable
+  // rows cannot hide a primary match. A cross-linked legacy row could sort
+  // before the primary group, so retain the exact original two-query resolution
+  // for that ambiguous case instead of accepting a truncated candidate set.
+  if (rows.some(row => row.account_user_id !== null && row.account_user_id !== user.id)) {
+    return resolveStaffAccountSequential(input);
+  }
+  const accountMatches = rows.filter(row => row.account_user_id === user.id);
+  const matches = accountMatches.length ? accountMatches : rows;
+  const source = accountMatches.length ? "account_user_id" : "legacy_user_id";
+  if (matches.length > 1) return { matches, source, staff: null, status: "multiple" };
+  if (matches.length === 1) return { source, staff: matches[0], status: "found" };
+  return { source: null, staff: null, status: "not_found" };
+}
+
+async function resolveStaffAccountSequential({
   context,
   supabase,
 }: ResolveStaffAccountForSalonInput): Promise<StaffAccountResolution> {

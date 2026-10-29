@@ -1,15 +1,16 @@
 "use client";
 import { WorkspaceText } from "@/components/workspace-language";
 import { useRef, useState, type ReactNode } from "react";
+import "./settings-controls.css";
 import type { loadDirectSettings } from "./direct-settings-actions";
 export type DirectData = Awaited<ReturnType<typeof loadDirectSettings>>;
 export type ActionResult =
   | { ok: true; message?: string; inviteUrl?: string | null }
   | { ok: false; error?: string };
 export const inputClass =
-  "min-h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm";
+  "settings-input w-full";
 export const buttonClass =
-  "inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:opacity-50";
+  "settings-button disabled:opacity-50";
 export function Field({
   name,
   label,
@@ -30,8 +31,8 @@ export function Field({
   step?: string;
 }) {
   return (
-    <label className="settings-field-row grid gap-1 text-sm">
-      <span className="settings-field-label"><WorkspaceText text={label} /></span>
+    <label className="settings-field">
+      <WorkspaceText text={label} />
       <input
         name={name}
         className={inputClass}
@@ -57,7 +58,7 @@ export function Check({
   required?: boolean;
 }) {
   return (
-    <label className="settings-check-row flex min-h-10 items-start gap-2 py-2 text-sm">
+    <label className="settings-check">
       <input
         className="mt-1 size-4 shrink-0"
         name={name}
@@ -81,8 +82,8 @@ export function Select({
   options: readonly (readonly [string, string])[];
 }) {
   return (
-    <label className="settings-field-row grid gap-1 text-sm">
-      <span className="settings-field-label"><WorkspaceText text={label} /></span>
+    <label className="settings-field">
+      <WorkspaceText text={label} />
       <select className={inputClass} name={name} defaultValue={value}>
         {options.map(([id, text]) => (
           <option key={id} value={id}>
@@ -211,7 +212,7 @@ export function InlineForm({
         <p role="status"><WorkspaceText text={dirty || changed ? "Unsaved changes in this group" : "Changes apply to this group only"} /></p>
         <button
           disabled={busy || disabled}
-          className={`${buttonClass} ${danger ? "!border-red-700 !bg-red-700" : "!border-zinc-950 !bg-zinc-950"} !text-white`}
+          className={`${buttonClass} ${danger ? "settings-danger-button" : "settings-primary-button"}`}
         >
           <WorkspaceText text={busy ? "Processing…" : label} />
         </button>
@@ -239,3 +240,11 @@ export const text = (form: FormData, key: string) =>
   String(form.get(key) ?? "").trim();
 export const number = (form: FormData, key: string) => Number(text(form, key));
 export const checked = (form: FormData, key: string) => form.get(key) === "on";
+
+export function SettingsFieldGroup({title,description,children}:{title:string;description?:string;children:ReactNode}) {
+  return <fieldset className="settings-field-group"><legend><WorkspaceText text={title}/></legend><div className="settings-field-group-content">{description?<p className="settings-field-group-description"><WorkspaceText text={description}/></p>:null}{children}</div></fieldset>;
+}
+
+export function SettingsSwitch({label,description,checked,disabled,onChange}:{label:string;description?:string;checked:boolean;disabled?:boolean;onChange:()=>void}) {
+  return <button type="button" role="switch" aria-checked={checked} disabled={disabled} onClick={onChange} className="settings-switch"><span className="settings-switch-copy"><span className="settings-switch-title"><WorkspaceText text={label}/></span>{description?<span className="settings-switch-description"><WorkspaceText text={description}/></span>:null}</span><span aria-hidden="true" className="settings-switch-track"><span className="settings-switch-thumb"/></span></button>;
+}

@@ -1,0 +1,42 @@
+KIỂM TRA ĐIỀU HƯỚNG IPHONE, EXPLORE COMMENT VÀ LUMI TRUST — 2026-10-28
+
+Yêu cầu: rà tất cả trang/vai trò còn nút Done xanh của cửa sổ web; sửa Comment/Trải nghiệm/Trust; lưu để deploy chung, chưa phát hành.
+Nguồn đối chiếu: build 1.0.0 (56), d58259afc3e90c6ccd9c2b0add5d2c009bfd1e45. Receipt build 56 đã đọc từ C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/native56-release-receipt.json.
+
+Phát hiện:
+1. Native openOnline dùng UINavigationController + UIBarButtonItem(.done) cho mọi fallback. iOS biểu diễn bằng dấu tích xanh; đóng cả phiên hosted sẽ quay về trang A giữ bên dưới. Đây là UIKit của app, không phải thông báo thành công Scan.
+2. Explore dùng nhãn Comment cả khi thẻ chỉ đại diện salon; fallback dẫn #customer-experiences thay vì một bài post.
+3. Salon nhận anchor trải nghiệm nhưng luôn cuộn tới lumi-trust. Anchor trải nghiệm trước đây không tồn tại khi danh sách trống.
+4. Link có fragment khác trang bị buộc mở hosted; pushState cùng trang không phát hashchange khiến tab/disclosure không đồng bộ.
+
+Sửa:
+- Quy tắc native chung cho mọi vai trò: trang thường không có native Done bar. Luồng đăng nhập, khôi phục, invitation và secret-capability có nút bằng chữ Back to app / Trở về app, không dùng system Done. Cập nhật lại theo trang usable mới, không để thanh của login đi theo trang thường. Nếu hosted load lỗi, hiện text exit để không kẹt ở màn hình trống; khi hồi phục thì bỏ thanh tạm.
+- Giữ nguyên fresh-context/nonce/navigation-identity/form-focus guards khi quay về installed app; không thay authorization, payment, camera permissions hoặc dữ liệu.
+- Các HTTPS ngoài app/Safari/Stripe vẫn là luồng ngoài app có chủ đích; không can thiệp control do hệ điều hành/provider quản lý.
+- Bài post có target: Comment gọi đúng callback/thread của bài. Target không hợp lệ không bị đưa nhầm sang trải nghiệm salon. Thẻ salon profile thật: nhãn Experiences / Trải nghiệm, mở danh sách trải nghiệm. Thẻ không có salon profile thật không dựng link bình luận giả.
+- Experiences có anchor ổn định kể cả danh sách trống; các feedback-good/feedback-issue/reviews đến danh sách, không đến Trust. Trust thu gọn, ở phần giải thích bên cạnh/bên dưới; chỉ mở disclosure khi người dùng bấm hoặc vào anchor Trust.
+- Whitelist các fragment trình bày của public salon và #comments trên beauty post. Registry vẫn kiểm tra UUID, query và route như cũ. Fragment/query lạ và token không được mượn đường local. Khi dữ liệu bài post đã render thì cuộn tới comment. Cùng trang phát hashchange để chuyển tab/khai triển đúng; không mở thêm cửa sổ.
+- Cập nhật tiếng Việt Experiences từ “Kinh nghiệm” thành “Trải nghiệm”, thêm “Trải nghiệm khách hàng”.
+
+Phạm vi audit bằng source:
+145 page.tsx: 91 trang thường, 20 luồng task/secret-capability, 34 trang bị loại theo policy app. Xem artifacts/navigation-comment-audit-20261028/all-routes.json, có từng route/source và role từ inventory. Guest/customer, beauty/personal, staff, owner/manager theo guard hiện hữu, portable và admin exclusions đều đi qua presentation boundary chung. Inventory không thay thế guard server; không khẳng định đã đăng nhập thử mọi tổ hợp vai trò trên thiết bị.
+
+Đã đạt:
+- node scripts/audit-hosted-navigation.mjs
+- node tests/navigation-comments-browser.mjs: chạy Chromium thật với function/view gốc, providers/data giả; kiểm tra callback post, salon label/destination, invalid target, empty state, explicit/collapsed Trust, hidden/same-page anchors, public cross-page anchors, query/token rejection. Không API mutation thật.
+- 12 tests hiện hữu: app-local-staff-online-identity, app-local-home-admission, app-local-root-handoff.
+- eslint trên toàn bộ TS/TSX đổi.
+- tsc --noEmit --incremental false.
+- build-app-local-bundle trong validation worktree riêng: 345 files, 96 routes, 327 commands, missing=0. Gói validation không activate và không đưa generated bundle vào patch.
+- git diff check với cr-at-eol (nguồn có CRLF).
+
+Còn chờ trước release:
+Xcode compile + LocalHostedReturnTests + NavigationPolicyTests + full native regression/archive; trên iPhone kiểm tra A -> Scan -> B, post Comment, salon Experiences trống/có dữ liệu, Trust/feedback anchors, Back, login/task -> ordinary page, error/retry/offline, đổi workspace/role, foreground, giữ drafts. XCTest đã thêm nhưng chưa chạy trên Windows. Không gọi bản sửa là đã được xác minh trên iPhone.
+
+Tích hợp:
+Đây là bản sửa tổng hợp THAY THẾ cách ẩn riêng cho Scan ở commit d216610 / changeId ios-scan-hosted-navigation-20261028. Không ghép frozen Scan cũ sau bản này.
+Dùng frozen source + patch mới theo journal ios-role-navigation-comments-20261028. Patch tổng hợp đối chiếu build56 d58259af, gồm cả Scan. Không cherry-pick toàn bộ baseline cũ đè lên native/web mới nhất. Ghép các file/hunks vào baseline release mới, giữ những thay đổi độc lập đã ship.
+Cần phát hành WEB và build IOS mới; chỉ deploy web không sửa native control và JS đã đóng gói trong binary 56. Build phải cao hơn bản thực tế đã upload tại thời điểm release. Task này không tăng version, push, upload hay deploy.
+Worktree thực hiện: C:/Reylumi-worktrees/scan-hosted-navigation-20261028
+Validation worktree: C:/Reylumi-worktrees/navigation-comments-validation-20261028 (generated bundle và typecheck riêng; không dùng toàn bộ output làm release source).
+Dependency junction node_modules ở hai worktree trỏ C:/Reylumi/kingpos/node_modules, không có server chạy nền được tạo bởi task.

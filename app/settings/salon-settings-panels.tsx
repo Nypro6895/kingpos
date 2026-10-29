@@ -14,6 +14,7 @@ import {
 } from "./direct-settings-actions";
 import {
   Field,
+  SettingsFieldGroup,
   Check,
   Select,
   InlineForm,
@@ -226,6 +227,7 @@ export function SalonDetailsPanel({
         }
         onSaved={onSaved}
       >
+        <SettingsFieldGroup title="Salon identity & contact">
         <Field
           name="business_name"
           label={__vt("Salon name")}
@@ -246,6 +248,8 @@ export function SalonDetailsPanel({
             rows={3}
           />
         </label>
+        </SettingsFieldGroup>
+        <SettingsFieldGroup title="Salon address">
         <Field name="address_line1" label={__vt("Address")} value={s.address_line1} />
         <Field
           name="address_line2"
@@ -258,6 +262,7 @@ export function SalonDetailsPanel({
           <Field name="postal_code" label={__vt("ZIP code")} value={s.postal_code} />
           <Field name="country" label={__vt("Country code")} value={s.country} />
         </div>
+        </SettingsFieldGroup>
       </InlineForm>
       {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? <SalonAddressSummary address={data.mapLocation.address} /> : <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
         <InlineForm disabled={!data.mapLocation.refreshEnabled} save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>

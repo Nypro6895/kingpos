@@ -4,11 +4,12 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { ActionFeedback } from "@/components/action-feedback";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { browserPublicOrigin } from "@/lib/browser-public-origin";
+import { sharePostLink } from "@/lib/post-share";
 
 export function PostShareButton({ href, title = "Reylumi" }: { href: string; title?: string }) {
   const translate = useWorkspaceTranslation();
   const [message, setMessage] = useState("");
+  const [manualUrl, setManualUrl] = useState("");
   const [pending, setPending] = useState(false);
   const busy = useRef(false);
   const generation = useRef(0);
@@ -20,6 +21,7 @@ export function PostShareButton({ href, title = "Reylumi" }: { href: string; tit
       generation.current += 1;
       busy.current = false;
       setPending(false);
+      setManualUrl("");
     };
   }, []);
   async function share() {
@@ -28,12 +30,12 @@ export function PostShareButton({ href, title = "Reylumi" }: { href: string; tit
     const attempt = ++generation.current;
     setPending(true);
     setMessage("");
+    setManualUrl("");
     try {
-      const url = new URL(href, browserPublicOrigin()).href;
-      if (navigator.share) await navigator.share({ title, url });
-      else {
-        await navigator.clipboard.writeText(url);
-        if (mounted.current && generation.current === attempt) setMessage("Link copied.");
+      const result = await sharePostLink(href, title);
+      if (mounted.current && generation.current === attempt) {
+        if (result.status === "copied") setMessage("Link copied.");
+        if (result.status === "manual") setManualUrl(result.url);
       }
     } catch (error) {
       if (mounted.current && generation.current === attempt && !(error instanceof Error && error.name === "AbortError")) setMessage("Could not share this link. Please try again.");
@@ -50,5 +52,6 @@ export function PostShareButton({ href, title = "Reylumi" }: { href: string; tit
     </button>
     {message ? <span role="status" className="absolute bottom-full right-0 z-30 mb-2 w-48 rounded-lg bg-zinc-900 p-2 text-xs text-white shadow-lg"
       onClick={() => setMessage("")}><WorkspaceText text={message} /></span> : null}
+    {manualUrl ? <span className="absolute bottom-full right-0 z-30 mb-2 w-64 rounded-lg bg-white p-2 shadow-lg"><label className="text-xs"><WorkspaceText text="Copy link" /><input aria-label={translate("Copy link")} className="w-full rounded border p-2" readOnly value={manualUrl} onFocus={event => event.currentTarget.select()} /></label></span> : null}
   </span>;
 }

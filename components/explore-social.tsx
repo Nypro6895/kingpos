@@ -13,6 +13,7 @@ import { EMPTY_SALON_SOCIAL, isSalonId, type ExploreSocialSalon, type SalonSocia
 import type { AccountSavedPostStateTarget } from "@/types/saved-post";
 import type { PostCommentTarget } from "@/types/post-comments";
 import styles from "./explore-social.module.css";
+import { sharePostLink } from "@/lib/post-share";
 
 type SocialContext = { states: Record<string, SalonSocialState>; busy: Set<string>; register: (id: string) => void; change: (id: string, field: SalonSocialField, active: boolean) => Promise<void>; authenticated: boolean; viewerId: string | null };
 const Context = createContext<SocialContext | null>(null);
@@ -105,15 +106,21 @@ export function ExploreSalonMenu({ salon, target, onHidden }: { salon: ExploreSo
 }
 export function ExploreSocialActions({ salon, href, target, onComment, commentCount = 0 }: { salon?: ExploreSocialSalon | null; href: string; target?: AccountSavedPostStateTarget | null; onComment?: () => void; commentCount?: number }) {
   const social = useSalonSocial(salon?.id), [message, setMessage] = useState("");
+  const [manualUrl, setManualUrl] = useState("");
   async function share() {
-    const url = new URL(href, window.location.origin).href;
-    try { if (navigator.share) await navigator.share({ title: salon?.name ?? "Reylumi", url }); else { await navigator.clipboard.writeText(url); setMessage("Link copied."); } }
+    setMessage(""); setManualUrl("");
+    try {
+      const result = await sharePostLink(href, salon?.name ?? "Reylumi");
+      if (result.status === "copied") setMessage("Link copied.");
+      if (result.status === "manual") setManualUrl(result.url);
+    }
     catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setMessage("Could not share this link. Please try again."); }
   }
   return <><div className={styles.actions} data-social-actions>
     {target ? <SavePostButton target={target} initialSaved={target.saved} saveCount={target.saveCount} isAuthenticated={social.authenticated} size="toolbar" showTooltip={false} /> : salon ? <button type="button" aria-label={`Love ${salon.name}`} aria-pressed={social.state.loved} disabled={social.busy} onClick={() => void social.change?.(salon.id, "loved", !social.state.loved)}><ReylumiIcon name="heart" fill={social.state.loved ? "currentColor" : "none"}/><WorkspaceText text="Love" /></button> : null}
-    {onComment ? <button type="button" aria-label="Comment" onClick={onComment}><ReylumiIcon name="message"/><WorkspaceText text="Comment" />{commentCount > 0 ? <span data-post-action-count className={styles.count}>{commentCount}</span> : null}</button> : <Link prefetch={false} href={`${salon?.href ?? href}#customer-experiences`} aria-label="Comment"><ReylumiIcon name="message"/><WorkspaceText text="Comment" /></Link>}
+    {onComment ? <button type="button" aria-label="Comment" onClick={onComment}><ReylumiIcon name="message"/><WorkspaceText text="Comment" />{commentCount > 0 ? <span data-post-action-count className={styles.count}>{commentCount}</span> : null}</button> : !target && salon?.href?.startsWith('/explore/salons/') ? <Link prefetch={false} href={`${salon.href.split('#')[0]}#customer-experiences`} aria-label="Customer experiences"><ReylumiIcon name="message"/><WorkspaceText text="Experiences" /></Link> : null}
     <button type="button" onClick={() => void share()} aria-label="Share"><ReylumiIcon name="share"/><WorkspaceText text="Share" /></button>
     {salon ? <ExploreBookButton href={salon.bookingHref} name={salon.name} contactHref={salon.href ?? href} phoneHref={salon.phone ? `tel:${salon.phone}` : null} /> : null}
-  </div>{message ? <p role="status" className={styles.feedback}><WorkspaceText text={message}/></p> : null}</>;
+  </div>{message ? <p role="status" className={styles.feedback}><WorkspaceText text={message}/></p> : null}
+  {manualUrl ? <label className={styles.feedback}><WorkspaceText text="Copy link" /><input className="w-full rounded border p-2" readOnly value={manualUrl} onFocus={event => event.currentTarget.select()} /></label> : null}</>;
 }
