@@ -254,7 +254,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     {error?<p role="alert" className="owner-error"><WorkspaceText text={error} /></p>:null}
     {cart?<>
       <div className="owner-tools">
-        
+        <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={add}>+ Add</button>
         <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button>
         <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
         {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??<><span className="owner-desktop-label"><WorkspaceText text="Customer" /></span><span className="owner-ios-label"><WorkspaceText text="Customers" /></span></>}</button>:null}
