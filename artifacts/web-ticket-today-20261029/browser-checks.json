@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-29T10:12:21.587Z",
+  "passed": 4,
+  "results": [
+    "Before: captured Today navigates while details stays open",
+    "After 390: Today closes, q preserved, one retained navigation; Book unaffected",
+    "After 768: Today closes, q preserved, one retained navigation; Book unaffected",
+    "After 1440: Today closes, q preserved, one retained navigation; Book unaffected"
+  ],
+  "errors": [],
+  "writes": 0
+}

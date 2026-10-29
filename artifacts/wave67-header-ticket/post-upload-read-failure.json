@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-29T10:03:23.584Z",
+  "run": 40852056389,
+  "overallRun": "failure",
+  "source": "d20058a06c0c71a04830346b0ad444657bca2acd",
+  "version": "1.0.0",
+  "build": "67",
+  "nativeTests": 235,
+  "nativeFailures": 0,
+  "sourceAndArchivesVerified": true,
+  "uploadAccepted": true,
+  "uploadTime": "2026-10-29T09:57:59Z",
+  "AppleValidObservedInFailedStepAt": "2026-10-29T10:00:05Z",
+  "failure": "After observing VALID, existing read-only check-build-status.mjs buildBetaDetail GET returned404; original workflow has no processing receipt.",
+  "notClaimed": [
+    "Original workflow successful",
+    "Current group availability until independent GET proof"
+  ],
+  "recovery": {
+    "kind": "GET_ONLY_EXISTING_STATUS_WORKFLOW",
+    "run": 40854414150,
+    "newUpload": false,
+    "newSigningOrCredentials": false,
+    "newSource": false
+  },
+  "evidence": [
+    "artifacts/wave67-header-ticket/native-job-failure.log",
+    "artifacts/wave67-header-ticket/native-source-upload-verified.json"
+  ]
+}

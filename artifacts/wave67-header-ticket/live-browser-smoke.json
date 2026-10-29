@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-29T10:10:08.502Z",
+  "status": "passed",
+  "scope": "Finite authenticated Owner browser smoke for required two UI repairs and retained Settings; not an all-page acceptance claim.",
+  "source": "d20058a06c0c71a04830346b0ad444657bca2acd",
+  "deployment": "dpl_4F5muTCV8GWRYosRUgDGV4VdTxAQ",
+  "checks": [
+    "POS global header with Notifications restored",
+    "Current POS source stylesheet IDs all4F5",
+    "Submit fits viewport861<889",
+    "Ticket contains one current calendar/search toolbar, legacy worklog inputs0",
+    "Calendar Date/Today labels and selected salon date visible",
+    "Owner Settings new Profile Edit/Cancel and salon address fallback passed on source66; retained exact filehashes verified unchanged67"
+  ],
+  "observations": [
+    {
+      "severity": "P3",
+      "surface": "Hosted web Ticket Today popup",
+      "observation": "Today navigates but calendar remains open; likely existing webFrame capture stopPropagation prevents child close handler. No mutation/data loss, awaiting native comparison before a small web-only followup.",
+      "blocksTwoConfirmedRegressionAcceptance": false
+    },
+    {
+      "surface": "Prepared canonical POS HTML",
+      "observation": "Canonical saved lease initially66 stylesheet IDs; fresh nonsensitive URL variant loaded verified4F5source. Existing worker prepares complete asset generations atomically, no cache clear or draft reset.",
+      "rootCauseNotMeasured": true
+    }
+  ],
+  "writes": 0,
+  "screenshot": "artifacts/wave67-header-ticket/pos-live.png",
+  "domProof": "artifacts/wave67-header-ticket/live-pos-dom-proof.json"
+}

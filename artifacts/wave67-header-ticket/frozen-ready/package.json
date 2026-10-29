@@ -1,0 +1,49 @@
+{
+  "name": "kingpos",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack && node scripts/build-offline-assets.mjs",
+    "start": "next start",
+    "lint": "eslint",
+    "db:validate-account-salon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-account-salon-foundation.ps1",
+    "test:account-salon-lifecycle": "node --test tests/salon-lifecycle-rules.test.mjs tests/account-salon-lifecycle-contract.test.mjs tests/account-deletion-flow-contract.test.mjs tests/account-lifecycle-phase3-contract.test.mjs",
+    "test:account-salon-baseline-static": "node scripts/verify-account-salon-baseline-static.mjs",
+    "test:pos-customer-display-e2e": "node tests/pos-customer-display-e2e.mjs",
+    "test:pos-live-draft-rpc-contract": "node --test tests/pos-live-draft-rpc-contract.test.mjs",
+    "test:customer-identity-claims": "node --test tests/customer-identity-claims-contract.test.mjs",
+    "test:customer-visits-contract": "node --test tests/customer-visits-contract.test.mjs",
+    "test:customer-visits-runtime": "node --test tests/customer-visits-runtime.test.mjs",
+    "test:staff-check-in-contract": "node --test tests/staff-check-in-contract.test.mjs",
+    "test:salon-creation-routing": "node scripts/verify-salon-creation-routing.mjs",
+    "test": "node scripts/test.mjs"
+  },
+  "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
+    "@stripe/stripe-js": "^10.0.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "botid": "^1.5.11",
+    "jsqr": "^1.4.0",
+    "maplibre-gl": "^5.24.0",
+    "next": "16.2.9",
+    "pdf-lib": "^1.17.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "playwright-core": "^1.61.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

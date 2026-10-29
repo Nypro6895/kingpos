@@ -1,0 +1,92 @@
+{
+  "kind": "release",
+  "summary": "Combined completed Settings/POS header and owner-confirmed top Add/Reset, three UI fixes, comment read transport, Payroll display and disabled first-party Check Writer code; native source-bound TestFlight and verified web. Developer Market and unfinished Payroll history excluded.",
+  "changes": [
+    "c3abe2ef-2c34-46ca-a1ad-98d66d282ac1",
+    "45c66e66-fea4-48de-bf21-4ad1db8683ac",
+    "d335a046-c9c3-4b0c-84b4-c8b5a31eab95",
+    "bb3456b8-8b66-4a0f-80ef-0fbdcdb33037",
+    "4dd0acc9-c1bc-4b82-bcfc-a02f1ea29589",
+    "9da1d904-6c4c-4509-9175-cd2d5f2c1dfb",
+    "8fbbe92f-f1b8-4ecc-bac5-504b81351d8c",
+    "c84379a7-3168-4058-8b68-b3fd3855c7d5",
+    "08e308fd-0719-41f3-b029-95fd3d308320",
+    "0bf23f73-9a6e-43b6-b356-4f3daa8b12e5",
+    "3fbfd81f-4879-4526-98c4-e91dda22b674",
+    "c43e7b71-d234-41b8-9d13-21a253ec96ae"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_4F5muTCV8GWRYosRUgDGV4VdTxAQ",
+      "baselineDeploymentId": "dpl_5vw2D8Xji2ZxMmKmakWmdcj8mxdb",
+      "sourceSha256": "8634088c10125caad82522cb07215efe6a04e798d8f27b04d4df708b66ec8fc2",
+      "overlaySha256": "e826de2aaabbe3342ec79f216be9d38d5710e67674582c9d156bab8307e189f4",
+      "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+      "evidence": "artifacts/wave67-header-ticket/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "67",
+      "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+      "evidence": "artifacts/wave67-header-ticket/availability-verified.json"
+    }
+  },
+  "source": {
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+    "nativeSourceSha256": "57e9dadb0bc9183b407a6c6fcef514d0929ae2b63d5f7cdaed1774d6b97066ea",
+    "baselineNative": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+    "frozenSnapshot": "artifacts/wave67-header-ticket/frozen-ready"
+  },
+  "verification": {
+    "nativeRun": 40852056389,
+    "nativeRunConclusion": "failure-after-accepted-upload-on-read-only-betaDetail404",
+    "independentProcessingAndAvailabilityRun": 40854414150,
+    "processingRecovery": "artifacts/wave67-header-ticket/post-upload-read-failure.json",
+    "native": "artifacts/wave67-header-ticket/native-verified.json",
+    "web": "artifacts/wave67-header-ticket/web-live-source-verified.json",
+    "http": "artifacts/wave67-header-ticket/http-live-verified.json",
+    "browser": "artifacts/wave67-header-ticket/live-browser-smoke.json",
+    "physical": {
+      "at": "2026-10-29T10:12:58.739Z",
+      "status": "in-progress",
+      "version": "1.0.0",
+      "build": "67",
+      "beforeInstalledBuild": "67",
+      "beforeContainer": "9CEA46B7-78C0-43BF-8DDB-594686DE7834",
+      "afterProof": "pending-worker-checkpoint",
+      "confirmedCases": [
+        "Global header account switcher/notifications open-close on POS",
+        "Header present Ticket/Book/CheckIn/Report",
+        "TopAdd/Reset andReceiptAddline visible",
+        "Submit774-814/bottomnav835-892 fit phone428x926",
+        "Single Ticket calendar/search, legacytoolbar absent",
+        "Search no-match then clear restoresTotal75",
+        "NativeToday popup closes anddatecorrect",
+        "SettingsProfileEdit/scroll/Cancel/Editrestore",
+        "Saloninformation opens",
+        "PersonalBookings/Beauty/QR settled content",
+        "StaffPost settledcontent/gallery7/posts"
+      ],
+      "overallAccepted": false,
+      "speedBenchmark": "pending",
+      "worker": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
+      "limitation": "Interim worker message; final raw artifacts and after-install consistency still required. Source66 unaffected cases retained separately."
+    }
+  },
+  "deferred": {
+    "checkWriter": "Code remains sales disabled. No production tables/catalog/key/flag or three module SQL migrations applied. Provider/physical printing activation separate; original activation events remain pending.",
+    "payrollHistory": "Original partial eight-file task remains pending; only five display paths released under new display-only revision.",
+    "developerMarket": "Excluded entirely."
+  },
+  "rollback": {
+    "web": "Retain exact5vw/sourcea9a7ac1 intermediate baseline (known UI partial; no financial/security regression); before rollback verify canonical alias still belongs to this release and do not overwrite an external successor.",
+    "ios": "TestFlight status distinct from App Store; previous build65 source/evidence preserved."
+  },
+  "id": "f830e1c5-8a3a-43c6-8bd4-b6b5769b3055",
+  "recordedAt": "2026-10-29T10:12:58.961Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029"
+}

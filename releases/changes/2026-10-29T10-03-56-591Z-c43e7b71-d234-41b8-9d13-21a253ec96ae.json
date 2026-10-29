@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "pos-shared-header-single-ticket-toolbar-20261029",
+  "status": "ready",
+  "summary": "Live and real iPhone66 QA found residual global POS header hide rule and native Ticket duplicate legacy filters. Restore shared header, measure remaining viewport on all device layouts, retain single current native Ticket toolbar and original filtering/authority.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/globals.css",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-local-panels.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave67-header-ticket\\frozen-ready",
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "b42dc04d-e143-48ab-9f88-af5cf380a660"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "c43e7b71-d234-41b8-9d13-21a253ec96ae",
+  "recordedAt": "2026-10-29T10:03:56.591Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/globals.css": "2d02721c3234413d07ea0341c24c65636fb0d9b283b79c367486a9a6df82637f",
+    "app/pos/owner-notebook-menu.css": "dddf11470cf6d9ee3b5f5bcf5aebda3bfd1dad320408275f8c50115f73233c50",
+    "app/pos/owner-pos-client.tsx": "59e480f114123a4745b903e3ad5ba448d7ac0ddc4d9108f526b971e2e2cb187c",
+    "app/pos/owner-workspace-frame.tsx": "a832f59ac3e050fe9bf25339f9220a9b8a8e75989196453966c07b67af98727a",
+    "app/pos/owner-local-panels.tsx": "d34c29a4402d75e3aa8f463a06a027ca4536cc665b2400f0522b5f264d426b02"
+  }
+}

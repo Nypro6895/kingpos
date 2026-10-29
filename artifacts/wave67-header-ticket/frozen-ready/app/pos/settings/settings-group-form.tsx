@@ -1,0 +1,52 @@
+"use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { useRef, useState, useTransition, type ReactNode } from "react";
+import { savePosSettingsGroup } from "./actions";
+import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
+import { serviceCategoryColor } from "@/lib/pos-service-catalog";
+const button="min-h-12 rounded-xl border px-4 py-3 font-semibold transition hover:bg-orange-50";
+function valueFor(name:string,row:Record<string,unknown>){
+  const preferences=normalizeWorkspacePreferences(row.workspace_preferences);
+  if(name.startsWith('serviceCategoryColor:'))return serviceCategoryColor(name.slice('serviceCategoryColor:'.length),preferences.serviceCategoryColors);
+  if(name in preferences)return preferences[name as keyof typeof preferences];
+  if(name.startsWith('tip_suggestion_'))return (row.tip_suggestions as number[]|undefined)?.[Number(name.slice(-1))-1]??0;
+  if(name.startsWith('current_'))return row[name.slice(8)]??'';
+  if(name.startsWith('remove_'))return false;
+  return row[name];
+}
+export function SettingsGroupForm({group,snapshot,children,saveAction=savePosSettingsGroup,showCancel=false}:{showCancel?:boolean;group:string;snapshot:Record<string,unknown>;children:ReactNode;saveAction?:typeof savePosSettingsGroup}) {
+  const __vt = useWorkspaceTranslation();
+
+  const expected=useRef(snapshot),form=useRef<HTMLFormElement>(null);
+  const [busy,start]=useTransition(),[message,setMessage]=useState('');
+  const [conflict,setConflict]=useState<Record<string,unknown>|null>(null);
+  const [changed,setChanged]=useState<{name:string;label:string;saved:string}[]>([]);
+  function describeConflict(conflict:Record<string,unknown>){return form.current?Array.from(form.current.elements).flatMap(element=>{
+    if(!(element instanceof HTMLInputElement||element instanceof HTMLTextAreaElement)||!element.name||element.type==='hidden'||element.type==='file')return [];
+    const saved=valueFor(element.name,conflict);if(saved===undefined)return [];
+    const mine=element instanceof HTMLInputElement&&element.type==='checkbox'?element.checked:element.value;
+    if(String(saved)===String(mine))return [];
+    return [{name:element.name,label:element.labels?.[0]?.textContent?.trim()||element.name.replaceAll('_',' '),saved:typeof saved==='boolean'?(saved?'On':'Off'):String(saved??'Empty')}];
+  }):[];}
+  function restoreValues(snapshot:Record<string,unknown>){
+    if(!form.current)return;
+    for(const element of Array.from(form.current.elements)){
+      if(!(element instanceof HTMLInputElement||element instanceof HTMLTextAreaElement)||!element.name)continue;
+      if(element instanceof HTMLInputElement&&element.type==='file'){element.value='';continue;}
+      const saved=valueFor(element.name,snapshot);if(saved===undefined)continue;
+      if(element instanceof HTMLInputElement&&element.type==='checkbox')element.checked=Boolean(saved);
+      else element.value=String(saved??'');
+    }
+  }
+  function acceptSaved(){
+    if(!conflict)return;restoreValues(conflict);
+    expected.current=conflict;setConflict(null);setMessage('Saved values loaded. Other settings groups were kept.');
+  }
+  return <div className="settings-style"><form ref={form} className="mt-4 grid gap-4" onSubmit={event=>{
+    event.preventDefault();if(conflict)return;
+    const data=new FormData(event.currentTarget);data.set('group',group);data.set('expected',JSON.stringify(expected.current));
+    start(async()=>{try{const result=await saveAction(data);if(result.ok&&result.snapshot)expected.current=result.snapshot;setConflict(result.conflict??null);setChanged(result.conflict?describeConflict(result.conflict):[]);setMessage(result.ok?'Saved':result.error??'Unable to save. Your changes are still here.');}catch{setMessage('Unable to save. Your changes are still here.');}});
+  }}><fieldset disabled={busy} className="grid gap-4">{children}</fieldset>
+    {conflict?<section className="rounded-xl border border-amber-200 bg-amber-50 p-4" aria-label={__vt("Settings changed")}><p className="font-semibold"><WorkspaceText text="Changed on another screen" /></p><ul className="my-3 space-y-2 text-sm">{changed.map(item=><li key={item.name}><WorkspaceText text={item.label} />: <strong>{item.saved}</strong></li>)}</ul><div className="flex flex-wrap gap-2"><button type="button" className={button} onClick={acceptSaved}><WorkspaceText text="Use saved values" /></button><button type="button" className={button} onClick={()=>{expected.current=conflict;setConflict(null);setMessage('Your changes are kept. Select Save changes to replace the saved values.');}}><WorkspaceText text="Keep my changes" /></button></div></section>:null}
+    <div className={showCancel?"settings-form-actions":"flex items-center justify-end gap-3"}>{showCancel?<button type="button" className="settings-button settings-cancel-button" disabled={busy} onClick={()=>{restoreValues(expected.current);setConflict(null);setChanged([]);setMessage('');}}><WorkspaceText text="Cancel"/></button>:null}<p role="status" className="text-sm text-zinc-600"><WorkspaceText text={message} /></p><button className="min-h-12 rounded-xl bg-orange-600 px-5 py-3 font-semibold text-white transition hover:bg-orange-700 disabled:opacity-50" disabled={busy||Boolean(conflict)}>{busy?'Saving...':<WorkspaceText text="Save changes" />}</button></div></form></div>;
+}

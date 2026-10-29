@@ -1,0 +1,56 @@
+/* Shared control rhythm across legacy panels, without changing their actions. */
+.settings-hub .settings-inline-editor :where(input:not([type]),input[type=text],input[type=email],input[type=password],input[type=tel],input[type=url],input[type=number],input[type=date],input[type=time],select,textarea),
+.settings-input{min-height:44px;border:1px solid #d4d4d8;border-radius:9px;background:#fff;padding:10px 12px;font-size:14px;line-height:1.5;color:#27272a}
+.settings-field{display:grid;gap:7px;font-size:13px;line-height:1.5;min-width:0}
+.settings-inline-form>fieldset{min-width:0;margin:0;padding:0;border:0}
+.settings-check{display:flex;align-items:flex-start;gap:10px;min-height:48px;padding:12px 0;font-size:14px;line-height:1.5}
+.settings-check input,.settings-hub .settings-inline-editor input[type=checkbox],.settings-hub .settings-inline-editor input[type=radio]{width:18px;height:18px;flex-shrink:0;accent-color:#c24f16}
+.settings-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid #d4d4d8;border-radius:9px;background:#fff;padding:10px 14px;font-size:14px;font-weight:600;line-height:1.4;color:#27272a}
+.settings-button:disabled{opacity:.5}.settings-button.settings-primary-button{border-color:#c24f16;background:#c24f16;color:#fff}.settings-button.settings-danger-button{border-color:#b4232b;background:#b4232b;color:#fff}
+.settings-hub .settings-inline-editor :where(button[class~="bg-zinc-950"],button[class~="!bg-zinc-950"],button[class~="bg-black"],button[class~="bg-orange-600"]){background:#c24f16!important;border-color:#c24f16!important;color:#fff!important;border-radius:9px;min-height:44px}
+.settings-hub .settings-inline-editor :where(button.rounded-md,button.rounded-lg,button.rounded-xl){border-radius:9px;min-height:44px}
+.settings-field-group{min-width:0;margin:0;padding:0 0 20px;border:0;border-bottom:1px solid #e4e4e7}.settings-field-group+.settings-field-group{padding-top:20px}.settings-field-group legend{float:left;width:100%;font-size:15px;font-weight:650;margin-bottom:12px}.settings-field-group-content{clear:both;display:grid;gap:14px}.settings-field-group-description{font-size:12px;line-height:1.6;color:#71717a;margin:0}
+.settings-field-group:last-child{padding-bottom:0;border-bottom:0}
+.settings-switch-list{border-top:1px solid #e4e4e7}.settings-switch{display:flex;align-items:center;gap:16px;width:100%;min-height:64px;padding:14px 0;border:0;border-bottom:1px solid #e4e4e7;background:transparent;text-align:left}.settings-switch:disabled{opacity:.6}.settings-switch-copy{flex:1;min-width:0}.settings-switch-title{display:block;font-size:14px;font-weight:500;line-height:1.5;color:#27272a}.settings-switch-description{display:block;margin-top:4px;font-size:12px;line-height:1.6;color:#71717a}.settings-switch-track{display:block;flex:none;width:44px;height:26px;border-radius:20px;background:#d4d4d8;padding:3px}.settings-switch[aria-checked=true] .settings-switch-track{background:#c24f16}.settings-switch-thumb{display:block;width:20px;height:20px;border-radius:50%;background:#fff;transform:translateX(0)}.settings-switch[aria-checked=true] .settings-switch-thumb{transform:translateX(18px)}
+.settings-hub [role=switch] .settings-switch-track{width:44px;height:26px;background:#d4d4d8;padding:3px}
+.settings-hub [role=switch] .settings-switch-thumb{width:20px;height:20px;margin:0;transform:translateX(0)}
+.settings-hub [role=switch][aria-checked=true] .settings-switch-track{background:#c24f16}
+.settings-hub [role=switch][aria-checked=true] .settings-switch-thumb{transform:translateX(18px)}
+@media(max-width:767px){.settings-hub .settings-inline-editor :where(input:not([type]),input[type=text],input[type=email],input[type=password],input[type=tel],input[type=url],input[type=number],input[type=date],input[type=time],select,textarea),.settings-input{font-size:16px}.settings-hub .settings-inline-editor :where(button[type=submit],button.settings-button){min-height:44px}}
+/* Native form checkboxes use switch presentation except explicit confirmations. */
+.settings-toggle-field{position:relative;align-items:center;justify-content:space-between;min-height:56px;border-bottom:1px solid #ededf1;gap:14px}
+.settings-toggle-field .settings-toggle-label{flex:1;min-width:0}
+.settings-toggle-field>input[type=checkbox]{position:absolute;inset:0;width:100%!important;height:100%!important;margin:0!important;opacity:0;cursor:pointer}
+.settings-toggle-track{display:block;flex:none;width:44px;height:26px;border-radius:20px;padding:3px;background:#d4d4d8;transition:background .15s}
+.settings-toggle-track>span{display:block;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 3px #0002;transition:transform .15s}
+.settings-toggle-field>input:checked~.settings-toggle-track{background:#c24f16}.settings-toggle-field>input:checked~.settings-toggle-track>span{transform:translateX(18px)}
+.settings-toggle-field:focus-within{outline:2px solid #c24f16;outline-offset:3px}.settings-toggle-field:has(input:disabled){opacity:.55;cursor:not-allowed}
+.settings-form-actions{justify-content:flex-end}.settings-form-actions>button{flex:none}.settings-form-actions>.settings-cancel-button{order:1}.settings-form-actions>button:not(.settings-cancel-button){order:2}.settings-form-actions>p{flex:1 1 130px;margin-right:auto;font-size:12px}
+.settings-action-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.settings-action-form>.settings-form-actions{border:0;margin:0;padding:0;grid-column:2;grid-row:1}
+.settings-action-form>fieldset{grid-column:1;grid-row:1;min-width:0}.settings-action-form>[role=alert],.settings-action-form>[role=status]{grid-column:1/-1}
+@media(max-width:767px){.settings-form-actions>button{flex:none}.settings-form-actions>p{flex-basis:100%}.settings-form-actions{gap:8px}.settings-action-form .settings-form-actions{gap:6px}}
+
+/* Reusable read/edit cards, including legacy Settings drawers. */
+.settings-edit-section{border:1px solid var(--settings-line,#e4e4e7);border-radius:12px;background:#fff;min-width:0;overflow:clip}
+.settings-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;min-height:64px}
+.settings-section-heading>div{flex:1;min-width:0}.settings-section-heading>button{flex:none}
+.settings-hub .settings-section-heading h3{font-size:15px;line-height:1.5;font-weight:600;margin:0}
+.settings-section-heading p{font-size:12px;color:var(--settings-muted,#71717a);margin:3px 0 0;line-height:1.5}
+.settings-edit-section>.settings-section-preview{border-top:1px solid var(--settings-line,#e4e4e7)}
+.settings-edit-section>div>.settings-inline-form,.settings-edit-section>div>div>.settings-inline-form{border:0;border-top:1px solid var(--settings-line,#e4e4e7);border-radius:0;padding:16px;box-shadow:none}
+.settings-read-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;min-height:56px;font-size:14px;line-height:1.5;border-top:1px solid #ededf1}
+.settings-read-row:first-child{border-top:0}.settings-read-row>span{flex:0 1 42%;min-width:0}.settings-read-row>div{min-width:0;flex:0 1 65%;text-align:right;color:#71717a;overflow-wrap:anywhere}
+.settings-identity{display:flex;align-items:center;gap:12px;min-width:0;padding:14px 16px}.settings-section-heading .settings-identity{padding:0}
+.settings-identity>div{min-width:0}.settings-identity strong{display:block;font-size:17px;line-height:1.4;overflow-wrap:anywhere}.settings-identity small{display:block;color:#71717a;font-size:12px;line-height:1.5;margin-top:3px}
+.settings-identity-avatar{display:grid;place-items:center;width:52px;height:52px;flex:none;border-radius:50%;overflow:hidden;background:#f6e7de;color:#96532e;font:22px Georgia,serif}.settings-identity-avatar img{width:100%;height:100%;object-fit:cover}
+.settings-owner-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-right:16px}
+.settings-state-badge{display:inline-flex;align-items:center;min-height:24px;border-radius:20px;background:#f0f8f3;border:1px solid #cde6d6;color:#287348;font-size:11px;padding:2px 8px;white-space:nowrap}
+.settings-edit-danger{border-color:#edd3d5}.settings-edit-danger .settings-section-heading h3{color:#b4232b}
+.settings-section-saved{font-size:12px;color:#247442;padding:10px 16px}
+
+.settings-style .settings-edit-section{border:1px solid var(--settings-line,#e4e4e7)!important;border-radius:12px!important;background:#fff!important;padding:0!important}
+.settings-style .settings-section-heading{border:0!important;background:transparent!important;padding:14px 16px!important;border-radius:0!important}
+.settings-style .settings-edit-section .settings-inline-form{padding:16px!important}
+.settings-style .settings-salon-public{border:1px solid var(--settings-line,#e4e4e7)!important;border-radius:12px!important;background:#fff!important;padding:0!important;overflow:hidden}
+.settings-style .settings-salon-public>.settings-inline-form{padding:16px!important}

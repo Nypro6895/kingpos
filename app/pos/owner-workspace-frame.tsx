@@ -103,6 +103,8 @@ function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
     const isWorkspaceTab = link.hasAttribute("data-owner-tab") && workspaceTab(url.pathname);
     if (target !== original || isWorkspaceTab || owner && ownerLocalHref(target)) {
       event.preventDefault();
+      // Capture navigation also owns closing the current Ticket date popup.
+      link.closest('details[data-ticket-date]')?.removeAttribute('open');
       // The popup link must still close itself after retained workspace navigation.
       if (!deviceShortcut) event.stopPropagation();
       void navigate(target);
