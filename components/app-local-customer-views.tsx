@@ -261,7 +261,7 @@ const error=messageFromSearch(initialError),message=messageFromSearch(initialMes
           </p>
         ) : null}
 
-        <p className="text-xs text-text-secondary">Appointments here ? <Link className="font-bold text-brand-teal" href="/activity">All visits & receipts</Link></p>
+        <p className="text-xs text-text-secondary">Appointments here &middot; <Link className="font-bold text-brand-teal" href="/activity">All visits & receipts</Link></p>
         <div className="flex min-w-0 items-center gap-3">
 <nav style={{ flex: "1 1 auto", minWidth: 0 }} className="flex gap-6 overflow-x-auto" aria-label="Booking filters">
           {TABS.map((tab) => {

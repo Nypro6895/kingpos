@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "personal-bookings-copy-parity-20261029",
+  "status": "working",
+  "summary": "Repair native Personal Bookings question-mark separator found on physical TestFlight70; align display copy with existing web page.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/app-local-customer-views.tsx"
+  ],
+  "source": {
+    "commit": "c976282fc1bc33b0545f4e0356668e67e6c18485"
+  },
+  "validation": [
+    {
+      "name": "physical70 reproduction",
+      "result": "passed",
+      "evidence": "Personal audit330 Bookings Past screenshot and source parity mismatch"
+    }
+  ],
+  "id": "e5be4aea-06be-4dde-bb98-15c2f6eecfdb",
+  "recordedAt": "2026-10-29T22:15:19.207Z",
+  "worktree": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
