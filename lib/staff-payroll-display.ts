@@ -1,4 +1,30 @@
 import type { PayrollStaffLineWithDailyTotals, StaffPayrollSetting } from "@/types/payroll";
+import { moneyCents } from "@/lib/payroll-live-money";
+
+/** Split existing final payouts for presentation; never recalculate earnings/tax. */
+export function staffTakeHomeDisplay(line: PayrollStaffLineWithDailyTotals) {
+  return {
+    check: (moneyCents(line.final_check_amount) - moneyCents(line.tip_check_amount)) / 100,
+    cash: (moneyCents(line.final_cash_amount) - moneyCents(line.tip_cash_amount)) / 100,
+    tip: (moneyCents(line.tip_check_amount) + moneyCents(line.tip_cash_amount)) / 100,
+    net: line.final_staff_income,
+  };
+}
+
+export function staffCompactSettings(line: PayrollStaffLineWithDailyTotals) {
+  const snapshots = Array.isArray(line.settings_used_snapshot) ? line.settings_used_snapshot.filter((value): value is Record<string, unknown> => !!value && typeof value === "object") : [];
+  const unique = (values: string[]) => [...new Set(values)];
+  const percent = (n: unknown) => `${Number(Number(n ?? 0).toFixed(2))}%`;
+  // A mixed period must not be described using a synthetic 0% or today's settings.
+  if (!snapshots.length && line.is_mixed_rate) return { pay: ["Mixed"], cash: ["Mixed"], tax: ["Mixed"], tip: ["Mixed"], fixed: false };
+  return {
+    pay: unique(snapshots.length ? snapshots.map(s => s.payType === "fixed" ? `$${Number(s.fixedPayAmount ?? 0).toFixed(2)}` : percent(s.commissionRate)) : [line.pay_type_used === "fixed" ? `$${line.fixed_pay_amount_used.toFixed(2)}` : percent(line.commission_rate_used)]),
+    cash: unique(snapshots.length ? snapshots.map(s => percent(100 - Number(s.checkRate ?? 0))) : [percent(100 - line.check_rate_used)]),
+    tax: unique(snapshots.length ? snapshots.map(s => percent(s.taxRate)) : [percent(line.tax_rate_used)]),
+    tip: unique(snapshots.length ? snapshots.map(s => s.tipPayoutMethod === "check" ? "Check" : "Cash") : [line.tip_payout_method_snapshot === "check" ? "Check" : "Cash"]),
+    fixed: line.pay_type_used === "fixed",
+  };
+}
 
 export type StaffPayRule = { commission: number | null; fixed: number | null; tax: number; tipsTax: boolean; bonusTax: boolean; fixedTax: boolean; from: string | null; to: string | null };
 

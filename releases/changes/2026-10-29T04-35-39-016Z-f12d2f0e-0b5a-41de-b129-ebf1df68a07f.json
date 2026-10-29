@@ -1,0 +1,43 @@
+{
+  "changeId": "payroll-charts-20261028",
+  "kind": "change",
+  "status": "needs-integration",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "ESLint and esbuild component bundle"
+    },
+    {
+      "name": "390px Edge rendered fixture: sparse reports, zero, negative staff sales, long name; no horizontal overflow",
+      "evidence": "artifacts/chart-mobile.png",
+      "result": "passed"
+    },
+    {
+      "name": "Existing canonical payroll-live-dashboard tests",
+      "evidence": "10/10",
+      "result": "passed"
+    },
+    {
+      "name": "Full app typecheck",
+      "evidence": "HEAD lacks current payroll/workspace modules; integrate with current source before full app verification",
+      "result": "pending"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-charts-20261028\\artifacts\\frozen-source"
+  },
+  "summary": "Responsive daily collection columns, adaptive currency axis and staff ranking bars; preserve payroll calculations",
+  "dependencies": [],
+  "files": [
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css"
+  ],
+  "id": "f12d2f0e-0b5a-41de-b129-ebf1df68a07f",
+  "recordedAt": "2026-10-29T04:35:39.016Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-charts-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "payroll-charts-20261028",
+  "status": "ready",
+  "summary": "Adaptive daily columns and responsive staff/service analytics; distinguish missing and zero",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v2"
+  },
+  "supersedesEvents": [],
+  "integratesEvents": [
+    "f12d2f0e-0b5a-41de-b129-ebf1df68a07f"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "19 Payroll Node tests,12 shared UI and12 native Payroll-view fixture observations",
+      "result": "passed"
+    },
+    {
+      "name": "13 actual workspace/portal observations;3 compact Windows portal checks;9 checkout/name/captured receipt observations",
+      "result": "passed"
+    },
+    {
+      "name": "Windows1440/820 actual64 fixture screenshot equality",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint/TypeScript and final production build459assets",
+      "result": "passed",
+      "evidence": "artifacts/wave65-audit/build-owner-approved-complete.log"
+    }
+  ],
+  "limitations": [
+    "Rebuilt native archive, Apple availability and exact-installed physical acceptance remain pending; local source-ready is not those outcomes.",
+    "Only inert fixtures and captured fake receipts; no production financial/social/data writes.",
+    "Native Payroll integration preserves actual64 wrapper/DTO/actions; two pre-existing unused-symbol lint warnings retained."
+  ],
+  "id": "7f15a87b-0c6b-4af7-b440-27826312afb9",
+  "recordedAt": "2026-10-29T04:59:40.496Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/payroll/payroll-dashboard.tsx": "052753aae0741d415d1d52ad5d758cb07b114d484635bdb54fcbee173c11de15",
+    "app/payroll/payroll-dashboard.module.css": "076404b633d0f08ff59cf12100cf7996ca46bd306548cd5026490828b03315b4"
+  }
+}

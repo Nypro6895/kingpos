@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "mobile-notebook-menu-20261028",
+  "status": "ready",
+  "summary": "More/Exit semantic repair: new direct mobile UI, scoped portal guard only for unchanged compact Windows legacy menu",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/owner-windows-compact-menu.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v2"
+  },
+  "supersedesEvents": [],
+  "integratesEvents": [
+    "953f5a12-69a8-4051-90f3-ebcca2e482d8"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "19 Payroll Node tests,12 shared UI and12 native Payroll-view fixture observations",
+      "result": "passed"
+    },
+    {
+      "name": "13 actual workspace/portal observations;3 compact Windows portal checks;9 checkout/name/captured receipt observations",
+      "result": "passed"
+    },
+    {
+      "name": "Windows1440/820 actual64 fixture screenshot equality",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint/TypeScript and final production build459assets",
+      "result": "passed",
+      "evidence": "artifacts/wave65-audit/build-owner-approved-complete.log"
+    }
+  ],
+  "limitations": [
+    "Rebuilt native archive, Apple availability and exact-installed physical acceptance remain pending; local source-ready is not those outcomes.",
+    "Only inert fixtures and captured fake receipts; no production financial/social/data writes.",
+    "Native Payroll integration preserves actual64 wrapper/DTO/actions; two pre-existing unused-symbol lint warnings retained."
+  ],
+  "id": "8182e0be-10eb-4f74-8c89-b6f1e339c958",
+  "recordedAt": "2026-10-29T04:59:31.064Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-notebook-menu.tsx": "f8c09a52909eec628140e6d4541da3b731265bb89df75852c86b502e45af540c",
+    "app/pos/owner-windows-compact-menu.tsx": "3e3e10ba85b60b473ee44e3ea20bf20e4cf817a21c5fd55ffd4d0530856a4337",
+    "app/pos/owner-windows-compact-menu.css": "7ba7afa499e34af9ee0995763f7377d7136cf6360def03b451f611dd6971a44c"
+  }
+}

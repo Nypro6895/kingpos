@@ -1,0 +1,65 @@
+{
+  "changeId": "payroll-staff-scroll-ui-20261029",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-disclosure.tsx",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "lib/payroll-period-rail.ts",
+    "lib/staff-payroll-display.ts",
+    "tests/payroll-staff-scroll-display.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-staff-scroll-ui-20261029\\artifacts\\payroll-staff-scroll\\frozen",
+    "commit": "d8aa3ab787aebd233f89f103ecb8a213a436299a"
+  },
+  "summary": "Staff net Check/Cash/Tip disclosures and shared draggable schedule/month rails; no deployment",
+  "status": "ready",
+  "validation": [
+    {
+      "evidence": "artifacts/payroll-staff-scroll/tests.log",
+      "result": "passed",
+      "name": "19 payroll display/schedule/staff access tests"
+    },
+    {
+      "evidence": "artifacts/payroll-staff-scroll/typecheck.log",
+      "result": "passed",
+      "name": "Targeted ESLint and full TypeScript"
+    },
+    {
+      "evidence": "artifacts/payroll-staff-scroll/build.log",
+      "result": "passed",
+      "name": "Production Next build"
+    },
+    {
+      "evidence": "artifacts/payroll-staff-scroll/browser-results.json",
+      "result": "passed",
+      "name": "12 responsive, navigation, touch, drag, keyboard and unsaved guard browser checks"
+    }
+  ],
+  "dependencies": [
+    "payroll-remove-source-notice-20261028"
+  ],
+  "kind": "change",
+  "id": "33368695-5bea-4108-a7dc-b7166e01c991",
+  "recordedAt": "2026-10-29T04:30:08.957Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-staff-scroll-ui-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "55a39e22ba09288b50145879b1d5edd81de99f596fe34b0b58489d9b7e8a5bca",
+    "app/payroll/payroll-mobile.module.css": "ae28899538b8750bedcf37f6698c80a60fc6d8c3f4db3a12467c4330e31f8569",
+    "app/payroll/payroll-disclosure.tsx": "641089a2d7c00f7be69d73f0bd405ca4fc0c0db48ad4ca0ab489ce3015d15e47",
+    "app/payroll/payroll-period-rail.tsx": "531a84606cb1553ec4bdac401bd1b530a0d49c1dadd5dc74ca05d036acdecdc7",
+    "app/payroll/payroll-tabs.tsx": "0bffc84f5321f4aa84a313e8922c35370efc5e7c5e515669a18a8ec4ccc4dddb",
+    "app/payroll/staff-income-card.tsx": "dd034ecbc4883281d56ec11d127d871145d3ed6b394d19eb5440ab19463d9337",
+    "lib/payroll-period-rail.ts": "219dce362b0fa898a37239af95a86a7705c0062faab12da3b6b006587eae9ccc",
+    "lib/staff-payroll-display.ts": "3d7ed4065d640669be1ee581137d488e55e9ddbbb9fd5e44788bef308eeca95f",
+    "tests/payroll-staff-scroll-display.test.mjs": "dc0b599e1aab3f1595809b7433b28ca1836cb64038fe3d77cff205d2a53efaf0"
+  }
+}

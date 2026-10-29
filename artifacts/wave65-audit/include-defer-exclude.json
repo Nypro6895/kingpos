@@ -1,0 +1,1180 @@
+{
+  "at": "2026-10-29T04:57:03.031Z",
+  "baseline": "WebJB/native64",
+  "rows": [
+    {
+      "event": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "status": "blocked",
+      "decision": "EXCLUDE_INDEPENDENT_TOOL",
+      "reason": "Independent Nails Page Pilot service/tool, not Reylumi app source; external gates remain separate.",
+      "source": {
+        "snapshot": "artifacts/nails-page-pilot-source.zip",
+        "sha256": "d76220e25eae43cbbc804dc74e3ea62697788db1cb4fa72eeeeae77bee76ed43",
+        "commit": "a0fd0bc4d076aab6203e113bcd7ca07158c80d24"
+      }
+    },
+    {
+      "event": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "status": "blocked",
+      "decision": "EXCLUDE_INDEPENDENT_TOOL",
+      "reason": "Independent Nails Page Pilot service/tool, not Reylumi app source; external gates remain separate.",
+      "source": {
+        "commit": "cfea80f58a26f1bfb15c3654cf863e282db05e15",
+        "snapshot": "artifacts/nails-page-pilot-v2-source.zip",
+        "sha256": "ee30e3cb0b42ca07848cabf786e325b89494f212f86e4cf834d21742765c7839"
+      }
+    },
+    {
+      "event": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Separate Nails Page Pilot Site: fixed Workers-incompatible redirect:error, refuse redirects explicitly, retain uncertain-write protection. Regression-tested on real local Workers runtime. Exclude from reylumi.com/iOS integration; native build not applicable.",
+      "source": {
+        "commit": "493d89003780ccc257f28cb25b2d2d18c17d6412",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-pilot-graph-runtime-frozen",
+        "archive": "artifacts/nails-pilot-graph-runtime-source.zip",
+        "sha256": "a1d97bd99d71f139431f6d0f3aedadbda01e6dfdc67f43c2084075928963bc10"
+      }
+    },
+    {
+      "event": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Independent Nails Page Pilot one-click automatic photo selection, real vision, American English caption/hashtags, immediate posting and duplicate protection. Excluded from reylumi.com and iOS.",
+      "source": {
+        "commit": "5e731400d42b40fa18a5d550c3e46761d610ce78",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-post-now-frozen-5e73140"
+      }
+    },
+    {
+      "event": "493385b7-012b-4d66-a589-5790acf7018a",
+      "changeId": "explore-preview-logos-20261017",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Completed LOCAL PREVIEW ONLY: existing captured public salon logos are hydrated and exact owned logo objects are served. King Nails avatar visibly restored. No application product, SQL, ranking or production changes; this harness correction does not require deployment.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-preview-logos-20261017\\completed-source",
+        "preimplementationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-preview-logos-20261017\\preimplementation-source"
+      }
+    },
+    {
+      "event": "f1a21743-b245-433f-bc2f-03a61fa05495",
+      "changeId": "ios-workspace-cookie-deletion-20261020",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "174 native tests passed historically; separate authenticated Staff and repaired Owner/Personal/Staff acceptance remains absent. Current Swift differs; do not replay old transport.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-fix-frozen\\cee9482db037f573696edca17ab91dbfb3d67860",
+        "commit": "cee9482db037f573696edca17ab91dbfb3d67860",
+        "baselineCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+        "overlaySha256": "a040ab2b0843f854721484bd0f82b37477b9c9ff41963facadc4c610ec60e6f3",
+        "testSourceManifest": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-candidate-r2-passed\\source-inputs.json"
+      }
+    },
+    {
+      "event": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "changeId": "auth-session-missing-rejection-20261020",
+      "status": "ready",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "45 historical tests pass; scoped patch cannot be proven present in evolved auth-rest. Reconcile confirmed rejection semantics with current auth and fresh role tests.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\auth-rejection-cf992a1-source",
+        "commit": "cf992a1e209fe6a9a0e3995cc2a9d917ea4296fd",
+        "snapshotSha256": "070d3c7a59b8dc71baa7f44ccee9285a395e1e88e29d9b47e0bb0f575ac401ed"
+      }
+    },
+    {
+      "event": "bca89a39-186f-412a-81bd-b76075e4d5da",
+      "changeId": "ios-background-cookie-authority-20261020",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Historical native compile/device gate remains; current writer differs despite a matching test file. Verify background cookie authority against current 63.",
+      "source": {
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/bg-cookie-d5ecb7a-source",
+        "commit": "d5ecb7a51e7ccd313e1e79c73d2adf823608955b",
+        "snapshotSha256": "518dac93252a4ba772762b025eb043837899da04adb604b2f3909d1e2bdab2ee"
+      }
+    },
+    {
+      "event": "4cff2fad-08e3-42d0-9b22-623957e87395",
+      "changeId": "help-context-dismiss-20261020",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_PRESENT_SCOPED",
+      "reason": "All scoped production hunks reverse-check against web and native63. Build62 Help device evidence exists; old journal ID was not separately receipted. No duplicate payload required.",
+      "source": {
+        "commit": "8ed23dd8623a3713e344ea6d6d26c07a02dc5393",
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/frozen-8ed23dd-raw-selected",
+        "snapshotKind": "selected-raw-git-patch",
+        "baseCommit": "d73afd529b6b5b3c0ba3437efcb6e225d5f1269c"
+      }
+    },
+    {
+      "event": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "changeId": "macqa-help-background-integration-20261020",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Old base45 aggregate replaced as a release assembly by 62/63. This does not prove inherited cookie features; retain individual cookie acceptance rows.",
+      "source": {
+        "commit": "ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\frozen-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+        "snapshotKind": "raw-native-ios-subtree; full product source retained in exact Git commit",
+        "snapshotSha256": "03caf8901156099e91d53e015fbf9c978b247467ab2f97664413f70ee7303bd3",
+        "nativeInputCount": 414,
+        "archive": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\reylumi-ios-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359-raw.tar",
+        "archiveSha256": "21ea78a85852a8601eb3ff484d4c9df2b43587add00876a9e518953957c6b087",
+        "baselineNativeCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+        "bundleBuildId": "1d85f270d246910f38f72a2fb7efb8417782336c8a3c73a0c2212329d258fe47"
+      }
+    },
+    {
+      "event": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "changeId": "ios-private-business-cache-admission-20261020",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Partial Swift matches do not prove private cache admission. Historical native195/role acceptance remains unproven on current source.",
+      "source": {
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/business-cache-7a88853-source",
+        "commit": "7a888538014cc9ae5c816cef164f28429c625abe"
+      }
+    },
+    {
+      "event": "62f208d8-136e-439b-bba2-23a9ec001f43",
+      "changeId": "online-authority-refresh-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Current source differs. Verify online same-tenant Staff preflight and all role transitions; historical note is not current device acceptance.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh-final-source\\frozen-e8177a596060693fc2a23044247713c941fae035",
+        "commit": "e8177a596060693fc2a23044247713c941fae035"
+      }
+    },
+    {
+      "event": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "changeId": "refresh-session-availability-tests-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_TEST_ONLY",
+      "reason": "One test file; no production payload. Reuse relevant cases when current auth integration is reconciled.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\test-source"
+      }
+    },
+    {
+      "event": "16970911-3725-403f-a83f-915be4271914",
+      "changeId": "pc-ios-today-session-reliability-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "13 auth/timing files evolved. Real-device 503 and restart acceptance was left open; requires current behavioral reconciliation, not old snapshot overlay.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\frozen-patch",
+        "commit": "4ee944727133257a6a2f1f84c01c9186bb0fb520",
+        "sourceSha256": "1135afeedf044a9ffacb10c9e17771ea0275455b8362d029cda317d84f2d6ea1"
+      }
+    },
+    {
+      "event": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "changeId": "payroll-hide-review-notices-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Historical six-file removal of review/adjusted badges is distinct from new Payroll payment panel removal. No exact source commit proof; reconcile remaining UI behavior separately.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\frozen",
+        "baselineCommit": "d75cf764215adbd97b34a473929b480e9edf6528",
+        "branch": "codex/payroll-hide-review-notices-20261021"
+      }
+    },
+    {
+      "event": "a88bc104-8a6e-4cab-b465-99463332dec3",
+      "changeId": "daily-closing-conflict-notice-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_PRESENT_SCOPED",
+      "reason": "Both production files match and scoped hunks reverse-check on web/native63. No additional payload identified; journal remains unchanged.",
+      "source": {
+        "commit": "b1083c57dd4aca6c69a0d3f416d3db2aff3274ce",
+        "baseCommit": "d75cf764215adbd97b34a473929b480e9edf6528",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-4\\snapshot"
+      }
+    },
+    {
+      "event": "b2617811-8752-4582-bc3a-244b701326d9",
+      "changeId": "pc-ios-causal-contracts-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "12 scope/cache/cancellation files differ. Native and current campaign integration acceptance remains open; require current contract proof.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\continuation-final-source-2026-10-21T15-10-17-035Z",
+        "commit": "6ed6fa65ce559a6b65ed04f106f6e7ef8f3ad681",
+        "manifestSha256": "4e03f07be5acde85252c626a7dc0c8d3a8f0b56aaf39510fa0c2743b5bfcfdc3"
+      }
+    },
+    {
+      "event": "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "changeId": "campaign-pc-common-integration-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_REPLACED_LOCAL",
+      "reason": "Explicitly superseded by pc-campaign-common-candidate-20261021. Do not integrate the 137-file assembly twice; replacement still has real Postgres/native gates.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-candidate",
+        "commit": "fd8e92b8bf53639ce0b08b0760cd05744164366b",
+        "baseCommit": "35dfdc1d493ccf59cbfa3c588eb497d13a44af78",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate-source-manifest.json",
+        "sha256": "f4110f0444ef8025a9e6b03e751ba4a4531e859516c5f35f4ff9a6bc65cf2897"
+      }
+    },
+    {
+      "event": "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "changeId": "flat-section-canvas-20261021",
+      "status": "ready",
+      "decision": "HISTORICAL_REPLACED_LOCAL",
+      "reason": "Nine frozen files are an exact subset of combined-ui-payroll-daily-local. Apply no duplicate payload; evolved UI still needs scoped residual review in that parent row.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-3\\frozen-payroll-final",
+        "baselineCommit": "2638cb272d3a13d872f9ea0bebbf2f0fba85ed2d",
+        "sourceSha256": "f58b99a61c40b3363cc17e7df53a28a1d06d01133d2fc16dc448cf7dc90cf736"
+      }
+    },
+    {
+      "event": "279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "changeId": "combined-ui-payroll-daily-local-20261021",
+      "status": "ready",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "104-file aggregate has 72 current equivalents and 32 evolved files. More/analytics and historical Payroll UI intent are not fully established by hashes; require scoped residual UI review.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-3\\frozen-payroll-final",
+        "baselineCommit": "2638cb272d3a13d872f9ea0bebbf2f0fba85ed2d",
+        "sourceSha256": "f58b99a61c40b3363cc17e7df53a28a1d06d01133d2fc16dc448cf7dc90cf736"
+      }
+    },
+    {
+      "event": "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "changeId": "pc-campaign-common-candidate-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "146-file historical release assembly is obsolete as a whole baseline. Its real Postgres race, authenticated native and account gates remain in component rows; no claim all features shipped.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-candidate-r2",
+        "commit": "fc3c0e55d6f068a04633825876a0b52889efacf6",
+        "baseCommit": "35dfdc1d493ccf59cbfa3c588eb497d13a44af78",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate-source-manifest-r2.json",
+        "sha256": "0f8b0eaae2c214aee87cd5938d2814b9ceb032637d04b06875dedb939510e034"
+      }
+    },
+    {
+      "event": "23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "changeId": "pc-ios-explicit-guest-continuation-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Three entry/shell files differ. Verify one explicit Guest prompt after authority withdrawal and current common account QA; do not copy old shell.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\guest-continuation\\frozen\\2026-10-21T16-23-54-954Z\\source",
+        "commit": "4d6c100c4545034230808ff794dbaf66321d51bd",
+        "manifestSha256": "f9399e550db86e6978f1883aaf8975f1af1aacca6311bcccab4c2e7bba112620"
+      }
+    },
+    {
+      "event": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "changeId": "campaign-causal-settlement-reporting-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "34 files including five SQL migrations; 250 local tests do not establish production schema, policy, causal settlement or staging acceptance. No migration authorized in this audit.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\source",
+        "commit": "c4e7db5ddbd9767526d62a4e1b6d33397dbca655",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\manifest.json",
+        "sha256": "513d3ef8ab9d961894776e8bc8cd77be60c30b0e68730b1cc56fa686b4066886"
+      }
+    },
+    {
+      "event": "a397b292-7798-4ba5-b16a-71673c11da76",
+      "changeId": "windows-portable-startup-offline-admission-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Optional lease before POS and offline admission need current integration/Windows acceptance. Two matching files do not establish four-file behavior.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-patch",
+        "commit": "a63f6f9b1a88cb76db846913cff2c82bfcae32c9",
+        "baselineCommit": "016178247ba97e15b210e1090cce4bb4f2c8972d"
+      }
+    },
+    {
+      "event": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "changeId": "campaign-pending-claim-demand-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Scoped source hunks are present on web/native63, but SQL production application and Postgres/manual checkout/staging acceptance are unknown. Source presence is not database evidence.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\source",
+        "commit": "5f3834866617331292ed5f34ee11919d76a571c1",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\manifest.json",
+        "sha256": "c27d6bb1c0ff5a29928a11077fa25a2e29908fa2b84543c92a524cac0f83586b"
+      }
+    },
+    {
+      "event": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "changeId": "unified-windows-portable-integration-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Historical aggregate superseded as an assembly by later baselines; retain component Postgres/POS/auth gates. No whole-tree reintegration.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\source",
+        "commit": "0276a9e3aa6fc2def4d1bd9689bd364867fcc56e",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\manifest.json",
+        "sha256": "d4ef182786752c17fac406f56445c2f9397ed6933d1b0a6ff830200b76718d25"
+      }
+    },
+    {
+      "event": "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "changeId": "windows-portable-owner-startup-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_PRESENT_SCOPED",
+      "reason": "Scoped production hunks reverse-check on both current sources. Physical Windows startup acceptance is not claimed; no new runtime payload identified.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-owner-combined",
+        "commit": "55c34d8762d711de501fdc8332d788344e049d02",
+        "baselineCommit": "a7c1eac15401972fadf95159b58b69ab9990682b"
+      }
+    },
+    {
+      "event": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "changeId": "unified-owner-guest-integration-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Old six-file assembly is not a future release baseline. Monthly cap/manual checkout/native/POS staging remain component acceptance gaps.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\source",
+        "commit": "f22db9c688db2ec8ebb54420725a35eea5d70cac",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\manifest.json",
+        "sha256": "9091be884574d7e8bf4cd5404bec90eed4a4cdf5b835066c74f04b8b037968dc"
+      }
+    },
+    {
+      "event": "df7e32b3-7171-47d3-86c6-2335990a478f",
+      "changeId": "campaign-credit-lifecycle-r5-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "17 files/two SQL migrations; sticky Pause reserve, Resume and exactly-once Cancel require production-schema/staging proof. Native/fallback acceptance remains open.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\source",
+        "commit": "a61cce68abdb2eb1b8a2ecff26bc8f3b267cdacf",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\manifest.json",
+        "sha256": "4658809997a5db9c9a3c0cddf8d87034eecb9d6d7af85419efbafa3021536c71"
+      }
+    },
+    {
+      "event": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "changeId": "reylumi-final-r5-integration-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Historical R5 staging package replaced by subsequent R6-R10 and 62/63 assemblies. This does not close its component native/POS/staging gates.",
+      "source": {
+        "commit": "090d276ab4b0f94361f7622f7f5f29932737bd6f",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\source",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\functional-source-manifest.json",
+        "sha256": "2440ecf64f7e093d09862b3df6333b91c71f8e13d9cbbfe4f49b942b5641a83d"
+      }
+    },
+    {
+      "event": "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+      "changeId": "ios-production-path-qa-20261021",
+      "status": "working",
+      "decision": "DEFER_HISTORICAL_OR_PERFORMANCE",
+      "reason": "Preserve actual uploaded64 source; no replay of older/WIP performance/auth assemblies, deeper speed work expressly deferred. Current task supported checkpoint checked.",
+      "source": {
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/pc-ios-reliability-20261021/session-restart/option-A-production-path-20261021",
+        "commit": "cf458316d827a4d765f1f0c27f1c13f101d8ca5c"
+      }
+    },
+    {
+      "event": "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "changeId": "ios-my-work-critical-path-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Historical 8.288s latency was not accepted. Five files evolved; current MyPay measurement still exceeds one second. Reconcile performance on current source instead of replaying old optimization.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\common-source-transition\\private-native\\c701-20261021T2109-frozen\\Project",
+        "commit": "c7016e00d12b39a9cdbeb4bb67fdb380870acdf9",
+        "sourceSha256": "ec29dc50e86999f5fd488929252b645a41e09bbf3a0e01218a5ecbddf9229f9c"
+      }
+    },
+    {
+      "event": "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "changeId": "claude-project-review-setup-20261021",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Claude Code Pro on Windows PC authenticated and verified by an actual read-only Vietnamese model check against the local Reylumi/KingPOS project; Desktop review launcher installed. Tooling only, no deployment required.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-release-snapshots\\claude-project-review-pc-ready-20261021-172940",
+        "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+      }
+    },
+    {
+      "event": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "changeId": "staff-my-work-verified-read-identity-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Fresh final identity gate/SDK reuse count was RED in producer evidence. Seven-file scope needs current proof; matching portions do not close identity correctness.",
+      "source": {
+        "commit": "5b7654a6a782032d9411502921e2faa637876803",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\frozen-implementation-20261021T223721238421Z\\source"
+      }
+    },
+    {
+      "event": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Fresh same-principal/tenant reuse intent needs authenticated physical verification against current63. Historical c701 device gate remains open.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\role-read-reuse\\frozen-implementation-20261021T224009609534Z\\source",
+        "commit": "54b692557288c7eb2fd1839618a4f8499f799d52"
+      }
+    },
+    {
+      "event": "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "changeId": "claude-pc-mac-simulator-review-20261021",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "PC Claude can read local Reylumi source and inspect fresh screenshots plus recorded native test results from a dedicated Mac iPhone simulator. Verified actual image understanding and 19 passing native tests; tooling only, no release.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-release-snapshots\\claude-pc-mac-simulator-ready-20261021-174403",
+        "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+      }
+    },
+    {
+      "event": "e32efba9-d661-4558-8f11-9e605b2383f1",
+      "changeId": "reylumi-final-r6-integration-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Metadata-only/old R6 assembly is superseded as a package. Keep revocation503/auth P0/pilot gates in component records; no independent product delta proven.",
+      "source": {
+        "commit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r6-verified\\functional-source-manifest.json",
+        "sha256": "795cce961cb3bf394eb3e1a94112295f86f65f71c562cecf3facc61e3ca0506d"
+      }
+    },
+    {
+      "event": "15938439-7e97-493e-b874-fe42810e2ce4",
+      "changeId": "local-first-services-pilot-r6",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Default-OFF pilot is not authorized for activation. Ten inherited fixture failures and real auth acceptance were unresolved; do not enable or overlay old sixteen-file snapshot.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\source",
+        "commit": "dbad6b0e661c4ba59939207bfb407549ecbde4c1",
+        "manifestSha256": "308c241f131cefcddb08774d1513104371efbaae0ff1a30516c382d4e018f75e"
+      }
+    },
+    {
+      "event": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "changeId": "r6-confirmed-auth-rejection-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "401/403 versus transient503 semantics need current server/native proof. Historical device gate remains; twelve-file older snapshot is not safe to overlay.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\delivery-20261021T233505722271Z\\source",
+        "commit": "8776d0b52d7e5526a0814cec794cfde9f2ee7eb4",
+        "baseCommit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8",
+        "overlayManifestSha256": "2130580861a0d6b3a9e181660e58597ca2deb37cf2c4f014415fa86b1f49f5f6",
+        "functionalSourceManifestSha256": "ba76b34725d651691dbedeb4134c320f7c87bbdd2a8255e01fdd48fa3bd2bf43"
+      }
+    },
+    {
+      "event": "5b41dd44-3397-4098-9235-ee3e693ee515",
+      "changeId": "local-first-services-native-delta-r6",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Default-OFF native pilot requires current auth Swift and physical-network acceptance. Twenty-six-file snapshot differs; no activation or old-bundle replay.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\source",
+        "commit": "00f3c909ed13c26bc3ec62d30d0e5fee839192d1",
+        "manifestSha256": "544d9fd1bfb7ad19610518abe4ee11406d8f097c37cec906575de41acf65cd7d"
+      }
+    },
+    {
+      "event": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "changeId": "reylumi-final-r7-auth-integration-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Old R7 assembly superseded as a package; native/POS/staging component gates remain. 649+8 historical tests are not current end-to-end proof.",
+      "source": {
+        "commit": "9b07ab1c58fcd2c4552bb8e96142e3ace086f473",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r7-auth\\functional-source-manifest.json",
+        "sha256": "4c028cf2fa2cb2f122934978a28cef9342ef0c6b3bd1a3154e182b8c6dc904f2"
+      }
+    },
+    {
+      "event": "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Old R8 assembly superseded as a package. Pilot stays OFF; Chain A denial/combined auth/Simulator gaps remain component acceptance work.",
+      "source": {
+        "commit": "93ce18d0fcdd0b0ce56aec4573d1d52fb375489f",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r8-pilot-off",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r8-pilot-off\\functional-source-manifest.json",
+        "sha256": "afe95a22091741283cfd7adc1e7b9a33257a0de68762b3174a1a8e979f5f05e2"
+      }
+    },
+    {
+      "event": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "changeId": "services-cache-invariants-r6",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Default-OFF bounded storage/stale-writer scope needs current auth/native/rollback validation; fourteen old files differ. No pilot activation implied.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\source",
+        "commit": "2d0b2619c7f83cea9001c6239631d06541e3a1ee",
+        "manifestSha256": "104700ab0d006c490716571ee50a0ba8dfd0f0b1caad9340263fc282c64abd1f"
+      }
+    },
+    {
+      "event": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "changeId": "ios-auth-observability-qa-20261021",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "387 historical checks/private compile do not prove exact current auth candidate in Simulator. Thirty-file source evolved; reconcile observability without dumping private diagnostics.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\source",
+        "commit": "e00c62ea2b8fd428a5055cfd18a9d538d32db3dc",
+        "manifest": {
+          "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\delta-manifest.json",
+          "sha256": "1725b1593f119fff4fbcff5ed2c5851c44196b3c1fc563fb31bcdd718c8aeed0"
+        },
+        "functionalSourceManifest": {
+          "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\functional-source-manifest.json",
+          "sha256": "c39bbb50d0998e596c9d4642f2b2d915b2f0e59fb7afcdc42083fdb554e10216"
+        }
+      }
+    },
+    {
+      "event": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "changeId": "services-cache-realm-guards-r6",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_TEST_ONLY",
+      "reason": "Three IndexedDB realm test files only; no production bypass. Relevant tests may accompany future reconciled auth/cache integration.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\source",
+        "commit": "2033e78995dba9d318d2c2339052197b4b970aaf",
+        "manifestSha256": "a231c161e7bc7b264c68b3c8318bc502a48a300695443082bb3c0447f9d50ff4"
+      }
+    },
+    {
+      "event": "04ee32a6-3687-4b77-affc-8058500c0f23",
+      "changeId": "reylumi-final-r9-observability-integration-20261022",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Metadata-only/old R9 assembly superseded as a package; native/POS/staging gates remain unresolved in components. Do not equate empty delta with full feature presence.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\source",
+        "commit": "3ba5757ec22bb0b2a1ac0f8c9e30e03e8be03d0e",
+        "tree": "02115e4ea2f30bab3cf171f52a572a20d4128305",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\functional-source-manifest.json"
+      }
+    },
+    {
+      "event": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_PRESENT_NARROW_DELTA",
+      "reason": "Only scoped R9-to-R10 late-disconnect/pilot-OFF delta reverse-checks on web/native63. This does not prove every inherited R9 feature or acceptance gate.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\source",
+        "commit": "7faa1e7d8088c1dd6b300fc0e9700b8050e23c48",
+        "tree": "ad1f7fe3bdc7da8a869242d9b426e02b1f11e992",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\functional-source-manifest.json"
+      }
+    },
+    {
+      "event": "13608576-db78-4312-9445-5d173e04315e",
+      "changeId": "r10-native-bundle-provenance-20261022",
+      "status": "ready",
+      "decision": "HISTORICAL_PRESENT_SCOPED",
+      "reason": "Six executable/config/test files are EOL-equivalent; scoped patch present. Source-bound 62/63 pipelines exercise current provenance chain. Historical documentation may differ.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\frozen-source-lf",
+        "commit": "57bd13bed0f37f99c2057d4d968e532208e65938",
+        "baselineCommit": "7e284b8749d79a990abedf8dade33c6909949903"
+      }
+    },
+    {
+      "event": "93859166-e3ea-4656-92df-3b78c7a2a327",
+      "changeId": "ios-hosted-login-actual-trace-20261022",
+      "status": "working",
+      "decision": "DEFER_HISTORICAL_OR_PERFORMANCE",
+      "reason": "Preserve actual uploaded64 source; no replay of older/WIP performance/auth assemblies, deeper speed work expressly deferred. Current task supported checkpoint checked.",
+      "source": {
+        "snapshot": "C:/Users/giuse/Documents/Codex/2026-10-21/task-6/final-candidate-r10-services",
+        "commit": "7e284b8749d79a990abedf8dade33c6909949903"
+      }
+    },
+    {
+      "event": "4072b660-7b05-4d67-81bf-43561df0cd04",
+      "changeId": "auth-request-finite-deadline-20261022",
+      "status": "ready",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Historical two-file 30s login/MFA single-POST intent has snapshot-to-commit ambiguity and evolved source. Require bounded current helper/behavior proof before declaring it shipped.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-r10-login-deadline-20261022",
+        "commit": "e9260e9e51fd5730d8a94b0110102067660a0793"
+      }
+    },
+    {
+      "event": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "changeId": "r10-native-reset-pending-20261022",
+      "status": "ready",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "Historical two-file 25s reset-wait/no-competing-read intent has snapshot-to-commit ambiguity. Reconcile current entry behavior and test against actual63.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-r10-native-reset-pending-20261022",
+        "commit": "2cd09be63bc50fd02dcdbb20fba6d17b1071ee63"
+      }
+    },
+    {
+      "event": "014d1e2b-713b-4368-925c-6fe55451770d",
+      "changeId": "market-authenticated-browser-qa-20261023",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "commit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c"
+      }
+    },
+    {
+      "event": "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "changeId": "market-browser-timeout-investigation-20261023",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "commit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c",
+        "snapshot": "artifacts/market-private/browser-qa/2026-10-23T07-50-59-527Z/harness-source"
+      }
+    },
+    {
+      "event": "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "changeId": "market-first-slice-acceptance-closure-20261023",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "commit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c",
+        "snapshot": "artifacts/market-private/acceptance-fullstack/2026-10-23T08-28-29-754Z-8d8bf297/closure-source"
+      }
+    },
+    {
+      "event": "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "changeId": "ios-readiness-bundle-xcresult-20261023",
+      "status": "ready",
+      "decision": "HISTORICAL_OLD_ASSEMBLY",
+      "reason": "Seven-file older packaging/205-test Development archive evidence superseded by source-bound 234-test 62/63 runs. Preserve artifacts; do not overwrite current packaging from old snapshot.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\.migration-20261023\\ios-readiness-fixed-source",
+        "commit": "064f3774d457621eae476767a22c19c8b1eaecb3"
+      }
+    },
+    {
+      "event": "d71a3e3d-4761-459e-baee-29f19edd8729",
+      "changeId": "main-app-qa-20261024-task4",
+      "status": "ready",
+      "decision": "historical-source-reconciliation-required-no-auth-change-in-this-release",
+      "reason": "Main-app QA complete: uploaded build52 already has identical effective native runtime; fresh Apple audit confirms existing TestFlight availability. Financial harness/source safeguards are maintenance only; no new distribution required.",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-23\\task-4\\frozen-overlay",
+        "commit": "80150117fcdfb7e7281382490b1974651c7ece5e"
+      }
+    },
+    {
+      "event": "49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "changeId": "campaign-run-again-investigation-20261025",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Reproduce old Run again routing defect against the verified pre-fix deployed source; verify the current live source already fixes it. Add real UI/action/PostgreSQL regression coverage for funded and delayed reruns, changed content, and an existing pending copy. No product logic or production data changed.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\campaign-run-again-investigation-20261025\\source"
+      }
+    },
+    {
+      "event": "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "changeId": "claude-simulator-20261025",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_TEST_ONLY",
+      "reason": "Six QA/harness/artifact files, with synthetic backend failures; not a production release payload. Does not establish authenticated native behavior.",
+      "source": {
+        "inventory": "artifacts/claude-simulator-20261025/source-inventory-final.json",
+        "snapshot": "artifacts/claude-simulator-20261025/source"
+      }
+    },
+    {
+      "event": "740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "changeId": "campaign-product-audit-20261025",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Completed evidence-backed audit and proposal only: live source, credit display defect, ad viewability/click gaps, creation friction, inventory economics and proposed defaults. No product or production changes.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\campaign-product-audit-20261025\\source"
+      }
+    },
+    {
+      "event": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+      "changeId": "combined-drako-integration-20261026",
+      "status": "working",
+      "decision": "DEFER_HISTORICAL_OR_PERFORMANCE",
+      "reason": "Preserve actual uploaded64 source; no replay of older/WIP performance/auth assemblies, deeper speed work expressly deferred. Current task supported checkpoint checked.",
+      "source": {
+        "snapshot": "C:/Users/giuse/Documents/Codex/2026-10-25/task-2/candidate-drako-20261026",
+        "baselineDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+        "baselineSourceSha256": "dc9a63ddb0a53c24dcb9f99790e917bd81573ab4783e9f0e9c0a2fb611a0c86e",
+        "baselineCommit": "6e230018c44eab3a518725d1bf221c7157c471aa"
+      }
+    },
+    {
+      "event": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "changeId": "windows-production-guard-command-20261026",
+      "status": "ready",
+      "decision": "independent-tooling-or-report-excluded",
+      "reason": "Repair Windows production alias guard command resolution to use existing npx.cmd without changing execution policy or credentials; release tooling only",
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-20261026\\guard-frozen"
+      }
+    },
+    {
+      "event": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "changeId": "iphone-real-performance-fixes-20261027",
+      "status": "ready",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "25-file mixed optimization includes booking_description_snapshot SQL and generated native assets. Some source is current, but schema and residual intent are unproven. Do not replay generated bundle or count whole item omitted/shipped.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-performance-fixes-20261027\\ready-source",
+        "baseCommit": "262dc463935bcc2454502f035fb199c07c66a84c"
+      }
+    },
+    {
+      "event": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "changeId": "iphone-first-load-dal-rpc-20261027",
+      "status": "needs-integration",
+      "decision": "HISTORICAL_OPEN",
+      "reason": "35 files/two SQL migrations partially match current code. Actual62 Staff/MyPay/workspace remain above one second, so performance acceptance is still open; validate schema/current residuals, not old whole-tree merge.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-dal-rpc-20261027\\ready-source",
+        "commit": "392212aac573d4516743eeaf889efb8bf0a4a86f"
+      }
+    },
+    {
+      "event": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "changeId": "check-writer-secure-addon-20261027",
+      "status": "needs-integration",
+      "decision": "DEFER_EXTERNAL_ACCEPTANCE",
+      "reason": "Staging Supabase/reviewed Stripe test path/native and physical print acceptance incomplete; closed sale, no new credentials or payment.",
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/source",
+        "commit": "e7214828ea2807287c744b9085c585c352f43e4d"
+      }
+    },
+    {
+      "event": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+      "changeId": "iphone-batched-handoff-release-20261028",
+      "status": "working",
+      "decision": "DEFER_HISTORICAL_OR_PERFORMANCE",
+      "reason": "Preserve actual uploaded64 source; no replay of older/WIP performance/auth assemblies, deeper speed work expressly deferred. Current task supported checkpoint checked."
+    },
+    {
+      "event": "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "changeId": "market-real-developer-platform-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-real\\frozen-source",
+        "baselineCommit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c",
+        "manifestSha256": "af2a01376df414744f1c545ca2339eb70fb97ab13df171856eeab976598b20d9"
+      }
+    },
+    {
+      "event": "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "changeId": "market-owner-integration-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-owner-integration\\frozen-source",
+        "archive": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-owner-integration\\frozen-source.zip",
+        "archiveSha256": "5eda93fd917dd0485ccc98bf154d80b5ae2c86b5bc8b8c170c0ff8c14a388bc5",
+        "baselineCommit": "9d2a93ea69e227300a61ed4978b4f3e1bda5ab0b",
+        "manifestSha256": "ec960c663ed73df3c2ec4ab204442c3574a05f8a906d11565fa3ed15da05f33d"
+      }
+    },
+    {
+      "event": "8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "changeId": "market-developer-journey-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-developer-journey\\frozen-source"
+      }
+    },
+    {
+      "event": "6030270a-ae7a-43d7-a554-fae70218a27b",
+      "changeId": "market-developer-journey-qa-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-developer-journey-qa\\frozen-source"
+      }
+    },
+    {
+      "event": "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+      "changeId": "iphone-route-bootstrap-module-loading-20261028",
+      "status": "working",
+      "decision": "DEFER_HISTORICAL_OR_PERFORMANCE",
+      "reason": "Preserve actual uploaded64 source; no replay of older/WIP performance/auth assemblies, deeper speed work expressly deferred. Current task supported checkpoint checked."
+    },
+    {
+      "event": "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+      "changeId": "iphone-bounded-comment-count-read-batch-20261028",
+      "status": "working",
+      "decision": "DEFER_HISTORICAL_OR_PERFORMANCE",
+      "reason": "Preserve actual uploaded64 source; no replay of older/WIP performance/auth assemblies, deeper speed work expressly deferred. Current task supported checkpoint checked."
+    },
+    {
+      "event": "39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "changeId": "market-self-hosted-design-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-self-hosted-design\\frozen-source"
+      }
+    },
+    {
+      "event": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "changeId": "check-writer-audit-price-20261028",
+      "status": "needs-integration",
+      "decision": "DEFER_EXTERNAL_ACCEPTANCE",
+      "reason": "Staging Supabase/reviewed Stripe test path/native and physical print acceptance incomplete; closed sale, no new credentials or payment.",
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/audit-20261028/source"
+      }
+    },
+    {
+      "event": "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "changeId": "check-writer-wait-combined-deploy-20261028",
+      "status": "needs-integration",
+      "decision": "DEFER_EXTERNAL_ACCEPTANCE",
+      "reason": "Staging Supabase/reviewed Stripe test path/native and physical print acceptance incomplete; closed sale, no new credentials or payment.",
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/deploy-note-snapshot"
+      }
+    },
+    {
+      "event": "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "changeId": "market-published-data-qr-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts/market-published-data/frozen-source",
+        "manifest": "artifacts/market-published-data/frozen-source-manifest.json"
+      }
+    },
+    {
+      "event": "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "changeId": "market-published-qa-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "fileHashes": {
+          "artifacts/market-published-qa/run.mjs": "3dc7f08ea3de0864feb9cd647b85d41008ba99c9b722533552d0df075e9d3e8f",
+          "artifacts/market-published-qa/results.json": "bf02bad06babc2c0a9186c60d7bb73527bf6349f87245e016f25695ff9a60da0",
+          "artifacts/market-published-qa/report.md": "ecf2a0ac6f86a1cb6f0798ebeb6e9c17895ae9590e65e73e98ea0c23e98e5ba6"
+        },
+        "productCommit": "c3309e3ead4e07a82bd55446502191fd604628e2",
+        "snapshot": "artifacts\\market-published-qa\\frozen-report",
+        "note": "Final frozen report adds strict benchmark matrix; earlier completion report hash preceded this documentation addition. Preserve earlier immutable event as history."
+      }
+    },
+    {
+      "event": "220c0bc8-a5da-4c23-a9b0-6f337009c61e",
+      "changeId": "social-abuse-relaxed-20261028",
+      "status": "needs-integration",
+      "decision": "DEFER_SECURITY_ACTION",
+      "reason": "Prepared social advisory migration/WAF changes require separate concrete action authorization; no migration or WAF change in this wave.",
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\social-abuse-relaxed-20261028\\frozen"
+      }
+    },
+    {
+      "event": "98110f68-e929-4630-83de-e4bceca6c10e",
+      "changeId": "market-qa-controller-repair-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts/market-published-qa/frozen-closeout",
+        "manifest": "artifacts/market-published-qa/closeout-manifest.json",
+        "fileHashes": {
+          "artifacts/market-published-qa/observe-expiry.mjs": "bfaa41478cc6c0fe37b9ef3949df1915436c861aa8c3027087c4ff15af46b8ac",
+          "artifacts/market-published-qa/run.mjs": "b424be051827d5ecd9788d7cef91b0f35821e0addb92a7426fd11efe7201e352",
+          "tests/market-qa-controller.test.mjs": "fb2aac85b89d058c9772a7bac27d82bb90920348a630f57f51ec0931d47e0e35",
+          "artifacts/market-published-qa/final-receipt-summary.md": "94f4f40cbe9c6eea548068bc4b8e62eec29b3891d83e6a31095ba54c42813198",
+          "artifacts/market-published-qa/controller.mjs": "c6e784c429c15eb2cac61435d6ddeadf6d34c211ee0ef344dd9a5f406c73b910",
+          "artifacts/market-published-qa/expiry-receipt.json": "0b7ccea08d56fab232bdb531d44bffa9fc6435b12ee44748d1a37ed805f9bb2d",
+          "artifacts/market-published-qa/controller-dry-run-final.log": "bbf4ce99c97d40271b0a29698723f1b5f6ff7879362f58c6cffe23948192c7a4",
+          "artifacts/market-published-qa/official-benchmark.md": "93e50cf70ef9b5eb58cfca08e462f76d8da5b5d1e0bd791f799067293838f737",
+          "artifacts/market-published-qa/results.json": "bf02bad06babc2c0a9186c60d7bb73527bf6349f87245e016f25695ff9a60da0",
+          "artifacts/market-published-qa/report.md": "ecf2a0ac6f86a1cb6f0798ebeb6e9c17895ae9590e65e73e98ea0c23e98e5ba6",
+          "artifacts/market-published-qa/controller-child.mjs": "6d717ea779d21625da4ecfdea9c0faec17385de937556ed0d33f1541a41156c8",
+          "artifacts/market-published-qa/launcher-dry-run-report.md": "45294294ec0eb21c780ea2151f1bac30b62746df21b8ebbb1957c6647638c610"
+        }
+      }
+    },
+    {
+      "event": "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "changeId": "market-qr-replacement-qa-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts/market-published-qa/replacement-1/frozen-source",
+        "manifest": "artifacts/market-published-qa/replacement-1/frozen-source-manifest.json",
+        "archive": "artifacts/market-published-qa/replacement-1/source-final.zip",
+        "archiveSha256": "27a5a0b1ba4f4f730a02a6a29703d038bca318c757bcf0a9ca4c37ae72d33261",
+        "evidenceArchive": "artifacts/market-published-qa/replacement-1/evidence-final.zip",
+        "evidenceArchiveSha256": "08d805c36d250d70c7c108517e18f95afc3797a51eee93dfe322360ee32dc4ff"
+      }
+    },
+    {
+      "event": "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "changeId": "market-developer-read-recovery-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts/market-published-qa/replacement-1/frozen-source",
+        "manifest": "artifacts/market-published-qa/replacement-1/frozen-source-manifest.json",
+        "archive": "artifacts/market-published-qa/replacement-1/source-final.zip",
+        "archiveSha256": "27a5a0b1ba4f4f730a02a6a29703d038bca318c757bcf0a9ca4c37ae72d33261",
+        "evidenceArchive": "artifacts/market-published-qa/replacement-1/evidence-final.zip",
+        "evidenceArchiveSha256": "08d805c36d250d70c7c108517e18f95afc3797a51eee93dfe322360ee32dc4ff"
+      }
+    },
+    {
+      "event": "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "changeId": "market-p0-reproduction-plan-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "archiveSha256": "8d63bc333a8935c3a8202fcbd73649a584e2a272aee63cb8cc545c1f8fc62382",
+        "productRevision": "df400285d3f2aa0b99fd030b0b08935f793c1d97",
+        "archive": "artifacts/market-p0-reproduction-plan/plan-evidence.zip",
+        "snapshot": "artifacts/market-p0-reproduction-plan/frozen",
+        "manifest": "artifacts/market-p0-reproduction-plan/manifest.json"
+      }
+    },
+    {
+      "event": "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "changeId": "market-p0-zero-key-real-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts\\market-p0-reproduction-plan\\frozen-zero-key",
+        "archive": "artifacts/market-p0-reproduction-plan/zero-key-evidence.zip",
+        "archiveSha256": "7def38e5c219cc310af9f72f7eecceecaa1299a521073ebeba201ce45f991002",
+        "productRevision": "df400285d3f2aa0b99fd030b0b08935f793c1d97"
+      }
+    },
+    {
+      "event": "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "changeId": "market-https-transport-preflight-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts\\market-https-transport-preflight\\frozen",
+        "archive": "artifacts/market-https-transport-preflight/evidence.zip",
+        "archiveSha256": "8718ee33e8c521eb79734edcf9beef58f3a6fb5bfd61e6d58146a1320f204c99"
+      }
+    },
+    {
+      "event": "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "changeId": "market-https-transport-clarification-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts\\market-https-transport-preflight\\frozen-clarification",
+        "archive": "artifacts/market-https-transport-preflight/clarification.zip",
+        "archiveSha256": "cfa25ee2e2d2c520d14daeff68120dbb66ebeec51b3eded45f2b3b3aa42ce3c6"
+      }
+    },
+    {
+      "event": "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "changeId": "market-qa-hosting-options-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "archive": "artifacts/market-qa-hosting-options/evidence.zip",
+        "archiveSha256": "1899cac4e7c473bea33e4603bf54b3d4b76948318d9246add97f26dfbbaa59ff",
+        "snapshot": "artifacts\\market-qa-hosting-options\\frozen"
+      }
+    },
+    {
+      "event": "72dc491a-317d-4c76-909d-14e61dabb4d2",
+      "changeId": "customer-auto-merge-20261028",
+      "status": "needs-integration",
+      "decision": "DEFER_DATA_ACCEPTANCE",
+      "reason": "Automatic production consolidation deletes/repoints source records; full current-schema integration and separately scoped data action acceptance absent.",
+      "source": {
+        "snapshot": "artifacts\\customer-auto-merge-20261028\\snapshot"
+      }
+    },
+    {
+      "event": "9e718f86-ade3-423a-a9dd-db77d0e40b8b",
+      "changeId": "social-monitor-only-20261029",
+      "status": "ready",
+      "decision": "DEFER_SECURITY_ACTION",
+      "reason": "Prepared social advisory migration/WAF changes require separate concrete action authorization; no migration or WAF change in this wave.",
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\social-monitor-release-20261029\\artifacts\\social-monitor-release\\task-frozen"
+      }
+    },
+    {
+      "event": "c29b0240-329f-4dba-bb6c-39e4d1dcf0fd",
+      "changeId": "security-check-edge-monitor-20261029",
+      "status": "working",
+      "decision": "DEFER_SECURITY_ACTION",
+      "reason": "Prepared social advisory migration/WAF changes require separate concrete action authorization; no migration or WAF change in this wave."
+    },
+    {
+      "event": "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "changeId": "market-consent-version-reset-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "snapshot": "artifacts\\market-consent-version-reset\\frozen",
+        "archive": "artifacts/market-consent-version-reset/source-evidence.zip",
+        "archiveSha256": "30c747bdabffc75308b92a3c1b4039cd0e370059401f6a8e78fc4b5a9eb141fb"
+      }
+    },
+    {
+      "event": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "changeId": "check-writer-release-gates-20261028",
+      "status": "needs-integration",
+      "decision": "DEFER_EXTERNAL_ACCEPTANCE",
+      "reason": "Staging Supabase/reviewed Stripe test path/native and physical print acceptance incomplete; closed sale, no new credentials or payment.",
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/readiness-20261028/source"
+      }
+    },
+    {
+      "event": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "changeId": "market-account-owner-polish-20261028",
+      "status": "needs-integration",
+      "decision": "EXCLUDE_MARKET_OWNER",
+      "reason": "Explicit owner: keep Market separate; preserve existing shipped Market baseline only.",
+      "source": {
+        "archive": "artifacts/market-account-owner-polish/source-evidence.zip",
+        "archiveSha256": "f34dac697c80dc4fdefe8073bc19ea49049082def138cc4eabfc12c8c17f9390",
+        "snapshot": "artifacts\\market-account-owner-polish\\frozen"
+      }
+    },
+    {
+      "event": "953f5a12-69a8-4051-90f3-ebcca2e482d8",
+      "changeId": "mobile-notebook-menu-20261028",
+      "status": "needs-integration",
+      "decision": "INTEGRATE_NEW_VERIFIED_REVISION",
+      "reason": "Behavior repaired by new direct mobile navigation; scoped portal guard only in preserved compact Windows component, not whole old patch.",
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\portal-fix-frozen",
+        "baseCommit": "509985dec00091f285c28b7dcb079460da104249",
+        "fileHashes": {
+          "app/pos/owner-notebook-menu.tsx": "923f2ab23d201aa97db3ee14d25f3dc35d458c08ecdb94854a51bcbc0806aefa",
+          "app/pos/owner-notebook-menu.css": "175dc0e92e033ed81aa54b3659ec7a9a2d2341c9816b5ef1204fb1d3e306f125",
+          "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc"
+        },
+        "commit": "a7eeaa2b20dd9af39399e1fa15a34206983125fb"
+      }
+    },
+    {
+      "event": "6ef0ead8-caaf-40a6-aba4-1fd53ff82773",
+      "changeId": "pos-ios-tablet-layout-20261028",
+      "status": "needs-integration",
+      "decision": "INTEGRATE_NEW_VERIFIED_REVISION",
+      "reason": "Narrow integration on exact current webJB/native64 with source/tests/build verification.",
+      "source": {
+        "snapshot": "artifacts/pos-ios-tablet/frozen"
+      }
+    },
+    {
+      "event": "9c2d6032-2009-43f8-a067-4bab7ab93748",
+      "changeId": "combined-pos-device-integration-20261028",
+      "status": "working",
+      "decision": "REPLACED_BY_THIS_INTEGRATION",
+      "reason": "Preparation working checkpoint will be superseded by frozen completed aggregate.",
+      "source": {
+        "commit": "509985dec00091f285c28b7dcb079460da104249"
+      }
+    },
+    {
+      "event": "33368695-5bea-4108-a7dc-b7166e01c991",
+      "changeId": "payroll-staff-scroll-ui-20261029",
+      "status": "ready",
+      "decision": "INTEGRATE_NEW_VERIFIED_REVISION",
+      "reason": "Narrow integration on exact current webJB/native64 with source/tests/build verification.",
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\payroll-staff-scroll-ui-20261029\\artifacts\\payroll-staff-scroll\\frozen",
+        "commit": "d8aa3ab787aebd233f89f103ecb8a213a436299a"
+      }
+    },
+    {
+      "event": "204750d6-d9f5-4df8-80d0-ba56345b22c9",
+      "changeId": "pos-ios-custom-service-20261028",
+      "status": "needs-integration",
+      "decision": "INTEGRATE_NEW_VERIFIED_REVISION",
+      "reason": "Full illustrated top Add/Reset plus Services below directly approved in coordinator human reply; include exact approved controls with navigation.",
+      "source": {
+        "snapshot": "artifacts/pos-ios-tablet/custom-v2/frozen"
+      }
+    },
+    {
+      "event": "f12d2f0e-0b5a-41de-b129-ebf1df68a07f",
+      "changeId": "payroll-charts-20261028",
+      "status": "needs-integration",
+      "decision": "INTEGRATE_NEW_VERIFIED_REVISION",
+      "reason": "Narrow integration on exact current webJB/native64 with source/tests/build verification.",
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\payroll-charts-20261028\\artifacts\\frozen-source"
+      }
+    }
+  ],
+  "counts": {
+    "EXCLUDE_INDEPENDENT_TOOL": 2,
+    "independent-tooling-or-report-excluded": 8,
+    "HISTORICAL_OPEN": 26,
+    "HISTORICAL_PRESENT_SCOPED": 4,
+    "HISTORICAL_OLD_ASSEMBLY": 10,
+    "HISTORICAL_TEST_ONLY": 3,
+    "HISTORICAL_REPLACED_LOCAL": 2,
+    "DEFER_HISTORICAL_OR_PERFORMANCE": 6,
+    "HISTORICAL_PRESENT_NARROW_DELTA": 1,
+    "EXCLUDE_MARKET_OWNER": 20,
+    "historical-source-reconciliation-required-no-auth-change-in-this-release": 1,
+    "DEFER_EXTERNAL_ACCEPTANCE": 4,
+    "DEFER_SECURITY_ACTION": 3,
+    "DEFER_DATA_ACCEPTANCE": 1,
+    "INTEGRATE_NEW_VERIFIED_REVISION": 5,
+    "REPLACED_BY_THIS_INTEGRATION": 1
+  },
+  "limitations": "Prior historical proofs inherited as explicit non-publication decisions; no journal closure or performance/full-matrix acceptance claimed. Discovery68known/recent chats,129registered worktrees,3115named notes; two Market worktrees ownership-blocked, not bypassed."
+}

@@ -25,7 +25,7 @@ import { appLocalRequestId } from '@/lib/app-local-host';
 import { openOwnerCart, ownerCartStartupDiagnostic } from '@/lib/owner-cart-startup';
 type Line = { id:string;staffId:string|null;staffName:string;serviceId:string|null;serviceLabel:string;total:number;amountInput:string;amountParts:number[] };
 type Step = 'staff'|'services'|'amount';
-type Cart = { inputTarget?:'amount'|'tip'|'discount'; activeLineId?:string|null; step?:Step; id:string;amount:string;staffId:string|null;serviceId:string|null;customer:PosDeskCustomer|null;lines:Line[];tip:string;discount:string };
+type Cart = { customServiceName?:string; inputTarget?:'amount'|'tip'|'discount'; activeLineId?:string|null; step?:Step; id:string;amount:string;staffId:string|null;serviceId:string|null;customer:PosDeskCustomer|null;lines:Line[];tip:string;discount:string };
 const empty = ():Cart=>({id:appLocalRequestId(),amount:"",staffId:null,serviceId:null,customer:null,lines:[],tip:"",discount:""});
 const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
 const amountPreview=(value:string)=>value.split('/').reduce((sum,part)=>sum+(Number(part)||0),0);
@@ -52,6 +52,15 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   useEffect(()=>{
     const resize=()=>{
       const element=document.querySelector<HTMLElement>('[data-pos-owner-page]');if(!element)return;
+      if(document.documentElement.dataset.ownerDevice==='tablet')return;
+      if(document.documentElement.dataset.ownerDevice==='phone'){
+        if(!element.getClientRects().length)return;
+        const viewport=window.visualViewport;
+        const nav=Array.from(document.querySelectorAll<HTMLElement>('.owner-device-nav')).find(n=>n.getClientRects().length>0);
+        const bottom=nav?.getBoundingClientRect().height??62;
+        element.style.setProperty('--owner-height',`${Math.max(160,(viewport?.height??window.innerHeight)+(viewport?.offsetTop??0)-element.getBoundingClientRect().top-bottom-8)}px`);
+        return;
+      }
       const nav=Array.from(document.querySelectorAll('nav')).find(n=>getComputedStyle(n).position==='fixed'&&n.getBoundingClientRect().bottom>=window.innerHeight-2);
       const bottom=nav?.getBoundingClientRect().height??0;
       element.style.setProperty('--owner-height',`${Math.max(280,window.innerHeight-element.getBoundingClientRect().top-bottom-8)}px`);
@@ -85,7 +94,8 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     else if(row.top<bounds.top)list.scrollTop+=row.top-bounds.top;
   },[cart?.inputTarget,cart?.activeLineId]);
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
-  const [panel,setPanel]=useState<'staff'|'services'|'customer'|'ticket'|null>(null);
+  const [panel,setPanel]=useState<'staff'|'services'|'customer'|'ticket'|'custom'|null>(null);
+  const [customName,setCustomName]=useState('');
   const [pickerQuery,setPickerQuery]=useState('');
   const dialog=useRef<HTMLDialogElement>(null);
   const [query,setQuery]=useState(''),[customers,setCustomers]=useState<PosDeskCustomer[]>([]);
@@ -138,9 +148,9 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     if(ticketDefaults.staffCheckInEnabled&&(!member||member.today_status!=='working')){setError('Choose a staff member who is checked in.');setPanel('staff');return null;}
     if(cart.staffId&&!member){setError('This staff member is no longer available. Choose another.');return null;}
     const service=reference.services.find(s=>s.id===cart.serviceId);
-    return{id:appLocalRequestId(),staffId:member?.id??null,staffName:member?.display_name??'Unassigned',serviceId:service?.id??null,serviceLabel:service?.name??'Service',total:amount,amountInput:cart.amount,amountParts:parsed.parts};
+    return{id:appLocalRequestId(),staffId:member?.id??null,staffName:member?.display_name??'Unassigned',serviceId:service?.id??null,serviceLabel:service?.name??cart.customServiceName??'Service',total:amount,amountInput:cart.amount,amountParts:parsed.parts};
   };
-  const add=()=>{if(!cart)return;const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;replaceAmount.current=true;update({lines:line?[...cart.lines,line]:cart.lines,amount:'',staffId:null,serviceId:null,activeLineId:null,inputTarget:'amount',step:firstStep});};
+  const add=()=>{if(!cart)return;const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;replaceAmount.current=true;update({lines:line?[...cart.lines,line]:cart.lines,amount:'',staffId:null,serviceId:null,customServiceName:undefined,activeLineId:null,inputTarget:'amount',step:firstStep});};
   const reset=async()=>{if(busyRef.current)return; if(persist(empty()))setTicketDefaults(pendingDefaults.current);};
   const submit=async()=>{
     if(!cart||busyRef.current)return;
@@ -183,7 +193,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const chooseService=(id:string|null)=>{
     const selected=reference.services.find(s=>s.id===id);replaceAmount.current=true;
     if(selectedLine&&cart)update({inputTarget:'amount',lines:cart.lines.map(l=>l.id===selectedLine.id?{...l,serviceId:id,serviceLabel:selected?.name??'Service'}:l),step:'amount'});
-    else update({inputTarget:'amount',serviceId:id,amount:serviceDefaultAmount(selected?.base_price),step:'amount'});
+    else update({inputTarget:'amount',serviceId:id,customServiceName:undefined,amount:serviceDefaultAmount(selected?.base_price),step:'amount'});
     setPanel(null);
   };
   const chooseAdjustment=(target:'tip'|'discount')=>{
@@ -201,10 +211,17 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     if(target==='amount')setAmount(normalized);else update({[target]:normalized});
   };
   const openPicker=(next:'services'|'staff')=>{setPickerQuery('');setPanel(next);};
-  const currentEntry=Boolean(cart?.amount||cart?.staffId||cart?.serviceId||!cart?.lines.length);
+  const currentEntry=Boolean(cart?.amount||cart?.staffId||cart?.serviceId||cart?.customServiceName||!cart?.lines.length);
   const entryCount=(cart?.lines.length??0)+(currentEntry?1:0);
   const inputTarget=cart?.inputTarget??'amount';
   const inputValue=inputTarget==='amount'?amountValue:(cart?.[inputTarget]??'');
+  const openCustomService=()=>{setCustomName(selectedLine?.serviceLabel??cart?.customServiceName??'');setPanel('custom');};
+  const applyCustomService=()=>{
+    const name=customName.trim();if(!name||name.length>100||busyRef.current)return;
+    if(selectedLine&&cart)update({inputTarget:'amount',lines:cart.lines.map(line=>line.id===selectedLine.id?{...line,serviceId:null,serviceLabel:name}:line),step:'amount'});
+    else update({inputTarget:'amount',serviceId:null,customServiceName:name,step:'amount'});
+    setPanel(null);
+  };
   const inlineRows=cart?<div ref={entries} className="owner-inline-rows" aria-label={__vt("Ticket entries")}>
     {cart.lines.map((line,index)=><div key={line.id} data-selected={inputTarget==='amount'&&selectedLine?.id===line.id}>
       <button className="owner-row-select" aria-label={__vt(`Edit entry ${index+1}`)} onClick={()=>selectLine(line.id)}/>
@@ -213,7 +230,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     </div>)}
     {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}>
       <button className="owner-row-select" aria-label={__vt("Edit current entry")} onClick={()=>selectLine(null)}/>
-      <span title={__vt(reference.services.find(s=>s.id===cart.serviceId)?.name)}>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</span><span className="owner-row-dash">-</span><span>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'}</span>
+      <span title={__vt(reference.services.find(s=>s.id===cart.serviceId)?.name)}>{reference.services.find(s=>s.id===cart.serviceId)?.name??cart.customServiceName??'Service'}</span><span className="owner-row-dash">-</span><span>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'}</span>
       {!selectedLine&&inputTarget==='amount'?<label className="owner-inline-money">$<input aria-label={__vt("Amount")} inputMode="none" value={cart.amount} placeholder={__vt("0.00")} onFocus={e=>{replaceAmount.current=true;e.target.select();}} onClick={e=>e.stopPropagation()} onChange={e=>setAmount(e.target.value)}/></label>:<strong>{money(amountPreview(cart.amount))}</strong>}
     </div>:null}
     {(['tip','discount'] as const).map(target=>(Number(cart[target])>0||inputTarget===target)?<div key={target} className="owner-adjustment-row" data-selected={inputTarget===target}>
@@ -226,7 +243,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
       <button className="owner-desktop-line" aria-label={__vt(`Edit entry ${index+1}`)} onClick={()=>selectLine(line.id)}><span><strong>{line.serviceLabel}</strong><small>{line.staffName}</small></span><strong>{money(line.total)}</strong></button>
       <button aria-label={__vt(`Remove ${line.serviceLabel}`)} onClick={()=>update({lines:cart.lines.filter(l=>l.id!==line.id),activeLineId:selectedLine?.id===line.id?null:cart.activeLineId})}>×</button>
     </div>)}
-    {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}><button className="owner-desktop-line" aria-label={__vt("Edit current entry")} onClick={()=>selectLine(null)}><span><strong>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</strong><small>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'} <WorkspaceText text="· Current entry" /></small></span><strong>{money(amountPreview(cart.amount))}</strong></button></div>:null}
+    {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}><button className="owner-desktop-line" aria-label={__vt("Edit current entry")} onClick={()=>selectLine(null)}><span><strong>{reference.services.find(s=>s.id===cart.serviceId)?.name??cart.customServiceName??'Service'}</strong><small>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'} <WorkspaceText text="· Current entry" /></small></span><strong>{money(amountPreview(cart.amount))}</strong></button></div>:null}
   </div>:null;
   return <main className="owner-checkout" data-pos-owner-page data-owner-reference="true" data-step="amount">
     {showNavigation?<OwnerPosNavigation active="pos" syncScope={scope}/>:null}
@@ -234,8 +251,10 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     {error?<p role="alert" className="owner-error"><WorkspaceText text={error} /></p>:null}
     {cart?<>
       <div className="owner-tools">
+        <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={add}>+ Add</button>
+        <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button>
         <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
-        {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??'Customer'}</button>:null}
+        {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??<><span className="owner-desktop-label"><WorkspaceText text="Customer" /></span><span className="owner-ios-label"><WorkspaceText text="Customers" /></span></>}</button>:null}
       </div>
       <div className="owner-workbench">
         <section className="owner-receipt"><div className="owner-section-heading"><h2><WorkspaceText text="Receipt" /></h2><Link href="/pos-tickets"><WorkspaceText text="History" /></Link></div>{linesView}
@@ -261,14 +280,19 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
           </div>
           <div className="owner-keypad">{['1','2','3','4','5','6','7','8','9','⌫','0','/'].map(n=><button key={n} data-key={n==='⌫'?'backspace':n} aria-label={__vt(n==='⌫'?'Backspace':n)} disabled={busy||(n==='/'&&inputTarget!=='amount')} onClick={()=>pressKey(n)}>{n==='⌫'?<OwnerPosIcon name="backspace"/>:n}</button>)}</div>
           <div className="owner-keypad-edit"><button disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button><button disabled={busy} onClick={()=>{replaceAmount.current=true;if(inputTarget==='amount')setAmount('');else update({[inputTarget]:''});}}><WorkspaceText text="Clear" /></button><button onClick={()=>setPanel('ticket')}><WorkspaceText text="Edit line" /></button></div>
-          <div className="owner-submit"><button disabled={busy} onClick={add}><WorkspaceText text="+ Add another" /></button><button disabled={busy} aria-busy={busy} onClick={()=>void submit()}><ActionFeedback pending={busy} pendingLabel="Saving…"><WorkspaceText text="Submit" /></ActionFeedback></button></div>
+          <div className="owner-submit"><button className="owner-desktop-add" disabled={busy} onClick={add}><WorkspaceText text="+ Add another" /></button><button className="owner-custom-service owner-ios-control" aria-label={__vt('Custom service')} aria-haspopup="dialog" disabled={busy} onClick={openCustomService}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></svg><WorkspaceText text="Services" /></button><button disabled={busy} aria-busy={busy} onClick={()=>void submit()}><ActionFeedback pending={busy} pendingLabel="Saving…"><WorkspaceText text="Submit" /></ActionFeedback></button></div>
         </section>
       </div>
     </>:<section className="owner-cart-startup" data-owner-cart-state={startup} data-owner-cart-error={startup==='failed'?startupDiagnostic:undefined} aria-busy={startup==='opening'}>
       {startup==='failed'?<><p role="alert"><WorkspaceText text="Unable to open saved work on this device. Your saved work has not been changed." /></p><button type="button" onClick={()=>{setStartup('opening');retryOpen(attempt=>attempt+1);}}><WorkspaceText text="Try again" /></button></>:<p role="status"><ActionFeedback pending pendingLabel="Opening your saved workspace…">{null}</ActionFeedback></p>}
     </section>}
     <dialog ref={dialog} aria-labelledby="owner-picker-title" onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setPanel(null);}}} onCancel={()=>setPanel(null)} className="owner-picker-dialog">
-      <header><h2 id="owner-picker-title">{panel==='staff'?'Employees':panel==='services'?<WorkspaceText text="Services" />:panel==='customer'?<WorkspaceText text="Customer" />:<WorkspaceText text="Ticket" />}</h2><button onClick={()=>setPanel(null)}><WorkspaceText text="Done" /></button></header>
+      <header><h2 id="owner-picker-title">{panel==='custom'?<WorkspaceText text="Custom service" />:panel==='staff'?'Employees':panel==='services'?<WorkspaceText text="Services" />:panel==='customer'?<WorkspaceText text="Customer" />:<WorkspaceText text="Ticket" />}</h2><button onClick={()=>setPanel(null)}><WorkspaceText text={panel==='custom'?'Cancel':'Done'} /></button></header>
+      {panel==='custom'?<form onSubmit={event=>{event.preventDefault();applyCustomService();}}>
+        <label htmlFor="owner-custom-service-name"><WorkspaceText text="Service name" /></label>
+        <input id="owner-custom-service-name" autoFocus className="owner-picker-search" autoComplete="off" maxLength={100} value={customName} onChange={event=>setCustomName(event.target.value)} placeholder={__vt('Enter service name')} />
+        <button className="owner-custom-done" type="submit" disabled={busy||!customName.trim()}><WorkspaceText text="Done" /></button>
+      </form>:null}
       {panel==='ticket'?<><div className="owner-ticket-actions"><button onClick={()=>openPicker('staff')}><WorkspaceText text="Employees" /></button><button onClick={()=>openPicker('services')}><WorkspaceText text="Services" /></button>{selectedLine?<button onClick={()=>{update({lines:cart!.lines.filter(l=>l.id!==selectedLine.id),activeLineId:null});setPanel(null);}}><WorkspaceText text="Remove line" /></button>:null}{preferences.showCustomer?<button onClick={()=>setPanel('customer')}><WorkspaceText text="Customer" /></button>:null}</div>{linesView}<div className="owner-total"><span><WorkspaceText text="Total" /></span><strong>{money(total)}</strong></div><Link href="/pos-tickets" className="owner-skip"><WorkspaceText text="Ticket history →" /></Link></>:null}
       {panel==='staff'||panel==='services'?<><input className="owner-picker-search" aria-label={__vt(panel==='staff'?'Search employees':'Search services')} type="search" placeholder={__vt(panel==='staff'?'Search employees':'Search services')} value={pickerQuery} onChange={e=>setPickerQuery(e.target.value)}/><div className="owner-picker-options">
         {panel==='staff'?<>{!ticketDefaults.staffCheckInEnabled?<button onClick={()=>chooseStaff(null)}><WorkspaceText text="No staff assignment" /></button>:null}{staff.filter(s=>s.display_name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart?.staffId)} onClick={()=>chooseStaff(s.id)}><span>{s.display_name}</span><small>{s.turns?.queueTurns??0} <WorkspaceText text="turns" /></small></button>)}{!staff.length?<p><WorkspaceText text="No staff checked in. Check in a staff member to start." /></p>:null}</>:<><button onClick={()=>chooseService(null)}><WorkspaceText text="Amount only" /></button><ServiceCatalog services={reference.services.filter(s=>s.name.toLowerCase().includes(pickerQuery.toLowerCase()))} preferences={preferences} selectedId={selectedLine?selectedLine.serviceId:cart?.serviceId} disabled={busy} onSelect={chooseService}/></>}

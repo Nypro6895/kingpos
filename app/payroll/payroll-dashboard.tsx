@@ -65,28 +65,35 @@ export function PayrollDashboard({ tab, lines, rows, services, today, difference
 function DailyLine({ rows, today }: { rows: PayrollShopDailyRow[]; today: string }) {
   const elapsed = rows.filter(row => row.businessDate <= today);
   const present = elapsed.filter(row => row.actualIncome !== null);
-  const max = Math.max(1, ...present.map(row => row.actualIncome!));
-  const ceiling = Math.ceil(max / 500) * 500;
-  const x = (index: number) => 34 + index / Math.max(1, elapsed.length - 1) * 316;
-  const y = (value: number) => 170 - value / ceiling * 150;
-  let path = "", connected = false;
-  elapsed.forEach((row, index) => {
-    if (row.actualIncome === null) { connected = false; return; }
-    path += `${connected ? "L" : "M"}${x(index)},${y(row.actualIncome)} `; connected = true;
-  });
+  const values = present.map(row => row.actualIncome!);
+  const magnitude = Math.max(1, ...values.map(Math.abs));
+  const power = 10 ** Math.floor(Math.log10(magnitude));
+  const step = [1, 2, 2.5, 5, 10].map(value => value * power).find(value => value >= magnitude / 3) ?? power * 10;
+  const ceiling = Math.ceil(Math.max(1, ...values) / step) * step;
+  const floor = Math.floor(Math.min(0, ...values) / step) * step;
+  const x = (index: number) => 60 + (index + .5) / Math.max(1, elapsed.length) * 290;
+  const y = (value: number) => 170 - (value - floor) / (ceiling - floor) * 150;
+  const barWidth = Math.min(24, 290 / Math.max(1, elapsed.length) * .65);
+  const ticks = Array.from({ length: Math.round((ceiling - floor) / step) + 1 }, (_, index) => floor + index * step);
   const ranked = present.filter(row => row.actualIncome !== 0 || row.posIncome !== 0).sort((a, b) => a.actualIncome! - b.actualIncome!);
   return <section className={`${styles.card} ${styles.lineCard}`}><h2><Text text="Daily collections" /></h2><p className={styles.note}><Text text="From Daily Report" /></p>
     {present.length ? <>
       <svg className={styles.line} viewBox="0 0 360 205" role="img" aria-label="Daily collections in USD. Exact amounts in daily values below.">
-        {[0, ceiling / 2, ceiling].map(value => <g key={value}><line x1="34" x2="350" y1={y(value)} y2={y(value)} stroke="#e5e9e6" strokeDasharray="3 4" /><text x="28" y={y(value) + 4} textAnchor="end">{value === 0 ? "$0" : `$${value / 1000}k`}</text></g>)}
-        <path d={path} fill="none" stroke="#23503a" strokeWidth="2.5" strokeLinejoin="round" />
-        {elapsed.map((row, index) => row.actualIncome === null ? null : <circle key={row.businessDate} cx={x(index)} cy={y(row.actualIncome)} r="3.5" fill="#23503a"><title>{day(row.businessDate)}: {money(row.actualIncome)}</title></circle>)}
+        {ticks.map(value => <g key={value}><line x1="60" x2="350" y1={y(value)} y2={y(value)} stroke="#e5e9e6" strokeDasharray={value === 0 ? undefined : "3 4"} /><text x="52" y={y(value) + 4} textAnchor="end">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(value)}</text></g>)}
+        {elapsed.map((row, index) => <g key={row.businessDate}>
+          <title>{`${day(row.businessDate)}: ${row.actualIncome === null ? "Not entered" : money(row.actualIncome)}`}</title>
+          {row.actualIncome === null
+            ? <circle cx={x(index)} cy={y(0)} r="2.5" fill="white" stroke="#9aa6a0" strokeWidth="1.5" />
+            : row.actualIncome === 0
+              ? <circle cx={x(index)} cy={y(0)} r="3" fill="#23503a" />
+              : <rect x={x(index) - barWidth / 2} y={Math.min(y(row.actualIncome), y(0))} width={barWidth} height={Math.max(2, Math.abs(y(row.actualIncome) - y(0)))} rx="3" fill={row.actualIncome < 0 ? "#a34545" : "#2c654d"} />}
+        </g>)}
         {[...new Set([0, Math.floor((elapsed.length - 1) / 2), elapsed.length - 1])].filter(index => index >= 0).map(index => <text key={index} x={x(index)} y="195" textAnchor={index === 0 ? "start" : index === elapsed.length - 1 ? "end" : "middle"}>{day(elapsed[index].businessDate)}</text>)}
       </svg>
       <div className={styles.extremes}><div><small><Text text="Highest" />{ranked.at(-1) ? ` · ${day(ranked.at(-1)!.businessDate)}` : ""}</small><strong>{money(ranked.at(-1)?.actualIncome ?? null)}</strong></div><div><small><Text text="Lowest active day" />{ranked[0] ? ` · ${day(ranked[0].businessDate)}` : ""}</small><strong>{money(ranked[0]?.actualIncome ?? null)}</strong></div></div>
       <details className={styles.dailyValues}><summary><Text text="Daily values" /></summary>{elapsed.map(row => <div className={styles.row} key={row.businessDate}><span>{day(row.businessDate)}</span><span>{row.actualIncome === null ? <Text text="Not entered" /> : money(row.actualIncome)}</span></div>)}</details>
     </> : <p className={styles.note}><Text text="Enter a Daily Report to see collections." /></p>}
-    <p className={styles.note}><Text text="Missing reports appear as gaps, not zero." /></p>
+    <p className={styles.note}><Text text="Hollow markers: not entered. Solid markers: $0." /></p>
   </section>;
 }
 
@@ -113,7 +120,7 @@ function Analytics({ rows, services, lines, today }: Pick<Props, "rows" | "servi
     </section>
     <section className={styles.card}><header className={styles.cardHeader}><h2><Text text="Staff performance" /></h2><div className={styles.segment}><button aria-pressed={staffMetric === "sales"} onClick={() => setStaffMetric("sales")}><Text text="Sales" /></button><button aria-pressed={staffMetric === "payout"} onClick={() => setStaffMetric("payout")}><Text text="Payout" /></button></div></header><p className={styles.note}><Text text={staffMetric === "sales" ? "Service sales · Excludes tips" : "Cash + check · Includes tips and bonuses"} /></p>
       <div className={styles.sort}><button onClick={() => setStaffAscending(value => !value)}><Text text={staffAscending ? "Low → High" : "High → Low"} /> ⌄</button></div>
-      <ol className={styles.rankList}>{(allStaff ? sortedStaff : sortedStaff.slice(0, 4)).map((line, index) => <li className={styles.staffRank} key={line.staff_id}><small>{index + 1}</small><span>{line.staff_display_name_snapshot}</span><i className={styles.rankBar} aria-hidden="true"><i style={{width:`${Math.max(0,staffMetric==="sales"?line.gross_sales:line.final_staff_income)/Math.max(1,...lines.map(row=>staffMetric==="sales"?row.gross_sales:row.final_staff_income))*100}%`}}/></i><strong>{money(staffMetric === "sales" ? line.gross_sales : line.final_staff_income)}</strong></li>)}</ol>
+      <ol className={styles.rankList}>{(allStaff ? sortedStaff : sortedStaff.slice(0, 4)).map((line, index) => <li className={styles.staffRank} key={line.staff_id}><small>{index + 1}</small><span>{line.staff_display_name_snapshot}</span><i className={styles.rankBar} aria-hidden="true"><i style={{background: (staffMetric === "sales" ? line.gross_sales : line.final_staff_income) < 0 ? "#a34545" : undefined, width:`${Math.abs(staffMetric==="sales"?line.gross_sales:line.final_staff_income)/Math.max(1,...lines.map(row=>Math.abs(staffMetric==="sales"?row.gross_sales:row.final_staff_income)))*100}%`}}/></i><strong>{money(staffMetric === "sales" ? line.gross_sales : line.final_staff_income)}</strong></li>)}</ol>
       {!lines.length && <p className={styles.note}><Text text="No staff payroll in this period." /></p>}
       {lines.length > 0 && <button className={styles.textLink} onClick={() => setAllStaff(value => !value)}><Text text={allStaff ? "Show less" : "View all staff"} /> ›</button>}
     </section>

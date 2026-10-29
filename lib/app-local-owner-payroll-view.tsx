@@ -3,7 +3,10 @@
 import type { AppLocalOwnerPayrollData, AppLocalOwnerPayrollParams } from "./app-local-owner-page-types";
 
 import { PayrollDashboard } from "@/app/payroll/payroll-dashboard";
-import { adjacentPayrollPeriod } from "@/lib/payroll-period-navigation";
+import { PayrollPeriodRail } from "@/app/payroll/payroll-period-rail";
+import { PayrollTabs } from "@/app/payroll/payroll-tabs";
+import { StaffIncomeCard } from "@/app/payroll/staff-income-card";
+import { payrollRailChoices } from "@/lib/payroll-period-rail";
 import { PayrollChangeHistory } from "@/app/payroll/payroll-change-history";
 import { PayrollLiveRefresh } from "@/app/payroll/payroll-live-refresh";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
@@ -14,7 +17,7 @@ import styles from "@/app/payroll/payroll-mobile.module.css";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { DataDownloadPanel } from "@/app/payroll/data-download-panel";
 import { PluginActivationPrompt, PluginActivationButton } from "@/app/settings/plugin-settings-row";
-import { PayrollFilterToolbar } from "@/app/payroll/payroll-filter-toolbar";
+
 import { saveSalonPayrollScheduleAction } from "@/app/payroll/actions";
 import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
 import { StaffIncomeAutosaveInputs } from "@/app/payroll/staff-income-autosave-inputs";
@@ -177,13 +180,7 @@ function getSettingsEditHref(period: PayrollPeriod, staffId: string) {
   return `/payroll?${href.toString()}`;
 }
 
-function taxLineRateLabel(line: PayrollStaffLineWithDailyTotals) {
-  if (line.is_mixed_rate && line.tax_withheld !== 0) {
-    return "Mixed rate";
-  }
 
-  return formatPercent(line.tax_rate_used);
-}
 
 function dailyCommissionGross(dailyTotal: PayrollStaffDailyTotal) {
   if (dailyTotal.pay_type_used === "fixed") {
@@ -201,25 +198,7 @@ function dailyCommissionGross(dailyTotal: PayrollStaffDailyTotal) {
   return 0;
 }
 
-function CompactPayoutLabel({
-  method,
-  taxed,
-}: {
-  method: string;
-  taxed: boolean;
-}) {
-  return (
-    <span className="whitespace-nowrap text-[11px] font-medium text-zinc-500">
-      <WorkspaceText text={formatPayoutMethod(method)} />
-      {taxed ? (
-        <>
-          {" \u00b7 "}
-          <WorkspaceText text="Tax" />
-        </>
-      ) : null}
-    </span>
-  );
-}
+
 
 const INPUT_HISTORY_FIELD_LABELS: Record<string, string> = {
   bonus_amount: "Bonus",
@@ -350,9 +329,7 @@ function ShopIncomeCard({ label, subLines, tone = "default", value }: {
   </PayrollDisclosure>;
 }
 
-function monthInputFromPeriod(period: PayrollPeriod) {
-  return period.startDate.slice(0, 7);
-}
+
 
 function NoPermissionState({ message }: { message: string }) {
   return (
@@ -367,187 +344,25 @@ function NoPermissionState({ message }: { message: string }) {
   );
 }
 
-function PayrollPeriodNavigation(props: Parameters<typeof PeriodSelector>[0]) {
-  const {period,activeTab}=props;
-  return <section>
-    <div className={styles.periodNav}>
-      <Link aria-label="Previous period" href={getPayrollHref({period:adjacentPayrollPeriod(period,-1),tab:activeTab})}>‹</Link>
-      <details className={styles.periodPicker}><summary>{formatDate(period.startDate)} – {formatDate(period.endDate)}</summary><div><PeriodSelector {...props}/></div></details>
-      <Link aria-label="Next period" href={getPayrollHref({period:adjacentPayrollPeriod(period,1),tab:activeTab})}>›</Link>
-    </div>
-    <div className={styles.periodModes}>
-      <Link href={`/payroll?tab=${activeTab}`} aria-current={period.preset!=="custom"?"page":undefined}><WorkspaceText text="Pay period"/></Link>
-      <Link href={`/payroll?tab=${activeTab}&preset=custom&start=${period.startDate.slice(0,7)}-01&end=${new Date(Date.UTC(Number(period.startDate.slice(0,4)),Number(period.startDate.slice(5,7)),0,12)).toISOString().slice(0,10)}`}><WorkspaceText text="Month"/></Link>
-      <details><summary><WorkspaceText text="Custom"/></summary><form action="/payroll"><input type="hidden" name="tab" value={activeTab}/><input type="hidden" name="preset" value="custom"/><label><WorkspaceText text="From"/><input type="date" name="start" required defaultValue={period.startDate}/></label><label><WorkspaceText text="To"/><input type="date" name="end" required defaultValue={period.endDate}/></label><button className={styles.action}><WorkspaceText text="Apply"/></button></form></details>
-      <small><WorkspaceText text="Live"/></small>
-    </div>
-  </section>;
-}
 
-function PeriodSelector({
-  activeTab,
-  period,
-  periodOptions,
-  salonPayrollSetting,
-  scheduleSetup,
-}: {
-  activeTab: PayrollTab;
-  period: PayrollPeriod;
-  periodOptions: Awaited<ReturnType<typeof getPayrollPageData>>["periodOptions"];
-  salonPayrollSetting: SalonPayrollSetting;
-  scheduleSetup: Awaited<ReturnType<typeof getPayrollPageData>>["scheduleSetup"];
-}) {
-  const scheduleCycle = salonPayrollSetting.cycle_type;
-  const missingBiweeklyAnchor = scheduleSetup.needsBiweeklyAnchor;
 
-  return (
-    <div className="min-w-0 space-y-2">
-    <PayrollFilterToolbar summary={<WorkspaceElement as="p" className="truncate" title={period.label}><WorkspaceText text={period.label} /></WorkspaceElement>} periodLabel={period.label} active={period.preset === "custom"}>
-      <form
-        action="/payroll"
-        className="flex flex-wrap items-end gap-3"
-      >
-        <input name="tab" type="hidden" value={activeTab} />
-        {scheduleCycle === "monthly" ? (
-          <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
-            <WorkspaceText text="Month" />
-            <input
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              defaultValue={monthInputFromPeriod(period)}
-              name="month"
-              type="month"
-            />
-          </label>
-        ) : null}
-        {scheduleCycle === "semi_monthly" ? (
-          <>
-            <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
-              <WorkspaceText text="Month" />
-              <input
-                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                defaultValue={monthInputFromPeriod(period)}
-                name="month"
-                type="month"
-              />
-            </label>
-            <label className="flex min-w-64 flex-col gap-1 text-sm font-medium text-zinc-700">
-              <WorkspaceText text="Period" />
-              <select
-                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                defaultValue={
-                  period.preset === "semi_monthly_second" ? "second" : "first"
-                }
-                name="segment"
-              >
-                <option value="first">First: 1 - 15</option>
-                <option value="second">Second: 16 - end of month</option>
-              </select>
-            </label>
-          </>
-        ) : null}
-        {scheduleCycle === "biweekly" ? (
-          <label className="flex min-w-0 w-full sm:w-72 flex-col gap-1 text-sm font-medium text-zinc-700">
-            <WorkspaceText text="Pay period" />
-            <select
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              disabled={missingBiweeklyAnchor}
-              name="payPeriodStart"
-              defaultValue={period.startDate}
-            >
-              {missingBiweeklyAnchor ? (
-                <option value=""><WorkspaceText text="Set anchor in Settings" /></option>
-              ) : (
-                periodOptions.map((option) => (
-                  <option key={option.value} value={option.startDate}>
-                    <WorkspaceText text={option.label} />
-                  </option>
-                ))
-              )}
-            </select>
-          </label>
-        ) : null}
-        <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
-          <WorkspaceText text="Apply" />
-        </button>
-      </form>
 
-      <details>
-        <summary className="cursor-pointer text-sm font-medium text-zinc-600">
-          <WorkspaceText text="Advanced custom range" />
-        </summary>
-        <form action="/payroll" className="mt-3 flex flex-wrap items-end gap-3">
-          <input name="tab" type="hidden" value={activeTab} />
-          <input name="preset" type="hidden" value="custom" />
-          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-            <WorkspaceText text="Start" />
-            <input
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              defaultValue={period.startDate}
-              name="start"
-              type="date"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-            <WorkspaceText text="End" />
-            <input
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              defaultValue={period.endDate}
-              name="end"
-              type="date"
-            />
-          </label>
-          <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
-            <WorkspaceText text="Apply Custom" />
-          </button>
-        </form>
-      </details>
-    </PayrollFilterToolbar>
-      {missingBiweeklyAnchor ? (
-        <p className="text-sm text-amber-700">
-          <WorkspaceText text="Every-2-weeks payroll needs an anchor date. Update it in Settings." />
-        </p>
-      ) : null}
-    </div>
-  );
-}
 
-function Tabs({activeTab,canViewAllPayroll,period}:{activeTab:PayrollTab;canViewAllPayroll:boolean;period:PayrollPeriod}) {
-  const tabs: {id:PayrollTab;label:string}[]=canViewAllPayroll?[{id:"overview",label:"Overview"},{id:"analytics",label:"Analytics"},{id:"staff",label:"Staff"},{id:"shop",label:"Shop"},{id:"tools",label:"Tools"}]:[{id:"staff",label:"Staff"}];
-  return <nav className={styles.mobileNav} aria-label="Payroll sections">{tabs.map(tab=><Link key={tab.id} href={getPayrollHref({period,tab:tab.id})} aria-current={activeTab===tab.id||tab.id==="overview"&&["differences","history"].includes(activeTab)||tab.id==="tools"&&["settings","tax","download"].includes(activeTab)?"page":undefined}><WorkspaceText text={tab.label}/></Link>)}</nav>;
-}
+
 
 function StaffIncomeTab({ canManage, lines, period, history }: {
   canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod; history: PayrollLiveChange[];
 }) {
   if (!lines.length) return <p className={styles.panel}><WorkspaceText text="No staff income lines for this period." /></p>;
-  return <section className="grid gap-3">
-    <div className={styles.heading}><h2 className="text-base font-semibold"><WorkspaceText text="Staff Income" /></h2><p className={styles.context}>{lines.length} <WorkspaceText text="Staff" /> · <WorkspaceText text="Current calculation" /></p></div>
-    {lines.map(line => <PayrollDisclosure key={`${period.startDate}:${period.endDate}:${line.staff_id}`} className={styles.staffCard} summary={<div className={styles.staffSummary}>
-      <div><strong>{line.staff_display_name_snapshot}</strong>{!line.staff_legal_name_snapshot && <small className="!text-amber-700"><WorkspaceText text="Missing legal name" /></small>}{line.final_check_amount < 0 && <small className="!text-rose-700"><WorkspaceText text="Check amount negative" /></small>}</div>
-      <div className={styles.staffMoney}><strong>{formatMoney(line.final_staff_income)}</strong><small><WorkspaceText text="Cash" /> {formatMoney(line.final_cash_amount)}</small><small><WorkspaceText text="Check" /> {formatMoney(line.final_check_amount)}</small></div>
-    </div>}>
-      {history.some(change=>change.staff_id===line.staff_id)&&<PayrollChangeHistory compact changes={history.filter(change=>change.staff_id===line.staff_id)} />}
-      <div className={styles.staffBody}>
-        <section className={styles.staffSection}><h3>{line.staff_display_name_snapshot} · <WorkspaceText text="Actual Payout" /></h3><dl className={styles.ledger}>
-          <div><dt><WorkspaceText text="Cash" /></dt><dd>{formatMoney(line.final_cash_amount)}</dd></div>
-          <div><dt><WorkspaceText text="Check" /></dt><dd className={line.final_check_amount < 0 ? "text-rose-700" : ""}>{formatMoney(line.final_check_amount)}</dd></div>
-          <div><dt><WorkspaceText text="Total" /></dt><dd className="font-semibold">{formatMoney(line.final_staff_income)}</dd></div>
-          <div><dt><WorkspaceText text="Tax" /></dt><dd>{taxLineRateLabel(line)} · {formatMoney(line.tax_withheld)}</dd></div>
-          <div><dt><WorkspaceText text="Tip" /></dt><dd>{formatMoney(line.tip_amount)} <CompactPayoutLabel method={line.tip_payout_method_snapshot} taxed={line.tax_tips_snapshot} /></dd></div>
-        </dl></section>
-        <section className={styles.staffSection}><h3><WorkspaceText text="Wage / Net Details" /></h3><dl className={styles.ledger}>
-          <div><dt><WorkspaceText text="Shop Gross" /></dt><dd>{formatMoney(line.gross_sales)}</dd></div>
-          <div><dt><WorkspaceText text="Comm Gross" /></dt><dd>{formatMoney(line.staff_commission_gross)}</dd></div>
-          <div><dt><WorkspaceText text="Cash Net" /></dt><dd>{formatMoney(line.base_cash_amount)}</dd></div>
-          <div><dt><WorkspaceText text="Check Net" /></dt><dd>{formatMoney(line.check_net)}</dd></div>
-        </dl></section>
-        <section className={styles.staffSection}><h3><WorkspaceText text="Period adjustments" /></h3><StaffIncomeAutosaveInputs inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /></section>
-      </div>
-      <details className="border-t p-4"><summary className="text-sm font-medium"><WorkspaceText text="Breakdown" /></summary>
+  return <section className="grid gap-3" aria-label="Staff payroll">
+    {lines.map(line => <StaffIncomeCard key={`${period.startDate}:${period.endDate}:${line.staff_id}`} line={line}
+      history={history.some(change=>change.staff_id===line.staff_id) ? <PayrollChangeHistory compact changes={history.filter(change=>change.staff_id===line.staff_id)} /> : null}
+      adjustments={<StaffIncomeAutosaveInputs inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} />}
+      breakdown={<details className="border-t p-4"><summary className="text-sm font-medium"><WorkspaceText text="Breakdown" /></summary>
         {line.dailyTotals.length ? <div className="grid gap-3">{line.dailyTotals.map(day => <div key={day.id} className="rounded-lg bg-zinc-50 p-3"><p className="mb-2 text-sm font-medium"><WorkspaceText text={formatDate(day.business_date)} /></p><dl className={styles.ledger}><div><dt><WorkspaceText text="Shop Gross" /></dt><dd>{formatMoney(day.gross_sales)}</dd></div><div><dt><WorkspaceText text="Comm Gross" /></dt><dd>{formatMoney(dailyCommissionGross(day))}</dd></div><div><dt><WorkspaceText text="Tip" /></dt><dd>{formatMoney(day.tip_amount)}</dd></div></dl></div>)}</div> : <p className="text-sm text-zinc-500"><WorkspaceText text="No daily rows for this staff member." /></p>}
         {Boolean(line.inputHistory?.length) && <details className="mt-3 border-t pt-2"><summary className="text-sm font-medium"><WorkspaceText text="Input history" /></summary><ul className="grid gap-2 text-sm">{line.inputHistory?.map(history => <li key={history.id}><WorkspaceText text={inputHistoryLabel(history.change_type)} /> · {inputHistoryFields(history.field_changes)}<p className="text-xs text-zinc-500"><WorkspaceText text={formatDateTime(history.created_at)} /></p></li>)}</ul></details>}
-      </details>
-    </PayrollDisclosure>)}
+      </details>}
+    />)}
   </section>;
 }
 
@@ -647,7 +462,7 @@ function ShopIncomeTab({
 
 function TaxTab({period,taxCompany,plugin,canManageConnection}:{period:PayrollPeriod;taxCompany:Awaited<ReturnType<typeof getPayrollPageData>>["taxCompany"];plugin:Awaited<ReturnType<typeof taxCompanySettings>>|null;canManageConnection:boolean;hasChanges:boolean}) {
   if(canManageConnection&&plugin&&!plugin.active)return <PluginActivationPrompt pluginName="Tax Company" label="Connect your tax company"/>;
-  return <section className={styles.panel}><h2><WorkspaceText text="Current payroll report"/></h2><p>{period.label}</p><p><WorkspaceText text="Current amounts update immediately after edits."/></p><p>{taxCompany.lines.length} <WorkspaceText text="Reportable lines"/></p><Link className={`${styles.action} ${styles.primary}`} href={getTaxCompanyHref(period)}><WorkspaceText text="View current report"/></Link>{canManageConnection&&<Link className={styles.action} href="/payroll/tax-company/settings"><WorkspaceText text="Connection and access"/></Link>}</section>;
+  return <section className={styles.panel}><p>{period.label}</p><p><WorkspaceText text="Current amounts update immediately after edits."/></p><p>{taxCompany.lines.length} <WorkspaceText text="Reportable lines"/></p><Link className={`${styles.action} ${styles.primary}`} href={getTaxCompanyHref(period)}><WorkspaceText text="View current report"/></Link>{canManageConnection&&<Link className={styles.action} href="/payroll/tax-company/settings"><WorkspaceText text="Connection and access"/></Link>}</section>;
 }
 function ToolsTab({ period, downloadEnabled, canActivate }: { period: PayrollPeriod; downloadEnabled: boolean | null; canActivate: boolean }) {
   const links: { tab: PayrollTab; title: string; subtitle: string }[] = [
@@ -1076,15 +891,13 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
     <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
       <PayrollLiveRefresh salonId={salonId} />
-      <Tabs
+      <PayrollTabs
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}
         period={data.period}
       />
       {visiblePayrollError&&<p role="alert" className={styles.warning}><WorkspaceText text={visiblePayrollError}/></p>}
-      {!["settings","tools","download"].includes(activeTab)&&<>
-        <PayrollPeriodNavigation activeTab={activeTab} period={data.period} salonPayrollSetting={data.salonPayrollSetting} periodOptions={data.periodOptions} scheduleSetup={data.scheduleSetup}/>
-      </>}
+      <PayrollPeriodRail activeTab={activeTab} period={data.period} {...payrollRailChoices(data.period, data.salonPayrollSetting)} needsAnchor={data.scheduleSetup.needsBiweeklyAnchor}/>
       {["overview","analytics","differences"].includes(activeTab)&&<PayrollDashboard tab={activeTab as "overview"|"analytics"|"differences"} lines={data.live.lines} rows={data.live.shopDailyRows} services={data.serviceAnalytics} today={data.today} historyCount={data.history.length} historyHref={getPayrollHref({period:data.period,tab:"history"})} differencesHref={getPayrollHref({period:data.period,tab:"differences"})}/>}
       {activeTab==="history"&&<PayrollChangeHistory changes={data.history} staffNames={Object.fromEntries(data.staffPayrollSettings.map(row=>[row.staff.id,row.staffProfileDisplayName??row.staff.display_name]))}/>}
       {activeTab === "staff" ? (

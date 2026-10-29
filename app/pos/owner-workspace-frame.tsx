@@ -43,7 +43,19 @@ function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
   const active = workspaceTab(destination) ?? "pos";
   const pending = !!intent && intent.from === path && intent.target !== path;
 
-  useEffect(() => { window.dispatchEvent(new Event("resize")); }, [destination]);
+  useEffect(() => {
+    const resize = () => {
+      const panel = document.querySelector<HTMLElement>('[data-owner-workspace]>.owner-workspace-panel');
+      if (!panel || panel.hidden || !panel.getClientRects().length || document.documentElement.dataset.ownerDevice === 'desktop') return;
+      const viewport = window.visualViewport;
+      const nav = Array.from(document.querySelectorAll<HTMLElement>('.owner-device-nav')).find(n => n.getClientRects().length > 0);
+      const bottom = document.documentElement.dataset.ownerDevice === 'phone' ? (nav?.getBoundingClientRect().height ?? 62) : 0;
+      panel.style.setProperty('--owner-panel-height',`${Math.max(160,(viewport?.height??innerHeight)+(viewport?.offsetTop??0)-panel.getBoundingClientRect().top-bottom-8)}px`);
+    };
+    window.addEventListener('resize', resize); window.visualViewport?.addEventListener('resize', resize);
+    window.dispatchEvent(new Event('resize'));
+    return () => { window.removeEventListener('resize', resize); window.visualViewport?.removeEventListener('resize', resize); };
+  }, [destination]);
   // A late device-cache answer no longer owns navigation after a route commit,
   // Activity disconnect or departure from this workspace.
   useLayoutEffect(() => () => { navigation.current++; }, [path]);
@@ -79,17 +91,21 @@ function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
     router.push(target);
   }
 
-  return <div data-owner-workspace onClickCapture={event => {
+  return <div data-owner-workspace data-owner-active={active} onClickCapture={event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
     const link = event.target.closest<HTMLAnchorElement>("a[href]");
-    if (!link || link.target || link.hasAttribute("download") || link.closest("[data-owner-more-popover]")) return;
+    const deviceShortcut = Boolean(link?.closest(".owner-device-more-links"));
+    if (!link || link.target || link.hasAttribute("download") || (link.closest("[data-owner-more-popover]") && !deviceShortcut)) return;
     const url = new URL(link.href, location.href);
     if (url.origin !== location.origin) return;
     const original = url.pathname + url.search + url.hash;
     const target = workspaceHref(original);
     const isWorkspaceTab = link.hasAttribute("data-owner-tab") && workspaceTab(url.pathname);
     if (target !== original || isWorkspaceTab || owner && ownerLocalHref(target)) {
-      event.preventDefault(); event.stopPropagation(); void navigate(target);
+      event.preventDefault();
+      // The popup link must still close itself after retained workspace navigation.
+      if (!deviceShortcut) event.stopPropagation();
+      void navigate(target);
     }
   }} onSubmitCapture={event => {
     const form = event.target as HTMLFormElement;

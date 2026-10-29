@@ -45,8 +45,10 @@ function OwnerMoreMenu() {
     const offsetLeft = viewport?.offsetLeft ?? 0;
     const offsetTop = viewport?.offsetTop ?? 0;
     const panelWidth = Math.min(384, width - 24);
-    const top = Math.max(offsetTop + 8, Math.min(rect.bottom + 8, offsetTop + height - 144));
-    setPlacement({ top, left: Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, maxHeight: Math.min(560, offsetTop + height - top - 12) });
+    const above = button.closest('.owner-device-nav') !== null && document.documentElement.dataset.ownerDevice === 'phone';
+    const maxHeight = above ? Math.max(48, Math.min(560, rect.top - offsetTop - 20)) : Math.min(560, height - 24);
+    const top = above ? Math.max(offsetTop + 8, rect.top - maxHeight - 8) : Math.max(offsetTop + 8, Math.min(rect.bottom + 8, offsetTop + height - 144));
+    setPlacement({ top, left: Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, maxHeight: Math.min(maxHeight, offsetTop + height - top - 12) });
   }
 
   useEffect(() => {
@@ -97,6 +99,10 @@ function OwnerMoreMenu() {
     </button>
     {placement ? createPortal(
       <div id={id} ref={panel} className="owner-more-popover" style={placement} role="region" aria-label={translate("More")} data-owner-more-popover>
+        <div className="owner-device-more-links">
+          <Link href="/pos/report" data-owner-tab="report" onClick={closeMenu}><WorkspaceText text="Report" /></Link>
+          <Link href="/pos/settings" data-owner-tab="settings" onClick={closeMenu}><WorkspaceText text="Settings" /></Link>
+        </div>
         <RoleMoreContent workspace="pos" roleKind="owner" activeItemIds={["owner-pos"]} onNavigate={closeMenu} />
       </div>, document.body,
     ) : null}
@@ -116,7 +122,7 @@ export function OwnerPosNavigation({ active, syncScope }: { active: OwnerTab; sy
 export function OwnerPosTabs({ active }: { active: OwnerTab }) {
   const translate = useWorkspaceTranslation();
   const pathname = usePathname();
-  const mobile = <OwnerNotebookMenu key={`notebook:${pathname ?? active}`} active={active} more={<OwnerMoreMenu key={pathname ?? active} />} />;
+  const mobile = <OwnerNotebookMenu key={`device:${pathname ?? active}`} active={active} more={<OwnerMoreMenu key={pathname ?? active} />} />;
   return <>{mobile}<nav className="owner-top-nav owner-notebook-desktop" aria-label={translate("Owner POS")}>
     <OwnerMoreMenu key={pathname ?? active} />
     {shortcuts.map(item => <Link className="owner-nav-item" data-owner-tab={item.id} href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}

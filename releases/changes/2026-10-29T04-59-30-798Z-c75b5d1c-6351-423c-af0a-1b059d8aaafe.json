@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "pos-ios-tablet-layout-20261028",
+  "status": "ready",
+  "summary": "Phone direct bottom navigation, iPad index, actual64 narrow Windows menu retained; current workspace authority and draft preserved",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/owner-windows-compact-menu.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v2"
+  },
+  "supersedesEvents": [],
+  "integratesEvents": [
+    "6ef0ead8-caaf-40a6-aba4-1fd53ff82773"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "19 Payroll Node tests,12 shared UI and12 native Payroll-view fixture observations",
+      "result": "passed"
+    },
+    {
+      "name": "13 actual workspace/portal observations;3 compact Windows portal checks;9 checkout/name/captured receipt observations",
+      "result": "passed"
+    },
+    {
+      "name": "Windows1440/820 actual64 fixture screenshot equality",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint/TypeScript and final production build459assets",
+      "result": "passed",
+      "evidence": "artifacts/wave65-audit/build-owner-approved-complete.log"
+    }
+  ],
+  "limitations": [
+    "Rebuilt native archive, Apple availability and exact-installed physical acceptance remain pending; local source-ready is not those outcomes.",
+    "Only inert fixtures and captured fake receipts; no production financial/social/data writes.",
+    "Native Payroll integration preserves actual64 wrapper/DTO/actions; two pre-existing unused-symbol lint warnings retained."
+  ],
+  "id": "c75b5d1c-6351-423c-af0a-1b059d8aaafe",
+  "recordedAt": "2026-10-29T04:59:30.798Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-notebook-menu.tsx": "f8c09a52909eec628140e6d4541da3b731265bb89df75852c86b502e45af540c",
+    "app/pos/owner-notebook-menu.css": "f1b0e26bc4fde50ff46d2d79125f00c0073ff719df72621d1e27c7b6cfe0d8b4",
+    "app/pos/owner-pos-tabs.tsx": "85b325d28e153661e71f3c6e7b8531d5bb9ee9ed9768515ca4cbb1672b134fae",
+    "app/pos/owner-pos-client.tsx": "a9088df365d9dfe541a24d15ce2a69df3937fee55c0d859977eebcde3ef08aea",
+    "app/pos/owner-workspace-frame.tsx": "5753f0a3c62c6b553827654f004f79d72b5ad479ecba13de5f8b461a240d3243",
+    "app/pos/owner-windows-compact-menu.tsx": "3e3e10ba85b60b473ee44e3ea20bf20e4cf817a21c5fd55ffd4d0530856a4337",
+    "app/pos/owner-windows-compact-menu.css": "7ba7afa499e34af9ee0995763f7377d7136cf6360def03b451f611dd6971a44c"
+  }
+}
