@@ -21,6 +21,8 @@ const jobKey = (job: AppLocalPrefetchJob) => JSON.stringify([job.name, job.args]
 /** Prepare DTOs, never hidden page trees or commands. Resource cells/cache are
  * shared with the actual page, so selecting a queued page promotes its read.
  * The queue lasts for the accepted identity, not for a route or lease renewal.
+ * Only two reads for unvisited routes may run speculatively. Selected routes
+ * remain eligible after that budget; previously visited offline DTOs stay intact.
  */
 export function useAppLocalPrefetch(context: AppLocalContext | null, path: string) {
   const current = useRef({ context, path });
@@ -33,7 +35,7 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
     const scope = value?.context.scope;
     readPriorityScheduler.setActiveScope(scope);
     if (!value || !scope) return;
-    let active = true, working = false, denied = false;
+    let active = true, working = false, denied = false, hiddenReads = 0;
     const controller = new AbortController(), done = new Set<string>(), pending = new Map<string, AppLocalPrefetchJob>();
     const append = (jobs: AppLocalPrefetchJob[]) => { for (const job of jobs) if (!done.has(jobKey(job))) pending.set(jobKey(job), job); };
     append(appLocalPrefetchPlan(value, current.current.path));
@@ -45,7 +47,10 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
         while (active && pending.size && canPrefetchAppLocalReads()) {
           const latest = current.current.context;
           if (!latest || identityOf(latest) !== identity || !appLocalPrefetchPlan(latest, current.current.path).length) return;
-          const job = [...pending.values()].sort((a, b) => Number(matches(b)) - Number(matches(a)) || a.rank - b.rank)[0];
+          const job = [...pending.values()].filter(job => matches(job) || hiddenReads < 2)
+            .sort((a, b) => Number(matches(b)) - Number(matches(a)) || a.rank - b.rank)[0];
+          if (!job) break;
+          if (!matches(job)) hiddenReads++;
           pending.delete(jobKey(job)); done.add(jobKey(job));
           const data = await prefetchAppLocalResource(scope, job.name, job.args, {
             route: job.path, priority: 80 + job.rank, signal: controller.signal,

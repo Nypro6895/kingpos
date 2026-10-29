@@ -101,11 +101,11 @@ test('settings memory reuse stays scoped, refreshes after writes, and never rest
   assert.equal(await page.evaluate(()=>window.foregroundState.data),undefined,'confirmed revocation withdraws cached settings');
 });
 
-test('accepted owner, staff and personal plans prepare ordinary tabs without a click or hidden UI trees', options, async t => {
+test('accepted owner, staff and personal plans prepare nearby tabs without hidden UI trees', options, async t => {
   const cases = [
-    ['owner', '/staff/today', { name: 'page.owner-today', args: { phase: 'shell' } }, 'page.owner-payroll'],
-    ['staff', '/staff/my-work', { name: 'staff.my-work', args: { staffId: staff } }, 'page.my-place'],
-    ['customer', '/explore', { name: 'page.explore', args: { query: '' } }, 'page.explore-feed'],
+    ['owner', '/staff/today', { name: 'page.owner-today', args: {} }, 'owner.salon-profile'],
+    ['staff', '/staff/my-work', { name: 'staff.my-work', args: { staffId: staff } }, 'owner.salon-profile'],
+    ['customer', '/explore', { name: 'page.explore', args: { query: '' } }, 'page.beauty'],
   ];
   for (const [kind, path, foreground, last] of cases) {
     const page = await fixture(t), value = context(kind);
@@ -119,6 +119,22 @@ test('accepted owner, staff and personal plans prepare ordinary tabs without a c
     assert.equal(await page.evaluate(() => window.h.commands.length), 0);
     assert.equal(await page.locator('#root *').count(), 1, 'only the actual selected page mounts');
   }
+});
+
+test('startup bounds hidden reads and navigation still opens an unwarmed financial page', options, async t => {
+  const page = await fixture(t), value = context('owner');
+  await page.evaluate(cfg => window.configure(cfg), { context: value, path: '/staff/today', foreground: { name: 'page.owner-today', args: {} }, runtime: true });
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'owner.salon-profile' && row.finished));
+  await page.waitForTimeout(300);
+  const hidden = await page.evaluate(() => window.h.reads.filter(row => row.name !== 'page.owner-today').map(row => row.name));
+  assert.deepEqual(hidden, ['owner.bookings', 'owner.salon-profile'], 'startup must not drain every role page');
+  await page.evaluate(() => { window.dispatchEvent(new Event('reylumi:foreground')); window.dispatchEvent(new Event('online')); });
+  await page.waitForTimeout(200);
+  assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.owner-payroll').length), 0);
+  await page.evaluate(() => window.configure({path:'/payroll', foreground:{name:'page.owner-payroll',args:{tab:'overview'}}}));
+  await page.getByTestId('foreground').filter({hasText:'page.owner-payroll:'}).waitFor();
+  assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.owner-payroll').length), 1);
+  assert.equal(await page.evaluate(() => window.h.commands.length), 0);
 });
 
 test('selecting the held preload reuses and promotes its one read', options, async t => {
@@ -183,7 +199,7 @@ test('same-scope display lease recovery preserves an unplanned foreground read',
   assert.equal(observed.aborted, false, JSON.stringify(observed));
   await page.evaluate(id => window.releaseRead(id, { data: { marker: 'settings-after-lease-recovery' } }), held);
   await page.getByTestId('foreground').filter({ hasText: 'settings-after-lease-recovery' }).waitFor();
-  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.my-place'));
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'owner.bookings'));
   assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.settings').length), 1);
 });
 
