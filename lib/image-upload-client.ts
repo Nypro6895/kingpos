@@ -38,6 +38,15 @@ export async function compressImageCanvas(source: HTMLCanvasElement, bounds: Ima
       // Convert the cropped pixels on the server, preserving transparency and
       // the WebP storage contract used by all upload callers.
       if (blob.type !== "image/webp") {
+        // The installed app cannot call an unpinned relative binary HTTP endpoint.
+        // Encode the already-cropped pixels locally; existing upload authority stays unchanged.
+        if (typeof location !== "undefined" && location.protocol === "reylumi-app:" && location.hostname === "bundle") {
+          const { encodeCanvasWebP } = await import("./image-webp-fallback");
+          const converted = await encodeCanvasWebP(canvas, quality);
+          if (converted.size <= target || quality === .62 && converted.size <= IMAGE_POLICY.maxBytes)
+            return { blob: converted, width: canvas.width, height: canvas.height };
+          continue;
+        }
         if (blob.size > IMAGE_POLICY.maxInputBytes) break;
         const response = await fetch("/api/images/normalize", {
           method: "POST", credentials: "same-origin", body: blob,

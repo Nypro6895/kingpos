@@ -1,0 +1,18 @@
+{
+  "package": "@jsquash/webp",
+  "version": "1.5.0",
+  "npmIntegrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==",
+  "upstream": "https://github.com/jamsinclair/jSquash",
+  "wasmSha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7",
+  "upstreamGlueSha256": "5fd62301662e37785aec38e38807926f72933d4c8b919018a43faf1b1ca760f6",
+  "bundledGlueSha256": "b8f05d5f823d5c83b0921fc790891e472f79d3e363b8a3f68745738b7c4829c9",
+  "licenses": [
+    "Apache-2.0",
+    "libwebp BSD"
+  ],
+  "changes": [
+    "Embed reviewed encoder WASM bytes; no decoder or remote WASM fetch",
+    "Remove unused module-relative URL fallback",
+    "Embed upstream license notices in distributed JavaScript"
+  ]
+}
