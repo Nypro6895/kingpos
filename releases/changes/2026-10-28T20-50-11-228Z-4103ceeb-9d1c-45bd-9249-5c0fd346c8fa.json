@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "post-share-ios-recovery",
+  "status": "needs-integration",
+  "summary": "Combined deploy supplement: verify post-detail comment recovery; repair Explore/post Share with existing iOS bridge and copy/selectable-link fallbacks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/post-share.ts",
+    "components/post-share-button.tsx",
+    "components/explore-social.tsx",
+    "tests/post-share-runtime.test.mjs",
+    "tests/explore-comment-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts\\explore-post-comments-share-20261028\\source"
+  },
+  "fileHashes": {
+    "lib/post-share.ts": "439266eafd6e34908b66eaedb735ff918accaaa01eda4fd98ad3f386fef37879",
+    "components/post-share-button.tsx": "fab00d0c3d5db4c3b673780043466ebd60a8d6bde327812febed7201de5d320e",
+    "components/explore-social.tsx": "e3f64a461dc607f85c8bb9b5a9dac5ba1e875b2c068e898370bb35b70c368094",
+    "tests/post-share-runtime.test.mjs": "c1dab7ee339a102b1140948b25886efa3c0b7f41d335c09620de6e75cebb32ad",
+    "tests/explore-comment-runtime.test.mjs": "0dc21c3756df6fa02a1199f92a9089f5762404e4e8852a599db979ef33e76dca"
+  },
+  "dependencies": [
+    "explore-comments-load-recovery"
+  ],
+  "validation": [
+    {
+      "name": "Share/comment/read regression tests (24)",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Source TypeScript excluding generated caches",
+      "result": "passed"
+    },
+    {
+      "name": "Production build and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "notes": "artifacts\\explore-post-comments-share-20261028\\DEPLOY-NOTE.md",
+  "id": "4103ceeb-9d1c-45bd-9249-5c0fd346c8fa",
+  "recordedAt": "2026-10-28T20:50:11.228Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

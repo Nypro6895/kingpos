@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "staff-salon-post-view-menu-20261028",
+  "status": "needs-integration",
+  "summary": "Salon timeline View is only in overflow; post image opens post and salon avatar/name link to salon. Queue for combined release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "artifacts/staff-role-avatar-20261028/DEPLOY-NOTE.txt"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-post-view-cleanup-20261028/source",
+    "patch": "artifacts/staff-post-view-cleanup-20261028/task-only.patch",
+    "hashManifest": "artifacts/staff-post-view-cleanup-20261028/source-hashes.json",
+    "note": "artifacts/staff-role-avatar-20261028/DEPLOY-NOTE.txt"
+  },
+  "validation": [
+    {
+      "name": "20 timeline, identity, booking permission, route and shared moderation service tests",
+      "result": "passed"
+    },
+    {
+      "name": "7 Chrome PostActions browser tests",
+      "result": "passed"
+    },
+    {
+      "name": "Rendered component handlers: image/menu same post; avatar/name same salon; no duplicate View",
+      "result": "passed",
+      "evidence": "artifacts/staff-post-view-cleanup-20261028/interaction-check.json"
+    },
+    {
+      "name": "ESLint and source-only TypeScript check",
+      "result": "passed"
+    },
+    {
+      "name": "Task patch reverse apply check",
+      "result": "passed"
+    },
+    {
+      "name": "WebKit unavailable locally; assembled production build and physical Safari/iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "relatedChanges": [
+    "staff-role-profile-avatar-20261028",
+    "staff-pay-compact-period-20261028"
+  ],
+  "id": "e4207226-495c-4c4f-8e58-060cab7d8a5b",
+  "recordedAt": "2026-10-28T20:29:29.736Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

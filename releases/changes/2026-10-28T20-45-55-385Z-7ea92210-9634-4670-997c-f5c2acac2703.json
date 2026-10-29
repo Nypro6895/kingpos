@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "explore-comments-load-recovery",
+  "status": "needs-integration",
+  "summary": "Explore: show confirmed inline comments after failed reads, clear stale load state and retry a transient GET once; include in combined deploy.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/post-comments/post-comment-thread.tsx",
+    "lib/post-comments-client.ts",
+    "tests/explore-comment-runtime.test.mjs",
+    "tests/post-comments-read.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts\\explore-comments-load-recovery-20261028\\source"
+  },
+  "validation": [
+    {
+      "name": "Focused comment runtime/read/identity/contracts (33 tests)",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint and scoped diff check",
+      "result": "passed"
+    },
+    {
+      "name": "Source TypeScript (1208 files, generated caches excluded)",
+      "result": "passed"
+    },
+    {
+      "name": "Full tsc",
+      "result": "failed",
+      "evidence": "6 pre-existing .next-readiness-check Help module references"
+    },
+    {
+      "name": "Broader idempotency harness",
+      "result": "failed",
+      "evidence": "5 existing missing .in() mock failures; server domain and suite not modified by this task"
+    },
+    {
+      "name": "Assembled production build and physical iPhone verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "notes": "artifacts\\explore-comments-load-recovery-20261028\\DEPLOY-NOTE.md",
+  "fileHashes": {
+    "app/post-comments/post-comment-thread.tsx": "53cbd10f9fc161e37c2933316d69330ace097225eb37196dff7904f9fb552d66",
+    "lib/post-comments-client.ts": "36396f6389d936db96fa20af045db920857ef40235eed7589c559f02ce6a2ccb",
+    "tests/explore-comment-runtime.test.mjs": "a6e03c4433719ea5f010830a4eddd7500a34edb012ec5e07cb82daed1bd520b2",
+    "tests/post-comments-read.test.mjs": "9786e3b8d29b68912b402655b4f11fae8fe47a44583b3c3d609bc58bf2457123"
+  },
+  "id": "7ea92210-9634-4670-997c-f5c2acac2703",
+  "recordedAt": "2026-10-28T20:45:55.385Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

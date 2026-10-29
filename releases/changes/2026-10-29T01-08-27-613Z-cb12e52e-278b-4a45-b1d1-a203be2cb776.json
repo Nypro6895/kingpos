@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "staff-salon-post-view-menu-20261028",
+  "status": "ready",
+  "summary": "Salon timeline View is only in overflow; post image opens post and salon avatar/name link to salon. Queue for combined release.; integrated against actual web baseline and native build60",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028\\artifacts\\combined-ui13\\selected-frozen-js-final",
+    "commit": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+    "integratedFromEvent": "e4207226-495c-4c4f-8e58-060cab7d8a5b",
+    "baselineWeb": "dpl_43heZjrRn8eGRQPeaojtBJ7MpsSZ",
+    "baselineNative": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Integrated production build/typecheck/scoped lint and focused UI tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/build-js-final.log; artifacts/combined-ui13/all-focused-source-final.log; artifacts/combined-ui13/native-js-final-tests.log; artifacts/combined-ui13/navigation-browser.log; artifacts/combined-ui13/period-browser-final2.log"
+    },
+    {
+      "name": "Unchanged native CSP static JavaScript WebP encoder including1600x1600 and zero fetch",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-js-csp-large.log"
+    },
+    {
+      "name": "Exact-source234 native tests, unsigned/signed archive and accepted Apple VALID upload",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-final-verified.json"
+    },
+    {
+      "name": "3459 deployed web source hashes and protected read-only smoke",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/web-js-final-source-verified.json; artifacts/combined-ui13/web-js-protected-smoke.json"
+    }
+  ],
+  "id": "cb12e52e-278b-4a45-b1d1-a203be2cb776",
+  "recordedAt": "2026-10-29T01:08:27.613Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028",
+  "fileHashes": {
+    "app/salon-profile/salon-profile-view.tsx": "eedd8d2852519e47890229d0f7102db292c5184607004237564368abd82ac118"
+  }
+}

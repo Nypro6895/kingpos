@@ -1,0 +1,104 @@
+{
+  "kind": "change",
+  "changeId": "ios-role-navigation-comments-20261028",
+  "status": "needs-integration",
+  "summary": "All-route hosted navigation presentation fix replaces Scan-only workaround; local public salon/post anchors, correct Explore Comment/Experiences and opt-in Trust. Source tests passed; native XCTest/device acceptance pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/navigation.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/explore-social.tsx",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "lib/app-local-link-navigation.ts",
+    "lib/app-local-public-registry.tsx",
+    "lib/app-local-public-anchor.ts",
+    "lib/salon-profile-anchor.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/navigation-comments-browser.mjs",
+    "scripts/audit-hosted-navigation.mjs",
+    "docs/ios-role-navigation-comments-deploy-note-20261028.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\scan-hosted-navigation-20261028\\artifacts\\navigation-comment-audit-20261028\\frozen",
+    "baselineCommit": "d58259afc3e90c6ccd9c2b0add5d2c009bfd1e45",
+    "patch": "artifacts\\navigation-comment-audit-20261028\\combined-build56.patch",
+    "patchSha256": "12acfd3e4f00ea8a3fab093ff672966c3ae1d50fd465c3ac07554233b485972c"
+  },
+  "fileHashes": {
+    "app/local-app/navigation.tsx": "b48de139d257ac1ca0b44e4c3e930efda76513663010721754abe4cc995ad1e5",
+    "app/salon-profile/salon-profile-view.tsx": "21350de58ddc069c56ab92555f88ef24f0f58d81a8978d51546809802f5bbb52",
+    "components/explore-social.tsx": "8abef6ca1308889e13ac9c0b75339e2b1cf374e04f27319d23b1fc4fafcc020c",
+    "ios/Reylumi/NavigationPolicy.swift": "2abd763fea7ee61ec9d17cd219dda8df50df4018fbddc4d8652024e1fd67b66a",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "6bda8c1a9f87259abeecd833e2e118e13989aa05317b8791931108341810896b",
+    "ios/Reylumi/ReylumiViewController.swift": "6c8a6713eec317cd400df99c96504c43c4ba4b0a87ff22a96799431ef5a32191",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "119fe873793af51c3be81599ca2ea6e16300406e4fb7e47e644ed87bcc8a049e",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "4abd678927d4f9d307298a43791632eeb2fc5dc70b78f1099eff4021ee0ad4a5",
+    "lib/app-local-link-navigation.ts": "e1fe9649fb743261eea04b13bb1df4510fb4928409f9e006374c7feaa5cb0fce",
+    "lib/app-local-public-registry.tsx": "89523e4824f10fe0cc64fe439fb354322a6df25953b953cbbbbb17d0e188d453",
+    "lib/app-local-public-anchor.ts": "9a731184beff913a1e6f6d20b5a7a272c2bdc67b61ab9aca0c22d85e88d5570e",
+    "lib/salon-profile-anchor.ts": "84504a268345268e2b734a3821397e1e8ec5e90c5704245668dd82d896afdf7a",
+    "lib/vietnamese-workspace-copy.json": "e61da4fb3f03ea5a49a41d3633aa47660f127abf50e15a8f93ae9c99ec65e8f9",
+    "tests/navigation-comments-browser.mjs": "6332b62b5a1be57109c09c3849fda18587dad500569157018f4d7f40a59890dc",
+    "scripts/audit-hosted-navigation.mjs": "41a5b1ebd590a32542f07b2093705f918f9c71e7793b87afa2f742b3ebe76641",
+    "docs/ios-role-navigation-comments-deploy-note-20261028.txt": "829107e152fe6adcfbdc9660599cc218047c795c4160f0384bb991bb14ef32a3"
+  },
+  "supersedes": [
+    "ios-scan-hosted-navigation-20261028"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "All 145 source page routes and shared native/browser boundaries audited",
+      "result": "passed",
+      "evidence": "artifacts/navigation-comment-audit-20261028/all-routes.json"
+    },
+    {
+      "name": "Original-function Chromium regression: comments, experiences, empty/hidden anchors, explicit Trust, safe public fragments and token rejection",
+      "result": "passed",
+      "evidence": "artifacts/navigation-comment-audit-20261028/browser.log"
+    },
+    {
+      "name": "Existing role admission/identity/root-handoff regression: 12/12",
+      "result": "passed",
+      "evidence": "artifacts/navigation-comment-audit-20261028/authority-tests.log"
+    },
+    {
+      "name": "ESLint changed TS/TSX",
+      "result": "passed",
+      "evidence": "artifacts/navigation-comment-audit-20261028/lint.log"
+    },
+    {
+      "name": "TypeScript noEmit incremental=false",
+      "result": "passed",
+      "evidence": "artifacts/navigation-comment-audit-20261028/types.log"
+    },
+    {
+      "name": "Installed client bundle: 345 files, 96 routes, 327 commands, missing 0 (nonactivated)",
+      "result": "passed",
+      "evidence": "artifacts/navigation-comment-audit-20261028/bundle-build.log"
+    },
+    {
+      "name": "Native Xcode compile, NavigationPolicyTests, LocalHostedReturnTests, archive",
+      "result": "pending",
+      "evidence": "Windows host; extended XCTest source provided. Run existing iOS CI before publishing."
+    },
+    {
+      "name": "Physical iPhone role/page matrix",
+      "result": "pending",
+      "evidence": "Not run; see deploy note."
+    }
+  ],
+  "nativeBuildRequired": true,
+  "id": "a80ea278-6a10-42d7-ba3c-2c675afd06ff",
+  "recordedAt": "2026-10-28T21:03:29.349Z",
+  "worktree": "C:\\Reylumi-worktrees\\scan-hosted-navigation-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

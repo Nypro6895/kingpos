@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "staff-role-profile-avatar-20261028",
+  "status": "needs-integration",
+  "summary": "Staff role header now uses salon-linked staff name/avatar; queue for next combined deployment",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "lib/current-context.ts",
+    "tests/business-context-performance.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-role-avatar-20261028/source",
+    "patch": "artifacts/staff-role-avatar-20261028/task-only.patch",
+    "note": "artifacts/staff-role-avatar-20261028/DEPLOY-NOTE.txt"
+  },
+  "validation": [
+    {
+      "name": "31 relevant Node tests including staff profile, duplicate identity, workspace navigation and owner isolation",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint changed files",
+      "result": "passed"
+    },
+    {
+      "name": "Production baseline integration/build and authenticated phone verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "cc37d511-3534-455f-89e5-a706db254a4d",
+  "recordedAt": "2026-10-28T20:13:54.045Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

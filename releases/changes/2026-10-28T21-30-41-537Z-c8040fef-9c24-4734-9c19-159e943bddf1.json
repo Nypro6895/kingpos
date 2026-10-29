@@ -1,0 +1,65 @@
+{
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/settings-grouped-style-20261028/artifacts/settings-grouped-style-20261028/source",
+    "patch": "artifacts/settings-grouped-style-20261028/task-only.patch",
+    "hashes": "artifacts/settings-grouped-style-20261028/source-hashes.json"
+  },
+  "changeId": "settings-grouped-style-20261028",
+  "kind": "change",
+  "status": "needs-integration",
+  "dependencies": [],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/notification-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/settings/plugin-settings-row.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/settings-hub-ui.test.mjs",
+    "app/settings/settings-navigation.ts",
+    "app/settings/settings-icon.tsx",
+    "app/settings/settings-controls.css",
+    "lib/vietnamese-settings-copy.json",
+    "tests/settings-grouped-editors.test.mjs"
+  ],
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "artifacts/settings-grouped-style-20261028/final-tests.log",
+      "name": "39 targeted and regression tests, including responsive browser and actual form payload tests"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/settings-grouped-style-20261028/typecheck-final.log",
+      "name": "Full source TypeScript"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/settings-grouped-style-20261028/lint.log",
+      "name": "Scoped ESLint without warnings"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/settings-grouped-style-20261028/task-only.patch",
+      "name": "Task patch application to captured original files"
+    },
+    {
+      "result": "failed",
+      "evidence": "artifacts/settings-grouped-style-20261028/build.log; artifacts/settings-grouped-style-20261028/baseline-build.log: identical inherited runtime/cacheComponents incompatibility in app/api/images/normalize/route.ts",
+      "name": "Production build"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "notes": "No deployment or production writes. Web-only compatible patch; no native binary change. Integrate frozen task patch with exact production baseline; do not deploy mutable worktree.",
+  "summary": "Completed grouped Settings navigation, function-specific icons, shared field groups and controls; local checks pass; inherited image route blocks full production build",
+  "id": "c8040fef-9c24-4734-9c19-159e943bddf1",
+  "recordedAt": "2026-10-28T21:30:41.537Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-grouped-style-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,35 @@
+{
+  "files": [
+    "app/local-app/entry.tsx"
+  ],
+  "changeId": "help-english-default-20261028",
+  "status": "needs-integration",
+  "kind": "change",
+  "dependencies": [],
+  "summary": "Bundled iPhone Help defaults to English; Vietnamese requires explicit lang=vi. Diagnostic export unchanged.",
+  "validation": [
+    {
+      "name": "12 Help route-language cases and TSX transform",
+      "result": "passed"
+    },
+    {
+      "name": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "name": "Native rebuild and device verification",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "artifacts/help-english-frozen"
+  },
+  "channels": [
+    "ios"
+  ],
+  "id": "6ac9f56d-d09a-4f14-8749-d75815968928",
+  "recordedAt": "2026-10-28T20:43:14.586Z",
+  "worktree": "C:\\Reylumi-worktrees\\help-english-default-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

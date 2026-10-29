@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "ios-role-navigation-comments-20261028",
+  "status": "ready",
+  "summary": "All-route hosted navigation presentation fix replaces Scan-only workaround; local public salon/post anchors, correct Explore Comment/Experiences and opt-in Trust. Source tests passed; native XCTest/device acceptance pending.; integrated against actual web baseline and native build60",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/navigation.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/explore-social.tsx",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "lib/app-local-link-navigation.ts",
+    "lib/app-local-public-registry.tsx",
+    "lib/app-local-public-anchor.ts",
+    "lib/salon-profile-anchor.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/navigation-comments-browser.mjs",
+    "scripts/audit-hosted-navigation.mjs",
+    "docs/ios-role-navigation-comments-deploy-note-20261028.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028\\artifacts\\combined-ui13\\selected-frozen-js-final",
+    "commit": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+    "integratedFromEvent": "a80ea278-6a10-42d7-ba3c-2c675afd06ff",
+    "baselineWeb": "dpl_43heZjrRn8eGRQPeaojtBJ7MpsSZ",
+    "baselineNative": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Integrated production build/typecheck/scoped lint and focused UI tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/build-js-final.log; artifacts/combined-ui13/all-focused-source-final.log; artifacts/combined-ui13/native-js-final-tests.log; artifacts/combined-ui13/navigation-browser.log; artifacts/combined-ui13/period-browser-final2.log"
+    },
+    {
+      "name": "Unchanged native CSP static JavaScript WebP encoder including1600x1600 and zero fetch",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-js-csp-large.log"
+    },
+    {
+      "name": "Exact-source234 native tests, unsigned/signed archive and accepted Apple VALID upload",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-final-verified.json"
+    },
+    {
+      "name": "3459 deployed web source hashes and protected read-only smoke",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/web-js-final-source-verified.json; artifacts/combined-ui13/web-js-protected-smoke.json"
+    }
+  ],
+  "id": "cde99526-8a43-4fbf-9b05-592372417202",
+  "recordedAt": "2026-10-29T01:08:28.383Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028",
+  "fileHashes": {
+    "app/local-app/navigation.tsx": "b48de139d257ac1ca0b44e4c3e930efda76513663010721754abe4cc995ad1e5",
+    "app/salon-profile/salon-profile-view.tsx": "eedd8d2852519e47890229d0f7102db292c5184607004237564368abd82ac118",
+    "components/explore-social.tsx": "97e184dc4cfa20c968645c21ba8781296a868b8ef0a825f344b0d99ec9ad6cd6",
+    "ios/Reylumi/NavigationPolicy.swift": "2abd763fea7ee61ec9d17cd219dda8df50df4018fbddc4d8652024e1fd67b66a",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "6bda8c1a9f87259abeecd833e2e118e13989aa05317b8791931108341810896b",
+    "ios/Reylumi/ReylumiViewController.swift": "ba2f238f70f6590f6cf7f51d95b6ddbc95f36bc8917569bc502293e06f856fe9",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "119fe873793af51c3be81599ca2ea6e16300406e4fb7e47e644ed87bcc8a049e",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "4abd678927d4f9d307298a43791632eeb2fc5dc70b78f1099eff4021ee0ad4a5",
+    "lib/app-local-link-navigation.ts": "e1fe9649fb743261eea04b13bb1df4510fb4928409f9e006374c7feaa5cb0fce",
+    "lib/app-local-public-registry.tsx": "89523e4824f10fe0cc64fe439fb354322a6df25953b953cbbbbb17d0e188d453",
+    "lib/app-local-public-anchor.ts": "9a731184beff913a1e6f6d20b5a7a272c2bdc67b61ab9aca0c22d85e88d5570e",
+    "lib/salon-profile-anchor.ts": "84504a268345268e2b734a3821397e1e8ec5e90c5704245668dd82d896afdf7a",
+    "lib/vietnamese-workspace-copy.json": "6163cc2a9b4f1b5c7841bf1511d51992a00d70ce9c6c79ba101141bcdc91dc81",
+    "tests/navigation-comments-browser.mjs": "6332b62b5a1be57109c09c3849fda18587dad500569157018f4d7f40a59890dc",
+    "scripts/audit-hosted-navigation.mjs": "41a5b1ebd590a32542f07b2093705f918f9c71e7793b87afa2f742b3ebe76641",
+    "docs/ios-role-navigation-comments-deploy-note-20261028.txt": "829107e152fe6adcfbdc9660599cc218047c795c4160f0384bb991bb14ef32a3"
+  }
+}

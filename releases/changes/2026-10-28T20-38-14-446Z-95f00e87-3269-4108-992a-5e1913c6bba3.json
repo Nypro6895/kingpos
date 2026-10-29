@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "staff-pay-compact-change-warning",
+  "status": "needs-integration",
+  "summary": "Compact staff income change notice and before/after owner note implemented; bell opens staff workspace and detail; Daily Report excluded; queue combined release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/my-work/staff-pay-change-notice.tsx",
+    "app/staff/my-work/staff-pay-change-notice.module.css",
+    "lib/staff-pay-changes.ts",
+    "lib/notification-feed-items.ts",
+    "lib/vietnamese-dictionary.ts",
+    "tests/staff-pay-change-notice.test.mjs",
+    "artifacts/staff-pay-change-warning-20261028/DEPLOY-NOTE.txt"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-pay-change-warning-20261028/source",
+    "patch": "artifacts/staff-pay-change-warning-20261028/task-only.patch",
+    "hashManifest": "artifacts/staff-pay-change-warning-20261028/source-hashes.json",
+    "note": "artifacts/staff-pay-change-warning-20261028/DEPLOY-NOTE.txt"
+  },
+  "validation": [
+    {
+      "name": "35 payroll/history/notification tests",
+      "result": "passed"
+    },
+    {
+      "name": "Staff pay period browser regression at 390px and 1280px",
+      "result": "passed"
+    },
+    {
+      "name": "Notice browser interactions, long-note safety and responsive overflow",
+      "result": "passed",
+      "evidence": "artifacts/staff-pay-change-warning-20261028/browser/results.json"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Source TypeScript excluding generated caches",
+      "result": "passed",
+      "evidence": "artifacts/staff-pay-cleanup-20261028/tsconfig.source.json"
+    },
+    {
+      "name": "Scoped patch reverse-apply check",
+      "result": "passed"
+    },
+    {
+      "name": "Production-baseline integration/build and authenticated physical phone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "staff-pay-compact-period-20261028"
+  ],
+  "id": "95f00e87-3269-4108-992a-5e1913c6bba3",
+  "recordedAt": "2026-10-28T20:38:14.446Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
