@@ -16,3 +16,5 @@ Receipt bất biến: `9adc36dd-2d40-4bba-bad9-b46cbb041828`. Cả10 exact event
 QA vật lý65: đã cài qua TestFlight và mở Owner; XCTest từng báo app không chạy khi đang kiểm tra More. Chưa kết luận crash, không ghi các ca POS/Payroll chưa chạy là pass. Chat iPhone đang một lượt recovery hữu hạn, không đo deep performance. Kết quả tiếp theo ghi checkpoint riêng, không sửa receipt cũ.
 
 Còn ngoài lượt này: Market theo nhánh riêng; Check Writer còn provider/staging/native/in máy thật; automatic customer merge còn acceptance schema/data và quyền thao tác dữ liệu riêng; New Appointment wordwrap là lỗi cosmetic64 chưa có patch hoàn tất. Không gọi TestFlight là App Store.
+
+Cập nhật QA vật lý cuối: lượt318 và đúng một recovery320 đã đóng; 1 PASS cài65, 1 quan sát context chưa stability accepted, 6 ca chức năng PENDING, 0 product FAIL đã xác nhận. Không có crash log tương ứng đọc được nhưng chưa loại trừ crash; nguyên nhân gián đoạn chưa rõ. Không còn xcodebuild của lượt này, không tự retry/pipeline. Addendum riêng WAVE65-physical65-closed-addendum.md; receipt9adc giữ nguyên.
