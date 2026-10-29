@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-29T05:53:28.361Z",
+  "kind": "post-release-finite-physical-verification",
+  "receiptUnchanged": "9adc36dd-2d40-4bba-bad9-b46cbb041828",
+  "run": "321",
+  "ownerProvidedNewDeviceCondition": true,
+  "version": "1.0.0",
+  "installedBuildBefore": "65",
+  "installedBuildAfter": "65",
+  "sameContainer": true,
+  "coordinatorIndependentlyReadRawBeforeAndAfter": true,
+  "nativeSourceFromPublishedProof": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "webDeploymentFromPublishedProof": "dpl_Gv64Dt919UZ5Pf76BwSerpqTqpAj",
+  "webSource": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f",
+  "runtimeBinaryFingerprintExtracted": false,
+  "actionWindowUTC": {
+    "start": "2026-10-29T05:43:25Z",
+    "end": "2026-10-29T05:48:57Z"
+  },
+  "stableSinglePid": true,
+  "axSnapshots": 66,
+  "observedPass": 21,
+  "confirmedProductFailuresInScope": 0,
+  "finiteReadNavigationCancelAccepted": true,
+  "wholeAppAcceptance": false,
+  "scope": [
+    "POS bottom navigation and top Add/Reset plus bottom Services pencil position",
+    "Custom service dialog typing then Cancel, reopen empty",
+    "Ticket to POS preserves existing blank zero draft",
+    "More Report, Settings, View all settings and Exit POS reach correct pages",
+    "Repeated More open/close and Exit POS",
+    "Payroll period rails, previous period selection and original period restoration",
+    "Staff Check/Cash/Tip and expand/collapse Gross/Net/settings",
+    "Analytics Daily collections screenshot and service mix/staff performance AX sections"
+  ],
+  "pending": [
+    "Nonzero draft preservation and financial state workflows",
+    "Custom Done/persisted service name",
+    "Actual Add/Reset/Submit/payment/CRUD/save/post/upload",
+    "Full chart geometry/hit tests",
+    "iPad/Windows hardware and broader roles/routes/History",
+    "Deep performance/full134 matrix"
+  ],
+  "finalState": "Owner Today; original period restored; owned controller stopped; no owned xcodebuild running",
+  "archiveSha256": "ea6a589293f904173ccec10699fc19bc479fd8e8c5a917debc93992a945fd03a",
+  "archiveHashIndependentlyVerified": true,
+  "archive": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/functional65-owner-ready321.zip",
+  "privateRawAxAndPayrollScreenshotsNotCommitted": true,
+  "prior319": "Separate unchanged interrupted run; final installed64.903 correction independently verified in physical319-erratum.json. No319 sample relabeled65.",
+  "deviceOwnershipRule": "One acknowledged controller/installer per physical device window; check build before/after."
+}

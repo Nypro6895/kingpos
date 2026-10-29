@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-29T05:52:01.358Z",
+  "kind": "physical-qa-erratum",
+  "originalReceiptUnchanged": "9adc36dd-2d40-4bba-bad9-b46cbb041828",
+  "corrects": [
+    "physical65-closed-addendum.json",
+    "physical65-closed-addendum.md",
+    "worker functional65-319 checkpoint manifest/report final65 claim"
+  ],
+  "incorrectClaim": "The app installed at the end of physical QA319 was build65.",
+  "correctObservation": {
+    "bundleIdentifier": "com.reylumi.ios",
+    "version": "1.0.0",
+    "bundleVersion": "64.903",
+    "source": "DALCandidate/functional65-319/installed-final.json inside immutable functional65-319-checkpoint.zip",
+    "independentlyReadByCoordinator": true,
+    "archiveSha256": "e5af1faaff5fb194c9ff021bab211d09cc64499e06332a20936ff4fc6f5f8527"
+  },
+  "stillValid": "Prepare318 installed65 after TestFlight update; web/Apple/TestFlight source/distribution proofs unaffected. QA319 never had functional acceptance.",
+  "interpretation": "The device app build/container changed during319. Samples cannot be continuously attributed to native65; termination observations are not confirmed native65 crashes. Do not attribute an actor or exact change time without evidence.",
+  "separateNewRun": "QA321 reported start/end65 and one PID across66 AX snapshots; final frozen evidence pending coordinator verification.",
+  "deviceCoordination": "Before future physical install/control, obtain a safe exclusive device boundary with current task owners and independently verify installed build before/after. Distinguish CI upload from physical device installation. Do not start competing installs/controllers.",
+  "privateDeviceIdsOmitted": true
+}

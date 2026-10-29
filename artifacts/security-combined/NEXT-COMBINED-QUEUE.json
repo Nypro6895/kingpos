@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-29T05:50:55.108Z",
+  "status": "waiting-for-combined-task-completion-then-integrate-and-publish-once",
+  "schedule": null,
+  "autoDeploymentStarted": false,
+  "coordinator": "Rà soát và gộp deploy iOS",
+  "currentPublishedReceipt": "9adc36dd-2d40-4bba-bad9-b46cbb041828",
+  "selectedNextScopes": [
+    {
+      "scope": "Check Writer internal module through existing first-party Market",
+      "plan": "NEXT-COMBINED-CHECK-WRITER.json",
+      "directionEvent": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "sourceEvents": [
+        "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+        "a487d2ab-008b-41c0-9699-c4107a62c95e",
+        "6db51b3f-1463-4749-93e9-bae876ed2f68"
+      ],
+      "salesHeldClosed": true
+    },
+    {
+      "scope": "Explore comments named native read transport",
+      "plan": "NEXT-COMBINED-EXPLORE-COMMENTS.json",
+      "sourceEvents": [
+        "d5a9b81c-796c-42d0-9181-811904a337fb"
+      ],
+      "shippingFiles": 4,
+      "excludeQaSwiftOverridesAndCredentials": true
+    }
+  ],
+  "independentScope": "New developer Market design/implementation is not a prerequisite for internal Check Writer.",
+  "beforePublication": [
+    "Fresh supported-chat/journal inventory determines remaining selected tasks; do not infer every historical pending event must ship.",
+    "Acquire sole shared lock and capture exact current live web and latest actually uploaded native source.",
+    "Narrowly integrate frozen verified patches, preserve current POS/Payroll/security, validate composed source and truthful pending gates.",
+    "Build web and required native together once; regenerate production bundle/provenance, tests/archive/sign/upload/provider state and live/device smoke.",
+    "Record exact channel publication receipt and release lock; do not mark unperformed checks passed."
+  ],
+  "acceptanceBoundary": "Deploy integrated code and enabling Check Writer sales are separate. Missing operational acceptance must not be replaced with a developer-review gate or fixture-as-provider claims.",
+  "deviceCoordination": "Before future physical install/control, obtain a safe exclusive device boundary with current task owners and independently verify installed build before/after. Distinguish CI upload from physical device installation. Do not start competing installs/controllers."
+}

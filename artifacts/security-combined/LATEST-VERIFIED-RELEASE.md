@@ -24,3 +24,9 @@ Cập nhật QA vật lý cuối: lượt318 và đúng một recovery320 đã �
 
 ## Thêm vào hàng đợi lượt chung — Explore comment
 Owner yêu cầu chờ tất cả task của lượt chung hoàn tất rồi deploy một lần. Event d5a9b81c-796c-42d0-9181-811904a337fb đã nhận;4 file frozen đã kiểm hash. Chỉ ghép named non-cacheable read adapter/metadata/server và regression test vào baseline web/native mới; không copy QA Swift routing/startPath/credential hoặc snapshot64 cũ. Physical dev64.903 đã test nhưng không phải bản65 hoặc TestFlight; lượt mới vẫn cần bundle/provenance/build/archive/Apple/live smoke đúng nguồn. Cùng hàng đợi Check Writer; chưa chạy pipeline/deploy/migration, không tạo lịch.
+
+## ĐÍNH CHÍNH QA319
+Đã trực tiếp đọc JSON gốc trong ZIP immutable: installed-final của319 là1.0.0(64.903), không phải65. Ghi nhận final65 trong báo cáo319 trước sai; prepare318 sau TestFlightUpdate từng là65 nhưng build/container đã đổi giữa đợt. Không gắn toàn bộ319 hoặc các termination cho nguồn65;319 vốn chưa được nghiệm thu. Receipt web/Apple/TestFlight giữ nguyên. QA321 là lượt riêng sau điều kiện owner mới, đang chờ gói chứng cứ cuối. Trước lần điều khiển/cài thiết bị tiếp theo phải chốt quyền sở hữu thiết bị tạm thời, kiểm build đầu/cuối; không cài/chạy controller cạnh tranh. Chi tiết WAVE65-physical319-erratum.json.
+
+## QA321 đã xác minh riêng
+Đã kiểm độc lập ZIP/hash và JSON đầu/cuối:1.0.0(65), cùng container;66AX cùng mộtPID;21 observed-pass phạm vi đọc/điều hướng/Cancel,0 productFAIL trong phạm vi. POS bố cục/More Exit/Settings/repeat và Payroll rails/cards/charts đã được quan sát đạt; nonzero draft, customDone/persist, Add/Reset/Submit thật, fullchart/device/role/performance vẫn chưa test. Lượt319 vẫn unaccepted, final64.903 và erratum giữ nguyên. Xem WAVE65-physical65-321-verified.md/json. Không có pipeline hoặc deploy mới trong bổ sung này.
