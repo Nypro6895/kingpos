@@ -1,0 +1,28 @@
+{
+  "kind": "release",
+  "summary": "My Pay native attempt2 failed in a different hosted handoff fixture; prior cookie startup test passed; upload skipped and actual baseline stays70",
+  "changes": [
+    "ed191f56-53e9-40df-8ee4-39817fca6943"
+  ],
+  "targets": {
+    "ios": {
+      "status": "failed",
+      "verified": false,
+      "commit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+      "evidence": "artifacts/release-20261029-mypay/native-evidence-attempt2/test.log"
+    }
+  },
+  "failure": {
+    "test": "LocalHostedReturnTests.testHostedViewStaysUsableUntilFreshContextAndItsInstalledFrameAreReady",
+    "tests": 235,
+    "assertionFailures": 2,
+    "unexpectedFailures": 1,
+    "webContentProcessLaunchSeconds": 31.729825,
+    "upload": "skipped",
+    "productCodeRootCauseNotEstablished": true
+  },
+  "nextAction": "No third unchanged-source rerun; isolate UIKit/WebKit suites into separate test-host invocations with exact runtime coverage for all235 cases",
+  "id": "5934c748-fec0-44b1-a2d6-cce5078b63d8",
+  "recordedAt": "2026-10-29T21:40:19.829Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

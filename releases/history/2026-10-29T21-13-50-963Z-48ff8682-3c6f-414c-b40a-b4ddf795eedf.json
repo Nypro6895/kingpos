@@ -1,0 +1,44 @@
+{
+  "kind": "release",
+  "summary": "Publish newly completed Staff My Pay notice and recorded-evidence disclosure removal, preserving verified13-package web/TestFlight70 source; bundled native followup in progress",
+  "changes": [
+    "61a9a430-1afd-478b-bc54-0a383a997a1f",
+    "ed191f56-53e9-40df-8ee4-39817fca6943"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+      "baselineDeploymentId": "dpl_2y9eNg7nYiVU5pSx1zBLZ5PM7EvE",
+      "sourceSha256": "8dd3f677348eb96a235d026aa436931191a579dd81b2fa550215ca6ea58e7bb3",
+      "overlaySha256": "62dacead8e0925ed3e2e57ecb6f26163f9e40732fd7a626dc08cdd43edecd045",
+      "evidence": "artifacts/release-20261029-mypay/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+      "evidence": "artifacts/release-20261029-mypay/native-run-id.json"
+    }
+  },
+  "preservedRelease": "1ccb10a6-36a9-407b-844d-85e39941a608",
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "physicalAcceptance": false,
+  "id": "48ff8682-3c6f-414c-b40a-b4ddf795eedf",
+  "recordedAt": "2026-10-29T21:13:50.963Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

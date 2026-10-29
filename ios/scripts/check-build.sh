@@ -128,13 +128,89 @@ print("Ad-hoc signature and actual embedded Simulator application/own Keychain e
 PY
 
 xcrun simctl bootstatus "$task_simulator_id" -b
-xcodebuild test-without-building \
-  -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
-  -destination "platform=iOS Simulator,id=$task_simulator_id" \
-  -derivedDataPath "$task_run_dir/DerivedData" \
-  -resultBundlePath "$task_run_dir/SimulatorTests.xcresult" \
-  -collect-test-diagnostics never \
-  "${task_simulator_signing[@]}" 2>&1 | tee build/test.log
+# Keep all tests, assertions and their timing budgets. Real WebKit/UIKit suites
+# get separate host processes so a preceding suite cannot retain WK processes
+# or windows into the next one. Persistent app data is not erased.
+python3 - "$task_run_dir" <<'PY'
+import json, pathlib, re, sys
+run = pathlib.Path(sys.argv[1])
+suites = []
+for file in sorted(pathlib.Path("ReylumiTests").glob("*.swift")):
+    text = file.read_text()
+    methods = re.findall(r"\bfunc\s+(test\w+)\s*\(\s*\)", text)
+    if not methods:
+        continue
+    names = re.findall(r"\bclass\s+(\w+)\s*:\s*XCTestCase\b", text)
+    assert len(names) == 1, "Ambiguous XCTest suite: " + str(file)
+    assert len(methods) == len(set(methods)), "Duplicate test method: " + str(file)
+    suites.append({"suite": names[0], "methods": methods,
+                   "isolatedHost": bool(re.search(r"import (?:WebKit|UIKit)\b", text))})
+assert suites, "No XCTest suites discovered"
+pure = ["ReylumiTests/" + item["suite"] for item in suites if not item["isolatedHost"]]
+batches = ([{"name": "PureTransportAndState", "identifiers": pure}] if pure else [])
+batches += [{"name": item["suite"], "identifiers": ["ReylumiTests/" + item["suite"]]}
+            for item in suites if item["isolatedHost"]]
+expected = [item["suite"] + "/" + method for item in suites for method in item["methods"]]
+assert len(expected) == len(set(expected)), "Duplicate XCTest identifier"
+(run / "TestInventory.json").write_text(json.dumps({"suites": suites, "batches": batches,
+                                                  "expectedCases": sorted(expected)}, indent=2))
+(run / "TestBatches.tsv").write_text("".join(item["name"] + "\t" + "\t".join(item["identifiers"]) + "\n" for item in batches))
+print("Frozen runtime test inventory:", len(expected), "cases in", len(batches), "host invocations")
+PY
+: > build/test.log
+task_batch_index=0
+while IFS=$'\t' read -r task_batch_name task_batch_identifiers; do
+  if [[ "$task_batch_index" -gt 0 ]]; then
+    # Only the app in this job's selected Simulator is terminated. A host that
+    # XCTest already exited is harmless; any other termination error is fatal.
+    python3 - "$task_simulator_id" <<'PY'
+import subprocess, sys
+result = subprocess.run(["xcrun", "simctl", "terminate", sys.argv[1], "com.reylumi.ios"], capture_output=True, text=True)
+message = (result.stdout + result.stderr).lower()
+already_exited = result.returncode == 3 and ("found nothing to terminate" in message or "no such process" in message)
+if result.returncode and not already_exited:
+    sys.exit("Cannot establish fresh Simulator test host: " + message)
+PY
+  fi
+  task_batch_index=$((task_batch_index + 1))
+  IFS=$'\t' read -r -a task_test_identifiers <<< "$task_batch_identifiers"
+  task_only_testing=()
+  for task_test_identifier in "${task_test_identifiers[@]}"; do
+    task_only_testing+=("-only-testing:$task_test_identifier")
+  done
+  echo "Runtime test host $task_batch_index: $task_batch_name" | tee -a build/test.log
+  xcodebuild test-without-building \
+    -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
+    -destination "platform=iOS Simulator,id=$task_simulator_id" \
+    -derivedDataPath "$task_run_dir/DerivedData" \
+    -resultBundlePath "$task_run_dir/SimulatorTests-$task_batch_name.xcresult" \
+    -collect-test-diagnostics never \
+    "${task_only_testing[@]}" "${task_simulator_signing[@]}" 2>&1 | tee -a build/test.log
+done < "$task_run_dir/TestBatches.tsv"
+
+# A successful empty -only-testing selection must never pass the release gate.
+# Require every source test to start and pass exactly once, with no extra case,
+# skip, failure, duplicate, or missing successful host invocation.
+python3 - "$task_run_dir" <<'PY'
+import collections, hashlib, json, pathlib, re, sys
+run = pathlib.Path(sys.argv[1])
+inventory = json.loads((run / "TestInventory.json").read_text())
+log = pathlib.Path("build/test.log").read_text()
+expected = set(inventory["expectedCases"])
+started = [suite + "/" + method for suite, method in re.findall(r"Test Case '-\[ReylumiTests\.(\w+) (test\w+)\]' started\.", log)]
+passed = [suite + "/" + method for suite, method in re.findall(r"Test Case '-\[ReylumiTests\.(\w+) (test\w+)\]' passed \(", log)]
+assert set(started) == expected and len(started) == len(expected), "Missing, duplicate or unexpected started test"
+assert set(passed) == expected and len(passed) == len(expected), "Missing, duplicate, skipped or failed test"
+assert not re.search(r"Test Case .* (?:failed|skipped)|\*\* TEST EXECUTE FAILED \*\*", log), "Runtime test failure or skip"
+assert log.count("** TEST EXECUTE SUCCEEDED **") == len(inventory["batches"]), "Missing successful host invocation"
+receipt = {"strategy": "sequential isolated UIKit/WebKit hosts; no persistent data erasure",
+           "expectedCases": sorted(expected), "passedCases": sorted(passed),
+           "expectedCount": len(expected), "passedCount": len(passed), "failureCount": 0,
+           "hostInvocations": len(inventory["batches"]), "coverageVerified": True,
+           "caseInventorySha256": hashlib.sha256(json.dumps(sorted(expected)).encode()).hexdigest()}
+pathlib.Path("build/test-execution-receipt.json").write_text(json.dumps(receipt, indent=2))
+print("Exact runtime coverage verified:", len(passed), "tests; no omissions, duplicates, skips or failures")
+PY
 
 xcodebuild archive \
   -project Reylumi.xcodeproj -scheme Reylumi -configuration Release \
@@ -166,6 +242,7 @@ receipt = {
     "simulatorEntitlements": plistlib.loads((run / "SimulatorEntitlements.plist").read_bytes()),
     "installableOnIPhone": False, "runDirectory": str(run.relative_to(root)),
     "githubRun": os.environ.get("GITHUB_RUN_ID"), "sourceSHA256": hashes,
+    "testExecution": json.loads((root / "build/test-execution-receipt.json").read_text()),
 }
 (root / "build/build-receipt.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
 PY

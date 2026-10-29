@@ -56,6 +56,8 @@ jobs:
           name: reylumi-testflight-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             ios/build/test.log
+            ios/build/test-build.log
+            ios/build/test-execution-receipt.json
             ios/build/archive.log
             ios/build/build-receipt.json
             ios/build/local-bundle-provenance.json

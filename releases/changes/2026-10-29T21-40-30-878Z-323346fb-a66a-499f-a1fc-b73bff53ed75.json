@@ -1,0 +1,23 @@
+{
+  "kind": "change",
+  "changeId": "native-suite-host-isolation-20261029",
+  "status": "working",
+  "summary": "Bound cross-suite WebKit process residency by separate UIKit/WebKit test-host invocations; preserve all235 cases and assertions/time budgets, enforce exact started/passed case coverage before archive",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-build.sh",
+    ".github/workflows/reylumi-ios-testflight.yml"
+  ],
+  "dependencies": [
+    "staff-my-pay-native-integration-20261029"
+  ],
+  "nativeBaselineBuild": "70",
+  "productSourceCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "id": "323346fb-a66a-499f-a1fc-b73bff53ed75",
+  "recordedAt": "2026-10-29T21:40:30.878Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
