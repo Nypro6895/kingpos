@@ -1,0 +1,20 @@
+{
+  "kind": "release",
+  "summary": "TestFlight1.0.0(60) verified Apple VALID/in beta and installed on physical iPhone. Exact2639source/346bundle/372archive hashes and232native tests verified. Physical history detail and booking-modal close/navigation regressions pass; one process/empty-read-cache Staff launch confirms three auxiliary reads replaced by one. Full-page sub-second objective and wider route QA remain pending.",
+  "changes": [
+    "eadacf3c-f5b4-4a17-b1d3-6859560cb00b"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "60",
+      "commit": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/shell277-native-verified.json; C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/release60-installed280.json; C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/released60-evidence280.zip; C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028/shell280-physical-summary.json"
+    }
+  },
+  "id": "12388406-740f-4b5b-90fa-f5c691119d23",
+  "recordedAt": "2026-10-29T00:07:31.236Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-focus-release-20261028"
+}
