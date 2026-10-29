@@ -96,7 +96,13 @@ final class BackgroundCookieAuthorityWKTests: XCTestCase {
         }
         for owner in profileOwners { owner.close() }
         profileOwners.removeAll()
+        // XCTest retains test-case instances until their suite is released.
+        // Clearing website data does not release the profile/network-process
+        // owners kept in these arrays; later WK fixtures need those resources.
+        profiles.removeAll()
+        stores.removeAll()
         for directory in directories { try? FileManager.default.removeItem(at: directory) }
+        directories.removeAll()
         try await super.tearDown()
     }
 

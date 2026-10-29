@@ -83,8 +83,13 @@ final class NativeCookieAuthorityWKTests: XCTestCase {
         }
         for owner in profileOwners { owner.close() }
         profileOwners.removeAll()
+        // Release the isolated profiles after bounded data cleanup and after
+        // their WK owners close, even while XCTest retains this test case.
+        dataStores.removeAll()
         for directory in directories { try? FileManager.default.removeItem(at: directory) }
+        directories.removeAll()
         for name in defaultsNames { UserDefaults.standard.removePersistentDomain(forName: name) }
+        defaultsNames.removeAll()
         try await super.tearDown()
     }
 

@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "native-wk-fixture-resource-release-20261029",
+  "status": "working",
+  "summary": "Release isolated WKWebsiteDataStore references held by XCTest case arrays after fixture cleanup; investigate repeated different WK startup fixture timeouts; product app/cookie assertions/budgets unchanged",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift"
+  ],
+  "source": {
+    "commit": "abd50d9b653b1f75013f9937436324fc08a4b24a"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Full235 native assertions on fresh CI source",
+      "result": "pending"
+    }
+  ],
+  "id": "f569f55a-d483-4d8d-bf27-fb3a4125de57",
+  "recordedAt": "2026-10-29T20:46:12.986Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
