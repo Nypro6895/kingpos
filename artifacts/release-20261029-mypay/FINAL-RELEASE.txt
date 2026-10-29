@@ -1,0 +1,21 @@
+Đã phát hành14 gói hoàn tất — 2026-10-29T22:15:06.196Z
+
+Web: https://reylumi.com — dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG
+iOS: TestFlight 1.0.0 (71), Apple VALID / IN_BETA_TESTING, cả hai nhóm Reylumi Internal và Reylumi support.
+Commit tích hợp mã ứng dụng: c976282fc1bc33b0545f4e0356668e67e6c18485. Native: 6d332e2a5e5a4137ca83e3cf579807369f2ed749; chỉ đổi runner CI, fixture bootstrap5s→45s trước khi seed cookie và metadata; giữ nguyên mã ứng dụng/Swift, test method bodies/assertions và deadline quyền/hành vi. Web bảo toàn baseline Vercel và overlay. Shared app/lib/components/public khớp sau chuẩn hoá newline; các file Swift lưu trong source web không tham gia build web.
+
+Bao gồm13 gói đã xác minh trong receipt1ccb10a6-36a9-407b-844d-85e39941a608 và phần Staff My Pay vừa hoàn tất: bỏ notice/Recorded payments and adjustment evidence, giữ nguyên số tiền, phép tính và lịch sử. Giữ + Add/Reset phía trên, Services ✎ phía dưới.
+
+Kiểm tra bổ sung: full production build/TypeScript,15 kiểm tra Staff pay/notice/period, scoped ESLint; 3594 file web khớp/0 khác/0 thừa;16 kiểm tra HTTP không5xx;235/0 native tests trên14 host: đủ235 ca được chạy/đạt đúng một lần; archive/sign/upload và hai nhóm TestFlight xác minh bằng GET-only. Hai lượt nguồn trước timeout ở các fixture khác nhau, upload đều skip; bằng chứng giữ nguyên. Cô lập test host và tăng riêng thời gian khởi tạo fixture5s→45s trước khi seed cookie; không đổi app/Swift, test method bodies/assertions hoặc deadline quyền/hành vi. Lượt nguồn cô lập host trước đó dừng ở213 ca/212 đạt, chưa archive/upload; bằng chứng được giữ. Hai migration và7 thân hàm SQL production đã xác minh trong hồ sơ phát hành13 gói; lượt bổ sung không đổi SQL.
+
+Còn chờ: Developer Market/publisher thiếu nền tảng/gate production; lịch sử Payroll cần chốt logic; Check Writer chưa mở bán, chưa kích hoạt3SQL/key/catalog/provider/in thực tế. Các journal cũ chưa đóng không được tự coi là phát hành.
+Kiểm tra trực tiếp Staff My Pay bị giới hạn bởi phiên trình duyệt báo access-context-changed; không đổi quyền/role. Kiểm tra iPhone thật trên binary mới chưa chạy. Chat iPhone báo330 đã phục hồi automation theo lệnh owner mới và đang auditPersonal trên actual70; giữ device exclusive, không tự cài đổi giữa lượt. Bằng chứng68 và lỗi328/329 được giữ riêng, không gán sang binary mới. Đây là TestFlight, chưa phải App Store.
+
+Web source SHA256: 8dd3f677348eb96a235d026aa436931191a579dd81b2fa550215ca6ea58e7bb3
+Web overlay SHA256: 62dacead8e0925ed3e2e57ecb6f26163f9e40732fd7a626dc08cdd43edecd045
+Native source SHA256: 914bb5d96b78dddc61da02d192abdce9cce007516d3db6f0c0c876455d262b1b
+Native bundle SHA256: 80fb21ca6d13b30f3300289ced176b44054c7531a0ae863fe4991804b881fe6d
+Receipt: 67f21d58-f623-4745-a065-13bac2d79655
+
+Audit queue/freeze và lý do fixture: artifacts/release-20261029-fixture-startup/FINAL-QUEUE-AUDIT.json
+Còn 92 journal rows lịch sử/WIP/chưa đủ gate; không tuyên bố đã xóa toàn backlog.

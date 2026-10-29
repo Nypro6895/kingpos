@@ -1,0 +1,94 @@
+{
+  "at": "2026-10-29T22:16:08.952Z",
+  "publicationReceipt": "67f21d58-f623-4745-a065-13bac2d79655",
+  "metadataOnlyNoNewPublication": true,
+  "webDeployment": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+  "native": {
+    "version": "1.0.0",
+    "build": "71",
+    "commit": "6d332e2a5e5a4137ca83e3cf579807369f2ed749"
+  },
+  "frozenSource": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+  "preDispatchEvidence": "artifacts/release-20261029-fixture-startup/pending-before-dispatch.json",
+  "chatInventoryEvidence": "artifacts/release-20261029-fixture-startup/chat-inventory-before-dispatch.json",
+  "ownerChatScope": "Human authorized ordinary remaining-chat combined web/iOS release; source assembly retained actual uploaded70 and liveEUC; no separate Market activation",
+  "preDispatchLatestRows": [
+    {
+      "event": "ed191f56-53e9-40df-8ee4-39817fca6943",
+      "change": "staff-my-pay-native-integration-20261029",
+      "status": "ready",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "event": "172a18b3-1eca-4b0d-8ebb-77b0425c0840",
+      "change": "native-suite-host-isolation-20261029",
+      "status": "ready",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "event": "bb980f4e-efe5-4360-95d4-c79b5156d3fa",
+      "change": "native-wk-fixture-bootstrap-budget-20261029",
+      "status": "ready",
+      "channels": [
+        "ios"
+      ]
+    }
+  ],
+  "sourceFreezeAndDispatch": {
+    "at": "2026-10-29T21:59:09.310Z",
+    "branch": "codex/remaining-chats-release-20261029",
+    "commit": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+    "baseline": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+    "active": [],
+    "ownerAuthorization": "Owner latest explicit remaining-chat deploy command; 14 completed queued changes; native baseline actually uploaded70; CheckWriter sales closed and unfinished Market/history excluded",
+    "accepted": true,
+    "status": 200
+  },
+  "runtimeCoverage": {
+    "cases": 235,
+    "uniquePassed": 235,
+    "hosts": 14,
+    "coverageReceipt": "artifacts/release-20261029-fixture-startup/native-evidence/test-execution-receipt.json"
+  },
+  "fixtureReason": {
+    "observedWebContentLaunchSeconds": 31.729825,
+    "beforeSetupSeconds": 5,
+    "afterSetupSeconds": 45,
+    "setupBeforeCookieSeeding": true,
+    "testBodiesAssertionsAndAuthorityDeadlinesUnchanged": true,
+    "sourceReview": "artifacts/release-20261029-fixture-startup/review.json",
+    "measuredEvidence": "artifacts/release-20261029-fixture-startup/fixture-observations.json"
+  },
+  "postReleaseQueue": "artifacts/release-20261029-mypay/FINAL-REMAINING-QUEUE.json",
+  "selectedEventsPending": 0,
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "newWorkingAfterFreeze": [
+    {
+      "eventId": "e5be4aea-06be-4dde-bb98-15c2f6eecfdb",
+      "changeId": "personal-bookings-copy-parity-20261029",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "New working Personal audit fix after release freeze; not in71; retained for next completed combined batch"
+    }
+  ]
+}
