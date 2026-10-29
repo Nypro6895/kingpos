@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-29T10:37:17.928Z",
+  "status": "passed",
+  "checks": [
+    "Today closes current Ticket details after captured navigation",
+    "One current toolbar, legacy inputs absent",
+    "Global header retained"
+  ],
+  "calendarOpen": false,
+  "legacyWorklogInputs": 0,
+  "styleDeploymentIds": [
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+    "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M"
+  ]
+}

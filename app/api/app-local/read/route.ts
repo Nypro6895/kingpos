@@ -1,3 +1,4 @@
+import { observeAppLocalRead } from "@/lib/app-local-read-observation";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { readAppLocalOwnerResource } from "@/lib/app-local-owner-resources-server";
@@ -73,7 +74,8 @@ async function readPage(request: Request, timing: ReadRequestTiming) {
       ?? await readAppLocalDisplayResource(name,args as Record<string,unknown>,options));
     if (!value) return json({ error: "This page is unavailable" }, { status: 404, headers: responseHeaders });
     const resultHeaders = { ...responseHeaders, ETag: value.etag, "x-reylumi-scope": value.scope };
-    return value.status === 304 ? timing.finish(new Response(null, { status: 304, headers: resultHeaders })) : json(value, { headers: resultHeaders });
+    const response = value.status === 304 ? timing.finish(new Response(null, { status: 304, headers: resultHeaders })) : json(value, { headers: resultHeaders });
+    return observeAppLocalRead(response, name);
   } catch (error) {
     const status = error && typeof error === "object" && "status" in error && [400, 401, 403, 404, 409, 503].includes(Number(error.status)) ? Number(error.status) : error instanceof SyntaxError ? 400 : 503;
     return json({ error: status === 401 || status === 403 || status === 409 ? "Your access has changed. Please sign in again." : "Could not update this page. Please try again." }, { status, headers: responseHeaders });

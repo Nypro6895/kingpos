@@ -1,3 +1,4 @@
+import { observeAppLocalRead } from "@/lib/app-local-read-observation";
 import { readAppLocalBootstrap } from "@/lib/app-local-bootstrap-server";
 import type { AppLocalContext } from "@/lib/app-local-host";
 import { headers } from "next/headers";
@@ -16,7 +17,8 @@ import { newReadRequestId } from "@/lib/read-request-trace-protocol";
 
 export async function GET(request: Request) {
   const timing = createReadRequestTiming(undefined,newReadRequestId(request.headers));
-  return runWithReadContext(() => readContext(request, timing), timing);
+  const response = await runWithReadContext(() => readContext(request, timing), timing);
+  return observeAppLocalRead(response, new URL(request.url).searchParams.get("path") === "/" ? "context.root" : "context.route");
 }
 
 async function readContext(request: Request, timing: ReadRequestTiming) {

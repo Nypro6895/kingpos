@@ -1,0 +1,35 @@
+{
+  "kind": "release",
+  "summary": "Hosted web Ticket Today popup closes before retained navigation; query preserved and one navigation. Original shared POS header/toolbar fixes retained; actual native67 unchanged with byte-equality/graph assessment.",
+  "changes": [
+    "4256266f-87ff-4527-ba3a-55c4164402c9"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+      "baselineDeploymentId": "dpl_4F5muTCV8GWRYosRUgDGV4VdTxAQ",
+      "sourceSha256": "c6227de25714f469d88f1b73b63cd07f39e408a6f42ba3f40b6007819ca5f6f4",
+      "overlaySha256": "6012e970b5539ad2e4343e07ed940796e8e9d041dd9f70e0c43194a54ffd131e",
+      "commit": "b9682b06bd19954777671779acc4fa3d0347374f",
+      "evidence": "artifacts/web-ticket-today-20261029/web-live-source-verified.json"
+    }
+  },
+  "verification": {
+    "browser": "artifacts/web-ticket-today-20261029/live-browser-smoke.json",
+    "http": "artifacts/web-ticket-today-20261029/http-live-verified.json",
+    "causalTests": "artifacts/web-ticket-today-20261029/browser-checks.json",
+    "nativeAssessment": "artifacts/web-ticket-today-20261029/native-assessment.json"
+  },
+  "nativeRetained": {
+    "version": "1.0.0",
+    "build": "67",
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+    "receipt": "f830e1c5-8a3a-43c6-8bd4-b6b5769b3055"
+  },
+  "remaining": "Physical/source performance audit continues; no first-uncached/sub-second/full-app acceptance claim. Shared coordinator lock remains held for bounded server-only observability phase, no publisher handoff.",
+  "id": "7ba3530c-06c2-4ea9-9c83-fc1742c808bb",
+  "recordedAt": "2026-10-29T10:38:42.206Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029"
+}

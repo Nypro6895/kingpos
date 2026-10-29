@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "hosted-pos-ticket-today-close-20261029",
+  "status": "ready",
+  "summary": "Hosted retained Owner POS navigation closes the containing Ticket date popup before intercepting Today link; query and single navigation preserved. Native67 route already behaves correctly; native bundle byte equality/graph prove no iOS rebuild required.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/owner-workspace-frame.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\web-ticket-today-20261029\\frozen-ready",
+    "commit": "b9682b06bd19954777671779acc4fa3d0347374f"
+  },
+  "validation": [
+    {
+      "name": "Four actual capture/TicketFilters browser before-after checks, q preserved, one navigation and Book unaffected",
+      "result": "passed",
+      "evidence": "artifacts/web-ticket-today-20261029/browser-checks.json"
+    },
+    {
+      "name": "Native graph841 inputs excludes Frame and345 diagnostic resources before-after byte identical; preserve uploaded native67",
+      "result": "passed",
+      "evidence": "artifacts/web-ticket-today-20261029/native-assessment.json"
+    },
+    {
+      "name": "Scoped ESLint and full production build465assets",
+      "result": "passed",
+      "evidence": "artifacts/web-ticket-today-20261029/build.log"
+    },
+    {
+      "name": "Candidate READY and exact3541files match live-baseline overlay",
+      "result": "passed",
+      "evidence": "artifacts/web-ticket-today-20261029/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "4256266f-87ff-4527-ba3a-55c4164402c9",
+  "recordedAt": "2026-10-29T10:23:35.065Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/owner-workspace-frame.tsx": "86e6951ce5c09a617f7544565b910d899e9f3e2c85a5c9025edec6737b4dd832"
+  }
+}
