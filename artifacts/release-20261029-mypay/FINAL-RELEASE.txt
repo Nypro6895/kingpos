@@ -1,3 +1,15 @@
+HIỆN TRẠNG CUỐI — 2026-10-29T22:38:15.596Z
+
+Web reylumi.com đã xác minh14 gói; TestFlight1.0.0(71) nguồn6d332e2… đã upload/Apple/cả hai nhóm xác minh,235 unique cases/0 failures trên14 host. Web overlayc976 và manifest thực tế được ghi riêng; shared runtime source khớp.
+
+Physical71 narrow Staff MyPay→Analysis→MyPay đã root kiểm tra archiveSHA, installed start/end71 và cùngbundle, AXpanelremoved/CalculatedUpdatedretained, token tiền tệ giữ nguyên trong cùng flow. Không lưu rawamounts trong receipt; không có acceptance đổi kỳ/edits/payments hay toànapp. QAaddendum926b7049-f108-4135-8ca6-8852286d4d8b; publication67f21d58-f623-4745-a065-13bac2d79655. Controller331 đãstop, publicationlockđãreleased.
+
+Bookingcopyfix949f8123/56b5d6e phát sinh sau chốt nguồn: needs-integration đợt chung sau, không có trong71. Market/publisher, historyPayroll và CheckWriter sales còn các gate riêng.
+
+Chi tiết và các mốc as-of bên dưới được giữ để audit; physicalNOTRUN ở mốc publication đã được bổ sung bằng smoke71 nêu trên.
+
+---
+
 Đã phát hành14 gói hoàn tất — 2026-10-29T22:15:06.196Z
 
 Web: https://reylumi.com — dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG
