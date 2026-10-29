@@ -1,0 +1,74 @@
+{
+  "at": "2026-10-29T03:47:26.510Z",
+  "baseNative": "5f7cf6fa5da8fc3a3b8ffb1a64b881329c79cfa5",
+  "sourceCommit": "509985dec00091f285c28b7dcb079460da104249",
+  "changed": [
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/reports/page.tsx",
+    "app/navigation-shell.tsx",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "lib/app-local-host.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "lib/operational-report.ts",
+    "lib/owner-reports-read.ts",
+    "releases/changes/2026-10-29T03-25-06-949Z-e5aef85f-3224-4cb9-984c-88bf9899c463.json",
+    "releases/changes/2026-10-29T03-30-51-247Z-363c5ddc-950c-4968-982f-6a045ff9a9d6.json",
+    "tests/ios-startup-cookie-recovery.test.mjs",
+    "tests/owner-reports-read.test.mjs"
+  ],
+  "unexpected": [],
+  "protectedFiles": [
+    {
+      "file": "lib/customer-history-client.ts",
+      "unchanged": true,
+      "sha256": "8943af83e357119889d87cf762239eff5fc3b2ef384e3942ecdaa72b583c1bb6"
+    },
+    {
+      "file": "lib/app-local-owner-payroll-view.tsx",
+      "unchanged": true,
+      "sha256": "c8878c6ea1430e19438412ea0b33aaca9f38e9b5764a838cc34e117c411796fa"
+    },
+    {
+      "file": "app/pos/owner-workspace-frame.tsx",
+      "unchanged": true,
+      "sha256": "10ac2b75b3f7e25c305bfcb198ba091d6c2dbee5acc196d81115598dba5e4894"
+    },
+    {
+      "file": "app/pos/portable/portable-sync-indicator.tsx",
+      "unchanged": true,
+      "sha256": "a377161b6d4524156dcda0485b0401c9d18ae1bc0c3030634aefb38207a8b55c"
+    },
+    {
+      "file": "lib/owner-local-workspace.ts",
+      "unchanged": true,
+      "sha256": "f800098109012cc9e670f6ce20dcea7814d5d3fe8f835ee859fa6c1eb850cebd"
+    },
+    {
+      "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "unchanged": true,
+      "sha256": "4b8479f3e72441f06cb7c7621d0375122d5e348298cd28a5ff7b1abf5c3bcfe0"
+    },
+    {
+      "file": "lib/supabase/auth-rest.ts",
+      "unchanged": true,
+      "sha256": "ffe385f3875c0d9d23058898753e26872a3f903a80d257b3f67329c478341648"
+    }
+  ],
+  "baseWeb": "925e890cae777741ab10263831d186ff0e96628c6d9a19389ffd8b4444640bcc",
+  "webUnrelatedChanges": [],
+  "sourceMetadataChangedOnly": [
+    "releases/changes/2026-10-29T03-25-06-949Z-e5aef85f-3224-4cb9-984c-88bf9899c463.json",
+    "releases/changes/2026-10-29T03-30-51-247Z-363c5ddc-950c-4968-982f-6a045ff9a9d6.json"
+  ],
+  "nativeSourceFileCount": 2691,
+  "semanticDiffReview": "git diff --ignore-space-at-eol; touched files normalize transport line endings, no unrelated old snapshot copied",
+  "failures": []
+}

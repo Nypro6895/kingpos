@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "ios-startup-cookie-recovery-20261028",
+  "status": "ready",
+  "summary": "Integrated ios-startup-cookie-recovery-20261028 on exact web7z/native63 baseline; verified source509985d, web live and TestFlight64 distribution; physical64 smoke explicitly pending",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "lib/app-local-host.ts",
+    "tests/ios-startup-cookie-recovery.test.mjs",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\release-frozen-source"
+  },
+  "integratesEvents": [
+    "bd4748b7-c8d6-4097-90d4-fc3292be699e"
+  ],
+  "supersedesEvents": [],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Scope reconciled with current shipped source; frozen Git bytes and unrelated baseline preserved",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/preservation.json"
+    },
+    {
+      "name": "81 focused regressions,12 workspace browser checks, TypeScript/lint/production build; applicable scope checks",
+      "result": "passed"
+    },
+    {
+      "name": "Actual live Owner browser read/navigation smoke, exact deployed source and native archive provenance",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/live-browser-smoke.json"
+    },
+    {
+      "name": "235 native tests including new startup WebKit case; Apple VALID and both existing groups",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/native-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical64 installation and smoke are unverified after device XCTest initialization timeout. No pending physical test is reported as passed.",
+    "Historical acceptance backlog and full performance matrix are not resolved by this revision."
+  ],
+  "id": "755746e2-e7ed-4a8f-9226-e429b4b36d5d",
+  "recordedAt": "2026-10-29T03:56:34.421Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "c57b84c186875baa0589a7759150f85f3a904fd9a5766616f62775f7745a2de9",
+    "ios/Reylumi/AppLocalBridge.js": "1422afe7e7409efcf22eb048bff859c9f64c937c66bcf137f897ad0efc6f75c7",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "c10682b3f3c89432a0fa633de330ca3467cd67b625863b48634527d29b5a27bd",
+    "lib/app-local-host.ts": "34d5b8cc0694b7514791f5aa3d6931896b817d50d3d1f52c05d89816458506e4",
+    "tests/ios-startup-cookie-recovery.test.mjs": "3c95e763015ca3c7d12afaa76c447395ba5da59ff1b546680a6bd68e7eed28c0",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt": "0efbe494a8b44c2fba308e2add88faaf4a5e266d02a7eb351d82697ff6a51bb4"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-29T03:58:18.792Z",
+  "selectedScopes": 7,
+  "selectedRemaining": [],
+  "globalPending": 91,
+  "counts": {
+    "blocked": 2,
+    "ready": 18,
+    "needs-integration": 64,
+    "working": 7
+  },
+  "note": "Global queue is not claimed empty; only exact selected ready events/channels resolved"
+}

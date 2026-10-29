@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "mobile-page-spacing-20261028",
+  "status": "needs-integration",
+  "summary": "Phone page gutters, inline staff search and Add Staff, remove visible Reports title; scoped edits over existing dirty files, preserve before snapshots when integrating",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "app/reports/owner-live-reports.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\mobile-page-spacing-20261028\\source"
+  },
+  "validation": [
+    {
+      "name": "ESLint changed TSX files",
+      "result": "passed",
+      "evidence": "0 errors; one existing unused NoPermissionState warning"
+    },
+    {
+      "name": "Workspace navigation tests",
+      "result": "passed",
+      "evidence": "5 passed; staff and report browser cases skipped by existing runner"
+    },
+    {
+      "name": "Authenticated phone and iPhone visual review",
+      "result": "pending"
+    }
+  ],
+  "id": "ab5644b4-ec46-4fae-9cb3-f00a6171950e",
+  "recordedAt": "2026-10-29T02:08:18.718Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

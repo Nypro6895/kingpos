@@ -1,0 +1,169 @@
+{
+  "kind": "release",
+  "summary": "One coordinated release of five queued UI/startup scopes: exact web live and iOS1.0.0(64) available in both existing internal TestFlight groups; physical64 smoke remains pending",
+  "changes": [
+    "a9d88225-8fb8-4da6-afa1-45bf328f4cb4",
+    "aed71c3a-2828-440c-ba80-55a303a2d6f4",
+    "755746e2-e7ed-4a8f-9226-e429b4b36d5d",
+    "0f195937-99a2-4cac-a28f-cca7e4a7f49a",
+    "7060bfc1-031e-4a4a-9b67-0c732e4dc0fb",
+    "c61fbe96-88bc-41c9-af1c-0220deb0dc3a",
+    "093df7f8-8eed-42f0-854f-10c88047d165"
+  ],
+  "sourceCommit": "509985dec00091f285c28b7dcb079460da104249",
+  "ownerAuthorization": {
+    "at": "2026-10-29T03:24:06Z",
+    "scope": "Deploy completed coordinated changes; Market separate; deep speed target deferred; functional failures still require handling"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+      "baselineDeploymentId": "dpl_7zHzb1kaXtq1qYJdSVNqDvN5s94U",
+      "sourceSha256": "aefdfb1f36afd10f280fb857521e30c02dac4b5e31d6e62eac07154be685fed4",
+      "overlaySha256": "9eb3e52b4864e0ecb3ea0940f144f6cbab48f59be6df8a991383da77ce713203",
+      "evidence": {
+        "source": "artifacts/combined-five-prep/web-live-source-verified.json",
+        "alias": "artifacts/combined-five-prep/web-final-alias.json",
+        "http": "artifacts/combined-five-prep/http-live.json",
+        "authGuard": "artifacts/combined-five-prep/history-unauthenticated-guard.json",
+        "browser": "artifacts/combined-five-prep/live-browser-smoke.json",
+        "preservation": "artifacts/combined-five-prep/preservation.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "64",
+      "commit": "509985dec00091f285c28b7dcb079460da104249",
+      "baselineBuild": "63",
+      "baselineCommit": "5f7cf6fa5da8fc3a3b8ffb1a64b881329c79cfa5",
+      "sourceSha256": "b53d51688872ea6e5984958cca2ee7806d9cf5c4d41d2f519dfd760778576360",
+      "bundleSha256": "67ddcbf37d3db72161c3fadde020c87addd88697a9a5b942db85afd81732615e",
+      "run": 40812613033,
+      "evidence": {
+        "sourceArchiveAndTests": "artifacts/combined-five-prep/native-verified.json",
+        "existingGroups": "artifacts/combined-five-prep/availability-verified.json",
+        "readOnlyStatusRun": 40814037975
+      },
+      "appStore": "No App Store submission or publication in this release"
+    }
+  },
+  "selectedScopes": [
+    {
+      "changeId": "payroll-remove-source-notice-20261028",
+      "originalEvent": "4721b2f2-00db-4453-8623-4c21e97ded71",
+      "integratedReadyEvent": "a9d88225-8fb8-4da6-afa1-45bf328f4cb4"
+    },
+    {
+      "changeId": "iphone-reports-overlap-20261028",
+      "originalEvent": "ef52b793-4fad-47a9-ab52-3ad7e25386b9",
+      "integratedReadyEvent": "aed71c3a-2828-440c-ba80-55a303a2d6f4"
+    },
+    {
+      "changeId": "ios-startup-cookie-recovery-20261028",
+      "originalEvent": "bd4748b7-c8d6-4097-90d4-fc3292be699e",
+      "integratedReadyEvent": "755746e2-e7ed-4a8f-9226-e429b4b36d5d"
+    },
+    {
+      "changeId": "mobile-page-spacing-20261028",
+      "originalEvent": "ab5644b4-ec46-4fae-9cb3-f00a6171950e",
+      "integratedReadyEvent": "0f195937-99a2-4cac-a28f-cca7e4a7f49a"
+    },
+    {
+      "changeId": "mobile-notebook-menu-20261028",
+      "originalEvent": "dd10089c-be4c-4f7b-ad30-c3e54ebca495",
+      "integratedReadyEvent": "7060bfc1-031e-4a4a-9b67-0c732e4dc0fb"
+    }
+  ],
+  "carryForward": {
+    "event": "093df7f8-8eed-42f0-854f-10c88047d165",
+    "reason": "Native Payroll view unchanged from uploaded63; exact64 provenance and both groups now verified"
+  },
+  "checks": {
+    "focusedNodeTests": 81,
+    "appleReadHelperTests": 16,
+    "actualWorkspaceBrowserChecksWithInertProviders": 12,
+    "liveOwnerReadSmokeObservations": 11,
+    "nativeTests": 235,
+    "nativeFailures": 0,
+    "newWKRecoveryTestPassed": true,
+    "webSourceFiles": 3465,
+    "nativeSourceFiles": 2691,
+    "sourceMismatches": 0,
+    "protectedUnchangedFiles": 7
+  },
+  "physical": {
+    "installedBuildLastVerified": "62",
+    "newBuildInstalled": false,
+    "newBuildSmokeVerified": false,
+    "latestAttempt": "ControlSmoke64Recovery315",
+    "result": "Timed out while enabling automation mode.",
+    "elapsedSeconds": 62.583,
+    "stage": "Before test UI, not app load time",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/smoke64-315",
+    "next": "Use existing TestFlight to update to64 and report visible screen; no reset/security change or unlimited XCTest retries"
+  },
+  "excluded": [
+    {
+      "change": "Market including new consent/version WIP",
+      "reason": "Direct owner instruction: separate branch"
+    },
+    {
+      "change": "Check Writer",
+      "reason": "Provider/schema/encryption/bridge/physical print acceptance incomplete"
+    },
+    {
+      "change": "Customer automatic merge",
+      "reason": "Current baseline/full-schema and automatic production data consolidation acceptance incomplete; no migration/data action in this release"
+    },
+    {
+      "change": "Social advisory migration and edge WAF challenge-to-log rule",
+      "reason": "Separate action-time confirmation pending; do not promote old social+Payroll candidate"
+    },
+    {
+      "change": "Historical unproven performance/pilot/campaign assemblies",
+      "reason": "No new historical patch selected; finite overlap/recovery checks completed, historical acceptance remains tracked"
+    }
+  ],
+  "dataSafety": {
+    "productionMigrations": 0,
+    "securityRuleChanges": 0,
+    "newCredentials": 0,
+    "payments": 0,
+    "customerMergeOperations": 0,
+    "realPosts": 0,
+    "mediaUploads": 0,
+    "SMS": 0,
+    "permissionsExpanded": 0
+  },
+  "preparationCorrections": {
+    "notebook": "Preserved current workspace intercepted links, draft/local panels/offline authority, Portable sync and desktop links; native HTML dragging disabled",
+    "unusedCandidate": {
+      "deployment": "dpl_FzT13XTHMrp9mhNj4K4jnfTnvSsS",
+      "project": "combined-five-prep-20261028",
+      "promotedToReylumi": false,
+      "gitDisconnected": true,
+      "localRootLinkCorrectedToExistingKingPOS": true,
+      "evidence": "artifacts/combined-five-prep/unused-project-git-disconnect.log"
+    },
+    "sourceUpload": "Two test files ignored by existing Vercel upload rules; retained and verified in Git/native/test evidence"
+  },
+  "limitations": [
+    "An already-open tab retained old7z script references even after reload; no cache/draft clearing performed. A newly loaded tab showed JB script references and the intended changes. Do not claim automatic refresh of all old sessions.",
+    "Candidate HTTP checks were redirected to Vercel protection; not counted as application acceptance. Ten canonical live HTTP routes returned200 afterward. An initial nonexistent app-local resource probe returned404 and was not treated as authorization proof; the correct /api/experience/customer?kind=history returned401 without authentication.",
+    "Physical64 installation and smoke remain unverified while device XCTest initialization is unresolved. No source62 evidence is relabeled64.",
+    "No latency target, all-routes acceptance or full product workflow claim."
+  ],
+  "rollback": {
+    "baselineWeb": "dpl_7zHzb1kaXtq1qYJdSVNqDvN5s94U",
+    "baselineNative": "63",
+    "performed": false
+  },
+  "id": "5d197e2f-983c-4f85-a152-d1fb227bc4e7",
+  "recordedAt": "2026-10-29T03:58:02.310Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "filePath": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\releases\\history\\2026-10-29T03-58-02-310Z-5d197e2f-983c-4f85-a152-d1fb227bc4e7.json"
+}

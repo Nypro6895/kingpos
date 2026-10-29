@@ -1,0 +1,60 @@
+{
+  "dependencies": [],
+  "summary": "Overlap canonical Overview and Closing data for first Reports read; preserve complete DTO and all existing authorization",
+  "kind": "change",
+  "status": "ready",
+  "changeId": "iphone-reports-overlap-20261028",
+  "validation": [
+    {
+      "name": "15 deterministic report overlap/date/error/authorization/abort tests",
+      "evidence": "tests/owner-reports-read.test.mjs",
+      "result": "passed"
+    },
+    {
+      "name": "14 getter-authority and native History regression tests",
+      "evidence": "tests/app-local-getter-read-scope.test.mjs; tests/app-local-customer-history.test.mjs",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit and scoped ESLint",
+      "evidence": "artifacts/reports-overlap/HANDOFF.md",
+      "result": "passed"
+    },
+    {
+      "name": "Production Next build and 460 offline assets",
+      "evidence": "artifacts/reports-overlap/build2.log",
+      "result": "passed"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/operational-report.ts",
+    "lib/owner-reports-read.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "app/(app)/reports/page.tsx",
+    "tests/owner-reports-read.test.mjs"
+  ],
+  "source": {
+    "commit": "72c5738f2a3868a17a301d33f7dc3c56cbee2e51",
+    "snapshot": "C:\\Reylumi-worktrees\\iphone-reports-overlap-20261028\\artifacts\\reports-overlap\\frozen"
+  },
+  "postDeploymentChecks": [
+    "Physical first-load comparison on same iPhone/data remains pending; patch is not live",
+    "Under-one-second acceptance remains false"
+  ],
+  "releaseConstraints": "Ready for combined integration only; full queue audit and fresh baseline required; no separate publication",
+  "id": "ef52b793-4fad-47a9-ab52-3ad7e25386b9",
+  "recordedAt": "2026-10-29T02:28:48.614Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-reports-overlap-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/operational-report.ts": "aaf9b6839ed6b8387a9cf49ee452c6f8b85d0b0721c2b1ea186727e9fc7a9e29",
+    "lib/owner-reports-read.ts": "0bf44bbd35438c5acaf7253487d33913f5df03a33ebf0a7b71191c5f23b27cfd",
+    "lib/app-local-owner-resources-server.ts": "c68f9e45f290e1efe0968cf43b5ca07e074287fb66a62deb4fec17788e02e66c",
+    "app/(app)/reports/page.tsx": "fcc903b2b6462471479ceafae14e56b644847d457f6e1d5dbed840cf7b7f0f56",
+    "tests/owner-reports-read.test.mjs": "a2bb74a474094bbee2732c7faeacb483650fba7fdb83e90093d80aa37ee18e75"
+  }
+}

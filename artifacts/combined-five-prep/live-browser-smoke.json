@@ -1,0 +1,26 @@
+{
+  "scope": "Read-only smoke through supported Chrome UI with existing Owner session; fresh document uses deployed JB source. These observations are separate from inert-provider browser tests and physical iPhone QA.",
+  "deployment": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+  "sourceCommit": "509985dec00091f285c28b7dcb079460da104249",
+  "viewport": {"mobileWidth": 390, "mobileHeight": 844, "restoredDefaultAtEnd": true},
+  "checks": [
+    {"name": "Payroll notice and recorded-evidence panel present before publication, absent in fresh live document afterward", "passed": true},
+    {"name": "Payroll current totals and period controls render; no payout, calculation or data editing action used", "passed": true},
+    {"name": "Reports Overview and Daily Closing both render in Owner session, no Save submitted", "passed": true},
+    {"name": "Reports visible duplicate heading removed: accessibility heading retained as1x1px sr-only; mobile gutters16px on both sides", "passed": true},
+    {"name": "Staff Search and Add Staff inline at390px; search210.6875px, Add Staff74.828125px; gutter16px", "passed": true},
+    {"name": "Notebook first tap opens104px menu without navigation; second tap enters POS Report; workspace stays390px wide", "passed": true},
+    {"name": "POS Report fully renders Daily Closing; returning to POS retains existing empty current entry and sync indicator", "passed": true},
+    {"name": "Notebook More opens one real role menu and Escape closes it", "passed": true},
+    {"name": "Notebook Ticket renders actual read-only ticket list", "passed": true},
+    {"name": "Notebook Book renders actual booking schedule; no New/Save/CRUD action used", "passed": true},
+    {"name": "Return to POS and default viewport restores desktop six-link navigation and original current-entry display", "passed": true}
+  ],
+  "writes": {"payments": 0, "CRUD": 0, "posts": 0, "mediaUploads": 0, "customerMerge": 0, "productionMigrations": 0, "securityChanges": 0},
+  "limitations": [
+    "An already-open tab retained old7z script references even after reload; no cache/draft clearing performed. A newly loaded tab showed JB script references and the intended changes. Do not claim automatic refresh of all old sessions.",
+    "Candidate HTTP checks were redirected to Vercel protection; not counted as application acceptance. Ten canonical live HTTP routes returned200 afterward. An initial nonexistent app-local resource probe returned404 and was not treated as authorization proof; the correct /api/experience/customer?kind=history returned401 without authentication.",
+    "Physical64 installation and smoke remain unverified while device XCTest initialization is unresolved. No source62 evidence is relabeled64.",
+    "No latency target, all-routes acceptance or full product workflow claim."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "mobile-notebook-menu-20261028",
+  "status": "needs-integration",
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "validation": [
+    {
+      "name": "13 isolated Chromium interaction checks including touch input",
+      "evidence": "artifacts/notebook-menu/verification.json",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint and focused TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Authenticated full-app and physical iPhone QA",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "artifacts/notebook-menu/frozen"
+  },
+  "summary": "Mobile/iOS notebook overlay tabs: reverse order, layered half-hidden pages, tap reveal and hold-drag magnification; preserve full-width POS content and desktop navigation",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [],
+  "id": "dd10089c-be4c-4f7b-ad30-c3e54ebca495",
+  "recordedAt": "2026-10-29T03:02:40.777Z",
+  "worktree": "C:\\Reylumi-worktrees\\mobile-notebook-menu-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

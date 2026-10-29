@@ -1,0 +1,12 @@
+{
+  "receipt": "5d197e2f-983c-4f85-a152-d1fb227bc4e7",
+  "publication": "Web JB and TestFlight64 complete; no full functional acceptance",
+  "unfinished": "More popup links still defective on live64; prepared repair953f5a12 needs-integration; no repair dispatch",
+  "ownedUploadRun": 40812613033,
+  "ownedStatusRun": 40814037975,
+  "pipelinesCompleted": true,
+  "at": "2026-10-29T04:16:36.724Z",
+  "released": true,
+  "owner": "combined-five-release-20261028",
+  "reason": "Publication receipt complete; no promotion/upload in progress. Read-only QA/UI continuation does not hold release lock."
+}

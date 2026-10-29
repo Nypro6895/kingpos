@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-29T03:48:11.212Z",
+  "deployment": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+  "state": "READY",
+  "target": "production",
+  "url": "kingpos-r0bdu8l8r-kingpos.vercel.app",
+  "sourceCommit": "509985dec00091f285c28b7dcb079460da104249",
+  "expected": 3465,
+  "actual": 3465,
+  "mismatches": [],
+  "extras": [],
+  "sourceSha256": "aefdfb1f36afd10f280fb857521e30c02dac4b5e31d6e62eac07154be685fed4",
+  "overlaySha256": "9eb3e52b4864e0ecb3ea0940f144f6cbab48f59be6df8a991383da77ce713203"
+}

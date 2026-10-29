@@ -1,0 +1,95 @@
+{
+  "kind": "change",
+  "changeId": "combined-five-preparation-20261028",
+  "status": "ready",
+  "summary": "Five selected scopes integrated and distribution-verified on native63/web7z with retained POS link navigation repair; physical64 smoke remains explicitly unverified",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/operational-report.ts",
+    "lib/owner-reports-read.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "app/(app)/reports/page.tsx",
+    "tests/owner-reports-read.test.mjs",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "lib/app-local-host.ts",
+    "tests/ios-startup-cookie-recovery.test.mjs",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt",
+    "app/navigation-shell.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\release-frozen-source"
+  },
+  "dependencies": [
+    "payroll-remove-source-notice-20261028",
+    "iphone-reports-overlap-20261028",
+    "ios-startup-cookie-recovery-20261028",
+    "mobile-page-spacing-20261028",
+    "mobile-notebook-menu-20261028"
+  ],
+  "validation": [
+    {
+      "name": "81 focused Node regressions and16 read-only Apple helper tests",
+      "result": "passed"
+    },
+    {
+      "name": "12 actual POS workspace/tab/More browser checks with inert data providers",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript, scoped lint and final production build",
+      "result": "passed"
+    },
+    {
+      "name": "235 Simulator tests including deterministic new WebKit recovery test; unsigned and signed archive provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Exact live web3465file source and native2691file source; Apple VALID and both existing TestFlight groups",
+      "result": "passed"
+    }
+  ],
+  "limitations": [
+    "No physical64 installation or functional smoke proven; device enabling automation blocked before UI.",
+    "No full performance matrix or subsecond claim; owner deferred deep performance.",
+    "Ready denotes the selected integrated source and distribution checks; it does not close historical component acceptance gaps."
+  ],
+  "id": "c61fbe96-88bc-41c9-af1c-0220deb0dc3a",
+  "recordedAt": "2026-10-29T03:52:12.520Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "9db3e7c13b6c7cc847e1a01555ae2c809b3c3956f03648ae6c6968b133ede302",
+    "lib/app-local-owner-payroll-view.tsx": "c8878c6ea1430e19438412ea0b33aaca9f38e9b5764a838cc34e117c411796fa",
+    "lib/operational-report.ts": "770bd6aaa9f9ac4b176b1a49e68a6fe8c44bc4ff9c295c3416a1726338a6c212",
+    "lib/owner-reports-read.ts": "0bf44bbd35438c5acaf7253487d33913f5df03a33ebf0a7b71191c5f23b27cfd",
+    "lib/app-local-owner-resources-server.ts": "f39963cb16baaf90e5fb3ce3b061d2620912cc8a7cb738bedf38f9a0703c786e",
+    "app/(app)/reports/page.tsx": "47642d5ab6a8b0a0ac3591f83c376584a741b7f9b58d1632f094cf1f0a049691",
+    "tests/owner-reports-read.test.mjs": "a2bb74a474094bbee2732c7faeacb483650fba7fdb83e90093d80aa37ee18e75",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "c57b84c186875baa0589a7759150f85f3a904fd9a5766616f62775f7745a2de9",
+    "ios/Reylumi/AppLocalBridge.js": "1422afe7e7409efcf22eb048bff859c9f64c937c66bcf137f897ad0efc6f75c7",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "c10682b3f3c89432a0fa633de330ca3467cd67b625863b48634527d29b5a27bd",
+    "lib/app-local-host.ts": "34d5b8cc0694b7514791f5aa3d6931896b817d50d3d1f52c05d89816458506e4",
+    "tests/ios-startup-cookie-recovery.test.mjs": "3c95e763015ca3c7d12afaa76c447395ba5da59ff1b546680a6bd68e7eed28c0",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt": "0efbe494a8b44c2fba308e2add88faaf4a5e266d02a7eb351d82697ff6a51bb4",
+    "app/navigation-shell.tsx": "16dfd053e4662d6301beed7419be030915509ec5a9f2a7901ecdd9f083364677",
+    "app/staff/staff-directory-editor.tsx": "e56fe70e571fc6ee83dcf5cc6513c9d2c963ac90e75688bb2efa4f59853b0b71",
+    "app/reports/owner-live-reports.tsx": "cc6fbbbcc3316b300e5e947500a4b5b846ecbe4352d5f4dadd4ddf253b1a07c0",
+    "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc",
+    "app/pos/owner-notebook-menu.tsx": "341af2eea4a57314d10d40ad04fcb2ab1dced7909fadd978a129973bf564e2f3",
+    "app/pos/owner-notebook-menu.css": "eae3c35687c5386ea9b171c49f8d56656e3805b5ca5552694827f080da975e23"
+  }
+}

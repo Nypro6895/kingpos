@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "ios-startup-cookie-recovery-20261028",
+  "source": {
+    "commit": "eac9e22bff2dd8d499060b15ff76e3d1b69fb2fc"
+  },
+  "status": "needs-integration",
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "lib/app-local-host.ts",
+    "tests/ios-startup-cookie-recovery.test.mjs",
+    "docs/ios-startup-recovery-deploy-queue-20261029.txt",
+    "artifacts/startup-cookie-recovery/verification.txt"
+  ],
+  "channels": [
+    "ios"
+  ],
+  "summary": "Startup cookie recovery integrated onto uploaded native62; 28 tests passed; include in next combined deploy, no separate release",
+  "validation": [
+    {
+      "name": "28 recovery/root/home/staff/History Node regression tests",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped diff whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Xcode WebKit test, regenerated production bundle, archive and physical iPhone acceptance",
+      "result": "pending",
+      "evidence": "docs/ios-startup-recovery-deploy-queue-20261029.txt"
+    }
+  ],
+  "id": "bd4748b7-c8d6-4097-90d4-fc3292be699e",
+  "recordedAt": "2026-10-29T02:05:52.743Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-startup-recovery-build62-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

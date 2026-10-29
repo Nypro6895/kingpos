@@ -1,0 +1,164 @@
+{
+  "at": "2026-10-29T04:14:11.279Z",
+  "originalReceipt": "5d197e2f-983c-4f85-a152-d1fb227bc4e7",
+  "originalReceiptUnchanged": true,
+  "installedVersion": "1.0.0",
+  "installedBuild": "64",
+  "source": "509985dec00091f285c28b7dcb079460da104249",
+  "web": "dpl_JB1hWgQ7GyqjL4PwxnnMdZ3CsTTY",
+  "evidenceZip": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/functional64-316-checkpoint.zip",
+  "evidenceZipSha256": "18b56bde2d39489f1118657a9cabd9b679a71351143c0743ea814f94c8a6d80f",
+  "readOnlySmokeCases": [
+    {
+      "scenario": "Owner cold start",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "owner-home-wait-result.json"
+    },
+    {
+      "scenario": "Book new form",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "book-new-result.json"
+    },
+    {
+      "scenario": "Book form closes",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "book-close-result.json"
+    },
+    {
+      "scenario": "Payroll overview",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "payroll-settled-result.json"
+    },
+    {
+      "scenario": "Reports Overview",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "report-settled-result.json"
+    },
+    {
+      "scenario": "Reports Daily Closing",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "closing-settled-result.json"
+    },
+    {
+      "scenario": "Staff directory",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "staff-settled-result.json"
+    },
+    {
+      "scenario": "POS notebook Report",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "notebook-report-after-drag-result.json"
+    },
+    {
+      "scenario": "POS notebook Ticket",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "notebook-ticket-settled-result.json"
+    },
+    {
+      "scenario": "POS notebook Book",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "notebook-book-settled-result.json"
+    },
+    {
+      "scenario": "POS return blank draft",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "notebook-pos-return-settled-result.json"
+    },
+    {
+      "scenario": "POS notebook Settings positive control",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "notebook-settings-after-result.json"
+    },
+    {
+      "scenario": "Personal History Details",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "history-details-settled-result.json"
+    },
+    {
+      "scenario": "History close/reopen",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "history-reopened-data-result.json"
+    },
+    {
+      "scenario": "Staff Today",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "staff-today-64-result.json"
+    },
+    {
+      "scenario": "Staff My Pay",
+      "status": "observed-pass",
+      "scope": "Read/navigation only; no full workflow or timing acceptance",
+      "evidence": "mypay-settled-result.json"
+    }
+  ],
+  "observedPassCount": 16,
+  "defects": [
+    {
+      "id": "notebook-more-links",
+      "status": "reproduced",
+      "observed": "Exit POS twice and View all settings once fail to navigate despite visible hittable links; More popover remains. Drag Settings positive control navigates.",
+      "evidence": [
+        "notebook-exit-repeat-after-result.json",
+        "notebook-more-settings-after-result.json",
+        "notebook-settings-after-result.json",
+        "more-screen/frame-000.png"
+      ],
+      "cause": "Suspected gesture/click capture of popup events; causal test/fix owned by coordinator, not proven by this phone test."
+    }
+  ],
+  "exclusions": [
+    "Ticket initial menu scroll was wrong direction; rerun succeeded.",
+    "Staff Next day is a Link; initial Button selector failed, corrected retry.",
+    "No payment, CRUD, customer save, post, upload, Submit, Reset or Clear used.",
+    "No nonzero draft edited; retention of nonzero draft not verified.",
+    "No full134 pattern or all workflow acceptance.",
+    "Resume activate responded; full previous UI state not independently checked."
+  ],
+  "overallFunctionalAcceptance": false,
+  "publicationStatus": "Web and TestFlight64 published; later physical QA found More popup-link regression",
+  "repair": {
+    "commit": "a7eeaa2b20dd9af39399e1fa15a34206983125fb",
+    "eventId": "953f5a12-69a8-4051-90f3-ebcca2e482d8",
+    "status": "needs-integration",
+    "files": [
+      "app/pos/owner-notebook-menu.tsx",
+      "app/pos/owner-notebook-menu.css",
+      "app/pos/owner-pos-tabs.tsx"
+    ],
+    "fileHashes": {
+      "app/pos/owner-notebook-menu.tsx": "923f2ab23d201aa97db3ee14d25f3dc35d458c08ecdb94854a51bcbc0806aefa",
+      "app/pos/owner-notebook-menu.css": "175dc0e92e033ed81aa54b3659ec7a9a2d2341c9816b5ef1204fb1d3e306f125",
+      "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc"
+    },
+    "actualRuntimeDelta": [
+      "app/pos/owner-notebook-menu.tsx"
+    ],
+    "before": "Actual component browser regression fails: popup stays open and navigation is intercepted",
+    "after": "14 actual component/workspace browser checks pass, including Settings/Exit POS; lint/TypeScript/production build pass",
+    "nativeValidation": "Not rebuilt or retested on native for repair;235 native tests belong to published509985d, not this repair",
+    "published": false,
+    "reasonHeld": "One combined release/no leaf release instruction; keep reviewable repair for the next coordinated publication, not an independent iPhone task release"
+  },
+  "limitations": [
+    "Observed16 read/navigation cases are not16 complete workflows or full134-pattern acceptance.",
+    "Only blank draft retention observed physically; nonzero draft retention tested in browser fixture, not on device.",
+    "Resume returned UI but complete before/after state comparison is not accepted.",
+    "Runtime bundle fingerprint not extracted from phone; provenance follows exact signed archive/Apple build64/installed-version chain and observed updated features.",
+    "No speed measurements, money, CRUD, Save/Submit, Reset/Clear, post or upload."
+  ]
+}

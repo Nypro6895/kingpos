@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-29T03:46:46.456Z",
+  "run": 40812613033,
+  "commit": "509985dec00091f285c28b7dcb079460da104249",
+  "version": "1.0.0",
+  "build": "64",
+  "sourceFiles": 2691,
+  "sourceSha256": "b53d51688872ea6e5984958cca2ee7806d9cf5c4d41d2f519dfd760778576360",
+  "bundleFiles": 346,
+  "bundleSha256": "67ddcbf37d3db72161c3fadde020c87addd88697a9a5b942db85afd81732615e",
+  "signedArchiveFiles": 372,
+  "unsignedArchiveFiles": 418,
+  "nativeTests": 235,
+  "nativeFailures": 0,
+  "newWKRecoveryTestPassed": true,
+  "upload": "accepted",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "failures": [],
+  "physicalAcceptance": false,
+  "physicalLimitation": "Device XCTest enabling automation timed out before UI; no new-build installation or smoke claimed"
+}

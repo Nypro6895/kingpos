@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "iphone-reports-overlap-20261028",
+  "status": "ready",
+  "summary": "Integrated iphone-reports-overlap-20261028 on exact web7z/native63 baseline; verified source509985d, web live and TestFlight64 distribution; physical64 smoke explicitly pending",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/operational-report.ts",
+    "lib/owner-reports-read.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "app/(app)/reports/page.tsx",
+    "tests/owner-reports-read.test.mjs"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\release-frozen-source"
+  },
+  "integratesEvents": [
+    "ef52b793-4fad-47a9-ab52-3ad7e25386b9"
+  ],
+  "supersedesEvents": [
+    "ef52b793-4fad-47a9-ab52-3ad7e25386b9"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Scope reconciled with current shipped source; frozen Git bytes and unrelated baseline preserved",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/preservation.json"
+    },
+    {
+      "name": "81 focused regressions,12 workspace browser checks, TypeScript/lint/production build; applicable scope checks",
+      "result": "passed"
+    },
+    {
+      "name": "Actual live Owner browser read/navigation smoke, exact deployed source and native archive provenance",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/live-browser-smoke.json"
+    },
+    {
+      "name": "235 native tests including new startup WebKit case; Apple VALID and both existing groups",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/native-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical64 installation and smoke are unverified after device XCTest initialization timeout. No pending physical test is reported as passed.",
+    "Historical acceptance backlog and full performance matrix are not resolved by this revision."
+  ],
+  "id": "aed71c3a-2828-440c-ba80-55a303a2d6f4",
+  "recordedAt": "2026-10-29T03:56:26.034Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/operational-report.ts": "770bd6aaa9f9ac4b176b1a49e68a6fe8c44bc4ff9c295c3416a1726338a6c212",
+    "lib/owner-reports-read.ts": "0bf44bbd35438c5acaf7253487d33913f5df03a33ebf0a7b71191c5f23b27cfd",
+    "lib/app-local-owner-resources-server.ts": "f39963cb16baaf90e5fb3ce3b061d2620912cc8a7cb738bedf38f9a0703c786e",
+    "app/(app)/reports/page.tsx": "47642d5ab6a8b0a0ac3591f83c376584a741b7f9b58d1632f094cf1f0a049691",
+    "tests/owner-reports-read.test.mjs": "a2bb74a474094bbee2732c7faeacb483650fba7fdb83e90093d80aa37ee18e75"
+  }
+}

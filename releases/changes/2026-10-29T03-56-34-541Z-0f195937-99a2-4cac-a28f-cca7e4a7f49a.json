@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "mobile-page-spacing-20261028",
+  "status": "ready",
+  "summary": "Integrated mobile-page-spacing-20261028 on exact web7z/native63 baseline; verified source509985d, web live and TestFlight64 distribution; physical64 smoke explicitly pending",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "app/reports/owner-live-reports.tsx"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\release-frozen-source"
+  },
+  "integratesEvents": [
+    "ab5644b4-ec46-4fae-9cb3-f00a6171950e"
+  ],
+  "supersedesEvents": [],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Scope reconciled with current shipped source; frozen Git bytes and unrelated baseline preserved",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/preservation.json"
+    },
+    {
+      "name": "81 focused regressions,12 workspace browser checks, TypeScript/lint/production build; applicable scope checks",
+      "result": "passed"
+    },
+    {
+      "name": "Actual live Owner browser read/navigation smoke, exact deployed source and native archive provenance",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/live-browser-smoke.json"
+    },
+    {
+      "name": "235 native tests including new startup WebKit case; Apple VALID and both existing groups",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/native-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical64 installation and smoke are unverified after device XCTest initialization timeout. No pending physical test is reported as passed.",
+    "Historical acceptance backlog and full performance matrix are not resolved by this revision."
+  ],
+  "id": "0f195937-99a2-4cac-a28f-cca7e4a7f49a",
+  "recordedAt": "2026-10-29T03:56:34.541Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "16dfd053e4662d6301beed7419be030915509ec5a9f2a7901ecdd9f083364677",
+    "app/staff/staff-directory-editor.tsx": "e56fe70e571fc6ee83dcf5cc6513c9d2c963ac90e75688bb2efa4f59853b0b71",
+    "app/reports/owner-live-reports.tsx": "cc6fbbbcc3316b300e5e947500a4b5b846ecbe4352d5f4dadd4ddf253b1a07c0"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "at": "2026-10-29T03:56:34.659Z",
+  "sourceCommit": "509985dec00091f285c28b7dcb079460da104249",
+  "events": [
+    {
+      "changeId": "payroll-remove-source-notice-20261028",
+      "originalEvent": "4721b2f2-00db-4453-8623-4c21e97ded71",
+      "eventId": "a9d88225-8fb8-4da6-afa1-45bf328f4cb4",
+      "filePath": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\releases\\changes\\2026-10-29T03-56-17-038Z-a9d88225-8fb8-4da6-afa1-45bf328f4cb4.json",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/(app)/payroll/page.tsx",
+        "lib/app-local-owner-payroll-view.tsx"
+      ],
+      "fileHashes": {
+        "app/(app)/payroll/page.tsx": "9db3e7c13b6c7cc847e1a01555ae2c809b3c3956f03648ae6c6968b133ede302",
+        "lib/app-local-owner-payroll-view.tsx": "c8878c6ea1430e19438412ea0b33aaca9f38e9b5764a838cc34e117c411796fa"
+      }
+    },
+    {
+      "changeId": "iphone-reports-overlap-20261028",
+      "originalEvent": "ef52b793-4fad-47a9-ab52-3ad7e25386b9",
+      "eventId": "aed71c3a-2828-440c-ba80-55a303a2d6f4",
+      "filePath": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\releases\\changes\\2026-10-29T03-56-26-034Z-aed71c3a-2828-440c-ba80-55a303a2d6f4.json",
+      "channels": [
+        "web"
+      ],
+      "files": [
+        "lib/operational-report.ts",
+        "lib/owner-reports-read.ts",
+        "lib/app-local-owner-resources-server.ts",
+        "app/(app)/reports/page.tsx",
+        "tests/owner-reports-read.test.mjs"
+      ],
+      "fileHashes": {
+        "lib/operational-report.ts": "770bd6aaa9f9ac4b176b1a49e68a6fe8c44bc4ff9c295c3416a1726338a6c212",
+        "lib/owner-reports-read.ts": "0bf44bbd35438c5acaf7253487d33913f5df03a33ebf0a7b71191c5f23b27cfd",
+        "lib/app-local-owner-resources-server.ts": "f39963cb16baaf90e5fb3ce3b061d2620912cc8a7cb738bedf38f9a0703c786e",
+        "app/(app)/reports/page.tsx": "47642d5ab6a8b0a0ac3591f83c376584a741b7f9b58d1632f094cf1f0a049691",
+        "tests/owner-reports-read.test.mjs": "a2bb74a474094bbee2732c7faeacb483650fba7fdb83e90093d80aa37ee18e75"
+      }
+    },
+    {
+      "changeId": "ios-startup-cookie-recovery-20261028",
+      "originalEvent": "bd4748b7-c8d6-4097-90d4-fc3292be699e",
+      "eventId": "755746e2-e7ed-4a8f-9226-e429b4b36d5d",
+      "filePath": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\releases\\changes\\2026-10-29T03-56-34-421Z-755746e2-e7ed-4a8f-9226-e429b4b36d5d.json",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "ios/Reylumi/ReylumiLocalAppViewController.swift",
+        "ios/Reylumi/AppLocalBridge.js",
+        "ios/ReylumiTests/LocalAppWebViewTests.swift",
+        "lib/app-local-host.ts",
+        "tests/ios-startup-cookie-recovery.test.mjs",
+        "docs/ios-startup-recovery-deploy-queue-20261029.txt"
+      ],
+      "fileHashes": {
+        "ios/Reylumi/ReylumiLocalAppViewController.swift": "c57b84c186875baa0589a7759150f85f3a904fd9a5766616f62775f7745a2de9",
+        "ios/Reylumi/AppLocalBridge.js": "1422afe7e7409efcf22eb048bff859c9f64c937c66bcf137f897ad0efc6f75c7",
+        "ios/ReylumiTests/LocalAppWebViewTests.swift": "c10682b3f3c89432a0fa633de330ca3467cd67b625863b48634527d29b5a27bd",
+        "lib/app-local-host.ts": "34d5b8cc0694b7514791f5aa3d6931896b817d50d3d1f52c05d89816458506e4",
+        "tests/ios-startup-cookie-recovery.test.mjs": "3c95e763015ca3c7d12afaa76c447395ba5da59ff1b546680a6bd68e7eed28c0",
+        "docs/ios-startup-recovery-deploy-queue-20261029.txt": "0efbe494a8b44c2fba308e2add88faaf4a5e266d02a7eb351d82697ff6a51bb4"
+      }
+    },
+    {
+      "changeId": "mobile-page-spacing-20261028",
+      "originalEvent": "ab5644b4-ec46-4fae-9cb3-f00a6171950e",
+      "eventId": "0f195937-99a2-4cac-a28f-cca7e4a7f49a",
+      "filePath": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\releases\\changes\\2026-10-29T03-56-34-541Z-0f195937-99a2-4cac-a28f-cca7e4a7f49a.json",
+      "channels": [
+        "web"
+      ],
+      "files": [
+        "app/navigation-shell.tsx",
+        "app/staff/staff-directory-editor.tsx",
+        "app/reports/owner-live-reports.tsx"
+      ],
+      "fileHashes": {
+        "app/navigation-shell.tsx": "16dfd053e4662d6301beed7419be030915509ec5a9f2a7901ecdd9f083364677",
+        "app/staff/staff-directory-editor.tsx": "e56fe70e571fc6ee83dcf5cc6513c9d2c963ac90e75688bb2efa4f59853b0b71",
+        "app/reports/owner-live-reports.tsx": "cc6fbbbcc3316b300e5e947500a4b5b846ecbe4352d5f4dadd4ddf253b1a07c0"
+      }
+    },
+    {
+      "changeId": "mobile-notebook-menu-20261028",
+      "originalEvent": "dd10089c-be4c-4f7b-ad30-c3e54ebca495",
+      "eventId": "7060bfc1-031e-4a4a-9b67-0c732e4dc0fb",
+      "filePath": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\releases\\changes\\2026-10-29T03-56-34-658Z-7060bfc1-031e-4a4a-9b67-0c732e4dc0fb.json",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/pos/owner-pos-tabs.tsx",
+        "app/pos/owner-notebook-menu.tsx",
+        "app/pos/owner-notebook-menu.css"
+      ],
+      "fileHashes": {
+        "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc",
+        "app/pos/owner-notebook-menu.tsx": "341af2eea4a57314d10d40ad04fcb2ab1dced7909fadd978a129973bf564e2f3",
+        "app/pos/owner-notebook-menu.css": "eae3c35687c5386ea9b171c49f8d56656e3805b5ca5552694827f080da975e23"
+      }
+    }
+  ]
+}

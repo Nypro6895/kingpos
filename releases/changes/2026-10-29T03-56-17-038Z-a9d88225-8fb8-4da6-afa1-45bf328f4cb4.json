@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "payroll-remove-source-notice-20261028",
+  "status": "ready",
+  "summary": "Integrated payroll-remove-source-notice-20261028 on exact web7z/native63 baseline; verified source509985d, web live and TestFlight64 distribution; physical64 smoke explicitly pending",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\release-frozen-source"
+  },
+  "integratesEvents": [
+    "4721b2f2-00db-4453-8623-4c21e97ded71"
+  ],
+  "supersedesEvents": [
+    "4721b2f2-00db-4453-8623-4c21e97ded71"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Scope reconciled with current shipped source; frozen Git bytes and unrelated baseline preserved",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/preservation.json"
+    },
+    {
+      "name": "81 focused regressions,12 workspace browser checks, TypeScript/lint/production build; applicable scope checks",
+      "result": "passed"
+    },
+    {
+      "name": "Actual live Owner browser read/navigation smoke, exact deployed source and native archive provenance",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/live-browser-smoke.json"
+    },
+    {
+      "name": "235 native tests including new startup WebKit case; Apple VALID and both existing groups",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/native-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical64 installation and smoke are unverified after device XCTest initialization timeout. No pending physical test is reported as passed.",
+    "Historical acceptance backlog and full performance matrix are not resolved by this revision."
+  ],
+  "id": "a9d88225-8fb8-4da6-afa1-45bf328f4cb4",
+  "recordedAt": "2026-10-29T03:56:17.038Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "9db3e7c13b6c7cc847e1a01555ae2c809b3c3956f03648ae6c6968b133ede302",
+    "lib/app-local-owner-payroll-view.tsx": "c8878c6ea1430e19438412ea0b33aaca9f38e9b5764a838cc34e117c411796fa"
+  }
+}

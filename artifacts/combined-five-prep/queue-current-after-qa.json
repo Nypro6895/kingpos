@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-29T04:16:13.007Z",
+  "note": "Distribution receipt remains immutable. New physical QA exposed a More regression; one repair revision remains pending, not silently closed.",
+  "selectedRemaining": [
+    {
+      "changeId": "mobile-notebook-menu-20261028",
+      "eventId": "953f5a12-69a8-4051-90f3-ebcca2e482d8",
+      "status": "needs-integration",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\portal-fix-frozen",
+        "baseCommit": "509985dec00091f285c28b7dcb079460da104249",
+        "fileHashes": {
+          "app/pos/owner-notebook-menu.tsx": "923f2ab23d201aa97db3ee14d25f3dc35d458c08ecdb94854a51bcbc0806aefa",
+          "app/pos/owner-notebook-menu.css": "175dc0e92e033ed81aa54b3659ec7a9a2d2341c9816b5ef1204fb1d3e306f125",
+          "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc"
+        },
+        "commit": "a7eeaa2b20dd9af39399e1fa15a34206983125fb"
+      }
+    }
+  ],
+  "globalPending": 93
+}

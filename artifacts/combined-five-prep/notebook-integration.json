@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-29T03:38:10.826Z",
+  "checks": [
+    "Report uses actual workspace local navigation, retains checkout and bypasses no authority",
+    "Return to POS preserves same draft and portable sync placement",
+    "Real More portal opens once and Escape closes it",
+    "Hold-drag release routes through existing Book workspace",
+    "Drag outside cancels without navigation",
+    "Landscape tabs fit viewport",
+    "Real touch hold-drag keeps draft and routes to Ticket through workspace",
+    "Keyboard link navigation follows same workspace contract",
+    "Reduced motion disables tab animation",
+    "Notebook overlay does not shrink or overflow workspace width",
+    "Desktop retains existing six links and no mobile overlay",
+    "No browser runtime errors"
+  ],
+  "passed": 12,
+  "failures": 0,
+  "scope": "Actual OwnerWorkspaceFrame, OwnerPosTabs, OwnerMoreMenu, notebook and ownerLocalHref; inert auth/resource/sync providers. No production account or writes."
+}

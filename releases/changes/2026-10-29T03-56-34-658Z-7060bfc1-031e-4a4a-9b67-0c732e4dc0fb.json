@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "mobile-notebook-menu-20261028",
+  "status": "ready",
+  "summary": "Integrated mobile-notebook-menu-20261028 on exact web7z/native63 baseline; verified source509985d, web live and TestFlight64 distribution; physical64 smoke explicitly pending",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-five-prep-20261028\\artifacts\\combined-five-prep\\release-frozen-source"
+  },
+  "integratesEvents": [
+    "dd10089c-be4c-4f7b-ad30-c3e54ebca495"
+  ],
+  "supersedesEvents": [],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Scope reconciled with current shipped source; frozen Git bytes and unrelated baseline preserved",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/preservation.json"
+    },
+    {
+      "name": "81 focused regressions,12 workspace browser checks, TypeScript/lint/production build; applicable scope checks",
+      "result": "passed"
+    },
+    {
+      "name": "Actual live Owner browser read/navigation smoke, exact deployed source and native archive provenance",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/live-browser-smoke.json"
+    },
+    {
+      "name": "235 native tests including new startup WebKit case; Apple VALID and both existing groups",
+      "result": "passed",
+      "evidence": "artifacts/combined-five-prep/native-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical64 installation and smoke are unverified after device XCTest initialization timeout. No pending physical test is reported as passed.",
+    "Historical acceptance backlog and full performance matrix are not resolved by this revision."
+  ],
+  "id": "7060bfc1-031e-4a4a-9b67-0c732e4dc0fb",
+  "recordedAt": "2026-10-29T03:56:34.658Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-tabs.tsx": "3e94f3334030311e294d32780e5108c3dee03bd0b321f049fb9c164526717ebc",
+    "app/pos/owner-notebook-menu.tsx": "341af2eea4a57314d10d40ad04fcb2ab1dced7909fadd978a129973bf564e2f3",
+    "app/pos/owner-notebook-menu.css": "eae3c35687c5386ea9b171c49f8d56656e3805b5ca5552694827f080da975e23"
+  }
+}

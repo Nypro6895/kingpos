@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-29T03:59:15.009Z",
+  "rows": [
+    {
+      "id": "51afe717-00f8-4278-98d3-1718425a1fb6",
+      "changeId": "check-writer-release-gates-20261028",
+      "status": "working",
+      "recordedAt": "2026-10-29T03:37:21.392Z",
+      "summary": "Prepare closed-sale Check Writer release gates, real local PostgreSQL verification and operator acceptance; no deploy or paid sales",
+      "worktree": "C:\\Reylumi-worktrees\\kingpos-check-writer-20261027",
+      "disposition": "Review next queue; never silently add after frozen source/publication"
+    },
+    {
+      "id": "785cb068-05ee-431f-8b82-c031fc570eba",
+      "changeId": "market-account-owner-polish-20261028",
+      "status": "working",
+      "recordedAt": "2026-10-29T03:39:56.666Z",
+      "summary": "EXCLUDED shared release: developer profile/security grouping and unavailable guards; Owner consent-aware activation; local-only review",
+      "worktree": "C:\\Reylumi\\market-real-20261028",
+      "disposition": "Excluded per explicit owner separate-Market instruction"
+    },
+    {
+      "id": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "changeId": "check-writer-release-gates-20261028",
+      "status": "needs-integration",
+      "recordedAt": "2026-10-29T03:41:06.418Z",
+      "summary": "Check Writer closed-sale release gates and readonly staging preflight; 74 focused/18 real PostgreSQL tests passed, external provider/native/device gates pending; no deploy or sales",
+      "worktree": "C:\\Reylumi-worktrees\\kingpos-check-writer-20261027",
+      "disposition": "Review next queue; never silently add after frozen source/publication"
+    },
+    {
+      "id": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "changeId": "market-account-owner-polish-20261028",
+      "status": "needs-integration",
+      "recordedAt": "2026-10-29T03:57:38.892Z",
+      "summary": "EXCLUDED SHARED RELEASE: grouped developer profile/security, guarded first/unavailable profile, EN/VI locale persistence and consent-aware Owner activation;27tests/lint/sanitized build pass; hosted acceptance pending",
+      "worktree": "C:\\Reylumi\\market-real-20261028",
+      "disposition": "Excluded per explicit owner separate-Market instruction"
+    }
+  ]
+}
