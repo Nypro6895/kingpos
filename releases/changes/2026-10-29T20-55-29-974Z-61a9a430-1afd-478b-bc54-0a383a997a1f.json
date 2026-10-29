@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-pay-remove-evidence-20261029",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx"
+  ],
+  "dependencies": [],
+  "status": "ready",
+  "summary": "Remove notice and recorded payments disclosure from Staff My Pay; preserve payroll calculations and history",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\staff-pay-remove-evidence-20261029\\artifacts\\staff-my-pay-remove-evidence"
+  },
+  "validation": [
+    {
+      "name": "Exact source comparison",
+      "result": "passed",
+      "evidence": "Only the unused import and StaffMyPay panel invocation removed; all remaining source identical."
+    },
+    {
+      "name": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "notes": "No deployment or device verification. Web-only presentation change. Integrate change.patch against current release baseline; do not overlay unrelated baseline changes.",
+  "id": "61a9a430-1afd-478b-bc54-0a383a997a1f",
+  "recordedAt": "2026-10-29T20:55:29.974Z",
+  "worktree": "C:\\Reylumi-worktrees\\staff-pay-remove-evidence-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/staff/my-work/staff-pay-analysis.tsx": "a8e6f958c10eade1764fabd7d2d84793e35d4d556611b8a8192f4059784fb8a5"
+  }
+}

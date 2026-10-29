@@ -1,5 +1,4 @@
 import { PayrollChangeHistory } from "@/app/payroll/payroll-change-history";
-import { PayrollRecordedFactsPanel } from "@/app/payroll/payroll-recorded-facts";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { StaffPayPeriodPicker } from "./staff-pay-period-picker";
 import type { StaffPayrollPortalData } from "@/lib/payroll";
@@ -43,7 +42,6 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
     ? "An earlier statement for this period was marked paid. This historical flag does not confirm that the current live amount was paid."
     : "Current income is a live calculation. Review recorded payment evidence separately; no payment status is inferred.";
   return <section className={styles.portal}><Period data={data} tab="payroll" />
-    <PayrollRecordedFactsPanel showExports={false} staffNames={line?{[line.staff_id]:line.staff_display_name_snapshot}:{}} facts={data.paymentEvidence?.recordedFacts??{status:"unavailable",message:"Recorded payment history is unavailable. Live income does not confirm a payment."}}/>
     {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text="Calculated" /> · <WorkspaceText text={data.status.label} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
       <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
     <StaffPayChangeNotice changes={data.history ?? []} staffId={line?.staff_id} />

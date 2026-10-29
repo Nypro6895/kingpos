@@ -1,0 +1,23 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-pay-native-integration-20261029",
+  "status": "working",
+  "summary": "Integrate newly completed Staff My Pay disclosure removal with exact web2y9 and actually uploaded native70 source; StaffMyPay is included in local native page registry, therefore native rebuild required",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx"
+  ],
+  "dependencies": [
+    "staff-my-pay-remove-evidence-20261029"
+  ],
+  "nativeBaseline": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "nativeBaselineBuild": "70",
+  "id": "3ca2e594-1644-4812-a0cb-08a45fedd4b6",
+  "recordedAt": "2026-10-29T21:08:28.357Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
