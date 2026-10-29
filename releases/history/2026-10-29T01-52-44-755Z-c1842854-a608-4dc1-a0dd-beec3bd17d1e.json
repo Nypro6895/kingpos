@@ -1,0 +1,131 @@
+{
+  "kind": "release",
+  "summary": "Verified combined thirteen changes plus restoration of shipped native History reader; web live and iOS1.0.0(62) available in existing TestFlight groups and physically retested",
+  "changes": [
+    "0c48502f-d534-4f60-942f-266bc56f53bb",
+    "0129f09b-ead4-49e9-a692-9a10d7ae5ccb",
+    "1c3657a3-5b07-4309-ab23-303c0dcbdea3",
+    "cb12e52e-278b-4a45-b1d1-a203be2cb776",
+    "4c473e6b-1aec-4e25-8993-614f64120f5f",
+    "c974de4c-f380-4e77-bdfc-d4431bb1e9e5",
+    "65539f49-9d0f-4550-8e9b-f53225de14da",
+    "3feac64b-66cb-43ac-b7b7-5507d6bcc225",
+    "9b195530-4081-437f-8bdf-50ea9d407ce1",
+    "cde99526-8a43-4fbf-9b05-592372417202",
+    "3b9acf8a-2f42-4541-a03f-615583216eb0",
+    "4d45160c-9083-4777-88e6-3170da1725e1",
+    "130cabb0-ed74-4181-a958-4ea50f0b8133",
+    "c1554c2e-2eca-41f2-b507-6702200b0658",
+    "3d0c1ef7-2052-4853-9a5e-8953e3d7cf31"
+  ],
+  "sourceCommit": "2e1bd5143bcd840d80e6401cdf820c86ef2c08e5",
+  "originalCombinedSource": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+  "originalCombinedBaseline": {
+    "web": "dpl_43heZjrRn8eGRQPeaojtBJ7MpsSZ",
+    "nativeBuild": "60",
+    "nativeCommit": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7zHzb1kaXtq1qYJdSVNqDvN5s94U",
+      "baselineDeploymentId": "dpl_FbJLZhbJFV9LxgTiJpc1pNpeNMdy",
+      "sourceSha256": "925e890cae777741ab10263831d186ff0e96628c6d9a19389ffd8b4444640bcc",
+      "overlaySha256": "35dd28205fba274ba35000394ce132d5575ce9a263c94fe5d66978b9bcf1187e",
+      "evidence": {
+        "source": "artifacts/combined-ui13/web-repair62-live-source-verified.json",
+        "alias": "artifacts/combined-ui13/web-repair62-live-alias-proof.log",
+        "http": "artifacts/combined-ui13/web-repair62-live-http-smoke.json",
+        "testCandidate": "artifacts/combined-ui13/web-repair62-test-smoke.json",
+        "preservation": "artifacts/combined-ui13/repair62-preserved-source-proof.json",
+        "physical": "artifacts/combined-ui13/physical62-final-audit.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "62",
+      "commit": "2e1bd5143bcd840d80e6401cdf820c86ef2c08e5",
+      "baselineBuild": "61",
+      "baselineCommit": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+      "sourceSha256": "ff514a47b87bcd3270c94c6ed52c04a04bd4ff64f985fcbc55080881ed8c7048",
+      "bundleSha256": "6544fb3c47ec66745bbf1caa42e7b6b6bc65b8a3905e6bf6b17f0e6be4a27424",
+      "run": 40800344682,
+      "evidence": {
+        "sourceArchiveAndTests": "artifacts/combined-ui13/native-repair62-verified.json",
+        "existingGroups": "artifacts/combined-ui13/testflight-repair62-availability.json",
+        "physical": "artifacts/combined-ui13/physical62-final-audit.json"
+      },
+      "appStore": "No App Store submission/publication in this release"
+    }
+  },
+  "checks": {
+    "nativeTests": 234,
+    "nativeFailures": 0,
+    "historyBeforeRepair": {
+      "pass": 1,
+      "fail": 6
+    },
+    "historyAfterRepair": {
+      "pass": 7,
+      "fail": 0
+    },
+    "preservedWebTests": {
+      "pass": 38,
+      "fail": 0
+    },
+    "originalSelectedFilesUnchanged": 76,
+    "webFiles": 3459,
+    "webSourceMismatches": 0,
+    "nativeSourceFiles": 2685,
+    "sourceMismatches": 0
+  },
+  "resolvedRegression": {
+    "partialReceipt": "6f0a4e07-57a6-471d-9a72-0b901641dafd",
+    "affectedBuild": "61",
+    "cause": "Shipped native-only customer.history reader omitted during web/native source assembly",
+    "fix": "Restore16 lines byte-identical to uploaded native60; fresh pre/post scope and original server ownership/link checks retained",
+    "physicalProof": "artifacts/combined-ui13/physical62-final-audit.json"
+  },
+  "excluded": [
+    {
+      "change": "Market",
+      "reason": "Separate unfinished task per owner scope"
+    },
+    {
+      "change": "Check Writer",
+      "reason": "Staging schema/RLS/RPC, encryption configuration, billing lifecycle, bridgev2 and physical print/MICR not end-to-end validated"
+    }
+  ],
+  "dataSafety": {
+    "productionMigrations": 0,
+    "newCredentials": 0,
+    "realPosts": 0,
+    "mediaUploads": 0,
+    "payments": 0,
+    "checksIssued": 0,
+    "SMS": 0,
+    "newPermissions": 0,
+    "authTokenCspChanges": false
+  },
+  "limitations": [
+    "No cross-account physical denial test",
+    "No real posts/uploads/payments/SMS or permission changes",
+    "Codec passed physical61 same preserved implementation; not retested62",
+    "No all96route or under1second performance acceptance",
+    "waitFor exact receipt identifier label false was harness mismatch: full label contains Receipt receipt identifier; raw tree confirms receipt",
+    "Initial postOpen TestFlight AX snapshot hung; restarted test runner, not a product-load timing sample",
+    "Device runtime fingerprint not extracted; CoreDevice installed62 and CI provenance verified"
+  ],
+  "rollback": {
+    "webBaseline": "dpl_FbJLZhbJFV9LxgTiJpc1pNpeNMdy",
+    "previousUploadedNative": "61 (History regression, not accepted)",
+    "lastPreviousNativeHistoryPass": "60",
+    "performed": false
+  },
+  "id": "c1842854-a608-4dc1-a0dd-beec3bd17d1e",
+  "recordedAt": "2026-10-29T01:52:44.755Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028"
+}
