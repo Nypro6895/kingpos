@@ -1,0 +1,92 @@
+[
+  {
+    "id": "328-C01",
+    "name": "POS layout/Services Cancel",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C02",
+    "name": "Ticket single filter/Today/search restore",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C03",
+    "name": "Booking progress wizard read/Cancel",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C04",
+    "name": "More/MyPlace filter layout",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C05",
+    "name": "Personal bookings time format",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C06",
+    "name": "Staff MyPay period/listing",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C07",
+    "name": "Explore comments/post preview read",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C08",
+    "name": "PersonalSettings read/Cancel surfaces",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C09",
+    "name": "OwnerSettings inventory/representative read panels",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  },
+  {
+    "id": "328-C10",
+    "name": "Standalone Services layout",
+    "status": "BLOCKED",
+    "build": "68",
+    "reason": "Both initial owned XCTest harness and single recovery failed enabling UI automation before any UI case/snapshot; no app regression inferred. No unsafe permission/trust/daemon/session workaround.",
+    "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "deviceEndpoint": "Before/after installed68 same bundlecontainer; final route unobserved without AX, last observed OwnerToday from327 only."
+  }
+]

@@ -1,0 +1,80 @@
+{
+  "at": "2026-10-29T12:04:59.472Z",
+  "source": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "web": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+  "native": "1.0.0(68)",
+  "eventCount": 15,
+  "fileCount": 125,
+  "sourceStatus": "PASS frozen declaration/absence assertions",
+  "pairedWebNativeFiles": 102,
+  "pairedMismatches": [],
+  "sourceChangedSince67": [
+    "app/pos/owner-workspace-frame.tsx",
+    "lib/app-local-prefetch.ts",
+    "tests/app-local-prefetch-runtime.test.mjs"
+  ],
+  "priorPhysical327": {
+    "status": "PASS",
+    "scope": "Eight exact68 read/navigation/performance windows only",
+    "report": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-comparison327.md"
+  },
+  "supplement328": {
+    "status": "BLOCKED",
+    "build": "68",
+    "cases": 10,
+    "completedUIcases": 0,
+    "archive": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+    "sha256": "2681c029c1298befddb1f960fa5e571bd2199f050ddeabdefa3d43e707bcfe2e",
+    "report": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+    "rootIndependentChecks": [
+      "ZIP SHA256 matched",
+      "Both original logs contain automation-mode timeout and TEST FAILED",
+      "Original before/after installed metadata1.0.0(68),samebundleURL"
+    ],
+    "attempts": 2,
+    "unsafeRecovery": false,
+    "activeController": false,
+    "endRoute": "Unobserved in328; last actual OwnerToday is327, not relabeled"
+  },
+  "settingsDestinationSummary": {
+    "total": 22,
+    "sourceRegistryPass": 22,
+    "physicalPass": 1,
+    "physicalBlocked": 10,
+    "physicalNotRun": 11
+  },
+  "remaining": [
+    {
+      "id": "R01",
+      "status": "NOT_RUN",
+      "assertion": "First uncached load",
+      "reason": "No verified row-only performance-cache helper; sealed store also contains authority/lease/binding. No reset performed."
+    },
+    {
+      "id": "R02",
+      "status": "NOT_RUN",
+      "assertion": "Causal speedup / under1s first load",
+      "reason": "12→2 source/runtime offroute proof only;67/68 cache/network/harness not controlled; endpoint totals not named-budget counts."
+    },
+    {
+      "id": "R03",
+      "status": "NOT_RUN",
+      "assertion": "Real OTP/password/account/ownership/role permission modifications",
+      "reason": "Read/navigation scope only; simulated auth/revocation/latecache fixtures separate."
+    },
+    {
+      "id": "R04",
+      "status": "BLOCKED",
+      "assertion": "CheckWriter paid activation/real printing/provider acceptance",
+      "reason": "Sales closed,3SQL/key/catalog activation not performed; new developer Market excluded."
+    },
+    {
+      "id": "R05",
+      "status": "NOT_RUN",
+      "assertion": "Physical iPad/Windows hardware, complete charts hit-tests, real device offline/revocation, financial or content writes",
+      "reason": "Outside finite shipped read-only QA; responsive/browser tests not physical hardware proof."
+    }
+  ],
+  "performance": "12→2 hidden off-route jobs established by frozen source/actual runtime regression only. Causal speedup not established; generic HTTP totals not budget count. First uncached NOT_RUN; no verified safe row-only helper.",
+  "releaseState": "Source/runtime/Apple receipts unchanged; lock remains closed. No logger,CI,release,permission/trust/cache/session changes in supplemental QA."
+}

@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-29T12:05:50.362Z",
+  "events": 15,
+  "files": 125,
+  "everyEventFileMapped": true,
+  "allStatusesValid": true,
+  "allBrowserEvidenceExists": true,
+  "pairedWebNative": 102,
+  "pairedMismatches": 0,
+  "physical327Pass": 8,
+  "physical328Blocked": 10,
+  "unsafeRetry": false,
+  "sourceOrReleaseOrLoggerChanged": false,
+  "lockFileAbsent": true
+}

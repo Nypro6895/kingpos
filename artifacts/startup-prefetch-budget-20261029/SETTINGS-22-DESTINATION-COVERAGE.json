@@ -1,0 +1,487 @@
+[
+  {
+    "id": "personal-profile",
+    "label": "Profile & contact",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C08"
+    }
+  },
+  {
+    "id": "personal-public",
+    "label": "Public profile",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C08"
+    }
+  },
+  {
+    "id": "login-security",
+    "label": "Login & security",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C08"
+    }
+  },
+  {
+    "id": "blocked-users",
+    "label": "Blocked users",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C08"
+    }
+  },
+  {
+    "id": "notifications",
+    "label": "Notifications",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C08"
+    }
+  },
+  {
+    "id": "connections",
+    "label": "Connections & invitations",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "delete-account",
+    "label": "Delete personal account",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "salon-profile",
+    "label": "Salon information",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "PASS",
+      "assertion": "327 hub→Salon information read, no Edit/Save",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-comparison327.md",
+      "case": "327-Settings"
+    }
+  },
+  {
+    "id": "public-profile",
+    "label": "Website & public profile",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C09"
+    }
+  },
+  {
+    "id": "services",
+    "label": "Services & prices",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "booking",
+    "label": "Booking rules",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "staff-team",
+    "label": "Team & invitations",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C09"
+    }
+  },
+  {
+    "id": "payroll",
+    "label": "Payroll",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C09"
+    }
+  },
+  {
+    "id": "pos-display",
+    "label": "POS & devices",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C09"
+    }
+  },
+  {
+    "id": "shortcuts",
+    "label": "Today shortcuts",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "BLOCKED",
+      "assertion": "328 selected pane read/Cancel",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md",
+      "case": "328-C09"
+    }
+  },
+  {
+    "id": "ownership",
+    "label": "Ownership",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "close-salon",
+    "label": "Salon status & closure",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "PASS",
+      "assertion": "Scoped mock UI/layout/navigation contract only",
+      "evidence": [
+        "artifacts/wave66/settings-tests.log",
+        "artifacts/wave66/settings-fixtures-confirmation.log"
+      ]
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "staff-profile",
+    "label": "Staff profile & preferences",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "staff-schedule",
+    "label": "Working hours & time off",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "create-salon",
+    "label": "Add salon",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "legal-policies",
+    "label": "Policies & terms",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  },
+  {
+    "id": "help-support",
+    "label": "Help & support",
+    "source": {
+      "status": "PASS",
+      "assertion": "Frozen label/registry/category mapping only; not provider or mutation acceptance",
+      "file": "app/settings/settings-navigation.ts"
+    },
+    "browser": {
+      "status": "NOT_RUN",
+      "assertion": "Individual destination visual/function flow not established by scoped fixture evidence; hub registry checked separately",
+      "evidence": []
+    },
+    "physical68": {
+      "status": "NOT_RUN",
+      "assertion": "Individual pane not selected for finite ten-group read supplement; destructive/create/provider actions deliberately not exercised",
+      "evidence": null,
+      "case": null
+    }
+  }
+]

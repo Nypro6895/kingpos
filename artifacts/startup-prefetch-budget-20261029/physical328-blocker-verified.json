@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-29T12:06:27.405Z",
+  "status": "BLOCKED-before-UI-not-product-failure",
+  "buildBefore": "68",
+  "buildAfter": "68",
+  "versionBefore": "1.0.0",
+  "versionAfter": "1.0.0",
+  "sameBundleURL": true,
+  "zipSha256": "2681c029c1298befddb1f960fa5e571bd2199f050ddeabdefa3d43e707bcfe2e",
+  "initialLogAutomationModeTimeout": true,
+  "recoveryLogAutomationModeTimeout": true,
+  "bothTestSessionsEndedFailed": true,
+  "completedUICases": 0,
+  "blockedGroups": 10,
+  "additionalRetries": 0,
+  "trustPermissionsCacheSessionChanged": false,
+  "controllerStopped": true,
+  "endRouteObserved": false,
+  "lastActualOwnerObservation": "327 only",
+  "rawPrivateEvidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release68-328-blocked.zip",
+  "report": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-supplement328-blocked.md"
+}

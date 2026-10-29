@@ -1,0 +1,587 @@
+[
+  {
+    "id": "c3abe2ef-2c34-46ca-a1ad-98d66d282ac1",
+    "changeId": "settings-consistent-layout-20261029",
+    "files": [
+      "app/settings/settings-hub-client.tsx",
+      "app/settings/settings-hub.css",
+      "app/settings/direct-settings-ui.tsx",
+      "app/settings/direct-settings-panel.tsx",
+      "app/settings/notification-preferences-panel.tsx",
+      "app/settings/salon-settings-panels.tsx",
+      "app/settings/team-payroll-panels.tsx",
+      "app/settings/plugin-settings-row.tsx",
+      "lib/vietnamese-dictionary.ts",
+      "tests/settings-hub-ui.test.mjs",
+      "app/settings/settings-navigation.ts",
+      "app/settings/settings-icon.tsx",
+      "app/settings/settings-controls.css",
+      "lib/vietnamese-settings-copy.json",
+      "tests/settings-grouped-editors.test.mjs",
+      "app/account/account-profile-editor.tsx",
+      "app/account/actions.ts",
+      "app/account/phone-change-actions.ts",
+      "lib/account-phone-change.ts",
+      "app/settings/personal-public-profile-panel.tsx",
+      "app/settings/blocked-users-panel.tsx",
+      "app/settings/deferred-personal-section.tsx",
+      "app/settings/login-security/login-security-panel.tsx",
+      "app/settings/login-security/login-security-quick-editor.tsx",
+      "tests/login-security-contract.test.mjs",
+      "tests/ios-personal-settings.test.mjs",
+      "tests/account-phone-change.test.mjs",
+      "app/settings/pos-settings-panel.tsx",
+      "app/settings/ownership-lifecycle-panels.tsx",
+      "app/settings/shortcuts-settings-panel.tsx",
+      "app/settings/salon-profile-preferences-panel.tsx",
+      "app/pos/settings/settings-group-form.tsx",
+      "tests/settings-owner-closure-ui.test.mjs",
+      "tests/settings-consistent-layout.test.mjs"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "45c66e66-fea4-48de-bf21-4ad1db8683ac",
+    "changeId": "ios-personal-settings-20261029",
+    "files": [
+      "app/settings/settings-hub-client.tsx",
+      "app/settings/settings-hub.css",
+      "app/account/account-profile-editor.tsx",
+      "app/account/actions.ts",
+      "app/account/phone-change-actions.ts",
+      "lib/account-phone-change.ts",
+      "app/settings/personal-public-profile-panel.tsx",
+      "app/settings/blocked-users-panel.tsx",
+      "app/settings/notification-preferences-panel.tsx",
+      "app/settings/deferred-personal-section.tsx",
+      "app/settings/login-security/login-security-panel.tsx",
+      "app/settings/login-security/login-security-quick-editor.tsx",
+      "lib/vietnamese-settings-copy.json",
+      "tests/settings-hub-ui.test.mjs",
+      "tests/login-security-contract.test.mjs",
+      "tests/ios-personal-settings.test.mjs",
+      "tests/account-phone-change.test.mjs"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "d335a046-c9c3-4b0c-84b4-c8b5a31eab95",
+    "changeId": "settings-image-runtime-build-fix-20261029",
+    "files": [
+      "app/api/images/normalize/route.ts"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "bb3456b8-8b66-4a0f-80ef-0fbdcdb33037",
+    "changeId": "iphone-ui-audit-20261029",
+    "files": [
+      "app/reports/reports.module.css",
+      "app/services/services.css",
+      "app/(app)/my-bookings/page.tsx"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "4dd0acc9-c1bc-4b82-bcfc-a02f1ea29589",
+    "changeId": "iphone-ui-proposals-20261029",
+    "files": [
+      "app/pos-tickets/ticket-filters.tsx",
+      "app/pos-tickets/ticket-filters.module.css",
+      "app/bookings/booking-workspace-client.tsx",
+      "app/bookings/appointment-progress.module.css",
+      "app/(app)/more/page.tsx",
+      "app/(app)/more/more-layout.module.css",
+      "app/staff/today/today-dashboard-view.tsx",
+      "app/staff/today/today-layout.module.css"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "9da1d904-6c4c-4509-9175-cd2d5f2c1dfb",
+    "changeId": "iphone-ui-followup-20261029",
+    "files": [
+      "app/my-place/place-panels.tsx"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "8fbbe92f-f1b8-4ecc-bac5-504b81351d8c",
+    "changeId": "ios-explore-comments-transport",
+    "files": [
+      "lib/app-local-explore-http-client.ts",
+      "lib/app-local-explore-metadata.ts",
+      "lib/app-local-explore-server.ts",
+      "tests/app-local-comments-transport.test.mjs"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "c84379a7-3168-4058-8b68-b3fd3855c7d5",
+    "changeId": "payroll-compact-display-only-20261029",
+    "files": [
+      "app/(app)/payroll/page.tsx",
+      "app/payroll/payroll-daily-listing.tsx",
+      "app/payroll/payroll-period-rail.tsx",
+      "app/payroll/payroll-mobile.module.css",
+      "lib/app-local-owner-payroll-view.tsx"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "08e308fd-0719-41f3-b029-95fd3d308320",
+    "changeId": "check-writer-disabled-code-integration-20261029",
+    "files": [
+      "app/market/sample-apps.ts",
+      "lib/market-card-rules.ts",
+      "lib/market-commerce.ts",
+      "lib/market-catalog-view.ts",
+      "lib/market-experience-data.ts",
+      "app/market/market-client.tsx",
+      "app/(app)/payroll/page.tsx",
+      "next.config.ts",
+      "ios/Reylumi/NativeBridge.js",
+      "ios/Reylumi/ReylumiViewController.swift",
+      ".env.example",
+      "package.json",
+      "package-lock.json",
+      "lib/vietnamese-dictionary.ts",
+      "lib/experience-route-policies.ts",
+      "types/check-writer.ts",
+      "docs/check-writer.md",
+      "app/(app)/check-writer/page.tsx",
+      "app/check-writer/check-writer.tsx",
+      "app/check-writer/check-writer.module.css",
+      "app/api/check-writer/route.ts",
+      "app/api/check-writer/pdf/route.ts",
+      "lib/check-writer-server.ts",
+      "lib/check-writer-rules.ts",
+      "lib/check-writer-crypto.ts",
+      "lib/check-writer-request.ts",
+      "lib/check-writer-pdf.ts",
+      "lib/check-writer-market.ts",
+      "app/market/check-writer-panel.tsx",
+      "app/market/check-writer-actions.ts",
+      "lib/vietnamese-check-writer.json",
+      "assets/check-writer/NotoSans-Regular.ttf",
+      "assets/check-writer/OFL.txt",
+      "assets/check-writer/micr-e13b.ttf",
+      "tests/check-writer-runtime.test.mjs",
+      "tests/check-writer-api.test.mjs",
+      "tests/check-writer.integration.test.mjs",
+      "tests/check-writer-ui.test.mjs",
+      "tests/check-writer-payroll-read.test.mjs",
+      "app/market/card-payment-actions.ts",
+      "lib/check-writer-subscription.ts",
+      "tests/check-writer-market.test.mjs",
+      "docs/check-writer-audit-20261028.md",
+      "lib/check-writer-readiness.ts",
+      "docs/check-writer-readiness.md",
+      "tests/check-writer-sales-hold.test.mjs",
+      "tests/check-writer-preflight.test.mjs",
+      "tests/check-writer-provider-contract.test.mjs",
+      "scripts/check-writer-preflight.mjs"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "0bf23f73-9a6e-43b6-b356-4f3daa8b12e5",
+    "changeId": "pos-receipt-flow-20261029",
+    "files": [
+      "app/pos/owner-pos-client.tsx",
+      "app/pos/owner-pos.css",
+      "app/globals.css",
+      "app/pos/owner-workspace-frame.tsx",
+      "app/pos-tickets/ticket-filters.tsx",
+      "app/pos-tickets/ticket-filters.module.css"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "3fbfd81f-4879-4526-98c4-e91dda22b674",
+    "changeId": "combined-settings-pos-payroll-checkwriter-20261029",
+    "files": [
+      ".env.example",
+      ".gitignore",
+      "app/(app)/check-writer/page.tsx",
+      "app/(app)/more/more-layout.module.css",
+      "app/(app)/more/page.tsx",
+      "app/(app)/my-bookings/page.tsx",
+      "app/(app)/payroll/page.tsx",
+      "app/account/account-profile-editor.tsx",
+      "app/account/actions.ts",
+      "app/account/phone-change-actions.ts",
+      "app/api/check-writer/pdf/route.ts",
+      "app/api/check-writer/route.ts",
+      "app/bookings/appointment-progress.module.css",
+      "app/bookings/booking-workspace-client.tsx",
+      "app/check-writer/check-writer.module.css",
+      "app/check-writer/check-writer.tsx",
+      "app/globals.css",
+      "app/market/card-payment-actions.ts",
+      "app/market/check-writer-actions.ts",
+      "app/market/check-writer-panel.tsx",
+      "app/market/market-client.tsx",
+      "app/market/sample-apps.ts",
+      "app/my-place/place-panels.tsx",
+      "app/payroll/payroll-daily-listing.tsx",
+      "app/payroll/payroll-mobile.module.css",
+      "app/payroll/payroll-period-rail.tsx",
+      "app/pos-tickets/ticket-filters.module.css",
+      "app/pos-tickets/ticket-filters.tsx",
+      "app/pos/owner-local-panels.tsx",
+      "app/pos/owner-notebook-menu.css",
+      "app/pos/owner-pos-client.tsx",
+      "app/pos/owner-pos.css",
+      "app/pos/owner-workspace-frame.tsx",
+      "app/pos/settings/settings-group-form.tsx",
+      "app/reports/reports.module.css",
+      "app/services/services.css",
+      "app/settings/blocked-users-panel.tsx",
+      "app/settings/deferred-personal-section.tsx",
+      "app/settings/direct-settings-panel.tsx",
+      "app/settings/direct-settings-ui.tsx",
+      "app/settings/login-security/login-security-panel.tsx",
+      "app/settings/login-security/login-security-quick-editor.tsx",
+      "app/settings/notification-preferences-panel.tsx",
+      "app/settings/ownership-lifecycle-panels.tsx",
+      "app/settings/personal-public-profile-panel.tsx",
+      "app/settings/plugin-settings-row.tsx",
+      "app/settings/pos-settings-panel.tsx",
+      "app/settings/salon-profile-preferences-panel.tsx",
+      "app/settings/salon-settings-panels.tsx",
+      "app/settings/settings-controls.css",
+      "app/settings/settings-hub-client.tsx",
+      "app/settings/settings-hub.css",
+      "app/settings/shortcuts-settings-panel.tsx",
+      "app/settings/team-payroll-panels.tsx",
+      "app/staff/today/today-dashboard-view.tsx",
+      "app/staff/today/today-layout.module.css",
+      "assets/check-writer/NotoSans-Regular.ttf",
+      "assets/check-writer/OFL.txt",
+      "assets/check-writer/micr-e13b.ttf",
+      "docs/check-writer-audit-20261028.md",
+      "docs/check-writer-readiness.md",
+      "docs/check-writer.md",
+      "ios/Reylumi/NativeBridge.js",
+      "ios/Reylumi/ReylumiViewController.swift",
+      "lib/account-phone-change.ts",
+      "lib/app-local-command-policy.json",
+      "lib/app-local-commands-server.generated.ts",
+      "lib/app-local-explore-http-client.ts",
+      "lib/app-local-explore-metadata.ts",
+      "lib/app-local-explore-server.ts",
+      "lib/app-local-online-routes.json",
+      "lib/app-local-owner-payroll-view.tsx",
+      "lib/app-local-route-inventory.generated.json",
+      "lib/check-writer-crypto.ts",
+      "lib/check-writer-market.ts",
+      "lib/check-writer-pdf.ts",
+      "lib/check-writer-readiness.ts",
+      "lib/check-writer-request.ts",
+      "lib/check-writer-rules.ts",
+      "lib/check-writer-server.ts",
+      "lib/check-writer-subscription.ts",
+      "lib/experience-route-policies.ts",
+      "lib/market-card-rules.ts",
+      "lib/market-catalog-view.ts",
+      "lib/market-commerce.ts",
+      "lib/market-experience-data.ts",
+      "lib/vietnamese-check-writer.json",
+      "lib/vietnamese-dictionary.ts",
+      "lib/vietnamese-settings-copy.json",
+      "next.config.ts",
+      "package-lock.json",
+      "package.json",
+      "scripts/check-writer-preflight.mjs",
+      "scripts/generate-app-local-routes.mjs",
+      "supabase/migrations/20261028040000_check_writer.sql",
+      "supabase/migrations/20261028193000_check_writer_output_and_price.sql",
+      "supabase/migrations/20261029040000_check_writer_sales_hold.sql",
+      "tests/account-phone-change.test.mjs",
+      "tests/app-local-comments-transport.test.mjs",
+      "tests/check-writer-api.test.mjs",
+      "tests/check-writer-market.test.mjs",
+      "tests/check-writer-payroll-read.test.mjs",
+      "tests/check-writer-preflight.test.mjs",
+      "tests/check-writer-provider-contract.test.mjs",
+      "tests/check-writer-runtime.test.mjs",
+      "tests/check-writer-sales-hold.test.mjs",
+      "tests/check-writer-ui.test.mjs",
+      "tests/check-writer.integration.test.mjs",
+      "tests/fixtures/check-writer-bootstrap.sql",
+      "tests/ios-personal-settings.test.mjs",
+      "tests/login-security-contract.test.mjs",
+      "tests/settings-consistent-layout.test.mjs",
+      "tests/settings-grouped-editors.test.mjs",
+      "tests/settings-hub-ui.test.mjs",
+      "tests/settings-owner-closure-ui.test.mjs",
+      "types/check-writer.ts"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/web-candidate-source-verified.json"
+      }
+    ]
+  },
+  {
+    "id": "c43e7b71-d234-41b8-9d13-21a253ec96ae",
+    "changeId": "pos-shared-header-single-ticket-toolbar-20261029",
+    "files": [
+      "app/globals.css",
+      "app/pos/owner-notebook-menu.css",
+      "app/pos/owner-pos-client.tsx",
+      "app/pos/owner-workspace-frame.tsx",
+      "app/pos/owner-local-panels.tsx"
+    ],
+    "validation": [
+      {
+        "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/preservation.json"
+      },
+      {
+        "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/validation-summary.json"
+      },
+      {
+        "name": "Exact-source native simulator/archive/upload and Apple VALID",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/native-verified.json"
+      },
+      {
+        "name": "Production candidate READY and complete uploaded source manifest verified",
+        "result": "passed",
+        "evidence": "artifacts/wave67-header-ticket/web-candidate-source-verified.json"
+      }
+    ]
+  }
+]
