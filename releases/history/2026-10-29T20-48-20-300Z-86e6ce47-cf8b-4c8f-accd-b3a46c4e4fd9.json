@@ -1,0 +1,20 @@
+{
+  "kind": "release",
+  "summary": "Final status source second native attempt failed during isolated cookie-profile startup (235 tests,1 failure), upload skipped. Prior offline fixture passed; repeated blind retries stopped and reviewed fixture-resource cleanup has a new source-bound pipeline",
+  "changes": [
+    "4c5e1651-5a06-44dc-ab48-959d2bf3cff2"
+  ],
+  "targets": {
+    "ios": {
+      "status": "failed",
+      "verified": false,
+      "commit": "abd50d9b653b1f75013f9937436324fc08a4b24a",
+      "evidence": "artifacts/release-20261029-status/native-attempt2-failed-verification.json"
+    }
+  },
+  "run": 40948549666,
+  "attempt": 2,
+  "id": "86e6ce47-cf8b-4c8f-accd-b3a46c4e4fd9",
+  "recordedAt": "2026-10-29T20:48:20.300Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

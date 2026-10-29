@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-29T20:47:43.773Z",
+  "webSource": "abd50d9b653b1f75013f9937436324fc08a4b24a",
+  "nativeSource": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "testOnlyDelta": [
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift"
+  ],
+  "productSourceIdentical": true,
+  "full235NativeGateRequired": true
+}
