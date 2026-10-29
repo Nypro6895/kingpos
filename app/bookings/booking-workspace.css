@@ -73,8 +73,8 @@
   --booking-orange: #f26f3d;
   --booking-orange-hover: #e85f2b;
   --booking-orange-light: #ff9b72;
-  --booking-ink: #211c24;
-  --booking-muted: #786d78;
+  --booking-ink: var(--text-primary);
+  --booking-muted: var(--text-secondary);
   --booking-border: #f0e6df;
   --booking-strong-border: #ffd6c4;
   --booking-green: #2f8a57;
@@ -82,7 +82,7 @@
   --booking-shadow: 0 18px 45px rgba(242, 111, 61, 0.09);
   background: var(--booking-owner-bg);
   color: var(--booking-ink);
-  font-family: var(--font-booking-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-app-sans);
   letter-spacing: 0;
 }
 
@@ -1113,14 +1113,14 @@
 .booking-publish-section { display: grid; gap: 10px; }
 .booking-publish-toggle { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
 .booking-publish-toggle-track { position: relative; width: 44px; height: 24px; border-radius: 999px; background: #ffd6c4; transition: background-color .15s; }
-.booking-publish-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 3px #211c2426; transition: transform .15s; }
+.booking-publish-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 3px var(--text-primary)26; transition: transform .15s; }
 .booking-publish-toggle[aria-checked=true] .booking-publish-toggle-track { background: #f26f3d; }
 .booking-publish-toggle[aria-checked=true] .booking-publish-toggle-thumb { transform: translateX(20px); }
 .booking-publish-toggle:focus-visible { outline: 2px solid #f26f3d; outline-offset: 3px; }
 .booking-publish-toggle:disabled { cursor: not-allowed; opacity: .6; }
 @media (prefers-reduced-motion: reduce) { .booking-publish-toggle-track, .booking-publish-toggle-thumb { transition: none; } }
-.booking-share-url { font-size: 12px; color: #786d78; overflow-wrap: anywhere; margin: 0; }
-.booking-share-hint { font-size: 12px; color: #786d78; line-height: 1.5; margin: 0; }
+.booking-share-url { font-size: 12px; color: var(--text-secondary); overflow-wrap: anywhere; margin: 0; }
+.booking-share-hint { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
 [data-booking-surface="owner"] .booking-publish-section .booking-secondary-button { min-height: 38px; padding: 6px 12px; font-size: 13px; box-shadow: none; }
 .booking-setup-row:last-child { border-bottom: 0; }
 .booking-setup-row .booking-status-badge { border: 0; background: transparent; padding: 0; font-size: 11px; }

@@ -1,5 +1,7 @@
 "use client";
 
+import { getStaffLegalName } from "@/lib/staff-legal-name";
+import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
 import { useCloseOnNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
@@ -67,6 +69,11 @@ export function StaffProfileSettingsDrawer({
           </button>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:px-6 sm:py-5">
+          <section className="mb-5 border-b border-zinc-200 pb-4">
+            <h3 className="text-sm font-semibold"><WorkspaceText text="Legal name" /></h3>
+            <p className="mt-1 text-sm">{getStaffLegalName(staff) || <WorkspaceText text="Not set" />}</p>
+            <Link className="mt-1 inline-flex min-h-11 items-center text-sm text-teal-700 underline" href="/account"><WorkspaceText text="Edit legal name in Personal" /></Link>
+          </section>
           <StaffPublicProfileEditor
             avatarUrl={avatarUrl}
             bio={staff.public_bio}

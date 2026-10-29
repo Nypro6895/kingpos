@@ -1,4 +1,10 @@
 /* Shared Settings navigation, overview and retained editor shell. */
+/* Paint through parent page gutters without widening the scrollable content. */
+@media(max-width:767px){
+ .settings-hub.settings-hub{background:var(--settings-panel);box-shadow:0 0 0 100vmax var(--settings-panel);clip-path:inset(0 -100vmax)}
+ .settings-hub .settings-inline-sections{padding:0;background:transparent;border-radius:0}
+ .settings-hub .settings-category-rows{padding:0;border-radius:0}
+}
 .settings-hub{--settings-accent:#c24f16;--settings-accent-soft:#fff3ec;--settings-text:#27272a;--settings-muted:#71717a;--settings-line:#e4e4e7;--settings-background:#f6f6f7;--settings-panel:#fff;--settings-danger:#b4232b;box-sizing:border-box;width:100%;min-width:0;padding:24px max(24px,env(safe-area-inset-right)) 32px max(24px,env(safe-area-inset-left));color:var(--settings-text);background:var(--settings-panel)}
 .settings-hub *{box-sizing:border-box}.settings-hub [hidden]{display:none!important}.settings-hub :where(h1,h2,h3,h4,p,span){overflow-wrap:anywhere}.settings-hub :where(input,select,textarea){min-width:0;max-width:100%}.settings-hub :where(button,a,input,select,textarea):focus-visible{outline:2px solid var(--settings-accent);outline-offset:3px}.settings-hub button:disabled{opacity:.55;cursor:not-allowed}
 .settings-page-header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-bottom:20px;border-bottom:1px solid var(--settings-line)}.settings-page-header h1{font-size:24px;font-weight:700;letter-spacing:-.6px;margin:0}.settings-search{display:flex;gap:8px;min-width:0}.settings-search label{display:flex;align-items:center;gap:10px;background:var(--settings-background);border:1px solid var(--settings-line);border-radius:10px;padding:0 12px;min-width:0}.settings-search .settings-icon{width:18px;height:18px;color:var(--settings-muted)}.settings-search input{width:300px;min-height:44px;border:0;background:transparent;font-size:14px}.settings-search>button{min-width:44px;min-height:44px;color:var(--settings-muted);border:0;background:transparent}

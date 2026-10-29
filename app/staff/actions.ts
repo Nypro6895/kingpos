@@ -389,14 +389,14 @@ async function saveStaffDirectoryBatch(formData: FormData) {
     city: readBatchOptionalString(formData, "city", staffId),
     display_name: readBatchRequiredString(formData, "display_name", staffId),
     email: readBatchOptionalString(formData, "email", staffId),
-    first_name: splitFullName(
-      readBatchOptionalString(formData, "full_name", staffId),
-    ).firstName,
+    first_name: formData.has(`first_name_${staffId}`)
+      ? readBatchOptionalString(formData, "first_name", staffId)
+      : splitFullName(readBatchOptionalString(formData, "full_name", staffId)).firstName,
     is_active: readBatchBoolean(formData, "is_active", staffId),
     job_title: readBatchOptionalString(formData, "job_title", staffId),
-    last_name: splitFullName(
-      readBatchOptionalString(formData, "full_name", staffId),
-    ).lastName,
+    last_name: formData.has(`last_name_${staffId}`)
+      ? readBatchOptionalString(formData, "last_name", staffId)
+      : splitFullName(readBatchOptionalString(formData, "full_name", staffId)).lastName,
     online_booking_enabled: readBatchBoolean(
       formData,
       "online_booking_enabled",

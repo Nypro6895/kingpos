@@ -1,0 +1,31 @@
+{
+  "status": "needs-integration",
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Scoped ESLint and git diff --check",
+      "result": "passed"
+    },
+    {
+      "name": "Actual iPhone visual check",
+      "result": "pending"
+    }
+  ],
+  "changeId": "pos-hide-green-check-20261029",
+  "channels": [
+    "web"
+  ],
+  "summary": "Hide healthy green sync check across owner and Portable POS pages while retaining background sync and error indicators",
+  "files": [
+    "app/pos/portable/portable-sync-indicator.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "artifacts/pos-hide-green-check-20261029/frozen"
+  },
+  "id": "6a8c3b59-01c9-4df4-8afd-148c0ccce6eb",
+  "recordedAt": "2026-10-29T19:59:05.319Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,4 +1,5 @@
 import "server-only";
+import { withStaffPersonalLegalName } from "@/lib/staff-legal-name";
 import { cache } from "react";
 import { scopedBusinessContext } from "./scoped-business-context";
 import { getCurrentStaffBusinessContext, type CurrentBusinessContext } from "@/lib/current-context";
@@ -26,7 +27,7 @@ async function readStaffPortalIdentity(targetContext?: CurrentBusinessContext, s
   const resolveStaff = () => resolveStaffAccountForSalon({ context, supabase });
   const resolved = await (getReadRequestTiming()?.measure("staff_resolve", resolveStaff) ?? resolveStaff());
   if (resolved.status === "multiple") throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
-  const identity = { context, staff: resolved.staff, supabase };
+  const identity = { context, staff: resolved.staff ? withStaffPersonalLegalName(resolved.staff, context.user) : null, supabase };
   const token = getReadContextToken(), authority = getAuthenticatedReadAuthority(supabase);
   if (token && authority && identity.staff?.is_active === true && identity.staff.salon_id === context.currentSalon.id) {
     readCapabilities.set(identity, { token, authority, context, staff: identity.staff, supabase, fingerprint: fingerprint(identity) });

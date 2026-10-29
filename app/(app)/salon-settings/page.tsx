@@ -1,5 +1,4 @@
 import { withExperiencePage } from "@/components/experience-page";
-import { SalonAddressSummary } from "@/components/salon-address-summary";
 export const metadata = { title: "Salon settings | Reylumi" };
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
@@ -209,7 +208,7 @@ function MapLocationSection({
   );
   const mapUnavailable = !mapLocation.providerConfigured || !publicMapConfigured;
   if (mapUnavailable) {
-    return <div className="px-4 py-4"><SalonAddressSummary address={mapLocation.address} /></div>;
+    return null;
   }
   const statusClass =
     mapLocation.status === "mapped"

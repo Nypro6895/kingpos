@@ -1,0 +1,36 @@
+{
+  "summary": "Owner POS sync indicator moved to right edge of Saved tickets and Customers toolbar; preserve status colors",
+  "source": {
+    "snapshot": "artifacts/pos-sync-toolbar-20261029/frozen"
+  },
+  "kind": "change",
+  "changeId": "pos-sync-toolbar-20261029",
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos.css"
+  ],
+  "dependencies": [],
+  "status": "needs-integration",
+  "validation": [
+    {
+      "name": "ESLint owner-pos-client",
+      "result": "passed"
+    },
+    {
+      "name": "git diff --check scoped files",
+      "result": "passed"
+    },
+    {
+      "name": "iPhone visual verification",
+      "result": "pending"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "id": "dccf4807-f7c7-4783-a75e-4ca9056bd5cf",
+  "recordedAt": "2026-10-29T19:55:22.078Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

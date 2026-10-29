@@ -232,3 +232,14 @@ export async function consolidateCustomers() {
   for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/activity", "/beauty"]) revalidatePath(path);
   redirect(`/customers?merged=${Number(data ?? 0)}`);
 }
+
+export async function automaticallyConsolidateCustomers() {
+  const { supabase, salon } = await requireCustomerMutationContext("/customers");
+  const { data, error } = await supabase.rpc("consolidate_customer_identities", { p_salon: salon.id });
+  if (error) return { merged: 0, error: "Automatic customer merge could not finish. Please retry." };
+  const merged = Number(data ?? 0);
+  if (merged > 0) {
+    for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/staff/today", "/activity", "/beauty"]) revalidatePath(path);
+  }
+  return { merged, error: null };
+}

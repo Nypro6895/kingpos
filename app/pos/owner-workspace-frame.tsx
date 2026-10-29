@@ -126,7 +126,7 @@ function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
     {/* CSS hiding keeps checkout, its single-writer lock and durable draft ID. */}
     <div hidden={active !== "pos"}>{checkout}</div>
     <section className="owner-workspace-panel" hidden={active === "pos"} style={active === "pos" ? { display: "none" } : undefined}>
-      <OwnerPosTabs active={active} />
+      {active !== "checkIn" ? <OwnerPosTabs active={active} /> : null}
       <div className="owner-workspace-content">
         {owner && localHref ? localPanels : null}
         <div hidden={pending || Boolean(owner && localHref && ownerLocalHref(localHref))}>{children}</div>

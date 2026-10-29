@@ -1,5 +1,7 @@
 import {loadPayrollRecordedFacts} from "@/lib/payroll-records";
 
+import { resolveStaffLegalNames } from "@/lib/staff-legal-name-server";
+import { getStaffLegalName } from "@/lib/staff-legal-name";
 import { fixedDayPay, moneyCents } from "@/lib/payroll-live-money";
 import { completeLiveIncomeDays, incomeFields } from "@/lib/payroll-live-projection";
 import { loadPayrollLiveHistory } from "@/lib/payroll-live-history";
@@ -656,10 +658,6 @@ function getStaffName(staff: Staff | undefined, staffId: string) {
   return staff?.display_name || `${staffId.slice(0, 8)}...`;
 }
 
-function getLegalName(setting: StaffPayrollSetting | null) {
-  return setting?.legal_name?.trim() || null;
-}
-
 function getDefaultStaffPayrollSetting(input: {
   accountId: string;
   salonId: string;
@@ -1048,7 +1046,7 @@ async function loadStaffRows(auth: PayrollAuthContext) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return resolveStaffLegalNames(data ?? [], auth.supabase);
 }
 
 async function loadStaffPayrollSettings(auth: PayrollAuthContext) {
@@ -2536,7 +2534,7 @@ async function calculateScheduledPayrollForAuth(
       staff_commission_gross: staffCommissionGross,
       staff_display_name_snapshot: getStaffName(staff, staffId),
       staff_id: staffId,
-      staff_legal_name_snapshot: getLegalName(latestSetting),
+      staff_legal_name_snapshot: getStaffLegalName(staff),
       tax_bonus_snapshot: taxBonus,
       tax_company_cash_amount: taxCompanyCashAmount,
       tax_company_check_amount: taxCompanyCheckAmount,
@@ -4067,7 +4065,7 @@ export async function updateStaffPayrollSetting(input: {
   commissionRate: number;
   effectiveFrom: string;
   fixedPayAmount: number;
-  legalName: string | null;
+  legalName?: string | null;
   payType: StaffPayType;
   staffId: string;
   taxBonus: boolean;
@@ -4120,10 +4118,10 @@ export async function updateStaffPayrollSetting(input: {
     (input.payType === "fixed" && Boolean(input.applyTaxToFixedPay));
   const { data: staff, error: staffError } = await auth.supabase
     .from("staff")
-    .select("id")
+    .select("id, salon_id, account_user_id, user_id, first_name, last_name")
     .eq("id", input.staffId)
     .eq("salon_id", auth.salon.id)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<{ id: string; salon_id: string; account_user_id: string | null; user_id: string | null; first_name: string | null; last_name: string | null }>();
 
   if (staffError) {
     throw new Error(staffError.message);
@@ -4133,6 +4131,7 @@ export async function updateStaffPayrollSetting(input: {
     throw new Error("Staff member was not found.");
   }
 
+  const [legalIdentity] = await resolveStaffLegalNames([staff], auth.supabase);
   const settingPayload = {
     apply_tax_to_fixed_pay: input.applyTaxToFixedPay,
     bonus_payout_method: input.bonusPayoutMethod,
@@ -4140,7 +4139,7 @@ export async function updateStaffPayrollSetting(input: {
     check_rate: checkRate,
     commission_rate: commissionRate,
     fixed_pay_amount: fixedPayAmount,
-    legal_name: input.legalName?.trim() || null,
+    legal_name: getStaffLegalName(legalIdentity),
     pay_type: input.payType,
     tax_bonus: input.taxBonus,
     tax_company_enabled: taxCompanyEnabled,

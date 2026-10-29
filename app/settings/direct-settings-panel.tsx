@@ -1,4 +1,6 @@
 "use client";
+import { getStaffLegalName } from "@/lib/staff-legal-name";
+import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -136,6 +138,11 @@ function Content({
     case "staff-workspace":
       return (
         <div className="grid gap-4">
+          <section>
+            <h3 className="text-sm font-semibold"><WorkspaceText text="Legal name" /></h3>
+            <p className="mt-1 text-sm">{getStaffLegalName(data.staff) || <WorkspaceText text="Not set" />}</p>
+            <Link className="inline-flex min-h-11 items-center text-sm text-teal-700 underline" href="/account"><WorkspaceText text="Edit legal name in Personal" /></Link>
+          </section>
           <SettingsFieldGroup title="Public staff profile">
           <StaffPublicProfileEditor
             expectedSalonId={data.salonId}

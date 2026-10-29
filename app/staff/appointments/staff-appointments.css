@@ -6,13 +6,13 @@
   --staff-booking-plum: var(--brand-orange, #f26f3d);
   --staff-booking-plum-dark: var(--brand-orange-hover, #e85f2b);
   --staff-booking-teal: #2f6f6a;
-  --staff-booking-ink: #211c24;
-  --staff-booking-muted: #786d78;
+  --staff-booking-ink: var(--text-primary);
+  --staff-booking-muted: var(--text-secondary);
   --staff-booking-border: #eee3dd;
   --staff-booking-strong-border: #f7cdbb;
   background: var(--staff-booking-bg);
   color: var(--staff-booking-ink);
-  font-family: var(--font-booking-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-app-sans);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -276,7 +276,7 @@
 .staff-appointments-line-status {
   background: #fafafa;
   border: 1px solid #e4e4e7;
-  color: #52525b;
+  color:var(--text-secondary);
 }
 
 .staff-appointments-ticket-link {
@@ -590,7 +590,7 @@
   background: rgba(113, 113, 122, 0.1);
   border: 1px dashed rgba(113, 113, 122, 0.35);
   border-radius: 6px;
-  color: #52525b;
+  color:var(--text-secondary);
   font-size: 11px;
   font-weight: 800;
   left: 8px;
@@ -776,7 +776,7 @@
 }
 
 .staff-appointments-day-empty {
-  color: #a1a1aa;
+  color:var(--text-muted);
   font-size: 11px;
   font-weight: 700;
   left: 8px;
@@ -940,7 +940,7 @@
 }
 
 .staff-appointments-detail-list dd {
-  color: #4b4650;
+  color:var(--text-secondary);
   font-size: 14px;
   line-height: 1.45;
 }
@@ -1095,7 +1095,7 @@
   background: #e4e4e7;
   border: 1px solid #d4d4d8;
   border-radius: 999px;
-  color: #3f3f46;
+  color:var(--text-primary);
   font-size: 13px;
   font-weight: 900;
   min-height: 34px;
@@ -1236,7 +1236,7 @@
 .staff-booking-settings-readonly {
   background: #f4f4f5;
   border-radius: 999px;
-  color: #52525b;
+  color:var(--text-secondary);
   font-size: 12px;
   font-weight: 900;
   padding: 6px 10px;
@@ -1586,7 +1586,7 @@
 .staff-no-show-form > div { display: flex; gap: 8px; }
 .staff-schedule-heading-actions { display: flex; align-items: center; gap: 12px; }
 .staff-create-trigger { display: inline-flex; align-items: center; gap: 3px; min-height: 40px; padding: 4px 8px; color: var(--staff-booking-plum-dark); font-size: 13px; font-weight: 600; }
-.staff-create-dialog { position: fixed; inset: 0; margin: auto; width: min(440px, calc(100% - 24px)); max-height: 90dvh; overflow-y: auto; border: 0; border-radius: 12px; padding: 20px; background: white; color: #241b1f; }
+.staff-create-dialog { position: fixed; inset: 0; margin: auto; width: min(440px, calc(100% - 24px)); max-height: 90dvh; overflow-y: auto; border: 0; border-radius: 12px; padding: 20px; background: white; color:var(--text-primary); }
 .staff-create-dialog::backdrop { background: #0006; }
 .staff-create-dialog header, .staff-create-date { display: flex; gap: 12px; justify-content: space-between; align-items: center; }
 .staff-create-dialog header { margin-bottom: 16px; }
@@ -1607,4 +1607,4 @@
 .staff-customer-suggestions { max-height: 180px; overflow-y: auto; border-block: 1px solid #eee3dd; }
 .staff-customer-suggestions button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; text-align: left; padding: 8px 4px; border-bottom: 1px solid #f4ece6; }
 .staff-customer-suggestions button:hover, .staff-customer-suggestions button[aria-selected=true] { background: #fff2eb; }
-.staff-customer-suggestions small { color: #6f6870; }
+.staff-customer-suggestions small { color:var(--text-secondary); }

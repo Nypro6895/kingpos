@@ -1,5 +1,6 @@
 "use client";
 
+import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -21,7 +22,6 @@ type ActiveField =
   | "commissionRate"
   | "effectiveFrom"
   | "fixedPay"
-  | "legalName"
   | "payType"
   | "taxBonus"
   | "taxCash"
@@ -132,7 +132,6 @@ function HiddenSettingInputs({
   commissionRate,
   effectiveFrom,
   fixedPayAmount,
-  legalName,
   payType,
   returnPath,
   staffId,
@@ -148,7 +147,6 @@ function HiddenSettingInputs({
   commissionRate: string;
   effectiveFrom: string;
   fixedPayAmount: string;
-  legalName: string;
   payType: StaffPayType;
   returnPath: string;
   staffId: string;
@@ -163,7 +161,6 @@ function HiddenSettingInputs({
     <>
       <input name="return_to" type="hidden" value={returnPath} />
       <input name="staff_id" type="hidden" value={staffId} />
-      <input name="legal_name" type="hidden" value={legalName} />
       <input name="pay_type" type="hidden" value={payType} />
       <input name="commission_rate" type="hidden" value={commissionRate} />
       <input name="fixed_pay_amount" type="hidden" value={fixedPayAmount} />
@@ -239,38 +236,6 @@ function InlineNumberInput({
         </span>
       ) : null}
     </span>
-  );
-}
-
-function InlineTextInput({
-  autoFocus = false,
-  onChange,
-  onDone,
-  value,
-}: {
-  autoFocus?: boolean;
-  onChange: (value: string) => void;
-  onDone: () => void;
-  value: string;
-}) {
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    event.preventDefault();
-    onDone();
-  }
-
-  return (
-    <input
-      autoFocus={autoFocus}
-      className="h-8 w-full max-w-48 rounded border border-zinc-300 bg-white px-2 text-sm text-zinc-950 outline-none"
-      onBlur={onDone}
-      onChange={(event) => onChange(event.target.value)}
-      onKeyDown={handleKeyDown}
-      value={value}
-    />
   );
 }
 
@@ -397,7 +362,7 @@ export function StaffPayrollSettingInlineEdit({
     setting?.bonus_payout_method ?? "check",
   );
   const [effectiveFrom, setEffectiveFrom] = useState(currentEffectiveFrom);
-  const [legalName, setLegalName] = useState(setting?.legal_name ?? "");
+  const legalName = getStaffLegalName(staff) ?? "";
 
   const closeField = () => setActiveField(null);
 
@@ -426,7 +391,6 @@ export function StaffPayrollSettingInlineEdit({
         commissionRate={commissionRate}
         effectiveFrom={effectiveFrom}
         fixedPayAmount={fixedPayAmount}
-        legalName={legalName}
         payType={payType}
         returnPath={returnPath}
         staffId={staff.id}
@@ -669,19 +633,10 @@ export function StaffPayrollSettingInlineEdit({
           <WorkspaceText text="More details" />
         </summary>
         <div className="mt-3 grid gap-1.5 sm:max-w-md">
-          <EditableSetting
-            active={activeField === "legalName"}
-            label={__vt("Legal name")}
-            onClick={() => setActiveField("legalName")}
-            value={legalName || "Not set"}
-          >
-            <InlineTextInput
-              autoFocus
-              onChange={setLegalName}
-              onDone={closeField}
-              value={legalName}
-            />
-          </EditableSetting>
+          <div className="text-xs text-zinc-600">
+            <WorkspaceText text="Legal name:" /> {legalName || <WorkspaceText text="Not set" />} {" · "}
+            {staffHasPersonalAccount(staff) ? <WorkspaceText text="Managed in Personal" /> : <Link className="underline" href="/staff"><WorkspaceText text="Edit staff" /></Link>}
+          </div>
           {payType === "commission" ? (
             <EditableSetting
               active={activeField === "fixedPay"}

@@ -12,6 +12,13 @@ import staffScanCopy from "@/lib/vietnamese-staff-scan.json";
 import personalQrCopy from "@/lib/vietnamese-personal-qr.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
+  "An app account is linked to this staff profile": "Hồ sơ nhân viên này đã liên kết tài khoản ứng dụng",
+  "Legal name is used for Staff and Payroll.": "Tên pháp lý được dùng cho hồ sơ nhân viên và bảng lương.",
+  "Legal name is managed by this person in Personal.": "Người này quản lý tên pháp lý tại trang Cá nhân.",
+  "Managed in Personal": "Quản lý tại trang Cá nhân",
+  "Edit legal name in Personal": "Sửa tên pháp lý tại trang Cá nhân",
+  "Legal first name": "Tên pháp lý",
+  "Legal last name": "Họ pháp lý",
   "Payroll update": "Cập nhật thu nhập",
   "Payroll updated": "Thu nhập đã cập nhật",
   "Updated by": "Người cập nhật:",

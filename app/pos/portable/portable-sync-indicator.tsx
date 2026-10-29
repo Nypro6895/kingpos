@@ -67,6 +67,8 @@ export function PortableSyncIndicator({ scope }: { scope: string }) {
   const disconnected = offline || connection === "offline";
   const attention = storageError || items.some((item) => item.state === "attention");
   const label = storageError ? "Unable to save on this device" : disconnected ? "Offline" : attention ? "Not synced" : items.length ? "Syncing" : connection === "checking" ? "Connecting" : "Up to date";
+  // Keep background syncing active without showing a check on every POS page.
+  if (!disconnected && !attention && !items.length && !open && !cancelling) return null;
   return <div className="relative" ref={root}>
     <button aria-label={__vt(label)} title={__vt(label)} type="button" onClick={() => setOpen(!open)}
       className={`grid h-10 w-10 place-items-center rounded-full ${attention ? "text-amber-600" : disconnected ? "text-zinc-400" : "text-emerald-700"}`}>

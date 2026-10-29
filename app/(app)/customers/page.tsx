@@ -6,13 +6,12 @@ import { WorkspaceToolbar, toolbarStyles } from "@/components/workspace-toolbar"
 import Form from "next/form";
 import { formatCustomerDateTime as formatDateTime } from "@/lib/customer-date-time";
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
-import { SubmitButton } from "@/components/submit-button";
 import {
   getCurrentSalonCustomerList,
   type CustomerListItem,
   type CustomerListPagination,
 } from "@/lib/customers";
-import { consolidateCustomers } from "@/app/customers/actions";
+import { AutomaticCustomerMerge } from "@/app/customers/automatic-customer-merge";
 import { DuplicateMergeForms } from "@/app/customers/duplicate-merge-forms";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
@@ -279,7 +278,7 @@ async function CustomersPage({ searchParams }: CustomersPageProps) {
       </WorkspaceToolbar>
 
       {merged !== undefined && <p role="status" className="py-2 text-sm">Merged {Number(merged) || 0} duplicate records.</p>}
-      {canManageCustomers && <details className="border-b py-2 text-sm"><summary className="cursor-pointer">Find and merge matching customers</summary><p className="my-2 text-zinc-600">Automatically merge matching names with the same full phone number. Other possible matches remain available for review. Up to 100 records per batch.</p><form action={consolidateCustomers}><SubmitButton pendingLabel="Checking…" className="py-2 font-medium text-orange-700">Run automatic merge</SubmitButton></form></details>}
+      {canManageCustomers && context.currentSalon && <AutomaticCustomerMerge salonId={context.currentSalon.id} />}
       <section>
         <CustomerList
           timezone={timezone}

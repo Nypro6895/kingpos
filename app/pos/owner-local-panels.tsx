@@ -22,7 +22,7 @@ type AttendanceAction = typeof ownerSubmitAttendance;
 export function OwnerLocalPanelBody({ data, snapshotAt, query, attendanceAction = ownerSubmitAttendance, onAttendanceSettled, active=true, ticketsPath="/pos/ticket" }: { data: OwnerLocalPanelData; snapshotAt: number; query: string; navigate: Navigate; attendanceAction?: AttendanceAction; onAttendanceSettled?: () => void; active?: boolean; ticketsPath?: string }) {
   const workspace = useOwnerLocalWorkspace();
   if (data.view === "denied") return <p className="p-6"><WorkspaceText text={data.message} /></p>;
-  if (data.view === "check-in") return <PortableCheckInClient data={data.props.data} action={attendanceAction} workspacePath="/pos/check-in" staffEndpoint="/api/pos/owner/check-in" managedRead businessDate={workspace?.businessDate} onDataChange={workspace?.attendance} onAttendanceSettled={onAttendanceSettled} active={active} />;
+  if (data.view === "check-in") return <PortableCheckInClient showSalonBranding={false} data={data.props.data} action={attendanceAction} workspacePath="/pos/check-in" staffEndpoint="/api/pos/owner/check-in" managedRead businessDate={workspace?.businessDate} onDataChange={workspace?.attendance} onAttendanceSettled={onAttendanceSettled} active={active} />;
   if (data.view === "bookings") return <OwnerLiveBookingWorkspace {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "reports") return <OwnerLiveReports {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "tickets") return <main className="mx-auto w-full max-w-7xl px-4 py-4 text-zinc-950 sm:px-6">

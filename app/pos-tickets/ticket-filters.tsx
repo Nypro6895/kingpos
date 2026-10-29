@@ -22,7 +22,7 @@ export function TicketFilters({ date, query, onQueryChange, title, actions }: {
   return (
     <form className={styles.toolbar} data-ticket-toolbar data-owner-ticket-toolbar={title ? "true" : undefined} role="search"
       onSubmit={event => { event.preventDefault(); (event.currentTarget.elements.namedItem("q") as HTMLInputElement)?.blur(); }}>
-      {title ? <h1 data-ticket-title className={styles.title}>{translate(title)}</h1> : null}
+      {title ? <h1 data-ticket-title className="sr-only">{translate(title)}</h1> : null}
       <details className={styles.calendar} data-ticket-date>
         <summary className={styles.calendarButton} aria-label={`${translate("Date")}: ${dateLabel}`} title={dateLabel}>
           <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

@@ -1,5 +1,6 @@
 "use client";
 
+import { staffHasPersonalAccount } from "@/lib/staff-legal-name";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -54,6 +55,7 @@ type RowState = {
   isActive: boolean;
   jobTitle: string;
   lastName: string;
+  personalLegalName: boolean;
   onlineBookingEnabled: boolean;
   passcodeIsDefault: boolean;
   phone: string;
@@ -104,6 +106,7 @@ function rowFromMember(
     isActive: member.is_active,
     jobTitle: clean(member.job_title),
     lastName: clean(member.last_name),
+    personalLegalName: staffHasPersonalAccount(member),
     onlineBookingEnabled: member.online_booking_enabled,
     passcodeIsDefault: member.passcode_is_default === true,
     phone: clean(member.phone) || clean(member.connected_user?.phone),
@@ -231,6 +234,8 @@ function HiddenInputs({ rows }: { rows: RowState[] }) {
             readOnly
             value={getFullName(row)}
           />
+          <input name={fieldName("first_name", row.id)} readOnly value={row.firstName} />
+          <input name={fieldName("last_name", row.id)} readOnly value={row.lastName} />
           <input name={fieldName("email", row.id)} readOnly value={row.email} />
           <input name={fieldName("phone", row.id)} readOnly value={row.phone} />
           <input
@@ -318,7 +323,7 @@ function StaffRow({ busy, onPendingChange, canManageStaff, dirty, editing, onTog
   const field = (key: keyof RowState, label: string, autoComplete?: string, type = "text") => (
     <label className="flex min-h-10 min-w-0 items-center gap-2 text-xs text-zinc-600">
       <span className={classNames("shrink-0", key !== "firstName" && key !== "lastName" && "w-16")}><WorkspaceText text={label} /></span>
-      <input autoComplete={autoComplete} className="h-9 min-w-0 w-full rounded bg-zinc-100 px-2 text-base text-zinc-950 outline-none focus:ring-2 focus:ring-teal-600/30"
+      <input autoComplete={autoComplete} readOnly={row.personalLegalName && (key === "firstName" || key === "lastName")} className="h-9 min-w-0 w-full rounded bg-zinc-100 px-2 text-base text-zinc-950 outline-none focus:ring-2 focus:ring-teal-600/30"
         onChange={(event) => onUpdate({ [key]: event.target.value })} type={type} value={String(row[key] ?? "")} />
     </label>
   );
@@ -369,9 +374,10 @@ function StaffRow({ busy, onPendingChange, canManageStaff, dirty, editing, onTog
         <input name="reset_staff_id" type="hidden" value={row.id} /><HiddenInputs rows={[row]} />
         <StaffEditFields onPendingChange={onPendingChange}>
           {field("displayName", "Nickname", "nickname")}
-          <div className="flex min-w-0 items-center gap-2"><span className="w-16 shrink-0 text-xs text-zinc-600"><WorkspaceText text="Name" /></span>
+          <div className="flex min-w-0 items-center gap-2"><span className="w-16 shrink-0 text-xs text-zinc-600"><WorkspaceText text="Legal name" /></span>
             <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">{field("firstName", "First", "given-name")}{field("lastName", "Last", "family-name")}</div>
           </div>
+          {row.personalLegalName ? <p className="pl-[4.5rem] text-xs text-zinc-500"><WorkspaceText text="Legal name is managed by this person in Personal." /></p> : null}
           {field("phone", "Phone", "tel", "tel")}
           {field("email", "Email", "email", "email")}
           <div className="flex min-w-0 items-start gap-2"><span className="w-16 shrink-0 py-3 text-xs text-zinc-600"><WorkspaceText text="Address" /></span>

@@ -987,7 +987,7 @@ export function AccountProfileEditor({
             {!avatarOnly ? <div>
               {!phoneOnly ? <>
               <EditableField
-                autoComplete="name"
+                autoComplete="nickname"
                 label={__vt("Display name")}
                 name="display_name"
                 onChange={updateValue}
@@ -1002,7 +1002,7 @@ export function AccountProfileEditor({
                 value={values.phone}
               />
               {!phoneOnly ? <>
-              <div className="grid gap-2 border-b border-zinc-100 px-4 py-3"><span className="text-sm font-semibold"><WorkspaceText text="Full name"/></span><div className="grid grid-cols-2 gap-2"><label className="grid gap-1 text-xs"><WorkspaceText text="First & middle names"/><input className="min-h-11 min-w-0 rounded-md border px-3" autoComplete="given-name" value={values.first_name} placeholder={__vt("First · middle")} onChange={e=>updateValue("first_name",e.target.value)}/></label><label className="grid gap-1 text-xs"><WorkspaceText text="Last name"/><input className="min-h-11 min-w-0 rounded-md border px-3" autoComplete="family-name" value={values.last_name} placeholder={__vt("Last")} onChange={e=>updateValue("last_name",e.target.value)}/></label></div></div>
+              <div className="grid gap-2 border-b border-zinc-100 px-4 py-3"><span className="text-sm font-semibold"><WorkspaceText text="Legal name"/></span><div className="grid grid-cols-2 gap-2"><label className="grid gap-1 text-xs"><WorkspaceText text="Legal first name"/><input className="min-h-11 min-w-0 rounded-md border px-3" autoComplete="given-name" value={values.first_name} placeholder={__vt("First · middle")} onChange={e=>updateValue("first_name",e.target.value)}/></label><label className="grid gap-1 text-xs"><WorkspaceText text="Legal last name"/><input className="min-h-11 min-w-0 rounded-md border px-3" autoComplete="family-name" value={values.last_name} placeholder={__vt("Last")} onChange={e=>updateValue("last_name",e.target.value)}/></label></div></div>
               <EditableField
                 label={__vt("Language")}
                 name="language"
@@ -1051,7 +1051,7 @@ export function AccountProfileEditor({
               onEdit={beginEdit}
               value={values.phone}
             />
-            <ProfileField label={__vt("Full name")} onEdit={beginEdit} value={[values.first_name,values.last_name].filter(Boolean).join(" ")||__vt("First · last · middle")}/>
+            <ProfileField label={__vt("Legal name")} onEdit={beginEdit} value={[values.first_name,values.last_name].filter(Boolean).join(" ")||__vt("First · last · middle")}/>
             <ProfileField
               label={__vt("Language")}
               onEdit={beginEdit}

@@ -1,3 +1,4 @@
+import { getStaffLegalName } from "@/lib/staff-legal-name";
 
 
 import { PayrollDailyListing } from "@/app/payroll/payroll-daily-listing";
@@ -642,9 +643,9 @@ function SettingsReadContent({
             <h3 className="truncate text-base font-semibold text-zinc-950">
               {staffProfileDisplayName}
             </h3>
-            {setting?.legal_name ? (
+            {getStaffLegalName(staff) ? (
               <p className="mt-0.5 truncate text-xs text-zinc-500">
-                <WorkspaceText text="Legal name:" /> {setting.legal_name}
+                <WorkspaceText text="Legal name:" /> {getStaffLegalName(staff)}
               </p>
             ) : null}
             <p className="mt-1 text-sm text-zinc-600">

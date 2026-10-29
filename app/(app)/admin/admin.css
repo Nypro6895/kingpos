@@ -1,4 +1,4 @@
-.admin-workspace { --admin-border: #e4e4e7; font-family: var(--font-geist-sans), Arial, sans-serif; }
+.admin-workspace { --admin-border: #e4e4e7; font-family: var(--font-app-sans); }
 .admin-workspace h1 { font-weight: 650; font-size: clamp(1.55rem, 2.5vw, 2rem); }
 .admin-workspace h2, .admin-workspace h3 { font-weight: 650; }
 .admin-workspace .font-black { font-weight: 650; }
@@ -9,7 +9,7 @@
 .admin-workspace button:disabled { cursor: wait; opacity: .6; }
 .admin-navigation { max-height: calc(100dvh - 15rem); overflow-y: auto; scrollbar-width: thin; }
 .admin-tabs { display: flex; gap: 1.5rem; overflow-x: auto; border-bottom: 1px solid var(--admin-border); margin-top: 1.5rem; }
-.admin-tabs a { padding: .8rem 0; font-size: .875rem; white-space: nowrap; color: #71717a; border-bottom: 2px solid transparent; }
+.admin-tabs a { padding: .8rem 0; font-size: .875rem; white-space: nowrap; color:var(--text-secondary); border-bottom: 2px solid transparent; }
 .admin-tabs a[aria-current=page] { color: #c2410c; border-bottom-color: #ea580c; font-weight: 600; }
 .admin-data-row:hover { background: #fafafa; }
 @media (max-width: 1023px) { .admin-navigation { max-height: 65dvh; } }
@@ -18,11 +18,11 @@
 }
 
 /* Shared admin shell and flat operational dashboard. */
-.admin-workspace { --admin-ink: #172238; --admin-muted: #64748b; --admin-link: #007e87; --admin-border: #e3e8ee; color: var(--admin-ink); }
+.admin-workspace { --admin-ink: var(--text-primary); --admin-muted: var(--text-secondary); --admin-link: #007e87; --admin-border: #e3e8ee; color: var(--admin-ink); }
 .admin-workspace a:focus-visible, .admin-workspace button:focus-visible, .admin-workspace summary:focus-visible { outline: 2px solid #07868f; outline-offset: 3px; }
 .admin-sidebar { display: none; }
 .admin-nav-link { position: relative; min-height: 40px; border-radius: 4px; }
-.admin-nav-link[aria-current=page] { background: #f3f5f7; color: #152237; }
+.admin-nav-link[aria-current=page] { background: #f3f5f7; color: var(--text-primary); }
 .admin-nav-link[aria-current=page]::before { content: ''; position: absolute; left: -16px; top: 3px; bottom: 3px; width: 3px; background: #f97316; }
 .admin-nav-count { margin-left: auto; background: #fff0e5; color: #b84a0b; min-width: 21px; text-align: center; font-size: 11px; padding: 2px 5px; border-radius: 4px; }
 .admin-sidebar-account { margin-top: auto; padding: 18px 4px 0; border-top: 1px solid var(--admin-border); display: flex; align-items: center; gap: 10px; }

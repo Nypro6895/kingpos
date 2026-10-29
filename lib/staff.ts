@@ -1,4 +1,6 @@
 import "server-only";
+import { staffLegalNameOwnerPatch } from "@/lib/staff-legal-name";
+import { resolveStaffLegalNames } from "@/lib/staff-legal-name-server";
 
 import {
   getCurrentBusinessContext,
@@ -124,7 +126,7 @@ export async function getCurrentSalonStaff() {
     throw new Error(error.message);
   }
 
-  return { context, staff: data ?? [] };
+  return { context, staff: await resolveStaffLegalNames(data ?? [], supabase) };
 }
 
 export async function getCurrentSalonStaffDirectory(
@@ -320,7 +322,7 @@ export async function getCurrentSalonStaffDirectory(
   }
 
   const staff =
-    staffResult.data?.map<StaffDirectoryMember>((member) => {
+    (await resolveStaffLegalNames(staffResult.data ?? [], supabase)).map<StaffDirectoryMember>((member) => {
       const payrollSetup = payrollSetupByStaffId.get(member.id) ?? null;
 
       const connectedUser =
@@ -556,10 +558,9 @@ export async function updateStaffDirectoryBatch(
         city: cleanOptional(change.city),
         display_name: displayName,
         email: cleanOptional(change.email),
-        first_name: cleanOptional(change.first_name),
+        ...staffLegalNameOwnerPatch(existing, change),
         is_active: isActive,
         job_title: cleanOptional(change.job_title),
-        last_name: cleanOptional(change.last_name),
         online_booking_enabled: onlineBookingEnabled,
         owner_public_enabled: publicProfileVisible,
         phone: cleanOptional(change.phone),

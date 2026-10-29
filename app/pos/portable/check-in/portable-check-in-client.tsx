@@ -44,6 +44,7 @@ type PortableCheckInClientProps = {
   businessDate?: string;
   onAttendanceSettled?: () => void;
   onDataChange?: (data: PortableCheckInData, pending: boolean) => void;
+  showSalonBranding?: boolean;
   workspacePath?: string;
   staffEndpoint?: string;
   action: (
@@ -241,6 +242,7 @@ export function PortableCheckInClient({
   businessDate: managedBusinessDate,
   onAttendanceSettled,
   onDataChange,
+  showSalonBranding = true,
   workspacePath="/pos/portable/check-in",
   staffEndpoint="/api/pos/portable/staff",
   action,
@@ -575,7 +577,7 @@ export function PortableCheckInClient({
       />
       {!workspaceState && <header className="relative z-10 shrink-0 px-2 pb-3 pt-1">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/80 bg-white/64 text-base font-bold text-zinc-950 shadow-[0_14px_34px_rgba(24,24,27,0.12)] backdrop-blur-xl">
+          {showSalonBranding && <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/80 bg-white/64 text-base font-bold text-zinc-950 shadow-[0_14px_34px_rgba(24,24,27,0.12)] backdrop-blur-xl">
             {viewData.salonLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -586,11 +588,11 @@ export function PortableCheckInClient({
             ) : (
               getSalonInitials(viewData.salonName)
             )}
-          </div>
+          </div>}
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-semibold leading-tight text-zinc-950">
+            {showSalonBranding && <h1 className="truncate text-xl font-semibold leading-tight text-zinc-950">
               {viewData.salonName}
-            </h1>
+            </h1>}
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium leading-tight text-zinc-600">
               <time>{clock.date || viewData.today}</time>
               <span aria-hidden="true" className="text-zinc-400">

@@ -1220,11 +1220,11 @@ function StaffDetailDrawer({
       <DetailSection title="Staff Profile">
         <DetailField label="Display name" value={member.display_name} />
         <DetailField
-          label="Real first name"
+          label="Legal first name"
           value={cleanValue(member.first_name) || "No first name"}
         />
         <DetailField
-          label="Real last name"
+          label="Legal last name"
           value={cleanValue(member.last_name) || "No last name"}
         />
         <DetailField

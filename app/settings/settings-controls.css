@@ -1,4 +1,14 @@
 /* Shared control rhythm across legacy panels, without changing their actions. */
+/* A subject occupies one row at every screen size; longer values wrap in place. */
+.settings-hub .settings-inline-editor :where(.settings-field,label:has(>input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden])),label:has(>select),label:has(>textarea),div.grid:has(>dt),div.grid:has(>label[for]+input),div.grid.border-b:has(>span+span)){
+ display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);align-items:center;gap:10px 12px;min-width:0
+}
+.settings-hub .settings-inline-editor :where(.settings-field,label:has(>input),label:has(>select),label:has(>textarea))> :where(input,select,textarea){width:100%;box-sizing:border-box;margin-top:0}
+.settings-hub .settings-inline-editor :where(dt,dd,label,span){overflow-wrap:anywhere}
+.settings-hub .settings-inline-editor :where(.settings-field-group-content,.settings-booking-fields){grid-template-columns:minmax(0,1fr)}
+.settings-hub .settings-inline-editor :where(.settings-field-group-content,.settings-booking-fields)>*{grid-column:1/-1}
+.settings-hub .settings-inline-editor .grid:has(>.settings-field),
+.settings-hub .settings-inline-editor .grid:has(>label>input:not([type=checkbox]):not([type=radio]):not([type=file])){grid-template-columns:minmax(0,1fr)}
 .settings-hub .settings-inline-editor :where(input:not([type]),input[type=text],input[type=email],input[type=password],input[type=tel],input[type=url],input[type=number],input[type=date],input[type=time],select,textarea),
 .settings-input{min-height:44px;border:1px solid #d4d4d8;border-radius:9px;background:#fff;padding:10px 12px;font-size:14px;line-height:1.5;color:#27272a}
 .settings-field{display:grid;gap:7px;font-size:13px;line-height:1.5;min-width:0}

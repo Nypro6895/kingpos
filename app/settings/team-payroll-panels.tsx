@@ -1,4 +1,6 @@
 "use client";
+import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
+import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useState } from "react";
 import {
@@ -88,12 +90,15 @@ export function TeamSettingsPanel({
           required
         />
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field
-            name="first_name"
-            label={__vt("First name")}
-            value={staff?.first_name}
-          />
-          <Field name="last_name" label={__vt("Last name")} value={staff?.last_name} />
+          {staff && staffHasPersonalAccount(staff) ? (
+            <p className="text-sm text-zinc-600 sm:col-span-2">
+              <WorkspaceText text="Legal name:" /> {getStaffLegalName(staff) || <WorkspaceText text="Not set" />}<br />
+              <WorkspaceText text="Legal name is managed by this person in Personal." />
+            </p>
+          ) : <>
+            <Field name="first_name" label={__vt("Legal first name")} value={staff?.first_name} />
+            <Field name="last_name" label={__vt("Legal last name")} value={staff?.last_name} />
+          </>}
           <Field name="email" label={__vt("Email")} type="email" value={staff?.email} />
           <Field name="phone" label={__vt("Phone")} type="tel" value={staff?.phone} />
         </div>
@@ -169,7 +174,7 @@ export function TeamSettingsPanel({
       {data.staff.map((staff) => (
         <SettingsEditSection key={staff.id} title={staff.staff_profile_display_name||staff.display_name} action={data.canManage?"Manage":"View"} closeOnSave={false} heading={<SettingsIdentity name={staff.staff_profile_display_name||staff.display_name} imageUrl={staff.staff_profile_avatar_url} subtitle={[__vt(staff.job_title||"Staff"),__vt(staff.is_active?"Active":"Inactive")].join(" · ")}/>}>
           <div className="mt-3 grid gap-3">
-            <p className="text-sm text-zinc-600"><WorkspaceText text={staff.connected_user?`${staff.connected_user.email||staff.connected_user.display_name||staff.connected_user.id} is linked to this staff profile`:`No app account is linked${staff.email?` · Contact: ${staff.email}`:""}`} /></p>
+            <p className="text-sm text-zinc-600"><WorkspaceText text={staff.connected_user?`${staff.connected_user.email||staff.connected_user.display_name||staff.connected_user.id} is linked to this staff profile`:staffHasPersonalAccount(staff)?"An app account is linked to this staff profile":`No app account is linked${staff.email?` · Contact: ${staff.email}`:""}`} /></p>
             {data.canManage ? (
               <>
                 {editor(staff)}
@@ -317,7 +322,6 @@ export function PayrollSettingsPanel({
                     staffId: row.staff.id,
                     expectedSettingId:s?.id??null,expectedUpdatedAt:s?.updated_at??null,
                     effectiveFrom: text(form, "effective_from"),
-                    legalName: text(form, "legal_name") || null,
                     payType:
                       text(form, "pay_type") === "fixed"
                         ? "fixed"
@@ -350,11 +354,10 @@ export function PayrollSettingsPanel({
                   value={s?.effective_from ?? data.today}
                   required
                 />
-                <Field
-                  name="legal_name"
-                  label={__vt("Legal name")}
-                  value={s?.legal_name}
-                />
+                <p className="text-sm text-zinc-600">
+                  <WorkspaceText text="Legal name:" /> {getStaffLegalName(row.staff) || <WorkspaceText text="Not set" />} {" · "}
+                  {staffHasPersonalAccount(row.staff) ? <WorkspaceText text="Managed in Personal" /> : <Link className="underline" href="/staff"><WorkspaceText text="Edit staff" /></Link>}
+                </p>
                 <Select
                   name="pay_type"
                   label={__vt("Pay type")}

@@ -1807,7 +1807,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
   return (
     <main
-      className={`${styles.page} min-h-screen bg-[#fbfaf8] px-4 py-6 sm:px-6 lg:px-8`}
+      className={`${styles.page} min-h-screen bg-[#fbfaf8] px-0 py-6 md:px-6 lg:px-8`}
       data-today-dashboard="owner-manager"
     >
       <div className="flex w-full min-w-0 flex-col gap-5">

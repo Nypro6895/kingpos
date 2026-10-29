@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "today-ticket-spacing-20261029",
+  "status": "needs-integration",
+  "summary": "Today uses the shared mobile gutter; owner Ticket keeps calendar/search/support without visible title or duplicate date text",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/pos-tickets/ticket-filters.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/today-ticket-spacing-20261029/source"
+  },
+  "validation": [
+    {
+      "name": "Scoped ESLint and diff whitespace checks",
+      "result": "passed"
+    },
+    {
+      "name": "Authenticated iPhone visual verification",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "mobile-page-spacing-20261028"
+  ],
+  "id": "0e42ece2-3f36-4d45-a1b7-88bb352c1766",
+  "recordedAt": "2026-10-29T14:49:19.021Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

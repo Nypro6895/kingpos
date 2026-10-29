@@ -4,7 +4,6 @@ import { BookingDepositSettings } from "./booking-deposit-settings";
 import { BookingRulesSettings, BookSmsSettings } from "./booking-plugin-settings";
 import { TimeZoneSelect } from "@/components/time-zone-select";
 import { SalonPublicationStatus } from "@/components/salon-publication-status";
-import { SalonAddressSummary } from "@/components/salon-address-summary";
 import { useState } from "react";
 import {
   saveDirectSalonProfile,
@@ -276,7 +275,7 @@ export function SalonDetailsPanel({
         </SettingsFieldGroup>
       </InlineForm>
       </SettingsEditSection>
-      {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? <SalonAddressSummary address={data.mapLocation.address} /> : <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
+      {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? null : <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
 
         <InlineForm disabled={!data.mapLocation.refreshEnabled} save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
           <p className="text-sm">{[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")}</p>

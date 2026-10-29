@@ -1,5 +1,5 @@
 /* Shared settings language. Only explicitly marked settings surfaces opt in. */
-.settings-style{--settings-green:#35634e;--settings-green-soft:#edf5ef;--settings-line:#e4e8e4;min-width:0;max-width:100%;color:#27272a}
+.settings-style{--settings-green:#35634e;--settings-green-soft:#edf5ef;--settings-line:#e4e8e4;min-width:0;max-width:100%;color:var(--text-primary);font-family:var(--font-app-sans)}
 .settings-style.settings-style-page{background:#fff;padding:20px 24px}
 .settings-style-page>main{background:transparent;padding:0;min-height:0}
 .settings-style-page>main>div>aside:not([role=dialog]){padding:0 18px 0 0;border-bottom:0;border-right:1px solid var(--settings-line)}

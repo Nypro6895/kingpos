@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "shared-typography-20261029",
+  "status": "needs-integration",
+  "summary": "Unified app font and neutral text palette across 24 stylesheets; Staff hours now follows shared Settings typography and actions",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/globals.css",
+    "components/settings-style.css",
+    "app/booking-setup/booking-setup.css",
+    "app/bookings/booking-workspace.css",
+    "app/staff/appointments/staff-appointments.css",
+    "components/booking-ui/booking-theme.module.css",
+    "components/booking-ui/public-booking.css",
+    "app/(app)/admin/admin.css",
+    "app/pos/owner-pos.css",
+    "app/(app)/admin/advertising/advertising.module.css",
+    "app/(app)/my-bookings/booking-list.module.css",
+    "app/book/[salonId]/booking-wizard.module.css",
+    "app/booking/manage/[token]/guest-manage.module.css",
+    "app/pos/compact-checkout-adjustments.module.css",
+    "app/pos/portable/book/booking.module.css",
+    "app/pos/portable/portable-booking-notifications.module.css",
+    "app/pos/portable/touch-keyboard.module.css",
+    "app/salon-profile/operating-hours-quick.module.css",
+    "app/salon-profile/service-menu.module.css",
+    "app/salon-profile/team-menu.module.css",
+    "app/services/services.css",
+    "app/staff/my-work/staff-daily-overview.module.css",
+    "components/booking-ui/schedule-picker.module.css",
+    "components/quick-booking.module.css"
+  ],
+  "validation": [
+    {
+      "name": "PostCSS/Tailwind and all 24 stylesheet parsing",
+      "result": "passed",
+      "evidence": "artifacts/shared-typography-20261029/verify.mjs"
+    },
+    {
+      "name": "Chrome component 375/768/1280 and shared surface computed styles",
+      "result": "passed",
+      "evidence": "artifacts/shared-typography-20261029/verification.json"
+    },
+    {
+      "name": "Existing compact availability interaction test",
+      "result": "passed",
+      "evidence": "artifacts/shared-typography-20261029/availability-test.log"
+    },
+    {
+      "name": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "name": "Production build, authenticated routes and physical iPhone acceptance",
+      "result": "pending",
+      "evidence": "artifacts/shared-typography-20261029/README.txt"
+    }
+  ],
+  "dependencies": [
+    "settings-grouped-style-20261028"
+  ],
+  "source": {
+    "snapshot": "artifacts/shared-typography-20261029/source"
+  },
+  "id": "04a4780f-e3d7-4e27-8b9f-645b4c29c11e",
+  "recordedAt": "2026-10-29T15:19:06.315Z",
+  "worktree": "C:\\Reylumi-worktrees\\shared-typography-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

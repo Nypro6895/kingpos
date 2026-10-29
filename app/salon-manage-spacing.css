@@ -1,0 +1,26 @@
+/* One mobile page gutter. Cards and forms retain their own internal spacing. */
+@media (width < 768px) {
+  [data-salon-manage-gutters="true"] {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  [data-salon-manage-gutters="true"] main:not(main main, dialog main, [role="dialog"] main) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  [data-salon-manage-gutters="true"] .settings-style.settings-style-page:not(main *) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Services uses frame widths and toolbar margins instead of main padding. */
+  [data-salon-manage-gutters="true"] .services-page:not(.settings-inline-services) > .services-page__frame {
+    width: 100%;
+  }
+
+  [data-salon-manage-gutters="true"] .services-page:not(.settings-inline-services) > .services-page__frame > :is(.services-toolbar, .services-message) {
+    margin-inline: 0;
+  }
+}
