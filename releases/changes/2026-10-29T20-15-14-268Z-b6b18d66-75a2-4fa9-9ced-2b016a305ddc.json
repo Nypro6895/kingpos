@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "profile-legal-name-consistency-20261029",
+  "status": "ready",
+  "summary": "Unify Owner Personal and linked Staff legal names from Personal; Owner names only unlinked Staff; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/staff/my-work/staff-profile-settings-drawer.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "app/staff/staff-public-profile-editor.tsx",
+    "lib/payroll.ts",
+    "lib/staff-legal-name-server.ts",
+    "lib/staff-legal-name.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff.ts",
+    "lib/vietnamese-dictionary.ts",
+    "supabase/migrations/20261029160000_staff_personal_legal_name.sql",
+    "tests/profile-legal-name-consistency-ui.test.mjs",
+    "tests/profile-legal-name-consistency.integration.test.mjs",
+    "tests/profile-legal-name-consistency.test.mjs",
+    "tests/staff-profile-legal-name.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "da1e55f0-3302-4dd4-b7a8-d3eeb782444e"
+  },
+  "dependencies": [
+    "staff-profile-legal-name-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "b6b18d66-75a2-4fa9-9ced-2b016a305ddc",
+  "recordedAt": "2026-10-29T20:15:14.268Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/account/account-profile-editor.tsx": "b9c52e18815f117a35ebf7e44de829fb96dd225d8fbad6eda1ae29f41e24bac8",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx": "26eaf6fdbf287305ab922047be6f6c77af18dff9ca700622fd9d04d9642b9aa9",
+    "app/settings/direct-settings-panel.tsx": "c50d1c92011ea3d35924ad7bcf26d1c19e3f3081381efa22471a980f5fb6baec",
+    "app/settings/team-payroll-panels.tsx": "27c3acf7ecb5b6acbf91fa4688f1f32f82c4a1ea2279019de012ab1742dd5501",
+    "app/staff/my-work/staff-profile-settings-drawer.tsx": "dd470bb447daee567015192ad9be5c38a4065f65d07de7999fd3805877a5b1ce",
+    "app/staff/staff-directory-editor.tsx": "68d29289663705c76b7a7c64d5ccc0ebaf4eb4de2e6e2dc0c2656297f3925688",
+    "app/staff/staff-public-profile-editor.tsx": "0f1f5301473545871d6ec94fe84cf9238f33bdc238018c365e97ff0ae9ccbe4e",
+    "lib/payroll.ts": "1b16aba5fc706da01de505180eec3cc6d1f99e694d3baeca5377dc346cfb5906",
+    "lib/staff-legal-name-server.ts": "9b020272979f30431590e69374d749ddc8aa525288c8b25eb40d46e05b11c70f",
+    "lib/staff-legal-name.ts": "f9c72d91229f217c0a2909d9500c6916e4bfd652a2df0c0a47f47aece0c0a7d3",
+    "lib/staff-portal-identity.ts": "4904ad7eaf4e8d208e4ebfd458353b7115eb4c024aa263edeaf1590cbd789c8e",
+    "lib/staff.ts": "35f6cf41d226db62d4bf147b2064648c55bfa127dff973a085e0553132c8f25f",
+    "lib/vietnamese-dictionary.ts": "324842a92fe1447629bc2de343bbbd2067ee752daf142ab6250a0f74faa526fd",
+    "supabase/migrations/20261029160000_staff_personal_legal_name.sql": "7c1c461614342f2f19ee12b8415f32e239e907f9d61d588ab6fde12282ec39a0",
+    "tests/profile-legal-name-consistency-ui.test.mjs": "21bbd1eceeb3e86f5b72f7cd2d8ba859b31217c4850d999049a26146bcdc9762",
+    "tests/profile-legal-name-consistency.integration.test.mjs": "2612f862373ccee6e2fe57619edd1f15f7097eabd509a616ff53ffe6923e3277",
+    "tests/profile-legal-name-consistency.test.mjs": "4b6d1a85809be5c788baddbb83bcc763fd099fdfa7a8d8d79fdccb0c8448a0f6",
+    "tests/staff-profile-legal-name.test.mjs": "1b10cb9a507f60964f05cbfba091c0a13f3c803382f43e6744b9788f96310340"
+  }
+}

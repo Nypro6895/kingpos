@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "shared-typography-20261029",
+  "status": "ready",
+  "summary": "Unified app font and neutral text palette across 24 stylesheets; Staff hours now follows shared Settings typography and actions; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/globals.css",
+    "components/settings-style.css",
+    "app/booking-setup/booking-setup.css",
+    "app/bookings/booking-workspace.css",
+    "app/staff/appointments/staff-appointments.css",
+    "components/booking-ui/booking-theme.module.css",
+    "components/booking-ui/public-booking.css",
+    "app/(app)/admin/admin.css",
+    "app/pos/owner-pos.css",
+    "app/(app)/admin/advertising/advertising.module.css",
+    "app/(app)/my-bookings/booking-list.module.css",
+    "app/book/[salonId]/booking-wizard.module.css",
+    "app/booking/manage/[token]/guest-manage.module.css",
+    "app/pos/compact-checkout-adjustments.module.css",
+    "app/pos/portable/book/booking.module.css",
+    "app/pos/portable/portable-booking-notifications.module.css",
+    "app/pos/portable/touch-keyboard.module.css",
+    "app/salon-profile/operating-hours-quick.module.css",
+    "app/salon-profile/service-menu.module.css",
+    "app/salon-profile/team-menu.module.css",
+    "app/services/services.css",
+    "app/staff/my-work/staff-daily-overview.module.css",
+    "components/booking-ui/schedule-picker.module.css",
+    "components/quick-booking.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "04a4780f-e3d7-4e27-8b9f-645b4c29c11e"
+  },
+  "dependencies": [
+    "settings-grouped-style-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "94252926-9186-4502-a2aa-a4cc79930eaf",
+  "recordedAt": "2026-10-29T20:15:14.125Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/globals.css": "3d9770aa4c825d77c3446eeecae2b4c51e492c0d12570cb9cc387639f7122b5e",
+    "components/settings-style.css": "3b41626442466164da1ff21d4f62f762c68fcb038582a2b43f663b923e208d33",
+    "app/booking-setup/booking-setup.css": "fc747ec2aa97709b9848254c6589ce3f50ba4a35f2bd206a67245b1d042ad07e",
+    "app/bookings/booking-workspace.css": "2d9503ee37d27cd8da211d4c9ffa970e5a863b6adba810b72318213b03901562",
+    "app/staff/appointments/staff-appointments.css": "e9928e794ed1d64cb9942a76fa2c6857f1e7e341de931ccd36866a5068d4d61a",
+    "components/booking-ui/booking-theme.module.css": "b9d79216cb0b7966f10a2e24cb865ec4307d9dee7c37be4259cfa9258412eb2a",
+    "components/booking-ui/public-booking.css": "4c7123d239c2cfd90ddf556d7ef87c4a8c45f464cb7cf79276512770b53b2339",
+    "app/(app)/admin/admin.css": "7f86684c6e6fb61e9e76889e80d29d0df737b4c29dcb1482c53957917ddc6648",
+    "app/pos/owner-pos.css": "f50f3d6e8cad3d435b05615ce9ca7c1d85f0b31c346b0caa6b7686a98e5ea601",
+    "app/(app)/admin/advertising/advertising.module.css": "8c3c60d10c26f2b7e0d828d5d6ead38c6f5ec87a743a49ee496def2a7bd22807",
+    "app/(app)/my-bookings/booking-list.module.css": "9ff8e3f005013c8aa0065f5955bcec9aba55682094afc73bc23134b795ef9a08",
+    "app/book/[salonId]/booking-wizard.module.css": "c254c626e97f52cb0af4f11f8eb9413c2e7565cc5a852fdaf6933e7bdd071832",
+    "app/booking/manage/[token]/guest-manage.module.css": "fc452ff6b31670be58d20c1cbd884edb5e33081686270e91515950ad620d6661",
+    "app/pos/compact-checkout-adjustments.module.css": "e72f47b1fb472e338e7028a87d5641336e8dcadbdca6ea83d0fd95f2e91ce4a0",
+    "app/pos/portable/book/booking.module.css": "cde572cbd1d3ddc58812b863d456e22a608e70a9bdf15712a865519e7659d0b4",
+    "app/pos/portable/portable-booking-notifications.module.css": "a052328a69550f3ee1ce63b02cc138a11eb4d7705c2ab487461f249f004bf4c6",
+    "app/pos/portable/touch-keyboard.module.css": "90e17d262287a91a6f5668234f0f635961db4b7c2b4fa304abb8177a00cea3ba",
+    "app/salon-profile/operating-hours-quick.module.css": "0c5c4a8a31f4333eb995bb283040860ad85090f68deeb7e3cfc6b1c73797cfca",
+    "app/salon-profile/service-menu.module.css": "30373e8ff135f90df488bfbb71647e0047a41087b9a05a1ef2f099834a459c65",
+    "app/salon-profile/team-menu.module.css": "87691480cef6e10e866d057612682246af2cb5e014e8702677b51e927dd3a402",
+    "app/services/services.css": "251561bcd2a82d0ffafa98ceeb497cd48a37bcf8f83c93b48349df1291b457bf",
+    "app/staff/my-work/staff-daily-overview.module.css": "ebe43db51c9abcefb940be9404e9e3542a7012d6f400ffc24eacadbb9f9031fd",
+    "components/booking-ui/schedule-picker.module.css": "310848ce9407672244d38756e13296535ff3555590c95d7ee5ae0b70b1cd3708",
+    "components/quick-booking.module.css": "88c50ecc4308f1916d8e562415d41e88eaaa8b7f7a4bce26991c549882896511"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "release",
+  "summary": "Publish 12 completed remaining-chat changes on exact release68 web baseline; new iOS source-bound pipeline running; developer Market dependency and unfinished Payroll history remain queued",
+  "changes": [
+    "866ea130-d9ed-4ed4-82b5-6f7ff850de0f",
+    "82dfe334-c7cc-46ce-a9c9-b68b28207b80",
+    "4298672d-7d0a-4249-b987-bf4e7f72c383",
+    "8f7e0ec5-6922-47cb-8388-e107286f27e5",
+    "f46ab960-c89d-4644-b3f8-2f3368f0682d",
+    "0278173d-321d-4a89-8e60-560f5a03e2fb",
+    "244c2487-d33e-463e-83df-a557dd5b3911",
+    "94252926-9186-4502-a2aa-a4cc79930eaf",
+    "b6b18d66-75a2-4fa9-9ced-2b016a305ddc",
+    "94fa6a81-58ac-4fd7-a444-ef4101102897",
+    "b362e119-e274-466c-97d7-8e6490cb1f03",
+    "9ed75779-d5bf-4d98-aec3-2bb662cc9ba9",
+    "2a1aea8e-caf4-4959-8b18-cf2244ef1f30"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_8BiU47gGHzC16dZR7tpKXtupmWMY",
+      "baselineDeploymentId": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+      "sourceSha256": "b67eff284f8159153cf11ac0b90b33ccee1d38c7e1e0585f4a2e7c2e8f1b7cdc",
+      "overlaySha256": "c97728e19171bf594cd4b5539007cbc277b6141470d2a422469db3049928a1ea",
+      "evidence": "artifacts/release-20261029/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+      "evidence": "Native pipeline40946482009 in progress; no upload claim"
+    }
+  },
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "limitations": {
+    "physicalAcceptance": false,
+    "customerMergeTest": "Isolated fixtures; no manual production customer merge performed",
+    "nativeAvailability": "Pending exact signed archive and independent Apple GET readback"
+  },
+  "id": "f72ab75a-3ed5-432b-8388-dbaa74d348e2",
+  "recordedAt": "2026-10-29T20:15:26.014Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

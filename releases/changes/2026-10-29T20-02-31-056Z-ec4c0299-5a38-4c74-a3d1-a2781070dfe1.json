@@ -1,0 +1,32 @@
+{
+  "changeId": "pos-status-main-only-20261029",
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "summary": "Show sync status only on main POS screen, keep background sync on other workspace pages",
+  "status": "needs-integration",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Scoped ESLint and diff whitespace checks"
+    },
+    {
+      "result": "pending",
+      "name": "Device route visual verification"
+    }
+  ],
+  "files": [
+    "app/pos/portable/portable-sync-indicator.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "artifacts/pos-status-main-only-20261029/frozen"
+  },
+  "id": "ec4c0299-5a38-4c74-a3d1-a2781070dfe1",
+  "recordedAt": "2026-10-29T20:02:31.056Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

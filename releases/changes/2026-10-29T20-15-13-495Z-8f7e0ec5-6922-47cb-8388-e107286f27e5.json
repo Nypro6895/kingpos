@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "customer-auto-merge-20261028",
+  "status": "ready",
+  "summary": "Owner queued automatic customer consolidation for the next coordinated live release on 2026-10-29; integrate the frozen patch and validate full schema before publication.; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/customers/actions.ts",
+    "app/customers/automatic-customer-merge.tsx",
+    "supabase/migrations/20261028180000_customer_automatic_consolidation.sql",
+    "tests/customer-automatic-consolidation.test.mjs",
+    "tests/customer-automatic-merge-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "e9c3aeff-eb1e-4125-8717-0583210dba2c"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "8f7e0ec5-6922-47cb-8388-e107286f27e5",
+  "recordedAt": "2026-10-29T20:15:13.495Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/customers/page.tsx": "4069028925d61c4d7fb1c56164bc200bb509f3f2595f8ea3a1ef1b2c843e68cc",
+    "app/customers/actions.ts": "0a0ef7896e5ef6eacaf8f944594d9c2ce583d714d27371cbd4c92a38b2b45a59",
+    "app/customers/automatic-customer-merge.tsx": "6eceb1b4d70381fc7cccbb93cb5db633a047017a60120f8865f416b2773c5721",
+    "supabase/migrations/20261028180000_customer_automatic_consolidation.sql": "7cc6e6bdbd581c7c3704fcdd5aea2793729868eca91be090669221c469ccc84d",
+    "tests/customer-automatic-consolidation.test.mjs": "f9bdcd4e907768f6120c4796e8a6403a663f2bdbb6e8dbe2e52b99db35307bd6",
+    "tests/customer-automatic-merge-ui.test.mjs": "536e532d77b132a0af1576ec737f2143a08842c7001fe5006112be0546017f8e"
+  }
+}

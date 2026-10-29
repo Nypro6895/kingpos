@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "remove-saved-address-card-20261029",
+  "status": "ready",
+  "summary": "Remove technical saved-address fallback card from salon settings across grouped, legacy and app-local views; preserve address editing and storage.; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "components/app-local-salon-settings.tsx",
+    "app/settings/salon-settings-panels.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "b423bc25-cc12-460a-b53e-c6ab65bbaaa6"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "82dfe334-c7cc-46ce-a9c9-b68b28207b80",
+  "recordedAt": "2026-10-29T20:15:13.226Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/salon-settings/page.tsx": "0dd3228afe29bab7d698142315b1b8b398d5420c644da7264b5fb26c724cfac6",
+    "components/app-local-salon-settings.tsx": "4206cf6cb55ff702ce1397f5ee5ba08f15a97f8413f0cd8e49098ee135ff56ab",
+    "app/settings/salon-settings-panels.tsx": "64e9772b9db59ab44a52c5f204468ade89ae35b3c34fb40f85ca6705443f6326"
+  }
+}

@@ -17,6 +17,7 @@ import { PortableFullscreenButton } from "./portable-fullscreen-button";
 import { PosWorkspaceRealtimeRefresh } from "@/app/pos/pos-workspace-realtime-refresh";
 import {
   isPortablePosRoute,
+  PORTABLE_POS_ROUTES,
   type PortablePosRouteLink,
 } from "@/lib/pos-portable-routes";
 
@@ -291,7 +292,7 @@ export function PortableWorkspaceTabs({
 
         <div className="ml-auto flex shrink-0 items-center gap-1">
         {items.some(item => item.id === "book") ? <PortableBookingNotifications key={workspace?.scope ?? salonId} salonId={salonId} timezone={salonTimezone} canConfirm={canConfirmBookings} /> : null}
-        {workspace?.offlineEnabled ? <PortableSyncIndicator scope={workspace.scope} /> : null}
+        {workspace?.offlineEnabled ? <PortableSyncIndicator scope={workspace.scope} visible={isPortablePosRoute((optimisticHref ?? pathname).split(/[?#]/, 1)[0], PORTABLE_POS_ROUTES.pos)} /> : null}
         <DesktopTools />
         <DeviceInputSettingsButton />
         <PortableFullscreenButton />

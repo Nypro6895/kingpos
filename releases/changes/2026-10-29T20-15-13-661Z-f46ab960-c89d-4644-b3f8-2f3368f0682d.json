@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "manage-mobile-gutters-20261029",
+  "status": "ready",
+  "summary": "Use one safe-area-aware 16px mobile gutter across salon manage pages, including Reports, Settings and Services; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/salon-manage-spacing.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "54fd19f7-ac4e-411f-9468-778525ac063d"
+  },
+  "dependencies": [
+    "mobile-page-spacing-20261028",
+    "today-ticket-spacing-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "f46ab960-c89d-4644-b3f8-2f3368f0682d",
+  "recordedAt": "2026-10-29T20:15:13.661Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "6f3a983a9ec0ce16f465c57153031f31810da86d90ed2b9892c49643ab2874d8",
+    "app/salon-manage-spacing.css": "7e406b232c93a01b0b3603bfc424a8a827f058a411ae15e1275bb2a11015fb5a"
+  }
+}

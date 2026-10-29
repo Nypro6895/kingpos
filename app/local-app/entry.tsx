@@ -146,7 +146,7 @@ function OwnerPages({ context, path, navigate, active }: { context: AppLocalCont
   const ownerTabs: Record<string, "pos" | "ticket" | "book" | "checkIn" | "report"> = { "/pos": "pos", "/pos/ticket": "ticket", "/pos/book": "book", "/pos/check-in": "checkIn", "/pos/report": "report" };
   const activeTab = ownerTabs[path.split("?")[0]] ?? "pos";
   return <OwnerLocalWorkspace scope={scope} salonId={salonId} ownerScope={ownerScope} active={active}>
-    <Activity mode={active ? "visible" : "hidden"}><OwnerPosNavigation active={activeTab} syncScope={ownerScope} /></Activity>
+    <Activity mode={active ? "visible" : "hidden"}><OwnerPosNavigation active={activeTab} /></Activity>
     <div ref={checkout} hidden={path.split("?")[0] !== "/pos"}>
       {reference ? <OwnerPosClient scope={ownerScope} salonId={salonId} salonName={reference.salonName} initial={reference} preferences={reference.preferences} snapshotAt={resource.updatedAt} active={active && path.split("?")[0] === "/pos"} showNavigation={false} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}><h1 className="text-xl font-semibold">POS</h1>{resource.error ? <><p className="mt-4">Please check your connection and try again.</p><button type="button" className="mt-4 rounded border px-4 py-2" onClick={() => void resource.refresh()}>Try again</button></> : <LumiLoadingStatus />}</section>}
     </div>

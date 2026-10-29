@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "today-ticket-spacing-20261029",
+  "status": "ready",
+  "summary": "Today uses the shared mobile gutter; owner Ticket keeps calendar/search/support without visible title or duplicate date text; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/pos-tickets/ticket-filters.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "0e42ece2-3f36-4d45-a1b7-88bb352c1766"
+  },
+  "dependencies": [
+    "mobile-page-spacing-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "4298672d-7d0a-4249-b987-bf4e7f72c383",
+  "recordedAt": "2026-10-29T20:15:13.361Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/staff/today/today-dashboard-view.tsx": "abacbb0e7769b4df756082c7f305322ca10dbdff9d543fd872d545ade3703595",
+    "app/pos-tickets/ticket-filters.tsx": "29e92d1e4252852ab10d4f8cfc9d7ef64adbe04d56637960735a63d104a1a728"
+  }
+}
