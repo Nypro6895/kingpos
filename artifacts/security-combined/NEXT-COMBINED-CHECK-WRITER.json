@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-29T05:45:07.812Z",
+  "status": "selected-for-next-combined-integration-sales-closed",
+  "scope": "Check Writer internal Reylumi module via existing Market; independent of new developer Market",
+  "ownerEvidence": {
+    "thread": "01a18053-5e4e-7923-ab55-368b0de93707",
+    "userMessage": "01a1862f-df49-7fa1-a892-ac272dd0000e",
+    "directionMessage": "01a1862d-cb6b-7811-bb85-f139c58a0950",
+    "verifiedThrough": "supported read_thread on2026-10-29",
+    "directionEvent": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+    "directionCommit": "4aa98d9"
+  },
+  "priorReleaseUnchanged": {
+    "receipt": "9adc36dd-2d40-4bba-bad9-b46cbb041828",
+    "web": "dpl_Gv64Dt919UZ5Pf76BwSerpqTqpAj",
+    "native": "1.0.0(65)",
+    "nativeCommit": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+    "note": "These are last verified publication facts, not future baseline authorization; refresh actual live web/uploaded native under next coordinator lock."
+  },
+  "orderedInputs": [
+    {
+      "event": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "commit": "e7214828ea2807287c744b9085c585c352f43e4d",
+      "patchSha256": "ad12217d317f8218bd86b7c7bc863f6ec636b6e1320af38ea637c57b5e781980"
+    },
+    {
+      "event": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "commit": "75de68a5c8e53280e941101d63096fb3b98cbedd",
+      "patchSha256": "f6524e6acac0d6e1b2bee26cdd9d9939aa6756df13e3132bff811d51d62f6a78"
+    },
+    {
+      "event": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "commit": "22391188782f2851410bb9c21ac6a5437c4520e0",
+      "patchSha256": "da43c4cff05cbb5738e6b97e8505f9c68139126a26698b3d44cd3d99ace8bc24"
+    }
+  ],
+  "patchHashesIndependentlyVerified": true,
+  "migrationOrder": [
+    "20261028040000_check_writer.sql",
+    "20261028193000_check_writer_output_and_price.sql",
+    "20261029040000_check_writer_sales_hold.sql"
+  ],
+  "price": {
+    "USDcents": 490,
+    "interval": "month",
+    "unit": "salon",
+    "ownerApproved": true
+  },
+  "sales": {
+    "CHECK_WRITER_SALES_ENABLED": false,
+    "fulfillment_ready": false,
+    "separateFromCodeDeployment": true,
+    "noLivePaymentAcceptanceClaim": true
+  },
+  "integrationPlan": [
+    "Reinventory selected pending sources; acquire shared lock, capture exact latest live web and uploaded native65 or newer, preserve all shipped POS/Payroll/security.",
+    "Verify frozen file manifests and reapply initial+audit+readiness narrowly; never overlay dirty Check Writer worktree.",
+    "Hook existing first-party Market without external developer submit/upload/review dependency. Preserve tenant/role/financial correctness and canonical Payroll read-only calculations/payment facts; printing never marks paid.",
+    "Revalidate migration compatibility and final closed catalog across all3 ordered migrations; never stop at temporary ready=true price migration. Target/environment/secrets assessed separately before any apply.",
+    "Integrate Swift/NativeBridgev2 against actual latest uploaded native, compile/test/archive and assess new native release in same coordinated wave; old clients PDF fallback.",
+    "Validate integrated candidate with sales held closed. Carry missing staging/provider/key/native/device acceptance as explicit limitations, not an invented Market developer blocker. Open sales is a separate verified decision."
+  ],
+  "reportedEvidence": {
+    "focusedTests": 74,
+    "realLocalPostgreSQLTests": 18,
+    "source": "producer handoff; not rerun against a future integration yet",
+    "providerFixturesOnly": true
+  },
+  "pendingAcceptance": [
+    "Supabase staging/Auth/PostgREST and real Owner/MFA/tenant transitions",
+    "Server-only target encryption key and persistence/rotation acceptance",
+    "Actual provider acceptance: current Market requires livemode=true; do not weaken guards or charge real money for a test",
+    "Integrated latest-native compile/tests/archive and device acceptance",
+    "Real Windows/AirPrint/check stock/MICR acceptance"
+  ],
+  "newDeveloperMarketDependency": false,
+  "externalDeveloperReviewRequired": false,
+  "actionsThisUpdate": {
+    "runtimeChanges": 0,
+    "migrationsApplied": 0,
+    "salesOpened": false,
+    "lockAcquired": false,
+    "nativeDispatched": false,
+    "deployStarted": false
+  },
+  "sourceNote": "C:/Reylumi-worktrees/kingpos-check-writer-20261027/docs/check-writer-deploy-note.md"
+}
