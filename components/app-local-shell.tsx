@@ -32,7 +32,7 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
   const neutralHelp = publicInitial && /^\/help(?:\/|$)/.test(route);
   // A public Help page has no private authority. Expiry of decorative Staff
   // chrome is not a confirmed logout; return through the ordinary home gate.
-  const helpReturn = neutralHelp ? <button type="button" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary" onClick={() => router.push("/")}>{new URLSearchParams((path ?? pathname).split("?")[1] ?? "").get("lang") === "en" ? "Back to app" : "Quay lại ứng dụng"}</button> : undefined;
+  const helpReturn = neutralHelp ? <button type="button" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary" onClick={() => router.push("/")}>{new URLSearchParams((path ?? pathname).split("?")[1] ?? "").get("lang") === "vi" ? "Quay lại ứng dụng" : "Back to app"}</button> : undefined;
   const accountEnabled = !publicInitial && !deviceContext;
   const navigation = useAppLocalResource<AppLocalShellNavigation>(scope, "shell.navigation", {}, { enabled: accountEnabled });
   const auxiliary = useAppLocalResource<AppLocalShellAuxiliary>(scope, "shell.auxiliary", {}, { enabled: accountEnabled, refreshAfterMs: 60_000 });
