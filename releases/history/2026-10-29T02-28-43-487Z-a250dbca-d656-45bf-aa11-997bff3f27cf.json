@@ -1,0 +1,32 @@
+{
+  "kind": "release",
+  "summary": "Native Payroll notice removal uploaded as1.0.0(63), Apple VALID; web security monitor candidate held, no web publication",
+  "changes": [
+    "093df7f8-8eed-42f0-854f-10c88047d165"
+  ],
+  "sourceCommit": "5f7cf6fa5da8fc3a3b8ffb1a64b881329c79cfa5",
+  "targets": {
+    "ios": {
+      "status": "uploaded",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "63",
+      "commit": "5f7cf6fa5da8fc3a3b8ffb1a64b881329c79cfa5",
+      "evidence": "artifacts/payroll-native-release/native-evidence-verified.json",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "run": 40804617585,
+      "sourceSha256": "e329ba96df8600f155370cfe9b7e1854a98d6d9772c38a89f24582ce806c10c9",
+      "bundleSha256": "57d2feecf8312d2417ddca7abfbdcd2ffcb89a45372b4fff5c06a3f322092966"
+    }
+  },
+  "limitations": [
+    "Existing TestFlight group association not freshly queried; no new status workflow dispatched.",
+    "App Store publication not performed.",
+    "Physical device installation/Payroll display not checked.",
+    "The security-check fix remains web/migration work awaiting browser confirmation."
+  ],
+  "id": "a250dbca-d656-45bf-aa11-997bff3f27cf",
+  "recordedAt": "2026-10-29T02:28:43.487Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-native-release-20261029"
+}

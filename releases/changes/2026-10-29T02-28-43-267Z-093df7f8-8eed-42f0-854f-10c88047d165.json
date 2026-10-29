@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "payroll-remove-source-notice-native-20261029",
+  "status": "ready",
+  "summary": "Owner Payroll notice removed from exact uploaded native62 baseline; native63 simulator/archive/source proof passed",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-native-release-20261029\\artifacts\\payroll-native-release\\frozen",
+    "commit": "5f7cf6fa5da8fc3a3b8ffb1a64b881329c79cfa5"
+  },
+  "validation": [
+    {
+      "name": "234 native simulator tests and unsigned/signed archives",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source/bundle/archive hashes",
+      "result": "passed",
+      "evidence": "artifacts/payroll-native-release/native-evidence-verified.json"
+    },
+    {
+      "name": "Upload accepted and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/payroll-native-release/native-evidence/testflight-processing.json"
+    }
+  ],
+  "id": "093df7f8-8eed-42f0-854f-10c88047d165",
+  "recordedAt": "2026-10-29T02:28:43.267Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-native-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-owner-payroll-view.tsx": "b7d8b140ef2dcd1264260587feeaf69eb82939533d3a88b072d0a235a349631f"
+  }
+}
