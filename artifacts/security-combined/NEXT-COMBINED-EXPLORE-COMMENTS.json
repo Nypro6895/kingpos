@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-29T05:49:17.616Z",
+  "status": "queued-needs-integration-wait-combined-tasks",
+  "ownerEvidence": {
+    "thread": "01a1860f-5c6d-7721-97b3-8b145d17033c",
+    "message": "01a18633-57ca-7363-9337-ad04176e5d30",
+    "instruction": "Wait until all tasks in the combined wave are done, then deploy once; no separate deployment or schedule."
+  },
+  "event": "d5a9b81c-796c-42d0-9181-811904a337fb",
+  "changeId": "ios-explore-comments-transport",
+  "sourceCommit": "f477de731490462b5aa713ef78aa6be96c1af249",
+  "handoffCommit": "815682f",
+  "snapshot": "C:/Reylumi-worktrees/ios-comment-device-test-20261029/artifacts/comment-device-qa/source",
+  "sourceFiles": [
+    {
+      "file": "lib/app-local-explore-http-client.ts",
+      "sha256": "e334760f6c9324cf7ff85e1777fecb42bbf0f098d1bccd11350047b569286cb0"
+    },
+    {
+      "file": "lib/app-local-explore-metadata.ts",
+      "sha256": "f8607da52ba045407ad970a834d92357d73f14767b7a209f5fccba762289e330"
+    },
+    {
+      "file": "lib/app-local-explore-server.ts",
+      "sha256": "981fe957e732c68f8b7cb334cc4de4c8e02c1395f9442bcc5d53eb15f3281861"
+    },
+    {
+      "file": "tests/app-local-comments-transport.test.mjs",
+      "sha256": "21142212d10bce7d955ee7f8e75ded86cac60c6c30a05fdc20977be7260f80b7"
+    }
+  ],
+  "hashesIndependentlyVerified": true,
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "runtimePatchOnly": 4,
+  "originalBaseline": "509985dec00091f285c28b7dcb079460da104249 (uploaded64)",
+  "integration": "Merge four files narrowly into then-current live web and latest uploaded native65 or newer, preserving all intervening POS/Payroll/security. Regenerate production native bundle/provenance; normal combined web+native tests/archive/upload and provider/live smoke required.",
+  "exclude": [
+    "QA-only Swift DEBUG preview routing",
+    "QA-only startPath/Explore override",
+    "Preview automation credentials",
+    "Whole QA worktree or old native64 snapshot"
+  ],
+  "reportedValidation": {
+    "developmentBuild": "1.0.0(64.903)",
+    "physicalQuickCommentColdStarts": 2,
+    "personalInlineAndPostPreview": "passed",
+    "regressions": 24,
+    "lint": "passed",
+    "previewBuild": "READY",
+    "realCommentsPosted": 0,
+    "note": "Producer acceptance, not shipped65 or future integrated binary proof; phone/device/runtime proof kept distinct."
+  },
+  "newDeveloperMarketDependency": false,
+  "existingNextWave": [
+    "Check Writer internal module via current Market, sales closed"
+  ],
+  "publishNow": false,
+  "scheduleCreated": false,
+  "nativeDispatched": false,
+  "migrationsApplied": false
+}
