@@ -233,12 +233,7 @@ actor ReylumiLocalReadStore {
         state?.sessions.append(session)
         while (state?.sessions.count ?? 0) > 16 { state?.sessions.removeFirst() }
         let retained = Set((state?.sessions ?? []).map(\.key)); state?.rows.removeAll { !retained.contains($0.sessionKey) }
-        // Context admission is on the startup path. Persist its complete current
-        // state immediately instead of waiting for the DTO coalescing window.
-        // Cancelling the queued save also prevents a redundant later write;
-        // replacement/revocation still reaches disk before admission returns.
-        cancelPendingSave()
-        save()
+        await saveTogether()
     }
     func get(_ key: String, session: ReylumiLocalSession, now: Date = Date()) -> Data? {
         load()

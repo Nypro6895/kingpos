@@ -751,7 +751,7 @@ final class ReylumiLocalAppTransport {
             Task { @MainActor [weak self] in _ = try? await self?.freshContext(path: path, initialPath: initialPath) }
             return object
         }
-        return try await freshContext(path: path, initialPath: initialPath)
+        return try await freshContext(path: path)
     }
     private func arguments(_ value: Any?, keys: [String]) throws -> [String: Any] {
         let args = value as? [String: Any] ?? [:]

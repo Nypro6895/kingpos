@@ -1,4 +1,3 @@
-import {PayrollRecordedFactsPanel} from "@/app/payroll/payroll-recorded-facts";
 
 import { PayrollDashboard } from "@/app/payroll/payroll-dashboard";
 import { adjacentPayrollPeriod } from "@/lib/payroll-period-navigation";
@@ -1100,7 +1099,6 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
     <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
       <PayrollLiveRefresh salonId={pageContext.currentSalon.id} />
-      <PayrollRecordedFactsPanel facts={data.recordedFacts} staffNames={Object.fromEntries(data.live.lines.map(line=>[line.staff_id,line.staff_display_name_snapshot]))}/>
       <Tabs
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}

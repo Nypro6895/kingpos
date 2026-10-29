@@ -416,9 +416,26 @@ export async function createPostComment(input: {
   const parentCommentId = cleanUuid(input.parentCommentId ?? null);
   const requestId = input.requestId ? cleanUuid(input.requestId) : null;
   if (input.requestId && !requestId) throw new Error("Comment request is not valid.");
-  await assertAbuseRequest("comment");
   const persona = input.workspaceIdentityKey ? exploreCommentIdentity(await getCurrentBusinessContext()) : null;
   if (persona && commentIdentityKey(persona) !== input.workspaceIdentityKey) throw new Error("Your commenting identity changed. Refresh before posting.");
+  if (requestId) {
+    const { data: existing, error: readError } = await supabase
+      .from("salon_profile_comments")
+      .select("id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, status, created_at, updated_at, edited_at, acting_role, acting_salon_id")
+      .eq("id", requestId).eq("author_user_id", user.id).maybeSingle<CommentRow>();
+    if (readError) throw new Error("Comment could not be checked. Please try again.");
+    if (existing) {
+      if (rowTargetType(existing) === target.sourceType && rowTargetId(existing) === target.sourceId &&
+          existing.body === body && existing.parent_comment_id === parentCommentId &&
+          Boolean(existing.is_salon_reply) === (!persona && input.asSalonReply === true) &&
+          (existing.acting_role ?? null) === (persona?.role ?? null) &&
+          (existing.acting_salon_id ?? null) === (persona?.salonId ?? null)) {
+        return { comment: (await mapCommentRows([existing]))[0], totalCount: await countForTarget(target) };
+      }
+      throw new Error("This comment request has already been used. Refresh the thread before continuing.");
+    }
+  }
+  await assertAbuseRequest("comment");
   const insertPayload = {
     ...(persona ? { acting_role: persona.role, acting_salon_id: persona.salonId } : {}),
     ...(requestId ? { id: requestId } : {}),

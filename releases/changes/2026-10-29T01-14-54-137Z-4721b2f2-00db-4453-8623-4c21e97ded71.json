@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "payroll-remove-source-notice-20261028",
+  "status": "ready",
+  "summary": "Remove source-data notice and recorded payment evidence panel from owner Payroll web and app views; preserve payroll calculations and recorded data",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-remove-notice-20261028\\artifacts\\payroll-remove-notice-20261028\\source"
+  },
+  "validation": [
+    {
+      "name": "Targeted ESLint",
+      "result": "passed",
+      "evidence": "0 errors; 2 pre-existing unused declaration warnings in local owner view"
+    },
+    {
+      "name": "Scoped diff review and git diff --check",
+      "result": "passed",
+      "evidence": "Only two panel imports and two panel render calls removed. No payroll data or calculation changes."
+    }
+  ],
+  "id": "4721b2f2-00db-4453-8623-4c21e97ded71",
+  "recordedAt": "2026-10-29T01:14:54.137Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-remove-notice-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "3ffd52563ff6ba016aae472ac549d6e13dca63bebec9136ed1d54ede790a277f",
+    "lib/app-local-owner-payroll-view.tsx": "b7d8b140ef2dcd1264260587feeaf69eb82939533d3a88b072d0a235a349631f"
+  }
+}

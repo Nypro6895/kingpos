@@ -1,5 +1,4 @@
 "use client";
-import {PayrollRecordedFactsPanel} from "@/app/payroll/payroll-recorded-facts";
 
 import type { AppLocalOwnerPayrollData, AppLocalOwnerPayrollParams } from "./app-local-owner-page-types";
 
@@ -1077,7 +1076,6 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
     <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
       <PayrollLiveRefresh salonId={salonId} />
-      <PayrollRecordedFactsPanel facts={data.recordedFacts} staffNames={Object.fromEntries(data.live.lines.map(line=>[line.staff_id,line.staff_display_name_snapshot]))}/>
       <Tabs
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}

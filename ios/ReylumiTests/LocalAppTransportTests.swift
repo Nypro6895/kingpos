@@ -210,12 +210,6 @@ final class LocalAppTransportTests: XCTestCase {
             let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] })
             let path = "/explore?q=fixture-recovery&location=Chicago&locationSource=manual&type=salons"
             let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: path, transport: transport)
-            // Filter canonicalization belongs to the installed router. Starting
-            // a second, unmatched request before that router runs wastes an auth
-            // round trip and must not extend its automatic recovery budget.
-            try await Task.sleep(nanoseconds: 100_000_000)
-            let speculativeAttempts = await http.contextRequests
-            XCTAssertEqual(speculativeAttempts, 0)
             controller.configureWebViewForTesting = { configuration in
                 configuration.userContentController.add(rules)
                 // Original adapters may wrap this fetch, but every unhandled

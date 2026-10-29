@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "social-monitor-only-20261029",
+  "status": "ready",
+  "summary": "Social bot/volume/repeated-content/keyword signals inform admin without automated challenges or holding; recover saved comment retries; preserve manual and account protections",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/abuse-server.ts",
+    "lib/post-comments.ts",
+    "app/(app)/admin/post-safety/spam/page.tsx",
+    "lib/vietnamese-workspace-copy.json",
+    "supabase/migrations/20261029021000_social_monitor_only.sql",
+    "tests/social-monitor-server.test.mjs",
+    "tests/social-monitor-only.integration.test.mjs",
+    "tests/comment-idempotency-runtime.test.mjs",
+    "tests/abuse-prevention.integration.test.mjs",
+    "tests/abuse-signals.test.mjs",
+    "tests/fixtures/social-monitor-apply.sql",
+    "tests/fixtures/social-monitor-production-functions.json",
+    "artifacts/social-monitor-release/README.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\social-monitor-release-20261029\\artifacts\\social-monitor-release\\task-frozen"
+  },
+  "validation": [
+    {
+      "name": "28 SQL/runtime regression tests including production function baseline and atomic migration wrapper",
+      "result": "passed",
+      "evidence": "artifacts/social-monitor-release/regressions-complete.log"
+    },
+    {
+      "name": "Fresh production Next webpack build/typecheck and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/social-monitor-release/build-final.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "0 errors; two existing unused Payroll declarations"
+    }
+  ],
+  "id": "9e718f86-ade3-423a-a9dd-db77d0e40b8b",
+  "recordedAt": "2026-10-29T02:13:39.103Z",
+  "worktree": "C:\\Reylumi-worktrees\\social-monitor-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/abuse-server.ts": "e7546e2535fac1bd0acd7d640da2440eb70d851b93fd6a98375c628cc234b6db",
+    "lib/post-comments.ts": "00a2d47ca757184b3fd92e21df85d7a93ce99565738d6c1e1e4aa5a725e5e000",
+    "app/(app)/admin/post-safety/spam/page.tsx": "f91a922f091b5fec75f7835bd520edad45044eb393e7f13459834a222a2058ad",
+    "lib/vietnamese-workspace-copy.json": "d3b380c1a6d10326d92a2ff29c276b9a30311d680efbdf50336d746fa14b476e",
+    "supabase/migrations/20261029021000_social_monitor_only.sql": "7d015d8cfa0d800ef8dacbaef1eb75aedc4dd1efd13aec803be4a12f1c7ef0de",
+    "tests/social-monitor-server.test.mjs": "3b6e77dbdece7245adcfa6fea9a9d2390894e5c71a38e6e44edd98fe83f97bd5",
+    "tests/social-monitor-only.integration.test.mjs": "a34a94d20be81520ea768e7f70b083d1d343004e25a92041f5a6127f6dee8edb",
+    "tests/comment-idempotency-runtime.test.mjs": "30717c52e8556cf9d90ef4df944fe35d532c93ef43e1d8a7439e852f98baec73",
+    "tests/abuse-prevention.integration.test.mjs": "b0d7f5489b554a721abaa536d88134f927e7bbc2135bd67d9dc90766e918de59",
+    "tests/abuse-signals.test.mjs": "8e276f605b306dbfb20938405359aca176c0cedbf0280015c258b5a5d545ce14",
+    "tests/fixtures/social-monitor-apply.sql": "c99767c43c34f69dc66bcdbf2d3bcbd642b0c9fc1612b73966c3ec566ddbf251",
+    "tests/fixtures/social-monitor-production-functions.json": "2d98a9fa292fb169f511f090b121723b11dfbd0bba03b91dfa5a8e3e553d906b",
+    "artifacts/social-monitor-release/README.md": "29431accdbb8a8b9dfdd4f790440ef7cd35f27f7165cefe5900bd8dd753cd818"
+  }
+}
