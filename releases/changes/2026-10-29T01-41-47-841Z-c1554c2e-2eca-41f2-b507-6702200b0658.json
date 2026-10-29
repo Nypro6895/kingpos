@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "combined-native-history-preservation-20261028",
+  "status": "ready",
+  "summary": "Restore uploaded native60 scoped customer.history reader in combined source; preserve newer shipped web implementation and all thirteen selected changes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/customer-history-client.ts",
+    "tests/app-local-customer-history.test.mjs",
+    "tests/app-local-getter-read-scope.test.mjs",
+    "tests/booking-plugin-read-scope.test.mjs",
+    "tests/booking-settings-concurrency.test.mjs",
+    "tests/salon-clock-request-read.test.mjs",
+    "tests/staff-account-roundtrip.test.mjs",
+    "tests/staff-authoritative-date-read.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028\\artifacts\\combined-ui13\\selected-frozen-repair62",
+    "commit": "2e1bd5143bcd840d80e6401cdf820c86ef2c08e5",
+    "baselineUploadedNative": "61",
+    "restoredNativeReaderFrom": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "History native-only omission reproduced before repair1pass6fail; original fresh scope/read behavior restored7pass",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/history61-before-repair.log; artifacts/combined-ui13/history61-after-repair.log"
+    },
+    {
+      "name": "Thirty-eight preserved web baseline regressions; productionbuild/typecheck/scopedlint",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/preserved-web-deltas-tests.log; artifacts/combined-ui13/build-repair62-webpack.log; artifacts/combined-ui13/history-repair-typecheck.log; artifacts/combined-ui13/history61-repair-lint.log"
+    },
+    {
+      "name": "Full shared-build-input audit; selected76sourcefiles unchanged",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-web-shared-delta-audit.json; artifacts/combined-ui13/full-shared-build-input-audit.json; artifacts/combined-ui13/source-freeze-repair62.json"
+    },
+    {
+      "name": "234native tests and actual source-bound signed/uploaded archive; AppleVALID",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-repair62-verified.json"
+    },
+    {
+      "name": "3459deployed web source hashes and authenticated safe candidate HTTP/unauthenticated read denial",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/web-repair62-final-source-verified.json; artifacts/combined-ui13/web-repair62-test-smoke.json"
+    }
+  ],
+  "id": "c1554c2e-2eca-41f2-b507-6702200b0658",
+  "recordedAt": "2026-10-29T01:41:47.841Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/customer-history-client.ts": "8943af83e357119889d87cf762239eff5fc3b2ef384e3942ecdaa72b583c1bb6",
+    "tests/app-local-customer-history.test.mjs": "32b72677ac912c82092b151327f31fa8fc3f8da3dbb4d74b8ef700b9ed0873f4",
+    "tests/app-local-getter-read-scope.test.mjs": "5bd2b0acd6fdf21e16cb4c2bf2c24e45daae501b7a233e43ddac158191cb45dc",
+    "tests/booking-plugin-read-scope.test.mjs": "c7b9d9759a336af22d2b0a467259068590e694ae49fc910d4ed6c4771fd6ad3d",
+    "tests/booking-settings-concurrency.test.mjs": "61e9ae422672094e2e12017ccf5e2b577868f7cdc38afb2bea6490ea77bc68d5",
+    "tests/salon-clock-request-read.test.mjs": "0687dd588572b6be5891ee1979a9fa61f884224f02e2546050d8a7159930265d",
+    "tests/staff-account-roundtrip.test.mjs": "396e0b1c90562e107b75a9726bf9d684d913617d0949b320a21a2b2de4fb7a28",
+    "tests/staff-authoritative-date-read.test.mjs": "7e733590717fa731eeeb3d9b338688c8dca9e541c0205379039f0cc15a79ecfa"
+  }
+}
