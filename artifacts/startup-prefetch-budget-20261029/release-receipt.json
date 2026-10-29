@@ -1,0 +1,75 @@
+{
+  "kind": "release",
+  "summary": "Combined web and source-bound iOS bounded prefetch update verified, preserving scoped Settings/POS/Payroll/comments and disabled first-party CheckWriter features. Native physical targeted smoke recorded separately from earlier native67 broad functional evidence. Finite server observer already explicitly removed and verified silent before expiry; no first-uncached/subsecond/full-app or causal speedup claim.",
+  "changes": [
+    "639fea99-cf68-4f66-8853-939d357a56fb"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+      "baselineDeploymentId": "dpl_7pJ2mhmJod6cFmqWAEtMedSzcKNE",
+      "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+      "sourceSha256": "16a859abf57484a12c3e265f39a78bfab9cce60a5d48157c2f1a8190e45d585c",
+      "overlaySha256": "b6177e4c25fbc003ee6e66791c2515be380bc43186a71dc389b68c316f288801",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "68",
+      "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+      "sourceSha256": "805595c171489a25ba3022abd64bb26be482675bcadc1f9ad4f8d4dd9ae99c18",
+      "bundleSha256": "1f0182114d08e4b8143db9d9931846b9e4dbed5bd6758619a30e9bbf141b2ee2",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/native-verified.json",
+      "availability": "artifacts/startup-prefetch-budget-20261029/availability-verified.json"
+    }
+  },
+  "verification": {
+    "webAndCleanupReceipt": "a5bad421-bb74-494b-b370-869b6acb85d0",
+    "sourceAndArchive": "artifacts/startup-prefetch-budget-20261029/native-verified.json",
+    "AppleBothGroups": "artifacts/startup-prefetch-budget-20261029/availability-verified.json",
+    "physical": "artifacts/startup-prefetch-budget-20261029/native-physical-verified.json",
+    "browserPlanTests": "artifacts/startup-prefetch-budget-20261029/tests.log",
+    "TodayAndScheduler": "artifacts/startup-prefetch-budget-20261029/foreground-scheduler-tests.log",
+    "extendedReportNavigation": "artifacts/startup-prefetch-budget-20261029/report-navigation-test.log",
+    "namedBeforeAnalysis": "artifacts/startup-prefetch-budget-20261029/NAMED-PERFORMANCE-ANALYSIS.md",
+    "cleanup": "artifacts/startup-prefetch-budget-20261029/live-cleanup-verified.json"
+  },
+  "nativePipeline": {
+    "run": 40862237073,
+    "attempt1": "235 tests,2 isolated WK constant-local-HTML startup timeouts; archive/sign/upload skipped, original failure preserved",
+    "attempt2": "same source; exact test/archive/upload/processing evidence verified; no assertion/budget changes"
+  },
+  "scope": {
+    "offRouteSpeculationBudget": 2,
+    "activeRouteReadsEligible": true,
+    "retainedVisitedOfflineDTOs": true,
+    "authorityLeaseBindingAndFinancialReadersChanged": false,
+    "developerMarket": "excluded",
+    "checkWriter": "disabled code only; sales closed; three SQL not applied; no key or salesflag/catalog activation",
+    "unfinishedPayrollHistory": "excluded"
+  },
+  "cleanup": {
+    "performed": true,
+    "receipt": "a5bad421-bb74-494b-b370-869b6acb85d0",
+    "noTtlExtension": true,
+    "noNewObservationEvents": 0,
+    "originalEvidenceRetained": true
+  },
+  "limitations": [
+    "Process-cold retains cache; not first uncached/fresh install",
+    "Primary upper bounds include XCTest tap/idle/capture overhead; not exact ready or subsecond/fullpaint/fullusable",
+    "Native67 vs68 cache age/backend/network/tap conditions not controlled; no causal speedup percent",
+    "Native68 named resources/bytes unavailable after deliberate observer removal; CDN generic counts do not prove named absence or budget2 total HTTP",
+    "Production forced403/revocation/offline/error paths not induced;37 local runtime/plan/Today/scheduler checks remain separate",
+    "No actual iPad/hardware/provider/printing/financial Submit/payment/SMS/post or full-app acceptance",
+    "Bundlecontainer may change67 to68 normal update; no dataContainer UUID or deleted-cache claim"
+  ],
+  "id": "34d1847f-953b-4f68-bc6f-caa8af50f3bf",
+  "recordedAt": "2026-10-29T11:39:06.117Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\history\\2026-10-29T11-39-06-117Z-34d1847f-953b-4f68-bc6f-caa8af50f3bf.json"
+}

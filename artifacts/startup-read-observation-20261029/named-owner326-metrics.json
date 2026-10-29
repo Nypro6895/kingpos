@@ -1,0 +1,3004 @@
+{
+  "at": "2026-10-29T10:52:41.309Z",
+  "deployment": "dpl_7pJ2mhmJod6cFmqWAEtMedSzcKNE",
+  "webSource": "cb6423dee5c78141004310fdddf9f7f7cc268cf2",
+  "native": "1.0.0(67)/d20058a",
+  "method": "Exact Vercel requestID joined in-memory between native-UA CDN requests and allowlisted runtime observer; all identifiers dropped from stored proof.",
+  "cdnRecords": 49,
+  "runtimeObservations": 50,
+  "matchedNativeObservations": 49,
+  "windows": [
+    {
+      "sample": "cold1",
+      "since": "2026-10-29T10:48:50Z",
+      "until": "2026-10-29T10:49:01Z",
+      "observations": [
+        {
+          "utc": "2026-10-29T10:48:58.356Z",
+          "resource": "shell.auxiliary",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 30.3
+            },
+            "auth_session": {
+              "durationMs": 33.1
+            },
+            "auth_status": {
+              "durationMs": 39.3
+            },
+            "load": {
+              "durationMs": 204.4
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 30.2,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 137.3,
+              "calls": 4,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 384.3,
+              "calls": 7,
+              "bytes": 4,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 204.7
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:57.998Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 160
+            },
+            "auth_user": {
+              "durationMs": 27
+            },
+            "auth_session": {
+              "durationMs": 49.8
+            },
+            "auth_status": {
+              "durationMs": 59.5
+            },
+            "clock": {
+              "durationMs": 35.5
+            },
+            "hours": {
+              "durationMs": 68.3
+            },
+            "staff_board": {
+              "durationMs": 94.2
+            },
+            "staff_activity": {
+              "durationMs": 35.4
+            },
+            "financial_report": {
+              "durationMs": 150.9
+            },
+            "financial_compare": {
+              "durationMs": 180
+            },
+            "today_financials": {
+              "durationMs": 216.8
+            },
+            "load": {
+              "durationMs": 377.4
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 26.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 879.2,
+              "calls": 13,
+              "bytes": 27,
+              "sized": 4
+            },
+            "backend_rpc": {
+              "durationMs": 185.6,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 377.8
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:57.846Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 152
+            },
+            "auth_user": {
+              "durationMs": 43.8
+            },
+            "auth_session": {
+              "durationMs": 49.4
+            },
+            "auth_status": {
+              "durationMs": 51.8
+            },
+            "clock": {
+              "durationMs": 31.4
+            },
+            "extras": {
+              "durationMs": 66.4
+            },
+            "today_extras": {
+              "durationMs": 69
+            },
+            "load": {
+              "durationMs": 222.1
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 43.7,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 199.6,
+              "calls": 5,
+              "bytes": 25,
+              "sized": 3
+            },
+            "backend_rpc": {
+              "durationMs": 166.3,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 222.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:57.400Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 234.7
+            },
+            "auth_user": {
+              "durationMs": 29.8
+            },
+            "auth_session": {
+              "durationMs": 48.6
+            },
+            "auth_status": {
+              "durationMs": 57.7
+            },
+            "clock": {
+              "durationMs": 30.4
+            },
+            "waiting": {
+              "durationMs": 32.4
+            },
+            "today_waiting": {
+              "durationMs": 63.7
+            },
+            "load": {
+              "durationMs": 298.8
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 29.7,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 199.7,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 221,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 299.1
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:57.353Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 144.6
+            },
+            "auth_user": {
+              "durationMs": 39.3
+            },
+            "auth_session": {
+              "durationMs": 45.2
+            },
+            "auth_status": {
+              "durationMs": 67.7
+            },
+            "clock": {
+              "durationMs": 34.4
+            },
+            "hours": {
+              "durationMs": 42.8
+            },
+            "bookings": {
+              "durationMs": 101.4
+            },
+            "today_bookings": {
+              "durationMs": 137.3
+            },
+            "load": {
+              "durationMs": 282.4
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 39.1,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 278.1,
+              "calls": 5,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 173.4,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 282.7
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:56.915Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 169.5
+            },
+            "auth_user": {
+              "durationMs": 33
+            },
+            "auth_session": {
+              "durationMs": 50.3
+            },
+            "auth_status": {
+              "durationMs": 52.4
+            },
+            "clock": {
+              "durationMs": 30.1
+            },
+            "hours": {
+              "durationMs": 38
+            },
+            "staff_board": {
+              "durationMs": 54.9
+            },
+            "today_staff": {
+              "durationMs": 86.4
+            },
+            "load": {
+              "durationMs": 256.4
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 32.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 289.3,
+              "calls": 6,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 159.4,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 256.8
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:56.852Z",
+          "resource": "shell.navigation",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0.1
+            },
+            "auth_user": {
+              "durationMs": 47.7
+            },
+            "auth_session": {
+              "durationMs": 46.2
+            },
+            "auth_status": {
+              "durationMs": 49.3
+            },
+            "load": {
+              "durationMs": 145.9
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 47.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 119,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 109.9,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 147.1
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:55.585Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 132
+            },
+            "validate": {
+              "durationMs": 0.1
+            },
+            "auth_user": {
+              "durationMs": 35.5
+            },
+            "auth_session": {
+              "durationMs": 32.8
+            },
+            "auth_status": {
+              "durationMs": 45.3
+            },
+            "lease": {
+              "durationMs": 0.7
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 35.4,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 103.5,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 99.9,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 134
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.756Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 551.2
+            },
+            "validate": {
+              "durationMs": 0.1
+            },
+            "auth_user": {
+              "durationMs": 65.9
+            },
+            "auth_status": {
+              "durationMs": 163.6
+            },
+            "auth_session": {
+              "durationMs": 164.2
+            },
+            "lease": {
+              "durationMs": 1.5
+            },
+            "clock": {
+              "durationMs": 104
+            },
+            "hours": {
+              "durationMs": 91.2
+            },
+            "waiting": {
+              "durationMs": 93.9
+            },
+            "extras": {
+              "durationMs": 210.4
+            },
+            "staff_board": {
+              "durationMs": 161.5
+            },
+            "staff_activity": {
+              "durationMs": 67.8
+            },
+            "financial_report": {
+              "durationMs": 299.3
+            },
+            "bookings": {
+              "durationMs": 301
+            },
+            "financial_compare": {
+              "durationMs": 343.5
+            },
+            "today_full": {
+              "durationMs": 454.4
+            },
+            "serialize": {
+              "durationMs": 0.6
+            },
+            "backend_auth": {
+              "durationMs": 65.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 2145.4,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 695.1,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 1038.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.756Z",
+          "resource": "shell.auxiliary",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 30
+            },
+            "auth_status": {
+              "durationMs": 62
+            },
+            "auth_session": {
+              "durationMs": 64.8
+            },
+            "load": {
+              "durationMs": 428.8
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 29.8,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 248.7,
+              "calls": 4,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 668.2,
+              "calls": 7,
+              "bytes": 4,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 429.2
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.733Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 788.1
+            },
+            "auth_user": {
+              "durationMs": 125.3
+            },
+            "auth_status": {
+              "durationMs": 338.8
+            },
+            "auth_session": {
+              "durationMs": 400.3
+            },
+            "clock": {
+              "durationMs": 58.1
+            },
+            "waiting": {
+              "durationMs": 71.9
+            },
+            "hours": {
+              "durationMs": 81.1
+            },
+            "extras": {
+              "durationMs": 226.2
+            },
+            "staff_board": {
+              "durationMs": 143.5
+            },
+            "staff_activity": {
+              "durationMs": 49
+            },
+            "bookings": {
+              "durationMs": 203.7
+            },
+            "financial_report": {
+              "durationMs": 229.1
+            },
+            "financial_compare": {
+              "durationMs": 466.5
+            },
+            "today_full": {
+              "durationMs": 531.6
+            },
+            "load": {
+              "durationMs": 1320.9
+            },
+            "serialize": {
+              "durationMs": 0.3
+            },
+            "backend_auth": {
+              "durationMs": 125.1,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 2423.4,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 856.9,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 1321.5
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.331Z",
+          "resource": "http.notifications.feed",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 40.8
+            },
+            "auth_session": {
+              "durationMs": 50.5
+            },
+            "auth_status": {
+              "durationMs": 86.9
+            },
+            "load": {
+              "durationMs": 396.4
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 40.7,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 184.4,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 339.3,
+              "calls": 2
+            },
+            "total": {
+              "durationMs": 396.7
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.204Z",
+          "resource": "shell.navigation",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 129
+            },
+            "auth_session": {
+              "durationMs": 409
+            },
+            "auth_status": {
+              "durationMs": 437.9
+            },
+            "load": {
+              "durationMs": 812.6
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 128.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 905.9,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 747.4,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 812.9
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.199Z",
+          "resource": "context.root",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 224.1
+            },
+            "validate": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 62.7
+            },
+            "auth_session": {
+              "durationMs": 78.3
+            },
+            "auth_status": {
+              "durationMs": 86.5
+            },
+            "lease": {
+              "durationMs": 0.7
+            },
+            "clock": {
+              "durationMs": 61.8
+            },
+            "extras": {
+              "durationMs": 743.4
+            },
+            "hours": {
+              "durationMs": 363.7
+            },
+            "waiting": {
+              "durationMs": 461.7
+            },
+            "staff_board": {
+              "durationMs": 571.7
+            },
+            "financial_report": {
+              "durationMs": 582.1
+            },
+            "staff_activity": {
+              "durationMs": 87.5
+            },
+            "bookings": {
+              "durationMs": 661.8
+            },
+            "financial_compare": {
+              "durationMs": 782
+            },
+            "today_full": {
+              "durationMs": 848.9
+            },
+            "serialize": {
+              "durationMs": 0.4
+            },
+            "backend_auth": {
+              "durationMs": 62.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 5499.9,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 732.8,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 1089
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.197Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0.1
+            },
+            "validate": {
+              "durationMs": 0
+            },
+            "lease": {
+              "durationMs": 1.3
+            },
+            "serialize": {
+              "durationMs": 0.4
+            },
+            "total": {
+              "durationMs": 853.3
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.109Z",
+          "resource": "http.shell.advertising",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 88.7
+            },
+            "auth_session": {
+              "durationMs": 396
+            },
+            "auth_status": {
+              "durationMs": 492.8
+            },
+            "load": {
+              "durationMs": 737.9
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 88.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 931.2,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 548.6,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 738.2
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:48:54.040Z",
+          "resource": "http.shell.advertising",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 99.1
+            },
+            "auth_session": {
+              "durationMs": 349.1
+            },
+            "auth_status": {
+              "durationMs": 404
+            },
+            "load": {
+              "durationMs": 692.5
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 99,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 845.6,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 382.6,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 692.8
+            }
+          }
+        }
+      ],
+      "byResource": {
+        "shell.auxiliary": {
+          "calls": 2,
+          "statuses": {
+            "200": 2
+          },
+          "totalMs": [
+            204.7,
+            429.2
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 8,
+            "rpc": 14
+          },
+          "backendBytes": {
+            "rest": 42,
+            "rpc": 8
+          },
+          "sizedResponses": {
+            "rest": 2,
+            "rpc": 6
+          }
+        },
+        "page.owner-today": {
+          "calls": 6,
+          "statuses": {
+            "200": 6
+          },
+          "totalMs": [
+            377.8,
+            222.6,
+            299.1,
+            282.7,
+            256.8,
+            1321.5
+          ],
+          "backendCalls": {
+            "auth": 6,
+            "rest": 48,
+            "rpc": 20
+          },
+          "backendBytes": {
+            "rest": 146,
+            "rpc": 178
+          },
+          "sizedResponses": {
+            "rest": 16,
+            "rpc": 14
+          }
+        },
+        "shell.navigation": {
+          "calls": 2,
+          "statuses": {
+            "200": 2
+          },
+          "totalMs": [
+            147.1,
+            812.9
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 6,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 42
+          },
+          "sizedResponses": {
+            "rest": 2
+          }
+        },
+        "context.route": {
+          "calls": 3,
+          "statuses": {
+            "200": 3
+          },
+          "totalMs": [
+            134,
+            1038.6,
+            853.3
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 19,
+            "rpc": 5
+          },
+          "backendBytes": {
+            "rest": 52,
+            "rpc": 31
+          },
+          "sizedResponses": {
+            "rest": 7,
+            "rpc": 3
+          }
+        },
+        "http.notifications.feed": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            396.7
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "context.root": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            1089
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 16,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 31,
+            "rpc": 31
+          },
+          "sizedResponses": {
+            "rest": 6,
+            "rpc": 3
+          }
+        },
+        "http.shell.advertising": {
+          "calls": 2,
+          "statuses": {
+            "200": 2
+          },
+          "totalMs": [
+            738.2,
+            692.8
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 6,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 42
+          },
+          "sizedResponses": {
+            "rest": 2
+          }
+        }
+      }
+    },
+    {
+      "sample": "cold2",
+      "since": "2026-10-29T10:49:07Z",
+      "until": "2026-10-29T10:49:17Z",
+      "observations": [
+        {
+          "utc": "2026-10-29T10:49:14.654Z",
+          "resource": "shell.auxiliary",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 28.8
+            },
+            "auth_session": {
+              "durationMs": 33.4
+            },
+            "auth_status": {
+              "durationMs": 54.4
+            },
+            "load": {
+              "durationMs": 223.7
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 28.7,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 162.5,
+              "calls": 4,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 384.4,
+              "calls": 7,
+              "bytes": 4,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 224.1
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:14.400Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 163
+            },
+            "auth_user": {
+              "durationMs": 31.1
+            },
+            "auth_session": {
+              "durationMs": 53.2
+            },
+            "auth_status": {
+              "durationMs": 70.5
+            },
+            "clock": {
+              "durationMs": 46.2
+            },
+            "hours": {
+              "durationMs": 47.9
+            },
+            "staff_board": {
+              "durationMs": 59.4
+            },
+            "staff_activity": {
+              "durationMs": 43.1
+            },
+            "financial_report": {
+              "durationMs": 116.8
+            },
+            "financial_compare": {
+              "durationMs": 195.7
+            },
+            "today_financials": {
+              "durationMs": 243.2
+            },
+            "load": {
+              "durationMs": 406.7
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 31,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 847.9,
+              "calls": 13,
+              "bytes": 27,
+              "sized": 4
+            },
+            "backend_rpc": {
+              "durationMs": 201,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 407
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:14.201Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 142.3
+            },
+            "auth_user": {
+              "durationMs": 33.8
+            },
+            "auth_session": {
+              "durationMs": 55.1
+            },
+            "auth_status": {
+              "durationMs": 65
+            },
+            "clock": {
+              "durationMs": 33
+            },
+            "extras": {
+              "durationMs": 66.2
+            },
+            "today_extras": {
+              "durationMs": 68.4
+            },
+            "load": {
+              "durationMs": 211.3
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 33.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 211.9,
+              "calls": 5,
+              "bytes": 25,
+              "sized": 3
+            },
+            "backend_rpc": {
+              "durationMs": 161.4,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 211.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:13.767Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 185.7
+            },
+            "auth_user": {
+              "durationMs": 34.8
+            },
+            "auth_session": {
+              "durationMs": 52.2
+            },
+            "auth_status": {
+              "durationMs": 53.8
+            },
+            "clock": {
+              "durationMs": 38.4
+            },
+            "hours": {
+              "durationMs": 39.2
+            },
+            "bookings": {
+              "durationMs": 95.8
+            },
+            "today_bookings": {
+              "durationMs": 136.8
+            },
+            "load": {
+              "durationMs": 322.9
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 34.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 285.6,
+              "calls": 5,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 184.3,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 323.3
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:13.742Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 149.1
+            },
+            "auth_user": {
+              "durationMs": 33.8
+            },
+            "auth_session": {
+              "durationMs": 59.2
+            },
+            "auth_status": {
+              "durationMs": 61.4
+            },
+            "clock": {
+              "durationMs": 52
+            },
+            "waiting": {
+              "durationMs": 66.2
+            },
+            "today_waiting": {
+              "durationMs": 119.1
+            },
+            "load": {
+              "durationMs": 268.6
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 33.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 153.9,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 258.9,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 269
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:13.316Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 148.2
+            },
+            "auth_user": {
+              "durationMs": 36
+            },
+            "auth_session": {
+              "durationMs": 49
+            },
+            "auth_status": {
+              "durationMs": 73.8
+            },
+            "clock": {
+              "durationMs": 53.4
+            },
+            "hours": {
+              "durationMs": 40.4
+            },
+            "staff_board": {
+              "durationMs": 72.8
+            },
+            "today_staff": {
+              "durationMs": 130.9
+            },
+            "load": {
+              "durationMs": 280.7
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 35.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 319.9,
+              "calls": 6,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 190.9,
+              "calls": 3,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 281.3
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:13.220Z",
+          "resource": "shell.navigation",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 30.7
+            },
+            "auth_session": {
+              "durationMs": 50.1
+            },
+            "auth_status": {
+              "durationMs": 71.5
+            },
+            "load": {
+              "durationMs": 180.1
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 30.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 149.4,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 146.9,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 180.4
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:11.864Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 143.6
+            },
+            "validate": {
+              "durationMs": 0.1
+            },
+            "auth_user": {
+              "durationMs": 58
+            },
+            "auth_session": {
+              "durationMs": 41.2
+            },
+            "auth_status": {
+              "durationMs": 46.1
+            },
+            "lease": {
+              "durationMs": 1.7
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 57.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 117.3,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 93.4,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 147.5
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:11.611Z",
+          "resource": "shell.navigation",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0.1
+            },
+            "auth_user": {
+              "durationMs": 130.4
+            },
+            "auth_status": {
+              "durationMs": 54.1
+            },
+            "auth_session": {
+              "durationMs": 61.8
+            },
+            "load": {
+              "durationMs": 276.3
+            },
+            "serialize": {
+              "durationMs": 0.4
+            },
+            "backend_auth": {
+              "durationMs": 128.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 141.5,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 160.3,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 278.3
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:10.500Z",
+          "resource": "http.notifications.feed",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 4.2
+            },
+            "auth_user": {
+              "durationMs": 41.3
+            },
+            "auth_session": {
+              "durationMs": 70.9
+            },
+            "auth_status": {
+              "durationMs": 75.5
+            },
+            "load": {
+              "durationMs": 340.6
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 41.1,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 180.3,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 290.5,
+              "calls": 2
+            },
+            "total": {
+              "durationMs": 345.2
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:10.413Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 290.8
+            },
+            "auth_user": {
+              "durationMs": 105.1
+            },
+            "auth_session": {
+              "durationMs": 118.8
+            },
+            "auth_status": {
+              "durationMs": 126.7
+            },
+            "clock": {
+              "durationMs": 59.5
+            },
+            "extras": {
+              "durationMs": 145.2
+            },
+            "waiting": {
+              "durationMs": 88.5
+            },
+            "hours": {
+              "durationMs": 140.4
+            },
+            "staff_board": {
+              "durationMs": 194.9
+            },
+            "staff_activity": {
+              "durationMs": 80.6
+            },
+            "bookings": {
+              "durationMs": 281.9
+            },
+            "financial_report": {
+              "durationMs": 294.8
+            },
+            "financial_compare": {
+              "durationMs": 430.8
+            },
+            "today_full": {
+              "durationMs": 492.6
+            },
+            "load": {
+              "durationMs": 786.6
+            },
+            "serialize": {
+              "durationMs": 0.3
+            },
+            "backend_auth": {
+              "durationMs": 104.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 2223.8,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 410.5,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 787.1
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:10.393Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 283.1
+            },
+            "validate": {
+              "durationMs": 0.1
+            },
+            "auth_user": {
+              "durationMs": 100.5
+            },
+            "auth_session": {
+              "durationMs": 62.7
+            },
+            "auth_status": {
+              "durationMs": 85.4
+            },
+            "lease": {
+              "durationMs": 0.8
+            },
+            "clock": {
+              "durationMs": 68.6
+            },
+            "hours": {
+              "durationMs": 106.6
+            },
+            "extras": {
+              "durationMs": 310.7
+            },
+            "waiting": {
+              "durationMs": 119.5
+            },
+            "staff_board": {
+              "durationMs": 241.6
+            },
+            "staff_activity": {
+              "durationMs": 56.1
+            },
+            "bookings": {
+              "durationMs": 298.6
+            },
+            "financial_report": {
+              "durationMs": 312.4
+            },
+            "financial_compare": {
+              "durationMs": 416.8
+            },
+            "today_full": {
+              "durationMs": 487.9
+            },
+            "serialize": {
+              "durationMs": 0.5
+            },
+            "backend_auth": {
+              "durationMs": 100.3,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 2476.8,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 461,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 774.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:10.194Z",
+          "resource": "context.root",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 182.7
+            },
+            "validate": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 57.4
+            },
+            "auth_status": {
+              "durationMs": 44.5
+            },
+            "auth_session": {
+              "durationMs": 48.3
+            },
+            "lease": {
+              "durationMs": 0.8
+            },
+            "clock": {
+              "durationMs": 139
+            },
+            "extras": {
+              "durationMs": 267.1
+            },
+            "hours": {
+              "durationMs": 161.2
+            },
+            "waiting": {
+              "durationMs": 201.4
+            },
+            "staff_board": {
+              "durationMs": 214.5
+            },
+            "bookings": {
+              "durationMs": 222.1
+            },
+            "financial_report": {
+              "durationMs": 337.1
+            },
+            "financial_compare": {
+              "durationMs": 383.4
+            },
+            "staff_activity": {
+              "durationMs": 170.7
+            },
+            "today_full": {
+              "durationMs": 526.2
+            },
+            "serialize": {
+              "durationMs": 0.4
+            },
+            "backend_auth": {
+              "durationMs": 57.3,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 2226.4,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 564,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 723.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:10.194Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0.1
+            },
+            "validate": {
+              "durationMs": 0
+            },
+            "lease": {
+              "durationMs": 0.8
+            },
+            "serialize": {
+              "durationMs": 0.4
+            },
+            "total": {
+              "durationMs": 530.4
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:09.977Z",
+          "resource": "http.shell.advertising",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 59.4
+            },
+            "auth_status": {
+              "durationMs": 67.9
+            },
+            "auth_session": {
+              "durationMs": 77.6
+            },
+            "load": {
+              "durationMs": 333.7
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 59.3,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 178.3,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 183.7,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 333.9
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:09.952Z",
+          "resource": "http.shell.advertising",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 51.8
+            },
+            "auth_session": {
+              "durationMs": 39.8
+            },
+            "auth_status": {
+              "durationMs": 47.4
+            },
+            "load": {
+              "durationMs": 355.6
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 51.7,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 171.4,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 109.7,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 363.3
+            }
+          }
+        }
+      ],
+      "byResource": {
+        "shell.auxiliary": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            224.1
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 4,
+            "rpc": 7
+          },
+          "backendBytes": {
+            "rest": 21,
+            "rpc": 4
+          },
+          "sizedResponses": {
+            "rest": 1,
+            "rpc": 3
+          }
+        },
+        "page.owner-today": {
+          "calls": 6,
+          "statuses": {
+            "200": 6
+          },
+          "totalMs": [
+            407,
+            211.6,
+            323.3,
+            269,
+            281.3,
+            787.1
+          ],
+          "backendCalls": {
+            "auth": 6,
+            "rest": 48,
+            "rpc": 20
+          },
+          "backendBytes": {
+            "rest": 146,
+            "rpc": 178
+          },
+          "sizedResponses": {
+            "rest": 16,
+            "rpc": 14
+          }
+        },
+        "shell.navigation": {
+          "calls": 2,
+          "statuses": {
+            "200": 2
+          },
+          "totalMs": [
+            180.4,
+            278.3
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 6,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 42
+          },
+          "sizedResponses": {
+            "rest": 2
+          }
+        },
+        "context.route": {
+          "calls": 3,
+          "statuses": {
+            "200": 3
+          },
+          "totalMs": [
+            147.5,
+            774.6,
+            530.4
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 19,
+            "rpc": 5
+          },
+          "backendBytes": {
+            "rest": 52,
+            "rpc": 31
+          },
+          "sizedResponses": {
+            "rest": 7,
+            "rpc": 3
+          }
+        },
+        "http.notifications.feed": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            345.2
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "context.root": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            723.6
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 16,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 31,
+            "rpc": 31
+          },
+          "sizedResponses": {
+            "rest": 6,
+            "rpc": 3
+          }
+        },
+        "http.shell.advertising": {
+          "calls": 2,
+          "statuses": {
+            "200": 2
+          },
+          "totalMs": [
+            333.9,
+            363.3
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 6,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 42
+          },
+          "sizedResponses": {
+            "rest": 2
+          }
+        }
+      }
+    },
+    {
+      "sample": "warm1",
+      "since": "2026-10-29T10:49:31Z",
+      "until": "2026-10-29T10:49:41Z",
+      "observations": [
+        {
+          "utc": "2026-10-29T10:49:40.452Z",
+          "resource": "page.owner-payroll",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 35.7
+            },
+            "auth_session": {
+              "durationMs": 38
+            },
+            "auth_status": {
+              "durationMs": 46.1
+            },
+            "load": {
+              "durationMs": 774.6
+            },
+            "serialize": {
+              "durationMs": 0.7
+            },
+            "backend_auth": {
+              "durationMs": 35.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 1478.5,
+              "calls": 26,
+              "bytes": 72,
+              "sized": 8
+            },
+            "backend_rpc": {
+              "durationMs": 187.1,
+              "calls": 3,
+              "bytes": 17,
+              "sized": 1
+            },
+            "total": {
+              "durationMs": 775.5
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:39.340Z",
+          "resource": "page.services",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 122.8
+            },
+            "auth_user": {
+              "durationMs": 25.6
+            },
+            "auth_session": {
+              "durationMs": 33.3
+            },
+            "auth_status": {
+              "durationMs": 39.2
+            },
+            "load": {
+              "durationMs": 237.3
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 25.5,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 339.3,
+              "calls": 9,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 91.2,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 237.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:38.946Z",
+          "resource": "page.owner-staff",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 27.2
+            },
+            "auth_status": {
+              "durationMs": 38.4
+            },
+            "auth_session": {
+              "durationMs": 50.7
+            },
+            "load": {
+              "durationMs": 346.2
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 27.1,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 785.6,
+              "calls": 16,
+              "bytes": 25,
+              "sized": 3
+            },
+            "backend_rpc": {
+              "durationMs": 107.1,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 346.5
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:38.385Z",
+          "resource": "page.owner-customers",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 31.5
+            },
+            "auth_session": {
+              "durationMs": 35.6
+            },
+            "auth_status": {
+              "durationMs": 39.2
+            },
+            "load": {
+              "durationMs": 326
+            },
+            "serialize": {
+              "durationMs": 0.3
+            },
+            "backend_auth": {
+              "durationMs": 31.3,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 102.2,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 319.4,
+              "calls": 4
+            },
+            "total": {
+              "durationMs": 326.5
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:37.905Z",
+          "resource": "owner.reports",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 32.3
+            },
+            "auth_session": {
+              "durationMs": 38.6
+            },
+            "auth_status": {
+              "durationMs": 47.6
+            },
+            "load": {
+              "durationMs": 606
+            },
+            "serialize": {
+              "durationMs": 0.3
+            },
+            "backend_auth": {
+              "durationMs": 32.2,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 1295.1,
+              "calls": 15,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 197.4,
+              "calls": 4,
+              "bytes": 46,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 606.4
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:37.139Z",
+          "resource": "owner.tickets",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 29
+            },
+            "auth_status": {
+              "durationMs": 38.2
+            },
+            "auth_session": {
+              "durationMs": 38.4
+            },
+            "load": {
+              "durationMs": 453.6
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 28.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 586.1,
+              "calls": 13,
+              "bytes": 25,
+              "sized": 3
+            },
+            "backend_rpc": {
+              "durationMs": 112.7,
+              "calls": 2,
+              "bytes": 17,
+              "sized": 1
+            },
+            "total": {
+              "durationMs": 453.9
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:36.520Z",
+          "resource": "owner.workspace",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 28
+            },
+            "auth_session": {
+              "durationMs": 37.2
+            },
+            "auth_status": {
+              "durationMs": 40.5
+            },
+            "load": {
+              "durationMs": 399.7
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 27.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 509.6,
+              "calls": 11,
+              "bytes": 51,
+              "sized": 2
+            },
+            "backend_rpc": {
+              "durationMs": 197.8,
+              "calls": 4,
+              "bytes": 29,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 400.2
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:35.841Z",
+          "resource": "page.notifications",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 50.5
+            },
+            "auth_session": {
+              "durationMs": 41.2
+            },
+            "auth_status": {
+              "durationMs": 44.4
+            },
+            "load": {
+              "durationMs": 215.5
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 50.4,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 178.5,
+              "calls": 4,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 340.1,
+              "calls": 6,
+              "bytes": 4,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 215.9
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:35.430Z",
+          "resource": "owner.salon-profile",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 33.7
+            },
+            "auth_session": {
+              "durationMs": 36.8
+            },
+            "auth_status": {
+              "durationMs": 38.1
+            },
+            "load": {
+              "durationMs": 476.8
+            },
+            "serialize": {
+              "durationMs": 0.6
+            },
+            "backend_auth": {
+              "durationMs": 33.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 1394.4,
+              "calls": 14,
+              "bytes": 70,
+              "sized": 3
+            },
+            "backend_rpc": {
+              "durationMs": 1889.7,
+              "calls": 19,
+              "bytes": 70,
+              "sized": 4
+            },
+            "total": {
+              "durationMs": 477.7
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:35.382Z",
+          "resource": "http.notifications.feed",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 44.8
+            },
+            "auth_status": {
+              "durationMs": 103.4
+            },
+            "auth_session": {
+              "durationMs": 132.2
+            },
+            "load": {
+              "durationMs": 314.2
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 44.7,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 295.7,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 242.9,
+              "calls": 2
+            },
+            "total": {
+              "durationMs": 314.6
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:34.795Z",
+          "resource": "owner.bookings",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 32.3
+            },
+            "auth_session": {
+              "durationMs": 45.7
+            },
+            "auth_status": {
+              "durationMs": 46.8
+            },
+            "load": {
+              "durationMs": 492.1
+            },
+            "serialize": {
+              "durationMs": 0.5
+            },
+            "backend_auth": {
+              "durationMs": 32.2,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 972,
+              "calls": 16,
+              "bytes": 27,
+              "sized": 4
+            },
+            "backend_rpc": {
+              "durationMs": 357,
+              "calls": 7
+            },
+            "total": {
+              "durationMs": 492.8
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:34.069Z",
+          "resource": "page.owner-today",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 195.8
+            },
+            "auth_user": {
+              "durationMs": 96.1
+            },
+            "auth_session": {
+              "durationMs": 52
+            },
+            "auth_status": {
+              "durationMs": 56.5
+            },
+            "clock": {
+              "durationMs": 36.5
+            },
+            "waiting": {
+              "durationMs": 64.8
+            },
+            "hours": {
+              "durationMs": 73.2
+            },
+            "extras": {
+              "durationMs": 189.6
+            },
+            "staff_board": {
+              "durationMs": 81.8
+            },
+            "staff_activity": {
+              "durationMs": 54.1
+            },
+            "bookings": {
+              "durationMs": 162.2
+            },
+            "financial_report": {
+              "durationMs": 185.7
+            },
+            "financial_compare": {
+              "durationMs": 239.5
+            },
+            "today_full": {
+              "durationMs": 280.8
+            },
+            "load": {
+              "durationMs": 477.2
+            },
+            "serialize": {
+              "durationMs": 0.3
+            },
+            "backend_auth": {
+              "durationMs": 95.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 1309.9,
+              "calls": 16,
+              "bytes": 31,
+              "sized": 6
+            },
+            "backend_rpc": {
+              "durationMs": 258.7,
+              "calls": 4,
+              "bytes": 31,
+              "sized": 3
+            },
+            "total": {
+              "durationMs": 477.7
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:33.859Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 226.4
+            },
+            "validate": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 90.9
+            },
+            "auth_status": {
+              "durationMs": 54.3
+            },
+            "auth_session": {
+              "durationMs": 59.4
+            },
+            "lease": {
+              "durationMs": 0.6
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 90.5,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 160.8,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 162.4,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 227.7
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:49:33.818Z",
+          "resource": "http.notifications.feed",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 73.9
+            },
+            "auth_session": {
+              "durationMs": 57.5
+            },
+            "auth_status": {
+              "durationMs": 58.7
+            },
+            "load": {
+              "durationMs": 245.1
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 73.8,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 155,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 197.6,
+              "calls": 2
+            },
+            "total": {
+              "durationMs": 245.4
+            }
+          }
+        }
+      ],
+      "byResource": {
+        "page.owner-payroll": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            775.5
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 26,
+            "rpc": 3
+          },
+          "backendBytes": {
+            "rest": 72,
+            "rpc": 17
+          },
+          "sizedResponses": {
+            "rest": 8,
+            "rpc": 1
+          }
+        },
+        "page.services": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            237.6
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 9,
+            "rpc": 1
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "page.owner-staff": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            346.5
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 16,
+            "rpc": 1
+          },
+          "backendBytes": {
+            "rest": 25
+          },
+          "sizedResponses": {
+            "rest": 3
+          }
+        },
+        "page.owner-customers": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            326.5
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "owner.reports": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            606.4
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 15,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 31,
+            "rpc": 46
+          },
+          "sizedResponses": {
+            "rest": 6,
+            "rpc": 3
+          }
+        },
+        "owner.tickets": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            453.9
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 13,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 25,
+            "rpc": 17
+          },
+          "sizedResponses": {
+            "rest": 3,
+            "rpc": 1
+          }
+        },
+        "owner.workspace": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            400.2
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 11,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 51,
+            "rpc": 29
+          },
+          "sizedResponses": {
+            "rest": 2,
+            "rpc": 2
+          }
+        },
+        "page.notifications": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            215.9
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 4,
+            "rpc": 6
+          },
+          "backendBytes": {
+            "rest": 21,
+            "rpc": 4
+          },
+          "sizedResponses": {
+            "rest": 1,
+            "rpc": 3
+          }
+        },
+        "owner.salon-profile": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            477.7
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 14,
+            "rpc": 19
+          },
+          "backendBytes": {
+            "rest": 70,
+            "rpc": 70
+          },
+          "sizedResponses": {
+            "rest": 3,
+            "rpc": 4
+          }
+        },
+        "http.notifications.feed": {
+          "calls": 2,
+          "statuses": {
+            "200": 2
+          },
+          "totalMs": [
+            314.6,
+            245.4
+          ],
+          "backendCalls": {
+            "auth": 2,
+            "rest": 6,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 42
+          },
+          "sizedResponses": {
+            "rest": 2
+          }
+        },
+        "owner.bookings": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            492.8
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 16,
+            "rpc": 7
+          },
+          "backendBytes": {
+            "rest": 27
+          },
+          "sizedResponses": {
+            "rest": 4
+          }
+        },
+        "page.owner-today": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            477.7
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 16,
+            "rpc": 4
+          },
+          "backendBytes": {
+            "rest": 31,
+            "rpc": 31
+          },
+          "sizedResponses": {
+            "rest": 6,
+            "rpc": 3
+          }
+        },
+        "context.route": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            227.7
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 1
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        }
+      }
+    }
+  ],
+  "cdnSummary": {
+    "type": "summary",
+    "recordsReturned": 49,
+    "timeRange": {
+      "start": "2026-10-29T10:48:45.000Z",
+      "end": "2026-10-29T10:49:42.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "runtimeSummary": {
+    "type": "summary",
+    "recordsReturned": 50,
+    "timeRange": {
+      "start": "2026-10-29T10:48:45.000Z",
+      "end": "2026-10-29T10:49:42.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "limits": [
+    "Only CDN-nativeUA correlated requests; not a cryptographic one-device identity.",
+    "Nested context observation inside one HTTP request can repeat labels; spans overlap, do not add as wall time.",
+    "Backend byte totals cover only existing Content-Length measurements where sized is present; not all app response or wire bytes.",
+    "These are process-cold with retained caches and later revalidation, not first uncached or exact UI-ready."
+  ]
+}

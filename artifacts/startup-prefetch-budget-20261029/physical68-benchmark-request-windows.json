@@ -1,0 +1,602 @@
+{
+  "at": "2026-10-29T11:33:53.136Z",
+  "deployment": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+  "nativeSource": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "nativeBuild": "1.0.0(68)",
+  "method": "Read-only existing CDN request logs, exact nativeUA, bounded worker UTC windows and deployment; only timestamp/path/method/status/cache result retained. No headers/bodies/query arguments/IPs saved.",
+  "summary": {
+    "type": "summary",
+    "recordsReturned": 38,
+    "timeRange": {
+      "start": "2026-10-29T11:31:34.000Z",
+      "end": "2026-10-29T11:32:22.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "rows": [
+    {
+      "timestamp": "2026-10-29T11:32:15.071Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:32:14.936Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:32:14.415Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:32:13.534Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:32:13.534Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:32:13.534Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:57.164Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:56.567Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:56.562Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:56.111Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:55.996Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:55.607Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:55.601Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:54.783Z",
+      "path": "/api/app-local/command",
+      "method": "POST",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:54.344Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.929Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.371Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.365Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.360Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.332Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.305Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:52.168Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:41.506Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:41.094Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:41.088Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:40.604Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:40.542Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:40.145Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:40.139Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:39.327Z",
+      "path": "/api/app-local/command",
+      "method": "POST",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:38.905Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:37.476Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:36.933Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:36.927Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:36.923Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 304,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:36.892Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:36.866Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    },
+    {
+      "timestamp": "2026-10-29T11:31:36.705Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200,
+      "cacheResult": "MISS"
+    }
+  ],
+  "windows": [
+    {
+      "sample": "cold1",
+      "since": "2026-10-29T11:31:34Z",
+      "until": "2026-10-29T11:31:44Z",
+      "count": 16,
+      "counts": {
+        "/api/app-local/read 304": 4,
+        "/api/app-local/read 200": 8,
+        "/api/app-local/command 200": 1,
+        "/api/app-local/context 200": 3
+      },
+      "requests": [
+        {
+          "timestamp": "2026-10-29T11:31:41.506Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:41.094Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:41.088Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:40.604Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:40.542Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:40.145Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:40.139Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:39.327Z",
+          "path": "/api/app-local/command",
+          "method": "POST",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:38.905Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:37.476Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:36.933Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:36.927Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:36.923Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:36.892Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:36.866Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:36.705Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        }
+      ]
+    },
+    {
+      "sample": "cold2",
+      "since": "2026-10-29T11:31:50Z",
+      "until": "2026-10-29T11:32:00Z",
+      "count": 16,
+      "counts": {
+        "/api/app-local/read 304": 4,
+        "/api/app-local/read 200": 8,
+        "/api/app-local/command 200": 1,
+        "/api/app-local/context 200": 3
+      },
+      "requests": [
+        {
+          "timestamp": "2026-10-29T11:31:57.164Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:56.567Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:56.562Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:56.111Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:55.996Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:55.607Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:55.601Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:54.783Z",
+          "path": "/api/app-local/command",
+          "method": "POST",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:54.344Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.929Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.371Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.365Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.360Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 304,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.332Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.305Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:31:52.168Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        }
+      ]
+    },
+    {
+      "sample": "warm1",
+      "since": "2026-10-29T11:32:11Z",
+      "until": "2026-10-29T11:32:22Z",
+      "count": 6,
+      "counts": {
+        "/api/app-local/read 200": 5,
+        "/api/app-local/context 200": 1
+      },
+      "requests": [
+        {
+          "timestamp": "2026-10-29T11:32:15.071Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:32:14.936Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:32:14.415Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:32:13.534Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:32:13.534Z",
+          "path": "/api/app-local/read",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        },
+        {
+          "timestamp": "2026-10-29T11:32:13.534Z",
+          "path": "/api/app-local/context",
+          "method": "GET",
+          "status": 200,
+          "cacheResult": "MISS"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "NativeUA/time correlation does not cryptographically identify one phone; other same-UA devices could contribute.",
+    "Read resource names/arguments, response bytes and durations absent in CDN fields. Multiple /read calls alone do not prove duplicate resources.",
+    "Process-cold uses retained encryptedread/lease cache, not fresh install or first uncached.",
+    "Visual firstdata upperbounds include XCTesttap/idle overhead; no subtraction as exact app-ready."
+  ]
+}

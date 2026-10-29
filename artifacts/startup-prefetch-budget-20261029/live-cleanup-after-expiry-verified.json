@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-29T11:31:35.265Z",
+  "deployment": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+  "since": "2026-10-29T11:31:21.768Z",
+  "querySince": "2026-10-29T11:31:19.768Z",
+  "until": "2026-10-29T11:31:32.251Z",
+  "probe": {
+    "at": "2026-10-29T11:31:22.238Z",
+    "since": "2026-10-29T11:31:21.768Z",
+    "deployment": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+    "contextStatus": 200,
+    "readStatus": 200,
+    "anonymous": true,
+    "writes": 0,
+    "noBodyHeadersOrIdentityRetained": true
+  },
+  "controlledCdnRequests": 2,
+  "requests": [
+    {
+      "utc": "2026-10-29T11:31:21.409Z",
+      "path": "/api/app-local/read",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "utc": "2026-10-29T11:31:21.257Z",
+      "path": "/api/app-local/context",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "newObservationEvents": 0,
+  "cdnSummary": {
+    "type": "summary",
+    "recordsReturned": 2,
+    "timeRange": {
+      "start": "2026-10-29T11:31:19.000Z",
+      "end": "2026-10-29T11:31:32.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "runtimeSummary": {
+    "type": "summary",
+    "recordsReturned": 0,
+    "timeRange": {
+      "start": "2026-10-29T11:31:19.768Z",
+      "end": "2026-10-29T11:31:32.251Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "originalHooksRemovedAndSourceVerified": true,
+  "expiryExtended": false,
+  "probeBeforeOriginalExpiry": false,
+  "cleanupPerformed": true,
+  "privacy": "Only public metadata probe, no bodies/raw headers/cookies/IDs stored. Existing frozen measurements retained; provider historical log retention unchanged."
+}

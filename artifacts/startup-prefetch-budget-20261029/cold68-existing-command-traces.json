@@ -1,0 +1,89 @@
+{
+  "at": "2026-10-29T11:34:43.896Z",
+  "source": "Existing allowlisted command tracing, no payloads/headers/identifiers saved",
+  "results": [
+    {
+      "utc": "2026-10-29T11:31:55.416Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 250.1,
+        "workspace": 0,
+        "backend_auth": 130.1,
+        "backend_rest": 342.1,
+        "backend_rpc": 217.9,
+        "handler": 300.4,
+        "total": 551.6
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:31:39.990Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 257,
+        "workspace": 0,
+        "backend_auth": 155.1,
+        "backend_rest": 341.9,
+        "backend_rpc": 185,
+        "handler": 317.9,
+        "total": 576.2
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    }
+  ],
+  "summary": {
+    "type": "summary",
+    "recordsReturned": 4,
+    "timeRange": {
+      "start": "2026-10-29T11:31:34.000Z",
+      "end": "2026-10-29T11:32:22.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  }
+}

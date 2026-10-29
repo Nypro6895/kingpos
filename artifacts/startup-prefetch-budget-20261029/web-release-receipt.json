@@ -1,0 +1,60 @@
+{
+  "kind": "release",
+  "summary": "Bounded hidden-route prefetch source and explicit startup observer cleanup published to web; both original API routes restored, helper/test absent, two controlled200 public requests on exact live deployment produce zero new observation events before original11:30UTC expiry. Native performance update still pending unchanged-source test retry, not published by this receipt.",
+  "changes": [
+    "639fea99-cf68-4f66-8853-939d357a56fb",
+    "96b97016-bc54-4e56-b1dd-c49bb1bea58b"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+      "baselineDeploymentId": "dpl_7pJ2mhmJod6cFmqWAEtMedSzcKNE",
+      "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+      "sourceSha256": "16a859abf57484a12c3e265f39a78bfab9cce60a5d48157c2f1a8190e45d585c",
+      "overlaySha256": "b6177e4c25fbc003ee6e66791c2515be380bc43186a71dc389b68c316f288801",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/web-live-source-verified.json"
+    }
+  },
+  "verification": {
+    "productionBuild": "artifacts/startup-prefetch-budget-20261029/web-candidate-source-verified.json",
+    "tests": "artifacts/startup-prefetch-budget-20261029/tests.log",
+    "foregroundAndTodayTests": "artifacts/startup-prefetch-budget-20261029/foreground-scheduler-tests.log",
+    "http": "artifacts/startup-prefetch-budget-20261029/http-live-verified.json",
+    "browser": "artifacts/startup-prefetch-budget-20261029/live-browser-proof.json",
+    "cleanup": "artifacts/startup-prefetch-budget-20261029/live-cleanup-verified.json",
+    "originalRouteBytes": "artifacts/startup-prefetch-budget-20261029/source-cleanup-verified.json"
+  },
+  "cleanup": {
+    "performed": true,
+    "ttlExtended": false,
+    "originalExpiryUTC": "2026-10-29T11:30:00Z",
+    "controlledRequests": 2,
+    "newObservationEvents": 0,
+    "probeBeforeExpiry": true,
+    "evidencePreserved": true,
+    "providerHistoricalRetentionUnchanged": true
+  },
+  "nativeRetained": {
+    "version": "1.0.0",
+    "build": "67",
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+    "receipt": "f830e1c5-8a3a-43c6-8bd4-b6b5769b3055"
+  },
+  "nativePending": {
+    "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+    "run": 40862237073,
+    "attempt": 2,
+    "reason": "Attempt1 two isolated WK local-HTML startup timeouts; signing/upload skipped. One unchanged-source rerun running, no assertion/budget changes."
+  },
+  "limitations": [
+    "No new native publication or physical acceptance claim from this web receipt.",
+    "No first uncached/subsecond/full-app or causal speedup claim; original named evidence and privacy limits preserved."
+  ],
+  "coordinatorLock": "Same owned coordinator retained while native CI/release remains active; finally unlock after verified final boundary.",
+  "id": "a5bad421-bb74-494b-b370-869b6acb85d0",
+  "recordedAt": "2026-10-29T11:17:21.804Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\history\\2026-10-29T11-17-21-804Z-a5bad421-bb74-494b-b370-869b6acb85d0.json"
+}

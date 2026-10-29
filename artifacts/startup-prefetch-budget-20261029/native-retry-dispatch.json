@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-29T11:13:09.281Z",
+  "run": 40862237073,
+  "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "accepted": true,
+  "attempt": 2,
+  "reason": "Two isolated foreground WK constant-local-HTML fixture startup timeouts at unchanged IsolatedWKCookieProfileOwner.swift:35; no product JS in fixture. Prior235 tests two failures, no unsigned archive/sign/upload. One unchanged-source rerun, assertions/budgets untouched.",
+  "priorEvidence": "artifacts/startup-prefetch-budget-20261029/native-evidence/test.log",
+  "priorUpload": "skipped"
+}

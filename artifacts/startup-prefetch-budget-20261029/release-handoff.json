@@ -1,0 +1,62 @@
+{
+  "at": "2026-10-29T11:42:51.195Z",
+  "receipt": "34d1847f-953b-4f68-bc6f-caa8af50f3bf",
+  "web": {
+    "status": "published",
+    "verified": true,
+    "deploymentId": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+    "baselineDeploymentId": "dpl_7pJ2mhmJod6cFmqWAEtMedSzcKNE",
+    "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+    "sourceSha256": "16a859abf57484a12c3e265f39a78bfab9cce60a5d48157c2f1a8190e45d585c",
+    "overlaySha256": "b6177e4c25fbc003ee6e66791c2515be380bc43186a71dc389b68c316f288801",
+    "evidence": "artifacts/startup-prefetch-budget-20261029/web-live-source-verified.json"
+  },
+  "ios": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.0",
+    "build": "68",
+    "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+    "sourceSha256": "805595c171489a25ba3022abd64bb26be482675bcadc1f9ad4f8d4dd9ae99c18",
+    "bundleSha256": "1f0182114d08e4b8143db9d9931846b9e4dbed5bd6758619a30e9bbf141b2ee2",
+    "evidence": "artifacts/startup-prefetch-budget-20261029/native-verified.json",
+    "availability": "artifacts/startup-prefetch-budget-20261029/availability-verified.json"
+  },
+  "cleanupReceipt": "a5bad421-bb74-494b-b370-869b6acb85d0",
+  "lock": {
+    "at": "2026-10-29T11:40:15.720Z",
+    "receipt": "34d1847f-953b-4f68-bc6f-caa8af50f3bf",
+    "owner": "combined-settings-pos-payroll-checkwriter-20261029",
+    "released": true,
+    "lockFileAbsent": true
+  },
+  "queue": {
+    "before": 94,
+    "after": 92,
+    "selectedPending": 0,
+    "externalAdded": 0,
+    "externalRemoved": 0,
+    "externalChanged": 0,
+    "originalInventory": {
+      "worktrees": 137,
+      "dirty": 85,
+      "notes": 3354,
+      "uniqueNotes": 1094,
+      "errors": 0
+    },
+    "scope": "Full release-journal pending output across all registered linked worktrees, event UUID/status/pending-channel comparison; source code freeze7ccb53a and prior101event disposition included. No claim this rescans ignored user files or all3354notes again; original137worktree/85dirty/3354note inventory retained separately."
+  },
+  "physicalReport": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical68-comparison327.md",
+  "performance": {
+    "firstUncached": "NOT_RUN",
+    "underOneSecondFirstLoad": "NOT_PASSED",
+    "causalSpeedup": "NOT_ESTABLISHED",
+    "verified": "bounded off-route speculation regression and finite8window functional/performance observation"
+  },
+  "pending": {
+    "developerMarket": "21originalrecords excluded",
+    "checkWriter": "four original activation records intentionally pending; compatible disabled code shipped67 via08e308fd;3SQL/key/salesflag/catalogactivation/provider/printing not performed",
+    "payrollHistory": "original partial income-history revision excluded/pending;display-onlyc84379a7 shipped67"
+  },
+  "metadataOnlyHandoff": "Actualweb/native source remains7ccb53a507839d6f439ecda90e162d7638d9e08c; later handoff commit is records/evidence only."
+}

@@ -1,0 +1,31 @@
+✔ owner priority matches real mounted cache keys and ordinary default views (2.2613ms)
+✔ staff plans bind every staff DTO to the trusted current staff; Post uses salon-profile (5.2821ms)
+✔ personal and guest plans never pull salon or another role resources (0.3901ms)
+✔ accepted authority is never inferred from display role, arbitrary online proof or old leases (0.6148ms)
+✔ current route comes first with component-exact query arguments and deduplicates the default (0.9481ms)
+✔ forms, recovery and sensitive callbacks cannot start speculative work (0.2768ms)
+✔ Today sections use only accepted server date and exact permission-filtered phase cache keys (0.4139ms)
+✔ planned descriptors are retained named reads with declared argument keys, never actions or control reads (5.3856ms)
+✔ settings memory reuse stays scoped, refreshes after writes, and never restores a durable settings form (451.7379ms)
+✔ accepted owner, staff and personal plans prepare nearby tabs without hidden UI trees (1119.8884ms)
+✔ startup bounds hidden reads and navigation still opens an unwarmed financial page (841.6295ms)
+✔ selecting the held preload reuses and promotes its one read (340.0675ms)
+✔ a different foreground tab preempts a held speculative transport and ignores its late result (348.6451ms)
+✔ aborting the preload consumer preserves a mounted foreground observer of the same read (181.983ms)
+✔ same-scope display lease recovery preserves an unplanned foreground read (317.4917ms)
+✔ account scope switch cancels old work and rejects a transport that resolves late (366.8667ms)
+✔ an explicit 403 ends the speculative chain across repeated foreground events (569.1813ms)
+✔ held disk hydration cannot gate the foreground online read beyond its short head start (265.5846ms)
+✔ an unvisited oversize preload does not retain an invisible DTO after bounded cache rejection (187.7756ms)
+✔ clock-skewed disk arriving before online cannot replace the fresh network DTO (259.6832ms)
+✔ clock-skewed disk arriving after online cannot replace the fresh network DTO (266.6728ms)
+✔ a 304 validation clears a disk clock skew before a later changed network response (250.2868ms)
+✔ workspace gesture stops old speculative HTTP before command preflight; foreground and new identity continue (731.9882ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6922.5186

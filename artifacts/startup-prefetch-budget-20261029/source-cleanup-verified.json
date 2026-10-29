@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-29T11:05:13.684Z",
+  "baseline": "cb6423dee5c78141004310fdddf9f7f7cc268cf2",
+  "candidate": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "restoredOriginalRoutes": [
+    {
+      "file": "app/api/app-local/read/route.ts",
+      "byteIdenticalToBeforeObserver": true
+    },
+    {
+      "file": "app/api/app-local/context/route.ts",
+      "byteIdenticalToBeforeObserver": true
+    }
+  ],
+  "deletedObserver": true,
+  "excludedDirty": [
+    "app/settings/settings-icon.tsx",
+    "app/settings/settings-navigation.ts",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/app-local-command-trace-names.generated.json",
+    "public/experience-build-assets.json"
+  ]
+}

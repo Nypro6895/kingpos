@@ -1,0 +1,120 @@
+{
+  "at": "2026-10-29T11:38:53.7382442Z",
+  "status": "finite-targeted-physical-verified",
+  "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "version": "1.0.0",
+  "build": "68",
+  "archive": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\release68-327.zip",
+  "archiveSha256": "c2184866281ffc0f860b96de41f745e23c816219fde1a21561300cd11eb0b05b",
+  "installedBeforeAfterVerified": true,
+  "sameBundleContainerWithin68Batch": true,
+  "dataContainerInspected": false,
+  "prior67ProofRelabeled": false,
+  "windows": 8,
+  "failures": [],
+  "observedMissingDataOrBlockedNavigation": 0,
+  "sourcePair": "Native68 and webDQAy exact7ccb53a, signed/archive/source hashes verified separately",
+  "physicalChecks": [
+    "OwnerToday two process-cold retained-cache plus one warm",
+    "Payroll current period content",
+    "Reports actual totals/rows/chart content",
+    "Staff Today selected staff content",
+    "Personal Beauty primary text and later cover image",
+    "Owner Settings full hub and Salon information read; no Edit/Save",
+    "Return Owner; controller stopped"
+  ],
+  "independentRootChecks": [
+    "ZIP SHA256 matched",
+    "Read original installed-before/after in immutable ZIP:1.0.0(68),same bundleURL",
+    "Read original visual-timing327.json",
+    "Directly viewed cold-process-1-327.jpg and settings-navigation-327.jpg"
+  ],
+  "workerDirectImageReview": "All eight contact sheets viewed; raw AX and actual images retained in immutable ZIP",
+  "samples": [
+    {
+      "sample": "beauty-navigation-frames",
+      "tapRequestedUTC": "2026-10-29T11:34:42.208Z",
+      "tapReturnedUTC": "2026-10-29T11:34:43.246Z",
+      "tapCallMs": 1038,
+      "confirmedPrimaryFrame": 0,
+      "primaryDataUpperMs": 1216,
+      "lastReceivedUTC": "2026-10-29T11:34:49.272Z"
+    },
+    {
+      "sample": "cold-process-1-frames",
+      "tapRequestedUTC": "2026-10-29T11:31:35.78Z",
+      "tapReturnedUTC": "2026-10-29T11:31:36.689Z",
+      "tapCallMs": 909,
+      "confirmedPrimaryFrame": 3,
+      "primaryDataUpperMs": 1689,
+      "lastReceivedUTC": "2026-10-29T11:31:42.696Z",
+      "freshTimestampConfirmedFrame": 6,
+      "freshTimestampUpperMs": 2185
+    },
+    {
+      "sample": "cold-process-2-frames",
+      "tapRequestedUTC": "2026-10-29T11:31:51.258Z",
+      "tapReturnedUTC": "2026-10-29T11:31:52.165Z",
+      "tapCallMs": 907,
+      "confirmedPrimaryFrame": 3,
+      "primaryDataUpperMs": 1682,
+      "lastReceivedUTC": "2026-10-29T11:31:58.188Z",
+      "freshTimestampConfirmedFrame": 6,
+      "freshTimestampUpperMs": 2185
+    },
+    {
+      "sample": "payroll-navigation-frames",
+      "tapRequestedUTC": "2026-10-29T11:33:20.853Z",
+      "tapReturnedUTC": "2026-10-29T11:33:21.762Z",
+      "tapCallMs": 909,
+      "confirmedPrimaryFrame": 0,
+      "primaryDataUpperMs": 1056,
+      "lastReceivedUTC": "2026-10-29T11:33:27.791Z"
+    },
+    {
+      "sample": "reports-navigation-frames",
+      "tapRequestedUTC": "2026-10-29T11:33:37.771Z",
+      "tapReturnedUTC": "2026-10-29T11:33:38.658Z",
+      "tapCallMs": 887,
+      "confirmedPrimaryFrame": 0,
+      "primaryDataUpperMs": 1034,
+      "lastReceivedUTC": "2026-10-29T11:33:44.724Z"
+    },
+    {
+      "sample": "settings-navigation-frames",
+      "tapRequestedUTC": "2026-10-29T11:35:11.07Z",
+      "tapReturnedUTC": "2026-10-29T11:35:11.889Z",
+      "tapCallMs": 819,
+      "confirmedPrimaryFrame": 3,
+      "primaryDataUpperMs": 1451,
+      "lastReceivedUTC": "2026-10-29T11:35:17.98Z"
+    },
+    {
+      "sample": "staff-switch-frames",
+      "tapRequestedUTC": "2026-10-29T11:34:00.837Z",
+      "tapReturnedUTC": "2026-10-29T11:34:01.422Z",
+      "tapCallMs": 585,
+      "confirmedPrimaryFrame": 6,
+      "primaryDataUpperMs": 1712,
+      "lastReceivedUTC": "2026-10-29T11:34:07.505Z"
+    },
+    {
+      "sample": "warm-resume-1-frames",
+      "tapRequestedUTC": "2026-10-29T11:32:12.889Z",
+      "tapReturnedUTC": "2026-10-29T11:32:13.794Z",
+      "tapCallMs": 905,
+      "confirmedPrimaryFrame": 0,
+      "primaryDataUpperMs": 1085,
+      "lastReceivedUTC": "2026-10-29T11:32:19.841Z"
+    }
+  ],
+  "limitations": [
+    "Process-cold retains cache; not first uncached/fresh install",
+    "Primary upper bounds include XCTest tap/idle/capture overhead; not exact ready or subsecond/fullpaint/fullusable",
+    "Native67 vs68 cache age/backend/network/tap conditions not controlled; no causal speedup percent",
+    "Native68 named resources/bytes unavailable after deliberate observer removal; CDN generic counts do not prove named absence or budget2 total HTTP",
+    "Production forced403/revocation/offline/error paths not induced;37 local runtime/plan/Today/scheduler checks remain separate",
+    "No actual iPad/hardware/provider/printing/financial Submit/payment/SMS/post or full-app acceptance",
+    "Bundlecontainer may change67 to68 normal update; no dataContainer UUID or deleted-cache claim"
+  ]
+}

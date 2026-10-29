@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-29T11:12:20.462Z",
+  "run": 40862237073,
+  "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "branch": "codex/combined-settings-checkwriter-20261029",
+  "status": "completed",
+  "conclusion": "failure",
+  "url": "https://github.com/Nypro6895/kingpos/actions/runs/40862237073",
+  "jobs": [
+    {
+      "name": "upload",
+      "status": "completed",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Rebuild source-bound production bundle (Services pilot OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run brew install xcodegen",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test simulator and unsigned archive",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "Sign and upload to TestFlight",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

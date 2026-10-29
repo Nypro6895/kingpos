@@ -1,0 +1,43 @@
+{
+  "kind": "release",
+  "summary": "Temporary bounded server-only startup read/context observation LIVE for owner-authorized physical67 performance audit. Same original response/auth/lease/binding/DTOs; allowlisted resource and existing numeric Server-Timing only. Autoexpire11:30UTC,1000responses/instance; explicit cleanup/readback still required.",
+  "changes": [
+    "f5d715a7-34ba-4cd9-8a42-29797da193c5"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7pJ2mhmJod6cFmqWAEtMedSzcKNE",
+      "baselineDeploymentId": "dpl_EuYDjZN4YcjaowspaCDsUhow6r5M",
+      "sourceSha256": "ceb6ca56d9bc87aba5deded34275e2e56fba0f67c47332ddaa5e11a768afe5b0",
+      "overlaySha256": "91eaa0df664f39a707ef5cf3a74f95647b5efc6f6880ff27e909470fc2af8de0",
+      "commit": "cb6423dee5c78141004310fdddf9f7f7cc268cf2",
+      "evidence": "artifacts/startup-read-observation-20261029/web-live-source-verified.json"
+    }
+  },
+  "verification": {
+    "http": "artifacts/startup-read-observation-20261029/http-live-verified.json",
+    "publicProbe": "artifacts/startup-read-observation-20261029/public-observer-probe.json",
+    "actualSanitizedLogReadback": "artifacts/startup-read-observation-20261029/observation-live-readback.json",
+    "privacyTests": "artifacts/startup-read-observation-20261029/tests.log",
+    "nativeAssessment": "artifacts/startup-read-observation-20261029/native-assessment.json"
+  },
+  "nativeRetained": {
+    "version": "1.0.0",
+    "build": "67",
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+    "receipt": "f830e1c5-8a3a-43c6-8bd4-b6b5769b3055"
+  },
+  "observation": {
+    "expiresUTC": "2026-10-29T11:30:00Z",
+    "maxResponsesPerInstance": 1000,
+    "noIdsUrlsArgsBodiesRawHeadersOrPII": true,
+    "backendBytes": "Existing header-reported bytes only when sized count available; no response-body bytes claimed",
+    "status": "ACTIVE_TEMPORARY_CLEANUP_REQUIRED"
+  },
+  "notAcceptance": "Measurement only, no first-uncached/sub-second/full-app/duplicate-resource claim. Phase326 correlation pending.",
+  "id": "33f1634b-d244-4139-b30b-3b71145523a4",
+  "recordedAt": "2026-10-29T10:50:58.077Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029"
+}

@@ -1,0 +1,22 @@
+✔ first native Today gets fresh complete data once; mutations refresh sections without a second full read (998.2097ms)
+✔ full upstream failure falls back to independent sections; only failed finance retries; denial withdraws money (516.4489ms)
+✔ durable offline frame stays visible while exactly one fresh full read replaces it (666.0107ms)
+✔ fresh bootstrap uses the page wrapper key and does not read Today a second time (314.018ms)
+✔ spare connection never starts another page while the visible page is loading (3.0676ms)
+✔ only one speculative read runs; foreground outranks remaining queue (0.8619ms)
+✔ foreground preempts background and late ignored-abort result cannot settle it (0.6388ms)
+✔ same scoped key shares work and cancelling one consumer keeps another alive (1.4229ms)
+✔ scope change cancels old queued and running work without accepting its late reply (0.5021ms)
+✔ pause yields speculative reads and resumes without rerunning completed reads (0.4162ms)
+✔ navigation promotes queued destination and demotes previous route (0.2355ms)
+✔ failed item releases queue and does not block subsequent reads (0.1883ms)
+✔ active-route speculation remains below visible section priority (0.5183ms)
+✔ a speculative join cannot move a foreground read to another route (0.5242ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2960.6087

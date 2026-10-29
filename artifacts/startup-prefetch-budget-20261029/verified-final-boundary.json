@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-29T11:40:15.577Z",
+  "receipt": "34d1847f-953b-4f68-bc6f-caa8af50f3bf",
+  "web": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+  "native": "1.0.0(68)",
+  "source": "7ccb53a507839d6f439ecda90e162d7638d9e08c",
+  "physicalFiniteBatchCompleted": true,
+  "noActiveRootPipelines": true,
+  "broadPerformanceNotUsedToHoldLock": true
+}

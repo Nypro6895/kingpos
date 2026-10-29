@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "startup-prefetch-budget-20261029",
+  "status": "ready",
+  "summary": "Bound off-route speculative DTO reads to two per accepted identity; selected route remains eligible, preserving existing authority, freshness, invalidation and retained visited-page DTOs. Before regression drains twelve hidden reads; after23/23 browser/plan tests pass. Unwarmed pages load normally when selected.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-prefetch.ts",
+    "tests/app-local-prefetch-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\startup-prefetch-budget-20261029\\ready-source",
+    "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c"
+  },
+  "validation": [
+    {
+      "name": "23 actual-browser runtime and plan tests, zero skipped",
+      "result": "passed",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/tests.log"
+    },
+    {
+      "name": "Frozen production web build and3546 exact uploaded source files",
+      "result": "passed",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/web-candidate-source-verified.json"
+    }
+  ],
+  "id": "639fea99-cf68-4f66-8853-939d357a56fb",
+  "recordedAt": "2026-10-29T11:06:50.547Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-prefetch.ts": "ffb4668e7aa91a5b11cffa53a4ad11edf09eaa0103b39f9fba44fc1acf339de3",
+    "tests/app-local-prefetch-runtime.test.mjs": "8eb164dfb86d2f7d183a22cc522b4d59d5eda015f7bc906c1b084cd12e33fb8f"
+  },
+  "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T11-06-50-547Z-639fea99-cf68-4f66-8853-939d357a56fb.json"
+}

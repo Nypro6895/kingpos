@@ -1,0 +1,413 @@
+{
+  "at": "2026-10-29T11:02:32.457Z",
+  "deployment": "dpl_7pJ2mhmJod6cFmqWAEtMedSzcKNE",
+  "webSource": "cb6423dee5c78141004310fdddf9f7f7cc268cf2",
+  "native": "1.0.0(67)/d20058a",
+  "method": "Exact Vercel requestID joined in-memory between native-UA CDN requests and allowlisted runtime observer; all identifiers dropped from stored proof.",
+  "cdnRecords": 23,
+  "runtimeObservations": 23,
+  "matchedNativeObservations": 23,
+  "windows": [
+    {
+      "sample": "staffSwitch",
+      "since": "2026-10-29T10:51:06Z",
+      "until": "2026-10-29T10:51:15Z",
+      "observations": [
+        {
+          "utc": "2026-10-29T10:51:09.164Z",
+          "resource": "http.notifications.feed",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 35
+            },
+            "auth_status": {
+              "durationMs": 45.8
+            },
+            "auth_session": {
+              "durationMs": 50
+            },
+            "load": {
+              "durationMs": 273.3
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 34.9,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 177.6,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 184.1,
+              "calls": 2
+            },
+            "total": {
+              "durationMs": 273.5
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:51:09.002Z",
+          "resource": "staff.relay",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 49.9
+            },
+            "auth_status": {
+              "durationMs": 83.9
+            },
+            "auth_session": {
+              "durationMs": 88
+            },
+            "staff_resolve": {
+              "durationMs": 70.8
+            },
+            "load": {
+              "durationMs": 358.5
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 49.8,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 275.6,
+              "calls": 4,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 244.3,
+              "calls": 2
+            },
+            "total": {
+              "durationMs": 358.8
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:51:08.969Z",
+          "resource": "shell.auxiliary",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 43.3
+            },
+            "auth_session": {
+              "durationMs": 67.7
+            },
+            "auth_status": {
+              "durationMs": 92.5
+            },
+            "load": {
+              "durationMs": 322.6
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "backend_auth": {
+              "durationMs": 43.2,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 197,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 474.9,
+              "calls": 6,
+              "bytes": 3,
+              "sized": 2
+            },
+            "total": {
+              "durationMs": 322.9
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:51:08.900Z",
+          "resource": "http.shell.advertising",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 34.7
+            },
+            "auth_session": {
+              "durationMs": 71.1
+            },
+            "auth_status": {
+              "durationMs": 77.5
+            },
+            "load": {
+              "durationMs": 264.9
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 34.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 203.2,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 134.1,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 265.2
+            }
+          }
+        },
+        {
+          "utc": "2026-10-29T10:51:08.369Z",
+          "resource": "context.route",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 93.6
+            },
+            "validate": {
+              "durationMs": 0
+            },
+            "lease": {
+              "durationMs": 49.6
+            },
+            "serialize": {
+              "durationMs": 0.2
+            },
+            "total": {
+              "durationMs": 385.6
+            }
+          }
+        }
+      ],
+      "byResource": {
+        "http.notifications.feed": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            273.5
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "staff.relay": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            358.8
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 4,
+            "rpc": 2
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "shell.auxiliary": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            322.9
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 6
+          },
+          "backendBytes": {
+            "rest": 21,
+            "rpc": 3
+          },
+          "sizedResponses": {
+            "rest": 1,
+            "rpc": 2
+          }
+        },
+        "http.shell.advertising": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            265.2
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 1
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        },
+        "context.route": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            385.6
+          ],
+          "backendCalls": {},
+          "backendBytes": {},
+          "sizedResponses": {}
+        }
+      }
+    },
+    {
+      "sample": "beautyWarm",
+      "since": "2026-10-29T10:51:45Z",
+      "until": "2026-10-29T10:51:55Z",
+      "observations": [
+        {
+          "utc": "2026-10-29T10:51:47.452Z",
+          "resource": "http.shell.advertising",
+          "status": 200,
+          "spans": {
+            "auth": {
+              "durationMs": 0
+            },
+            "auth_user": {
+              "durationMs": 56.7
+            },
+            "auth_status": {
+              "durationMs": 42.3
+            },
+            "auth_session": {
+              "durationMs": 83.2
+            },
+            "load": {
+              "durationMs": 250.2
+            },
+            "serialize": {
+              "durationMs": 0.1
+            },
+            "backend_auth": {
+              "durationMs": 56.6,
+              "calls": 1
+            },
+            "backend_rest": {
+              "durationMs": 158.8,
+              "calls": 3,
+              "bytes": 21,
+              "sized": 1
+            },
+            "backend_rpc": {
+              "durationMs": 129.9,
+              "calls": 1
+            },
+            "total": {
+              "durationMs": 250.4
+            }
+          }
+        }
+      ],
+      "byResource": {
+        "http.shell.advertising": {
+          "calls": 1,
+          "statuses": {
+            "200": 1
+          },
+          "totalMs": [
+            250.4
+          ],
+          "backendCalls": {
+            "auth": 1,
+            "rest": 3,
+            "rpc": 1
+          },
+          "backendBytes": {
+            "rest": 21
+          },
+          "sizedResponses": {
+            "rest": 1
+          }
+        }
+      }
+    }
+  ],
+  "cdnSummary": {
+    "type": "summary",
+    "recordsReturned": 23,
+    "timeRange": {
+      "start": "2026-10-29T10:51:05.000Z",
+      "end": "2026-10-29T10:51:56.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "runtimeSummary": {
+    "type": "summary",
+    "recordsReturned": 23,
+    "timeRange": {
+      "start": "2026-10-29T10:51:05.000Z",
+      "end": "2026-10-29T10:51:56.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  },
+  "limits": [
+    "Only CDN-nativeUA correlated requests; not a cryptographic one-device identity.",
+    "Nested context observation inside one HTTP request can repeat labels; spans overlap, do not add as wall time.",
+    "Backend byte totals cover only existing Content-Length measurements where sized is present; not all app response or wire bytes.",
+    "These are process-cold with retained caches and later revalidation, not first uncached or exact UI-ready."
+  ]
+}

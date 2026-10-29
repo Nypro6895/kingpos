@@ -1,0 +1,284 @@
+{
+  "at": "2026-10-29T11:37:42.035Z",
+  "source": "Existing allowlisted command tracing, no payloads/headers/identifiers saved",
+  "results": [
+    {
+      "utc": "2026-10-29T11:35:14.884Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0,
+        "auth": 200.2,
+        "workspace": 0,
+        "backend_auth": 136.3,
+        "backend_rest": 312.8,
+        "backend_rpc": 182.2,
+        "handler": 321,
+        "total": 522.4
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:34:59.874Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 220.6,
+        "workspace": 0.1,
+        "backend_auth": 118.7,
+        "backend_rest": 327.5,
+        "backend_rpc": 206.2,
+        "handler": 326.8,
+        "total": 551.1
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:34:56.596Z",
+      "status": 200,
+      "commandId": "shell.switch-workspace",
+      "originalHandler": null,
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 247.8,
+        "backend_auth": 52.7,
+        "backend_rest": 3161.7,
+        "backend_rpc": 552.6,
+        "total": 764.1
+      },
+      "backendCalls": {
+        "auth": 1,
+        "rest": 17,
+        "rpc": 4
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 1
+        },
+        "rest": {
+          "200": 17
+        },
+        "rpc": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:34:13.581Z",
+      "status": 200,
+      "commandId": "shell.switch-workspace",
+      "originalHandler": null,
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 169.3,
+        "backend_auth": 53.5,
+        "backend_rest": 163.6,
+        "backend_rpc": 710.4,
+        "total": 567.7
+      },
+      "backendCalls": {
+        "auth": 1,
+        "rest": 4,
+        "rpc": 10
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 1
+        },
+        "rest": {
+          "200": 4
+        },
+        "rpc": {
+          "200": 10
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:34:01.932Z",
+      "status": 200,
+      "commandId": "shell.switch-workspace",
+      "originalHandler": null,
+      "durationsMs": {
+        "proxy_refresh": 0,
+        "auth": 178.7,
+        "backend_auth": 88,
+        "backend_rest": 436.5,
+        "backend_rpc": 363.8,
+        "total": 607.5
+      },
+      "backendCalls": {
+        "auth": 2,
+        "rest": 9,
+        "rpc": 6
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 2
+        },
+        "rest": {
+          "200": 9
+        },
+        "rpc": {
+          "200": 6
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:33:41.464Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 222.2,
+        "workspace": 0,
+        "backend_auth": 130.7,
+        "backend_rest": 321.7,
+        "backend_rpc": 183.5,
+        "handler": 289,
+        "total": 512.3
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:33:35.508Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 222.8,
+        "workspace": 0,
+        "backend_auth": 129.4,
+        "backend_rest": 287,
+        "backend_rpc": 245.7,
+        "handler": 348.7,
+        "total": 573
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    },
+    {
+      "utc": "2026-10-29T11:33:24.624Z",
+      "status": 200,
+      "commandId": "action.43868b737ff7fd87908af008",
+      "originalHandler": {
+        "module": "app/campaigns/actions.ts",
+        "name": "ownerCampaignPromptAction"
+      },
+      "durationsMs": {
+        "proxy_refresh": 0.1,
+        "auth": 201.7,
+        "workspace": 0.1,
+        "backend_auth": 125.5,
+        "backend_rest": 308.1,
+        "backend_rpc": 192,
+        "handler": 323.4,
+        "total": 529
+      },
+      "backendCalls": {
+        "auth": 4,
+        "rest": 8,
+        "rpc": 2
+      },
+      "backendStatuses": {
+        "auth": {
+          "200": 4
+        },
+        "rest": {
+          "200": 8
+        },
+        "rpc": {
+          "200": 2
+        }
+      }
+    }
+  ],
+  "summary": {
+    "type": "summary",
+    "recordsReturned": 16,
+    "timeRange": {
+      "start": "2026-10-29T11:33:19.000Z",
+      "end": "2026-10-29T11:35:20.000Z"
+    },
+    "pagination": {
+      "hasMore": false,
+      "next": null
+    },
+    "excludedIntervals": []
+  }
+}

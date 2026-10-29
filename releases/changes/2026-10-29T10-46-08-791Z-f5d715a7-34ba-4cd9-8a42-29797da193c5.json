@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "startup-read-observation-20261029",
+  "status": "ready",
+  "summary": "Temporary server-only allowlisted resource/status/existing numeric Server-Timing backend observations for exact67 startup; no IDs/URL/query/body/rawheaders/PII, no extra backend calls, original Response retained. Autoexpires11:30UTC and1000responses/instance; cleanup and readback required after finite audit.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-read-observation.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "tests/app-local-read-observation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\startup-read-observation-20261029\\frozen-ready",
+    "commit": "cb6423dee5c78141004310fdddf9f7f7cc268cf2"
+  },
+  "validation": [
+    {
+      "name": "Seven privacy/expiry/hardlimit/Responseidentity/noBodyConsume tests",
+      "result": "passed",
+      "evidence": "artifacts/startup-read-observation-20261029/tests.log"
+    },
+    {
+      "name": "ESLint/fullproductionbuild465assets",
+      "result": "passed",
+      "evidence": "artifacts/startup-read-observation-20261029/build.log"
+    },
+    {
+      "name": "Native graph excludes observer/APIroutes;345diagnosticresources byte identical; uploaded67 retained",
+      "result": "passed",
+      "evidence": "artifacts/startup-read-observation-20261029/native-assessment.json"
+    },
+    {
+      "name": "Exact3545sourcefiles/candidateREADY/noextra/mismatch",
+      "result": "passed",
+      "evidence": "artifacts/startup-read-observation-20261029/web-candidate-source-verified.json"
+    },
+    {
+      "name": "Freshqueue only currentcoordinator delta, zeroexternal additions",
+      "result": "passed",
+      "evidence": "artifacts/startup-read-observation-20261029/queue-delta.json"
+    }
+  ],
+  "dependencies": [],
+  "operationalExpiry": "2026-10-29T11:30:00Z",
+  "cleanupRequired": true,
+  "id": "f5d715a7-34ba-4cd9-8a42-29797da193c5",
+  "recordedAt": "2026-10-29T10:46:08.791Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-read-observation.ts": "feb9134cd8bd8b851d3b73f0eb92b71cfb09744cd903839d86188419364b0105",
+    "app/api/app-local/read/route.ts": "7544bfaa8d65d74be8ee74bda76bfc0bc4923f11cf2a35995f44e8067beaa073",
+    "app/api/app-local/context/route.ts": "ec8e93f36570521e5b684d31258a012534548f500820f7aa38d3a77e2c5d5fc5",
+    "tests/app-local-read-observation.test.mjs": "486ee5ca3066088910950d19e2f7a9d26d9689c572872b04c170ef5a5ba3c5d4"
+  }
+}

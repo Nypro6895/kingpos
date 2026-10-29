@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "startup-read-observation-20261029",
+  "status": "ready",
+  "summary": "Remove finite startup observation helper and privacy test, restore both API routes byte-for-byte to pre-observer production. Preserve all frozen measurement evidence; no TTL extension, future-log live readback required for publication receipt.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "lib/app-local-read-observation.ts",
+    "tests/app-local-read-observation.test.mjs"
+  ],
+  "deletedFiles": [
+    "lib/app-local-read-observation.ts",
+    "tests/app-local-read-observation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\startup-prefetch-budget-20261029\\ready-source",
+    "commit": "7ccb53a507839d6f439ecda90e162d7638d9e08c"
+  },
+  "supersedesEvents": [
+    "f5d715a7-34ba-4cd9-8a42-29797da193c5"
+  ],
+  "validation": [
+    {
+      "name": "Exact original API route bytes and observer absence",
+      "result": "passed",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/source-cleanup-verified.json"
+    },
+    {
+      "name": "Frozen production build and exact source match",
+      "result": "passed",
+      "evidence": "artifacts/startup-prefetch-budget-20261029/web-candidate-source-verified.json"
+    }
+  ],
+  "id": "96b97016-bc54-4e56-b1dd-c49bb1bea58b",
+  "recordedAt": "2026-10-29T11:06:50.689Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "fileHashes": {
+    "app/api/app-local/context/route.ts": "67d3306f6533da072292ba629d9a211d8ee11f29f758b80b0e554426f55f9bd0",
+    "app/api/app-local/read/route.ts": "5b0ad3a1338d5c936a29c8079c8c3c8e7579cf7e0eb7155626a26dbb68be026b",
+    "lib/app-local-read-observation.ts": null,
+    "tests/app-local-read-observation.test.mjs": null
+  }
+}
