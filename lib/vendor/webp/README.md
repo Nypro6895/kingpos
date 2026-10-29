@@ -1,9 +1,9 @@
 # Bundled WebP encoder
 
-Vendored from @jsquash/webp1.5.0 (https://github.com/jamsinclair/jSquash), Apache-2.0; exact npm tarball integrity is in the integration evidence. Only the non-SIMD encoder and default options are used. No decoder, native permission, remote script or network resource is loaded.
+Source: @jsquash/webp1.5.0 (jSquash/Squoosh/libwebp), Apache-2.0 and libwebp BSD notices in LICENSE and LIBWEBP-COPYING. Notices are also embedded in codec glue and retained in distributed JavaScript.
 
-WASM SHA256: b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7.
+The pinned non-SIMD encoder WASM is a build-time compiler input only. Binaryen132 wasm2js converts it to ordinary JavaScript, then a static wrapper returns its exports to the existing Emscripten codec glue. No WebAssembly compilation, eval, remote resource, native permission, credential or CSP change is used at runtime.
 
-Browser glue change: replace the unused default import.meta-relative WASM URL with a string. The reviewed encoder always receives embedded wasmBinary plus locateFile, so no fallback resource fetch is used. Generated base64 bytes are unchanged from the package WASM.
+Compiler command and input hashes are recorded in provenance.json. The generated module is initialized only when the installed canvas cannot encode WebP. Input is bounded cropped RGBA pixels; upload authorization and format/size checks remain unchanged. Browser tests enforce self-only CSP, prove WASM compile is blocked, validate real WebP with alpha and exercise memory growth at1600x1600.
 
-Additional browser-only adaptation: omit the generated import.meta URL fallback because all encoder bytes are embedded and no module-relative resource can be fetched.
+Glue adaptations: omit unused import.meta-relative resource fallback; always supply the reviewed static instantiateWasm callback (name inherited from upstream API, implementation is JavaScript).

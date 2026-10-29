@@ -1,13 +1,16 @@
 import factory, { type WebPEncoder } from "./vendor/webp/webp-encoder.mjs";
 import { defaultOptions } from "./vendor/webp/meta.js";
-import { webpEncoderBase64 } from "./vendor/webp/webp-encoder-bytes";
+import instantiate from "./vendor/webp/webp-encoder-js.mjs";
 import { IMAGE_POLICY } from "./image-policy";
 
 let encoder: Promise<WebPEncoder> | undefined;
 function loadEncoder() {
   if (!encoder) {
-    const bytes = Uint8Array.from(atob(webpEncoderBase64), character => character.charCodeAt(0));
-    encoder = factory({ wasmBinary: bytes, noInitialRun: true, locateFile: file => file }).catch(() => {
+    encoder = factory({ noInitialRun: true, locateFile: file => file, instantiateWasm(imports, receive) {
+      const exports = instantiate(imports);
+      receive({ exports });
+      return exports;
+    } }).catch(() => {
       encoder = undefined;
       throw new Error("Image could not be processed. Please try again.");
     });
