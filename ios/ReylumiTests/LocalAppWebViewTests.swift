@@ -11,10 +11,12 @@ private actor AppLocalUnavailableHTTP: ReylumiLocalHTTPClient {
 /// All authority and DTOs are synthetic. No request reaches a business server.
 private actor InstalledPOSFixtureHTTP: ReylumiLocalHTTPClient {
     struct Command: Sendable { let name: String; let values: [Bool]?; let scope: String? }
+    struct BenefitQuote: Sendable { let cartID: String; let cents: Int; let scope: String }
     static let relayLoader = "action.5290c94f98ce780e04f5d9ad"
     let viewer = UUID().uuidString.lowercased()
     let salon = "00000000-0000-4000-8000-000000000002"
     private(set) var commands: [Command] = []
+    private(set) var benefitQuotes: [BenefitQuote] = []
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let url = try XCTUnwrap(request.url)
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -40,6 +42,34 @@ private actor InstalledPOSFixtureHTTP: ReylumiLocalHTTPClient {
             let body = (try? JSONSerialization.jsonObject(with: request.httpBody ?? Data())) as? [String: Any]
             let name = body?["name"] as? String ?? "", args = body?["args"] as? [String: Any]
             let values = args?["values"] as? [Bool], scope = body?["scope"] as? String
+            // The installed POS now synchronizes an optional benefit quote on
+            // mount/amount changes. Simulate only this exact synthetic DTO;
+            // submissions, consent, purchases and all unknown commands remain
+            // forbidden and are counted by the original no-replay assertions.
+            if request.httpMethod == "POST", name == "http.benefits.rewards", scope == AppLocalTestFixture.scope,
+               let args, Set(args.keys) == Set(["input"]),
+               let input = args["input"] as? [String: Any], Set(input.keys) == Set(["scope", "op", "args"]),
+               input["scope"] as? String == "pos", input["op"] as? String == "owner-cart",
+               let quote = input["args"] as? [String: Any], Set(quote.keys) == Set(["cartId", "receipt"]),
+               let cartID = quote["cartId"] as? String, UUID(uuidString: cartID) != nil,
+               let receipt = quote["receipt"] as? [String: Any], receipt["requestId"] as? String == cartID,
+               Set(receipt.keys).isSubset(of: Set(["requestId", "customerId", "customerName", "discountType", "discountValue", "tipAmount", "lines"])),
+               receipt["customerId"] is NSNull, receipt["customerName"] is NSNull,
+               receipt["discountType"] as? String == "fixed_amount",
+               (receipt["discountValue"] as? NSNumber)?.doubleValue == 0,
+               (receipt["tipAmount"] as? NSNumber)?.doubleValue == 0,
+               let lines = receipt["lines"] as? [[String: Any]], lines.count <= 1,
+               lines.allSatisfy({ line in
+                   Set(line.keys) == Set(["staffId", "serviceId", "serviceLabel", "total", "amountInput", "amountParts"])
+                   && line["staffId"] is NSNull && line["serviceId"] is NSNull
+                   && line["serviceLabel"] as? String == "Service" && line["amountInput"] as? String == "44.25"
+                   && (line["total"] as? NSNumber)?.doubleValue == 44.25
+                   && (line["amountParts"] as? [Double]) == [44.25]
+               }) {
+                benefitQuotes.append(BenefitQuote(cartID: cartID, cents: lines.isEmpty ? 0 : 4425, scope: scope!))
+                object = ["ok": true, "data": ["status": 200, "headers": ["content-type": "application/json", "cache-control": "no-store"], "body": "{\"view\":null}"]]
+                return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
+            }
             commands.append(Command(name: name, values: values, scope: scope))
             // DeskRelay mounts its original loader once per WebView. Its real
             // server action may dispatch relay work; never call it in a test.
@@ -302,6 +332,10 @@ final class LocalAppWebViewTests: XCTestCase {
         let commands = await http.commands
         XCTAssertEqual(commands.map(\.name), [InstalledPOSFixtureHTTP.relayLoader, InstalledPOSFixtureHTTP.relayLoader], "One original DeskRelay loader per mount; no financial action or queued operation may be replayed")
         XCTAssertTrue(commands.allSatisfy { $0.values == [true] && $0.scope == AppLocalTestFixture.scope }, "The synthetic loader cannot stand in for a different action/arguments/workspace")
+        for _ in 0..<100 { if await http.benefitQuotes.contains(where: { $0.cents == 4425 }) { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let quotes = await http.benefitQuotes
+        XCTAssertFalse(quotes.isEmpty, "The actual installed benefit quote must cross the scoped native bridge")
+        XCTAssertTrue(quotes.allSatisfy { $0.cartID == cartID && [0, 4425].contains($0.cents) && $0.scope == AppLocalTestFixture.scope }, "A quote must retain this test's durable cart and money, never another customer or workspace")
     }
     @MainActor
     func testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope() async throws {

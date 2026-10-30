@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "gift-entry-links-20261030",
+  "status": "working",
+  "summary": "Complete the original Gift task entry links from Account and salon profile, preserving current profile layout and financial code; Market excluded.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/account/page.tsx",
+    "app/salon-profile/salon-profile-view.tsx"
+  ],
+  "dependencies": [
+    "gift-reward-sale-integration-20261030"
+  ],
+  "validation": [
+    {
+      "name": "Entry link source integration and build",
+      "result": "pending"
+    }
+  ],
+  "id": "66ad33a0-7ea8-4214-ba02-718ec3f572e2",
+  "recordedAt": "2026-10-30T19:02:11.649Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

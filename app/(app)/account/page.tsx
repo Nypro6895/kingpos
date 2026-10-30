@@ -74,6 +74,7 @@ async function AccountPage() {
             </p>
           </div>
           <nav aria-label={__vt("Account settings sections")} className="mt-3 grid gap-1">
+            <Link href="/gift-cards" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-zinc-50">Gift cards</Link>
             <Link href="/tax-company" className="flex min-h-10 items-center rounded-md px-2.5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100">Tax Company app</Link>
             <a
               className="flex min-h-10 items-center rounded-md px-2.5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
