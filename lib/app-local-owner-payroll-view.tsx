@@ -187,21 +187,6 @@ function getSettingsEditHref(period: PayrollPeriod, staffId: string) {
 
 
 
-function dailyCommissionGross(dailyTotal: PayrollStaffDailyTotal) {
-  if (dailyTotal.pay_type_used === "fixed") {
-    return Number(dailyTotal.fixed_pay_amount_used ?? 0);
-  }
-
-  if (dailyTotal.pay_type_used === "commission") {
-    return (
-      (Number(dailyTotal.gross_sales) *
-        Number(dailyTotal.commission_rate_used ?? 0)) /
-      100
-    );
-  }
-
-  return 0;
-}
 
 
 
