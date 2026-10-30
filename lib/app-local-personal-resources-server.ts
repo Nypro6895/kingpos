@@ -1,4 +1,5 @@
 import "server-only";
+import { getMyReviewsData } from "./customer-reviews";
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { getRequestBusinessContext } from "./request-business-context";
@@ -25,7 +26,11 @@ export async function readAppLocalPersonalResource(name:string,args:Record<strin
   if(Object.entries(args).some(([key,value])=>!allowed.includes(key)||typeof value!=="string"||value.length>512))fail(400,"Invalid page filters.");
   const context=await authority(options.scope);if(options.signal?.aborted)throw options.signal.reason;
   let data:unknown;
-  if(name==="page.beauty"){
+  if(name==="customer.reviews"){
+    const reviews=await getMyReviewsData({page:Number(args.page??1),experienceId:typeof args.experience==="string"?args.experience:undefined});
+    if(reviews.error)fail(503,reviews.error);
+    data=reviews;
+  }else if(name==="page.beauty"){
     const [profile,commentViewer,upcoming]=await Promise.all([getSelfBeautyProfilePage(),getPostCommentViewer(),listCustomerBookings({scope:"upcoming",limit:1})]);
     if(!profile.ok)fail(profile.code==="sign_in_required"?401:503,"Your profile could not be loaded.");
     if(!upcoming.ok)fail(503,"Your next appointment could not be loaded.");

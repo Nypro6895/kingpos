@@ -1,0 +1,89 @@
+{
+  "kind": "change",
+  "changeId": "review-experience-flow-20261029",
+  "status": "needs-integration",
+  "summary": "Verified-visit review and salon reply flow, My Reviews for web/bundled iOS, keyboard-safe drawer and Truth-preserving status/history/notifications.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/more/[section]/page.tsx",
+    "app/activity/actions.ts",
+    "app/activity/experience-actions.ts",
+    "app/activity/history-details-drawer.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/activity/my-reviews.tsx",
+    "app/activity/visit-experience-prompt.tsx",
+    "app/activity/visit-reply-controls.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/use-dialog-viewport.ts",
+    "docs/qa/review-experience-flow-20261029.md",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-page-paths.json",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-resources-server.ts",
+    "lib/app-local-route-policy.ts",
+    "lib/customer-reviews.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "scripts/qa-review-bundled-client.mjs",
+    "scripts/qa-review-experience-browser.mjs",
+    "scripts/qa-review-experience-local.mjs",
+    "scripts/qa-review-experience-resilience.mjs",
+    "scripts/qa-review-https-entry.mjs",
+    "scripts/qa-review-rest-proxy.mjs",
+    "supabase/migrations/20261030002000_visit_experience_replies.sql",
+    "tests/lumi-trust-contract.test.mjs",
+    "tests/lumi-trust-evidence.integration.sql",
+    "tests/visit-experience-flow.integration.test.mjs",
+    "types/customer-review.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\source"
+  },
+  "validation": [
+    {
+      "name": "46 focused contract/authorization/Truth tests",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\tests-final.log"
+    },
+    {
+      "name": "Full 326-migration isolated DB flow and original Truth integration",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\full-schema-flow.log"
+    },
+    {
+      "name": "7 browser flow/width checks and 4 network resilience checks",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\browser\\results.json"
+    },
+    {
+      "name": "Bundled UI pinned customer edit, server refresh and reload",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\browser\\bundled-client-results.json"
+    },
+    {
+      "name": "Real iPhone Safari keyboard, customer/owner response flow and bundled UI rendering",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\HANDOFF.md"
+    },
+    {
+      "name": "ESLint, TypeScript, production web build and native bundle compilation",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\build-final-verified.log"
+    },
+    {
+      "name": "Integrate current release, apply migration and archive/install/verify new signed iOS binary",
+      "result": "pending",
+      "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\HANDOFF.md"
+    }
+  ],
+  "dependencies": [],
+  "id": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+  "recordedAt": "2026-10-30T01:02:51.991Z",
+  "worktree": "C:\\Reylumi-worktrees\\review-experience-flow-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

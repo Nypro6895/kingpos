@@ -73,6 +73,7 @@ export async function recordVisitExperienceAction(input: {
   const salonId = typeof payload.salonId === "string" ? payload.salonId : "";
 
   revalidatePath("/activity");
+    revalidatePath("/more/reviews");
   revalidatePath(`/activity/receipts/${input.ticketId}`);
   revalidatePath("/explore");
 

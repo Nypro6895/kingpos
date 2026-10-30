@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "review-experience-flow-20261029",
+  "status": "working",
+  "summary": "Complete verified visit feedback and salon replies, My Reviews, keyboard layout and Truth v2 copy after physical iPhone audit.",
+  "channels": [
+    "web"
+  ],
+  "files": [],
+  "source": {
+    "commit": "f4e5109"
+  },
+  "validation": [
+    {
+      "name": "Existing physical iPhone audit",
+      "result": "passed",
+      "evidence": "C:/Reylumi/artifacts/review-iphone-20261029/report.md"
+    }
+  ],
+  "dependencies": [],
+  "id": "5e713160-4b74-42e1-8c27-6f32a2599bd9",
+  "recordedAt": "2026-10-30T00:19:41.165Z",
+  "worktree": "C:\\Reylumi-worktrees\\review-experience-flow-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

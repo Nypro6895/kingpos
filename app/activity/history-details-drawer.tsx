@@ -9,6 +9,7 @@ import { bookingStatusLabel } from "@/lib/booking-no-show";
 import { loadHistoryDetailsAction } from "./history-details-actions";
 import { HistoryLinkControl } from "./history-link-control";
 import { VisitExperiencePrompt } from "./visit-experience-prompt";
+import { useDialogViewport } from "@/components/use-dialog-viewport";
 import { BookingDetailActions } from "@/app/my-bookings/[bookingId]/booking-detail-actions";
 import bookingStyles from "@/components/booking-ui/booking-theme.module.css";
 import type { CustomerActivity, CustomerActivityReceipt } from "@/lib/customer-activity";
@@ -25,6 +26,7 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
   useCloseOnNavigation(onClose);
   const dialog = useRef<HTMLDialogElement>(null);
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
+  useDialogViewport(dialog, Boolean(portalHost));
   useEffect(() => { let active = true; queueMicrotask(() => { if (active) setPortalHost(document.body); }); return () => { active = false; }; }, []);
   const [data, setData] = useState<{ booking: CustomerBookingDetail | null; receipt: CustomerActivityReceipt | null } | null>(initialDetails ?? (activity.type === "visit" ? { booking: null, receipt: null } : null));
   const [updatedAt, setUpdatedAt] = useState(()=>initialDetails ? Date.now() : 0);

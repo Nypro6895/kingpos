@@ -40,7 +40,7 @@ export function getAppLocalRoutePolicy(href: string, origin = "https://reylumi.i
   if (policy.route === "/more/[section]") {
     const section = pathname.split("/").at(-1)!;
     if (!MORE_READ_SECTIONS.has(section)) return null;
-    const resource = section === "saved-post" || section === "saved-posts" ? "customer.saved-posts" : section === "following" ? "customer.following" : null;
+    const resource = section === "saved-post" || section === "saved-posts" ? "customer.saved-posts" : section === "following" ? "customer.following" : section === "reviews" ? "customer.reviews" : null;
     return { ...policy, readResources: resource ? [resource] : [], rendererId: resource ?? policy.rendererId };
   }
   return policy;

@@ -487,6 +487,10 @@
     ],
     "app/market/check-writer-actions.ts": [
       "manageCheckWriterSubscription"
+    ],
+    "app/activity/experience-actions.ts": [
+      "replyToVisitExperienceAction",
+      "setVisitExperienceStatusAction"
     ]
   }
 }

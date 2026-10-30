@@ -1,4 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { MyReviews } from "@/app/activity/my-reviews";
 import { WorkspaceLink } from "@/components/workspace-link";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 
@@ -26,6 +27,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 type MoreSectionSearchParams = {
+  experience?: string | string[];
   filter?: string | string[];
   page?: string | string[];
   q?: string | string[];
@@ -580,6 +582,10 @@ async function MoreSectionPage({
   }
 
   const normalizedSection = normalizeSection(section);
+
+    if (normalizedSection === "reviews") {
+      return <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6"><div className="mx-auto grid w-full max-w-3xl gap-5"><BackLink /><MyReviews page={Math.min(1001,parseSavedPostPage(stringParam(rawSearchParams.page)))} experienceId={stringParam(rawSearchParams.experience)} /></div></main>;
+    }
 
   if (normalizedSection === "saved-post") {
     const savedPostQuery = stringParam(rawSearchParams.q)?.trim() ?? "";

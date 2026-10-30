@@ -1,4 +1,5 @@
 "use client";
+import { VisitReplyControls } from "@/app/activity/visit-reply-controls";
 import { salonProfileAnchor } from "@/lib/salon-profile-anchor";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
@@ -2490,9 +2491,7 @@ function ReviewReplyForm({
 
 function experienceStateLabel(experience: PublicSalonProfileExperience) {
   if (experience.feedbackState === "issue") {
-    return experience.issueStatus === "resolved"
-      ? "Issue resolved"
-      : "Issue shared";
+      return "Issue shared";
   }
 
   if (experience.feedbackState === "good") {
@@ -2523,7 +2522,7 @@ function ExperienceCard({
     .join(" / ");
 
   return (
-    <article className="border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
+      <article id={`experience-${experience.id}`} className="min-w-0 scroll-mt-28 border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-zinc-950">
@@ -2531,6 +2530,7 @@ function ExperienceCard({
           </p>
           {viewerId && experience.authorUserId && viewerId !== experience.authorUserId ? <BlockUserButton userId={experience.authorUserId} /> : null}
           {meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
+            {experience.editedAt ? <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Edited" /></p> : null}
         </div>
         <span
           className={[
@@ -2552,7 +2552,7 @@ function ExperienceCard({
         <h3 className="mt-2 font-semibold text-zinc-950"><WorkspaceText text={experience.title} /></h3>
       ) : null}
       {experience.body ? (
-        <p className="mt-3 text-sm leading-6 text-zinc-700">
+          <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
           {experience.body}
         </p>
       ) : (
@@ -2565,13 +2565,16 @@ function ExperienceCard({
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
             <WorkspaceText text="Salon reply" />
           </p>
-          <p className="mt-2 text-sm leading-6 text-zinc-700">
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
             {experience.replyBody}
           </p>
+            {experience.replyCreatedAt ? <p className="mt-2 text-xs text-zinc-500">{timeAgo(experience.replyCreatedAt)}</p> : null}
         </div>
       ) : canReplyToExperience ? (
         <ReviewReplyForm onPosted={onPosted} review={experience} />
       ) : null}
+        {experience.feedbackState === "issue" ? <p className="mt-3 text-xs leading-5 text-zinc-600"><WorkspaceText text={experience.issueStatus === "resolved" ? "Salon marked this issue as handled. This does not change your feedback or its eligibility for LUMI Truth." : experience.issueStatus === "acknowledged" ? "The salon has acknowledged your issue." : "Awaiting a salon response."} /></p> : null}
+        {canReplyAsSalon && experience.source === "experience" ? <VisitReplyControls salonId={experience.salonId} experienceId={experience.id} hasReply={Boolean(experience.replyBody)} issueStatus={experience.feedbackState === "issue" ? experience.issueStatus : null} onChanged={onPosted} /> : null}
     </article>
   );
 }
@@ -4153,8 +4156,9 @@ export function SalonProfileView({
 
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.45fr)]">
-        <div className="grid gap-4 scroll-mt-24" id="customer-experiences">
+          <div className="grid gap-4 scroll-mt-24" id="customer-experiences">
           <h3 className="text-lg font-semibold"><WorkspaceText text="Customer experiences" /></h3>
+            <p className="text-xs leading-5 text-zinc-600"><WorkspaceText text="Experiences include shared reviews. Opinions in LUMI Truth count eligible independent customers, so the totals may differ." /></p>
           <div className="flex flex-wrap gap-2">
             {(["all", "verified", "good", "issues"] as const).map((filter) => (
               <button
@@ -4375,7 +4379,7 @@ export function SalonProfileView({
           profile={profile} layout={preferences.layout} tabs={mainTabs} extraTabs={visibleTabs.filter(tab => !mainTabs.includes(tab))} selectedTab={effectiveTab} introVisible={preferences.show_featured !== false}
           onTab={id => changeTab(id as TabId)} onTabKeyDown={onTabKeyDown}
           verified={<SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>}
-          trust={<SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>}
+          trust={<div><SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/><button type="button" className="min-h-11 text-xs font-semibold text-brand-teal underline underline-offset-4" onClick={() => changeTab("experiences")}><WorkspaceText text="Read customer experiences" /></button></div>}
           priceHint={salonPopularPrice(data.reputationSummary)}
           canBook={canShowBook} onBook={() => openBooking({title:"Book appointment"})}
           canFollow={canShowFollow} following={isFollowing} followPending={isPending} onFollow={toggleFollow}
@@ -4406,6 +4410,7 @@ export function SalonProfileView({
             <div className="min-w-0 px-2 py-1">
               <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 break-words text-xl font-semibold leading-6">{profile.name}</h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/></div>
               <SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>
+              <button type="button" className="min-h-11 text-xs font-semibold text-brand-teal underline underline-offset-4" onClick={() => changeTab("experiences")}><WorkspaceText text="Read customer experiences" /></button>
               <p className="truncate text-[11px] leading-5 text-zinc-500"><WorkspaceText text={salonPopularPrice(data.reputationSummary)??"Salon"} />{profile.city?` · ${profile.city}${profile.state?`, ${profile.state}`:""}`:""}</p>
 
 

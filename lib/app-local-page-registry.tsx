@@ -1,4 +1,6 @@
 "use client";
+import { MyReviewsList } from "@/app/activity/my-reviews-list";
+import type { MyReviewsData } from "@/types/customer-review";
 
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { AppLocalHelp } from "@/components/app-local-help";
@@ -89,6 +91,7 @@ function BookingsPage(props: AppLocalPageProps) {
 }
 function ReceiptPage(props: AppLocalPageProps) { return <ReadView<AppLocalReceiptData> {...props} name="page.customer-receipt" args={{ ticketId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Receipt">{data => <AppLocalCustomerReceipt {...data} />}</ReadView>; }
 function SavedPage(props: AppLocalPageProps) { return <ReadView<AppLocalSavedPostsData> {...props} name="customer.saved-posts" args={queryFor(props.path, ["filter", "page", "q"])} title="Saved posts">{data => <AppLocalSavedPosts data={data} />}</ReadView>; }
+function ReviewsPage(props: AppLocalPageProps) { return <ReadView<MyReviewsData> {...props} name="customer.reviews" args={queryFor(props.path,["page","experience"])} title="My Reviews">{data => <main className="mx-auto w-full max-w-3xl px-4 py-5"><MyReviewsList {...data} /></main>}</ReadView>; }
 function FollowingPage(props: AppLocalPageProps) {
   const args = queryFor(props.path, ["filter", "page", "q"]);
   if (urlFor(props.path).pathname === "/more/favorite-shop") args.filter = "shop";
@@ -144,6 +147,7 @@ const definitions = [
   { id: "customer.receipt", title: "Receipt", requiresContext: true, Component: ReceiptPage, features: ["complete-services", "totals", "recorded-payments", "original-visit-review"] },
   { id: "customer.saved-posts", title: "Saved posts", requiresContext: true, Component: SavedPage, features: ["complete-list", "search", "filters", "pagination", "original-remove"] },
   { id: "customer.following", title: "Following", requiresContext: true, Component: FollowingPage, features: ["complete-list", "search", "filters", "pagination", "original-unfollow"] },
+  { id: "customer.reviews", title: "My Reviews", requiresContext: true, Component: ReviewsPage, features: ["own-reviews","salon-replies","pagination","original-customer-edit"] },
   { id: "customer.favorites", title: "Your favorites", requiresContext: true, Component: FavoritesPage, features: ["salons", "inspiration", "original-favorite-controls"] },
   { id: "staff.work", title: "My Work", requiresContext: true, Component: StaffPage, features: ["original-daily", "pay", "analysis", "schedule", "workday", "original-commands"] },
   { id: "owner.today", title: "Today", requiresContext: true, Component: TodayPage, features: ["original-complete-dashboard", "date", "original-shortcuts"] },
@@ -172,6 +176,7 @@ export function getAppLocalPage(path: string): AppLocalPage | null {
     else if (["/more/saved-post", "/more/saved-posts", "/more/saved-designs"].includes(pathname)) id = "customer.saved-posts";
     else if (["/more/following", "/more/favorite-shop", "/more/favorite-customer"].includes(pathname)) id = "customer.following";
     else if (pathname === "/explore/favorites") id = "customer.favorites";
+    else if (pathname === "/more/reviews") id = "customer.reviews";
     else if (["/staff/my-work", "/staff/workday", "/staff/appointments"].includes(pathname)) id = "staff.work";
     else if (pathname === "/staff/today") id = "owner.today";
     return id ? pages.get(id) ?? null : null;
