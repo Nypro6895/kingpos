@@ -1,0 +1,108 @@
+{
+  "kind": "release",
+  "summary": "Published owner-approved Library Personal navigation including exclusive active guard, flat Payroll Download and Reports details; preserves Gift Reward 75 and all production baseline features. Portable0.7.4 hosted update only; source-bound TestFlight available, no App Store submission or physical-device claim.",
+  "changes": [
+    "92f016aa-8cc1-4446-b83d-4994593f4d93"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Dkz9sFDas79W7zYD1H6S6UyLQop6",
+      "baselineDeploymentId": "dpl_Gcf9uNi3oWwpS2CL6rq8E6dwwwRZ",
+      "sourceCommit": "bde768a12acaaf0ae1c762e8ba743b5c746ffba9",
+      "sourceSha256": "272a0b0d015057cda791b4bb4ca913c42a1832b160151804c2685cecea93c8a6",
+      "overlaySha256": "959066308117652f3a8ed4da6d41cb101c6b9fbfb3a9116de01d265c1ebe60e5",
+      "evidence": "artifacts/audited-ui-completion-20261030/web-live-source-verified.json",
+      "httpEvidence": "artifacts/audited-ui-completion-20261030/http-live.json",
+      "checks": 24,
+      "portable": {
+        "version": "0.7.4",
+        "installerRebuilt": false,
+        "delivery": "hosted-web-update",
+        "evidence": "artifacts/audited-ui-completion-20261030/portable-live.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "76",
+      "commit": "bde768a12acaaf0ae1c762e8ba743b5c746ffba9",
+      "run": 41128451487,
+      "runAttempt": 2,
+      "sourceSha256": "08ca38292a04b9baf2cb98ae84e8c13fe69f3a0a18ec126b0cbacb6aa202b525",
+      "bundleSha256": "182c1643cc2d1fe1b113751c4abb3878ac3b421200a6aa8497d9614d04085440",
+      "tests": 238,
+      "hostInvocations": 14,
+      "upload": "accepted",
+      "appleProcessing": "VALID",
+      "distribution": "Existing Reylumi Internal and Reylumi support groups",
+      "evidence": "artifacts/audited-ui-completion-20261030/native-source-upload-verified.json",
+      "availabilityEvidence": "artifacts/audited-ui-completion-20261030/availability-verified.json",
+      "appStorePublished": false,
+      "appStoreSubmitted": false,
+      "physicalAcceptance": false,
+      "physicalLimitation": "No physical-device test was executed; actual browser fixtures and source-bound 238 XCTest cases across 14 hosts are distinct."
+    }
+  },
+  "nativeValidationHistory": {
+    "firstAttempt": {
+      "run": 41128451487,
+      "attempt": 1,
+      "passedCases": 209,
+      "failedCases": 1,
+      "failedAssertion": "Existing hosted-return fixture installed-frame cover",
+      "signUpload": "skipped"
+    },
+    "retry": {
+      "maximum": 1,
+      "sourceUnchanged": true,
+      "assertionsUnchanged": true,
+      "finalAttempt": 2
+    },
+    "evidence": "artifacts/audited-ui-completion-20261030/failed-attempt-1/native-evidence/test.log"
+  },
+  "validation": {
+    "regressionTests": 32,
+    "uiWidths": [
+      320,
+      390,
+      1280
+    ],
+    "exclusiveNavigation": true,
+    "noHorizontalOverflow": true,
+    "productionBuild": "passed",
+    "financialAstEquivalent": true,
+    "lint": "zero errors; one pre-existing unused helper warning"
+  },
+  "excluded": [
+    "Market developer",
+    "Check Writer sales activation",
+    "Universal Links provisioning",
+    "Services catalog pilot activation",
+    "working lazy bootstrap optimization",
+    "working comment count batch optimization",
+    "migrations/security/credentials/financial transactions"
+  ],
+  "supersededCandidates": {
+    "commit": "c6c6e28799920a7ace34c78927453587903c696e",
+    "web": [
+      "dpl_BpZcjUUVTyJyVjYtqKHm6TmzZABN",
+      "dpl_Bv1DgGpwXwqYXUCEENaZ4DYYEVqo"
+    ],
+    "customDomainPromoted": false,
+    "nativeRun": 41126517981,
+    "nativeConclusion": "cancelled",
+    "signUpload": "skipped; no binary uploaded"
+  },
+  "evidenceHashes": {
+    "web": "54b916b8b89e33c4bac77b6c98b31913fd88fefc7e335977f3c2ca92e686377b",
+    "native": "fcb849cbf757fbf4e86886b740df959ea2a01563d7849ee9f37b07cd8c55e56a",
+    "availability": "233933ed9673e9df2da49bae2c7f5a30d05c5dbcbec4ddfa714c6ceb975c87b8",
+    "nativeArtifact": "9d42f6e6abf8d9b52f120fc14e60a4ab1df234ca8648af41f92e0fdd4c4701c0"
+  },
+  "id": "cc883875-0c49-4dba-9e81-257f7ce6fb24",
+  "recordedAt": "2026-10-30T21:40:44.390Z",
+  "worktree": "C:\\Reylumi\\audited-ui-completion-20261030"
+}
