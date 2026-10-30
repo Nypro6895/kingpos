@@ -1,0 +1,61 @@
+{
+  "kind": "release",
+  "summary": "Published source-bound Gift/Reward and persistent guest delivery to existing TestFlight groups; AppleVALID. Web and Portable0.7.4 have independent verified receipts. Market excluded.",
+  "changes": [
+    "3498772a-49b0-433e-bb42-0a7a5023ef77",
+    "2d036b68-5cc4-4ae5-a357-e2c67263b2f4",
+    "b50a6c5a-17de-4ab9-9449-b35a8d3505a9",
+    "ce9a106d-6218-46c3-81f5-ec3cd00098b3",
+    "d27c627e-c996-4593-84df-20c09909b332",
+    "72cba52c-bdec-46a8-8831-f9a44e21afcb",
+    "2a99cba5-0cce-40ae-a23b-ac6d4e459367",
+    "06c90c47-050d-4b78-be2b-f7f80bcd5a2c"
+  ],
+  "targets": {
+    "ios": {
+      "status": "published",
+      "verified": true,
+      "commit": "9fd66c891410a308fb5fbff2947efe508044030e",
+      "run": 41115270700,
+      "version": "1.0.0",
+      "build": "75",
+      "sourceSha256": "f5d39a08faf0d71b4780412530410846717570c3602266da526424a3cee3be1c",
+      "bundleSha256": "d4354f348c36921ec25f8482180c55e586abcba46cad4901850cdade00b08924",
+      "tests": 238,
+      "hostInvocations": 14,
+      "upload": "accepted",
+      "appleProcessing": "VALID",
+      "distribution": "TestFlight existing internal groups",
+      "availabilityEvidence": "artifacts/gift-sale-integration-20261030/native-v3/availability-verified.json",
+      "sourceEvidence": "artifacts/gift-sale-integration-20261030/native-v3/native-verified.json",
+      "physicalAcceptance": {
+        "at": "2026-10-30T19:53:21.888Z",
+        "status": "blocked_before_product_UI",
+        "passed": false,
+        "expectedBuild": "75",
+        "installedObservedBuild": "74",
+        "attempts": 1,
+        "sourceCommit": "9fd66c891410a308fb5fbff2947efe508044030e",
+        "bundleSha256": "d4354f348c36921ec25f8482180c55e586abcba46cad4901850cdade00b08924",
+        "blocker": "Existing XCTest controller did not reach readiness or answer opening TestFlight; exact startup cause unconfirmed. This does not show a product75 failure.",
+        "checks": {
+          "TestFlightUpdate": "not executed",
+          "warmColdApp75": "not tested",
+          "SafariSalonQr75": "not tested",
+          "GiftUI75": "not tested"
+        },
+        "productInstalled": false,
+        "financialWrites": false,
+        "permissionsSigningPairingChanged": false,
+        "cleanupVerified": true,
+        "lease": "released",
+        "evidence": "C:/Reylumi/artifacts/physical-smoke75-20261030/evidence/RESULT.json",
+        "evidenceSha256": "4852e4399afc1640fae90d6b836abee38f91e438af9050b4d968efb07db559ca"
+      },
+      "appStorePublished": false
+    }
+  },
+  "id": "99d98a57-b05c-44bd-be2e-555f680fa281",
+  "recordedAt": "2026-10-30T19:53:22.273Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030"
+}
