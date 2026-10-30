@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-30T01:06:00Z",
+  "readOnly": true,
+  "reviewFlowWorkingDirectoryProcesses": [],
+  "knownControllerFamilyProcesses": [],
+  "cwdScanExit": 0,
+  "uiCommandsSent": false,
+  "stoppedOrClaimedDevice": false,
+  "reportedPid": 21579,
+  "reportedPidAbsentInEarlierChecks": true,
+  "identifiedOwningChat": {
+    "id": "01a18a20-467f-7ea1-b274-c25a2f00fd0c",
+    "title": "Kiểm tra review trên iPhone thật",
+    "threadState": "completed-idle at latest supported snapshot",
+    "usesReportedReviewFlowPath": true
+  },
+  "ownerExplicitReleaseAckReceived": false,
+  "interpretation": "Point-in-time absence of known controller families and ReviewFlow working-directory processes; not an exclusive device reservation. Recheck immediately before taking own controller.",
+  "rootDeviceActions": {
+    "controllerStarted": false,
+    "uiCommandsSent": false,
+    "appInstalled": false,
+    "processStopped": false
+  },
+  "requestedNextUse": "Owning iPhone chat's static Safari fixture only; no account/session transfer or TestFlight replacement",
+  "implementationNotice": {
+    "scope": "Appointments & visits plus scan salon QR / Personal QR check-in",
+    "status": "working-reported-by-owning-chat",
+    "reportedIsolatedSchemaCases": 16,
+    "canonicalFinancialPayloadComparison": "in validation, not accepted as complete",
+    "newDeploymentAuthorized": false
+  }
+}
