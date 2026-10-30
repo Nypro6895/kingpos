@@ -4,6 +4,7 @@ import { resolveStaffLegalNames } from "@/lib/staff-legal-name-server";
 import { getStaffLegalName } from "@/lib/staff-legal-name";
 import { fixedDayPay, moneyCents } from "@/lib/payroll-live-money";
 import { completeLiveIncomeDays, incomeFields } from "@/lib/payroll-live-projection";
+import { hasCompletePayrollReceipts } from "@/lib/payroll-live-dashboard";
 import { loadPayrollLiveHistory } from "@/lib/payroll-live-history";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
 import { getSalonBusinessTimezone } from "@/lib/salon-business-clock";
@@ -211,6 +212,7 @@ type TicketAdjustmentRow = {
 };
 
 type DailyClosingRow = {
+  tip_input: number | null;
   live_report_entered_at: string | null;
   cash_amount: number;
   closed_at: string | null;
@@ -893,7 +895,7 @@ async function getLinkedCurrentStaffId(
 }
 
 async function requirePayrollContext(
-  options: { taxCompanyOnly?: boolean; taxSalonId?: string } = {},
+  options: { taxCompanyOnly?: boolean; taxSalonId?: string; liveTaxReport?: boolean } = {},
 ): Promise<PayrollAuthContext> {
   const context = await getCurrentBusinessContext();
 
@@ -942,6 +944,9 @@ async function requirePayrollContext(
 
   if (!canOpen) {
     throw new Error("You do not have permission to view payroll.");
+  }
+  if (options.liveTaxReport && !canViewAllPayroll) {
+    throw new Error("Viewing current payroll tax calculations requires Payroll view permission. Ask the salon Owner to update your access.");
   }
 
   return {
@@ -1173,33 +1178,16 @@ async function loadStaffEarningsForPeriod(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
 ) {
-  const rows:StaffEarningRow[]=[];
-  for(let offset=0;;offset+=1000){
-  let query = auth.supabase
-    .from("pos_ticket_staff_earnings")
-    .select(
-      "ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount",
-    )
-    .eq("salon_id", auth.salon.id)
-    .gte("work_date", period.startDate)
-    .lte("work_date", period.endDate);
-
-  if (
-    !auth.access.canViewAllPayroll &&
-    !auth.access.canViewTaxCompany &&
-    auth.access.linkedStaffId
-  ) {
-    query = query.eq("staff_id", auth.access.linkedStaffId);
-  }
-
-  const { data, error } = await query.order("id").range(offset,offset+999).returns<StaffEarningRow[]>();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  rows.push(...data??[]);
-  if(!data||data.length<1000)return rows;
+  const rows: StaffEarningRow[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    let query = auth.supabase.rpc("effective_staff_day_inputs_range", { p_salon: auth.salon.id, p_start: period.startDate, p_end: period.endDate });
+    if (!auth.access.canViewAllPayroll && !auth.access.canViewTaxCompany && auth.access.linkedStaffId) query = query.eq("staff_id", auth.access.linkedStaffId);
+    const { data, error } = await query.order("work_date").order("staff_id").range(offset, offset + 999);
+    if (error) throw new Error("Staff gross and tip inputs could not be loaded. Please retry.");
+    if (!Array.isArray(data)) throw new Error("Staff gross and tip inputs could not be loaded. Please retry.");
+    const effectiveRows = data as Array<Omit<StaffEarningRow, "ticket_id" | "manual_tip_amount">>;
+    rows.push(...effectiveRows.map(row => ({ ...row, ticket_id: "", manual_tip_amount: null })));
+    if (effectiveRows.length < 1000) return rows;
   }
 }
 
@@ -1799,7 +1787,7 @@ async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPer
   const { data, error } = await auth.supabase
     .from("pos_daily_closings")
     .select(
-      "report_date, cash_amount, credit_card_amount, other_amount, status, closed_at, locked_at, live_report_entered_at",
+      "report_date, cash_amount, credit_card_amount, other_amount, tip_input, status, closed_at, locked_at, live_report_entered_at",
     )
     .eq("salon_id", auth.salon.id)
     .gte("report_date", period.startDate)
@@ -1815,6 +1803,7 @@ async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPer
     cash_amount: numberValue(row.cash_amount),
     credit_card_amount: numberValue(row.credit_card_amount),
     other_amount: numberValue(row.other_amount),
+    tip_input: row.tip_input == null ? null : numberValue(row.tip_input),
   }));
 }
 
@@ -2065,7 +2054,7 @@ function buildShopDailyRows(input: {
       }
     }
 
-    const posIncome = input.expectedByDate?.get(businessDate) ?? (input.expectedByDate ? 0 : roundMoney(staffProduction + tips));
+    const posIncome = input.expectedByDate?.get(businessDate) ?? (input.expectedByDate ? 0 : roundMoney(staffProduction));
     const savedClosing = closingByDate.get(businessDate);
     const closing = savedClosing?.live_report_entered_at ? savedClosing : undefined;
     const manualInputIncome = closing
@@ -2077,6 +2066,7 @@ function buildShopDailyRows(input: {
       : null;
     const difference =
       manualInputIncome === null ? null : roundMoney(manualInputIncome - posIncome);
+    const actualTipIncome = savedClosing?.tip_input ?? null;
     const overShortStatus: PayrollShopDailyRow["overShortStatus"] =
       difference === null
         ? "no_closing_input"
@@ -2088,6 +2078,8 @@ function buildShopDailyRows(input: {
 
     return {
       actualIncome: manualInputIncome,
+      actualTipIncome,
+      tipDifference: actualTipIncome === null ? null : roundMoney(actualTipIncome - tips),
       businessDate,
       cashAmount: closing ? numberValue(closing.cash_amount) : null,
       corrections: correctionsByDate.get(businessDate) ?? [],
@@ -2099,9 +2091,9 @@ function buildShopDailyRows(input: {
       posIncome,
       shopShare: roundMoney(shopShare),
       shopNetIncome:
-        manualInputIncome === null
+        manualInputIncome === null || actualTipIncome === null
           ? null
-          : roundMoney(manualInputIncome - staffObligation),
+          : roundMoney(manualInputIncome + actualTipIncome - staffObligation),
       staffCommissionPay: roundMoney(staffCommissionPay),
       staffNetPay: roundMoney(staffNetPay),
       staffObligation: roundMoney(staffObligation),
@@ -2121,7 +2113,7 @@ function buildShopDailyRows(input: {
     finalDay.staffNetPay=(moneyCents(finalDay.staffNetPay)+payoutDelta)/100;
     finalDay.taxWithheld=(moneyCents(finalDay.taxWithheld)+taxDelta)/100;
     finalDay.staffObligation=(moneyCents(finalDay.staffObligation)+payoutDelta+taxDelta)/100;
-    finalDay.shopNetIncome=finalDay.actualIncome===null?null:(moneyCents(finalDay.actualIncome)-moneyCents(finalDay.staffObligation))/100;
+    finalDay.shopNetIncome=finalDay.actualIncome===null||finalDay.actualTipIncome==null?null:(moneyCents(finalDay.actualIncome)+moneyCents(finalDay.actualTipIncome)-moneyCents(finalDay.staffObligation))/100;
   }
   return rows;
 }
@@ -2135,8 +2127,11 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
       ? null
       : roundMoney(values.reduce((total, value) => total + value, 0));
   };
+  const actualService = nullableSum(row => row.actualIncome);
+  const actualTips = nullableSum(row => row.actualTipIncome ?? null);
 
   return {
+    totalActualTip: actualTips,
     cashAmount: nullableSum((row) => row.cashAmount),
     correctionCount: rows.reduce((total, row) => total + row.corrections.length, 0),
     creditCardAmount: nullableSum((row) => row.creditCardAmount),
@@ -2145,7 +2140,7 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
     overShortTotal: nullableSum((row) => row.difference),
     posIncome: sum((row) => row.posIncome),
     shopShare: sum((row) => row.shopShare),
-    shopNetIncome: nullableSum(row=>row.actualIncome) === null ? null : (moneyCents(nullableSum(row=>row.actualIncome)!) - rows.reduce((total,row)=>total+moneyCents(row.staffObligation),0))/100,
+    shopNetIncome: !hasCompletePayrollReceipts(rows) || actualService === null || actualTips === null ? null : (moneyCents(actualService)+moneyCents(actualTips) - rows.reduce((total,row)=>total+moneyCents(row.staffObligation),0))/100,
     staffCommissionPay: sum((row) => row.staffCommissionPay),
     staffNetPay: sum((row) => row.staffNetPay),
     totalStaffObligation: sum((row) => row.staffObligation),
@@ -2915,7 +2910,7 @@ export async function buildTaxCompanyLines(input: {
   segment?: string | null;
   startDate?: string | null;
 }) {
-  const auth = await requirePayrollContext({ taxCompanyOnly: true });
+  const auth = await requirePayrollContext({ taxCompanyOnly: true, liveTaxReport: true });
   const salonPayrollSetting = await loadSalonPayrollSetting(auth);
   const period = resolvePayrollPeriod({
     timezone: await getSalonBusinessTimezone(auth.salon.id),
@@ -3639,8 +3634,8 @@ function getPayrollStatusView(
 
   if (statement.run.status === "paid") {
     return {
-      kind: "paid",
-      label: "Paid",
+      kind: "live",
+      label: "Earlier statement marked paid",
       statementVersion: statement.run.version,
     };
   }
@@ -4057,6 +4052,7 @@ export async function updateSalonPayrollSetting(input: {
 }
 
 export async function updateStaffPayrollSetting(input: {
+  notifyStaff?: boolean; requestId?: string;
   expectedSettingId?:string|null; expectedUpdatedAt?:string|null;
   applyTaxToFixedPay: boolean;
   bonusPayoutMethod: PayrollPayoutMethod;
@@ -4148,9 +4144,10 @@ export async function updateStaffPayrollSetting(input: {
     tip_payout_method: input.tipPayoutMethod,
   };
 
-  const {data,error}=await auth.supabase.rpc("save_owner_live_payroll_setting",{
+  const {data,error}=await auth.supabase.rpc("save_owner_payroll_setting_with_notice",{
     p_salon:auth.salon.id,p_staff:input.staffId,p_effective:input.effectiveFrom,p_values:settingPayload,
     p_expected_id:input.expectedSettingId??null,p_expected_updated_at:input.expectedUpdatedAt??null,
+    p_request: input.requestId ?? crypto.randomUUID(), p_notify_staff: input.notifyStaff ?? false,
   });
   if(error)throw new Error(error.message);
   return data as StaffPayrollSetting;
@@ -4334,7 +4331,7 @@ export async function getPayrollTaxCompanyData(input: {
   segment?: string | null;
   startDate?: string | null;
 }) {
-  const auth = await requirePayrollContext({ taxCompanyOnly: true });
+  const auth = await requirePayrollContext({ taxCompanyOnly: true, liveTaxReport: true });
   const salonPayrollSetting = await loadSalonPayrollSetting(auth);
   const period = resolvePayrollPeriod({
     timezone: await getSalonBusinessTimezone(auth.salon.id),

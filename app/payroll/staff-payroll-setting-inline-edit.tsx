@@ -14,7 +14,7 @@ import type {
 import type { Staff } from "@/types/staff";
 import Link from "next/link";
 import type { KeyboardEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type ActiveField =
   | "bonusPayout"
@@ -363,6 +363,7 @@ export function StaffPayrollSettingInlineEdit({
   );
   const [effectiveFrom, setEffectiveFrom] = useState(currentEffectiveFrom);
   const legalName = getStaffLegalName(staff) ?? "";
+  const settingRequestField = useRef<HTMLInputElement>(null);
 
   const closeField = () => setActiveField(null);
 
@@ -371,6 +372,7 @@ export function StaffPayrollSettingInlineEdit({
       action={saveStaffPayrollSettingWithEffectiveDateAction}
       className="grid gap-4"
       onSubmit={(event) => {
+        if (settingRequestField.current && !settingRequestField.current.value) settingRequestField.current.value = crypto.randomUUID();
         if (
           effectiveFrom === currentEffectiveFrom &&
           !window.confirm(
@@ -384,6 +386,7 @@ export function StaffPayrollSettingInlineEdit({
       }}
     >
       <input type="hidden" name="expected_setting_id" value={setting?.id ?? ""}/>
+      <input type="hidden" name="setting_request_id" defaultValue="" ref={settingRequestField}/>
       <input type="hidden" name="expected_setting_updated_at" value={setting?.updated_at ?? ""}/>
       <HiddenSettingInputs
         bonusPayout={bonusPayout}
@@ -673,6 +676,7 @@ export function StaffPayrollSettingInlineEdit({
           </EditableSetting>
         </div>
       </details>
+      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="notify_staff" value="true" /><WorkspaceText text="Notify Staff about these changes" /></label>
     </form></div>
   );
 }

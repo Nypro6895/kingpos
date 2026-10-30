@@ -50,6 +50,7 @@ export type PosDeskSubmitLine = {
 };
 
 export type PosDeskSubmitInput = {
+  requestId?: string;
   sourceBookingId?: string | null;
   sourceBookingUpdatedAt?: string | null;
   customerId?: string | null;

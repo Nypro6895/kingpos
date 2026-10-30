@@ -1,12 +1,14 @@
 "use client";
 import { WorkspaceText } from "@/components/workspace-language";
-import type { DailyClosingAdjustmentTotals, DailyClosingCorrectionField, DailyClosingCorrectionRequest, DailyClosingFinancialAdjustment, DailyClosingLockInfo, DailyClosingSnapshotTotals, DailyPosClosingInputs, DailyPosReconciliationStatus } from "@/types/pos-daily-closing";
+import type { DailyClosingAdjustmentTotals, DailyClosingCorrectionField, DailyClosingCorrectionRequest, DailyClosingFinancialAdjustment, DailyClosingLockInfo, DailyClosingSnapshotTotals, DailyPosClosingInputs } from "@/types/pos-daily-closing";
 import { type ReactNode } from "react";
 import { ReportDetails } from "./report-ui";
 import styles from "./reports.module.css";
 import { useDailyClosingSave } from "@/lib/daily-closing-client";
 import { parseClosingCents as parseInputCents } from "@/lib/daily-closing-input";
 import { ClosingSaveNotice, ClosingSaveStatus } from "./owner-closing-save-notice";
+import { ClosingBalanceSummary } from "./closing-balance-summary";
+import { DailyReconciliationCases } from "./daily-reconciliation-cases";
 import { DailyReportChangeHistory } from "./daily-report-history";
 
 type DailyClosingFormProps = {
@@ -23,16 +25,13 @@ type DailyClosingFormProps = {
     requests: DailyClosingCorrectionRequest[];
   };
   expectedTotal: number;
+  expectedTip?: number;
   lock: DailyClosingLockInfo;
   reportDate: string;
   snapshotTotals: DailyClosingSnapshotTotals | null;
 };
 
-const RECONCILIATION_LABELS: Record<DailyPosReconciliationStatus, string> = {
-  balanced: "Balanced",
-  over: "Over",
-  short: "Short",
-};
+
 
 const CORRECTION_FIELD_LABELS: Record<DailyClosingCorrectionField, string> = {
   cash_amount: "Cash",
@@ -61,23 +60,13 @@ function formatDateTime(value: string | null) {
   }).format(new Date(value));
 }
 
-function toCents(value: number) {
-  return Math.round(value * 100);
-}
+
 
 function fromCents(value: number) {
   return Math.round(value) / 100;
 }
 
-function getReconciliationStatus(
-  differenceCents: number,
-): DailyPosReconciliationStatus {
-  if (Math.abs(differenceCents) < 1) {
-    return "balanced";
-  }
 
-  return differenceCents < 0 ? "short" : "over";
-}
 
 function readCorrectionValue(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -159,6 +148,7 @@ export function DailyClosingForm({
   closingInputs,
   corrections,
   expectedTotal,
+  expectedTip = 0,
   lock,
   reportDate,
 }: DailyClosingFormProps) {
@@ -169,16 +159,6 @@ export function DailyClosingForm({
   const cashCents = parseInputCents(values.cashAmount);
   const creditCardCents = parseInputCents(values.creditCardAmount);
   const otherCents = parseInputCents(values.otherAmount);
-  const hasInvalidAmount =
-    cashCents === null || creditCardCents === null || otherCents === null;
-  const actualTotalCents = hasInvalidAmount
-    ? 0
-    : cashCents + creditCardCents + otherCents;
-  const expectedTotalCents = toCents(expectedTotal);
-  const differenceCents = actualTotalCents - expectedTotalCents;
-  const reconciliationStatus = hasInvalidAmount
-    ? "short"
-    : getReconciliationStatus(differenceCents);
   return (
     <>
       <form className={styles.closing} onSubmit={(event) => {
@@ -247,6 +227,7 @@ export function DailyClosingForm({
               </label>
             </div>
 
+            <label className={styles.moneyRow}><span><WorkspaceText text="Tip input" /></span><span className={styles.moneyInput}><span aria-hidden="true">$</span><input disabled={isReadOnly} inputMode="decimal" name="tip_input" placeholder="Not entered" onFocus={event => editor.focusMoney("tipInput", event)} onBlur={() => editor.blurMoney("tipInput")} onChange={event => updateValue("tipInput", event.target.value)} onKeyDown={handleEnter} value={values.tipInput ?? ""} /></span></label>
             <label className={styles.note}>
               <span>
                 <WorkspaceText text="Note" />
@@ -264,17 +245,8 @@ export function DailyClosingForm({
 
         <section className={styles.reconciliation}>
           <h2><WorkspaceText text="Reconciliation" /></h2>
-          <dl>
-            <div><dt><WorkspaceText text="Expected total" /></dt><dd>{formatMoney(expectedTotal)}</dd></div>
-            <div><dt><WorkspaceText text="Actual total" /></dt><dd>{hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}</dd></div>
-            <div className={styles.difference}>
-              <dt><WorkspaceText text="Difference" /></dt>
-              <dd className={hasInvalidAmount ? styles.neutral : reconciliationStatus === "short" ? styles.down : reconciliationStatus === "over" ? styles.over : styles.up}>
-                {hasInvalidAmount ? "-" : formatMoney(fromCents(differenceCents))}
-                <small><WorkspaceText text={hasInvalidAmount ? "Invalid amount" : RECONCILIATION_LABELS[reconciliationStatus]} /></small>
-              </dd>
-            </div>
-          </dl>
+          <ClosingBalanceSummary values={values} expectedService={expectedTotal} expectedTip={expectedTip} />
+
         </section>
         {!canEdit&&<p className={styles.message}><WorkspaceText text="Only the Owner can edit Daily Report amounts."/></p>}
         {(corrections.requests.length>0||corrections.adjustments.length>0)&&<ReportDetails title="Earlier change history"><CorrectionHistory adjustments={corrections.adjustments} requests={corrections.requests}/></ReportDetails>}
@@ -287,6 +259,7 @@ export function DailyClosingForm({
         </div>
       </form>
       <DailyReportChangeHistory salonId={salonId} reportDate={reportDate} savedAt={editor.status}/>
+      {canEdit && <DailyReconciliationCases salonId={salonId} startDate={reportDate} endDate={reportDate} refreshKey={editor.status} />}
 
     </>
   );

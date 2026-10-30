@@ -31,22 +31,23 @@ export function PayrollDashboard({ tab, lines, rows, services, today, difference
   const data = payrollLiveDashboard(lines, rows, today);
   if (tab === "differences") return <section className={styles.card}>
     <h2><Text text="Daily Report differences" /></h2>
-    <p className={styles.note}><Text text="Daily Report collected minus POS expected. Missing reports are listed separately." /></p>
-    <div className={styles.dayList}>{[...data.differences, ...data.missing].sort((a, b) => a.businessDate.localeCompare(b.businessDate)).map(row => <article key={row.businessDate} className={styles.day}>
-      <header><strong>{day(row.businessDate)}</strong><span className={styles.warningLabel}><Text text={row.actualIncome === null ? "Report not entered" : row.difference! < 0 ? "Short" : "Over"} /></span></header>
-      <dl><AmountRow label="POS expected" value={row.posIncome} /><AmountRow label="Daily Report collected" value={row.actualIncome} /><AmountRow label="Difference" value={row.difference} /></dl>
+    <p className={styles.note}><Text text="Service collections and tips are reconciled separately. Missing inputs remain unknown." /></p>
+    <div className={styles.dayList}>{[...new Map([...data.differences, ...data.missing, ...data.missingTips].map(row => [row.businessDate, row])).values()].sort((a, b) => a.businessDate.localeCompare(b.businessDate)).map(row => <article key={row.businessDate} className={styles.day}>
+      <header><strong>{day(row.businessDate)}</strong><span className={styles.warningLabel}><Text text={row.actualIncome === null ? "Service input not entered" : row.actualTipIncome == null ? "Tip input not entered" : "Differences to review"} /></span></header>
+      <dl><AmountRow label="Expected service" value={row.posIncome} /><AmountRow label="Service collected" value={row.actualIncome} /><AmountRow label="Service difference" value={row.difference} /><AmountRow label="Expected tip" value={row.tips} /><AmountRow label="Tip collected" value={row.actualTipIncome ?? null} /><AmountRow label="Tip difference" value={row.tipDifference ?? null} /></dl>
       <Link href={`/reports?date=${row.businessDate}`} className={styles.textLink}><Text text="Open Daily Report" /> ›</Link>
     </article>)}</div>
-    {!data.differences.length && !data.missing.length && <p><Text text="All entered Daily Reports are balanced." /></p>}
+    {!data.differences.length && !data.missing.length && !data.missingTips.length && <p><Text text="All entered Daily Reports are balanced." /></p>}
   </section>;
   if (tab === "analytics") return <Analytics rows={rows} services={services} lines={lines} today={today} />;
   return <section className={styles.overview}>
     <div className={styles.summary}>
-      <article className={styles.card}><p className={styles.metric}><Text text="Total collected" /></p><strong className={styles.amount}>{money(data.collected)}</strong><small><Text text="From Daily Report" /></small></article>
+      <article className={styles.card}><p className={styles.metric}><Text text="Service collected" /></p><strong className={styles.amount}>{money(data.collected)}</strong><small><Text text="Excludes tips · From Daily Report" /></small><p><Text text="Tip collected" /> {money(data.tipsCollected)}</p></article>
       <article className={styles.card}><p className={styles.metric}><Text text="Staff cost" /></p><strong className={styles.amount}>{money(data.staffCost)}</strong><small><Text text="Cash + check + tax" /></small></article>
       <article className={`${styles.hero} ${data.remaining !== null && data.remaining < 0 ? styles.loss : ""}`}>
         <p className={styles.metric}><Text text="Remaining after payroll" /></p><strong>{money(data.remaining)}</strong>
-        <small><Text text="Daily Report total − staff cost" /></small>
+        <small><Text text="Service collected + tip collected − staff cost" /></small>
+        {!data.receiptsComplete&&<small><Text text="Remaining amount is unconfirmed until service and tip inputs cover every day included in staff cost." /></small>}
       </article>
       <p className={styles.summaryNote}><Text text="Before supplies, utilities and rent." />{data.missing.length > 0 && <> <Text text="Partial total · some Daily Reports are not entered." /></>}</p>
     </div>

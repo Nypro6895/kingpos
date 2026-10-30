@@ -343,7 +343,7 @@ function PortableDailyWorkLog({
               }}
               businessDateCompactLabel={selectedDateCompactLabel}
               canApplyFinancialCorrection={false}
-              canEdit={canEdit && !isBusinessDateLocked}
+              canEdit={canEdit}
               dailyNumber={dailyNumbers.get(ticket.id) ?? 0}
               isBusinessDateLocked={isBusinessDateLocked}
               key={ticket.id}

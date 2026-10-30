@@ -27,11 +27,16 @@ for (const [module, names] of Object.entries(policy.modules)) {
 }
 await fs.writeFile(path.join(root, 'lib/app-local-commands-server.generated.ts'), `// Generated from the reviewed, explicit app-local-command-policy.json.\nimport "server-only";\n${imports.join('\n')}\nconst commands: Record<string,(values:unknown[])=>unknown>={\n${mapping.join('\n')}\n};\nexport async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}\n`);
 
+// Server command registry can be checked without replacing signed/bundled assets.
+if(process.argv.includes('--commands-only')) { console.log(`Validated ${commandNames.size} pinned server actions`); process.exit(0); }
 const output = path.join(root, 'ios/Reylumi/LocalAppBundle');
+const verifyOnly = process.argv.includes('--verify-only');
 // Only this exact generated directory may be replaced; never traverse a caller path.
 if (path.dirname(output) !== path.join(root, 'ios/Reylumi')) throw Error('Unsafe local bundle output');
-await fs.mkdir(output, { recursive: true });
-await fs.rm(path.join(output,'manifest.json'), { force: true });
+if(!verifyOnly) {
+  await fs.mkdir(output, { recursive: true });
+  await fs.rm(path.join(output,'manifest.json'), { force: true });
+}
 const wrappers = 'app-local-next';
 const unsupported = new Map();
 const nextPlugin = {
@@ -54,7 +59,7 @@ const nextPlugin = {
       const names = ast.statements.filter(node => ts.isFunctionDeclaration(node) && node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword)).map(node => node.name?.text).filter(Boolean);
       const proxies = names.map(name => {
         const id = commandNames.get(originalModule + '#' + name);
-        if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${!/^(load|get|search|referenceLoveStates)/.test(name)},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
+        if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${!/^(load|get|read|search|referenceLoveStates)/.test(name)},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
         unsupported.set(originalModule + '#' + name, true);
         return `export const ${name}=()=>{throw new Error(${JSON.stringify('__unsupported_action:' + originalModule + '#' + name)})};`;
       });
@@ -64,11 +69,12 @@ const nextPlugin = {
 };
 // Only these already-public configuration values enter the JavaScript bundle.
 const publicConfig = {NEXT_PUBLIC_APP_URL:'https://reylumi.com',...Object.fromEntries(['NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_ANON_KEY','NEXT_PUBLIC_MAPTILER_KEY','NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY'].map(key => [key, process.env[key]?.trim() ?? '']))};
-const result = await build({ absWorkingDir: root, entryPoints: ['app/local-app/entry.tsx'], outfile: path.join(output, 'app.js'), bundle: true, format: 'iife', platform: 'browser', target: ['safari16'], minify: true, metafile: true, jsx: 'automatic', tsconfig: path.join(root, 'tsconfig.json'), plugins: [nextPlugin], loader: { '.png': 'file', '.svg': 'file', '.woff2': 'file' }, define: { '__REYLUMI_SERVICES_CATALOG_QA__': String(servicesCatalogQA), 'process.env.NODE_ENV': '"production"', ...Object.fromEntries(Object.entries(publicConfig).map(([key,value])=>['process.env.'+key,JSON.stringify(value)])) } });
-const js = await fs.readFile(path.join(output, 'app.js'), 'utf8');
-const viewCSS = await fs.readFile(path.join(output,'app.css'),'utf8').catch(()=> '');
+const result = await build({ absWorkingDir: root, entryPoints: ['app/local-app/entry.tsx'], outfile: path.join(output, 'app.js'), write:!verifyOnly, bundle: true, format: 'iife', platform: 'browser', target: ['safari16'], minify: true, metafile: true, jsx: 'automatic', tsconfig: path.join(root, 'tsconfig.json'), plugins: [nextPlugin], loader: { '.png': 'file', '.svg': 'file', '.woff2': 'file' }, define: { '__REYLUMI_SERVICES_CATALOG_QA__': String(servicesCatalogQA), 'process.env.NODE_ENV': '"production"', ...Object.fromEntries(Object.entries(publicConfig).map(([key,value])=>['process.env.'+key,JSON.stringify(value)])) } });
+const js = verifyOnly ? result.outputFiles.find(file=>file.path.endsWith('app.js')).text : await fs.readFile(path.join(output, 'app.js'), 'utf8');
+const viewCSS = verifyOnly ? result.outputFiles.find(file=>file.path.endsWith('app.css'))?.text??'' : await fs.readFile(path.join(output,'app.css'),'utf8').catch(()=> '');
 const activeUnsupported = [...unsupported.keys()].filter(name => js.includes('__unsupported_action:' + name));
 if (activeUnsupported.length) throw Error('Original action adapters are not yet pinned:\n' + activeUnsupported.join('\n'));
+if(verifyOnly) { console.log(JSON.stringify({verified:true,target:'safari16',pinnedActions:commandNames.size,modules:Object.keys(result.metafile.inputs).length,unsupportedActions:activeUnsupported.length,assetsWritten:false}));process.exit(0); }
 // Use exactly the current site styles and all application class candidates.
 const postcss = require('postcss'), tailwind = require('@tailwindcss/postcss');
 const cssInput = await fs.readFile(path.join(root, 'app/globals.css'), 'utf8') + '\n' + await fs.readFile(path.join(root, 'components/settings-style.css'), 'utf8') + '\n' + viewCSS + '\n' + await fs.readFile(path.join(root, 'app/local-app/app.css'), 'utf8');

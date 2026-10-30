@@ -8,6 +8,12 @@ test('booking conversion fails atomically before the missing-column fix and pres
   skip:process.env.RUN_ISOLATED_SUPABASE!=='1',timeout:900000,
 },async t=>{
   const f=await startIsolatedSupabase('iphone-booking-pos',JSON.parse(process.env.TEST_SUPABASE_IMAGES||'{}'));t.after(()=>f.close());
+  // The column regression temporarily replays an older migration. Restore the
+  // fully migrated command afterward so the successful calls exercise today's
+  // booking authority/locking wrapper, including Staff-day serialization.
+  const finalConversion=f.sql("select pg_get_functiondef('public.convert_booking_to_pos_ticket(uuid)'::regprocedure)");
+  assert.ok(finalConversion.includes('booking-pos-authority-v1'),'full migration chain must enforce booking.manage in SQL');
+  assert.ok(finalConversion.includes('staff-day-input:'),'full migration chain must preserve current Staff-day serialization');
   const owner=f.person('qa-owner'),outsider=f.person('qa-outsider');
   const account=f.rpc(owner,'ensure_personal_account_for_current_user',{p_account_name:'Physical QA fixture'})[0].account_id;
   const salon=f.rpc(owner,'create_account_salon_with_owner_staff',{p_account_id:account,p_create_request_key:crypto.randomUUID(),p_name:'Isolated iPhone QA',p_owner_is_staff:false,
@@ -21,7 +27,10 @@ test('booking conversion fails atomically before the missing-column fix and pres
     alter table pos_ticket_items drop column service_description_snapshot;`);
   assert.throws(()=>f.rpc(owner,'convert_booking_to_pos_ticket',{p_booking_id:booking}),/service_description_snapshot/);
   assert.equal(f.sql(`select count(*) from pos_tickets where source_booking_id='${booking}'`),'0','SQL error must roll back the ticket too');
+  assert.equal(f.sql(`select pos_ticket_id is null from bookings where id='${booking}'`),'t','failed conversion must not bind the booking');
   f.sql(fs.readFileSync('supabase/migrations/20261028003000_booking_pos_description_snapshot.sql','utf8'));
+  f.sql(finalConversion);
+  assert.equal(f.sql("select pg_get_functiondef('public.convert_booking_to_pos_ticket(uuid)'::regprocedure)"),finalConversion,'successful calls must test the final installed wrapper, not only the old column fix');
   const ticket=f.rpc(owner,'convert_booking_to_pos_ticket',{p_booking_id:booking});
   assert.match(ticket,/^[a-f0-9-]{36}$/);
   assert.equal(f.rpc(owner,'convert_booking_to_pos_ticket',{p_booking_id:booking}),ticket);
@@ -30,7 +39,7 @@ test('booking conversion fails atomically before the missing-column fix and pres
   assert.equal(Number(rows[0].booked_unit_price_snapshot),12.5);assert.equal(Number(rows[0].quantity),2);assert.equal(Number(rows[0].line_total),25);
   assert.equal(f.sql(`select count(*) from pos_tickets where source_booking_id='${booking}'`),'1');
   assert.throws(()=>f.rpc(outsider,'convert_booking_to_pos_ticket',{p_booking_id:booking}));
-  f.save('booking-pos-description-result.json',{booking,ticket,rows:1,total:25,descriptionPreserved:true,idempotent:true,outsiderDenied:true});
+  f.save('booking-pos-description-result.json',{booking,ticket,rows:1,total:25,descriptionPreserved:true,idempotent:true,outsiderDenied:true,missingColumnRolledBackBookingBinding:true,finalWrapperRestored:true,staffDaySerializationPresent:true,finalWrapperSha256:crypto.createHash('sha256').update(finalConversion).digest('hex')});
   // Real Postgres, isolated data only. Keep today's result at 30 tickets while
   // growing historical data 1,000x; distinguish SQL work from HTTP/auth latency.
   f.sql(`create table public.qa_scale_tickets (like public.pos_tickets including defaults including indexes);`);

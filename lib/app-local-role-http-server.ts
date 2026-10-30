@@ -12,6 +12,8 @@ import { POST as staffPreferencesPOST } from "@/app/api/staff/booking-preference
 import { GET as preferencesGET, POST as preferencesPOST } from "@/app/api/notifications/preferences/route";
 import { GET as closingGET, POST as closingPOST } from "@/app/api/pos/closing/route";
 import { GET as closingHistoryGET } from "@/app/api/pos/closing/history/route";
+import {GET as financialHistoryGET} from "@/app/api/financial-input-history/route";
+import {GET as reconciliationCasesGET} from "@/app/api/reports/reconciliation-cases/route";
 import { ROLE_READS, ROLE_COMMANDS } from "./app-local-platform-types";
 import type { AppLocalRead } from "./app-local-host";
 import type { AppLocalHttpResponse } from "./app-local-http-client";
@@ -42,7 +44,7 @@ export async function readAppLocalRoleHttpResource(name: string, args: Record<st
   const current = await authorized(options.scope), url = new URL(rule.path, "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
   const forwarded = new Headers(); if (current.get("cookie")) forwarded.set("cookie", current.get("cookie")!);
   const readRequest = new Request(url, { headers: forwarded, signal: options.signal });
-  const response = name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
+  const response = name === "http.financial-input-history" ? await financialHistoryGET(readRequest) : name === "http.owner.reconciliation-cases" ? await reconciliationCasesGET(readRequest) : name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
   const result = await wire(response);
   if (options.signal?.aborted) throw options.signal.reason;
   // These control DTOs are never retained by native. Preserve their actual wire status/body.

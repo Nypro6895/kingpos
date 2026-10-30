@@ -1,12 +1,16 @@
 import { getStaffLegalName } from "@/lib/staff-legal-name";
 
 
+import {DailyReconciliationCases} from "@/app/reports/daily-reconciliation-cases";
 import { PayrollDailyListing } from "@/app/payroll/payroll-daily-listing";
 import { PayrollDashboard } from "@/app/payroll/payroll-dashboard";
 import { PayrollPeriodRail } from "@/app/payroll/payroll-period-rail";
 import { PayrollTabs } from "@/app/payroll/payroll-tabs";
 import { StaffIncomeCard } from "@/app/payroll/staff-income-card";
+import { PayrollPaymentComparison } from "@/app/payroll/payroll-payment-comparison";
+import type {PayrollRecordedFacts} from "@/types/payroll-records";
 import { payrollRailChoices } from "@/lib/payroll-period-rail";
+import { payrollHistoryForStaff } from "@/lib/payroll-live-history-presentation";
 import { PayrollChangeHistory } from "@/app/payroll/payroll-change-history";
 import { PayrollLiveRefresh } from "@/app/payroll/payroll-live-refresh";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
@@ -339,17 +343,17 @@ function NoPermissionState({ message }: { message: string }) {
   );
 }
 
-function StaffIncomeTab({ canPrintChecks, canManage, lines, period, history }: {
-  canPrintChecks: boolean;
-
-  canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod; history: PayrollLiveChange[];
+function StaffIncomeTab({ canPrintChecks, canManage, lines, period, history, salonId, today, recordedFacts, scope }: {
+  canPrintChecks: boolean; canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod; history: PayrollLiveChange[]; salonId: string; today: string;recordedFacts:PayrollRecordedFacts;scope:string;
 }) {
   if (!lines.length) return <p className={styles.panel}><WorkspaceText text="No staff income lines for this period." /></p>;
   return <section className="grid gap-3" aria-label="Staff payroll">
     {lines.map(line => <StaffIncomeCard key={`${period.startDate}:${period.endDate}:${line.staff_id}`} line={line}
-      history={history.some(change=>change.staff_id===line.staff_id) ? <PayrollChangeHistory compact changes={history.filter(change=>change.staff_id===line.staff_id)} /> : null}
+      history={payrollHistoryForStaff(history,line.staff_id).length > 0 ? <PayrollChangeHistory compact changes={payrollHistoryForStaff(history,line.staff_id)} /> : null}
       adjustments={<>{canPrintChecks && <Link className="inline-flex min-h-11 items-center px-3 text-sm text-teal-700" href={`/check-writer?start=${period.startDate}&end=${period.endDate}&staff=${line.staff_id}`}><WorkspaceText text="Print check" /></Link>}<StaffIncomeAutosaveInputs inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /></>}
-      breakdown={<PayrollDailyListing rows={line.dailyTotals} />}
+      breakdown={<><PayrollPaymentComparison facts={recordedFacts} line={line} period={period} canRecord={canManage} scope={scope} showPayments/><details className="border-t py-3"><summary className="text-sm font-medium"><WorkspaceText text="Breakdown" /></summary>
+        <PayrollDailyListing rows={line.dailyTotals} salonId={salonId} canManage={canManage} today={today} />
+      </details></>}
     />)}
   </section>;
 }
@@ -369,11 +373,12 @@ function ShopIncomeTab({
     <section className="grid gap-6">
       <div className="grid gap-4 lg:grid-cols-3">
         <ShopIncomeCard
-          label="Total Actual"
+          label="Service collected"
           subLines={[
             { label: "Cash", value: formatOptionalMoney(summary.cashAmount) },
             { label: "Card", value: formatOptionalMoney(summary.creditCardAmount) },
             { label: "Other", value: formatOptionalMoney(summary.otherAmount) },
+            { label: "Tip collected (separate)", value: formatOptionalMoney(summary.totalActualTip ?? null) },
           ]}
           value={formatOptionalMoney(
             summary.totalActualIncome,
@@ -384,7 +389,7 @@ function ShopIncomeTab({
           label="Total Staff Obligation"
           subLines={[
             { label: "Staff Pay", value: formatMoney(summary.staffNetPay) },
-            { label: "Tips Paid", value: formatMoney(summary.tipsPaid) },
+            { label: "Tips after tax", value: formatMoney(summary.tipsPaid) },
             { label: "Tax Withheld", value: formatMoney(summary.taxWithheld) },
           ]}
           value={formatMoney(summary.totalStaffObligation)}
@@ -393,9 +398,10 @@ function ShopIncomeTab({
           label="Shop Net Income"
           subLines={[
             {
-              label: "Actual",
+              label: "Service collected",
               value: hasActual ? formatMoney(summary.totalActualIncome ?? 0) : "-",
             },
+            { label: "Tip collected", value: formatOptionalMoney(summary.totalActualTip ?? null) },
             {
               label: "Staff Obligation",
               value: formatMoney(summary.totalStaffObligation),
@@ -411,24 +417,24 @@ function ShopIncomeTab({
         <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Notes" /></h2>
         <dl className="mt-3 grid gap-2">
           <div>
-            <dt className="font-medium text-zinc-800"><WorkspaceText text="Total Actual" /></dt>
-            <dd><WorkspaceText text="Total money actually collected from daily input: Cash + Card + Other." /></dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Service collected" /></dt>
+            <dd><WorkspaceText text="Cash + Card + Other excludes tips. Tip collected is entered and reconciled separately." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800"><WorkspaceText text="POS" /></dt>
-            <dd><WorkspaceText text="Expected collected amount recorded by POS for comparison with Actual." /></dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Expected service" /></dt>
+            <dd><WorkspaceText text="Staff gross service inputs minus customer discounts. Discounts do not reduce Staff gross service inputs." /></dd>
           </div>
           <div>
             <dt className="font-medium text-zinc-800"><WorkspaceText text="Total Staff Obligation" /></dt>
-            <dd><WorkspaceText text="Money handled for staff: Staff Pay + Tips Paid + Tax Withheld." /></dd>
+            <dd><WorkspaceText text="Calculated Staff Pay + Tips after tax + Tax Withheld. This is the obligation, not a payment record." /></dd>
           </div>
           <div>
             <dt className="font-medium text-zinc-800"><WorkspaceText text="Staff Pay" /></dt>
             <dd><WorkspaceText text="Net commission or fixed pay after tax withholding." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800"><WorkspaceText text="Tips Paid" /></dt>
-            <dd><WorkspaceText text="Tips paid to staff after optional tip tax withholding." /></dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Tips after tax" /></dt>
+            <dd><WorkspaceText text="Calculated tips after optional tax withholding; actual payments are recorded separately." /></dd>
           </div>
           <div>
             <dt className="font-medium text-zinc-800"><WorkspaceText text="Tax Withheld" /></dt>
@@ -436,7 +442,7 @@ function ShopIncomeTab({
           </div>
           <div>
             <dt className="font-medium text-zinc-800"><WorkspaceText text="Shop Net Income" /></dt>
-            <dd><WorkspaceText text="Total Actual minus Total Staff Obligation, before future expenses." /></dd>
+            <dd><WorkspaceText text="Service collected plus tip collected minus total staff obligation, before other expenses." /></dd>
           </div>
           <div>
             <dt className="font-medium text-zinc-800"><WorkspaceText text="Corrections" /></dt>
@@ -910,14 +916,18 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
       {visiblePayrollError&&<p role="alert" className={styles.warning}><WorkspaceText text={visiblePayrollError}/></p>}
       <PayrollPeriodRail activeTab={activeTab} period={data.period} {...payrollRailChoices(data.period, data.salonPayrollSetting)} needsAnchor={data.scheduleSetup.needsBiweeklyAnchor}/>
       {["overview","analytics","differences"].includes(activeTab)&&<PayrollDashboard tab={activeTab as "overview"|"analytics"|"differences"} lines={data.live.lines} rows={data.live.shopDailyRows} services={data.serviceAnalytics} today={data.today} historyCount={data.history.length} historyHref={getPayrollHref({period:data.period,tab:"history"})} differencesHref={getPayrollHref({period:data.period,tab:"differences"})}/>}
-      {activeTab==="history"&&<PayrollChangeHistory changes={data.history} staffNames={Object.fromEntries(data.staffPayrollSettings.map(row=>[row.staff.id,row.staffProfileDisplayName??row.staff.display_name]))}/>}
+      {canManageConnection && ["history","shop","differences"].includes(activeTab) && <DailyReconciliationCases salonId={pageContext.currentSalon.id} startDate={data.period.startDate} endDate={data.period.endDate}/>}{activeTab==="history"&&<PayrollChangeHistory changes={data.history} staffNames={Object.fromEntries(data.staffPayrollSettings.map(row=>[row.staff.id,row.staffProfileDisplayName??row.staff.display_name]))}/>}
       {activeTab === "staff" ? (
         <StaffIncomeTab
+          salonId={pageContext.currentSalon.id}
+          today={data.today}
           canPrintChecks={canManageConnection}
           canManage={data.access.canManagePayroll}
           lines={data.live.lines}
           history={data.history}
           period={data.period}
+          recordedFacts={data.recordedFacts}
+          scope={`${pageContext.currentSalon.id}:${data.context.user?.id??""}`}
         />
       ) : null}
       {activeTab === "shop" && data.access.canViewAllPayroll ? (

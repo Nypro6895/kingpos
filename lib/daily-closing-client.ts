@@ -23,8 +23,8 @@ async function request(url: string, body?: unknown): Promise<Reply> {
 }
 
 export function useDailyClosingSave({mode, salonId, scope, reportDate, initial, canEdit, legacyDraft, clearLegacyDraft, draftStorage}: {
-  mode: "owner" | "portable"; salonId: string; scope: string; reportDate: string; initial: Pick<DailyPosClosingInputs, "cashAmount" | "creditCardAmount" | "otherAmount" | "note">; canEdit: boolean;
-  legacyDraft?: () => {values: ClosingFormValues; baseline?: Pick<DailyPosClosingInputs, "cashAmount" | "creditCardAmount" | "otherAmount" | "note">} | null;
+  mode: "owner" | "portable"; salonId: string; scope: string; reportDate: string; initial: Pick<DailyPosClosingInputs, "cashAmount" | "creditCardAmount" | "otherAmount" | "tipInput" | "entered" | "note">; canEdit: boolean;
+  legacyDraft?: () => {values: ClosingFormValues; baseline?: Pick<DailyPosClosingInputs, "cashAmount" | "creditCardAmount" | "otherAmount" | "tipInput" | "entered" | "note">} | null;
   clearLegacyDraft?: () => void;
   draftStorage?: {getItem(key: string): string | null; setItem(key: string, value: string): void};
 }) {
@@ -79,7 +79,7 @@ export function useDailyClosingSave({mode, salonId, scope, reportDate, initial, 
           if (old) restored = {values: old.values, baseline: old.baseline && closingSnapshot(closingValues(old.baseline)) !== closingSnapshot(closingValues(current.closingInputs)) ? {...current, revision: -1} : current};
         }
         if (restored?.values && ["cashAmount", "creditCardAmount", "otherAmount", "note"].every(k => typeof restored!.values![k as keyof ClosingFormValues] === "string")) {
-          if (!edits.current) replaceValues(restored.values);
+          if (!edits.current) replaceValues({...restored.values, tipInput: restored.values.tipInput ?? ""});
           if (restored.intent && restored.baseline?.reportDate === reportDate) {
             intent.current = restored.intent;
             baseline.current = restored.baseline;

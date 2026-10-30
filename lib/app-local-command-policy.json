@@ -1,6 +1,10 @@
 {
   "schemaVersion": 1,
   "modules": {
+    "app/payroll/staff-day-financial-actions.ts": [
+      "readStaffDayFinancialInput",
+      "saveStaffDayFinancialInput"
+    ],
     "app/pos/owner-check-in-actions.ts": [
       "ownerSubmitAttendance"
     ],

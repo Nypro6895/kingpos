@@ -247,6 +247,8 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
 
   try {
     await updateStaffPayrollSetting({
+      notifyStaff: readBoolean(formData, "notify_staff"),
+      requestId: readOptionalString(formData, "setting_request_id") ?? undefined,
       expectedSettingId:readOptionalString(formData,"expected_setting_id"),
       expectedUpdatedAt:readOptionalString(formData,"expected_setting_updated_at"),
       applyTaxToFixedPay: readBoolean(formData, "apply_tax_to_fixed_pay"),

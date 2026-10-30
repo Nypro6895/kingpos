@@ -800,10 +800,10 @@ function statusForRow(row: PayrollShopDailyRow): {
   label: string;
 } {
   if (row.actualIncome === null) {
-    return row.posIncome > 0
+    return row.posIncome > 0 || row.tips > 0 || row.actualTipIncome != null
       ? {
           kind: "missing",
-          label: "Missing actual input",
+          label: "Service input missing",
         }
       : {
           kind: "no_activity",
@@ -812,6 +812,10 @@ function statusForRow(row: PayrollShopDailyRow): {
   }
 
   const difference = rowDifference(row) ?? 0;
+  if (row.actualTipIncome == null) return { kind: "missing", label: "Tip input missing" };
+  const tipDifference = row.tipDifference ?? row.actualTipIncome - row.tips;
+  if (difference !== 0 && tipDifference !== 0) return { kind: difference < 0 || tipDifference < 0 ? "short" : "over", label: "Service / tip differences" };
+  if (tipDifference !== 0) return { kind: tipDifference < 0 ? "short" : "over", label: `${tipDifference < 0 ? "Tip short" : "Tip over"} ${formatMoney(Math.abs(tipDifference))}` };
 
   if (difference < 0) {
     return {
@@ -882,13 +886,16 @@ function DailyDetailsSubRow({ row }: { row: PayrollShopDailyRow }) {
           <section>
             <h3 className="mb-2 font-semibold text-zinc-800"><WorkspaceText text="Reconciliation" /></h3>
             <dl className="grid gap-1.5">
-              <DetailMetric label={__vt("Actual")} value={formatOptionalMoney(row.actualIncome)} />
-              <DetailMetric label={__vt("POS")} value={formatMoney(row.posIncome)} />
+              <DetailMetric label={__vt("Service collected")} value={formatOptionalMoney(row.actualIncome)} />
+              <DetailMetric label={__vt("Expected service")} value={formatMoney(row.posIncome)} />
               <DetailMetric
                 className={differenceClass(row)}
-                label={__vt("Difference")}
+                label={__vt("Service difference")}
                 value={formatDifference(row)}
               />
+              <DetailMetric label={__vt("Expected tip")} value={formatMoney(row.tips)} />
+              <DetailMetric label={__vt("Tip collected")} value={formatOptionalMoney(row.actualTipIncome ?? null)} />
+              <DetailMetric label={__vt("Tip difference")} value={formatOptionalMoney(row.tipDifference ?? null)} />
             </dl>
           </section>
           <section>
@@ -1036,7 +1043,7 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
           return <details key={row.businessDate}>
             <summary>
               <div className={styles.mobileDayTitle}><strong><WorkspaceText text={formatDailyDate(row.businessDate)} /></strong><span className={`rounded-full border px-2 py-1 text-xs ${statusBadgeClass(status.kind)}`}><WorkspaceText text={status.label} /></span></div>
-              <div className={styles.mobileDayAmounts}><span><WorkspaceText text="Actual" /> <strong>{formatOptionalMoney(row.actualIncome)}</strong></span><span><WorkspaceText text="POS" /> {formatMoney(row.posIncome)}</span></div>
+              <div className={styles.mobileDayAmounts}><span><WorkspaceText text="Service collected" /> <strong>{formatOptionalMoney(row.actualIncome)}</strong></span><span><WorkspaceText text="Expected service" /> {formatMoney(row.posIncome)}</span></div>
               {correctionEvents.length > 0 && <p className="mt-2 text-xs text-amber-800">{correctionEvents.length} <WorkspaceText text="corrections" /></p>}
             </summary>
             <div className={styles.mobileDayBody}>
@@ -1044,7 +1051,10 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
                 <DetailMetric label="Cash" value={formatOptionalMoney(row.cashAmount)} />
                 <DetailMetric label="Credit card" value={formatOptionalMoney(row.creditCardAmount)} />
                 <DetailMetric label="Other" value={formatOptionalMoney(row.otherAmount)} />
-                <DetailMetric label="Difference" value={formatDifference(row)} className={differenceClass(row)} />
+                <DetailMetric label="Service difference" value={formatDifference(row)} className={differenceClass(row)} />
+                <DetailMetric label="Tip collected" value={formatOptionalMoney(row.actualTipIncome ?? null)} />
+                <DetailMetric label="Expected tip" value={formatMoney(row.tips)} />
+                <DetailMetric label="Tip difference" value={formatOptionalMoney(row.tipDifference ?? null)} />
               </dl>
               <h3 className="text-sm font-semibold"><WorkspaceText text="Payroll impact" /></h3>
               <dl className={styles.ledger}>
@@ -1064,8 +1074,8 @@ export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) 
           <thead className="bg-zinc-50 text-left text-xs font-semibold text-zinc-500">
             <tr>
               <th className="whitespace-nowrap px-4 py-3"><WorkspaceText text="Date" /></th>
-              <th className="whitespace-nowrap px-4 py-3 text-right"><WorkspaceText text="Actual" /></th>
-              <th className="whitespace-nowrap px-4 py-3 text-right"><WorkspaceText text="POS" /></th>
+              <th className="whitespace-nowrap px-4 py-3 text-right"><WorkspaceText text="Service collected" /></th>
+              <th className="whitespace-nowrap px-4 py-3 text-right"><WorkspaceText text="Expected service" /></th>
               <th className="whitespace-nowrap px-4 py-3"><WorkspaceText text="Status" /></th>
               <th className="whitespace-nowrap px-4 py-3"><WorkspaceText text="Corrections" /></th>
             </tr>

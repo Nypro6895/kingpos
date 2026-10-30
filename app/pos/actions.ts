@@ -9,6 +9,7 @@ import {
   getCurrentBusinessContext,
   getRouteForInvalidSalonContext,
   isSalonManageContext,
+  isOwnerMembership,
 } from "@/lib/current-context";
 import {
   issueCustomerClaimTokenForTicket,
@@ -16,7 +17,6 @@ import {
 } from "@/lib/customer-identity-claims";
 import {
   cancelCustomerVisit,
-  completeCustomerVisitForTicket,
   resolveCustomerDisplaySubmission,
   selectCustomerVisitForLiveDraft,
   updateCustomerVisitRequestedServices,
@@ -28,12 +28,8 @@ import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
 import { broadcastPosLiveDraftSnapshot } from "@/lib/pos-live-draft-realtime-server";
 import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import {
-  getCurrentSalonPosSettings,
   getPublicPosDisplaySettingsByToken,
 } from "@/lib/pos-settings";
-import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
-import { buildTicketReceipt } from "@/lib/pos-ticket-receipt";
-import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { marketServiceClient } from "@/lib/market-payments";
 import {
@@ -60,9 +56,6 @@ import type {
   PosLiveDraftReceiptLine,
   PosLiveDraftView,
 } from "@/types/pos-desk";
-import type { PosPayment } from "@/types/pos-payment";
-import type { PosTicket } from "@/types/pos-ticket";
-import type { PosTicketItemWithRelations } from "@/types/pos-ticket-item";
 
 type ActionResult<T> =
   | { data: T; error?: never; ok: true }
@@ -776,28 +769,6 @@ async function requireActiveSession(sessionId: string) {
   return session;
 }
 
-async function requirePendingConfirmedSession(sessionId: string) {
-  const session = await loadPosDeskSessionForPos(sessionId);
-
-  if (!session) {
-    throw new Error("POS session is required.");
-  }
-
-  if (session.status !== "active" && session.status !== "pending_confirmation") {
-    throw new Error("Send the receipt to the customer before completing checkout.");
-  }
-
-  if (session.lines.length === 0) {
-    throw new Error("Send the receipt to the customer before completing checkout.");
-  }
-
-  if (!session.customer_confirmed_at) {
-    throw new Error("Waiting for customer confirmation.");
-  }
-
-  return session;
-}
-
 async function touchSession(sessionId: string) {
   const { salon, supabase } = await requirePosDeskMutationContext();
   const now = new Date();
@@ -839,22 +810,6 @@ function validateSubmitLines(lines: PosDeskSubmitLine[]) {
 type PosDeskSupabaseClient = NonNullable<
   Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
 >;
-
-async function getSalonBusinessDate(input: {
-  salonId: string;
-  supabase: PosDeskSupabaseClient;
-}) {
-  const { data, error } = await input.supabase.rpc("get_salon_business_date", {
-    p_salon_id: input.salonId,
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (typeof data !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data)) throw new Error("Salon business date is unavailable. Please retry.");
-  return data;
-}
 
 async function validatePosStaffIds(input: {
   salonId: string;
@@ -1034,328 +989,26 @@ async function finalizeLiveDraftForPos(input: {
   return toLiveDraftView(data);
 }
 
-async function createTicketFromSubmitInput(
-  input: PosDeskSubmitInput,
-  sessionId?: string | null,
-): Promise<PosDeskActionResult> {
+async function createTicketFromSubmitInput(input:PosDeskSubmitInput,sessionId?:string|null):Promise<PosDeskActionResult> {
   try {
-    const { context, salon, supabase, user } =
-      await requirePosDeskMutationContext();
-    validateSubmitLines(input.lines);
-    const [settings, workDate] = await Promise.all([
-      getCurrentSalonPosSettings(context),
-      getSalonBusinessDate({
-        salonId: salon.id,
-        supabase,
-      }),
-    ]);
-    await validateSubmitLineScope({
-      lines: input.lines,
-      requireWorkingStaff: settings.staffCheckInEnabled,
-      salonId: salon.id,
-      supabase,
-      workDate,
-    });
-
-    const customer = await findOrCreateDeskCustomer({
-      customerId: cleanOptional(input.customerId),
-      customerLookup: cleanOptional(input.customerLookup),
-      customerName: cleanOptional(input.customerName),
-    });
-    const discountType: PosTicket["discount_type"] =
-      input.discountType === "percentage" ? "percentage" : "fixed_amount";
-    const discountValue = roundMoney(input.discountValue ?? 0);
-
-    if (discountValue < 0) {
-      throw new Error("Discount must be zero or greater.");
+    const {context,salon,supabase}=await requirePosDeskMutationContext();
+    if(!isOwnerMembership(context.currentMembership)) throw Error("Only the Owner can submit this ticket.");
+    const request=input.requestId??sessionId;
+    if(!request||!/^[0-9a-f-]{36}$/i.test(request)) throw Error("Reload this receipt before submitting.");
+    const {data,error}=await supabase.rpc("submit_owner_ticket_inputs",{p_salon:salon.id,p_receipt:input,p_request:request});
+    if(error||!data?.ticketId) throw Error(error?.message??"Unable to submit this receipt.");
+    const ticketId=String(data.ticketId),ticketNumber=String(data.ticketNumber??"Ticket");
+    if(sessionId) {
+      const {error:sessionError}=await supabase.from("pos_desk_sessions").update({status:"submitted",submitted_ticket_id:ticketId,last_activity_at:new Date().toISOString()}).eq("id",sessionId).eq("salon_id",salon.id);
+      if(sessionError) throw Error(sessionError.message);
     }
-
-    if (discountType === "percentage" && discountValue > 100) {
-      throw new Error("Percentage discount must be between 0 and 100.");
-    }
-
-    const tipAmount = roundMoney(input.tipAmount ?? 0);
-    const now = new Date().toISOString();
-    const { data: ticket, error: ticketError } = await supabase
-      .from("pos_tickets")
-      .insert({
-        customer_id: customer.id,
-        notes: cleanOptional(input.note),
-        opened_at: now,
-        salon_id: salon.id,
-        status: "open",
-        tax_rate: settings.taxEnabled ? 0 : 0,
-        tip_type: "fixed_amount",
-        tip_value: tipAmount,
-      })
-      .select("id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at")
-      .single<PosTicket>();
-
-    if (ticketError) {
-      throw new Error(ticketError.message);
-    }
-
-    const insertedLineResults = await Promise.all(input.lines.map(async (line) => {
-      const { data: item, error: itemError } = await supabase
-        .from("pos_ticket_items")
-        .insert({
-          assigned_staff_id: line.staffId,
-          notes: `${line.serviceLabel} | Parts: ${line.amountInput}`,
-          pos_ticket_id: ticket.id,
-          quantity: 1,
-          salon_id: salon.id,
-          service_id: cleanOptional(line.serviceId),
-          unit_price: line.total,
-        })
-        .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title)")
-        .single<PosTicketItemWithRelations>();
-
-      if (itemError) {
-        throw new Error(itemError.message);
-      }
-
-      const turnRows = line.amountParts.map((amount, partIndex) => ({
-        amount,
-        salon_id: salon.id,
-        staff_id: line.staffId,
-        ticket_id: ticket.id,
-        ticket_item_id: item.id,
-        turn_index: partIndex + 1,
-        turn_type: getTurnType(amount, settings.largeTurnThreshold),
-        work_date: workDate,
-      }));
-
-      const { error: turnError } = await supabase
-        .from("pos_ticket_item_turn_parts")
-        .insert(turnRows);
-
-      if (turnError) {
-        throw new Error(turnError.message);
-      }
-
-      return {
-        item,
-        largeTurnDelta: turnRows.filter((row) => row.turn_type === "large").length,
-        staffId: line.staffId,
-      };
-    }));
-    const insertedItems = insertedLineResults.map((result) => result.item);
-    const queueDeltasByStaff = new Map<string, number>();
-
-    for (const result of insertedLineResults) {
-      if (result.largeTurnDelta > 0) {
-        queueDeltasByStaff.set(
-          result.staffId,
-          (queueDeltasByStaff.get(result.staffId) ?? 0) + result.largeTurnDelta,
-        );
-      }
-    }
-
-    await Promise.all(
-      [...queueDeltasByStaff].map(async ([staffId, delta]) => {
-        const { error: queueError } = await supabase.rpc(
-          "increment_staff_queue_turns",
-          {
-            p_delta: delta,
-            p_salon_id: salon.id,
-            p_staff_id: staffId,
-            p_work_date: workDate,
-          },
-        );
-
-        if (queueError) {
-          throw new Error(queueError.message);
-        }
-      }),
-    );
-
-    if (discountValue > 0 || discountType !== "fixed_amount") {
-      const { error: discountError } = await supabase
-        .from("pos_tickets")
-        .update({
-          discount_type: discountType,
-          discount_value: discountValue,
-        })
-        .eq("id", ticket.id)
-        .eq("salon_id", salon.id);
-
-      if (discountError) {
-        throw new Error(discountError.message);
-      }
-    }
-
-    const ticketWithDiscount = {
-      ...ticket,
-      discount_type: discountType,
-      discount_value: discountValue,
-    };
-
-    const totals = calculateTicketTotals({
-      discountType,
-      discountValue,
-      items: insertedItems,
-      tipType: "fixed_amount",
-      tipValue: tipAmount,
-    });
-
-    if (totals.total <= 0) {
-      throw new Error("Receipt total must be greater than 0.");
-    }
-
-    const { data: payment, error: paymentError } = await supabase
-      .from("pos_payments")
-      .insert({
-        amount: totals.total,
-        created_by: user.id,
-        note: "Record-only POS desk payment. Payment processor connection comes later.",
-        payment_method: "other",
-        salon_id: salon.id,
-        ticket_id: ticket.id,
-      })
-      .select("id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at")
-      .single<PosPayment>();
-
-    if (paymentError) {
-      throw new Error(paymentError.message);
-    }
-
-    const finalTotals = calculateTicketTotals({
-      discountType,
-      discountValue,
-      items: insertedItems,
-      payments: [payment],
-      tipType: "fixed_amount",
-      tipValue: tipAmount,
-    });
-
-    buildTicketReceipt({
-      customer,
-      items: insertedItems,
-      payments: [payment],
-      salon,
-      ticket: ticketWithDiscount,
-      totals: finalTotals,
-    });
-
-    const [{ error: closeError }, { error: auditError }] = await Promise.all([
-      supabase
-        .from("pos_tickets")
-        .update({ closed_at: new Date().toISOString(), status: "closed" })
-        .eq("id", ticket.id)
-        .eq("salon_id", salon.id),
-      supabase.from("pos_ticket_audit_logs").insert({
-        action: "ticket_checked_out",
-        created_by: user.id,
-        note: "Ticket checked out from POS Desk.",
-        salon_id: salon.id,
-        ticket_id: ticket.id,
-      }),
-    ]);
-
-    if (closeError) {
-      throw new Error(closeError.message);
-    }
-
-    if (auditError) {
-      throw new Error(auditError.message);
-    }
-
-    try {
-      const visitResult = await completeCustomerVisitForTicket({
-        customerId: customer.id,
-        preferredVisitId: cleanOptional(input.customerVisitId),
-        salonId: salon.id,
-        supabase,
-        ticketId: ticket.id,
-      });
-
-      if (visitResult.ok && visitResult.appointmentId) {
-        revalidatePath("/bookings");
-      }
-    } catch (visitError) {
-      console.error("Unable to complete customer visit after POS submit", {
-        error: visitError instanceof Error ? visitError.message : visitError,
-        salonId: salon.id,
-        ticketId: ticket.id,
-      });
-    }
-
-    if (sessionId) {
-      const { error: sessionError } = await supabase
-        .from("pos_desk_sessions")
-        .update({
-          customer_id: customer.id,
-          customer_lookup_value: cleanOptional(input.customerLookup),
-          customer_name_snapshot: customer.name,
-          last_activity_at: new Date().toISOString(),
-          note: cleanOptional(input.note),
-          status: "submitted",
-          submitted_ticket_id: ticket.id,
-          tip_amount: tipAmount,
-        })
-        .eq("id", sessionId)
-        .eq("salon_id", salon.id);
-
-      if (sessionError) {
-        throw new Error(sessionError.message);
-      }
-    }
-
-    try {
-      const finalizedDraft = await finalizeLiveDraftForPos({
-        salonId: salon.id,
-        supabase,
-        token: input.liveDraftToken,
-      });
-      if (finalizedDraft) {
-        after(() => broadcastPosLiveDraftSnapshot(finalizedDraft, "pos"));
-      }
-    } catch (draftError) {
-      console.error("Unable to finalize POS live draft after submit", {
-        error: draftError instanceof Error ? draftError.message : draftError,
-        salonId: salon.id,
-      });
-    }
-
-    after(async () => {
-      try {
-        await recalculateStaffEarningsForDate(salon.id, workDate);
-      } catch (earningsError) {
-        console.error("Unable to refresh staff earnings after POS submit", {
-          error:
-            earningsError instanceof Error
-              ? earningsError.message
-              : earningsError,
-          salonId: salon.id,
-          workDate,
-        });
-      }
-      await broadcastPosStaffChange(salon.id, "pos");
-    });
-
-    const customerClaim = await maybeIssueCustomerClaimOffer({
-      customerId: customer.id,
-      supabase,
-      ticketId: ticket.id,
-    });
-
-    revalidatePath("/pos");
-    revalidatePath("/pos-tickets");
-    revalidatePath("/staff/today");
-    revalidatePath("/staff/my-work");
-
-    return {
-      customerClaim,
-      ok: true,
-      ticketId: ticket.id,
-      ticketNumber: ticket.ticket_number,
-    };
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Unable to submit POS receipt.",
-      ok: false,
-    };
-  }
+    const liveDraft=await finalizeLiveDraftForPos({salonId:salon.id,supabase,token:input.liveDraftToken});
+    after(async()=>{if(liveDraft)await broadcastPosLiveDraftSnapshot(liveDraft,"pos");await broadcastPosStaffChange(salon.id,"pos");});
+    const {data:ticket}=await supabase.from("pos_tickets").select("customer_id").eq("id",ticketId).eq("salon_id",salon.id).maybeSingle();
+    const customerClaim=ticket?.customer_id?await maybeIssueCustomerClaimOffer({customerId:ticket.customer_id,supabase,ticketId}):null;
+    for(const path of ["/pos","/pos-tickets","/staff/today","/staff/my-work","/reports","/payroll"])revalidatePath(path);
+    return {ok:true,ticketId,ticketNumber,customerClaim};
+  } catch(error) {return {ok:false,error:error instanceof Error?error.message:"Unable to submit this receipt."};}
 }
 
 export async function getPosDeskSession(
@@ -2757,274 +2410,23 @@ export async function cancelSession(
   }
 }
 
-export async function submitSessionToTicket(
-  sessionId: string,
-): Promise<PosDeskActionResult> {
+export async function submitSessionToTicket(sessionId:string):Promise<PosDeskActionResult> {
   try {
-    const { context, salon, supabase, user } =
-      await requirePosDeskMutationContext();
-    const settings = await getCurrentSalonPosSettings(context);
-    const session = await requirePendingConfirmedSession(sessionId);
-
-    if (session.lines.length === 0) {
-      throw new Error("Add at least one receipt line before submit.");
+    const {context,salon,supabase}=await requirePosDeskMutationContext();
+    if(!isOwnerMembership(context.currentMembership))throw Error("Only the Owner can submit this ticket.");
+    const session=await loadPosDeskSessionForPos(sessionId);
+    if(!session)throw Error("This POS session was not found.");
+    if(session.status==="submitted"&&session.submitted_ticket_id) {
+      const {data,error}=await supabase.from("pos_tickets").select("ticket_number").eq("id",session.submitted_ticket_id).eq("salon_id",salon.id).maybeSingle();
+      if(error||!data)throw Error("Submitted ticket was not found.");
+      return {ok:true,ticketId:session.submitted_ticket_id,ticketNumber:data.ticket_number,customerClaim:null};
     }
-
-    const workDate = await getSalonBusinessDate({
-      salonId: salon.id,
-      supabase,
-    });
-
-    await validatePosStaffIds({
-      salonId: salon.id,
-      staffIds: session.lines.map((line) => line.staff_id),
-      supabase,
-    });
-
-    if (settings.staffCheckInEnabled) {
-      await validateWorkingStaffIds({
-        salonId: salon.id,
-        staffIds: session.lines.map((line) => line.staff_id),
-        supabase,
-        workDate,
-      });
-    }
-
-    const customer = await findOrCreateDeskCustomer({
-      customerId: session.customer_id,
-      customerLookup: session.customer_lookup_value,
-      customerName: session.customer_name_snapshot,
-    });
-
-    const now = new Date().toISOString();
-    const { data: ticket, error: ticketError } = await supabase
-      .from("pos_tickets")
-      .insert({
-        customer_id: customer.id,
-        notes: cleanOptional(session.note),
-        opened_at: now,
-        salon_id: salon.id,
-        status: "open",
-        tax_rate: POS_DESK_DEFAULTS.taxEnabled ? 0 : 0,
-        tip_type: "fixed_amount",
-        tip_value: session.tip_amount,
-      })
-      .select("id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at")
-      .single<PosTicket>();
-
-    if (ticketError) {
-      throw new Error(ticketError.message);
-    }
-
-    const insertedItems: PosTicketItemWithRelations[] = [];
-
-    for (const line of session.lines) {
-      const { data: item, error: itemError } = await supabase
-        .from("pos_ticket_items")
-        .insert({
-          assigned_staff_id: line.staff_id,
-          notes: `${line.service_label} | Parts: ${line.amount_input}`,
-          pos_ticket_id: ticket.id,
-          quantity: 1,
-          salon_id: salon.id,
-          service_id: line.service_id,
-          unit_price: line.amount,
-        })
-        .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title)")
-        .single<PosTicketItemWithRelations>();
-
-      if (itemError) {
-        throw new Error(itemError.message);
-      }
-
-      insertedItems.push(item);
-
-      const turnRows = line.amount_parts.map((amount, partIndex) => ({
-        amount,
-        salon_id: salon.id,
-        staff_id: line.staff_id,
-        ticket_id: ticket.id,
-        ticket_item_id: item.id,
-        turn_index: partIndex + 1,
-        turn_type: getTurnType(amount, settings.largeTurnThreshold),
-        work_date: workDate,
-      }));
-
-      const { error: turnError } = await supabase
-        .from("pos_ticket_item_turn_parts")
-        .insert(turnRows);
-
-      if (turnError) {
-        throw new Error(turnError.message);
-      }
-
-      const largeTurnDelta = turnRows.filter(
-        (row) => row.turn_type === "large",
-      ).length;
-
-      if (largeTurnDelta > 0) {
-        const { error: queueError } = await supabase.rpc(
-          "increment_staff_queue_turns",
-          {
-            p_delta: largeTurnDelta,
-            p_salon_id: salon.id,
-            p_staff_id: line.staff_id,
-            p_work_date: workDate,
-          },
-        );
-
-        if (queueError) {
-          throw new Error(queueError.message);
-        }
-      }
-    }
-
-    const totals = calculateTicketTotals({
-      items: insertedItems,
-      tipType: "fixed_amount",
-      tipValue: session.tip_amount,
-    });
-
-    if (totals.total <= 0) {
-      throw new Error("Receipt total must be greater than 0.");
-    }
-
-    const { data: payment, error: paymentError } = await supabase
-      .from("pos_payments")
-      .insert({
-        amount: totals.total,
-        created_by: user.id,
-        note: "Record-only POS desk payment. Payment processor connection comes later.",
-        payment_method: "other",
-        salon_id: salon.id,
-        ticket_id: ticket.id,
-      })
-      .select("id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at")
-      .single<PosPayment>();
-
-    if (paymentError) {
-      throw new Error(paymentError.message);
-    }
-
-    const finalTotals = calculateTicketTotals({
-      items: insertedItems,
-      payments: [payment],
-      tipType: "fixed_amount",
-      tipValue: session.tip_amount,
-    });
-
-    buildTicketReceipt({
-      customer,
-      items: insertedItems,
-      payments: [payment],
-      salon,
-      ticket,
-      totals: finalTotals,
-    });
-
-    const { error: closeError } = await supabase
-      .from("pos_tickets")
-      .update({ closed_at: new Date().toISOString(), status: "closed" })
-      .eq("id", ticket.id)
-      .eq("salon_id", salon.id);
-
-    if (closeError) {
-      throw new Error(closeError.message);
-    }
-
-    const { error: auditError } = await supabase
-      .from("pos_ticket_audit_logs")
-      .insert({
-        action: "ticket_checked_out",
-        created_by: user.id,
-        note: "Ticket checked out from POS Desk session.",
-        salon_id: salon.id,
-        ticket_id: ticket.id,
-      });
-
-    if (auditError) {
-      throw new Error(auditError.message);
-    }
-
-    try {
-      const visitResult = await completeCustomerVisitForTicket({
-        customerId: customer.id,
-        preferredVisitId: null,
-        salonId: salon.id,
-        supabase,
-        ticketId: ticket.id,
-      });
-
-      if (visitResult.ok && visitResult.appointmentId) {
-        revalidatePath("/bookings");
-      }
-    } catch (visitError) {
-      console.error("Unable to complete customer visit after session submit", {
-        error: visitError instanceof Error ? visitError.message : visitError,
-        salonId: salon.id,
-        ticketId: ticket.id,
-      });
-    }
-
-    const { error: sessionError } = await supabase
-      .from("pos_desk_sessions")
-      .update({
-        last_activity_at: new Date().toISOString(),
-        status: "submitted",
-        submitted_ticket_id: ticket.id,
-      })
-      .eq("id", session.id)
-      .eq("salon_id", salon.id);
-
-    if (sessionError) {
-      throw new Error(sessionError.message);
-    }
-
-    await supabase
-      .from("pos_display_channels")
-      .update({ status: "finalized" })
-      .eq("token", session.customer_display_token)
-      .eq("salon_id", salon.id);
-
-    after(async () => {
-      try {
-        await recalculateStaffEarningsForDate(salon.id, workDate);
-      } catch (earningsError) {
-        console.error("Unable to refresh staff earnings after session submit", {
-          error:
-            earningsError instanceof Error
-              ? earningsError.message
-              : earningsError,
-          salonId: salon.id,
-          workDate,
-        });
-      }
-      await broadcastPosStaffChange(salon.id, "pos");
-    });
-
-    const customerClaim = await maybeIssueCustomerClaimOffer({
-      customerId: customer.id,
-      supabase,
-      ticketId: ticket.id,
-    });
-
-    revalidatePath("/pos");
-    revalidatePath("/pos-tickets");
-    revalidatePath("/staff/today");
-    revalidatePath("/staff/my-work");
-
-    return {
-      customerClaim,
-      ok: true,
-      ticketId: ticket.id,
-      ticketNumber: ticket.ticket_number,
-    };
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Unable to submit POS session.",
-      ok: false,
-    };
-  }
+    if(!["active","pending_confirmation"].includes(session.status)||!session.customer_confirmed_at)throw Error("Confirm the receipt before submitting.");
+    return createTicketFromSubmitInput({requestId:sessionId,customerId:session.customer_id,customerLookup:session.customer_lookup_value,
+      customerName:session.customer_name_snapshot,note:session.note,tipAmount:session.tip_amount,
+      lines:session.lines.map(line=>({staffId:line.staff_id,serviceId:line.service_id,serviceLabel:line.service_label,
+        total:line.amount,amountInput:line.amount_input,amountParts:line.amount_parts}))},sessionId);
+  } catch(error){return {ok:false,error:error instanceof Error?error.message:"Unable to submit POS session."};}
 }
 
 export async function submitPosDeskReceipt(

@@ -535,6 +535,7 @@ type SnapshotItem = {
   line_total?: number;
   service?: { name?: string | null } | null;
   service_id?: string | null;
+  service_name_snapshot?: string | null;
   turn_parts?: Array<{
     amount?: number;
     id?: string;
@@ -712,11 +713,11 @@ function snapshotLineTotal(item: SnapshotItem) {
 }
 
 function snapshotStaffName(item: SnapshotItem) {
-  return item.assigned_staff?.display_name ?? item.assigned_staff_id ?? "Unassigned";
+  return item.assigned_staff?.display_name ?? "Staff member";
 }
 
 function snapshotServiceName(item: SnapshotItem) {
-  return item.service?.name ?? item.service_id ?? "No service";
+  return item.service_name_snapshot ?? item.service?.name ?? "Service";
 }
 
 function formatParts(parts: number[]) {
@@ -986,6 +987,12 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
   if (safeCents(beforeTip) !== safeCents(afterTip)) {
     lines.push(`Ticket tip ${formatMoney(beforeTip)} -> ${formatMoney(afterTip)}`);
   }
+  const discountAmount=(value:SnapshotTicket)=>calculateTicketTotals({
+    discountType:value.discount_type,discountValue:value.discount_value,
+    items:activeSnapshotItems(value).map(item=>({line_total:snapshotLineTotal(item)})),
+  }).discount_amount;
+  const beforeDiscount=discountAmount(beforeTicket),afterDiscount=discountAmount(afterTicket);
+  if(!centsEqual(beforeDiscount,afterDiscount)) lines.push(`Discount ${formatMoney(beforeDiscount)} -> ${formatMoney(afterDiscount)}`);
 
   const namesByStaffId = staffNamesById(beforeTicket, afterTicket);
   const beforeEarningsByStaffId = new Map(
@@ -1008,7 +1015,7 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
       safeCents(previousTip) !== safeCents(nextTip)
     ) {
       lines.push(
-        `${namesByStaffId.get(earning.staff_id) ?? earning.staff_id} tip ${formatMoney(
+        `${namesByStaffId.get(earning.staff_id) ?? "Staff member"} tip ${formatMoney(
           previousTip,
         )} -> ${formatMoney(nextTip)}`,
       );
@@ -1026,7 +1033,6 @@ export function DailyPosTicketCard({
   canApplyFinancialCorrection,
   canEdit,
   dailyNumber,
-  isBusinessDateLocked,
   requireServiceForActiveLines = true,
   returnTo,
   services,
@@ -1080,6 +1086,9 @@ export function DailyPosTicketCard({
   const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
   const [lines, setLines] = useState<EditableLine[]>(initialLines);
   const [tipTotal, setTipTotal] = useState(formatNumber(initialTotals.tip_amount));
+  const [discountType,setDiscountType]=useState(ticket.discount_type);
+  const [discountValue,setDiscountValue]=useState(formatNumber(ticket.discount_value));
+  const [requestId,setRequestId]=useState("");
   const [staffTipDrafts, setStaffTipDrafts] = useState<Record<string, string>>({});
   const [reason, setReason] = useState("");
   const nextKeyRef = useRef(0);
@@ -1107,9 +1116,6 @@ export function DailyPosTicketCard({
   const staffIdsInActiveLines = activeLines
     .map((line) => line.staffId)
     .filter(Boolean);
-  const duplicateStaff = staffIdsInActiveLines.some(
-    (staffId, index) => staffIdsInActiveLines.indexOf(staffId) !== index,
-  );
   const staffIdSet = new Set(staffIdsInActiveLines);
   const submittedManualStaffTipCentsById = new Map(
     Object.entries(staffTipDrafts)
@@ -1147,8 +1153,8 @@ export function DailyPosTicketCard({
     line_total: lineTotal(line),
   }));
   const editedTotals = calculateTicketTotals({
-    discountType: ticket.discount_type,
-    discountValue: ticket.discount_value,
+    discountType,
+    discountValue: toMoneyNumber(discountValue),
     items: finalItemsForTotals,
     taxRate: ticket.tax_rate,
     tipType: "fixed_amount",
@@ -1234,7 +1240,7 @@ export function DailyPosTicketCard({
   );
   const invalidExistingLine = activeLines.some(
     (line) =>
-      (requireServiceForActiveLines && !line.serviceId) ||
+      (requireServiceForActiveLines && !line.serviceId && !originalItemByKey.has(line.key)) ||
       !line.staffId ||
       line.parts.length === 0 ||
       line.parts.some((part) => safeCents(part.amount) <= 0) ||
@@ -1249,14 +1255,15 @@ export function DailyPosTicketCard({
     editedItems.length > 0 ||
     addedItems.length > 0 ||
     hasTipChange ||
-    hasManualTipChange;
+    hasManualTipChange || discountType!==ticket.discount_type || !centsEqual(discountValue,ticket.discount_value);
+  const invalidDiscount=!Number.isFinite(toMoneyNumber(discountValue)) || toMoneyNumber(discountValue)<0 ||
+    (discountType==="percentage" ? toMoneyNumber(discountValue)>100 : safeCents(discountValue)>safeCents(editedTotals.subtotal));
   const canSave =
     reason.trim().length > 0 &&
     hasChange &&
-    !invalidTipTotal &&
+    !invalidTipTotal && !invalidDiscount && Boolean(requestId) &&
     !invalidAddedLine &&
     !invalidExistingLine &&
-    !duplicateStaff &&
     !manualTipsTooHigh &&
     !manualTipsMismatch;
 
@@ -1338,6 +1345,9 @@ export function DailyPosTicketCard({
     setEditSnapshot(null);
     setLines(initialLines);
     setTipTotal(formatNumber(initialTotals.tip_amount));
+    setDiscountType(ticket.discount_type);
+    setDiscountValue(formatNumber(ticket.discount_value));
+    setRequestId("");
     setStaffTipDrafts({});
     setReason("");
     setSelectorTarget(null);
@@ -1350,14 +1360,12 @@ export function DailyPosTicketCard({
   function startEdit() {
     setLines(getInitialLines(serverTicket));
     setTipTotal(formatNumber(initialTotals.tip_amount));
-    if (!isBusinessDateLocked) {
-      setEditSnapshot(serverTicket);
-      setIsCorrectionMode(false);
-      setIsEditing(true);
-      return;
-    }
-
-    setShowLockedConfirmation(true);
+    setDiscountType(serverTicket.discount_type);
+    setDiscountValue(formatNumber(serverTicket.discount_value));
+    setRequestId(crypto.randomUUID());
+    setEditSnapshot(serverTicket);
+    setIsCorrectionMode(false);
+    setIsEditing(true);
   }
 
   function continueLockedCorrection() {
@@ -1408,7 +1416,7 @@ export function DailyPosTicketCard({
       servicesById.get(line.serviceId)?.name ??
       originalItemByKey.get(line.key)?.service?.name ??
       originalItemByKey.get(line.key)?.service_name_snapshot ??
-      "Select service"
+        (originalItemByKey.get(line.key)?.service_id === null ? "Custom service" : "Select service")
     );
   }
 
@@ -1472,16 +1480,8 @@ export function DailyPosTicketCard({
     setMoneyTarget({ kind: "staffTip", staffId });
   }
 
-  function staffOptionsForLine(line: EditableLine) {
-    const usedByOtherLines = new Set(
-      activeLines
-        .filter((currentLine) => currentLine.key !== line.key)
-        .map((currentLine) => currentLine.staffId)
-        .filter(Boolean),
-    );
-
+  function staffOptionsForLine() {
     return staff.map((member) => ({
-      disabled: usedByOtherLines.has(member.id),
       id: member.id,
       label: member.display_name,
     }));
@@ -1510,7 +1510,7 @@ export function DailyPosTicketCard({
         </span>
         {isOpen ? (
           <PickerPopover
-            items={staffOptionsForLine(line)}
+            items={staffOptionsForLine()}
             onSelect={(id) => {
               updateLine(line.key, { staffId: id });
               setStaffTipDrafts((current) => {
@@ -1629,7 +1629,7 @@ export function DailyPosTicketCard({
           <div className="flex flex-wrap items-center gap-3 pb-2">
             {renderTurnDisplay(line)}
             {!line.remove ? <button className="min-h-11 rounded border border-zinc-200 px-3 text-zinc-700" onClick={() => addPart(line)} type="button"><WorkspaceText text="+ Part" /></button> : null}
-            {line.staffId ? <InlineMoney disabled={line.remove} isEditing={Boolean(isStaffTipEditing)}
+            {line.staffId && activeLines.find(active=>active.staffId===line.staffId)?.key===line.key ? <InlineMoney disabled={line.remove} isEditing={Boolean(isStaffTipEditing)}
               onChange={(value) => setStaffTip(line.staffId, value)} onDone={finishMoneyEdit}
               onStart={() => startStaffTipEdit(line.staffId)} prefix="Tip " value={staffTipInput} /> : null}
           </div>
@@ -1724,6 +1724,9 @@ export function DailyPosTicketCard({
             <input name="ticket_id" type="hidden" value={ticket.id} />
             <input name="return_to" type="hidden" value={returnTo} />
             <input name="expected_revision" type="hidden" value={ticket.workspace_revision??0} />
+            <input name="request_id" type="hidden" value={requestId} />
+            <input name="discount_type" type="hidden" value={discountType} />
+            <input name="discount_value" type="hidden" value={normalizeMoneyInput(discountValue)} />
             <input name="tip_total" type="hidden" value={normalizeMoneyInput(tipTotal)} />
             <input name="item_updates" type="hidden" value={JSON.stringify(editedItems)} />
             <input name="item_parts" type="hidden" value={JSON.stringify(itemPartsPayload)} />
@@ -1809,7 +1812,15 @@ export function DailyPosTicketCard({
               <WorkspaceText text="+ Add staff / service" />
             </button>
             <div className="space-y-3 py-4 tabular-nums text-zinc-600" data-receipt-adjustments>
-              {editedTotals.discount_amount > 0 ? <div className="flex justify-between gap-3"><WorkspaceText text="Discount" /><span>-{formatMoney(editedTotals.discount_amount)}</span></div> : null}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label htmlFor={`discount-${ticket.id}`}><WorkspaceText text="Discount" /></label>
+                <div className="flex items-center gap-2">
+                  <select className="min-h-11 rounded border border-zinc-300 bg-white px-2 text-base" aria-label="Discount type" value={discountType} onChange={event=>setDiscountType(event.target.value as PosTicketDiscountType)}>
+                    <option value="fixed_amount">$</option><option value="percentage">%</option>
+                  </select>
+                  <input id={`discount-${ticket.id}`} className="min-h-11 w-24 rounded border border-zinc-300 px-2 text-right text-base" inputMode="decimal" value={discountValue} onChange={event=>setDiscountValue(event.target.value)} onBlur={()=>setDiscountValue(normalizeMoneyInput(discountValue))} />
+                </div>
+              </div>
               {toMoneyNumber(tipTotal) > 0 || isTotalTipEditing ? (
                 <div className="flex items-center justify-between gap-3"><WorkspaceText text="Tip" />
                   <InlineMoney isEditing={isTotalTipEditing} onChange={updateTotalTip} onDone={finishMoneyEdit} onStart={startTotalTipEdit} value={tipTotal} />
@@ -1836,12 +1847,12 @@ export function DailyPosTicketCard({
             </label>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <p className={hasChange ? "text-xs text-zinc-500" : "sr-only"} aria-live="polite">
-                <WorkspaceText text={duplicateStaff
-                  ? "Each staff member can appear only once on a ticket."
-                  : manualTipsTooHigh
+                <WorkspaceText text={manualTipsTooHigh
                     ? "Manual staff tips cannot exceed total tip."
                     : manualTipsMismatch
                       ? "Manual staff tips must equal total tip when every staff tip is manual."
+                      : invalidDiscount
+                        ? "Discount must be within the service total, or 0–100%."
                       : invalidTipTotal
                         ? "Total tip must be zero or greater."
                         : invalidAddedLine

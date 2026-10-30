@@ -2,6 +2,7 @@ import { withExperiencePage } from "@/components/experience-page";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
+import { isOwnerMembership } from "@/lib/current-context";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -13,6 +14,7 @@ import {
   deletePosTicketItem,
   reopenPosTicket,
   updatePosTicketDiscount,
+  updatePosTicketItem,
   updatePosTicketItemStaff,
   updatePosTicketTaxRate,
   updatePosTicketTip,
@@ -117,11 +119,32 @@ function StatusBadge({ status }: { status: PosTicketStatus }) {
   );
 }
 
+function TicketInputFields({revision,note=true}:{revision:number;note?:boolean}) {
+  return <>
+    <input name="expected_revision" type="hidden" value={revision} />
+    <input name="request_id" type="hidden" value={crypto.randomUUID()} />
+    {note?<label className="block text-sm text-zinc-700"><WorkspaceText text="Edit note" /><input className="mt-1 min-h-10 w-full rounded border border-zinc-300 px-2 text-base" name="correction_reason" required maxLength={1000} /></label>:null}
+  </>;
+}
+
+function ItemPriceForm({itemId,quantity,unitPrice,revision,returnPath}:{itemId:string;quantity:number;unitPrice:number;revision:number;returnPath:string}) {
+  return <details className="mt-2"><summary className="cursor-pointer text-xs underline"><WorkspaceText text="Edit amount" /></summary>
+    <form action={updatePosTicketItem} className="mt-2 grid gap-2">
+      <input name="item_id" type="hidden" value={itemId} /><input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} />
+      <label><WorkspaceText text="Quantity" /><input className="min-h-10 w-24 rounded border px-2" type="number" name="quantity" min="0.01" max="1000" step="0.01" required defaultValue={quantity} /></label>
+      <label><WorkspaceText text="Unit price" /><input className="min-h-10 w-24 rounded border px-2" type="number" name="unit_price" min="0" step="0.01" required defaultValue={unitPrice} /></label>
+      <SubmitButton type="submit" pendingLabel="Saving…"><WorkspaceText text="Save" /></SubmitButton>
+    </form></details>;
+}
+
 function AddServiceForm({
+  revision,
   returnPath,
   services,
   ticketId,
 }: {
+  revision: number;
   returnPath: string;
   services: Service[];
   ticketId: string;
@@ -130,6 +153,7 @@ function AddServiceForm({
     <form action={addPosTicketItem} className="mt-4 flex flex-col gap-3 sm:flex-row">
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} />
       <select
         className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 sm:max-w-xs"
         defaultValue=""
@@ -154,12 +178,14 @@ function AddServiceForm({
 }
 
 function AssignStaffForm({
+  revision,
   itemId,
   returnPath,
   staff,
   staffId,
 }: {
   itemId: string;
+  revision: number;
   returnPath: string;
   staff: PosTicketStaffOption[];
   staffId: string | null;
@@ -168,6 +194,7 @@ function AssignStaffForm({
     <form action={updatePosTicketItemStaff} className="flex flex-wrap gap-2">
       <input name="item_id" type="hidden" value={itemId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} />
       <select
         className="min-w-36 rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-950 outline-none focus:border-zinc-950"
         defaultValue={staffId ?? ""}
@@ -191,11 +218,13 @@ function AssignStaffForm({
 }
 
 function AddPaymentForm({
+  revision,
   remaining,
   returnPath,
   ticketId,
 }: {
   remaining: number;
+  revision: number;
   returnPath: string;
   ticketId: string;
 }) {
@@ -208,6 +237,7 @@ function AddPaymentForm({
     >
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} note={false} />
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Method" /></span>
@@ -242,7 +272,7 @@ function AddPaymentForm({
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Note" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          name="note"
+          name="note" required maxLength={1000}
           type="text"
         />
       </label>
@@ -260,12 +290,14 @@ function AddPaymentForm({
 }
 
 function WorkflowActionForm({
+  revision,
   action,
   buttonLabel,
   returnPath,
   ticketId,
 }: {
   action: (formData: FormData) => Promise<void>;
+  revision: number;
   buttonLabel: string;
   returnPath: string;
   ticketId: string;
@@ -274,6 +306,7 @@ function WorkflowActionForm({
     <form action={action} className="grid min-w-0 gap-3 bg-white p-4">
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} note={false} />
       <label className="block">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Note" /></span>
         <input
@@ -295,12 +328,14 @@ function WorkflowActionForm({
 }
 
 function DiscountForm({
+  revision,
   discountType,
   discountValue,
   returnPath,
   ticketId,
 }: {
   discountType: PosTicketDiscountType;
+  revision: number;
   discountValue: number;
   returnPath: string;
   ticketId: string;
@@ -312,6 +347,7 @@ function DiscountForm({
     >
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} />
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Discount Type" /></span>
@@ -352,12 +388,14 @@ function DiscountForm({
 }
 
 function TaxForm({
+  revision,
   returnPath,
   taxRate,
   ticketId,
 }: {
   returnPath: string;
   taxRate: number;
+  revision: number;
   ticketId: string;
 }) {
   return (
@@ -367,6 +405,7 @@ function TaxForm({
     >
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} />
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Tax Rate (%)" /></span>
@@ -395,6 +434,7 @@ function TaxForm({
 }
 
 function TipForm({
+  revision,
   returnPath,
   ticketId,
   tipType,
@@ -403,6 +443,7 @@ function TipForm({
   returnPath: string;
   ticketId: string;
   tipType: PosTicketTipType;
+  revision: number;
   tipValue: number;
 }) {
   return (
@@ -412,6 +453,7 @@ function TipForm({
     >
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
+      <TicketInputFields revision={revision} />
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Tip Type" /></span>
@@ -495,8 +537,8 @@ async function PosTicketDetailPage({
 
   const isOpen = ticket.status === "open";
   const isClosed = ticket.status === "closed";
-  const canWorkTicket = canManageTickets && isOpen;
-  const canVoidOrReopenTicket = canVoidTickets && isClosed;
+  const canWorkTicket = isOwnerMembership(context.currentMembership) && canManageTickets && isOpen;
+  const canVoidOrReopenTicket = isOwnerMembership(context.currentMembership) && canVoidTickets && isClosed;
   const returnPath = `/pos-tickets/${ticket.id}`;
   const totals = calculateTicketTotals({
     discountType: ticket.discount_type,
@@ -679,6 +721,7 @@ async function PosTicketDetailPage({
                       <WorkspaceText text="Price:" />{" "}
                     </span>
                     {formatMoney(item.unit_price)}
+                    {canWorkTicket?<ItemPriceForm itemId={item.id} quantity={item.quantity} unitPrice={item.unit_price} revision={ticket.workspace_revision??0} returnPath={returnPath}/>:null}
                     {item.booked_unit_price_snapshot !== null ? (
                       <p className="mt-1 text-xs text-zinc-500">
                         <WorkspaceText text="Booked" /> {formatMoney(item.booked_unit_price_snapshot)}
@@ -688,6 +731,7 @@ async function PosTicketDetailPage({
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
                     {canWorkTicket ? (
                       <AssignStaffForm
+                        revision={ticket.workspace_revision??0}
                         itemId={item.id}
                         returnPath={returnPath}
                         staff={options.staff}
@@ -724,6 +768,7 @@ async function PosTicketDetailPage({
                       <form action={deletePosTicketItem}>
                         <input name="item_id" type="hidden" value={item.id} />
                         <input name="return_to" type="hidden" value={returnPath} />
+                        <TicketInputFields revision={ticket.workspace_revision??0} />
                         <SubmitButton pendingLabel="Removing…"
                           className="font-medium text-zinc-950 underline"
                           type="submit"
@@ -741,6 +786,7 @@ async function PosTicketDetailPage({
 
         {canWorkTicket ? (
           <AddServiceForm
+            revision={ticket.workspace_revision??0}
             returnPath={returnPath}
             services={options.services}
             ticketId={ticket.id}
@@ -787,6 +833,7 @@ async function PosTicketDetailPage({
 
         {canWorkTicket ? (
           <DiscountForm
+            revision={ticket.workspace_revision??0}
             discountType={ticket.discount_type}
             discountValue={ticket.discount_value}
             returnPath={returnPath}
@@ -826,6 +873,7 @@ async function PosTicketDetailPage({
 
         {canWorkTicket ? (
           <TaxForm
+            revision={ticket.workspace_revision??0}
             returnPath={returnPath}
             taxRate={ticket.tax_rate}
             ticketId={ticket.id}
@@ -872,6 +920,7 @@ async function PosTicketDetailPage({
 
         {canWorkTicket ? (
           <TipForm
+            revision={ticket.workspace_revision??0}
             returnPath={returnPath}
             ticketId={ticket.id}
             tipType={ticket.tip_type}
@@ -1004,8 +1053,10 @@ async function PosTicketDetailPage({
                   <div className="col-span-12 text-sm sm:col-span-2">
                     {canWorkTicket ? (
                       <form action={deletePosPayment}>
+                        <input name="ticket_id" type="hidden" value={ticket.id} />
                         <input name="payment_id" type="hidden" value={payment.id} />
                         <input name="return_to" type="hidden" value={returnPath} />
+                        <TicketInputFields revision={ticket.workspace_revision??0} />
                         <SubmitButton pendingLabel="Removing…"
                           className="font-medium text-zinc-950 underline"
                           type="submit"
@@ -1023,6 +1074,7 @@ async function PosTicketDetailPage({
 
         {canWorkTicket && remainingCents > 0 ? (
           <AddPaymentForm
+            revision={ticket.workspace_revision??0}
             remaining={totals.remaining}
             returnPath={returnPath}
             ticketId={ticket.id}
@@ -1184,6 +1236,7 @@ async function PosTicketDetailPage({
                   <form action={closePosTicket} className="min-w-0 bg-white p-4">
                     <input name="ticket_id" type="hidden" value={ticket.id} />
                     <input name="return_to" type="hidden" value={returnPath} />
+                        <TicketInputFields revision={ticket.workspace_revision??0} />
                     <SubmitButton pendingLabel="Processing…"
                       className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                       type="submit"
@@ -1193,6 +1246,7 @@ async function PosTicketDetailPage({
                   </form>
                 ) : null}
                 <WorkflowActionForm
+                  revision={ticket.workspace_revision??0}
                   action={cancelPosTicket}
                   buttonLabel={__vt("Cancel Ticket")}
                   returnPath={returnPath}
@@ -1203,12 +1257,14 @@ async function PosTicketDetailPage({
             {canVoidOrReopenTicket ? (
               <>
                 <WorkflowActionForm
+                  revision={ticket.workspace_revision??0}
                   action={voidPosTicket}
                   buttonLabel={__vt("Void Ticket")}
                   returnPath={returnPath}
                   ticketId={ticket.id}
                 />
                 <WorkflowActionForm
+                  revision={ticket.workspace_revision??0}
                   action={reopenPosTicket}
                   buttonLabel={__vt("Reopen Ticket")}
                   returnPath={returnPath}

@@ -9,6 +9,7 @@ import { StaffLoadRetry } from "./staff-load-retry";
 import { StaffProfileSettingsDrawer } from "./staff-profile-settings-drawer";
 import type { StaffMyWorkResource, StaffMyWorkSearchParams, StaffPortalTab } from "@/lib/staff-my-work-experience";
 import Link from "next/link";
+import {FinancialInputHistoryPanel} from "@/app/payroll/financial-input-history-panel";
 
 type StaffPortalTabId = StaffPortalTab | "profile";
 type StaffPortalTabItem = { href: string; id: StaffPortalTabId; label: string };
@@ -194,6 +195,7 @@ export function StaffMyWorkView({ resource, params, scope, relay }: { resource: 
         {activeTab === "daily" ? (
           <>
             <StaffDailyMetrics activity={activity} completedTickets={workTickets.filter(ticket => ticket.status === "closed" && ticket.hasEarning).length} />
+            <FinancialInputHistoryPanel salonId={salonId} scope={scope} title="Ticket input history"/>
             {relay ?? <StaffRelay salonId={salonId} scope={scope} />}
             <section>
               <div className="mb-3 flex items-center justify-between gap-3">

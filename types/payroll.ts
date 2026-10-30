@@ -368,6 +368,8 @@ export type PayrollPeriodOption = {
 };
 
 export type PayrollShopDailyRow = {
+  actualTipIncome?: number | null;
+  tipDifference?: number | null;
   payrollRecord?: {state:"closed"|"adjusted";sourcePeriod:{start:string;end:string};originalStaffNetPay:number;netAdjustment:number;originalTaxWithheld:number;taxAdjustment:number;originalStaffObligation:number;obligationAdjustment:number;originalShopNetIncome:number|null;shopNetAdjustment:number};
   actualIncome: number | null;
   businessDate: string;
@@ -391,6 +393,7 @@ export type PayrollShopDailyRow = {
 };
 
 export type PayrollShopSummary = {
+  totalActualTip?: number | null;
   cashAmount: number | null;
   correctionCount: number;
   creditCardAmount: number | null;

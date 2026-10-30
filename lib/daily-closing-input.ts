@@ -1,4 +1,4 @@
-export type ClosingFormValues = { cashAmount: string; creditCardAmount: string; otherAmount: string; note: string };
+export type ClosingFormValues = { cashAmount: string; creditCardAmount: string; otherAmount: string; tipInput: string; note: string };
 export type ClosingMoneyField = Exclude<keyof ClosingFormValues, "note">;
 
 export function parseClosingCents(input: string): number | null {
@@ -17,19 +17,22 @@ export function parseClosingCents(input: string): number | null {
 
 export function normalizeClosingMoney(input: string): string {
   const cents = parseClosingCents(input);
-  return cents === null ? input : cents === 0 ? "" : (cents / 100).toFixed(2);
+  return input.trim() === "" ? "" : cents === null ? input : (cents / 100).toFixed(2);
 }
 
-export function closingValues(input: {cashAmount: number; creditCardAmount: number; otherAmount: number; note: string | null}): ClosingFormValues {
-  const format = (value: number) => value === 0 ? "" : value.toFixed(2);
-  return {cashAmount: format(input.cashAmount), creditCardAmount: format(input.creditCardAmount), otherAmount: format(input.otherAmount), note: input.note ?? ""};
+export function closingValues(input: {cashAmount: number; creditCardAmount: number; otherAmount: number; tipInput?: number | null; entered?: boolean; serviceEntered?: boolean; note: string | null}): ClosingFormValues {
+  const format = (value: number) => value === 0 && !(input.entered ?? input.serviceEntered) ? "" : value.toFixed(2);
+  return {cashAmount: format(input.cashAmount), creditCardAmount: format(input.creditCardAmount), otherAmount: format(input.otherAmount), tipInput: input.tipInput == null ? "" : input.tipInput.toFixed(2), note: input.note ?? ""};
 }
 
 export function closingPayload(values: ClosingFormValues) {
   const cash = parseClosingCents(values.cashAmount), card = parseClosingCents(values.creditCardAmount), other = parseClosingCents(values.otherAmount);
   if (cash === null || card === null || other === null) throw new Error("Enter an amount of 0 or more, with up to 2 decimal places.");
   if (values.note.length > 4000) throw new Error("Keep the note within 4,000 characters.");
-  return {cashAmount: cash / 100, creditCardAmount: card / 100, otherAmount: other / 100, note: values.note.trim() || null};
+  const tip = values.tipInput?.trim() ? parseClosingCents(values.tipInput) : null;
+  if (values.tipInput?.trim() && tip === null) throw new Error("Enter a valid tip amount with up to 2 decimal places.");
+  return {cashAmount: cash / 100, creditCardAmount: card / 100, otherAmount: other / 100, tipInput: tip === null ? null : tip / 100,
+    serviceEntered: [values.cashAmount, values.creditCardAmount, values.otherAmount].some(value => value.trim() !== ""), note: values.note.trim() || null};
 }
 
 export function closingSnapshot(values: ClosingFormValues) {

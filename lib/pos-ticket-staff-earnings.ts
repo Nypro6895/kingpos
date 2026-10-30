@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
+import { getCurrentBusinessContext } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType } from "@/lib/pos-desk-amounts";
@@ -173,10 +173,6 @@ function getUtcBoundsForLocalDate(dateString: string, timeZone: string) {
     openedFrom: start.toISOString(),
     openedTo: new Date(nextStart.getTime() - 1).toISOString(),
   };
-}
-
-function getExistingKey(ticketId: string, staffId: string) {
-  return `${ticketId}:${staffId}`;
 }
 
 function sortTicketItems(items: RawTicketItem[]) {
@@ -616,78 +612,13 @@ export async function calculateTicketStaffEarnings(ticketId: string) {
   );
 }
 
-export async function recalculateStaffEarningsForDate(
-  salonId: string,
-  workDate: string,
-) {
-  const { salon, supabase, timeZone, context } = await requireEarningContext();
-
-  if (salon.id !== salonId) {
-    throw new Error("Staff earnings can only be recalculated for the current salon.");
-  }
-
-  const tickets = await loadTicketsForDate({
-    salonId,
-    supabase,
-    timeZone,
-    workDate,
-  });
-  const calculatedRows = calculateRowsForTickets(tickets, workDate);
-  const existingRows = tickets.flatMap((ticket) => ticket.staff_earnings ?? []);
-  const existingByKey = new Map(
-    existingRows.map((row) => [getExistingKey(row.ticket_id, row.staff_id), row]),
-  );
-  const calculatedKeys = new Set(
-    calculatedRows.map((row) => getExistingKey(row.ticket_id, row.staff_id)),
-  );
-  const unlockedRows = calculatedRows.filter((row) => {
-    const existing = existingByKey.get(getExistingKey(row.ticket_id, row.staff_id));
-    return isOwnerMembership(context.currentMembership) || !existing?.locked_at;
-  });
-
-  if (unlockedRows.length > 0) {
-    const { error } = await supabase
-      .from("pos_ticket_staff_earnings")
-      .upsert(unlockedRows, { onConflict: "ticket_id,staff_id" });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  const staleRows = existingRows.filter(
-    (row) => (isOwnerMembership(context.currentMembership) || !row.locked_at) && !calculatedKeys.has(getExistingKey(row.ticket_id, row.staff_id)),
-  );
-
-  for (const row of staleRows) {
-    const { error } = await supabase
-      .from("pos_ticket_staff_earnings")
-      .update({
-        big_turn_count: 0,
-        bonus_amount: 0,
-        calculation_version: STAFF_EARNING_CALCULATION_VERSION,
-        commission_amount: 0,
-        deduction_amount: 0,
-        first_big_turn_sequence: null,
-        first_small_turn_sequence: null,
-        last_big_turn_sequence: null,
-        last_small_turn_sequence: null,
-        manual_tip_amount: null,
-        service_total: 0,
-        small_turn_count: 0,
-        tip_amount: 0,
-        tip_is_manual: false,
-        total_earning: 0,
-      })
-      .eq("id", row.id)
-      .eq("salon_id", salonId);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  return calculatedRows;
+export async function recalculateStaffEarningsForDate(salonId:string,workDate:string) {
+  const {salon,supabase,timeZone}=await requireEarningContext();
+  if(salon.id!==salonId)throw Error("Staff earnings can only be recalculated for the current salon.");
+  const {error}=await supabase.rpc("refresh_owner_ticket_source_earnings",{p_salon:salonId,p_date:workDate});
+  if(error)throw Error(error.message);
+  const tickets=await loadTicketsForDate({salonId,supabase,timeZone,workDate});
+  return calculateRowsForTickets(tickets,workDate);
 }
 
 export async function recalculateTicketStaffEarnings(ticketId: string) {

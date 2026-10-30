@@ -5,6 +5,7 @@ import {getReusableReadValidationToken,memoizeReadContext} from "@/lib/read-cont
 import {
   getCurrentBusinessContext,
   getCurrentStaffBusinessContext,
+  isSalonStaffContext,
 } from "@/lib/current-context";
 import {
   CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE,
@@ -478,7 +479,17 @@ export async function getCurrentSalonStaffActivitySummaries(
   }
 
   const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
-  const { data, error } = await supabase
+  // Staff cannot read shared ticket headers. The admitted Staff snapshot exposes
+  // only that person's inputs and the minimal ticket status needed for counts.
+  const ownSnapshot = isSalonStaffContext(resolvedContext)
+    ? await supabase.rpc("get_my_staff_daily_snapshot", {p_salon_id: salon.id})
+    : null;
+  if (ownSnapshot && (ownSnapshot.error || !ownSnapshot.data || ownSnapshot.data.date !== today || !staffIds.includes(ownSnapshot.data.staff_id))) {
+    throw new Error("Staff daily activity could not be verified.");
+  }
+  const { data, error } = ownSnapshot
+    ? {data: (ownSnapshot.data.earnings as Array<{staff_id: string; service_total: number; tip_amount: number; total_earning: number; big_turn_count: number; small_turn_count: number; ticket: {status: string} | null}>).filter(row => row.staff_id === ownSnapshot.data.staff_id && isCountedDailyTicketStatus(row.ticket?.status)), error: null}
+    : await supabase
     .from("pos_ticket_staff_earnings")
     .select(
       "staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count, ticket:pos_tickets!inner(status)",

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
 const require = createRequire(import.meta.url);
@@ -14,6 +15,11 @@ function load(path, overrides = {}) {
       useWorkspaceTranslation: () => text => text,
     };
     if (name === './payroll-export-button') return {PayrollExportButton:()=>null};
+    if (name === './ledger-actions') return {
+      saveOwnerAdjustment(){throw new Error('Staff render must not record an income adjustment');},
+      saveRecordedPayment(){throw new Error('Staff render must not record a payment');},
+      verifyPayrollIntent(){throw new Error('Staff render must not submit a payment intent');},
+    };
     if (name === './staff-pay-period-picker') return load('app/staff/my-work/staff-pay-period-picker.tsx');
     if (name === './current-payroll-download-actions') return {downloadMyCurrentPayroll(){throw new Error('Download is not invoked by a static render');}};
     if (name.startsWith('@/app/')) return load(name.replace('@/', '') + '.tsx');
@@ -21,6 +27,11 @@ function load(path, overrides = {}) {
     if (name === 'next/link') return { __esModule: true, default: ({ children, ...props }) => require('react').createElement('a', props, children) };
     if (name.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (name.startsWith('@/lib/')) return load(name.replace('@/', '') + '.ts');
+    if (name.startsWith('.')) {
+      const target=resolve(dirname(path),name);
+      const source=[target+'.tsx',target+'.ts'].find(existsSync);
+      if(source)return load(source,overrides);
+    }
     return require(name);
   };
   new Function('exports', 'require', ts.transpileModule(readFileSync(path, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText)(exports, localRequire);
@@ -77,6 +88,16 @@ test('My Pay renders final payouts, daily tip and total, individual settings wit
   const html=renderToStaticMarkup(React.createElement(StaffMyPay,{data}));
   for(const value of ['Commission 60%','Tax ','20','Tip · ','No tax','Bonus · ','$75.00','$50.00','$65.00','$60.00','<tfoot>']) assert.ok(html.includes(value),value);
   assert.ok(!html.includes('Cash %')); assert.ok(!html.includes('$40.00')); assert.ok(!html.includes('Custom range'));
+});
+
+test('My Pay renders the actual payment comparison with current pay, without a Staff money editor or paid-flag inference',()=>{
+  const period=staffPeriodAt({cycle_type:'semi_monthly'},'2026-09-25');
+  const data={period,periodOptions:[],settings:[],status:{kind:'live',label:'Live'},latestStatement:null,paystub:null,dailyRows:[],history:[],
+    line:{staff_id:'anna',staff_display_name_snapshot:'Anna',final_staff_income:125,final_cash_amount:75,final_check_amount:50,gross_sales:200,staff_commission_gross:120,tip_amount:5,bonus_amount:0,tax_withheld:0,settings_used_snapshot:[]},
+    paymentEvidence:{markedPaidStatements:[{runId:'historical-paid-flag',version:1,paidAt:'2026-10-01T12:00:00Z'}],recordedFacts:{status:'available',selection:{start:period.startDate,end:period.endDate,exact:true},periods:[{base:null,sourcePeriod:{start:period.startDate,end:period.endDate,cycle:'semi_monthly'},revision:1,adjustments:[],legacyPaidHistory:[],payments:[{id:'actual-private-id',staff_id:'anna',cash_amount:50,check_amount:50,paid_at:'2026-10-02T12:00:00Z',note:'Actual original period payment'}]}]}}};
+  const html=renderToStaticMarkup(React.createElement(StaffMyPay,{data}));
+  assert.match(html,/Current calculated pay/);assert.match(html,/Actual recorded payments/);assert.match(html,/Amount still owed/);assert.match(html,/\$125\.00/);assert.match(html,/\$100\.00/);assert.match(html,/\$25\.00/);
+  assert.match(html,/historical flag does not confirm/);assert.doesNotMatch(html,/<form|Record actual payment|Final cash income|actual-private-id|historical-paid-flag/);
 });
 
 test('published history preserves old cycles, same-start different ends and deduplicates revisions',()=>{

@@ -22,7 +22,7 @@ export async function saveRecordedPayment(_state:LedgerActionState,form:FormData
   try{
     const date=text(form,"paid_at");
     if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(date))throw new Error("Choose the actual payment date and time.");
-    await recordOwnerPayrollPayment({...common(form),cash:parsePayrollMoney(text(form,"cash_amount")),check:parsePayrollMoney(text(form,"check_amount")),paidAt:date,note:text(form,"note")});
+    await recordOwnerPayrollPayment({...common(form),period:{start:text(form,"period_start"),end:text(form,"period_end")},cash:parsePayrollMoney(text(form,"cash_amount")),check:parsePayrollMoney(text(form,"check_amount")),paidAt:date,note:text(form,"note")});
     refresh();return {status:"saved",message:"Actual payment recorded. No money was transferred."};
   }catch(error){return {status:error instanceof PayrollWriteError&&error.outcomeUnknown?"unknown":"error",message:error instanceof Error?error.message:"Payment could not be recorded."};}
 }

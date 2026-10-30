@@ -1,4 +1,5 @@
 "use client";
+import { ClosingBalanceSummary } from "@/app/reports/closing-balance-summary";
 import { ClosingSaveNotice } from "@/app/reports/closing-save-notice";
 import { parseClosingCents } from "@/lib/daily-closing-input";
 import { useDailyClosingSave } from "@/lib/daily-closing-save";
@@ -18,11 +19,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 
-const RECONCILIATION_LABELS = {
-  balanced: "Du / Balanced",
-  over: "Du / Over",
-  short: "Short",
-} as const;
+
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -37,29 +34,11 @@ function fromCents(value: number) {
   return Math.round(value) / 100;
 }
 
-function toCents(value: number) {
-  return Math.round(value * 100);
-}
 
-function getReconciliationStatus(differenceCents: number) {
-  if (Math.abs(differenceCents) < 1) {
-    return "balanced" as const;
-  }
 
-  return differenceCents < 0 ? ("short" as const) : ("over" as const);
-}
 
-function statusClass(status: keyof typeof RECONCILIATION_LABELS) {
-  if (status === "balanced") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  }
 
-  if (status === "short") {
-    return "border-red-200 bg-red-50 text-red-800";
-  }
 
-  return "border-amber-200 bg-amber-50 text-amber-800";
-}
 
 function PortableClosingEditor({
   data: initialData,
@@ -70,6 +49,7 @@ function PortableClosingEditor({
 
   const pathname=usePathname();
   const workspace = usePortableWorkspaceState();
+  const workspaceScope = workspace?.scope;
   const [data,setData]=useState(initialData);
   const scope = workspace?.scope ?? initialData.closingScope ?? "";
   const active = useRef(true);
@@ -80,10 +60,10 @@ function PortableClosingEditor({
     if(response.ok){const next=await response.json();if(active.current && next.closingScope===scope && next.reportDate===initialData.reportDate && !next.setupMessage)setData(next);}
   },{enabled:pathname==="/pos/portable/report"});
   useEffect(()=>{
-    if(!workspace)return;let active=true;
-    const refresh=()=>{void listPortableOperations(workspace.scope).then(rows=>{if(active)setPendingCount(rows.filter(row=>row.kind==='receipt'&&row.state!=='synced'&&row.state!=='cancelled').length);});};
+    if(!workspaceScope)return;let active=true;
+    const refresh=()=>{void listPortableOperations(workspaceScope).then(rows=>{if(active)setPendingCount(rows.filter(row=>row.kind==='receipt'&&row.state!=='synced'&&row.state!=='cancelled').length);});};
     refresh();window.addEventListener(PORTABLE_OPERATIONS_CHANGED,refresh);return()=>{active=false;window.removeEventListener(PORTABLE_OPERATIONS_CHANGED,refresh);};
-  },[workspace?.scope]);
+  },[workspaceScope]);
   const closing = useDailyClosingSave({
     initial: data.closingInputs, readOnly: !scope || data.lock.isLocked || Boolean(data.setupMessage),
     storageKey: 'kingpos:report-inputs:' + scope + ':' + data.reportDate,
@@ -114,17 +94,6 @@ function PortableClosingEditor({
   const actualTotalCents = hasInvalidAmount
     ? 0
     : cashCents + creditCardCents + otherCents;
-  const expectedTotalCents = toCents(data.totals.expectedTotal);
-  const differenceCents = actualTotalCents - expectedTotalCents;
-  const reconciliationStatus = hasInvalidAmount
-    ? "short"
-    : getReconciliationStatus(differenceCents);
-  const missingOrOverText =
-    reconciliationStatus === "balanced"
-      ? "Actual total matches expected total."
-      : reconciliationStatus === "short"
-        ? `Missing ${formatMoney(Math.abs(fromCents(differenceCents)))}`
-        : `Over ${formatMoney(fromCents(differenceCents))}`;
 
   function handleEnter(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key !== "Enter" || event.nativeEvent.isComposing) {
@@ -168,7 +137,7 @@ function PortableClosingEditor({
           }}
         >
           <ClosingSaveNotice {...closing} />
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <label className="block">
               <span className="text-xs font-medium uppercase text-zinc-500">
                 <WorkspaceText text="Cash" />
@@ -224,7 +193,9 @@ function PortableClosingEditor({
                 value={values.otherAmount}
               />
             </label>
+          <label className="block"><span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Tip input" /></span><input className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm" disabled={isReadOnly} inputMode="decimal" placeholder="Not entered" onFocus={event => event.currentTarget.select()} onBlur={() => closing.blurMoney("tipInput")} onChange={event => updateValue("tipInput", event.target.value)} onKeyDown={handleEnter} value={values.tipInput ?? ""} /></label>
           </div>
+
 
           <label className="block">
             <span className="text-xs font-medium uppercase text-zinc-500">
@@ -250,10 +221,10 @@ function PortableClosingEditor({
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4">
             <div>
               <p className="text-xs font-medium uppercase text-zinc-500">
-                <WorkspaceText text="Actual Total" />
+                <WorkspaceText text="Service entered" />
               </p>
               <p className="mt-1 text-2xl font-semibold text-zinc-950">
-                {hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}
+                {hasInvalidAmount ? "-" : [values.cashAmount, values.creditCardAmount, values.otherAmount].every(value => value.trim() === "") ? <WorkspaceText text="Not entered" /> : formatMoney(fromCents(actualTotalCents))}
               </p>
             </div>
             <button
@@ -269,44 +240,7 @@ function PortableClosingEditor({
 
       <section className="min-w-0 py-2">
         <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Reconciliation" /></h2>
-        <dl className="mt-5 space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-600"><WorkspaceText text="Expected total" /></dt>
-            <dd className="text-sm font-semibold text-zinc-950">
-              {formatMoney(data.totals.expectedTotal)}
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-600"><WorkspaceText text="Actual total" /></dt>
-            <dd className="text-sm font-semibold text-zinc-950">
-              {hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-600"><WorkspaceText text="Difference" /></dt>
-            <dd className="text-sm font-semibold text-zinc-950">
-              {hasInvalidAmount ? "-" : formatMoney(fromCents(differenceCents))}
-            </dd>
-          </div>
-        </dl>
-
-        <div
-          className={[
-            "mt-5 rounded border px-4 py-3",
-            hasInvalidAmount
-              ? "border-zinc-200 bg-zinc-50 text-zinc-700"
-              : statusClass(reconciliationStatus),
-          ].join(" ")}
-        >
-          <p className="font-semibold">
-            <WorkspaceText text={hasInvalidAmount
-              ? "Invalid amount"
-              : RECONCILIATION_LABELS[reconciliationStatus]} />
-          </p>
-          <p className="mt-2 text-sm">
-            <WorkspaceText text={hasInvalidAmount ? "Check the amounts before saving." : missingOrOverText} />
-          </p>
-        </div>
+        <ClosingBalanceSummary values={values} expectedService={data.totals.expectedTotal} expectedTip={data.totals.expectedTip ?? data.totals.tips} />
       </section>
     </div>
   );

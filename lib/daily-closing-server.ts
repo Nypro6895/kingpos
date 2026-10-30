@@ -10,7 +10,7 @@ export type ClosingRequest = {
   date: string;
   requestId?: string;
   expectedRevision?: number;
-  values?: {cashAmount: number; creditCardAmount: number; otherAmount: number; note: string | null};
+  values?: {cashAmount: number; creditCardAmount: number; otherAmount: number; tipInput: number | null; serviceEntered: boolean; note: string | null};
 };
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 

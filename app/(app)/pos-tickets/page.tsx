@@ -5,7 +5,6 @@ import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import {OwnerLiveTickets} from '@/app/pos-tickets/owner-live-tickets';
 import {
   canApplyFinancialCorrections,
-  FINANCIAL_CORRECTION_PERMISSIONS,
   isDailyClosingLocked,
 } from "@/lib/daily-pos-report";
 import {
@@ -16,6 +15,7 @@ import {
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import { getTodayDate } from "@/lib/staff-workdays";
+import {isOwnerMembership} from "@/lib/current-context";
 
 type PosTicketsPageProps = {
   searchParams: Promise<{
@@ -204,22 +204,18 @@ async function PosTicketsPage({
   const [
     canManageTickets,
     canVoidTickets,
-    canRequestStaffCorrection,
     canApplyFinancialCorrection,
     isSelectedDateLocked,
     { tickets },
   ] = await Promise.all([
     hasPermission(POS_TICKET_PERMISSIONS.manage, context),
     hasPermission(POS_TICKET_PERMISSIONS.void, context),
-    hasPermission(FINANCIAL_CORRECTION_PERMISSIONS.request, context),
     canApplyFinancialCorrections(context),
     isDailyClosingLocked(selectedDate, context),
     getCurrentSalonPosTickets(getUtcBoundsForLocalDate(selectedDate, timeZone)),
   ]);
   const canCorrectTickets = canManageTickets || canVoidTickets;
-  const canEditDailyTickets = isSelectedDateLocked
-    ? canCorrectTickets || canRequestStaffCorrection || canApplyFinancialCorrection
-    : canCorrectTickets;
+  const canEditDailyTickets = isOwnerMembership(context.currentMembership) && canCorrectTickets;
   const ticketOptions = canEditDailyTickets
     ? await getCurrentSalonPosTicketOptions(context)
     : { services: [], staff: [] };

@@ -17,6 +17,7 @@ import {OperationalReportDashboard} from './operational-report-dashboard';
 import type {OperationalReportData} from '@/lib/operational-report';
 import type {DailyPosReport,DailyPosReportStaffRow} from '@/types/pos-daily-closing';
 import Link from 'next/link';
+import { StaffDayFinancialEditor } from "@/app/payroll/staff-day-financial-editor";
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -109,7 +110,7 @@ function DateSelector({
   );
 }
 
-function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
+function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: DailyPosReportStaffRow[]; salonId: string; businessDate: string; canEdit: boolean }) {
   if (rows.length === 0) {
     return (
       <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
@@ -124,7 +125,7 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
     <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
         <div className="col-span-4"><WorkspaceText text="Staff" /></div>
-        <div className="col-span-3 text-right"><WorkspaceText text="Total Earned" /></div>
+        <div className="col-span-3 text-right"><WorkspaceText text="Gross service" /></div>
         <div className="col-span-3 text-right"><WorkspaceText text="Tip" /></div>
         <div className="col-span-2 text-right"><WorkspaceText text="Turns" /></div>
       </div>
@@ -133,6 +134,7 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
           <li className="grid grid-cols-12 px-4 py-3 text-sm" key={row.staffId}>
             <div className="col-span-4 min-w-0 break-words font-medium text-zinc-950">
               {row.staffName}
+              {canEdit && <StaffDayFinancialEditor salonId={salonId} staffId={row.staffId} businessDate={businessDate} serviceTotal={row.totalEarned} tipAmount={row.tipAmount} />}
             </div>
             <div className="col-span-3 text-right text-zinc-950">
               {formatMoney(row.totalEarned)}
@@ -247,6 +249,7 @@ export function OwnerLiveReports(initial:Props){
             closingInputs={report.closingInputs}
             corrections={report.corrections}
             expectedTotal={report.totals.expectedTotal}
+            expectedTip={report.totals.expectedTip ?? report.totals.totalTip}
             key={`${salonId}:${data.viewerId}:${report.reportDate}`}
             lock={report.lock}
             reportDate={report.reportDate}
@@ -274,7 +277,7 @@ export function OwnerLiveReports(initial:Props){
 
             </ReportDetails>
 <ReportDetails title="Staff Daily Report" meta={report.staffRows.length}>
-<StaffReportTable rows={report.staffRows} />
+<StaffReportTable rows={report.staffRows} salonId={salonId} businessDate={report.reportDate} canEdit={canEdit} />
 </ReportDetails>
 
           <ReportDetails title="Verification" meta={report.metadata.ticketCount}>

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { closingPayload, closingSnapshot, closingValues, normalizeClosingMoney, type ClosingFormValues, type ClosingMoneyField } from "@/lib/daily-closing-input";
 
-export type ClosingRow = { cashAmount: number; creditCardAmount: number; otherAmount: number; note: string | null; status: string };
+export type ClosingRow = { cashAmount: number; creditCardAmount: number; otherAmount: number; tipInput?: number | null; entered?: boolean; note: string | null; status: string };
 type SavedRead<T> = { closingInputs: T; readOnly: boolean };
 type Intent<T> = { values: ClosingFormValues; expectedClosing: T };
 type Phase = "loading" | "idle" | "saving" | "checking" | "unknown" | "review" | "saved" | "matched" | "error";
@@ -22,7 +22,7 @@ export const CLOSING_SAVE_WAIT_MS = 15_000;
 const unknownMessage = "Save not confirmed. Your entries are kept. Check the saved result before saving again.";
 const same = (a: ClosingRow, b: ClosingRow) => closingSnapshot(closingValues(a)) === closingSnapshot(closingValues(b));
 const matches = (row: ClosingRow, values: ClosingFormValues) => closingSnapshot(closingValues(row)) === closingSnapshot(values);
-const emptyClosing = (row: ClosingRow) => row.cashAmount === 0 && row.creditCardAmount === 0 && row.otherAmount === 0 && !row.note;
+const emptyClosing = (row: ClosingRow) => row.cashAmount === 0 && row.creditCardAmount === 0 && row.otherAmount === 0 && row.tipInput == null && !row.entered && !row.note;
 const conflictMessage = "Saved amounts changed. Choose which amounts to keep.";
 
 function initialState<T extends ClosingRow>(options: Options<T>): State<T> {
@@ -94,7 +94,7 @@ export function useDailyClosingSave<T extends ClosingRow>(options: Options<T>) {
         const draft = JSON.parse(callbacks.current.storage.getItem(callbacks.current.storageKey) ?? "null");
         // Keep Portable drafts created by the previous form as well.
         if (validValues(draft?.values ?? draft)) {
-          const values = editRevision.current ? next.values : draft.values ?? draft;
+          const values = editRevision.current ? next.values : {tipInput: "", ...(draft.values ?? draft)};
           const baseline = validClosingRow(draft.baseline) ? draft.baseline as T : next.baseline;
           const pending = validValues(draft.pending?.values) && validClosingRow(draft.pending?.expectedClosing) ? draft.pending as Intent<T> : null;
           next = { ...next, values, baseline, pending, explicitSave: true,

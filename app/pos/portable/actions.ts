@@ -1,4 +1,5 @@
 "use server";
+import { closingPayload } from "@/lib/daily-closing-input";
 import type { RelayWorkspace } from "@/types/service-relay";
 import type { ScanDeskLine } from "@/types/staff-scan";
 
@@ -373,6 +374,8 @@ export type PortableCreateAppointmentInput = {
 export type PortableReportData = {
   closingScope?: string;
   closingInputs: {
+    tipInput?: number | null;
+    entered?: boolean;
     cashAmount: number;
     creditCardAmount: number;
     note: string | null;
@@ -388,6 +391,9 @@ export type PortableReportData = {
   setupMessage: string | null;
   timezone: string;
   totals: {
+    expectedTip?: number;
+    serviceDifference?: number | null;
+    tipDifference?: number | null;
     actualTotal: number;
     discounts: number;
     difference: number;
@@ -402,6 +408,7 @@ export type PortableReportData = {
 };
 
 export type PortableReportClosingSaveInput = {
+  tipInput?: string;
   expectedScope?: string;
   expectedClosing?: PortableReportData["closingInputs"];
   cashAmount: string;
@@ -1138,6 +1145,8 @@ function normalizePortableReportClosingInputs(value: unknown) {
     value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
   return {
+    tipInput: payload.tipInput == null ? null : normalizePortableNumber(payload.tipInput),
+    entered: payload.entered === true,
     cashAmount: normalizePortableNumber(payload.cashAmount),
     creditCardAmount: normalizePortableNumber(payload.creditCardAmount),
     note: normalizePortableNullableString(payload.note),
@@ -1164,35 +1173,9 @@ function normalizePortableReconciliationStatus(
     : "short";
 }
 
-function parsePortableCurrencyToCents(value: string, label: string) {
-  const normalized = value.trim().replaceAll(",", "").replace(/^\$/, "");
 
-  if (!normalized) {
-    return 0;
-  }
 
-  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
-    throw new Error(`${label} must be a valid non-negative money amount.`);
-  }
 
-  const amount = Number(normalized);
-
-  if (!Number.isFinite(amount) || amount < 0) {
-    throw new Error(`${label} must be a valid non-negative money amount.`);
-  }
-
-  const cents = Math.round(amount * 100);
-
-  if (cents > 999_999_999_999) {
-    throw new Error(`${label} is too large.`);
-  }
-
-  return cents;
-}
-
-function centsToPortableMoney(cents: number) {
-  return Math.round(cents) / 100;
-}
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -1930,7 +1913,7 @@ export async function correctPortableClosedPosTicketInline(formData: FormData) {
     salonId = portableSession.salon_id;
 
     const { data, error } = await supabase.rpc(
-      "correct_pos_workspace_ticket",
+      "save_pos_ticket_inputs",
       {
         p_added_items: addedItems,
         p_item_parts: itemParts,
@@ -1943,6 +1926,9 @@ export async function correctPortableClosedPosTicketInline(formData: FormData) {
         p_staff_tip_overrides: staffTipOverrides,
         p_ticket: ticketId,
         p_tip_total: tipTotal,
+        p_discount_type: readString(formData,"discount_type") || null,
+        p_discount_value: readString(formData,"discount_value") ? Number(readString(formData,"discount_value")) : null,
+        p_request: readString(formData,"request_id") || null,
       },
     );
 
@@ -2040,8 +2026,7 @@ export async function getPortableTicketData(
   );
   let canEdit =
     canUsePortablePos &&
-    !isBusinessDateLocked &&
-    Boolean(payload.canEdit ?? payload.can_edit);
+    date === getTodayDate(portableSession.salon_timezone);
   let editOptions: {
     services: PosDeskService[];
     staff: PosDeskStaff[];
@@ -2320,8 +2305,11 @@ export async function getPortableReportData(
     timezone: normalizePortableString(payload.timezone) || "America/Chicago",
     totals: {
       actualTotal: Number(totals.actualTotal ?? 0),
+      expectedTip: Number(totals.expectedTip ?? totals.tips ?? 0),
+      serviceDifference: totals.serviceDifference ?? null,
+      tipDifference: totals.tipDifference ?? null,
       discounts: Number(totals.discounts ?? 0),
-      difference: Number(totals.difference ?? 0),
+      difference: Number(totals.serviceDifference ?? totals.difference ?? 0),
       expectedTotal: Number(totals.expectedTotal ?? 0),
       finalizedTicketCount: Number(totals.finalizedTicketCount ?? 0),
       reconciliationStatus: normalizePortableReconciliationStatus(
@@ -2330,7 +2318,7 @@ export async function getPortableReportData(
       serviceCount: Number(totals.serviceCount ?? 0),
       taxes: Number(totals.taxes ?? 0),
       ticketCount: Number(totals.ticketCount ?? 0),
-      tips: Number(totals.tips ?? 0),
+      tips: Number(totals.expectedTip ?? totals.tips ?? 0),
     },
   };
 }
@@ -2352,27 +2340,9 @@ export async function savePortableReportClosing(
       if (input.reportDate !== getTodayDate(portableSession.salon_timezone)) {
         throw new Error("Portable Report is available for today only. Reload Report to continue.");
       }
-    const cashAmountCents = parsePortableCurrencyToCents(
-      input.cashAmount,
-      "Cash",
-    );
-    const creditCardAmountCents = parsePortableCurrencyToCents(
-      input.creditCardAmount,
-      "Credit Card",
-    );
-    const otherAmountCents = parsePortableCurrencyToCents(
-      input.otherAmount,
-      "Other",
-    );
-    const { error } = await supabase.rpc("save_pos_workspace_report_closing", {
-      p_expected: input.expectedClosing ?? null,
-      p_cash_amount: centsToPortableMoney(cashAmountCents),
-      p_credit_card_amount: centsToPortableMoney(creditCardAmountCents),
-      p_key_id: keyId,
-      p_note: input.note?.trim() ? input.note.trim() : null,
-      p_other_amount: centsToPortableMoney(otherAmountCents),
-      p_report_date: input.reportDate,
-      p_session_signature: signature,
+    const values = closingPayload({cashAmount: input.cashAmount, creditCardAmount: input.creditCardAmount, otherAmount: input.otherAmount, tipInput: input.tipInput ?? "", note: input.note ?? ""});
+    const { error } = await supabase.rpc("save_pos_workspace_report_closing_v2", {
+      p_expected: input.expectedClosing ?? null, p_key: keyId, p_signature: signature, p_date: input.reportDate, p_values: values,
     });
 
     if (error) {

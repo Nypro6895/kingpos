@@ -13,6 +13,8 @@ export type PosDailyClosingStatus =
   (typeof POS_DAILY_CLOSING_STATUSES)[number];
 
 export type PosDailyClosing = {
+  tip_input?: number | null;
+  live_report_entered_at?: string | null;
   approved_at: string | null;
   approved_by: string | null;
   actual_total_snapshot: number | null;
@@ -50,6 +52,8 @@ export type PosDailyClosing = {
 };
 
 export type DailyPosClosingInputs = {
+  tipInput?: number | null;
+  entered?: boolean;
   approvedAt: string | null;
   cashAmount: number;
   closedAt: string | null;
@@ -62,6 +66,9 @@ export type DailyPosClosingInputs = {
 export type DailyPosReconciliationStatus = "balanced" | "short" | "over";
 
 export type DailyPosReportTotals = {
+  expectedTip?: number;
+  serviceDifference?: number | null;
+  tipDifference?: number | null;
   actualTotal: number;
   difference: number;
   expectedTotal: number;

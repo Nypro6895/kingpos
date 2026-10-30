@@ -655,6 +655,7 @@ export function PosDeskClient({
   const resetInFlightRef = useRef(false);
   const suppressNextStaffClickRef = useRef(false);
   const submitLockedRef = useRef(false);
+  const receiptRequestRef = useRef<string | null>(null);
   const tipInputRef = useRef<HTMLInputElement | null>(null);
   const waitingButtonRef = useRef<HTMLButtonElement | null>(null);
   const receiptLocked = isResetting || isSubmitting;
@@ -1237,7 +1238,7 @@ export function PosDeskClient({
 
       tipInputRef.current?.focus();
     });
-  }, []);
+  }, [setKeypadMode]);
 
   useEffect(() => {
     window.addEventListener("pointerdown", markPosActivity, { passive: true });
@@ -2358,7 +2359,7 @@ export function PosDeskClient({
     setServiceSearch("");
     setShowCustomerCreateModal(false);
     setShowServicePicker(false);
-  }, []);
+  }, [setKeypadMode]);
 
   const syncEmptyLiveDraft = useCallback(async () => {
     if (!liveDraftToken) {
@@ -2413,6 +2414,7 @@ export function PosDeskClient({
           pendingLocalTip.current = null;
         }
         clearDraft();
+        receiptRequestRef.current=null;
 
         if (reason === "idle") {
           setLastAction("Idle reset");
@@ -2527,6 +2529,7 @@ export function PosDeskClient({
       try {
         setError(null);
         const input = {
+          requestId: receiptRequestRef.current??(receiptRequestRef.current=crypto.randomUUID()),
           sourceBookingId: draft.sourceBookingId,
           sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt,
           customerId: draft.customerId ?? selectedCustomer?.id,

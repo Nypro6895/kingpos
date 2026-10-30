@@ -5,7 +5,6 @@ import type { StaffPayrollPortalData } from "@/lib/payroll";
 import type { StaffPayrollView, StaffAnalysisView } from "@/lib/staff-my-work-experience";
 import { staffPayRules } from "@/lib/staff-payroll-display";
 import { shiftStaffDate } from "@/lib/staff-payroll-period";
-import { StaffPayChangeNotice } from "@/app/staff/my-work/staff-pay-change-notice";
 import styles from "./staff-pay-analysis.module.css";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
@@ -44,7 +43,7 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
   return <section className={styles.portal}><Period data={data} tab="payroll" />
     {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text="Calculated" /> · <WorkspaceText text={data.status.label} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
       <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
-    <StaffPayChangeNotice changes={data.history ?? []} staffId={line?.staff_id} />
+    <div id="input-history"><PayrollChangeHistory compact changes={data.history??[]} title="Daily inputs & pay settings history" /></div>
     <div className={styles.columns}>{line && <section><h2><WorkspaceText text="Pay breakdown" /></h2><dl>
       <div className={styles.row}><dt><WorkspaceText text="Service pay" /><small>{money(line.gross_sales)} <WorkspaceText text="in services" /></small></dt><dd>{money(line.staff_commission_gross)}</dd></div>
       <div className={styles.row}><dt><WorkspaceText text="Tips" /></dt><dd>{money(line.tip_amount)}</dd></div>
@@ -57,7 +56,7 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
         <p className={styles.note}><WorkspaceText text="Total = service pay + tip, before tax and period bonus." /></p>
         {rows.length ? <table className={styles.table}><thead><tr><th scope="col"><WorkspaceText text="Date" /></th><th scope="col"><WorkspaceText text="Tip" /></th><th scope="col"><WorkspaceText text="Total" /></th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td><WorkspaceText text={date(row.businessDate)} /></td><td>{money(row.tipAmount)}</td><td><strong>{money(row.commissionGross + row.tipAmount)}</strong></td></tr>)}</tbody><tfoot><tr><td><strong><WorkspaceText text="Total" /></strong></td><td><strong>{money(tipTotal)}</strong></td><td><strong>{money(dailyTotal)}</strong></td></tr></tfoot></table> : <p className={styles.note}><WorkspaceText text="No daily payroll entries yet." /></p>}
       </details>
-      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details & history" /></summary><p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}{data.history?.length > 0 && <PayrollChangeHistory compact changes={data.history} />}</details>
+      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary><p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
     </section></div>
   </section>;
 }

@@ -10,7 +10,7 @@ const fields=[['final_cash_amount','Final cash income'],['final_check_amount','F
 
 export function OwnerPayrollForm({baseId,revision,line,kind,period,scope}:{baseId:string;revision:number;line:PayrollStaffLineWithDailyTotals;kind:"adjust"|"payment";period:{start:string;end:string};scope:string}){
  const formRef=useRef<HTMLFormElement>(null);
- const {state,pending,locked,submit,retry,verify}=usePayrollIntent({storageKey:`payroll-intent:${scope}:${baseId}:${line.staff_id}:${kind}`,formRef,send:data=>(kind==='adjust'?saveOwnerAdjustment:saveRecordedPayment)({status:'idle',message:''},data),verify:verifyPayrollIntent});
+ const {state,pending,locked,submit,retry,verify}=usePayrollIntent({storageKey:`payroll-intent:${scope}:${period.start}:${period.end}:${baseId}:${line.staff_id}:${kind}`,formRef,send:data=>(kind==='adjust'?saveOwnerAdjustment:saveRecordedPayment)({status:'idle',message:''},data),verify:verifyPayrollIntent});
  return <form ref={formRef} className="mt-3 space-y-3" onSubmit={event=>{event.preventDefault();submit();}}>
   <fieldset disabled={locked} className="space-y-3 disabled:opacity-75">
    <input type="hidden" name="expected_scope" defaultValue={scope}/><input type="hidden" name="base_id" defaultValue={baseId}/><input type="hidden" name="staff_id" defaultValue={line.staff_id}/><input type="hidden" name="revision" defaultValue={revision}/>
@@ -23,7 +23,7 @@ export function OwnerPayrollForm({baseId,revision,line,kind,period,scope}:{baseI
     </div>
     <label className="block">Reason<textarea name="reason" required minLength={3} maxLength={1000} className={fieldStyle}/></label>
    </>:<>
-    <p>Record money already paid to this staff member. This does not transfer funds or change income.</p>
+    <p>Record money already paid to this staff member for {period.start} – {period.end}, including a later supplemental payment. This does not transfer funds or change income.</p>
     <div className="grid gap-3 sm:grid-cols-2"><label>Cash paid<input name="cash_amount" type="number" min="0" step="0.01" required defaultValue="0" className={fieldStyle}/></label><label>Check paid<input name="check_amount" type="number" min="0" step="0.01" required defaultValue="0" className={fieldStyle}/></label></div>
     <label className="block">Payment date and time (your device timezone)<input name="paid_local" type="datetime-local" required onChange={event=>{const d=new Date(event.currentTarget.value);const target=formRef.current?.elements.namedItem('paid_at');if(target instanceof HTMLInputElement)target.value=Number.isNaN(d.getTime())?'':d.toISOString();}} className={fieldStyle}/></label>
     <input type="hidden" name="paid_at" defaultValue=""/>

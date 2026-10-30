@@ -12,6 +12,7 @@ import { TODAY_DASHBOARD_SECTIONS, failTodayDashboardSection, getTodayDashboardP
 import { useExperienceResource } from "@/lib/use-experience-resource";
 import { useLiveExperienceRefresh } from "@/lib/use-live-experience-refresh";
 import { TodayDashboardView } from "./today-dashboard-view";
+import {FinancialInputHistoryPanel} from "@/app/payroll/financial-input-history-panel";
 import { recordExperienceTrace } from "@/lib/experience-trace";
 
 const tags: Record<TodayDashboardSection, readonly PosResource[]> = {
@@ -180,5 +181,5 @@ function NativeTodayFrame({scope,requestedDate,completeFirst}: {scope:string;req
   if (!state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">Today</h1>
     {state.error || !state.loading && !state.refreshing ? <div role="status"><p>{state.error ?? "Connect to load Today."}</p><button type="button" disabled={recovering} onClick={() => void (needsRecovery.current ? recover() : state.refresh())}>Try again</button></div> : <p role="status">Opening…</p>}
   </main>;
-  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} /></>;
+  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} /><div className="mx-auto w-full max-w-7xl px-4"><FinancialInputHistoryPanel scope={scope} title="Ticket input history"/></div></>;
 }
