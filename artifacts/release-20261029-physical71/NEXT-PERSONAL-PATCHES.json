@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-30T01:17:49.606Z",
+  "at": "2026-10-30T01:18:14.540Z",
   "status": "queued-needs-integration-no-publication",
   "currentPublished": {
     "version": "1.0.0",
@@ -68,7 +68,7 @@
       "handoff": "C:/Reylumi-worktrees/personal-audit-fixes-20261029/artifacts/personal-layout-followup-20261029/HANDOFF.txt"
     },
     {
-      "event": "d574882f-c27b-4133-afde-175cf4d88f75",
+      "event": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
       "change": "customer-journey-20261029",
       "status": "needs-integration",
       "channels": [
@@ -76,7 +76,7 @@
         "ios"
       ],
       "productCommit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
-      "completionJournalCommit": "a915f10",
+      "completionJournalCommit": "484a745",
       "snapshot": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029\\artifacts\\customer-journey-20261029\\source",
       "files": [
         {
@@ -242,8 +242,8 @@
         }
       ],
       "dependencies": [
-        "698d1bf8-5553-42b5-a2da-50ba42148c0d",
-        "949f8123-0eb4-4282-a811-aa99409a1027"
+        "personal-layout-followup-20261029",
+        "personal-bookings-copy-parity-20261029"
       ],
       "supersedesNone": true,
       "handoff": "C:/Reylumi-worktrees/personal-audit-fixes-20261029/artifacts/customer-journey-20261029/HANDOFF.txt",
@@ -307,7 +307,13 @@
         ]
       },
       "integration": "Refresh exact live web and actually uploaded native baselines; apply only scoped files and retain separate earlier patches; do not copy whole checkout or generated QA bundle",
-      "standalonePublicationAuthorized": false
+      "standalonePublicationAuthorized": false,
+      "previousCompletionEvent": "d574882f-c27b-4133-afde-175cf4d88f75",
+      "dependencyEvents": [
+        "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+        "949f8123-0eb4-4282-a811-aa99409a1027"
+      ],
+      "metadataCorrectionOnly": true
     }
   ],
   "ownerDecisions": {

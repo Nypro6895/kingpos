@@ -36,11 +36,12 @@
     ],
     "nativeBundleArchiveAndPublishedAcceptance": false,
     "fixtureDoesNotEstablishNativeReleaseAcceptance": true,
-    "event": "d574882f-c27b-4133-afde-175cf4d88f75",
+    "event": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
     "sourceCommit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
     "reportedTargetedTests": 64,
     "hostedMigrationApplied": false,
-    "nativeReleaseAcceptance": false
+    "nativeReleaseAcceptance": false,
+    "previousCompletionEvent": "d574882f-c27b-4133-afde-175cf4d88f75"
   },
   "currentWindow": {
     "reportedAt": "2026-10-30T01:11:50.699Z",
@@ -66,6 +67,8 @@
     "noInstallOrLiveDataMutation": true,
     "noCompetingControllerObservedByOwner": true,
     "rootDeviceReservation": false,
-    "recheckBeforeFutureClaim": true
+    "recheckBeforeFutureClaim": true,
+    "installedBeforeAfterReported": "com.reylumi.ios1.0.0(71)",
+    "noAppReplacementReported": true
   }
 }
