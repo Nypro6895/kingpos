@@ -233,7 +233,12 @@ final class LocalHostedReturnTests: XCTestCase {
     @MainActor private func makeWindow(_ controller: UIViewController) -> UIWindow {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
-        window.rootViewController = controller; window.isHidden = false; controller.loadViewIfNeeded(); return window
+        window.rootViewController = controller
+        // Frame/visibility assertions require a foreground fixture. A visible
+        // non-key window can remain behind a preceding hosted WK test window.
+        window.makeKeyAndVisible(); controller.loadViewIfNeeded()
+        XCTAssertTrue(window.isKeyWindow, "Hosted frame acceptance requires the actual foreground fixture")
+        return window
     }
     @MainActor private func wait(_ expression: String, in web: WKWebView, timeout: TimeInterval = 5) async throws {
         for _ in 0..<Int(timeout * 50) { if (try? await web.evaluateJavaScript(expression)) as? Bool == true { return }; try await Task.sleep(nanoseconds: 20_000_000) }

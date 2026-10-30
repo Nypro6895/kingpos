@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "hosted-return-fixture-foreground-20261030",
+  "status": "working",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Investigate failed frame-cover acceptance after new cold hosted test;make actual UIKit fixture window key/foreground and assert key ownership. Product behavior,assertions and timing budgets unchanged.",
+  "files": [
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "validation": [
+    {
+      "name": "Two new warm/cold hosted QR runtime regressions",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/native74-attempt2/test.log"
+    },
+    {
+      "name": "Full238native suite on foreground-owned fixture",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "personal-qr-explicit-app-handoff-20261030"
+  ],
+  "releaseLimits": [
+    "No successful upload from either failed41019299649attempt",
+    "Do not rerun unchanged source again;correct fixture lifecycle and validate full suite"
+  ],
+  "id": "0c1fe04a-9b61-44fd-88d9-dc38d6427d81",
+  "recordedAt": "2026-10-30T07:41:58.477Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
