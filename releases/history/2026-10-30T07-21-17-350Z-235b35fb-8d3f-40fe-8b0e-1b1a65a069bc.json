@@ -1,0 +1,32 @@
+{
+  "kind": "release",
+  "summary": "TestFlight73 uploaded/AppleVALID/existing groups and Beauty/QR wallet smoke passed,but actual Safari explicit QR warm/cold handoff failed;do not resolve its ready event",
+  "changes": [
+    "1f826618-044d-416e-b35f-616e805f2957"
+  ],
+  "targets": {
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "version": "1.0.0",
+      "build": "73",
+      "commit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993",
+      "evidence": "artifacts/release-20261030/phase73/native-verified.json; artifacts/release-20261030/phase73/availability-verified.json; artifacts/release-20261030/phase73/physical-result.json"
+    }
+  },
+  "upload": "accepted",
+  "Apple": "VALID",
+  "existingGroupsConfirmed": true,
+  "physical": {
+    "Beauty": "passed",
+    "MyQr": "passed",
+    "manualPublicLinkCatalog": "passed",
+    "explicitWarm": "failed",
+    "explicitCold": "failed",
+    "writes": false
+  },
+  "continuation": "Source2365d97 routes hosted-only QR through original hosted authority;new CI41019299649;no rollback of working website/identity/security.",
+  "id": "235b35fb-8d3f-40fe-8b0e-1b1a65a069bc",
+  "recordedAt": "2026-10-30T07:21:17.350Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030"
+}

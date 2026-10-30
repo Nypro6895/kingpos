@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "customer-display-qr-fallback-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Preserve no-QR fallback and fix actual wide paired-display QR copy:stack heading/copy/QR inside300px card rather than forcing200px QR plus60px text column",
+  "files": [
+    "app/pos/customer-display/customer-idle-screen.css",
+    "app/service-relay/customer-entry-qr.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\wide-qr-ready-source",
+    "commit": "2365d977785b0bb442e645ad990c011c6ba608f3"
+  },
+  "supersedesEvents": [
+    "f657fdfd-bb98-4f2a-93af-6b5100a5e6d1"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Current-source production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/build-repair.log"
+    },
+    {
+      "name": "1920x1080 real-CSS browser geometry:heading60→268px,120→24px tall,no horizontal overflow",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/qr-wide-layout-check.json"
+    },
+    {
+      "name": "Existing web landing and Beauty/QuickQR checks",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/repair-web-checks.log"
+    }
+  ],
+  "releaseLimits": [
+    "Signed native and actual paired-display refresh verified separately"
+  ],
+  "id": "d22ed873-ac17-44ac-89dc-47e6da28c6d8",
+  "recordedAt": "2026-10-30T07:22:28.674Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/customer-display/customer-idle-screen.css": "f65d957f4056d2871964b7d6cff51185f55df769322f3b8ec8267610a756712a",
+    "app/service-relay/customer-entry-qr.tsx": "8ee39668f954755fc718f7d0ba6cd783077ca10e0aa4bcd7b8d76db313cf0355"
+  }
+}

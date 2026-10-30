@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Verified signed compatible salon QR app handoff,Beauty Home/Library/profile update;exact runtime/source/bundle/upload and existing TestFlight groups;Universal Links deferred",
+  "changes": [
+    "43cf5a35-e8b6-48e1-a77d-266730a41876",
+    "d22ed873-ac17-44ac-89dc-47e6da28c6d8",
+    "d5a0348e-d93b-4ce5-9ea4-a95505871cad",
+    "a9e10055-7b94-4d66-924d-6d383777ce9e",
+    "3fa27627-e468-4d69-96c5-b369038fb1cf",
+    "24b1d8e5-8db7-4aa8-b2d6-bfeba65af10c",
+    "dec3f4b0-d6d8-4819-8072-dffb72ffe386"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "74",
+      "commit": "9f2244340a0d47737021ac40abea738fed4e2f6c",
+      "evidence": "artifacts/release-20261030/native-verified.json; artifacts/release-20261030/availability-verified.json; artifacts/release-20261030/physical74-verified.json"
+    }
+  },
+  "baselineNativeCommit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993",
+  "baselineBuild": "73",
+  "physicalAcceptance": false,
+  "physicalSmokePassed": true,
+  "held": [
+    "Universal Links provisioning",
+    "Full Camera tests",
+    "Gift Card/Rewardlumi financial reconciliation",
+    "Entire Market"
+  ],
+  "id": "1e07b128-b31d-4e33-9f65-36c3a9989349",
+  "recordedAt": "2026-10-30T08:08:36.834Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030"
+}
