@@ -8,7 +8,7 @@ declare global {
       offline?: { prepare(scope: string, assets: string[]): Promise<void>; lock(): boolean };
       updates?: { state(): Promise<DesktopUpdateState>; later(): Promise<DesktopUpdateState>; download?(): Promise<DesktopUpdateState>; schedule(at: number): Promise<DesktopUpdateState>; now(): Promise<DesktopUpdateState> };
       display?: { pair(token: string | null): Promise<void>; open(): Promise<void>; close(): Promise<void> };
-      windowControls?: { fullscreen(toggle?: boolean): Promise<boolean>; menu(): void; onFullscreen(callback: (value: boolean) => void): () => void };
+      windowControls?: { fullscreen(toggle?: boolean): Promise<boolean>; menu(): void; action?(action: "help" | "reopen" | "offline" | "updates" | "about" | "minimize" | "zoomIn" | "zoomOut" | "resetZoom"): Promise<void>; onFullscreen(callback: (value: boolean) => void): () => void };
       storage: { get(key: string): string | null; set(key: string, value: string): void; remove(key: string): void };
       operations: { list(scope: string): Promise<PortableOperation[]>; checkpoint(scope: string, key: string): Promise<number>; save(operation: PortableOperation): Promise<void> };
     };

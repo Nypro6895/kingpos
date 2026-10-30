@@ -252,7 +252,7 @@ function createQrMatrix(codewords: number[]): QrCode {
   };
 }
 
-function createQrCode(valueToEncode: string) {
+export function createQrCode(valueToEncode: string) {
   const data = new TextEncoder().encode(valueToEncode);
 
   if (data.length > QR_MAX_BYTES) {

@@ -13,3 +13,9 @@
 [data-pos-service-tile][aria-pressed=true]{outline:2px solid #f26f3d;outline-offset:-2px}
 [data-pos-service-tile]:disabled{opacity:.5}
 .owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-services{min-height:0;overflow:hidden;flex:1}
+
+/* Portable: preserve tile styling while allowing complete service/staff labels. */
+[data-portable-pos-shell] [data-adaptive-pos] [data-pos-service-tiles]{grid-auto-rows:minmax(var(--pos-service-height),auto)}
+[data-portable-pos-shell] [data-pos-service-tile]>span{-webkit-line-clamp:unset;display:block;white-space:normal;overflow:visible}
+[data-portable-pos-shell] [data-adaptive-pos] [data-pos-staff-grid]{grid-auto-rows:minmax(var(--pos-staff-height),auto)}
+[data-portable-pos-shell] [data-adaptive-pos] [data-pos-staff-grid]>button{height:auto;min-height:var(--pos-staff-height)}

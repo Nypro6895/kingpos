@@ -71,10 +71,10 @@ export async function saveServiceRelay(input: { offerId: string; lines: { id: st
     return { ok: true };
   } catch (error) { return { error: message(error) }; }
 }
-export async function submitServiceRelay(input: { visitId: string; revision: number; tip: number; discount: number }) {
+export async function submitServiceRelay(input: { visitId: string; revision: number; tip: number; discount: number; rewardQuote?: string | null }) {
   try {
     const { client, salonId } = await deskContext();
-    const { data, error } = await client.rpc("service_relay_submit", { p_salon: salonId, p_visit: input.visitId, p_expected: input.revision, p_tip: input.tip, p_discount: input.discount });
+    const { data, error } = await client.rpc("reward_service_relay_submit", { p_salon: salonId, p_visit: input.visitId, p_expected: input.revision, p_tip: input.tip, p_discount: input.discount, p_quote: input.rewardQuote ?? null });
     if (error) throw new Error(error.message);
     revalidateServiceRelay();
     await broadcastPosStaffChange(salonId, "pos");

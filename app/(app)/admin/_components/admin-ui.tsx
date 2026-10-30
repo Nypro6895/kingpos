@@ -30,6 +30,7 @@ type AdminNavItem = {
 };
 
 const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+  { href: "/admin/rewards", label: "Reward campaigns", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Plugins & content", icon: "☆" },
   { href: "/admin", label: "Dashboard", permission: PLATFORM_ADMIN_PERMISSIONS.dashboardRead, group: "Platform", icon: "⌂" },
   { href: "/admin/users", label: "Users", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Platform", icon: "♙" },
   { href: "/admin/locations", label: "Businesses", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Platform", icon: "▦" },

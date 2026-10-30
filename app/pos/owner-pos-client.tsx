@@ -1,5 +1,9 @@
 "use client";
 import { ActionFeedback } from "@/components/action-feedback";
+import { OwnerCartBenefits } from "@/components/rewardlumi/owner-cart-benefits";
+import type { RewardView } from "@/types/rewardlumi";
+import type { GiftCheckout } from "@/components/gift-card/pos-gift-card";
+import type { GiftSession } from "@/types/gift-card";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { Activity, useCallback,useEffect, useRef, useState } from "react";
@@ -81,6 +85,10 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const [startupDiagnostic,setStartupDiagnostic]=useState<string>();
   const startupFailure=useRef<unknown>(null);
   const [openAttempt,retryOpen]=useState(0);
+  const [rewardView,setRewardView]=useState<RewardView|null>(null);
+  const [giftSession,setGiftSession]=useState<GiftSession|null>(null);
+  const giftCheckout=useRef<GiftCheckout>(()=>Promise.resolve(null));
+  const registerGift=useCallback((fn:GiftCheckout)=>{giftCheckout.current=fn;},[]);
   const busyRef=useRef(false);
   const replaceAmount=useRef(true);
   const entries=useRef<HTMLDivElement>(null);
@@ -94,7 +102,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     else if(row.top<bounds.top)list.scrollTop+=row.top-bounds.top;
   },[cart?.inputTarget,cart?.activeLineId]);
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
-  const [panel,setPanel]=useState<'staff'|'services'|'customer'|'ticket'|'custom'|null>(null);
+  const [panel,setPanel]=useState<'staff'|'services'|'customer'|'ticket'|'custom'|'benefits'|null>(null);
   const [customName,setCustomName]=useState('');
   const [pickerQuery,setPickerQuery]=useState('');
 
@@ -104,7 +112,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const [ticketDefaults,setTicketDefaults]=useState(initial.defaults);
   useEffect(()=>{if(shared)pendingDefaults.current=shared.defaults;},[shared]);
   const persist=useCallback((next:Cart)=>{
-    try { localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),cart:next})); current.current=next;setCart(next);setError('');return true; }
+    try { const boundaryChanged=next.id!==current.current?.id||next.customer?.id!==current.current?.customer?.id;localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),cart:next}));if(boundaryChanged){setRewardView(null);setGiftSession(null);giftCheckout.current=()=>Promise.resolve(null);} current.current=next;setCart(next);setError('');return true; }
     catch {setError('Unable to save on this device. Keep this ticket open.');return false;}
   },[key]);
   useEffect(()=>{
@@ -159,19 +167,33 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;
     const lines=line?[...cart.lines,line]:cart.lines;
     if(lines.some(l=>!parsePosAmountInput(l.amountInput).isValid||!Number.isFinite(l.total)||l.total<=0)){setError('Enter a valid amount for each service.');return;}
-    if(!lines.length){setError('Enter an amount first.');return;}
+    if(!lines.length&&!(giftSession?.status==='open'&&giftSession.purchase>0)){setError('Enter an amount first.');return;}
     if(ticketDefaults.staffCheckInEnabled&&lines.some(l=>!reference.staff.some(s=>s.id===l.staffId&&s.today_status==='working'))){setError('A selected staff member is no longer checked in. Review this ticket.');return;}
     busyRef.current=true;setBusy(true);setError('');
     try{
+      const gift=await giftCheckout.current();
+      if(gift?.ticketId||gift?.giftSaleId){const next=empty();if(persist(next))setTicketDefaults(pendingDefaults.current);return;}
+      if(rewardView?.request){
+        if(!navigator.onLine)throw Error("Reconnect before using rewards.");
+        const response=await fetch("/api/rewards",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({scope:"pos",op:"owner-submit",args:{cartId:cart.id,receipt:{...benefitReceipt,lines:lines.map(l=>({staffId:l.staffId,serviceId:l.serviceId,serviceLabel:l.serviceLabel,total:l.total,amountInput:l.amountInput,amountParts:l.amountParts}))}}})});
+        const result=await response.json();if(!response.ok||!result.ticketId)throw Error(result.error??"Checkout could not be saved.");
+        const next=empty();if(persist(next))setTicketDefaults(pendingDefaults.current);return;
+      }
       // Use the same durable cart identity across a retry after a lost reply.
       const existing=(await listPortableOperations(scope)).find(op=>op.payload.ownerCartId===cart.id);
       if(!existing)await savePortableOperation(scope,'receipt',{ownerCartId:cart.id,localDraftKey:key,lines,customerId:cart.customer?.id??null,customerName:cart.customer?.name??null,tipAmount:Number(cart.tip||0),discountType:'fixed_amount',discountValue:Number(cart.discount||0)});
       const next=empty();if(persist(next))setTicketDefaults(pendingDefaults.current);
-    }catch{setError('Unable to save this ticket. Your entries have been kept.');}
+    }catch(e){setError(e instanceof Error?e.message:'Unable to save this ticket. Your entries have been kept.');}
     finally{busyRef.current=false;setBusy(false);}
   };
   const subtotal=cart?.lines.reduce((sum,l)=>sum+l.total,0)??0;
-  const total=Math.max(0,subtotal+amountPreview(cart?.amount??'')-Number(cart?.discount||0))+Number(cart?.tip||0);
+  const rewardDiscount=rewardView?.request?.status==='confirmed'?rewardView.request.valueCents/100:0;
+  const serviceSubtotal=subtotal+amountPreview(cart?.amount??'');
+  const total=Math.max(0,serviceSubtotal-Number(cart?.discount||0)-rewardDiscount)+(serviceSubtotal>0?Number(cart?.tip||0):0);
+  const giftReduction=giftSession?.status==='open'&&giftSession.total===Math.round(total*100)?giftSession.amount/100:0;
+  const giftPurchase=giftSession?.status==='open'?giftSession.purchase/100:0;
+  const benefitSummary=giftReduction>0||giftPurchase>0?<div data-owner-gift-summary style={{display:"block",width:"100%",minWidth:0}}>{giftPurchase>0&&<div style={{display:'flex',justifyContent:'space-between',gap:8,padding:'8px 0'}}><span>Gift card purchase</span><strong>+{money(giftPurchase)}</strong></div>}{giftReduction>0&&<div style={{display:'flex',justifyContent:'space-between',gap:8,padding:'8px 0'}}><span>Gift card</span><strong>−{money(giftReduction)}</strong></div>}<div className="owner-total"><span>Amount due</span><strong>{money(Math.max(0,total-giftReduction)+giftPurchase)}</strong></div></div>:null;
+  const benefitReceipt={requestId:cart?.id,rewardQuote:rewardView?.request?.status==='confirmed'?rewardView.request.quote:null,customerId:cart?.customer?.id??null,customerName:cart?.customer?.name??null,discountType:'fixed_amount',discountValue:Number(cart?.discount||0),tipAmount:Number(cart?.tip||0),lines:[...(cart?.lines??[]).map(l=>({staffId:l.staffId,serviceId:l.serviceId,serviceLabel:l.serviceLabel,total:l.total,amountInput:l.amountInput,amountParts:l.amountParts})),...(cart?.amount&&amountPreview(cart.amount)>0?[{staffId:cart.staffId,serviceId:cart.serviceId,serviceLabel:reference.services.find(s=>s.id===cart.serviceId)?.name??'Service',total:amountPreview(cart.amount),amountInput:cart.amount,amountParts:parsePosAmountInput(cart.amount).parts}]:[])]};
   const staff = reference.staff.filter(s=>!ticketDefaults.staffCheckInEnabled||s.today_status==='working')
     .sort((a,b)=>(a.turns?.queueTurns??0)-(b.turns?.queueTurns??0)||(a.check_in_sequence??0)-(b.check_in_sequence??0));
   const hasStaff=ticketDefaults.staffCheckInEnabled||(preferences.showStaff&&staff.length>0);
@@ -259,6 +281,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
         <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button>
         <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
         {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??<><span className="owner-desktop-label"><WorkspaceText text="Customer" /></span><span className="owner-ios-label"><WorkspaceText text="Customers" /></span></>}</button>:null}
+        <button className="owner-customer-shortcut" onClick={()=>setPanel('benefits')}>{rewardView?.request?.status==='confirmed'?'✓ Reward confirmed':rewardView?.request&&rewardView.request.status!=='cancelled'?'Reward requested':rewardView?.available?`${rewardView.available} pts · Rewards / Gift card`:'Rewards / Gift card'}</button>
         <div className="owner-toolbar-sync"><PortableSyncIndicator scope={scope}/></div>
       </div>
       <div className="owner-workbench">
@@ -267,6 +290,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
             {Number(cart.tip)>0||Number(cart.discount)>0?<div><span><WorkspaceText text="Subtotal" /></span><strong>{money(subtotal+amountPreview(cart.amount))}</strong></div>:null}
             {(['discount','tip'] as const).map(target=>Number(cart[target])>0?<button key={target} onClick={()=>chooseAdjustment(target)}><span>{target==='tip'?<WorkspaceText text="Tip" />:<WorkspaceText text="Discount" />}</span><strong>{target==='discount'?'-':''}{money(Number(cart[target]))}</strong></button>:null)}
             <div className="owner-total"><span><WorkspaceText text="Total (" />{entryCount})</span><strong>{money(total)}</strong></div>
+            {benefitSummary}
           </div>
         </section>
         <AdaptivePosWorkspace className="owner-catalog" staffCount={hasStaff?staff.length:0} serviceCount={hasServices?reference.services.length:0}>
@@ -274,7 +298,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
           {hasServices?<div className="owner-services"><div className="owner-section-heading"><h2><WorkspaceText text="Services" /></h2><button onClick={()=>openPicker('services')}><WorkspaceText text="View all" /></button></div><ServiceCatalog services={reference.services} preferences={preferences} selectedId={selectedLine?selectedLine.serviceId:cart.serviceId} disabled={busy} onSelect={chooseService}/><button className="owner-skip" onClick={()=>chooseService(null)}><WorkspaceText text="Amount only" /></button></div>:null}
         </AdaptivePosWorkspace>
         <section className="owner-amount">
-          <div className="owner-mobile-ticket">{inlineRows}<div className="owner-total"><span><WorkspaceText text="Total (" />{entryCount})</span><strong>{money(total)}</strong></div></div>
+          <div className="owner-mobile-ticket">{inlineRows}<div className="owner-total"><span><WorkspaceText text="Total (" />{entryCount})</span><strong>{money(total)}</strong></div>{benefitSummary}</div>
           <div className="owner-section-heading"><span className="owner-selection"><WorkspaceText text={selectedLine?.staffName??member?.display_name??'Amount'} />{selectedLine?` · ${selectedLine.serviceLabel}`:service?` · ${service.name}`:cart.customServiceName?` · ${cart.customServiceName}`:''}</span></div>
           <label className="owner-amount-field"><span>{inputTarget==='amount'?<WorkspaceText text="Amount" />:inputTarget==='tip'?<WorkspaceText text="Tip" />:<WorkspaceText text="Discount" />}</span><input aria-label={__vt(inputTarget==='amount'?'Amount':inputTarget==='tip'?'Tip amount':'Discount amount')} inputMode="none" autoComplete="off" value={inputValue} placeholder={__vt("0.00")} onFocus={e=>{replaceAmount.current=true;e.target.select();}} onChange={e=>{if(inputTarget==='amount')setAmount(e.target.value);else if(/^\d*(\.\d{0,2})?$/.test(e.target.value))update({[inputTarget]:e.target.value});}}/></label>
           <div className="owner-mode-tabs" aria-label={__vt("Keypad controls")}>
@@ -293,12 +317,13 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
       {startup==='failed'?<><p role="alert"><WorkspaceText text="Unable to open saved work on this device. Your saved work has not been changed." /></p><button type="button" onClick={()=>{setStartup('opening');retryOpen(attempt=>attempt+1);}}><WorkspaceText text="Try again" /></button></>:<p role="status"><ActionFeedback pending pendingLabel="Opening your saved workspace…">{null}</ActionFeedback></p>}
     </section>}
     <dialog ref={dialog} aria-labelledby="owner-picker-title" onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setPanel(null);}}} onCancel={()=>setPanel(null)} className="owner-picker-dialog" data-choice-picker={panel==='services'||panel==='staff'||undefined} data-long-picker={(panel==='services'?reference.services.length>8:panel==='staff'?staff.length>8:false)||undefined}>
-      <header><h2 id="owner-picker-title">{panel==='custom'?<WorkspaceText text="Custom service" />:panel==='staff'?'Employees':panel==='services'?<WorkspaceText text="Services" />:panel==='customer'?<WorkspaceText text="Customer" />:<WorkspaceText text="Ticket" />}</h2><button onClick={()=>setPanel(null)}><WorkspaceText text={panel==='custom'?'Cancel':'Done'} /></button></header>
+      <header><h2 id="owner-picker-title">{panel==='custom'?<WorkspaceText text="Custom service" />:panel==='staff'?'Employees':panel==='services'?<WorkspaceText text="Services" />:panel==='customer'?<WorkspaceText text="Customer" />:panel==='benefits'?'Rewards & gift card':<WorkspaceText text="Ticket" />}</h2><button onClick={()=>setPanel(null)}><WorkspaceText text={panel==='custom'?'Cancel':'Done'} /></button></header>
       {panel==='custom'?<form onSubmit={event=>{event.preventDefault();applyCustomService();}}>
         <label htmlFor="owner-custom-service-name"><WorkspaceText text="Service name" /></label>
         <input id="owner-custom-service-name" autoFocus className="owner-picker-search" autoComplete="off" maxLength={100} value={customName} onChange={event=>setCustomName(event.target.value)} placeholder={__vt('Enter service name')} />
         <button className="owner-custom-done" type="submit" disabled={busy||!customName.trim()}><WorkspaceText text="Done" /></button>
       </form>:null}
+      <div hidden={panel!=='benefits'}>{cart&&<OwnerCartBenefits key={cart.id+":"+(cart.customer?.id??"")} cartId={cart.id} receipt={benefitReceipt} onView={setRewardView} onGift={setGiftSession} onCheckout={registerGift}/>}</div>
       {panel==='ticket'?<><div className="owner-ticket-actions"><button onClick={()=>openPicker('staff')}><WorkspaceText text="Employees" /></button><button onClick={()=>openPicker('services')}><WorkspaceText text="Services" /></button>{selectedLine?<button onClick={()=>{update({lines:cart!.lines.filter(l=>l.id!==selectedLine.id),activeLineId:null});setPanel(null);}}><WorkspaceText text="Remove line" /></button>:null}{preferences.showCustomer?<button onClick={()=>setPanel('customer')}><WorkspaceText text="Customer" /></button>:null}</div>{linesView}<div className="owner-total"><span><WorkspaceText text="Total" /></span><strong>{money(total)}</strong></div><Link href="/pos-tickets" className="owner-skip"><WorkspaceText text="Ticket history →" /></Link></>:null}
       {panel==='staff'||panel==='services'?<><input className="owner-picker-search" aria-label={__vt(panel==='staff'?'Search employees':'Search services')} type="search" placeholder={__vt(panel==='staff'?'Search employees':'Search services')} value={pickerQuery} onChange={e=>setPickerQuery(e.target.value)}/><div className="owner-picker-options owner-picker-choice-grid">
         {panel==='staff'?<>{!ticketDefaults.staffCheckInEnabled?<button onClick={()=>chooseStaff(null)}><WorkspaceText text="No staff assignment" /></button>:null}{staff.filter(s=>s.display_name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart?.staffId)} onClick={()=>chooseStaff(s.id)}><span>{s.display_name}</span><small>{s.turns?.queueTurns??0} <WorkspaceText text="turns" /></small></button>)}{!staff.length?<p><WorkspaceText text="No staff checked in. Check in a staff member to start." /></p>:null}</>:<><div className="owner-picker-shortcuts"><button onClick={()=>chooseService(null)}><WorkspaceText text="Amount only" /></button><button onClick={()=>{setCustomName('');setPanel('custom');}}><WorkspaceText text="Custom services" /></button></div><ServiceCatalog services={reference.services.filter(s=>s.name.toLowerCase().includes(pickerQuery.toLowerCase()))} preferences={preferences} selectedId={selectedLine?selectedLine.serviceId:cart?.serviceId} disabled={busy} onSelect={chooseService}/></>}

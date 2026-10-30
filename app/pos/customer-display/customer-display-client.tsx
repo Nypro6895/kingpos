@@ -1,4 +1,6 @@
 "use client";
+import { GiftCustomerControl } from "@/components/gift-card/pos-gift-card";
+import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
 import "./customer-display-responsive.css";
 import { CustomerIdleScreen } from "./customer-idle-screen";
 import { CUSTOMER_DISPLAY_APPEARANCE_CHANGED } from "@/lib/customer-display-preferences";
@@ -2685,10 +2687,12 @@ export function CustomerDisplayClient({
 
   return (
     <div className={rootClass} ref={rootRef}>
+      <GiftCustomerControl token={token} />
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
       ) : null}
       <div className="customer-display-auto-scale h-full w-full">
+        {(liveDraftCustomer?.id || checkInState?.visit.id) && displayMode !== "completed" && displayMode !== "attract" && <VisitRewards key={liveDraftCustomer?.id ?? checkInState?.visit.id} scope="display" token={token} visitId={checkInState?.visit.id} />}
         {displayMode === "attract" ? (
           <CustomerIdleScreen token={token} images={attractImages} salonName={settings.salonName ?? "Welcome"} backgroundImageUrl={settings.customerBackgroundImageUrl ?? undefined}
             title={settings.customerLeftAdText} body={settings.customerRightAdText} onBegin={beginFromAttract} fullscreenControl={<FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />}>

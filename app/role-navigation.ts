@@ -143,6 +143,8 @@ const OWNER_LINKS: NavigationLink[] = [
 
 export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   personal: [
+    { description: "Keep, use and share your gift cards.", href: "/gift-cards", icon: "star", id: "personal-gift-cards", label: "Gift Cards", navigationIcon: "star" },
+    { description: "Points, rewards and activity at each salon.", href: "/rewards", icon: "star", id: "personal-rewards", label: "My Rewards", navigationIcon: "star" },
     {
       description: "Your Personal ID QR, salon check-in, and recent visits.",
       href: "/qr",
@@ -259,6 +261,8 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
+    { description: "Manage gift card sales, balances and activity.", href: "/gift-cards/manage", icon: "star", id: "owner-gift-cards", label: "Gift Cards", navigationIcon: "star" },
+    { description: "Set earning rules and customer rewards.", href: "/reward-system", icon: "star", id: "owner-rewards", label: "Reward System", navigationIcon: "star" },
     { description: "Run ads for your salon.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Advertising", navigationIcon: "star" },
     {
       description: "Add messaging, payroll, rewards, and more to Reylumi.",
@@ -354,7 +358,7 @@ for (const kind of ["owner", "staff"] as const) {
 export const OWNER_MORE_GROUPS = [
   { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
   { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
-  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-campaigns", "owner-market"] },
+  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-campaigns", "owner-rewards", "owner-gift-cards", "owner-market"] },
   { id: "settings-support", title: "Settings & support", summary: "Salon setup, workspaces, and help.", ids: ["owner-setting", "owner-my-place", "owner-support", "owner-help"] },
 ];
 const ownerPriority = OWNER_MORE_GROUPS.flatMap(group => group.ids);

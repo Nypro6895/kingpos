@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 // Opt-in integration fixture. Cached images only, no network/host ports/bind
 // mounts, no persistent credentials, and no application notification worker.
-export async function startIsolatedSupabase(labelPrefix = 'booking-access', images = {}) {
+export async function startIsolatedSupabase(labelPrefix = 'booking-access', images = {}, options = {}) {
   const docker = process.env.TEST_DOCKER_PATH || (process.platform === 'win32'
     ? 'C:/Program Files/Docker/Docker/resources/bin/docker.exe' : 'docker');
   const context = process.env.TEST_DOCKER_CONTEXT || (process.platform === 'win32' ? 'desktop-linux' : 'default');
@@ -95,7 +95,12 @@ export async function startIsolatedSupabase(labelPrefix = 'booking-access', imag
     evidence.cleanup = { removedOwnedContainers: removed, priorContainersPresent: evidence.priorContainers.every(n => remaining.includes(n)),
       testContainersRemaining: Object.values(names).filter(n => remaining.includes(n)), credentialsDiscarded: true };
     evidence.finishedAt = new Date().toISOString(); save(`${labelPrefix}-fixture.json`, evidence);
-    assert.ok(evidence.cleanup.priorContainersPresent); assert.equal(evidence.cleanup.testContainersRemaining.length, 0);
+    // Other chats may finish their own temporary fixtures while this test runs.
+    // Our deletion audit still proves that only this fixture's labelled names
+    // were removed. The strict legacy check remains the default.
+    if (options.allowConcurrentFixtureCleanup) assert.ok(removed.every(name => !evidence.priorContainers.includes(name)));
+    else assert.ok(evidence.cleanup.priorContainersPresent);
+    assert.equal(evidence.cleanup.testContainersRemaining.length, 0);
   }
   evidence.priorContainers = command(['ps', '-a', '--format', '{{.Names}}']).split('\n').filter(Boolean);
   try {

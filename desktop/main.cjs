@@ -177,6 +177,19 @@ async function start() {
         !event.senderFrame.url.startsWith('file:')) throw Error('Access denied');
     return loadPos();
   });
+  ipcMain.handle('kingpos:application-action', async (event, action) => {
+    if (!trusted(event)) throw Error('Access denied');
+    if (action === 'minimize') { win.minimize(); return; }
+    if (['zoomIn', 'zoomOut', 'resetZoom'].includes(action)) {
+      const zoom = win.webContents.getZoomLevel();
+      win.webContents.setZoomLevel(action === 'resetZoom' ? 0 : Math.max(-3, Math.min(3, zoom + (action === 'zoomIn' ? 0.5 : -0.5))));
+      return;
+    }
+    if (!['help', 'reopen', 'offline', 'updates', 'about'].includes(action)) throw Error('Invalid action');
+    const item = Menu.getApplicationMenu()?.getMenuItemById('portable-' + action);
+    if (!item?.click) throw Error('Application action unavailable');
+    await item.click(item, win);
+  });
   ipcMain.on('kingpos:menu' , event => { if (trusted(event)) Menu.getApplicationMenu()?.popup({ window: win }); });
   win = new BrowserWindow({ width: 1440, height: 960, minWidth: 900, minHeight: 650,
     title: profile, backgroundColor: '#f5f7fa', show: false, autoHideMenuBar: true,
@@ -231,21 +244,21 @@ async function showUnavailable(message) {
 function setupMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'KingPOS', submenu: [
-      { label: 'Help / Hướng dẫn sử dụng', click: async () => {
+      { id: 'portable-help', label: 'Help / Hướng dẫn sử dụng', click: async () => {
         try { await shell.openExternal('https://reylumi.com/help/windows-portable'); }
         catch { await dialog.showMessageBox(win, { message: 'Help could not open / Không mở được hướng dẫn', detail: 'Connect to the internet and open https://reylumi.com/help/windows-portable in your browser. / Kết nối internet và mở địa chỉ này trong trình duyệt.' }); }
       } },
-      { label: 'Open POS again', click: async () => {
+      { id: 'portable-reopen', label: 'Open POS again', click: async () => {
         const { response } = await dialog.showMessageBox(win, { buttons: ['Cancel', 'Open'], defaultId: 0, cancelId: 0, message: 'Open POS again?', detail: 'Saved tickets will remain on this device.' });
         if (response === 1) await loadPos();
       } },
-      { label: 'Offline readiness', click: () => dialog.showMessageBox(win, { message: offlineShell.cached('/pos/portable') ? 'Ready for offline use' : 'Offline setup is not finished', detail: offlineShell.cached('/pos/portable') ? 'You can close and reopen this app without internet. Saved tickets will upload when the POS server is available.' : 'Connect to your POS server, sign in and keep the POS open while its files are saved.' }) },
-      { label: 'Check for updates', click: () => checkUpdate(true) },
+      { id: 'portable-offline', label: 'Offline readiness', click: () => dialog.showMessageBox(win, { message: offlineShell.cached('/pos/portable') ? 'Ready for offline use' : 'Offline setup is not finished', detail: offlineShell.cached('/pos/portable') ? 'You can close and reopen this app without internet. Saved tickets will upload when the POS server is available.' : 'Connect to your POS server, sign in and keep the POS open while its files are saved.' }) },
+      { id: 'portable-updates', label: 'Check for updates', click: () => checkUpdate(true) },
       { label: 'Download and install update', click: async () => {
         await requestUpdateInstall();
         if (updateMessage && win && !win.isDestroyed()) await dialog.showMessageBox(win, { message: updateMessage });
       } },
-      { label: 'About KingPOS', click: () => dialog.showMessageBox(win, { message: `${profile} ${app.getVersion()}`, detail: config.channel === 'test' ? 'Test version. Connects to the test server; not a production release.' : 'Windows · one checkout. Saved tickets stay on this Windows account.' }) },
+      { id: 'portable-about', label: 'About KingPOS', click: () => dialog.showMessageBox(win, { message: `${profile} ${app.getVersion()}`, detail: config.channel === 'test' ? 'Test version. Connects to the test server; not a production release.' : 'Windows · one checkout. Saved tickets stay on this Windows account.' }) },
       { type: 'separator' }, { role: 'quit', label: 'Close app' },
     ] }, { label: 'View', submenu: [{ role: 'togglefullscreen' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }] },
   ]));

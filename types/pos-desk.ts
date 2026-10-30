@@ -51,6 +51,8 @@ export type PosDeskSubmitLine = {
 
 export type PosDeskSubmitInput = {
   requestId?: string;
+  rewardSettlementId?: string;
+  rewardQuote?: string | null;
   sourceBookingId?: string | null;
   sourceBookingUpdatedAt?: string | null;
   customerId?: string | null;

@@ -1,5 +1,6 @@
 "use client";
 
+import { RewardsNearby } from "@/components/rewardlumi/rewards-nearby";
 import { Suspense, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { exploreFeedErrorMessage, requestExploreFeed } from "@/lib/explore-feed-client";
 import { recordExploreLoadDuration, useExplorePrefetchDistance, useExploreVisibleAfterFirstContent } from "@/lib/explore-viewport-priority";
@@ -37,6 +38,7 @@ type ExploreDiscoveryFeedProps = {
 
 export function ExploreDiscoveryFeed(props: ExploreDiscoveryFeedProps) {
   return <>
+    <RewardsNearby latitude={props.discovery.latitude} longitude={props.discovery.longitude} />
     {props.initialPagePromise ? <Suspense fallback={<ExploreFeedSkeleton />}><ExploreSeededDiscoveryFeed {...props} initialPagePromise={props.initialPagePromise} /></Suspense> : <ExploreDiscoveryFeedReady {...props} />}
   </>;
 }

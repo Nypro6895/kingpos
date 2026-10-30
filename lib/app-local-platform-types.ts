@@ -59,6 +59,8 @@ export const ROLE_READS = {
   "http.owner.closing-history": { method: "GET", path: "/api/pos/closing/history", argumentKeys: ["salonId", "date"], access: "scoped", cacheable: false },
 } as const;
 export const ROLE_COMMANDS = {
+  "http.benefits.gift-cards": { method: "POST", path: "/api/gift-cards", argumentKeys: ["input"] },
+  "http.benefits.rewards": { method: "POST", path: "/api/rewards", argumentKeys: ["input"] },
   "http.staff.create-appointment": { method: "POST", path: "/api/staff/create-appointment", argumentKeys: ["input"] },
   "http.staff.report-no-show": { method: "POST", path: "/api/staff/report-no-show", argumentKeys: ["input"] },
   "http.staff.confirm-booking": { method: "POST", path: "/api/staff/confirm-booking", argumentKeys: ["input"] },

@@ -1,5 +1,10 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import { rewardTransport } from "@/lib/rewardlumi-client";
+import type { RewardView } from "@/types/rewardlumi";
+import { GiftPosControl, type GiftCheckout } from "@/components/gift-card/pos-gift-card";
+import type { GiftReply } from "@/types/gift-card";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { loadServiceRelay, submitServiceRelay, saveServiceRelayAtDesk, notifyPersonalReady } from "./actions";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -32,6 +37,12 @@ function DeskTicket({ ticket, workspace, submit, save, notify, onSubmitted }: { 
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [tip, setTip] = useState(""), [discount, setDiscount] = useState("");
   const [editing, setEditing] = useState(false);
   const pending = useRef(false);
+  const [reward, setReward] = useState<RewardView | null>(null);
+  const giftCheckout = useRef<GiftCheckout>(() => Promise.resolve(null));
+  const registerGift = useCallback((fn: GiftCheckout) => { giftCheckout.current = fn; }, []);
+  const rewardApi = useMemo(() => rewardTransport("pos"), []);
+  const visitTransport = useMemo(() => async (op: string, args?: Record<string, unknown>) => op === "quote" ? rewardApi("relay", { visitId: ticket.visitId, expected: ticket.revision, innerOp: "quote", tip: Number(tip), discount: Number(discount) }) : rewardApi(op, args), [rewardApi, ticket.visitId, ticket.revision, tip, discount]);
+  const giftTransport = useMemo(() => async (op: string, args?: Record<string, unknown>) => await rewardApi("relay", { visitId: ticket.visitId, expected: ticket.revision, innerOp: op, innerArgs: args, tip: Number(tip), discount: Number(discount) }) as GiftReply, [rewardApi, ticket.visitId, ticket.revision, tip, discount]);
   return <article className={`${styles.panel} ${styles.card}`}><div className={styles.header}><h3>{ticket.customerName} · #{ticket.queueNumber}</h3><span className={styles.badge}>{ticket.status === "checkout" ? "Ready to pay" : ticket.status === "in_service" ? "In service" : "Waiting"}</span></div>
     {ticket.offers.filter(o => o.status !== "done").map(o => <p key={o.id}>{o.staffName} · {o.serviceName} · {o.status === "working" ? "Working" : "Awaiting response"}</p>)}
     {ticket.canNotifyReady && <ReadyCustomer ticket={ticket} workspace={workspace} notify={notify} onNotified={onSubmitted} />}
@@ -39,8 +50,10 @@ function DeskTicket({ ticket, workspace, submit, save, notify, onSubmitted }: { 
     {!editing && <button type="button" disabled={busy} onClick={() => setEditing(true)}>Edit services & amounts</button>}
     {editing && <DeskServiceEditor key={ticket.visitId} ticket={ticket} workspace={workspace} save={save} onClose={() => setEditing(false)} onSaved={async () => { setEditing(false); await onSubmitted(); }} />}
     {(ticket.status === "checkout" || (ticket.scanMode && ticket.lines.length > 0)) && <div className={styles.adjustments}><label>Tip<input disabled={busy} inputMode="decimal" value={tip} onChange={e => { if (/^\d*(\.\d{0,2})?$/.test(e.target.value)) setTip(e.target.value); }} /></label><label>Discount<input disabled={busy} inputMode="decimal" value={discount} onChange={e => { if (/^\d*(\.\d{0,2})?$/.test(e.target.value)) setDiscount(e.target.value); }} /></label></div>}
-    <p className={styles.total}>{money(Math.max(0, ticket.lines.reduce((sum, l) => sum + l.amount, 0) - Number(discount)) + Number(tip))}</p>
-    {(ticket.status === "checkout" || (ticket.scanMode && ticket.lines.length > 0)) && <button className={styles.primary} disabled={busy || editing} onClick={async () => { if (pending.current) return; pending.current = true; setBusy(true); setError(""); try { const result = await submit({ visitId: ticket.visitId, revision: ticket.revision, tip: Number(tip), discount: Number(discount) }); if (result.error) { setError(result.error); await onSubmitted(); } else await onSubmitted(); } catch { setError("Connection interrupted. Refresh this ticket before retrying Submit."); } finally { pending.current = false; setBusy(false); } }}>{busy ? "Submitting…" : "Payment collected · Submit"}</button>}
+    <VisitRewards scope="pos" visitId={ticket.visitId} receipt={{ revision: ticket.revision, tip, discount }} transport={visitTransport} onChange={setReward} />
+    <GiftPosControl token={ticket.visitId} receipt={{ revision: ticket.revision, tip, discount, reward: reward?.request?.revision }} transport={giftTransport} onCheckout={registerGift} />
+    <p className={styles.total}>{money(Math.max(0, ticket.lines.reduce((sum, l) => sum + l.amount, 0) - Number(discount) - (reward?.request?.status === "confirmed" ? reward.request.valueCents / 100 : 0)) + Number(tip))}</p>
+    {(ticket.status === "checkout" || (ticket.scanMode && ticket.lines.length > 0)) && <button className={styles.primary} disabled={busy || editing} onClick={async () => { if (pending.current) return; pending.current = true; setBusy(true); setError(""); try { const gift = await giftCheckout.current(); if (gift?.ticketId) { await onSubmitted(); return; } const result = await submit({ visitId: ticket.visitId, revision: ticket.revision, tip: Number(tip), discount: Number(discount), rewardQuote: reward?.request?.status === "confirmed" ? reward.request.quote : null }); if (result.error) { setError(result.error); await onSubmitted(); } else await onSubmitted(); } catch { setError("Connection interrupted. Refresh this ticket before retrying Submit."); } finally { pending.current = false; setBusy(false); } }}>{busy ? "Submitting…" : "Payment collected · Submit"}</button>}
     {error && <p role="alert" className={styles.notice}>{error}</p>}
   </article>;
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import { VisitGiftCards } from "@/components/rewardlumi/visit-gift-cards";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QrCodeTile } from "@/components/qr-code-tile";
 import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon";
@@ -17,6 +20,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
   viewerId: string; initial: PersonalQrWorkspace | null; initialError?: string;
   entry?: string; initialCatalog?: PersonalQrCatalog; initialVisitId?: string; initialScan?: boolean; customerName?: string;
 }) {
+  const router = useRouter();
   const [data, setData] = useState(initial), [error, setError] = useState(initialError ?? "");
   const [online, setOnline] = useState(true), [now, setNow] = useState(() => Date.now());
   const [camera, setCamera] = useState(initialScan && !initialVisitId && !entry), [busy, setBusy] = useState(false);
@@ -70,7 +74,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
     try {
       const result = await checkinPersonalQr(viewerId, { entry: entryId, services: selected, requestId: requestId.current });
       if (generation !== epoch.current) return;
-      if (result.visitId) { setVisitId(result.visitId); setCatalog(null); await refresh(); }
+      if (result.visitId) { setVisitId(result.visitId); router.replace(`/qr?visit=${result.visitId}`); setCatalog(null); await refresh(); }
       else setError(result.error ?? "Could not check in. Your selections are kept.");
     } catch { if (generation === epoch.current) setError("Connection interrupted. Retry with the same selections to recover your check-in."); }
     finally { pending.current = false; setBusy(false); }
@@ -93,7 +97,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
         <div className={styles.actions}><button type="button" disabled={busy} onClick={() => { setCatalog(null); setSelected([]); }}><WorkspaceText text="Cancel" /></button></div>
       </form>
     </section> : visitId ? <>
-      <button type="button" className={styles.topLink} onClick={() => setVisitId(null)}><WorkspaceText text="My personal QR" /></button>
+      <button type="button" className={styles.topLink} onClick={() => { setVisitId(null); router.replace("/qr"); }}><WorkspaceText text="My personal QR" /></button>
       {visit ? <PersonalVisit visit={visit} online={online} /> : <p role="status" className={styles.empty}><WorkspaceText text="Refreshing your check-in…" /></p>}
     </> : <>
       <section className={`${styles.card} ${styles.identity}`} aria-label="Personal identity QR">
@@ -123,10 +127,11 @@ function PersonalVisit({ visit, online }: { visit: PersonalQrVisit; online: bool
     <p>#{visit.queueNumber ?? "—"}</p>
     {visit.ready && <div role="status" className={styles.ready}><strong><WorkspaceText text="Your staff is ready" /></strong><p>{visit.ready.staffName ?? ""}{visit.ready.chair && <> · <WorkspaceText text="Chair" /> {visit.ready.chair}</>}</p></div>}
     {!!visit.workingStaff.length && !finished && <p className={styles.muted}>{visit.workingStaff.join(" · ")} · <WorkspaceText text="Working" /></p>}
-    {!finished && <div className={visit.status === "waiting" || expanded ? "" : styles.smallQr}>
+    {!finished && <><VisitRewards key={visit.visitId} scope="personal" visitId={visit.visitId} /><VisitGiftCards key={`gift:${visit.visitId}`} visitId={visit.visitId} /></>}
+    {!finished && <div className={expanded ? "" : styles.smallQr}>
       <QrCodeTile className={styles.qrTile} ariaLabel="Your check-in QR" valueToEncode={`reylumi:checkin:${visit.visitId}`} fallbackMessage="Tell staff your check-in number." />
       <p className={styles.muted}><WorkspaceText text="Show this visit QR to your staff." /></p>
-      {visit.status !== "waiting" && <button type="button" onClick={() => setExpanded(!expanded)}><WorkspaceText text={expanded ? "Hide QR" : "Show QR"} /></button>}
+      {<button type="button" onClick={() => setExpanded(!expanded)}><WorkspaceText text={expanded ? "Hide QR" : "Show QR"} /></button>}
     </div>}
     {lines.length ? <>{lines.map(line => <div className={styles.row} key={line.id}><span>{line.serviceName}<small>{line.staffName}</small></span><strong>{money(Number(line.amount))}</strong></div>)}
       {totals && <><div className={styles.row}><span><WorkspaceText text="Tip" /></span><strong>{money(totals.tip_amount)}</strong></div>{totals.discount_amount > 0 && <div className={styles.row}><span><WorkspaceText text="Discount" /></span><strong>−{money(totals.discount_amount)}</strong></div>}{totals.tax_amount > 0 && <div className={styles.row}><span><WorkspaceText text="Tax" /></span><strong>{money(totals.tax_amount)}</strong></div>}</>}

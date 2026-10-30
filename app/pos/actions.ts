@@ -995,7 +995,9 @@ async function createTicketFromSubmitInput(input:PosDeskSubmitInput,sessionId?:s
     if(!isOwnerMembership(context.currentMembership)) throw Error("Only the Owner can submit this ticket.");
     const request=input.requestId??sessionId;
     if(!request||!/^[0-9a-f-]{36}$/i.test(request)) throw Error("Reload this receipt before submitting.");
-    const {data,error}=await supabase.rpc("submit_owner_ticket_inputs",{p_salon:salon.id,p_receipt:input,p_request:request});
+    const {data,error}=input.rewardSettlementId
+      ? await supabase.rpc("reward_submit_owner",{p_salon:salon.id,p_request:input.rewardSettlementId,p_receipt:input})
+      : await supabase.rpc("submit_owner_ticket_inputs",{p_salon:salon.id,p_receipt:input,p_request:request});
     if(error||!data?.ticketId) throw Error(error?.message??"Unable to submit this receipt.");
     const ticketId=String(data.ticketId),ticketNumber=String(data.ticketNumber??"Ticket");
     if(sessionId) {

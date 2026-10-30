@@ -44,6 +44,9 @@ import { PortableCustomerAction } from "@/app/pos/portable/portable-customer-act
 import { PortableDraftControls } from "@/app/pos/portable/portable-draft-controls";
 import { usePortableCloseGuard } from "@/app/pos/portable/use-portable-close-guard";
 import { portableBusinessDate } from "@/lib/portable-business-day";
+import { GiftPosControl, type GiftCheckout } from "@/components/gift-card/pos-gift-card";
+import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import type { RewardView } from "@/types/rewardlumi";
 import { CustomServiceDialog } from "./custom-service-dialog";
 import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
 import { CompactCheckoutAdjustments } from "./compact-checkout-adjustments";
@@ -665,6 +668,9 @@ export function PosDeskClient({
       ? "Receipt is resetting. Please wait."
       : "Receipt is locked.";
   const liveDraftToken = liveDraft?.token;
+  const giftCheckout = useRef<GiftCheckout>(() => Promise.resolve(null));
+  const registerGiftCheckout = useCallback((fn: GiftCheckout) => { giftCheckout.current = fn; }, []);
+  const [rewardView, setRewardView] = useState<RewardView | null>(null);
   useEffect(() => {
     const desktop = desktopDevice();
     if (!desktop?.display || !liveDraftToken || !portableWorkspaceState?.scope) return;
@@ -835,7 +841,7 @@ export function PosDeskClient({
       searchTextMatches([service.name, service.category], serviceSearch),
     );
   }, [serviceSearch, services]);
-  const totals = useMemo(
+  const baseTotals = useMemo(
     () =>
       calculateTicketTotals({
         discountType: draft.discountType,
@@ -849,6 +855,9 @@ export function PosDeskClient({
       }),
     [discountAmount, draft.discountType, tipAmount, totalLines],
   );
+  const rewardDiscount = rewardView?.request?.status === "confirmed" ? rewardView.request.valueCents / 100 : 0;
+  const totals = rewardDiscount > 0 ? calculateTicketTotals({ items: totalLines, discountType: "fixed_amount", discountValue: baseTotals.discount_amount + rewardDiscount, tipValue: baseTotals.tip_value }) : baseTotals;
+  const rewardReceipt = { customerId: draft.customerId ?? selectedCustomer?.id, customerVisitId: draft.customerVisitId ?? selectedCustomer?.visitId ?? null, discountType: draft.discountType, discountValue: baseTotals.discount_value, lines: positiveStaffLines.map((line,index) => ({ amountInput: line.amount_input, amountParts: line.amount_parts, serviceId: line.service_id, serviceLabel: line.service_label || `Service ${index + 1}`, staffId: line.staff_id, total: line.amount })) };
   const liveStaffLines = useMemo<PosLiveDraftView["staff_lines"]>(
     () =>
       staffLines.map((line, index) => ({
@@ -2507,6 +2516,7 @@ export function PosDeskClient({
       }
     }
 
+    if (rewardView?.request?.status === "confirmed" && !navigator.onLine) { showError("Reconnect before using rewards."); return; }
     const submitLines = positiveLines.map((line, index) => ({
       amountInput: line.amount_input,
       amountParts: line.amount_parts,
@@ -2528,8 +2538,18 @@ export function PosDeskClient({
     startTransition(async () => {
       try {
         setError(null);
+        const giftResult = await giftCheckout.current();
+        if (giftResult?.ticketId) {
+          holdCompletedDisplayRef.current = true;
+          if (localFirstDraft) checkpointPortableDraft({ draft: { ...emptyDraft, giftCardInput: "", note: "" }, lines: [], customer: null });
+          clearDraft(); setRewardView(null);
+          showToast({ amount: formatMoney(submittedTotal), detail: submittedCustomerName, title: "Ticket paid", tone: "success" });
+          setLastAction("Reward and gift checkout complete"); return;
+        }
         const input = {
           requestId: receiptRequestRef.current??(receiptRequestRef.current=crypto.randomUUID()),
+          rewardSettlementId: rewardView?.request ? (localCartId.current ??= crypto.randomUUID()) : undefined,
+          rewardQuote: rewardView?.request?.status === "confirmed" ? rewardView.request.quote : null,
           sourceBookingId: draft.sourceBookingId,
           sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt,
           customerId: draft.customerId ?? selectedCustomer?.id,
@@ -2538,13 +2558,13 @@ export function PosDeskClient({
           customerVisitId:
             draft.customerVisitId ?? selectedCustomer?.visitId ?? null,
           discountType: draft.discountType,
-          discountValue: totals.discount_value,
+          discountValue: baseTotals.discount_value,
           lines: submitLines,
           liveDraftToken,
           note: draft.note,
           tipAmount: totals.tip_value,
         };
-        if (localFirstDraft && portableWorkspaceState) {
+        if (localFirstDraft && portableWorkspaceState && !rewardView?.request) {
           // Commit the business command before clearing the form. Network and
           // display-draft conflicts must never prevent saving the next ticket.
           const staffAttendance: Record<string, { status: string; queueTurnCount: number }> = {};
@@ -3651,6 +3671,8 @@ export function PosDeskClient({
               localCartId.current = crypto.randomUUID(); completedLocalReceipt.current = null;
               restorePortableDraft(saved); return true;
             }} />}
+          <GiftPosControl token={liveDraftToken} onCheckout={registerGiftCheckout} receipt={{ ...rewardReceipt, sourceBookingId: draft.sourceBookingId, sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt, customerName: draft.customerName || selectedCustomer?.name, customerLookup: draft.customerLookup || selectedCustomer?.phone, tipAmount: baseTotals.tip_value, note: draft.note, _rewardRevision: rewardView?.request?.revision ?? 0 }} />
+          {(draft.customerId || selectedCustomer?.id) && <VisitRewards key={draft.customerId ?? selectedCustomer?.id} scope="pos" token={liveDraftToken} receipt={rewardReceipt} onChange={setRewardView} />}
           {selectedCustomer ? (
             <div className="flex items-center justify-between gap-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5">
               <div className="min-w-0">
@@ -3762,7 +3784,7 @@ export function PosDeskClient({
               if (isPortableSurface) {
                 return (
                   <div
-                    className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-zinc-200 px-1 py-1.5 last:border-b-0"
+                    className="grid min-h-12 grid-cols-[minmax(0,1fr)_max-content_2.5rem] items-center gap-1 border-b border-zinc-200 px-1 py-1.5 last:border-b-0"
                     data-pos-receipt-line
                     key={line.id}
                     title={__vt(`${rowTitle} ${formatMoney(line.amount)}`)}
@@ -3773,34 +3795,14 @@ export function PosDeskClient({
                       onClick={() => editLine(line)}
                       type="button"
                     >
-                      <span className="flex min-w-0 items-center gap-1.5 text-sm leading-none">
-                        <span
-                          className="truncate font-semibold text-zinc-950"
-                          data-pos-receipt-line-staff
-                        >
-                          {staffLabel}
-                        </span>
-                        <span aria-hidden="true" className="shrink-0 text-zinc-400">
-                          <WorkspaceText text="&middot;" />
-                        </span>
-                        <span
-                          className="truncate text-zinc-600"
-                          data-pos-receipt-line-service
-                        >
-                          {serviceLabel}
-                        </span>
-                        {quantity ? (
-                          <span
-                            className="shrink-0 text-xs font-semibold text-zinc-500"
-                            data-pos-receipt-line-quantity
-                          >
-                            <WorkspaceText text="&times;" />{quantity}
-                          </span>
-                        ) : null}
+                      <span className="block min-w-0 text-sm leading-snug">
+                        <span className="block whitespace-normal break-words font-semibold text-zinc-950" data-pos-receipt-line-service>{serviceLabel}</span>
+                        <span className="mt-0.5 block whitespace-normal break-words text-xs text-zinc-600" data-pos-receipt-line-staff>{staffLabel}</span>
+                        {quantity ? <span className="block text-xs font-semibold text-zinc-500" data-pos-receipt-line-quantity><WorkspaceText text="&times;" />{quantity}</span> : null}
                       </span>
                     </button>
                     <p
-                      className="min-w-[5.25rem] text-right text-sm font-semibold tabular-nums text-zinc-950"
+                      className="whitespace-nowrap text-right text-sm font-semibold tabular-nums text-zinc-950"
                       data-pos-receipt-line-price
                     >
                       {formatMoney(line.amount)}
@@ -4094,6 +4096,12 @@ export function PosDeskClient({
             <WorkspaceText text="Large turn:" /> {formatMoney(defaults.largeTurnThreshold)}
           </p>
         </div>
+        {isPortableSurface && sortedStaff.length === 0 ? (
+          <p role="status" className="shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-4 text-sm text-zinc-600" data-pos-staff-empty>
+            <span className="block font-semibold text-zinc-800"><WorkspaceText text={defaults.staffCheckInEnabled ? "No staff checked in yet" : "No staff available"} /></span>
+            {defaults.staffCheckInEnabled ? <span className="mt-1 block"><WorkspaceText text="Check in a staff member to show them here." /></span> : null}
+          </p>
+        ) : null}
         <div data-pos-staff-grid className="grid max-h-[min(42dvh,390px)] min-h-0 shrink-0 grid-cols-[repeat(auto-fill,minmax(90px,104px))] content-start justify-start gap-2 overflow-y-auto overflow-x-hidden pr-1">
           {sortedStaff.map((member) => {
             const selected = draft.selectedStaffId === member.id;
@@ -4155,7 +4163,7 @@ export function PosDeskClient({
                     }}
                   />
                 ) : null}
-                <span data-pos-staff-name className="relative z-10 block truncate text-[15px] font-semibold leading-tight">
+                <span data-pos-staff-name className={isPortableSurface ? "relative z-10 block whitespace-normal break-words text-[15px] font-semibold leading-tight" : "relative z-10 block truncate text-[15px] font-semibold leading-tight"}>
                   {getFirstName(member.display_name)}
                 </span>
                 {member.service_status === "working" && <span className="relative z-10 block text-[10px]"><WorkspaceText text="Working" />{(member.turns.holdingTurns ?? 0) > 0 ? <> · <WorkspaceText text="Holding" /></> : null}</span>}

@@ -5,6 +5,7 @@ import {
   sameTimeSalesComparison,
 } from "@/lib/today-metric-assessment";
 import "server-only";
+import { giftCashflow } from "@/lib/gift-card-cashflow";
 import type { DailyInputReconciliation } from "@/lib/daily-input-reconciliation";
 
 import {
@@ -1264,8 +1265,11 @@ async function loadLiveDailyPosReport(
     staffId: row.staff_id, staffName: row.staff_name || previousByStaff.get(row.staff_id)?.staffName || "Staff",
     totalEarned: Number(row.service_total), tipAmount: Number(row.tip_amount),
   }));
-  const totalGiftCardCents = 0;
-  const expectedTotalCents = toCents(reconciliation.expectedService);
+  const giftFlowResult = await supabase.rpc("gift_card_day_cashflow", {p_salon:salon.id,p_date:reportDate,p_before:options.closedBefore??null});
+  if(giftFlowResult.error) throw new Error("Gift card source report could not load. Retry before closing the day.");
+  const giftFlow = giftCashflow(giftFlowResult.data);
+  const totalGiftCardCents = giftFlow.redeemed;
+  const expectedTotalCents = toCents(reconciliation.expectedService) - (usesTicketCutoff ? giftFlow.serviceRedeemed : 0);
   const differenceCents = reconciliation.serviceDifference === null ? 0 : toCents(reconciliation.serviceDifference);
 
   return {
