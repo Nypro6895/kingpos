@@ -1,0 +1,103 @@
+{
+  "at": "2026-10-30T02:29:33.713Z",
+  "run": 40990294928,
+  "runAttempt": 1,
+  "commit": "9196c703195249a6f00c0fdfee2d9c61c86683e1",
+  "branch": "codex/combined-journey-review-history-20261029",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/Nypro6895/kingpos/actions/runs/40990294928",
+  "jobs": [
+    {
+      "name": "upload",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:12Z",
+          "completedAt": "2026-10-30T02:12:13Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:13Z",
+          "completedAt": "2026-10-30T02:12:22Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:22Z",
+          "completedAt": "2026-10-30T02:12:24Z"
+        },
+        {
+          "name": "Run npm ci",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:24Z",
+          "completedAt": "2026-10-30T02:12:42Z"
+        },
+        {
+          "name": "Rebuild source-bound production bundle (Services pilot OFF)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:42Z",
+          "completedAt": "2026-10-30T02:12:50Z"
+        },
+        {
+          "name": "Run brew install xcodegen",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:50Z",
+          "completedAt": "2026-10-30T02:12:51Z"
+        },
+        {
+          "name": "Test simulator and unsigned archive",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:12:51Z",
+          "completedAt": "2026-10-30T02:25:28Z"
+        },
+        {
+          "name": "Sign and upload to TestFlight",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:25:28Z",
+          "completedAt": "2026-10-30T02:28:53Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:28:53Z",
+          "completedAt": "2026-10-30T02:28:56Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:28:56Z",
+          "completedAt": "2026-10-30T02:29:01Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:01Z",
+          "completedAt": "2026-10-30T02:29:02Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:02Z",
+          "completedAt": "2026-10-30T02:29:14Z"
+        }
+      ]
+    }
+  ]
+}

@@ -1,20 +1,31 @@
 {
-  "at": "2026-10-30T02:23:27.021Z",
-  "owner": "combined-journey-review-history-20261029",
+  "at": "2026-10-30T02:30:48.472Z",
+  "status": "verified-web-and-testflight",
   "web": {
-    "status": "published",
     "deployment": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
     "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
     "receipt": "0b4719ac-03e3-49d2-a387-c9514d1c9ec7"
   },
   "native": {
-    "status": "simulator-tests-and-archive-running",
+    "version": "1.0.0",
+    "build": "72",
+    "commit": "9196c703195249a6f00c0fdfee2d9c61c86683e1",
     "run": 40990294928,
-    "commit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+    "receipt": "61de5c3b-0b28-46ca-9b1b-48e4ed4bc967",
+    "Apple": "VALID",
+    "bothExistingGroups": true
   },
-  "excluded": {
-    "changeId": "profile-layout-defaults-20261029",
-    "reason": "Owner explicitly requested next release"
-  },
-  "proofDirectory": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029"
+  "completedScopes": [
+    "personal-bookings-copy-parity-20261029",
+    "personal-layout-followup-20261029",
+    "customer-journey-20261029",
+    "review-experience-flow-20261029",
+    "history-input-reconciliation-20261029",
+    "payroll-compact-income-20261029"
+  ],
+  "excludedProfile": "profile-layout-defaults-20261029",
+  "otherUnfinishedMarket": "Remains outside this release; commerce/provider acceptance and active diagnostics are separate.",
+  "physicalAcceptance": false,
+  "proofDirectory": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029",
+  "lockReleased": true
 }

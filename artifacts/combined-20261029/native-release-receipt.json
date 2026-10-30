@@ -1,0 +1,49 @@
+{
+  "kind": "release",
+  "summary": "Combined six completed scopes available on existing TestFlight groups; web already verified live; preserve uploaded71 runtime, frozen native application source, hosted retention repair and exclude three-state profile redesign",
+  "changes": [
+    "278ee86c-4f89-4465-a7ce-e25d1f5551eb",
+    "f81ce161-5052-42a1-a62d-26286f102dd7",
+    "9ad7d4cb-2867-4443-8deb-11419a24bb8b",
+    "03dbe2c1-268d-4a00-be3d-d32f472f3f2c",
+    "8468cdce-dfdb-4678-8bd4-cfe77ce4456a",
+    "84daa50f-ab6e-4ca8-bcd5-6fbe62f639c7",
+    "4def5283-a042-4617-87f4-94a6e1781a2c"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "72",
+      "commit": "9196c703195249a6f00c0fdfee2d9c61c86683e1",
+      "evidence": "artifacts/combined-20261029/availability-verified.json"
+    }
+  },
+  "relatedWebRelease": "0b4719ac-03e3-49d2-a387-c9514d1c9ec7",
+  "nativeRun": 40990294928,
+  "webDeployment": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
+  "validation": {
+    "nativeRuntimeCases": 235,
+    "nativeFailures": 0,
+    "hostInvocations": 14,
+    "signedArchiveFiles": 372,
+    "unsignedArchiveFiles": 418,
+    "bundleSha256": "41bd148a800bdf427e4541d5a2c150d24a9821bcff94d2c54fab8f63fea50d17",
+    "existingGroups": [
+      "afe80011-9371-4a4c-afda-025b624f3275",
+      "d94e3e47-4837-485a-abbd-3681b6dfe3bc"
+    ]
+  },
+  "excluded": [
+    "profile-layout-defaults-20261029"
+  ],
+  "physicalAcceptance": {
+    "newSignedBinary": false,
+    "limitation": "Existing physical Safari/fixture checks and prior installed71 are separate from this TestFlight binary."
+  },
+  "id": "61de5c3b-0b28-46ca-9b1b-48e4ed4bc967",
+  "recordedAt": "2026-10-30T02:30:23.390Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\releases\\history\\2026-10-30T02-30-23-390Z-61de5c3b-0b28-46ca-9b1b-48e4ed4bc967.json"
+}

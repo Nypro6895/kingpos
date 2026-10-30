@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-30T02:29:40.763Z",
+  "accepted": true,
+  "operation": "Existing status workflow: GET-only Apple checks, no upload, group/tester/invite/settings mutation",
+  "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+  "uploadedCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1",
+  "body": {
+    "ref": "codex/combined-journey-review-history-20261029",
+    "inputs": {
+      "operation": "availability",
+      "build": "72",
+      "baseline_build": "71",
+      "marketing_version": "1.0.0",
+      "baseline_marketing_version": "1.0.0",
+      "existing_group_id": ""
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "at": "2026-10-30T02:30:17.498Z",
+  "run": 40992002597,
+  "runAttempt": 1,
+  "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+  "branch": "codex/combined-journey-review-history-20261029",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/Nypro6895/kingpos/actions/runs/40992002597",
+  "jobs": [
+    {
+      "name": "status",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:43Z",
+          "completedAt": "2026-10-30T02:29:44Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:44Z",
+          "completedAt": "2026-10-30T02:29:52Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:52Z",
+          "completedAt": "2026-10-30T02:29:53Z"
+        },
+        {
+          "name": "Read exact build and existing group availability",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:53Z",
+          "completedAt": "2026-10-30T02:29:55Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:55Z",
+          "completedAt": "2026-10-30T02:29:56Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:56Z",
+          "completedAt": "2026-10-30T02:29:57Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:57Z",
+          "completedAt": "2026-10-30T02:29:57Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-30T02:29:57Z",
+          "completedAt": "2026-10-30T02:29:57Z"
+        }
+      ]
+    }
+  ]
+}

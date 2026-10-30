@@ -1,0 +1,16 @@
+Đã xác minh web reylumi.com và TestFlight 1.0.0 (72).
+
+Web: dpl_8XRRsUnjuDvShkguZML5qagT2vFa
+Web source: 0d3617c2021769af30d30f064ab5102994ea31c8
+Native source: 9196c703195249a6f00c0fdfee2d9c61c86683e1
+Native run: 40990294928
+Native tests: 235, failures 0; 14 host invocations.
+Apple VALID; cả hai nhóm TestFlight hiện có đã có build. Không phải App Store.
+
+Đã ghép sáu scope: personal-bookings-copy-parity-20261029, personal-layout-followup-20261029, customer-journey-20261029, review-experience-flow-20261029, history-input-reconciliation-20261029, payroll-compact-income-20261029.
+9 migration đã áp dụng. Local build254 pages, 68 focused +15 legal identity +6 compact tests,28 full-schema checks.
+Web source3635 files,0 mismatch/extra; authenticated read-only browser checked Upcoming/History/My Reviews.
+
+Loại riêng: profile-layout-defaults-20261029 (3 trạng thái profile), theo yêu cầu chủ project.
+Market chưa hoàn tất và kích hoạt bán Check Writer không nằm trong lượt này.
+Chưa nghiệm thu binary mới trên iPhone thật; bằng chứng Safari/fixture trước đó không thay thế kiểm tra này.
