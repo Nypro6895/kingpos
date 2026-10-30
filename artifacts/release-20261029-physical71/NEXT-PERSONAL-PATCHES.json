@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-30T00:06:46.995Z",
+  "status": "queued-needs-integration-no-publication",
+  "currentPublished": {
+    "version": "1.0.0",
+    "build": "71",
+    "nativeSource": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+    "web": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+    "publicationReceipt": "67f21d58-f623-4745-a065-13bac2d79655"
+  },
+  "pending": [
+    {
+      "event": "949f8123-0eb4-4282-a811-aa99409a1027",
+      "change": "personal-bookings-copy-parity-20261029",
+      "status": "needs-integration",
+      "productCommit": "56b5d6e",
+      "scope": "Earlier Booking separator copy fix; not in71"
+    },
+    {
+      "event": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+      "change": "personal-layout-followup-20261029",
+      "status": "needs-integration",
+      "productCommit": "84adb8fbce1c93e2ead20d5a181c3cb89bc869a6",
+      "snapshot": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029\\artifacts\\personal-layout-followup-20261029\\source",
+      "files": [
+        {
+          "file": "app/explore/explore-client.tsx",
+          "snapshotSha256": "3de391ce75afb8808485a2475b8ea4f941de9c9efecc6cdb543946b278ad5b9b",
+          "gitBlobSha256": "3de391ce75afb8808485a2475b8ea4f941de9c9efecc6cdb543946b278ad5b9b",
+          "normalizedMatch": true
+        },
+        {
+          "file": "app/account/account-profile-editor.tsx",
+          "snapshotSha256": "c254de5e88a178d1b440ad8267625252c2b1deedf6fa1cbaf5652aada113fc73",
+          "gitBlobSha256": "705daa9046b91940167e3e17290069b377fcdf404e1e0a931cc28a3146f73d6d",
+          "normalizedMatch": true
+        },
+        {
+          "file": "app/account/account-profile-editor.module.css",
+          "snapshotSha256": "2678187cd7439910d9bea2871fc91a1a06db8502bf14b2b7c488b2af001d2ed8",
+          "gitBlobSha256": "2678187cd7439910d9bea2871fc91a1a06db8502bf14b2b7c488b2af001d2ed8",
+          "normalizedMatch": true
+        }
+      ],
+      "scope": "Explore grid constraints; reachable sticky Personal Save/Cancel",
+      "validation": [
+        {
+          "name": "TSX transforms and CSS module parse",
+          "result": "passed",
+          "evidence": "Both TSX transforms0warnings; CSS module esbuild bundle parses"
+        },
+        {
+          "name": "Source-derived responsive geometry",
+          "result": "passed",
+          "evidence": "artifacts/personal-layout-followup-20261029/geometry-results.json; profile before offscreen and after visible; Explore fixture in bounds but did not reproduce physical463pt defect"
+        },
+        {
+          "name": "Scoped whitespace",
+          "result": "passed",
+          "evidence": "git -c core.whitespace=cr-at-eol diff --check"
+        },
+        {
+          "name": "Combined build/native/physical acceptance",
+          "result": "pending",
+          "evidence": "Not deployed; native bundled TSX/CSS needs integration and iPhone recheck. HANDOFF.txt documents limits."
+        }
+      ],
+      "handoff": "C:/Reylumi-worktrees/personal-audit-fixes-20261029/artifacts/personal-layout-followup-20261029/HANDOFF.txt"
+    }
+  ],
+  "ownerDecisions": {
+    "retainStaticMembershipsReviewsGiftCards": true,
+    "retainAllRoleNotifications": true,
+    "bookingActivitySemanticsUnchanged": true,
+    "appointmentsAndVisitsInformationArchitecture": "Proposal only; no implementation authorized by this notice"
+  },
+  "acceptance": {
+    "productionBuild": false,
+    "nativeBuild": false,
+    "physicalExploreDefectClosed": false,
+    "profileGeometry": "Chromium fixture passed, not physical keyboard acceptance",
+    "needsCombinedNativeAssessment": true
+  },
+  "standaloneDeploymentAuthorized": false,
+  "schedule": null
+}
