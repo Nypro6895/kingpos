@@ -75,7 +75,9 @@ function defaultJobs(role: Audience, value: AppLocalContext): Job[] {
       read("/staff/my-work?tab=payroll", "staff.my-work", { tab: "payroll", staffId: id }),
       read("/staff/my-work?tab=analysis", "staff.my-work", { tab: "analysis", staffId: id }), ...common] : [];
   }
-  return [exploreJobs()[0], read("/my-bookings", "page.customer-bookings"), read("/beauty", "page.beauty"), read("/activity", "customer.activity"),
+  // Private journey history is read on entry, never used as off-route startup
+  // work. The two tabs then share the same accepted resource and cache key.
+  return [exploreJobs()[0], read("/beauty", "page.beauty"),
     read("/my-place", "page.my-place"), read("/more/saved-post", "customer.saved-posts"), read("/more/following", "customer.following"),
     read("/explore/favorites", "customer.favorites"), ...common.filter(job => job.name !== "page.my-place"), ...exploreJobs().slice(1)];
 }
@@ -122,7 +124,7 @@ function currentJobs(role: Audience, value: AppLocalContext, url: URL): Job[] {
     if (role === "guest") return [];
     if (pathname === "/my-bookings" || /^\/my-bookings\/[^/]+$/.test(pathname)) {
       const bookingId = pathname.split("/")[2];
-      if (!bookingId || uuid.test(bookingId)) return [read(path, "page.customer-bookings", { ...query(url, ["tab", "details"]), ...(bookingId ? { bookingId } : {}) })];
+      if (!bookingId || uuid.test(bookingId)) return [read(path, "customer.activity")];
     }
     if (pathname === "/beauty" || pathname === "/activity") return [read(path, pathname === "/beauty" ? "page.beauty" : "customer.activity")];
     if (["/more/saved-post", "/more/saved-posts", "/more/saved-designs"].includes(pathname)) return [read(path, "customer.saved-posts", query(url, ["filter", "page", "q"]))];

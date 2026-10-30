@@ -222,6 +222,26 @@ test('Personal QR → check-in → Staff → POS → History on the complete int
   assert.equal(rpc(owner,'personal_qr_staff_send',{p_salon:salon,p_token:code}).status,'connected');
   assertDenied(outsider,'accept_staff_connection_invite_by_request',{p_request_id:sent.requestId});
  });
+ await t.test('Journey display metadata preserves exact canonical history and financial payloads; private read remains inaccessible',()=>{
+  const customerId=f.sql(`select id from customers where location_id='${salon}' and customer_user_id='${customer.profileId}' limit 1`);
+  f.sql(`alter table bookings disable trigger enforce_booking_time_policy;
+    insert into bookings(id,salon_id,customer_id,customer_user_id,start_at,end_at,status)
+    select gen_random_uuid(),'${salon}','${customerId}','${customer.profileId}',now()+interval '20 days'+i*interval '1 day',now()+interval '20 days 45 minutes'+i*interval '1 day','confirmed' from generate_series(1,11) i;
+    alter table bookings enable trigger enforce_booking_time_policy;`);
+  const compared=f.json(`with claims as materialized (select set_config('request.jwt.claim.sub','${customer.authId}',true),set_config('request.jwt.claims','{"sub":"${customer.authId}","role":"authenticated"}',true))
+    select jsonb_build_object('before',public.get_customer_activity_before_journey(100),'after',public.get_customer_activity(100)) from claims`);
+  assert.equal(compared.before.ok,true);assert.equal(compared.after.ok,true);
+  assert.ok(compared.after.bookings.filter(b=>b.status==='confirmed'&&Date.parse(b.startAt)>Date.now()).length>=11,'Bookings is not truncated to the old10-item Activity preview');
+  assert.ok(compared.after.purchases.length>0);
+  for(const p of compared.after.purchases)assert.ok(['appointment','walk_in','unknown'].includes(p.visitType));
+  assert.ok(compared.after.purchases.some(p=>p.visitType==='walk_in'));
+  assert.ok(compared.after.purchases.some(p=>p.visitType==='appointment'));
+  const stripped={...compared.after,purchases:compared.after.purchases.map(({visitType,...p})=>p)};
+  assert.deepEqual(stripped,compared.before,'only one display field may differ; money, service snapshots, evidence and order stay exact');
+  assertDenied(customer,'get_customer_activity_before_journey',{p_limit:100});
+  assertDenied(null,'get_customer_activity',{p_limit:100});
+  const unrelated=rpc(outsider,'get_customer_activity',{p_limit:100});assert.equal(unrelated.ok,true);assert.deepEqual(unrelated.purchases,[]);
+ });
  await runQrCapabilityAndRetentionChecks(t,f,{owner,staffUser,customer,account,salon,staff,services,visit});
  f.save('qr-full-flow-results.json',{completed:true,migrations:f.evidence.migrationHashes.length,realAuth:true,realPostgrest:true,realRls:true,realFinancialCore:true});
 });

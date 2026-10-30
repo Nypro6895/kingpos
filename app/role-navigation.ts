@@ -157,11 +157,11 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "grid",
     },
     {
-      description: "Appointments, receipts, and salon visits tied to your profile.",
-      href: "/activity",
+      description: "Past appointments, visits and receipts.",
+      href: "/my-bookings?tab=history",
       icon: "receipt",
       id: "personal-activity",
-      label: "Activity",
+      label: "Salon history",
       navigationIcon: "receipt",
     },
     {

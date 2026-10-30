@@ -2,11 +2,13 @@
 
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { AppLocalHelp } from "@/components/app-local-help";
-import { AppLocalCustomerBookings, AppLocalCustomerReceipt } from "@/components/app-local-customer-views";
+import { AppLocalCustomerReceipt } from "@/components/app-local-customer-views";
 import { AppLocalSavedPosts, AppLocalFollowing, AppLocalFavorites } from "@/components/app-local-social-views";
 import { AppLocalMore } from "@/components/app-local-more";
 import { AppLocalSupport, AppLocalSupportConversation } from "@/components/app-local-support";
 import { CustomerActivityView } from "@/app/activity/customer-activity-view";
+import { CustomerJourneyLoading } from "@/app/activity/customer-journey";
+import { customerJourneyTab } from "./customer-journey";
 import { StaffMyWorkView } from "@/app/staff/my-work/staff-my-work-view";
 import { StaffScheduleView } from "@/app/staff/appointments/staff-schedule-view";
 import { StaffWorkdayView } from "@/app/staff/workday/staff-workday-view";
@@ -30,16 +32,17 @@ import type { CustomerActivityResource } from "@/app/activity/customer-activity-
 import type { StaffMyWorkResource, StaffMyWorkSearchParams } from "./staff-my-work-experience";
 import type { StaffScheduleResource, StaffWorkdayResource } from "./staff-read-view";
 import type { MarketExperienceData } from "@/types/market-experience";
-import type { AppLocalBookingsData, AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData, AppLocalFavoritesData, AppLocalSettingsData, AppLocalStaffIdentityData, AppLocalMyPlaceData, AppLocalServicesData, AppLocalMoreData, AppLocalSupportData, AppLocalSupportCaseData } from "./app-local-platform-types";
+import type { AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData, AppLocalFavoritesData, AppLocalSettingsData, AppLocalStaffIdentityData, AppLocalMyPlaceData, AppLocalServicesData, AppLocalMoreData, AppLocalSupportData, AppLocalSupportCaseData } from "./app-local-platform-types";
 
 export type AppLocalPageProps = { path: string; context: AppLocalContext | null; navigate: (href: string) => void; host?: AppLocalHost };
 export type AppLocalPage = { id: string; title: string; requiresContext: boolean; Component: ComponentType<AppLocalPageProps>; features: readonly string[] };
-type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>) => ReactNode; publicView?: (scope?: string) => ReactNode };
+type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean}) => ReactNode; publicView?: (scope?: string) => ReactNode };
 function ReadView<T>({ context, name, args = {}, title, children, publicView }: ReadViewProps<T>) {
   const scope = context?.context.scope;
   const state = useAppLocalResource<T>(scope, name, args, { enabled: Boolean(scope) });
-  if (state.data !== undefined && context) return children(state.data, state.refresh);
+  if (state.data !== undefined && context) return children(state.data, state.refresh,{error:state.error,refreshing:state.refreshing});
   if (publicView) return publicView(scope);
+  if (name === "customer.activity") return <CustomerJourneyLoading failed={state.error} onRetry={()=>void state.refresh()}/>;
   if (name === "page.settings") return <main className="settings-hub settings-route-loading"><h1>{title}</h1>{state.error?<div role="alert"><p>{state.error}</p><button type="button" onClick={()=>void state.refresh()}>Try again</button></div>:<SettingsLoading/>}</main>;
   return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{title}</h1>{state.error ? <div role="alert"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div> : <p role="status">{context ? "Opening…" : "Connect to verify your account."}</p>}</main>;
 }
@@ -78,11 +81,11 @@ function ServicesPage(props: AppLocalPageProps) {
   return <ReadView<AppLocalServicesData> {...props} name="page.services" title="Services">{data => <ServicesManager {...data} expectedSalonId={props.context?.context.salonId ?? undefined} catalogScope={props.context?.context.scope} initialServiceId={urlFor(props.path).searchParams.get("service")} />}</ReadView>;
 }
 function MorePage(props: AppLocalPageProps) { return <ReadView<AppLocalMoreData> {...props} name="page.more" title="More">{data => <AppLocalMore {...data} />}</ReadView>; }
-function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Activity">{data => <CustomerActivityView activity={data.result} />}</ReadView>; }
+function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Appointments & visits">{(data,refresh,feedback) => <CustomerActivityView activity={data.result} initialTab="history" onRefresh={refresh} error={feedback.error} refreshing={feedback.refreshing}/>}</ReadView>; }
 function BookingsPage(props: AppLocalPageProps) {
-  const url = urlFor(props.path), args = queryFor(props.path, ["tab", "details"]);
-  if (url.pathname.startsWith("/my-bookings/")) args.bookingId = url.pathname.slice("/my-bookings/".length);
-  return <ReadView<AppLocalBookingsData> {...props} name="page.customer-bookings" args={args} title="My bookings">{data => <AppLocalCustomerBookings data={data} error={url.searchParams.get("error") ?? undefined} message={url.searchParams.get("message") ?? undefined} />}</ReadView>;
+  const url = urlFor(props.path), tab = customerJourneyTab(url.searchParams.get("tab"));
+  const details = url.pathname.startsWith("/my-bookings/") ? url.pathname.slice("/my-bookings/".length) : url.searchParams.get("details")??undefined;
+  return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Appointments & visits">{(data,refresh,feedback) => <CustomerActivityView key={`${tab}:${details??""}:${url.searchParams.get("tab")??""}`} activity={data.result} initialTab={tab} initialStatus={url.searchParams.get("tab")==="cancelled"?"cancelled":"all"} initialSelectedBookingId={details} onRefresh={refresh} refreshing={feedback.refreshing} error={feedback.error??url.searchParams.get("error")??undefined} message={url.searchParams.get("message")??undefined}/>}</ReadView>;
 }
 function ReceiptPage(props: AppLocalPageProps) { return <ReadView<AppLocalReceiptData> {...props} name="page.customer-receipt" args={{ ticketId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Receipt">{data => <AppLocalCustomerReceipt {...data} />}</ReadView>; }
 function SavedPage(props: AppLocalPageProps) { return <ReadView<AppLocalSavedPostsData> {...props} name="customer.saved-posts" args={queryFor(props.path, ["filter", "page", "q"])} title="Saved posts">{data => <AppLocalSavedPosts data={data} />}</ReadView>; }
@@ -136,8 +139,8 @@ const definitions = [
   { id: "my-place", title: "My Place", requiresContext: true, Component: MyPlacePage, features: ["original-workspaces", "original-requests", "original-invitations", "original-lifecycle"] },
   { id: "services", title: "Services", requiresContext: true, Component: ServicesPage, features: ["original-complete-service-manager", "original-configurations", "original-confirmations"] },
   { id: "more", title: "More", requiresContext: true, Component: MorePage, features: ["complete-role-menu", "original-workspace-actions"] },
-  { id: "customer.activity", title: "Activity", requiresContext: true, Component: ActivityPage, features: ["upcoming", "history", "original-detail-drawers"] },
-  { id: "customer.bookings", title: "My bookings", requiresContext: true, Component: BookingsPage, features: ["upcoming", "past", "cancelled", "original-details"] },
+  { id: "customer.activity", title: "Appointments & visits", requiresContext: true, Component: ActivityPage, features: ["shared-journey", "history", "original-detail-drawers"] },
+  { id: "customer.bookings", title: "Appointments & visits", requiresContext: true, Component: BookingsPage, features: ["shared-journey", "upcoming", "history", "legacy-deep-links"] },
   { id: "customer.receipt", title: "Receipt", requiresContext: true, Component: ReceiptPage, features: ["complete-services", "totals", "recorded-payments", "original-visit-review"] },
   { id: "customer.saved-posts", title: "Saved posts", requiresContext: true, Component: SavedPage, features: ["complete-list", "search", "filters", "pagination", "original-remove"] },
   { id: "customer.following", title: "Following", requiresContext: true, Component: FollowingPage, features: ["complete-list", "search", "filters", "pagination", "original-unfollow"] },

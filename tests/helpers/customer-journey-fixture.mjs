@@ -1,0 +1,11 @@
+export const journeyId=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+export function journeyFixture(){
+ const salon={id:journeyId(1),name:'Lumi Nail Studio',location:'Milwaukee, WI',imageUrl:null,coverUrl:null};
+ const service={id:journeyId(2),name:'Full Set',staffName:'Alex',lineTotal:40};
+ const booking=(n,changes={})=>({id:'booking-'+journeyId(n),bookingId:journeyId(n),type:'booking',currency:'USD',href:'/my-bookings/'+journeyId(n),startAt:'2026-10-30T14:00:00Z',endAt:'2026-10-30T14:45:00Z',occurredAt:'2026-10-30T14:00:00Z',timezone:'America/Chicago',status:'upcoming',bookingStatus:'confirmed',salon,services:[service],staffName:'Alex',title:'Full Set',total:40,...changes});
+ const evidence={bookingId:journeyId(12),visitId:journeyId(90),checkedInAt:'2026-10-29T18:55:00Z',ticket:null,manualLink:false,candidates:[]};
+ const active=booking(12,{status:'in_service',bookingStatus:'in_service',visitState:'in_service',historyEvidence:evidence,startAt:'2026-10-29T19:30:00Z'});
+ const paid={id:'purchase-'+journeyId(80),type:'purchase',ticketId:journeyId(80),ticketNumber:'#1042',bookingId:journeyId(13),status:'completed',occurredAt:'2026-10-28T20:00:00Z',appointmentStartAt:'2026-10-28T19:00:00Z',checkedInAt:'2026-10-28T18:55:00Z',timezone:'America/Chicago',currency:'USD',href:'/activity/receipts/'+journeyId(80),salon,services:[{...service,name:'Gel Manicure',lineTotal:40},{...service,id:journeyId(3),name:'Classic Pedicure',lineTotal:50}],title:'Gel Manicure · Classic Pedicure',total:108,verifiedVisit:null};
+ const history=[active,paid,booking(13,{status:'past_appointment',startAt:'2026-10-28T19:00:00Z',endAt:'2026-10-28T19:45:00Z',occurredAt:'2026-10-28T19:00:00Z'}),booking(14,{status:'past_appointment',bookingStatus:'completed',startAt:'2026-10-24T15:00:00Z',occurredAt:'2026-10-24T15:00:00Z'}),booking(15,{status:'cancelled',bookingStatus:'cancelled',startAt:'2026-10-23T15:00:00Z',occurredAt:'2026-10-23T15:00:00Z'}),booking(16,{status:'no_show',bookingStatus:'no_show',noShowKind:'excused',startAt:'2026-10-21T15:00:00Z',occurredAt:'2026-10-21T15:00:00Z'})];
+ return {upcoming:[booking(10),booking(11,{bookingStatus:'pending',startAt:'2026-10-31T14:00:00Z',occurredAt:'2026-10-31T14:00:00Z'})],history,salonCount:1,totalCount:8};
+}

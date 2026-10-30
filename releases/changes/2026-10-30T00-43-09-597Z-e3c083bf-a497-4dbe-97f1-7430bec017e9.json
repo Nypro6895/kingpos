@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "customer-journey-20261029",
+  "status": "working",
+  "summary": "Implement owner-approved Appointments & visits proposal: shared Bookings/Activity presentation, clear upcoming/history/active visits, compact filters and detail actions, check-in scanner/Personal QR entry. Preserve canonical money, booking mutations, server identity/permissions and one-visit check-in.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/activity/customer-activity-view.tsx",
+    "app/activity/customer-activity-client.tsx",
+    "app/activity/customer-journey.tsx",
+    "app/activity/customer-journey.module.css",
+    "lib/customer-journey.ts",
+    "app/(app)/my-bookings/page.tsx",
+    "app/(app)/activity/page.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-prefetch-plan.ts",
+    "app/role-navigation.ts",
+    "app/activity/history-details-drawer.tsx",
+    "app/qr/personal-qr-client.tsx",
+    "app/(app)/qr/page.tsx"
+  ],
+  "source": {
+    "commit": "186b37f"
+  },
+  "validation": [
+    {
+      "name": "Journey data and UI regression checks",
+      "result": "pending"
+    },
+    {
+      "name": "Physical device and integrated build",
+      "result": "pending"
+    }
+  ],
+  "id": "e3c083bf-a497-4dbe-97f1-7430bec017e9",
+  "recordedAt": "2026-10-30T00:43:09.597Z",
+  "worktree": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

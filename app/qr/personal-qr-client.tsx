@@ -13,13 +13,13 @@ import { checkinPersonalQr, loadPersonalQr, loadPersonalQrCatalog } from "./acti
 import styles from "./personal-qr.module.css";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
-export function PersonalQrClient({ viewerId, initial, initialError, entry, initialCatalog, initialVisitId, customerName = "Guest" }: {
+export function PersonalQrClient({ viewerId, initial, initialError, entry, initialCatalog, initialVisitId, initialScan = false, customerName = "Guest" }: {
   viewerId: string; initial: PersonalQrWorkspace | null; initialError?: string;
-  entry?: string; initialCatalog?: PersonalQrCatalog; initialVisitId?: string; customerName?: string;
+  entry?: string; initialCatalog?: PersonalQrCatalog; initialVisitId?: string; initialScan?: boolean; customerName?: string;
 }) {
   const [data, setData] = useState(initial), [error, setError] = useState(initialError ?? "");
   const [online, setOnline] = useState(true), [now, setNow] = useState(() => Date.now());
-  const [camera, setCamera] = useState(false), [busy, setBusy] = useState(false);
+  const [camera, setCamera] = useState(initialScan && !initialVisitId && !entry), [busy, setBusy] = useState(false);
   const [catalog, setCatalog] = useState(initialCatalog ?? null), [entryId, setEntryId] = useState(entry ?? "");
   const [selected, setSelected] = useState<string[]>([]), [visitId, setVisitId] = useState(initialVisitId ?? null);
   const [manualCode, setManualCode] = useState("");
@@ -103,7 +103,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
       {camera ? <StaffQrScanner onCode={code => void scan(code)} onClose={closeCamera} hint="Point at the QR on the salon check-in screen." fallbackMessage="Allow camera access, or paste the salon check-in link below." /> : <button type="button" className={styles.scan} disabled={busy || !online || !data} onClick={() => setCamera(true)}><WorkspaceNavigationIcon name="qr" /><WorkspaceText text="Scan salon QR" /></button>}
       <details className={styles.manual}><summary><WorkspaceText text="Have a check-in link?" /></summary><form onSubmit={event => { event.preventDefault(); void scan(manualCode); }}><input type="text" aria-label="Salon check-in link" value={manualCode} onChange={event => setManualCode(event.target.value)} /><button type="submit" disabled={!online || busy}><WorkspaceText text="Open check-in" /></button></form></details>
       {!!activeVisits.length && <section className={styles.list} aria-label="Current check-ins"><h2><WorkspaceText text="Your check-ins" /></h2>{activeVisits.map(item => <VisitRow key={item.visitId} visit={item} onOpen={() => setVisitId(item.visitId)} />)}</section>}
-      <div className={styles.heading}><h2><WorkspaceText text="Recent visits" /></h2><Link href="/activity"><WorkspaceText text="History" /></Link></div>
+      <div className={styles.heading}><h2><WorkspaceText text="Recent visits" /></h2><Link href="/my-bookings?tab=history"><WorkspaceText text="History" /></Link></div>
       <div className={styles.list}>{data?.visits.filter(item => ["paid", "cancelled"].includes(item.status)).slice(0, 3).map(item => <VisitRow key={item.visitId} visit={item} onOpen={() => setVisitId(item.visitId)} />)}</div>
     </>}
     {data && <p className={styles.muted}><WorkspaceText text="Last updated" /> · {new Date(data.updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>}

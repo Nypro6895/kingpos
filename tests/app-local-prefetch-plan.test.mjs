@@ -45,9 +45,21 @@ test('staff plans bind every staff DTO to the trusted current staff; Post uses s
 
 test('personal and guest plans never pull salon or another role resources', () => {
   const jobs = plan(context('customer'), '/', now);
-  for (const name of ['page.explore', 'page.customer-bookings', 'page.beauty', 'customer.activity', 'page.my-place', 'customer.saved-posts', 'customer.following', 'customer.favorites', 'page.more']) assert.ok(jobs.some(row => row.name === name), name);
+  for (const name of ['page.explore', 'page.beauty', 'page.my-place', 'customer.saved-posts', 'customer.following', 'customer.favorites', 'page.more']) assert.ok(jobs.some(row => row.name === name), name);
+  assert.equal(jobs.filter(row=>row.name==='customer.activity').length,0,'private history is not startup prefetch work');
+  assert.ok(!jobs.some(row=>row.name==='page.customer-bookings'));
   assert.ok(!jobs.some(row => /^(?:owner|staff)\.|page\.owner-|page\.services/.test(row.name)));
   assert.deepEqual(plan(context('public'), '/', now).map(row => row.name), ['page.explore', 'page.explore-extras', 'page.explore-feed']);
+});
+
+test('Bookings, History and the legacy Activity entry share one exact named-read key',()=>{
+  for(const path of ['/my-bookings','/my-bookings?tab=history','/my-bookings?tab=past','/my-bookings?tab=cancelled','/activity','/my-bookings/'+viewer]){
+    const jobs=plan(context('customer'),path,now);
+    assert.equal(jobs[0].name,'customer.activity',path);
+    assert.deepEqual(jobs[0].args,{},path);
+    assert.equal(jobs.filter(row=>row.name==='customer.activity').length,1,path);
+    assert.ok(!jobs.some(row=>row.name==='page.customer-bookings'),path);
+  }
 });
 
 test('accepted authority is never inferred from display role, arbitrary online proof or old leases', () => {

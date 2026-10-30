@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { loadHistoryEvidenceAction, setHistoryLinkAction } from "./history-link-actions";
 import { historyTicketTotals, type HistoryEvidence } from "@/lib/booking-history";
 
-export function HistoryLinkControl({ bookingId, evidence: initial, timezone = "America/Chicago", owner = false }: {
-  bookingId: string; evidence?: HistoryEvidence; timezone?: string; owner?: boolean;
+export function HistoryLinkControl({ bookingId, evidence: initial, timezone = "America/Chicago", owner = false, onChanged }: {
+  bookingId: string; evidence?: HistoryEvidence; timezone?: string; owner?: boolean; onChanged?:()=>void;
 }) {
   const [evidence, setEvidence] = useState(initial);
   const [error, setError] = useState("");
@@ -30,7 +30,7 @@ export function HistoryLinkControl({ bookingId, evidence: initial, timezone = "A
       dialog.current?.close();
       const fresh = await loadHistoryEvidenceAction(bookingId);
       setEvidence(fresh.evidence);
-      router.refresh();
+      if(onChanged)onChanged();else router.refresh();
     });
   }
   if (!owner && !evidence?.manualLink && !evidence?.candidates.length) return null;

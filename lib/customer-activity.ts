@@ -87,6 +87,7 @@ export type CustomerActivityStatus =
   | "in_service";
 
 export type CustomerPurchaseActivity = {
+  visitType?: "appointment" | "walk_in" | "unknown";
   bookingId?: string;
   appointmentStartAt?: string;
   checkedInAt?: string | null;
@@ -107,6 +108,8 @@ export type CustomerPurchaseActivity = {
 };
 
 export type CustomerBookingActivity = {
+  bookingStatus?: BookingStatus;
+  visitState?: string;
   historyEvidence?: HistoryEvidence;
   noShowKind?: import("@/lib/booking-no-show").NoShowKind;
   bookingId: string;
@@ -127,6 +130,7 @@ export type CustomerBookingActivity = {
 };
 
 export type CustomerVisitActivity = {
+  visitState?: string;
   type: "visit"; id: string; href: string; occurredAt: string; timezone: string;
   salon: CustomerActivitySalon; services: CustomerActivityService[]; title: string;
   status: "checked_in" | "in_service"; total: number; currency: string;
@@ -408,6 +412,7 @@ function mapPurchaseActivity(entry: unknown): CustomerPurchaseActivity | null {
     title: activityTitle(services, "Purchase"),
     total: totals.total,
     type: "purchase",
+    visitType: raw.visitType === "walk_in" || raw.visitType === "appointment" ? raw.visitType : "unknown",
     verifiedVisit: parseVerifiedVisit(raw.verifiedVisit),
   };
 }
@@ -480,6 +485,7 @@ function mapBookingActivity(
       0,
     ),
     type: "booking",
+    bookingStatus: normalizeBookingStatus((readString(raw.status) ?? "confirmed") as BookingStatus),
   };
 }
 
@@ -561,15 +567,18 @@ export async function getCustomerActivity(input?: {
       Boolean(activity),
     );
   const evidence = (asArray(payload.evidence) as HistoryEvidence[]);
+  const visitStates = new Map(asArray(payload.visits).map(entry=>{const raw=asRecord(entry);return [readUuid(raw.id),readString(raw.status)] as const;}));
   const evidenceById = new Map(evidence.map(item => [item.bookingId, item]));
   const linkedBookings = bookings.filter(booking => {
     booking.historyEvidence = evidenceById.get(booking.bookingId);
     const item = booking.historyEvidence;
+    if(item?.visitId)booking.visitState=visitStates.get(item.visitId)??undefined;
     if (item?.ticket) {
       const purchase = purchases.find(p => p.ticketId === item.ticket!.ticketId) ?? mapPurchaseActivity(item.ticket);
       if (purchase) {
         if (!purchases.includes(purchase)) purchases.push(purchase);
         purchase.bookingId = booking.bookingId;
+        purchase.visitType = "appointment";
         purchase.appointmentStartAt = booking.startAt;
         purchase.checkedInAt = item.checkedInAt;
         purchase.timezone = booking.timezone;
@@ -578,7 +587,7 @@ export async function getCustomerActivity(input?: {
         return false;
       }
     }
-    if (item?.checkedInAt && !["cancelled", "no_show"].includes(booking.status)) booking.status = "checked_in";
+    if (item?.checkedInAt && !["cancelled", "no_show", "in_service"].includes(booking.status)) booking.status = "checked_in";
     return true;
   });
   const visits: CustomerVisitActivity[] = asArray(payload.visits).flatMap(entry => {
@@ -588,7 +597,7 @@ export async function getCustomerActivity(input?: {
     if (!id || !at || raw.ticketId || raw.bookingId || evidence.some(item => item.visitId === id)) return [];
     return [{ type: "visit" as const, id: `visit-${id}`, href: "/activity", occurredAt: at,
       timezone: readString(raw.timezone) ?? "America/Chicago", salon: parseSalon(raw.salon), services: parseServices(raw.services),
-      title: "Checked in", status: raw.status === "in_service" ? "in_service" as const : "checked_in" as const, total: 0, currency: "USD" }];
+      title: "Checked in", visitState:readString(raw.status)??undefined, status: raw.status === "in_service" ? "in_service" as const : "checked_in" as const, total: 0, currency: "USD" }];
   });
   const upcoming = linkedBookings
     .filter((booking) => booking.status === "upcoming")

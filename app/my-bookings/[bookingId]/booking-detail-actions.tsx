@@ -647,7 +647,7 @@ export function BookingDetailActions({
             ) : null}
 
             {canBookAgain ? (
-              <Link
+              <Link prefetch={false}
                 className={embedded ? "inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-brand-orange px-3 text-sm font-semibold text-white hover:bg-brand-orange-hover" : classNames(styles.primaryButton, "w-full px-4")}
                 href={`/book/${booking.salon_id}`}
               >
@@ -683,7 +683,7 @@ export function BookingDetailActions({
             ) : null}
 
             {!embedded && canViewSalon ? (
-              <Link
+              <Link prefetch={false}
                 className={classNames(styles.secondaryButton, "w-full px-4")}
                 href={`/explore/salons/${booking.salon_id}`}
               >
