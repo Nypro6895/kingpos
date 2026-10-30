@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "gift-pos-delivery-20261030",
+  "status": "working",
+  "summary": "Preserve issued guest Gift delivery QR after the cart resets and support Gift-only through the existing Portable POS Submit. No ledger/payment change.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/gift-card/pos-gift-card.tsx",
+    "components/rewardlumi/owner-cart-benefits.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/pos-desk-client.tsx"
+  ],
+  "dependencies": [
+    "gift-reward-sale-integration-20261030"
+  ],
+  "validation": [
+    {
+      "name": "Actual guest Gift delivery and Portable Submit UI",
+      "result": "pending"
+    }
+  ],
+  "id": "c922c9c3-7082-4281-962e-fb25c93429c5",
+  "recordedAt": "2026-10-30T19:09:42.203Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

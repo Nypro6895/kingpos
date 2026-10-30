@@ -1,0 +1,49 @@
+{
+  "kind": "release",
+  "summary": "Published tested first-party Gift/Reward and Portable presentation to web; Windows0.7.4 public download/feed verified end-to-end. Market excluded. iOS source-bound pipeline running, Apple publication not yet claimed.",
+  "changes": [
+    "b1fc0fec-ca35-4527-b223-d3484a760c6e",
+    "d237af5b-f4f8-4b0c-a5ab-7eabfc9ff505",
+    "1b43bb3a-160b-4529-b3a0-516adb0e62a6",
+    "6ee1293c-79fc-410b-93e8-122c4169b096",
+    "1d2bec91-bdd8-4beb-8262-2efe761b0d31"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7t28Vm7CwNvZEffPYBQLGDpy17Hb",
+      "baselineDeploymentId": "dpl_AFsaE3G65kP9w5mHLJHnAVQUvKw9",
+      "sourceSha256": "5d0e2d513f33e93aadea9cf1dba8a7546cd7e3397e85604b59e1df06ec070b2d",
+      "overlaySha256": "be9b36f114ed953edcef11b57b02cd84fc5e814327af30011fa650e5f1898549",
+      "sourceCommit": "bdfb5898ab4cd62a96f5dab0b7e2f9c5c99c035c",
+      "evidence": "artifacts/gift-sale-integration-20261030/web-live-source-verified.json",
+      "http": "artifacts/gift-sale-integration-20261030/http-live.json",
+      "migration": "artifacts/gift-sale-integration-20261030/production-migration-applied.json",
+      "windows": {
+        "version": "0.7.4",
+        "bytes": 111708701,
+        "sha256": "703a307fa153f59155e29c9e0cb5af8d4b1903f62f46f932bed8e7ac075d6b37",
+        "sha512": "hu+lHHJ0r8HDN0K89HxJuxCNU6+J3aUfAWBlnJLYmn+3GDPsf+wICA5pXX5bYj8/ghhnbNjtj/0BlPm1BC6AMw==",
+        "evidence": "artifacts/gift-sale-integration-20261030/portable-download-live-verified.json"
+      },
+      "uploadExcluded": [
+        {
+          "file": ".gitignore",
+          "reason": "Vercel CLI default source exclusion; Git-only generated-directory housekeeping, no runtime source"
+        }
+      ]
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "bdfb5898ab4cd62a96f5dab0b7e2f9c5c99c035c",
+      "run": 41110055760,
+      "evidence": "artifacts/gift-sale-integration-20261030/run-41110055760.json",
+      "reason": "Provider macOS Set up job in progress; no new archive/upload/Apple availability claimed"
+    }
+  },
+  "id": "0a160523-91fc-4e92-8c1e-a813545cbf24",
+  "recordedAt": "2026-10-30T18:59:27.027Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030"
+}

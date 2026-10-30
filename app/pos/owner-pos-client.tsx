@@ -2,7 +2,7 @@
 import { ActionFeedback } from "@/components/action-feedback";
 import { OwnerCartBenefits } from "@/components/rewardlumi/owner-cart-benefits";
 import type { RewardView } from "@/types/rewardlumi";
-import type { GiftCheckout } from "@/components/gift-card/pos-gift-card";
+import { GiftDeliveryReceipt, type GiftCheckout } from "@/components/gift-card/pos-gift-card";
 import type { GiftSession } from "@/types/gift-card";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -87,6 +87,8 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const [openAttempt,retryOpen]=useState(0);
   const [rewardView,setRewardView]=useState<RewardView|null>(null);
   const [giftSession,setGiftSession]=useState<GiftSession|null>(null);
+  const [giftDelivery,setGiftDelivery]=useState<GiftSession|null>(null);
+  useEffect(()=>{setGiftDelivery(null);},[scope]);
   const giftCheckout=useRef<GiftCheckout>(()=>Promise.resolve(null));
   const registerGift=useCallback((fn:GiftCheckout)=>{giftCheckout.current=fn;},[]);
   const busyRef=useRef(false);
@@ -323,12 +325,13 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
         <input id="owner-custom-service-name" autoFocus className="owner-picker-search" autoComplete="off" maxLength={100} value={customName} onChange={event=>setCustomName(event.target.value)} placeholder={__vt('Enter service name')} />
         <button className="owner-custom-done" type="submit" disabled={busy||!customName.trim()}><WorkspaceText text="Done" /></button>
       </form>:null}
-      <div hidden={panel!=='benefits'}>{cart&&<OwnerCartBenefits key={cart.id+":"+(cart.customer?.id??"")} cartId={cart.id} receipt={benefitReceipt} onView={setRewardView} onGift={setGiftSession} onCheckout={registerGift}/>}</div>
+      <div hidden={panel!=='benefits'}>{cart&&<OwnerCartBenefits key={cart.id+":"+(cart.customer?.id??"")} cartId={cart.id} receipt={benefitReceipt} onView={setRewardView} onGift={setGiftSession} onCheckout={registerGift} onDelivery={setGiftDelivery}/>}</div>
       {panel==='ticket'?<><div className="owner-ticket-actions"><button onClick={()=>openPicker('staff')}><WorkspaceText text="Employees" /></button><button onClick={()=>openPicker('services')}><WorkspaceText text="Services" /></button>{selectedLine?<button onClick={()=>{update({lines:cart!.lines.filter(l=>l.id!==selectedLine.id),activeLineId:null});setPanel(null);}}><WorkspaceText text="Remove line" /></button>:null}{preferences.showCustomer?<button onClick={()=>setPanel('customer')}><WorkspaceText text="Customer" /></button>:null}</div>{linesView}<div className="owner-total"><span><WorkspaceText text="Total" /></span><strong>{money(total)}</strong></div><Link href="/pos-tickets" className="owner-skip"><WorkspaceText text="Ticket history →" /></Link></>:null}
       {panel==='staff'||panel==='services'?<><input className="owner-picker-search" aria-label={__vt(panel==='staff'?'Search employees':'Search services')} type="search" placeholder={__vt(panel==='staff'?'Search employees':'Search services')} value={pickerQuery} onChange={e=>setPickerQuery(e.target.value)}/><div className="owner-picker-options owner-picker-choice-grid">
         {panel==='staff'?<>{!ticketDefaults.staffCheckInEnabled?<button onClick={()=>chooseStaff(null)}><WorkspaceText text="No staff assignment" /></button>:null}{staff.filter(s=>s.display_name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart?.staffId)} onClick={()=>chooseStaff(s.id)}><span>{s.display_name}</span><small>{s.turns?.queueTurns??0} <WorkspaceText text="turns" /></small></button>)}{!staff.length?<p><WorkspaceText text="No staff checked in. Check in a staff member to start." /></p>:null}</>:<><div className="owner-picker-shortcuts"><button onClick={()=>chooseService(null)}><WorkspaceText text="Amount only" /></button><button onClick={()=>{setCustomName('');setPanel('custom');}}><WorkspaceText text="Custom services" /></button></div><ServiceCatalog services={reference.services.filter(s=>s.name.toLowerCase().includes(pickerQuery.toLowerCase()))} preferences={preferences} selectedId={selectedLine?selectedLine.serviceId:cart?.serviceId} disabled={busy} onSelect={chooseService}/></>}
       </div></>:null}
       {panel==='customer'?<><input autoComplete="off" aria-label={__vt("Search customers")} placeholder={__vt("Name or phone")} className="owner-picker-search" value={query} onChange={e=>setQuery(e.target.value)}/><div className="owner-picker-options"><button onClick={()=>{update({customer:null});setPanel(null);}}><WorkspaceText text="Walk-in customer" /></button>{customers.map(c=><button key={c.id} onClick={()=>{update({customer:c});setPanel(null);}}>{c.name} · {c.phone?.slice(-4)}</button>)}</div></>:null}
     </dialog>
+    <GiftDeliveryReceipt session={giftDelivery} onClose={()=>setGiftDelivery(null)}/>
   </main>;
 }

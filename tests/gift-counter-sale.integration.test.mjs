@@ -84,5 +84,17 @@ test('Gift future-value sale stays outside current service discount, tip and sta
   const flow=f.rpc(owner,'gift_card_day_cashflow',{p_salon:salon,p_date:day});assert.equal(flow.serviceRedeemed,5000);assert.equal(flow.tipRedeemed,1000);assert.equal(flow.counterSales,0);
   assert.equal(Number(f.sql(`select sum(amount) from pos_payments where ticket_id=(select ticket_id from gift_card_ledger where card_id='${card}' and kind='redeem')`)),60);
  });
+ await t.test('actual anonymous Portable key settles a legacy Gift receipt without client requestId, once with the server session identity',()=>{
+  const key=id();f.sql(`insert into pos_portable_access_keys(id,salon_id,access_id,passcode_salt,passcode_digest,capabilities) values('${key}','${salon}','${id()}','fixture-salt','fixture-digest',array['portable.pos.use','portable.report.view'])`);
+  const signature=f.sql(`select pos_portable_access_signature('${key}','fixture-digest')`),authority={p_salon:salon,p_key:key,p_signature:signature},portable=(op,args)=>f.rpc(null,'gift_card_pos',{...authority,p_op:op,p_args:args});
+  const card=f.sql(`select gift_card_issue('${salon}',10000,null,'${id()}',null)`),credentials=f.json(`select gift_card_credentials('${card}')`);
+  let s=portable('sync',{token:'owner:'+id(),receipt:{discountType:'fixed_amount',discountValue:0,tipAmount:0,lines:[{staffId:staff,serviceId:service,serviceLabel:'Service',total:50,amountInput:'50',amountParts:[50]}]}}).session;
+  s=portable('code',{sessionId:s.id,revision:s.revision,code:credentials.code,pin:credentials.pin}).session;
+  const args={sessionId:s.id,revision:s.revision},result=portable('submit',args);assert.ok(result.ticketId);assert.equal(portable('submit',args).ticketId,result.ticketId);
+  assert.equal(Number(f.sql(`select sum(amount) from pos_payments where ticket_id='${result.ticketId}'`)),50);
+  assert.equal(f.sql(`select request_id from pos_ticket_input_requests where ticket_id='${result.ticketId}'`),s.id);
+  assert.equal(Number(f.sql(`select count(*) from gift_card_ledger where card_id='${card}' and kind='redeem'`)),1);
+  assert.ok(f.http(3000,'/rpc/gift_card_pos','POST',{...authority,p_signature:'wrong',p_op:'submit',p_args:args}).status>=400);
+ });
  f.save('gift-counter-sale-result.json',{passed:true,source:'gift_card_sale',mixedAmountDueCents:15400,canonicalServicePaymentCents:5400,giftPurchaseCents:10000,giftOnlyServiceTickets:0,portableReconciliationPreserved:true,externalPaymentClaim:false});
 });

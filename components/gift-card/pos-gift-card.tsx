@@ -5,13 +5,14 @@ import type { GiftReply, GiftSession, GiftTransport } from "@/types/gift-card";
 import { giftCents, giftMoney } from "@/types/gift-card";
 import { giftApi } from "./gift-api";
 import { GiftQr as QrCodeTile } from "./gift-qr";
+import { giftPublicLink } from "@/lib/gift-public-link";
 import "./gift-card.css";
 
 export type GiftCheckout = () => Promise<GiftReply | null>;
-export function giftLink(kind: "card" | "mobile", token: string) { return `${typeof location === "undefined" ? "" : location.origin}/gift-cards#${kind}=${token}`; }
-export function GiftPosControl({ token, receipt, onCheckout, transport }: { token?: string; receipt: Record<string, unknown>; onCheckout?: (fn: GiftCheckout) => void; transport?: GiftTransport }) {
+export function giftLink(kind: "card" | "mobile", token: string) { return giftPublicLink(kind, token, typeof location === "undefined" ? undefined : location); }
+export function GiftPosControl({ token, receipt, onCheckout, onDelivery, onSession, transport }: { token?: string; receipt: Record<string, unknown>; onCheckout?: (fn: GiftCheckout) => void; onDelivery?: (session: GiftSession) => void; onSession?: (session: GiftSession) => void; transport?: GiftTransport }) {
   const api = useMemo(()=>transport??giftApi("pos"),[transport]); const [session,setSession]=useState<GiftSession>(); const [available,setAvailable]=useState(false); const [installed,setInstalled]=useState(false); const [open,setOpen]=useState(false); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
-  const receiptKey=JSON.stringify(receipt); const current=useRef(session); const lock=useRef(false); const setSnapshot=useCallback((s?:GiftSession)=>{if(!s)return;if(!current.current||s.id!==current.current.id||s.revision>=current.current.revision){if(current.current&&(s.prompt??0)>(current.current.prompt??0))setOpen(true);current.current=s;setSession(s);}},[]);
+  const receiptKey=JSON.stringify(receipt); const current=useRef(session); const lock=useRef(false); const setSnapshot=useCallback((s?:GiftSession)=>{if(!s)return;if(!current.current||s.id!==current.current.id||s.revision>=current.current.revision){if(current.current&&(s.prompt??0)>(current.current.prompt??0))setOpen(true);current.current=s;setSession(s);onSession?.(s);}},[onSession]);
   const latestReceipt=useRef({token,key:receiptKey});
   useLayoutEffect(()=>{latestReceipt.current={token,key:receiptKey};},[token,receiptKey]);
   useEffect(()=>{
@@ -29,14 +30,14 @@ export function GiftPosControl({ token, receipt, onCheckout, transport }: { toke
       let s=current.current;if(!s)return null;
       const hadSelection=Boolean(s.amount||s.purchase);
       if(navigator.onLine){const latest=latestReceipt.current;const bound=await api("sync",{token:latest.token,receipt:JSON.parse(latest.key)});if(latestReceipt.current.token!==latest.token||latestReceipt.current.key!==latest.key)throw new Error("Ticket changed while checking gift cards. Review and submit again.");if(bound.session){s=bound.session;setSnapshot(s);}}
-      if(s.status==="completed"&&(s.amount||s.purchase)){const done=await api("submit",{sessionId:s.id,revision:s.revision});setSnapshot(done.session);return done;}
+      if(s.status==="completed"&&(s.amount||s.purchase)){const done=await api("submit",{sessionId:s.id,revision:s.revision});setSnapshot(done.session);if(done.session?.purchase&&done.session.delivery&&!done.session.collected)onDelivery?.(done.session);return done;}
       if(s.status!=="open"&&(s.amount||s.purchase))throw new Error("Gift card session expired. Reapply before Submit.");
       if(!s.amount&&!s.purchase){if(hadSelection)throw new Error("Ticket changed. Reapply the gift card before Submit.");return null;}
       if(!navigator.onLine)throw new Error("Connect before submitting gift cards. This payment cannot be queued offline.");
       if(s.amount&&!s.approved)throw new Error("Ask the customer to confirm their gift card first.");
-      const result=await api("submit",{sessionId:s.id,revision:s.revision});setSnapshot(result.session);setOpen(Boolean(result.session?.purchase));return result;
+      const result=await api("submit",{sessionId:s.id,revision:s.revision});setSnapshot(result.session);if(result.session?.purchase&&result.session.delivery&&!result.session.collected)onDelivery?.(result.session);setOpen(!onDelivery&&Boolean(result.session?.purchase));return result;
     });
-  },[api,onCheckout,setSnapshot]);
+  },[api,onCheckout,onDelivery,setSnapshot]);
   async function action(op:string,args:Record<string,unknown>={}) { if(lock.current||!current.current)return;lock.current=true;setBusy(true);setError("");try{const s=current.current;const reply=await api(op,{sessionId:s.id,revision:s.revision,...args});setSnapshot(reply.session);if(reply.message)setError(reply.message);}catch(e){if(op==='open'&&e instanceof Error&&e.message.includes('Session changed')){try{const fresh=await api('read',{sessionId:current.current!.id});setSnapshot(fresh.session);if(fresh.session){const retry=await api('open',{sessionId:fresh.session.id,revision:fresh.session.revision,...args});setSnapshot(retry.session);}}catch(retryError){setError((retryError as Error).message);}}else setError(e instanceof Error?e.message:"Gift card action failed");}finally{lock.current=false;setBusy(false);} }
   if(!available)return null;
   return <div className="gc" data-gift-pos><button type="button" style={{width:"100%",justifyContent:"space-between"}} onClick={()=>setOpen(true)}><span>Gift card</span><span>{session?.amount?`−${giftMoney(session.amount)}`:session?.purchase?`+${giftMoney(session.purchase)}`:"Use / Buy"}</span></button>
@@ -46,6 +47,8 @@ export function GiftPosControl({ token, receipt, onCheckout, transport }: { toke
     </GiftDialog>}
   </div>;
 }
+
+export function GiftDeliveryReceipt({session,onClose}:{session:GiftSession|null;onClose:()=>void}) { return session?<GiftDialog session={session} staff onClose={onClose} action={async()=>{}}/>:null; }
 
 export function GiftDialog({ session:s, staff=false, installed=true, busy=false, error="", action, onClose, wallet, children }: { session:GiftSession; staff?:boolean; installed?:boolean; busy?:boolean; error?:string; action:(op:string,args?:Record<string,unknown>)=>Promise<void>; onClose:()=>void; wallet?:()=>Promise<import("@/types/gift-card").GiftCardView[]>; children?:React.ReactNode }) {
   const [code,setCode]=useState("");const [pin,setPin]=useState("");const [amount,setAmount]=useState("100");const [applyDraft,setApplyDraft]=useState({base:s.amount,value:String(s.amount/100)});const applyAmount=applyDraft.base===s.amount?applyDraft.value:String(s.amount/100);const setApplyAmount=(value:string)=>setApplyDraft({base:s.amount,value});const [walletCards,setWalletCards]=useState<import("@/types/gift-card").GiftCardView[]>([]);const [localError,setLocalError]=useState("");const initialFocus=useRef<HTMLButtonElement>(null);

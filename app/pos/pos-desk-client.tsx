@@ -44,8 +44,9 @@ import { PortableCustomerAction } from "@/app/pos/portable/portable-customer-act
 import { PortableDraftControls } from "@/app/pos/portable/portable-draft-controls";
 import { usePortableCloseGuard } from "@/app/pos/portable/use-portable-close-guard";
 import { portableBusinessDate } from "@/lib/portable-business-day";
-import { GiftPosControl, type GiftCheckout } from "@/components/gift-card/pos-gift-card";
+import { GiftPosControl, GiftDeliveryReceipt, type GiftCheckout } from "@/components/gift-card/pos-gift-card";
 import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import type { GiftSession } from "@/types/gift-card";
 import type { RewardView } from "@/types/rewardlumi";
 import { CustomServiceDialog } from "./custom-service-dialog";
 import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
@@ -669,6 +670,8 @@ export function PosDeskClient({
       : "Receipt is locked.";
   const liveDraftToken = liveDraft?.token;
   const giftCheckout = useRef<GiftCheckout>(() => Promise.resolve(null));
+  const [giftSession,setGiftSession]=useState<GiftSession|null>(null);
+  const [giftDelivery,setGiftDelivery]=useState<GiftSession|null>(null);
   const registerGiftCheckout = useCallback((fn: GiftCheckout) => { giftCheckout.current = fn; }, []);
   const [rewardView, setRewardView] = useState<RewardView | null>(null);
   useEffect(() => {
@@ -2491,7 +2494,7 @@ export function PosDeskClient({
       showError("A staff member is no longer working. Choose an available staff member before submitting."); return;
     }
 
-    if (positiveLines.length === 0) {
+    if (positiveLines.length === 0 && !(giftSession?.status === "open" && giftSession.purchase > 0)) {
       setDraftStaffLines([]);
       updateDraft({
         amountInput: "",
@@ -2503,7 +2506,7 @@ export function PosDeskClient({
       return;
     }
 
-    if (positiveLines.length !== staffLines.length) {
+    if (positiveLines.length > 0 && positiveLines.length !== staffLines.length) {
       setDraftStaffLines(positiveLines);
       if (!positiveLines.some((line) => line.id === draft.editingLineId)) {
         const firstLine = positiveLines[0];
@@ -2534,16 +2537,16 @@ export function PosDeskClient({
       selectedCustomer?.name ||
       draft.customerLookup.trim() ||
       "Walk-in";
-    const submittedTotal = totals.total;
+    const submittedTotal = giftSession?.status === "open" ? (giftSession.total + giftSession.purchase - giftSession.amount) / 100 : totals.total;
     startTransition(async () => {
       try {
         setError(null);
         const giftResult = await giftCheckout.current();
-        if (giftResult?.ticketId) {
+        if (giftResult?.ticketId || giftResult?.giftSaleId) {
           holdCompletedDisplayRef.current = true;
           if (localFirstDraft) checkpointPortableDraft({ draft: { ...emptyDraft, giftCardInput: "", note: "" }, lines: [], customer: null });
-          clearDraft(); setRewardView(null);
-          showToast({ amount: formatMoney(submittedTotal), detail: submittedCustomerName, title: "Ticket paid", tone: "success" });
+          clearDraft(); setRewardView(null); setGiftSession(null);
+          showToast({ amount: formatMoney(submittedTotal), detail: submittedCustomerName, title: "Sale saved", tone: "success" });
           setLastAction("Reward and gift checkout complete"); return;
         }
         const input = {
@@ -3671,7 +3674,9 @@ export function PosDeskClient({
               localCartId.current = crypto.randomUUID(); completedLocalReceipt.current = null;
               restorePortableDraft(saved); return true;
             }} />}
-          <GiftPosControl token={liveDraftToken} onCheckout={registerGiftCheckout} receipt={{ ...rewardReceipt, sourceBookingId: draft.sourceBookingId, sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt, customerName: draft.customerName || selectedCustomer?.name, customerLookup: draft.customerLookup || selectedCustomer?.phone, tipAmount: baseTotals.tip_value, note: draft.note, _rewardRevision: rewardView?.request?.revision ?? 0 }} />
+          <GiftDeliveryReceipt session={giftDelivery} onClose={()=>setGiftDelivery(null)}/>
+          <GiftPosControl token={liveDraftToken} onCheckout={registerGiftCheckout} onSession={setGiftSession} onDelivery={setGiftDelivery} receipt={{ ...rewardReceipt, sourceBookingId: draft.sourceBookingId, sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt, customerName: draft.customerName || selectedCustomer?.name, customerLookup: draft.customerLookup || selectedCustomer?.phone, tipAmount: baseTotals.tip_value, note: draft.note, _rewardRevision: rewardView?.request?.revision ?? 0 }} />
+          {giftSession?.status === "open" && (giftSession.purchase > 0 || giftSession.amount > 0) && <div data-gift-sale-summary className="rounded border border-zinc-200 p-2 text-sm"><div>Gift card purchase: {formatMoney(giftSession.purchase/100)}</div><div>Gift card reduction: {formatMoney(giftSession.amount/100)}</div><strong>Amount due: {formatMoney((giftSession.total+giftSession.purchase-giftSession.amount)/100)}</strong></div>}
           {(draft.customerId || selectedCustomer?.id) && <VisitRewards key={draft.customerId ?? selectedCustomer?.id} scope="pos" token={liveDraftToken} receipt={rewardReceipt} onChange={setRewardView} />}
           {selectedCustomer ? (
             <div className="flex items-center justify-between gap-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5">

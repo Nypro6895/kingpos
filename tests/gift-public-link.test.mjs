@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+const output = await build({entryPoints:['lib/gift-public-link.ts'],bundle:true,write:false,format:'esm',platform:'node'});
+const { giftPublicLink } = await import('data:text/javascript;base64,'+Buffer.from(output.outputFiles[0].text).toString('base64'));
+const token='a'.repeat(64);
+assert.equal(giftPublicLink('card',token,{protocol:'reylumi-app:',origin:'null'}),`https://reylumi.com/gift-cards#card=${token}`);
+assert.equal(giftPublicLink('mobile',token),`https://reylumi.com/gift-cards#mobile=${token}`);
+assert.equal(giftPublicLink('card',token,{protocol:'https:',origin:'https://reylumi.com'}),`https://reylumi.com/gift-cards#card=${token}`);
+assert.equal(giftPublicLink('card',token,{protocol:'http:',origin:'http://localhost:4084'}),`http://localhost:4084/gift-cards#card=${token}`);
+console.log('PASS scannable native Gift links and hosted/local browser links.');
