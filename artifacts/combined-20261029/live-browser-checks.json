@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-30T02:21:50.338Z",
+  "host": "https://reylumi.com",
+  "authenticated": true,
+  "checks": {
+    "newAppointmentsVisitsHeading": true,
+    "upcomingHistoryTabs": true,
+    "historyLoadsExistingRecords": true,
+    "myReviewsViewRenders": true,
+    "profileRedesignExcluded": true
+  },
+  "mutations": 0,
+  "limitations": [
+    "Initial navigation showed retained old view; normal reload loaded the new release.",
+    "No financial or review writes performed in production.",
+    "This is desktop browser verification, not signed native physical acceptance."
+  ],
+  "screenshot": "live-appointments.png"
+}

@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "personal-bookings-copy-parity-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated combined revision: One-line Personal native Bookings copy correction: replace accidental question-mark separator with middot matching existing SSR. Physical70 reproduction captured; no behavior/auth/data changes. Not in published71.",
+  "files": [
+    "components/app-local-customer-views.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029\\frozen-final",
+    "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+    "nativeCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "254-page production build, TypeScript and all 2012 shared production files match frozen web source",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/local-build-web-source-equivalence.json"
+    },
+    {
+      "name": "68 focused feature/Truth and 15 legal identity preservation checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/focused.log"
+    },
+    {
+      "name": "Full schema actual Auth/PostgREST/Owner/Staff/QR/history/retention and immutable payments",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/retention-final.log"
+    },
+    {
+      "name": "Safari16 compiled source 335 pinned actions and zero missing adapters",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/bundle-verify.log"
+    }
+  ],
+  "integratesEvent": "949f8123-0eb4-4282-a811-aa99409a1027",
+  "releaseLimits": [
+    "Apple/signed native acceptance verified separately",
+    "Physical signed binary acceptance separate from Safari fixtures",
+    "Profile three-state redesign explicitly deferred"
+  ],
+  "id": "278ee86c-4f89-4465-a7ce-e25d1f5551eb",
+  "recordedAt": "2026-10-30T02:19:56.762Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/app-local-customer-views.tsx": "46547f4a67dede88a47377067839a4f30169fc9ef8ce2568a351c84b1729d432"
+  }
+}

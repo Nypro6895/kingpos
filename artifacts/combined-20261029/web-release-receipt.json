@@ -1,0 +1,43 @@
+{
+  "kind": "release",
+  "summary": "Combined Personal journey/QR/review and financial input history web publication; nine validated migrations; profile three-state redesign explicitly excluded; native pipeline separately pending",
+  "changes": [
+    "278ee86c-4f89-4465-a7ce-e25d1f5551eb",
+    "f81ce161-5052-42a1-a62d-26286f102dd7",
+    "9ad7d4cb-2867-4443-8deb-11419a24bb8b",
+    "03dbe2c1-268d-4a00-be3d-d32f472f3f2c",
+    "8468cdce-dfdb-4678-8bd4-cfe77ce4456a",
+    "4def5283-a042-4617-87f4-94a6e1781a2c"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
+      "baselineDeploymentId": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+      "sourceSha256": "8cd1e9fb32703feb6dac33ac23df81f04cc0059b7048818cb0281299b95f5b69",
+      "overlaySha256": "da020a14a4fb244500a1a4f3d9c24affcf946153bfc45e0bb6ef81a3cdce17d2",
+      "evidence": "artifacts/combined-20261029/web-live-source-verified.json"
+    }
+  },
+  "sourceCommit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+  "validation": {
+    "build": "passed",
+    "focused": 68,
+    "legalIdentity": 15,
+    "fullSchema": 28,
+    "readOnlyHttpNo5xx": 14
+  },
+  "excluded": [
+    "profile-layout-defaults-20261029"
+  ],
+  "native": {
+    "status": "in-progress",
+    "run": 40990294928,
+    "sourceCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+  },
+  "id": "0b4719ac-03e3-49d2-a387-c9514d1c9ec7",
+  "recordedAt": "2026-10-30T02:21:21.639Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\releases\\history\\2026-10-30T02-21-21-639Z-0b4719ac-03e3-49d2-a387-c9514d1c9ec7.json"
+}

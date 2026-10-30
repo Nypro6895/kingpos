@@ -1,0 +1,7 @@
+{
+  "verifiedAt": "2026-10-30T02:20:32.364Z",
+  "migration": "20261030020000",
+  "applied": true,
+  "retentionFallback": true,
+  "firstWrapperAttempt": "SQL parser rejected before execution; corrected dollar quoting and successful guarded transaction"
+}

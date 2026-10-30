@@ -1,0 +1,758 @@
+{
+  "suites": [
+    {
+      "suite": "AppViewportTests",
+      "methods": [
+        "testNativePageZoomAndKeyboardLayout",
+        "testBundledViewportInWebKit"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "AuthLifecycleTransportTests",
+      "methods": [
+        "testActualSerializedCookieRefreshCancelsOnlyStaleDeliveryAndRetainsNewState",
+        "testExplicitHTTPDenialsRemainDenialsAfterAnotherResponseRefreshesCookies",
+        "testPossiblyCommittedCommandWithStaleCookieReplyIsNeverAutomaticallyReplayed",
+        "testHTTP200ContextDenialSurvivesInternalCookieRefreshAndRevokesStoredDisplay",
+        "testExternalWorkspaceChangeAfterInternalWorkspaceCommitStillRevokesAuthority",
+        "testHTTP401AndSignOutPreserveTypedResetWireContract",
+        "testStaleContextTaskFinishesBeforeTheNextFreshGETCanStart",
+        "testUnknownExternalChangesAfterInternalCommitStillRevokeCurrentAuthority",
+        "testColdOnlineContextDuringLeaseOutageReadsWithoutPersistingOrCommandAuthority",
+        "testActualNormalGuestPublicContextAndSeparatelyLabeledLeaseOutageRemainReadable",
+        "testTemporaryLeaseOutagePreservesOriginalLeaseAndSnapshotWithoutExtendingThem",
+        "testExplicitDeniedOrUnconfirmedLeaseNeverAcquiresAnOfflineLeaseOrCommandAuthority",
+        "testHTTP403WithdrawsAnOnlineOnlyContextBeforeAnyLaterReadCanUseItsBarrier",
+        "testOwnerLeaseDenialRevokesOnlyThatScopeAndCannotRestoreItsOfflineSnapshot",
+        "testWorkspaceSwitchCannotUseDisplayOnly503AsItsCommandGrant"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "BackgroundCookieAuthorityWKTests",
+      "methods": [
+        "testBackgroundContextDeletionRemovesTheActualStoredParentDomainCookie",
+        "testBackgroundResourceReplacementCollapsesHostAndParentDomainAliases",
+        "testBackgroundReplacementPreservesDifferentCookieDomainsPathsAndNames",
+        "testConcurrentExternalAuthorityChangeRejectsBeforeBackgroundCookieApplication",
+        "testClearWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot",
+        "testCancellationWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "BackgroundSyncTests",
+      "methods": [
+        "testOnlyCompleteKnownReadEndpointsAndExactScopeAreAccepted",
+        "testSnapshotValidatorRejectsPartialInvalidFutureOrOversizedPayloads",
+        "testFreshScopedReadCanBeDrainedWithoutAnyWriteOrCredentialPersistence",
+        "testLateOldAccountUnauthorizedResponseCannotClearNewAccountRegistration",
+        "testLateReadAfterLogoutOrTaskCancellationNeverRestoresSnapshot",
+        "testUnavailableOrNoCookieDoesNotInventOrUploadDataAndBoundedStoreRejectsOverflow",
+        "testAuthCookieRotationIsDeliveredToWebKitAndLateOldCookieReadIsIgnored"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "BusinessContextCacheAdmissionTests",
+      "methods": [
+        "testPersonalToStaffFirstPostAwaitsFreshRootInsteadOfPersonalLease",
+        "testRetainedOwnerCannotReplaceSelectedStaffWhilePostIsPending",
+        "testOnlineOnlyStaffUsesCurrentOnlineScopeInsteadOfRetainedOwnerLease",
+        "testPersonalCustomerCannotAdmitAnyBusinessPageButItsAccountPagesRemainCompatible",
+        "testServerShapedStaffRootCustomerAllowsOnlySharedSalonProfileAmongBusinessPages",
+        "testNeutralHomeEstablishesOwnerAndPreservesItsOfflineBusinessContext",
+        "testCurrentStaffRootCanReuseMatchingSalonCustomerWithoutPersonalFallback",
+        "testColdNonNeutralBusinessRouteAwaitsFreshRatherThanGuessingRetainedOwner",
+        "testResetWhileFreshPostIsPendingCannotDeliverOrRestoreOldAuthority",
+        "testPortableAndExpiredOrWrongGenerationLeasesKeepTheirExistingBoundaries"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "BusinessContextFailureTests",
+      "methods": [
+        "testFreshUnavailableOrActualDenialNeverFallsBackToAnotherRole",
+        "testExplicitUnconfirmedRepeatedContextCannotResurrectRetainedOwner",
+        "testIdenticalScopeRetainedOwnerCannotAuthorizeSelectedStaffBusinessCache",
+        "testGenericOwnerDisplayLeaseOutageKeepsItsMatchingValidOfflineLease",
+        "testFreshStaffPostUsesOriginalOnlineReadWithoutBorrowingOwnerOfflineAuthority"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "CampaignReadTransportTests",
+      "methods": [
+        "testCampaignCoordinatesUsePrivateReadBodyAndNeverEnterURLOrReadCache"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "CommandDiagnosticsTransportTests",
+      "methods": [
+        "testOverlappingCommandsKeepTheirOwnRequestIDsWhenResponsesFinishOutOfOrder",
+        "testHTTP503AndURLSessionTimeoutRemainDistinctWithoutWriteRetry",
+        "testUntrustedResponseMetadataCannotReplaceLocalIDOrChangeSuccessfulCommandResult",
+        "testUnknownFailureCodeIsIgnoredAndMalformedCallerCannotCreateDiagnosticAuthority",
+        "testPreflight503CarriesCommandTimingWithoutSendingCommandPOST",
+        "testJoinedContextSharesActualHTTPIDAndCachedContextCannotClaimIt",
+        "testLegacyAndMismatchedReadEchoPreserveNumericTimingWithoutCorrelationOrChangingResults"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "LaunchAppearanceTests",
+      "methods": [
+        "testWhiteCanvasBeforeNetworkResponseEvenInDarkMode",
+        "testErrorStopsLoadingAndRetryRestoresIt",
+        "testBrandedOrbitFitsBeforeWebKitWithoutPlaceholderControls",
+        "testOrbitGeometryStaysInsideItsBoundsWhenResized",
+        "testExplicitStartupAndReturnIntentsSurviveBrandedLoading",
+        "testDisplayedShellStartsWebKitThroughFramesAndSurvivesEarlyBackground",
+        "testReadinessStopsOrbitWithoutMinimumDelayAndRetryRestoresIt"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "LocalAppTransportTests",
+      "methods": [
+        "testActualInstalledExploreBoundsTransientContextRecoveryBeforeUserRetry",
+        "testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst",
+        "testUnavailableContextKeepsCachedReadButExplicitDenialStillRevokesIt",
+        "testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks",
+        "testResponseCookieProofRejectsUnrelatedWorkspaceAccountAndLogoutChanges",
+        "testLateReadAfterConfirmedWorkspaceCookieCommitIsDiscardedWithoutReset",
+        "testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact",
+        "testSameScopeStaffMarketStaffRetainsDOMAuthorityAndStaffCacheUntilBindingChanges",
+        "testCachedAuthorityRotationAdmitsSelectedLeaseWithoutCancellingItsOwnContextRead",
+        "testFullSessionResetStillRevokesCachedAuthorityAndRejectsOldGeneration",
+        "testPortableLockPersistsOriginalHTTPSCookieAndOnlyRevokesDeviceDisplayLease",
+        "testUnusedDefaultTransportsReleaseWithoutCreatingADeinitializingSessionDelegate",
+        "testOnlyNamedReadsUseFixedEndpointAndCommandsAreSingleAttempt",
+        "testLateReadAfterResetCannotReturnOrPersistOldAccountData",
+        "testStaffAndOwnerContextsSelectMatchingLeaseAndDeniedScopeDoesNotEraseOtherRole",
+        "testAuthoritative404EvictsOnlyExactReadBut503RetainsOtherSnapshot",
+        "testPartialLeaseFailurePreservesOnlyUnchangedAuthorityAndNeverAllowsCommands",
+        "testForbiddenReadEvictsOnlyItsSnapshotWithoutResettingOtherPages",
+        "testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "LocalAppWebViewTests",
+      "methods": [
+        "testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel",
+        "testNativeBackForwardRestoresActualHistoryWithoutReplacingTheDraftDocument",
+        "testLostStartupResetRecoversContextWithoutReplayingCommands",
+        "testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace",
+        "testProgrammaticLocalNavigationRetainsSameDocumentAndUnsentInput",
+        "testProgrammaticHostedCheckoutAndSignInKeepTheirOriginalNativeBoundary",
+        "testLogoutAcknowledgesNewMetadataAndClearsPrivateLeaseBeforeOfflineContext",
+        "testInstalledClassicClientWorksWithoutAnySuccessfulNetworkRead",
+        "testActualPackagedHelpCatalogAndArticleAreUsableOfflineBeforeSignIn",
+        "testActualInstalledPOSInitializerRetainsMoneyAndOutboxAcrossColdWebView",
+        "testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope",
+        "testCustomOriginHasCryptographicRandomAndDurableStrictIndexedDBBeforeOutboxUse",
+        "testCustomOriginSupportsActualOfflineStaffDigestPBKDF2AndRSAEncryption",
+        "testCustomOriginHasActualExclusiveWebLocksForOriginalPOSWriterGuard",
+        "testOriginalLocalPhotoProcessingCanLoadItsTemporaryBlobImage",
+        "testExistingMapProviderCanUseItsLocalBlobWorkerWithoutRemoteScripts",
+        "testNotReadyManifestPreservesOriginalHTTPSController"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "LocalBundleTests",
+      "methods": [
+        "testStartupQueryKeepsDeclaredRouteAndRejectsOtherOrigins",
+        "testCoreResourcesAreVerifiedOffMainThreadOnceAndOnlyWithinMemoryBounds",
+        "testStoppedSchemeTaskCannotReceiveLateAssetCallbacks",
+        "testActualInstalledManifestAndEveryDeclaredResourceAreComplete",
+        "testManifestResourcesAndActualRouteAreVerifiedWithoutNetwork",
+        "testTamperedMissingAndOutsideBundleFilesFailClosed",
+        "testManifestCannotEnableAnArbitraryNetworkProxy"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "LocalDiagnosticsTests",
+      "methods": [
+        "testDisabledByDefaultAndBoundedWhenExplicitlyEnabled",
+        "testOnlyFixedServerTimingLabelsAndFiniteNumbersAreRetained",
+        "testArbitraryRouteAndResourceInputsBecomeFixedCategoriesOnly",
+        "testUserExportRevalidatesJavaScriptAndOmitsIdentifiersAndPayloads",
+        "testUserExportIsBoundedAndDoesNotAcceptMetadataFromPage",
+        "testCommandTraceRequiresManifestRuleAndStrictRandomRequestID",
+        "testNativeCommandMetadataCannotBeInjectedThroughJavaScriptExport",
+        "testUTCAnchorAndBothReportRingsRemainBoundedWithValidatedNumbers",
+        "testReadEchoMetadataAndNestedStagesDoNotCreateAuthority"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "LocalHostedReturnTests",
+      "methods": [
+        "testOrdinaryHostedPagesHaveNoTaskChromeAndIdentityTasksUseTextExit",
+        "testAutomaticXCTestSceneCannotBootAProductionWebView",
+        "testHostedReturnAcceptsOnlyCompleteOrdinaryBareRoutes",
+        "testHostedSPAWaitsForNewRouteReadinessAndRejectsStaleNonce",
+        "testHostedViewStaysUsableUntilFreshContextAndItsInstalledFrameAreReady",
+        "testColdLaunchIgnoresSavedRouteAndDoesNotOpenHostedModal"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "LocalReadStoreTests",
+      "methods": [
+        "testResourceRemovalAtomicallyFencesBothWriteOrdersAndPreservesOtherKeysAndScopes",
+        "testScopeRevocationPermissionReplacementAndClearInvalidateTheirPendingPermits",
+        "testNeutralHomeAdmitsAccountLeasesWithoutGrantingAnotherRoleOrDeviceAuthority",
+        "testConcurrentSnapshotsShareOneDurableCommitAndIdenticalLeaseDoesNotRewriteIt",
+        "testClearDuringBatchedCommitCannotResurrectPrivateData",
+        "testBareCustomerDisplaySelectsDeviceLeaseWithoutBorrowingOwnerOrPublicTokenAuthority",
+        "testPortableAuthorityIsExactDeviceScopeAndCannotImpersonateAnAccountLease",
+        "testPairedDisplayCapabilityCanOnlyPersistInExactEncryptedPortableWorkspace",
+        "testEncryptedColdReadIsGrantScopeRevisionGenerationAndExpiryBound",
+        "testNoCredentialOrCommandPayloadCanEnterReadCache",
+        "testSameViewerLeasesCoexistWithoutRenewingStaffExpiryAndRevocationIsScoped",
+        "testPermissionRevisionOnlyReplacesRelatedScopeAndDifferentViewerClearsAll"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "NativeCookieAuthorityTests",
+      "methods": [
+        "testMissingAdvertisingCookieInsertionCannotRevokeConcurrentRead",
+        "testAdvertisingCookieRotationCannotRevokeConcurrentRead",
+        "testAllAuditedNonAuthorityMarkersStayStoredWithoutRevokingParallelRead",
+        "testExistingValidAdvertisingCookieValueAndReversedReplyOrderControls",
+        "testAuthWorkspaceAbuseAndUnknownPrefixedCookieChangesStillRevoke",
+        "testUnknownUnprefixedOriginCookieRemainsConservativelyAuthoritative",
+        "testUnrelatedDomainCookieCannotInvalidateThisOrigin",
+        "testBackgroundReadUsesSameBenignCookieBoundary",
+        "testBackgroundReadStillDiscardsChangedAuthAndUnknownOriginCookies",
+        "testAuthorityProjectionUsesOriginAndDomainLabelBoundaries",
+        "testExactMarkerNamesCannotExcludeUnknownOrDifferentlyCasedAuthority",
+        "testExplicitResourceRemovalFencesPendingReadAndItsOfflineFallback"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "NativeCookieAuthorityWKTests",
+      "methods": [
+        "testHostOnlyPersonalSwitchCommitsTheAcknowledgedDestination",
+        "testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination",
+        "testReplacementCollapsesAliasesAndPreservesDifferentDomainsPathsAndNames",
+        "testNonAuthorityCookieExpiryDoesNotResetThePersonalSwitch",
+        "testAuthorityCookieExpiryStillRejectsBeforeResponseCookieWrites",
+        "testExternalWorkspaceEditStillRejectsWithoutReplayingTheCommand"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "NativeCookiePipelineTests",
+      "methods": [
+        "testNoCookieUpdatesUseTwoSnapshotsAndExposeNonHTTPDeliveryStages",
+        "testRevalidatedResponseStillChecksAuthorityWithoutPersistingAnotherSnapshot",
+        "testNoUpdateFastPathStillRejectsExternalWorkspaceChangeBeforeDelivering",
+        "testCookieWritesRetainPostWriteVerificationAndStaleNoUpdateReadIsCancelled",
+        "testLegacyResponseCannotAcquireCorrelatedPostResponseTiming"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "NavigationPolicyTests",
+      "methods": [
+        "testHostedControlsAreForExplicitTasksAcrossEveryRole",
+        "testWorkspacesRemainAvailable",
+        "testAdministrationCannotBeNavigatedTo",
+        "testUntrustedOriginsAndSchemes",
+        "testPaymentsOpenOnlyTrustedHostedOrigins",
+        "testMarketReturnIsNavigationOnly",
+        "testOnlyRecognizedSecurityChallengeDocumentsAreAllowed",
+        "testChallengeExceptionCannotExpandToOtherOriginsOrRoutes"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "OfflineRouteTests",
+      "methods": [
+        "testHostAppCanUseItsOwnDeviceProtectedKeychain",
+        "testOnlyExactPublicAndPreparedRoleRoutesCanBeRestored",
+        "testLeaseIsCappedAndExpiryCannotBeExtendedByRestore",
+        "testProtectedKeychainHintIsOriginBoundAndClearedOnExpiryOrReset",
+        "testColdStartupQueuesHomeAndExplicitAuthReturnStillTakesPrecedence"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "OfflineWebViewTests",
+      "methods": [
+        "testExplicitPOSOpenRestoresDurableDraftAfterNewAppStartsAtHome"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "OnlineAuthorityRefreshTests",
+      "methods": [
+        "testIdenticalExplicitOnlineStaffRefreshDoesNotCancelWorkspacePreflight",
+        "testIdenticalGenericLeaseOutageDoesNotBorrowPersonalLeaseOrCancelPreflight",
+        "testGeneric503CannotSelectUnrelatedPersonalLeaseForReadConflictRevocation",
+        "testChangedOnlineIdentityStillInvalidatesPendingWorkspacePreflight",
+        "testUnconfirmedOrInvalidStaffProofStillBlocksPendingWorkspaceCommand",
+        "testOuterCancellationAndResetStillCannotPostAfterPreflightReturns",
+        "testUnconfirmedCurrentOnlineStaffWithNoStoredLeaseStillInvalidatesPendingCommand"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "OwnerTodayDiagnosticsTests",
+      "methods": [
+        "testInstalledOwnerTodayColdWithoutCacheAndWarmRevisit",
+        "testInstalledOwnerTodayColdFromEncryptedCache",
+        "testInstalledOwnerTodaySixtySecondsVisibleThenTouchAndForeground",
+        "testInstalledOwnerTodayTransient503RecoversOnceWithoutCommands",
+        "testInstalledOwnerTodaySameRouteHandoffAcceptsNativeEventAndRequestedReply"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "ScopeConflictTransportTests",
+      "methods": [
+        "testRead409BeforeContext200WithdrawsOldScopeAndPreservesCurrentAuthorityFlight",
+        "testPreConflictSameScopeResponseIsCancelledAndOnlyNewAuthorityGETCanReauthorizeIt",
+        "testConflictRecoveryPreservesHTTPDenialsUnavailableAndUnconfirmedEnvelope",
+        "testDepartingRead409AfterWorkspaceSwitchCannotWithdrawTheVerifiedDestination",
+        "testPageSupersessionCancelsOldDeliveryWithoutFabricatingWorkspaceDenial",
+        "testOldScopeConflictCannotWithdrawADifferentAlreadyVerifiedScope"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "SecurityChallengeWebViewTests",
+      "methods": [
+        "testProviderDocumentIsVisibleAtCommitWithoutAppReadinessOrDidFinish",
+        "testOrdinaryErrorStillCancelsAndCannotRevealThroughLateCompletion"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "SinglePostGetterTests",
+      "methods": [
+        "testThreeAuditedGettersUseOnePOSTAfterNegotiatedAdmission",
+        "testOldServerRetainsFreshPreflight",
+        "testSaveStillPerformsFreshPreflight",
+        "testWrongDisplayedScopeCannotPost",
+        "testFreshServerDenialNeverReturnsSettings",
+        "testNetworkFailureIsNotRetried",
+        "testResetDiscardsHeldReply",
+        "testWithoutOnlineNegotiationPreflightIsRequired"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "StaffOnlineAccessTransportTests",
+      "methods": [
+        "testExplicitStaffOnlineProofReadsFreshWithoutOfflineOrBackgroundAuthority",
+        "testExplicitOnlineOnlyPurgesSameScopeStaffLeaseAndSnapshotInsteadOfTemporaryOutageReuse",
+        "testMalformedStaleWrongIdentityAndWrongRouteOnlineProofsRemainDenied",
+        "testOnlineOnlyCommandsUseFreshBoundedStaffPreflightAndNeverReplayServerDenial",
+        "testGeneric503UnconfirmedAndNonHTTPSCannotAcquireNewStaffCommandOrRemovalAuthority",
+        "testOnlineOnlyResourceDenialsAndEvictionNeverRequireOrCreateAReadLease",
+        "testPreResetHeldOnlineProofCannotRestoreStaffAuthorityOrRemoveNewScopeData",
+        "testActualCacheBridgeAllowsOnlyRemovalWithFreshOnlineStaffProof",
+        "testPinnedStaffActionIDsExistInActuallyInstalledManifest"
+      ],
+      "isolatedHost": true
+    },
+    {
+      "suite": "StartupStateTests",
+      "methods": [
+        "testReadyRequiresCommittedDocumentAndMatchingNonceAndGeneration",
+        "testOldReadinessCannotHideTheNextNavigation",
+        "testProvisionalFailurePreservesTheWorkingDocumentButCommittedFailureDoesNot",
+        "testHTTPErrorCannotBeMarkedReadyByLateBridgeOrDidFinish",
+        "testSecurityChallengeRevealsAtCommitWithoutBridgeOrLoadCompletion",
+        "testChallengeStateDoesNotLeakIntoNextPageOrRecoverRejectedErrors",
+        "testLateReadinessAfterSoftFailureCanRecoverTheSameDocument",
+        "testRetryConstructsAFreshBoundedGetAndNeverReplaysMutationBodies",
+        "testRetryRejectsExternalAdminAndOneUseAuthenticationOrPaymentUrls",
+        "testProcessTerminationClearsReadinessAndBoundsAutomaticRecovery"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "WorkspacePreferenceTests",
+      "methods": [
+        "testAcknowledgedChoiceSurvivesCookieRollbackWithoutStoringCredentials",
+        "testTokenRotationPreservesSelectionButDifferentViewerOrLoginCannotRestoreIt",
+        "testMissingAmbiguousExpiredAndCorruptBindingsFailClosed",
+        "testServerFallbackOrExplicitResetClearsSelectionAndNeverPersistsInvalidWorkspace",
+        "testRestoreChangesOnlySelectorAndStillRequiresFreshHTTPSContext",
+        "testRestoredSelectionCannotBypassServerSessionDenial"
+      ],
+      "isolatedHost": false
+    },
+    {
+      "suite": "WorkspaceSwitchTests",
+      "methods": [
+        "testNeutralBootSuppliesOneUseRouteSpecificHomeAdmission",
+        "testNegotiatedSelectionReusesOnlyItsAcknowledgedTargetAdmission",
+        "testSwitchUsesFreshRootIdentityWhenOldStaffBindingIsUnavailableWithoutAdoptingPreflight",
+        "testCookieCommittedButUnreadableAcknowledgmentRecoversByNeutralReadsWithOneCommand",
+        "testWrongScopeOrChangedAccountCannotSendWorkspaceCommand",
+        "testCancelledOrResetPreflightCannotReachCommandPost",
+        "testConcurrentWorkspaceWritesAreRejectedAndCookieVerificationStillFencesDelivery",
+        "testTwentyOwnerStaffRoundTripsKeepFreshScopesAndOneWritePerSelection",
+        "testOrdinaryCommandStillRequiresItsCurrentStaffContextAndUnavailableRootCannotSwitch",
+        "testTargetDenialCannotSelectOwnerAndRecoveryNeverReplaysTheWrite",
+        "testInitialFiltersStaySeparateFromStaffAuthorityPath",
+        "testColdContextMissKeepsSelectedPayTabWithoutChangingAuthorityPath",
+        "testColdContextMissKeepsSelectedScheduleDateWithoutChangingAuthorityPath",
+        "testStartupNetworkBeginsBeforeJSAndIsConsumedOnceWithoutEarlyAdmission",
+        "testStartupNetworkCannotSurviveAccountReset"
+      ],
+      "isolatedHost": false
+    }
+  ],
+  "batches": [
+    {
+      "name": "PureTransportAndState",
+      "identifiers": [
+        "ReylumiTests/AuthLifecycleTransportTests",
+        "ReylumiTests/BackgroundSyncTests",
+        "ReylumiTests/BusinessContextCacheAdmissionTests",
+        "ReylumiTests/BusinessContextFailureTests",
+        "ReylumiTests/CampaignReadTransportTests",
+        "ReylumiTests/CommandDiagnosticsTransportTests",
+        "ReylumiTests/LocalDiagnosticsTests",
+        "ReylumiTests/LocalReadStoreTests",
+        "ReylumiTests/NativeCookieAuthorityTests",
+        "ReylumiTests/NativeCookiePipelineTests",
+        "ReylumiTests/NavigationPolicyTests",
+        "ReylumiTests/OnlineAuthorityRefreshTests",
+        "ReylumiTests/ScopeConflictTransportTests",
+        "ReylumiTests/SinglePostGetterTests",
+        "ReylumiTests/StartupStateTests",
+        "ReylumiTests/WorkspacePreferenceTests",
+        "ReylumiTests/WorkspaceSwitchTests"
+      ]
+    },
+    {
+      "name": "AppViewportTests",
+      "identifiers": [
+        "ReylumiTests/AppViewportTests"
+      ]
+    },
+    {
+      "name": "BackgroundCookieAuthorityWKTests",
+      "identifiers": [
+        "ReylumiTests/BackgroundCookieAuthorityWKTests"
+      ]
+    },
+    {
+      "name": "LaunchAppearanceTests",
+      "identifiers": [
+        "ReylumiTests/LaunchAppearanceTests"
+      ]
+    },
+    {
+      "name": "LocalAppTransportTests",
+      "identifiers": [
+        "ReylumiTests/LocalAppTransportTests"
+      ]
+    },
+    {
+      "name": "LocalAppWebViewTests",
+      "identifiers": [
+        "ReylumiTests/LocalAppWebViewTests"
+      ]
+    },
+    {
+      "name": "LocalBundleTests",
+      "identifiers": [
+        "ReylumiTests/LocalBundleTests"
+      ]
+    },
+    {
+      "name": "LocalHostedReturnTests",
+      "identifiers": [
+        "ReylumiTests/LocalHostedReturnTests"
+      ]
+    },
+    {
+      "name": "NativeCookieAuthorityWKTests",
+      "identifiers": [
+        "ReylumiTests/NativeCookieAuthorityWKTests"
+      ]
+    },
+    {
+      "name": "OfflineRouteTests",
+      "identifiers": [
+        "ReylumiTests/OfflineRouteTests"
+      ]
+    },
+    {
+      "name": "OfflineWebViewTests",
+      "identifiers": [
+        "ReylumiTests/OfflineWebViewTests"
+      ]
+    },
+    {
+      "name": "OwnerTodayDiagnosticsTests",
+      "identifiers": [
+        "ReylumiTests/OwnerTodayDiagnosticsTests"
+      ]
+    },
+    {
+      "name": "SecurityChallengeWebViewTests",
+      "identifiers": [
+        "ReylumiTests/SecurityChallengeWebViewTests"
+      ]
+    },
+    {
+      "name": "StaffOnlineAccessTransportTests",
+      "identifiers": [
+        "ReylumiTests/StaffOnlineAccessTransportTests"
+      ]
+    }
+  ],
+  "expectedCases": [
+    "AppViewportTests/testBundledViewportInWebKit",
+    "AppViewportTests/testNativePageZoomAndKeyboardLayout",
+    "AuthLifecycleTransportTests/testActualNormalGuestPublicContextAndSeparatelyLabeledLeaseOutageRemainReadable",
+    "AuthLifecycleTransportTests/testActualSerializedCookieRefreshCancelsOnlyStaleDeliveryAndRetainsNewState",
+    "AuthLifecycleTransportTests/testColdOnlineContextDuringLeaseOutageReadsWithoutPersistingOrCommandAuthority",
+    "AuthLifecycleTransportTests/testExplicitDeniedOrUnconfirmedLeaseNeverAcquiresAnOfflineLeaseOrCommandAuthority",
+    "AuthLifecycleTransportTests/testExplicitHTTPDenialsRemainDenialsAfterAnotherResponseRefreshesCookies",
+    "AuthLifecycleTransportTests/testExternalWorkspaceChangeAfterInternalWorkspaceCommitStillRevokesAuthority",
+    "AuthLifecycleTransportTests/testHTTP200ContextDenialSurvivesInternalCookieRefreshAndRevokesStoredDisplay",
+    "AuthLifecycleTransportTests/testHTTP401AndSignOutPreserveTypedResetWireContract",
+    "AuthLifecycleTransportTests/testHTTP403WithdrawsAnOnlineOnlyContextBeforeAnyLaterReadCanUseItsBarrier",
+    "AuthLifecycleTransportTests/testOwnerLeaseDenialRevokesOnlyThatScopeAndCannotRestoreItsOfflineSnapshot",
+    "AuthLifecycleTransportTests/testPossiblyCommittedCommandWithStaleCookieReplyIsNeverAutomaticallyReplayed",
+    "AuthLifecycleTransportTests/testStaleContextTaskFinishesBeforeTheNextFreshGETCanStart",
+    "AuthLifecycleTransportTests/testTemporaryLeaseOutagePreservesOriginalLeaseAndSnapshotWithoutExtendingThem",
+    "AuthLifecycleTransportTests/testUnknownExternalChangesAfterInternalCommitStillRevokeCurrentAuthority",
+    "AuthLifecycleTransportTests/testWorkspaceSwitchCannotUseDisplayOnly503AsItsCommandGrant",
+    "BackgroundCookieAuthorityWKTests/testBackgroundContextDeletionRemovesTheActualStoredParentDomainCookie",
+    "BackgroundCookieAuthorityWKTests/testBackgroundReplacementPreservesDifferentCookieDomainsPathsAndNames",
+    "BackgroundCookieAuthorityWKTests/testBackgroundResourceReplacementCollapsesHostAndParentDomainAliases",
+    "BackgroundCookieAuthorityWKTests/testCancellationWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot",
+    "BackgroundCookieAuthorityWKTests/testClearWhileBackgroundReadIsPendingRejectsCookiesAndSnapshot",
+    "BackgroundCookieAuthorityWKTests/testConcurrentExternalAuthorityChangeRejectsBeforeBackgroundCookieApplication",
+    "BackgroundSyncTests/testAuthCookieRotationIsDeliveredToWebKitAndLateOldCookieReadIsIgnored",
+    "BackgroundSyncTests/testFreshScopedReadCanBeDrainedWithoutAnyWriteOrCredentialPersistence",
+    "BackgroundSyncTests/testLateOldAccountUnauthorizedResponseCannotClearNewAccountRegistration",
+    "BackgroundSyncTests/testLateReadAfterLogoutOrTaskCancellationNeverRestoresSnapshot",
+    "BackgroundSyncTests/testOnlyCompleteKnownReadEndpointsAndExactScopeAreAccepted",
+    "BackgroundSyncTests/testSnapshotValidatorRejectsPartialInvalidFutureOrOversizedPayloads",
+    "BackgroundSyncTests/testUnavailableOrNoCookieDoesNotInventOrUploadDataAndBoundedStoreRejectsOverflow",
+    "BusinessContextCacheAdmissionTests/testColdNonNeutralBusinessRouteAwaitsFreshRatherThanGuessingRetainedOwner",
+    "BusinessContextCacheAdmissionTests/testCurrentStaffRootCanReuseMatchingSalonCustomerWithoutPersonalFallback",
+    "BusinessContextCacheAdmissionTests/testNeutralHomeEstablishesOwnerAndPreservesItsOfflineBusinessContext",
+    "BusinessContextCacheAdmissionTests/testOnlineOnlyStaffUsesCurrentOnlineScopeInsteadOfRetainedOwnerLease",
+    "BusinessContextCacheAdmissionTests/testPersonalCustomerCannotAdmitAnyBusinessPageButItsAccountPagesRemainCompatible",
+    "BusinessContextCacheAdmissionTests/testPersonalToStaffFirstPostAwaitsFreshRootInsteadOfPersonalLease",
+    "BusinessContextCacheAdmissionTests/testPortableAndExpiredOrWrongGenerationLeasesKeepTheirExistingBoundaries",
+    "BusinessContextCacheAdmissionTests/testResetWhileFreshPostIsPendingCannotDeliverOrRestoreOldAuthority",
+    "BusinessContextCacheAdmissionTests/testRetainedOwnerCannotReplaceSelectedStaffWhilePostIsPending",
+    "BusinessContextCacheAdmissionTests/testServerShapedStaffRootCustomerAllowsOnlySharedSalonProfileAmongBusinessPages",
+    "BusinessContextFailureTests/testExplicitUnconfirmedRepeatedContextCannotResurrectRetainedOwner",
+    "BusinessContextFailureTests/testFreshStaffPostUsesOriginalOnlineReadWithoutBorrowingOwnerOfflineAuthority",
+    "BusinessContextFailureTests/testFreshUnavailableOrActualDenialNeverFallsBackToAnotherRole",
+    "BusinessContextFailureTests/testGenericOwnerDisplayLeaseOutageKeepsItsMatchingValidOfflineLease",
+    "BusinessContextFailureTests/testIdenticalScopeRetainedOwnerCannotAuthorizeSelectedStaffBusinessCache",
+    "CampaignReadTransportTests/testCampaignCoordinatesUsePrivateReadBodyAndNeverEnterURLOrReadCache",
+    "CommandDiagnosticsTransportTests/testHTTP503AndURLSessionTimeoutRemainDistinctWithoutWriteRetry",
+    "CommandDiagnosticsTransportTests/testJoinedContextSharesActualHTTPIDAndCachedContextCannotClaimIt",
+    "CommandDiagnosticsTransportTests/testLegacyAndMismatchedReadEchoPreserveNumericTimingWithoutCorrelationOrChangingResults",
+    "CommandDiagnosticsTransportTests/testOverlappingCommandsKeepTheirOwnRequestIDsWhenResponsesFinishOutOfOrder",
+    "CommandDiagnosticsTransportTests/testPreflight503CarriesCommandTimingWithoutSendingCommandPOST",
+    "CommandDiagnosticsTransportTests/testUnknownFailureCodeIsIgnoredAndMalformedCallerCannotCreateDiagnosticAuthority",
+    "CommandDiagnosticsTransportTests/testUntrustedResponseMetadataCannotReplaceLocalIDOrChangeSuccessfulCommandResult",
+    "LaunchAppearanceTests/testBrandedOrbitFitsBeforeWebKitWithoutPlaceholderControls",
+    "LaunchAppearanceTests/testDisplayedShellStartsWebKitThroughFramesAndSurvivesEarlyBackground",
+    "LaunchAppearanceTests/testErrorStopsLoadingAndRetryRestoresIt",
+    "LaunchAppearanceTests/testExplicitStartupAndReturnIntentsSurviveBrandedLoading",
+    "LaunchAppearanceTests/testOrbitGeometryStaysInsideItsBoundsWhenResized",
+    "LaunchAppearanceTests/testReadinessStopsOrbitWithoutMinimumDelayAndRetryRestoresIt",
+    "LaunchAppearanceTests/testWhiteCanvasBeforeNetworkResponseEvenInDarkMode",
+    "LocalAppTransportTests/testActualInstalledExploreBoundsTransientContextRecoveryBeforeUserRetry",
+    "LocalAppTransportTests/testAuthoritative404EvictsOnlyExactReadBut503RetainsOtherSnapshot",
+    "LocalAppTransportTests/testCachedAuthorityRotationAdmitsSelectedLeaseWithoutCancellingItsOwnContextRead",
+    "LocalAppTransportTests/testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst",
+    "LocalAppTransportTests/testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks",
+    "LocalAppTransportTests/testForbiddenReadEvictsOnlyItsSnapshotWithoutResettingOtherPages",
+    "LocalAppTransportTests/testFullSessionResetStillRevokesCachedAuthorityAndRejectsOldGeneration",
+    "LocalAppTransportTests/testLateReadAfterConfirmedWorkspaceCookieCommitIsDiscardedWithoutReset",
+    "LocalAppTransportTests/testLateReadAfterResetCannotReturnOrPersistOldAccountData",
+    "LocalAppTransportTests/testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay",
+    "LocalAppTransportTests/testOnlyNamedReadsUseFixedEndpointAndCommandsAreSingleAttempt",
+    "LocalAppTransportTests/testPartialLeaseFailurePreservesOnlyUnchangedAuthorityAndNeverAllowsCommands",
+    "LocalAppTransportTests/testPortableLockPersistsOriginalHTTPSCookieAndOnlyRevokesDeviceDisplayLease",
+    "LocalAppTransportTests/testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact",
+    "LocalAppTransportTests/testResponseCookieProofRejectsUnrelatedWorkspaceAccountAndLogoutChanges",
+    "LocalAppTransportTests/testSameScopeStaffMarketStaffRetainsDOMAuthorityAndStaffCacheUntilBindingChanges",
+    "LocalAppTransportTests/testStaffAndOwnerContextsSelectMatchingLeaseAndDeniedScopeDoesNotEraseOtherRole",
+    "LocalAppTransportTests/testUnavailableContextKeepsCachedReadButExplicitDenialStillRevokesIt",
+    "LocalAppTransportTests/testUnusedDefaultTransportsReleaseWithoutCreatingADeinitializingSessionDelegate",
+    "LocalAppWebViewTests/testActualInstalledPOSInitializerRetainsMoneyAndOutboxAcrossColdWebView",
+    "LocalAppWebViewTests/testActualPackagedHelpCatalogAndArticleAreUsableOfflineBeforeSignIn",
+    "LocalAppWebViewTests/testCustomOriginHasActualExclusiveWebLocksForOriginalPOSWriterGuard",
+    "LocalAppWebViewTests/testCustomOriginHasCryptographicRandomAndDurableStrictIndexedDBBeforeOutboxUse",
+    "LocalAppWebViewTests/testCustomOriginSupportsActualOfflineStaffDigestPBKDF2AndRSAEncryption",
+    "LocalAppWebViewTests/testExistingMapProviderCanUseItsLocalBlobWorkerWithoutRemoteScripts",
+    "LocalAppWebViewTests/testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace",
+    "LocalAppWebViewTests/testInstalledClassicClientWorksWithoutAnySuccessfulNetworkRead",
+    "LocalAppWebViewTests/testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel",
+    "LocalAppWebViewTests/testLogoutAcknowledgesNewMetadataAndClearsPrivateLeaseBeforeOfflineContext",
+    "LocalAppWebViewTests/testLostStartupResetRecoversContextWithoutReplayingCommands",
+    "LocalAppWebViewTests/testNativeBackForwardRestoresActualHistoryWithoutReplacingTheDraftDocument",
+    "LocalAppWebViewTests/testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope",
+    "LocalAppWebViewTests/testNotReadyManifestPreservesOriginalHTTPSController",
+    "LocalAppWebViewTests/testOriginalLocalPhotoProcessingCanLoadItsTemporaryBlobImage",
+    "LocalAppWebViewTests/testProgrammaticHostedCheckoutAndSignInKeepTheirOriginalNativeBoundary",
+    "LocalAppWebViewTests/testProgrammaticLocalNavigationRetainsSameDocumentAndUnsentInput",
+    "LocalBundleTests/testActualInstalledManifestAndEveryDeclaredResourceAreComplete",
+    "LocalBundleTests/testCoreResourcesAreVerifiedOffMainThreadOnceAndOnlyWithinMemoryBounds",
+    "LocalBundleTests/testManifestCannotEnableAnArbitraryNetworkProxy",
+    "LocalBundleTests/testManifestResourcesAndActualRouteAreVerifiedWithoutNetwork",
+    "LocalBundleTests/testStartupQueryKeepsDeclaredRouteAndRejectsOtherOrigins",
+    "LocalBundleTests/testStoppedSchemeTaskCannotReceiveLateAssetCallbacks",
+    "LocalBundleTests/testTamperedMissingAndOutsideBundleFilesFailClosed",
+    "LocalDiagnosticsTests/testArbitraryRouteAndResourceInputsBecomeFixedCategoriesOnly",
+    "LocalDiagnosticsTests/testCommandTraceRequiresManifestRuleAndStrictRandomRequestID",
+    "LocalDiagnosticsTests/testDisabledByDefaultAndBoundedWhenExplicitlyEnabled",
+    "LocalDiagnosticsTests/testNativeCommandMetadataCannotBeInjectedThroughJavaScriptExport",
+    "LocalDiagnosticsTests/testOnlyFixedServerTimingLabelsAndFiniteNumbersAreRetained",
+    "LocalDiagnosticsTests/testReadEchoMetadataAndNestedStagesDoNotCreateAuthority",
+    "LocalDiagnosticsTests/testUTCAnchorAndBothReportRingsRemainBoundedWithValidatedNumbers",
+    "LocalDiagnosticsTests/testUserExportIsBoundedAndDoesNotAcceptMetadataFromPage",
+    "LocalDiagnosticsTests/testUserExportRevalidatesJavaScriptAndOmitsIdentifiersAndPayloads",
+    "LocalHostedReturnTests/testAutomaticXCTestSceneCannotBootAProductionWebView",
+    "LocalHostedReturnTests/testColdLaunchIgnoresSavedRouteAndDoesNotOpenHostedModal",
+    "LocalHostedReturnTests/testHostedReturnAcceptsOnlyCompleteOrdinaryBareRoutes",
+    "LocalHostedReturnTests/testHostedSPAWaitsForNewRouteReadinessAndRejectsStaleNonce",
+    "LocalHostedReturnTests/testHostedViewStaysUsableUntilFreshContextAndItsInstalledFrameAreReady",
+    "LocalHostedReturnTests/testOrdinaryHostedPagesHaveNoTaskChromeAndIdentityTasksUseTextExit",
+    "LocalReadStoreTests/testBareCustomerDisplaySelectsDeviceLeaseWithoutBorrowingOwnerOrPublicTokenAuthority",
+    "LocalReadStoreTests/testClearDuringBatchedCommitCannotResurrectPrivateData",
+    "LocalReadStoreTests/testConcurrentSnapshotsShareOneDurableCommitAndIdenticalLeaseDoesNotRewriteIt",
+    "LocalReadStoreTests/testEncryptedColdReadIsGrantScopeRevisionGenerationAndExpiryBound",
+    "LocalReadStoreTests/testNeutralHomeAdmitsAccountLeasesWithoutGrantingAnotherRoleOrDeviceAuthority",
+    "LocalReadStoreTests/testNoCredentialOrCommandPayloadCanEnterReadCache",
+    "LocalReadStoreTests/testPairedDisplayCapabilityCanOnlyPersistInExactEncryptedPortableWorkspace",
+    "LocalReadStoreTests/testPermissionRevisionOnlyReplacesRelatedScopeAndDifferentViewerClearsAll",
+    "LocalReadStoreTests/testPortableAuthorityIsExactDeviceScopeAndCannotImpersonateAnAccountLease",
+    "LocalReadStoreTests/testResourceRemovalAtomicallyFencesBothWriteOrdersAndPreservesOtherKeysAndScopes",
+    "LocalReadStoreTests/testSameViewerLeasesCoexistWithoutRenewingStaffExpiryAndRevocationIsScoped",
+    "LocalReadStoreTests/testScopeRevocationPermissionReplacementAndClearInvalidateTheirPendingPermits",
+    "NativeCookieAuthorityTests/testAdvertisingCookieRotationCannotRevokeConcurrentRead",
+    "NativeCookieAuthorityTests/testAllAuditedNonAuthorityMarkersStayStoredWithoutRevokingParallelRead",
+    "NativeCookieAuthorityTests/testAuthWorkspaceAbuseAndUnknownPrefixedCookieChangesStillRevoke",
+    "NativeCookieAuthorityTests/testAuthorityProjectionUsesOriginAndDomainLabelBoundaries",
+    "NativeCookieAuthorityTests/testBackgroundReadStillDiscardsChangedAuthAndUnknownOriginCookies",
+    "NativeCookieAuthorityTests/testBackgroundReadUsesSameBenignCookieBoundary",
+    "NativeCookieAuthorityTests/testExactMarkerNamesCannotExcludeUnknownOrDifferentlyCasedAuthority",
+    "NativeCookieAuthorityTests/testExistingValidAdvertisingCookieValueAndReversedReplyOrderControls",
+    "NativeCookieAuthorityTests/testExplicitResourceRemovalFencesPendingReadAndItsOfflineFallback",
+    "NativeCookieAuthorityTests/testMissingAdvertisingCookieInsertionCannotRevokeConcurrentRead",
+    "NativeCookieAuthorityTests/testUnknownUnprefixedOriginCookieRemainsConservativelyAuthoritative",
+    "NativeCookieAuthorityTests/testUnrelatedDomainCookieCannotInvalidateThisOrigin",
+    "NativeCookieAuthorityWKTests/testAuthorityCookieExpiryStillRejectsBeforeResponseCookieWrites",
+    "NativeCookieAuthorityWKTests/testExternalWorkspaceEditStillRejectsWithoutReplayingTheCommand",
+    "NativeCookieAuthorityWKTests/testHostOnlyPersonalSwitchCommitsTheAcknowledgedDestination",
+    "NativeCookieAuthorityWKTests/testNonAuthorityCookieExpiryDoesNotResetThePersonalSwitch",
+    "NativeCookieAuthorityWKTests/testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination",
+    "NativeCookieAuthorityWKTests/testReplacementCollapsesAliasesAndPreservesDifferentDomainsPathsAndNames",
+    "NativeCookiePipelineTests/testCookieWritesRetainPostWriteVerificationAndStaleNoUpdateReadIsCancelled",
+    "NativeCookiePipelineTests/testLegacyResponseCannotAcquireCorrelatedPostResponseTiming",
+    "NativeCookiePipelineTests/testNoCookieUpdatesUseTwoSnapshotsAndExposeNonHTTPDeliveryStages",
+    "NativeCookiePipelineTests/testNoUpdateFastPathStillRejectsExternalWorkspaceChangeBeforeDelivering",
+    "NativeCookiePipelineTests/testRevalidatedResponseStillChecksAuthorityWithoutPersistingAnotherSnapshot",
+    "NavigationPolicyTests/testAdministrationCannotBeNavigatedTo",
+    "NavigationPolicyTests/testChallengeExceptionCannotExpandToOtherOriginsOrRoutes",
+    "NavigationPolicyTests/testHostedControlsAreForExplicitTasksAcrossEveryRole",
+    "NavigationPolicyTests/testMarketReturnIsNavigationOnly",
+    "NavigationPolicyTests/testOnlyRecognizedSecurityChallengeDocumentsAreAllowed",
+    "NavigationPolicyTests/testPaymentsOpenOnlyTrustedHostedOrigins",
+    "NavigationPolicyTests/testUntrustedOriginsAndSchemes",
+    "NavigationPolicyTests/testWorkspacesRemainAvailable",
+    "OfflineRouteTests/testColdStartupQueuesHomeAndExplicitAuthReturnStillTakesPrecedence",
+    "OfflineRouteTests/testHostAppCanUseItsOwnDeviceProtectedKeychain",
+    "OfflineRouteTests/testLeaseIsCappedAndExpiryCannotBeExtendedByRestore",
+    "OfflineRouteTests/testOnlyExactPublicAndPreparedRoleRoutesCanBeRestored",
+    "OfflineRouteTests/testProtectedKeychainHintIsOriginBoundAndClearedOnExpiryOrReset",
+    "OfflineWebViewTests/testExplicitPOSOpenRestoresDurableDraftAfterNewAppStartsAtHome",
+    "OnlineAuthorityRefreshTests/testChangedOnlineIdentityStillInvalidatesPendingWorkspacePreflight",
+    "OnlineAuthorityRefreshTests/testGeneric503CannotSelectUnrelatedPersonalLeaseForReadConflictRevocation",
+    "OnlineAuthorityRefreshTests/testIdenticalExplicitOnlineStaffRefreshDoesNotCancelWorkspacePreflight",
+    "OnlineAuthorityRefreshTests/testIdenticalGenericLeaseOutageDoesNotBorrowPersonalLeaseOrCancelPreflight",
+    "OnlineAuthorityRefreshTests/testOuterCancellationAndResetStillCannotPostAfterPreflightReturns",
+    "OnlineAuthorityRefreshTests/testUnconfirmedCurrentOnlineStaffWithNoStoredLeaseStillInvalidatesPendingCommand",
+    "OnlineAuthorityRefreshTests/testUnconfirmedOrInvalidStaffProofStillBlocksPendingWorkspaceCommand",
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodayColdFromEncryptedCache",
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodayColdWithoutCacheAndWarmRevisit",
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodaySameRouteHandoffAcceptsNativeEventAndRequestedReply",
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodaySixtySecondsVisibleThenTouchAndForeground",
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodayTransient503RecoversOnceWithoutCommands",
+    "ScopeConflictTransportTests/testConflictRecoveryPreservesHTTPDenialsUnavailableAndUnconfirmedEnvelope",
+    "ScopeConflictTransportTests/testDepartingRead409AfterWorkspaceSwitchCannotWithdrawTheVerifiedDestination",
+    "ScopeConflictTransportTests/testOldScopeConflictCannotWithdrawADifferentAlreadyVerifiedScope",
+    "ScopeConflictTransportTests/testPageSupersessionCancelsOldDeliveryWithoutFabricatingWorkspaceDenial",
+    "ScopeConflictTransportTests/testPreConflictSameScopeResponseIsCancelledAndOnlyNewAuthorityGETCanReauthorizeIt",
+    "ScopeConflictTransportTests/testRead409BeforeContext200WithdrawsOldScopeAndPreservesCurrentAuthorityFlight",
+    "SecurityChallengeWebViewTests/testOrdinaryErrorStillCancelsAndCannotRevealThroughLateCompletion",
+    "SecurityChallengeWebViewTests/testProviderDocumentIsVisibleAtCommitWithoutAppReadinessOrDidFinish",
+    "SinglePostGetterTests/testFreshServerDenialNeverReturnsSettings",
+    "SinglePostGetterTests/testNetworkFailureIsNotRetried",
+    "SinglePostGetterTests/testOldServerRetainsFreshPreflight",
+    "SinglePostGetterTests/testResetDiscardsHeldReply",
+    "SinglePostGetterTests/testSaveStillPerformsFreshPreflight",
+    "SinglePostGetterTests/testThreeAuditedGettersUseOnePOSTAfterNegotiatedAdmission",
+    "SinglePostGetterTests/testWithoutOnlineNegotiationPreflightIsRequired",
+    "SinglePostGetterTests/testWrongDisplayedScopeCannotPost",
+    "StaffOnlineAccessTransportTests/testActualCacheBridgeAllowsOnlyRemovalWithFreshOnlineStaffProof",
+    "StaffOnlineAccessTransportTests/testExplicitOnlineOnlyPurgesSameScopeStaffLeaseAndSnapshotInsteadOfTemporaryOutageReuse",
+    "StaffOnlineAccessTransportTests/testExplicitStaffOnlineProofReadsFreshWithoutOfflineOrBackgroundAuthority",
+    "StaffOnlineAccessTransportTests/testGeneric503UnconfirmedAndNonHTTPSCannotAcquireNewStaffCommandOrRemovalAuthority",
+    "StaffOnlineAccessTransportTests/testMalformedStaleWrongIdentityAndWrongRouteOnlineProofsRemainDenied",
+    "StaffOnlineAccessTransportTests/testOnlineOnlyCommandsUseFreshBoundedStaffPreflightAndNeverReplayServerDenial",
+    "StaffOnlineAccessTransportTests/testOnlineOnlyResourceDenialsAndEvictionNeverRequireOrCreateAReadLease",
+    "StaffOnlineAccessTransportTests/testPinnedStaffActionIDsExistInActuallyInstalledManifest",
+    "StaffOnlineAccessTransportTests/testPreResetHeldOnlineProofCannotRestoreStaffAuthorityOrRemoveNewScopeData",
+    "StartupStateTests/testChallengeStateDoesNotLeakIntoNextPageOrRecoverRejectedErrors",
+    "StartupStateTests/testHTTPErrorCannotBeMarkedReadyByLateBridgeOrDidFinish",
+    "StartupStateTests/testLateReadinessAfterSoftFailureCanRecoverTheSameDocument",
+    "StartupStateTests/testOldReadinessCannotHideTheNextNavigation",
+    "StartupStateTests/testProcessTerminationClearsReadinessAndBoundsAutomaticRecovery",
+    "StartupStateTests/testProvisionalFailurePreservesTheWorkingDocumentButCommittedFailureDoesNot",
+    "StartupStateTests/testReadyRequiresCommittedDocumentAndMatchingNonceAndGeneration",
+    "StartupStateTests/testRetryConstructsAFreshBoundedGetAndNeverReplaysMutationBodies",
+    "StartupStateTests/testRetryRejectsExternalAdminAndOneUseAuthenticationOrPaymentUrls",
+    "StartupStateTests/testSecurityChallengeRevealsAtCommitWithoutBridgeOrLoadCompletion",
+    "WorkspacePreferenceTests/testAcknowledgedChoiceSurvivesCookieRollbackWithoutStoringCredentials",
+    "WorkspacePreferenceTests/testMissingAmbiguousExpiredAndCorruptBindingsFailClosed",
+    "WorkspacePreferenceTests/testRestoreChangesOnlySelectorAndStillRequiresFreshHTTPSContext",
+    "WorkspacePreferenceTests/testRestoredSelectionCannotBypassServerSessionDenial",
+    "WorkspacePreferenceTests/testServerFallbackOrExplicitResetClearsSelectionAndNeverPersistsInvalidWorkspace",
+    "WorkspacePreferenceTests/testTokenRotationPreservesSelectionButDifferentViewerOrLoginCannotRestoreIt",
+    "WorkspaceSwitchTests/testCancelledOrResetPreflightCannotReachCommandPost",
+    "WorkspaceSwitchTests/testColdContextMissKeepsSelectedPayTabWithoutChangingAuthorityPath",
+    "WorkspaceSwitchTests/testColdContextMissKeepsSelectedScheduleDateWithoutChangingAuthorityPath",
+    "WorkspaceSwitchTests/testConcurrentWorkspaceWritesAreRejectedAndCookieVerificationStillFencesDelivery",
+    "WorkspaceSwitchTests/testCookieCommittedButUnreadableAcknowledgmentRecoversByNeutralReadsWithOneCommand",
+    "WorkspaceSwitchTests/testInitialFiltersStaySeparateFromStaffAuthorityPath",
+    "WorkspaceSwitchTests/testNegotiatedSelectionReusesOnlyItsAcknowledgedTargetAdmission",
+    "WorkspaceSwitchTests/testNeutralBootSuppliesOneUseRouteSpecificHomeAdmission",
+    "WorkspaceSwitchTests/testOrdinaryCommandStillRequiresItsCurrentStaffContextAndUnavailableRootCannotSwitch",
+    "WorkspaceSwitchTests/testStartupNetworkBeginsBeforeJSAndIsConsumedOnceWithoutEarlyAdmission",
+    "WorkspaceSwitchTests/testStartupNetworkCannotSurviveAccountReset",
+    "WorkspaceSwitchTests/testSwitchUsesFreshRootIdentityWhenOldStaffBindingIsUnavailableWithoutAdoptingPreflight",
+    "WorkspaceSwitchTests/testTargetDenialCannotSelectOwnerAndRecoveryNeverReplaysTheWrite",
+    "WorkspaceSwitchTests/testTwentyOwnerStaffRoundTripsKeepFreshScopesAndOneWritePerSelection",
+    "WorkspaceSwitchTests/testWrongScopeOrChangedAccountCannotSendWorkspaceCommand"
+  ]
+}

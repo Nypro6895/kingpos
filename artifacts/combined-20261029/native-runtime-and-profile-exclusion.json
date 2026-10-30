@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-30T02:14:12.014Z",
+  "nativeRuntimeAndTestHarnessUnchangedFromUploaded71": true,
+  "swiftTestInventory": 235,
+  "hostInvocations": 14,
+  "profileFilesUnchanged": [
+    "app/salon-profile/salon-website-home.tsx",
+    "app/salon-profile/salon-website-home.module.css",
+    "app/salon-profile/salon-website-header.module.css",
+    "app/settings/salon-profile-preferences-panel.tsx"
+  ],
+  "excludedNewFiles": [
+    "lib/salon-website-images.ts",
+    "app/settings/profile-layout-thumbnail.tsx",
+    "app/settings/profile-layout-thumbnail.module.css",
+    "public/images/profile-defaults/botanical-welcome.webp"
+  ]
+}

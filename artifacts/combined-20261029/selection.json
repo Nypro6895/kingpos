@@ -1,0 +1,669 @@
+{
+  "selected": [
+    {
+      "changeId": "personal-bookings-copy-parity-20261029",
+      "eventId": "949f8123-0eb4-4282-a811-aa99409a1027",
+      "status": "needs-integration",
+      "summary": "One-line Personal native Bookings copy correction: replace accidental question-mark separator with middot matching existing SSR. Physical70 reproduction captured; no behavior/auth/data changes. Not in published71.",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "56b5d6eecd263802d157fe5712a9806592f942cf",
+        "snapshot": "artifacts/personal-audit-20261029/source"
+      },
+      "files": [
+        "components/app-local-customer-views.tsx"
+      ],
+      "deletedFiles": [],
+      "fileHashes": null,
+      "validation": [
+        {
+          "name": "TSX transform",
+          "result": "passed",
+          "evidence": "esbuild transform with zero warnings"
+        },
+        {
+          "name": "scoped diff whitespace",
+          "result": "passed",
+          "evidence": "git -c core.whitespace=cr-at-eol diff --check; one-line product change"
+        },
+        {
+          "name": "assembled release/native verification",
+          "result": "pending",
+          "evidence": "Coordinator integration required; no independent pipeline or deployment"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "latestEventId": "949f8123-0eb4-4282-a811-aa99409a1027",
+      "latestStatus": "needs-integration",
+      "occurredAt": "2026-10-29T22:16:35.145Z"
+    },
+    {
+      "changeId": "personal-layout-followup-20261029",
+      "eventId": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+      "status": "needs-integration",
+      "summary": "Owner-authorized Explore grid constraints and Personal sticky Save/Cancel repair. Preserve existing presentation, static More placeholders, all-role notifications, and history semantics. Physical Explore acceptance pending.",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "84adb8fbce1c93e2ead20d5a181c3cb89bc869a6",
+        "snapshot": "artifacts/personal-layout-followup-20261029/source"
+      },
+      "files": [
+        "app/explore/explore-client.tsx",
+        "app/account/account-profile-editor.tsx",
+        "app/account/account-profile-editor.module.css"
+      ],
+      "deletedFiles": [],
+      "fileHashes": null,
+      "validation": [
+        {
+          "name": "TSX transforms and CSS module parse",
+          "result": "passed",
+          "evidence": "Both TSX transforms0warnings; CSS module esbuild bundle parses"
+        },
+        {
+          "name": "Source-derived responsive geometry",
+          "result": "passed",
+          "evidence": "artifacts/personal-layout-followup-20261029/geometry-results.json; profile before offscreen and after visible; Explore fixture in bounds but did not reproduce physical463pt defect"
+        },
+        {
+          "name": "Scoped whitespace",
+          "result": "passed",
+          "evidence": "git -c core.whitespace=cr-at-eol diff --check"
+        },
+        {
+          "name": "Combined build/native/physical acceptance",
+          "result": "pending",
+          "evidence": "Not deployed; native bundled TSX/CSS needs integration and iPhone recheck. HANDOFF.txt documents limits."
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "latestEventId": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+      "latestStatus": "needs-integration",
+      "occurredAt": "2026-10-30T00:06:08.396Z"
+    },
+    {
+      "changeId": "customer-journey-20261029",
+      "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+      "status": "needs-integration",
+      "summary": "Implement approved unified Personal appointments and salon history, guarded QR entry, precise visit/receipt grouping and reduced redundant reads. Canonical money and server authorization preserved.",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+        "snapshot": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029\\artifacts\\customer-journey-20261029\\source",
+        "hashes": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029\\artifacts\\customer-journey-20261029\\source-hashes.json"
+      },
+      "files": [
+        "app/(app)/activity/page.tsx",
+        "app/(app)/my-bookings/page.tsx",
+        "app/(app)/qr/page.tsx",
+        "app/activity/customer-activity-client.tsx",
+        "app/activity/customer-activity-view.tsx",
+        "app/activity/customer-journey.module.css",
+        "app/activity/customer-journey.tsx",
+        "app/activity/history-details-drawer.tsx",
+        "app/activity/history-link-control.tsx",
+        "app/my-bookings/[bookingId]/booking-detail-actions.tsx",
+        "app/qr/personal-qr-client.tsx",
+        "app/role-navigation.ts",
+        "lib/app-local-page-registry.tsx",
+        "lib/app-local-prefetch-plan.ts",
+        "lib/customer-activity.ts",
+        "lib/customer-journey.ts",
+        "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+        "tests/app-local-prefetch-plan.test.mjs",
+        "tests/customer-journey-ui.test.mjs",
+        "tests/customer-journey.test.mjs",
+        "tests/helpers/customer-journey-fixture.mjs",
+        "tests/personal-qr-full-schema.integration.test.mjs",
+        "tests/personal-qr-ui.test.mjs"
+      ],
+      "deletedFiles": [],
+      "fileHashes": null,
+      "validation": [
+        {
+          "name": "64 targeted source/component/security regressions",
+          "evidence": "artifacts/customer-journey-20261029/browser/results.json",
+          "result": "passed"
+        },
+        {
+          "name": "17 full-schema isolated DB/Auth/RLS and exact financial payload invariance",
+          "evidence": "artifacts/customer-journey-20261029/full-schema-final/qr-full-flow-results.json",
+          "result": "passed"
+        },
+        {
+          "name": "Full Next production build",
+          "evidence": "artifacts/customer-journey-20261029/HANDOFF.txt",
+          "result": "passed"
+        },
+        {
+          "name": "Nonactivated native bundle compilation",
+          "evidence": "artifacts/customer-journey-20261029/native-qa-manifest.json",
+          "result": "passed"
+        },
+        {
+          "name": "Physical iPhone Safari actual-component fixture touch checks",
+          "evidence": "artifacts/customer-journey-20261029/physical",
+          "result": "passed"
+        },
+        {
+          "name": "Latest baseline integration, hosted migration, signed native/released E2E",
+          "evidence": "artifacts/customer-journey-20261029/HANDOFF.txt",
+          "result": "pending"
+        }
+      ],
+      "dependencies": [
+        "personal-layout-followup-20261029",
+        "personal-bookings-copy-parity-20261029"
+      ],
+      "supersedesEvents": [],
+      "latestEventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+      "latestStatus": "needs-integration",
+      "occurredAt": "2026-10-30T01:16:51.751Z"
+    },
+    {
+      "changeId": "review-experience-flow-20261029",
+      "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+      "status": "needs-integration",
+      "summary": "Verified-visit review and salon reply flow, My Reviews for web/bundled iOS, keyboard-safe drawer and Truth-preserving status/history/notifications.",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\source"
+      },
+      "files": [
+        "app/(app)/more/[section]/page.tsx",
+        "app/activity/actions.ts",
+        "app/activity/experience-actions.ts",
+        "app/activity/history-details-drawer.tsx",
+        "app/activity/my-reviews-list.tsx",
+        "app/activity/my-reviews.tsx",
+        "app/activity/visit-experience-prompt.tsx",
+        "app/activity/visit-reply-controls.tsx",
+        "app/salon-profile/salon-profile-view.tsx",
+        "components/use-dialog-viewport.ts",
+        "docs/qa/review-experience-flow-20261029.md",
+        "lib/app-local-command-policy.json",
+        "lib/app-local-commands-server.generated.ts",
+        "lib/app-local-page-paths.json",
+        "lib/app-local-page-registry.tsx",
+        "lib/app-local-personal-metadata.ts",
+        "lib/app-local-personal-resources-server.ts",
+        "lib/app-local-route-policy.ts",
+        "lib/customer-reviews.ts",
+        "lib/vietnamese-workspace-copy.json",
+        "scripts/qa-review-bundled-client.mjs",
+        "scripts/qa-review-experience-browser.mjs",
+        "scripts/qa-review-experience-local.mjs",
+        "scripts/qa-review-experience-resilience.mjs",
+        "scripts/qa-review-https-entry.mjs",
+        "scripts/qa-review-rest-proxy.mjs",
+        "supabase/migrations/20261030002000_visit_experience_replies.sql",
+        "tests/lumi-trust-contract.test.mjs",
+        "tests/lumi-trust-evidence.integration.sql",
+        "tests/visit-experience-flow.integration.test.mjs",
+        "types/customer-review.ts"
+      ],
+      "deletedFiles": [],
+      "fileHashes": null,
+      "validation": [
+        {
+          "name": "46 focused contract/authorization/Truth tests",
+          "result": "passed",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\tests-final.log"
+        },
+        {
+          "name": "Full 326-migration isolated DB flow and original Truth integration",
+          "result": "passed",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\full-schema-flow.log"
+        },
+        {
+          "name": "7 browser flow/width checks and 4 network resilience checks",
+          "result": "passed",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\browser\\results.json"
+        },
+        {
+          "name": "Bundled UI pinned customer edit, server refresh and reload",
+          "result": "passed",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\browser\\bundled-client-results.json"
+        },
+        {
+          "name": "Real iPhone Safari keyboard, customer/owner response flow and bundled UI rendering",
+          "result": "passed",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\HANDOFF.md"
+        },
+        {
+          "name": "ESLint, TypeScript, production web build and native bundle compilation",
+          "result": "passed",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\build-final-verified.log"
+        },
+        {
+          "name": "Integrate current release, apply migration and archive/install/verify new signed iOS binary",
+          "result": "pending",
+          "evidence": "C:\\Reylumi-worktrees\\review-experience-flow-20261029\\artifacts\\review-experience-flow-20261029\\HANDOFF.md"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "latestEventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+      "latestStatus": "needs-integration",
+      "occurredAt": "2026-10-30T01:02:51.991Z"
+    },
+    {
+      "changeId": "history-input-reconciliation-20261029",
+      "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+      "status": "needs-integration",
+      "summary": "Complete authoritative gross/tip inputs, independent salon service/tip reconciliation, role-scoped operation/history/payment flows, original-period supplemental payments and privacy guards; preserve calculated Payroll formulas and compact UI",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+        "baseline": "6115a303bc8f9e37b934fa019d1b4ed1e729e30b",
+        "hashManifest": "artifacts/history-input-reconciliation/source-files.json"
+      },
+      "files": [
+        "app/(app)/payroll/page.tsx",
+        "app/(app)/pos-tickets/[ticketId]/page.tsx",
+        "app/(app)/pos-tickets/page.tsx",
+        "app/api/financial-input-history/route.ts",
+        "app/api/reports/reconcile/route.ts",
+        "app/api/reports/reconciliation-cases/route.ts",
+        "app/payroll/actions.ts",
+        "app/payroll/financial-input-history-panel.tsx",
+        "app/payroll/financial-input-history.module.css",
+        "app/payroll/ledger-actions.ts",
+        "app/payroll/owner-payroll-form.tsx",
+        "app/payroll/payroll-change-history.tsx",
+        "app/payroll/payroll-daily-listing.tsx",
+        "app/payroll/payroll-dashboard.tsx",
+        "app/payroll/payroll-payment-comparison.tsx",
+        "app/payroll/payroll-recorded-facts.tsx",
+        "app/payroll/shop-income-daily-table.tsx",
+        "app/payroll/staff-day-financial-actions.ts",
+        "app/payroll/staff-day-financial-editor.tsx",
+        "app/payroll/staff-payroll-setting-inline-edit.tsx",
+        "app/pos-tickets/actions.ts",
+        "app/pos-tickets/closed-ticket-correction-form.tsx",
+        "app/pos/actions.ts",
+        "app/pos/portable/actions.ts",
+        "app/pos/portable/report/portable-report-closing-form.tsx",
+        "app/pos/portable/ticket/portable-ticket-client.tsx",
+        "app/pos/pos-desk-client.tsx",
+        "app/reports/closing-balance-summary.tsx",
+        "app/reports/daily-closing-form.tsx",
+        "app/reports/daily-reconciliation-cases.tsx",
+        "app/reports/daily-report-history.tsx",
+        "app/reports/owner-live-reports.tsx",
+        "app/staff/my-work/staff-my-work-view.tsx",
+        "app/staff/my-work/staff-pay-analysis.tsx",
+        "app/staff/today/today-dashboard-client.tsx",
+        "app/staff/today/today-progressive-client.tsx",
+        "lib/app-local-command-policy.json",
+        "lib/app-local-commands-server.generated.ts",
+        "lib/app-local-owner-payroll-view.tsx",
+        "lib/app-local-platform-types.ts",
+        "lib/app-local-role-http-server.ts",
+        "lib/daily-closing-client.ts",
+        "lib/daily-closing-input.ts",
+        "lib/daily-closing-save.ts",
+        "lib/daily-closing-server.ts",
+        "lib/daily-input-reconciliation.ts",
+        "lib/daily-pos-report.ts",
+        "lib/financial-input-history.ts",
+        "lib/payroll-live-dashboard.ts",
+        "lib/payroll-live-history-presentation.ts",
+        "lib/payroll-live-history.ts",
+        "lib/payroll-payment-comparison.ts",
+        "lib/payroll-recorded-export.ts",
+        "lib/payroll-records.ts",
+        "lib/payroll.ts",
+        "lib/pos-ticket-calculations.ts",
+        "lib/pos-ticket-staff-earnings.ts",
+        "lib/staff-workdays.ts",
+        "scripts/build-app-local-bundle.mjs",
+        "supabase/migrations/20261029100000_financial_input_history.sql",
+        "supabase/migrations/20261029101000_staff_day_financial_inputs.sql",
+        "supabase/migrations/20261029101100_live_payroll_payments.sql",
+        "supabase/migrations/20261029101200_financial_history_privacy.sql",
+        "supabase/migrations/20261029102000_closing_service_tip_reconciliation.sql",
+        "supabase/migrations/20261029103000_ticket_input_events.sql",
+        "tests/booking-pos-description.integration.test.mjs",
+        "tests/closing-reconciliation-browser.mjs",
+        "tests/closing-service-tip-reconciliation.integration.test.mjs",
+        "tests/daily-pos-comparison-batch.test.mjs",
+        "tests/daily-report-live-authority.test.mjs",
+        "tests/financial-history-authorization.integration.test.mjs",
+        "tests/financial-history-privacy.integration.test.mjs",
+        "tests/financial-history-routing.test.mjs",
+        "tests/financial-input-history-browser.mjs",
+        "tests/financial-inputs-full-stack.integration.test.mjs",
+        "tests/payroll-compact-income.test.mjs",
+        "tests/payroll-input-formula-regression.test.mjs",
+        "tests/payroll-live-payment-projection.test.mjs",
+        "tests/payroll-live-payments.integration.test.mjs",
+        "tests/payroll-payment-browser.mjs",
+        "tests/payroll-recorded-facts.test.mjs",
+        "tests/payroll-service-tip-projection.test.mjs",
+        "tests/payroll-tax-live-access.test.mjs",
+        "tests/staff-day-financial-browser.mjs",
+        "tests/staff-day-financial-inputs.integration.test.mjs",
+        "tests/staff-pay-analysis.test.mjs",
+        "tests/tax-company-published-source.test.mjs",
+        "tests/ticket-input-editor-browser.mjs",
+        "tests/ticket-input-events.integration.test.mjs",
+        "tsconfig.financial-inputs.json",
+        "types/payroll-live-history.ts",
+        "types/payroll-records.ts",
+        "types/payroll.ts",
+        "types/pos-daily-closing.ts",
+        "types/pos-desk.ts"
+      ],
+      "deletedFiles": [],
+      "fileHashes": null,
+      "validation": [
+        {
+          "name": "Financial Auth/PostgREST/PostgreSQL",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/full-stack/financial-inputs-fixture.json",
+          "details": {
+            "migrations": 325,
+            "isolated": true,
+            "network": "none",
+            "hostPortsPublished": false,
+            "ownedContainersRemoved": 4
+          }
+        },
+        {
+          "name": "Final booking conversion wrapper",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/full-stack/iphone-booking-pos-fixture.json",
+          "details": {
+            "migrations": 325,
+            "isolated": true,
+            "network": "none",
+            "hostPortsPublished": false,
+            "ownedContainersRemoved": 4
+          }
+        },
+        {
+          "name": "145 focused and compatibility regression tests",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/focused-final.txt"
+        },
+        {
+          "name": "11 full-schema financial checks including concurrent transactions",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/full-stack-final.txt"
+        },
+        {
+          "name": "Booking conversion rollback, final wrapper, snapshots and retry",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/full-stack/booking-pos-description-result.json"
+        },
+        {
+          "name": "Production build, full TypeScript, prerender and offline assets",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/build-final.txt",
+          "details": {
+            "version": "f302450072b0abcb7926b7b2f8beece1c321d99cc34320ceab6d598ffec08183",
+            "assets": 465,
+            "totalBytes": 9731645
+          }
+        },
+        {
+          "name": "App-local Safari 16 compilation and pinned commands",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/app-local-verify-final.txt",
+          "details": {
+            "verified": true,
+            "target": "safari16",
+            "pinnedActions": 331,
+            "modules": 834,
+            "unsupportedActions": 0,
+            "assetsWritten": false
+          }
+        },
+        {
+          "name": "Responsive component/browser: history-browser/results.json",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/history-browser/results.json",
+          "details": {
+            "checks": 7,
+            "transport": "isolated/mocked, no production session"
+          }
+        },
+        {
+          "name": "Responsive component/browser: payroll-editor-browser/results.json",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/payroll-editor-browser/results.json",
+          "details": {
+            "checks": 6,
+            "transport": "isolated/mocked, no production session"
+          }
+        },
+        {
+          "name": "Responsive component/browser: closing/browser-results.json",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/closing/browser-results.json",
+          "details": {
+            "checks": 9,
+            "transport": "isolated/mocked, no production session"
+          }
+        },
+        {
+          "name": "Responsive component/browser: ticket-editor/browser-results.json",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/ticket-editor/browser-results.json",
+          "details": {
+            "checks": 6,
+            "transport": "isolated/mocked, no production session"
+          }
+        },
+        {
+          "name": "Responsive component/browser: payroll-payment-browser/results.json",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/payroll-payment-browser/results.json",
+          "details": {
+            "checks": 5,
+            "transport": "isolated/mocked, no production session"
+          }
+        },
+        {
+          "name": "Changed product lint and whitespace",
+          "result": "passed",
+          "evidence": "artifacts/history-input-reconciliation/eslint-final.txt",
+          "details": {
+            "errors": 0,
+            "inheritedUnusedWarnings": 3
+          }
+        },
+        {
+          "name": "Current production integration and hosted migrations/scheduler",
+          "result": "pending"
+        },
+        {
+          "name": "Configured native bundle, archive/upload and physical iPhone acceptance",
+          "result": "pending"
+        }
+      ],
+      "dependencies": [
+        "payroll-compact-income-20261029"
+      ],
+      "supersedesEvents": [],
+      "latestEventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+      "latestStatus": "needs-integration",
+      "occurredAt": "2026-10-30T01:22:42.015Z"
+    }
+  ],
+  "excluded": {
+    "changeId": "profile-layout-defaults-20261029",
+    "threadId": "01a18a78-224e-7792-9622-a9d98141af6e",
+    "reason": "Explicit owner defer to next release"
+  },
+  "files": [
+    "app/(app)/activity/page.tsx",
+    "app/(app)/more/[section]/page.tsx",
+    "app/(app)/my-bookings/page.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/(app)/pos-tickets/page.tsx",
+    "app/(app)/qr/page.tsx",
+    "app/account/account-profile-editor.module.css",
+    "app/account/account-profile-editor.tsx",
+    "app/activity/actions.ts",
+    "app/activity/customer-activity-client.tsx",
+    "app/activity/customer-activity-view.tsx",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "app/activity/experience-actions.ts",
+    "app/activity/history-details-drawer.tsx",
+    "app/activity/history-link-control.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/activity/my-reviews.tsx",
+    "app/activity/visit-experience-prompt.tsx",
+    "app/activity/visit-reply-controls.tsx",
+    "app/api/financial-input-history/route.ts",
+    "app/api/reports/reconcile/route.ts",
+    "app/api/reports/reconciliation-cases/route.ts",
+    "app/explore/explore-client.tsx",
+    "app/my-bookings/[bookingId]/booking-detail-actions.tsx",
+    "app/payroll/actions.ts",
+    "app/payroll/financial-input-history-panel.tsx",
+    "app/payroll/financial-input-history.module.css",
+    "app/payroll/ledger-actions.ts",
+    "app/payroll/owner-payroll-form.tsx",
+    "app/payroll/payroll-change-history.tsx",
+    "app/payroll/payroll-daily-listing.tsx",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-payment-comparison.tsx",
+    "app/payroll/payroll-recorded-facts.tsx",
+    "app/payroll/shop-income-daily-table.tsx",
+    "app/payroll/staff-day-financial-actions.ts",
+    "app/payroll/staff-day-financial-editor.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/pos-tickets/actions.ts",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos/actions.ts",
+    "app/pos/portable/actions.ts",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/qr/personal-qr-client.tsx",
+    "app/reports/closing-balance-summary.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/daily-reconciliation-cases.tsx",
+    "app/reports/daily-report-history.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/role-navigation.ts",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/staff/my-work/staff-my-work-view.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/today/today-dashboard-client.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "components/app-local-customer-views.tsx",
+    "components/use-dialog-viewport.ts",
+    "docs/qa/review-experience-flow-20261029.md",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/app-local-page-paths.json",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-prefetch-plan.ts",
+    "lib/app-local-role-http-server.ts",
+    "lib/app-local-route-policy.ts",
+    "lib/customer-activity.ts",
+    "lib/customer-journey.ts",
+    "lib/customer-reviews.ts",
+    "lib/daily-closing-client.ts",
+    "lib/daily-closing-input.ts",
+    "lib/daily-closing-save.ts",
+    "lib/daily-closing-server.ts",
+    "lib/daily-input-reconciliation.ts",
+    "lib/daily-pos-report.ts",
+    "lib/financial-input-history.ts",
+    "lib/payroll-live-dashboard.ts",
+    "lib/payroll-live-history-presentation.ts",
+    "lib/payroll-live-history.ts",
+    "lib/payroll-payment-comparison.ts",
+    "lib/payroll-recorded-export.ts",
+    "lib/payroll-records.ts",
+    "lib/payroll.ts",
+    "lib/pos-ticket-calculations.ts",
+    "lib/pos-ticket-staff-earnings.ts",
+    "lib/staff-workdays.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "scripts/build-app-local-bundle.mjs",
+    "scripts/qa-review-bundled-client.mjs",
+    "scripts/qa-review-experience-browser.mjs",
+    "scripts/qa-review-experience-local.mjs",
+    "scripts/qa-review-experience-resilience.mjs",
+    "scripts/qa-review-https-entry.mjs",
+    "scripts/qa-review-rest-proxy.mjs",
+    "supabase/migrations/20261029100000_financial_input_history.sql",
+    "supabase/migrations/20261029101000_staff_day_financial_inputs.sql",
+    "supabase/migrations/20261029101100_live_payroll_payments.sql",
+    "supabase/migrations/20261029101200_financial_history_privacy.sql",
+    "supabase/migrations/20261029102000_closing_service_tip_reconciliation.sql",
+    "supabase/migrations/20261029103000_ticket_input_events.sql",
+    "supabase/migrations/20261030002000_visit_experience_replies.sql",
+    "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+    "tests/app-local-prefetch-plan.test.mjs",
+    "tests/booking-pos-description.integration.test.mjs",
+    "tests/closing-reconciliation-browser.mjs",
+    "tests/closing-service-tip-reconciliation.integration.test.mjs",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/customer-journey.test.mjs",
+    "tests/daily-pos-comparison-batch.test.mjs",
+    "tests/daily-report-live-authority.test.mjs",
+    "tests/financial-history-authorization.integration.test.mjs",
+    "tests/financial-history-privacy.integration.test.mjs",
+    "tests/financial-history-routing.test.mjs",
+    "tests/financial-input-history-browser.mjs",
+    "tests/financial-inputs-full-stack.integration.test.mjs",
+    "tests/helpers/customer-journey-fixture.mjs",
+    "tests/lumi-trust-contract.test.mjs",
+    "tests/lumi-trust-evidence.integration.sql",
+    "tests/payroll-compact-income.test.mjs",
+    "tests/payroll-input-formula-regression.test.mjs",
+    "tests/payroll-live-payment-projection.test.mjs",
+    "tests/payroll-live-payments.integration.test.mjs",
+    "tests/payroll-payment-browser.mjs",
+    "tests/payroll-recorded-facts.test.mjs",
+    "tests/payroll-service-tip-projection.test.mjs",
+    "tests/payroll-tax-live-access.test.mjs",
+    "tests/personal-qr-full-schema.integration.test.mjs",
+    "tests/personal-qr-ui.test.mjs",
+    "tests/staff-day-financial-browser.mjs",
+    "tests/staff-day-financial-inputs.integration.test.mjs",
+    "tests/staff-pay-analysis.test.mjs",
+    "tests/tax-company-published-source.test.mjs",
+    "tests/ticket-input-editor-browser.mjs",
+    "tests/ticket-input-events.integration.test.mjs",
+    "tests/visit-experience-flow.integration.test.mjs",
+    "tsconfig.financial-inputs.json",
+    "types/customer-review.ts",
+    "types/payroll-live-history.ts",
+    "types/payroll-records.ts",
+    "types/payroll.ts",
+    "types/pos-daily-closing.ts",
+    "types/pos-desk.ts",
+    "supabase/migrations/20261030020000_financial_history_staff_retention.sql"
+  ]
+}

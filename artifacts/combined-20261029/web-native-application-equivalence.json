@@ -1,0 +1,10 @@
+{
+  "nativeCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1",
+  "webCommit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+  "applicationSourceEqual": true,
+  "differences": [
+    "supabase/migrations/20261030020000_financial_history_staff_retention.sql",
+    "tests/helpers/qr-capability-retention-cases.mjs"
+  ],
+  "explanation": "Only additive hosted SQL retention fix and corresponding integration fixture changed after native freeze; no Swift, shared JS/TS, assets, runtime/config or bundle input changed."
+}

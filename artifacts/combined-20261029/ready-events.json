@@ -1,0 +1,35 @@
+{
+  "events": [
+    {
+      "producer": "949f8123-0eb4-4282-a811-aa99409a1027",
+      "ready": "278ee86c-4f89-4465-a7ce-e25d1f5551eb",
+      "changeId": "personal-bookings-copy-parity-20261029"
+    },
+    {
+      "producer": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+      "ready": "f81ce161-5052-42a1-a62d-26286f102dd7",
+      "changeId": "personal-layout-followup-20261029"
+    },
+    {
+      "producer": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+      "ready": "9ad7d4cb-2867-4443-8deb-11419a24bb8b",
+      "changeId": "customer-journey-20261029"
+    },
+    {
+      "producer": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+      "ready": "03dbe2c1-268d-4a00-be3d-d32f472f3f2c",
+      "changeId": "review-experience-flow-20261029"
+    },
+    {
+      "producer": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+      "ready": "8468cdce-dfdb-4678-8bd4-cfe77ce4456a",
+      "changeId": "history-input-reconciliation-20261029"
+    },
+    {
+      "producer": "2a895c72-1390-4570-8108-d0d0ad55a012",
+      "ready": "84daa50f-ab6e-4ca8-bcd5-6fbe62f639c7",
+      "changeId": "payroll-compact-income-20261029"
+    }
+  ],
+  "aggregate": "4def5283-a042-4617-87f4-94a6e1781a2c"
+}

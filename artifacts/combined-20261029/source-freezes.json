@@ -1,0 +1,1073 @@
+[
+  {
+    "eventId": "949f8123-0eb4-4282-a811-aa99409a1027",
+    "file": "components/app-local-customer-views.tsx",
+    "commit": "56b5d6eecd263802d157fe5712a9806592f942cf",
+    "sourceSha256": "46547f4a67dede88a47377067839a4f30169fc9ef8ce2568a351c84b1729d432",
+    "frozenSha256": "46547f4a67dede88a47377067839a4f30169fc9ef8ce2568a351c84b1729d432"
+  },
+  {
+    "eventId": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+    "file": "app/explore/explore-client.tsx",
+    "commit": "84adb8fbce1c93e2ead20d5a181c3cb89bc869a6",
+    "sourceSha256": "3de391ce75afb8808485a2475b8ea4f941de9c9efecc6cdb543946b278ad5b9b",
+    "frozenSha256": "3de391ce75afb8808485a2475b8ea4f941de9c9efecc6cdb543946b278ad5b9b"
+  },
+  {
+    "eventId": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+    "file": "app/account/account-profile-editor.tsx",
+    "commit": "84adb8fbce1c93e2ead20d5a181c3cb89bc869a6",
+    "sourceSha256": "705daa9046b91940167e3e17290069b377fcdf404e1e0a931cc28a3146f73d6d",
+    "frozenSha256": "c254de5e88a178d1b440ad8267625252c2b1deedf6fa1cbaf5652aada113fc73"
+  },
+  {
+    "eventId": "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+    "file": "app/account/account-profile-editor.module.css",
+    "commit": "84adb8fbce1c93e2ead20d5a181c3cb89bc869a6",
+    "sourceSha256": "2678187cd7439910d9bea2871fc91a1a06db8502bf14b2b7c488b2af001d2ed8",
+    "frozenSha256": "2678187cd7439910d9bea2871fc91a1a06db8502bf14b2b7c488b2af001d2ed8"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/(app)/activity/page.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "3cb36feee8f658ce8a3be3f4570f03a4c432ac8824cb0a26e407c71ea6ac6a90",
+    "frozenSha256": "3cb36feee8f658ce8a3be3f4570f03a4c432ac8824cb0a26e407c71ea6ac6a90"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/(app)/my-bookings/page.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "aad70b187efc15575e02fc362bea433072ad63555cb88af49d30c94046eb44ec",
+    "frozenSha256": "f56228269f97e270fb64204dd4f0291407153d560a2a6651f2ac760920ed41d9"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/(app)/qr/page.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "461e742ef68e7eb5c8c5d2bc36a4fd7c82f46314b606de6cd529f090c74a427f",
+    "frozenSha256": "0d2b5e6a13409c4d86613e6e218b485b998f593af3cc5094713042ab0f793228"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/activity/customer-activity-client.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "31d6e8ddbc11b2a3906497a19dffe6fd495f7d4028bf48db81507e0567dad83f",
+    "frozenSha256": "31d6e8ddbc11b2a3906497a19dffe6fd495f7d4028bf48db81507e0567dad83f"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/activity/customer-activity-view.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "c2ae8d006301b222c6e3e346d5628bf7e4522b4b474ab8c6c19cbe67b6c4c392",
+    "frozenSha256": "c2ae8d006301b222c6e3e346d5628bf7e4522b4b474ab8c6c19cbe67b6c4c392"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/activity/customer-journey.module.css",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "f5eb0ecdd5d75a5a182517354d400e45425510fe640661c60a16d542ac82dcd2",
+    "frozenSha256": "082e9e28eb9691527e00cc1ba75a1dd30191fec7baa25f517d687daf2772ed78"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/activity/customer-journey.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "a5883603685ea1d9766baa15a09ec479482ba4400f958112ffe343362297abb5",
+    "frozenSha256": "a5883603685ea1d9766baa15a09ec479482ba4400f958112ffe343362297abb5"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/activity/history-details-drawer.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "17ed973b4718fc2caee103368c1ed86dae7cde74b661c85615ea48c86ad78850",
+    "frozenSha256": "17ed973b4718fc2caee103368c1ed86dae7cde74b661c85615ea48c86ad78850"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/activity/history-link-control.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "d55fb60d21ff2cb5ce6b1290d227fd48f7afddf022e017c9b3ebbfd702fd8eeb",
+    "frozenSha256": "d55fb60d21ff2cb5ce6b1290d227fd48f7afddf022e017c9b3ebbfd702fd8eeb"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/my-bookings/[bookingId]/booking-detail-actions.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "5778780eaf282773942bd2f43d1d8eea1a04e96534468e2134443fb4189185e7",
+    "frozenSha256": "5778780eaf282773942bd2f43d1d8eea1a04e96534468e2134443fb4189185e7"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/qr/personal-qr-client.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "8af96ab39f29113e5ac150c7e55fa19d44c96b63a15774b87cc1cc45c6476a5e",
+    "frozenSha256": "27ffe7e236b3dd94c755b725fab13828c04a78a8b297391b9d5f21db9d0f05b9"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "app/role-navigation.ts",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "4725c806a42bd95c89d268b194a35349582bdc2ebe9332474ab5bbb99b227f33",
+    "frozenSha256": "be1324207ce642bfeb34b56aa7a6afcf7af681383c8114ea55c09b1f5ebecdf1"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "lib/app-local-page-registry.tsx",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "fb065b74792e29984bd83c4199c3da55fc61a22e5232a5bcaf0293ef78da45ca",
+    "frozenSha256": "fb065b74792e29984bd83c4199c3da55fc61a22e5232a5bcaf0293ef78da45ca"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "lib/app-local-prefetch-plan.ts",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "81a88b857c41305d274c32eddd8224c8b053ba95a1bb2dbe14f842267e1d4cf0",
+    "frozenSha256": "99fbfe56f5a98e96ed3ccfa1b5d4af27a5c26c988f880042aebd39b9bfa25ca0"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "lib/customer-activity.ts",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "1286ab4dc18b498c31caf16b1c5da1d031fe9e86dc9a4d7c4fbf5a72d3ab6488",
+    "frozenSha256": "1286ab4dc18b498c31caf16b1c5da1d031fe9e86dc9a4d7c4fbf5a72d3ab6488"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "lib/customer-journey.ts",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "1c040be3e8e86b5f071b9449cad3149792dfd5c0b787ee51e045511516aa71d1",
+    "frozenSha256": "1c040be3e8e86b5f071b9449cad3149792dfd5c0b787ee51e045511516aa71d1"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "c380de662bdae2ef02ac7151ee25d70530c17f5c7d54919cc6b87f7afd68f709",
+    "frozenSha256": "c380de662bdae2ef02ac7151ee25d70530c17f5c7d54919cc6b87f7afd68f709"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "tests/app-local-prefetch-plan.test.mjs",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "673f7b9e742cc9d7b07a6e9ba95e1fc81637d2815be8b8180324a3babcb91b6a",
+    "frozenSha256": "ccb202d60b0c3d3a0e5976a458b65039f5d1f7f41b0dc9bca4516e53e8365839"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "tests/customer-journey-ui.test.mjs",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "80607fc0ea9c013e66ade25c7413e9bf56c1463bd3c4f61b21ccb90e9882f034",
+    "frozenSha256": "80607fc0ea9c013e66ade25c7413e9bf56c1463bd3c4f61b21ccb90e9882f034"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "tests/customer-journey.test.mjs",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "a4a0af6af3e168787777db22dcedf7c113d187696ee63191e95a1df0beaf36c8",
+    "frozenSha256": "a4a0af6af3e168787777db22dcedf7c113d187696ee63191e95a1df0beaf36c8"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "tests/helpers/customer-journey-fixture.mjs",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "98b866c42cd20219cb2aa58f8636c64cb9665cd83f7a7988feae493f86c2d4d3",
+    "frozenSha256": "98b866c42cd20219cb2aa58f8636c64cb9665cd83f7a7988feae493f86c2d4d3"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "tests/personal-qr-full-schema.integration.test.mjs",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "d68fdc6ef257e6fc782f91d30dc898e5c8cc05214237c00a132228ee8a88550c",
+    "frozenSha256": "5e10170207ff5bea1a082e70e0299bc71be2a090b7974d2f5b8ab76e105ee0de"
+  },
+  {
+    "eventId": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+    "file": "tests/personal-qr-ui.test.mjs",
+    "commit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "sourceSha256": "89b1be73f342fa8197bc2977fec755cdeea37b98821e07e9eca4b4f02fdedee2",
+    "frozenSha256": "e5b431fd77108d673594bc88f3c01a751f83ea345f05c284bd22853502fe7f8b"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/(app)/more/[section]/page.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "d82927b1d0c3c659e6a64d043a16bc46a7e488ce23349b0c98c10e8ef6848ff3",
+    "frozenSha256": "d82927b1d0c3c659e6a64d043a16bc46a7e488ce23349b0c98c10e8ef6848ff3"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/actions.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "7c35556027af9016812f3b57450cb969ad24eb2e8a9fd78935162bf884497119",
+    "frozenSha256": "7c35556027af9016812f3b57450cb969ad24eb2e8a9fd78935162bf884497119"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/experience-actions.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "0d8abbfe3d81d5b1f6b2567e614ff45672d8522ceff783cedcbf5f58e2876f27",
+    "frozenSha256": "0d8abbfe3d81d5b1f6b2567e614ff45672d8522ceff783cedcbf5f58e2876f27"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/history-details-drawer.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "aad38d4462794c9b1bb142a9a6e2102af20c733497c61a71ae30a936d47e82b0",
+    "frozenSha256": "aad38d4462794c9b1bb142a9a6e2102af20c733497c61a71ae30a936d47e82b0"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/my-reviews-list.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "57404da8f5b7bb36350f3ed19ad5174e5d066e03a99955b3a61ffe4e79efa39f",
+    "frozenSha256": "57404da8f5b7bb36350f3ed19ad5174e5d066e03a99955b3a61ffe4e79efa39f"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/my-reviews.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "8b873ebe8678b734712ed455a00698bda6a4b9f436e8f27473073885a7fba418",
+    "frozenSha256": "8b873ebe8678b734712ed455a00698bda6a4b9f436e8f27473073885a7fba418"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/visit-experience-prompt.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "7014d36f7aea868f1aa9875e732beec5f752ace313f42c375f238488023be862",
+    "frozenSha256": "7014d36f7aea868f1aa9875e732beec5f752ace313f42c375f238488023be862"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/activity/visit-reply-controls.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "77c8375c8170e2d63b462649381ab5aa484a9e9d51242f56194f2b3ec8a2c47f",
+    "frozenSha256": "77c8375c8170e2d63b462649381ab5aa484a9e9d51242f56194f2b3ec8a2c47f"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "app/salon-profile/salon-profile-view.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "fbe849e71eeecda6c00f0c41735d6221d7307509fde4cdb3573920997cfb4582",
+    "frozenSha256": "fbe849e71eeecda6c00f0c41735d6221d7307509fde4cdb3573920997cfb4582"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "components/use-dialog-viewport.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "d9eadfc1cd147e0ceac2ba84a80c7232e3ab4eca098f9a03700958f547d91809",
+    "frozenSha256": "d9eadfc1cd147e0ceac2ba84a80c7232e3ab4eca098f9a03700958f547d91809"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "docs/qa/review-experience-flow-20261029.md",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "f154c3438ade4bf52a6721a0201a15271031e75005d25995e4239a08c3f7b624",
+    "frozenSha256": "004ff93353ef432d15eb8995d320530d95505f492801e91083c62aec759789d2"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-command-policy.json",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "de1b49e214518d55941c823604e0d9c5cae10887f42220db1e168c72481df826",
+    "frozenSha256": "17f97f6d81cb12c48b595d291d5009baed6ada601f028733fbac45050df81383"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-commands-server.generated.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "9b0233994820d95dc091c04beb3a03e6e980f7bc7b6f2569246c4a83c403b4a2",
+    "frozenSha256": "350f5f60b5db500ce009eab10129ff54766d2f94ebcc23a48864959be6c43edf"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-page-paths.json",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "bf62d75d37b9f54b9658ba7848d41f545fdf73dc3c73d94b57e8f33865eb6f6e",
+    "frozenSha256": "bf62d75d37b9f54b9658ba7848d41f545fdf73dc3c73d94b57e8f33865eb6f6e"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-page-registry.tsx",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "37e54bae606263916bb420ea1de902b9357e99308effdc23d0515910110a8a4a",
+    "frozenSha256": "37e54bae606263916bb420ea1de902b9357e99308effdc23d0515910110a8a4a"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-personal-metadata.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "2d1effc041d166aed7cd17e9d17a01022886780e40f3f9557f3412fe346a8803",
+    "frozenSha256": "2d1effc041d166aed7cd17e9d17a01022886780e40f3f9557f3412fe346a8803"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-personal-resources-server.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "32126f498797eb669a2d5db510320abc6441fd8b0a5ec81e157d3bcd57de6398",
+    "frozenSha256": "32126f498797eb669a2d5db510320abc6441fd8b0a5ec81e157d3bcd57de6398"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/app-local-route-policy.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "fe10f832b2ef43e4a6be28de9bb29cd8f581031349e8689ae1c228e1a8e3bec2",
+    "frozenSha256": "fe10f832b2ef43e4a6be28de9bb29cd8f581031349e8689ae1c228e1a8e3bec2"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/customer-reviews.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "baf5e4dd437a13eb501a02c09259d910224d46c909e8eefe2e08b9e633cdfef1",
+    "frozenSha256": "baf5e4dd437a13eb501a02c09259d910224d46c909e8eefe2e08b9e633cdfef1"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "lib/vietnamese-workspace-copy.json",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "448074457d8320c37486dd6fa2f743aa18dfd2fbb366b56d9e3b963e73009839",
+    "frozenSha256": "03950ae895c3678348557818a2a1064a11cf1cfab33c1bee79b7596ca9e2a50a"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "scripts/qa-review-bundled-client.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "822843b8f69ac9a1e4a209575e9fcb03033ba7916e68302d1344466341f5fdbb",
+    "frozenSha256": "822843b8f69ac9a1e4a209575e9fcb03033ba7916e68302d1344466341f5fdbb"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "scripts/qa-review-experience-browser.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "bc77048f9678020b37f97ece62627bd9d965bd23d4d327cf8034e609a79c9de5",
+    "frozenSha256": "bc77048f9678020b37f97ece62627bd9d965bd23d4d327cf8034e609a79c9de5"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "scripts/qa-review-experience-local.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "b089764c1dfda59142896c8079cfb211677f0712030d101b70423637cfc02e73",
+    "frozenSha256": "b089764c1dfda59142896c8079cfb211677f0712030d101b70423637cfc02e73"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "scripts/qa-review-experience-resilience.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "0bc29c050697d5be594c56fed467125f6b4eac6751174ac8593c50b02acd7423",
+    "frozenSha256": "0bc29c050697d5be594c56fed467125f6b4eac6751174ac8593c50b02acd7423"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "scripts/qa-review-https-entry.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "a39f6d72ab07abe84ad871191cf9963ddd180fe6f440b478c1265744b8255336",
+    "frozenSha256": "a39f6d72ab07abe84ad871191cf9963ddd180fe6f440b478c1265744b8255336"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "scripts/qa-review-rest-proxy.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "5d244611e9a2c9ddbf662c7cc55859caa2006bef25f97888aaeb372b868aabbe",
+    "frozenSha256": "5d244611e9a2c9ddbf662c7cc55859caa2006bef25f97888aaeb372b868aabbe"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "supabase/migrations/20261030002000_visit_experience_replies.sql",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "47c3b1b34584f39340105c5b39a8612865cefb15bba058d7e6ac3b0791ed93c1",
+    "frozenSha256": "47c3b1b34584f39340105c5b39a8612865cefb15bba058d7e6ac3b0791ed93c1"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "tests/lumi-trust-contract.test.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "2c70454a07132546fe9993351006a9070fe0cd9e50644c50ce322520d1b0b946",
+    "frozenSha256": "08105ada3a79612c1dd46d9b5cdc73d0e2444fbd0a90ff286b0c45c575d70b5d"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "tests/lumi-trust-evidence.integration.sql",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "0e23d6c7f375050fc33eb0ad7f7a174114f2d3657b447ee465f9ffda6f74adaa",
+    "frozenSha256": "734660a8155b647638c694eb67aa6813bb082295ebac9e9ba62347e6b6f8535e"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "tests/visit-experience-flow.integration.test.mjs",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "7bbec294050a4cbc12f360f8689e8991cc3bb5f05cd66ca52113496ca90cdea1",
+    "frozenSha256": "7bbec294050a4cbc12f360f8689e8991cc3bb5f05cd66ca52113496ca90cdea1"
+  },
+  {
+    "eventId": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+    "file": "types/customer-review.ts",
+    "commit": "9ec480fef0a55bbf9558177be18267af6f6d9011",
+    "sourceSha256": "5d55b023b2d636da7d83151d6ff2443614d4a5c3707b22f5c311df576b17e004",
+    "frozenSha256": "5d55b023b2d636da7d83151d6ff2443614d4a5c3707b22f5c311df576b17e004"
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/(app)/payroll/page.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3fd8939dfe82d85b94b77799b0261b42722bbe3083cbd0653797a5fee2ad72de",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "db2c47b500463b83767c466a244e9cb8609b8c913a6d17d8d7dec15d4a968a95",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/(app)/pos-tickets/page.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "137e09682f268eb38b5ee54f30f9e25ad9a35d5c734c32e603942ce9107cd927",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/api/financial-input-history/route.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "2dd1f9da270df9015964a4e3a7e9918c62fc7fda53efd473e1026ad45f5d1021",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/api/reports/reconcile/route.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "27ba5f5f46546ba43ec5507c968f52156203b6edf136756290231c6496417971",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/api/reports/reconciliation-cases/route.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "57756ca3ad0e03a11adf655f69fabe9d6a408d1a81b7f34b1fcb8273f7beb247",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/actions.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "0704c1cd766259990ee3e2487789d999b9c2fb18dfcf89096868a49246dd3afb",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/financial-input-history-panel.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "67b1a6e8d0a38e3cb19c7c7c760f3c15c9f32df39b24d885e2a61ddd7fd0a485",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/financial-input-history.module.css",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "d9ac4c38c281279c1cf212f89dc34221243e5fc68ad4db2680d691770a383ff8",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/ledger-actions.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "e451b12cf4420fab4d6607ded5ccfaec3ff00f33dc20555e035f72060f9f2b81",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/owner-payroll-form.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "2b3c71300211e51bf15c0a3f660e0488d16565849946a11bc2e9f376f3f35613",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/payroll-change-history.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "b9d40a37a34bf639c8e61f7d94f0d89876b434741c4cfabf23c0b2217a283808",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/payroll-daily-listing.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "c23c1f46f437982b36763e91acff1cf3cfaec9ee2c83a86f34f8433fa7bd382a",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/payroll-dashboard.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3756908dd4f2c7cd3b9a2892e3e507e856549181bd3e8428be6d2e4aa7b234a9",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/payroll-payment-comparison.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "ed8605c2720b278dd1cb1b65b1197b4acea4b4db1aba779bf2c8e3347db2e805",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/payroll-recorded-facts.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "f956eaaad4a202da15a7ddccfec64ebdacf39273fe17dec6a9b38de7be1d2f19",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/shop-income-daily-table.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3d3a1cd44c9a0ca0ce7b1624c038857c609a77265ee2f1cf8ca366197fb438f6",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/staff-day-financial-actions.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "2dfc57240d12d29fd444d02318b54565594a0f98f04c15a7483fe0f3c959d2b5",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/staff-day-financial-editor.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "66fcb173d0c6bad07f27158656ceb5d3daf91ced059a1999b2d80ce46e114515",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "87eb04d59b3c6370ea787acfb827da800ec3f49b1f9a94c6513632361e1dbf45",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos-tickets/actions.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "9c9c64ede9a4b88c35c3927218105f70a905a7af13795ffb05e75b815a26416d",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "e05467216e8bb2057d2d73ce511579f7b6eebc8fcd0b7b380a6bf6c371811748",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos/actions.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "9bcb0169d113bf249a4823ff80b4e14c90824273c4f7ac51b2cddc87bcfa5205",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos/portable/actions.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "8bec04e25d00dc73f94371cd93e8f10451ca55b7f32c93509f7e8cb36b91ac0a",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos/portable/report/portable-report-closing-form.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3b3688982a7991b51dc0cea6ac11ff984b3da8a591ffcaf05f34b53f1b236eab",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "2927ddd74ea31c3f2eef8ea784fdfa103537925208aa51bf70d43f5ed2b80ac6",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/pos/pos-desk-client.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "005deba72c63fdf0c8f83d66024fd81cadcea3a610fe0217c267d46f695c83f6",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/reports/closing-balance-summary.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "294c21ed1fe7730f5369e337acb882abb3ab381859359b0087c7aa3030e8075d",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/reports/daily-closing-form.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "24e1cababf98d83d92b041acea0d97c07bb2cfe97fcda7723f9aeb3185d0f6a4",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/reports/daily-reconciliation-cases.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "64bf771e7686441be02789ff0d5a073a58431c37e0ed50718f9c882f190d6079",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/reports/daily-report-history.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "412161b129df821abd687875d2f401067b851426488fd7297e6f6d6e581e05c3",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/reports/owner-live-reports.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "2e183044c1d055c8e8786a20910ebf979d33ea40e3e38905035547ff9a9e9ee7",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/staff/my-work/staff-my-work-view.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "ee049441eff4b73018b1fe44b8cc6e656b33448e95321068d2c264956aea74c1",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/staff/my-work/staff-pay-analysis.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "ff5b5ace3ccade05ef1902d55dc872e428c483a067c45a7e11926eb10fcf6a19",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/staff/today/today-dashboard-client.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "cde0b64892ff7a08e19287b7b30a9f6994fc39a919c42edb3f7639bec33f2442",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "app/staff/today/today-progressive-client.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "14033d622e424a67f1b83b481cf09ea337860242f505112cbdf2771f310f9e37",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/app-local-command-policy.json",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "5a5f528fdc72a1a38eae94669c98fb0ad113785f114002632de1ef58a3562e92",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/app-local-commands-server.generated.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "16eef71e89bfe9a2512d797dc5953d33e5798f4bb3d86532d83e384424087215",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/app-local-owner-payroll-view.tsx",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "9a36c98805c89c66c91c6456657a92b232cb177c6e32812f508cc070eaf02646",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/app-local-platform-types.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "e9539cabc04b14647b68f35518c01198241a4ab3e5fba2fb427e9cd693946b89",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/app-local-role-http-server.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "30b128ee2897945cddba706a61bf62daa50f9d71ad078e08bed948c5c81dd2a8",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/daily-closing-client.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "60a895e57fa43b60fa7371db2b8230785e9e38dbeabab19724e18a05fd201b5e",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/daily-closing-input.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "dd952b06ba621a9f4ee7c39912374a5715fb537e4126b51b520bb1bbdf38b2a0",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/daily-closing-save.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "87985e57bb5ed4fe530b0df0ad1fbe9569cdb3134a2cae22964ea655e6429658",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/daily-closing-server.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "e7128784651cc74e7b449dc5a94386044638d63227a93d0e19e3b0b0a41ed2f9",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/daily-input-reconciliation.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "25e629b479f4bf4aa3aa6c807519ef6af4dd1174e02dd5742cc437c6c75eee30",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/daily-pos-report.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "30cec4d8f44f847544fe4f0514a1baa01712ff232b36e5de739a3be971ad086b",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/financial-input-history.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "dda37e6d3acc1ac578199f7144ea44b4cef2edf0845c0f01e23d556a8464cc13",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll-live-dashboard.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "a99a78d306cb019a367ada6a8888a4b171fb72a364cdb370733029747009b412",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll-live-history-presentation.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "d5f2c0ed1839880c1075d89e6cba294bdfe4ce16f1508820df4e5d3fbc3a5789",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll-live-history.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "891ab4946f335eb223dbde4dc65d38474669dc54450c8652e3fe2926ef2deb05",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll-payment-comparison.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "c12c1c5829910d212db0b7c38cdce98637c1850542133d8e9df3b247b2b7bd95",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll-recorded-export.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "17e10a9a2bd32e70ee5ee89ce96b45e22aa573d1e7fde7a5f62d7571f28281c4",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll-records.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "48f4333a86bd727efa98321fbb6a6593836ea744c596b71fff0f33ba645813ca",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/payroll.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "a460a818a8a658db5b3f3cc250de1ce5e08511513876c58a50bc0e67a05e1f11",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/pos-ticket-calculations.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3e261c970e5a8b49fb3e2c8dc3936be68b66627a3afe772e9f548b9401da9e56",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/pos-ticket-staff-earnings.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "6698492765032f8eb2b283246d3e3c1b2381bafa69e4af17cd740ae6177caea4",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "lib/staff-workdays.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "16043f93efed1196ca567fd7fecbc844906ea7503b1f49f5772d856511394300",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "scripts/build-app-local-bundle.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "44c12097ddb462079ab54492c4ce16b0b7f8aebd1ca6980aa7db034622d878ad",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "supabase/migrations/20261029100000_financial_input_history.sql",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3178a2146bfe2e22a6b4cbe2729d25f5fb4582843346f2a0c37705241bde8bff",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "supabase/migrations/20261029101000_staff_day_financial_inputs.sql",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "57bf1405a8fc9372caa53acadab5613d497130fdaea18846143dec867ed086ad",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "supabase/migrations/20261029101100_live_payroll_payments.sql",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "354ef54c8b9035e7b490dee67fb47a7d42212f4e3341756b02dc61569892909e",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "supabase/migrations/20261029101200_financial_history_privacy.sql",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "3f9e786d36280573130bf8c4f0a8d15e608b8873864a3063def870d15ad13b1c",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "supabase/migrations/20261029102000_closing_service_tip_reconciliation.sql",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "e0a88a077fd506f1f4abd03edf279b295d6206ba050b3fdd08c0e5b3c0ed15cd",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "supabase/migrations/20261029103000_ticket_input_events.sql",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "f36ccb1417955a3a9537379ebeb03680c78d7acc2d81c319aa5fcf2e30cdfe9a",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/booking-pos-description.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "4230973c0fc8bd863c0f72a83b7f0f22ced2e55e8ae7fc17a737f7f757417204",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/closing-reconciliation-browser.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "b4b93ca7658e6c240423bf20c4e874ceb01edf9ced747e52ee17ef76d65e9365",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/closing-service-tip-reconciliation.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "da8a795e300c3a71fd028a715eca6307d0f44e7a9410f6d0be0162c9c9ab572c",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/daily-pos-comparison-batch.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "5b5d915893339a6c85a1df8a3f9086d782b0ada710ff96e6a5152abc483ba11d",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/daily-report-live-authority.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "81deed9ebd44566feec1075cb5d530da426de754f29a8312faa0fdf040a4b9fd",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/financial-history-authorization.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "d634fcb0d26fbfd7b5af10566e899d0719654ccdc27f3b8baf307023417fa57f",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/financial-history-privacy.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "7afb0aefce145c12dfd2878f3def4ca5a8848927c0318f15f56709668dd3047f",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/financial-history-routing.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "09b02d409f985b9606e1eaaf9a96e80d51e186ef19bdf4b24d74d484043bdab5",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/financial-input-history-browser.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "c18c631ecdb1adf61cda995853dfa28f741c4ff19e1ef31032471fd60158b5e5",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/financial-inputs-full-stack.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "8c2b67e13f22df54c2747fffe26d2ecac7bdff788b14a377a58f3d8ece66f165",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-compact-income.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "8827d848b26a75b04988b9b317ab909d664bbab7c7d21052706a661ef2cfb976",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-input-formula-regression.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "96d94e981475fa3f2a8aafd3a844bf1c922bfb2ed379fd6cfdfa488b9a617196",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-live-payment-projection.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "a3acbd439af45c1d18a2c9713a474565fbad8c53d68187a8518756beaa39c09d",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-live-payments.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "01349d5173cb92915632d251085945d087010c72b15ab65f688ea912a1ea3f3c",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-payment-browser.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "2f6bf9bf63c8144e72c25cde958e23d5449fa9a8120938de66d13ecc55f2919c",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-recorded-facts.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "c35e9c81c61436475f168e90184d2b9b2339082958f450d9030343d6622aaf57",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-service-tip-projection.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "65a0dab4fba4d06aa6f2a026a87c973080b58e96b3fcd8052e2a8f2dee81effc",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/payroll-tax-live-access.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "7966addc41bda580995b659fbf8ab61c8031a8c8dcea53c8d66eaea9ab6fb075",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/staff-day-financial-browser.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "37402e655d120ac08ab79e07e9bd2eef99c7242390197da64a9c80248900913c",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/staff-day-financial-inputs.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "ba130e32460d2b9a5978eef94148a25f390f7f0f5bec12b3e3f3cb7c49bd8bc1",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/staff-pay-analysis.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "c6bb402ce9fa8598fbebfbf68d90a8aa91af4a12be168c2d3ffff4e3ef511a0e",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/tax-company-published-source.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "b1ea25673dacffbdc0b8052fe3b28ef0aa3af3cd98d63c6d54a65de29da6a0dc",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/ticket-input-editor-browser.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "9821e581b72ca1c8c8ca315e22306848ca4d1454b1ba6915b84d68e928df4c28",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tests/ticket-input-events.integration.test.mjs",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "991699996d3a8a64e6c921e95fe7377316fbde2a5bac73de148ac96c483a6ecd",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "tsconfig.financial-inputs.json",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "f84d697fb303a0d56bd5fe129e81bd7a506b8da4312fdc040389ca4c386355b1",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "types/payroll-live-history.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "32a64b81d2eada49d560e507b4d93ebbe1e3a9a2bbcf8fb7f627d13e7131a80a",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "types/payroll-records.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "f1792d769a1e302fa187bda721dd16afa18e176514e54ecc291b64eca4740123",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "types/payroll.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "426186e3b92d1b195a2724c82f3ff0dcbbd76ac571f9e8ba1e3412ddae277b17",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "types/pos-daily-closing.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "929723dbd57f58d7d331fb856a1431e5f799bc137a94e3d022b9948d98bbc19f",
+    "frozenSha256": null
+  },
+  {
+    "eventId": "3ecaf796-1b85-493d-97f1-23d130a409c4",
+    "file": "types/pos-desk.ts",
+    "commit": "ade36fbe69d0b4ef6fdf62f51dc5cb9266ecf71c",
+    "sourceSha256": "42d764756088b89e22fac5b2411a9b2457bb21ae294dafe6594a1ce08dcba5c8",
+    "frozenSha256": null
+  }
+]

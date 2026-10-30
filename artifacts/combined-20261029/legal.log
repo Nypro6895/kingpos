@@ -1,0 +1,23 @@
+✔ consistent Personal Owner Staff and Payroll legal-name controls at phone and tablet sizes (3507.3905ms)
+✔ linked profile identity uses explicit account link, never an unrelated legacy auth link (0.5467ms)
+✔ Owner payload never overwrites linked Personal names, including legacy linked staff (1.0048ms)
+✔ private resolver uses only salon-scoped RPC, skips local staff, and propagates current Personal edits (0.2289ms)
+✔ RPC failure or missing authorized row fails closed; empty names stay empty (0.3435ms)
+✔ resolver separates salon scopes and batches long staff lists (0.8515ms)
+✔ actual Staff update service enforces owner-name boundaries without writing any Personal rows (4.2958ms)
+✔ linked live Payroll uses Personal across edits and owner payroll saves ignore a forged name (14.1994ms)
+✔ Staff legal name preserves First/Last boundaries on save; Payroll shows profile name without an independent editor (1275.6021ms)
+✔ legal identity preserves compound names and never substitutes a nickname (0.4858ms)
+✔ live payroll and Tax Company use profile legal name despite a conflicting legacy setting (12.7072ms)
+✔ profile renames update new calculations, leave older snapshots intact, and never change amounts (1.7901ms)
+✔ missing profile name stays missing even if legacy setting or nickname exists (0.7946ms)
+✔ payroll writes derive legal name on the server and retain salon scope (1.0075ms)
+✔ Staff save preserves compound family names, explicit blanks, and older full-name clients (12.3096ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3792.7429

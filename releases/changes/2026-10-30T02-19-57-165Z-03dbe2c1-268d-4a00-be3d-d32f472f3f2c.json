@@ -1,0 +1,115 @@
+{
+  "kind": "change",
+  "changeId": "review-experience-flow-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated combined revision: Verified-visit review and salon reply flow, My Reviews for web/bundled iOS, keyboard-safe drawer and Truth-preserving status/history/notifications.",
+  "files": [
+    "app/(app)/more/[section]/page.tsx",
+    "app/activity/actions.ts",
+    "app/activity/experience-actions.ts",
+    "app/activity/history-details-drawer.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/activity/my-reviews.tsx",
+    "app/activity/visit-experience-prompt.tsx",
+    "app/activity/visit-reply-controls.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/use-dialog-viewport.ts",
+    "docs/qa/review-experience-flow-20261029.md",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-page-paths.json",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-resources-server.ts",
+    "lib/app-local-route-policy.ts",
+    "lib/customer-reviews.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "scripts/qa-review-bundled-client.mjs",
+    "scripts/qa-review-experience-browser.mjs",
+    "scripts/qa-review-experience-local.mjs",
+    "scripts/qa-review-experience-resilience.mjs",
+    "scripts/qa-review-https-entry.mjs",
+    "scripts/qa-review-rest-proxy.mjs",
+    "supabase/migrations/20261030002000_visit_experience_replies.sql",
+    "tests/lumi-trust-contract.test.mjs",
+    "tests/lumi-trust-evidence.integration.sql",
+    "tests/visit-experience-flow.integration.test.mjs",
+    "types/customer-review.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029\\frozen-final",
+    "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+    "nativeCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "254-page production build, TypeScript and all 2012 shared production files match frozen web source",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/local-build-web-source-equivalence.json"
+    },
+    {
+      "name": "68 focused feature/Truth and 15 legal identity preservation checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/focused.log"
+    },
+    {
+      "name": "Full schema actual Auth/PostgREST/Owner/Staff/QR/history/retention and immutable payments",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/retention-final.log"
+    },
+    {
+      "name": "Safari16 compiled source 335 pinned actions and zero missing adapters",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/bundle-verify.log"
+    }
+  ],
+  "integratesEvent": "c01b3f2a-5039-4c5f-b8cd-632668f176db",
+  "releaseLimits": [
+    "Apple/signed native acceptance verified separately",
+    "Physical signed binary acceptance separate from Safari fixtures",
+    "Profile three-state redesign explicitly deferred"
+  ],
+  "id": "03dbe2c1-268d-4a00-be3d-d32f472f3f2c",
+  "recordedAt": "2026-10-30T02:19:57.165Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/more/[section]/page.tsx": "d82927b1d0c3c659e6a64d043a16bc46a7e488ce23349b0c98c10e8ef6848ff3",
+    "app/activity/actions.ts": "7c35556027af9016812f3b57450cb969ad24eb2e8a9fd78935162bf884497119",
+    "app/activity/experience-actions.ts": "0c7b8f3b4cb6070d3242fa967e7b47e516e9d586bad96c747e18d3a40661991d",
+    "app/activity/history-details-drawer.tsx": "3cae6bf8e9fabe92db7fc813070b58fcd078d513d68950da78e9ad27d74ffb33",
+    "app/activity/my-reviews-list.tsx": "514aa4564dc18d057f63662df0edf3c20f4ba361225bbfeb203a6b8618bf8f1a",
+    "app/activity/my-reviews.tsx": "043da32057bd66e4c32588149fd9d660d371e88a03071b8ff47912ae919ce409",
+    "app/activity/visit-experience-prompt.tsx": "7468af2fb15bc25294d95cb6e7a3896b338a0ae3fb330556d4d96cebf55b9dbb",
+    "app/activity/visit-reply-controls.tsx": "5e88ae683295192c4a6259940910c6c5bc174cb68198e1595015633b2ddc5fb1",
+    "app/salon-profile/salon-profile-view.tsx": "fbe849e71eeecda6c00f0c41735d6221d7307509fde4cdb3573920997cfb4582",
+    "components/use-dialog-viewport.ts": "17d80e085b7986bc2387f11a123bed83a1bbcb8d1058489496024b753a974f86",
+    "docs/qa/review-experience-flow-20261029.md": "f4c55e94ce5948bc975238988c7a469ac9bc381ffba8fca2833c129d6514693d",
+    "lib/app-local-command-policy.json": "74070b93b3b38ea0e6a4687c6c24434c0af036d247c873092101145ab1150eba",
+    "lib/app-local-commands-server.generated.ts": "709cd9b34e33339137b8b23d6ff8cf1dfc274c8dc0149c401c90b78c6b586e21",
+    "lib/app-local-page-paths.json": "bf62d75d37b9f54b9658ba7848d41f545fdf73dc3c73d94b57e8f33865eb6f6e",
+    "lib/app-local-page-registry.tsx": "48c118acd31a15e9d6f3e12318da618492b8b5b9c24123a37c3b19ed57c31f3a",
+    "lib/app-local-personal-metadata.ts": "2d1effc041d166aed7cd17e9d17a01022886780e40f3f9557f3412fe346a8803",
+    "lib/app-local-personal-resources-server.ts": "32126f498797eb669a2d5db510320abc6441fd8b0a5ec81e157d3bcd57de6398",
+    "lib/app-local-route-policy.ts": "fe10f832b2ef43e4a6be28de9bb29cd8f581031349e8689ae1c228e1a8e3bec2",
+    "lib/customer-reviews.ts": "df65b31ca34edaa40cb165f86ccb72d5a6d976992bb5faeb367a434541a2cc87",
+    "lib/vietnamese-workspace-copy.json": "03950ae895c3678348557818a2a1064a11cf1cfab33c1bee79b7596ca9e2a50a",
+    "scripts/qa-review-bundled-client.mjs": "219cbba82b75548e125c471d55854199cc9b7f6f6e5d0cad60ad63f6b8263aef",
+    "scripts/qa-review-experience-browser.mjs": "e7af64d66e4ee0676441a1bca9a4465e71e5f1b2cf618d34114deabc65661a31",
+    "scripts/qa-review-experience-local.mjs": "7518d5fb65e09107eef1acd336da3783a87f9077c823c7d686e7151474fdcf98",
+    "scripts/qa-review-experience-resilience.mjs": "a5c046926c15a50072466bb5efcde3f507750e521dc60248cd3ef4e61fc9eb96",
+    "scripts/qa-review-https-entry.mjs": "56470514fe2da3ba28841c41344e86f7babf129f3fbee4a3968288c9e595c44f",
+    "scripts/qa-review-rest-proxy.mjs": "f9070950b8823c2107af88fe937380a9e1537c60739bd81397815b3d738f0487",
+    "supabase/migrations/20261030002000_visit_experience_replies.sql": "bdcf6a5527a6f82ee71bb69ac1632376b4c4fe6ba60aa463348c16d48d834d62",
+    "tests/lumi-trust-contract.test.mjs": "08105ada3a79612c1dd46d9b5cdc73d0e2444fbd0a90ff286b0c45c575d70b5d",
+    "tests/lumi-trust-evidence.integration.sql": "734660a8155b647638c694eb67aa6813bb082295ebac9e9ba62347e6b6f8535e",
+    "tests/visit-experience-flow.integration.test.mjs": "c8ce19354099efda9b669b2d995cc93a9d8a8724a707649c6b9b71a16431ec16",
+    "types/customer-review.ts": "2aac38760c15660ca5a40e5b0bd6b68eb4a4cd1f2eee2589dc1db89528593b8c"
+  }
+}

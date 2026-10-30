@@ -1,0 +1,14 @@
+✔ gross and tip corrections render without calculated net snapshots, including fixed-pay unchanged net (14.953ms)
+✔ Daily Report history stays visible with service receipts and independently entered tip (0.7309ms)
+✔ unchanged ticket reassignment shows both staff input changes and human service names (2.2867ms)
+✔ single Staff day projection does not duplicate identical parent values (0.9937ms)
+✔ settings history includes dated configuration and legal name without inferring income (0.8623ms)
+✔ edited timestamp uses salon local time independently from the business date (0.6362ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.9074

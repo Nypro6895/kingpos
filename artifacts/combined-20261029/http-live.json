@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-30T02:20:46.034Z",
+  "host": "https://reylumi.com",
+  "readOnly": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/explore",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/settings",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/activity",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/my-bookings",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/qr",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/more/reviews",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/payroll",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/reports",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/pos-tickets",
+      "status": 200,
+      "redirect": null
+    },
+    {
+      "path": "/api/explore/search?q=nails",
+      "status": 405,
+      "redirect": null
+    },
+    {
+      "path": "/api/explore/feed",
+      "status": 405,
+      "redirect": null
+    },
+    {
+      "path": "/api/explore/area",
+      "status": 405,
+      "redirect": null
+    }
+  ]
+}

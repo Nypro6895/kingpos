@@ -1,0 +1,43 @@
+{
+  "sources": [
+    {
+      "file": "supabase/migrations/20261029100000_financial_input_history.sql",
+      "sha256": "4d7e11f1ed90314353fe59fe52f9f638c1114b5b0735563b849b85eb1811a1a2"
+    },
+    {
+      "file": "supabase/migrations/20261029101000_staff_day_financial_inputs.sql",
+      "sha256": "e66f2adef9d85312ab38cdf5d092106f274f82b406a6c7960844b6afe6a7cce5"
+    },
+    {
+      "file": "supabase/migrations/20261029101100_live_payroll_payments.sql",
+      "sha256": "865d3771a24e8ac058b5ac81245e74211a5ad1ffec506e03388f63220478e78f"
+    },
+    {
+      "file": "supabase/migrations/20261029101200_financial_history_privacy.sql",
+      "sha256": "4b41a6997214f1da433a69f6ca852d90426ad3936f99ec7ffbad55dc12d81d03"
+    },
+    {
+      "file": "supabase/migrations/20261029102000_closing_service_tip_reconciliation.sql",
+      "sha256": "990d4773f5e0f14a31a285e5de7de79a39206fe68690ff0814adddb45584960b"
+    },
+    {
+      "file": "supabase/migrations/20261029103000_ticket_input_events.sql",
+      "sha256": "f7e4b4aa087109b60cb7c417d2e18db90486e984e5e2945a38a417a0e6ce6ace"
+    },
+    {
+      "file": "supabase/migrations/20261030002000_visit_experience_replies.sql",
+      "sha256": "bdcf6a5527a6f82ee71bb69ac1632376b4c4fe6ba60aa463348c16d48d834d62"
+    },
+    {
+      "file": "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+      "sha256": "b58b772e70ba8d5e2a3faca4b64078683bf13e94df42b3ac0f692d1d846e9fe5"
+    }
+  ],
+  "bytes": 146122,
+  "sha256": "aec4c88e5bd9b06d6257a0343aa92f7ceca95f14026d1b6d7a298430ff68b801",
+  "preflight": {
+    "selectedMigrationsAbsent": true,
+    "cronInstalled": true
+  },
+  "scope": "Schema/functions and scoped history; no production financial test writes, payment transfer, customer merge or sales activation"
+}

@@ -1,0 +1,102 @@
+{
+  "kind": "change",
+  "changeId": "customer-journey-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated combined revision: Implement approved unified Personal appointments and salon history, guarded QR entry, precise visit/receipt grouping and reduced redundant reads. Canonical money and server authorization preserved.",
+  "files": [
+    "app/(app)/activity/page.tsx",
+    "app/(app)/my-bookings/page.tsx",
+    "app/(app)/qr/page.tsx",
+    "app/activity/customer-activity-client.tsx",
+    "app/activity/customer-activity-view.tsx",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "app/activity/history-details-drawer.tsx",
+    "app/activity/history-link-control.tsx",
+    "app/my-bookings/[bookingId]/booking-detail-actions.tsx",
+    "app/qr/personal-qr-client.tsx",
+    "app/role-navigation.ts",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-prefetch-plan.ts",
+    "lib/customer-activity.ts",
+    "lib/customer-journey.ts",
+    "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+    "tests/app-local-prefetch-plan.test.mjs",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/customer-journey.test.mjs",
+    "tests/helpers/customer-journey-fixture.mjs",
+    "tests/personal-qr-full-schema.integration.test.mjs",
+    "tests/personal-qr-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029\\frozen-final",
+    "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+    "nativeCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+  },
+  "dependencies": [
+    "personal-layout-followup-20261029",
+    "personal-bookings-copy-parity-20261029"
+  ],
+  "validation": [
+    {
+      "name": "254-page production build, TypeScript and all 2012 shared production files match frozen web source",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/local-build-web-source-equivalence.json"
+    },
+    {
+      "name": "68 focused feature/Truth and 15 legal identity preservation checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/focused.log"
+    },
+    {
+      "name": "Full schema actual Auth/PostgREST/Owner/Staff/QR/history/retention and immutable payments",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/retention-final.log"
+    },
+    {
+      "name": "Safari16 compiled source 335 pinned actions and zero missing adapters",
+      "result": "passed",
+      "evidence": "artifacts/combined-20261029/bundle-verify.log"
+    }
+  ],
+  "integratesEvent": "fbc074f4-81d3-452d-8fe1-d1cd17a044df",
+  "releaseLimits": [
+    "Apple/signed native acceptance verified separately",
+    "Physical signed binary acceptance separate from Safari fixtures",
+    "Profile three-state redesign explicitly deferred"
+  ],
+  "id": "9ad7d4cb-2867-4443-8deb-11419a24bb8b",
+  "recordedAt": "2026-10-30T02:19:57.033Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/activity/page.tsx": "3cb36feee8f658ce8a3be3f4570f03a4c432ac8824cb0a26e407c71ea6ac6a90",
+    "app/(app)/my-bookings/page.tsx": "097a9dea4c66d909286cf7c4b0ceedf413fa6addc00b4c76f8881e45b3da9769",
+    "app/(app)/qr/page.tsx": "0d2b5e6a13409c4d86613e6e218b485b998f593af3cc5094713042ab0f793228",
+    "app/activity/customer-activity-client.tsx": "31d6e8ddbc11b2a3906497a19dffe6fd495f7d4028bf48db81507e0567dad83f",
+    "app/activity/customer-activity-view.tsx": "c2ae8d006301b222c6e3e346d5628bf7e4522b4b474ab8c6c19cbe67b6c4c392",
+    "app/activity/customer-journey.module.css": "409a9511fd03c263eb7aa3b9aa86240beb45a7703cdba66e3a0cb4f2279a1fbf",
+    "app/activity/customer-journey.tsx": "d7a037424ac73dc16536e7baa1a6b97b3a3b7e8eedf0fa6ee0573bff471e23e2",
+    "app/activity/history-details-drawer.tsx": "3cae6bf8e9fabe92db7fc813070b58fcd078d513d68950da78e9ad27d74ffb33",
+    "app/activity/history-link-control.tsx": "d55fb60d21ff2cb5ce6b1290d227fd48f7afddf022e017c9b3ebbfd702fd8eeb",
+    "app/my-bookings/[bookingId]/booking-detail-actions.tsx": "5778780eaf282773942bd2f43d1d8eea1a04e96534468e2134443fb4189185e7",
+    "app/qr/personal-qr-client.tsx": "27ffe7e236b3dd94c755b725fab13828c04a78a8b297391b9d5f21db9d0f05b9",
+    "app/role-navigation.ts": "be1324207ce642bfeb34b56aa7a6afcf7af681383c8114ea55c09b1f5ebecdf1",
+    "lib/app-local-page-registry.tsx": "48c118acd31a15e9d6f3e12318da618492b8b5b9c24123a37c3b19ed57c31f3a",
+    "lib/app-local-prefetch-plan.ts": "99fbfe56f5a98e96ed3ccfa1b5d4af27a5c26c988f880042aebd39b9bfa25ca0",
+    "lib/customer-activity.ts": "1286ab4dc18b498c31caf16b1c5da1d031fe9e86dc9a4d7c4fbf5a72d3ab6488",
+    "lib/customer-journey.ts": "314e7225eae70814153c242414db2f66e36c225689449ee3490d118ea014b843",
+    "supabase/migrations/20261030011000_customer_journey_read_metadata.sql": "b58b772e70ba8d5e2a3faca4b64078683bf13e94df42b3ac0f692d1d846e9fe5",
+    "tests/app-local-prefetch-plan.test.mjs": "ccb202d60b0c3d3a0e5976a458b65039f5d1f7f41b0dc9bca4516e53e8365839",
+    "tests/customer-journey-ui.test.mjs": "8b4baed49e2fedfa63313a27ed09a18b0dc5b4a5f685ccaaab5474245b0ed763",
+    "tests/customer-journey.test.mjs": "63cdffad1ffb73c47b43b9b4923b65caf68d78edf8bdd27fa58ce118b64f7498",
+    "tests/helpers/customer-journey-fixture.mjs": "a950116c63354d1abf58717cee9cc9d00688de44c6f82d92b635ef15c18dd341",
+    "tests/personal-qr-full-schema.integration.test.mjs": "5e10170207ff5bea1a082e70e0299bc71be2a090b7974d2f5b8ab76e105ee0de",
+    "tests/personal-qr-ui.test.mjs": "071762490ae302faed8fe0e9940a7d168b96e8b09726c3d767b31a503012071b"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "kind": "release",
+  "summary": "Correct dependency metadata for same validated compact Payroll scope; no product or deployment change",
+  "changes": [
+    "84daa50f-ab6e-4ca8-bcd5-6fbe62f639c7"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
+      "baselineDeploymentId": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+      "sourceSha256": "8cd1e9fb32703feb6dac33ac23df81f04cc0059b7048818cb0281299b95f5b69",
+      "overlaySha256": "da020a14a4fb244500a1a4f3d9c24affcf946153bfc45e0bb6ef81a3cdce17d2",
+      "evidence": "artifacts/combined-20261029/web-live-source-verified.json"
+    }
+  },
+  "relatedRelease": "0b4719ac-03e3-49d2-a387-c9514d1c9ec7",
+  "id": "81cb5abf-b5bc-467c-9ab5-9d0f617c583d",
+  "recordedAt": "2026-10-30T02:23:13.369Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029"
+}

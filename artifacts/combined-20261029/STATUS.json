@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-30T02:23:27.021Z",
+  "owner": "combined-journey-review-history-20261029",
+  "web": {
+    "status": "published",
+    "deployment": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
+    "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+    "receipt": "0b4719ac-03e3-49d2-a387-c9514d1c9ec7"
+  },
+  "native": {
+    "status": "simulator-tests-and-archive-running",
+    "run": 40990294928,
+    "commit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+  },
+  "excluded": {
+    "changeId": "profile-layout-defaults-20261029",
+    "reason": "Owner explicitly requested next release"
+  },
+  "proofDirectory": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029"
+}

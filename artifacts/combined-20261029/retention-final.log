@@ -1,0 +1,50 @@
+Isolated fixture: 50 migrations
+Isolated fixture: 100 migrations
+Isolated fixture: 150 migrations
+Isolated fixture: 200 migrations
+Isolated fixture: 250 migrations
+Isolated fixture: 300 migrations
+▶ approved financial inputs: full schema, authenticated RPC, RLS and separate service/tip reconciliation
+  ✔ Owner edits original gross/tip, no-op/retry is not another amount and stale requests reject (1810.0595ms)
+  ✔ Staff reads own projected inputs/events only; outsider cannot mutate or read salon history (1003.5636ms)
+  ✔ Cash/Card/Other exclude tip; two balances are independent and Daily Report never notifies Staff (998.416ms)
+  ✔ Owner can correct a past day without changing payments; after-day reconciliation has stable revisions (2418.4157ms)
+  ✔ actual Owner receipt posts raw service/tip once, customer discount stays salon-only, and source edits preserve earning identities (5411.8354ms)
+  ✔ actual live payments need no frozen base; supplements retain original period and replay cannot pay twice (2972.1836ms)
+  ✔ real STAFF role with custom permission bits still cannot read other Staff or salon finances (1462.4914ms)
+  ✔ retired raw money correction commands cannot bypass the approved input paths (651.9264ms)
+  ✔ two real Postgres transactions cannot overwrite the same Staff day with a stale amount (1528.3503ms)
+  ✔ history retains actor snapshot through account deletion without allowing financial edits (1944.5272ms)
+✔ approved financial inputs: full schema, authenticated RPC, RLS and separate service/tip reconciliation (105045.3205ms)
+Isolated fixture: 50 migrations
+Isolated fixture: 100 migrations
+Isolated fixture: 150 migrations
+Isolated fixture: 200 migrations
+Isolated fixture: 250 migrations
+Isolated fixture: 300 migrations
+▶ Personal QR → check-in → Staff → POS → History on the complete integrated schema
+  ✔ Owner scan is read-only; Send is idempotent and existing invitation acceptance grants the correct Staff identity (2210.699ms)
+  ✔ Phone kiosk check-in auto-links the account; mobile salon scan confirmation reuses its visit, queue and requested services (4071.6234ms)
+  ✔ Personal check-in issues the canonical daily Check-in Receipt number once, shared across customer, Staff and POS (923.1734ms)
+  ✔ POS Ready is private, deduplicated, linked to the correct visit and leaves turns unchanged (1111.8316ms)
+  ✔ Staff scans Personal ID; Working/Holding and requested services flow to POS; amounts save without Done (1696.8346ms)
+  ✔ Scanning again while staff works or checkout is pending preserves one visit, Holding, amounts and queue (2075.7527ms)
+  ✔ Actual POS receipt core settles offline Staff work exactly once and History exposes the same final receipt and earnings (2270.9857ms)
+  ✔ Concurrent duplicate check-ins, Staff scans and POS collections create one visit, one Holding and one financial ticket (1372.3845ms)
+  ✔ Stand by/Cancel release an empty Holding; Done counts once; Portable POS can take over, settle, and reject stale staff writes (4583.4446ms)
+  ✔ Today appointment survives account check-in, actual receipt settlement and the original booking/history evidence chain (1996.6774ms)
+  ✔ An account can reuse its desk-created waiting visit without rewriting display origin or weakening public receipt pairing (2839.6509ms)
+  ✔ A verified matching Staff profile retains its original history and cannot be connected by another account (2201.7865ms)
+  ✔ Journey display metadata preserves exact canonical history and financial payloads; private read remains inaccessible (1183.1885ms)
+  ✔ both capability RPCs deny every invalid path before any persistent side effect (14619.7409ms)
+  ✔ Owner paths, interleaved Ready retries and consumed requests preserve exact saved outcomes (4537.8229ms)
+  ✔ Staff deletion retains audit attribution and exact actual payment facts under Owner RLS (5504.5874ms)
+✔ Personal QR → check-in → Staff → POS → History on the complete integrated schema (133036.2131ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 238185.7319

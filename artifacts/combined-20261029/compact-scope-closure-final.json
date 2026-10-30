@@ -1,0 +1,85 @@
+{
+  "supersededReady": "7affba43-7f2b-4c19-9b63-cfd08aac16f4",
+  "readyEvent": {
+    "kind": "change",
+    "changeId": "payroll-compact-income-20261029",
+    "status": "ready",
+    "channels": [
+      "web",
+      "ios"
+    ],
+    "summary": "Close previously held compact Payroll scope using approved financial input history: preserve shipped compact rail/listing and replace incomplete net-only history with validated input events; corrected dependency to original compact UI foundation, avoiding a cycle with financial history",
+    "files": [
+      "app/(app)/payroll/page.tsx",
+      "app/payroll/payroll-change-history.tsx",
+      "app/payroll/payroll-daily-listing.tsx",
+      "app/payroll/payroll-dashboard.module.css",
+      "app/payroll/payroll-mobile.module.css",
+      "app/payroll/payroll-period-rail.tsx",
+      "lib/payroll-live-history-presentation.ts",
+      "tests/payroll-compact-income.test.mjs"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\artifacts\\combined-20261029\\compact-frozen",
+      "commit": "0d3617c2021769af30d30f064ab5102994ea31c8",
+      "nativeCommit": "9196c703195249a6f00c0fdfee2d9c61c86683e1"
+    },
+    "integratesEvent": "2a895c72-1390-4570-8108-d0d0ad55a012",
+    "dependencies": [
+      "payroll-staff-scroll-ui-20261029"
+    ],
+    "validation": [
+      {
+        "name": "Six compact history behavior cases and unchanged shipped compact layout",
+        "result": "passed",
+        "evidence": "artifacts/combined-20261029/compact.log"
+      },
+      {
+        "name": "Integrated production build,83 focused/legal tests and28 full-schema checks",
+        "result": "passed",
+        "evidence": "artifacts/combined-20261029/retention-final.log"
+      }
+    ],
+    "deletedFiles": [],
+    "supersedesEvents": [
+      "7affba43-7f2b-4c19-9b63-cfd08aac16f4"
+    ],
+    "id": "84daa50f-ab6e-4ca8-bcd5-6fbe62f639c7",
+    "recordedAt": "2026-10-30T02:23:01.396Z",
+    "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+    "fileHashes": {
+      "app/(app)/payroll/page.tsx": "ea61912b852906f47dac57c83d18cd7f3e6d4873fdba470ec199dac10f2d6b79",
+      "app/payroll/payroll-change-history.tsx": "b9d40a37a34bf639c8e61f7d94f0d89876b434741c4cfabf23c0b2217a283808",
+      "app/payroll/payroll-daily-listing.tsx": "e090cfe2b3a24fd1a7528fa9e7591f3644a13caa6d169927bbcaa0085dd79eea",
+      "app/payroll/payroll-dashboard.module.css": "3d2f830732bf9495f82da624d9ceeaee42565892b736be879ae25e90b2bfc097",
+      "app/payroll/payroll-mobile.module.css": "557f1a6810be02799dbe006f095223febb96f47f19f347af2104b6442cc6cacd",
+      "app/payroll/payroll-period-rail.tsx": "5a5d0b30af7f61ae0a9aae6fd6bb46e819a96b19795a697e95bd100797ec90c1",
+      "lib/payroll-live-history-presentation.ts": "d5f2c0ed1839880c1075d89e6cba294bdfe4ce16f1508820df4e5d3fbc3a5789",
+      "tests/payroll-compact-income.test.mjs": "7091bd6884faa12abaab9af3cea4ba207e0ac9ca037ee88975ce9839dee7603b"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\releases\\changes\\2026-10-30T02-23-01-396Z-84daa50f-ab6e-4ca8-bcd5-6fbe62f639c7.json"
+  },
+  "webReceipt": {
+    "kind": "release",
+    "summary": "Correct dependency metadata for same validated compact Payroll scope; no product or deployment change",
+    "changes": [
+      "84daa50f-ab6e-4ca8-bcd5-6fbe62f639c7"
+    ],
+    "targets": {
+      "web": {
+        "status": "published",
+        "verified": true,
+        "deploymentId": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
+        "baselineDeploymentId": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+        "sourceSha256": "8cd1e9fb32703feb6dac33ac23df81f04cc0059b7048818cb0281299b95f5b69",
+        "overlaySha256": "da020a14a4fb244500a1a4f3d9c24affcf946153bfc45e0bb6ef81a3cdce17d2",
+        "evidence": "artifacts/combined-20261029/web-live-source-verified.json"
+      }
+    },
+    "relatedRelease": "0b4719ac-03e3-49d2-a387-c9514d1c9ec7",
+    "id": "81cb5abf-b5bc-467c-9ab5-9d0f617c583d",
+    "recordedAt": "2026-10-30T02:23:13.369Z",
+    "worktree": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029",
+    "filePath": "C:\\Reylumi-worktrees\\combined-journey-review-history-20261029\\releases\\history\\2026-10-30T02-23-13-369Z-81cb5abf-b5bc-467c-9ab5-9d0f617c583d.json"
+  }
+}

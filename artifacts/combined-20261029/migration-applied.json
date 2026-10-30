@@ -1,0 +1,20 @@
+{
+  "verifiedAt": "2026-10-30T02:13:44.270Z",
+  "project": "bowkoiprvqwjilwaxhda",
+  "installed": [
+    "20261029100000",
+    "20261029101000",
+    "20261029101100",
+    "20261029101200",
+    "20261029102000",
+    "20261029103000",
+    "20261030002000",
+    "20261030011000"
+  ],
+  "scheduler": {
+    "name": "reylumi-daily-input-reconciliation",
+    "active": true,
+    "schedule": "*/10 * * * *"
+  },
+  "evidence": "SQL Editor successful transaction result"
+}
