@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "gift-reward-financial-integration-gate-20261030",
+  "status": "blocked",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Gift Card and Rewardlumi held from this release: producer gift cashflow uses pre-live total formula, existing POS received confirmation remains unresolved; Reward depends on final Gift source. Preserve live Staff/day/service-tip and immutable payment facts.",
+  "files": [],
+  "source": {
+    "snapshot": "artifacts/release-20261030/gift-integration-review-preserved"
+  },
+  "dependencies": [
+    "digital-gift-card-20261029",
+    "rewardlumi-unified-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Three-way financial integration against actual deployed service/tip/Staff-day reconciliation",
+      "result": "failed",
+      "evidence": "artifacts/release-20261030/gift-integration.json"
+    },
+    {
+      "name": "Canonical payment confirmation, full assembled schema, split gift tender/service/tip/refund/idempotency and provider/native physical acceptance",
+      "result": "pending"
+    }
+  ],
+  "heldEvents": [
+    {
+      "event": "8a804647-fb8d-4187-a404-37b9771c0dfe",
+      "changeId": "digital-gift-card-20261029",
+      "source": {
+        "snapshot": "artifacts/digital-gift-card/frozen-source-v2"
+      },
+      "reason": "Canonical financial reconciliation and existing POS payment confirmation unresolved in producer handoff; preserve service/tip/Staff inputs; no activation"
+    },
+    {
+      "event": "c6608a28-caaa-49cb-b47c-5126acd1cb28",
+      "changeId": "rewardlumi-unified-20261029",
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\rewardlumi-unified-20261029\\artifacts\\rewardlumi\\source",
+        "hashManifest": "artifacts/rewardlumi/source-hashes.json",
+        "baselineManifest": "artifacts/rewardlumi/baseline-manifest.json",
+        "commit": "a4bca9e3ecbd12d22d2d8e1a95ca505c9892fbb4"
+      },
+      "reason": "Depends on final reconciled Gift Card; overlapping gift migration and payment flow require combined financial acceptance"
+    }
+  ],
+  "remediation": "Reconcile gift cashflow into current effective Staff/day authority and original POS received-payment flow; merge final Gift safety changes with Reward overlay in timestamp order; run combined full-schema/payment/refund/idempotency/browser suites. Do not change production formulas or enable Stripe/sales to force integration.",
+  "id": "113bdae4-2292-42f3-a9b2-c7c6bba1b668",
+  "recordedAt": "2026-10-30T06:50:49.324Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

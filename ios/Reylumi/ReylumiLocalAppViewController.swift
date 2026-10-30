@@ -443,6 +443,7 @@ final class ReylumiAppContainer: UIViewController {
     private var marketReturnSequence = 0
     private var checkinSequence = 0
     private var initialCheckinPath: String?
+    private var pendingHostedCheckinPath: String?
     init(origin: URL = URL(string: "https://reylumi.com")!, bundle: ReylumiLocalBundle? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, transport: ReylumiLocalAppTransport? = nil) {
         self.origin = origin; self.installedBundle = bundle; self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin); self.localTransport = transport
         super.init(nibName: nil, bundle: nil)
@@ -453,11 +454,23 @@ final class ReylumiAppContainer: UIViewController {
         if let bundle = installedBundle ?? (try? ReylumiLocalBundle.installed()), bundle.manifest.productionReady == true {
             // A new process starts at the role home. Foreground resumes this
             // controller in place; explicit auth/payment returns keep their path.
-            let hint = initialCheckinPath ?? "/"
+            let initialIsBundled = initialCheckinPath.flatMap { URLComponents(string: $0)?.path }.map(bundle.routeExists) ?? true
+            let hint = initialIsBundled ? (initialCheckinPath ?? "/") : "/"
+            if !initialIsBundled { pendingHostedCheckinPath = initialCheckinPath }
             let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint, transport: localTransport)
             local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }
             embed(controller)
         } else { let controller = ReylumiViewController(origin: origin, initialURL: initialCheckinPath.flatMap { URL(string: $0, relativeTo: origin)?.absoluteURL }); hosted = controller; embed(controller) }
+    }
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        presentPendingHostedCheckin()
+    }
+    private func presentPendingHostedCheckin() {
+        guard isViewLoaded, view.window != nil, presentedViewController == nil,
+              let path = pendingHostedCheckinPath else { return }
+        pendingHostedCheckinPath = nil
+        openOnline(path)
     }
     private func embed(_ controller: UIViewController) {
         addChild(controller); controller.view.translatesAutoresizingMaskIntoConstraints = false; view.addSubview(controller.view)
@@ -544,7 +557,15 @@ final class ReylumiAppContainer: UIViewController {
         handoffTask?.cancel(); handoffID = nil
         let navigate = { [weak self] in
             guard let self else { return }
-            if let local = self.local { local.navigate(path) }
+            if let local = self.local {
+                if local.bundle.routeExists(components.path) { local.navigate(path) }
+                else {
+                    // /qr deliberately retains its original HTTPS authority.
+                    // Never silently send a hosted-only destination to the local router.
+                    self.pendingHostedCheckinPath = path
+                    self.presentPendingHostedCheckin()
+                }
+            }
             else { self.hosted?.openPersonalCheckin(entry: entry) }
         }
         if presentedViewController != nil { dismiss(animated: false, completion: navigate) }

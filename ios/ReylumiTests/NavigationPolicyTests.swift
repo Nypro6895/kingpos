@@ -13,6 +13,8 @@ final class NavigationPolicyTests: XCTestCase {
         }
     }
     func testHostedControlsAreForExplicitTasksAcrossEveryRole() {
+        XCTAssertTrue(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/qr?entry=00000000-0000-4000-8000-000000000001")!))
+        XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/qr?entry=invalid")!))
         for path in ["/explore", "/explore/salons/id#customer-experiences", "/explore/beauty/id/posts/post#comments", "/beauty", "/activity", "/qr", "/book/id", "/my-bookings", "/staff/scan", "/staff/scan/", "/staff/my-work", "/staff/workday", "/staff/appointments", "/staff/today", "/pos", "/pos/portable", "/reports", "/payroll", "/customers", "/services", "/salon-settings", "/settings", "/market", "/help", "/support", "/more"] {
             XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com" + path)!), path)
         }

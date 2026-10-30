@@ -175,6 +175,54 @@ final class LocalHostedReturnTests: XCTestCase {
         XCTAssertEqual(routes.restored()?.path, "/staff/my-work", "Changing startup must not delete persisted work or leases")
     }
 
+    @MainActor
+    func testWarmPersonalCheckinUsesHostedOnlyRouteAndPreservesInstalledController() async throws {
+        let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        XCTAssertFalse(bundle.routeExists("/qr"), "The real QR capability is deliberately hosted, not a local route")
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        let local = try XCTUnwrap(container.local)
+        let entry = "00000000-0000-4000-8000-000000000001"
+        container.openPersonalCheckin(path: "/qr?entry=" + entry, sequence: 1)
+        let hosted = try await hostedCheckin(container, entry: entry)
+        XCTAssertTrue(container.local === local, "Opening check-in must retain installed work behind the hosted task")
+        XCTAssertFalse(try XCTUnwrap(hosted.navigationController).isNavigationBarHidden)
+        XCTAssertNotNil(hosted.navigationItem.leftBarButtonItem?.title)
+        container.openPersonalCheckin(path: "/qr?entry=00000000-0000-4000-8000-000000000002", sequence: 1)
+        XCTAssertTrue((container.presentedViewController as? UINavigationController)?.viewControllers.first === hosted,
+                      "A repeated delivery sequence must not replace the admitted task")
+    }
+
+    @MainActor
+    func testColdPersonalCheckinWaitsForWindowThenOpensExactHostedEntry() async throws {
+        let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let entry = "00000000-0000-4000-8000-000000000003"
+        container.openPersonalCheckin(path: "/qr?entry=" + entry, sequence: 1)
+        XCTAssertNil(container.presentedViewController, "Do not lose the cold URL by presenting before a scene is attached")
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        _ = try await hostedCheckin(container, entry: entry)
+        XCTAssertNotNil(container.local, "The installed workspace remains available when leaving the task")
+    }
+
+    @MainActor
+    private func hostedCheckin(_ container: ReylumiAppContainer, entry: String) async throws -> ReylumiViewController {
+        for _ in 0..<250 {
+            if let navigation = container.presentedViewController as? UINavigationController,
+               let hosted = navigation.viewControllers.first as? ReylumiViewController {
+                hosted.initializeWebContentIfNeeded()
+                let web = try XCTUnwrap(hosted.view.subviews.compactMap { $0 as? WKWebView }.first)
+                try await wait("location.pathname === '/qr' && new URLSearchParams(location.search).get('entry') === '" + entry + "' && document.getElementById('route') != null", in: web, timeout: 45)
+                return hosted
+            }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        XCTFail("Personal check-in disappeared instead of presenting its original hosted authority")
+        throw URLError(.timedOut)
+    }
+
     private func readyBundle() throws -> (ReylumiLocalBundle, URL) {
         let (_, directory) = try AppLocalTestFixture.bundle(), url = directory.appendingPathComponent("manifest.json")
         var value = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any]); value["productionReady"] = true
@@ -187,8 +235,8 @@ final class LocalHostedReturnTests: XCTestCase {
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
         window.rootViewController = controller; window.isHidden = false; controller.loadViewIfNeeded(); return window
     }
-    @MainActor private func wait(_ expression: String, in web: WKWebView) async throws {
-        for _ in 0..<250 { if (try? await web.evaluateJavaScript(expression)) as? Bool == true { return }; try await Task.sleep(nanoseconds: 20_000_000) }
+    @MainActor private func wait(_ expression: String, in web: WKWebView, timeout: TimeInterval = 5) async throws {
+        for _ in 0..<Int(timeout * 50) { if (try? await web.evaluateJavaScript(expression)) as? Bool == true { return }; try await Task.sleep(nanoseconds: 20_000_000) }
         XCTFail("Hosted handoff fixture did not become ready: \(expression)"); throw URLError(.timedOut)
     }
 }

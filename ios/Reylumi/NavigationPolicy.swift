@@ -33,6 +33,8 @@ struct NavigationPolicy {
     func needsHostedTaskControls(_ url: URL) -> Bool {
         guard isInternal(url), !isExcluded(url) else { return false }
         let path = url.path.lowercased()
+        if path == "/qr", let entry = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "entry" })?.value,
+           UUID(uuidString: entry) != nil { return true }
         return ["/login", "/signup", "/account-recovery", "/forgot-password",
                 "/reset-password", "/security-check", "/accept-invite",
                 "/ownership/invite", "/staff/invite", "/claim", "/deletion-status",

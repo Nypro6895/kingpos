@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "salon-qr-hosted-handoff-wide-layout-20261030",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Repair physical73 explicit salon QR handoff: route reviewed hosted-only QR via existing hosted controller for warm/cold start;fix narrow QR text column on actual wide Customer Display",
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "app/pos/customer-display/customer-idle-screen.css"
+  ],
+  "source": {
+    "baselineNativeCommit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993",
+    "baselineNativeBuild": "73",
+    "baselineWebDeployment": "dpl_82omCD98ajxqjLMWRPtjyv2qRZV7"
+  },
+  "validation": [
+    {
+      "name": "Physical73 actual Safari Open app",
+      "result": "failed",
+      "evidence": "iPhone coordinator physical73 checkpoint;opens Beauty Home instead of salon service selection"
+    },
+    {
+      "name": "Warm/cold real container regression,source-bound CI and physical retest",
+      "result": "pending"
+    }
+  ],
+  "id": "aa00ffbd-b53b-4a3f-a646-ee99b82cad6b",
+  "recordedAt": "2026-10-30T07:14:23.414Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

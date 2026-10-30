@@ -22,3 +22,7 @@
 /* A fallback has no QR column, including on wide customer displays. */
 .customer-idle-qr .customer-entry-card:has(>.customer-entry-fallback),.customer-phone-with-qr .customer-entry-card:has(>.customer-entry-fallback){display:block;text-align:center;overflow-wrap:anywhere}
 .customer-entry-card>.customer-entry-fallback{min-height:0;padding:16px 0}
+
+/* The paired display can reserve only 300px even on a wide monitor. */
+.customer-idle-qr .customer-entry-card{display:block;text-align:center}
+.customer-idle-qr .customer-entry-card>.customer-entry-qr{margin:12px auto}
