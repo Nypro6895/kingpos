@@ -441,6 +441,8 @@ final class ReylumiAppContainer: UIViewController {
     private var handoffTask: Task<Void, Never>?
     private var handoffID: UUID?
     private var marketReturnSequence = 0
+    private var checkinSequence = 0
+    private var initialCheckinPath: String?
     init(origin: URL = URL(string: "https://reylumi.com")!, bundle: ReylumiLocalBundle? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, transport: ReylumiLocalAppTransport? = nil) {
         self.origin = origin; self.installedBundle = bundle; self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin); self.localTransport = transport
         super.init(nibName: nil, bundle: nil)
@@ -451,11 +453,11 @@ final class ReylumiAppContainer: UIViewController {
         if let bundle = installedBundle ?? (try? ReylumiLocalBundle.installed()), bundle.manifest.productionReady == true {
             // A new process starts at the role home. Foreground resumes this
             // controller in place; explicit auth/payment returns keep their path.
-            let hint = "/"
+            let hint = initialCheckinPath ?? "/"
             let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint, transport: localTransport)
             local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }
             embed(controller)
-        } else { let controller = ReylumiViewController(origin: origin); hosted = controller; embed(controller) }
+        } else { let controller = ReylumiViewController(origin: origin, initialURL: initialCheckinPath.flatMap { URL(string: $0, relativeTo: origin)?.absoluteURL }); hosted = controller; embed(controller) }
     }
     private func embed(_ controller: UIViewController) {
         addChild(controller); controller.view.translatesAutoresizingMaskIntoConstraints = false; view.addSubview(controller.view)
@@ -526,6 +528,27 @@ final class ReylumiAppContainer: UIViewController {
         loadViewIfNeeded()
         if let local { if presentedViewController != nil { dismiss(animated: true) }; local.navigate("/market") }
         else { hosted?.returnToMarket(sequence: sequence) }
+    }
+    func openPersonalCheckin(path: String?, sequence: Int) {
+        guard sequence > checkinSequence, let path,
+              let components = URLComponents(string: path), components.path == "/qr",
+              let entry = components.queryItems?.first(where: { $0.name == "entry" })?.value,
+              UUID(uuidString: entry) != nil else { return }
+        checkinSequence = sequence
+        if !isViewLoaded {
+            initialCheckinPath = path
+            loadViewIfNeeded()
+            return
+        }
+        loadViewIfNeeded()
+        handoffTask?.cancel(); handoffID = nil
+        let navigate = { [weak self] in
+            guard let self else { return }
+            if let local = self.local { local.navigate(path) }
+            else { self.hosted?.openPersonalCheckin(entry: entry) }
+        }
+        if presentedViewController != nil { dismiss(animated: false, completion: navigate) }
+        else { navigate() }
     }
 }
 

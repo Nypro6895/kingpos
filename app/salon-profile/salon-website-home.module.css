@@ -24,3 +24,33 @@
 @media(max-width:959px){.hours[data-wide=true]{grid-template-columns:repeat(2,minmax(0,1fr))}.hours[data-wide=true]>.schedule{grid-column:1/-1;padding-left:0;padding-top:16px;border-left:0;border-top:1px solid var(--website-line)}}
 @media(max-width:599px){.hours[data-wide=true]{grid-template-columns:minmax(0,1fr)}}
 .heroImage{width:100%;overflow:hidden;border-radius:10px;background:#e9e2d8}.home[data-layout=portfolio] .heroImage{border-radius:2px}.postMedia img{object-fit:cover}
+
+/* Approved white/ivory website surfaces: sections share a canvas, not stacked cards. */
+.home{gap:28px;--website-line:#eae4dc}
+.home .feature,.home[data-layout=booking] .feature,.home[data-layout=portfolio] .feature,.home[data-layout=balanced] .feature{border:0;border-radius:12px;background:#fbf1e6;padding:32px;gap:28px}
+.home[data-layout=booking] .feature{grid-template-columns:minmax(0,1fr);padding-right:30%}
+.home[data-layout=portfolio] .feature{background:#f8f2e9}
+.home[data-layout=portfolio] .welcome{padding:0}
+.home[data-layout=balanced] .feature{background:#fcf2e7}
+.welcomeBackdrop{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;object-fit:cover;object-position:right center;opacity:.42;pointer-events:none}
+.feature:has(.welcomeBackdrop)::after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#fcf5ed 0%,#fcf5edf2 42%,#fcf5ed44 100%);pointer-events:none}
+.mosaic{position:relative;z-index:1}
+.defaultCredit,.backdropCredit{display:block;font-size:10px;line-height:1.5;color:#68615b}
+.defaultCredit{margin-top:6px;text-align:right}
+.serviceMedia{position:relative}
+.serviceCredit{position:absolute;bottom:0;left:0;right:0;text-align:center;background:#fffE;color:#443b33;font-size:8px;line-height:12px}
+.backdropCredit{position:absolute;bottom:7px;right:12px;z-index:1}
+.home .hours,.home[data-layout=portfolio] .hours{background:transparent;border:0;border-top:1px solid var(--website-line);border-radius:0;padding:22px 0 0}
+.person{background:transparent}
+.home[data-layout=portfolio] .mosaic img{max-height:390px}
+@media(max-width:599px){
+  .home{gap:24px}
+  .home .feature,.home[data-layout=booking] .feature,.home[data-layout=portfolio] .feature,.home[data-layout=balanced] .feature{grid-template-columns:minmax(0,1fr);padding:24px 20px;gap:18px;border-radius:8px}
+  .home[data-layout=booking] .feature{padding-bottom:30px}
+  .welcome h2,.home[data-layout=balanced] .welcome h2{font-size:32px;line-height:1.13}
+  .home[data-layout=portfolio] .welcome{padding:0}
+  .home .hours{padding-top:20px}
+  .heroActions .secondary{width:auto;min-height:44px}
+  .home[data-layout=balanced] .mosaic img{max-height:180px;aspect-ratio:2}
+  .home[data-layout=portfolio] .mosaic img{max-height:300px;aspect-ratio:1.25}
+}

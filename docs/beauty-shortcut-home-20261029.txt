@@ -1,0 +1,53 @@
+Personal Beauty shortcut home — 2026-10-29 America/Chicago
+
+Scope approved in the owning chat:
+/beauty is now the private shortcut home: slim greeting/identity, quick My QR,
+existing post/photo composer, Rewards coming-soon card, upcoming booking,
+saved-post Favorites previews, then a shortcut to /beauty/library.
+No sample balances, points, bookings or photos are seeded into account data.
+
+/beauty/library reuses BeautyProfileClient and its existing cover, avatar,
+privacy, Overview/My posts/Library tabs, composer, Before & After, comments,
+saved-post actions, sharing and photo pagination. The appointment card is
+removed from that screen. Public /explore/beauty/[profileId] routes and their
+existing privacy rules remain unchanged.
+
+My QR moves from Personal primary navigation into More. Personal bottom
+navigation has four evenly sized entries. Owner/staff retain five entries.
+More keeps its other existing entries; Beauty Library is not added there.
+Quick QR fetches through the existing authenticated loadPersonalQr action,
+checks the returned viewer ID and expiry, hides expired codes and supports
+retry. Closing discards the code and ignores late responses. Full /qr keeps
+its existing salon scan/check-in/history flow.
+
+Implementation worktree:
+C:\Reylumi-worktrees\beauty-shortcut-home-20261029
+Baseline: 0013931 (local source snapshot, with adb25a8 as its parent).
+This is NOT a production baseline. Do not merge the entire snapshot ancestry
+or deploy this worktree wholesale. Integrate only the task commit/patch onto
+the exact current production source according to docs/release-policy.txt.
+The canonical checkout was read/copied only, not edited by this task.
+node_modules is a junction to the canonical checkout for local validation.
+
+Compatibility prerequisite: removed redundant runtime="nodejs" from the
+existing image-normalization route. Node.js is still the default runtime;
+the declaration was incompatible with the configured Cache Components.
+
+Validation evidence: artifacts/beauty-shortcut-home/
+checks.txt: 63 passing tests (browser UI, Beauty/privacy, QR routing,
+workspace navigation, post mutations and confirmed comment identity).
+lint.txt and lint-final.txt: clean for modified code.
+build-final.txt: production build of assembled local implementation.
+beauty-home-390.png and quick-qr-390.png: real component fixture screenshots,
+using sample data, not screenshots of an authenticated production account.
+Browser checked 320, 375, 390, 430, 768 and 1280px with no horizontal overflow.
+QR checks cover open/close/focus, expiry, retry/offline, wrong account response
+and ignoring a late response after dismissal.
+
+Outstanding release validation:
+Reconcile this patch with current release source and concurrent typography,
+QR/camera and Rewards work. Verify a signed-in Personal account on physical
+iPhone/Safari: posting/photo picker, returning from Library, actual saved
+items, booking details, QR scanning and More navigation. No production post,
+check-in, customer-data mutation, database migration or deployment was done.
+These are web-only changes and do not alter the native bridge or bundle.

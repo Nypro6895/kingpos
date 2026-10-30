@@ -43,13 +43,13 @@ export async function postModerationAction(target: PostCommentTarget, action: st
         await client.storage.from("beauty-profile-media").remove([path]);
         throw new Error(result.message);
       }
-      revalidatePath("/beauty"); revalidatePath("/explore");
+      revalidatePath("/beauty"); revalidatePath("/beauty/library"); revalidatePath("/explore");
       return { data: { ok: true, coverImageUrl: result.data.coverImageUrl, coverMediaPath: result.data.coverMediaPath }, error: null };
     }
     if (action === "block") {
       const result = await client.rpc("post_user_block", {p_type: target.sourceType, p_id: target.sourceId, p_block: true});
       if (result.error) throw new Error(result.error.message);
-      revalidatePath("/explore"); revalidatePath("/beauty"); revalidatePath("/salon-profile");
+      revalidatePath("/explore"); revalidatePath("/beauty"); revalidatePath("/beauty/library"); revalidatePath("/salon-profile");
       return {data: result.data, error: null};
     }
     const { data, error } = await client.rpc("post_safety_action", {
@@ -69,7 +69,7 @@ export async function postModerationAction(target: PostCommentTarget, action: st
       if (!permissions.canManage) delete permissions.caption;
       return { data: { ...permissions, canBlock: Boolean(!blockState.error && blockState.data?.canBlock), canPromote: Boolean(campaignOwner && isSalonManageContext(context) && isOwnerMembership(context.currentMembership) && context.currentSalon?.id === target.salonId) }, error: null };
     }
-    if (action !== "permissions") { revalidatePath("/explore"); revalidatePath("/salon-profile"); revalidatePath("/beauty"); }
+    if (action !== "permissions") { revalidatePath("/explore"); revalidatePath("/salon-profile"); revalidatePath("/beauty"); revalidatePath("/beauty/library"); }
     if(action==="report" && await getCurrentKingUser()) {
       const conversation=await client.rpc("get_my_post_report_conversation",{p_type:target.sourceType,p_id:target.sourceId});
       return {data:{...data,supportHref:conversation.data?`/support/${conversation.data}`:null},error:null};

@@ -143,6 +143,7 @@ export async function updateBeautyProfileAction(input: {
   }
 
   revalidatePath("/beauty");
+  revalidatePath("/beauty/library");
   revalidatePath("/account");
   revalidatePath("/explore");
   revalidatePath(`/explore/beauty/${result.data.id}`);
@@ -172,6 +173,7 @@ export async function createBeautyPostAction(
   });
 
   revalidatePath("/beauty");
+  revalidatePath("/beauty/library");
 
   return {
     error: null,

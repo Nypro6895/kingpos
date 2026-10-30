@@ -1,4 +1,5 @@
 import "server-only";
+import {getAccountSavedPosts} from "./account-social";
 import { getMyReviewsData } from "./customer-reviews";
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
@@ -31,10 +32,10 @@ export async function readAppLocalPersonalResource(name:string,args:Record<strin
     if(reviews.error)fail(503,reviews.error);
     data=reviews;
   }else if(name==="page.beauty"){
-    const [profile,commentViewer,upcoming]=await Promise.all([getSelfBeautyProfilePage(),getPostCommentViewer(),listCustomerBookings({scope:"upcoming",limit:1})]);
+    const [profile,commentViewer,upcoming,favorites]=await Promise.all([getSelfBeautyProfilePage(),getPostCommentViewer(),listCustomerBookings({scope:"upcoming",limit:1}),getAccountSavedPosts({limit:3}).catch(()=>null)]);
     if(!profile.ok)fail(profile.code==="sign_in_required"?401:503,"Your profile could not be loaded.");
     if(!upcoming.ok)fail(503,"Your next appointment could not be loaded.");
-    data={profile:profile.data,commentViewer,booking:upcoming.data[0]??null};
+    data={profile:profile.data,commentViewer,booking:upcoming.data[0]??null,favorites};
   }else if(name==="page.notifications"){
     const filter=args.filter==="unread"?"unread":"all";
     const [feed,pending]=await Promise.all([loadNotificationPage(context,{unread:filter==="unread"}),getWorkspacePendingSummary(context)]);

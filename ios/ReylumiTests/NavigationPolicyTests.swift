@@ -3,6 +3,15 @@ import XCTest
 
 final class NavigationPolicyTests: XCTestCase {
     let policy = NavigationPolicy(origin: URL(string: "https://reylumi.com")!)
+    func testCameraCheckinLinksAreStrictAndDoNotCarryIdentity() {
+        let id = "00000000-0000-4000-8000-000000000200"
+        for value in ["https://reylumi.com/check-in/\(id)", "https://www.reylumi.com/check-in/\(id)/", "reylumi://check-in/\(id)"] {
+            XCTAssertEqual(NavigationPolicy.personalCheckinPath(URL(string: value)!), "/qr?entry=\(id)")
+        }
+        for value in ["http://reylumi.com/check-in/\(id)", "https://evil.test/check-in/\(id)", "https://reylumi.com:443/check-in/\(id)", "https://user@reylumi.com/check-in/\(id)", "https://reylumi.com/check-in/not-a-uuid", "https://reylumi.com/check-in/\(id)?next=/admin", "https://reylumi.com/check-in/\(id)#fragment", "https://reylumi.com/check-in/\(id)/more", "reylumi://check-in/\(id)?user=other", "reylumi://market/\(id)"] {
+            XCTAssertNil(NavigationPolicy.personalCheckinPath(URL(string: value)!), value)
+        }
+    }
     func testHostedControlsAreForExplicitTasksAcrossEveryRole() {
         for path in ["/explore", "/explore/salons/id#customer-experiences", "/explore/beauty/id/posts/post#comments", "/beauty", "/activity", "/qr", "/book/id", "/my-bookings", "/staff/scan", "/staff/scan/", "/staff/my-work", "/staff/workday", "/staff/appointments", "/staff/today", "/pos", "/pos/portable", "/reports", "/payroll", "/customers", "/services", "/salon-settings", "/settings", "/market", "/help", "/support", "/more"] {
             XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com" + path)!), path)

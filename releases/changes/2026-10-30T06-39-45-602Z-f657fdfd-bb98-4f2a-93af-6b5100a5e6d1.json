@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "customer-display-qr-fallback-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated release integration: Fix QR-unavailable Customer Display wide-layout text compression and hide scan instructions without a live QR. Pairing, entitlement, check-in and financial behavior unchanged.",
+  "files": [
+    "app/pos/customer-display/customer-idle-screen.css",
+    "app/service-relay/customer-entry-qr.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\frozen-source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/build-final.log"
+    },
+    {
+      "name": "6 profile/layout,22 regression and isolated QR/Auth/PostgREST integration",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/profile-tests-final-4.log; artifacts/release-20261030/regression.log; artifacts/release-20261030/qr-db.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/lint.log"
+    }
+  ],
+  "integratesEvent": "6987aec0-970f-4480-89dd-709930c4f77b",
+  "releaseLimits": [
+    "Physical device acceptance separate"
+  ],
+  "id": "f657fdfd-bb98-4f2a-93af-6b5100a5e6d1",
+  "recordedAt": "2026-10-30T06:39:45.602Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/customer-display/customer-idle-screen.css": "32bc42fa214d18eaa138999fd57b3160d36e3e02560ccfce19fb85b9c77700a5",
+    "app/service-relay/customer-entry-qr.tsx": "8ee39668f954755fc718f7d0ba6cd783077ca10e0aa4bcd7b8d76db313cf0355"
+  }
+}

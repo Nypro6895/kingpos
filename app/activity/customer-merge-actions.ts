@@ -21,5 +21,5 @@ export async function mergeMyCustomerProfiles(input: { salonId: string; targetId
   if (!client) throw new Error("Please reconnect.");
   const { error } = await client.rpc("merge_customer_records", { p_salon: input.salonId, p_target: input.targetId, p_sources: input.sourceIds, p_reason: "customer_confirmed" });
   if (error) throw new Error("These profiles could not be merged. Ask the salon to review them.");
-  for (const path of ["/activity", "/beauty", "/customers", "/bookings", "/pos", "/pos-tickets"]) revalidatePath(path);
+  for (const path of ["/activity", "/beauty", "/beauty/library", "/customers", "/bookings", "/pos", "/pos-tickets"]) revalidatePath(path);
 }

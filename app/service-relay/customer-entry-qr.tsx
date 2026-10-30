@@ -34,9 +34,9 @@ export function CustomerRelayEntry({ token }: { token: string }) {
   const url = entry?.token === token && now - entry.at < 90000 ? entry.url : "";
   return <section className="customer-entry-card" aria-label={t("Check in with your app")}>
     <h2><WorkspaceText text="Check in with your app" /></h2>
-    <p><WorkspaceText text="Scan with your phone" /></p>
+    {url && <p><WorkspaceText text="Scan with your phone" /></p>}
     {url ? <QrCodeTile valueToEncode={url} ariaLabel={t("Scan to check in with your app")} fallbackMessage={t("Use the phone keypad to check in.")} className="customer-entry-qr" />
       : <div className="customer-entry-fallback" role="status"><WorkspaceText text="Use the phone keypad to check in." /></div>}
-    <p><WorkspaceText text="Or enter your phone number here" /></p>
+    {url && <p><WorkspaceText text="Or enter your phone number here" /></p>}
   </section>;
 }

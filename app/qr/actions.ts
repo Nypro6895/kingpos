@@ -31,7 +31,7 @@ export async function loadPersonalQr(viewerId: string): Promise<{ data?: Persona
 export async function loadPersonalQrCatalog(viewerId: string, entry: string): Promise<{ catalog?: PersonalQrCatalog; error?: string }> {
   try {
     const client = await personal(viewerId);
-    const { data, error } = await client.rpc("service_relay_entry_catalog", { p_entry: entry }).abortSignal(AbortSignal.timeout(8000));
+    const { data, error } = await client.rpc("personal_checkin_catalog", { p_entry: entry }).abortSignal(AbortSignal.timeout(8000));
     if (error || !data) throw new Error("Check-in QR expired. Scan the salon screen again.");
     return { catalog: data as PersonalQrCatalog };
   } catch (error) { return { error: message(error) }; }

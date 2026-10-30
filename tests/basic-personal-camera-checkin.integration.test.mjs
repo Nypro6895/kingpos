@@ -1,0 +1,60 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import {startIsolatedSupabase} from './helpers/isolated-supabase-fixture.mjs';
+
+test('Unpaid salon basic account QR retains pairing, identity, service and retry guards without enabling advanced Scan', {
+  skip: process.env.RUN_ISOLATED_SUPABASE !== '1', timeout: 900000,
+}, async t => {
+  const f = await startIsolatedSupabase('basic-camera-qr', JSON.parse(process.env.TEST_SUPABASE_IMAGES || '{}'));
+  t.after(() => f.close());
+  const owner = f.person('camera-owner'), customer = f.person('camera-customer'), other = f.person('camera-other');
+  const rpc = (who, name, args = {}) => f.rpc(who, name, args);
+  const denied = (who, name, args) => assert.ok(f.http(3000, '/rpc/' + name, 'POST', args, who?.token).status >= 400, name);
+  const uuid = () => crypto.randomUUID();
+  const account = rpc(owner, 'ensure_personal_account_for_current_user', {p_account_name:'Camera fixture'})[0].account_id;
+  const salon = rpc(owner, 'create_account_salon_with_owner_staff', {p_account_id:account,p_create_request_key:uuid(),p_name:'Basic QR salon',p_owner_is_staff:false,
+    p_phone:null,p_address_line1:null,p_address_line2:null,p_city:null,p_state:null,p_postal_code:null,p_country:'US'}).salon_id;
+  const display=uuid(), service=uuid(), foreign=uuid();
+  f.sql(`insert into services(id,salon_id,name,base_price) values('${service}','${salon}','Basic service',25);
+    insert into pos_live_drafts(salon_id,token) values('${salon}','${display}');`);
+  assert.equal(rpc(null,'service_relay_entry',{p_token:display}),null,'advanced relay remains gated');
+  const entry=rpc(null,'personal_checkin_entry',{p_token:display});assert.ok(entry);
+  assert.equal(rpc(null,'personal_checkin_entry',{p_token:display}),entry,'same paired display refreshes its entry');
+  assert.equal(rpc(null,'personal_checkin_entry',{p_token:uuid()}),null);
+  assert.equal(rpc(null,'personal_checkin_destination',{p_entry:entry}),'Basic QR salon');
+  const catalog=rpc(customer,'personal_checkin_catalog',{p_entry:entry});
+  assert.equal(catalog.personalOnly,true);assert.equal(catalog.services.length,1);
+  assert.equal(rpc(null,'service_relay_entry_catalog',{p_entry:entry}),null);
+  const request=uuid(), args={p_entry:entry,p_services:[service],p_request:request};
+  denied(null,'personal_qr_checkin',args);
+  denied(customer,'personal_qr_checkin',{...args,p_services:[foreign]});
+  f.sql(`update services set is_active=false where id='${service}'`);
+  denied(customer,'personal_qr_checkin',args);
+  f.sql(`update services set is_active=true where id='${service}'`);
+  const visit=rpc(customer,'personal_qr_checkin',args);assert.ok(visit);
+  assert.equal(rpc(customer,'personal_qr_checkin',args),visit);
+  assert.equal(rpc(customer,'personal_qr_checkin',{...args,p_request:uuid()}),visit,'re-scan reuses active visit');
+  denied(customer,'personal_qr_checkin',{...args,p_services:[foreign]});
+  denied(other,'personal_qr_visit',{p_visit:visit});
+  assert.equal(Number(f.sql(`select count(*) from customer_visits where salon_id='${salon}'`)),1);
+  assert.equal(Number(f.sql(`select count(*) from checkin_receipts where salon_id='${salon}'`)),0,'paid receipt not enabled');
+  assert.equal(f.sql(`select staff_scan_available('${salon}')`),'f');
+  const own=rpc(customer,'personal_qr_visit',{p_visit:visit});assert.ok(own);
+  f.sql(`update service_relay_entries set expires_at=now()-interval '1 minute' where id='${entry}'`);
+  assert.equal(rpc(null,'personal_checkin_destination',{p_entry:entry}),null);
+  assert.equal(rpc(customer,'personal_checkin_catalog',{p_entry:entry}),null);
+  denied(customer,'personal_qr_checkin',{...args,p_request:uuid()});
+  assert.equal(rpc(customer,'personal_qr_checkin',args),visit,'retry ledger survives expiry without a new write');
+  rpc(null,'personal_checkin_entry',{p_token:display});
+  f.sql(`update locations set status='inactive' where id='${salon}'`);
+  assert.equal(rpc(null,'personal_checkin_entry',{p_token:display}),null);
+  assert.equal(rpc(customer,'personal_checkin_catalog',{p_entry:entry}),null);
+  denied(customer,'personal_qr_checkin',{...args,p_request:uuid()});
+  f.sql(`update locations set status='active' where id='${salon}'`);
+  f.sql(`update pos_live_drafts set status='closed' where token='${display}'`);
+  assert.equal(rpc(null,'personal_checkin_entry',{p_token:display}),null);
+  assert.equal(rpc(customer,'personal_checkin_catalog',{p_entry:entry}),null);
+  denied(customer,'personal_qr_checkin',{...args,p_request:uuid()});
+  f.save('basic-camera-result.json',{entryIssued:true,basicCheckin:true,advancedScanEnabled:false,paidReceiptEnabled:false,retryIdempotent:true,foreignServiceDenied:true,otherAccountReadDenied:true,expiredAndClosedDisplayDenied:true});
+});

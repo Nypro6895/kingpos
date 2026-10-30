@@ -21,7 +21,8 @@ import {
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
 import Link from "next/link";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
+import { BeautyHome } from "./beauty-home";
 import NextImage from "next/image";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import "./beauty-profile.css";
@@ -67,6 +68,8 @@ import {
 
 type BeautyProfileClientProps = {
   appointment?: ReactNode;
+  favorites?: ReactNode;
+  home?: boolean;
   commentViewer: PostCommentViewer;
   initialTimeline: BeautyTimelinePage;
   profile: BeautyProfileSummary;
@@ -877,6 +880,8 @@ function PostCard({
 
 export function BeautyProfileClient({
   appointment,
+  favorites,
+  home = false,
   commentViewer,
   initialTimeline,
   profile: initialProfile,
@@ -931,6 +936,7 @@ export function BeautyProfileClient({
   const [posts, setPosts] = useState(initialTimeline.items);
   const savedTargetsKey = JSON.stringify(posts.filter(post => post.visibility === "public").map(post => ({ sourceId: post.id, sourceType: "beauty_post" })));
   useEffect(() => {
+    if (home) return;
     let active = true;
     const targets = JSON.parse(savedTargetsKey) as AccountSavedPostTarget[];
     if (!targets.length) return;
@@ -942,7 +948,7 @@ export function BeautyProfileClient({
       setSavedStates(current => ({ ...current, ...Object.fromEntries(targets.map(target => [target.sourceId, { saved: keys.has(`beauty_post:${target.sourceId}`), count: result.saveCountsByKey[`beauty_post:${target.sourceId}`] }])) }));
     }).catch(() => { if (active) setSavedLoadError(true); });
     return () => { active = false; };
-  }, [savedTargetsKey, savedRetry]);
+  }, [home, savedTargetsKey, savedRetry]);
 
   const [activeFilter, setActiveFilter] = useState<TimelineFilter>("all");
   const [cursor, setCursor] = useState<BeautyTimelineCursor | null>(
@@ -1118,7 +1124,7 @@ export function BeautyProfileClient({
   useEffect(() => {
     const node = sentinelRef.current;
 
-    if (!node || loadingMore || section === "library" ||
+    if (!node || home || loadingMore || section === "library" ||
         (section === "posts" && !hasMore) ||
         (section === "overview" && (posts.length === 0 || (posts.length < 2 && !hasMore)))) {
       return;
@@ -1143,7 +1149,7 @@ export function BeautyProfileClient({
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, loadMorePosts, loadingMore, section, posts.length]);
+  }, [home, hasMore, loadMorePosts, loadingMore, section, posts.length]);
 
   const selectedStaffOptions = useMemo(
     () => attribution?.staffOptions ?? [],
@@ -1799,18 +1805,21 @@ export function BeautyProfileClient({
   return (
     <main className="beauty-profile-page min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
       <div className="grid w-full min-w-0 gap-4">
-        <section className="beauty-identity">
+        {home ? <BeautyHome profile={profile} posts={posts} viewerId={commentViewer.userId} appointment={appointment} favorites={favorites} onCompose={photo => {
+          flushSync(() => openComposer("regular"));
+          if (photo) normalFileInputRef.current?.click();
+        }}/> : <><section className="beauty-identity">
           <div className="beauty-cover">{profile.coverImageUrl ? <NextImage alt={`${profile.displayName} Beauty cover`} src={profile.coverImageUrl} fill sizes="(min-width: 1024px) 960px, 100vw" /> : null}
             {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null}
           </div>
           <div className="beauty-person"><ProfileAvatar className="beauty-profile-avatar" profile={profile} /><div><h1 className="text-2xl font-semibold">{profile.displayName}</h1>{profile.bio ? <p className="mt-1 text-sm text-text-secondary">{profile.bio}</p> : null}<p className="mt-1 text-xs text-text-secondary">{profile.visibility === "public" ? "Public profile" : "Private profile"}</p></div></div>
         </section>
         <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav>
-        {(section === "overview" || (section === "posts" && overviewContinuation)) && profile.isSelf ? appointment : null}
         {section !== "library" && profile.isSelf ? <button type="button" className="beauty-composer" onClick={() => openComposer("regular")}><ProfileAvatar profile={profile} /><span className="flex-1 text-left text-sm text-text-secondary">Share a beauty moment…</span><ReylumiIcon name="image" /></button> : null}
         {section === "library" ? <section aria-label="Your photo library"><BeautyLibrary posts={posts} />{hasMore ? <button type="button" className="beauty-action mt-3" disabled={loadingMore} onClick={() => void loadMorePosts()}>{loadingMore ? "Loading…" : "Load more photos"}</button> : null}{timelineError ? <p role="alert" className="text-sm text-red-700">{timelineError}</p> : null}</section> : null}
+        </>}
 
-        {savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
+        {!home && savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
         {successNotice ? (
           <p
             aria-live="polite"
@@ -1820,7 +1829,7 @@ export function BeautyProfileClient({
           </p>
         ) : null}
 
-        <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
+        {!home && <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-extrabold text-text-primary">
@@ -1944,7 +1953,7 @@ export function BeautyProfileClient({
               You are all caught up
             </p>
           ) : null}
-        </section>
+        </section>}
       </div>
 
       {profileEditorOpen ? (

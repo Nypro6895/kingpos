@@ -26,7 +26,7 @@ function revalidatePostCommentTarget(target: PostCommentTarget) {
   }
 
   if (target.sourceType === "beauty_post") {
-    revalidatePath("/beauty");
+    revalidatePath("/beauty"); revalidatePath("/beauty/library");
 
     if (target.profileId) {
       revalidatePath(`/explore/beauty/${target.profileId}`);

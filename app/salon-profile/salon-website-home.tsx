@@ -11,6 +11,7 @@ import { preloadQuickBooking } from "@/lib/quick-booking-client";
 import { PostActions } from "./post-actions";
 import styles from "./salon-website-home.module.css";
 import { salonAboutParagraphs, visibleSalonPosts } from "@/lib/salon-profile-content";
+import { WEBSITE_WELCOME_IMAGE, websiteDefaultImage, websiteImageSource } from "@/lib/salon-website-images";
 import { isDefaultNailImage } from "@/lib/default-nail-images";
 import { NailIllustrationCredit } from "@/components/nail-illustration-credit";
 import { WebsitePhotoFeed, selectWebsiteFeedPhotos, type WebsiteLibraryPhoto } from "./website-photo-feed";
@@ -95,7 +96,11 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
   const heroPost = useHero ? featured : undefined;
   const coverUrl = !heroPost && useHero && data.profile.coverImageUrl && !isDefaultNailImage(data.profile.coverImageUrl)
     && !failedImages.includes(data.profile.coverImageUrl) && !unsuitableHeroImages.includes(data.profile.coverImageUrl) ? data.profile.coverImageUrl : null;
-  const heroUrl = heroPost?.imageUrl || coverUrl;
+  const libraryHeroUrl = useHero ? libraryPhotos?.find(photo => photo.publishedAt && photo.imageUrl && !isDefaultNailImage(photo.imageUrl) && !failedImages.includes(photo.imageUrl) && !unsuitableHeroImages.includes(photo.imageUrl))?.imageUrl : null;
+  const heroSource = websiteImageSource(heroPost?.imageUrl || coverUrl || libraryHeroUrl, websiteDefaultImage(data.profile), [...failedImages, ...unsuitableHeroImages]);
+  const heroUrl = useHero && (preferences.layout === "portfolio" || !heroSource.illustrative) ? heroSource.url : null;
+  const welcomeSource = websiteImageSource(data.profile.coverImageUrl, WEBSITE_WELCOME_IMAGE, failedImages);
+  const welcomeUrl = preferences.layout === "booking" || !heroUrl || heroSource.illustrative ? welcomeSource.url : null;
   const servicePreview = preferences.show_services ? data.services.slice(0, 4) : [];
   const showServices = servicePreview.length > 0;
   const showTeam = preferences.show_team && data.staff.length > 0;
@@ -166,7 +171,8 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
   const visitTitle = preferences.layout === "booking" ? "Plan your visit" : preferences.layout === "portfolio" ? "Visit the studio" : "Visit us";
   return <div className={styles.home} data-layout={preferences.layout} data-owner={Boolean(composer)} data-services={showServices} data-team={showTeam} data-has-photos={Boolean(heroUrl)} data-photo-count={heroUrl ? 1 : 0} style={gridStyle}>
     {composer ? <div className={styles.composer}>{composer}</div> : null}
-    {showFeature ? <section className={styles.feature} data-has-image={Boolean(heroUrl)} aria-label={__vt("Salon introduction")}>
+    {showFeature ? <section className={styles.feature} data-has-image={Boolean(heroUrl)} data-welcome-image={Boolean(welcomeUrl)} aria-label={__vt("Salon introduction")}>
+      {welcomeUrl ? <WebsiteImage className={styles.welcomeBackdrop} src={welcomeUrl} alt="" aria-hidden="true" onError={() => imageFailed(welcomeUrl)}/> : null}
       <div className={styles.welcome}>
         <p className={styles.eyebrow}><WorkspaceText text={locality || "Welcome"} /></p>
         <h2>{data.profile.tagline?.trim() || data.profile.name}</h2>
@@ -176,11 +182,12 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
           {data.profile.phone ? <a className={styles.secondary} href={`tel:${data.profile.phone}`}><WorkspaceText text="Call salon" /></a> : data.profile.addressLine1 ? <a className={styles.secondary} href={directions} target="_blank" rel="noreferrer"><WorkspaceText text="Get directions ↗" /></a> : null}
         </div>
       </div>
-      {heroUrl ? <div className={styles.mosaic}>{heroPost || galleryAvailable ? <button type="button" aria-label={__vt(heroPost ? `Open ${heroPost.title || "featured work"}` : "View salon gallery")} onClick={() => heroPost ? onPost(heroPost) : onGallery()}>
+      {welcomeUrl && welcomeSource.illustrative && !heroUrl ? <small className={styles.backdropCredit}>Illustrative image · lumiAi</small> : null}
+      {heroUrl ? <div className={styles.mosaic}>{!heroSource.illustrative && (heroPost || galleryAvailable) ? <button type="button" aria-label={__vt(heroPost ? `Open ${heroPost.title || "featured work"}` : "View salon gallery")} onClick={() => heroPost ? onPost(heroPost) : onGallery()}>
         <WebsiteImage src={heroUrl} alt={heroPost?.title || `${data.profile.name} salon`} onLoad={event => rejectSmallHero(heroUrl, event.currentTarget)} onError={() => imageFailed(heroUrl)}/>
-      </button> : <div className={styles.heroImage}><WebsiteImage src={heroUrl} alt={`${data.profile.name} salon`} onLoad={event => rejectSmallHero(heroUrl, event.currentTarget)} onError={() => imageFailed(heroUrl)}/></div>}</div> : <div className={styles.heroDecoration} aria-hidden="true"><span>{data.profile.name.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join("")}</span></div>}
+      </button> : <div className={styles.heroImage}><WebsiteImage src={heroUrl} alt={heroSource.illustrative ? "Illustrative image" : `${data.profile.name} salon`} onLoad={event => rejectSmallHero(heroUrl, event.currentTarget)} onError={() => imageFailed(heroUrl)}/></div>}{heroSource.illustrative ? <small className={styles.defaultCredit}>Illustrative image · lumiAi</small> : null}</div> : <div className={styles.heroDecoration} aria-hidden="true"><span>{data.profile.name.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join("")}</span></div>}
     </section> : null}
-    {showServices ? <section className={styles.services}>{heading("Services", onServices, "View all services")}<WebsiteServices services={servicePreview} posts={visiblePosts} canBook={canBook} onBook={onBook} salonId={data.profile.salonId} showPhotos={preferences.layout === "balanced"}/></section> : null}
+    {showServices ? <section className={styles.services}>{heading("Services", onServices, "View all services")}<WebsiteServices services={servicePreview} posts={visiblePosts} canBook={canBook} onBook={onBook} salonId={data.profile.salonId} showPhotos={preferences.layout !== "portfolio"}/></section> : null}
     {showVisit ? <section className={styles.hours} data-wide={wideVisit}>{heading(visitTitle)}
       {data.profile.addressLine1 ? <div className={styles.visitItem}><span aria-hidden="true">↗</span><div><p>{address}</p><a href={directions} target="_blank" rel="noreferrer"><WorkspaceText text="Get directions ↗" /></a></div></div> : null}
       {data.profile.phone ? <div className={styles.visitItem}><span aria-hidden="true">☎</span><div><p>{data.profile.phone}</p><a href={`tel:${data.profile.phone}`}><WorkspaceText text="Call salon" /></a></div></div> : null}
@@ -221,9 +228,10 @@ export function WebsiteServices({ services, posts, canBook, onBook, salonId, sho
   const [failedPhotos, setFailedPhotos] = useState<string[]>([]);
   return <div className={styles.serviceCards}>{services.map(service => {
     const photo = showPhotos ? posts.find(post => post.serviceId === service.id && post.publishedAt && post.imageUrl && !isDefaultNailImage(post.imageUrl))?.imageUrl : null;
-    const usablePhoto = photo && !failedPhotos.includes(photo);
+    const serviceImage = websiteImageSource(photo, websiteDefaultImage({salonId: service.id, name: service.name, serviceCategories: service.category ? [service.category] : []}), failedPhotos);
+    const usablePhoto = showPhotos ? serviceImage.url : null;
     return <article key={service.id} className={styles.service}>
-      {usablePhoto ? <div className={styles.serviceMedia}><WebsiteImage src={photo} alt={`${service.name} work from this salon`} loading="lazy" onError={() => setFailedPhotos(previous => [...previous, photo])}/></div> : null}
+      {usablePhoto ? <div className={styles.serviceMedia}><WebsiteImage src={usablePhoto} alt={serviceImage.illustrative ? "Illustrative image" : `${service.name} work from this salon`} loading="lazy" onError={() => setFailedPhotos(previous => [...previous, usablePhoto])}/>{serviceImage.illustrative ? <small className={styles.serviceCredit}>Sample</small> : null}</div> : null}
       <div className={styles.serviceBody}><h4>{service.name}</h4>
         <p className={styles.serviceMeta}><strong>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(service.basePrice)}</strong>{service.durationMinutes > 0 ? <span> · {service.durationMinutes} <WorkspaceText text="min" /></span> : null}</p>
         {service.description ? <p className={styles.clamp}>{service.description}</p> : null}

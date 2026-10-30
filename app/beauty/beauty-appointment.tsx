@@ -1,10 +1,18 @@
 import { listCustomerBookings } from "@/lib/customer-bookings";
 import Link from "next/link";
+import { BeautyHomeIcon } from "./beauty-home-icon";
 
-export async function BeautyAppointment() {
+export async function BeautyAppointment({ compact = false }: { compact?: boolean }) {
   const result = await listCustomerBookings({ scope: "upcoming", limit: 1 });
   if (!result.ok) return <p className="text-sm text-text-secondary">Appointment could not be loaded. <Link href="/my-bookings" className="text-brand-teal">Open bookings</Link></p>;
   const booking = result.data[0];
+  if (compact) return <Link className="beauty-home-booking" href={booking ? `/my-bookings/${booking.id}` : "/my-bookings"}>
+    <span className="beauty-home-booking-icon"><BeautyHomeIcon name="calendar"/></span>
+    <div className="beauty-home-booking-copy">
+      <p>Next appointment</p>
+      {booking ? <><h3>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}</h3><p>{booking.lines?.filter(line => line.line_type === "service").map(line => line.service_name_snapshot).join(" · ")}</p><p>{booking.salon?.displayName ?? "Salon appointment"}</p></> : <><h3>No upcoming appointments</h3><p>View your bookings</p></>}
+    </div><span className="beauty-home-booking-arrow"><BeautyHomeIcon name="arrow"/></span>
+  </Link>;
   return <section className="relative border-border-subtle bg-surface p-4 rounded-none border-0 shadow-none" aria-label="Your next appointment">
     <span role="img" className="absolute right-3 top-3 text-text-secondary" title="Only you can see your appointment" aria-label="Only you can see your appointment"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg></span>
     <p className="text-xs font-semibold text-text-secondary">Next appointment</p>

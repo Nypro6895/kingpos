@@ -325,7 +325,7 @@ export async function updateAccountProfileAction(
   }
 
   revalidatePath("/account");
-  revalidatePath("/beauty");
+  revalidatePath("/beauty"); revalidatePath("/beauty/library");
   revalidatePath("/", "layout");
 
   return { error: null, phoneClaim: phoneClaim ?? null };
@@ -489,7 +489,7 @@ async function alreadyConfirmedPhoneOtpResult(
 
   revalidatePath("/account");
   revalidatePath("/activity");
-  revalidatePath("/beauty");
+  revalidatePath("/beauty"); revalidatePath("/beauty/library");
   revalidatePath("/", "layout");
 
   return {
@@ -742,7 +742,7 @@ export async function verifyAccountPhoneOtpAction(
 
   revalidatePath("/account");
   revalidatePath("/activity");
-  revalidatePath("/beauty");
+  revalidatePath("/beauty"); revalidatePath("/beauty/library");
   revalidatePath("/", "layout");
 
   return {

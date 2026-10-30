@@ -192,7 +192,7 @@ export async function mergeDuplicateCustomers(formData: FormData) {
       ...(mergeAll ? {} : { p_reason: "manual" }) },
   );
   if (error) redirectWithError(errorPath, error.message);
-  for (const path of ["/customers", "/bookings", "/pos-tickets", "/pos", "/pos/portable", "/staff/today", "/activity", "/beauty", ...[targetCustomerId, ...sourceCustomerIds].map(id => `/customers/${id}`)]) revalidatePath(path);
+  for (const path of ["/customers", "/bookings", "/pos-tickets", "/pos", "/pos/portable", "/staff/today", "/activity", "/beauty", "/beauty/library", ...[targetCustomerId, ...sourceCustomerIds].map(id => `/customers/${id}`)]) revalidatePath(path);
   const merged = Number(data?.merged ?? 0);
   const skipped = Array.isArray(data?.skipped) ? data.skipped.length : 0;
   redirect(`/customers/${targetCustomerId}?merged=${merged}&skipped=${skipped}`);
@@ -229,7 +229,7 @@ export async function consolidateCustomers() {
   const { supabase, salon } = await requireCustomerMutationContext("/customers");
   const { data, error } = await supabase.rpc("consolidate_customer_identities", { p_salon: salon.id });
   if (error) redirectWithError("/customers", error.message);
-  for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/activity", "/beauty"]) revalidatePath(path);
+  for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/activity", "/beauty", "/beauty/library"]) revalidatePath(path);
   redirect(`/customers?merged=${Number(data ?? 0)}`);
 }
 
@@ -239,7 +239,7 @@ export async function automaticallyConsolidateCustomers() {
   if (error) return { merged: 0, error: "Automatic customer merge could not finish. Please retry." };
   const merged = Number(data ?? 0);
   if (merged > 0) {
-    for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/staff/today", "/activity", "/beauty"]) revalidatePath(path);
+    for (const path of ["/customers", "/bookings", "/pos", "/pos/portable", "/pos-tickets", "/staff/today", "/activity", "/beauty", "/beauty/library"]) revalidatePath(path);
   }
   return { merged, error: null };
 }

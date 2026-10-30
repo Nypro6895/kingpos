@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "profile-layout-defaults-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated release integration: Implemented approved first profile proposal with white/ivory backgrounds, safe default imagery and three layout thumbnails. Local checks passed; merge scoped commit into current baseline for combined release.",
+  "files": [
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-home.module.css",
+    "app/salon-profile/salon-website-home.tsx",
+    "app/settings/profile-layout-thumbnail.module.css",
+    "app/settings/profile-layout-thumbnail.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "docs/profile-layout-defaults-20261029.md",
+    "lib/salon-website-images.ts",
+    "public/images/profile-defaults/botanical-welcome.webp",
+    "public/images/profile-defaults/thumbnail-nails-01.webp",
+    "public/images/profile-defaults/thumbnail-nails-02.webp",
+    "public/images/profile-defaults/thumbnail-nails-03.webp",
+    "public/images/profile-defaults/thumbnail-nails-04.webp",
+    "tests/profile-layout-defaults.test.mjs",
+    "tests/salon-website-layouts.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\frozen-source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/build-final.log"
+    },
+    {
+      "name": "6 profile/layout,22 regression and isolated QR/Auth/PostgREST integration",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/profile-tests-final-4.log; artifacts/release-20261030/regression.log; artifacts/release-20261030/qr-db.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/lint.log"
+    }
+  ],
+  "integratesEvent": "d3431f5e-2348-4389-a014-b77f0b4fdcea",
+  "releaseLimits": [
+    "Physical device acceptance separate"
+  ],
+  "id": "43cf5a35-e8b6-48e1-a77d-266730a41876",
+  "recordedAt": "2026-10-30T06:39:45.459Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/salon-profile/salon-website-header.module.css": "392f8b07badf50891865a2de1ee315689a190f672aebabb71255a3e420107d31",
+    "app/salon-profile/salon-website-home.module.css": "36735673fb8885ddf83f3ff60445d180642ec85e1273f3434fc1af90c296d1b3",
+    "app/salon-profile/salon-website-home.tsx": "45fe05e0fe74911a184e9ec2aa8926549575e8b33eba882eed752f25a87d90e8",
+    "app/settings/profile-layout-thumbnail.module.css": "cc2330bf70115bcfa60fb42ff4875e3ad27ffdc2f981cf2672fe2c2eca3abfac",
+    "app/settings/profile-layout-thumbnail.tsx": "88446adbe3f0e83f804e78d5595b415d9b0d1748f72c8a408c9f20fb0f77e3d8",
+    "app/settings/salon-profile-preferences-panel.tsx": "df4bace028aa19f4c84e75a15ea73dd7f072e3f645e0bb5588de8463a934beb2",
+    "docs/profile-layout-defaults-20261029.md": "c5f33f1f9002c402a7532aa7470fe577326a71b2a65fdbe7182ee5fa34f9fff4",
+    "lib/salon-website-images.ts": "e15a7209efd616b6849de7fe12f1e8198ed1aee50a70dee916a3b85f8d1e8bf6",
+    "public/images/profile-defaults/botanical-welcome.webp": "0aa99ce9dace41aff493ef2d6a189a119bd12b5b1792b7595f05d7aac8c30574",
+    "public/images/profile-defaults/thumbnail-nails-01.webp": "57999f4868b4c9b5b49fefa115518b817a8ad2e05edca7e8c1bd6d64681ac0ac",
+    "public/images/profile-defaults/thumbnail-nails-02.webp": "94b6a99c39ceb2d3763897b3939960e8b36578fb0100d0cf9dac9025aeb7b25b",
+    "public/images/profile-defaults/thumbnail-nails-03.webp": "739dcb076039847b482e14b207bd113a53cacc6dc3483a8b33b7fb7bcb93bf2a",
+    "public/images/profile-defaults/thumbnail-nails-04.webp": "c9061d795eedd85b8304f29aba9f10a953cd942f95e1798ec62daa5a7996c9ce",
+    "tests/profile-layout-defaults.test.mjs": "712e4c520cf87f164f6d3dbffb74939a1798939d2d0725045c956f55e2e8fd08",
+    "tests/salon-website-layouts.test.mjs": "3341dbaece11bed3f305a70d91726e11d08c698c3b700117e5e937f5d53080d7"
+  }
+}

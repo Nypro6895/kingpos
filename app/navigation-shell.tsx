@@ -2640,7 +2640,8 @@ function MobileBottomNav({
   return (
     <nav
       aria-label={__vt(ariaLabel)}
-      className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border-subtle bg-surface px-1 pb-[env(safe-area-inset-bottom)] pt-2.5 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] lg:hidden"
+      className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-50 grid border-t border-border-subtle bg-surface px-1 pb-[env(safe-area-inset-bottom)] pt-2.5 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] lg:hidden"
+      style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
     >
       {links.map((originalLink) => {
         const link: NavigationLink = roleKind === "owner" && originalLink.href === "/notifications"

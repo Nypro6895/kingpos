@@ -13,6 +13,11 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         openPublicDestination("/market")
     }
     private var webView: WKWebView!
+    func openPersonalCheckin(entry: String) {
+        guard let id = UUID(uuidString: entry) else { return }
+        loadViewIfNeeded()
+        openPublicDestination("/qr", query: [URLQueryItem(name: "entry", value: id.uuidString.lowercased())])
+    }
     private var startupDisplayLink: CADisplayLink?
     private var firstPresentedFrame: CFTimeInterval?
     private lazy var startupFrameTarget = ReylumiStartupFrameTarget(self)
@@ -202,7 +207,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     private func openPublicDestination(_ path: String, query: [URLQueryItem] = []) {
-        guard ["/explore", "/market"].contains(path),
+        guard ["/explore", "/market", "/qr"].contains(path),
               var components = URLComponents(url: policy.origin, resolvingAgainstBaseURL: false) else { return }
         components.path = path
         components.queryItems = query.isEmpty ? nil : query

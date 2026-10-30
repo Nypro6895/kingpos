@@ -1,12 +1,15 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
+import {BeautyHomeIcon} from "@/app/beauty/beauty-home-icon";
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { NotificationCenterClient } from "@/app/notifications/notification-center-client";
 import { getAppLocalHost } from "./app-local-host";
 import { useAppLocalResource } from "./app-local-resource";
 import type { AppLocalPage,AppLocalPageProps } from "./app-local-page-registry";
 import type { AppLocalBeautyData,AppLocalNotificationData } from "./app-local-personal-metadata";
-function NextAppointment({booking}:{booking:AppLocalBeautyData["booking"]}){
+function NextAppointment({booking,compact=false}:{booking:AppLocalBeautyData["booking"];compact?:boolean}){
+ if(compact)return <Link className="beauty-home-booking" href={booking?`/my-bookings/${booking.id}`:"/my-bookings"}><span className="beauty-home-booking-icon"><BeautyHomeIcon name="calendar"/></span><div className="beauty-home-booking-copy"><p>Next appointment</p>{booking?<><h3>{new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:booking.salon_timezone_snapshot}).format(new Date(booking.start_at))}</h3><p>{booking.salon?.displayName??"Salon appointment"}</p></>:<><h3>No upcoming appointments</h3><p>View your bookings</p></>}</div><BeautyHomeIcon name="arrow"/></Link>;
   return <section className="relative border-border-subtle bg-surface p-4 rounded-none border-0 shadow-none" aria-label="Your next appointment">
     <span role="img" className="absolute right-3 top-3 text-text-secondary" title="Only you can see your appointment" aria-label="Only you can see your appointment"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
     <p className="text-xs font-semibold text-text-secondary">Next appointment</p>
@@ -14,15 +17,17 @@ function NextAppointment({booking}:{booking:AppLocalBeautyData["booking"]}){
   </section>;
 }
 function PersonalPage(props:AppLocalPageProps){
-  const url=new URL(props.path,"https://reylumi.com"),beauty=url.pathname==="/beauty",args=beauty?{}:{filter:url.searchParams.get("filter")==="unread"?"unread":"all"};
+  const url=new URL(props.path,"https://reylumi.com"),beauty=url.pathname==="/beauty"||url.pathname==="/beauty/library",args=beauty?{}:{filter:url.searchParams.get("filter")==="unread"?"unread":"all"};
   const resource=useAppLocalResource<AppLocalBeautyData|AppLocalNotificationData>(props.context?.context.scope,beauty?"page.beauty":"page.notifications",args,{enabled:Boolean(props.context?.context.authenticated)});
   const title=beauty?"Beauty":"Notifications";
   if(!props.context?.context.authenticated)return <main className="p-6"><h1 className="text-2xl font-semibold">{title}</h1><button className="mt-4 rounded border px-4 py-2" onClick={()=>void getAppLocalHost().openOnline("/login?next="+encodeURIComponent(url.pathname))}>Sign in</button></main>;
   if(!resource.data)return <main className="p-6" aria-busy={resource.loading||resource.refreshing}><h1 className="text-2xl font-semibold">{title}</h1>{resource.error?<><p role="alert">{resource.error}</p><button className="mt-4 rounded border px-4 py-2" onClick={()=>void resource.refresh()}>Try again</button></>:<p className="mt-4">Opening…</p>}</main>;
-  if(beauty){const data=resource.data as AppLocalBeautyData;return <BeautyProfileClient appointment={<NextAppointment booking={data.booking}/>} commentViewer={data.commentViewer} initialTimeline={data.profile.timeline} profile={data.profile.profile} visitCandidates={data.profile.visitCandidates}/>;}
+  if(beauty){const data=resource.data as AppLocalBeautyData;return <BeautyProfileClient key={url.pathname} home={url.pathname==="/beauty"} appointment={url.pathname==="/beauty"?<NextAppointment compact booking={data.booking}/>:undefined} favorites={<NativeFavorites posts={data.favorites}/>} commentViewer={data.commentViewer} initialTimeline={data.profile.timeline} profile={data.profile.profile} visitCandidates={data.profile.visitCandidates}/>;}
   return <NotificationCenterClient {...resource.data as AppLocalNotificationData}/>;
 }
 export function getAppLocalPersonalPage(path:string):AppLocalPage|null{
-  const pathname=path.split("?")[0];if(pathname!=="/beauty"&&pathname!=="/notifications")return null;
-  return{id:pathname==="/beauty"?"personal.beauty":"personal.notifications",title:pathname==="/beauty"?"Beauty":"Notifications",requiresContext:true,Component:PersonalPage,features:["complete-original-view","scoped-retained-data","existing-guarded-actions"]};
+  const pathname=path.split("?")[0];if(pathname!=="/beauty"&&pathname!=="/beauty/library"&&pathname!=="/notifications")return null;
+  return{id:pathname.startsWith("/beauty")?"personal.beauty":"personal.notifications",title:pathname.startsWith("/beauty")?"Beauty":"Notifications",requiresContext:true,Component:PersonalPage,features:["complete-original-view","scoped-retained-data","existing-guarded-actions"]};
 }
+
+function NativeFavorites({posts}:{posts:AppLocalBeautyData["favorites"]}){if(!posts)return <p className="beauty-home-empty">Favorites could not be loaded. <Link href="/more/saved-post">Open saved posts</Link></p>;if(!posts.length)return <p className="beauty-home-empty">Save a look you love to see it here. <Link href="/explore">Explore looks</Link></p>;return <div className="beauty-home-favorites">{posts.map(post=><Link key={post.id} href={post.href} className="beauty-home-favorite" aria-label={`Open saved post: ${post.title}`}>{post.imageUrl?<Image src={post.imageUrl} alt={post.title} width={240} height={300} sizes="30vw"/>:<span>{post.title}</span>}<span className="beauty-home-favorite-heart"><BeautyHomeIcon name="heart"/></span></Link>)}</div>;}

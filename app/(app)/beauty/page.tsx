@@ -5,6 +5,7 @@ import { getPostCommentViewer } from "@/lib/post-comments";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BeautyAppointment } from "@/app/beauty/beauty-appointment";
+import { BeautyHomeFavorites } from "@/app/beauty/beauty-home-favorites";
 
 async function BeautyPage() {
   const [result, commentViewer] = await Promise.all([
@@ -36,7 +37,9 @@ async function BeautyPage() {
 
   return (
     <BeautyProfileClient
-      appointment={<Suspense fallback={<div className="h-32 animate-pulse rounded-2xl bg-surface" aria-label="Loading appointment" />}><BeautyAppointment /></Suspense>}
+      home
+      appointment={<Suspense fallback={<div className="h-28 animate-pulse rounded-2xl bg-surface" aria-label="Loading appointment" />}><BeautyAppointment compact /></Suspense>}
+      favorites={<Suspense fallback={<div className="h-32 animate-pulse rounded-2xl bg-surface" aria-label="Loading favorites" />}><BeautyHomeFavorites /></Suspense>}
       commentViewer={commentViewer}
       initialTimeline={result.data.timeline}
       profile={result.data.profile}

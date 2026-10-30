@@ -13,3 +13,16 @@
 .shell{min-height:100dvh}
 @media(max-width:599px){.header[data-home=true] .actions .book{display:none}.header[data-home=true] .actions:has(.book:only-child){display:none}}
 .priceHint{font-size:12px;color:#68615b}
+
+/* One continuous canvas from identity through the website's content. */
+.shell{background:#faf9f6!important}
+.shell:has([data-website-header][data-layout=booking]){background:#fff!important}
+.shell:has([data-website-header][data-layout=portfolio]){background:#fcfaf6!important}
+.header,.header[data-layout=portfolio]{background:transparent;border-radius:0;padding-left:0;padding-right:0}
+.shell>div:first-child{padding-bottom:0}
+@media(max-width:599px){
+  .shell>div:first-child{padding-top:8px;padding-bottom:0}
+  .header{padding-top:12px}
+  .meta{padding-top:4px;gap:0 12px}
+  .navigation{margin-top:8px}
+}

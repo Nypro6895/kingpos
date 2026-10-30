@@ -6,6 +6,9 @@ import { ADMIN_SESSION_COOKIE, readAdminSession, touchAdminSession, sessionCooki
 import { APP_LOCAL_TRACE_REQUEST_ID, APP_LOCAL_TRACE_PROXY_REFRESH, APP_LOCAL_TRACE_PROXY_FAILURE, appLocalTraceRequestId, stripAppLocalCommandTraceHeaders, appLocalTraceNow, appLocalTraceDuration } from "@/lib/app-local-command-trace-protocol";
 
 export async function proxy(request: NextRequest) {
+  // Apple's association crawler has no user session. Serve this public OS
+  // document without refreshing auth, issuing device cookies or role checks.
+  if (request.nextUrl.pathname === "/.well-known/apple-app-site-association") return NextResponse.next();
   if (isReylumiIOSClient(request.headers.get("user-agent")) && isIOSExcludedPath(request.nextUrl.pathname)) {
     return new NextResponse("This feature is not available in Reylumi for iOS.", { status: 403 });
   }

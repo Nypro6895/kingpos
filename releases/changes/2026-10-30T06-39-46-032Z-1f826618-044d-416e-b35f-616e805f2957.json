@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "personal-qr-explicit-app-handoff-20261030",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Guarded explicit reylumi check-in handoff, cold launch and login continuation; Universal Links signing deferred because existing profile lacks Associated Domains",
+  "files": [
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Reylumi.entitlements",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/project.yml"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\frozen-source"
+  },
+  "dependencies": [
+    "customer-display-qr-fallback-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/build-final.log"
+    },
+    {
+      "name": "6 profile/layout,22 regression and isolated QR/Auth/PostgREST integration",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/profile-tests-final-4.log; artifacts/release-20261030/regression.log; artifacts/release-20261030/qr-db.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/lint.log"
+    }
+  ],
+  "releaseLimits": [
+    "No Universal Link entitlement configured for signing",
+    "Physical Camera acceptance pending"
+  ],
+  "id": "1f826618-044d-416e-b35f-616e805f2957",
+  "recordedAt": "2026-10-30T06:39:46.032Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/NavigationPolicy.swift": "c4a6ff998104280143e5819e9593ff3c753499403c0964f0564a623ac1e5a324",
+    "ios/Reylumi/ReylumiApp.swift": "2e4d1993940a3033add3a0cbc6c1ffdf740028fe84df123904adedcac0e1d044",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "fefb01dec1fe5909c7aa12eef546241b37f182c356741aed3666f166288bfdf4",
+    "ios/Reylumi/ReylumiViewController.swift": "b5475231f41f05d32af3a2f7e640c00b823b155e1735616ac4dccec3aa8a6a3e",
+    "ios/Reylumi/Reylumi.entitlements": "89065321e45a32835d2707b62aa01f9a07d0c1efda7a45a9992144a9f951457d",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "a53f816a1910466e7a95d8534b7ac3020af8ea80ea19493b5c79416d0ffe52f5",
+    "ios/project.yml": "934b624b4b941fa1029960dc347b8431a361e3305ce125f291ab7a570dde6885"
+  }
+}

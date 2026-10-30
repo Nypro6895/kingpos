@@ -41,6 +41,7 @@ export type NavigationSection = {
 export type RoleNavigationKind = "owner" | "personal" | "staff";
 
 export type RoleMoreIcon =
+  | "qr"
   | "badge"
   | "book"
   | "cash"
@@ -106,12 +107,6 @@ const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/explore", icon: "compass", id: "explore", label: "Explore" },
   { href: "/my-bookings", icon: "calendar", id: "bookings", label: "Bookings" },
   { href: "/beauty", icon: "user", id: "beauty", label: "Beauty" },
-  {
-    href: "/qr",
-    icon: "qr",
-    id: "personal-qr",
-    label: "QR",
-  },
   { href: "/more", icon: "more", id: "more", label: "More" },
 ];
 
@@ -148,6 +143,14 @@ const OWNER_LINKS: NavigationLink[] = [
 
 export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   personal: [
+    {
+      description: "Your Personal ID QR, salon check-in, and recent visits.",
+      href: "/qr",
+      icon: "qr",
+      id: "personal-qr",
+      label: "My QR",
+      navigationIcon: "qr",
+    },
     {
       description: "Switch between Personal, owner salons, staff workplaces, and accounts.",
       href: "/my-place",

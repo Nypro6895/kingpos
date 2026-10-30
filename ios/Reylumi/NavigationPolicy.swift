@@ -65,4 +65,19 @@ struct NavigationPolicy {
         url.scheme == "reylumi" && url.host == "market" && url.path.isEmpty
             && url.query == nil && url.fragment == nil && url.user == nil && url.password == nil && url.port == nil
     }
+
+    /// Public entry identifiers identify a salon display, never an account or
+    /// permission. Accept only the exact Camera link; writes remain in the UI.
+    static func personalCheckinPath(_ url: URL) -> String? {
+        let universal = url.scheme == "https" && ["reylumi.com", "www.reylumi.com"].contains(url.host?.lowercased() ?? "")
+        let explicitOpen = url.scheme == "reylumi" && url.host == "check-in"
+        guard universal || explicitOpen, url.user == nil, url.password == nil, url.port == nil,
+              url.query == nil, url.fragment == nil else { return nil }
+        let path = explicitOpen ? "/check-in" + url.path : url.path
+        let parts = path.split(separator: "/", omittingEmptySubsequences: false)
+        guard parts.count == 3 || (parts.count == 4 && parts[3].isEmpty),
+              parts[0].isEmpty, parts[1] == "check-in",
+              let id = UUID(uuidString: String(parts[2])), parts[2].count == 36 else { return nil }
+        return "/qr?entry=" + id.uuidString.lowercased()
+    }
 }

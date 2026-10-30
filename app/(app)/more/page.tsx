@@ -41,6 +41,7 @@ function MoreIcon({ name }: { name: MoreIconName }) {
     viewBox: "0 0 24 24",
   };
   const paths: Record<MoreIconName, ReactNode> = {
+    qr: <><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h2v2h-2zM21 14v3h-2M14 21h3v-2M20 20h1v1"/></>,
     badge: (
       <>
         <path d="M12 3 4 7v6c0 4 3.2 7.4 8 8 4.8-.6 8-4 8-8V7z" />
@@ -146,6 +147,7 @@ function personalMoreItems(): MoreContent {
       {
         id: "beauty-history",
         items: pickMoreItems(ROLE_MORE_ITEMS.personal, [
+          "personal-qr",
           "personal-activity",
           "personal-saved-post",
           "personal-following",
