@@ -511,6 +511,10 @@ function isLinkActive(
 ) {
   const [linkPath, linkQuery = ""] = link.href.split("?");
 
+  if (linkPath === "/beauty") {
+    return pathname === "/beauty";
+  }
+
   if (linkPath === "/staff") {
     return pathname === "/staff";
   }
