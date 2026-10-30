@@ -26,8 +26,29 @@
   "implementationNotice": {
     "scope": "Appointments & visits plus scan salon QR / Personal QR check-in",
     "status": "working-reported-by-owning-chat",
-    "reportedIsolatedSchemaCases": 16,
-    "canonicalFinancialPayloadComparison": "in validation, not accepted as complete",
-    "newDeploymentAuthorized": false
+    "reportedIsolatedSchemaCases": 17,
+    "canonicalFinancialPayloadComparison": "reported passed in isolated full-schema tests",
+    "newDeploymentAuthorized": false,
+    "otherReportedChecks": [
+      "private-helper/outsider denial",
+      "more-than10 upcoming records",
+      "Next production webpack/typecheck/prerender build passed"
+    ],
+    "nativeBundleArchiveAndPublishedAcceptance": false,
+    "fixtureDoesNotEstablishNativeReleaseAcceptance": true
+  },
+  "currentWindow": {
+    "reportedAt": "2026-10-30T01:11:50.699Z",
+    "ownerThread": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
+    "ownerTitle": "Phân tích tốc độ tải trên iPhone",
+    "controller": "ControlJourneyPreview_332",
+    "status": "claimed-active-reported-by-owner-after-immediate-recheck",
+    "purpose": "Real-component sample-data Safari fixture only",
+    "noInstallOrTestFlightReplacement": true,
+    "noAccountSessionTransfer": true,
+    "noLiveWrites": true,
+    "ownerWillStopControllerAndServer": true,
+    "ownerWillRestoreReylumiForeground": true,
+    "rootMustNotStartCompetingController": true
   }
 }
