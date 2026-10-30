@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import styles from "./account-profile-editor.module.css";
 import { authorizePhoneChangeAction } from "@/app/account/phone-change-actions";
 import { TimeZoneSelect } from "@/components/time-zone-select";
 import {
@@ -910,7 +911,7 @@ export function AccountProfileEditor({
 
       </div> : null}
 
-      <div className={compact ? "bg-white" : "overflow-hidden rounded-lg border border-border-subtle bg-white"}>
+      <div className={compact ? "bg-white" : "overflow-clip rounded-lg border border-border-subtle bg-white"}>
         {!phoneOnly ? <div className={compact ? "relative flex min-w-0 items-start justify-between gap-2 py-1" : "personal-profile-heading flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-4"}>
           <div className={compact ? "flex min-w-0 flex-1 items-start gap-3" : "flex min-w-0 items-center gap-4"}>
             <span className={compact ? "grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-50 text-sm text-orange-700" : "grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange"}>
@@ -1017,7 +1018,7 @@ export function AccountProfileEditor({
               />
               <ReadonlyField label={__vt("Created")} value={createdAtLabel} /></> : null}
             </div> : null}
-            <div className="sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
+            <div className={`${avatarOnly ? "" : styles.actions} sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}>
               <div className="flex items-center justify-end gap-2">
                 <button
                   className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"

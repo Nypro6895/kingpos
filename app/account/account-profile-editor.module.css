@@ -1,0 +1,13 @@
+/* Use the same clearance as the workspace's mobile content; standalone and
+   desktop editors retain their existing bottom edge. */
+@media (max-width: 1023px) {
+  :global(.customer-desktop-content) .actions {
+    bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1023px) and (pointer: coarse) {
+  :global(.customer-desktop-content) .actions {
+    bottom: calc(69px + env(safe-area-inset-bottom));
+  }
+}

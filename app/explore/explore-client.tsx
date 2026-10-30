@@ -1491,7 +1491,7 @@ function ResultSection({
   }
 
   return (
-    <section className={hideHeading ? "grid" : "grid gap-4"}>
+    <section className={hideHeading ? "grid min-w-0 grid-cols-1" : "grid min-w-0 grid-cols-1 gap-4"}>
       <div className={hideHeading ? "sr-only" : undefined}>
         <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
         {description ? (
@@ -1500,7 +1500,7 @@ function ResultSection({
           </p>
         ) : null}
       </div>
-      <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-12">
+      <div className="grid min-w-0 grid-cols-1 items-stretch gap-5 md:grid-cols-2 xl:grid-cols-12">
         {results.map((salon, index) => {
           const featured = index === 0 && results.length >= 3;
           const rank = searchRankBadge(rankKind, index);
@@ -4021,7 +4021,7 @@ export function ExploreClient({
                 </div>
               </section>
 
-              <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
+              <section className="mx-auto grid w-full min-w-0 max-w-none grid-cols-1 gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
                 {searchMode && !activeSearchFailure ? (
                   <SearchRefinementBar
                     category={committedSearch.category || "All"}
@@ -4081,7 +4081,7 @@ export function ExploreClient({
                     <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} />
                   </div>
                 ) : (
-                  <div className="grid gap-6">
+                  <div className="grid min-w-0 grid-cols-1 gap-6">
                     <ResultSection
                       hideHeading
                       description={`${activeSections.bestMatches.length} result${
