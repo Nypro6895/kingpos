@@ -495,6 +495,9 @@
     "app/activity/experience-actions.ts": [
       "replyToVisitExperienceAction",
       "setVisitExperienceStatusAction"
+    ],
+    "app/qr/actions.ts": [
+      "loadPersonalQr"
     ]
   }
 }

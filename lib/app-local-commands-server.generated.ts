@@ -335,6 +335,7 @@ import {authorizePhoneChangeAction as action331} from "@/app/account/phone-chang
 import {manageCheckWriterSubscription as action332} from "@/app/market/check-writer-actions";
 import {replyToVisitExperienceAction as action333} from "@/app/activity/experience-actions";
 import {setVisitExperienceStatusAction as action334} from "@/app/activity/experience-actions";
+import {loadPersonalQr as action335} from "@/app/qr/actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.0dde0f1e1c260096f8675486": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.05073222e31d780f4868f2db": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -671,5 +672,6 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.ab51fff38ee5ec82fa599d3f": (values: unknown[]) => (action332 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.8d438e025b6861f6b975b5bb": (values: unknown[]) => (action333 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.92acccabed6bdbf2212e62df": (values: unknown[]) => (action334 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.c5f16ef8fdcbd410e221ea80": (values: unknown[]) => (action335 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}
