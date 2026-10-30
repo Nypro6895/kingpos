@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-30T00:06:46.995Z",
+  "at": "2026-10-30T01:17:49.606Z",
   "status": "queued-needs-integration-no-publication",
   "currentPublished": {
     "version": "1.0.0",
@@ -66,13 +66,255 @@
         }
       ],
       "handoff": "C:/Reylumi-worktrees/personal-audit-fixes-20261029/artifacts/personal-layout-followup-20261029/HANDOFF.txt"
+    },
+    {
+      "event": "d574882f-c27b-4133-afde-175cf4d88f75",
+      "change": "customer-journey-20261029",
+      "status": "needs-integration",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "productCommit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+      "completionJournalCommit": "a915f10",
+      "snapshot": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029\\artifacts\\customer-journey-20261029\\source",
+      "files": [
+        {
+          "file": "app/(app)/activity/page.tsx",
+          "snapshotSha256": "3cb36feee8f658ce8a3be3f4570f03a4c432ac8824cb0a26e407c71ea6ac6a90",
+          "gitBlobSha256": "3cb36feee8f658ce8a3be3f4570f03a4c432ac8824cb0a26e407c71ea6ac6a90",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/(app)/my-bookings/page.tsx",
+          "snapshotSha256": "f56228269f97e270fb64204dd4f0291407153d560a2a6651f2ac760920ed41d9",
+          "gitBlobSha256": "aad70b187efc15575e02fc362bea433072ad63555cb88af49d30c94046eb44ec",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/(app)/qr/page.tsx",
+          "snapshotSha256": "0d2b5e6a13409c4d86613e6e218b485b998f593af3cc5094713042ab0f793228",
+          "gitBlobSha256": "461e742ef68e7eb5c8c5d2bc36a4fd7c82f46314b606de6cd529f090c74a427f",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/activity/customer-activity-client.tsx",
+          "snapshotSha256": "31d6e8ddbc11b2a3906497a19dffe6fd495f7d4028bf48db81507e0567dad83f",
+          "gitBlobSha256": "31d6e8ddbc11b2a3906497a19dffe6fd495f7d4028bf48db81507e0567dad83f",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/activity/customer-activity-view.tsx",
+          "snapshotSha256": "c2ae8d006301b222c6e3e346d5628bf7e4522b4b474ab8c6c19cbe67b6c4c392",
+          "gitBlobSha256": "c2ae8d006301b222c6e3e346d5628bf7e4522b4b474ab8c6c19cbe67b6c4c392",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/activity/customer-journey.module.css",
+          "snapshotSha256": "082e9e28eb9691527e00cc1ba75a1dd30191fec7baa25f517d687daf2772ed78",
+          "gitBlobSha256": "f5eb0ecdd5d75a5a182517354d400e45425510fe640661c60a16d542ac82dcd2",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/activity/customer-journey.tsx",
+          "snapshotSha256": "a5883603685ea1d9766baa15a09ec479482ba4400f958112ffe343362297abb5",
+          "gitBlobSha256": "a5883603685ea1d9766baa15a09ec479482ba4400f958112ffe343362297abb5",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/activity/history-details-drawer.tsx",
+          "snapshotSha256": "17ed973b4718fc2caee103368c1ed86dae7cde74b661c85615ea48c86ad78850",
+          "gitBlobSha256": "17ed973b4718fc2caee103368c1ed86dae7cde74b661c85615ea48c86ad78850",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/activity/history-link-control.tsx",
+          "snapshotSha256": "d55fb60d21ff2cb5ce6b1290d227fd48f7afddf022e017c9b3ebbfd702fd8eeb",
+          "gitBlobSha256": "d55fb60d21ff2cb5ce6b1290d227fd48f7afddf022e017c9b3ebbfd702fd8eeb",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/my-bookings/[bookingId]/booking-detail-actions.tsx",
+          "snapshotSha256": "5778780eaf282773942bd2f43d1d8eea1a04e96534468e2134443fb4189185e7",
+          "gitBlobSha256": "5778780eaf282773942bd2f43d1d8eea1a04e96534468e2134443fb4189185e7",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/qr/personal-qr-client.tsx",
+          "snapshotSha256": "27ffe7e236b3dd94c755b725fab13828c04a78a8b297391b9d5f21db9d0f05b9",
+          "gitBlobSha256": "8af96ab39f29113e5ac150c7e55fa19d44c96b63a15774b87cc1cc45c6476a5e",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "app/role-navigation.ts",
+          "snapshotSha256": "be1324207ce642bfeb34b56aa7a6afcf7af681383c8114ea55c09b1f5ebecdf1",
+          "gitBlobSha256": "4725c806a42bd95c89d268b194a35349582bdc2ebe9332474ab5bbb99b227f33",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "lib/app-local-page-registry.tsx",
+          "snapshotSha256": "fb065b74792e29984bd83c4199c3da55fc61a22e5232a5bcaf0293ef78da45ca",
+          "gitBlobSha256": "fb065b74792e29984bd83c4199c3da55fc61a22e5232a5bcaf0293ef78da45ca",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "lib/app-local-prefetch-plan.ts",
+          "snapshotSha256": "99fbfe56f5a98e96ed3ccfa1b5d4af27a5c26c988f880042aebd39b9bfa25ca0",
+          "gitBlobSha256": "81a88b857c41305d274c32eddd8224c8b053ba95a1bb2dbe14f842267e1d4cf0",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "lib/customer-activity.ts",
+          "snapshotSha256": "1286ab4dc18b498c31caf16b1c5da1d031fe9e86dc9a4d7c4fbf5a72d3ab6488",
+          "gitBlobSha256": "1286ab4dc18b498c31caf16b1c5da1d031fe9e86dc9a4d7c4fbf5a72d3ab6488",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "lib/customer-journey.ts",
+          "snapshotSha256": "1c040be3e8e86b5f071b9449cad3149792dfd5c0b787ee51e045511516aa71d1",
+          "gitBlobSha256": "1c040be3e8e86b5f071b9449cad3149792dfd5c0b787ee51e045511516aa71d1",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+          "snapshotSha256": "c380de662bdae2ef02ac7151ee25d70530c17f5c7d54919cc6b87f7afd68f709",
+          "gitBlobSha256": "c380de662bdae2ef02ac7151ee25d70530c17f5c7d54919cc6b87f7afd68f709",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "tests/app-local-prefetch-plan.test.mjs",
+          "snapshotSha256": "ccb202d60b0c3d3a0e5976a458b65039f5d1f7f41b0dc9bca4516e53e8365839",
+          "gitBlobSha256": "673f7b9e742cc9d7b07a6e9ba95e1fc81637d2815be8b8180324a3babcb91b6a",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "tests/customer-journey-ui.test.mjs",
+          "snapshotSha256": "80607fc0ea9c013e66ade25c7413e9bf56c1463bd3c4f61b21ccb90e9882f034",
+          "gitBlobSha256": "80607fc0ea9c013e66ade25c7413e9bf56c1463bd3c4f61b21ccb90e9882f034",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "tests/customer-journey.test.mjs",
+          "snapshotSha256": "a4a0af6af3e168787777db22dcedf7c113d187696ee63191e95a1df0beaf36c8",
+          "gitBlobSha256": "a4a0af6af3e168787777db22dcedf7c113d187696ee63191e95a1df0beaf36c8",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "tests/helpers/customer-journey-fixture.mjs",
+          "snapshotSha256": "98b866c42cd20219cb2aa58f8636c64cb9665cd83f7a7988feae493f86c2d4d3",
+          "gitBlobSha256": "98b866c42cd20219cb2aa58f8636c64cb9665cd83f7a7988feae493f86c2d4d3",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "tests/personal-qr-full-schema.integration.test.mjs",
+          "snapshotSha256": "5e10170207ff5bea1a082e70e0299bc71be2a090b7974d2f5b8ab76e105ee0de",
+          "gitBlobSha256": "d68fdc6ef257e6fc782f91d30dc898e5c8cc05214237c00a132228ee8a88550c",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        },
+        {
+          "file": "tests/personal-qr-ui.test.mjs",
+          "snapshotSha256": "e5b431fd77108d673594bc88f3c01a751f83ea345f05c284bd22853502fe7f8b",
+          "gitBlobSha256": "89b1be73f342fa8197bc2977fec755cdeea37b98821e07e9eca4b4f02fdedee2",
+          "exactManifestMatch": true,
+          "normalizedGitMatch": true
+        }
+      ],
+      "dependencies": [
+        "698d1bf8-5553-42b5-a2da-50ba42148c0d",
+        "949f8123-0eb4-4282-a811-aa99409a1027"
+      ],
+      "supersedesNone": true,
+      "handoff": "C:/Reylumi-worktrees/personal-audit-fixes-20261029/artifacts/customer-journey-20261029/HANDOFF.txt",
+      "validationFromProducer": [
+        {
+          "name": "64 targeted source/component/security regressions",
+          "evidence": "artifacts/customer-journey-20261029/browser/results.json",
+          "result": "passed"
+        },
+        {
+          "name": "17 full-schema isolated DB/Auth/RLS and exact financial payload invariance",
+          "evidence": "artifacts/customer-journey-20261029/full-schema-final/qr-full-flow-results.json",
+          "result": "passed"
+        },
+        {
+          "name": "Full Next production build",
+          "evidence": "artifacts/customer-journey-20261029/HANDOFF.txt",
+          "result": "passed"
+        },
+        {
+          "name": "Nonactivated native bundle compilation",
+          "evidence": "artifacts/customer-journey-20261029/native-qa-manifest.json",
+          "result": "passed"
+        },
+        {
+          "name": "Physical iPhone Safari actual-component fixture touch checks",
+          "evidence": "artifacts/customer-journey-20261029/physical",
+          "result": "passed"
+        },
+        {
+          "name": "Latest baseline integration, hosted migration, signed native/released E2E",
+          "evidence": "artifacts/customer-journey-20261029/HANDOFF.txt",
+          "result": "pending"
+        }
+      ],
+      "coordinatorValidation": "23 frozen files hash-match manifest and normalized Git source; runtime tests not rerun by coordinator",
+      "migration": {
+        "file": "supabase/migrations/20261030011000_customer_journey_read_metadata.sql",
+        "hostedApplied": false,
+        "requiredBeforeNewUIAtAuthorizedCombinedIntegration": true
+      },
+      "native": {
+        "qaOnly": true,
+        "productionReady": false,
+        "files": 345,
+        "routes": 96,
+        "commands": 328,
+        "missing": 0,
+        "archive": false,
+        "install": false,
+        "upload": false,
+        "productionConfigRebuildRequired": true
+      },
+      "physical": {
+        "kind": "Actual-component sample-data Safari fixture",
+        "installedNativeBackendE2E": false,
+        "scanDecodingAcceptancePending": true,
+        "excludedEarlierCaptures": [
+          "physical/raw/actual-journey332",
+          "journey-upcoming332"
+        ]
+      },
+      "integration": "Refresh exact live web and actually uploaded native baselines; apply only scoped files and retain separate earlier patches; do not copy whole checkout or generated QA bundle",
+      "standalonePublicationAuthorized": false
     }
   ],
   "ownerDecisions": {
     "retainStaticMembershipsReviewsGiftCards": true,
     "retainAllRoleNotifications": true,
     "bookingActivitySemanticsUnchanged": true,
-    "appointmentsAndVisitsInformationArchitecture": "Proposal only; no implementation authorized by this notice"
+    "appointmentsAndVisitsInformationArchitecture": "Approved and now implemented in this frozen handoff, pending integration/release acceptance; not Payroll history"
   },
   "acceptance": {
     "productionBuild": false,
@@ -82,5 +324,6 @@
     "needsCombinedNativeAssessment": true
   },
   "standaloneDeploymentAuthorized": false,
-  "schedule": null
+  "schedule": null,
+  "underway": []
 }

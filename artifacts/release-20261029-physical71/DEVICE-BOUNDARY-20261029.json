@@ -25,7 +25,7 @@
   "requestedNextUse": "Owning iPhone chat's static Safari fixture only; no account/session transfer or TestFlight replacement",
   "implementationNotice": {
     "scope": "Appointments & visits plus scan salon QR / Personal QR check-in",
-    "status": "working-reported-by-owning-chat",
+    "status": "completed-needs-integration",
     "reportedIsolatedSchemaCases": 17,
     "canonicalFinancialPayloadComparison": "reported passed in isolated full-schema tests",
     "newDeploymentAuthorized": false,
@@ -35,20 +35,37 @@
       "Next production webpack/typecheck/prerender build passed"
     ],
     "nativeBundleArchiveAndPublishedAcceptance": false,
-    "fixtureDoesNotEstablishNativeReleaseAcceptance": true
+    "fixtureDoesNotEstablishNativeReleaseAcceptance": true,
+    "event": "d574882f-c27b-4133-afde-175cf4d88f75",
+    "sourceCommit": "720b8e21e302277f27faf92f2d5a85ef1d57a5de",
+    "reportedTargetedTests": 64,
+    "hostedMigrationApplied": false,
+    "nativeReleaseAcceptance": false
   },
   "currentWindow": {
     "reportedAt": "2026-10-30T01:11:50.699Z",
     "ownerThread": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
     "ownerTitle": "Phân tích tốc độ tải trên iPhone",
     "controller": "ControlJourneyPreview_332",
-    "status": "claimed-active-reported-by-owner-after-immediate-recheck",
+    "status": "stopped-owner-ack",
     "purpose": "Real-component sample-data Safari fixture only",
     "noInstallOrTestFlightReplacement": true,
     "noAccountSessionTransfer": true,
     "noLiveWrites": true,
     "ownerWillStopControllerAndServer": true,
     "ownerWillRestoreReylumiForeground": true,
-    "rootMustNotStartCompetingController": true
+    "rootMustNotStartCompetingController": true,
+    "ackRecordedAt": "2026-10-30T01:17:49.607Z",
+    "ownedControllerStopped": true,
+    "ownedHttpServer": {
+      "port": 8843,
+      "pid": 23683,
+      "status": "stopped-owner-reported"
+    },
+    "reylumiForegroundRestored": true,
+    "noInstallOrLiveDataMutation": true,
+    "noCompetingControllerObservedByOwner": true,
+    "rootDeviceReservation": false,
+    "recheckBeforeFutureClaim": true
   }
 }
