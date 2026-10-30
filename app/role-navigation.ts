@@ -107,6 +107,7 @@ const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/explore", icon: "compass", id: "explore", label: "Explore" },
   { href: "/my-bookings", icon: "calendar", id: "bookings", label: "Bookings" },
   { href: "/beauty", icon: "user", id: "beauty", label: "Beauty" },
+  { href: "/beauty/library", icon: "grid", id: "beauty-library", label: "Library" },
   { href: "/more", icon: "more", id: "more", label: "More" },
 ];
 

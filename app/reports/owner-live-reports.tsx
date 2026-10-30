@@ -113,7 +113,7 @@ function DateSelector({
 function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: DailyPosReportStaffRow[]; salonId: string; businessDate: string; canEdit: boolean }) {
   if (rows.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950">
           <WorkspaceText text="No finalized staff rows for this date." />
         </h2>
@@ -122,7 +122,7 @@ function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: Dail
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <div className="mt-4 min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
         <div className="col-span-4"><WorkspaceText text="Staff" /></div>
         <div className="col-span-3 text-right"><WorkspaceText text="Gross service" /></div>
