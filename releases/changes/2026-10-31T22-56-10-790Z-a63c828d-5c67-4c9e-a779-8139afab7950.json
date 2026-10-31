@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "payroll-history-context-20261031",
+  "status": "working",
+  "summary": "Correct omitted Payroll global history navigation and legacy audit presentation. Keep edits inline on related objects; preserve exact authorized old notice context and separate check metadata from income changes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/payroll-dashboard.tsx",
+    "lib/financial-change-presentation.ts",
+    "lib/inline-financial-history.ts",
+    "app/payroll/inline-financial-history.tsx",
+    "app/payroll/payroll-change-history.tsx"
+  ],
+  "source": {
+    "baselineDeploymentId": "dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi",
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-history-context-20261031",
+    "baselineCommit": "aba717a6d3072887fc18d263e50bb3749cf858ec"
+  },
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Implementation and current-baseline validation"
+    }
+  ],
+  "dependencies": [
+    "history-inline-clarity-20261031"
+  ],
+  "notes": "Follow-up within prior owner-authorized implementation and deployment; no formula, production financial data, payment or permission changes.",
+  "id": "a63c828d-5c67-4c9e-a779-8139afab7950",
+  "recordedAt": "2026-10-31T22:56:10.790Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-history-context-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

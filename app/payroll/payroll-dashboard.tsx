@@ -19,15 +19,13 @@ type Props = {
   services: PayrollServiceAnalytics;
   today: string;
   differencesHref: string;
-  historyHref: string;
-  historyCount: number;
 };
 
 function AmountRow({ label, value, total = false }: { label: string; value: number | null; total?: boolean }) {
   return <div className={total ? styles.totalRow : styles.row}><dt><Text text={label} /></dt><dd>{money(value)}</dd></div>;
 }
 
-export function PayrollDashboard({ tab, lines, rows, services, today, differencesHref, historyHref, historyCount }: Props) {
+export function PayrollDashboard({ tab, lines, rows, services, today, differencesHref }: Props) {
   const data = payrollLiveDashboard(lines, rows, today);
   if (tab === "differences") return <section className={styles.card}>
     <h2><Text text="Daily Report differences" /></h2>
@@ -56,7 +54,6 @@ export function PayrollDashboard({ tab, lines, rows, services, today, difference
       <section className={styles.statusStack}>
         {data.differences.length > 0 && <Link className={styles.warning} href={differencesHref}><strong>⚠ <Text text={`${data.differences.length} days with differences`} /></strong><span><Text text={`${data.shortDays} short · ${data.overDays} over`} /> · <Text text="Net" /> {money(data.difference)}</span><span className={styles.review}><Text text="Review affected days" /> ›</span></Link>}
         <Link className={data.missing.length ? styles.pending : styles.good} href={differencesHref}><span><Text text={data.missing.length ? "Daily Reports to review" : "Daily Reports entered"} /></span><strong>{data.enteredDays}/{data.elapsedDays}</strong></Link>
-        {historyCount > 0 && <Link className={styles.updated} href={historyHref}><span><Text text="Updated" /> · {historyCount}</span><span><Text text="View change history" /> ›</span></Link>}
         <section className={styles.card}><h2><Text text="Collection details" /></h2><dl><AmountRow label="Cash" value={data.collectionCash} /><AmountRow label="Card" value={data.collectionCard} /><AmountRow label="Other" value={data.collectionOther} /></dl></section>
       </section>
     </div>

@@ -1,7 +1,8 @@
 import type {PayrollLiveChange} from "@/types/payroll-live-history";
 
 type Values=Record<string,unknown>;
-export type FinancialChangeDetail={label:string;before:string;after:string};
+export type FinancialChangeDetail={label:string;before:string;after:string;comparison?:"recorded";recordedSide?:"before"|"after"};
+export type FinancialHistoryRecordKind="created"|"draft"|"unchanged"|"change"|"earlier"|"payment-details";
 export type FinancialChangeGroup={title:string;details:FinancialChangeDetail[]};
 export type FinancialChangePresentation={title:string;summary:string;details:FinancialChangeDetail[];groups:FinancialChangeGroup[];incomplete:boolean};
 const labels:Record<string,string>={service_total:"Service sales",gross_sales:"Service sales",tip_amount:"Tips",tip_input:"Entered tips",discount_amount:"Customer discount",discount_value:"Discount",discount_type:"Discount type",cash_amount:"Cash",credit_card_amount:"Card",other_amount:"Other",bonus_amount:"Bonus",commission_rate:"Commission",tax_rate:"Tax",check_rate:"Check split",fixed_pay_amount:"Fixed pay",pay_type:"Pay type",effective_from:"Effective from",effective_to:"Effective to",tip_payout_method:"Tip payout",bonus_payout_method:"Bonus payout",tax_tips:"Tax on tips",tax_bonus:"Tax on bonus",apply_tax_to_fixed_pay:"Tax on fixed pay",cash_to_tax_company:"Cash reported",tax_company_enabled:"Tax company",legal_name:"Legal name",check_number:"Check number",cycle_type:"Pay cycle",biweekly_anchor_date:"Anchor date",note:"Note",notes:"Ticket note",status:"Ticket status",entered:"Report entered",work_date:"Business date",recorded_payment_total:"Ticket payments"};
@@ -25,14 +26,22 @@ function format(field:string,value:unknown,values:Values={}){
  const text=financialHistoryText(value,"—");return names[text]??text;
 }
 function valuesChanged(before:Values,after:Values,source:string){
+ const report=source==="daily_report"||source==="pos_daily_closings";
+ const collections=new Set(["cash_amount","credit_card_amount","other_amount"]);
+ const display=(key:string,values:Values)=>report&&Object.hasOwn(values,key)&&(key==="tip_input"&&values[key]===null||collections.has(key)&&values.entered===false)?"Not entered":format(key,values[key],values);
  return Object.keys(labels).flatMap(key=>{
+  if(key==="work_date"||source==="payroll_period_staff_inputs"&&(key==="check_number"||key==="note"))return [];
   if(source==="ticket"&&key==="discount_value"&&(before.discount_amount!==undefined||after.discount_amount!==undefined))return [];
   if(source==="payroll_period_staff_inputs"&&key==="bonus_amount"&&before[key]==null&&numeric(after[key])===0)return [];
-  const a=format(key,before[key],before),b=format(key,after[key],after);
-  return a===b?[]:[{label:source==="ticket"&&key==="tax_rate"?"Ticket tax":labels[key],before:a,after:b}];
+  const a=display(key,before),b=display(key,after);
+  if(a===b)return [];
+  const knownReportAbsence=report&&(key==="tip_input"&&(before[key]===null||after[key]===null)||collections.has(key)&&Object.hasOwn(before,"entered")&&Object.hasOwn(after,"entered")&&(before.entered===false||after.entered===false));
+  const unknown=(monetary.has(key)||percentages.has(key))&&!knownReportAbsence&&(numeric(before[key])===null||numeric(after[key])===null)||!Object.hasOwn(before,key)||!Object.hasOwn(after,key);
+  return [{label:source==="ticket"&&key==="tax_rate"?"Ticket tax":labels[key],before:a,after:b,...(unknown?{comparison:"recorded" as const,recordedSide:(after[key]!==null&&after[key]!==undefined?"after":"before") as "before"|"after"}:{})}];
  });
 }
-const detailText=(detail:FinancialChangeDetail)=>`${detail.label}: ${detail.before} → ${detail.after}`;
+export const financialChangeDetailText=(detail:FinancialChangeDetail)=>detail.comparison==="recorded"?`Recorded ${detail.label.toLowerCase()}: ${detail.recordedSide==="before"?detail.before:detail.after}`:`${detail.label}: ${detail.before} → ${detail.after}`;
+const detailText=financialChangeDetailText;
 function shorten(value:string,max=110){return value.length>max?value.slice(0,max-1)+"…":value;}
 function parts(value:unknown){return Array.isArray(value)?value.map(item=>money(isRecord(item)?item.amount:item)).join(" + "):"—";}
 function lineName(line:Values){return financialHistoryText(line.service_name??line.service_name_snapshot,"Service");}
@@ -47,31 +56,32 @@ function serviceChanges(before:Values,after:Values,own:boolean){
   if(a&&!b){const label=own?"Service removed from your work":"Service removed";groups.push({title:lineName(a),details:[{label,before:`${lineName(a)} · ${money(a.service_total)}`,after:"—"}]});summaries.push(`${lineName(a)} removed${own?" from your work":""}: ${money(a.service_total)}`);continue;}
   if(!a||!b)continue;
   const details:FinancialChangeDetail[]=[];
-  const add=(label:string,oldValue:string,newValue:string)=>{if(oldValue!==newValue)details.push({label,before:oldValue,after:newValue});};
-  add("Service name",lineName(a),lineName(b));
-  add("Service amount",money(a.service_total),money(b.service_total));
-  if((a.unit_price!==undefined||b.unit_price!==undefined)&&!(numeric(a.quantity)===1&&numeric(b.quantity)===1&&money(a.unit_price)===money(a.service_total)&&money(b.unit_price)===money(b.service_total)))add("Unit price",money(a.unit_price),money(b.unit_price));
-  if(a.quantity!==undefined||b.quantity!==undefined)add("Quantity",number(a.quantity),number(b.quantity));
-  if(!own)add("Staff",financialHistoryText(a.staff_name,"Unassigned"),financialHistoryText(b.staff_name,"Unassigned"));
-  if((Array.isArray(a.parts)&&a.parts.length>1)||(Array.isArray(b.parts)&&b.parts.length>1)||Array.isArray(a.parts)!==Array.isArray(b.parts)||(Array.isArray(a.parts)&&Array.isArray(b.parts)&&a.parts.length!==b.parts.length))add("Service split",parts(a.parts),parts(b.parts));
-  if(a.notes!==undefined||b.notes!==undefined)add("Service note",financialHistoryText(a.notes,"—"),financialHistoryText(b.notes,"—"));
+  const add=(label:string,oldValue:string,newValue:string,known=true,recordedSide:"before"|"after"="after")=>{if(oldValue!==newValue)details.push({label,before:oldValue,after:newValue,...(!known?{comparison:"recorded" as const,recordedSide}:{})});};
+  add("Service name",lineName(a),lineName(b),Boolean(a.service_name??a.service_name_snapshot)&&Boolean(b.service_name??b.service_name_snapshot),Boolean(b.service_name??b.service_name_snapshot)?"after":"before");
+  add("Service amount",money(a.service_total),money(b.service_total),numeric(a.service_total)!==null&&numeric(b.service_total)!==null,numeric(b.service_total)!==null?"after":"before");
+  if((a.unit_price!==undefined||b.unit_price!==undefined)&&!(numeric(a.quantity)===1&&numeric(b.quantity)===1&&money(a.unit_price)===money(a.service_total)&&money(b.unit_price)===money(b.service_total)))add("Unit price",money(a.unit_price),money(b.unit_price),numeric(a.unit_price)!==null&&numeric(b.unit_price)!==null,numeric(b.unit_price)!==null?"after":"before");
+  if(a.quantity!==undefined||b.quantity!==undefined)add("Quantity",number(a.quantity),number(b.quantity),numeric(a.quantity)!==null&&numeric(b.quantity)!==null,numeric(b.quantity)!==null?"after":"before");
+  if(!own)add("Staff",financialHistoryText(a.staff_name,"Unassigned"),financialHistoryText(b.staff_name,"Unassigned"),Object.hasOwn(a,"staff_name")&&Object.hasOwn(b,"staff_name"),Object.hasOwn(b,"staff_name")?"after":"before");
+  if((Array.isArray(a.parts)&&a.parts.length>1)||(Array.isArray(b.parts)&&b.parts.length>1)||Array.isArray(a.parts)!==Array.isArray(b.parts)||(Array.isArray(a.parts)&&Array.isArray(b.parts)&&a.parts.length!==b.parts.length))add("Service split",parts(a.parts),parts(b.parts),Array.isArray(a.parts)&&Array.isArray(b.parts),Array.isArray(b.parts)?"after":"before");
+  if(a.notes!==undefined||b.notes!==undefined)add("Service note",financialHistoryText(a.notes,"—"),financialHistoryText(b.notes,"—"),Object.hasOwn(a,"notes")&&Object.hasOwn(b,"notes"),Object.hasOwn(b,"notes")?"after":"before");
   if(details.length){groups.push({title:lineName(b),details});for(const detail of details){
    if(detail.label==="Unit price"&&details.some(d=>d.label==="Service amount"&&d.before===detail.before&&d.after===detail.after))continue;
    const label=detail.label==="Service amount"?lineName(b):detail.label==="Staff"?`${lineName(b)} staff`:detail.label==="Service split"?`${lineName(b)} split`:detail.label==="Service note"?`${lineName(b)} note`:detail.label;
-   summaries.push(detail.label==="Service note"?`${label} updated`:`${label}: ${detail.before} → ${detail.after}`);
+   summaries.push(detail.label==="Service note"&&detail.comparison!=="recorded"?`${label} updated`:detailText({...detail,label}));
   }}
  }
  return {groups,summaries};
 }
 function paymentChanges(before:Values,after:Values){
+ const knownLists=Array.isArray(before.payments)&&Array.isArray(after.payments);
  const prior=new Map(array(before.payments).map((p,i)=>[typeof p.id==="string"?p.id:`position:${i}`,p]));
  const next=new Map(array(after.payments).map((p,i)=>[typeof p.id==="string"?p.id:`position:${i}`,p]));
  const details:FinancialChangeDetail[]=[],summaries:string[]=[];
  for(const key of new Set([...prior.keys(),...next.keys()])){
   const a=prior.get(key),b=next.get(key);const payment=b??a!;
   const method=format("method",payment.method),value=money(payment.amount);
-  if(!a){details.push({label:"Ticket payment recorded",before:"—",after:`${method} ${value}`});summaries.push(`Ticket payment recorded: ${method} ${value}`);}
-  else if(!b){details.push({label:"Ticket payment removed",before:`${method} ${value}`,after:"—"});summaries.push(`Ticket payment removed: ${method} ${value}`);}
+  if(!a){details.push({label:"Ticket payment recorded",before:"—",after:`${method} ${value}`,...(!knownLists?{comparison:"recorded" as const,recordedSide:"after" as const}:{})});summaries.push(knownLists?`Ticket payment recorded: ${method} ${value}`:detailText(details.at(-1)!));}
+  else if(!b){details.push({label:"Ticket payment removed",before:`${method} ${value}`,after:"—",...(!knownLists?{comparison:"recorded" as const,recordedSide:"before" as const}:{})});summaries.push(knownLists?`Ticket payment removed: ${method} ${value}`:detailText(details.at(-1)!));}
   else if(format("method",a.method)!==format("method",b.method)||money(a.amount)!==money(b.amount)){details.push({label:"Ticket payment",before:`${format("method",a.method)} ${money(a.amount)}`,after:`${format("method",b.method)} ${money(b.amount)}`});summaries.push(detailText(details.at(-1)!));}
  }
  return {details,summaries};
@@ -86,7 +96,55 @@ export function isFinancialInputCreation(change:PayrollLiveChange){
  const action=(change as PayrollLiveChange&{event_action?:string}).event_action;
  return change.source_table==="ticket"&&action!=="draft"&&(action==="created"||Object.keys(change.before_values??{}).length===0);
 }
-export function hasMeaningfulFinancialInputChange(change:PayrollLiveChange){return !(change.source_table==="ticket"&&(change as PayrollLiveChange&{event_action?:string}).event_action==="draft")&&!isFinancialInputCreation(change)&&(change.source_table!=="payroll_period_staff_inputs"||valuesChanged(change.before_values??{},change.after_values??{},change.source_table).length>0);}
+export function isKnownFinancialInputCreation(change:PayrollLiveChange){return change.event_action==="created"||isFinancialInputCreation(change);}
+export function periodPaymentMetadataDetails(change:PayrollLiveChange):FinancialChangeDetail[]{
+ if(change.source_table!=="payroll_period_staff_inputs")return [];
+ const before=change.before_values??{},after=change.after_values??{};
+ return ["check_number","note"].flatMap(key=>{
+  const a=financialHistoryText(before[key],"Not set"),b=financialHistoryText(after[key],"Not set");if(a===b)return [];
+  const unknown=!Object.hasOwn(before,key)||!Object.hasOwn(after,key);
+  return [{label:key==="check_number"?"Check number":"Period note",before:a,after:b,...(unknown?{comparison:"recorded" as const,recordedSide:(Object.hasOwn(after,key)?"after":"before") as "before"|"after"}:{})}];
+ });
+}
+function ordered(value:unknown):unknown{
+ if(Array.isArray(value))return value.map(ordered);
+ if(isRecord(value))return Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([key,item])=>[key,ordered(item)]));
+ return value;
+}
+/** Classifies captured evidence, never the income result under current settings. */
+export function financialHistoryRecordKind(change:PayrollLiveChange):FinancialHistoryRecordKind{
+ if(change.event_action==="draft")return "draft";
+ if(isKnownFinancialInputCreation(change))return "created";
+ const before=change.before_values??{},after=change.after_values??{},source=change.source_table;
+ if(source==="payroll_live_recorded_payments"||source==="payroll_recorded_payments")return "payment-details";
+ if(Object.keys(before).length&&Object.keys(after).length&&JSON.stringify(ordered(before))===JSON.stringify(ordered(after)))return "unchanged";
+ const metadata=periodPaymentMetadataDetails(change);
+ if(source==="payroll_period_staff_inputs"&&!Object.keys(before).length&&numeric(after.bonus_amount)===0&&!metadata.length)return "unchanged";
+ if(!Object.keys(before).length||!Object.keys(after).length)return "earlier";
+ const presentation=describeFinancialInputChange(change),details=[...presentation.details,...presentation.groups.flatMap(group=>group.details)];
+ const known=details.some(detail=>detail.comparison!=="recorded"&&(
+  !detail.label.startsWith("Service added")&&!detail.label.startsWith("Service removed")||Array.isArray(before.lines)&&Array.isArray(after.lines)));
+ if(known||source==="ticket"&&ticketFlags(before,after).length>0)return "change";
+ if(metadata.length)return metadata.some(detail=>detail.comparison==="recorded")?"earlier":"payment-details";
+ const changedKeys=[...new Set([...Object.keys(before),...Object.keys(after)])].filter(key=>JSON.stringify(ordered(before[key]))!==JSON.stringify(ordered(after[key])));
+ if(changedKeys.length&&changedKeys.every(key=>["work_date","business_date","ticket_number"].includes(key)))return "unchanged";
+ return "earlier";
+}
+export function isConfirmedFinancialInputChange(change:PayrollLiveChange){return financialHistoryRecordKind(change)==="change";}
+// Read eligibility intentionally retains earlier evidence and payment metadata.
+export function hasMeaningfulFinancialInputChange(change:PayrollLiveChange){const kind=financialHistoryRecordKind(change);return ["change","earlier","payment-details"].includes(kind)||kind==="created"&&change.source_table!=="ticket";}
+export function capturedFinancialRecordFacts(change:PayrollLiveChange):FinancialChangeDetail[]{
+ const before=change.before_values??{},after=change.after_values??{},values=Object.keys(after).length?after:before,source=change.source_table;
+ const result=Object.keys(labels).flatMap(key=>{
+  if(key==="work_date")return [];
+  const useAfter=Object.hasOwn(after,key)&&after[key]!==null&&after[key]!==undefined,captured=useAfter?after:before;
+  if(!Object.hasOwn(captured,key)||captured[key]===null||captured[key]===undefined)return [];
+  const label=source==="payroll_period_staff_inputs"&&key==="note"?"Period note":labels[key];
+  return [{label:!useAfter&&Object.keys(after).length?`Earlier ${label.toLowerCase()}`:label,before:"",after:format(key,captured[key],captured),comparison:"recorded" as const,recordedSide:"after" as const}];
+ });
+ for(const line of array(values.lines))if(numeric(line.service_total)!==null)result.push({label:lineName(line),before:"",after:money(line.service_total),comparison:"recorded",recordedSide:"after"});
+ return result;
+}
 export function describeFinancialInputChange(change:PayrollLiveChange):FinancialChangePresentation{
  const before=change.before_values??{},after=change.after_values??{},source=change.source_table,own=Boolean(change.staff_id);
  const ticket=financialHistoryText(after.ticket_number??before.ticket_number);

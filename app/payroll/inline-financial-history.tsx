@@ -3,8 +3,8 @@
 import {createContext,useCallback,useContext,useEffect,useId,useMemo,useRef,useState,type ReactNode} from "react";
 import {useSearchParams} from "next/navigation";
 import {WorkspaceText as Text} from "@/components/workspace-language";
-import {describeFinancialInputChange,financialHistoryText} from "@/lib/financial-change-presentation";
-import {financialHistoryForObject,financialHistoryMatchesObject,type FinancialHistoryObject} from "@/lib/inline-financial-history";
+import {capturedFinancialRecordFacts,describeFinancialInputChange,financialHistoryRecordKind,financialHistoryText,periodPaymentMetadataDetails,type FinancialChangeDetail} from "@/lib/financial-change-presentation";
+import {financialHistoryEarlierEvidenceForObject,financialHistoryForObject,financialHistoryMatchesObject,periodPaymentDetailsForObject,type FinancialHistoryObject} from "@/lib/inline-financial-history";
 import type {PayrollLiveChange} from "@/types/payroll-live-history";
 import {legacyTicketNoticeDate} from "@/lib/ticket-history-navigation";
 import styles from "./inline-financial-history.module.css";
@@ -26,6 +26,9 @@ function openObject(element:HTMLElement|null){
  while(parent){if(parent instanceof HTMLDetailsElement)parent.open=true;parent=parent.parentElement;}
  element?.scrollIntoView?.({block:"nearest"});
 }
+function DetailValue({detail}:{detail:FinancialChangeDetail}){
+ return detail.comparison==="recorded"?<>{detail.recordedSide==="before"?detail.before:detail.after}</>:<>{detail.before} <span aria-hidden="true">→</span> {detail.after}</>;
+}
 function Entries({changes,focusedEventId,legacyBusinessDate}:{changes:PayrollLiveChange[];focusedEventId?:string;legacyBusinessDate?:string}){
  const ref=useRef<HTMLUListElement>(null);
  useEffect(()=>{if(focusedEventId)openObject(ref.current?.querySelector<HTMLElement>(`[data-input-event="${focusedEventId}"]`)??null);else if(legacyBusinessDate)openObject(ref.current?.querySelector<HTMLElement>(`[data-business-date="${legacyBusinessDate}"]`)??null);},[focusedEventId,legacyBusinessDate,changes]);
@@ -37,10 +40,10 @@ function Entries({changes,focusedEventId,legacyBusinessDate}:{changes:PayrollLiv
    const display=(values:Record<string,unknown>,value:string)=>detail.label==="Entered tips"&&values.tip_input===null?"Not entered":["Cash","Card","Other"].includes(detail.label)&&values.entered===false?"Not entered":value;
    return {...detail,before:display(change.before_values,detail.before),after:display(change.after_values,detail.after)};
   });
-  const note=financialHistoryText(change.note),actor=financialHistoryText(change.actor_name,"Owner"),edited=time(change);
+  const note=financialHistoryText(change.note),actor=financialHistoryText(change.actor_name,"Unknown"),edited=time(change);
   const userNote=note&&!['Ticket created','Daily Report inputs updated','Payroll settings updated'].includes(note)?note:"";
   return <li key={`${change.id}:${change.staff_id??""}`} data-input-event={change.id} data-business-date={change.period_start} className={styles.entry}>
-   {rows.length?<dl className={styles.values}>{rows.map((detail,index)=><div className={styles.value} key={`${detail.label}:${index}`}><dt><Text text={detail.label}/></dt><dd>{detail.before} <span aria-hidden="true">→</span> {detail.after}</dd></div>)}</dl>:<p className={styles.unavailable}><Text text={description.incomplete?"Earlier record; full before / after details were not recorded.":description.summary}/></p>}
+   {rows.length?<dl className={styles.values}>{rows.map((detail,index)=><div className={styles.value} key={`${detail.label}:${index}`}><dt><Text text={detail.comparison==="recorded"?`Recorded ${detail.label.toLowerCase()}`:detail.label}/></dt><dd><DetailValue detail={detail}/></dd></div>)}</dl>:<p className={styles.unavailable}><Text text={description.incomplete?"Earlier record; full before / after details were not recorded.":description.summary}/></p>}
    {userNote&&<p className={styles.note}>{userNote}</p>}
    <p className={styles.meta}>{actor}{edited&&<> · <time dateTime={change.created_at}>{edited}</time></>}</p>
   </li>;
@@ -51,20 +54,50 @@ function Entries({changes,focusedEventId,legacyBusinessDate}:{changes:PayrollLiv
 export function InlineFinancialHistory({changes,className}:{changes:readonly PayrollLiveChange[];className?:string}){
  const context=useContext(Context),query=useSearchParams(),key=useId(),claim=context.claim;
  const focused=context.focusedEventId??query?.get("inputEvent")?.toLowerCase();
- const rows=financialHistoryForObject(changes),matching=focused&&rows.some(row=>row.id===focused)?focused:undefined;
+ const rows=financialHistoryForObject(changes),earlier=financialHistoryEarlierEvidenceForObject(changes),matching=focused&&[...rows,...earlier].some(row=>row.id===focused)?focused:undefined;
  useEffect(()=>matching?claim?.(matching,key):undefined,[claim,matching,key]);
+ if(!rows.length)return matching&&earlier.some(row=>row.id===matching)?<InlineFinancialEvidence records={earlier.filter(row=>row.id===matching)} className={className}/>:null;
+ return <div className={className}><Entries changes={rows} focusedEventId={matching} legacyBusinessDate={context.legacyBusinessDate}/>{earlier.length>0&&<details className={styles.evidenceDisclosure}><summary><Text text="Earlier records"/></summary><InlineFinancialEvidence records={earlier}/></details>}</div>;
+}
+
+/** Neutral captured facts. Call only for an explicit target or inside an edited object. */
+export function InlineFinancialEvidence({records,className,claimFocus=true}:{records:readonly PayrollLiveChange[];className?:string;claimFocus?:boolean}){
+ const context=useContext(Context),key=useId(),ref=useRef<HTMLDivElement>(null),claim=context.claim,focused=context.focusedEventId;
+ const matching=focused&&records.some(row=>row.id===focused)?focused:undefined;
+ useEffect(()=>claimFocus&&matching?claim?.(matching,key):undefined,[claim,matching,key,claimFocus]);
+ useEffect(()=>{if(matching)openObject(ref.current);},[matching]);
+ return <div ref={ref} className={className}>{records.map(record=>{
+  const facts=capturedFinancialRecordFacts(record);
+  return <div className={styles.evidence} data-input-evidence={record.id} key={record.id}><p className={styles.meta}><Text text="Earlier record"/> · {record.period_start}{record.period_end!==record.period_start&&record.period_end!=="9999-12-31"?` – ${record.period_end}`:""}</p>
+   <p className={styles.unavailable}><Text text="The earlier value was not fully recorded. These are the values preserved in this record."/></p>
+   {!!facts.length&&<dl className={styles.values}>{facts.map((detail,index)=><div className={styles.value} key={index}><dt><Text text={detail.label}/></dt><dd>{detail.after}</dd></div>)}</dl>}
+   {record.note&&<p className={styles.note}>{record.note}</p>}<p className={styles.meta}><Text text="Recorded by"/> {financialHistoryText(record.actor_name,"Unknown")} · {time(record)}</p>
+  </div>;
+ })}</div>;
+}
+
+export function InlinePayrollPaymentDetails({changes,className,claimFocus=true}:{changes:readonly PayrollLiveChange[];className?:string;claimFocus?:boolean}){
+ const context=useContext(Context),rows=periodPaymentDetailsForObject(changes),ref=useRef<HTMLDetailsElement>(null),key=useId(),claim=context.claim;
+ const focused=context.focusedEventId,matching=focused&&rows.some(row=>row.id===focused)?focused:undefined;
+ useEffect(()=>claimFocus&&matching?claim?.(matching,key):undefined,[claim,matching,key,claimFocus]);
+ useEffect(()=>{if(matching&&ref.current){ref.current.open=true;openObject(ref.current);}},[matching]);
  if(!rows.length)return null;
- return <div className={className}><Entries changes={rows} focusedEventId={matching} legacyBusinessDate={context.legacyBusinessDate}/></div>;
+ return <details ref={ref} className={[styles.paymentDetails,className].filter(Boolean).join(" ")} data-period-payment-details><summary><Text text="Payment details"/></summary>{rows.map(row=><div key={row.id} className={styles.evidence} data-payment-detail-event={row.id}>
+  <dl className={styles.values}>{periodPaymentMetadataDetails(row).map((detail,index)=><div className={styles.value} key={index}><dt><Text text={detail.label}/></dt><dd><DetailValue detail={detail}/></dd></div>)}</dl>
+  <p className={styles.meta}>{row.period_start} – {row.period_end} · {financialHistoryText(row.actor_name,"Unknown")} · {time(row)}</p>
+ </div>)}</details>;
 }
 
 export function useFinancialHistoryContext(){return useContext(Context);}
 export function useInlineFinancialHistory(object:FinancialHistoryObject={}){
  const context=useContext(Context),key=useId(),selector=JSON.stringify(object),claim=context.claim;
  const changes=useMemo(()=>financialHistoryForObject(context.changes,JSON.parse(selector) as FinancialHistoryObject),[context.changes,selector]);
+ const earlier=useMemo(()=>financialHistoryEarlierEvidenceForObject(context.changes,JSON.parse(selector) as FinancialHistoryObject),[context.changes,selector]);
+ const paymentDetails=useMemo(()=>periodPaymentDetailsForObject(context.changes,JSON.parse(selector) as FinancialHistoryObject),[context.changes,selector]);
  const record=context.record&&financialHistoryMatchesObject(context.record,object)?context.record:undefined;
  const focused=context.focusedEventId&&(changes.some(row=>row.id===context.focusedEventId)||record?.id===context.focusedEventId)?context.focusedEventId:undefined;
  useEffect(()=>focused?claim?.(focused,key):undefined,[claim,focused,key]);
- return {changes,hasChanges:changes.length>0,loading:context.loading,error:context.error,record,focusedEventId:focused,retry:context.retry};
+ return {changes,earlier,paymentDetails,hasChanges:changes.length>0,loading:context.loading,error:context.error,record,focusedEventId:focused,retry:context.retry};
 }
 
 export function InlineFinancialRecord({record,claimFocus=true}:{record:PayrollLiveChange;claimFocus?:boolean}){
@@ -77,7 +110,7 @@ export function InlineFinancialRecord({record,claimFocus=true}:{record:PayrollLi
  const items=record.source_table==="ticket"?[["Services",money(values.service_total)],["Tips",money(values.tip_amount)],...lines.map(line=>[financialHistoryText(line.service_name,"Service"),money(line.service_total)])]:describeFinancialInputChange(record).details.map(detail=>[detail.label,detail.after]);
  return <div ref={ref} className={styles.record} data-input-record={record.id}>
   <dl className={styles.values}>{items.map(([label,value],index)=><div className={styles.value} key={index}><dt><Text text={String(label)}/></dt><dd>{String(value)}</dd></div>)}</dl>
-  <p className={styles.meta}><Text text="Recorded by"/> {financialHistoryText(record.actor_name,"POS")} · {time(record)}</p>
+  <p className={styles.meta}><Text text="Recorded by"/> {financialHistoryText(record.actor_name,"Unknown")} · {time(record)}</p>
  </div>;
 }
 
@@ -87,11 +120,13 @@ function FocusFallback({context,claimed}:{context:ContextValue;claimed:boolean})
  if(context.loading)return <p role="status" className={styles.unavailable}><Text text="Loading this record…"/></p>;
  if(context.error||!target)return <p role="status" className={styles.unavailable}><Text text={context.error||"This record is unavailable in this view."}/><button type="button" className={styles.retry} onClick={context.retry}><Text text="Retry"/></button></p>;
  const ticket=financialHistoryText(target.ticket_number??target.after_values.ticket_number),staff=financialHistoryText(target.staff_snapshot?.displayName);
- const name=target.source_table==="ticket"?`Ticket${ticket?` ${ticket}`:""}`:target.source_table==="daily_report"?"Daily Report":target.source_table==="staff_day"?staff||"Staff daily inputs":target.source_table.includes("setting")?"Pay settings":target.source_table==="payroll_period_staff_inputs"?"Period inputs":"Recorded input";
+ const name=target.source_table==="ticket"?`Ticket${ticket?` ${ticket}`:""}`:target.source_table==="daily_report"||target.source_table==="pos_daily_closings"?"Daily Report":target.source_table==="staff_day"||target.source_table==="pos_ticket_staff_earnings"?staff||"Staff daily inputs":target.source_table.includes("setting")?"Pay settings":target.source_table==="payroll_period_staff_inputs"?"Payment details":"Recorded input";
  const edited=financialHistoryForObject([target]).length>0;
+ const kind=financialHistoryRecordKind(target);
+ if(kind==="draft"||kind==="unchanged")return <p role="status" className={styles.unavailable}><Text text="No saved change was recorded for this item."/></p>;
  return <details open className={`${styles.fallback} ${edited?styles.editedRow:""}`} data-focused-input-object={target.source_id}>
   <summary>{name} · {target.period_start}{target.period_end!==target.period_start?` – ${target.period_end}`:""}</summary>
-  <div className={styles.fallbackBody}>{edited?<Entries changes={[target]} focusedEventId={context.focusedEventId}/>:<InlineFinancialRecord record={target} claimFocus={false}/>}</div>
+  <div className={styles.fallbackBody}>{edited?<Entries changes={[target]} focusedEventId={context.focusedEventId}/>:kind==="earlier"?<InlineFinancialEvidence records={[target]} claimFocus={false}/>:kind==="payment-details"&&target.source_table==="payroll_period_staff_inputs"?<InlinePayrollPaymentDetails changes={[target]} claimFocus={false}/>:<InlineFinancialRecord record={target} claimFocus={false}/>}</div>
  </details>;
 }
 

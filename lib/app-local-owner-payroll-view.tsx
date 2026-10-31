@@ -1,6 +1,8 @@
 "use client";
-import {financialHistoryForObject} from "@/lib/inline-financial-history";
-import {FinancialHistoryProvider,InlineFinancialHistory} from "@/app/payroll/inline-financial-history";
+import {financialHistoryForObject,periodPaymentDetailsForObject} from "@/lib/inline-financial-history";
+import {FinancialHistoryProvider,InlineFinancialHistory,InlinePayrollPaymentDetails} from "@/app/payroll/inline-financial-history";
+import {resolvePayrollContextTab,type PayrollContextTab} from "@/lib/payroll-history-navigation";
+import {PayrollRecordContext} from "@/app/payroll/payroll-record-context";
 import {PayrollObjectHistory} from "@/app/payroll/payroll-object-history";
 import inlineStyles from "@/app/payroll/payroll-object-history.module.css";
 
@@ -14,7 +16,6 @@ import { StaffIncomeCard } from "@/app/payroll/staff-income-card";
 import { payrollRailChoices } from "@/lib/payroll-period-rail";
 import { PayrollPaymentComparison } from "@/app/payroll/payroll-payment-comparison";
 import type {PayrollRecordedFacts} from "@/types/payroll-records";
-import {FinancialHistoryWithFocus} from "@/app/payroll/financial-history-with-focus";
 import { PayrollLiveRefresh } from "@/app/payroll/payroll-live-refresh";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
 import type { taxCompanySettings } from "@/lib/tax-company";
@@ -54,7 +55,7 @@ type PayrollPageProps = {
   }>;
 };
 
-type PayrollTab = "analytics" | "differences" | "history" | "overview" | "staff" | "shop" | "tax" | "settings" | "tools" | "download";
+type PayrollTab = PayrollContextTab;
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -92,18 +93,6 @@ function formatDate(value: string) {
     timeZone: "UTC",
     year: "numeric",
   }).format(new Date(Date.UTC(year, month - 1, day, 12)));
-}
-
-function getActiveTab(value: string | undefined, canViewAllPayroll: boolean): PayrollTab {
-  if (value === "staff") {
-    return "staff";
-  }
-
-  if (canViewAllPayroll && (value === "analytics" || value === "differences" || value === "history" || value === "shop" || value === "tax" || value === "settings" || value === "tools" || value === "download")) {
-    return value;
-  }
-
-  return "overview";
 }
 
 function getPayrollHref(input: {
@@ -345,11 +334,11 @@ function NoPermissionState({ message }: { message: string }) {
 function StaffIncomeTab({ canPrintChecks, canManage, lines, period, history, salonId, today, recordedFacts, scope, historyQuery }: {
   canPrintChecks: boolean; canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod; history: PayrollLiveChange[]; salonId:string; today:string; recordedFacts:PayrollRecordedFacts; scope:string; historyQuery?:string;
 }) {
-  if (!lines.length) return <p className={styles.panel}><WorkspaceText text="No staff income lines for this period." /></p>;
   return <FinancialHistoryProvider salonId={salonId} surface="payroll" start={period.startDate} end={period.endDate} scope={scope} query={historyQuery} initialChanges={history}><section className="grid gap-3" aria-label="Staff payroll">
+    {!lines.length&&<p className={styles.panel}><WorkspaceText text="No staff income lines for this period." /></p>}
     {lines.map(line => <StaffIncomeCard key={`${period.startDate}:${period.endDate}:${line.staff_id}`} line={line}
       history={<PayrollObjectHistory changes={financialHistoryForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_settings","staff_payroll_settings"]})} label="Pay settings edited"/>}
-      adjustments={<>{canPrintChecks&&<Link className="inline-flex min-h-11 items-center px-3 text-sm text-teal-700" href={`/check-writer?start=${period.startDate}&end=${period.endDate}&staff=${line.staff_id}`}><WorkspaceText text="Print check"/></Link>}<StaffIncomeAutosaveInputs inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /><PayrollObjectHistory changes={financialHistoryForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})} label="Period inputs edited"/></>}
+      adjustments={<>{canPrintChecks&&<Link className="inline-flex min-h-11 items-center px-3 text-sm text-teal-700" href={`/check-writer?start=${period.startDate}&end=${period.endDate}&staff=${line.staff_id}`}><WorkspaceText text="Print check"/></Link>}<StaffIncomeAutosaveInputs inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /><InlinePayrollPaymentDetails changes={periodPaymentDetailsForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})}/><PayrollObjectHistory changes={financialHistoryForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})} label="Bonus edited"/></>}
       breakdown={<><PayrollPaymentComparison facts={recordedFacts} line={line} period={period} canRecord={canManage} scope={scope} showPayments/><PayrollDailyListing rows={line.dailyTotals} salonId={salonId} canManage={canManage} today={today} history={history} /></>}
     />)}
   </section></FinancialHistoryProvider>;
@@ -459,7 +448,6 @@ function TaxTab({period,taxCompany,plugin,canManageConnection}:{period:PayrollPe
 }
 function ToolsTab({ period, downloadEnabled, canActivate }: { period: PayrollPeriod; downloadEnabled: boolean | null; canActivate: boolean }) {
   const links: { tab: PayrollTab; title: string; subtitle: string }[] = [
-    { tab: "history", title: "Change history", subtitle: "Current data and recorded changes" },
     { tab: "settings", title: "Payroll settings", subtitle: "Schedule, compensation and withholding" },
     { tab: "tax", title: "Tax Company", subtitle: "Connection, saved reports and paystubs" },
     ...(downloadEnabled ? [{ tab: "download" as const, title: "Download", subtitle: "Payroll Data Download" }] : []),
@@ -878,7 +866,7 @@ function SettingsTab({
 export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwnerPayrollData; params: AppLocalOwnerPayrollParams }) {
   const {payroll:data,salonId,canManageConnection,taxPlugin,downloadEnabled}=value;
   const historyQuery=new URLSearchParams(Object.entries(params).filter((entry):entry is [string,string]=>typeof entry[1]==="string")).toString();
-  const activeTab = getActiveTab(params.tab, data.access.canViewAllPayroll);
+  const activeTab = resolvePayrollContextTab(params, data.access.canViewAllPayroll,data.history);
   const returnPath = getReturnPath(data.period, activeTab);
   const visiblePayrollError =
     params.payroll_error?.includes("Biweekly payroll requires") &&
@@ -897,8 +885,8 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
       />
       {visiblePayrollError&&<p role="alert" className={styles.warning}><WorkspaceText text={visiblePayrollError}/></p>}
       <PayrollPeriodRail activeTab={activeTab} period={data.period} {...payrollRailChoices(data.period, data.salonPayrollSetting)} needsAnchor={data.scheduleSetup.needsBiweeklyAnchor}/>
-      {["overview","analytics","differences"].includes(activeTab)&&<PayrollDashboard tab={activeTab as "overview"|"analytics"|"differences"} lines={data.live.lines} rows={data.live.shopDailyRows} services={data.serviceAnalytics} today={data.today} historyCount={data.history.length} historyHref={getPayrollHref({period:data.period,tab:"history"})} differencesHref={getPayrollHref({period:data.period,tab:"differences"})}/>}
-      {activeTab==="history"&&<FinancialHistoryWithFocus salonId={salonId} scope={value.payrollScope} historyQuery={historyQuery} changes={data.history} staffNames={Object.fromEntries(data.staffPayrollSettings.map(row=>[row.staff.id,row.staffProfileDisplayName??row.staff.display_name]))}/>}
+      {["overview","analytics","differences"].includes(activeTab)&&<PayrollDashboard tab={activeTab as "overview"|"analytics"|"differences"} lines={data.live.lines} rows={data.live.shopDailyRows} services={data.serviceAnalytics} today={data.today} differencesHref={getPayrollHref({period:data.period,tab:"differences"})}/>}
+      {activeTab==="record"&&<PayrollRecordContext salonId={salonId} scope={value.payrollScope} query={historyQuery} history={data.history} period={data.period} canViewAllPayroll={data.access.canViewAllPayroll}/>}
       {activeTab === "staff" ? (
         <StaffIncomeTab
           salonId={salonId}

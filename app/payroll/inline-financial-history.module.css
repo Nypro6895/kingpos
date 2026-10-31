@@ -10,3 +10,8 @@
 .fallback>summary{min-height:44px;padding:12px;cursor:pointer;font-weight:500;overflow-wrap:anywhere}
 .fallbackBody{padding:0 12px 12px}.retry{min-height:44px;margin-left:6px;padding:4px 8px;text-decoration:underline}
 .record{padding:10px 0}.record .values{font-size:13px}.record .meta{margin-top:8px}
+.evidence{padding:9px 0;font-size:13px;overflow-wrap:anywhere;border-top:1px solid var(--border-subtle,#e4e4e7)}
+.evidenceDisclosure,.paymentDetails{min-width:0;border-top:1px solid var(--border-subtle,#e4e4e7);font-size:12px;color:var(--text-secondary,#6b7280)}
+.evidenceDisclosure>summary,.paymentDetails>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;gap:8px}
+.evidenceDisclosure>summary::after,.paymentDetails>summary::after{content:"⌄";margin-left:auto}
+.evidenceDisclosure[open]>summary::after,.paymentDetails[open]>summary::after{content:"⌃"}
