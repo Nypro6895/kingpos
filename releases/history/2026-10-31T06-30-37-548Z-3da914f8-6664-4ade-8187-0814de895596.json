@@ -1,0 +1,43 @@
+{
+  "kind": "release",
+  "summary": "Web candidate and TestFlight77 delivered and source verified; final authenticated live UI exposed legacy edit-count ambiguity and an open-ticket list/count mismatch. Presentation correction required before final combined acceptance; financial calculations/data unchanged.",
+  "changes": [
+    "cb83206a-c27a-43d4-90b8-e5a402128f86",
+    "db0ce53b-a945-4330-a486-46836a673702",
+    "6f485aff-c776-436c-ada7-02f6756550e0"
+  ],
+  "targets": {
+    "web": {
+      "status": "partial",
+      "verified": false,
+      "deploymentId": "dpl_8eVwGxHt425fkxYd9CwiSCiAnfHr",
+      "baselineDeploymentId": "dpl_Dkz9sFDas79W7zYD1H6S6UyLQop6",
+      "sourceCommit": "52236a328acf36a3c0742ca9d409d6ab4952466a",
+      "sourceSha256": "c267bf2a42b8f7d2d87b79ef93bba8951da6ea4d36b3c23436628227b807298e",
+      "overlaySha256": "6d5c77a7dfd66b410fd34c1b6572be005342d2838ec9a161353b22c2574cc5bb",
+      "sourceVerified": true,
+      "evidence": "artifacts/history-inline-release-20261031-v2/authenticated-live-ui.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "version": "1.0.0",
+      "build": "77",
+      "commit": "52236a328acf36a3c0742ca9d409d6ab4952466a",
+      "run": 41175250384,
+      "actualUploadAccepted": true,
+      "actualTestFlightAvailable": true,
+      "appleProcessing": "VALID",
+      "sourceVerified": true,
+      "evidence": "artifacts/history-inline-release-20261031-v2/native-source-upload-verified.json"
+    }
+  },
+  "financialTestWrites": false,
+  "requiredCorrection": [
+    "Display unlinked legacy records as secondary evidence without asserting multiple edits",
+    "Keep closed sales-ticket list consistent with its closed-ticket count"
+  ],
+  "id": "3da914f8-6664-4ade-8187-0814de895596",
+  "recordedAt": "2026-10-31T06:30:37.548Z",
+  "worktree": "C:\\Reylumi-worktrees\\history-inline-combined-20261031"
+}

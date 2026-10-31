@@ -23,15 +23,15 @@ export function TodayInlineTickets({date,timeZone,open}:{date:string;timeZone:st
  if(!open)return null;
  if(result.key!==key)return <p role="status" className="py-3 text-xs text-zinc-500"><Text text="Loading tickets…"/></p>;
  if(result.error)return <p role="status" className="py-3 text-xs text-zinc-500"><Text text={result.error}/> <button type="button" className="min-h-11 underline" onClick={()=>setAttempt(attempt+1)}><Text text="Retry"/></button></p>;
- const current=new Set(result.tickets.map(ticket=>ticket.id)),missing=new Map<string,PayrollLiveChange[]>();
+ const completed=result.tickets.filter(ticket=>ticket.status==="closed"),current=new Set(completed.map(ticket=>ticket.id)),missing=new Map<string,PayrollLiveChange[]>();
  const dailyNumbers=new Map([...result.tickets].sort((a,b)=>new Date(a.opened_at).getTime()-new Date(b.opened_at).getTime()||a.ticket_sequence-b.ticket_sequence).map((ticket,index)=>[ticket.id,index+1]));
  for(const change of [...financialHistoryForObject(history.changes,{sourceKinds:["ticket"]}),...(history.record?[history.record]:[])]){
   const id=change.ticket_id??change.source_id;if(change.source_table!=="ticket"||current.has(id))continue;
   missing.set(id,[...(missing.get(id)??[]),change]);
  }
  return <div className="col-span-full min-w-0 border-t border-zinc-200" data-today-ticket-list>
-  {!result.tickets.length&&!missing.size&&<p className="py-3 text-xs text-zinc-500"><Text text="No tickets recorded for this date."/></p>}
-  {result.tickets.map(ticket=><DailyPosTicketCard key={ticket.id} ticket={ticket} dailyNumber={dailyNumbers.get(ticket.id)??ticket.ticket_sequence} businessDateCompactLabel={date} canEdit={false} canApplyFinancialCorrection={false} isBusinessDateLocked services={[]} staff={[]} returnTo={'/staff/today?date='+date} timeZone={timeZone}/>)}
+  {!completed.length&&!missing.size&&<p className="py-3 text-xs text-zinc-500"><Text text="No completed tickets recorded for this date."/></p>}
+  {completed.map(ticket=><DailyPosTicketCard key={ticket.id} ticket={ticket} dailyNumber={dailyNumbers.get(ticket.id)??ticket.ticket_sequence} businessDateCompactLabel={date} canEdit={false} canApplyFinancialCorrection={false} isBusinessDateLocked services={[]} staff={[]} returnTo={'/staff/today?date='+date} timeZone={timeZone}/>)}
   {[...missing].map(([id,rows])=>{const record=rows.find(row=>row===history.record),changes=rows.filter(row=>row!==record),last=rows[0];return <details className={`border-b border-zinc-200 ${changes.length?'bg-orange-50/60':''}`} key={id} data-ticket-context={id}>
    <summary className="min-h-11 cursor-pointer px-3 py-3 text-sm"><strong>{financialHistoryText(last.ticket_number??last.after_values.ticket_number,"Ticket")}</strong> · {last.period_start}{changes.length>0&&<span className="ml-2 text-xs text-orange-800"><Text text="Edited"/> · {changes.length}</span>}</summary>
    <div className="bg-white px-3"><p className="py-2 text-xs text-zinc-500"><Text text="Earlier ticket · Reference only"/></p><InlineFinancialHistory changes={changes}/>{record&&<InlineFinancialRecord record={record}/>}</div>
