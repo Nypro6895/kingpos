@@ -1,0 +1,19 @@
+# Payroll history context follow-up - 2026-10-31
+
+Published source: c0d0ed32d95ea03dfd53509604f4971341ab56e3. Release event: 333540e3-5442-4ed9-9747-1b71ece00267.
+
+Web: https://reylumi.com - dpl_GEzx4DxiqsR1NnBuut4FjrkHLuKf. Exact baseline dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi, source aba717a6d3072887fc18d263e50bb3749cf858ec; all 3738 source files verified with no missing, mismatch or extras. Source SHA256 4f371b0e4ebd756009c307016c5bba6be6c5b4adeedd341725b66eee811ca751; overlay SHA256 705db9cb091080d5190f2bb714a8fad30854e6ccde79c2586a301c186a8da3c4. Candidate and live each passed 33 GET checks; Windows 0.7.4 installer HEAD/bounded Range sample passed, binary unchanged.
+
+The separate Input change history page and its Overview/Tools entry points are retired in web and bundled Owner Payroll. Confirmed edits stay on their ticket, staff day, salon day or settings record. Creation, draft and unchanged records never imply an edit. Incomplete earlier facts stay neutral with their captured values; an absent old value is not zero. Check number and note-only changes appear as Payment details, separate from income edits and recorded payments. Known Daily Report Not entered to explicit zero remains a real input change.
+
+Exact legacy notice links retain authorized object identity and selected period; ticket context links to Today only using a captured business date. Unknown or outside-period records use one neutral focused context, without guessing a date or recomputing the selected payroll. Authorization/404 retry, no duplicate focus, hidden collapsed ancestors and empty-period fallback are covered by actual complete-page checks.
+
+Validation: production Next build/TypeScript/offline bundle passed; scoped lint 0 errors with 7 existing warnings. 32 semantics regressions, 33 new component browser cases, 24 prior component cases, 25 prior Payroll checks, 5 navigation tests and 10 complete web/app-local browser groups at 320/390/768/1280 px passed. Exact current obligation versus recorded-paid comparison remains separate. No migration, formula, financial amount, payment, permission or notification read-state change.
+
+iOS 1.0.0 (79), source c0d0ed32d95ea03dfd53509604f4971341ab56e3, run 41251259931 attempt 1: 238 exact XCTest cases across 14 hosts passed; unsigned and signed archives bind to source/bundle, upload accepted. Source SHA256 06326c7e6d6575afe701757de0f7a116b49972239248c0affd489ba2bc9a89da; bundle SHA256 d518db21f2deced72b79614468b4c4565287bef641208c498f19554104fdeef7. Apple VALID/nonexpired/IN_BETA_TESTING; both existing TestFlight groups verified by GET-only status run 41253089605. All 84 native/workflow authority inputs preserved from uploaded baseline 1.0.0 (78). No App Store submission/publication or physical iPhone test.
+
+Limits: the browser extension repeatedly failed to respond, so an authenticated live Owner/Staff/Portable UI session was not verified in this follow-up. Full component/page browser fixtures and exact candidate/live source plus anonymous route checks passed; those do not establish physical-device or signed-in production acceptance. The prior release's authenticated evidence is not reused as current proof.
+
+Other-chat discovery found no newly completed work beyond the prior combined release; its full source remains preserved. Unfinished Developer Market, Check Writer paid activation/provider/printer acceptance, Universal Links and bootstrap/comment-count investigations remain excluded. Canonical dirty checkout and unrelated worktrees were not reset, cleaned, stashed or moved.
+
+Detailed immutable record: releases/history/2026-10-31T23-34-59-527Z-333540e3-5442-4ed9-9747-1b71ece00267.json. Detailed evidence: artifacts/payroll-history-context-20261031/. Local browser fixture evidence also lives under artifacts/payroll-history-context/record-semantics.

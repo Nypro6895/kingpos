@@ -1,0 +1,142 @@
+{
+  "kind": "release",
+  "summary": "Payroll history follow-up: remove aggregate History from Overview/Tools in web and bundled Owner Payroll; attach confirmed edits to their authorized records, preserve exact notice links and period context, distinguish incomplete legacy facts and check metadata from income edits. No schema, financial amount, formula, payment or permission change.",
+  "changes": [
+    "1d225163-1661-4f18-9cc1-bec7b4a26fa1"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_GEzx4DxiqsR1NnBuut4FjrkHLuKf",
+      "baselineDeploymentId": "dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi",
+      "sourceCommit": "c0d0ed32d95ea03dfd53509604f4971341ab56e3",
+      "sourceSha256": "4f371b0e4ebd756009c307016c5bba6be6c5b4adeedd341725b66eee811ca751",
+      "overlaySha256": "705db9cb091080d5190f2bb714a8fad30854e6ccde79c2586a301c186a8da3c4",
+      "sourceFiles": 3738,
+      "evidence": "artifacts/payroll-history-context-20261031/web-live-source-verified.json",
+      "httpEvidence": "artifacts/payroll-history-context-20261031/http-live.json",
+      "checks": 33,
+      "uiEvidence": "artifacts/payroll-history-context-20261031/navigation-browser/results.json",
+      "uiScope": "Actual complete web/app-local components with fixture backend/router; no authenticated live session. Browser connection unavailable.",
+      "authenticatedLiveUiVerified": false,
+      "portable": {
+        "version": "0.7.4",
+        "installerRebuilt": false,
+        "delivery": "hosted-web-update",
+        "evidence": "artifacts/payroll-history-context-20261031/windows-installer-live-smoke.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "79",
+      "commit": "c0d0ed32d95ea03dfd53509604f4971341ab56e3",
+      "run": 41251259931,
+      "runAttempt": 1,
+      "sourceSha256": "06326c7e6d6575afe701757de0f7a116b49972239248c0affd489ba2bc9a89da",
+      "bundleSha256": "d518db21f2deced72b79614468b4c4565287bef641208c498f19554104fdeef7",
+      "baseline": {
+        "commit": "aba717a6d3072887fc18d263e50bb3749cf858ec",
+        "run": 41177201906,
+        "attempt": 1,
+        "version": "1.0.0",
+        "build": "78"
+      },
+      "tests": 238,
+      "hostInvocations": 14,
+      "upload": "accepted",
+      "appleProcessing": "VALID",
+      "statusRun": 41253089605,
+      "distribution": "Both existing Reylumi Internal and Reylumi support groups",
+      "evidence": "artifacts/payroll-history-context-20261031/native-source-upload-verified.json",
+      "availabilityEvidence": "artifacts/payroll-history-context-20261031/availability-verified.json",
+      "appStoreSubmitted": false,
+      "appStorePublished": false,
+      "physicalAcceptance": false
+    }
+  },
+  "baseline": {
+    "webDeploymentId": "dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi",
+    "webSourceCommit": "aba717a6d3072887fc18d263e50bb3749cf858ec",
+    "webSourceSha256": "5a51c9523ae902bcb9b1f09a9ba97c5ea29d691fb5e57fe50eb074dafc3d8d88",
+    "native": {
+      "commit": "aba717a6d3072887fc18d263e50bb3749cf858ec",
+      "run": 41177201906,
+      "attempt": 1,
+      "version": "1.0.0",
+      "build": "78"
+    },
+    "priorReceipt": "a1aaa3f0-d525-4ba3-b0fb-73d9d2735481"
+  },
+  "database": {
+    "migrationsApplied": [],
+    "schemaChanges": false,
+    "financialAmountsRecalculated": false,
+    "paymentMutations": false,
+    "permissionChanges": false,
+    "notificationReadStateMutations": false
+  },
+  "validation": {
+    "productionBuild": "passed",
+    "typeScript": "passed",
+    "lint": "0 errors; 7 existing warnings",
+    "semanticsRegressions": 32,
+    "newComponentBrowserCases": 33,
+    "priorComponentBrowserCases": 24,
+    "priorPayrollBrowserChecks": 25,
+    "navigationPureTests": 5,
+    "completePageBrowserGroups": 10,
+    "browserWidths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "authenticatedLiveUiVerified": false,
+    "authenticatedLiveUiLimitation": "artifacts/payroll-history-context-20261031/authenticated-live-ui-limitation.json",
+    "physicalDeviceAcceptance": false
+  },
+  "otherChatDiscovery": {
+    "evidence": "artifacts/payroll-history-context-20261031/release-discovery/inventory.md",
+    "newCompletedOtherChatWork": 0,
+    "preservedPreviousCombinedRelease": true
+  },
+  "excluded": [
+    "Unfinished Developer Market/provider/security work",
+    "Check Writer paid activation/provider/printer acceptance",
+    "Universal Links provisioning and ongoing bootstrap/comment-count work",
+    "Real financial test transactions",
+    "App Store submission/publication and physical-device acceptance"
+  ],
+  "rollback": {
+    "webDeploymentId": "dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi",
+    "automaticRollbackPerformed": false,
+    "rule": "Only under coordinator lock and after verifying current alias still belongs to this release. Never overwrite an unrelated newer deployment."
+  },
+  "evidenceHashes": {
+    "artifacts/payroll-history-context-20261031/web-source.json": "76d89a1474410bc2f2e62ca8c9e7ad1b6f2fc5a83983938ca0108c2f432fb437",
+    "artifacts/payroll-history-context-20261031/ready-events.json": "5e80c4c1e625c21aac8084efe972085ad35c3ea843200ccaf4e57771f03122de",
+    "artifacts/payroll-history-context-20261031/production-build-result.json": "4b857977eaf3f89ec71454411c55655e847db80ddc72f6f4c517b643a59d75b7",
+    "artifacts/payroll-history-context-20261031/navigation-browser/results.json": "c81909bb0632cd663593c922d40d269867e3635e81cd462cff873d8d5f853997",
+    "artifacts/payroll-history-context-20261031/web-live-source-verified.json": "d727893ea78b461a4a3923d811cdb5f1ad86f3f2000240533d08cc833664fc11",
+    "artifacts/payroll-history-context-20261031/http-live.json": "3542fdd3237b2feaf6a3e9f38e784183c4e464f393c3f3bc6e15f83c03a505f4",
+    "artifacts/payroll-history-context-20261031/web-live-verification-summary.json": "cb0516d5e39b9bd407831d8d39905a08470ca438ee06bc4eae1e73eff240b546",
+    "artifacts/payroll-history-context-20261031/web-final-receipt-alias.json": "f762d08ef2918638fa14fbc1c570bd1899399fa2a3ced06b9c7a6c67ec33aeb0",
+    "artifacts/payroll-history-context-20261031/windows-installer-live-smoke.json": "9f4169dacca9b5145936e7dfd83f3eca1042e24332b909e4e013ac9053aa336a",
+    "artifacts/payroll-history-context-20261031/native-baseline-config.json": "59290fb286ba6b8e23ede62e4cc28aeadc72da774ac612e2a012c78db05eb083",
+    "artifacts/payroll-history-context-20261031/native-source-upload-verified.json": "7caa248c598d3faae01cff08b62d27debf1637d909266025bba9323931bae960",
+    "artifacts/payroll-history-context-20261031/native-archive-completeness.json": "0df1541fc574399f86814670212c9b2bb8c9499db80872b7a19a356ec43b61d2",
+    "artifacts/payroll-history-context-20261031/native-evidence-extraction.json": "043f65be586726997edebd2c128e807e23752c2f436d3904ba255fb5b7394807",
+    "artifacts/payroll-history-context-20261031/availability-verified.json": "fe58c84428a7469a2ce4b4be139d1df3ba8a7af9f0852d1bc8ba35838f53c1a7",
+    "artifacts/payroll-history-context-20261031/availability-evidence-extraction.json": "1e5ce869ae28977245ea426f3448a98767aec301ed92f5a93695535500c4dc16",
+    "artifacts/payroll-history-context-20261031/authenticated-live-ui-limitation.json": "26c286cb3e821903f35808b5f71503389bdf9c4e9c3fbbb4dd4df591736b565d",
+    "artifacts/payroll-history-context-20261031/release-discovery/code-review.json": "5c70aeac6432cbadbaf916d8060224249274419dfa4d89338ac89999f053f374",
+    "artifacts/payroll-history-context-20261031/release-discovery/code-review-frozen-binding.json": "e6a45aecef24859e56e140d7444cd32b53c36cd04d8f6d837bd39991bbe883a1",
+    "artifacts/payroll-history-context-20261031/release-discovery/web-final-review.json": "f715fb17afeaedeedc190a4535c4460b903ff912094008778816da5515cfca6c"
+  },
+  "id": "333540e3-5442-4ed9-9747-1b71ece00267",
+  "recordedAt": "2026-10-31T23:34:59.527Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-history-context-20261031"
+}
