@@ -6,10 +6,11 @@ import {WorkspaceText as Text} from "@/components/workspace-language";
 import {describeFinancialInputChange,financialHistoryText} from "@/lib/financial-change-presentation";
 import {financialHistoryForObject,financialHistoryMatchesObject,type FinancialHistoryObject} from "@/lib/inline-financial-history";
 import type {PayrollLiveChange} from "@/types/payroll-live-history";
+import {legacyTicketNoticeDate} from "@/lib/ticket-history-navigation";
 import styles from "./inline-financial-history.module.css";
 
 export const inlineHistoryEditedClassName=styles.editedRow;
-type ContextValue={changes:PayrollLiveChange[];record?:PayrollLiveChange;focusedEventId?:string;loading:boolean;error:string;retry:()=>void;claim?:(id:string,key:string)=>()=>void};
+type ContextValue={changes:PayrollLiveChange[];record?:PayrollLiveChange;focusedEventId?:string;legacyBusinessDate?:string;loading:boolean;error:string;retry:()=>void;claim?:(id:string,key:string)=>()=>void};
 const empty:ContextValue={changes:[],loading:false,error:"",retry:()=>{}};
 const Context=createContext<ContextValue>(empty);
 type Result={key:string;changes:PayrollLiveChange[];record?:PayrollLiveChange;loading:boolean;error:string};
@@ -25,9 +26,9 @@ function openObject(element:HTMLElement|null){
  while(parent){if(parent instanceof HTMLDetailsElement)parent.open=true;parent=parent.parentElement;}
  element?.scrollIntoView?.({block:"nearest"});
 }
-function Entries({changes,focusedEventId}:{changes:PayrollLiveChange[];focusedEventId?:string}){
+function Entries({changes,focusedEventId,legacyBusinessDate}:{changes:PayrollLiveChange[];focusedEventId?:string;legacyBusinessDate?:string}){
  const ref=useRef<HTMLUListElement>(null);
- useEffect(()=>{if(focusedEventId)openObject(ref.current?.querySelector<HTMLElement>(`[data-input-event="${focusedEventId}"]`)??null);},[focusedEventId,changes]);
+ useEffect(()=>{if(focusedEventId)openObject(ref.current?.querySelector<HTMLElement>(`[data-input-event="${focusedEventId}"]`)??null);else if(legacyBusinessDate)openObject(ref.current?.querySelector<HTMLElement>(`[data-business-date="${legacyBusinessDate}"]`)??null);},[focusedEventId,legacyBusinessDate,changes]);
  return <ul ref={ref} className={styles.entries}>{changes.map(change=>{
   const description=describeFinancialInputChange(change);
   const details=description.details.filter(detail=>!(change.source_table==="ticket"&&description.groups.length&&detail.label==="Service sales"));
@@ -53,7 +54,7 @@ export function InlineFinancialHistory({changes,className}:{changes:readonly Pay
  const rows=financialHistoryForObject(changes),matching=focused&&rows.some(row=>row.id===focused)?focused:undefined;
  useEffect(()=>matching?claim?.(matching,key):undefined,[claim,matching,key]);
  if(!rows.length)return null;
- return <div className={className}><Entries changes={rows} focusedEventId={matching}/></div>;
+ return <div className={className}><Entries changes={rows} focusedEventId={matching} legacyBusinessDate={context.legacyBusinessDate}/></div>;
 }
 
 export function useFinancialHistoryContext(){return useContext(Context);}
@@ -96,12 +97,14 @@ function FocusFallback({context,claimed}:{context:ContextValue;claimed:boolean})
 
 export function FinancialHistoryProvider({salonId,surface,start,end,scope="",refreshKey,initialChanges,readChanges,query:routeQuery,children}:{salonId:string;surface:"today"|"reports"|"payroll";start?:string;end?:string;scope?:string;refreshKey?:unknown;initialChanges?:readonly PayrollLiveChange[];readChanges?:InlineFinancialHistoryReader;query?:string;children:ReactNode}){
  const params=useSearchParams(),rawFocus=(routeQuery===undefined?params:new URLSearchParams(routeQuery))?.get("inputEvent")?.toLowerCase(),focusedEventId=rawFocus&&uuid.test(rawFocus)?rawFocus:undefined;
- const key=JSON.stringify([salonId,surface,start,end,scope,refreshKey]);
+ const noticeParams=routeQuery===undefined?params:new URLSearchParams(routeQuery);
+ const legacyBusinessDate=surface==="today"?legacyTicketNoticeDate({inputEvent:noticeParams?.get("inputEvent")??undefined,eventDate:noticeParams?.get("eventDate")??undefined}):undefined;
+ const key=JSON.stringify([salonId,surface,start,end,scope,refreshKey,legacyBusinessDate]);
  const [base,setBase]=useState<Result>({key:"",changes:[],loading:initialChanges===undefined,error:""}),[focus,setFocus]=useState<Result>({key:"",changes:[],loading:false,error:""});
  const [attempt,setAttempt]=useState(0),[claims,setClaims]=useState<Record<string,string[]>>({});
  const claim=useCallback((id:string,consumer:string)=>{setClaims(previous=>previous[id]?.includes(consumer)?previous:{...previous,[id]:[...previous[id]??[],consumer]});return()=>setClaims(previous=>({...previous,[id]:previous[id]?.filter(item=>item!==consumer)??[]}));},[]);
  const retry=useCallback(()=>setAttempt(n=>n+1),[]);
- const args=useMemo(()=>{const result=new URLSearchParams({surface});if(salonId)result.set("salonId",salonId);if(start)result.set("start",start);if(end)result.set("end",end);return result.toString();},[salonId,surface,start,end]);
+ const args=useMemo(()=>{const result=new URLSearchParams({surface});if(salonId)result.set("salonId",salonId);if(legacyBusinessDate)result.set("date",legacyBusinessDate);else{if(start)result.set("start",start);if(end)result.set("end",end);}return result.toString();},[salonId,surface,start,end,legacyBusinessDate]);
  const seed=useMemo<Result|undefined>(()=>initialChanges!==undefined&&attempt===0?{key,changes:initialChanges.filter(row=>!salonId||row.salon_id===salonId),loading:false,error:""}:undefined,[initialChanges,attempt,key,salonId]);
  useEffect(()=>{
   const controller=new AbortController();let version=0;
@@ -130,7 +133,7 @@ export function FinancialHistoryProvider({salonId,surface,start,end,scope="",ref
  },[args,current,focusInBase,focusKey,focusedEventId,salonId,attempt,readChanges]);
  const focused=useMemo(()=>focusInBase?{key:focusKey,changes:[],loading:false,error:""}:focus.key===focusKey?focus:undefined,[focusInBase,focusKey,focus]);
  const merged=useMemo(()=>{const rows=new Map((current?.changes??[]).map(row=>[row.id,row]));for(const row of focused?.changes??[])rows.set(row.id,row);return [...rows.values()];},[current?.changes,focused?.changes]);
- const value=useMemo<ContextValue>(()=>({changes:merged,record:focused?.record,focusedEventId,loading:!current||current.loading||Boolean(focused?.loading)||Boolean(focusedEventId&&!focused),error:focused?.error||current?.error||"",retry,claim}),[merged,focused,current,focusedEventId,retry,claim]);
+ const value=useMemo<ContextValue>(()=>({changes:merged,record:focused?.record,focusedEventId,legacyBusinessDate,loading:!current||current.loading||Boolean(focused?.loading)||Boolean(focusedEventId&&!focused),error:focused?.error||current?.error||"",retry,claim}),[merged,focused,current,focusedEventId,legacyBusinessDate,retry,claim]);
  const claimed=Boolean(focusedEventId&&claims[focusedEventId]?.length);
- return <Context.Provider value={value}>{children}<FocusFallback context={value} claimed={claimed}/></Context.Provider>;
+ return <Context.Provider value={value}>{legacyBusinessDate&&<p data-legacy-input-context className={styles.unavailable}><Text text="Earlier ticket notice"/> · {new Intl.DateTimeFormat("en-US",{dateStyle:"medium",timeZone:"UTC"}).format(new Date(legacyBusinessDate+"T12:00:00Z"))}. <Text text="This notice did not link a specific saved change."/></p>}{children}<FocusFallback context={value} claimed={claimed}/></Context.Provider>;
 }

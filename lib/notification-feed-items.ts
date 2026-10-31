@@ -113,6 +113,13 @@ export function resolveAppNotificationDestination(
     notification.notification_type === "owner_transfer_invite"
       ? "/my-place"
       : safeNotificationHref(notification.href);
+  // Old notices already contain the exact event in their immutable event key.
+  // Never infer an ID from a date, title, notification ID or nearby operation.
+  if (["financial_input_updated","ticket_recorded"].includes(notification.notification_type)) {
+    const path=href.split(/[?#]/)[0],owner=notification.recipient_kind==="owner_manager"&&path==="/staff/today",staff=notification.recipient_kind==="staff"&&path==="/staff/my-work";
+    const event=notification.event_key?.match(/^financial-input(?:-owner)?:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    if((owner||staff)&&event){const url=new URL(href,"https://notification.invalid");if(!url.searchParams.has("inputEvent")&&url.searchParams.has("eventDate")){url.searchParams.set("inputEvent",event[1].toLowerCase());href=url.pathname+url.search+url.hash;}}
+  }
   if (notification.notification_type === "payroll_updated" && notification.recipient_kind === "staff" &&
     href.split(/[?#]/)[0] === "/staff/my-work") href = `${href.split("#")[0]}#input-history`;
   const shouldOpenManageWorkspace =

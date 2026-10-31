@@ -1398,7 +1398,8 @@ function SalesSummary({ performance,date,timeZone,canViewTickets }: { performanc
   const edits=financialHistoryForObject(history.changes,{businessDate:date,sourceKinds:["ticket"]});
   const editedCount=new Set(edits.map(row=>row.ticket_id??row.source_id)).size;
   const focus=history.changes.find(row=>row.id===history.focusedEventId&&row.source_table==="ticket")??(history.record?.source_table==="ticket"?history.record:undefined);
-  const open=manuallyOpen||Boolean(focus&&focus.id!==dismissedFocus);
+  const focusKey=focus?.id??(history.legacyBusinessDate===date?`legacy:${date}`:undefined);
+  const open=manuallyOpen||Boolean(focusKey&&focusKey!==dismissedFocus);
   if (!performance.sales) {
     return (
       <EmptyLine label="Reports access is required to show sales totals." />
@@ -1447,7 +1448,7 @@ function SalesSummary({ performance,date,timeZone,canViewTickets }: { performanc
           >
             <dt className="text-xs font-medium text-zinc-500"><WorkspaceText text={label} /></dt>
             <dd className="mt-1 whitespace-nowrap text-sm font-semibold tabular-nums text-zinc-950">
-              {label==="Tickets"&&canViewTickets?<button type="button" className="min-h-11 text-left" aria-expanded={open} onClick={()=>{if(open){setManuallyOpen(false);setDismissedFocus(focus?.id);}else setManuallyOpen(true);}}><span>{value}</span>{editedCount>0&&<span className="ml-1 text-xs font-normal text-orange-800">· {editedCount} <WorkspaceText text="edited"/></span>} <span aria-hidden="true">{open?"⌃":"⌄"}</span></button>:value}
+              {label==="Tickets"&&canViewTickets?<button type="button" className="min-h-11 text-left" aria-expanded={open} onClick={()=>{if(open){setManuallyOpen(false);setDismissedFocus(focusKey);}else setManuallyOpen(true);}}><span>{value}</span>{editedCount>0&&<span className="ml-1 text-xs font-normal text-orange-800">· {editedCount} <WorkspaceText text="edited"/></span>} <span aria-hidden="true">{open?"⌃":"⌄"}</span></button>:value}
             </dd>
           </div>
         ))}

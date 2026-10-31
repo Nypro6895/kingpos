@@ -10,7 +10,7 @@ import "server-only";
 import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
 import type { ReadStage } from "@/lib/read-request-timing";
 
-import { getCurrentAppNotifications } from "@/lib/app-notifications";
+import {loadNotificationPage} from "@/lib/notification-center";
 import {
   BOOKING_LINE_SELECT,
   BOOKING_SELECT,
@@ -716,18 +716,12 @@ async function loadNotificationAttentionItems(
   context: CurrentBusinessContext,
 ): Promise<DashboardData<TodayAttentionItem[]>> {
   try {
-    const notifications = await getCurrentAppNotifications({
-      accountId: context.currentAccount?.id,
-      limit: 3,
-      recipientKind: "owner_manager",
-      salonId: context.currentSalon?.id,
-      unreadOnly: true,
-    });
+    const notifications = await loadNotificationPage(context,{limit:3,unread:true,strictSalonScope:true});
 
     return {
-      data: notifications.map((notification) => ({
+      data: notifications.items.map((notification) => ({
         detail: notification.body ?? "Open this update when you have a moment.",
-        href: notification.href,
+        href: "href" in notification.action?notification.action.href:null,
         id: `notification:${notification.id}`,
         label: notification.title,
         tone: "notice" as const,
