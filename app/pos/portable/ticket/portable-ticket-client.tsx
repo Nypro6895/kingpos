@@ -143,6 +143,10 @@ function toEditableTicket(
   return {
     adjustments: ticket.adjustments.map((adjustment) => ({
       action: adjustment.action,
+      event_action: adjustment.eventAction,
+      financial_input_event_id: adjustment.financialInputEventId,
+      financial_before_values: adjustment.financialInputBeforeValues,
+      financial_after_values: adjustment.financialInputAfterValues,
       after_snapshot: adjustment.afterSnapshot,
       before_snapshot: adjustment.beforeSnapshot,
       created_at: adjustment.createdAt,

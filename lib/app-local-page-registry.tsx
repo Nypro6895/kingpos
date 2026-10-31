@@ -32,6 +32,7 @@ import { getAppLocalHost, type AppLocalHost, type AppLocalContext } from "./app-
 import { getAppLocalHelpGuide } from "./app-local-reference-content";
 import type { CustomerActivityResource } from "@/app/activity/customer-activity-client";
 import type { StaffMyWorkResource, StaffMyWorkSearchParams } from "./staff-my-work-experience";
+import {ticketNotificationDate} from "./ticket-history-navigation";
 import type { StaffScheduleResource, StaffWorkdayResource } from "./staff-read-view";
 import type { MarketExperienceData } from "@/types/market-experience";
 import type { AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData, AppLocalFavoritesData, AppLocalSettingsData, AppLocalStaffIdentityData, AppLocalMyPlaceData, AppLocalServicesData, AppLocalMoreData, AppLocalSupportData, AppLocalSupportCaseData } from "./app-local-platform-types";
@@ -125,12 +126,12 @@ function StaffPage(props: AppLocalPageProps) {
   const args = { ...queryFor(props.path, view === "schedule" ? ["range", "status", "bookingId", "date", "quickId", "view"] : view === "my-work" ? ["tab", "payPeriodStart"] : []), staffId: identity.data?.staffId ?? "" };
   const state = useAppLocalResource<StaffMyWorkResource | StaffScheduleResource | StaffWorkdayResource>(identity.data?.resourceScope, view === "my-work" ? "staff.my-work" : `staff.${view}`, args, { enabled: Boolean(identity.data) });
   if (!identity.data || !state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{view === "my-work" ? "My Work" : view === "schedule" ? "Appointments" : "Workday"}</h1>{identity.error || state.error ? <p role="alert">{identity.error ?? state.error}</p> : <p role="status">Opening…</p>}</main>;
-  if (view === "my-work") return <StaffMyWorkView resource={state.data as StaffMyWorkResource} params={params as StaffMyWorkSearchParams} scope={identity.data.resourceScope} relay={<AppLocalStaffRelay scope={identity.data.resourceScope} salonId={identity.data.salonId} staffId={identity.data.staffId}/>} />;
+  if (view === "my-work") return <StaffMyWorkView resource={state.data as StaffMyWorkResource} params={params as StaffMyWorkSearchParams} scope={identity.data.resourceScope} historyQuery={urlFor(props.path).search} relay={<AppLocalStaffRelay scope={identity.data.resourceScope} salonId={identity.data.salonId} staffId={identity.data.staffId}/>} />;
   if (view === "workday") return <StaffWorkdayView data={(state.data as StaffWorkdayResource).result} error={params.error} />;
   const schedule = state.data as StaffScheduleResource;
   return <StaffScheduleView data={schedule.result} salonId={schedule.salonId} params={params} />;
 }
-function TodayPage(props: AppLocalPageProps) { return <AppLocalTodayClient scope={props.context!.context.scope} requestedDate={queryFor(props.path, ["date"]).date} />; }
+function TodayPage(props: AppLocalPageProps) { return <AppLocalTodayClient scope={props.context!.context.scope} requestedDate={ticketNotificationDate(queryFor(props.path, ["date","inputEvent","eventDate"]))} historyQuery={urlFor(props.path).search} />; }
 
 const definitions = [
   { id: "help.home", title: "Help", requiresContext: false, Component: HelpPage, features: ["complete-guides", "search", "role-filters", "illustrations", "en-vi"] },
@@ -159,7 +160,8 @@ export function getAppLocalPage(path: string): AppLocalPage | null {
   try {
     if (!path.startsWith("/") || path.startsWith("//") || /\\|%2f|%5c|%00/i.test(path)) return null;
     const url = urlFor(path), pathname = url.pathname.replace(/\/$/, "") || "/";
-    if (url.hash || path.length > 4096 || [...url.searchParams].some(([key, value]) => /^(token|access_token|refresh_token|code|secret|signature|session|session_id|password|payment|bookingStripe|checkout|payment_intent|payment_intent_client_secret|setup_intent|setup_intent_client_secret|redirect_status|client_secret|key|invite|next|return_to)$/i.test(key) || value.length > 512)) return null;
+    const financialAnchor = ["/staff/today", "/staff/my-work"].includes(pathname) && ["#input-history", "#ticket-record"].includes(url.hash);
+    if ((url.hash && !financialAnchor) || path.length > 4096 || [...url.searchParams].some(([key, value]) => /^(token|access_token|refresh_token|code|secret|signature|session|session_id|password|payment|bookingStripe|checkout|payment_intent|payment_intent_client_secret|setup_intent|setup_intent_client_secret|redirect_status|client_secret|key|invite|next|return_to)$/i.test(key) || value.length > 512)) return null;
     let id: string | undefined;
     if (pathname === "/help" || pathname.startsWith("/help/") && getAppLocalHelpGuide(pathname.slice(6))) id = "help.home";
     else if (pathname === "/support") id = "support";

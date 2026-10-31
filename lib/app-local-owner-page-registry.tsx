@@ -55,7 +55,8 @@ export function getAppLocalOwnerPage(path: string): AppLocalPage | null {
   try {
     if (!path.startsWith("/") || path.startsWith("//") || path.length > 4096 || /\\|%2f|%5c|%00/i.test(path)) return null;
     const url = urlFor(path), pathname = url.pathname.replace(/\/$/, "") || "/";
-    if (url.hash || [...url.searchParams].some(([key, value]) => /token|secret|password|pin|signature|authorization|cookie|^code$|^payment$|bookingStripe|checkout|^next$|return_to/i.test(key) || value.length > 512)) return null;
+    const financialAnchor = pathname === "/payroll" && ["#input-history", "#ticket-record"].includes(url.hash);
+    if ((url.hash && !financialAnchor) || [...url.searchParams].some(([key, value]) => /token|secret|password|pin|signature|authorization|cookie|^code$|^payment$|bookingStripe|checkout|^next$|return_to/i.test(key) || value.length > 512)) return null;
     if (pathname === "/staff") return pages.staff;
     if (pathname === "/customers") return pages.customers;
     if (pathname === "/customers/new") return pages.form;

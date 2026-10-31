@@ -38,7 +38,7 @@ export type PosDeskCustomer = Pick<
 export type PosDeskService = Pick<
   Service,
   "id" | "name" | "category" | "base_price"
-> & { duration_minutes?: number };
+> & { duration_minutes?: number; booking_parent_service_id?: string | null };
 
 export type PosDeskSubmitLine = {
   amountInput: string;

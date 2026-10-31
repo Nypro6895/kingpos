@@ -11,6 +11,7 @@ export const APP_LOCAL_DAILY_READS = {
 } as const;
 export const APP_LOCAL_DAILY_ROUTES = ["/pos-tickets/:ticketId", "/pos/ticket/:ticketId", "/tax-company", "/tax-company/:salonId", "/tax-company/install"] as const;
 export type AppLocalTicketDetailData = {
+  businessTimezone?: string;
   ticket: PosTicketWithRelations;
   salon: Location;
   canManageTickets: boolean;

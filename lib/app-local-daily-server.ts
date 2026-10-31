@@ -7,6 +7,7 @@ import { getExperienceContext } from "./experience-context";
 import { isSalonManageContext } from "./current-context";
 import { requireSalonManagePageContext } from "./route-context-guards";
 import { hasPermission } from "./permissions";
+import {getContextBusinessTimezone} from "./salon-business-clock";
 import { getCurrentSalonPosTicket, getCurrentSalonPosTicketOptions, POS_TICKET_PERMISSIONS } from "./pos-tickets";
 import { taxCompanySalons, taxCompanyReport } from "./tax-company";
 import { runReadWithDeadline } from "./bounded-get";
@@ -42,7 +43,7 @@ export async function readAppLocalDailyResource(name: string, args: Record<strin
     if (getExperienceContext(result.context).scope !== options.scope || result.context.user?.id !== root.user.id) fail(409, "Your workspace changed. Open this page again.");
     if (!result.ticket || result.ticket.salon_id !== context.currentSalon.id) fail(404, "POS Ticket was not found for the current salon.");
     const optionsData = canManageTickets && result.ticket.status === "open" ? await runReadWithDeadline(getCurrentSalonPosTicketOptions(context), 12000) : { services: [], staff: [] };
-    data = { ticket: result.ticket, salon: context.currentSalon, canManageTickets, canVoidTickets, options: { services: optionsData.services, staff: optionsData.staff } } satisfies AppLocalTicketDetailData;
+    data = { ticket: result.ticket, salon: context.currentSalon, businessTimezone:await getContextBusinessTimezone(context),canManageTickets, canVoidTickets, options: { services: optionsData.services, staff: optionsData.staff } } satisfies AppLocalTicketDetailData;
   } else if (name === "customer.tax-salons") {
     data = await runReadWithDeadline(taxCompanySalons(), 15000);
   } else {

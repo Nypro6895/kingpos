@@ -1,0 +1,12 @@
+.entries{display:grid;gap:10px;margin:8px 0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--text-primary,#27272a)}
+.entry{min-width:0;padding:10px 12px;background:light-dark(#fff4eb,#36291f);border-radius:6px;overflow-wrap:anywhere}
+.values{display:grid;gap:5px;margin:0}
+.value{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 12px}
+.value dt{font-weight:500}.value dd{margin:0;font-variant-numeric:tabular-nums;white-space:normal}
+.note{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.meta,.unavailable{margin:6px 0 0;font-size:12px;color:var(--text-secondary,#6b7280)}
+.editedRow>summary,.editedRow:not(details){background:light-dark(#fff4eb,#36291f);box-shadow:inset 3px 0 light-dark(#a44b23,#ffb790)}
+.fallback{min-width:0;margin:12px 0;border-block:1px solid var(--border-subtle,#e4e4e7);font-size:13px}
+.fallback>summary{min-height:44px;padding:12px;cursor:pointer;font-weight:500;overflow-wrap:anywhere}
+.fallbackBody{padding:0 12px 12px}.retry{min-height:44px;margin-left:6px;padding:4px 8px;text-decoration:underline}
+.record{padding:10px 0}.record .values{font-size:13px}.record .meta{margin-top:8px}

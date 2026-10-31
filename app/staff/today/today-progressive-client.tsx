@@ -12,7 +12,7 @@ import { TODAY_DASHBOARD_SECTIONS, failTodayDashboardSection, getTodayDashboardP
 import { useExperienceResource } from "@/lib/use-experience-resource";
 import { useLiveExperienceRefresh } from "@/lib/use-live-experience-refresh";
 import { TodayDashboardView } from "./today-dashboard-view";
-import {FinancialInputHistoryPanel} from "@/app/payroll/financial-input-history-panel";
+import {FinancialHistoryProvider} from "@/app/payroll/inline-financial-history";
 import { recordExperienceTrace } from "@/lib/experience-trace";
 
 const tags: Record<TodayDashboardSection, readonly PosResource[]> = {
@@ -65,7 +65,7 @@ function NativeSectionReader({ scope, date, section, initialReadPending, accept,
   return <ReadFailure section={section} error={state.error || Boolean(state.data && hasTodayDashboardSectionError(state.data.dashboard,section))} retry={state.refresh} refreshing={state.refreshing} />;
 }
 
-function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false, nativeInitialPending, recovery }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery }) {
+function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false, nativeInitialPending, recovery,historyQuery }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery;historyQuery?:string }) {
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [blocked, setBlocked] = useState(false);
   const tracedSections = useRef<readonly TodayDashboardSection[] | null>(null);
@@ -111,24 +111,24 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
   }, [scope, dashboard.date, dashboard.dayView.currentDate, native]);
   if (blocked) return <main className="p-6" role="status"><p>Your workspace access must be checked again.</p>{recovery ? <><button type="button" disabled={recovery.busy} onClick={() => void recovery.run()}>Open Today</button>{recovery.error && <p>Access could not be confirmed. Please try again.</p>}</> : <a href="/staff/today">Open Today</a>}</main>;
   const Reader = native ? NativeSectionReader : WebSectionReader;
-  return <>
+  return <FinancialHistoryProvider salonId={salonId} scope={scope} surface="today" start={dashboard.date} end={dashboard.date} refreshKey={dashboard.generatedAt} query={historyQuery}>
     {getTodayDashboardSections(initialDashboard).map(section => <Reader key={section} scope={scope} salonId={salonId} date={dashboard.date} currentDate={dashboard.dayView.currentDate} section={section} initialReadPending={nativeInitialPending} accept={accept} fail={fail} deny={deny} />)}
     {clockChanged && <p role="status" data-today-clock-refresh className="px-4 py-3 text-sm">The business day or time zone has changed. <a href="/staff/today" className="underline">Open Today</a> to refresh.</p>}
     <TodayDashboardView dashboard={dashboard} isOwner={isOwner} />
-  </>;
+  </FinancialHistoryProvider>;
 }
 
-export function TodayProgressiveClient(props: { initialDashboard: TodayDashboard; scope: string; salonId: string; requestedDate?: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery }) {
+export function TodayProgressiveClient(props: { initialDashboard: TodayDashboard; scope: string; salonId: string; requestedDate?: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery;historyQuery?:string }) {
   const identity = `${props.scope}:${props.initialDashboard.date}:${props.initialDashboard.dayView.currentDate}:${props.initialDashboard.timezone}:${props.initialDashboard.salonName}:${getTodayDashboardPermissionsIdentity(props.initialDashboard.permissions)}:${props.initialDashboard.noAccess}`;
   return <TodaySections key={identity} {...props} />;
 }
 
 /** Native uses the existing named-read bridge and its signed argument policy. */
-export function AppLocalTodayClient({ scope, requestedDate }: { scope: string; requestedDate?: string }) {
-  return <NativeTodayFrame scope={scope} requestedDate={requestedDate} completeFirst />;
+export function AppLocalTodayClient({ scope, requestedDate,historyQuery }: { scope: string; requestedDate?: string;historyQuery?:string }) {
+  return <NativeTodayFrame scope={scope} requestedDate={requestedDate} historyQuery={historyQuery} completeFirst />;
 }
 
-function NativeTodayFrame({scope,requestedDate,completeFirst}: {scope:string;requestedDate?:string;completeFirst:boolean}) {
+function NativeTodayFrame({scope,requestedDate,completeFirst,historyQuery}: {scope:string;requestedDate?:string;completeFirst:boolean;historyQuery?:string}) {
   // The original endpoint selects the complete response when phase is omitted.
   const args = useMemo(() => ({ ...(requestedDate ? { date: requestedDate } : {}), ...(!completeFirst ? {phase:"shell"} : {}) }), [requestedDate,completeFirst]);
   const state = useAppLocalResource<PageData>(scope, "page.owner-today", args, {initialOnly:completeFirst});
@@ -177,9 +177,9 @@ function NativeTodayFrame({scope,requestedDate,completeFirst}: {scope:string;req
   };
   // The complete endpoint rejects partial upstream failures. Fall back to the
   // original independent sections rather than blanking every working section.
-  if (completeFirst && state.error && !state.data && state.available && !state.accessDenied) return <NativeTodayFrame scope={scope} requestedDate={requestedDate} completeFirst={false} />;
+  if (completeFirst && state.error && !state.data && state.available && !state.accessDenied) return <NativeTodayFrame scope={scope} requestedDate={requestedDate} historyQuery={historyQuery} completeFirst={false} />;
   if (!state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">Today</h1>
     {state.error || !state.loading && !state.refreshing ? <div role="status"><p>{state.error ?? "Connect to load Today."}</p><button type="button" disabled={recovering} onClick={() => void (needsRecovery.current ? recover() : state.refresh())}>Try again</button></div> : <p role="status">Opening…</p>}
   </main>;
-  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} /><div className="mx-auto w-full max-w-7xl px-4"><FinancialInputHistoryPanel scope={scope} title="Ticket input history"/></div></>;
+  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} historyQuery={historyQuery} /></>;
 }

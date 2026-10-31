@@ -157,7 +157,7 @@ export async function getCurrentSalonPosDeskData({includeCustomers=true,includeW
         .returns<PosDeskCustomer[]>() : Promise.resolve({data:[] as PosDeskCustomer[],error:null}),
       supabase
         .from("services")
-        .select("id, name, category, base_price")
+        .select("id, name, category, base_price, booking_parent_service_id")
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .order("name", { ascending: true })

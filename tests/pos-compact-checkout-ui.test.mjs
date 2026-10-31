@@ -126,6 +126,10 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
     await dialog.getByRole('button',{name:'Cancel',exact:true}).tap();
     await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).waitFor();
     await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).tap();
+    await page.getByLabel('Tip amount',{exact:true}).fill('99');
+    await page.mouse.click(2,2);await dialog.waitFor({state:'hidden'});
+    await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).waitFor();
+    await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).tap();
     await dialog.getByRole('button',{name:'Clear',exact:true}).tap();
     await dialog.getByRole('button',{name:'2',exact:true}).tap();
     await dialog.getByRole('button',{name:'.',exact:true}).tap();

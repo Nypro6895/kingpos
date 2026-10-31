@@ -4,5 +4,8 @@ export type PayrollLiveChange = {
   period_start: string; period_end: string; before_values: Record<string, unknown>;
   after_values: Record<string, unknown>; actor_id: string | null; created_at: string;
   actor_name?: string; note?: string; business_timezone?: string;
+  event_action?: "created" | "updated" | "draft";
+  ticket_number?: string;
+  ticket_id?: string;
   staff_projections?: Array<{staff_id:string;staff_name:string;before_values:Record<string,unknown>;after_values:Record<string,unknown>}>;
 };

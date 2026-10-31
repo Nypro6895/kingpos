@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
   "names": [
+    "http.benefits.gift-cards",
+    "http.benefits.rewards",
     "http.explore.feed-events",
     "http.notifications.preferences",
     "http.notifications.viewed",
@@ -14,8 +16,10 @@
     "http.staff.report-no-show",
     "owner.receipt-operation",
     "portable.http.draft",
+    "portable.http.gift-cards",
     "portable.http.operations",
     "portable.http.prepare-device",
+    "portable.http.rewards",
     "shell.logout",
     "shell.switch-workspace",
     "upload.cancel",

@@ -19,16 +19,16 @@ test('Daily Report history stays visible with service receipts and independently
 });
 test('unchanged ticket reassignment shows both staff input changes and human service names',()=>{
  const change={...event,source_table:'ticket',note:'Reassigned manicure',before_values:{ticket_number:'T-24',service_total:100,tip_amount:10,lines:[{id:uuid,service_name:'Manicure',staff_id:uuid,staff_name:'Anna',service_total:100}]},after_values:{ticket_number:'T-24',service_total:100,tip_amount:10,lines:[{id:uuid,service_name:'Manicure',staff_id:uuid,staff_name:'Lily',service_total:100}]},staff_projections:[{staff_id:'anna',staff_name:'Anna',before_values:{service_total:100,tip_amount:10},after_values:{service_total:0,tip_amount:0}},{staff_id:'lily',staff_name:'Lily',before_values:{service_total:0,tip_amount:0},after_values:{service_total:100,tip_amount:10}}]};
- const html=renderHistory({changes:[change]});assert.match(html,/Anna input changes/);assert.match(html,/Lily input changes/);assert.match(html,/Services before/);assert.match(html,/Services after/);assert.match(html,/Manicure/);assert.match(html,/\$0\.00/);assert.doesNotMatch(html,/staff_id|service_id|source_id/);assert.doesNotMatch(html,new RegExp(uuid));
+ const html=renderHistory({changes:[change]});assert.match(html,/Anna input changes/);assert.match(html,/Lily input changes/);assert.match(html,/Manicure staff: Anna → Lily/);assert.match(html,/<dt>Staff<\/dt>/);assert.match(html,/\$0\.00/);assert.doesNotMatch(html,/staff_id|service_id|source_id/);assert.doesNotMatch(html,new RegExp(uuid));
  const own=payrollHistoryForStaff([change],'anna');const ownHtml=renderHistory({changes:own});assert.equal(own[0].before_values.service_total,100);assert.equal(own[0].after_values.service_total,0);assert.doesNotMatch(ownHtml,/Lily|Services after/);assert.equal(payrollHistoryForStaff([change],'someone-else').length,0);
 });
 test('single Staff day projection does not duplicate identical parent values',()=>{
  const html=renderHistory({changes:[{...event,staff_projections:[{staff_id:uuid,staff_name:'Anna',before_values:event.before_values,after_values:event.after_values}]}]});
- assert.equal((html.match(/\$120\.00/g)??[]).length,1);assert.doesNotMatch(html,new RegExp(uuid));
+ const detail=html.split('</summary>')[1];assert.equal((detail.match(/\$120\.00/g)??[]).length,1);assert.doesNotMatch(html,/Anna input changes/);assert.doesNotMatch(html,new RegExp(uuid));
 });
 test('settings history includes dated configuration and legal name without inferring income',()=>{
  const html=renderHistory({changes:[{...event,source_table:'payroll_settings',before_values:{commission_rate:60,legal_name:'Anna Old',effective_from:'2026-01-01'},after_values:{commission_rate:65,legal_name:'Anna Example',effective_from:'2026-10-01'}}]});
- assert.match(html,/Commission %/);assert.match(html,/Legal name/);assert.match(html,/Anna Example/);assert.match(html,/2026-10-01/);assert.doesNotMatch(html,/take-home|\$65/);
+ assert.match(html,/Commission: 60% → 65%/);assert.match(html,/Legal name/);assert.match(html,/Anna Example/);assert.match(html,/2026-10-01/);assert.doesNotMatch(html,/take-home|\$65/);
  assert.equal(payrollHistoryStaffLabel({...event,staff_snapshot:{id:uuid,displayName:'Anna'}},{}),'Anna');assert.equal(payrollHistoryStaffLabel({...event,staff_snapshot:{id:uuid,displayName:null}},{}),'Staff');
 });
 test('edited timestamp uses salon local time independently from the business date',()=>{

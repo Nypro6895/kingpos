@@ -5,7 +5,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { useActionState } from "react";
 import { PortableTouchKeyboard } from "./touch-keyboard";
 import { PortableFullscreenButton } from "./portable-fullscreen-button";
-import { DeviceInputSettingsButton } from "./device-input-settings";
+import "./device-input-settings.css";
 import {
   forgetPortablePosAccessIdAction,
   signInPortablePosAction,
@@ -33,7 +33,7 @@ export function PortablePosLoginForm({
 
   return (
     <div className="w-full max-w-sm" data-portable-login-shell>
-      <div className="mb-2 flex justify-end gap-1"><PortableFullscreenButton /><DeviceInputSettingsButton /></div>
+      <PortableFullscreenButton cornerExit />
       <PortableTouchKeyboard scopeSelector="[data-portable-login-shell]" />
       <form
         action={formAction}

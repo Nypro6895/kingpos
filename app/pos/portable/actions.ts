@@ -1,7 +1,9 @@
 "use server";
 import { closingPayload } from "@/lib/daily-closing-input";
+import { ticketAdjustmentEventAction, type TicketAdjustmentEventAction } from "@/lib/pos-ticket-adjustment-history";
 import type { RelayWorkspace } from "@/types/service-relay";
 import type { ScanDeskLine } from "@/types/staff-scan";
+import type {PayrollLiveChange} from "@/types/payroll-live-history";
 
 export async function portableLoadServiceRelay(): Promise<{ data?: RelayWorkspace; error?: string }> {
   try {
@@ -46,6 +48,7 @@ import { after } from "next/server";
 import { cache } from "react";
 import { createHash, createPublicKey, pbkdf2, privateDecrypt, constants as cryptoConstants } from "node:crypto";
 import { getPosLiveDraft } from "@/app/pos/actions";
+import { withPortableServiceAddOns } from "@/lib/pos-service-catalog-server";
 import { marketServiceClient } from "@/lib/market-payments";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
@@ -256,6 +259,10 @@ export type PortableTicketStaffEarningRow = {
 };
 
 export type PortableTicketAdjustmentRow = {
+  eventAction?: TicketAdjustmentEventAction;
+  financialInputEventId?: string | null;
+  financialInputBeforeValues?: Record<string, unknown> | null;
+  financialInputAfterValues?: Record<string, unknown> | null;
   action: "item_corrected" | "item_removed" | "item_replaced";
   afterSnapshot: unknown;
   beforeSnapshot: unknown;
@@ -995,6 +1002,10 @@ function normalizePortableTicketAdjustment(
   }
 
   const payload = value as Record<string, unknown>;
+  const eventAction = ticketAdjustmentEventAction(payload.eventAction ?? payload.event_action);
+  if (eventAction === "draft" || eventAction === "created") return null;
+  const financialBefore = payload.financialInputBeforeValues ?? payload.financial_input_before_values;
+  const financialAfter = payload.financialInputAfterValues ?? payload.financial_input_after_values;
   const id = normalizePortableString(payload.id);
   const ticketId = normalizePortableString(payload.ticketId ?? payload.ticket_id);
   const rawAction = normalizePortableString(payload.action);
@@ -1018,6 +1029,10 @@ function normalizePortableTicketAdjustment(
 
   return {
     action: rawAction as PortableTicketAdjustmentRow["action"],
+    eventAction,
+    financialInputEventId: normalizePortableNullableString(payload.financialInputEventId ?? payload.financial_input_event_id),
+    financialInputBeforeValues: financialBefore !== null && typeof financialBefore === "object" && !Array.isArray(financialBefore) ? financialBefore as Record<string, unknown> : null,
+    financialInputAfterValues: financialAfter !== null && typeof financialAfter === "object" && !Array.isArray(financialAfter) ? financialAfter as Record<string, unknown> : null,
     afterSnapshot: payload.afterSnapshot ?? payload.after_snapshot ?? {},
     beforeSnapshot: payload.beforeSnapshot ?? payload.before_snapshot ?? {},
     createdAt,
@@ -1590,7 +1605,7 @@ async function loadPortablePosDeskData(): Promise<{
     salonName:
       normalizePortableString(payload.salonName ?? payload.salon_name) ||
       portableSession.salon_name,
-    services: payload.services ?? [],
+    services: await withPortableServiceAddOns(payload.services ?? [], portableSession.salon_id),
     staff: normalizePortableDeskStaffRows(payload.staff),
     today,
     waitingVisits: normalizePortableWaitingVisits(
@@ -2226,6 +2241,18 @@ export async function portableCreateAppointment(
       ok: false,
     };
   }
+}
+
+export async function getPortableReportInputHistory(reportDate:string):Promise<{rows:PayrollLiveChange[]}>{
+ const {keyId,portableSession,signature,supabase}=await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
+ if(reportDate!==getTodayDate(portableSession.salon_timezone))throw new Error("Portable Report is available for today only.");
+ const {data,error}=await supabase.rpc("get_pos_portable_daily_input_history",{p_key_id:keyId,p_session_signature:signature,p_report_date:reportDate});
+ if(error||!Array.isArray(data))throw new Error("Saved report changes could not be loaded. Please retry.");
+ return {rows:data.filter(row=>row.salon_id===portableSession.salon_id&&row.business_date===reportDate).map(row=>({
+  id:row.id,salon_id:row.salon_id,staff_id:null,source_table:"daily_report",source_id:row.source_id,
+  period_start:row.business_date,period_end:row.business_date,before_values:row.before_values,after_values:row.after_values,
+  actor_id:null,actor_name:row.actor_name,note:row.note,created_at:row.created_at,event_action:row.event_action,business_timezone:row.business_timezone,
+ }))};
 }
 
 export async function getPortableReportData(

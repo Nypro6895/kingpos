@@ -19,7 +19,7 @@ export function CustomServiceDialog({ onCancel, onDone, showKeyboard = true }: {
     const caret = text === "Backspace" ? Math.max(0, start === end ? start - 1 : start) : Math.min(100, start + text.length);
     requestAnimationFrame(() => { input.current?.focus(); input.current?.setSelectionRange(caret, caret); });
   }
-  return createPortal(<div className="fixed inset-0 z-[95] grid place-items-center bg-black/40 p-4">
+  return createPortal(<div className="fixed inset-0 z-[95] grid place-items-center bg-black/40 p-4" onClick={event => { if (event.target === event.currentTarget) onCancel(); }}>
     <section role="dialog" aria-modal="true" aria-label={__vt("Custom service")} className="w-full max-w-2xl rounded-2xl bg-zinc-50 p-5 shadow-2xl" onKeyDown={event => { if (event.key === "Escape") onCancel(); if (event.key === "Enter" && name.trim()) onDone(name.trim()); }}>
       <h2 className="text-lg font-semibold"><WorkspaceText text="Custom service" /></h2>
       <label className="mt-4 block text-sm font-medium" htmlFor="pos-custom-service-name"><WorkspaceText text="Service name" /></label>

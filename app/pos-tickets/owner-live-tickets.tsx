@@ -5,6 +5,7 @@ import { TicketFilters } from "./ticket-filters";
 import {useState,useEffect,useRef} from 'react';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {DailyPosTicketCard} from './closed-ticket-correction-form';
+import {FinancialHistoryProvider} from '@/app/payroll/inline-financial-history';
 import {calculateTicketTotals} from '@/lib/pos-ticket-calculations';
 import {searchTextMatches} from '@/lib/search-normalization';
 import type {PosTicketWithRelations} from '@/types/pos-ticket';import type {Staff} from '@/types/staff';import type {Service} from '@/types/service';
@@ -239,5 +240,5 @@ export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets
    });
  },{enabled:!managedRead,initialReconcile:false,snapshotAt});
  const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,query,dailyNumbers));
- return <><TicketFilters title="POS Tickets" actions={<ContextualSupport />} date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></>;
+ return <FinancialHistoryProvider salonId={salonId} surface="today" start={selectedDate} end={selectedDate} refreshKey={tickets.map(ticket=>`${ticket.id}:${ticket.workspace_revision}:${ticket.updated_at}`).join(",")}><TicketFilters title="POS Tickets" actions={<ContextualSupport />} date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></FinancialHistoryProvider>;
 }

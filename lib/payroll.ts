@@ -1,4 +1,5 @@
 import {loadPayrollRecordedFacts} from "@/lib/payroll-records";
+import { loadVisibleTicketAdjustments } from "@/lib/pos-ticket-adjustment-history-server";
 
 import { resolveStaffLegalNames } from "@/lib/staff-legal-name-server";
 import { getStaffLegalName } from "@/lib/staff-legal-name";
@@ -201,6 +202,7 @@ type TicketForAdjustmentRow = {
 };
 
 type TicketAdjustmentRow = {
+  financial_input_event_id?: string | null;
   action: string;
   after_snapshot: unknown;
   before_snapshot: unknown;
@@ -1373,8 +1375,9 @@ async function loadTicketAdjustmentsForPeriod(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
 ) {
-  const startBounds = getUtcBoundsForLocalDate(period.startDate, await getSalonBusinessTimezone(auth.salon.id));
-  const endBounds = getUtcBoundsForLocalDate(period.endDate, await getSalonBusinessTimezone(auth.salon.id));
+  const timezone = await getSalonBusinessTimezone(auth.salon.id);
+  const startBounds = getUtcBoundsForLocalDate(period.startDate, timezone);
+  const endBounds = getUtcBoundsForLocalDate(period.endDate, timezone);
   const { data: tickets, error: ticketsError } = await auth.supabase
     .from("pos_tickets")
     .select("id, ticket_number, opened_at")
@@ -1397,7 +1400,7 @@ async function loadTicketAdjustmentsForPeriod(
   const { data: adjustments, error: adjustmentsError } = await auth.supabase
     .from("pos_ticket_adjustments")
     .select(
-      "id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at",
+      "id, ticket_id, financial_input_event_id, action, reason, before_snapshot, after_snapshot, created_by, created_at",
     )
     .eq("salon_id", auth.salon.id)
     .in(
@@ -1410,22 +1413,24 @@ async function loadTicketAdjustmentsForPeriod(
     throw new Error(adjustmentsError.message);
   }
 
+  const visibleAdjustments = await loadVisibleTicketAdjustments(auth.supabase, adjustments ?? []);
   const userLabels = await loadPayrollUserLabels(
     auth,
-    (adjustments ?? []).map((adjustment) => adjustment.created_by),
+    visibleAdjustments.map((adjustment) => adjustment.created_by),
   );
 
-  return (adjustments ?? []).map<PayrollCorrectionListItem>((adjustment) => {
+  return visibleAdjustments.map<PayrollCorrectionListItem>((adjustment) => {
     const ticket = ticketById.get(adjustment.ticket_id);
 
     return {
-      businessDate: ticket?.opened_at.slice(0, 10) ?? period.startDate,
+      businessDate: ticket ? new Intl.DateTimeFormat("en-CA", {timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit"}).format(new Date(ticket.opened_at)) : period.startDate,
+      financialInputEventId: adjustment.financial_input_event_id ?? null,
       changedById: adjustment.created_by,
       correctionDate: adjustment.created_at,
       correctionRequestId: null,
       delta: null,
       id: adjustment.id,
-      changedByName: userLabels.get(adjustment.created_by) ?? adjustment.created_by,
+      changedByName: userLabels.get(adjustment.created_by) ?? "Owner",
       newValue: summarizeCorrectionValue(adjustment.after_snapshot),
       oldValue: summarizeCorrectionValue(adjustment.before_snapshot),
       rawNewValue: serializeCorrectionValue(adjustment.after_snapshot),

@@ -21,7 +21,7 @@ const {GET,loadFinancialInputHistory}=module.exports;
 
 function clientFor(tables){
  const calls=[];
- return {calls,from(table){let filters=[],ordering=[],range=null;const call={table,filters,ordering,get range(){return range;}};calls.push(call);
+ return {calls,async rpc(name,{p_event_ids}){assert.equal(name,'get_financial_input_event_metadata');return {data:tables.financial_input_events.filter(row=>p_event_ids.includes(row.id)).map(row=>({event_id:row.id,event_action:row.event_action??(Object.keys(row.before_values).length===0?'created':'updated'),ticket_number:row.after_values.ticket_number??null})),error:null};},from(table){let filters=[],ordering=[],range=null;const call={table,filters,ordering,get range(){return range;}};calls.push(call);
   const data=()=>{let rows=[...(tables[table]??[])];for(const filter of filters){const [op,key,value]=filter;if(op==='eq')rows=rows.filter(row=>row[key]===value);if(op==='neq')rows=rows.filter(row=>row[key]!==value);if(op==='in')rows=rows.filter(row=>value.includes(row[key]));if(op==='gte')rows=rows.filter(row=>row[key]>=value);if(op==='lte')rows=rows.filter(row=>row[key]<=value);if(op==='lt')rows=rows.filter(row=>row[key]<value);if(op==='or')rows=rows.filter(row=>row.created_at<tables.financial_input_history_cutover[0].cutover_at||['payroll_period_staff_inputs','salon_payroll_settings'].includes(row.source_table));}
    rows.sort((a,b)=>{for(const [key,ascending]of ordering){const result=String(a[key]).localeCompare(String(b[key]));if(result)return ascending?result:-result;}return 0;});
    return range?rows.slice(range[0],Math.min(range[1]+1,range[0]+1000)):rows.slice(0,1000);};
@@ -67,4 +67,54 @@ test('legacy income-source audits never leak into Staff Payroll and old missing 
 test('history timestamps use the selected salon timezone for new and retained older rows',async()=>{
  const f=setup();f.timeZone='Pacific/Honolulu';const result=await request('?surface=payroll&start=2026-10-01&end=2026-10-29');
  assert.equal(result.status,200);assert.ok(result.body.rows.every(row=>row.business_timezone==='Pacific/Honolulu'));
+});
+
+const focusedId='a0000000-1111-4111-8111-111111111111';
+test('new and legacy ticket creation stay audited but never appear as edits on any default surface',async()=>{
+ for(const lane of ['manage','staff']){
+  const f=setup(lane);f.tables.financial_input_events=[event(focusedId,'ticket',undefined,{before_values:{},after_values:{ticket_number:'T00044',service_total:20,tip_amount:0}})];
+  // Old Staff projections used zero inputs rather than {}. Parent metadata is authoritative.
+  f.tables.financial_input_event_staff=[event(undefined,'ticket','anna',{event_id:focusedId,before_values:{service_total:0,tip_amount:0},after_values:{service_total:20,tip_amount:0}})];
+  for(const surface of lane==='manage'?['today','reports','payroll']:['today','payroll']){
+   const result=await request(`?surface=${surface}&start=2026-10-01&end=2026-10-29`);assert.equal(result.status,200);assert.deepEqual(result.body.rows,[]);assert.equal(result.body.record,undefined);
+  }
+  const receipt=await request(`?surface=today&inputEvent=${focusedId.toUpperCase()}`);assert.equal(receipt.status,200);assert.deepEqual(receipt.body.rows,[]);assert.equal(receipt.body.record.id,focusedId);assert.equal(receipt.body.record.event_action,'created');
+  assert.equal(f.tables.financial_input_events.length,1);
+ }
+});
+test('exact notification opens an old or future authorized event without changing the selected pay period',async()=>{
+ const f=setup('staff');f.tables.financial_input_event_staff=[event(undefined,'payroll_settings','anna',{event_id:focusedId,business_date:'2030-01-01',created_at:'2026-10-01T01:00:00Z',before_values:{commission_rate:60},after_values:{commission_rate:65}})];
+ const result=await request(`?surface=payroll&start=2026-10-01&end=2026-10-29&inputEvent=${focusedId}`);
+ assert.equal(result.status,200);assert.equal(result.body.rows.length,1);assert.equal(result.body.rows[0].period_start,'2030-01-01');
+ const foreign='b0000000-1111-4111-8111-111111111111';f.tables.financial_input_event_staff.push(event(undefined,'payroll_settings','lily',{event_id:foreign}));
+ assert.equal((await request(`?surface=payroll&inputEvent=${foreign}`)).status,404);
+ assert.equal((await request(`?surface=today&inputEvent=${focusedId}`)).status,404);
+ assert.equal((await request('?inputEvent=invalid')).status,400);
+});
+test('legacy bonus notification addresses its original range and default zero initialization is silent',async()=>{
+ const f=setup('staff');f.tables.financial_input_event_staff=[];
+ const bonus={id:focusedId,salon_id:'salon',staff_id:'anna',source_table:'payroll_period_staff_inputs',source_id:'source',period_start:'2024-01-01',period_end:'2024-01-31',before_values:{bonus_amount:0},after_values:{bonus_amount:20},actor_id:null,created_at:'2026-10-27T15:00:00Z'};
+ f.tables.payroll_live_change_history=[bonus];
+ const result=await request(`?surface=payroll&inputEvent=${focusedId}`);assert.equal(result.status,200);assert.equal(result.body.rows[0].period_start,'2024-01-01');
+ f.tables.payroll_live_change_history=[{...bonus,before_values:{},after_values:{bonus_amount:0}}];
+ assert.deepEqual((await request('?surface=payroll&start=2024-01-01&end=2024-01-31')).body.rows,[]);
+});
+test('metadata failure cannot misclassify or expose an old Staff ticket projection',async()=>{
+ const f=setup('staff');f.client.rpc=async()=>({data:[],error:null});
+ assert.equal((await request('?surface=today')).status,503);
+});
+test('Owner and Staff hide initial draft steps and first submission while preserving reopened ticket edits',async()=>{
+ for(const lane of ['manage','staff']){
+  const f=setup(lane),draft=event(focusedId,'ticket',undefined,{event_action:'draft',before_values:{},after_values:{status:'open',service_total:20}});
+  const submitted=event('b0000000-1111-4111-8111-111111111111','ticket',undefined,{event_action:'created',before_values:{status:'open',service_total:20},after_values:{status:'closed',service_total:20}});
+  const changed=event('c0000000-1111-4111-8111-111111111111','ticket',undefined,{event_action:'updated',before_values:{status:'open',service_total:20},after_values:{status:'open',service_total:30}});
+  f.tables.financial_input_events=[draft,submitted,changed];f.tables.financial_input_event_staff=[draft,submitted,changed].map(({id,...row})=>({...row,event_id:id,staff_id:'anna'}));
+  const result=await request('?surface=today');assert.equal(result.status,200);assert.deepEqual(result.body.rows.map(row=>row.id),[changed.id]);
+  assert.equal((await request(`?surface=today&inputEvent=${draft.id}`)).status,404);
+  const first=await request(`?surface=today&inputEvent=${submitted.id}`);assert.equal(first.status,200);assert.equal(first.body.record.id,submitted.id);assert.deepEqual(first.body.rows,[]);
+ }
+});
+test('Owner ticket context cannot be replaced with a dual-role own-Staff projection',async()=>{
+ const f=setup();f.client.rpc=async(_name,{p_event_ids})=>({error:null,data:p_event_ids.map(event_id=>({event_id,event_action:'updated',before_context:{service_total:1},after_context:{service_total:2}}))});
+ const result=await request('?surface=today');assert.equal(result.status,200);assert.equal(result.body.rows[0].before_values.service_total,100);assert.equal(result.body.rows[0].after_values.service_total,120);
 });

@@ -3263,7 +3263,7 @@ export function PosDeskClient({
 
   return (
     <>
-      {editingVisit && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/30" role="dialog" aria-label={__vt("Edit waiting customer")} aria-modal="true">
+      {editingVisit && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/30" role="dialog" aria-label={__vt("Edit waiting customer")} aria-modal="true" onClick={event => { if (event.target === event.currentTarget && !waitingVisitBusyId) setEditingVisit(null); }}>
         <form data-offline-local-submit={localFirstDraft ? "true" : undefined} className="grid gap-3 rounded-xl bg-white p-6 shadow-xl" autoComplete="off" onSubmit={event => { event.preventDefault(); void changeLocalVisit(editingVisit, "edit"); }}>
           <h2 className="font-semibold"><WorkspaceText text="Edit customer" /></h2>
           <label><WorkspaceText text="Name" /><input className="block border p-2" value={visitEditName} onChange={event => setVisitEditName(event.target.value)} autoComplete="off" maxLength={120} /></label>
@@ -3320,7 +3320,7 @@ export function PosDeskClient({
       {showCustomService && <CustomServiceDialog showKeyboard={showSupplementalKeyboard} onCancel={() => setShowCustomService(false)} onDone={name => { selectService(null, name); setShowCustomService(false); }} />}
       {waitingDrawerLayer}
       {showCustomerCreateModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4" data-touch-keyboard="off">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4" data-touch-keyboard="off" onClick={event => { if (event.target === event.currentTarget && !isPending && !isSubmitting) setShowCustomerCreateModal(false); }}>
           <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-xl">
             <div className="mb-3">
               <h2 className="text-lg font-semibold"><WorkspaceText text="New Customer" /></h2>
@@ -3406,7 +3406,7 @@ export function PosDeskClient({
       ) : null}
 
       {showServicePicker ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-zinc-950/40 px-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-zinc-950/40 px-4" onClick={event => { if (event.target === event.currentTarget) setShowServicePicker(false); }}>
           <div
             className="max-h-[86vh] w-full max-w-2xl overflow-hidden rounded-lg border border-white/70 bg-white/90 p-4 shadow-2xl backdrop-blur"
             data-pos-service-picker

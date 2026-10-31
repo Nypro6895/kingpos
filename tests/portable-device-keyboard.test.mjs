@@ -9,6 +9,13 @@ import { chromium } from 'playwright-core';
 import postcss from 'postcss';
 import tailwindcss from '@tailwindcss/postcss';
 
+const keyboardToggle = page => page.getByRole('button', { name: /^Turn (?:on|off) keyboard$/ });
+async function setKeyboard(page, enabled) {
+  const toggle = keyboardToggle(page);
+  if ((await toggle.getAttribute('aria-pressed')) !== String(enabled)) await toggle.click();
+  assert.equal(await toggle.getAttribute('aria-pressed'), String(enabled));
+}
+
 test('device input: default off, persist/reopen, cross-window sync, device isolation, native typing, custom service and storage failure', { timeout: 90000 }, async () => {
   const built = await build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
     import React,{useState} from 'react';import{createRoot}from'react-dom/client';
@@ -46,7 +53,6 @@ test('device input: default off, persist/reopen, cross-window sync, device isola
     const keyboard=page.getByRole('group',{name:'Touch keyboard'});
     const open=()=>page.getByRole('button',{name:'Device settings',exact:true}).click();
     const close=()=>page.getByRole('dialog',{name:'Device settings'}).getByRole('button',{name:'Close settings',exact:true}).click();
-    const toggle=page.getByLabel('Keyboard');
     await page.getByLabel('Customer',{exact:true}).click();
     await page.keyboard.type('Maya');assert.equal(await page.getByLabel('Customer',{exact:true}).inputValue(),'Maya');
     assert.equal(await keyboard.count(),0);assert.equal(await page.getByLabel('Customer',{exact:true}).getAttribute('inputmode'),'text');
@@ -57,18 +63,18 @@ test('device input: default off, persist/reopen, cross-window sync, device isola
     assert.equal(await page.getByLabel('Service name',{exact:true}).getAttribute('inputmode'),'text');
     await page.keyboard.type('Custom manicure');assert.equal(await page.getByLabel('Service name',{exact:true}).inputValue(),'Custom manicure');
     await page.keyboard.press('Escape');
-    await open();assert.equal(await toggle.isChecked(),false);await toggle.check();await close();
+    await open();assert.equal(await keyboardToggle(page).getAttribute('aria-pressed'),'false');await setKeyboard(page,true);await close();
     await other.waitForFunction(()=>document.querySelector('output').textContent==='true');
     await page.getByLabel('Customer',{exact:true}).click();await keyboard.waitFor();
     await keyboard.getByRole('button',{name:'a',exact:true}).click();
     assert.equal(await page.getByLabel('Customer',{exact:true}).inputValue(),'Mayaa');
     assert.equal(await page.getByLabel('Customer',{exact:true}).getAttribute('inputmode'),'none');
-    await open();await toggle.uncheck();await close();
+    await open();await setKeyboard(page,false);await close();
     assert.equal(await keyboard.count(),0);
     assert.equal(await page.getByLabel('Customer',{exact:true}).getAttribute('inputmode'),'text');
     assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue('--portable-keyboard-height')),'');
     await other.waitForFunction(()=>document.querySelector('output').textContent==='false');
-    await open();await toggle.check();await close();
+    await open();await setKeyboard(page,true);await close();
     await page.reload();await page.waitForFunction(()=>document.querySelector('output').textContent==='true');
     await page.getByRole('button',{name:'Custom service',exact:true}).click();
     await page.getByLabel('Service keyboard').waitFor();
@@ -81,9 +87,9 @@ test('device input: default off, persist/reopen, cross-window sync, device isola
     // Read errors fail closed; write errors remain visible and do not claim a save.
     const unavailable=await browser.newContext();await unavailable.addInitScript(()=>{Storage.prototype.getItem=()=>{throw Error('blocked')};Storage.prototype.setItem=()=>{throw Error('disk full')};});
     const blocked=await unavailable.newPage();await blocked.goto(url);await blocked.getByRole('button',{name:'Device settings',exact:true}).click();
-    await blocked.getByLabel('Keyboard').click();
-    await blocked.getByRole('alert').waitFor();assert.equal(await blocked.getByLabel('Keyboard').isChecked(),false);await unavailable.close();
-    await open();await toggle.uncheck();await close();await page.reload();await page.waitForFunction(()=>document.querySelector('output').textContent==='false');
+    await keyboardToggle(blocked).click();
+    await blocked.getByRole('alert').waitFor();assert.equal(await keyboardToggle(blocked).getAttribute('aria-pressed'),'false');await unavailable.close();
+    await open();await setKeyboard(page,false);await close();await page.reload();await page.waitForFunction(()=>document.querySelector('output').textContent==='false');
     await open();
     for(const viewport of [{width:1024,height:768},{width:390,height:844}]){
       await page.setViewportSize(viewport);const box=await page.getByRole('dialog').boundingBox();
@@ -115,7 +121,7 @@ test('staff PIN keypad remains visible and accepts digits with supplemental keyb
   const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
   try{const page=await browser.newPage();page.setDefaultTimeout(5000);const errors=[];page.on('pageerror',e=>{errors.push(e.message);process.stderr.write(e.message+'\n');});await page.goto(`http://127.0.0.1:${server.address().port}`);
     for(const enabled of [false,true]){
-      await page.getByLabel('Keyboard').setChecked(enabled);
+      await setKeyboard(page,enabled);
       await page.getByRole('button',{name:/Alex/}).click();const dialog=page.getByRole('dialog');
       await dialog.getByRole('button',{name:'1',exact:true}).click();await dialog.getByRole('button',{name:'2',exact:true}).click();
       assert.equal(await dialog.getByRole('textbox',{name:'Passcode',exact:true}).textContent(),'••');

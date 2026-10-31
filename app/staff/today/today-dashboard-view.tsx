@@ -1,4 +1,8 @@
 import styles from "./today-layout.module.css";
+import {useState} from "react";
+import {useFinancialHistoryContext} from "@/app/payroll/inline-financial-history";
+import {financialHistoryForObject} from "@/lib/inline-financial-history";
+import {TodayInlineTickets} from "./today-inline-tickets";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { backlogTone, type MetricTone } from "@/lib/today-metric-assessment";
@@ -1389,7 +1393,12 @@ function hasSalesActivity(performance: TodayPerformance) {
   );
 }
 
-function SalesSummary({ performance }: { performance: TodayPerformance }) {
+function SalesSummary({ performance,date,timeZone,canViewTickets }: { performance: TodayPerformance;date:string;timeZone:string;canViewTickets:boolean }) {
+  const history=useFinancialHistoryContext(),[manuallyOpen,setManuallyOpen]=useState(false),[dismissedFocus,setDismissedFocus]=useState<string>();
+  const edits=financialHistoryForObject(history.changes,{businessDate:date,sourceKinds:["ticket"]});
+  const editedCount=new Set(edits.map(row=>row.ticket_id??row.source_id)).size;
+  const focus=history.changes.find(row=>row.id===history.focusedEventId&&row.source_table==="ticket")??(history.record?.source_table==="ticket"?history.record:undefined);
+  const open=manuallyOpen||Boolean(focus&&focus.id!==dismissedFocus);
   if (!performance.sales) {
     return (
       <EmptyLine label="Reports access is required to show sales totals." />
@@ -1438,11 +1447,12 @@ function SalesSummary({ performance }: { performance: TodayPerformance }) {
           >
             <dt className="text-xs font-medium text-zinc-500"><WorkspaceText text={label} /></dt>
             <dd className="mt-1 whitespace-nowrap text-sm font-semibold tabular-nums text-zinc-950">
-              {value}
+              {label==="Tickets"&&canViewTickets?<button type="button" className="min-h-11 text-left" aria-expanded={open} onClick={()=>{if(open){setManuallyOpen(false);setDismissedFocus(focus?.id);}else setManuallyOpen(true);}}><span>{value}</span>{editedCount>0&&<span className="ml-1 text-xs font-normal text-orange-800">· {editedCount} <WorkspaceText text="edited"/></span>} <span aria-hidden="true">{open?"⌃":"⌄"}</span></button>:value}
             </dd>
           </div>
         ))}
       </dl>
+      {canViewTickets&&<TodayInlineTickets date={date} timeZone={timeZone} open={open}/>}
       {performance.sales.discount > 0 ? (
         <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
           <WorkspaceText text="Discounts applied: -" />{formatMoney(performance.sales.discount)}
@@ -1695,7 +1705,7 @@ function PerformancePanel({ dashboard }: { dashboard: TodayDashboard }) {
     >
       <div className="space-y-5">
         <div className="grid gap-6 lg:grid-cols-[minmax(260px,0.45fr)_minmax(0,1.55fr)]">
-          <SalesSummary performance={dashboard.performance} />
+          <SalesSummary performance={dashboard.performance} date={dashboard.date} timeZone={dashboard.timezone} canViewTickets={dashboard.permissions.canViewTickets}/>
           {isClosedEmptyDay ? (
             <CompactEmptyState
               detail="No sales activity was recorded for this selected date."

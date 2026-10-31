@@ -9,7 +9,7 @@ import { StaffLoadRetry } from "./staff-load-retry";
 import { StaffProfileSettingsDrawer } from "./staff-profile-settings-drawer";
 import type { StaffMyWorkResource, StaffMyWorkSearchParams, StaffPortalTab } from "@/lib/staff-my-work-experience";
 import Link from "next/link";
-import {FinancialInputHistoryPanel} from "@/app/payroll/financial-input-history-panel";
+import {FinancialHistoryProvider} from "@/app/payroll/inline-financial-history";
 
 type StaffPortalTabId = StaffPortalTab | "profile";
 type StaffPortalTabItem = { href: string; id: StaffPortalTabId; label: string };
@@ -147,7 +147,7 @@ export function StaffPortalLoadError({ label = "Staff Portal" }: { label?: strin
   );
 }
 
-export function StaffMyWorkView({ resource, params, scope, relay }: { resource: StaffMyWorkResource; params: StaffMyWorkSearchParams; scope?: string; relay?: React.ReactNode }) {
+export function StaffMyWorkView({ resource, params, scope, relay,historyQuery }: { resource: StaffMyWorkResource; params: StaffMyWorkSearchParams; scope?: string; relay?: React.ReactNode;historyQuery?:string }) {
   const { salonId, staff, today, workTickets, excludedTicketCount, workStatus, workStatusLabel,
     salonTimezone, greetingHistory, staffDisplayName, staffAvatarUrl, payrollData, analysisData, generatedAt } = resource;
   const activeTab = getActiveTab(params.tab);
@@ -193,36 +193,29 @@ export function StaffMyWorkView({ resource, params, scope, relay }: { resource: 
         ) : null}
 
         {activeTab === "daily" ? (
-          <>
+          <FinancialHistoryProvider salonId={salonId} scope={scope} surface="today" start={today} end={today} refreshKey={generatedAt} query={historyQuery}>
             <StaffDailyMetrics activity={activity} completedTickets={workTickets.filter(ticket => ticket.status === "closed" && ticket.hasEarning).length} />
-            <FinancialInputHistoryPanel salonId={salonId} scope={scope} title="Ticket input history"/>
             {relay ?? <StaffRelay salonId={salonId} scope={scope} />}
             <section>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Your tickets" /> <span className="ml-2 text-xs font-normal text-zinc-500">{workTickets.length}</span></h2>
               </div>
 
-              {workTickets.length === 0 ? (
-                <EmptyTickets
+              <StaffDailyTickets tickets={workTickets} timezone={salonTimezone} staffId={staff.id} businessDate={today} emptyState={<EmptyTickets
                   excludedTicketCount={excludedTicketCount}
                   workStatus={workStatus}
                   hasTodayActivity={hasTodayActivity}
-                />
-              ) : (
-                <div className="space-y-3">
+                />}/>
                   {hasTicketsWithoutEarnings ? (
                     <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                       <WorkspaceText text="Some assigned tickets have no earnings yet and are excluded from these totals." />
                     </p>
                   ) : null}
-                  <StaffDailyTickets tickets={workTickets} timezone={salonTimezone} />
-                </div>
-              )}
             </section>
-          </>
+          </FinancialHistoryProvider>
         ) : activeTab === "payroll" ? (
           payrollData ? (
-            <StaffMyPay data={payrollData} />
+            <StaffMyPay data={payrollData} salonId={salonId} scope={scope} historyQuery={historyQuery}/>
           ) : (
             <p className="mt-8 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
               <WorkspaceText text="My Payroll could not load right now." /> <StaffLoadRetry automatic={false} />

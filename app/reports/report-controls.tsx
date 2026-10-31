@@ -7,6 +7,7 @@ import { ContextualSupport } from "@/components/contextual-support";
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import {useFinancialHistoryContext} from "@/app/payroll/inline-financial-history";
 import type { OperationalReportData } from "@/lib/operational-report";
 import { inputClass, primaryButton } from "@/app/my-place/place-ui";
 
@@ -159,13 +160,16 @@ export function ReportTabs({
   const __vt = useWorkspaceTranslation();
 
   const workspace=usePathname().startsWith('/pos/report');
+  const history=useFinancialHistoryContext();
+  const target=history.changes.find(row=>row.id===history.focusedEventId)??history.record;
+  const focusView=history.focusedEventId?(target?.source_table==="ticket"?"overview":"closing"):undefined;
   const [closing, setClosing] = useState(workspace);
   useEffect(() => {
-    const sync = () => setClosing(window.location.hash === "#daily-closing" || (workspace && !window.location.hash));
+    const sync = () => setClosing(window.location.hash === "#daily-closing" || (window.location.hash!=="#overview"&&(focusView?focusView==="closing":workspace&&!window.location.hash)));
     sync();
     window.addEventListener("hashchange", sync);
   return () => window.removeEventListener("hashchange", sync);
-  }, [workspace]);
+  }, [workspace,focusView]);
   useEffect(()=>{onViewChange?.(closing ? "closing" : "overview");},[closing,onViewChange]);
   return (
     <>

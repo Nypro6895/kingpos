@@ -2,6 +2,7 @@ import styles from "./reports.module.css";
 import { ReportDetails, ReportIcon } from "./report-ui";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
+import {ReportTicketHistoryRow} from "./report-ticket-history-row";
 import type {
   OperationalReportBookingMetrics,
   OperationalReportComparisonMetric,
@@ -606,10 +607,7 @@ function RecentTickets({
           </div>
           <ul className="divide-y divide-zinc-200">
             {rows.map((row) => (
-              <li
-                className="grid grid-cols-12 gap-2 px-4 py-3 text-sm"
-                key={row.id}
-              >
+              <li key={row.id}><ReportTicketHistoryRow ticketId={row.id}>
                 <div className="col-span-4 min-w-0">
                   <p className="truncate font-semibold text-zinc-950">
                     #{row.ticketNumber}
@@ -627,7 +625,7 @@ function RecentTickets({
                 <div className="col-span-4 text-right capitalize text-zinc-700 sm:col-span-2">
                   <WorkspaceText text={row.paymentStatus} />
                 </div>
-              </li>
+              </ReportTicketHistoryRow></li>
             ))}
           </ul>
         </div>

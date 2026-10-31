@@ -1,8 +1,12 @@
 "use client";
+import { visibleTicketAdjustments, type TicketAdjustmentEventAction } from "@/lib/pos-ticket-adjustment-history";
 import { WorkspaceText } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
+import {TicketHistoryDisclosure,type TicketLegacyHistoryEntry} from "./ticket-history-disclosure";
+import {FinancialHistoryProvider} from "@/app/payroll/inline-financial-history";
+import type {PosTicketTimelineItem} from "@/types/pos-ticket-timeline";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState,type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import {
   correctClosedPosTicketInline as ownerCorrectClosedPosTicketInline,
@@ -57,9 +61,15 @@ export type TicketCorrectionStaffOption = {
 };
 
 export type EditablePosTicket = {
+  salon_id?: string;
+  ticket_number?: string;
   workspace_revision?: number;
   adjustments?: Array<{
     action: "item_corrected" | "item_removed" | "item_replaced";
+    event_action?: TicketAdjustmentEventAction;
+    financial_input_event_id?: string | null;
+    financial_before_values?: Record<string,unknown> | null;
+    financial_after_values?: Record<string,unknown> | null;
     after_snapshot: unknown;
     before_snapshot: unknown;
     created_at: string;
@@ -861,10 +871,6 @@ function historyBadgeLabel(kind: ReturnType<typeof historyKind>) {
   return "Direct Edit";
 }
 
-function historySummaryLabel(kind: ReturnType<typeof historyKind>) {
-  return kind === "pending" ? "Requested" : "Changed";
-}
-
 function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: unknown) {
   const financialSummary = buildFinancialCorrectionSummary(afterSnapshot);
 
@@ -1025,6 +1031,27 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
   return lines.length > 0
     ? lines
     : ["Details captured in audit snapshot."];
+}
+
+export function ticketLegacyHistoryEntries(ticket:EditablePosTicket,timeZone="UTC"):TicketLegacyHistoryEntry[]{
+ const businessDate=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(ticket.opened_at));
+ return visibleTicketAdjustments(ticket.adjustments??[]).map(adjustment=>{
+  const kind=historyKind(adjustment),before=adjustment.financial_before_values,after=adjustment.financial_after_values;
+  return {id:adjustment.id,eventId:adjustment.financial_input_event_id,createdAt:adjustment.created_at,
+   actor:adjustment.created_by_user?.display_name??adjustment.created_by_user?.email??"Unknown",note:adjustment.reason,
+   summary:[...(kind!=="direct"?[historyBadgeLabel(kind)]:[]),...buildCorrectionChangeSummary(adjustment.before_snapshot,adjustment.after_snapshot).map(line=>line.replaceAll(" -> "," → "))],
+   change:before&&after&&adjustment.financial_input_event_id?{id:adjustment.financial_input_event_id,salon_id:ticket.salon_id??"",staff_id:null,source_table:"ticket",source_id:ticket.id,ticket_id:ticket.id,
+    event_action:"updated",period_start:businessDate,period_end:businessDate,before_values:before,after_values:after,actor_id:adjustment.created_by,
+    actor_name:adjustment.created_by_user?.display_name??adjustment.created_by_user?.email??"Unknown",note:adjustment.reason,created_at:adjustment.created_at,business_timezone:timeZone}:undefined};
+ });
+}
+
+/** The detail route uses the original header as the single inline entry. */
+export function TicketDetailInlineHistory({ticket,salonId,businessDate,timeZone,children,timeline=[]}:{ticket:EditablePosTicket;salonId:string;businessDate:string;timeZone:string;children:ReactNode;timeline?:PosTicketTimelineItem[]}){
+ const facts=timeline.length?<ul className="space-y-2 border-t border-zinc-100 bg-white px-3 py-3 text-xs text-zinc-600" aria-label="Recorded ticket details">{timeline.map(item=><li key={item.id}><strong><WorkspaceText text={item.label}/></strong> · <WorkspaceText text={formatDateTime(item.timestamp,timeZone)}/> · {item.user}{item.note&&<p className="mt-1">{item.note}</p>}</li>)}</ul>:undefined;
+ return <FinancialHistoryProvider salonId={salonId} surface="today" start={businessDate} end={businessDate}>
+  <TicketHistoryDisclosure ticketId={ticket.id} legacyEntries={ticketLegacyHistoryEntries(ticket,timeZone)} timeZone={timeZone} additionalDetails={facts}>{children}</TicketHistoryDisclosure>
+ </FinancialHistoryProvider>;
 }
 
 export function DailyPosTicketCard({
@@ -1638,86 +1665,15 @@ export function DailyPosTicketCard({
     );
   }
 
+  const historyEntries=ticketLegacyHistoryEntries(ticket,timeZone);
   function renderCorrectionHistory() {
-    const adjustments = ticket.adjustments ?? [];
-
-    if (adjustments.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="border-t border-zinc-100 bg-zinc-50/60 px-3 py-2 text-xs text-zinc-600">
-        <div className="font-semibold text-zinc-800"><WorkspaceText text="Correction History" /></div>
-        <ul className="mt-1 space-y-1">
-          {adjustments.map((adjustment) => {
-            const kind = historyKind(adjustment);
-            const isCorrection = kind !== "direct";
-            const summary = buildCorrectionChangeSummary(
-              adjustment.before_snapshot,
-              adjustment.after_snapshot,
-            );
-            const summaryText =
-              summary.length > 0
-                ? summary.join("; ")
-                : "Details captured in audit snapshot.";
-            const actor =
-              adjustment.created_by_user?.display_name ??
-              adjustment.created_by_user?.email ??
-              "Unknown";
-
-            return (
-              <li
-                className={`leading-5 ${
-                  isCorrection
-                    ? "rounded bg-amber-50 px-2 py-1 text-amber-950"
-                    : "text-zinc-600"
-                }`}
-                key={adjustment.id}
-              >
-                <span className="font-medium text-zinc-800">
-                  <WorkspaceText text={formatDateTime(adjustment.created_at, timeZone)} />
-                </span>
-                <span className="px-1 text-zinc-400">|</span>
-                {isCorrection ? (
-                  <>
-                    <span className="font-semibold text-amber-900">
-                      <WorkspaceText text={historyBadgeLabel(kind)} />
-                    </span>
-                    <span className="text-amber-900">
-                      {" "}
-                      <WorkspaceText text="for" /> <WorkspaceText text={businessDateCompactLabel} />
-                    </span>
-                    <span className="px-1 text-amber-300">|</span>
-                  </>
-                ) : null}
-                <span>{actor}</span>
-                {adjustment.reason ? (
-                  <>
-                    <span className="px-1 text-zinc-400">|</span>
-                    <span>
-                      <WorkspaceText text="Reason:" />{" "}
-                      <span className={isCorrection ? "text-amber-950" : "text-zinc-800"}>
-                        {adjustment.reason}
-                      </span>
-                    </span>
-                  </>
-                ) : null}
-                <span className="px-1 text-zinc-400">-</span>
-                <span className={isCorrection ? "text-amber-950" : "text-zinc-700"}>
-                  <WorkspaceText text={historySummaryLabel(kind)} />: {summaryText}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    );
+    return <TicketHistoryDisclosure ticketId={ticket.id} legacyEntries={historyEntries} timeZone={timeZone} inlineOnly/>;
   }
 
   const isTotalTipEditing = moneyTarget?.kind === "totalTip";
 
   return (
-    <article className="border-b border-zinc-200">
+    <article className="border-b border-zinc-200" data-business-date-label={businessDateCompactLabel}>
       <form action={correctionActions.correctClosedTicket}>
         {isEditing ? (
           <>
@@ -1749,6 +1705,7 @@ export function DailyPosTicketCard({
           </>
         ) : null}
         {!isEditing ? (
+          <TicketHistoryDisclosure ticketId={ticket.id} legacyEntries={historyEntries} timeZone={timeZone}>
           <div className="px-4 py-3 text-sm text-zinc-950 sm:px-3" data-compact-ticket>
             <div className="flex min-w-0 items-center gap-2">
               <span className="shrink-0 font-semibold">#{dailyNumber}</span>
@@ -1756,7 +1713,7 @@ export function DailyPosTicketCard({
               <span className="min-w-0 flex-1 truncate"><CustomerName name={ticket.customer?.name} /></span>
               {ticket.source_booking_id ? <span className="shrink-0 text-xs text-sky-800"><WorkspaceText text="From appointment" /></span> : null}
               {canCorrectClosedTicket ? (
-                <button type="button" aria-label="Edit" title="Edit" onClick={startEdit}
+                <button type="button" aria-label="Edit" title="Edit" onClick={event=>{event.preventDefault();event.stopPropagation();startEdit();}}
                   className="-my-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-zinc-600">
                   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 5 5L9 20l-6 1 1-6Z" /></svg>
                 </button>
@@ -1777,6 +1734,7 @@ export function DailyPosTicketCard({
               <span className="font-semibold text-zinc-950"><WorkspaceText text="Total" /> {formatMoney(initialTotals.total)}</span>
             </div>
           </div>
+          </TicketHistoryDisclosure>
         ) : (<>
         <div data-receipt-header className="flex min-w-0 items-center gap-3 border-b border-zinc-200 px-4 py-4 text-sm sm:px-3">
           <span className="shrink-0 font-semibold text-zinc-950">#{dailyNumber}</span>
@@ -1794,7 +1752,6 @@ export function DailyPosTicketCard({
           )}
         </div>
         </>)}
-        {!isEditing ? renderCorrectionHistory() : null}
         {isEditing ? (
           <div className="px-4 pb-4 text-sm sm:px-3" data-receipt-editor>
             {isCorrectionMode ? (

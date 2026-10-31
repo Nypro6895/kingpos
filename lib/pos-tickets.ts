@@ -7,6 +7,7 @@ import {
 } from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_PAYMENT_SELECT } from "@/lib/pos-payments";
+import { loadVisibleTicketAdjustments } from "@/lib/pos-ticket-adjustment-history-server";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Customer } from "@/types/customer";
@@ -54,6 +55,7 @@ type PosTicketItemTurnPart = PosTicketTurnPartRow;
 
 type PosTicketAdjustmentRow = {
   action: "item_corrected" | "item_removed" | "item_replaced";
+  financial_input_event_id?: string | null;
   after_snapshot: unknown;
   before_snapshot: unknown;
   created_at: string;
@@ -243,7 +245,7 @@ async function loadAdjustmentsForTickets(input: {
 
   const { data: adjustments, error } = await input.supabase
     .from("pos_ticket_adjustments")
-    .select("id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at")
+    .select("id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at, financial_input_event_id")
     .eq("salon_id", input.salonId)
     .in("ticket_id", input.ticketIds)
     .order("created_at", { ascending: false })
@@ -262,9 +264,10 @@ async function loadAdjustmentsForTickets(input: {
     throw new Error(error.message);
   }
 
+  const visibleAdjustments = await loadVisibleTicketAdjustments(input.supabase, adjustments ?? []);
   const userIds = Array.from(
     new Set(
-      (adjustments ?? [])
+      visibleAdjustments
         .map((adjustment) => normalizeUuid(adjustment.created_by))
         .filter((userId): userId is string => Boolean(userId)),
     ),
@@ -301,7 +304,7 @@ async function loadAdjustmentsForTickets(input: {
     NonNullable<PosTicketWithRelations["adjustments"]>
   >();
 
-  for (const adjustment of adjustments ?? []) {
+  for (const adjustment of visibleAdjustments) {
     const createdByUserId = normalizeUuid(adjustment.created_by);
 
     adjustmentsByTicketId.set(adjustment.ticket_id, [

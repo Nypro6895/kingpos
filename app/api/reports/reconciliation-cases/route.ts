@@ -1,6 +1,7 @@
 import { getRequestBusinessContext } from "@/lib/request-business-context";
 import { isOwnerMembership, isSalonManageContext } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import {getSalonBusinessTimezone} from "@/lib/salon-business-clock";
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams, salonId = params.get("salonId"), start = params.get("start"), end = params.get("end");
@@ -11,5 +12,6 @@ export async function GET(request: Request) {
   const client = await createAuthenticatedSupabaseServerClient();
   if (!client) return reply({error: "Please retry."}, 503);
   const {data, error} = await client.from("daily_reconciliation_cases").select("id,business_date,revision,status,latest_values,updated_at,revisions:daily_reconciliation_revisions(revision,values,created_at)").eq("salon_id", salonId).gte("business_date", start).lte("business_date", end).order("business_date", {ascending: false});
-  return error ? reply({error: "Daily reconciliation reports could not be loaded."}, 503) : reply({rows: data ?? []});
+  if(error)return reply({error: "Daily reconciliation reports could not be loaded."},503);
+  try{return reply({rows:data??[],timezone:await getSalonBusinessTimezone(salonId!)});}catch{return reply({error:"Salon clock could not be loaded."},503);}
 }

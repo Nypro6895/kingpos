@@ -18,6 +18,8 @@ import type {OperationalReportData} from '@/lib/operational-report';
 import type {DailyPosReport,DailyPosReportStaffRow} from '@/types/pos-daily-closing';
 import Link from 'next/link';
 import { StaffDayFinancialEditor } from "@/app/payroll/staff-day-financial-editor";
+import {FinancialHistoryProvider,InlineFinancialHistory,inlineHistoryEditedClassName,useFinancialHistoryContext} from "@/app/payroll/inline-financial-history";
+import {financialHistoryForObject} from "@/lib/inline-financial-history";
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -110,6 +112,22 @@ function DateSelector({
   );
 }
 
+function StaffReportRow({row,salonId,businessDate,canEdit}:{row:DailyPosReportStaffRow;salonId:string;businessDate:string;canEdit:boolean}){
+ const history=useFinancialHistoryContext();
+ // A ticket rename/note belongs to its ticket. Only a captured monetary change
+ // belongs to the aggregate staff/day input row.
+ const changes=financialHistoryForObject(history.changes,{staffId:row.staffId,businessDate,sourceKinds:["staff_day","pos_ticket_staff_earnings","ticket"]}).filter(change=>change.source_table!=="ticket"||["service_total","tip_amount"].some(field=>JSON.stringify(change.before_values[field])!==JSON.stringify(change.after_values[field])));
+ return <li><details className={changes.length?inlineHistoryEditedClassName:undefined} data-staff-input-date={businessDate} data-staff-input={row.staffId}>
+  <summary className="grid min-h-11 cursor-pointer list-none grid-cols-12 gap-1 px-4 py-3 text-sm">
+   <div className="col-span-4 min-w-0 break-words font-medium text-zinc-950">{row.staffName}{changes.length>0&&<span className="block text-xs font-normal"><WorkspaceText text="Edited"/> · {changes.length}</span>}</div>
+   <div className="col-span-3 text-right text-zinc-950">{formatMoney(row.totalEarned)}</div>
+   <div className="col-span-3 text-right text-zinc-700">{formatMoney(row.tipAmount)}</div>
+   <div className="col-span-2 text-right text-zinc-700">{row.totalTurns}</div>
+  </summary>
+  <div className="min-w-0 px-4 pb-3"><InlineFinancialHistory changes={changes}/>{history.error&&<p role="status" className="text-xs"><WorkspaceText text={history.error}/><button type="button" className="ml-2 min-h-11 underline" onClick={history.retry}><WorkspaceText text="Retry"/></button></p>}{canEdit&&<StaffDayFinancialEditor salonId={salonId} staffId={row.staffId} businessDate={businessDate} serviceTotal={row.totalEarned} tipAmount={row.tipAmount}/>}</div>
+ </details></li>;
+}
+
 function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: DailyPosReportStaffRow[]; salonId: string; businessDate: string; canEdit: boolean }) {
   if (rows.length === 0) {
     return (
@@ -130,23 +148,7 @@ function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: Dail
         <div className="col-span-2 text-right"><WorkspaceText text="Turns" /></div>
       </div>
       <ul className="divide-y divide-zinc-200">
-        {rows.map((row) => (
-          <li className="grid grid-cols-12 px-4 py-3 text-sm" key={row.staffId}>
-            <div className="col-span-4 min-w-0 break-words font-medium text-zinc-950">
-              {row.staffName}
-              {canEdit && <StaffDayFinancialEditor salonId={salonId} staffId={row.staffId} businessDate={businessDate} serviceTotal={row.totalEarned} tipAmount={row.tipAmount} />}
-            </div>
-            <div className="col-span-3 text-right text-zinc-950">
-              {formatMoney(row.totalEarned)}
-            </div>
-            <div className="col-span-3 text-right text-zinc-700">
-              {formatMoney(row.tipAmount)}
-            </div>
-            <div className="col-span-2 text-right text-zinc-700">
-              {row.totalTurns}
-            </div>
-          </li>
-        ))}
+        {rows.map(row=><StaffReportRow key={row.staffId} row={row} salonId={salonId} businessDate={businessDate} canEdit={canEdit}/>)}
       </ul>
     </div>
   );
@@ -215,6 +217,7 @@ export function OwnerLiveReports(initial:Props){
  },{enabled:!initial.managedRead,initialReconcile:false,freshForMs:30000,snapshotAt:Math.max(initial.snapshotAt??0,scope?experienceResourceCache.get({scope,key:snapshotKey})?.updatedAt??0:0)||initial.snapshotAt});
  if(!retained.available)return null;
   return (
+    <FinancialHistoryProvider salonId={salonId} surface="reports" start={reportOverview.range.startDate<report.reportDate?reportOverview.range.startDate:report.reportDate} end={reportOverview.range.endDate>report.reportDate?reportOverview.range.endDate:report.reportDate} scope={`${salonId}:${data.viewerId}`} refreshKey={data.snapshotAt} query={initial.query}>
     <main className={styles.page}>
       <h1 className="sr-only"><WorkspaceText text="Reports" /></h1>
       <ReportTabs
@@ -253,6 +256,7 @@ export function OwnerLiveReports(initial:Props){
             key={`${salonId}:${data.viewerId}:${report.reportDate}`}
             lock={report.lock}
             reportDate={report.reportDate}
+            timeZone={reportOverview.range.timeZone}
             snapshotTotals={report.snapshotTotals}
           >
             <ReportDetails title="Closing breakdown">
@@ -330,5 +334,6 @@ export function OwnerLiveReports(initial:Props){
         </section>
       </ReportTabs>
     </main>
+    </FinancialHistoryProvider>
   );
 }

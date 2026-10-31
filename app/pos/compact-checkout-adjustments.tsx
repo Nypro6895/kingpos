@@ -1,4 +1,5 @@
 "use client";
+import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
@@ -65,7 +66,7 @@ function AdjustmentDialog({ mode, onClose, ...props }: Props & { mode: Adjustmen
   }
 
   return createPortal(
-    <dialog ref={dialog} className={styles.dialog} aria-labelledby={titleId} onCancel={onClose} onClose={onClose} data-touch-keyboard="off">
+    <dialog ref={dialog} onPointerDown={dialogOutsidePointerDown} onClick={dialogOutsideClick} className={styles.dialog} aria-labelledby={titleId} onCancel={onClose} onClose={onClose} data-touch-keyboard="off">
       <form onSubmit={event => {
         event.preventDefault();
         if (error || props.disabled) return;

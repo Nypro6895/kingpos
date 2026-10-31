@@ -114,7 +114,7 @@ export function resolveAppNotificationDestination(
       ? "/my-place"
       : safeNotificationHref(notification.href);
   if (notification.notification_type === "payroll_updated" && notification.recipient_kind === "staff" &&
-    href.split(/[?#]/)[0] === "/staff/my-work") href = `${href.split("#")[0]}#payroll-changes`;
+    href.split(/[?#]/)[0] === "/staff/my-work") href = `${href.split("#")[0]}#input-history`;
   const shouldOpenManageWorkspace =
     notification.recipient_kind === "owner_manager" &&
     Boolean(notification.salon_id) &&

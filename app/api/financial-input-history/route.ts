@@ -7,12 +7,15 @@ import {getContextBusinessDate,getContextBusinessTimezone} from "@/lib/salon-bus
 import {getUtcBoundsForLocalDate} from "@/lib/daily-pos-report";
 import {loadFinancialInputHistory,type FinancialHistorySurface} from "@/lib/financial-input-history";
 import {runWithReadContext} from "@/lib/read-context-scope";
+import {isFinancialInputCreation} from "@/lib/financial-change-presentation";
 const validDate=(value:string)=>/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value+"T12:00:00Z"))&&new Date(value+"T12:00:00Z").toISOString().slice(0,10)===value;
 export async function GET(request:Request){return runWithReadContext(async()=>{
  const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{"Cache-Control":"private, no-store"}});
  try{
   const args=new URL(request.url).searchParams,surface=args.get("surface")??"today";
   if(!["today","reports","payroll"].includes(surface))return reply({error:"Invalid history view."},400);
+  const eventId=args.get("inputEvent")?.toLowerCase();
+  if(eventId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId))return reply({error:"Invalid history event."},400);
   const context=await getRequestBusinessContext();if(!context.user)return reply({error:"Sign in required."},401);
   if(!context.currentSalon||args.get("salonId")&&args.get("salonId")!==context.currentSalon.id)return reply({error:"The salon changed. Reload this view."},403);
   const client=await createAuthenticatedSupabaseServerClient();if(!client)return reply({error:"Please sign in again."},401);
@@ -31,7 +34,8 @@ export async function GET(request:Request){return runWithReadContext(async()=>{
   if(!validDate(start)||!validDate(end)||start>end)return reply({error:"Invalid history dates."},400);
   const bounds=surface==="today"&&!args.has("date")?getUtcBoundsForLocalDate(today,await getContextBusinessTimezone(context)):null;
   const rows=await loadFinancialInputHistory(client,context.currentSalon.id,start,end,{staffId,surface:surface as FinancialHistorySurface,
-   ...(bounds?{createdFrom:bounds.openedFrom,createdTo:new Date(Date.parse(bounds.openedTo)+1).toISOString()}:{})});
-  return reply({rows});
+   ...(eventId?{eventId,includeCreation:true}:{}),...(bounds?{createdFrom:bounds.openedFrom,createdTo:new Date(Date.parse(bounds.openedTo)+1).toISOString()}:{})});
+  if(eventId&&!rows.length)return reply({error:"This record is unavailable in this view."},404);
+  return reply({rows:rows.filter(row=>!isFinancialInputCreation(row)),...(eventId&&rows.some(isFinancialInputCreation)?{record:rows.find(isFinancialInputCreation)}:{})});
  }catch{return reply({error:"Input history could not be loaded. Please retry."},503);}
 });}

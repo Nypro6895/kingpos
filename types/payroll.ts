@@ -220,6 +220,7 @@ export type PayrollPaystub = {
 };
 
 export type PayrollCorrectionListItem = {
+  financialInputEventId?: string | null;
   businessDate: string;
   changedById: string | null;
   correctionDate: string;

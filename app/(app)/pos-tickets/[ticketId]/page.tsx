@@ -1,3 +1,5 @@
+import {getContextBusinessTimezone} from "@/lib/salon-business-clock";
+import {TicketDetailInlineHistory} from "@/app/pos-tickets/closed-ticket-correction-form";
 import { withExperiencePage } from "@/components/experience-page";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -590,6 +592,8 @@ async function PosTicketDetailPage({
     totals,
   });
   const timeline = getTicketTimeline(ticket);
+  const businessTimezone=await getContextBusinessTimezone(context);
+  const businessDate=new Intl.DateTimeFormat("en-CA",{timeZone:businessTimezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(ticket.opened_at));
 
   return (
     <main className="min-w-0 w-full px-4 py-6 sm:px-6">
@@ -600,6 +604,7 @@ async function PosTicketDetailPage({
           </Link>
           <div className="flex items-center gap-3"><StatusBadge status={ticket.status} /><ContextualSupport /></div>
         </div>
+        <TicketDetailInlineHistory ticket={ticket} salonId={context.currentSalon.id} businessDate={businessDate} timeZone={businessTimezone} timeline={timeline}>
         <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-4">
           <p>
             <span className="font-medium text-zinc-950"><WorkspaceText text="Ticket:" /></span>{" "}
@@ -618,6 +623,7 @@ async function PosTicketDetailPage({
             {context.currentSalon.name}
           </p>
         </div>
+        </TicketDetailInlineHistory>
       </div>
 
       {error ? (
@@ -1276,36 +1282,7 @@ async function PosTicketDetailPage({
         </section>
       ) : null}
 
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Activity Timeline" /></h2>
-        {timeline.length === 0 ? (
-          <p className="mt-4 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-            <WorkspaceText text="No activity yet." />
-          </p>
-        ) : (
-          <ol className="mt-4 border-l border-zinc-200">
-            {timeline.map((item) => (
-              <li className="relative pb-5 pl-5" key={item.id}>
-                <span className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full border border-zinc-300 bg-white" />
-                <div className="min-w-0 bg-white py-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-zinc-950">
-                      <WorkspaceText text={item.label} />
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      <WorkspaceText text={formatTicketDateTime(item.timestamp)} />
-                    </p>
-                  </div>
-                  <p className="mt-1 text-sm text-zinc-700"><WorkspaceText text="User:" /> {item.user}</p>
-                  {item.note ? (
-                    <p className="mt-2 text-sm text-zinc-700">{item.note}</p>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
+
     </main>
   );
 }

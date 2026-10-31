@@ -9,13 +9,16 @@ import { posUserMessage } from "@/lib/pos-user-messages";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { listPortableOperations, PORTABLE_OPERATIONS_CHANGED } from "@/lib/portable-operations";
 import { portableDeviceStorage } from "@/lib/portable-device-storage";
+import {FinancialHistoryProvider} from "@/app/payroll/inline-financial-history";
+import {DailyInputInlineHistory} from "@/app/reports/daily-input-inline-history";
 
 import {
   savePortableReportClosing,
+  getPortableReportInputHistory,
   type PortableReportData,
 } from "@/app/pos/portable/actions";
 import type { KeyboardEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback,useEffect, useRef, useState } from "react";
 
 import { usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 
@@ -85,6 +88,7 @@ function PortableClosingEditor({
   const { values, updateValue } = closing;
   const isPending = closing.phase === 'saving';
   const saveState = closing.phase;
+  useEffect(()=>{if(saveState==="saved")window.dispatchEvent(new Event("financial-input-saved"));},[saveState]);
   const isReadOnly = closing.readOnly || closing.phase === 'loading';
   const cashCents = parseInputCents(values.cashAmount);
   const creditCardCents = parseInputCents(values.creditCardAmount);
@@ -110,14 +114,7 @@ function PortableClosingEditor({
       {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} <WorkspaceText text="ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details." /></p>:null}
       <section className="min-w-0 py-2">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-950">
-              <WorkspaceText text="Closing Inputs" />
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600">
-              <WorkspaceText text="Actual money collected for the selected business date." />
-            </p>
-          </div>
+          <div className="min-w-0 flex-1"><DailyInputInlineHistory businessDate={data.reportDate}/></div>
           <div className="min-h-6 text-sm" aria-live="polite">
             {isPending ? (
               <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
@@ -248,11 +245,13 @@ function PortableClosingEditor({
 
 export function PortableReportClosingForm({ data }: { data: PortableReportData }) {
   const workspace = usePortableWorkspaceState();
+  const readChanges=useCallback(async(eventId?:string)=>{const result=await getPortableReportInputHistory(data.reportDate);return {rows:eventId?result.rows.filter(row=>row.id===eventId):result.rows};},[data.reportDate]);
   if (workspace?.businessDate && workspace.businessDate !== data.reportDate) {
     return <div role="alert" className="bg-amber-50 p-4 text-sm text-amber-900">
       <p><WorkspaceText text="The business date has changed. Reload Report to view today before entering closing amounts." /></p>
       <button type="button" className="mt-3 rounded bg-zinc-950 px-4 py-2 text-white" onClick={() => window.location.reload()}><WorkspaceText text="Reload" /></button>
     </div>;
   }
-  return <PortableClosingEditor key={(workspace?.scope ?? data.closingScope ?? '') + ':' + data.reportDate} data={data}/>;
+  const scope=workspace?.scope??data.closingScope??"";
+  return <FinancialHistoryProvider salonId={scope.split(":")[0]} surface="reports" start={data.reportDate} end={data.reportDate} scope={scope} readChanges={readChanges}><PortableClosingEditor key={scope + ':' + data.reportDate} data={data}/></FinancialHistoryProvider>;
 }

@@ -2,6 +2,12 @@
 import { useEffect, useState } from "react";
 import { WorkspaceText as Text } from "@/components/workspace-language";
 import type { DailyInputReconciliation } from "@/lib/daily-input-reconciliation";
+import {DailyReconciliationPreviousChecks,useDailyReconciliationHistory} from "@/app/payroll/daily-reconciliation-history";
+
+export function DailyReconciliationHistory({salonId,businessDate}:{salonId:string;businessDate:string;refreshKey?:unknown;timeZone?:string}){
+ const history=useDailyReconciliationHistory({salonId,start:businessDate,end:businessDate,enabled:true});
+ return <>{history.error?<p role="status" className="text-xs"><Text text={history.error}/><button type="button" className="ml-2 min-h-11 underline" onClick={history.retry}><Text text="Retry"/></button></p>:<DailyReconciliationPreviousChecks value={history.rows.find(row=>row.business_date===businessDate)} timezone={history.timezone}/>}</>;
+}
 
 type Case = {id: string; business_date: string; revision: number; status: string; latest_values: DailyInputReconciliation; revisions: Array<{revision: number; values: DailyInputReconciliation; created_at: string}>};
 const money = (value: number | null) => value === null ? "Not entered" : new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(value);

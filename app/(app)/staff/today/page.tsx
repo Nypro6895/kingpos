@@ -9,9 +9,10 @@ import { Suspense } from "react";
 import { PageLoadingSkeleton } from "@/components/loading-feedback";
 import { runReadWithDeadline } from "@/lib/bounded-get";
 import { runWithReadContext } from "@/lib/read-context-scope";
+import {ticketNotificationDate} from "@/lib/ticket-history-navigation";
 
 type StaffTodayPageProps = {
-  searchParams: Promise<{ date?: string | string[] }>;
+  searchParams: Promise<{ date?: string | string[];eventDate?:string|string[];inputEvent?:string|string[] }>;
 };
 
 async function TodayContent(props: StaffTodayPageProps) {
@@ -21,12 +22,13 @@ async function TodayContent(props: StaffTodayPageProps) {
 async function loadTodayContent({ searchParams }: StaffTodayPageProps) {
   const context = await requireSalonManagePageContext("/staff/today");
   const params = await searchParams;
-  const dashboard = await runReadWithDeadline(getTodayDashboard(context, { date: params.date, phase: "shell" }), 12000);
+  const date=ticketNotificationDate(params);
+  const dashboard = await runReadWithDeadline(getTodayDashboard(context, { date, phase: "shell" }), 12000);
   return <TodayDashboardClient
     initialSnapshot={createLiveResourceSnapshot(dashboard, ["generatedAt"])}
     scope={getExperienceContext(context).scope}
     salonId={context.currentSalon.id}
-    requestedDate={Array.isArray(params.date) ? params.date[0] : params.date}
+    requestedDate={date}
     isOwner={isOwnerMembership(context.currentMembership)}
   />;
 }

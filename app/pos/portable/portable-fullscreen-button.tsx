@@ -18,7 +18,7 @@ function FullscreenIcon({ active }: { active: boolean }) {
   );
 }
 
-export function PortableFullscreenButton() {
+export function PortableFullscreenButton({ cornerExit = false }: { cornerExit?: boolean }) {
   const __vt = useWorkspaceTranslation();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -60,11 +60,11 @@ export function PortableFullscreenButton() {
     void target.requestFullscreen?.().catch(() => undefined);
   }, []);
 
-  if (!isSupported) {
+  if (!isSupported || (cornerExit && !isFullscreen)) {
     return null;
   }
 
-  return (
+  const button = (
     <button
       aria-label={__vt(isFullscreen ? "Exit full view" : "Enter full view")}
       aria-pressed={isFullscreen}
@@ -77,4 +77,5 @@ export function PortableFullscreenButton() {
       <FullscreenIcon active={isFullscreen} />
     </button>
   );
+  return cornerExit ? <div className="portable-fullscreen-corner" data-portable-fullscreen-corner>{button}</div> : button;
 }

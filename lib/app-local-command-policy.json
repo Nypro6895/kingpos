@@ -435,6 +435,7 @@
     "app/pos/portable/actions.ts": [
       "correctPortableClosedPosTicketInline",
       "getPortableTicketData",
+      "getPortableReportInputHistory",
       "logoutPortablePosAction",
       "portableAdjustStaffTurn",
       "portableBookingAppointments",

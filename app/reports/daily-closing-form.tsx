@@ -1,15 +1,14 @@
 "use client";
 import { WorkspaceText } from "@/components/workspace-language";
 import type { DailyClosingAdjustmentTotals, DailyClosingCorrectionField, DailyClosingCorrectionRequest, DailyClosingFinancialAdjustment, DailyClosingLockInfo, DailyClosingSnapshotTotals, DailyPosClosingInputs } from "@/types/pos-daily-closing";
-import { type ReactNode } from "react";
-import { ReportDetails } from "./report-ui";
+import { useEffect, type ReactNode } from "react";
 import styles from "./reports.module.css";
 import { useDailyClosingSave } from "@/lib/daily-closing-client";
 import { parseClosingCents as parseInputCents } from "@/lib/daily-closing-input";
 import { ClosingSaveNotice, ClosingSaveStatus } from "./owner-closing-save-notice";
 import { ClosingBalanceSummary } from "./closing-balance-summary";
-import { DailyReconciliationCases } from "./daily-reconciliation-cases";
-import { DailyReportChangeHistory } from "./daily-report-history";
+import { DailyReconciliationHistory } from "./daily-reconciliation-cases";
+import { DailyInputInlineHistory } from "./daily-input-inline-history";
 
 type DailyClosingFormProps = {
   children?: ReactNode;
@@ -28,6 +27,7 @@ type DailyClosingFormProps = {
   expectedTip?: number;
   lock: DailyClosingLockInfo;
   reportDate: string;
+  timeZone?: string;
   snapshotTotals: DailyClosingSnapshotTotals | null;
 };
 
@@ -151,6 +151,7 @@ export function DailyClosingForm({
   expectedTip = 0,
   lock,
   reportDate,
+  timeZone,
 }: DailyClosingFormProps) {
   const editor = useDailyClosingSave({mode: "owner", salonId, scope, reportDate, initial: closingInputs, canEdit});
   const {values, updateValue, handleEnter} = editor;
@@ -159,16 +160,16 @@ export function DailyClosingForm({
   const cashCents = parseInputCents(values.cashAmount);
   const creditCardCents = parseInputCents(values.creditCardAmount);
   const otherCents = parseInputCents(values.otherAmount);
+  useEffect(()=>{if(editor.status==="saved")window.dispatchEvent(new Event("financial-input-saved"));},[editor.status]);
   return (
     <>
       <form className={styles.closing} onSubmit={(event) => {
         event.preventDefault();
         editor.save(true);
       }}>
-        <div className={styles.closingHeader}>
-          <h2><WorkspaceText text="Closing Inputs" /></h2>
-          <span className={styles.draft}><WorkspaceText text="Live" /></span>
-        </div>
+        <DailyInputInlineHistory businessDate={reportDate}>
+          {(corrections.requests.length>0||corrections.adjustments.length>0)&&<CorrectionHistory adjustments={corrections.adjustments} requests={corrections.requests}/>}
+        </DailyInputInlineHistory>
         <ClosingSaveNotice editor={editor} />
             <div className={styles.moneyInputs}>
               <label className={styles.moneyRow}>
@@ -246,10 +247,9 @@ export function DailyClosingForm({
         <section className={styles.reconciliation}>
           <h2><WorkspaceText text="Reconciliation" /></h2>
           <ClosingBalanceSummary values={values} expectedService={expectedTotal} expectedTip={expectedTip} />
-
+          {canEdit&&<DailyReconciliationHistory salonId={salonId} businessDate={reportDate} refreshKey={editor.status} timeZone={timeZone}/>}
         </section>
         {!canEdit&&<p className={styles.message}><WorkspaceText text="Only the Owner can edit Daily Report amounts."/></p>}
-        {(corrections.requests.length>0||corrections.adjustments.length>0)&&<ReportDetails title="Earlier change history"><CorrectionHistory adjustments={corrections.adjustments} requests={corrections.requests}/></ReportDetails>}
         {children}
         <div className={styles.actions}>
           <div className={styles.saveState} aria-live="polite"><ClosingSaveStatus status={editor.status} /></div>
@@ -258,8 +258,6 @@ export function DailyClosingForm({
           </button> : null}
         </div>
       </form>
-      <DailyReportChangeHistory salonId={salonId} reportDate={reportDate} savedAt={editor.status}/>
-      {canEdit && <DailyReconciliationCases salonId={salonId} startDate={reportDate} endDate={reportDate} refreshKey={editor.status} />}
 
     </>
   );

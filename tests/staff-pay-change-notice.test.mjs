@@ -32,7 +32,7 @@ test('payroll bell links open staff workspace and compact detail without changin
   }}]});const m={exports:{}};new Function('require','module','exports',built.outputFiles[0].text)(require,m,m.exports);
   const notification={notification_type:'payroll_updated',recipient_kind:'staff',salon_id:'salon',href:'/staff/my-work?tab=payroll&payPeriodStart=2026-10-16'};
   const result=m.exports.resolveAppNotificationDestination(notification);
-  assert.equal(result.href,notification.href+'#payroll-changes');assert.equal(result.workspaceId,'staff:salon');
+  assert.equal(result.href,notification.href+'#input-history');assert.equal(result.workspaceId,'staff:salon');
   assert.equal(m.exports.resolveAppNotificationDestination({...notification,href:'/staff/my-work'}).workspaceId,'staff:salon');
   assert.equal(m.exports.resolveAppNotificationDestination({...notification,notification_type:'other'}).href,notification.href);
 });
@@ -51,11 +51,23 @@ test('compact notice: hidden without changes, single line, click/Escape/focus, n
     for(const width of [390,1280]){const page=await browser.newPage({viewport:{width,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port);await page.locator('#change').waitFor();
       const notice=page.getByRole('button',{name:/Payroll updated/});assert.equal(await notice.count(),0);await page.locator('#change').click();await notice.waitFor();assert.ok((await notice.boundingBox()).height<=48);
       await notice.click();const dialog=page.getByRole('dialog');await dialog.waitFor();assert.ok((await dialog.innerText()).includes('$0.00'));assert.ok((await dialog.innerText()).includes('$25.00'));assert.ok((await dialog.innerText()).includes('<script>alert(1)</script>'));assert.equal(await page.locator('dialog script').count(),0);
+      let nativeCloseEvents=0;
+      const closeAndWaitForNativeEvent=async action=>{
+        // Escape removes `open` before the queued native close event. Waiting
+        // only for hidden can race onClose's hash cleanup with the next link.
+        await dialog.evaluate(element=>{
+          element.dataset.testNativeClose='pending';
+          element.addEventListener('close',()=>queueMicrotask(()=>{element.dataset.testNativeClose='handled';}),{once:true});
+        });
+        await action();
+        await page.waitForFunction(()=>document.querySelector('dialog')?.dataset.testNativeClose==='handled');
+        await dialog.waitFor({state:'hidden'});nativeCloseEvents++;
+      };
       assert.ok(await dialog.evaluate(el=>el.scrollHeight>el.clientHeight));assert.ok(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth));
-      await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});assert.equal(await notice.evaluate(el=>el===document.activeElement),true);
-      await page.evaluate(()=>location.hash='payroll-changes');await dialog.waitFor();await dialog.getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'hidden'});await page.waitForFunction(()=>location.hash==='');
-      await notice.click();await page.screenshot({path:resolve(dir,`detail-${width}.png`)});await page.keyboard.press('Escape');await page.screenshot({path:resolve(dir,`notice-${width}.png`)});
-      await page.locator('#empty').click();assert.equal(await notice.count(),0);assert.ok(await page.locator('body').evaluate(el=>el.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);checks.push({width,passed:true});await page.close();}
+      await closeAndWaitForNativeEvent(()=>page.keyboard.press('Escape'));assert.equal(await notice.evaluate(el=>el===document.activeElement),true);
+      await page.evaluate(()=>location.hash='payroll-changes');await dialog.waitFor();await closeAndWaitForNativeEvent(()=>dialog.getByRole('button',{name:'Close',exact:true}).click());await page.waitForFunction(()=>location.hash==='');
+      await notice.click();await page.screenshot({path:resolve(dir,`detail-${width}.png`)});await closeAndWaitForNativeEvent(()=>page.keyboard.press('Escape'));await page.screenshot({path:resolve(dir,`notice-${width}.png`)});
+      await page.locator('#empty').click();assert.equal(await notice.count(),0);assert.ok(await page.locator('body').evaluate(el=>el.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);assert.equal(nativeCloseEvents,3);checks.push({width,nativeCloseEvents,hashReopenedAfterEscape:true,passed:true});await page.close();}
     writeFileSync(dir+'/results.json',JSON.stringify(checks,null,2));
   }finally{await browser?.close();await new Promise(r=>server.close(r));}
 });

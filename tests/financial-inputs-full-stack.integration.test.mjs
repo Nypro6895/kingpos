@@ -74,6 +74,13 @@ test('approved financial inputs: full schema, authenticated RPC, RLS and separat
   const earning=f.json(`select json_agg(e order by e.staff_id) from (select id,staff_id,service_total,tip_amount from pos_ticket_staff_earnings where ticket_id='${ticket}')e`);
   assert.equal(earning.reduce((n,e)=>n+Number(e.service_total),0),100);assert.equal(earning.reduce((n,e)=>n+Number(e.tip_amount),0),20);
   assert.equal(Number(f.sql(`select count(*) from financial_input_events where source_id='${ticket}'`)),1);
+  const creation=f.json(`select row_to_json(e) from financial_input_events e where source_id='${ticket}'`);
+  assert.equal(creation.event_action,'created');
+  const creationNotices=f.json(`select json_agg(n) from app_notifications n where salon_id='${salon}' and event_key like '%${creation.id}%'`);
+  assert.equal(creationNotices.length,3);assert.ok(creationNotices.every(n=>n.notification_type==='ticket_recorded'&&!/changed|updated/i.test(n.title)&&n.href.includes('inputEvent='+creation.id)&&n.href.endsWith('#ticket-record')));
+  const ownCreation=f.rpc(anna,'get_financial_input_event_metadata',{p_event_ids:[creation.id]});
+  assert.equal(ownCreation.length,1);assert.equal(ownCreation[0].event_action,'created');assert.equal(ownCreation[0].ticket_id,ticket);assert.equal(Number(ownCreation[0].after_context.service_total),40);assert.equal(ownCreation[0].after_context.lines.length,1);assert.equal(ownCreation[0].after_context.lines[0].service_name,'Full set');
+  assert.ok(!JSON.stringify(ownCreation).includes('Pedicure'));assert.deepEqual(f.rpc(outsider,'get_financial_input_event_metadata',{p_event_ids:[creation.id]}),[]);
   const item=f.json(`select row_to_json(i) from pos_ticket_items i where pos_ticket_id='${ticket}' and assigned_staff_id='${staffA}'`);
   const revision=Number(f.sql(`select workspace_revision from pos_tickets where id='${ticket}'`));
   const edit={p_key:null,p_signature:null,p_salon:salon,p_ticket:ticket,p_expected:revision,p_item_updates:[{item_id:item.id,service_id:serviceA,staff_id:staffA,parts:[{amount:50}],remove:false}],p_item_parts:[],p_added_items:[],p_staff_tip_overrides:[],p_tip_total:20,p_reason:'Verified original inputs',p_discount_type:'fixed_amount',p_discount_value:15,p_request:randomUUID()};
@@ -81,6 +88,29 @@ test('approved financial inputs: full schema, authenticated RPC, RLS and separat
   const after=f.json(`select json_agg(e order by e.staff_id) from (select id,staff_id,service_total,tip_amount from pos_ticket_staff_earnings where ticket_id='${ticket}')e`);
   assert.deepEqual(after.map(e=>e.id),earning.map(e=>e.id));assert.equal(after.reduce((n,e)=>n+Number(e.service_total),0),110);assert.equal(after.reduce((n,e)=>n+Number(e.tip_amount),0),20);
   assert.equal(Number(f.sql(`select count(*) from financial_input_events where source_id='${ticket}'`)),2);
+  const changed=f.json(`select row_to_json(e) from financial_input_events e where source_id='${ticket}' and event_action='updated'`);
+  const changedNotices=f.json(`select json_agg(n) from app_notifications n where salon_id='${salon}' and event_key like '%${changed.id}%'`);
+  assert.equal(changedNotices.length,3);assert.ok(changedNotices.every(n=>n.notification_type==='financial_input_updated'&&n.href.includes('inputEvent='+changed.id)));
+  assert.match(changedNotices.find(n=>n.recipient_user_id===anna.profileId).body,/\$40\.00 → \$50\.00/);
+  assert.ok(!changedNotices.find(n=>n.recipient_user_id===anna.profileId).body.includes('$15.00'));
+  assert.match(changedNotices.find(n=>n.recipient_user_id===lily.profileId).body,/Ticket discount changed/);
+  const ownChanged=f.rpc(anna,'get_financial_input_event_metadata',{p_event_ids:[changed.id]});assert.equal(ownChanged[0].event_action,'updated');assert.equal(ownChanged[0].ticket_id,ticket);assert.equal(Number(ownChanged[0].before_context.service_total),40);assert.equal(Number(ownChanged[0].after_context.service_total),50);
+  assert.equal(f.rpc(owner,'get_financial_input_event_metadata',{p_event_ids:[changed.id]})[0].ticket_id,ticket);
+  assert.deepEqual(f.rpc(outsider,'get_financial_input_event_metadata',{p_event_ids:[changed.id]}),[]);
+  assert.ok(f.http(3000,'/rpc/get_financial_input_event_metadata','POST',{p_event_ids:[changed.id]}).status>=400);
+  // The actual signed Portable reader must return the exact linked saved facts,
+  // including fields absent from the earlier raw correction snapshot.
+  const key=randomUUID();f.sql(`insert into pos_portable_access_keys(id,salon_id,access_id,passcode_salt,passcode_digest,capabilities) values('${key}','${salon}','${randomUUID()}','isolated-salt','isolated-digest',array['portable.pos.use','portable.today.view','portable.report.view'])`);
+  const signature=f.sql(`select pos_portable_access_signature('${key}','isolated-digest')`);
+  const signed=f.rpc(null,'get_pos_portable_ticket_data',{p_key_id:key,p_session_signature:signature,p_date:today});
+  const signedTicket=signed.tickets.find(row=>row.id===ticket);assert.ok(signedTicket);
+  const signedEdit=signedTicket.adjustments.find(row=>row.financialInputEventId===changed.id);assert.ok(signedEdit);assert.equal(signedEdit.eventAction,'updated');
+  assert.deepEqual(signedEdit.financialInputBeforeValues,changed.before_values);assert.deepEqual(signedEdit.financialInputAfterValues,changed.after_values);
+  assert.equal(f.rpc(null,'get_pos_portable_ticket_data',{p_key_id:key,p_session_signature:'invalid',p_date:today}),null);
+  const reportEvents=f.rpc(null,'get_pos_portable_daily_input_history',{p_key_id:key,p_session_signature:signature,p_report_date:today});assert.ok(reportEvents.length);
+  assert.ok(reportEvents.every(row=>row.salon_id===salon&&row.business_date===today&&Object.keys(row.after_values).every(field=>['cash_amount','credit_card_amount','other_amount','tip_input','entered','note'].includes(field))));
+  assert.ok(f.http(3000,'/rpc/get_pos_portable_daily_input_history','POST',{p_key_id:key,p_session_signature:signature,p_report_date:yesterday}).status>=400);
+  assert.ok(f.http(3000,'/rpc/get_pos_portable_daily_input_history','POST',{p_key_id:key,p_session_signature:'invalid',p_report_date:today}).status>=400);
   assert.ok(f.http(3000,'/rpc/save_pos_ticket_inputs','POST',{...edit,p_request:randomUUID()},anna.token).status>=400);
   assert.ok(f.http(3000,'/rpc/save_pos_ticket_inputs','POST',{...edit,p_request:randomUUID()},manager.token).status>=400);
   for(const user of [owner,manager]) assert.equal(f.http(3000,`/pos_ticket_items?id=eq.${item.id}`,'PATCH',{unit_price:999},user.token).status,403);
@@ -115,6 +145,28 @@ test('approved financial inputs: full schema, authenticated RPC, RLS and separat
   assert.equal(Number(f.sql(`select count(*) from payroll_period_bases where salon_id='${salon}' and period_start='${month.start}' and period_end='${month.end}'`)),baseCount);
   assert.ok(f.rest(anna,`/payroll_live_recorded_payments?salon_id=eq.${salon}`).every(row=>row.staff_id===staffA));
   assert.ok(f.http(3000,'/rpc/record_live_payroll_payment','POST',{...args,p_request:randomUUID(),p_expected_revision:3},anna.token).status>=400);
+ });
+ await t.test('initial open-ticket construction stays draft, first checkout records once, and reopened corrections remain updates',()=>{
+  const service=randomUUID();f.sql(`insert into services(id,salon_id,name,base_price) values('${service}','${salon}','Draft lifecycle service',30)`);
+  const ticket=f.rpc(owner,'create_owner_open_ticket',{p_salon:salon,p_customer:null,p_opened_at:null,p_notes:'Initial construction',p_request:randomUUID()}).ticketId;
+  const edit=(operation,values,note)=>f.rpc(owner,'mutate_owner_ticket_inputs',{p_salon:salon,p_ticket:ticket,p_expected:Number(f.sql(`select workspace_revision from pos_tickets where id='${ticket}'`)),p_request:randomUUID(),p_operation:operation,p_values:values,p_note:note});
+  edit('item_add',{service_id:service},'Choose service');
+  const item=f.sql(`select id from pos_ticket_items where pos_ticket_id='${ticket}'`);
+  edit('item_staff',{item_id:item,assigned_staff_id:staffA},'Choose Staff');edit('tip',{tip_type:'fixed_amount',tip_value:5},'Enter original tip');edit('payment_add',{payment_method:'cash',amount:35},'Enter original payment');
+  const drafts=f.json(`select json_agg(e order by e.created_at) from financial_input_events e where source_id='${ticket}'`);assert.equal(drafts.length,5);assert.ok(drafts.every(e=>e.event_action==='draft'));
+  const draftAdjustments=f.json(`select json_agg(a) from pos_ticket_adjustments a where ticket_id='${ticket}'`);assert.equal(draftAdjustments.length,4);assert.ok(draftAdjustments.every(a=>drafts.some(e=>e.id===a.financial_input_event_id)));
+  const draftMetadata=f.rpc(owner,'get_pos_ticket_adjustment_metadata',{p_adjustment_ids:draftAdjustments.map(a=>a.id)});assert.equal(draftMetadata.length,4);assert.ok(draftMetadata.every(a=>a.event_action==='draft'));
+  assert.deepEqual(f.rpc(anna,'get_pos_ticket_adjustment_metadata',{p_adjustment_ids:draftAdjustments.map(a=>a.id)}),[]);assert.deepEqual(f.rpc(outsider,'get_pos_ticket_adjustment_metadata',{p_adjustment_ids:draftAdjustments.map(a=>a.id)}),[]);
+  assert.equal(Number(f.sql(`select count(*) from app_notifications where event_key like any(array[${drafts.map(e=>`'%${e.id}%'`).join(',')}])`)),0);
+  const submitted=edit('checkout',{},'First submission');
+  const first=f.json(`select row_to_json(e) from financial_input_events e where id='${submitted.eventId}'`);assert.equal(first.event_action,'created');assert.equal(first.before_values.status,'open');assert.equal(first.after_values.status,'closed');
+  const firstAdjustment=f.sql(`select id from pos_ticket_adjustments where financial_input_event_id='${first.id}'`);assert.ok(firstAdjustment);assert.equal(f.rpc(owner,'get_pos_ticket_adjustment_metadata',{p_adjustment_ids:[firstAdjustment]})[0].event_action,'created');
+  const delivery=f.json(`select json_agg(n) from app_notifications n where event_key like '%${first.id}%'`);assert.equal(delivery.length,2);assert.ok(delivery.every(n=>n.notification_type==='ticket_recorded'&&!/updated|changed/i.test(n.title)));
+  const own=f.rpc(anna,'get_financial_input_event_metadata',{p_event_ids:[...drafts.map(e=>e.id),first.id]});assert.equal(own.filter(e=>e.event_action==='created').length,1);assert.ok(own.filter(e=>e.event_id!==first.id).every(e=>e.event_action==='draft'));
+  const reopened=edit('reopen',{},'Reopen submitted ticket');assert.equal(f.sql(`select event_action from financial_input_events where id='${reopened.eventId}'`),'updated');
+  const changed=edit('item_update',{item_id:item,quantity:1,unit_price:35},'Correct previously submitted service');assert.equal(f.sql(`select event_action from financial_input_events where id='${changed.eventId}'`),'updated');
+  const changedAdjustment=f.sql(`select id from pos_ticket_adjustments where financial_input_event_id='${changed.eventId}'`);assert.equal(f.rpc(owner,'get_pos_ticket_adjustment_metadata',{p_adjustment_ids:[changedAdjustment]})[0].event_action,'updated');
+  const changedDelivery=f.json(`select json_agg(n) from app_notifications n where event_key like '%${changed.eventId}%'`);assert.ok(changedDelivery.every(n=>n.notification_type==='financial_input_updated'));assert.match(changedDelivery.find(n=>n.recipient_user_id===anna.profileId).body,/\$30\.00 → \$35\.00/);
  });
  await t.test('real STAFF role with custom permission bits still cannot read other Staff or salon finances',()=>{
   const earnings=f.rest(anna,`/pos_ticket_staff_earnings?salon_id=eq.${salon}`);assert.ok(earnings.length);assert.ok(earnings.every(row=>row.staff_id===staffA));

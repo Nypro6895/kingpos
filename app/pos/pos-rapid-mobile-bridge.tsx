@@ -85,8 +85,9 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
 
   const filteredServices = useMemo(() => {
     const query = serviceQuery.trim().toLowerCase();
-    if (!query) return services;
-    return services.filter((service) =>
+    const mainServices = services.filter(service => !service.booking_parent_service_id);
+    if (!query) return mainServices;
+    return mainServices.filter((service) =>
       `${service.name} ${service.category ?? ""}`.toLowerCase().includes(query),
     );
   }, [serviceQuery, services]);

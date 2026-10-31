@@ -314,4 +314,6 @@ justify-self:start;
 gap:0}
 .greetingHeader .heading span{
 max-width:100%}
+.ticket.edited>summary{background:#fff7f0;box-shadow:inset 3px 0 #ce6b36}
+.editedLabel{color:#a54b24!important;flex-basis:100%}
 
