@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "combined-financial-integration-20261101",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Integrate Attention/Payroll flat groups and missing Ticket calendar/date guards/turn display against exact current production build81 source; preserve shipped features and closed-sale gates",
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "dependencies": [
+    "owner-financial-attention-20261101",
+    "owner-attention-payroll-polish-20261101",
+    "ticket-calendar-history-20261031",
+    "ticket-staff-turns-20261031"
+  ],
+  "source": {
+    "commit": "05bb0fe",
+    "deploymentId": "dpl_FnWRb4DLB2terinVzD6ZxrJxmGZd"
+  },
+  "validation": [
+    {
+      "name": "Combined production source build and regression",
+      "result": "pending"
+    }
+  ],
+  "id": "9a78d18e-d6b5-462e-8382-c3341b0fc09c",
+  "recordedAt": "2026-11-01T07:17:54.174Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

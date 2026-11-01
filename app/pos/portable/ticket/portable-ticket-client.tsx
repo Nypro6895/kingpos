@@ -373,21 +373,29 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
   const panelVisible=pathname==="/pos/portable/ticket";
   const workspace=usePortableWorkspaceState();
   const scope=workspace?.scope;
-  const [data, setData] = useState(initialData);
+  // A new server snapshot must replace the retained client snapshot immediately.
+  const [live, setLive] = useState<{ base: typeof initialData; data: typeof initialData } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   const selectedDate = followToday && workspace?.businessDate ? workspace.businessDate : initialData.date;
+  const snapshot = live?.base === initialData ? live.data : initialData;
+  const data = snapshot.date === selectedDate ? snapshot : { ...snapshot, date: selectedDate, tickets: [], canEdit: false };
+  const waitingForDate = snapshot.date !== selectedDate;
   useEffect(() => {
     let active = true, busy = false, again = false;
     const refresh = async () => {
-      if (!navigator.onLine || !active || !panelVisible || document.visibilityState!=="visible") return;
+      if (!active || !panelVisible || document.visibilityState!=="visible") return;
+      if (!navigator.onLine) { setLoadError(selectedDate); return; }
       if (busy) { again = true; return; }
       busy = true;
       try {
         const response = await fetch('/api/pos/portable/tickets?date=' + encodeURIComponent(selectedDate), { cache: 'no-store', signal: AbortSignal.timeout(20000) });
-        if (!response.ok) return;
+        if (!response.ok) throw new Error("Unable to load tickets");
         const next = await response.json();
-        if (active && !next.setupMessage && next.date === selectedDate && Array.isArray(next.tickets)) setData(next);
+        if (next.setupMessage || next.date !== selectedDate || !Array.isArray(next.tickets)) throw new Error("Unable to load tickets");
+        if (active) { setLive({ base: initialData, data: next }); setLoadError(null); }
       }
-      catch { /* Keep the cached list and local receipts available. */ }
+      catch { if (active) setLoadError(selectedDate); }
       finally { busy = false; if (again && active) { again = false; void refresh(); } }
     };
     const unsubscribe=scope?subscribePosChanges(scope.split(":")[0],change=>{if(change.resource==="tickets")void refresh();}):()=>{};
@@ -400,7 +408,7 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
     document.addEventListener("visibilitychange",onChange);
     void refresh();
     return () => { active = false; unsubscribe(); document.removeEventListener("visibilitychange",onChange); window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, onChange); window.removeEventListener('online', onChange); window.removeEventListener('focus', onChange); window.removeEventListener('pageshow', onChange); };
-  }, [selectedDate, scope, panelVisible]);
+  }, [selectedDate, scope, panelVisible, initialData, retry]);
   const selectedDateLabel = formatLocalDateHeader(data.date, data.timezone);
   const selectedDateCompactLabel = formatLocalDateCompact(
     data.date,
@@ -428,6 +436,11 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
       <main className="mx-auto w-full max-w-7xl">
         <TicketFilters date={selectedDate} query={query} onQueryChange={setQuery} />
 
+        {loadError === selectedDate ? <p role="alert" className="px-4 py-2 text-sm text-red-800">
+          <WorkspaceText text="Unable to load tickets. Please try again." />{" "}
+          <button type="button" className="min-h-11 underline" onClick={() => setRetry(value => value + 1)}><WorkspaceText text="Retry" /></button>
+        </p> : waitingForDate ? <p role="status" className="px-4 py-2 text-sm"><WorkspaceText text="Loading tickets…" /></p> : null}
+
         {data.setupMessage ? (
           <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             <WorkspaceText text={data.setupMessage} />
@@ -441,7 +454,7 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
         ) : null}
 
         <PortableLocalTickets serverIds={data.tickets.map(ticket => ticket.id)} date={data.date} timezone={data.timezone} query={query} />
-        <PortableDailyWorkLog
+        {!waitingForDate ? <PortableDailyWorkLog
           canEdit={data.canEdit}
           dailyNumbers={dailyNumbers}
           isBusinessDateLocked={data.isBusinessDateLocked}
@@ -452,7 +465,7 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
           staff={data.staff}
           tickets={visibleTickets}
           timeZone={data.timezone}
-        />
+        /> : null}
       </main>
     </section>
   );

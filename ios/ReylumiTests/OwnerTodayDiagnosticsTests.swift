@@ -33,8 +33,8 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
                 let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
                 object = AppLocalTestFixture.context(generation: generation, kind: "owner")
                 var grant = object["grant"] as! [String: Any]
-                grant["path"] = "/staff/today"; grant["workspaceId"] = "fixture-workspace"; object["grant"] = grant
-                object["home"] = "/staff/today"
+                grant["path"] = fixture["payroll"] == nil ? "/staff/today" : "/payroll"; grant["workspaceId"] = "fixture-workspace"; object["grant"] = grant
+                object["home"] = fixture["payroll"] == nil ? "/staff/today" : "/payroll"
                 object["display"] = ["name": "Synthetic owner", "language": "en", "role": "owner"]
                 object["access"] = ["ownerWorkspace": true, "staffWorkspace": false]
             }
@@ -48,6 +48,9 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
             reads[label, default: 0] += 1
             let value: [String: Any]
             switch name {
+            case "page.owner-payroll":
+                if let ms = fixture["payrollReadDelayMs"] as? UInt64 { try await Task.sleep(nanoseconds: ms * 1_000_000) }
+                value = fixture["payroll"] as! [String: Any]
             case "page.owner-today": value = ["dashboard": (fixture["phases"] as! [String: Any])[phase]!, "isOwner": true]
             case "shell.navigation": value = ["scope": AppLocalTestFixture.scope, "authenticated": true, "navigation": fixture["navigation"]!, "ownerQueueScope": NSNull(), "audience": "owner"]
             case "shell.configuration": value = ["scope": AppLocalTestFixture.scope, "language": ["enabled": false, "portableEnabled": false, "expiresAt": NSNull()], "campaign": ["installed": false, "runtime": NSNull()]]
@@ -76,6 +79,8 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
     private static func readLabel(_ name: String, phase: String) -> String {
         if name == "page.owner-today", ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].contains(phase) { return "today_" + phase }
         switch name {
+        case "page.owner-payroll": return "payroll"
+        case "http.owner.shop-money": return "shop_money"
         case "shell.navigation": return "shell_navigation"
         case "shell.configuration": return "shell_configuration"
         case "shell.summary": return "shell_summary"
@@ -212,18 +217,51 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         }
     }
 
+
+    func testInstalledPayrollColdAndWarmWithControlledReadDelay() async throws {
+        for delay in [UInt64(100), UInt64(700)] {
+            try await scenario("payroll_cold_warm_\(delay)ms", startPath: "/payroll?tab=shop", payrollReadDelayMs: delay) { run in
+                try await self.wait("Boolean(document.querySelector('[data-payroll-page] [data-shop-money]')) && document.body.innerText.includes('$10,000.00')", in: run.web)
+                let coldMs = (ProcessInfo.processInfo.systemUptime - run.startedAt) * 1000
+                let before = await run.http.counts()
+                XCTAssertEqual((before["reads"] as? [String: Int])?["payroll"], 1)
+                XCTAssertNil((before["reads"] as? [String: Int])?["shop_money"], "Seeded Shop must not make a second initial read")
+                _ = try await run.web.evaluateJavaScript("window.__payrollMeasurementDOM=document.querySelector('[data-payroll-page]');true")
+                run.controller.navigate("/help")
+                try await self.wait("location.pathname==='/help'", in: run.web)
+                let warmStart = ProcessInfo.processInfo.systemUptime
+                run.controller.navigate("/payroll?tab=shop")
+                try await self.wait("location.pathname==='/payroll' && Boolean(document.querySelector('[data-payroll-page] [data-shop-money]'))", in: run.web)
+                let warmMs = (ProcessInfo.processInfo.systemUptime - warmStart) * 1000
+                let retained = try await run.web.evaluateJavaScript("window.__payrollMeasurementDOM===document.querySelector('[data-payroll-page]')") as? Bool
+                XCTAssertEqual(retained, true)
+                let after = await run.http.counts()
+                XCTAssertEqual((after["reads"] as? [String: Int])?["payroll"], 1, "Warm return must retain the loaded page")
+                let metrics: [String: Any] = ["coldReadyMs": coldMs, "warmReadyMs": warmMs, "syntheticReadDelayMs": delay, "counts": after, "retainedDOM": retained ?? false, "physicalDevice": false]
+                print("REYLUMI_PAYROLL_MEASUREMENT " + String(decoding: try JSONSerialization.data(withJSONObject: metrics, options: [.sortedKeys]), as: UTF8.self))
+                return metrics
+            }
+        }
+    }
+
     private struct Run {
         let controller: ReylumiLocalAppViewController
         let web: WKWebView
         let http: OwnerTodayMeasurementHTTP
         let trace: ReylumiLocalDiagnostics
+        let startedAt: Double
     }
-    private func scenario(_ name: String, prewarm: Bool = false, failures: Int = 0, startPath: String = "/", body: (Run) async throws -> [String: Any]) async throws {
+    private func scenario(_ name: String, prewarm: Bool = false, failures: Int = 0, startPath: String = "/", payrollReadDelayMs: UInt64 = 100, body: (Run) async throws -> [String: Any]) async throws {
         let bundle = try ReylumiLocalBundle.installed()
         XCTAssertEqual(bundle.manifest.productionReady, true); XCTAssertTrue(bundle.routeExists("/staff/today"))
         let resource = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "OwnerTodayMeasurementFixture", withExtension: "json"))
-        let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: resource)) as? [String: Any])
+        var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: resource)) as? [String: Any])
         XCTAssertEqual(fixture["synthetic"] as? Bool, true)
+        if startPath.hasPrefix("/payroll") {
+            let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "OwnerPayrollMeasurementFixture", withExtension: "json"))
+            fixture["payroll"] = try JSONSerialization.jsonObject(with: Data(contentsOf: url))
+            fixture["payrollReadDelayMs"] = payrollReadDelayMs
+        }
         let http = OwnerTodayMeasurementHTTP(fixture: fixture, failures: failures), origin = URL(string: "https://reylumi.com")!
         let id = "reylumi.tests.owner-today-measurement." + UUID().uuidString
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(id, isDirectory: true)
@@ -269,8 +307,9 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
         window.rootViewController = controller; window.isHidden = false
         defer { controller.webView?.stopLoading(); window.isHidden = true; window.rootViewController = nil }
+        let startedAt = ProcessInfo.processInfo.systemUptime
         controller.initializeWebContentIfNeeded()
-        let run = Run(controller: controller, web: try XCTUnwrap(controller.webView), http: http, trace: trace)
+        let run = Run(controller: controller, web: try XCTUnwrap(controller.webView), http: http, trace: trace, startedAt: startedAt)
         do {
             let checkpoints = try await body(run)
             let counts = await http.counts()

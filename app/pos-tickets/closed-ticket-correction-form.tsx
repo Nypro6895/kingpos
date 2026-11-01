@@ -1462,14 +1462,14 @@ export function DailyPosTicketCard({
 
     if (!display) {
       return (
-        <span className="ml-2 shrink-0 text-xs font-medium text-zinc-400">
+        <span className="ml-2 inline-flex shrink-0 whitespace-nowrap text-xs font-medium text-zinc-400">
           - | -
         </span>
       );
     }
 
     return (
-      <span className="ml-2 shrink-0 text-xs text-zinc-400">
+      <span className="ml-2 inline-flex shrink-0 whitespace-nowrap text-xs text-zinc-400">
         <span className="font-bold text-zinc-950">{display.big ?? "-"}</span>
         <span className="px-1 text-zinc-300">|</span>
         <span className="font-medium text-zinc-500">{display.small ?? "-"}</span>
@@ -1722,7 +1722,7 @@ export function DailyPosTicketCard({
             <div className="my-2 space-y-1">
               {displayedLines.length === 0 ? <WorkspaceText text="No services recorded." /> : displayedLines.map(line => (
                 <div key={line.key} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-baseline gap-2">
-                  <span className="min-w-0 break-words font-semibold">{staffDisplayName(line)}</span>
+                  <span className="min-w-0 break-words font-semibold">{staffDisplayName(line)}{renderTurnDisplay(line)}</span>
                   <span className="min-w-0 break-words text-zinc-600">{serviceName(line)}</span>
                   <span className="tabular-nums">{formatMoney(lineTotal(line))}</span>
                 </div>

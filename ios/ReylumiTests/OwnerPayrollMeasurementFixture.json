@@ -1,0 +1,354 @@
+{
+  "synthetic": true,
+  "payroll": {
+    "access": {
+      "canViewAllPayroll": true,
+      "canManagePayroll": false
+    },
+    "period": {
+      "startDate": "2026-10-16",
+      "endDate": "2026-10-31",
+      "cycleType": "semi_monthly",
+      "preset": "semi_monthly_second",
+      "label": "Oct 16–31, 2026"
+    },
+    "today": "2026-10-31",
+    "context": {
+      "user": {
+        "id": "a0000000-1111-4111-8111-000000000097"
+      }
+    },
+    "history": [
+      {
+        "id": "a0000000-1111-4111-8111-000000000009",
+        "salon_id": "a0000000-1111-4111-8111-000000000099",
+        "staff_id": "a0000000-1111-4111-8111-000000000098",
+        "source_id": "a0000000-1111-4111-8111-000000000098",
+        "source_table": "ticket",
+        "period_start": "2026-10-29",
+        "period_end": "2026-10-29",
+        "created_at": "2026-10-31T01:00:00Z",
+        "actor_name": "Salon Owner",
+        "before_values": {},
+        "after_values": {
+          "ticket_number": "T00045",
+          "service_total": 50,
+          "tip_amount": 0
+        },
+        "note": "Checked against the original record",
+        "event_action": "created"
+      },
+      {
+        "id": "a0000000-1111-4111-8111-000000000010",
+        "salon_id": "a0000000-1111-4111-8111-000000000099",
+        "staff_id": "a0000000-1111-4111-8111-000000000098",
+        "source_id": "a0000000-1111-4111-8111-000000000098",
+        "source_table": "payroll_period_staff_inputs",
+        "period_start": "2026-10-29",
+        "period_end": "2026-10-29",
+        "created_at": "2026-10-31T01:00:00Z",
+        "actor_name": "Salon Owner",
+        "before_values": {},
+        "after_values": {
+          "bonus_amount": 0
+        },
+        "note": "Checked against the original record",
+        "event_action": "updated"
+      }
+    ],
+    "serviceAnalytics": {
+      "rows": [],
+      "ticketCount": 1
+    },
+    "staffPayrollSettings": [],
+    "salonPayrollSetting": {
+      "cycle_type": "semi_monthly"
+    },
+    "scheduleSetup": {
+      "needsBiweeklyAnchor": false
+    },
+    "difference": {
+      "changed": false
+    },
+    "taxCompany": {
+      "lines": []
+    },
+    "recordedFacts": {
+      "status": "available",
+      "selection": {
+        "start": "2026-10-16",
+        "end": "2026-10-31",
+        "exact": true
+      },
+      "periods": [
+        {
+          "base": null,
+          "sourcePeriod": {
+            "start": "2026-10-16",
+            "end": "2026-10-31",
+            "cycle": "semi_monthly"
+          },
+          "revision": 2,
+          "adjustments": [],
+          "legacyPaidHistory": [],
+          "payments": [
+            {
+              "id": "a0000000-1111-4111-8111-000000000040",
+              "staff_id": "a0000000-1111-4111-8111-000000000098",
+              "cash_amount": 20,
+              "check_amount": 20,
+              "paid_at": "2026-11-01T18:00:00Z",
+              "note": "Payment for October 16–31"
+            }
+          ]
+        }
+      ]
+    },
+    "live": {
+      "lines": [
+        {
+          "staff_id": "a0000000-1111-4111-8111-000000000098",
+          "staff_display_name_snapshot": "Kim",
+          "staff_legal_name_snapshot": "Kim Example",
+          "gross_sales": 120,
+          "staff_commission_gross": 72,
+          "bonus_amount": 0,
+          "tax_withheld": 0,
+          "final_staff_income": 84,
+          "final_cash_amount": 42,
+          "final_check_amount": 42,
+          "tip_amount": 12,
+          "tip_cash_amount": 12,
+          "tip_check_amount": 0,
+          "bonus_payout_method_snapshot": "check",
+          "tip_payout_method_snapshot": "cash",
+          "check_number": null,
+          "note": null,
+          "pay_type_used": "commission",
+          "fixed_pay_amount_used": 0,
+          "commission_rate_used": 60,
+          "check_rate_used": 50,
+          "tax_rate_used": 0,
+          "tax_bonus_snapshot": false,
+          "tax_tips_snapshot": false,
+          "dailyTotals": [
+            {
+              "id": "a0000000-1111-4111-8111-000000000021",
+              "staff_id": "a0000000-1111-4111-8111-000000000098",
+              "business_date": "2026-10-29",
+              "gross_sales": 120,
+              "tip_amount": 12
+            }
+          ],
+          "settings_used_snapshot": [
+            {
+              "payType": "commission",
+              "commissionRate": 60,
+              "checkRate": 50,
+              "taxRate": 0,
+              "effectiveFrom": "2026-10-16"
+            }
+          ]
+        }
+      ],
+      "shopDailyRows": [
+        {
+          "businessDate": "2026-10-29",
+          "actualIncome": 120,
+          "actualTipIncome": 12,
+          "posIncome": 120,
+          "tips": 12,
+          "cashAmount": 120,
+          "creditCardAmount": 0,
+          "otherAmount": 0,
+          "difference": 0,
+          "tipDifference": 0,
+          "manualInputIncome": null,
+          "staffProduction": 120,
+          "staffCommissionPay": 72,
+          "staffNetPay": 72,
+          "tipsPaid": 12,
+          "staffObligation": 84,
+          "taxWithheld": 0,
+          "shopShare": 48,
+          "shopNetIncome": 48,
+          "overShortStatus": "balanced",
+          "corrections": []
+        }
+      ],
+      "shopSummary": {
+        "totalActualIncome": 120,
+        "totalActualTip": 12,
+        "cashAmount": 120,
+        "creditCardAmount": 0,
+        "otherAmount": 0,
+        "totalStaffObligation": 84,
+        "staffNetPay": 72,
+        "tipsPaid": 12,
+        "taxWithheld": 0,
+        "shopNetIncome": 48,
+        "correctionCount": 0,
+        "posIncome": 120,
+        "staffProduction": 120,
+        "staffCommissionPay": 72,
+        "shopShare": 48,
+        "tips": 12
+      }
+    },
+    "shopMoney": {
+      "data": {
+        "today": "2026-10-31",
+        "timezone": "America/Chicago",
+        "days": [
+          {
+            "date": "2026-10-16",
+            "expected": 100
+          },
+          {
+            "date": "2026-10-17",
+            "expected": 500
+          },
+          {
+            "date": "2026-10-18",
+            "expected": 600
+          },
+          {
+            "date": "2026-10-19",
+            "expected": 8880
+          }
+        ],
+        "collections": [
+          {
+            "business_date": "2026-10-17",
+            "cash": 200,
+            "card": 300,
+            "other": 0,
+            "revision": 1,
+            "legacy_snapshot": null
+          },
+          {
+            "business_date": "2026-10-18",
+            "cash": 200,
+            "card": 420,
+            "other": 0,
+            "revision": 1,
+            "legacy_snapshot": null
+          },
+          {
+            "business_date": "2026-10-19",
+            "cash": 4000,
+            "card": 4380,
+            "other": 500,
+            "revision": 1,
+            "legacy_snapshot": null
+          }
+        ],
+        "legacy": [],
+        "expenses": [
+          {
+            "id": "rent-1",
+            "business_date": "2026-10-01",
+            "paid_at": "2026-10-01T14:00:00Z",
+            "amount": 400,
+            "source": "bank",
+            "category": "rent",
+            "note": "October rent",
+            "revision": 1,
+            "recurrence_key": "2026-10"
+          },
+          {
+            "id": "supply-1",
+            "business_date": "2026-10-20",
+            "paid_at": "2026-10-20T19:35:00Z",
+            "amount": 70,
+            "source": "cash",
+            "category": "supplies",
+            "note": "Nail supplies",
+            "revision": 1
+          },
+          {
+            "id": "other-1",
+            "business_date": "2026-10-20",
+            "paid_at": "2026-10-20T16:30:00Z",
+            "amount": 30,
+            "source": "bank",
+            "category": "other",
+            "note": "Other",
+            "revision": 1
+          }
+        ],
+        "opening": {
+          "cash": 0,
+          "bank": 0,
+          "other": 0,
+          "tax": 0,
+          "revision": 1
+        },
+        "settings": {
+          "rent": 400,
+          "rent_day": 1,
+          "fee_rate": 0,
+          "fee_each": 0,
+          "revision": 1
+        },
+        "giftOpening": 200,
+        "giftClosing": 300,
+        "giftActivity": [
+          {
+            "id": "g1",
+            "kind": "issue",
+            "delta": 20000,
+            "last4": "1234",
+            "created_at": "2026-10-17T18:00:00Z"
+          },
+          {
+            "id": "g2",
+            "kind": "redeem",
+            "delta": -30000,
+            "last4": "1234",
+            "created_at": "2026-10-18T18:00:00Z"
+          },
+          {
+            "id": "g3",
+            "kind": "issue",
+            "delta": 20000,
+            "last4": "4567",
+            "created_at": "2026-10-20T18:00:00Z"
+          }
+        ],
+        "rewardOpening": 1000,
+        "rewardClosing": 1300,
+        "rewardCredits": 500,
+        "rewardDebits": 200,
+        "rewardActivity": [
+          {
+            "id": "r1",
+            "reason": "Earned",
+            "delta": 500,
+            "customer_name": "Sample customer",
+            "user_id": "sample-customer",
+            "created_at": "2026-10-17T18:00:00Z"
+          }
+        ],
+        "discounts": [
+          {
+            "id": "d1",
+            "ticket_number": "T00042",
+            "total": 80,
+            "reward": 30,
+            "opened_at": "2026-10-18T18:00:00Z"
+          }
+        ],
+        "history": [],
+        "cardTransactions": 20
+      },
+      "error": null
+    }
+  },
+  "salonId": "a0000000-1111-4111-8111-000000000099",
+  "salonName": "Synthetic payroll salon",
+  "payrollScope": "synthetic-owner-workspace",
+  "canManageConnection": true,
+  "taxPlugin": null,
+  "downloadEnabled": true
+}

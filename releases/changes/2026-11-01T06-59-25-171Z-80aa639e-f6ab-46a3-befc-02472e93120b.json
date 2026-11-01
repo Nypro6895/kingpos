@@ -1,0 +1,87 @@
+{
+  "kind": "change",
+  "changeId": "owner-attention-payroll-polish-20261101",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Compact Attention detail/Ignore controls; shadow groups; app-aligned iOS Payroll gutters; remove duplicate/sequential Payroll reads",
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/payroll/shop-money.module.css",
+    "app/staff/today/attention-detail.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-layout.module.css",
+    "docs/owner-attention-payroll-polish-20261101.md",
+    "lib/app-local-owner-page-registry-server.ts",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/payroll-page-load-plan.ts",
+    "lib/payroll.ts",
+    "tests/owner-attention-browser.mjs",
+    "tests/owner-payroll-polish-browser.mjs",
+    "tests/payroll-load-concurrency.test.mjs",
+    "tests/payroll-load-plan.test.mjs"
+  ],
+  "dependencies": [
+    "owner-financial-attention-20261101",
+    "payroll-style-reference-20261101"
+  ],
+  "source": {
+    "commit": "42c730aff5090495a276b53ecb2d04c14871ff4a",
+    "snapshot": "C:\\Reylumi-worktrees\\owner-attention-payroll-polish-20261101\\artifacts\\owner-payroll-polish\\frozen",
+    "baseline": "4931ef6",
+    "payrollBaseline": "154c0ce"
+  },
+  "validation": [
+    {
+      "name": "32 unit/financial/load regressions",
+      "result": "passed"
+    },
+    {
+      "name": "64 web/native Payroll browser views and five Attention widths",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit and scoped lint zero errors",
+      "result": "passed"
+    },
+    {
+      "name": "Safari16 native source bundle verify only",
+      "result": "passed"
+    },
+    {
+      "name": "Controlled source benchmark 155ms to 60ms; not device timing",
+      "result": "passed"
+    }
+  ],
+  "id": "80aa639e-f6ab-46a3-befc-02472e93120b",
+  "recordedAt": "2026-11-01T06:59:25.171Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-attention-payroll-polish-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "7763a7d5a1050562dda4ed2e53b35f8a336b49749c28bd2946e2a610de496a09",
+    "app/payroll/payroll-mobile.module.css": "7d8f3c2a997ece750c149bb076cde4c56c11e702cd47244a7201d877037a6063",
+    "app/payroll/shop-money-workspace.tsx": "723fcf810f342e6bf7804bf2af6a8ecf23e2294b0e84b4e19d56cf1d6a297713",
+    "app/payroll/shop-money.module.css": "ccaa514ac76e244226babb0ed248665c5c39a7b0e61f8797f1929f2856b32488",
+    "app/staff/today/attention-detail.tsx": "284712f41261f592c2fc8baefed3517cbac252fddd4a7a70d6b293a74698bbc4",
+    "app/staff/today/owner-attention-panel.tsx": "d252e59ad1b1eb482ff8636ff6742bf59531924a1ff9443b7b79827d1192cc1d",
+    "app/staff/today/owner-attention.module.css": "f54fcff0005562b42de26b8afdfc0e952695f40679874079915f7d13a1210e79",
+    "app/staff/today/today-dashboard-view.tsx": "d1ec2115565f10b70133f0c8ab68be5f89878d0a71fe811a09c0a0b104759797",
+    "app/staff/today/today-layout.module.css": "30fdbb3112f8e69761e5a668146d30118768e48aa9c977982705c5102d2ee0f7",
+    "docs/owner-attention-payroll-polish-20261101.md": "08505c285e5b547b814f635d0594a73a78cc771313cc24d8ecdf60d2102d2c44",
+    "lib/app-local-owner-page-registry-server.ts": "587240e1a5b6572ba3dc628ab01b97bb866031badf3cf869a4d75e07cf862ada",
+    "lib/app-local-owner-payroll-view.tsx": "1aaabbd891bd6506b8b8165db180cf4927eebdcfbdb990c9b9c2da422c296960",
+    "lib/payroll-page-load-plan.ts": "00595bfc4a4c618aafbd4de9fe06f58c6529c2962684ddefcdfecc1eb852f51d",
+    "lib/payroll.ts": "4a1d31db142936d4c0994c7b1d21807ea294d0d259610df4f910a35ed88fac8b",
+    "tests/owner-attention-browser.mjs": "5d012c506d96df91d3f3003a685d3c6c05d27df2ae1c24809fbaea35a1d83384",
+    "tests/owner-payroll-polish-browser.mjs": "a0e8876776dca119b9665cf92b0e82f0499d8c05fc6c69740e45efc7f5ff7309",
+    "tests/payroll-load-concurrency.test.mjs": "2aba9048f4bdabacda31cfc4e2be1fa4b097b58c9364ca45ac8886dd09bdff28",
+    "tests/payroll-load-plan.test.mjs": "33ebc7b6d826aeef0bd51ade5fbfc41ebd600184668aa990aed86be592e856e0"
+  }
+}

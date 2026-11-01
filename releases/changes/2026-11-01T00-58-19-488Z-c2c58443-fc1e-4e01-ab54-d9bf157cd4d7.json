@@ -1,0 +1,18 @@
+{
+  "kind": "change",
+  "changeId": "ticket-staff-turns-20261031",
+  "status": "working",
+  "summary": "Show existing big and small turn numbers immediately after staff name in shared ticket summary",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "validation": [],
+  "id": "c2c58443-fc1e-4e01-ab54-d9bf157cd4d7",
+  "recordedAt": "2026-11-01T00:58:19.488Z",
+  "worktree": "C:\\Reylumi-worktrees\\ticket-calendar-history-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
