@@ -1,0 +1,29 @@
+{
+  "kind": "release",
+  "summary": "Payroll reference UI published on web/hosted Windows and iOS 1.0.0 build 81 available in both existing TestFlight groups. Exact source/archive binding, 238 native tests and 35 live HTTP checks passed. Authenticated live browser UI unavailable due Chrome extension timeouts; no physical-device acceptance or App Store publication claimed.",
+  "changes": [
+    "0e5e28b6-ea55-4716-8ea2-df15195c6414"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_FnWRb4DLB2terinVzD6ZxrJxmGZd",
+      "baselineDeploymentId": "dpl_62ypVGBt4UeVjHymgi9gXKqQmETn",
+      "sourceSha256": "232613589222885c8f443482f891dc7785f28fadc772a60fc6a185021652bbf4",
+      "overlaySha256": "e80d7b6d73140d74b6bca7f64a4ecb2d67dba29d08d605ab9c20a251020c1b05",
+      "evidence": "artifacts/payroll-reference-release-20261101/web-live-source-verified.json; artifacts/payroll-reference-release-20261101/live-alias-after.json; artifacts/payroll-reference-release-20261101/http-live.json; artifacts/payroll-reference-release-20261101/windows-installer-live-smoke.json; artifacts/payroll-reference-release-20261101/authenticated-browser-status.json; artifacts/payroll-reference-release-20261101/live-alias-final.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "81",
+      "commit": "577e062fddcaacd37165841f8510d2818c0e0b09",
+      "evidence": "artifacts/payroll-reference-release-20261101/native-verified.json; artifacts/payroll-reference-release-20261101/availability-verified.json; artifacts/payroll-reference-release-20261101/native-artifact.json; artifacts/payroll-reference-release-20261101/availability-extraction.json"
+    }
+  },
+  "id": "b7abb9af-bdea-4d4c-aad1-852440ed75bb",
+  "recordedAt": "2026-11-01T06:20:50.891Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-style-reference-20261101"
+}

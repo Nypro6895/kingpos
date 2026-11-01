@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Owner-reviewed Payroll four-screen reference published on live web. Exact 3750-file source, 35 live route checks, Shop anonymous denial and Windows download verified. Authenticated browser UI unavailable because Chrome extension timed out; source/local SQL/UI proofs remain separate. Native pipeline in progress.",
+  "changes": [
+    "0e5e28b6-ea55-4716-8ea2-df15195c6414"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_FnWRb4DLB2terinVzD6ZxrJxmGZd",
+      "baselineDeploymentId": "dpl_62ypVGBt4UeVjHymgi9gXKqQmETn",
+      "sourceSha256": "232613589222885c8f443482f891dc7785f28fadc772a60fc6a185021652bbf4",
+      "overlaySha256": "e80d7b6d73140d74b6bca7f64a4ecb2d67dba29d08d605ab9c20a251020c1b05",
+      "evidence": "artifacts/payroll-reference-release-20261101/web-live-source-verified.json; artifacts/payroll-reference-release-20261101/live-alias-after.json; artifacts/payroll-reference-release-20261101/http-live.json; artifacts/payroll-reference-release-20261101/windows-installer-live-smoke.json; artifacts/payroll-reference-release-20261101/authenticated-browser-status.json"
+    }
+  },
+  "id": "77cfb011-7443-4e90-b2f0-f38adbbe7ee5",
+  "recordedAt": "2026-11-01T06:02:03.378Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-style-reference-20261101"
+}
