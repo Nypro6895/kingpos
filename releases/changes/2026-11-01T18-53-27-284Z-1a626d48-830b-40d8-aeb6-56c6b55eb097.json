@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "daily-report-edited-after-business-date",
+  "status": "ready",
+  "summary": "Daily Report shows Edited only for confirmed saves made after its report business date in the salon timezone. Ticket edits keep their existing behavior; same-day audit data remains intact.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/financial-change-presentation.ts",
+    "tests/daily-report-edit-date.test.mjs",
+    "tests/daily-report-edit-date-browser.mjs",
+    "tests/financial-history-record-semantics.test.mjs"
+  ],
+  "source": {
+    "snapshot": "/workspace/kingpos/artifacts/daily-report-edit-date-20261101/frozen-source",
+    "commit": "a454ccec7b49484a4e4cb006a64631708b654c3d"
+  },
+  "validation": [
+    {
+      "name": "37 date-boundary, record-semantics, routing and inline-history tests",
+      "result": "passed",
+      "evidence": "artifacts/daily-report-edit-date-20261101/verification.json"
+    },
+    {
+      "name": "Chromium: actual DailyInputInlineHistory and ReportTicketHistoryRow with Tokyo device timezone and Chicago salon timezone; later viewing preserves same-day saves without Edited; post-date save counts once",
+      "result": "passed",
+      "evidence": "artifacts/daily-report-edit-date-20261101/verification.json"
+    },
+    {
+      "name": "npx tsc --noEmit --project tsconfig.financial-inputs.json",
+      "result": "passed",
+      "evidence": "artifacts/daily-report-edit-date-20261101/verification.json"
+    },
+    {
+      "name": "ESLint on changed source/tests and git diff --check",
+      "result": "passed",
+      "evidence": "artifacts/daily-report-edit-date-20261101/verification.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "1a626d48-830b-40d8-aeb6-56c6b55eb097",
+  "recordedAt": "2026-11-01T18:53:27.284Z",
+  "worktree": "/workspace/kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/financial-change-presentation.ts": "f3bdde1041180ced3013de5c7c06f3e68a6db73ba65cb8582f77c8b62e74b30f",
+    "tests/daily-report-edit-date.test.mjs": "f239a8e42f0c8df7e87382a4bf3e2ef14a63ec488caa62c20be5b1c31dab851b",
+    "tests/daily-report-edit-date-browser.mjs": "c91011660211eab2239ae29f504d642acb6d437ae1ef92c6db1f8bfb8a7a6c98",
+    "tests/financial-history-record-semantics.test.mjs": "05031d4efe54d4428443c8aa17105764e0ff5cb32eaa1907115ef45a3eae479a"
+  }
+}
