@@ -308,7 +308,8 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         }
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
-        window.rootViewController = controller; window.isHidden = false
+        window.rootViewController = controller; window.makeKeyAndVisible()
+        XCTAssertTrue(window.isKeyWindow, "Installed frame measurements require the foreground fixture")
         defer { controller.webView?.stopLoading(); window.isHidden = true; window.rootViewController = nil }
         let startedAt = ProcessInfo.processInfo.systemUptime
         controller.initializeWebContentIfNeeded()
@@ -338,6 +339,10 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
     private func attach(_ name: String, run: Run, checkpoints: [String: Any], passed: Bool) async throws {
         let js = (try? await run.web.evaluateJavaScript("window.__reylumiDiagnostics?.snapshot() ?? []")) as? [[String: Any]] ?? []
         let native = try JSONSerialization.jsonObject(with: JSONEncoder().encode(run.trace.snapshot()))
+        if !passed {
+            let state = try? await run.web.evaluateJavaScript("JSON.stringify({visibility:document.visibilityState,path:location.pathname,text:document.body.innerText.slice(0,1200),today:!!document.querySelector('[data-today-dashboard]'),ownerNav:!!document.querySelector('nav[aria-label=Owner]')})")
+            print("REYLUMI_OWNER_DIAGNOSTIC \(String(describing: state))")
+        }
         let firstVisible = js.first { $0["event"] as? String == "data.visible" && $0["area"] as? String == "today" }
         let bootStart = js.first { $0["event"] as? String == "boot.start" }
         let report: [String: Any] = ["schemaVersion": 1, "scenario": name, "candidateBaseCommit": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0", "bundleBuildId": run.controller.bundle.manifest.buildId, "passed": passed, "actualInstalledBundle": true, "newColdWebView": true, "nativeProcessColdStart": false, "syntheticTransport": true, "syntheticServerTiming": true, "physicalDeviceEvidence": false, "nativeTrace": native, "javascriptTrace": js, "checkpoints": checkpoints, "counts": await run.http.counts()]

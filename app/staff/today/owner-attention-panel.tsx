@@ -81,7 +81,7 @@ export function OwnerAttentionPanel({ salonId }: { salonId: string }) {
   return <section className={s.panel} aria-busy={!data && !error}>
     <div className={s.heading}><h2><T text="Needs Attention" /></h2><span className={s.badge}><T text={error ? "Check unavailable" : data ? `${data.total} to review` : "Checking…"} /></span></div>
     {error && <div role="status"><p className={s.error}>{error}</p><button onClick={() => void load()}><T text="Try again" /></button></div>}
-    {data?.salonId === salonId && data.items.slice(0, 5).map(item => <article className={`${s.item} ${s.notification}`} key={item.item_key}>
+    {data && data.salonId === salonId && data.items.slice(0, 5).map(item => <article className={`${s.item} ${s.notification}`} key={item.item_key}>
       <div className={s.message}><h3>{item.label}</h3><p className={s.meta}>{item.business_date} · {new Intl.DateTimeFormat("en-US", { dateStyle: "short", timeStyle: "short", timeZone: data.timezone }).format(new Date(item.occurred_at))}</p>
       <p className={s.detail}>{item.detail}</p></div><div className={s.notificationActions}><AttentionActions salonId={salonId} viewerId={data.viewerId} item={item} compact /></div>
     </article>)}

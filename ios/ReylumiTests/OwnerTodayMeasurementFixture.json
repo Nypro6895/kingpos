@@ -120,7 +120,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "staff": {
       "pendingSections": {
@@ -264,7 +265,8 @@
           }
         }
       ],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "bookings": {
       "pendingSections": {
@@ -405,7 +407,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "waiting": {
       "pendingSections": {
@@ -545,7 +548,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "financials": {
       "pendingSections": {
@@ -735,7 +739,8 @@
           }
         }
       ],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "extras": {
       "pendingSections": {
@@ -872,7 +877,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "full": {
       "pendingSections": {
@@ -1119,7 +1125,8 @@
           }
         }
       ],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     }
   },
   "navigation": {

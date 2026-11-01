@@ -1681,7 +1681,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
           <RightNowPanel dashboard={dashboard} />
-          {isOwner && <OwnerAttentionPanel key={dashboard.salonId} salonId={dashboard.salonId} />}
+          {isOwner && dashboard.salonId && <OwnerAttentionPanel key={dashboard.salonId} salonId={dashboard.salonId} />}
         </section>
 
         {(progressive ? sectionPending(dashboard, "staff") : dashboard.pendingSections?.details) ? <PendingPanel title="Team" /> : <TeamPanel dashboard={teamDashboard} />}
