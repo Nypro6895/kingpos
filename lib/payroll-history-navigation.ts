@@ -25,9 +25,9 @@ export function resolvePayrollContextTab(params: RouteParams, canViewAllPayroll:
     return target === "shop" && !canViewAllPayroll ? "record" : target;
   }
   if (!canViewAllPayroll) return "staff";
-  if (typeof params.tab === "string" && ["analytics", "differences", "staff", "shop", "gifts", "rewards", "discounts", "tax", "settings", "tools", "download"].includes(params.tab)) return params.tab as PayrollContextTab;
-  // Legacy history URLs without an exact record are aliases of Overview.
-  return "overview";
+  if (typeof params.tab === "string" && ["staff", "shop", "gifts", "rewards", "discounts", "tax", "settings", "tools", "download"].includes(params.tab)) return params.tab as PayrollContextTab;
+  // Retired overview/analytics URLs land on Shop. Exact record links above retain their target.
+  return "shop";
 }
 
 function capturedTicketDate(change: PayrollLiveChange) {

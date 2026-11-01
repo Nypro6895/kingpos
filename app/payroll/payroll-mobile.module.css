@@ -149,3 +149,68 @@
 
 /* Payroll sections stay on one horizontal rail at every viewport. */
 .mobileNav{display:flex!important;flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:thin}.mobileNav a{flex:0 0 auto;min-width:74px;padding-inline:12px;white-space:nowrap}
+
+/* Reference styling shared by Shop, Staff and all Tools destinations. */
+.page { gap:16px; }
+.mobileNav { border-bottom:1px solid var(--payroll-line); scrollbar-width:none; }
+.mobileNav a { flex:1 0 auto; min-height:44px; padding:10px 8px; font-size:13px; }
+.mobileNav a[aria-current=page] { color:var(--payroll-green); border-bottom-color:var(--payroll-green); }
+.compactPeriod { border-color:var(--payroll-line); }
+.compactPeriod button:nth-child(2) { font-size:13px; }
+.staffCard { border-color:var(--payroll-line); }
+.takeHomeCard>.disclosureSummary { padding:16px 0; }
+.takeHomeMoney strong { color:var(--payroll-green); }
+.takeHomeBody { padding:0 0 16px; gap:12px; }
+.earningsTotals { margin:0; padding:12px; gap:12px; border:0; border-radius:5px; background:var(--payroll-total); }
+.earningsTotals dd { font-size:24px; color:var(--payroll-green); }
+.staffSettings { border-color:var(--payroll-line); gap:6px 12px; padding-top:10px; }
+.ledger { gap:0; }
+.ledger>div { min-height:34px; padding:6px 0; border-bottom:1px solid var(--payroll-line); }
+.ledger dd { color:var(--payroll-ink); }
+.toolLink { min-height:68px; border:0; border-bottom:1px solid var(--payroll-line); border-radius:0; padding:14px 0; }
+.toolLink strong { font-size:16px; font-weight:600; }
+.toolLink small { font-size:12px; color:var(--payroll-muted); }
+.toolLink>span:last-child { color:var(--payroll-muted); }
+.tools { gap:0; }
+.panel { border-color:var(--payroll-line); padding:16px 0; }
+.action { border-color:#dcdeda; border-radius:6px; min-height:40px; padding:8px 14px; font-size:13px; }
+.primary { background:var(--payroll-peach); border-color:var(--payroll-peach); color:#322b25; }
+.output { gap:8px; padding:12px 0; border-color:var(--payroll-line); }
+.output>a { flex:0 1 auto; }
+.page form { min-width:0; }
+.page :global(.settings-style) { border-radius:6px; }
+.page :global(#download)>form { padding:14px; border-radius:6px; background:var(--payroll-form); }
+.page :global(#download)>form>button { background:var(--payroll-peach); color:#322b25; }
+.page :global(#download)>form>label { flex:1 1 180px; }
+.page :global(#download)>form>fieldset { flex-basis:100%; }
+.page :global(table) { font-variant-numeric:tabular-nums; }
+.page :global(thead) { color:var(--payroll-muted); }
+.page :global(tfoot) { background:var(--payroll-total); color:var(--payroll-green); }
+.page :global(tfoot td) { font-weight:650; }
+.checkShortcut { align-self:flex-end; width:fit-content; display:inline-flex; align-items:center; min-height:32px; padding:5px 10px; border:1px solid var(--payroll-line); border-radius:6px; font-size:12px; }
+.schedulePanel { border:0; border-bottom:1px solid var(--payroll-line); padding:0 0 16px; box-shadow:none; }
+.schedulePanel form { padding:12px; background:var(--payroll-form); border-radius:6px; }
+.page :global([data-payroll-autosave=true]) { padding:12px; background:var(--payroll-form); border-radius:6px; }
+.page :global([data-payroll-autosave=true])>div { grid-template-columns:64px minmax(0,1fr); font-size:13px; }
+.page :global([data-payroll-autosave=true]) input:not([type=hidden]) { min-height:36px; background:white; }
+@media(max-width:639px) {
+ .page { padding:12px 16px!important; gap:14px; }
+ .page>.output { padding-inline:0; }
+ .takeHomeCard>.disclosureSummary { padding:14px 0; }
+ .takeHomeMoney { gap:9px; }
+ .takeHomeMoney strong { font-size:13px; }
+ .staffIdentity strong { font-size:14px; }
+ .takeHomeBody { padding-inline:0; }
+}
+@media(min-width:1024px) {
+ .page { width:100%; max-width:1440px; padding:24px 32px; gap:18px; }
+ .mobileNav { max-width:680px; }
+ .mobileNav a { flex:0 0 auto; min-width:110px; justify-content:center; padding:12px 20px; }
+ .compactPeriod { max-width:none; }
+ .tools { grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+ .takeHomeBody { max-width:none; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px 28px; }
+ .earningsTotals,.takeHomeBody>.staffSettings { grid-column:1/-1; }
+ .takeHomeMoney { gap:40px; }
+ .takeHomeMoney strong { font-size:16px; }
+ .page :global(#download)>form { max-width:960px; }
+}

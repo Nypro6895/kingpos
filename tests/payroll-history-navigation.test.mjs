@@ -8,8 +8,8 @@ const period={startDate:'2026-10-16',endDate:'2026-10-31',cycleType:'semi_monthl
 const event=(source,extra={})=>({id,source_table:source,period_start:'2026-10-29',period_end:'2026-10-29',...extra});
 
 test('old aggregate links resolve the ordinary accessible section without turning a malformed ID into a record',()=>{
- for(const params of [{tab:'history'},{tab:'history',inputEvent:'bad-id'},{tab:'record'},{tab:'history',inputEvent:' '+id},{tab:['history'],inputEvent:[id]},{tab:'history',inputEvent:null}]){
-  assert.equal(nav.resolvePayrollContextTab(params,true,[]),'overview');
+ for(const params of [{}, {tab:'overview'}, {tab:'analytics'}, {tab:'differences'}, {tab:'history'},{tab:'history',inputEvent:'bad-id'},{tab:'record'},{tab:'history',inputEvent:' '+id},{tab:['history'],inputEvent:[id]},{tab:'history',inputEvent:null}]){
+  assert.equal(nav.resolvePayrollContextTab(params,true,[]),'shop');
   assert.equal(nav.resolvePayrollContextTab(params,false,[]),'staff');
  }
 });

@@ -1,3 +1,4 @@
+import payrollTheme from "@/app/payroll/payroll-theme.module.css";
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
 import {financialHistoryForObject,periodPaymentDetailsForObject} from "@/lib/inline-financial-history";
 import {FinancialHistoryProvider,InlineFinancialHistory,InlinePayrollPaymentDetails} from "@/app/payroll/inline-financial-history";
@@ -818,7 +819,7 @@ function SettingsTab({
 }) {
   return (
     <section className="grid gap-6" id="payroll-settings">
-      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className={styles.schedulePanel}>
         <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Shop Payroll Schedule" /></h2>
         <fieldset disabled={!canManage}><PayrollScheduleForm
           action={saveSalonPayrollScheduleAction}
@@ -879,7 +880,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
 
   try {
     data = await getPayrollPageData({
-      includeAnalytics: params.tab === "analytics",
+      includeAnalytics: false,
       endDate: params.end,
       month: params.month,
       payPeriodStart: params.payPeriodStart,
@@ -905,9 +906,9 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
       : params.payroll_error;
 
   return (
-    <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
+    <PayrollEditBoundary><main className={`${payrollTheme.surface} ${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
-      {canManageConnection && <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 py-2 text-sm" href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
+      {canManageConnection && <Link className={styles.checkShortcut} href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
       <PayrollLiveRefresh salonId={pageContext.currentSalon.id} />
       <PayrollTabs
         canReconcile={canManageConnection}

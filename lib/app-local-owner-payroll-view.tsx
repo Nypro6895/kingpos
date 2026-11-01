@@ -1,4 +1,5 @@
 "use client";
+import payrollTheme from "@/app/payroll/payroll-theme.module.css";
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
 import {financialHistoryForObject,periodPaymentDetailsForObject} from "@/lib/inline-financial-history";
 import {FinancialHistoryProvider,InlineFinancialHistory,InlinePayrollPaymentDetails} from "@/app/payroll/inline-financial-history";
@@ -811,7 +812,7 @@ function SettingsTab({
 }) {
   return (
     <section className="grid gap-6" id="payroll-settings">
-      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className={styles.schedulePanel}>
         <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Shop Payroll Schedule" /></h2>
         <fieldset disabled={!canManage}><PayrollScheduleForm
           action={saveSalonPayrollScheduleAction}
@@ -876,7 +877,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
       : params.payroll_error;
 
   return (
-    <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
+    <PayrollEditBoundary><main className={`${payrollTheme.surface} ${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
       <PayrollLiveRefresh salonId={salonId} />
       <PayrollTabs
