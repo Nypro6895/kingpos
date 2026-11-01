@@ -162,6 +162,7 @@ print("Frozen runtime test inventory:", len(expected), "cases in", len(batches),
 PY
 : > build/test.log
 task_batch_index=0
+task_failed_batches=0
 while IFS=$'\t' read -r task_batch_name task_batch_identifiers; do
   if [[ "$task_batch_index" -gt 0 ]]; then
     # Only the app in this job's selected Simulator is terminated. A host that
@@ -182,14 +183,23 @@ PY
     task_only_testing+=("-only-testing:$task_test_identifier")
   done
   echo "Runtime test host $task_batch_index: $task_batch_name" | tee -a build/test.log
-  xcodebuild test-without-building \
+  if ! xcodebuild test-without-building \
     -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
     -destination "platform=iOS Simulator,id=$task_simulator_id" \
     -derivedDataPath "$task_run_dir/DerivedData" \
     -resultBundlePath "$task_run_dir/SimulatorTests-$task_batch_name.xcresult" \
     -collect-test-diagnostics never \
-    "${task_only_testing[@]}" "${task_simulator_signing[@]}" 2>&1 | tee -a build/test.log
+    "${task_only_testing[@]}" "${task_simulator_signing[@]}" 2>&1 | tee -a build/test.log; then
+    # Collect the remaining independent host diagnostics in this same run.
+    # Any failed invocation still blocks the receipt, archive and upload.
+    task_failed_batches=$((task_failed_batches + 1))
+    echo "Failed runtime host: $task_batch_name" | tee -a build/test.log
+  fi
 done < "$task_run_dir/TestBatches.tsv"
+if [[ "$task_failed_batches" -gt 0 ]]; then
+  echo "Release blocked: $task_failed_batches runtime host(s) failed; no archive or upload."
+  exit 1
+fi
 
 # A successful empty -only-testing selection must never pass the release gate.
 # Require every source test to start and pass exactly once, with no extra case,
