@@ -1,3 +1,4 @@
+import {OwnerAttentionPanel} from "./owner-attention-panel";
 import {QuickExpense} from "@/app/reports/quick-expense";
 import styles from "./today-layout.module.css";
 import {useState} from "react";
@@ -5,8 +6,7 @@ import {useFinancialHistoryContext} from "@/app/payroll/inline-financial-history
 import {financialHistoryForObject} from "@/lib/inline-financial-history";
 import {TodayInlineTickets} from "./today-inline-tickets";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
-import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
-import { backlogTone, type MetricTone } from "@/lib/today-metric-assessment";
+import { type MetricTone } from "@/lib/today-metric-assessment";
 import { OwnerMarketPromo } from "@/components/owner-market-promo";
 
 import Link from "next/link";
@@ -15,10 +15,8 @@ import Link from "next/link";
 import { QuickAccessPanel } from "@/app/staff/today/quick-access-editor";
 import {
 
-  type TodayAttentionItem,
   type TodayClientPresence,
   type TodayDashboard,
-  type TodayDayView,
   type TodayMetric,
   type TodayMetricChart,
   type TodayPerformance,
@@ -46,13 +44,6 @@ function formatDashboardDate(value: string) {
   }).format(new Date(`${value}T12:00:00.000Z`));
 }
 
-function dateHref(date: string, currentDate: string) {
-  if (date === currentDate) {
-    return "/staff/today";
-  }
-
-  return `/staff/today?${new URLSearchParams({ date }).toString()}`;
-}
 
 function formatTime(value: string | null | undefined, timeZone: string) {
   if (!value) {
@@ -136,91 +127,6 @@ function hasTeamActivity(member: TodayTeamMember) {
   );
 }
 
-function ChevronDownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function DayViewControl({ dayView }: { dayView: TodayDayView }) {
-  return (
-    <div className="relative">
-      <details className="group">
-        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-800 shadow-sm transition hover:border-amber-200 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-          <span className="text-amber-700">
-            <SectionIcon name="calendar" />
-          </span>
-          <span><WorkspaceText text="Day view" /></span>
-          <ChevronDownIcon />
-        </summary>
-        <div className="absolute left-0 z-20 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-zinc-200 bg-white p-3 shadow-xl sm:left-auto sm:right-0">
-          <div className="grid gap-2">
-            <Link
-              className="flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-zinc-800 transition hover:bg-amber-50 hover:text-amber-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              href={dayView.todayHref}
-            >
-              <WorkspaceText text="Today" />
-            </Link>
-            <Link
-              className="flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-zinc-800 transition hover:bg-amber-50 hover:text-amber-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              href={dateHref(dayView.previousDate, dayView.currentDate)}
-            >
-              <WorkspaceText text="Previous day" />
-            </Link>
-            {dayView.nextDate ? (
-              <Link
-                className="flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-zinc-800 transition hover:bg-amber-50 hover:text-amber-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                href={dateHref(dayView.nextDate, dayView.currentDate)}
-              >
-                <WorkspaceText text="Next day" />
-              </Link>
-            ) : null}
-          </div>
-          <NavigationForm className="mt-3 border-t border-zinc-100 pt-3" method="get">
-            <label
-              className="text-xs font-semibold uppercase tracking-normal text-zinc-500"
-              htmlFor="today-date"
-            >
-              <WorkspaceText text="Choose date" />
-            </label>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <input
-                className="min-h-11 min-w-0 flex-1 rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                defaultValue={dayView.selectedDate}
-                id="today-date"
-                max={dayView.maxDate}
-                name="date"
-                type="date"
-              />
-              <NavigationSubmitButton pendingLabel="Loading…"
-                className="min-h-11 rounded-md bg-amber-600 px-3 text-sm font-semibold text-white transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
-                type="submit"
-              >
-                <WorkspaceText text="Apply" />
-              </NavigationSubmitButton>
-            </div>
-          </NavigationForm>
-        </div>
-      </details>
-      {dayView.invalidDate ? (
-        <p className="mt-2 text-xs font-medium text-amber-700">
-          <WorkspaceText text="Showing today; selected date was unavailable." />
-        </p>
-      ) : null}
-    </div>
-  );
-}
 
 function formatCheckIn(member: TodayTeamMember, timeZone: string) {
   if (!member.checkInAt) {
@@ -1083,81 +989,6 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
   );
 }
 
-function AttentionPanel({ items, pending = false }: { items: TodayAttentionItem[]; pending?: boolean }) {
-  const count = items.reduce(
-    (sum, item) => sum + (item.tone === "good" ? 0 : (item.count ?? 1)),
-    0,
-  );
-  const incomplete = items.some((item) => item.id === "incomplete-attention");
-  const tone = count === 0 && incomplete ? "default" : backlogTone(count);
-  return (
-    <Card
-      icon="alert"
-      iconTone={tone}
-      title="Needs Attention"
-      action={
-        <span
-          className={classNames(
-            "rounded-full px-2 py-1 text-xs font-semibold",
-            metricIconTone(tone),
-          )}
-        >
-          <WorkspaceText text={count
-            ? `${count} to review`
-            : pending
-              ? "Checking…"
-              : incomplete
-              ? "Check unavailable"
-              : "All clear"} />
-        </span>
-      }
-    >
-      <div className="divide-y divide-zinc-100">
-        {items.map((item) => {
-          const content = (
-            <div className="flex items-start gap-3 py-3">
-              <span
-                className={classNames(
-                  "mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full",
-                  item.tone === "good"
-                    ? "bg-emerald-500"
-                    : (item.count ?? 1) >= 5
-                      ? "bg-red-500"
-                      : "bg-orange-500",
-                )}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="break-words text-sm font-semibold text-zinc-950">
-                  <WorkspaceText text={item.label} />
-                </p>
-                <p className="mt-1 text-sm leading-5 text-zinc-600">
-                  <WorkspaceText text={item.detail} />
-                </p>
-              </div>
-              {item.href ? (
-                <span className="mt-0.5 shrink-0 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
-                  <WorkspaceText text={item.actionLabel ?? "View"} />
-                </span>
-              ) : null}
-            </div>
-          );
-
-          return item.href ? (
-            <Link
-              className="block hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              href={item.href}
-              key={item.id}
-            >
-              {content}
-            </Link>
-          ) : (
-            <div key={item.id}>{content}</div>
-          );
-        })}
-      </div>
-    </Card>
-  );
-}
 
 function StaffStatusBadge({
   status,
@@ -1811,10 +1642,6 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
   const progressive = Boolean(dashboard.pendingSections?.sections);
   const financePending = sectionPending(dashboard, "financials");
-  const attentionPending = dashboard.pendingSections?.sections?.some(section => section !== "staff");
-  const attention = attentionPending ? [...dashboard.attention.filter(item => item.id !== "all-good" && item.id !== "incomplete-attention"), {
-    id: "incomplete-attention", label: "Still checking", detail: "Other Today sections are still loading.", tone: "notice" as const, href: null, count: 0,
-  }] : dashboard.attention;
   const teamDashboard = financePending ? { ...dashboard, permissions: { ...dashboard.permissions, canViewStaffFinancials: false } } : dashboard;
 
   return (
@@ -1832,21 +1659,20 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
                 <span aria-hidden="true">{"\uD83D\uDC4B"}</span>
               </h1>
             </div>
-
+            {isOwner && <QuickExpense compact />}
           </div>
           <div className={styles.metadata}>
             <p className="min-w-0 break-words">
               <WorkspaceText text={formatDashboardDate(dashboard.date)} />
             </p>
-            <DayViewControl dayView={dashboard.dayView} />
+
             <p className={styles.updated}>
               <WorkspaceText text="Updated" /> <WorkspaceText text={formatTime(dashboard.generatedAt, dashboard.timezone)} />
             </p>
           </div>
         </header>
 
-        {isOwner && <QuickExpense/>}
-          <LoadErrorsBanner errors={dashboard.loadErrors} />
+        <LoadErrorsBanner errors={dashboard.loadErrors} />
         <SummaryGrid dashboard={dashboard} />
         {retry ? <div role="status" className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm">
           <WorkspaceText text="We couldn’t finish loading. You can try again." />
@@ -1855,7 +1681,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
           <RightNowPanel dashboard={dashboard} />
-          {!progressive && dashboard.pendingSections?.details ? <PendingPanel title="Needs attention" /> : <AttentionPanel items={attention} pending={Boolean(attentionPending)} />}
+          {isOwner && <OwnerAttentionPanel key={dashboard.salonId} salonId={dashboard.salonId} />}
         </section>
 
         {(progressive ? sectionPending(dashboard, "staff") : dashboard.pendingSections?.details) ? <PendingPanel title="Team" /> : <TeamPanel dashboard={teamDashboard} />}

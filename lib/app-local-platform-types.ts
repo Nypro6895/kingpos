@@ -37,6 +37,7 @@ export const APP_LOCAL_PLATFORM_READS = {
   "settings.personal": { argumentKeys: ["kind"], retention: "none" },
   "settings.direct": { argumentKeys: ["kind", "salonId"], retention: "none" },
   "page.owner-today": { argumentKeys: ["date", "phase"], retention: "scoped" },
+  "page.owner-attention": { argumentKeys: ["item", "page"], retention: "none" },
   "page.customer-bookings": { argumentKeys: ["tab", "details", "bookingId"], retention: "scoped" },
   "page.customer-receipt": { argumentKeys: ["ticketId"], retention: "scoped" },
   "page.staff-identity": { argumentKeys: ["view"], retention: "none" },
@@ -51,6 +52,7 @@ export const APP_LOCAL_PLATFORM_READS = {
 } as const;
 
 export const ROLE_READS = {
+  "http.owner.attention": { method: "GET", path: "/api/owner-attention", argumentKeys: ["salonId", "item", "page"], access: "scoped", cacheable: false },
   "http.financial-input-history": { method: "GET", path: "/api/financial-input-history", argumentKeys: ["salonId", "surface", "start", "end", "date", "inputEvent"], access: "scoped", cacheable: false },
   "http.owner.reconciliation-cases": { method: "GET", path: "/api/reports/reconciliation-cases", argumentKeys: ["salonId", "start", "end"], access: "scoped", cacheable: false },
   "http.staff.creation": { method: "GET", path: "/api/staff/create-appointment", argumentKeys: ["salonId", "catalog"], access: "scoped", cacheable: false },
@@ -59,6 +61,7 @@ export const ROLE_READS = {
   "http.owner.closing-history": { method: "GET", path: "/api/pos/closing/history", argumentKeys: ["salonId", "date"], access: "scoped", cacheable: false },
 } as const;
 export const ROLE_COMMANDS = {
+  "http.owner.attention": { method: "POST", path: "/api/owner-attention", argumentKeys: ["input"] },
   "http.owner.shop-money": { method: "POST", path: "/api/shop-money", argumentKeys: ["input"] },
   "http.benefits.gift-cards": { method: "POST", path: "/api/gift-cards", argumentKeys: ["input"] },
   "http.benefits.rewards": { method: "POST", path: "/api/rewards", argumentKeys: ["input"] },

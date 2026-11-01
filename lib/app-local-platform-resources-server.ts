@@ -1,4 +1,5 @@
 import "server-only";
+import { readOwnerFinancialAttention } from "./owner-financial-attention";
 
 import { createHash } from "node:crypto";
 import { getRequestBusinessContext } from "./request-business-context";
@@ -118,6 +119,9 @@ async function readAppLocalPlatformResourceInContext(name: string, input: unknow
     const index = await runReadWithDeadline(loadSettingsHub(), 15000);
     // KingUser contains profile metadata only. Do not extend this with security/PIN/session DTOs.
     data = { user: context.user!, createdAtLabel: new Date(context.user!.created_at).toLocaleDateString("en-US"), index } satisfies AppLocalSettingsData;
+  } else if (name === "page.owner-attention") {
+    if (!isOwnerMembership(context.currentMembership) || !context.currentSalon) throw new AppLocalRoleReadError(403, "Owner access required");
+    data = await runReadWithDeadline(readOwnerFinancialAttention(context, args.item, args.page ? Number(args.page) : 0), 12000);
   } else if (name === "page.owner-today") {
     const response = await readAppLocalRoleResource("owner.today", args, { ...options, etag: undefined });
     data = { dashboard: response!.data, isOwner: isOwnerMembership(context.currentMembership) };

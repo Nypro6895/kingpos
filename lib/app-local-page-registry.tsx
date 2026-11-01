@@ -15,6 +15,8 @@ import { StaffMyWorkView } from "@/app/staff/my-work/staff-my-work-view";
 import { StaffScheduleView } from "@/app/staff/appointments/staff-schedule-view";
 import { StaffWorkdayView } from "@/app/staff/workday/staff-workday-view";
 import { AppLocalTodayClient } from "@/app/staff/today/today-progressive-client";
+import { AttentionDetail, AttentionList } from "@/app/staff/today/attention-detail";
+import type { OwnerAttentionData } from "@/types/owner-financial-attention";
 import { MarketClient } from "@/app/market/market-client";
 import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
 import { SettingsLoading } from "@/app/settings/settings-loading";
@@ -132,6 +134,10 @@ function StaffPage(props: AppLocalPageProps) {
   return <StaffScheduleView data={schedule.result} salonId={schedule.salonId} params={params} />;
 }
 function TodayPage(props: AppLocalPageProps) { return <AppLocalTodayClient scope={props.context!.context.scope} requestedDate={ticketNotificationDate(queryFor(props.path, ["date","inputEvent","eventDate"]))} historyQuery={urlFor(props.path).search} />; }
+function OwnerAttentionPage(props: AppLocalPageProps) {
+  const query = queryFor(props.path, ["item", "page"]);
+  return <ReadView<OwnerAttentionData> {...props} name="page.owner-attention" args={query} title="Financial attention">{(data, refresh) => <main className="mx-auto max-w-4xl p-4"><a href="/staff/today">← Today</a>{query.item ? data.items[0] ? <AttentionDetail data={data} item={data.items[0]} onSaved={() => void refresh()} /> : <p>This item changed or was resolved. <a href="/staff/today/attention">Open current attention</a></p> : <AttentionList data={data} page={Number(query.page ?? 0)} onSaved={() => void refresh()} />}</main>}</ReadView>;
+}
 
 const definitions = [
   { id: "help.home", title: "Help", requiresContext: false, Component: HelpPage, features: ["complete-guides", "search", "role-filters", "illustrations", "en-vi"] },
@@ -151,7 +157,8 @@ const definitions = [
   { id: "customer.reviews", title: "My Reviews", requiresContext: true, Component: ReviewsPage, features: ["own-reviews","salon-replies","pagination","original-customer-edit"] },
   { id: "customer.favorites", title: "Your favorites", requiresContext: true, Component: FavoritesPage, features: ["salons", "inspiration", "original-favorite-controls"] },
   { id: "staff.work", title: "My Work", requiresContext: true, Component: StaffPage, features: ["original-daily", "pay", "analysis", "schedule", "workday", "original-commands"] },
-  { id: "owner.today", title: "Today", requiresContext: true, Component: TodayPage, features: ["original-complete-dashboard", "date", "original-shortcuts"] },
+  { id: "owner.today", title: "Today", requiresContext: true, Component: TodayPage, features: ["original-complete-dashboard", "today-only", "owner-money-attention", "original-shortcuts"] },
+  { id: "owner.attention", title: "Financial attention", requiresContext: true, Component: OwnerAttentionPage, features: ["owner-financial-checks", "exact-event-detail", "persistent-ignore"] },
 ] satisfies AppLocalPage[];
 const pages = new Map(definitions.map(page => [page.id, page.requiresContext ? privatePage(page) : page]));
 export const APP_LOCAL_PAGE_IDS = definitions.map(({ id, title, requiresContext, features }) => ({ id, title, requiresContext, features }));
@@ -181,6 +188,7 @@ export function getAppLocalPage(path: string): AppLocalPage | null {
     else if (pathname === "/more/reviews") id = "customer.reviews";
     else if (["/staff/my-work", "/staff/workday", "/staff/appointments"].includes(pathname)) id = "staff.work";
     else if (pathname === "/staff/today") id = "owner.today";
+    else if (pathname === "/staff/today/attention") id = "owner.attention";
     return id ? pages.get(id) ?? null : null;
   } catch { return null; }
 }

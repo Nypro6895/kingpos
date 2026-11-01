@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageCount": 146,
+  "pageCount": 147,
   "layoutCount": 17,
   "routes": [
     {
@@ -6370,6 +6370,51 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(app)/staff/today/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "scoped-authorized-snapshot",
+        "scope": "workspace",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/staff/today/attention",
+      "source": "app/(app)/staff/today/attention/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "live",
+      "roles": [
+        "owner"
+      ],
+      "scope": "workspace",
+      "renderStrategy": "prepared-authorized-page",
+      "rendererId": "owner.attention",
+      "readResources": [
+        "page.owner-attention"
+      ],
+      "onlineReason": null,
+      "clientModules": [
+        {
+          "source": "app/staff/today/attention-detail.tsx",
+          "exports": [
+            "AttentionDetail",
+            "AttentionList"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/owner-financial-attention#readOwnerFinancialAttention"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/staff/today/attention/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."

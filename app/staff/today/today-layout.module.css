@@ -1,5 +1,5 @@
 .header { min-width:0; }
-.greeting { min-width:0; }
+.greeting { min-width:0; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
 .metadata { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; margin-top:8px; color:#71717a; font-size:13px; font-weight:500; }
 .metadata > p:first-child { margin:0; min-width:0; }
 .metadata summary { min-height:44px; font-size:13px; box-shadow:none; }

@@ -1,5 +1,6 @@
 {
   "routes": [
+    "/staff/today/attention",
     "/help",
     "/help/:slug",
     "/support",

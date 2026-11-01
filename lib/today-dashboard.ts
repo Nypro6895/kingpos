@@ -10,7 +10,7 @@ import "server-only";
 import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
 import type { ReadStage } from "@/lib/read-request-timing";
 
-import {loadNotificationPage} from "@/lib/notification-center";
+
 import {
   BOOKING_LINE_SELECT,
   BOOKING_SELECT,
@@ -104,6 +104,7 @@ export type TodayDashboard = {
     waitingClients: TodayClientPresence[];
   };
   salonName: string;
+  salonId: string;
   summary: {
     customers: TodayMetric;
     sales: TodayMetric;
@@ -712,38 +713,6 @@ async function loadQuickAccessDashboardData(
   }
 }
 
-async function loadNotificationAttentionItems(
-  context: CurrentBusinessContext,
-): Promise<DashboardData<TodayAttentionItem[]>> {
-  try {
-    const notifications = await loadNotificationPage(context,{limit:3,unread:true,strictSalonScope:true});
-
-    return {
-      data: notifications.items.map((notification) => ({
-        detail: notification.body ?? "Open this update when you have a moment.",
-        href: "href" in notification.action?notification.action.href:null,
-        id: `notification:${notification.id}`,
-        label: notification.title,
-        tone: "notice" as const,
-      })),
-      error: null,
-    };
-  } catch (error) {
-    console.error("Today notification dashboard data failed", {
-      error: errorMessage(error),
-      salonId: context.currentSalon?.id,
-      userId: context.user?.id,
-    });
-
-    return {
-      data: null,
-      error: {
-        area: "notifications",
-        message: errorMessage(error),
-      },
-    };
-  }
-}
 
 function customerDisplayName(booking: TodayBookingRow) {
   return (
@@ -1366,97 +1335,6 @@ function buildWaitingMetric(input: {
   } satisfies TodayMetric;
 }
 
-function buildAttention(input: {
-  bookingSummary: ReturnType<typeof summarizeBookings> | null;
-  canViewTickets: boolean;
-  date: string;
-  isCurrentDate: boolean;
-  notifications: TodayAttentionItem[];
-  report: DailyPosReport | null;
-  waitingClients: TodayClientPresence[];
-}) {
-  const items: TodayAttentionItem[] = [];
-
-  if (input.isCurrentDate && input.waitingClients.length > 0) {
-    items.push({
-      actionLabel: "Review",
-      detail:
-        "Appointment arrivals are marked checked in and have not started service.",
-      href: "/bookings",
-      id: "waiting-clients",
-      count: input.waitingClients.length,
-      label: `${input.waitingClients.length} waiting client${
-        input.waitingClients.length === 1 ? "" : "s"
-      }`,
-      tone: "warning",
-    });
-  }
-
-  if (input.bookingSummary && input.bookingSummary.pending > 0) {
-    items.push({
-      actionLabel: "Review",
-      detail: input.isCurrentDate
-        ? "Review pending or requested appointments for today."
-        : "Review pending or requested appointments for this date.",
-      href: `/bookings?${new URLSearchParams({
-        date: input.date,
-        range: "day",
-        status: "pending",
-      }).toString()}`,
-      id: "pending-bookings",
-      count: input.bookingSummary.pending,
-      label: `${input.bookingSummary.pending} booking${
-        input.bookingSummary.pending === 1 ? "" : "s"
-      } need review`,
-      tone: "notice",
-    });
-  }
-
-  if (input.report && input.report.metadata.excludedOpenTicketCount > 0) {
-    items.push({
-      actionLabel: input.canViewTickets ? "View" : undefined,
-      detail: input.isCurrentDate
-        ? "Open tickets are excluded from daily closing totals until completed."
-        : "Open tickets from this date are excluded from daily closing totals until completed.",
-      href: input.canViewTickets
-        ? `/pos-tickets?${new URLSearchParams({
-            date: input.date,
-          }).toString()}`
-        : null,
-      id: "open-pos-tickets",
-      count: input.report.metadata.excludedOpenTicketCount,
-      label: `${input.report.metadata.excludedOpenTicketCount} open POS ticket${
-        input.report.metadata.excludedOpenTicketCount === 1 ? "" : "s"
-      }`,
-      tone: "notice",
-    });
-  }
-
-  if (input.isCurrentDate) {
-    items.push(
-      ...input.notifications.map((notification) => ({
-        ...notification,
-        actionLabel: notification.actionLabel ?? "View",
-      })),
-    );
-  }
-
-  if (items.length === 0) {
-    return [
-      {
-        detail: input.isCurrentDate
-          ? "Nothing needs your attention right now."
-          : "No date-specific issues found for this day.",
-        href: null,
-        id: "all-good",
-        label: "All good",
-        tone: "good" as const,
-      },
-    ];
-  }
-
-  return items.slice(0, 5);
-}
 
 function buildPerformance(input: {
   bookingSummary: ReturnType<typeof summarizeBookings> | null;
@@ -1585,6 +1463,7 @@ function emptyDashboard(input: {
       waitingClients: [],
     },
     salonName: input.context.currentSalon?.name ?? "Current salon",
+    salonId: input.context.currentSalon?.id ?? "",
     summary: {
       customers: {
         chart: null,
@@ -1640,7 +1519,7 @@ export async function getTodayDashboard(
   const currentClock = await measureTodayRead("clock", () => loadBusinessClock(context));
   const dayView = buildDayView({
     currentDate: currentClock.date,
-    selectedDateInput: options.date,
+    selectedDateInput: undefined,
   });
   const clock: BusinessClock = {
     date: dayView.selectedDate,
@@ -1772,9 +1651,7 @@ export async function getTodayDashboard(
           readContext: financialReads,
         })
       : Promise.resolve({ data: null, error: null }),
-    readExtras && dayView.isCurrentDate
-      ? measureTodayRead("extras", () => loadNotificationAttentionItems(context))
-      : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
+    Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
     readExtras ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context)) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
   ]);
   if (readHours) {
@@ -1838,22 +1715,13 @@ export async function getTodayDashboard(
       })
     : [];
   const report = reportResult.data;
-  const notificationAttention = notificationsResult.data ?? [];
 
   const dashboard: TodayDashboard = {
     pendingSections: { metrics: core ? [
       ...(permissions.canViewReports ? ["sales" as const] : []),
       ...(!permissions.canViewBookings && permissions.canViewReports ? ["customers" as const] : []),
     ] : [], details: core },
-    attention: buildAttention({
-      bookingSummary,
-      canViewTickets: permissions.canViewTickets,
-      date: clock.date,
-      isCurrentDate: dayView.isCurrentDate,
-      notifications: notificationAttention,
-      report,
-      waitingClients,
-    }),
+    attention: [],
     businessHours,
     date: clock.date,
     dayView,
@@ -1881,6 +1749,7 @@ export async function getTodayDashboard(
       waitingClients: waitingClients.slice(0, 5),
     },
     salonName: context.currentSalon?.name ?? "Current salon",
+    salonId: context.currentSalon?.id ?? "",
     summary: {
       customers: buildCustomerMetric({
         bookingChart,

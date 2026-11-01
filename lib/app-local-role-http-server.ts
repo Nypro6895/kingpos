@@ -1,4 +1,5 @@
 import "server-only";
+import { GET as ownerAttentionGET, POST as ownerAttentionPOST } from "@/app/api/owner-attention/route";
 import { NextRequest } from "next/server";
 import { POST as giftPOST } from "@/app/api/gift-cards/route";
 import { POST as rewardPOST } from "@/app/api/rewards/route";
@@ -48,7 +49,7 @@ export async function readAppLocalRoleHttpResource(name: string, args: Record<st
   const current = await authorized(options.scope), url = new URL(rule.path, "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
   const forwarded = new Headers(); if (current.get("cookie")) forwarded.set("cookie", current.get("cookie")!);
   const readRequest = new Request(url, { headers: forwarded, signal: options.signal });
-  const response = name === "http.financial-input-history" ? await financialHistoryGET(readRequest) : name === "http.owner.reconciliation-cases" ? await reconciliationCasesGET(readRequest) : name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
+  const response = name === "http.owner.attention" ? await ownerAttentionGET(new NextRequest(readRequest)) : name === "http.financial-input-history" ? await financialHistoryGET(readRequest) : name === "http.owner.reconciliation-cases" ? await reconciliationCasesGET(readRequest) : name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
   const result = await wire(response);
   if (options.signal?.aborted) throw options.signal.reason;
   // These control DTOs are never retained by native. Preserve their actual wire status/body.
@@ -63,7 +64,7 @@ export async function runAppLocalRoleHttpCommand(name: string, args: Record<stri
   const body = JSON.stringify(args.input); if (body.length > 64 * 1024) fail(413, "This request is too large.");
   const current = await authorized(scope), forwarded = new Headers({ "Content-Type": "application/json", Origin: origin });
   const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);
-  const handlers = { "http.owner.shop-money": shopMoneyPOST, "http.benefits.gift-cards": giftPOST, "http.benefits.rewards": rewardPOST, "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST, "http.owner.closing": closingPOST };
+  const handlers = { "http.owner.attention": ownerAttentionPOST, "http.owner.shop-money": shopMoneyPOST, "http.benefits.gift-cards": giftPOST, "http.benefits.rewards": rewardPOST, "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST, "http.owner.closing": closingPOST };
   const rule = ROLE_COMMANDS[name as keyof typeof ROLE_COMMANDS], handler = handlers[name as keyof typeof handlers];
   const result = await wire(await handler(new NextRequest(new URL(rule.path, origin), { method: "POST", headers: forwarded, body })));
   return { handled: true, data: result, status: result.status };
