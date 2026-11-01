@@ -37,7 +37,7 @@ function TouchKeyboard({ scopeSelector, desktopOnly }: { scopeSelector: string; 
       // The active field uses inputmode="none" to suppress the native keyboard.
       // Its subsequent click must preserve the layout selected on focus.
       if (target.inputMode !== "none") {
-        setSymbols(target instanceof HTMLInputElement && (["tel", "number"].includes(target.type) || target.inputMode === "numeric"));
+        setSymbols(target instanceof HTMLInputElement && (["tel", "number"].includes(target.type) || ["numeric", "decimal"].includes(target.inputMode)));
       }
     }
     function outside(event: MouseEvent) {
@@ -88,6 +88,12 @@ function TouchKeyboard({ scopeSelector, desktopOnly }: { scopeSelector: string; 
 
   function insert(text: string, erase = false) {
     if (!editor || !editor.isConnected) return;
+    // Use the same first-edit behavior as the native keyboard. Dispatch before
+    // reading the caret/value, since a zero default may be cleared by the editor.
+    if (!editor.dispatchEvent(new InputEvent("beforeinput", {
+      bubbles: true, cancelable: true,
+      inputType: erase ? "deleteContentBackward" : "insertText", data: text,
+    }))) return;
     const start = editor.selectionStart ?? editor.value.length;
     const end = editor.selectionEnd ?? start;
     const previous = Array.from(editor.value.slice(0, start));
