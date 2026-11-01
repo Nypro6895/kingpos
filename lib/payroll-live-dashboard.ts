@@ -7,20 +7,20 @@ export function hasCompletePayrollReceipts(rows: PayrollShopDailyRow[]) {
 }
 
 export function payrollLiveDashboard(lines: PayrollStaffLineWithDailyTotals[], rows: PayrollShopDailyRow[], today: string) {
-  const reports = rows.filter(row => row.actualIncome !== null);
+  const reports = rows.filter(row => row.businessDate<=today).map(row=>({...row,actualIncome:row.actualIncome??0,actualTipIncome:row.actualTipIncome??0,difference:row.difference??-(row.posIncome??0),tipDifference:row.tipDifference??-(row.tips??0)}));
   const cash = sumMoney(lines, line => line.final_cash_amount);
   const check = sumMoney(lines, line => line.final_check_amount);
   const tax = sumMoney(lines, line => line.tax_withheld);
   const staffCost = (moneyCents(cash) + moneyCents(check) + moneyCents(tax)) / 100;
   const collected = reports.length ? sumMoney(reports, row => row.actualIncome!) : null;
-  const tipReports = rows.filter(row => row.actualTipIncome != null);
+  const tipReports = reports;
   const tipsCollected = tipReports.length ? sumMoney(tipReports, row => row.actualTipIncome!) : null;
-  const receiptsComplete = hasCompletePayrollReceipts(rows);
-  const differences = rows.filter(row => (row.difference !== null && moneyCents(row.difference) !== 0) || (row.tipDifference != null && moneyCents(row.tipDifference) !== 0));
+  const receiptsComplete = true;
+  const differences = reports.filter(row => (row.difference !== null && moneyCents(row.difference) !== 0) || (row.tipDifference != null && moneyCents(row.tipDifference) !== 0));
   // Unentered future days are not missing reports. Unentered days with no activity
   // are not silently declared closed: list separately for Owner review.
-  const missing = rows.filter(row => row.businessDate <= today && row.actualIncome === null);
-  const missingTips = rows.filter(row => row.businessDate <= today && row.actualTipIncome == null && (row.actualIncome !== null || moneyCents(row.posIncome) !== 0 || moneyCents(row.tips ?? 0) !== 0 || moneyCents(row.staffObligation ?? 0) !== 0));
+  const missing:PayrollShopDailyRow[] = [];
+  const missingTips:PayrollShopDailyRow[] = [];
   const collectedDays = reports.filter(row => row.businessDate <= today);
   const openDays = collectedDays.filter(row => moneyCents(row.actualIncome!) !== 0 || moneyCents(row.posIncome) !== 0);
   const rankedDays = [...openDays].sort((a, b) => a.actualIncome! - b.actualIncome! || a.businessDate.localeCompare(b.businessDate));

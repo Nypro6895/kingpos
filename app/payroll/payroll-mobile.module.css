@@ -146,3 +146,6 @@
 .dailyListing th{font-size:12px;color:#626b65;font-weight:400}
 .dailyListing th:first-child,.dailyListing td:first-child{text-align:left}
 @media(max-width:639px){.page{padding-inline:0!important;max-width:none}.takeHomeCard>.disclosureSummary{padding-inline:12px}.takeHomeBody{padding-inline:12px;max-width:none}.page>.output{padding-inline:12px}}
+
+/* Payroll sections stay on one horizontal rail at every viewport. */
+.mobileNav{display:flex!important;flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:thin}.mobileNav a{flex:0 0 auto;min-width:74px;padding-inline:12px;white-space:nowrap}

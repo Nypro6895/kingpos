@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "shop-money-expenses-20261031",
+  "status": "working",
+  "channels": [
+    "web"
+  ],
+  "summary": "Owner-authorized shop collected/reserved/available reconciliation; daily short zero and edit audit; operating expenses, rent/fee inputs; reward/gift/discount tabs using current release source",
+  "files": [],
+  "source": {
+    "commit": "c0d0ed32d95ea03dfd53509604f4971341ab56e3"
+  },
+  "validation": [
+    {
+      "name": "Implementation and financial acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "c8778e29-932b-4052-99f4-9c67b3a08085",
+  "recordedAt": "2026-11-01T03:56:09.204Z",
+  "worktree": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -19,8 +19,8 @@ test('service receipt excludes tip, owner remainder includes actual tip once bef
   const result=payrollLiveDashboard([line],[row(900,100)],'2026-10-02');
   assert.equal(result.collected,900);assert.equal(result.tipsCollected,100);assert.equal(result.staffCost,700);assert.equal(result.remaining,300);assert.equal(result.differences.length,0);
 });
-test('missing tip remains unknown; an explicitly entered zero is a real tip shortage',()=>{
-  const missing=payrollLiveDashboard([line],[row(900,null)],'2026-10-02');assert.equal(missing.remaining,null);assert.equal(missing.missingTips.length,1);
+test('unentered tip counts as zero and shortage, matching an explicit zero',()=>{
+  const missing=payrollLiveDashboard([line],[row(900,null)],'2026-10-02');assert.equal(missing.remaining,200);assert.equal(missing.missingTips.length,0);assert.equal(missing.shortDays,1);
   const zero=payrollLiveDashboard([line],[row(900,0)],'2026-10-02');assert.equal(zero.remaining,200);assert.equal(zero.differences.length,1);assert.equal(zero.shortDays,1);
 });
 test('opposite service and tip differences remain separately reviewable instead of canceling',()=>{
@@ -28,17 +28,17 @@ test('opposite service and tip differences remain separately reviewable instead 
   assert.equal(result.differences.length,1);assert.equal(result.differences[0].difference,20);assert.equal(result.differences[0].tipDifference,-20);assert.equal(result.shortDays,1);assert.equal(result.overDays,1);
 });
 
-test('tip-only entries contribute known tip total while incomplete receipts keep the period remainder unknown',()=>{
+test('tip-only entries contribute tips while unentered service counts zero in the period',()=>{
  const rows=[{...row(900,100),corrections:[],staffObligation:700},{...row(null,20,200,20),businessDate:'2026-10-02',corrections:[],staffObligation:140}];
- const result=payrollLiveDashboard([line],rows,'2026-10-03');assert.equal(result.collected,900);assert.equal(result.tipsCollected,120);assert.equal(result.remaining,null);assert.equal(result.receiptsComplete,false);
- const summary=buildShopSummary(rows);assert.equal(summary.totalActualIncome,900);assert.equal(summary.totalActualTip,120);assert.equal(summary.shopNetIncome,null);
+ const result=payrollLiveDashboard([line],rows,'2026-10-03');assert.equal(result.collected,900);assert.equal(result.tipsCollected,120);assert.equal(result.remaining,320);assert.equal(result.receiptsComplete,true);
+ const summary=buildShopSummary(rows);assert.equal(summary.totalActualIncome,900);assert.equal(summary.totalActualTip,120);assert.equal(summary.shopNetIncome,180);
 });
-test('whole-period future obligations cannot be subtracted from partial receipts as a confirmed remainder',()=>{
+test('estimated period remainder uses the supplied obligations; future receipts remain zero',()=>{
  const rows=[{...row(900,100),corrections:[],staffObligation:700},{...row(null,null,0,0),businessDate:'2026-10-30',corrections:[],staffObligation:100}];
- assert.equal(payrollLiveDashboard([line],rows,'2026-10-29').remaining,null);assert.equal(buildShopSummary(rows).shopNetIncome,null);
+ assert.equal(payrollLiveDashboard([line],rows,'2026-10-29').remaining,300);assert.equal(buildShopSummary(rows).shopNetIncome,200);
  rows[1].staffObligation=0;assert.equal(payrollLiveDashboard([line],rows,'2026-10-29').remaining,300);assert.equal(buildShopSummary(rows).shopNetIncome,300);
 });
 test('a known tip-only discrepancy remains visible while service input is still missing',()=>{
  const result=payrollLiveDashboard([line],[row(null,80)],'2026-10-02');
- assert.equal(result.collected,null);assert.equal(result.tipsCollected,80);assert.equal(result.differences.length,1);assert.equal(result.differences[0].tipDifference,-20);assert.equal(result.shortDays,1);assert.equal(result.remaining,null);
+ assert.equal(result.collected,0);assert.equal(result.tipsCollected,80);assert.equal(result.differences.length,1);assert.equal(result.differences[0].tipDifference,-20);assert.equal(result.shortDays,1);assert.equal(result.remaining,-620);
 });

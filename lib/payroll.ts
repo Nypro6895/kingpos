@@ -5,7 +5,6 @@ import { resolveStaffLegalNames } from "@/lib/staff-legal-name-server";
 import { getStaffLegalName } from "@/lib/staff-legal-name";
 import { fixedDayPay, moneyCents } from "@/lib/payroll-live-money";
 import { completeLiveIncomeDays, incomeFields } from "@/lib/payroll-live-projection";
-import { hasCompletePayrollReceipts } from "@/lib/payroll-live-dashboard";
 import { loadPayrollLiveHistory } from "@/lib/payroll-live-history";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
 import { getSalonBusinessTimezone } from "@/lib/salon-business-clock";
@@ -214,6 +213,7 @@ type TicketAdjustmentRow = {
 };
 
 type DailyClosingRow = {
+  total_inclusive?: boolean; total_expected?: number; updated_at?:string;
   tip_input: number | null;
   live_report_entered_at: string | null;
   cash_amount: number;
@@ -1792,7 +1792,7 @@ async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPer
   const { data, error } = await auth.supabase
     .from("pos_daily_closings")
     .select(
-      "report_date, cash_amount, credit_card_amount, other_amount, tip_input, status, closed_at, locked_at, live_report_entered_at",
+      "report_date, cash_amount, credit_card_amount, other_amount, tip_input, status, closed_at, locked_at, live_report_entered_at, updated_at",
     )
     .eq("salon_id", auth.salon.id)
     .gte("report_date", period.startDate)
@@ -1803,7 +1803,18 @@ async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPer
     throw new Error("Daily closing receipts couldn't be loaded. Please retry.");
   }
 
-  return (data ?? []).map((row) => ({
+  const merged:DailyClosingRow[] = [...(data ?? [])];
+  if(auth.access.canViewAllPayroll && isOwnerMembership(auth.context.currentMembership)) {
+    const r=await auth.supabase.rpc('shop_payroll_collections',{p_salon:auth.salon.id,p_start:period.startDate,p_end:period.endDate});
+    if(r.error)throw Error('Total collections could not load. Please retry.');
+    for(const total of r.data??[]) {
+      const index=merged.findIndex(row=>row.report_date===total.business_date);const old=merged[index];
+
+      const row:DailyClosingRow={...old,report_date:total.business_date,cash_amount:Number(total.cash),credit_card_amount:Number(total.card),other_amount:Number(total.other),tip_input:0,status:old?.status??'draft',closed_at:old?.closed_at??null,locked_at:old?.locked_at??null,live_report_entered_at:total.updated_at,total_inclusive:true,total_expected:Number(total.expected)};
+      if(index<0)merged.push(row);else merged[index]=row;
+    }
+  }
+  return merged.map((row) => ({
     ...row,
     cash_amount: numberValue(row.cash_amount),
     credit_card_amount: numberValue(row.credit_card_amount),
@@ -2059,19 +2070,19 @@ function buildShopDailyRows(input: {
       }
     }
 
-    const posIncome = input.expectedByDate?.get(businessDate) ?? (input.expectedByDate ? 0 : roundMoney(staffProduction));
+    let posIncome = input.expectedByDate?.get(businessDate) ?? (input.expectedByDate ? 0 : roundMoney(staffProduction));
     const savedClosing = closingByDate.get(businessDate);
     const closing = savedClosing?.live_report_entered_at ? savedClosing : undefined;
+    if(closing?.total_inclusive)posIncome=closing.total_expected??posIncome;
     const manualInputIncome = closing
       ? roundMoney(
           numberValue(closing.cash_amount) +
             numberValue(closing.credit_card_amount) +
             numberValue(closing.other_amount),
         )
-      : null;
-    const difference =
-      manualInputIncome === null ? null : roundMoney(manualInputIncome - posIncome);
-    const actualTipIncome = savedClosing?.tip_input ?? null;
+      : 0;
+    const difference = roundMoney(manualInputIncome - posIncome);
+    const actualTipIncome = savedClosing?.tip_input ?? 0;
     const overShortStatus: PayrollShopDailyRow["overShortStatus"] =
       difference === null
         ? "no_closing_input"
@@ -2084,14 +2095,14 @@ function buildShopDailyRows(input: {
     return {
       actualIncome: manualInputIncome,
       actualTipIncome,
-      tipDifference: actualTipIncome === null ? null : roundMoney(actualTipIncome - tips),
+      tipDifference: closing?.total_inclusive ? 0 : roundMoney(actualTipIncome - tips),
       businessDate,
-      cashAmount: closing ? numberValue(closing.cash_amount) : null,
+      cashAmount: closing ? numberValue(closing.cash_amount) : 0,
       corrections: correctionsByDate.get(businessDate) ?? [],
-      creditCardAmount: closing ? numberValue(closing.credit_card_amount) : null,
+      creditCardAmount: closing ? numberValue(closing.credit_card_amount) : 0,
       difference,
       manualInputIncome,
-      otherAmount: closing ? numberValue(closing.other_amount) : null,
+      otherAmount: closing ? numberValue(closing.other_amount) : 0,
       overShortStatus,
       posIncome,
       shopShare: roundMoney(shopShare),
@@ -2128,9 +2139,7 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
     roundMoney(rows.reduce((total, row) => total + selector(row), 0));
   const nullableSum = (selector: (row: PayrollShopDailyRow) => number | null) => {
     const values = rows.map(selector).filter((value): value is number => value !== null);
-    return values.length === 0
-      ? null
-      : roundMoney(values.reduce((total, value) => total + value, 0));
+    return roundMoney(values.reduce((total, value) => total + value, 0));
   };
   const actualService = nullableSum(row => row.actualIncome);
   const actualTips = nullableSum(row => row.actualTipIncome ?? null);
@@ -2145,7 +2154,7 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
     overShortTotal: nullableSum((row) => row.difference),
     posIncome: sum((row) => row.posIncome),
     shopShare: sum((row) => row.shopShare),
-    shopNetIncome: !hasCompletePayrollReceipts(rows) || actualService === null || actualTips === null ? null : (moneyCents(actualService)+moneyCents(actualTips) - rows.reduce((total,row)=>total+moneyCents(row.staffObligation),0))/100,
+    shopNetIncome: actualService === null || actualTips === null ? null : (moneyCents(actualService)+moneyCents(actualTips) - rows.reduce((total,row)=>total+moneyCents(row.staffObligation),0))/100,
     staffCommissionPay: sum((row) => row.staffCommissionPay),
     staffNetPay: sum((row) => row.staffNetPay),
     totalStaffObligation: sum((row) => row.staffObligation),

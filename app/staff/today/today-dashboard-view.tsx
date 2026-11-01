@@ -1,3 +1,4 @@
+import {QuickExpense} from "@/app/reports/quick-expense";
 import styles from "./today-layout.module.css";
 import {useState} from "react";
 import {useFinancialHistoryContext} from "@/app/payroll/inline-financial-history";
@@ -1844,7 +1845,8 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
           </div>
         </header>
 
-        <LoadErrorsBanner errors={dashboard.loadErrors} />
+        {isOwner && <QuickExpense/>}
+          <LoadErrorsBanner errors={dashboard.loadErrors} />
         <SummaryGrid dashboard={dashboard} />
         {retry ? <div role="status" className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm">
           <WorkspaceText text="We couldn’t finish loading. You can try again." />

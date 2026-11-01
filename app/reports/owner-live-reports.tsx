@@ -11,6 +11,7 @@ import {useExperienceScope} from '@/components/experience-scope';
 import {experienceResourceCache} from '@/lib/experience-resource-cache';
 import {fetchWorkspaceResource} from '@/lib/fetch-workspace-resource';
 import {useExperienceResource} from '@/lib/use-experience-resource';
+import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
 import {ClosingDateForm,ReportTabs} from './report-controls';
 import {DailyClosingForm} from './daily-closing-form';
 import {OperationalReportDashboard} from './operational-report-dashboard';

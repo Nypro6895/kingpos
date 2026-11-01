@@ -29,7 +29,7 @@ export function PayrollDashboard({ tab, lines, rows, services, today, difference
   const data = payrollLiveDashboard(lines, rows, today);
   if (tab === "differences") return <section className={styles.card}>
     <h2><Text text="Daily Report differences" /></h2>
-    <p className={styles.note}><Text text="Service collections and tips are reconciled separately. Missing inputs remain unknown." /></p>
+    <p className={styles.note}><Text text="Unentered receipts count as zero and remain in the selected period." /></p>
     <div className={styles.dayList}>{[...new Map([...data.differences, ...data.missing, ...data.missingTips].map(row => [row.businessDate, row])).values()].sort((a, b) => a.businessDate.localeCompare(b.businessDate)).map(row => <article key={row.businessDate} className={styles.day}>
       <header><strong>{day(row.businessDate)}</strong><span className={styles.warningLabel}><Text text={row.actualIncome === null ? "Service input not entered" : row.actualTipIncome == null ? "Tip input not entered" : "Differences to review"} /></span></header>
       <dl><AmountRow label="Expected service" value={row.posIncome} /><AmountRow label="Service collected" value={row.actualIncome} /><AmountRow label="Service difference" value={row.difference} /><AmountRow label="Expected tip" value={row.tips} /><AmountRow label="Tip collected" value={row.actualTipIncome ?? null} /><AmountRow label="Tip difference" value={row.tipDifference ?? null} /></dl>
@@ -40,11 +40,11 @@ export function PayrollDashboard({ tab, lines, rows, services, today, difference
   if (tab === "analytics") return <Analytics rows={rows} services={services} lines={lines} today={today} />;
   return <section className={styles.overview}>
     <div className={styles.summary}>
-      <article className={styles.card}><p className={styles.metric}><Text text="Service collected" /></p><strong className={styles.amount}>{money(data.collected)}</strong><small><Text text="Excludes tips · From Daily Report" /></small><p><Text text="Tip collected" /> {money(data.tipsCollected)}</p></article>
+      <article className={styles.card}><p className={styles.metric}><Text text="Total collected" /></p><strong className={styles.amount}>{money((data.collected??0)+(data.tipsCollected??0))}</strong><small><Text text="Includes tips · Recorded collections" /></small><p><Text text="Tip collected" /> {money(data.tipsCollected)}</p></article>
       <article className={styles.card}><p className={styles.metric}><Text text="Staff cost" /></p><strong className={styles.amount}>{money(data.staffCost)}</strong><small><Text text="Cash + check + tax" /></small></article>
       <article className={`${styles.hero} ${data.remaining !== null && data.remaining < 0 ? styles.loss : ""}`}>
         <p className={styles.metric}><Text text="Remaining after payroll" /></p><strong>{money(data.remaining)}</strong>
-        <small><Text text="Service collected + tip collected − staff cost" /></small>
+        <small><Text text="Collected receipts − calculated staff cost" /></small>
         {!data.receiptsComplete&&<small><Text text="Remaining amount is unconfirmed until service and tip inputs cover every day included in staff cost." /></small>}
       </article>
       <p className={styles.summaryNote}><Text text="Before supplies, utilities and rent." />{data.missing.length > 0 && <> <Text text="Partial total · some Daily Reports are not entered." /></>}</p>
@@ -53,7 +53,7 @@ export function PayrollDashboard({ tab, lines, rows, services, today, difference
       <section><div className={styles.card}><h2><Text text="Staff cost breakdown" /></h2><dl><AmountRow label="Cash payout" value={data.cash} /><AmountRow label="Check payout" value={data.check} /><AmountRow label="Tax withheld" value={data.tax} /><AmountRow label="Total staff cost" value={data.staffCost} total /></dl></div><p className={styles.note}><Text text="Tips and bonuses are included in payouts." /></p></section>
       <section className={styles.statusStack}>
         {data.differences.length > 0 && <Link className={styles.warning} href={differencesHref}><strong>⚠ <Text text={`${data.differences.length} days with differences`} /></strong><span><Text text={`${data.shortDays} short · ${data.overDays} over`} /> · <Text text="Net" /> {money(data.difference)}</span><span className={styles.review}><Text text="Review affected days" /> ›</span></Link>}
-        <Link className={data.missing.length ? styles.pending : styles.good} href={differencesHref}><span><Text text={data.missing.length ? "Daily Reports to review" : "Daily Reports entered"} /></span><strong>{data.enteredDays}/{data.elapsedDays}</strong></Link>
+        <Link className={data.missing.length ? styles.pending : styles.good} href={differencesHref}><span><Text text={data.missing.length ? "Daily Reports to review" : "Days included"} /></span><strong>{data.enteredDays}/{data.elapsedDays}</strong></Link>
         <section className={styles.card}><h2><Text text="Collection details" /></h2><dl><AmountRow label="Cash" value={data.collectionCash} /><AmountRow label="Card" value={data.collectionCard} /><AmountRow label="Other" value={data.collectionOther} /></dl></section>
       </section>
     </div>

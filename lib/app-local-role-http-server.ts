@@ -2,6 +2,7 @@ import "server-only";
 import { NextRequest } from "next/server";
 import { POST as giftPOST } from "@/app/api/gift-cards/route";
 import { POST as rewardPOST } from "@/app/api/rewards/route";
+import { POST as shopMoneyPOST } from "@/app/api/shop-money/route";
 
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
@@ -62,7 +63,7 @@ export async function runAppLocalRoleHttpCommand(name: string, args: Record<stri
   const body = JSON.stringify(args.input); if (body.length > 64 * 1024) fail(413, "This request is too large.");
   const current = await authorized(scope), forwarded = new Headers({ "Content-Type": "application/json", Origin: origin });
   const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);
-  const handlers = { "http.benefits.gift-cards": giftPOST, "http.benefits.rewards": rewardPOST, "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST, "http.owner.closing": closingPOST };
+  const handlers = { "http.owner.shop-money": shopMoneyPOST, "http.benefits.gift-cards": giftPOST, "http.benefits.rewards": rewardPOST, "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST, "http.owner.closing": closingPOST };
   const rule = ROLE_COMMANDS[name as keyof typeof ROLE_COMMANDS], handler = handlers[name as keyof typeof handlers];
   const result = await wire(await handler(new NextRequest(new URL(rule.path, origin), { method: "POST", headers: forwarded, body })));
   return { handled: true, data: result, status: result.status };

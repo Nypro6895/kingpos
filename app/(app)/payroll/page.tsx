@@ -1,3 +1,4 @@
+import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
 import {financialHistoryForObject,periodPaymentDetailsForObject} from "@/lib/inline-financial-history";
 import {FinancialHistoryProvider,InlineFinancialHistory,InlinePayrollPaymentDetails} from "@/app/payroll/inline-financial-history";
 import {resolvePayrollContextTab,type PayrollContextTab} from "@/lib/payroll-history-navigation";
@@ -931,13 +932,8 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
           historyQuery={historyQuery}
         />
       ) : null}
-      {activeTab === "shop" && data.access.canViewAllPayroll ? (
-        <ShopIncomeTab
-          rows={data.live.shopDailyRows}
-          summary={data.live.shopSummary}
-          salonId={pageContext.currentSalon.id} history={data.history} canReadChecks={canManageConnection} historyQuery={historyQuery}
-        />
-      ) : null}
+      {["shop","gifts","rewards","discounts"].includes(activeTab) && canManageConnection && <ShopMoneyWorkspace key={pageContext.currentSalon.id+data.period.startDate+data.period.endDate+activeTab} salonId={pageContext.currentSalon.id} start={data.period.startDate} end={data.period.endDate} view={activeTab as "shop"|"gifts"|"rewards"|"discounts"} history={data.history} payout={{cash:data.live.lines.reduce((n,l)=>n+l.final_cash_amount,0),check:data.live.lines.reduce((n,l)=>n+l.final_check_amount,0),tax:data.live.shopSummary.taxWithheld,tipsCash:data.live.lines.reduce((n,l)=>n+l.tip_cash_amount,0),tipsCheck:data.live.lines.reduce((n,l)=>n+l.tip_check_amount,0),bonusCash:data.live.lines.reduce((n,l)=>n+l.bonus_cash_amount,0),bonusCheck:data.live.lines.reduce((n,l)=>n+l.bonus_check_amount,0),reportedGross:data.live.lines.reduce((n,l)=>n+l.tax_company_reported_wage_gross,0)}}/>}
+      {activeTab === "shop" && data.access.canViewAllPayroll && !canManageConnection && <ShopIncomeTab rows={data.live.shopDailyRows} summary={data.live.shopSummary} salonId={pageContext.currentSalon.id} history={data.history} canReadChecks={false} historyQuery={historyQuery}/>}
       {["staff","shop"].includes(activeTab)&&<footer className={styles.output}><Link className={styles.action} href={getPayrollHref({period:data.period,tab:"download"})}><WorkspaceText text="Download current data"/></Link></footer>}
       {activeTab === "tax" && data.access.canViewAllPayroll ? (
         <TaxTab canManageConnection={canManageConnection} period={data.period} taxCompany={data.taxCompany} plugin={taxPlugin} hasChanges={data.difference.changed} />

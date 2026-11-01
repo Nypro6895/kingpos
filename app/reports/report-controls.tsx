@@ -146,12 +146,14 @@ export function ReportRangeFilter({
 
 export function ReportTabs({
   overview,
+  expenses,
   children,
   onViewChange,
   overviewTools,
   closingTools,
 }: {
   overview: ReactNode;
+  expenses?: ReactNode;
   overviewTools?: ReactNode;
   closingTools?: ReactNode;
   children: ReactNode;
@@ -164,8 +166,9 @@ export function ReportTabs({
   const target=history.changes.find(row=>row.id===history.focusedEventId)??history.record;
   const focusView=history.focusedEventId?(target?.source_table==="ticket"?"overview":"closing"):undefined;
   const [closing, setClosing] = useState(workspace);
+  const [expenseView,setExpenseView]=useState(false);
   useEffect(() => {
-    const sync = () => setClosing(window.location.hash === "#daily-closing" || (window.location.hash!=="#overview"&&(focusView?focusView==="closing":workspace&&!window.location.hash)));
+    const sync = () => {setExpenseView(window.location.hash === "#expenses");setClosing(window.location.hash === "#daily-closing" || (window.location.hash!=="#overview"&&(focusView?focusView==="closing":workspace&&!window.location.hash)));};
     sync();
     window.addEventListener("hashchange", sync);
   return () => window.removeEventListener("hashchange", sync);
@@ -182,9 +185,9 @@ export function ReportTabs({
           <button
             key={String(value)}
             type="button"
-            aria-pressed={closing === value}
+            aria-pressed={!expenseView && closing === value}
             onClick={() => {
-              setClosing(value);
+              setExpenseView(false);setClosing(value);
               window.history.replaceState(
                 null,
                 "",
@@ -199,10 +202,11 @@ export function ReportTabs({
         <ContextualSupport />
         <div className={styles.tools}>{closing ? closingTools : overviewTools}</div>
       </div>
-      <div className="min-w-0" hidden={closing}>
+      <div className="min-w-0" hidden={!expenseView}>{expenseView&&expenses}</div>
+      <div className="min-w-0" hidden={closing||expenseView}>
         {overview}
       </div>
-      <div className="min-w-0" hidden={!closing}>
+      <div className="min-w-0" hidden={!closing||expenseView}>
         {children}
       </div>
     </>

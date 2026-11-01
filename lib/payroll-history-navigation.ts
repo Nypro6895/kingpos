@@ -2,7 +2,7 @@ import type { PayrollPeriod } from "@/types/payroll";
 import type { PayrollLiveChange } from "@/types/payroll-live-history";
 import { payrollPeriodHref } from "@/lib/payroll-period-rail";
 
-export type PayrollContextTab = "analytics" | "differences" | "overview" | "staff" | "shop" | "tax" | "settings" | "tools" | "download" | "record";
+export type PayrollContextTab = "analytics" | "differences" | "overview" | "staff" | "shop" | "gifts" | "rewards" | "discounts" | "tax" | "settings" | "tools" | "download" | "record";
 type RouteParams = { tab?: unknown; inputEvent?: unknown };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,7 +25,7 @@ export function resolvePayrollContextTab(params: RouteParams, canViewAllPayroll:
     return target === "shop" && !canViewAllPayroll ? "record" : target;
   }
   if (!canViewAllPayroll) return "staff";
-  if (typeof params.tab === "string" && ["analytics", "differences", "staff", "shop", "tax", "settings", "tools", "download"].includes(params.tab)) return params.tab as PayrollContextTab;
+  if (typeof params.tab === "string" && ["analytics", "differences", "staff", "shop", "gifts", "rewards", "discounts", "tax", "settings", "tools", "download"].includes(params.tab)) return params.tab as PayrollContextTab;
   // Legacy history URLs without an exact record are aliases of Overview.
   return "overview";
 }

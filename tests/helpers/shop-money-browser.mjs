@@ -1,0 +1,27 @@
+import fs from 'node:fs';import http from 'node:http';import path from 'node:path';import assert from 'node:assert/strict';import{build}from'esbuild';import{chromium}from'playwright-core';
+export async function shopMoneyBrowser(f,owner,salon,start,end){
+ const dir=path.resolve('artifacts/shop-money-20261031/browser');fs.mkdirSync(dir,{recursive:true});
+ await build({entryPoints:['tests/helpers/shop-money-ui-entry.tsx'],bundle:true,format:'esm',target:'es2022',jsx:'automatic',outfile:dir+'/app.js',plugins:[{name:'isolated-browser-context',setup(b){
+  b.onResolve({filter:/^(next\/navigation|next\/link|@\/components\/workspace-language|\.\/inline-financial-history)$/},args=>({path:args.path,namespace:'fixture'}));
+  b.onLoad({filter:/.*/,namespace:'fixture'},args=>({loader:'tsx',contents:args.path==='next/navigation'?'export const useRouter=()=>({refresh(){}});':args.path==='next/link'?'export default function Link({children,...p}){return <a {...p}>{children}</a>;}':args.path.includes('inline-financial')?'export const InlineFinancialHistory=()=>null;':'export const WorkspaceText=({text})=><>{text}</>;',resolveDir:process.cwd()}));
+ }}]});
+ const server=http.createServer(async(req,res)=>{try{if(req.url==='/api/shop-money') {let raw='';for await(const chunk of req)raw+=chunk;const body=JSON.parse(raw);assert.equal(body.salonId,salon);let d;
+  if(body.op==='read')d=f.rpc(owner,'shop_money_read',{p_salon:salon,p_start:body.start,p_end:body.end});else d=f.rpc(owner,'shop_money_write',{p_salon:salon,p_op:body.op,p_args:body.args});res.setHeader('Content-Type','application/json');res.end(JSON.stringify(d));return;}
+  if(req.url==='/app.js'||req.url==='/app.css'){res.setHeader('Content-Type',req.url.endsWith('.css')?'text/css':'application/javascript');res.end(fs.readFileSync(dir+req.url));return;}
+  res.setHeader('Content-Type','text/html');res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/app.css"><style>*{box-sizing:border-box}body{font:14px Arial;margin:0;padding:12px}nav{display:flex;gap:6px;overflow:auto;margin-bottom:14px}button,input{font:inherit}button{min-height:44px}fieldset{border:0;margin:0}h2,p{margin:4px 0}</style></head><body><div id="root"></div><script>window.fixture=${JSON.stringify({salonId:salon,start,end})}</script><script type="module" src="/app.js"></script></body></html>`);
+ }catch(e){res.statusCode=400;res.setHeader('Content-Type','application/json');res.end(JSON.stringify({error:e.message}));}});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ try{const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}`);await page.getByText('Total collected',{exact:true}).waitFor();
+  await page.getByText('Short $100.00',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Collected breakdown',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Collected breakdown',exact:true}).getAttribute('aria-expanded'),'true');
+  await page.getByRole('button',{name:'Remaining by source',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Collected breakdown',exact:true}).getAttribute('aria-expanded'),'false');
+  for(const width of [320,390,768,1280]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`No document overflow ${width}`);}
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:dir+'/shop-mobile.png',fullPage:true});
+  await page.getByRole('button',{name:`Edit ${end}`,exact:true}).click();await page.getByLabel('Cash',{exact:true}).fill('500');await page.getByRole('button',{name:'Save collection',exact:true}).click();await page.getByText('Saved',{exact:true}).waitFor();
+  assert.equal(Number(f.sql(`select cash from shop_daily_collections where salon_id='${salon}' and business_date='${end}'`)),500);
+  await page.getByRole('button',{name:'expenses',exact:true}).click();await page.getByRole('button',{name:'+ Add',exact:true}).click();await page.getByLabel('Amount',{exact:true}).fill('12.50');await page.getByLabel('Note',{exact:true}).fill('Browser receipt');await page.getByRole('button',{name:'Save expense',exact:true}).click();await page.getByText('Browser receipt',{exact:true}).waitFor();
+  assert.equal(Number(f.sql(`select count(*) from shop_expenses where salon_id='${salon}' and note='Browser receipt'`)),1);await page.screenshot({path:dir+'/expenses-mobile.png',fullPage:true});
+  for(const view of ['gifts','rewards','discounts']){await page.getByRole('button',{name:view,exact:true}).click();await page.locator(`[data-shop-money="${view}"]`).waitFor();await page.screenshot({path:dir+`/${view}-mobile.png`,fullPage:true});}
+  assert.deepEqual(errors,[]);f.save('shop-money-browser.json',{passed:true,widths:[320,390,768,1280],actualComponents:true,actualSQL:true,checks:['exclusive disclosure','late collection save and SQL readback','expense save and SQL readback','all reconciliation tabs','no overflow'],runtimeErrors:errors});
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+}
