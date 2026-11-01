@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "payroll-exact-reference-20261101",
+  "status": "working",
+  "summary": "Implement the four supplied reference screens directly in actual Payroll/Reports components: green Shop summary, icon accordions, compact daily editor with live total/cancel, unified gift dashboard and Expenses ledger/form. Latest reference orange overrides earlier peach preference.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/payroll/shop-money-workspace.tsx",
+    "app/payroll/shop-money.module.css",
+    "app/payroll/payroll-theme.module.css"
+  ],
+  "validation": [
+    {
+      "name": "Actual component screenshot comparison",
+      "result": "pending"
+    }
+  ],
+  "id": "6cd92aff-8972-4b44-9d59-66aae3d9e6e7",
+  "recordedAt": "2026-11-01T05:30:00.369Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-style-reference-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

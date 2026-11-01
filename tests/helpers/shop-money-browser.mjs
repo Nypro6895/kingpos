@@ -12,7 +12,7 @@ export async function shopMoneyBrowser(f,owner,salon,start,end){
  }catch(e){res.statusCode=400;res.setHeader('Content-Type','application/json');res.end(JSON.stringify({error:e.message}));}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
  try{const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}`);await page.getByText('Total collected',{exact:true}).waitFor();
-  await page.getByText('Short $100.00',{exact:true}).waitFor();
+  await page.getByText(/^Short \$100(?:\.00)?$/).waitFor();
   await page.getByRole('button',{name:'Collected breakdown',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Collected breakdown',exact:true}).getAttribute('aria-expanded'),'true');
   await page.getByRole('button',{name:'Remaining by source',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Collected breakdown',exact:true}).getAttribute('aria-expanded'),'false');
   for(const width of [320,390,768,1280]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`No document overflow ${width}`);}

@@ -908,7 +908,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
   return (
     <PayrollEditBoundary><main className={`${payrollTheme.surface} ${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
-      {canManageConnection && <Link className={styles.checkShortcut} href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
+      {canManageConnection && activeTab === "tools" && <Link className={styles.checkShortcut} href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
       <PayrollLiveRefresh salonId={pageContext.currentSalon.id} />
       <PayrollTabs
         canReconcile={canManageConnection}

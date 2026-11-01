@@ -5,9 +5,10 @@
   --payroll-green: #174e3d;
   --payroll-total: #edf5f0;
   --payroll-line: #e8ebe8;
-  --payroll-peach: #ffc5a5;
+  --payroll-peach: #ff7435;
   --payroll-form: #fff5ee;
   color: var(--payroll-ink);
+  font-family: Arial, Helvetica, sans-serif;
   background: #fff;
   font-variant-numeric: tabular-nums;
 }
@@ -26,7 +27,7 @@
 }
 .surface button[type=submit], .surface form button:not([type]) {
   background: var(--payroll-peach);
-  color: #322b25;
+  color: #fff;
   border: 1px solid var(--payroll-peach);
   border-radius: 6px;
   box-shadow: none;

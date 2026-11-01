@@ -176,7 +176,7 @@ export function ReportTabs({
   useEffect(()=>{onViewChange?.(closing ? "closing" : "overview");},[closing,onViewChange]);
   return (
     <>
-      <div className={styles.toolbar}>
+      <div className={`${styles.toolbar} ${expenseView ? styles.expenseToolbar : ""}`}>
       <nav
         aria-label={__vt("Report views")}
         className={styles.tabs}

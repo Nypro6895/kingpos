@@ -1,0 +1,17 @@
+# Four-screen reference implementation
+
+This revision follows the owner's latest four-screen Shop / Daily edit / Gift-Reward-Discount / Expenses reference, rather than treating it only as a palette suggestion. The latest orange primary buttons replace the earlier peach preference. It builds on the unpublished `payroll-style-reference-20261101` revision; no database migration or financial formula is changed.
+
+## Implemented in source
+
+- Shop: one pale green summary with the large estimated available amount, collected/payout/expense reconciliation, total remaining and inset tax/gift reserves. Information is available through compact accessible disclosures. The three primary breakdowns have reference-style borders, icons and chevrons. Opening balances remain accessible inside Remaining by source.
+- Daily edit: selecting a row collapses the breakdown area; the summary becomes compact. Cash/Card/Other have currency prefixes, a live total, inline note, Save and Cancel. Cancel discards the draft without a write. The selected row is highlighted. Saved edit timestamps, original dates, notes and before/after amounts remain available; UI does not fabricate an audit for an unsaved draft. Whole-dollar table cells use compact money formatting; input totals retain cents.
+- Gift/Reward/Discount: one parent, rectangular segmented selector, green opening/sold/redeemed/closing card, transaction table and reward/discount preview blocks. Existing direct reward and discount links still select their corresponding subsection. Actual source totals remain authoritative. If gift activity reaches the existing 500-event cap, incomplete sold/redeemed aggregates are shown as unavailable rather than falsely presented as full-period totals. Reversals/other movements appear as adjustments. Reward points remain points; reductions are not deducted again.
+- Expenses: green total/add header; white, bordered, two-column amount/note/source/category form; optional date control; orange Save. Date/time, note/source, amount and edit action form the ledger, followed by a total and icon disclosures for rent, fees and edit history. Payment date and business date remain distinct when different. Stable IDs, revisions and existing RPC writes are preserved.
+- Shared Payroll tabs, default Shop routing and Staff/Tools styling from the prior revision remain included. Print checks stays available in Tools and individual Staff rows instead of occupying the top of Shop. Calendar icon and typography align with the reference. Windows keeps a responsive summary/detail layout and full-width daily table.
+
+## Review evidence
+
+`artifacts/payroll-exact-reference-20261101/` contains the production build, ESLint, 28 financial/navigation/wiring assertions, 64 actual-component responsive views, ten history/period checks and isolated SQL/browser acceptance. Browser samples use fixture account data, not salon transactions. Four core screenshots and Windows screenshots are copied into its `browser` folder; `comparison.html` displays them alongside the supplied reference.
+
+The supplied image is a rendered concept, not an executable baseline. Screenshot evidence supports the implemented structure and styling; it is not a measured claim of pixel equality across physical devices, system headers, browser chrome, fonts or real financial values. No live promotion, native upload or physical-device acceptance is claimed for this revision.

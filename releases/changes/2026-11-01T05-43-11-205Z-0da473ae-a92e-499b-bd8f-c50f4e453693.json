@@ -1,0 +1,19 @@
+{
+  "kind": "change",
+  "changeId": "payroll-exact-reference-20261101",
+  "status": "abandoned",
+  "summary": "Tracking ID consolidated into validated payroll-style-reference-20261101 revision 0e5e28b6-ea55-4716-8ea2-df15195c6414. All implemented work is preserved in that frozen cumulative snapshot; no product work was discarded.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "dependencies": [
+    "payroll-style-reference-20261101"
+  ],
+  "id": "0da473ae-a92e-499b-bd8f-c50f4e453693",
+  "recordedAt": "2026-11-01T05:43:11.205Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-style-reference-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

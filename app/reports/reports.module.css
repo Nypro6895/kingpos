@@ -17,6 +17,7 @@
 .tabs { display: flex; flex: 1; gap: 24px; }
 .tabs button { flex: 1; min-height: 44px; padding: 0 4px; border-bottom: 2px solid transparent; color: #71717a; }
 .tabs button[aria-pressed="true"] { color: var(--report-blue); border-color: var(--report-orange); font-weight: 600; }
+.expenseToolbar .tabs button[aria-pressed="true"] { color:#174e3d; border-color:#174e3d; }
 .tools { display: flex; align-items: center; justify-content: space-between; min-width: 0; width: 100%; padding: 0; border-top: 1px solid #f4f4f5; }
 .tools > div { width: 100%; }
 .date { display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%; }

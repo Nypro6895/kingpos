@@ -174,13 +174,13 @@
 .tools { gap:0; }
 .panel { border-color:var(--payroll-line); padding:16px 0; }
 .action { border-color:#dcdeda; border-radius:6px; min-height:40px; padding:8px 14px; font-size:13px; }
-.primary { background:var(--payroll-peach); border-color:var(--payroll-peach); color:#322b25; }
+.primary { background:var(--payroll-peach); border-color:var(--payroll-peach); color:#fff; }
 .output { gap:8px; padding:12px 0; border-color:var(--payroll-line); }
 .output>a { flex:0 1 auto; }
 .page form { min-width:0; }
 .page :global(.settings-style) { border-radius:6px; }
 .page :global(#download)>form { padding:14px; border-radius:6px; background:var(--payroll-form); }
-.page :global(#download)>form>button { background:var(--payroll-peach); color:#322b25; }
+.page :global(#download)>form>button { background:var(--payroll-peach); color:#fff; }
 .page :global(#download)>form>label { flex:1 1 180px; }
 .page :global(#download)>form>fieldset { flex-basis:100%; }
 .page :global(table) { font-variant-numeric:tabular-nums; }
@@ -214,3 +214,4 @@
  .takeHomeMoney strong { font-size:16px; }
  .page :global(#download)>form { max-width:960px; }
 }
+.compactPeriod button:nth-child(2){display:flex;align-items:center;justify-content:center;gap:7px}.periodIcon{width:15px;height:15px;flex:none}

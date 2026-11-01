@@ -1,5 +1,7 @@
 # Payroll reference style
 
+> This initial style revision is superseded by [the four-screen reference revision](./payroll-exact-reference-20261101.md). Its older peach preference and screenshot paths are historical.
+
 Owner scope: use the two supplied images as the visual language, while retaining the subsequently agreed financial model. Inspect and align the remaining Payroll sections as well. This is a presentation/navigation revision of the previously shipped Shop money work, based on commit `88246c1`. No database migration, payroll arithmetic, payment write, permission or production data change is included.
 
 | Surface | Finding and adjustment |

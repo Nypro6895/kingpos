@@ -7,6 +7,7 @@ import { payrollPeriodHref, type PayrollRailChoice } from "@/lib/payroll-period-
 import type { PayrollPeriod } from "@/types/payroll";
 import { usePayrollEdits } from "./payroll-edit-boundary";
 import styles from "./payroll-mobile.module.css";
+import {WorkspaceNavigationIcon} from "@/components/workspace-navigation-icon";
 
 export function PayrollPeriodRail({ period, activeTab, months, periods, needsAnchor = false }: {
   period: PayrollPeriod; activeTab: string; months: PayrollRailChoice[]; periods: PayrollRailChoice[]; needsAnchor?: boolean;
@@ -40,7 +41,7 @@ export function PayrollPeriodRail({ period, activeTab, months, periods, needsAnc
       onPointerCancel={() => { drag.current = null; moved.current = true; }}
       onClickCapture={event => { if (moved.current) { event.preventDefault(); event.stopPropagation(); moved.current = false; } }}>
       <button type="button" aria-label="Previous pay period" disabled={!previous} onClick={() => go(previous)}>‹</button>
-      <button type="button" aria-expanded={open} aria-controls="payroll-period-options" onClick={() => setOpen(value => !value)}>{period.label} <span aria-hidden="true">⌄</span></button>
+      <button type="button" aria-expanded={open} aria-controls="payroll-period-options" onClick={() => setOpen(value => !value)}><WorkspaceNavigationIcon name="calendar" className={styles.periodIcon}/>{period.label} <span aria-hidden="true">⌄</span></button>
       <button type="button" aria-label="Next pay period" disabled={!next} onClick={() => go(next)}>›</button>
     </div>
     {open && <div id="payroll-period-options" className={styles.periodOptions} onKeyDown={event => { if (event.key === "Escape") setOpen(false); }}>

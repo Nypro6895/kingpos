@@ -22,7 +22,7 @@ const id=n=>'a0000000-1111-4111-8111-'+String(n).padStart(12,'0'),salon=id(99),r
 const event=(n,source,date='2025-01-03')=>({id:id(n),salon_id:salon,staff_id:id(98),source_id:id(98),source_table:source,period_start:date,period_end:date,before_values:{service_total:10,tip_amount:0},after_values:{service_total:15,tip_amount:0,ticket_number:'T-OLD'},actor_name:'Salon Owner',created_at:'2026-10-31T01:00:00Z',note:'Original dated record',event_action:'updated',ticket_number:'T-OLD'});
 try{
  browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH??'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
- const page=await browser.newPage({viewport:{width:390,height:1100},colorScheme:'light'});page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage({viewport:{width:390,height:1100},colorScheme:'light'});page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error:',e.message)});
  let responseStatus=200,responseRows=[],responseRecord;
  await page.route('**/api/financial-input-history?**',route=>{
   requests.push({method:route.request().method(),url:route.request().url()});
@@ -39,17 +39,17 @@ try{
  const noOverflow=async()=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  const selectedPeriod=async()=>assert.match(await page.getByRole('region',{name:'Payroll period'}).innerText(),/Oct 16–31, 2026/);
  for(const runtime of ['web','native'])for(const width of [320,390,768,1280]){
-  await page.setViewportSize({width,height:1100});await open(runtime,'tab=overview');await page.getByText('Available to use (estimated)',{exact:true}).waitFor();await noGlobalHistory();await selectedPeriod();await noOverflow();
+  await page.setViewportSize({width,height:1100});await open(runtime,'tab=overview');await page.getByText('Available to use (est.)',{exact:true}).waitFor();await noGlobalHistory();await selectedPeriod();await noOverflow();
   assert.equal(await page.getByRole('link',{name:'Shop',exact:true}).getAttribute('aria-current'),'page');
   assert.equal(await page.getByRole('link',{name:'Gift & Rewards',exact:true}).count(),1);
   await page.getByRole('link',{name:'Tools',exact:true}).click();await page.getByRole('link',{name:/Payroll settings/}).waitFor();await noGlobalHistory();assert.equal(await page.getByRole('link',{name:'Tools',exact:true}).getAttribute('aria-current'),'page');
   for(const link of await page.locator('nav a').evaluateAll(rows=>rows.map(row=>row.href))){const url=new URL(link);assert.equal(url.searchParams.get('month'),'2026-10');assert.equal(url.searchParams.get('segment'),'second');}
-  await open(runtime,'tab=history');await page.getByText('Available to use (estimated)',{exact:true}).waitFor();await noGlobalHistory();await selectedPeriod();assert.equal(await page.getByRole('link',{name:'Shop',exact:true}).getAttribute('aria-current'),'page');
+  await open(runtime,'tab=history');await page.getByText('Available to use (est.)',{exact:true}).waitFor();await noGlobalHistory();await selectedPeriod();assert.equal(await page.getByRole('link',{name:'Shop',exact:true}).getAttribute('aria-current'),'page');
   await page.screenshot({path:`${directory}/${runtime}-overview-${width}.png`,fullPage:true});results.push({runtime,width,overviewToolsNoAggregateHistory:true,legacyNoEventResolvesShop:true,selectedPeriodPreserved:true,overflow:false});
  }
  for(const runtime of ['web','native']){
   await page.setViewportSize({width:390,height:1100});
-  await open(runtime,'tab=history&inputEvent=bad-id');await page.getByText('Available to use (estimated)',{exact:true}).waitFor();assert.equal(await page.getByRole('region',{name:'Saved record context'}).count(),0);
+  await open(runtime,'tab=history&inputEvent=bad-id');await page.getByText('Available to use (est.)',{exact:true}).waitFor();assert.equal(await page.getByRole('region',{name:'Saved record context'}).count(),0);
   await open(runtime,'access=staff&tab=history');await page.getByRole('region',{name:'Staff payroll'}).waitFor();assert.equal(await page.getByRole('link',{name:'Staff',exact:true}).getAttribute('aria-current'),'page');assert.equal(await page.getByRole('link',{name:'Overview',exact:true}).count(),0);
   await open(runtime,'tab=history&inputEvent='+id(1));await page.locator('[data-input-event="'+id(1)+'"]').waitFor({state:'visible'});assert.equal(await page.getByRole('link',{name:'Staff',exact:true}).getAttribute('aria-current'),'page');assert.match(await page.locator('[data-input-event="'+id(1)+'"]').innerText(),/\$100\.00\s*→\s*\$120\.00/);await selectedPeriod();await noGlobalHistory();
   await open(runtime,'tab=history&inputEvent='+id(2));await page.locator('[data-input-event="'+id(2)+'"]').waitFor({state:'visible'});assert.equal(await page.getByRole('link',{name:'Shop',exact:true}).getAttribute('aria-current'),'page');await selectedPeriod();await noGlobalHistory();
