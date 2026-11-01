@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "ticket-calendar-history-20261031",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Shared one-tap month calendar and single-row ticket search; prevent retained POS snapshots from labeling previous-day rows as newly selected day; visible reload failures and retry; integrated with current shipped financial history and verified on live authenticated Owner Ticket",
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "tests/portable-ticket-live-sync.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-financial-release-20261101\\artifacts\\combined-financial-release-20261101\\frozen-ticket-calendar-history-20261031",
+    "commit": "3a12b876f57feacbbc1be5546a5dca119ac46004",
+    "baseline": "577e062fddcaacd37165841f8510d2818c0e0b09"
+  },
+  "validation": [
+    {
+      "name": "Full production build and scoped lint",
+      "result": "passed"
+    },
+    {
+      "name": "Real component historical/date/retry/overflow browser regression",
+      "result": "passed"
+    },
+    {
+      "name": "Authenticated live calendar opens and staff turn summary displayed; no writes",
+      "result": "passed"
+    }
+  ],
+  "id": "a08a505d-156b-4e63-b279-48a1f0ae69a6",
+  "recordedAt": "2026-11-01T07:31:40.266Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "a09155d4c0f8afcc9693be7261a846f9ec1957faacf27772a58997af99c8793b",
+    "app/pos-tickets/ticket-filters.module.css": "d8d6cde63a2d620cdfe97d3b0fcc54958f1d8ccf6c1119f39476ef6e1a62f9e0",
+    "app/pos/portable/ticket/portable-ticket-client.tsx": "937596023d82c11dd3a8ae00812e1cce0cc0ccfa94c49106adc5c052050c6bd7",
+    "tests/portable-ticket-live-sync.test.mjs": "3ee0e6aad8bed9949840c34f02f5a377c01f9662c8c08e12fa9a278124c276af"
+  }
+}

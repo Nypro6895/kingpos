@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "ticket-staff-turns-20261031",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Show staff name followed by existing big | small turn values in shared owner/portable ticket summary; big bold, small muted, keep turn pair together; integrated with current shipped financial history and verified on live authenticated Owner Ticket",
+  "files": [
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-financial-release-20261101\\artifacts\\combined-financial-release-20261101\\frozen-ticket-staff-turns-20261031",
+    "commit": "3a12b876f57feacbbc1be5546a5dca119ac46004",
+    "baseline": "577e062fddcaacd37165841f8510d2818c0e0b09"
+  },
+  "validation": [
+    {
+      "name": "Full production build and scoped lint",
+      "result": "passed"
+    },
+    {
+      "name": "Real component historical/date/retry/overflow browser regression",
+      "result": "passed"
+    },
+    {
+      "name": "Authenticated live calendar opens and staff turn summary displayed; no writes",
+      "result": "passed"
+    }
+  ],
+  "id": "1371998e-2718-4c1b-ae7c-b63339b0384a",
+  "recordedAt": "2026-11-01T07:31:40.451Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "1e9b700425b525a6019a308927dc50c3bc4002cfbb348fa0d1304a22074491e2"
+  }
+}

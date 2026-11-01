@@ -14,8 +14,9 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
     private var requestedContextPaths: [String] = []
     private var commandCount = 0
     private var reads: [String: Int] = [:]
+    private var payrollTabs: [String] = []
     init(fixture: [String: Any], failures: Int = 0) { self.fixture = fixture; self.failures = failures }
-    func counts() -> [String: Any] { ["context": contextCount, "commands": commandCount, "reads": reads] }
+    func counts() -> [String: Any] { ["context": contextCount, "commands": commandCount, "reads": reads, "payrollTabs": payrollTabs] }
     func contextPaths() -> [String] { requestedContextPaths }
     func clearCounts() { contextCount = 0; commandCount = 0; reads = [:]; requestedContextPaths = [] }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
@@ -49,6 +50,7 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
             let value: [String: Any]
             switch name {
             case "page.owner-payroll":
+                payrollTabs.append(args["tab"] as? String ?? "missing")
                 if let ms = fixture["payrollReadDelayMs"] as? UInt64 { try await Task.sleep(nanoseconds: ms * 1_000_000) }
                 value = fixture["payroll"] as! [String: Any]
             case "page.owner-today": value = ["dashboard": (fixture["phases"] as! [String: Any])[phase]!, "isOwner": true]
@@ -225,6 +227,7 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
                 let coldMs = (ProcessInfo.processInfo.systemUptime - run.startedAt) * 1000
                 let before = await run.http.counts()
                 XCTAssertEqual((before["reads"] as? [String: Int])?["payroll"], 1)
+                XCTAssertEqual(before["payrollTabs"] as? [String], ["shop"], "Actual native request must preserve Shop for server preloading")
                 XCTAssertNil((before["reads"] as? [String: Int])?["shop_money"], "Seeded Shop must not make a second initial read")
                 _ = try await run.web.evaluateJavaScript("window.__payrollMeasurementDOM=document.querySelector('[data-payroll-page]');true")
                 run.controller.navigate("/help")

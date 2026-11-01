@@ -1,0 +1,30 @@
+{
+  "kind": "release",
+  "summary": "Combined Attention/Payroll flat financial UI and load-path fixes plus omitted Ticket calendar/date guard/turn summary published once on web. iOS simulator/archive/upload remains in progress; no physical-device or App Store claim.",
+  "changes": [
+    "861da700-d17d-48e8-ad05-d25de2dd59cc",
+    "9f5c9bc3-9308-4c48-a7ab-3cdf7bbf214d",
+    "a08a505d-156b-4e63-b279-48a1f0ae69a6",
+    "1371998e-2718-4c1b-ae7c-b63339b0384a"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki",
+      "baselineDeploymentId": "dpl_FnWRb4DLB2terinVzD6ZxrJxmGZd",
+      "sourceSha256": "e2400daa039ca7c18b5db83b69eca346cd90232577648378ef3edb8194a2cb3e",
+      "overlaySha256": "bc20a66b49c5bdc8cb057bba3fca0a916e59a9758fb26ce2683dcdf55b5dc9d6",
+      "evidence": "artifacts/combined-financial-release-20261101/candidate-source-verified.json; artifacts/combined-financial-release-20261101/live-alias-after.json; artifacts/combined-financial-release-20261101/http-live.json; artifacts/combined-financial-release-20261101/migration-evidence.json; artifacts/combined-financial-release-20261101/live-today-desktop.png; artifacts/combined-financial-release-20261101/live-attention-detail-desktop.png"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "3a12b876f57feacbbc1be5546a5dca119ac46004",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/41284498629"
+    }
+  },
+  "id": "ddc3641d-01f1-4e3a-b8e1-a87abdf7d802",
+  "recordedAt": "2026-11-01T07:31:40.659Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101"
+}

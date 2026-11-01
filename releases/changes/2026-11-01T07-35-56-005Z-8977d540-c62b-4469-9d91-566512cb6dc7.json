@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "native-payroll-visible-tab-20261101",
+  "status": "working",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Preserve the visible Payroll tab through native read argument normalization so Shop preload and Tools entitlements run; diagnose failed native hosted-return gate without weakening assertions",
+  "files": [
+    "lib/payroll-read-args.ts",
+    "tests/payroll-read-args.test.mjs",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "dependencies": [
+    "owner-attention-payroll-polish-20261101"
+  ],
+  "source": {
+    "commit": "3a12b876f57feacbbc1be5546a5dca119ac46004"
+  },
+  "validation": [
+    {
+      "name": "Native read-plan regression and simulator acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "8977d540-c62b-4469-9d91-566512cb6dc7",
+  "recordedAt": "2026-11-01T07:35:56.005Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

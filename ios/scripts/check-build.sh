@@ -148,8 +148,11 @@ for file in sorted(pathlib.Path("ReylumiTests").glob("*.swift")):
 assert suites, "No XCTest suites discovered"
 pure = ["ReylumiTests/" + item["suite"] for item in suites if not item["isolatedHost"]]
 batches = ([{"name": "PureTransportAndState", "identifiers": pure}] if pure else [])
+# Collect the requested installed Payroll measurements before later UI gates.
+# Every suite/case is still required exactly once before any archive/upload.
+ordered_ui = sorted(suites, key=lambda item: 0 if item["suite"] == "OwnerTodayDiagnosticsTests" else 1)
 batches += [{"name": item["suite"], "identifiers": ["ReylumiTests/" + item["suite"]]}
-            for item in suites if item["isolatedHost"]]
+            for item in ordered_ui if item["isolatedHost"]]
 expected = [item["suite"] + "/" + method for item in suites for method in item["methods"]]
 assert len(expected) == len(set(expected)), "Duplicate XCTest identifier"
 (run / "TestInventory.json").write_text(json.dumps({"suites": suites, "batches": batches,

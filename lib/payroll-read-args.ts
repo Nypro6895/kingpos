@@ -1,4 +1,5 @@
-/** Presentation filters are applied to the loaded payroll snapshot, not read again. */
+/** Keep transport tabs distinct: they choose preload and entitlement reads.
+ * Presentation-only filters do not create additional server reads. */
 export function payrollReadArgs(path: string): Record<string, string> {
   const query = new URL(path, "https://reylumi.com").searchParams;
   const args: Record<string, string> = {};
@@ -7,6 +8,6 @@ export function payrollReadArgs(path: string): Record<string, string> {
     if (value !== null) args[key] = value;
   }
   const tab = query.get("tab");
-  args.tab = tab === "tax" ? "tax" : tab && ["staff", "shop", "settings", "tools", "download"].includes(tab) ? "staff" : "overview";
+  args.tab = tab && ["staff", "shop", "gifts", "rewards", "discounts", "settings", "tools", "download", "tax", "analytics", "overview", "differences", "record"].includes(tab) ? tab : "shop";
   return args;
 }
