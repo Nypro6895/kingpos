@@ -20,13 +20,13 @@ await build({stdin:{contents:fixture,loader:'tsx',resolveDir:process.cwd()},bund
 const globals=readFileSync('app/globals.css','utf8').replace('@import "tailwindcss";','@import "tailwindcss" source(none);\n@source "'+resolve('app').replaceAll('\\','/')+'";');
 writeFileSync(dir+'/global.css',(await postcss([tailwindcss()]).process(globals,{from:resolve('app/globals.css')})).css);
 
-let writes=0,readRequests=0;
+let writes=0,readRequests=0,allowWrites=false,failRead=false;
 const server=createServer(async(req,res)=>{
  const name=(req.url??'').split('?')[0].slice(1);
  if(name==='api/shop-money'){
   let body='';for await(const chunk of req)body+=chunk;
-  if(req.method!=='POST'||JSON.parse(body).op!=='read'){writes++;res.writeHead(405);res.end('{"error":"Read-only design preview"}');return;}
-  readRequests++;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(sample));return;
+  if(req.method!=='GET'){writes++;if(allowWrites){res.setHeader('Content-Type','application/json');res.end('{}');return;}res.writeHead(405);res.end('{"error":"Read-only design preview"}');return;}
+  readRequests++;if(failRead){res.writeHead(503,{'Content-Type':'application/json'});res.end('{"error":"Read unavailable"}');return;}res.setHeader('Content-Type','application/json');res.end(JSON.stringify(sample));return;
  }
  if(name==='api/financial-input-history'){res.setHeader('Content-Type','application/json');res.end('{"rows":[]}');return;}
  if(['app.js','app.css','global.css'].includes(name)){res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':'text/css');res.end(readFileSync(dir+'/'+name));return;}
@@ -48,7 +48,7 @@ else{
     assert.deepEqual(await rail.locator('a').allTextContents(),['Shop','Staff','Gift & Rewards','Tools']);
    }
    if(tab==='shop'){
-    if(width<768){const box=await page.getByRole('navigation',{name:'Payroll sections'}).boundingBox();assert.equal(Math.round(box.x),16,runtime+' gutter must match app header');const group=page.getByRole('button',{name:'Collected breakdown',exact:true}).locator('..');assert.notEqual(await group.evaluate(e=>getComputedStyle(e).boxShadow),'none');assert.equal(await group.evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');}
+    if(width<768){const box=await page.getByRole('navigation',{name:'Payroll sections'}).boundingBox();assert.equal(Math.round(box.x),16,runtime+' gutter must match app header');const group=page.getByRole('button',{name:'Collected breakdown',exact:true}).locator('..');assert.notEqual(await group.evaluate(e=>getComputedStyle(e).boxShadow),'none');assert.equal(await group.evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');assert.equal(await group.evaluate(e=>getComputedStyle(e).borderRadius),'0px');const band=await group.boundingBox();assert.equal(Math.round(band.x),0);assert.equal(Math.round(band.width),width);}
     assert.match(await page.locator('body').innerText(),/Short\s+\$100(?:\.00)?/);
     await page.getByRole('button',{name:'Collected breakdown',exact:true}).click();
     await page.getByRole('button',{name:'Staff payout breakdown',exact:true}).click();
@@ -85,6 +85,14 @@ else{
     await page.evaluate(()=>dispatchEvent(new Event('shop-money-updated')));await page.waitForTimeout(100);assert.equal(readRequests,count+1,'Live money event still refreshes seeded '+runtime);
     const beforeError=readRequests;await page.goto(base+'/payroll?runtime='+runtime+'&tab=shop&mode=plain&seed=error');await page.getByText('Shop money could not load. Please retry.').waitFor();assert.equal(readRequests,beforeError,'Failed preload does not retry silently');await page.getByRole('button',{name:'Retry',exact:true}).click();await page.locator('[data-shop-money]').waitFor();assert.equal(readRequests,beforeError+1);
   }
-  assert.deepEqual(errors,[]);assert.equal(writes,0);writeFileSync(dir+'/results.json',JSON.stringify({passed:true,checks,errors,writes,limitation:'Sample data, actual components/CSS; no live or physical device acceptance'},null,2));console.log({passed:true,views:checks.length,errors,writes});
+  assert.equal(writes,0);allowWrites=true;
+  for(const failed of [false,true]){
+   await page.goto(base+'/payroll?runtime=native&tab=shop&mode=plain&seed=1');await page.locator('[data-shop-money]').waitFor();
+   await page.getByRole('button',{name:'Edit 2026-10-16',exact:true}).click();await page.getByLabel('Note',{exact:true}).fill('Confirmed live edit');
+   const reads=readRequests,beforeWrites=writes;failRead=failed;await page.getByRole('button',{name:'Save collection',exact:true}).click();await page.getByText('Saved',{exact:true}).waitFor();await page.waitForTimeout(120);
+   assert.equal(writes,beforeWrites+1,'One write attempt');assert.equal(readRequests,reads+1,'One refresh, no own event duplicate');
+   if(failed)await page.getByText('Saved, but the latest figures could not load. Refresh to check them.',{exact:true}).waitFor();failRead=false;
+  }
+  assert.deepEqual(errors,[]);writeFileSync(dir+'/results.json',JSON.stringify({passed:true,checks,errors,writes,limitation:'Sample data, actual components/CSS; no live or physical device acceptance'},null,2));console.log({passed:true,views:checks.length,errors,writes});
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 }

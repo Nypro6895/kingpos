@@ -52,6 +52,7 @@ export const APP_LOCAL_PLATFORM_READS = {
 } as const;
 
 export const ROLE_READS = {
+  "http.owner.shop-money": { method: "GET", path: "/api/shop-money", argumentKeys: ["op", "salonId", "start", "end"], access: "scoped", cacheable: false },
   "http.owner.attention": { method: "GET", path: "/api/owner-attention", argumentKeys: ["salonId", "item", "page"], access: "scoped", cacheable: false },
   "http.financial-input-history": { method: "GET", path: "/api/financial-input-history", argumentKeys: ["salonId", "surface", "start", "end", "date", "inputEvent"], access: "scoped", cacheable: false },
   "http.owner.reconciliation-cases": { method: "GET", path: "/api/reports/reconciliation-cases", argumentKeys: ["salonId", "start", "end"], access: "scoped", cacheable: false },

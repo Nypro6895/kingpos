@@ -16,3 +16,12 @@ export async function POST(request:NextRequest){
   return Response.json(result.data,{headers});
  }catch(error){return Response.json({error:error instanceof Error?error.message:"Unable to save"},{status:400,headers});}
 }
+
+/** Live read, separate from commands so native cancellation never implies an uncertain write. */
+export async function GET(request:NextRequest){
+ const params=request.nextUrl.searchParams;
+ if([...params].some(([key])=>!['op','salonId','start','end'].includes(key)||params.getAll(key).length!==1)||params.has('op')&&params.get('op')!=='context')return Response.json({error:'Invalid query'},{status:400,headers:{'Cache-Control':'no-store'}});
+ const body=params.get('op')==='context'?{op:'context'}:{op:'read',salonId:params.get('salonId'),start:params.get('start'),end:params.get('end')};
+ const headers=new Headers(request.headers);headers.set('Content-Type','application/json');
+ return POST(new NextRequest(request.nextUrl,{method:'POST',headers,body:JSON.stringify(body)}));
+}

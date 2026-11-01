@@ -229,3 +229,13 @@
 .takeHomeCard>.disclosureSummary{padding-inline:12px}
 .takeHomeBody{padding-inline:12px}
 .mobileDays details{border:0;border-radius:10px;padding-inline:12px;box-shadow:0 1px 8px #18251e10}
+
+/* Flat sections: full-width surfaces, text aligned with the app gutter. */
+.staffCard,.takeHomeCard,.panel,.taxCard,.toolLink,.output,.schedulePanel{border-radius:0;box-shadow:0 -3px 9px -7px #18251e55,0 5px 10px -9px #18251e55}
+.mobileDays details{border-radius:0;box-shadow:none;padding-inline:0}
+@media(max-width:767px){
+.staffCard,.takeHomeCard,.panel,.taxCard,.toolLink,.output,.schedulePanel{margin-inline:-16px;width:calc(100% + 32px)}
+.staffCard,.takeHomeCard{padding-inline:16px}
+.panel,.taxCard,.toolLink,.output,.schedulePanel{padding-inline:16px}
+.takeHomeCard>.disclosureSummary,.takeHomeBody{padding-inline:0}
+}

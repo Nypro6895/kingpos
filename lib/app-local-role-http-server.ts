@@ -3,7 +3,7 @@ import { GET as ownerAttentionGET, POST as ownerAttentionPOST } from "@/app/api/
 import { NextRequest } from "next/server";
 import { POST as giftPOST } from "@/app/api/gift-cards/route";
 import { POST as rewardPOST } from "@/app/api/rewards/route";
-import { POST as shopMoneyPOST } from "@/app/api/shop-money/route";
+import { GET as shopMoneyGET, POST as shopMoneyPOST } from "@/app/api/shop-money/route";
 
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
@@ -49,7 +49,7 @@ export async function readAppLocalRoleHttpResource(name: string, args: Record<st
   const current = await authorized(options.scope), url = new URL(rule.path, "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
   const forwarded = new Headers(); if (current.get("cookie")) forwarded.set("cookie", current.get("cookie")!);
   const readRequest = new Request(url, { headers: forwarded, signal: options.signal });
-  const response = name === "http.owner.attention" ? await ownerAttentionGET(new NextRequest(readRequest)) : name === "http.financial-input-history" ? await financialHistoryGET(readRequest) : name === "http.owner.reconciliation-cases" ? await reconciliationCasesGET(readRequest) : name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
+  const response = name === "http.owner.shop-money" ? await shopMoneyGET(new NextRequest(readRequest)) : name === "http.owner.attention" ? await ownerAttentionGET(new NextRequest(readRequest)) : name === "http.financial-input-history" ? await financialHistoryGET(readRequest) : name === "http.owner.reconciliation-cases" ? await reconciliationCasesGET(readRequest) : name === "http.staff.creation" ? await creationGET(readRequest) : name === "http.owner.closing" ? await closingGET(readRequest) : name === "http.owner.closing-history" ? await closingHistoryGET(readRequest) : await preferencesGET();
   const result = await wire(response);
   if (options.signal?.aborted) throw options.signal.reason;
   // These control DTOs are never retained by native. Preserve their actual wire status/body.

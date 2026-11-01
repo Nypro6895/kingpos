@@ -26,3 +26,12 @@ test('native scope changes reject a late read',async()=>{
  const fetch=createAppLocalRoleHttpFetch({scope:()=>scope,host:()=>({isNative:true,read:async()=>{scope='other';return{scope:'workspace',data:wire}}}),fetch:()=>{throw Error('Raw network not allowed')}});
  await assert.rejects(fetch('/api/owner-attention?salonId=salon'),/account has changed/);
 });
+
+test('Shop refresh is an uncached native read, not a command or a write-complete event',async()=>{
+ const calls=[];const fetch=createAppLocalRoleHttpFetch({scope:()=> 'workspace',host:()=>({isNative:true,read:async(name,args,options)=>{calls.push({name,args,scope:options.scope});return{scope:'workspace',data:wire}},command:()=>{throw Error('Must not command')}}),fetch:()=>{throw Error('No raw network')}});
+ await fetch('/api/shop-money?salonId=salon&start=2026-10-16&end=2026-10-31');assert.deepEqual(calls,[{name:'http.owner.shop-money',args:{salonId:'salon',start:'2026-10-16',end:'2026-10-31'},scope:'workspace'}]);
+});
+test('uncertain Shop write is attempted once and never silently retried',async()=>{
+ let attempts=0;const fetch=createAppLocalRoleHttpFetch({scope:()=> 'workspace',host:()=>({isNative:true,command:async()=>{attempts++;throw Error('Unconfirmed write')}}),fetch:()=>{throw Error('No raw network')}});
+ await assert.rejects(fetch('/api/shop-money',{method:'POST',body:JSON.stringify({salonId:'salon',op:'collection',args:{}})}),/Unconfirmed write/);assert.equal(attempts,1);
+});

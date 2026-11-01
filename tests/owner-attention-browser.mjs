@@ -60,8 +60,9 @@ try{
    const geometry=await link.evaluate(el=>{const card=el.closest('article'),r=el.getBoundingClientRect(),c=card.getBoundingClientRect(),s=el.querySelector('span').getBoundingClientRect();return {right:c.right-r.right,height:r.height,visual:s.height,width:s.width};});
    assert.ok(geometry.right<=20&&geometry.right>=0);assert.ok(geometry.height>=44);assert.ok(geometry.visual<32&&geometry.width<=78);
   }
-  const groups=await page.locator('main .content-surface').evaluateAll(els=>els.map(el=>({shadow:getComputedStyle(el).boxShadow,borderImage:getComputedStyle(el).borderImageSource,border:getComputedStyle(el).borderTopWidth})));
-  assert.ok(groups.length>0);for(const group of groups){assert.notEqual(group.shadow,'none');assert.equal(group.borderImage,'none');assert.equal(group.border,'0px');}
+  const groups=await page.locator('main .content-surface').evaluateAll(els=>els.map(el=>({nested:!!el.parentElement.closest('.content-surface'),shadow:getComputedStyle(el).boxShadow,borderImage:getComputedStyle(el).borderImageSource,border:getComputedStyle(el).borderTopWidth})));
+  assert.ok(groups.length>0);for(const group of groups){if(group.nested)assert.equal(group.shadow,'none');else assert.notEqual(group.shadow,'none');assert.equal(group.borderImage,'none');assert.equal(group.border,'0px');}
+  for(const card of await page.locator('article').all())assert.equal(await card.evaluate(el=>getComputedStyle(el).boxShadow),'none');
   await page.screenshot({path:path.join(out,`today-${width}.png`),fullPage:true});assert.deepEqual(errors,[]);results.push({width,overflow:false,errors});await page.close();
  }
  const page=await browser.newPage({viewport:{width:390,height:950}});await page.goto(origin);await page.getByText('4 to review',{exact:true}).waitFor();await page.getByRole('button',{name:'Ignore',exact:true}).first().click();await page.getByText('3 to review',{exact:true}).waitFor();await page.reload();await page.getByText('3 to review',{exact:true}).waitFor();assert.equal(await page.getByText('Closing Oct 31 needs review',{exact:true}).count(),0);
