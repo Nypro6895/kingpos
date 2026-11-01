@@ -130,7 +130,22 @@ export function financialHistoryRecordKind(change:PayrollLiveChange):FinancialHi
  if(changedKeys.length&&changedKeys.every(key=>["work_date","business_date","ticket_number"].includes(key)))return "unchanged";
  return "earlier";
 }
-export function isConfirmedFinancialInputChange(change:PayrollLiveChange){return financialHistoryRecordKind(change)==="change";}
+export function isConfirmedFinancialInputChange(change:PayrollLiveChange){
+ if(financialHistoryRecordKind(change)!=="change")return false;
+ if(change.source_table!=="daily_report"&&change.source_table!=="pos_daily_closings")return true;
+ // Daily Report entry remains editable throughout its business day. Only a
+ // saved change made after that day earns Edited; reopening it tomorrow must
+ // not reclassify yesterday's same-day saves. Keep the captured audit intact.
+ if(!change.business_timezone||!/^\d{4}-\d{2}-\d{2}$/.test(change.period_start))return false;
+ try{
+  const reportDate=new Date(change.period_start+"T12:00:00Z");
+  if(reportDate.toISOString().slice(0,10)!==change.period_start)return false;
+  const parts=new Intl.DateTimeFormat("en-US",{timeZone:change.business_timezone,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date(change.created_at));
+  const part=(type:string)=>parts.find(value=>value.type===type)?.value;
+  const editedDate=`${part("year")}-${part("month")}-${part("day")}`;
+  return editedDate>change.period_start;
+ }catch{return false;}
+}
 // Read eligibility intentionally retains earlier evidence and payment metadata.
 export function hasMeaningfulFinancialInputChange(change:PayrollLiveChange){const kind=financialHistoryRecordKind(change);return ["change","earlier","payment-details"].includes(kind)||kind==="created"&&change.source_table!=="ticket";}
 export function capturedFinancialRecordFacts(change:PayrollLiveChange):FinancialChangeDetail[]{
