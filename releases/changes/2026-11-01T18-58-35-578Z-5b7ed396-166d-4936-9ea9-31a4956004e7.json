@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "numeric-input-zero-replacement-20261101",
+  "status": "ready",
+  "summary": "Owner queued default-zero numeric input fix for the next web deployment (PR #7)",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/numeric-input-editing.ts",
+    "components/numeric-input-behavior.tsx",
+    "app/(app)/layout.tsx",
+    "app/pos/portable/touch-keyboard.tsx",
+    "tests/numeric-input-editing.test.mjs",
+    "docs/numeric-input-audit-20261101.md"
+  ],
+  "source": {
+    "snapshot": "/workspace/kingpos/artifacts/numeric-input-editing-20261101/frozen",
+    "commit": "bb3fac3050c7a6bf9681f49ea309d5946d5ec050",
+    "restore": "Frozen patch files are recoverable from the exact source commit on codex/numeric-input-editing-20261101"
+  },
+  "validation": [
+    {
+      "name": "Numeric browser regressions: 6 passed",
+      "result": "passed",
+      "evidence": "tests/numeric-input-editing.test.mjs"
+    },
+    {
+      "name": "Financial change clarity and Shop Money wiring: 12 passed",
+      "result": "passed",
+      "evidence": "docs/numeric-input-audit-20261101.md"
+    },
+    {
+      "name": "Existing device keyboard browser regressions: 2 passed",
+      "result": "passed",
+      "evidence": "tests/portable-device-keyboard.test.mjs"
+    },
+    {
+      "name": "Check Writer UI: 1 passed with installed Chromium runtime override",
+      "result": "passed",
+      "evidence": "docs/numeric-input-audit-20261101.md"
+    },
+    {
+      "name": "Production build including TypeScript, 268 routes and offline asset packaging",
+      "result": "passed",
+      "evidence": "docs/numeric-input-audit-20261101.md"
+    },
+    {
+      "name": "Patch whitespace check (existing CRLF recognized)",
+      "result": "passed"
+    },
+    {
+      "name": "Queue registration: frozen snapshot matches pinned source commit for all six patch files",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "6d78ce31-6120-4d8a-860a-04593e8487ff"
+  ],
+  "notes": [
+    "Physical iPhone/Safari not tested",
+    "Legacy Portable Report tests have obsolete assertions/fixture exports",
+    "Payroll formula regression depends on unavailable commit 6115a30"
+  ],
+  "nativeBuildRequired": false,
+  "queueRequest": {
+    "requestedAt": "2026-11-01T18:58:35.570Z",
+    "userInstruction": "Đưa vào hàng chờ deploy",
+    "target": "next-web-release",
+    "deployNow": false,
+    "pullRequest": "https://github.com/Nypro6895/kingpos/pull/7"
+  },
+  "id": "5b7ed396-166d-4936-9ea9-31a4956004e7",
+  "recordedAt": "2026-11-01T18:58:35.578Z",
+  "worktree": "/workspace/kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/numeric-input-editing.ts": "79c3f4aea03de7d769ea7747dc4729c41e1d161e4097ed69ab8a25248887a9fd",
+    "components/numeric-input-behavior.tsx": "d8bb71596150ce701ccc75fa3011d7cc8e05b8df82d732a327be34e5f81cc261",
+    "app/(app)/layout.tsx": "19f68be1db8cebf32542f34f37e9ea3fed429e7b9d9dd90e769dba0e6c0a97eb",
+    "app/pos/portable/touch-keyboard.tsx": "9039b6ecef4447e4fec8264ff2eaec5ee90c34d157558c5a03b934f0605de7ed",
+    "tests/numeric-input-editing.test.mjs": "8f729d79f402f706af33e95a02bb6e8dfb25bf853836ff08b9a50d9553d36e12",
+    "docs/numeric-input-audit-20261101.md": "da24cade8bfeb52d6b44548b228d5331ae595bc3f1af38f12d8c02c7d837dec9"
+  }
+}
