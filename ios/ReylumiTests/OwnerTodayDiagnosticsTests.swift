@@ -137,6 +137,20 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         try await scenario("statistics_pie_and_hour_selection") { run in
             try await self.wait(self.fullReady, in: run.web)
             try await self.wait("document.querySelector('[data-today-statistics]')?.innerText.includes('Service mix') && document.querySelectorAll('[data-today-statistics] svg').length===2", in: run.web)
+            // The chart becomes visible before deferred shell initialization
+            // finishes. Establish its quiet baseline before measuring clicks;
+            // keep the all-reads equality below strict throughout interaction.
+            let settleDeadline = ProcessInfo.processInfo.systemUptime + 10
+            var settledReads: [String: Int] = [:]
+            var quietSince = ProcessInfo.processInfo.systemUptime
+            while true {
+                let reads = (await run.http.counts())["reads"] as? [String: Int] ?? [:]
+                let now = ProcessInfo.processInfo.systemUptime
+                if reads != settledReads { settledReads = reads; quietSince = now }
+                if reads["shell_configuration"] == 1 && reads["shell_summary"] == 1 && now - quietSince >= 1 { break }
+                guard now < settleDeadline else { throw NSError(domain: "StatisticsTestShellDidNotSettle", code: 1) }
+                try await Task.sleep(nanoseconds: 100_000_000)
+            }
             let before = await run.http.counts()
             _ = try await run.web.evaluateJavaScript("(()=>{const p=document.querySelector('[data-today-statistics]');[...p.querySelectorAll('button')].find(b=>b.textContent==='Sales').click();return true})()")
             try await self.wait("document.querySelector('[data-today-statistics]').innerText.includes('$120.00 before discounts')", in: run.web)
