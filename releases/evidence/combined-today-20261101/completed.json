@@ -1,0 +1,30 @@
+{
+  "completedAt": "2026-11-01T21:00:34.154Z",
+  "web": {
+    "url": "https://reylumi.com/staff/today",
+    "deploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG",
+    "sourceCommit": "fd0357bd2e8f8b399c274a39e248e16ba2084329",
+    "receipt": "69b8471a-4eca-4652-a6e2-13aa59a77804",
+    "originalReceipt": "e3d1c693-1865-4b72-8f36-7052c00fc9d5",
+    "verified": true
+  },
+  "ios": {
+    "version": "1.0.0",
+    "build": "83",
+    "sourceCommit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+    "receipt": "cfd7d616-e4eb-4b22-a088-72bb5e464cbe",
+    "simulatorTests": 240,
+    "appleProcessing": "VALID",
+    "testflightAvailable": true,
+    "existingGroups": 2,
+    "appStorePublished": false,
+    "physicalDeviceAcceptance": false
+  },
+  "queue": {
+    "auditedOriginalEvents": 111,
+    "currentReleasePending": 0,
+    "remainingHistoricalOrOtherPlatformEvents": 107,
+    "decisions": "pending-decisions-summary.json"
+  },
+  "localGeneratedOutputs": "Local bundle preparation and TypeScript incremental output are preserved in the isolated release worktree; not added as source overlays."
+}

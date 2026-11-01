@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "sourceCommit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+  "previousCommit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec",
+  "changedFiles": [
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift"
+  ],
+  "sourceSha256": "952a9694d206782953f42dd725015db266bede45c293c82f0d912578b42ad1d7",
+  "sourceFiles": 3040,
+  "expectedTests": 240,
+  "run": 41347053508
+}

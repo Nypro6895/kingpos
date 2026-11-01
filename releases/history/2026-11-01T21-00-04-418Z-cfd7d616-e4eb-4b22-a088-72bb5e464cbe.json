@@ -1,0 +1,48 @@
+{
+  "kind": "release",
+  "summary": "Today Statistics, exact staff/day ticket navigation and iOS scroll containment available through existing internal TestFlight distribution, preserving uploaded build82 source. Full installed simulator test inventory and unsigned/signed resources verified.",
+  "changes": [
+    "316e166d-c0f5-46c0-a838-57de7b3c57ac",
+    "69001912-9131-49db-bcaa-431ad28fed95",
+    "67aa578d-ef9b-409a-9037-fccf764da156",
+    "33a98581-bf20-4b07-8367-ffd5fc818ede",
+    "adc88739-7e75-4cf9-8ed9-d991f8060adf"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "83",
+      "commit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+      "sourceSha256": "952a9694d206782953f42dd725015db266bede45c293c82f0d912578b42ad1d7",
+      "bundleBuildId": "c5975ebff62ce1df3767598cf311a1844f4ef9f8e17535ba0a2045de8adbb4f0",
+      "bundleSha256": "41abc44e5a6ba814cddab72cec19322a8fee91ae80e641c6314009144bd3d44e",
+      "baseline": {
+        "version": "1.0.0",
+        "build": "82",
+        "commit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8"
+      },
+      "evidence": "releases/evidence/combined-today-20261101",
+      "workflowRun": 41347053508,
+      "checks": [
+        "All 240 source-defined simulator tests passed exactly once",
+        "Installed WKWebView Statistics Count/Sales/hour interaction, no extra reads or writes",
+        "Unsigned archive and signed resource hashes match frozen source",
+        "Apple upload accepted and processing VALID",
+        "Read-only exact-build membership in existing internal distribution groups"
+      ],
+      "physicalDeviceAcceptance": false,
+      "appStorePublished": false
+    }
+  },
+  "webReceipt": "e3d1c693-1865-4b72-8f36-7052c00fc9d5",
+  "webFollowupReceipt": "69b8471a-4eca-4652-a6e2-13aa59a77804",
+  "limitations": [
+    "Simulator/installed bundle checks are not physical-device acceptance.",
+    "Existing TestFlight group access is verified; installation on a particular device and App Store publication are separate."
+  ],
+  "id": "cfd7d616-e4eb-4b22-a088-72bb5e464cbe",
+  "recordedAt": "2026-11-01T21:00:04.418Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101"
+}

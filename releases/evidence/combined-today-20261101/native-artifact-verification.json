@@ -1,0 +1,10 @@
+{
+  "verified": true,
+  "run": 41347053508,
+  "sourceCommit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+  "artifactId": 13100314381,
+  "artifactDigest": "sha256:97d4937b42226277d6e848c111a0971d42f83deed041b0cf112a8632b78b390e",
+  "signatureSourceBaselineBuild": "82",
+  "signedBuild": "83",
+  "statusWorkflowRun": 41349628439
+}
