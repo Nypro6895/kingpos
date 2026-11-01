@@ -55,7 +55,7 @@ export function AttentionDetail({ data, item, onSaved }: { data: OwnerAttentionD
 
 export function AttentionList({ data, page = 0, onSaved }: { data: OwnerAttentionData; page?: number; onSaved?: () => void }) {
   return <><h1><T text="Financial attention" /> · {data.total}</h1>
-    {data.items.map(row => <article className={s.item} key={row.item_key}><h2>{row.label}</h2><p className={s.meta}>{row.business_date}</p><p className={s.detail}>{row.detail}</p><AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={row} onSaved={onSaved} /></article>)}
+    {data.items.map(row => <article className={`${s.item} ${s.notification}`} key={row.item_key}><div className={s.message}><h2>{row.label}</h2><p className={s.meta}>{row.business_date}</p><p className={s.detail}>{row.detail}</p></div><div className={s.notificationActions}><AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={row} onSaved={onSaved} compact /></div></article>)}
     {!data.items.length && <p><T text="No financial items awaiting review." /></p>}
     <nav className={s.actions}>{page > 0 && <Link href={`/staff/today/attention?page=${page - 1}`}><T text="Previous" /></Link>}{(page + 1) * 50 < data.total && <Link href={`/staff/today/attention?page=${page + 1}`}><T text="Next" /></Link>}</nav>
   </>;

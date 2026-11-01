@@ -19,3 +19,6 @@
   .metric > p, .metric > div:last-child:not(.metricBody):not(.metricHeading) { margin-top:6px; font-size:11px; line-height:15px; }
 }
 @media (min-width:640px) { .updated { flex-basis:auto; margin-left:auto; } }
+
+/* Today surfaces follow the same raised-group treatment as financial pages. */
+.page :global(.content-surface),.group{border:0;border-image:none!important;border-radius:12px;box-shadow:0 2px 10px #18251e12,0 0 1px #18251e16}

@@ -27,7 +27,7 @@ async function call(salonId: string, args: Record<string, unknown>, signal?: Abo
   } finally { clearTimeout(timer); signal?.removeEventListener("abort", abort); }
 }
 
-export function AttentionActions({ salonId, viewerId, item, onSaved, closing = false }: { salonId: string; viewerId: string; item: OwnerAttentionItem; onSaved?: () => void; closing?: boolean }) {
+export function AttentionActions({ salonId, viewerId, item, onSaved, closing = false, compact = false }: { salonId: string; viewerId: string; item: OwnerAttentionItem; onSaved?: () => void; closing?: boolean; compact?: boolean }) {
   const router = useRouter();
   const facts = item.facts;
   const report = facts?.report as { entered?: boolean } | undefined;
@@ -44,10 +44,10 @@ export function AttentionActions({ salonId, viewerId, item, onSaved, closing = f
     } catch (e) { setError(e instanceof Error ? e.message : "Unable to save"); }
     finally { setBusy(false); }
   }
-  return <><div className={s.actions}>
-    {!closing && <Link href={attentionHref(item.item_key)}><T text="View details" /></Link>}
+  return <><div className={`${s.actions} ${compact ? s.compactActions : ""}`}>
+    {!closing && <Link href={attentionHref(item.item_key)}><span><T text="View details" /></span></Link>}
     {closing && item.kind === "closing" && <button className={s.primary} disabled={busy || !canConfirm} onClick={() => void save("review_closing")}><T text="Confirm day reviewed" /></button>}
-    {!item.ignored && <button disabled={busy} onClick={() => void save("ignore")}><T text={busy ? "Saving…" : "Ignore"} /></button>}
+    {!item.ignored && <button disabled={busy} onClick={() => void save("ignore")}><span><T text={busy ? "Saving…" : "Ignore"} /></span></button>}
     {item.ignored && <span className={s.meta}><T text="Ignored · hidden from Attention" /></span>}
   </div>{closing && item.kind === "closing" && !canConfirm && <p className={s.detail}><T text="Enter actual collections and finish open receipts in Reports before confirming." /></p>}{error && <p role="alert" className={s.error}>{error}</p>}</>;
 }
@@ -81,9 +81,9 @@ export function OwnerAttentionPanel({ salonId }: { salonId: string }) {
   return <section className={s.panel} aria-busy={!data && !error}>
     <div className={s.heading}><h2><T text="Needs Attention" /></h2><span className={s.badge}><T text={error ? "Check unavailable" : data ? `${data.total} to review` : "Checking…"} /></span></div>
     {error && <div role="status"><p className={s.error}>{error}</p><button onClick={() => void load()}><T text="Try again" /></button></div>}
-    {data?.salonId === salonId && data.items.slice(0, 5).map(item => <article className={s.item} key={item.item_key}>
-      <h3>{item.label}</h3><p className={s.meta}>{item.business_date} · {new Intl.DateTimeFormat("en-US", { dateStyle: "short", timeStyle: "short", timeZone: data.timezone }).format(new Date(item.occurred_at))}</p>
-      <p className={s.detail}>{item.detail}</p><AttentionActions salonId={salonId} viewerId={data.viewerId} item={item} />
+    {data?.salonId === salonId && data.items.slice(0, 5).map(item => <article className={`${s.item} ${s.notification}`} key={item.item_key}>
+      <div className={s.message}><h3>{item.label}</h3><p className={s.meta}>{item.business_date} · {new Intl.DateTimeFormat("en-US", { dateStyle: "short", timeStyle: "short", timeZone: data.timezone }).format(new Date(item.occurred_at))}</p>
+      <p className={s.detail}>{item.detail}</p></div><div className={s.notificationActions}><AttentionActions salonId={salonId} viewerId={data.viewerId} item={item} compact /></div>
     </article>)}
     {data && !error && data.total === 0 && <p className={s.detail}><T text="No financial items awaiting review." /></p>}
     {data && data.total > 5 && <div className={s.actions}><Link href="/staff/today/attention"><T text={`View all ${data.total} items`} /></Link></div>}

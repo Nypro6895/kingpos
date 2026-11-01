@@ -1,3 +1,4 @@
+import type { ShopMoneyData } from "@/types/shop-money";
 import {loadPayrollRecordedFacts} from "@/lib/payroll-records";
 import { loadVisibleTicketAdjustments } from "@/lib/pos-ticket-adjustment-history-server";
 
@@ -4177,6 +4178,7 @@ export async function getPayrollSettingsWorkspace() {
 
 export async function getPayrollPageData(input: {
   includeAnalytics?: boolean;
+  includeShopMoney?: boolean;
   cycleType?: string | null;
   endDate?: string | null;
   month?: string | null;
@@ -4186,11 +4188,12 @@ export async function getPayrollPageData(input: {
   startDate?: string | null;
 }) {
   const auth = await requirePayrollContext();
-  const salonPayrollSetting = auth.access.canViewAllPayroll
-    ? await loadSalonPayrollSetting(auth)
-    : getDefaultSalonPayrollSetting(auth.Account.id, auth.salon.id);
+  const [salonPayrollSetting, timezone] = await Promise.all([
+    auth.access.canViewAllPayroll ? loadSalonPayrollSetting(auth) : Promise.resolve(getDefaultSalonPayrollSetting(auth.Account.id, auth.salon.id)),
+    getSalonBusinessTimezone(auth.salon.id),
+  ]);
   const period = resolvePayrollPeriod({
-    timezone: await getSalonBusinessTimezone(auth.salon.id),
+    timezone,
     cycleType: input.cycleType,
     endDate: input.endDate,
     month: input.month,
@@ -4200,21 +4203,28 @@ export async function getPayrollPageData(input: {
     salonSetting: salonPayrollSetting,
     startDate: input.startDate,
   });
-  const [live, latestStatement, staffRows, staffSettings, serviceAnalytics] =
-    await Promise.all([
-      calculateLivePayrollForAuth(auth, period),
-      loadLatestPayrollSnapshot(auth, period),
-      auth.access.canViewAllPayroll ? loadStaffRows(auth) : Promise.resolve([]),
-      auth.access.canViewAllPayroll
-        ? loadStaffPayrollSettings(auth)
-        : Promise.resolve([]),
-      auth.access.canViewAllPayroll && input.includeAnalytics !== false
-        ? loadPayrollServiceAnalytics(auth, period)
-        : Promise.resolve(emptyPayrollServiceAnalytics()),
-    ]);
-  const history = await loadPayrollLiveHistory(auth.supabase,auth.salon.id,period.startDate,period.endDate);
-  const recordedFacts = await loadPayrollRecordedFacts(auth.supabase,auth.salon.id,period.startDate,period.endDate);
-  const timezone = await getSalonBusinessTimezone(auth.salon.id);
+  const staffRowsRead = auth.access.canViewAllPayroll ? loadStaffRows(auth) : Promise.resolve([] as Staff[]);
+  const staffSettingsRead = auth.access.canViewAllPayroll ? loadStaffPayrollSettings(auth) : Promise.resolve([] as StaffPayrollSetting[]);
+  const liveRead = auth.access.canViewAllPayroll
+    ? Promise.all([staffRowsRead, staffSettingsRead]).then(([staffRows, staffSettings]) => calculateLivePayrollForAuth(auth, period, { staffRows, staffSettings, salonSetting: salonPayrollSetting }))
+    : calculateLivePayrollForAuth(auth, period);
+  const shopMoneyRead = input.includeShopMoney && isOwnerMembership(auth.context.currentMembership)
+    ? Promise.resolve(auth.supabase.rpc("shop_money_read", { p_salon: auth.salon.id, p_start: period.startDate, p_end: period.endDate })).then(({ data, error }) => {
+        if (error || !data || !Array.isArray(data.days)) throw new Error("Shop money could not load. Please retry.");
+        return { data: data as ShopMoneyData, error: null as string | null };
+      }).catch(() => ({ data: null as ShopMoneyData | null, error: "Shop money could not load. Please retry." }))
+    : Promise.resolve(null);
+  const [live, latestStatement, staffRows, staffSettings, serviceAnalytics, history, recordedFacts, staffPresentations, shopMoney] = await Promise.all([
+    liveRead,
+    loadLatestPayrollSnapshot(auth, period),
+    staffRowsRead,
+    staffSettingsRead,
+    auth.access.canViewAllPayroll && input.includeAnalytics !== false ? loadPayrollServiceAnalytics(auth, period) : Promise.resolve(emptyPayrollServiceAnalytics()),
+    loadPayrollLiveHistory(auth.supabase, auth.salon.id, period.startDate, period.endDate),
+    loadPayrollRecordedFacts(auth.supabase, auth.salon.id, period.startDate, period.endDate),
+    staffRowsRead.then(staff => getStaffPresentationsByStaffId({ staff, supabase: auth.supabase })),
+    shopMoneyRead,
+  ]);
   const today = new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   const difference = compareLivePayrollToStatement(live, latestStatement);
   const taxCompany = await buildTaxCompanyLinesForAuth({
@@ -4223,15 +4233,11 @@ export async function getPayrollPageData(input: {
     live,
     period,
   });
-  const staffPresentations = await getStaffPresentationsByStaffId({
-    staff: staffRows,
-    supabase: auth.supabase,
-  });
 
   return {
     access: auth.access,
     context: auth.context,
-    history, today, recordedFacts,
+    history, today, recordedFacts, shopMoney,
     difference,
     latestStatement,
     live,

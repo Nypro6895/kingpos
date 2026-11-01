@@ -13,19 +13,20 @@ import theme from "./payroll-theme.module.css";
 import {ShopSummary,CollectionEditor,GiftReconciliation,ExpensePanel,FinanceIcon,Pencil} from "./shop-money-reference";
 const usd=(v:unknown)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v??0));
 type View="shop"|"gifts"|"rewards"|"discounts"|"expenses";
-type Props={initialDay?:string;historyQuery?:string;salonId:string;start:string;end:string;view?:View;payout?:{cash:number;check:number;tax:number;tipsCash?:number;tipsCheck?:number;bonusCash?:number;bonusCheck?:number;reportedGross?:number};history?:PayrollLiveChange[]};
+type Props={initialData?:ShopMoneyData|null;initialError?:string|null;initialDay?:string;historyQuery?:string;salonId:string;start:string;end:string;view?:View;payout?:{cash:number;check:number;tax:number;tipsCash?:number;tipsCheck?:number;bonusCash?:number;bonusCheck?:number;reportedGross?:number};history?:PayrollLiveChange[]};
 const emptyPayout={cash:0,check:0,tax:0};
 async function request(body:Record<string,unknown>,signal?:AbortSignal){const response=await fetch('/api/shop-money',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store',signal});const result=await response.json();if(!response.ok)throw Error(result.error??'Unable to load');return result;}
 function Row({label,value,strong=false}:{label:string;value:number;strong?:boolean}){return <div className={`${s.row} ${strong?s.totalRow:""}`}><span><T text={label}/></span><strong className={value<0?s.negative:undefined} style={strong?{fontSize:22}:undefined}>{usd(value)}</strong></div>;}
 function Field({name,label,value='0',type='number',min}:{name:string;label:string;value?:string|number;type?:string;min?:number}){return <label><T text={label}/><input name={name} defaultValue={value} type={type} step={type==='number'?'0.01':undefined} min={min} placeholder={name==='note'?'e.g. Nail supplies':undefined} required={type!=='text'}/></label>;}
 function formValues(form:HTMLFormElement){return Object.fromEntries(new FormData(form));}
 export function ShopMoneyWorkspace(props:Props){return <ShopMoneyContent key={`${props.salonId}:${props.start}:${props.end}:${props.historyQuery??""}`} {...props}/>;}
-function ShopMoneyContent({salonId,start,end,view='shop',payout=emptyPayout,history=[],initialDay}:Props){
+function ShopMoneyContent({salonId,start,end,view='shop',payout=emptyPayout,history=[],initialDay,initialData,initialError}:Props){
  const [offerView,setOfferView]=useState<'gifts'|'rewards'|'discounts'>(view==='rewards'||view==='discounts'?view:'gifts');
- const router=useRouter();const [data,setData]=useState<ShopMoneyData|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(initialDay?`day:${initialDay}`:''),[draft,setDraft]=useState<ShopExpense|null>(null),[saved,setSaved]=useState(''),[newExpenseId,setNewExpenseId]=useState('');
+ const router=useRouter();const [loaded,setLoaded]=useState<{seed:ShopMoneyData|null|undefined;data:ShopMoneyData}|null>(null),[error,setError]=useState(initialError??''),[busy,setBusy]=useState(false),[open,setOpen]=useState(initialDay?`day:${initialDay}`:''),[draft,setDraft]=useState<ShopExpense|null>(null),[saved,setSaved]=useState(''),[newExpenseId,setNewExpenseId]=useState('');
 
- const load=useCallback(async(signal?:AbortSignal)=>{const d=await request({op:'read',salonId,start,end},signal);setData(d);setError('');},[salonId,start,end]);
- useEffect(()=>{const c=new AbortController();const refresh=()=>void load(c.signal).catch(e=>{if(!c.signal.aborted)setError(e.message);});refresh();window.addEventListener('shop-money-updated',refresh);return()=>{c.abort();window.removeEventListener('shop-money-updated',refresh);};},[load]);
+ const data=loaded&&loaded.seed===initialData?loaded.data:initialData??null;
+ const load=useCallback(async(signal?:AbortSignal)=>{const d=await request({op:'read',salonId,start,end},signal);setLoaded({seed:initialData,data:d});setError('');},[salonId,start,end,initialData]);
+ useEffect(()=>{const c=new AbortController();const refresh=()=>void load(c.signal).catch(e=>{if(!c.signal.aborted)setError(e.message);});if(!initialData&&!initialError)refresh();window.addEventListener('shop-money-updated',refresh);return()=>{c.abort();window.removeEventListener('shop-money-updated',refresh);};},[load,initialData,initialError]);
  const toggle=(key:string)=>{setOpen(old=>old===key?'':key);setSaved('');};
  async function save(op:string,args:Record<string,unknown>){setBusy(true);setError('');setSaved('');try{await request({salonId,op,args});await load();setOpen('');setDraft(null);setSaved('Saved');router.refresh();window.dispatchEvent(new Event('shop-money-updated'));}catch(e){setError(e instanceof Error?e.message:'Unable to save');}finally{setBusy(false);}}
  const submit=(op:string,extra:Record<string,unknown>={})=>(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();void save(op,{...formValues(e.currentTarget),...extra});};

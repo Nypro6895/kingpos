@@ -1,3 +1,4 @@
+import { payrollPageLoadPlan } from "@/lib/payroll-page-load-plan";
 import payrollTheme from "@/app/payroll/payroll-theme.module.css";
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
 import {financialHistoryForObject,periodPaymentDetailsForObject} from "@/lib/inline-financial-history";
@@ -876,26 +877,30 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
 
   const params = await searchParams;
   const pageContext = await requireSalonManagePageContext("/payroll");
+  const canManageConnection = isOwnerMembership(pageContext.currentMembership);
+  const plan = payrollPageLoadPlan(params.tab, canManageConnection);
+  const taxPluginRead = plan.taxPlugin ? taxCompanySettings().catch(() => null) : Promise.resolve(null);
+  const downloadRead = plan.downloadPlugin ? payrollDataPluginInstalled().catch(() => null) : Promise.resolve(null);
   let data: Awaited<ReturnType<typeof getPayrollPageData>>;
+  let taxPlugin: Awaited<ReturnType<typeof taxCompanySettings>> | null;
+  let downloadEnabled: boolean | null;
 
   try {
-    data = await getPayrollPageData({
-      includeAnalytics: false,
+    [data, taxPlugin, downloadEnabled] = await Promise.all([getPayrollPageData({
+      includeAnalytics: plan.includeAnalytics,
+      includeShopMoney: plan.includeShopMoney,
       endDate: params.end,
       month: params.month,
       payPeriodStart: params.payPeriodStart,
       preset: params.preset,
       segment: params.segment,
       startDate: params.start,
-    });
+    }), taxPluginRead, downloadRead]);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Payroll could not be loaded.";
     return <NoPermissionState message={message} />;
   }
 
-  const canManageConnection = isOwnerMembership(pageContext.currentMembership);
-  const taxPlugin = params.tab === "tax" && canManageConnection ? await taxCompanySettings().catch(() => null) : null;
-  const downloadEnabled = await payrollDataPluginInstalled().catch(() => null);
   const historyQuery=new URLSearchParams(Object.entries(params).filter((entry):entry is [string,string]=>typeof entry[1]==="string")).toString();
   const activeTab = resolvePayrollContextTab(params, data.access.canViewAllPayroll,data.history);
   const returnPath = getReturnPath(data.period, activeTab);
@@ -906,7 +911,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
       : params.payroll_error;
 
   return (
-    <PayrollEditBoundary><main className={`${payrollTheme.surface} ${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
+    <PayrollEditBoundary><main data-payroll-page="true" className={`${payrollTheme.surface} ${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
       {canManageConnection && activeTab === "tools" && <Link className={styles.checkShortcut} href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
       <PayrollLiveRefresh salonId={pageContext.currentSalon.id} />
@@ -934,7 +939,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
           historyQuery={historyQuery}
         />
       ) : null}
-      {["shop","gifts","rewards","discounts"].includes(activeTab) && canManageConnection && <FinancialHistoryProvider salonId={pageContext.currentSalon.id} surface="payroll" initialChanges={data.history} query={historyQuery}><ShopMoneyWorkspace historyQuery={historyQuery} initialDay={data.history.find(h=>h.id===params.inputEvent)?.period_start} key={pageContext.currentSalon.id+data.period.startDate+data.period.endDate+activeTab} salonId={pageContext.currentSalon.id} start={data.period.startDate} end={data.period.endDate} view={activeTab as "shop"|"gifts"|"rewards"|"discounts"} history={data.history} payout={{cash:data.live.lines.reduce((n,l)=>n+l.final_cash_amount,0),check:data.live.lines.reduce((n,l)=>n+l.final_check_amount,0),tax:data.live.shopSummary.taxWithheld,tipsCash:data.live.lines.reduce((n,l)=>n+l.tip_cash_amount,0),tipsCheck:data.live.lines.reduce((n,l)=>n+l.tip_check_amount,0),bonusCash:data.live.lines.reduce((n,l)=>n+l.bonus_cash_amount,0),bonusCheck:data.live.lines.reduce((n,l)=>n+l.bonus_check_amount,0),reportedGross:data.live.lines.reduce((n,l)=>n+l.tax_company_reported_wage_gross,0)}}/></FinancialHistoryProvider>}
+      {["shop","gifts","rewards","discounts"].includes(activeTab) && canManageConnection && <FinancialHistoryProvider salonId={pageContext.currentSalon.id} surface="payroll" initialChanges={data.history} query={historyQuery}><ShopMoneyWorkspace initialData={data.shopMoney?.data} initialError={data.shopMoney?.error} historyQuery={historyQuery} initialDay={data.history.find(h=>h.id===params.inputEvent)?.period_start} key={pageContext.currentSalon.id+data.period.startDate+data.period.endDate+activeTab} salonId={pageContext.currentSalon.id} start={data.period.startDate} end={data.period.endDate} view={activeTab as "shop"|"gifts"|"rewards"|"discounts"} history={data.history} payout={{cash:data.live.lines.reduce((n,l)=>n+l.final_cash_amount,0),check:data.live.lines.reduce((n,l)=>n+l.final_check_amount,0),tax:data.live.shopSummary.taxWithheld,tipsCash:data.live.lines.reduce((n,l)=>n+l.tip_cash_amount,0),tipsCheck:data.live.lines.reduce((n,l)=>n+l.tip_check_amount,0),bonusCash:data.live.lines.reduce((n,l)=>n+l.bonus_cash_amount,0),bonusCheck:data.live.lines.reduce((n,l)=>n+l.bonus_check_amount,0),reportedGross:data.live.lines.reduce((n,l)=>n+l.tax_company_reported_wage_gross,0)}}/></FinancialHistoryProvider>}
       {activeTab === "shop" && data.access.canViewAllPayroll && !canManageConnection && <ShopIncomeTab rows={data.live.shopDailyRows} summary={data.live.shopSummary} salonId={pageContext.currentSalon.id} history={data.history} canReadChecks={false} historyQuery={historyQuery}/>}
       {["staff","shop"].includes(activeTab)&&<footer className={styles.output}><Link className={styles.action} href={getPayrollHref({period:data.period,tab:"download"})}><WorkspaceText text="Download current data"/></Link></footer>}
       {activeTab === "tax" && data.access.canViewAllPayroll ? (

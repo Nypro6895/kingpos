@@ -1,0 +1,32 @@
+{
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Implementation and load audit"
+    }
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "commit": "4931ef6"
+  },
+  "files": [
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/payroll/payroll-theme.module.css"
+  ],
+  "dependencies": [
+    "owner-financial-attention-20261101",
+    "payroll-style-reference-20261101"
+  ],
+  "summary": "Compact Attention actions, shadow-separated Today/Payroll groups, iOS Payroll gutters and measured Payroll load fixes",
+  "changeId": "owner-attention-payroll-polish-20261101",
+  "status": "working",
+  "kind": "change",
+  "id": "af1e0f2b-cf65-4314-a8d4-f1b3374c2fd2",
+  "recordedAt": "2026-11-01T06:52:24.603Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-attention-payroll-polish-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

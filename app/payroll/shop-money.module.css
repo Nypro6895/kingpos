@@ -151,3 +151,8 @@
 .shopLayout:has(.activeDay) .summaryLedger>div{min-height:24px}
 @media(min-width:1024px){.shopLayout:has(.activeDay){grid-template-columns:1fr;grid-template-areas:'summary' 'daily'}.shopLayout:has(.activeDay) .summaryCard{max-width:700px}}
 .currencyInput{position:relative;display:block;min-width:0}.currencyInput>span{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:13px;color:#37473f;pointer-events:none}.collectionEditor .currencyInput>input{padding-left:19px}
+
+/* Shared money groups on Payroll and Reports. Table rows keep their ledger rules. */
+.summaryCard,.group,.daily,.expenseHero,.giftHero,.benefitSummary{border:0;border-radius:12px;box-shadow:0 2px 10px #18251e12,0 0 1px #18251e16}
+.group,.daily{background:#fff}
+.daily{padding:12px}

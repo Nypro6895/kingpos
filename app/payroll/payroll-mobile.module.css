@@ -194,7 +194,7 @@
 .page :global([data-payroll-autosave=true])>div { grid-template-columns:64px minmax(0,1fr); font-size:13px; }
 .page :global([data-payroll-autosave=true]) input:not([type=hidden]) { min-height:36px; background:white; }
 @media(max-width:639px) {
- .page { padding:12px 16px!important; gap:14px; }
+ .page { padding-block:12px; gap:14px; }
  .page>.output { padding-inline:0; }
  .takeHomeCard>.disclosureSummary { padding:14px 0; }
  .takeHomeMoney { gap:9px; }
@@ -215,3 +215,17 @@
  .page :global(#download)>form { max-width:960px; }
 }
 .compactPeriod button:nth-child(2){display:flex;align-items:center;justify-content:center;gap:7px}.periodIcon{width:15px;height:15px;flex:none}
+
+/* A page owns one gutter; hosted iOS already receives it from the app shell. */
+@media(max-width:767px){
+ .page[data-payroll-page=true]{padding-left:max(16px,env(safe-area-inset-left))!important;padding-right:max(16px,env(safe-area-inset-right))!important;max-width:none}
+ :global([data-salon-manage-gutters=true]) .page[data-payroll-page=true]{padding-left:0!important;padding-right:0!important}
+}
+/* Separate groups with elevation, without introducing more page gutters. */
+.staffCard,.takeHomeCard,.panel,.taxCard,.toolLink,.output,.schedulePanel{border:0;border-radius:12px;background:#fff;box-shadow:0 2px 10px #18251e12,0 0 1px #18251e16}
+.staffCard,.takeHomeCard{overflow:hidden}
+.panel,.taxCard,.toolLink,.output,.schedulePanel{padding:14px}
+.tools{gap:12px}
+.takeHomeCard>.disclosureSummary{padding-inline:12px}
+.takeHomeBody{padding-inline:12px}
+.mobileDays details{border:0;border-radius:10px;padding-inline:12px;box-shadow:0 1px 8px #18251e10}
