@@ -1,0 +1,10 @@
+{
+  "verified": true,
+  "format": "Vercel source archive",
+  "archiveSha256": "f17ab752c5f02c30d13bd1306494b52b87ff6430fcb0366121dd3ac0486684c7",
+  "files": 3760,
+  "sourceCommit": "3a12b876f57feacbbc1be5546a5dca119ac46004",
+  "sourceSha256": "e2400daa039ca7c18b5db83b69eca346cd90232577648378ef3edb8194a2cb3e",
+  "overlaySha256": "bc20a66b49c5bdc8cb057bba3fca0a916e59a9758fb26ce2683dcdf55b5dc9d6",
+  "extras": []
+}

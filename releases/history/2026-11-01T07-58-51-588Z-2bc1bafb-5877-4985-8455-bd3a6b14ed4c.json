@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Record validated web integration completion for the existing single promotion; no additional deployment",
+  "changes": [
+    "ac3764b8-4547-43f9-9ad8-89b6b69956b7"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki",
+      "baselineDeploymentId": "dpl_FnWRb4DLB2terinVzD6ZxrJxmGZd",
+      "sourceSha256": "e2400daa039ca7c18b5db83b69eca346cd90232577648378ef3edb8194a2cb3e",
+      "overlaySha256": "bc20a66b49c5bdc8cb057bba3fca0a916e59a9758fb26ce2683dcdf55b5dc9d6",
+      "evidence": "artifacts/combined-financial-release-20261101/candidate-source-verified.json; artifacts/combined-financial-release-20261101/live-alias-after.json; artifacts/combined-financial-release-20261101/http-live.json; artifacts/combined-financial-release-20261101/migration-evidence.json; artifacts/combined-financial-release-20261101/live-today-desktop.png; artifacts/combined-financial-release-20261101/live-attention-detail-desktop.png"
+    }
+  },
+  "id": "2bc1bafb-5877-4985-8455-bd3a6b14ed4c",
+  "recordedAt": "2026-11-01T07:58:51.588Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101"
+}

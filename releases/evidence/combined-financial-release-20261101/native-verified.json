@@ -1,0 +1,69 @@
+{
+  "verified": true,
+  "commit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8",
+  "sourceSha256": "b107dd8698f2ced4f70c5875bea97de5fa9bcaf264eddc4862a34c4df1ecf69f",
+  "sourceFiles": 3034,
+  "bundleBuildId": "bc865e032ebab387b75370f081643665a69b5c2cd61245a8238137eb31d129a1",
+  "bundleSha256": "cbd69b66da78af2a89219cf787e12ad76492d766d0052b01f83ecc416e06c6ca",
+  "servicesCatalogPilot": false,
+  "testCount": 239,
+  "exactTestInventory": true,
+  "version": "1.0.0",
+  "build": "82",
+  "upload": "accepted",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "unsignedSignedResourcesMatch": true,
+  "measurements": [
+    {
+      "coldReadyMs": 1308.4317083333872,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 2,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 100,
+      "warmReadyMs": 37.9802083332379
+    },
+    {
+      "coldReadyMs": 1651.4571666666598,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 1,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 700,
+      "warmReadyMs": 26.748791666705074
+    }
+  ],
+  "measurementScope": "Installed WKWebView on CI iPhone simulator; synthetic data; not physical network timing",
+  "evidenceFolder": "artifacts/combined-financial-release-20261101/native-attempt4"
+}

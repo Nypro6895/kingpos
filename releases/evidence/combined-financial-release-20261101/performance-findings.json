@@ -1,0 +1,267 @@
+{
+  "webDeployment": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki",
+  "confirmed": [
+    {
+      "issue": "Sequential and duplicate Payroll backend reads",
+      "fix": "Share staff/settings/timezone reads and run independent history/record/Shop reads concurrently",
+      "evidence": "regressions.txt; web-source.json"
+    },
+    {
+      "issue": "Shop mount waterfall and self-generated duplicate refresh after save",
+      "fix": "Preload authorized Shop data, use uncached read transport and exclude own update event",
+      "evidence": "payroll-browser.txt"
+    },
+    {
+      "issue": "Native tabs collapsed to staff/overview before server load planning",
+      "fix": "Native-only correction preserves Shop/Gifts/Tools/Download, default and explicit Shop share one read key",
+      "nativeCommit": "34490041807891ec3ef73fd5350f1ecbcbb4bdba",
+      "evidence": "native-read-plan-tests.txt",
+      "nativePublication": "TestFlight available"
+    },
+    {
+      "issue": "Native read cancellation previously reported as uncertain command",
+      "fix": "GET/named read for Shop, POST for actual writes; a confirmed save followed by failed read gets precise status",
+      "evidence": "regressions.txt; payroll-browser.txt"
+    },
+    {
+      "issue": "Shop POST reads were capable of triggering native command-complete invalidation",
+      "evidence": "lib/app-local-role-http-client.ts dispatches command-complete for successful POST; lib/app-local-resource.ts invalidates and refreshes active resources on that signal",
+      "fix": "Main Shop reads now use GET/named read, avoiding this invalidation path",
+      "measurement": "Source mechanism verified; no physical before/after trace claimed."
+    },
+    {
+      "issue": "Opening Expense metadata used POST and could trigger native command-complete invalidation",
+      "fix": "Native client now reads GET context; actual financial save remains POST",
+      "evidence": "artifacts/combined-financial-release-20261101/installed-today-current.txt; artifacts/combined-financial-release-20261101/installed-today-legacy.txt",
+      "nativePublication": "TestFlight available"
+    },
+    {
+      "issue": "Retained legacy Today DTO without salonId could dereference null Attention state and replace Today with the error boundary",
+      "fix": "Guard absent data and mount Attention only with valid salonId; current Today DTO fixture corrected",
+      "evidence": "artifacts/combined-financial-release-20261101/installed-today-current.txt; artifacts/combined-financial-release-20261101/installed-today-legacy.txt",
+      "nativePublication": "TestFlight available"
+    }
+  ],
+  "liveBrowser": {
+    "authenticated": true,
+    "sourceMarkerConfirmed": true,
+    "platform": "Desktop Chrome; not physical iPhone",
+    "verification": [
+      "Today financial list loads",
+      "Closing detail shows current data and review semantics",
+      "Ticket date picker opens",
+      "Staff turn pair displayed",
+      "Payroll totals remain displayed"
+    ],
+    "writesExecuted": false,
+    "loadEvidence": "live-payroll-completed-navigation.json",
+    "limitation": "Warm browser end-to-end observation includes navigation and automation; not raw server CPU or a controlled before/after comparison. Earlier samples without explicit navigation wait are excluded."
+  },
+  "native": {
+    "firstRun": 41284498629,
+    "firstRunResult": "failed hosted-return gate before upload; installed Payroll measurement had not yet run",
+    "firstSourceHashVerified": true,
+    "currentRun": 41287880392,
+    "currentCommit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8",
+    "result": "TestFlight available",
+    "testAssertions": "No timeout shortening, no skipped capabilities; every test still required exactly once before upload. Payroll diagnostic suite prioritized to collect requested evidence before later gates.",
+    "secondRun": 41285496264,
+    "secondRunResult": "Payroll diagnostic passed; old Today fixture missing salonId exposed a null-guard bug; upload blocked",
+    "secondRunMeasurements": [
+      {
+        "coldReadyMs": 2011.7306666666082,
+        "counts": {
+          "commands": 0,
+          "context": 1,
+          "payrollTabs": [
+            "shop"
+          ],
+          "reads": {
+            "advertising": 1,
+            "other": 1,
+            "payroll": 1,
+            "shell_configuration": 1,
+            "shell_navigation": 1,
+            "shell_notice": 1,
+            "shell_summary": 1
+          }
+        },
+        "physicalDevice": false,
+        "retainedDOM": true,
+        "syntheticReadDelayMs": 100,
+        "warmReadyMs": 22.08537499996055
+      },
+      {
+        "coldReadyMs": 1481.9847500000378,
+        "counts": {
+          "commands": 0,
+          "context": 1,
+          "payrollTabs": [
+            "shop"
+          ],
+          "reads": {
+            "advertising": 2,
+            "other": 1,
+            "payroll": 1,
+            "shell_configuration": 1,
+            "shell_navigation": 1,
+            "shell_notice": 1,
+            "shell_summary": 1,
+            "today_full": 1
+          }
+        },
+        "physicalDevice": false,
+        "retainedDOM": true,
+        "syntheticReadDelayMs": 700,
+        "warmReadyMs": 20.817666666744117
+      }
+    ],
+    "thirdRun": 41286848883,
+    "thirdRunResult": "All six Today/Payroll cases passed; viewport fixture failed to load; no upload",
+    "thirdSourceHashVerified": true,
+    "verifiedEvidence": "native-verified.json",
+    "measurements": [
+      {
+        "coldReadyMs": 1308.4317083333872,
+        "counts": {
+          "commands": 0,
+          "context": 1,
+          "payrollTabs": [
+            "shop"
+          ],
+          "reads": {
+            "advertising": 2,
+            "other": 1,
+            "payroll": 1,
+            "shell_configuration": 1,
+            "shell_navigation": 1,
+            "shell_notice": 1,
+            "shell_summary": 1,
+            "today_full": 1
+          }
+        },
+        "physicalDevice": false,
+        "retainedDOM": true,
+        "syntheticReadDelayMs": 100,
+        "warmReadyMs": 37.9802083332379
+      },
+      {
+        "coldReadyMs": 1651.4571666666598,
+        "counts": {
+          "commands": 0,
+          "context": 1,
+          "payrollTabs": [
+            "shop"
+          ],
+          "reads": {
+            "advertising": 1,
+            "other": 1,
+            "payroll": 1,
+            "shell_configuration": 1,
+            "shell_navigation": 1,
+            "shell_notice": 1,
+            "shell_summary": 1,
+            "today_full": 1
+          }
+        },
+        "physicalDevice": false,
+        "retainedDOM": true,
+        "syntheticReadDelayMs": 700,
+        "warmReadyMs": 26.748791666705074
+      }
+    ],
+    "exactTestCount": 239,
+    "version": "1.0.0",
+    "build": "82"
+  },
+  "remainingSourceCandidates": [
+    {
+      "path": "lib/payroll.ts:getPayrollPageData",
+      "finding": "All tabs still load the common financial graph, latest statement comparison and tax-company lines, including Tools/Settings. Narrow per-tab reads or lazy detail loading remain candidates for further profiling.",
+      "measurement": "Source observation only; no claim of live timing attribution."
+    },
+    {
+      "finding": "Current Shop arithmetic is bundled locally; Staff live payroll lines remain calculated on server. Moving arithmetic alone does not remove auth/data waits."
+    },
+    {
+      "path": "app/payroll/payroll-live-refresh.tsx",
+      "finding": "Visible, non-editing Payroll refreshes every 20 seconds, including Tools; the common heavy read graph still runs. Profile and narrow per-tab work while preserving freshness fallback.",
+      "measurement": "Source-confirmed cadence; physical cost not measured."
+    }
+  ],
+  "physicalAccess": {
+    "mac": "192.168.1.253",
+    "connection": "Desktop Commander and existing SSH key successful after rediscovery",
+    "device": "Connected iPhone 12 Pro Max, currently installed build 74 version 1.0.0",
+    "testAttempt": "Xcode could not initialize UI testing: Timed out while enabling automation mode. No route test ran.",
+    "request": "Asked user asynchronously to unlock/keep awake and accept testing prompt; no reply yet",
+    "physicalAcceptance": false,
+    "evidence": "artifacts/combined-financial-release-20261101/physical-observe.log"
+  },
+  "localMacSimulator": {
+    "device": "Dedicated ReylumiFinancial-20261101 iPhone 18 Pro simulator; iOS 27.0",
+    "runtime": "Real activated bundle and Swift native runtime; synthetic HTTP; screenshots added only to local test harness",
+    "sourceCommit": "86382e2e374424491e24d6ccc72cffdee0628179",
+    "sourceTransfer": "Git archive ios plus current activated bundle; not the signed distribution binary",
+    "test": "testInstalledPayrollColdAndWarmWithControlledReadDelay",
+    "passed": true,
+    "measurements": [
+      {
+        "coldReadyMs": 2381.6109166364186,
+        "counts": {
+          "commands": 0,
+          "context": 1,
+          "payrollTabs": [
+            "shop"
+          ],
+          "reads": {
+            "advertising": 1,
+            "other": 1,
+            "payroll": 1,
+            "shell_configuration": 1,
+            "shell_navigation": 1,
+            "shell_notice": 1,
+            "shell_summary": 1,
+            "today_full": 1
+          }
+        },
+        "physicalDevice": false,
+        "retainedDOM": true,
+        "syntheticReadDelayMs": 100,
+        "warmReadyMs": 8.74879170442
+      },
+      {
+        "coldReadyMs": 1363.494458317291,
+        "counts": {
+          "commands": 0,
+          "context": 1,
+          "payrollTabs": [
+            "shop"
+          ],
+          "reads": {
+            "advertising": 2,
+            "other": 1,
+            "payroll": 1,
+            "shell_configuration": 1,
+            "shell_navigation": 1,
+            "shell_notice": 1,
+            "shell_summary": 1,
+            "today_full": 1
+          }
+        },
+        "physicalDevice": false,
+        "retainedDOM": true,
+        "syntheticReadDelayMs": 700,
+        "warmReadyMs": 6.5763749880716205
+      }
+    ],
+    "screenshot": "artifacts/combined-financial-release-20261101/mac-simulator-payroll-synthetic.png",
+    "note": "Independent corroboration, not the complete CI acceptance gate or physical network benchmark. Do not compare 100ms vs 700ms runs as a causal delay experiment.",
+    "completeInventory": {
+      "passed": true,
+      "cases": 239,
+      "hosts": 14,
+      "evidence": "mac-all-runtime-verified.json"
+    }
+  }
+}

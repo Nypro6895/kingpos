@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "native-payroll-visible-tab-20261101",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Preserve native Payroll visible tab/load plan, use read-only Expense context and tolerate retained legacy Today DTO; preserve complete hosted-return assertions",
+  "files": [
+    "lib/payroll-read-args.ts",
+    "tests/payroll-read-args.test.mjs",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "app/reports/quick-expense.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "tests/installed-today-compatibility-browser.mjs",
+    "tests/owner-attention-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-financial-release-20261101\\artifacts\\combined-financial-release-20261101\\frozen-native-financial-runtime",
+    "commit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8"
+  },
+  "validation": [
+    {
+      "name": "Exact source provenance, every native test, signed/unsigned bundle parity and Apple processing",
+      "result": "passed",
+      "evidence": "artifacts/combined-financial-release-20261101/native-verified.json"
+    },
+    {
+      "name": "Installed Payroll cold/warm and no duplicate Shop read",
+      "result": "passed",
+      "evidence": "artifacts/combined-financial-release-20261101/native-verified.json"
+    },
+    {
+      "name": "Current/legacy actual bundled Today and Expense read-only compatibility, scoped typecheck/lint",
+      "result": "passed",
+      "evidence": "artifacts/combined-financial-release-20261101/installed-today-current.txt; artifacts/combined-financial-release-20261101/installed-today-legacy.txt; artifacts/combined-financial-release-20261101/native-final-typecheck.txt; artifacts/combined-financial-release-20261101/native-compatibility-lint.txt"
+    }
+  ],
+  "dependencies": [
+    "owner-attention-payroll-polish-20261101"
+  ],
+  "id": "313d6c33-bd8b-47e0-b449-2306a8731f76",
+  "recordedAt": "2026-11-01T08:30:45.852Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/payroll-read-args.ts": "ce8680820cca7b12760bae9da1a6bacf0b4b793cae9f5392257793fe182e4a1b",
+    "tests/payroll-read-args.test.mjs": "3e41035b3defb6ae032b2d4712e50582cab7304b953947e5a44eb8f7d075cc58",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "ce34bd78d8bd5e56af38c3ef788e6e72e8adb6caeb861cbc2eb5e8c0fbc6ba88",
+    "ios/ReylumiTests/AppViewportTests.swift": "9fa78589b855da6b2c53909d49799eccabd8c39a89df66fc2d0bb0dec76193b8",
+    "app/reports/quick-expense.tsx": "2b8a7753fad6c8c0dd2367d588d96135d0ec8f775a7f0122fa615045fb2a4ca1",
+    "app/staff/today/owner-attention-panel.tsx": "3370a3f8dc1af580aac2d7f877462673ecce3eac0a787036a4b3a88cb45b859f",
+    "app/staff/today/today-dashboard-view.tsx": "19c3ba66a5062bcc505b76cf3370f1aeb752a05ca379e98eb1a1f859f1d4f340",
+    "tests/installed-today-compatibility-browser.mjs": "89c4d5de206465b0b757cfb59830169bf5a398d8a4252998b61e2532b3872626",
+    "tests/owner-attention-browser.mjs": "20a5c9a4a79697b8d57193ad3cc86aeebbe4716eda58d28a945846f07673fd29"
+  }
+}

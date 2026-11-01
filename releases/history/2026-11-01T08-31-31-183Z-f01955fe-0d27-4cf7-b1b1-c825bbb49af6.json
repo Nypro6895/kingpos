@@ -1,0 +1,33 @@
+{
+  "kind": "release",
+  "summary": "Combined financial Attention/Payroll and omitted Ticket features available in the existing TestFlight groups; preserve the single previously verified web promotion. Simulator acceptance verified; physical automation blocked before route tests; no App Store publication claim.",
+  "changes": [
+    "861da700-d17d-48e8-ad05-d25de2dd59cc",
+    "9f5c9bc3-9308-4c48-a7ab-3cdf7bbf214d",
+    "a08a505d-156b-4e63-b279-48a1f0ae69a6",
+    "1371998e-2718-4c1b-ae7c-b63339b0384a",
+    "997d8bf6-e70a-4634-859f-cd0e85c2a04d",
+    "313d6c33-bd8b-47e0-b449-2306a8731f76"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "82",
+      "commit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8",
+      "sourceSha256": "b107dd8698f2ced4f70c5875bea97de5fa9bcaf264eddc4862a34c4df1ecf69f",
+      "bundleSha256": "cbd69b66da78af2a89219cf787e12ad76492d766d0052b01f83ecc416e06c6ca",
+      "baselineVersion": "1.0.0",
+      "baselineBuild": "81",
+      "baselineCommit": "577e062fddcaacd37165841f8510d2818c0e0b09",
+      "evidence": "releases/evidence/combined-financial-release-20261101/native-verified.json; releases/evidence/combined-financial-release-20261101/testflight-availability.json; https://github.com/Nypro6895/kingpos/actions/runs/41287880392",
+      "existingGroupsConfirmed": 2,
+      "physicalDeviceAcceptance": false,
+      "appStorePublication": false
+    }
+  },
+  "id": "f01955fe-0d27-4cf7-b1b1-c825bbb49af6",
+  "recordedAt": "2026-11-01T08:31:31.183Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101"
+}

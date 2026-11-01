@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "combined-financial-integration-20261101",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Validated scoped integration of omitted Ticket calendar/date guard and staff turn summary against preserved production financial/history behavior",
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-financial-release-20261101\\artifacts\\combined-financial-release-20261101\\frozen-integration-web",
+    "commit": "3a12b876f57feacbbc1be5546a5dca119ac46004"
+  },
+  "dependencies": [
+    "owner-financial-attention-20261101",
+    "owner-attention-payroll-polish-20261101",
+    "ticket-calendar-history-20261031",
+    "ticket-staff-turns-20261031"
+  ],
+  "validation": [
+    {
+      "name": "Combined production build, regressions, Portable runtime and exact deployed source",
+      "result": "passed",
+      "evidence": "artifacts/combined-financial-release-20261101/candidate-source-verified.json; artifacts/combined-financial-release-20261101/regressions.txt; artifacts/combined-financial-release-20261101/http-live.json"
+    }
+  ],
+  "id": "ac3764b8-4547-43f9-9ad8-89b6b69956b7",
+  "recordedAt": "2026-11-01T07:58:51.448Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "a09155d4c0f8afcc9693be7261a846f9ec1957faacf27772a58997af99c8793b",
+    "app/pos-tickets/ticket-filters.module.css": "d8d6cde63a2d620cdfe97d3b0fcc54958f1d8ccf6c1119f39476ef6e1a62f9e0",
+    "app/pos/portable/ticket/portable-ticket-client.tsx": "937596023d82c11dd3a8ae00812e1cce0cc0ccfa94c49106adc5c052050c6bd7",
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "1e9b700425b525a6019a308927dc50c3bc4002cfbb348fa0d1304a22074491e2"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "combined-financial-integration-20261101",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Native combined Ticket integration and actual installed Payroll diagnostic; complete unchanged test inventory gates upload",
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json",
+    "ios/ReylumiTests/OwnerPayrollMeasurementFixture.json",
+    "ios/scripts/check-build.sh"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-financial-release-20261101\\artifacts\\combined-financial-release-20261101\\frozen-integration-ios",
+    "commit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8"
+  },
+  "validation": [
+    {
+      "name": "Exact source provenance, every native test, signed/unsigned bundle parity and Apple processing",
+      "result": "passed",
+      "evidence": "artifacts/combined-financial-release-20261101/native-verified.json"
+    },
+    {
+      "name": "Installed Payroll cold/warm and no duplicate Shop read",
+      "result": "passed",
+      "evidence": "artifacts/combined-financial-release-20261101/native-verified.json"
+    }
+  ],
+  "dependencies": [
+    "owner-financial-attention-20261101",
+    "owner-attention-payroll-polish-20261101",
+    "ticket-calendar-history-20261031",
+    "ticket-staff-turns-20261031"
+  ],
+  "id": "997d8bf6-e70a-4634-859f-cd0e85c2a04d",
+  "recordedAt": "2026-11-01T08:30:45.518Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-financial-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "99edd0a66a266df861d06aee9df5e9f76daf0a2480eafd8d33d9093d60ff0343",
+    "app/pos-tickets/ticket-filters.module.css": "d4568603d052edee7d72601738a2db6cf59c09d481f30642d352fdef2d52b6a9",
+    "app/pos/portable/ticket/portable-ticket-client.tsx": "937596023d82c11dd3a8ae00812e1cce0cc0ccfa94c49106adc5c052050c6bd7",
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "1e9b700425b525a6019a308927dc50c3bc4002cfbb348fa0d1304a22074491e2",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "03d24206b78581976fe5df421a17585fc28829ffc4c00fb4080d4d0ccd6f34fd",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json": "b2f46e55b8be66b5b5edcdb21a34f77bb74bf5e592e4247de99a9d0a64010fee",
+    "ios/ReylumiTests/OwnerPayrollMeasurementFixture.json": "2b115a434c62ff261ac2da18017e665866218a003becf07e0cfc39f863da0eac",
+    "ios/scripts/check-build.sh": "8699399cee34f26b6767ff341f60dd1c74c4a008736945fc5c693ee4033a798a"
+  }
+}
