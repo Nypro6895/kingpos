@@ -1,0 +1,41 @@
+{
+  "verified": true,
+  "at": "2026-11-01T20:27:58.365Z",
+  "surface": "Actual authenticated Owner Chrome session",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "deploymentId": "dpl_BQkiX3GLWa2YhsAMZ4UXzKi5Hdnb",
+  "day": "2026-11-01",
+  "statistics": {
+    "checkIns": 0,
+    "turns": 5,
+    "closedTickets": 4,
+    "bookings": 0,
+    "serviceMixCount": 5,
+    "serviceMixSales": 146,
+    "discounts": 5,
+    "salesHeadline": 141,
+    "bothPieModes": true,
+    "hourSelection": true,
+    "emptyGiftCardsConfirmed": true,
+    "noHorizontalOverflow": true
+  },
+  "navigation": {
+    "kimRelatedTickets": 3,
+    "otherStaffRelatedTickets": 2,
+    "allStaffTickets": 4,
+    "datePreserved": true,
+    "searchPreservedOnStaffSwitch": true,
+    "sharedTicketRetainsWholeReceipt": true
+  },
+  "preservedFeatures": [
+    "Needs Attention review cards",
+    "Quick Accesses",
+    "Owner bottom navigation"
+  ],
+  "writesPerformed": 0,
+  "screenshot": "artifacts/release/live-today-mobile.jpg",
+  "cacheObservation": "An already-open pre-promotion Today document initially retained its old deployment assets. Fresh date navigation loaded the new deployment; returning through Today then used the exact new deployment scripts and retained chart selection."
+}

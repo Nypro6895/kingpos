@@ -1,0 +1,23 @@
+{
+  "baselineNativeCommit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8",
+  "baselineBuild": "82",
+  "baselineVersion": "1.0.0",
+  "preservedFiles": [
+    "app/reports/quick-expense.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json",
+    "ios/scripts/check-build.sh",
+    "lib/payroll-read-args.ts",
+    "tests/installed-today-compatibility-browser.mjs",
+    "tests/owner-attention-browser.mjs",
+    "tests/payroll-read-args.test.mjs"
+  ],
+  "extraNativeFiles": [
+    "ios/Reylumi/ReylumiViewController.swift"
+  ],
+  "reason": "Today UI is compiled into AppLocalTodayClient; a new source-bound native bundle is required, plus queued scroll containment"
+}

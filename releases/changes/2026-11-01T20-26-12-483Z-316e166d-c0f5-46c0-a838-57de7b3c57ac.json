@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-today-release-20261101\\artifacts\\release\\frozen-integrated",
+    "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec"
+  },
+  "validation": [
+    {
+      "name": "Production build and remote READY candidate",
+      "result": "passed",
+      "evidence": "artifacts/release/build-web-final.txt"
+    },
+    {
+      "name": "Exact 3765 deployed source content hashes",
+      "result": "passed",
+      "evidence": "artifacts/release/candidate-source-verified.json"
+    },
+    {
+      "name": "TypeScript and scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck-final.txt"
+    },
+    {
+      "name": "23 integration tests including money aggregation and progressive merge",
+      "result": "passed",
+      "evidence": "artifacts/release/integration-tests.txt"
+    },
+    {
+      "name": "Responsive Statistics chart, pie selector and empty states",
+      "result": "passed",
+      "evidence": "artifacts/release/browser-results.json"
+    },
+    {
+      "name": "Source-bound installed bundle, current and legacy read-only DTO",
+      "result": "passed",
+      "evidence": "artifacts/release/installed-current.txt"
+    }
+  ],
+  "changeId": "today-statistics-20261101",
+  "summary": "Integrated Today Statistics: combined check-in/service sales lines, service mix Count/Sales pie, operational counts, gift cards, promotions and bookings; preserve progressive production and native82 compatibility.",
+  "files": [
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-statistics.module.css",
+    "app/staff/today/today-statistics.tsx",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "lib/today-statistics-server.ts",
+    "lib/today-statistics.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-today-statistics.json",
+    "tests/installed-today-compatibility-browser.mjs",
+    "tests/native-today-first-load.test.mjs",
+    "tests/today-statistics-runtime.test.mjs"
+  ],
+  "dependencies": [],
+  "id": "316e166d-c0f5-46c0-a838-57de7b3c57ac",
+  "recordedAt": "2026-11-01T20:26:12.483Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/staff/today/owner-attention-panel.tsx": "3370a3f8dc1af580aac2d7f877462673ecce3eac0a787036a4b3a88cb45b859f",
+    "app/staff/today/today-dashboard-view.tsx": "aae171cb1b6166cc380f43a7d7585a206b07abab23d0625af0ed4d9457a7087d",
+    "app/staff/today/today-statistics.module.css": "15d438b98ef10afc30b0f5ecafc848630ea68ceecbd336442be9a7ebaea6ebfc",
+    "app/staff/today/today-statistics.tsx": "48dc851774c788f50317e5667d780a5d4d4d68be395693209aa6cc7ad6b1ae94",
+    "lib/today-dashboard-sections.ts": "ecb2dfa2cfa957a1f49be6f1ff566991c5fb0c74fd9708daebf84fdd79772cf4",
+    "lib/today-dashboard.ts": "7954006de3587dd31dd556771b976c927ffb29a68179be53cf821c2754afff05",
+    "lib/today-statistics-server.ts": "085b59bd4e828de307e6ebc57b9f237c9823ec1cf9640d134d8f038b5a785149",
+    "lib/today-statistics.ts": "613c6e4152e1c38d371f5592155c3b9d95b62b4ceec4c23e30ef41384b4c9bbb",
+    "lib/vietnamese-dictionary.ts": "64f74e90f2844b4a2da1006a33d4ba7b0647b07eea39d5184e6b8c9b12fe939a",
+    "lib/vietnamese-today-statistics.json": "64e9bb3f940308b546716276a14ed9173a94dc83494a0b454af4eaf4d09428d3",
+    "tests/installed-today-compatibility-browser.mjs": "89c4d5de206465b0b757cfb59830169bf5a398d8a4252998b61e2532b3872626",
+    "tests/native-today-first-load.test.mjs": "61a7c6444a95f14b5c610d2a3490029f9332c3cce6762cda7113a4dd435798c9",
+    "tests/today-statistics-runtime.test.mjs": "7ccfec4f0f83b22f6ac4e33bd4a313be9c729ec4773d225af00fb9153f250870"
+  }
+}

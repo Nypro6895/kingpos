@@ -1,0 +1,118 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-today-release-20261101\\artifacts\\release\\frozen-integrated",
+    "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec"
+  },
+  "validation": [
+    {
+      "name": "Production build and remote READY candidate",
+      "result": "passed",
+      "evidence": "artifacts/release/build-web-final.txt"
+    },
+    {
+      "name": "Exact 3765 deployed source content hashes",
+      "result": "passed",
+      "evidence": "artifacts/release/candidate-source-verified.json"
+    },
+    {
+      "name": "TypeScript and scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck-final.txt"
+    },
+    {
+      "name": "23 integration tests including money aggregation and progressive merge",
+      "result": "passed",
+      "evidence": "artifacts/release/integration-tests.txt"
+    },
+    {
+      "name": "Responsive Statistics chart, pie selector and empty states",
+      "result": "passed",
+      "evidence": "artifacts/release/browser-results.json"
+    },
+    {
+      "name": "Source-bound installed bundle, current and legacy read-only DTO",
+      "result": "passed",
+      "evidence": "artifacts/release/installed-current.txt"
+    }
+  ],
+  "changeId": "combined-today-integration-20261101",
+  "summary": "Frozen integration against exact live source and actually uploaded iOS82; retain shipped financial/Payroll/Attention changes and record all 111 pending-event decisions.",
+  "files": [
+    "app/(app)/pos-tickets/page.tsx",
+    "app/globals.css",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/reports/quick-expense.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-statistics.module.css",
+    "app/staff/today/today-statistics.tsx",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json",
+    "ios/scripts/check-build.sh",
+    "lib/payroll-read-args.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "lib/today-statistics-server.ts",
+    "lib/today-statistics.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-today-statistics.json",
+    "tests/installed-today-compatibility-browser.mjs",
+    "tests/native-today-first-load.test.mjs",
+    "tests/owner-attention-browser.mjs",
+    "tests/payroll-read-args.test.mjs",
+    "tests/today-statistics-runtime.test.mjs",
+    "app/api/images/normalize/route.ts",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css"
+  ],
+  "dependencies": [
+    "today-statistics-20261101",
+    "today-staff-navigation-20261101",
+    "app-scroll-containment-20261101"
+  ],
+  "id": "33a98581-bf20-4b07-8367-ffd5fc818ede",
+  "recordedAt": "2026-11-01T20:26:13.044Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/pos-tickets/page.tsx": "0e4226b3ac2b5613481ef937eb5807b71aac586fb9830283e637cb75cc10731b",
+    "app/globals.css": "93520b8eb8cb3b5d367b5533fba07deb950985fd7f581e448ec3e3721f1afa8e",
+    "app/pos-tickets/owner-live-tickets.tsx": "715516d02bc039ea5a30c1f3590489b21340fa12db3ea8d49ea7679b64cf0cdc",
+    "app/reports/quick-expense.tsx": "2b8a7753fad6c8c0dd2367d588d96135d0ec8f775a7f0122fa615045fb2a4ca1",
+    "app/staff/today/owner-attention-panel.tsx": "3370a3f8dc1af580aac2d7f877462673ecce3eac0a787036a4b3a88cb45b859f",
+    "app/staff/today/today-dashboard-view.tsx": "aae171cb1b6166cc380f43a7d7585a206b07abab23d0625af0ed4d9457a7087d",
+    "app/staff/today/today-statistics.module.css": "15d438b98ef10afc30b0f5ecafc848630ea68ceecbd336442be9a7ebaea6ebfc",
+    "app/staff/today/today-statistics.tsx": "48dc851774c788f50317e5667d780a5d4d4d68be395693209aa6cc7ad6b1ae94",
+    "ios/Reylumi/ReylumiViewController.swift": "6a003e996bd320cbf83acd986c70b33ab3446195b031f561d921d9e9083d535e",
+    "ios/ReylumiTests/AppViewportTests.swift": "9fa78589b855da6b2c53909d49799eccabd8c39a89df66fc2d0bb0dec76193b8",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "ce34bd78d8bd5e56af38c3ef788e6e72e8adb6caeb861cbc2eb5e8c0fbc6ba88",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "699ff80b66981ecbed03f0831a836aabe0289c68490806682006475abd134551",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json": "60f8e73fad6e7cb424b5c0c06920c6917894a6f41cdbd378297c08ebe8bf5a89",
+    "ios/scripts/check-build.sh": "8699399cee34f26b6767ff341f60dd1c74c4a008736945fc5c693ee4033a798a",
+    "lib/payroll-read-args.ts": "ce8680820cca7b12760bae9da1a6bacf0b4b793cae9f5392257793fe182e4a1b",
+    "lib/today-dashboard-sections.ts": "ecb2dfa2cfa957a1f49be6f1ff566991c5fb0c74fd9708daebf84fdd79772cf4",
+    "lib/today-dashboard.ts": "7954006de3587dd31dd556771b976c927ffb29a68179be53cf821c2754afff05",
+    "lib/today-statistics-server.ts": "085b59bd4e828de307e6ebc57b9f237c9823ec1cf9640d134d8f038b5a785149",
+    "lib/today-statistics.ts": "613c6e4152e1c38d371f5592155c3b9d95b62b4ceec4c23e30ef41384b4c9bbb",
+    "lib/vietnamese-dictionary.ts": "64f74e90f2844b4a2da1006a33d4ba7b0647b07eea39d5184e6b8c9b12fe939a",
+    "lib/vietnamese-today-statistics.json": "64e9bb3f940308b546716276a14ed9173a94dc83494a0b454af4eaf4d09428d3",
+    "tests/installed-today-compatibility-browser.mjs": "89c4d5de206465b0b757cfb59830169bf5a398d8a4252998b61e2532b3872626",
+    "tests/native-today-first-load.test.mjs": "61a7c6444a95f14b5c610d2a3490029f9332c3cce6762cda7113a4dd435798c9",
+    "tests/owner-attention-browser.mjs": "20a5c9a4a79697b8d57193ad3cc86aeebbe4716eda58d28a945846f07673fd29",
+    "tests/payroll-read-args.test.mjs": "3e41035b3defb6ae032b2d4712e50582cab7304b953947e5a44eb8f7d075cc58",
+    "tests/today-statistics-runtime.test.mjs": "7ccfec4f0f83b22f6ac4e33bd4a313be9c729ec4773d225af00fb9153f250870",
+    "app/api/images/normalize/route.ts": "216561f248d8682adfbe4a61f97ec7b0e4084258c2378d3183c7b18bc9a22d8d",
+    "app/pos-tickets/ticket-filters.tsx": "a09155d4c0f8afcc9693be7261a846f9ec1957faacf27772a58997af99c8793b",
+    "app/pos-tickets/ticket-filters.module.css": "d8d6cde63a2d620cdfe97d3b0fcc54958f1d8ccf6c1119f39476ef6e1a62f9e0"
+  }
+}
