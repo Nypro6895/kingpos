@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "numeric-input-zero-replacement-20261101",
+  "status": "working",
+  "summary": "Audit numeric editors and replace default zero on first input across Reylumi",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/numeric-input-editing.ts",
+    "components/numeric-input-behavior.tsx",
+    "app/(app)/layout.tsx",
+    "app/pos/portable/touch-keyboard.tsx",
+    "tests/numeric-input-editing.test.mjs",
+    "docs/numeric-input-audit-20261101.md"
+  ],
+  "source": {
+    "commit": "25a4e32bd99a8e533b871be99715e8a79cca2bf3"
+  },
+  "validation": [
+    {
+      "name": "Numeric input audit and runtime regression checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "d5fcaced-b13f-4cfb-8e1a-408236c5a73c",
+  "recordedAt": "2026-11-01T18:48:39.245Z",
+  "worktree": "/workspace/kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
