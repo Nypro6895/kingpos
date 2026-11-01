@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "daily-report-edited-after-business-date",
+  "status": "working",
+  "summary": "Show Daily Report Edited only for saved changes after the report business date; preserve Ticket behavior and raw history.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/financial-change-presentation.ts",
+    "tests/daily-report-edit-date.test.mjs"
+  ],
+  "source": {
+    "commit": "25a4e32bd99a8e533b871be99715e8a79cca2bf3"
+  },
+  "validation": [
+    {
+      "name": "business date boundary regression tests",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "bd1532f0-d41a-48c4-abcc-675926217f56",
+  "recordedAt": "2026-11-01T18:50:49.354Z",
+  "worktree": "/workspace/kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

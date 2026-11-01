@@ -1,0 +1,29 @@
+{
+  "baselineCommit": "25a4e32bd99a8e533b871be99715e8a79cca2bf3",
+  "files": [
+    "lib/financial-change-presentation.ts",
+    "tests/daily-report-edit-date.test.mjs",
+    "tests/daily-report-edit-date-browser.mjs",
+    "tests/financial-history-record-semantics.test.mjs"
+  ],
+  "checks": [
+    {
+      "name": "37 date-boundary, record-semantics, routing and inline-history tests",
+      "result": "passed"
+    },
+    {
+      "name": "Chromium: actual DailyInputInlineHistory and ReportTicketHistoryRow with Tokyo device timezone and Chicago salon timezone; later viewing preserves same-day saves without Edited; post-date save counts once",
+      "result": "passed"
+    },
+    {
+      "name": "npx tsc --noEmit --project tsconfig.financial-inputs.json",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint on changed source/tests and git diff --check",
+      "result": "passed"
+    }
+  ],
+  "nativeAssessment": "Shared web presentation helper only; no bundled/native/bridge changes. No new iOS binary required.",
+  "publication": "Not deployed. Integrate the frozen patch with the exact current production baseline before release."
+}
