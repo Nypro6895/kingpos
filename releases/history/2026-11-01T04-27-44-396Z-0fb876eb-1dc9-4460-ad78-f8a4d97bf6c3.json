@@ -1,0 +1,19 @@
+{
+  "kind": "release",
+  "summary": "Intermediate Shop money web source promoted; owner UI QA found omitted navigation props. Forward correction remains under the same coordinator; no native upload from superseded sources.",
+  "changes": [
+    "6aaa2592-798b-43f6-86b9-f1aec7a6ec9f"
+  ],
+  "targets": {
+    "web": {
+      "status": "partial",
+      "verified": false,
+      "deploymentId": "dpl_Bkrw88gADr6EfwAGLQ4vG9gTUfBA",
+      "baselineDeploymentId": "dpl_GEzx4DxiqsR1NnBuut4FjrkHLuKf",
+      "evidence": "artifacts/shop-money-20261031/v2/web-live-source-verified.json; authenticated owner QA identified missing tab wiring"
+    }
+  },
+  "id": "0fb876eb-1dc9-4460-ad78-f8a4d97bf6c3",
+  "recordedAt": "2026-11-01T04:27:44.396Z",
+  "worktree": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031"
+}
