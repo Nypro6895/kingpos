@@ -5,6 +5,7 @@ import { getExperienceContext } from "@/lib/experience-context";
 import { isSalonManageContext } from "@/lib/current-context";
 import type { SalonManagePageContext } from "@/lib/route-context-guards";
 import { hasPermission } from "@/lib/permissions";
+import { getCurrentSalonStaff, STAFF_PERMISSIONS } from "@/lib/staff";
 import { getCurrentSalonBookingWorkspace, BOOKING_PERMISSIONS, localDateTimeToUtcIso } from "@/lib/bookings";
 import { getCurrentSalonPosTickets, getCurrentSalonPosTicketOptions, POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { canApplyFinancialCorrections, FINANCIAL_CORRECTION_PERMISSIONS, DAILY_POS_REPORT_PERMISSIONS, isDailyClosingLocked } from "@/lib/daily-pos-report";
@@ -92,8 +93,11 @@ export async function readAppLocalOwnerResource(name: string, args: Record<strin
       const [canManage, canVoid, canRequest, canApplyFinancialCorrection, isBusinessDateLocked, result] = await Promise.all([hasPermission(POS_TICKET_PERMISSIONS.manage, context), hasPermission(POS_TICKET_PERMISSIONS.void, context), hasPermission(FINANCIAL_CORRECTION_PERMISSIONS.request, context), canApplyFinancialCorrections(context), isDailyClosingLocked(selectedDate, context), getCurrentSalonPosTickets(bounds)]);
       const canEdit = isBusinessDateLocked ? canManage || canVoid || canRequest || canApplyFinancialCorrection : canManage || canVoid;
       const ticketOptions = canEdit ? await getCurrentSalonPosTicketOptions(context) : { services: [], staff: [] };
-      const returnTo = "/pos/ticket?" + new URLSearchParams({ date: selectedDate, ...(searchQuery ? { q: searchQuery } : {}) });
-      data = { view: "tickets", props: { salonId: context.currentSalon.id, initialTickets: result.tickets, bounds, searchQuery, canApplyFinancialCorrection, canEdit, isBusinessDateLocked, returnTo, selectedDate, today, selectedDateLabel: dateLabel(selectedDate, timezone, false), selectedDateCompactLabel: dateLabel(selectedDate, timezone, true), services: ticketOptions.services, staff: ticketOptions.staff } };
+      const selectedStaffId = query.staff ?? "";
+      const filterStaff = await hasPermission(STAFF_PERMISSIONS.view, context)
+        ? (await getCurrentSalonStaff()).staff : ticketOptions.staff;
+      const returnTo = "/pos/ticket?" + new URLSearchParams({ date: selectedDate, ...(searchQuery ? { q: searchQuery } : {}), ...(selectedStaffId ? { staff: selectedStaffId } : {}) });
+      data = { view: "tickets", props: { salonId: context.currentSalon.id, initialTickets: result.tickets, bounds, searchQuery, selectedStaffId, filterStaff, canApplyFinancialCorrection, canEdit, isBusinessDateLocked, returnTo, selectedDate, today, selectedDateLabel: dateLabel(selectedDate, timezone, false), selectedDateCompactLabel: dateLabel(selectedDate, timezone, true), services: ticketOptions.services, staff: ticketOptions.staff } };
     }
   }
   if (options.signal?.aborted) throw options.signal.reason;
