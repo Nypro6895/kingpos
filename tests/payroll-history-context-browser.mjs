@@ -29,6 +29,10 @@ try{
   const focus=new URL(route.request().url()).searchParams.get('inputEvent');
   return route.fulfill({status:responseStatus,json:{rows:responseRows.filter(row=>!focus||row.id===focus),record:responseRecord?.id===focus?responseRecord:undefined}});
  });
+ await page.route('**/api/shop-money',route=>{
+  assert.equal(route.request().postDataJSON().op,'read','History navigation must not mutate money');
+  return route.fulfill({json:{today:'2026-10-31',timezone:'America/Chicago',days:[{date:'2026-10-29',expected:132}],collections:[],legacy:[{business_date:'2026-10-29',cash:120,card:0,other:0,tip:12,entered:true,updated_at:'2026-10-31T01:00:00Z'}],expenses:[],opening:null,settings:null,giftOpening:0,giftClosing:0,giftActivity:[],rewardOpening:0,rewardClosing:0,rewardCredits:0,rewardDebits:0,rewardSummary:{issued:0,spent:0,adjustments:0},rewardActivity:[],discounts:[],history:[],cardTransactions:0}});
+ });
  const base='http://127.0.0.1:'+server.address().port;
  const open=async(runtime,extra='')=>{await page.goto(`${base}/payroll?runtime=${runtime}&preset=semi_monthly_second&month=2026-10&segment=second&${extra}`);await page.getByRole('navigation',{name:'Payroll sections'}).waitFor();};
  const noGlobalHistory=async()=>{assert.equal(await page.getByRole('heading',{name:'Input change history',exact:true}).count(),0);assert.equal(await page.getByRole('link',{name:/View change history|^Updated|^Change history/}).count(),0);};

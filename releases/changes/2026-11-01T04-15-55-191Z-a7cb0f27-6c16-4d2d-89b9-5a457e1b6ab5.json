@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "shop-money-expenses-20261031",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Final compatibility correction: preserve exact daily-input history deep links inside the new Shop workspace before publication",
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "app/payroll/shop-money-workspace.tsx"
+  ],
+  "validation": [
+    {
+      "name": "History compatibility and refreshed release validation",
+      "result": "pending"
+    }
+  ],
+  "id": "a7cb0f27-6c16-4d2d-89b9-5a457e1b6ab5",
+  "recordedAt": "2026-11-01T04:15:55.191Z",
+  "worktree": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
