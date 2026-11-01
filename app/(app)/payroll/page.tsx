@@ -910,6 +910,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
       {canManageConnection && <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 py-2 text-sm" href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
       <PayrollLiveRefresh salonId={pageContext.currentSalon.id} />
       <PayrollTabs
+        canReconcile={canManageConnection}
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}
         period={data.period}

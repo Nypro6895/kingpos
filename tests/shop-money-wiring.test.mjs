@@ -1,0 +1,4 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import ts from'typescript';
+function attributes(file,tag){const tree=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX),found=[];function visit(n){if((ts.isJsxOpeningElement(n)||ts.isJsxSelfClosingElement(n))&&n.tagName.getText(tree)===tag)found.push(n.attributes.properties.filter(ts.isJsxAttribute).map(p=>p.name.getText(tree)));ts.forEachChild(n,visit);}visit(tree);return found;}
+test('both Owner Payroll renders provide the owner reconciliation navigation gate',()=>{for(const file of ['app/(app)/payroll/page.tsx','lib/app-local-owner-payroll-view.tsx'])assert.ok(attributes(file,'PayrollTabs').some(names=>names.includes('canReconcile')),file);});
+test('the full Reports workspace supplies its Expenses panel',()=>assert.ok(attributes('app/reports/owner-live-reports.tsx','ReportTabs').some(names=>names.includes('expenses'))));

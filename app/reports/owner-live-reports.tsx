@@ -222,6 +222,7 @@ export function OwnerLiveReports(initial:Props){
     <main className={styles.page}>
       <h1 className="sr-only"><WorkspaceText text="Reports" /></h1>
       <ReportTabs
+        expenses={<ShopMoneyWorkspace salonId={salonId} start={reportOverview.range.startDate.slice(0,7)+"-01"} end={new Date(Date.UTC(Number(reportOverview.range.startDate.slice(0,4)),Number(reportOverview.range.startDate.slice(5,7)),0)).toISOString().slice(0,10)} view="expenses"/>}
         onViewChange={onViewChange}
         overviewTools={<ReportRangeFilter key={`${reportOverview.range.preset}:${reportOverview.range.startDate}:${reportOverview.range.endDate}`} report={reportOverview} selectedClosingDate={report.reportDate} />}
         closingTools={<DateSelector reportOverview={reportOverview} selectedDate={report.reportDate} today={today} />}

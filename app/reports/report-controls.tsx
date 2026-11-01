@@ -198,6 +198,7 @@ export function ReportTabs({
             <WorkspaceText text={value ? "Daily Closing" : "Overview"} />
           </button>
         ))}
+        {expenses&&<button type="button" aria-pressed={expenseView} onClick={()=>{setExpenseView(true);window.history.replaceState(null,"",`${window.location.pathname}${window.location.search}#expenses`);}}><WorkspaceText text="Expenses"/></button>}
       </nav>
         <ContextualSupport />
         <div className={styles.tools}>{closing ? closingTools : overviewTools}</div>

@@ -41,6 +41,7 @@ try{
  for(const runtime of ['web','native'])for(const width of [320,390,768,1280]){
   await page.setViewportSize({width,height:1100});await open(runtime,'tab=overview');await page.getByText('Remaining after payroll',{exact:true}).waitFor();await noGlobalHistory();await selectedPeriod();await noOverflow();
   assert.equal(await page.getByRole('link',{name:'Overview',exact:true}).getAttribute('aria-current'),'page');
+  for(const name of ['Gift Cards','Rewards','Discounts'])assert.equal(await page.getByRole('link',{name,exact:true}).count(),1);
   await page.getByRole('link',{name:'Tools',exact:true}).click();await page.getByRole('link',{name:/Payroll settings/}).waitFor();await noGlobalHistory();assert.equal(await page.getByRole('link',{name:'Tools',exact:true}).getAttribute('aria-current'),'page');
   for(const link of await page.locator('nav a').evaluateAll(rows=>rows.map(row=>row.href))){const url=new URL(link);assert.equal(url.searchParams.get('month'),'2026-10');assert.equal(url.searchParams.get('segment'),'second');}
   await open(runtime,'tab=history');await page.getByText('Remaining after payroll',{exact:true}).waitFor();await noGlobalHistory();await selectedPeriod();assert.equal(await page.getByRole('link',{name:'Overview',exact:true}).getAttribute('aria-current'),'page');

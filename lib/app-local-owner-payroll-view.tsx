@@ -880,6 +880,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
       <PayrollLiveRefresh salonId={salonId} />
       <PayrollTabs
+        canReconcile={canManageConnection}
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}
         period={data.period}
