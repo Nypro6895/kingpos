@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "today-staff-installed-ticket-dto-20261101",
+  "status": "ready",
+  "summary": "Server read DTO preserves exact staff, date and search for installed owner tickets, with alternate staff roster gated by existing Staff view permission; additive compatibility with the frozen iPhone bundle.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-owner-resources-server.ts",
+    "tests/owner-ticket-staff-dto.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-today-release-20261101\\artifacts\\release\\frozen-dto",
+    "commit": "fd0357bd2e8f8b399c274a39e248e16ba2084329"
+  },
+  "validation": [
+    {
+      "name": "Two runtime DTO tests: staff/day/search/return URL, all staff, roster permission and ticket denial",
+      "result": "passed",
+      "evidence": "artifacts/release/dto-tests.txt"
+    },
+    {
+      "name": "TypeScript, scoped ESLint and full local production build",
+      "result": "passed",
+      "evidence": "artifacts/release/build-dto.txt"
+    },
+    {
+      "name": "Vercel production candidate READY and exact 3765 source content hashes",
+      "result": "passed",
+      "evidence": "artifacts/release/candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [
+    "today-staff-navigation-20261101"
+  ],
+  "id": "016693f9-c26d-43b0-ab60-a7a0c0e3b6a2",
+  "recordedAt": "2026-11-01T20:50:58.917Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-owner-resources-server.ts": "3fc6ca462f1e8b6d73671b9d4d6ab35f82d301174e886a17cd772ce82353a9e6",
+    "tests/owner-ticket-staff-dto.test.mjs": "6de6915ccab34c929c987e0bf09b0aa66bdd698bbbd018b3f73e606bfec78126"
+  }
+}

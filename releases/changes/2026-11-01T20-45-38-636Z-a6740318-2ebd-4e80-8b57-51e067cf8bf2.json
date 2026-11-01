@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "today-staff-installed-ticket-dto-20261101",
+  "status": "working",
+  "summary": "Pass exact staff filter and authorized alternate staff roster through the installed owner ticket read DTO; compatible server-only follow-up to Today navigation.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-owner-resources-server.ts",
+    "tests/owner-ticket-staff-dto.test.mjs"
+  ],
+  "source": {
+    "commit": "fd0357bd2e8f8b399c274a39e248e16ba2084329"
+  },
+  "dependencies": [
+    "today-staff-navigation-20261101"
+  ],
+  "occurredAt": "2026-11-01T20:45:00.000Z",
+  "id": "a6740318-2ebd-4e80-8b57-51e067cf8bf2",
+  "recordedAt": "2026-11-01T20:45:38.636Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

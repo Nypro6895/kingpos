@@ -1,0 +1,32 @@
+{
+  "kind": "release",
+  "summary": "Published additive installed owner ticket DTO staff filter, preserving the verified Today Statistics web release and all unrelated live source.",
+  "changes": [
+    "016693f9-c26d-43b0-ab60-a7a0c0e3b6a2"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG",
+      "baselineDeploymentId": "dpl_BQkiX3GLWa2YhsAMZ4UXzKi5Hdnb",
+      "sourceSha256": "e23944beb490fee43bec237b7e7b846f702e5dab93570b31b2cf8495bc59c74d",
+      "overlaySha256": "7788d7912ad36e654093b226385d87b24ecb0005f59103b15d983dcb83d40a52",
+      "commit": "fd0357bd2e8f8b399c274a39e248e16ba2084329",
+      "evidence": "releases/evidence/combined-today-20261101/dto-followup"
+    }
+  },
+  "previousRelease": "e3d1c693-1865-4b72-8f36-7052c00fc9d5",
+  "nativeCompatibility": {
+    "requiresNewBinary": false,
+    "reason": "Additive read-only server DTO fields consumed by the already-frozen new OwnerLiveTickets component; no bundled code changed.",
+    "nativeSourceCommit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022"
+  },
+  "rollback": {
+    "deploymentId": "dpl_BQkiX3GLWa2YhsAMZ4UXzKi5Hdnb",
+    "requiresCurrentAliasGuard": true
+  },
+  "id": "69b8471a-4eca-4652-a6e2-13aa59a77804",
+  "recordedAt": "2026-11-01T20:52:07.880Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101"
+}

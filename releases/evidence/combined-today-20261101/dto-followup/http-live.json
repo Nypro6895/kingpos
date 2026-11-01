@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-01T20:51:17.675Z",
+  "origin": "https://reylumi.com",
+  "records": [
+    {
+      "path": "/login",
+      "status": 200,
+      "location": null,
+      "bytes": 98842
+    },
+    {
+      "path": "/explore",
+      "status": 200,
+      "location": null,
+      "bytes": 223319
+    },
+    {
+      "path": "/help",
+      "status": 200,
+      "location": null,
+      "bytes": 63634
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "location": null,
+      "bytes": 214781
+    },
+    {
+      "path": "/staff/today",
+      "status": 200,
+      "location": null,
+      "bytes": 91450
+    },
+    {
+      "path": "/pos-tickets",
+      "status": 200,
+      "location": null,
+      "bytes": 78787
+    },
+    {
+      "path": "/payroll",
+      "status": 200,
+      "location": null,
+      "bytes": 80356
+    },
+    {
+      "path": "/api/experience/today",
+      "status": 401,
+      "location": null,
+      "bytes": 24
+    }
+  ]
+}

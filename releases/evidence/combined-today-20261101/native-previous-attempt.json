@@ -1,0 +1,15 @@
+{
+  "run": 41345768424,
+  "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec",
+  "status": "failed-before-archive-upload",
+  "expectedTests": 240,
+  "passed": 239,
+  "failed": [
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodayStatisticsPieAndHourlySelection"
+  ],
+  "reason": "Chart became visible before deferred initial shell.configuration/shell.summary reads completed; strict all-read equality caught startup work during chart interaction.",
+  "fixCommit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+  "fix": "Await initial shell reads and one second of unchanged read counters; retain all-reads equality and zero-command assertion.",
+  "artifactDigest": "sha256:85867260b33b800d76202a6b01c466d5e0e4246d8234de5301a3a72d40f39a78",
+  "evidence": "artifacts/release/native-attempt1/test.log"
+}

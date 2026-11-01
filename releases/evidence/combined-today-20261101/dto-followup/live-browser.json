@@ -1,0 +1,13 @@
+{
+  "verified": true,
+  "at": "2026-11-01T20:52:07.702Z",
+  "surface": "Authenticated Owner Chrome session after final promotion",
+  "deploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG",
+  "exactDeploymentScriptsObserved": true,
+  "todayStatisticsVisible": true,
+  "kimRelatedTickets": 3,
+  "otherStaffRelatedTickets": 2,
+  "datePreserved": true,
+  "writesPerformed": 0,
+  "limitations": "Installed read DTO exercised by runtime server tests; installed Statistics component by full simulator suite. Physical phone acceptance remains separate."
+}

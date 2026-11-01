@@ -1,0 +1,10 @@
+✔ installed owner tickets DTO preserves exact staff, day, search and permitted alternate staff (70.9002ms)
+✔ staff filtering does not widen roster permissions or bypass ticket permission (27.0374ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 300.3221
