@@ -1,4 +1,26 @@
 @import "tailwindcss";
+/* Keep the document on its horizontal origin; tables and period rails retain
+   their own horizontal scrolling. Clip avoids creating a second scroll root. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
+/* Phone/tablet chrome has no scroll tracks. Scrolling remains available by
+   touch, wheel and keyboard, including inside dialogs and table regions. */
+@media (max-width: 1023px) {
+  *, *::before, *::after {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 
 
 /* One Explore search instance moves into the desktop chrome after hydration. */

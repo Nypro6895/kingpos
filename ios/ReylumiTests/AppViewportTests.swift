@@ -45,8 +45,10 @@ final class AppViewportTests: XCTestCase {
         let window = UIWindow(frame: webView.frame)
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
         window.rootViewController = host
-        window.isHidden = false
-        defer { window.isHidden = true; webView.stopLoading() }
+        window.makeKeyAndVisible()
+        XCTAssertTrue(window.isKeyWindow, "Viewport acceptance requires the foreground WebKit fixture")
+        host.view.layoutIfNeeded()
+        defer { window.isHidden = true; window.rootViewController = nil; webView.stopLoading() }
         let loaded = expectation(description: "Viewport fixture loaded")
         let navigation = ViewportNavigationDelegate(loaded: loaded)
         webView.navigationDelegate = navigation
@@ -56,6 +58,12 @@ final class AppViewportTests: XCTestCase {
             </head><body><input id="email" type="email"><input id="amount" type="number"></body></html>
             """, baseURL: URL(string: "https://reylumi.com"))
         await fulfillment(of: [loaded], timeout: 30)
+        if !navigation.finished {
+            print("REYLUMI_VIEWPORT_DIAGNOSTIC key=\(window.isKeyWindow) scene=\(String(describing: window.windowScene?.activationState)) loading=\(webView.isLoading) failure=\(String(describing: navigation.failure)) terminated=\(navigation.terminated)")
+        }
+        XCTAssertTrue(navigation.finished, "The local HTML must finish loading before viewport acceptance")
+        XCTAssertNil(navigation.failure)
+        XCTAssertFalse(navigation.terminated)
         let checked = expectation(description: "WebKit viewport checked")
         webView.evaluateJavaScript("""
             ({viewport:document.querySelector('meta[name="viewport"]').content,
@@ -79,6 +87,12 @@ final class AppViewportTests: XCTestCase {
 
 private final class ViewportNavigationDelegate: NSObject, WKNavigationDelegate {
     let loaded: XCTestExpectation
+    private(set) var finished = false
+    private(set) var failure: String?
+    private(set) var terminated = false
     init(loaded: XCTestExpectation) { self.loaded = loaded }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { loaded.fulfill() }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { finished = true; loaded.fulfill() }
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { failure = error.localizedDescription }
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { failure = error.localizedDescription }
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { terminated = true }
 }

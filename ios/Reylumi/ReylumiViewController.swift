@@ -166,6 +166,11 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         webView.scrollView.bouncesZoom = false
         webView.scrollView.alwaysBounceHorizontal = false
+        // Keep the document aligned; nested web regions retain horizontal scrolling.
+        webView.scrollView.bounces = false
+        webView.scrollView.isDirectionalLockEnabled = true
+        webView.scrollView.showsHorizontalScrollIndicator = false
+        webView.scrollView.showsVerticalScrollIndicator = false
         // Safe areas are already applied by the constraints below.
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.translatesAutoresizingMaskIntoConstraints = false

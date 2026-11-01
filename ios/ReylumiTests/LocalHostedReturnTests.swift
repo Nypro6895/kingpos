@@ -98,6 +98,10 @@ final class LocalHostedReturnTests: XCTestCase {
         XCTAssertFalse(returned.contains { $0.path == "/help" }, "Changing history or an old nonce cannot dismiss authentication")
         _ = try await web.evaluateJavaScript("window.dispatchEvent(new Event('reylumi:screen-ready'));true")
         for _ in 0..<150 { if returned.contains(where: { $0.path == "/help" }) { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        if returned.filter({ $0.path == "/help" }).count != 1 {
+            let state = try? await web.evaluateJavaScript("JSON.stringify({visibility:document.visibilityState,readyState:document.readyState,path:location.pathname,focused:document.hasFocus(),startupBridge:!!window.__reylumiStartup})")
+            print("REYLUMI_HOSTED_HANDOFF_DIAGNOSTIC scene=\(String(describing: window.windowScene?.activationState)) key=\(window.isKeyWindow) state=\(String(describing: state))")
+        }
         XCTAssertEqual(returned.filter { $0.path == "/help" }.count, 1)
         _ = try await web.evaluateJavaScript("window.dispatchEvent(new Event('reylumi:screen-ready'));true")
         try await Task.sleep(nanoseconds: 100_000_000)

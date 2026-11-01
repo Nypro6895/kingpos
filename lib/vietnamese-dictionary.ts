@@ -1,3 +1,4 @@
+import statisticsCopy from "@/lib/vietnamese-today-statistics.json";
 import checkWriterCopy from "@/lib/vietnamese-check-writer.json";
 import helpCopy from "@/lib/vietnamese-help-copy.json";
 import salonSetupCopy from "@/lib/vietnamese-salon-setup.json";
@@ -63,6 +64,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Windows app & devices": "App Windows và thiết bị",
   "Saved automatically on this device only. Off by default; use your physical or Windows touch keyboard. Built-in POS, staff PIN and customer keypads stay available.": "Tự động lưu riêng trên máy này. Mặc định tắt; dùng bàn phím rời hoặc bàn phím cảm ứng Windows. Bàn phím số POS, PIN nhân viên và bàn phím khách luôn được giữ.",
   "Unable to save this device setting. Please try again.": "Không thể lưu cài đặt trên máy này. Vui lòng thử lại.",
+  ...statisticsCopy,
   ...helpCopy,
   ...salonSetupCopy,
   ...workspaceCopy,

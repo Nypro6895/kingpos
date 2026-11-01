@@ -1,10 +1,7 @@
+import { TodayStatistics } from "./today-statistics";
 import {OwnerAttentionPanel} from "./owner-attention-panel";
 import {QuickExpense} from "@/app/reports/quick-expense";
 import styles from "./today-layout.module.css";
-import {useState} from "react";
-import {useFinancialHistoryContext} from "@/app/payroll/inline-financial-history";
-import {financialHistoryForObject} from "@/lib/inline-financial-history";
-import {TodayInlineTickets} from "./today-inline-tickets";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { type MetricTone } from "@/lib/today-metric-assessment";
 import { OwnerMarketPromo } from "@/components/owner-market-promo";
@@ -19,7 +16,6 @@ import {
   type TodayDashboard,
   type TodayMetric,
   type TodayMetricChart,
-  type TodayPerformance,
   type TodayTeamMember,
   type TodayUpcomingBooking,
 } from "@/lib/today-dashboard";
@@ -78,21 +74,6 @@ function getGreeting(timeZone: string) {
   }
 
   return "Good evening";
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(value);
-}
-
-function formatCompactMoney(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    maximumFractionDigits: value >= 1000 ? 0 : 2,
-    style: "currency",
-  }).format(value);
 }
 
 function formatShortMoney(value: number) {
@@ -1016,11 +997,13 @@ function StaffStatusBadge({
 
 function TeamMobileRow({
   canViewFinancials,
+  ticketsHref,
   pendingTurns,
   member,
   timeZone,
 }: {
   canViewFinancials: boolean;
+  ticketsHref: string | null;
   pendingTurns?: boolean;
   member: TodayTeamMember;
   timeZone: string;
@@ -1050,7 +1033,7 @@ function TeamMobileRow({
           <div className="flex min-w-0 items-center gap-2">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-zinc-950">
-                {member.displayName}
+                {ticketsHref ? <Link href={ticketsHref} className="inline-flex min-h-11 items-center underline decoration-zinc-200 underline-offset-4">{member.displayName}</Link> : member.displayName}
               </p>
             </div>
             <StaffStatusBadge status={member.status} />
@@ -1090,7 +1073,7 @@ function TeamMobileRow({
 function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
   return (
     <Card
-      action={<ActionLink href="/staff" label="Staff" />}
+      action={dashboard.permissions.canViewTickets ? <ActionLink href={`/pos-tickets?${new URLSearchParams({ date: dashboard.date })}`} label="Tickets" /> : null}
       icon="team"
       title="Team Today"
     >
@@ -1100,6 +1083,7 @@ function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
             {dashboard.team.map((member) => (
               <TeamMobileRow
                 canViewFinancials={dashboard.permissions.canViewStaffFinancials}
+                ticketsHref={dashboard.permissions.canViewTickets ? `/pos-tickets?${new URLSearchParams({date:dashboard.date,staff:member.id})}` : null}
                 pendingTurns={sectionPending(dashboard, "financials")}
                 key={member.id}
                 member={member}
@@ -1137,7 +1121,7 @@ function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
                         <StaffAvatar name={member.displayName} size="sm" />
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-zinc-950">
-                            {member.displayName}
+                            {dashboard.permissions.canViewTickets ? <Link href={`/pos-tickets?${new URLSearchParams({ date: dashboard.date, staff: member.id })}`} className="inline-flex min-h-11 items-center underline decoration-zinc-200 underline-offset-4">{member.displayName}</Link> : member.displayName}
                           </p>
                           <p className="truncate text-xs text-zinc-500">
                             <WorkspaceText text={member.jobTitle ?? "Staff"} />
@@ -1211,368 +1195,6 @@ function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
           }
         />
       )}
-    </Card>
-  );
-}
-
-function hasSalesActivity(performance: TodayPerformance) {
-  return Boolean(
-    performance.sales &&
-    (performance.sales.ticketCount > 0 ||
-      performance.sales.total > 0 ||
-      performance.sales.service > 0 ||
-      performance.sales.tip > 0),
-  );
-}
-
-function SalesSummary({ performance,date,timeZone,canViewTickets }: { performance: TodayPerformance;date:string;timeZone:string;canViewTickets:boolean }) {
-  const history=useFinancialHistoryContext(),[manuallyOpen,setManuallyOpen]=useState(false),[dismissedFocus,setDismissedFocus]=useState<string>();
-  const edits=financialHistoryForObject(history.changes,{businessDate:date,sourceKinds:["ticket"]});
-  const editedCount=new Set(edits.map(row=>row.ticket_id??row.source_id)).size;
-  const focus=history.changes.find(row=>row.id===history.focusedEventId&&row.source_table==="ticket")??(history.record?.source_table==="ticket"?history.record:undefined);
-  const focusKey=focus?.id??(history.legacyBusinessDate===date?`legacy:${date}`:undefined);
-  const open=manuallyOpen||Boolean(focusKey&&focusKey!==dismissedFocus);
-  if (!performance.sales) {
-    return (
-      <EmptyLine label="Reports access is required to show sales totals." />
-    );
-  }
-
-  const rows = [
-    [
-      "Services",
-      performance.sales.service > 0
-        ? formatShortMoney(performance.sales.service)
-        : "-",
-    ],
-    [
-      "Tips",
-      performance.sales.tip > 0 ? formatShortMoney(performance.sales.tip) : "-",
-    ],
-    [
-      "Tickets",
-      performance.sales.ticketCount > 0
-        ? `${performance.sales.ticketCount}`
-        : "-",
-    ],
-  ];
-  const hasActivity = hasSalesActivity(performance);
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-sm font-medium text-zinc-500"><WorkspaceText text="Total sales" /></p>
-        <p className="mt-1 text-3xl font-semibold text-zinc-950 sm:text-4xl">
-          {formatMoney(performance.sales.total)}
-        </p>
-        <TrendPill trend={performance.sales.comparison} />
-        {!hasActivity ? (
-          <p className="mt-2 text-sm text-zinc-600">
-            <WorkspaceText text="Performance will appear after the first completed ticket." />
-          </p>
-        ) : null}
-      </div>
-      <dl className="grid grid-cols-3 gap-2">
-        {rows.map(([label, value]) => (
-          <div
-            className="content-surface border-zinc-100 bg-zinc-50 px-3 py-3 rounded-none border-y shadow-none"
-            key={label}
-          >
-            <dt className="text-xs font-medium text-zinc-500"><WorkspaceText text={label} /></dt>
-            <dd className="mt-1 whitespace-nowrap text-sm font-semibold tabular-nums text-zinc-950">
-              {label==="Tickets"&&canViewTickets?<button type="button" className="min-h-11 text-left" aria-expanded={open} onClick={()=>{if(open){setManuallyOpen(false);setDismissedFocus(focusKey);}else setManuallyOpen(true);}}><span>{value}</span>{editedCount>0&&<span className="ml-1 text-xs font-normal text-orange-800">· {editedCount} <WorkspaceText text="edited"/></span>} <span aria-hidden="true">{open?"⌃":"⌄"}</span></button>:value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {canViewTickets&&<TodayInlineTickets date={date} timeZone={timeZone} open={open}/>}
-      {performance.sales.discount > 0 ? (
-        <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          <WorkspaceText text="Discounts applied: -" />{formatMoney(performance.sales.discount)}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function shortHourLabel(label: string) {
-  if (label === "Before open") {
-    return "Before";
-  }
-
-  if (label === "After hours") {
-    return "After hrs";
-  }
-
-  return label
-    .replace(" after hours", "*")
-    .replace(" AM", "a")
-    .replace(" PM", "p")
-    .replace(" ", "");
-}
-
-function SalesActivityChart({
-  dateLabel,
-  performance,
-}: {
-  dateLabel: string;
-  performance: TodayPerformance;
-}) {
-  const points = performance.salesTrend;
-
-  if (!performance.sales || points.length === 0) {
-    return null;
-  }
-
-  const hasSignal = points.some((point) => point.total > 0);
-  const max = Math.max(...points.map((point) => Math.max(0, point.total)), 1);
-  const width = 760;
-  const height = 250;
-  const chartLeft = 48;
-  const chartRight = 14;
-  const chartTop = 18;
-  const chartBottom = 206;
-  const chartWidth = width - chartLeft - chartRight;
-  const chartHeight = chartBottom - chartTop;
-  const slotWidth = chartWidth / points.length;
-  const barWidth = Math.min(22, Math.max(4, slotWidth * 0.42));
-  const labelStep = Math.max(1, Math.ceil(points.length / 12));
-  const ticks = hasSignal ? [max, max / 2, 0] : [0];
-  const ticketCount = points.reduce(
-    (total, point) => total + point.ticketCount,
-    0,
-  );
-
-  return (
-    <div className="min-w-0">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Hourly sales" /></h3>
-        <span className="shrink-0 text-xs font-medium text-zinc-500">
-          <WorkspaceText text={ticketCount > 0
-            ? `${ticketCount} ticket${ticketCount === 1 ? "" : "s"}`
-            : "No tickets"} />
-        </span>
-      </div>
-      <WorkspaceElement as="svg"
-        aria-label={`Hourly sales chart for ${dateLabel}`}
-        className="h-64 w-full max-w-full overflow-hidden"
-        role="img"
-        viewBox={`0 0 ${width} ${height}`}
-      >
-        <desc>
-          {points
-            .map((point) => `${point.label}: ${formatMoney(point.total)}`)
-            .join(", ")}
-        </desc>
-        {ticks.map((tick) => {
-          const y = chartBottom - (tick / max) * chartHeight;
-
-          return (
-            <g key={tick}>
-              <line
-                className="stroke-zinc-200"
-                strokeWidth={tick === 0 ? "1.1" : "0.8"}
-                x1={chartLeft}
-                x2={width - chartRight}
-                y1={y}
-                y2={y}
-              />
-              <text
-                className="fill-zinc-500 text-[11px]"
-                textAnchor="end"
-                x={chartLeft - 8}
-                y={y + 4}
-              >
-                {tick === 0 ? "$0" : formatShortMoney(tick)}
-              </text>
-            </g>
-          );
-        })}
-        {points.map((point, index) => {
-          const barHeight = Math.max(
-            hasSignal ? 3 : 1.5,
-            (Math.max(0, point.total) / max) * chartHeight,
-          );
-          const x = chartLeft + index * slotWidth + (slotWidth - barWidth) / 2;
-          const y = chartBottom - barHeight;
-          const showLabel =
-            index === 0 ||
-            index === points.length - 1 ||
-            index % labelStep === 0;
-
-          return (
-            <g key={`${point.label}:${index}`}>
-              <rect
-                className={
-                  point.afterHours
-                    ? "fill-current opacity-40"
-                    : point.latest
-                      ? "fill-current"
-                      : "fill-amber-300"
-                }
-                height={barHeight}
-                rx="2.5"
-                width={barWidth}
-                x={x}
-                y={y}
-              />
-              {showLabel ? (
-                <text
-                  className="fill-zinc-500 text-[10px]"
-                  textAnchor="middle"
-                  x={x + barWidth / 2}
-                  y="236"
-                >
-                  <WorkspaceText text={shortHourLabel(point.label)} />
-                </text>
-              ) : null}
-            </g>
-          );
-        })}
-      </WorkspaceElement>
-    </div>
-  );
-}
-
-function StaffBars({
-  canViewFinancials,
-  bars,
-}: {
-  bars: TodayPerformance["staffBars"];
-  canViewFinancials: boolean;
-}) {
-  if (!canViewFinancials) {
-    return (
-      <EmptyLine label="Staff sales require payroll, reports, or ticket access." />
-    );
-  }
-
-  if (bars.length === 0) {
-    return null;
-  }
-
-  const max = Math.max(...bars.map((bar) => bar.value), 1);
-
-  return (
-    <div className="space-y-3">
-      {bars.map((bar) => (
-        <div key={bar.staffId}>
-          <div className="mb-1 flex items-center justify-between gap-3">
-            <p className="truncate text-sm font-medium text-zinc-700">
-              <WorkspaceText text={bar.label} />
-            </p>
-            <p className="shrink-0 text-sm font-semibold text-zinc-950">
-              {formatCompactMoney(bar.value)}
-            </p>
-          </div>
-          <div className="h-2 overflow-hidden rounded-md bg-zinc-100">
-            <div
-              className="h-full rounded-md bg-amber-500"
-              style={{ width: `${Math.max(8, (bar.value / max) * 100)}%` }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function BookingStatusCounts({
-  performance,
-}: {
-  performance: TodayPerformance;
-}) {
-  const total =
-    performance.bookingStatus.active +
-    performance.bookingStatus.completed +
-    performance.bookingStatus.upcoming;
-
-  if (total === 0) {
-    return null;
-  }
-
-  const rows = [
-    ["Active", performance.bookingStatus.active],
-    ["Completed", performance.bookingStatus.completed],
-    ["Upcoming", performance.bookingStatus.upcoming],
-  ];
-
-  return (
-    <dl className="grid grid-cols-3 gap-2">
-      {rows.map(([label, value]) => (
-        <div className="border-t border-zinc-200 pt-3" key={label}>
-          <dt className="text-xs font-medium text-zinc-500"><WorkspaceText text={label} /></dt>
-          <dd className="mt-1 text-lg font-semibold text-zinc-950">{value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function PerformancePanel({ dashboard }: { dashboard: TodayDashboard }) {
-  const reportsHref = dashboard.permissions.canViewReports
-    ? `/reports?${new URLSearchParams({
-        date: dashboard.date,
-      }).toString()}`
-    : null;
-  const showStaffBars =
-    dashboard.permissions.canViewStaffFinancials &&
-    dashboard.performance.staffBars.length > 0;
-  const showBookingCounts =
-    dashboard.performance.bookingStatus.active +
-      dashboard.performance.bookingStatus.completed +
-      dashboard.performance.bookingStatus.upcoming >
-    0;
-  const isClosedEmptyDay = dashboard.performance.emptyLabel === "Closed day.";
-  const title = dashboard.dayView.isCurrentDate
-    ? "Today Performance"
-    : "Day Performance";
-
-  return (
-    <Card
-      action={
-        reportsHref ? <ActionLink href={reportsHref} label="Reports" /> : null
-      }
-      icon="chart"
-      title={title}
-    >
-      <div className="space-y-5">
-        <div className="grid gap-6 lg:grid-cols-[minmax(260px,0.45fr)_minmax(0,1.55fr)]">
-          <SalesSummary performance={dashboard.performance} date={dashboard.date} timeZone={dashboard.timezone} canViewTickets={dashboard.permissions.canViewTickets}/>
-          {isClosedEmptyDay ? (
-            <CompactEmptyState
-              detail="No sales activity was recorded for this selected date."
-              title="Closed day"
-            />
-          ) : (
-            <SalesActivityChart
-              dateLabel={formatDashboardDate(dashboard.date)}
-              performance={dashboard.performance}
-            />
-          )}
-        </div>
-
-        {showStaffBars ? (
-          <div>
-            <h3 className="mb-3 text-sm font-semibold text-zinc-950">
-              <WorkspaceText text="Top Staff" />
-            </h3>
-            <StaffBars
-              bars={dashboard.performance.staffBars}
-              canViewFinancials={dashboard.permissions.canViewStaffFinancials}
-            />
-          </div>
-        ) : null}
-
-        {showBookingCounts ? (
-          <div>
-            <h3 className="mb-3 text-sm font-semibold text-zinc-950">
-              <WorkspaceText text="Appointments" />
-            </h3>
-            <BookingStatusCounts performance={dashboard.performance} />
-          </div>
-        ) : null}
-      </div>
     </Card>
   );
 }
@@ -1681,11 +1303,11 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
           <RightNowPanel dashboard={dashboard} />
-          {isOwner && <OwnerAttentionPanel key={dashboard.salonId} salonId={dashboard.salonId} />}
+          {isOwner && dashboard.salonId && <OwnerAttentionPanel key={dashboard.salonId} salonId={dashboard.salonId} />}
         </section>
 
         {(progressive ? sectionPending(dashboard, "staff") : dashboard.pendingSections?.details) ? <PendingPanel title="Team" /> : <TeamPanel dashboard={teamDashboard} />}
-        {(progressive ? financePending : dashboard.pendingSections?.details) ? <PendingPanel title="Performance" /> : <PerformancePanel dashboard={dashboard} />}
+        {(progressive ? financePending : dashboard.pendingSections?.details) ? <PendingPanel title="Statistics" /> : <TodayStatistics dashboard={dashboard} />}
 
         {(progressive ? sectionPending(dashboard, "extras") : dashboard.pendingSections?.details) ? <PendingPanel title="Quick access" /> : <QuickAccessPanel
           configuration={dashboard.quickAccesses}

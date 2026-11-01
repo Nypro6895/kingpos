@@ -120,7 +120,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "staff": {
       "pendingSections": {
@@ -264,7 +265,8 @@
           }
         }
       ],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "bookings": {
       "pendingSections": {
@@ -325,12 +327,37 @@
           "completed": 0,
           "inService": 0,
           "pending": 1,
-          "upcoming": 0
+          "upcoming": 0,
+          "total": 1,
+          "cancelled": 0,
+          "other": 1,
+          "statisticsUpcoming": 0
         },
         "emptyLabel": null,
         "salesTrend": [],
         "sales": null,
-        "staffBars": []
+        "staffBars": [],
+        "statistics": {
+          "checkIns": 2,
+          "closedTickets": null,
+          "hours": [
+            {
+              "hour": 9,
+              "checkIns": 2,
+              "sales": null
+            },
+            {
+              "hour": 10,
+              "checkIns": 0,
+              "sales": null
+            }
+          ],
+          "services": null,
+          "giftCardsSold": null,
+          "giftCardsRedeemed": null,
+          "promotions": null,
+          "errors": []
+        }
       },
       "permissions": {
         "canViewBookings": true,
@@ -405,7 +432,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "waiting": {
       "pendingSections": {
@@ -545,7 +573,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "financials": {
       "pendingSections": {
@@ -635,7 +664,40 @@
             "staffId": "staff-a",
             "value": 120
           }
-        ]
+        ],
+        "statistics": {
+          "checkIns": null,
+          "closedTickets": 2,
+          "hours": [
+            {
+              "hour": 9,
+              "checkIns": null,
+              "sales": 120
+            },
+            {
+              "hour": 10,
+              "checkIns": null,
+              "sales": 0
+            }
+          ],
+          "services": [
+            {
+              "label": "Gel polish",
+              "count": 2,
+              "sales": 120
+            }
+          ],
+          "giftCardsSold": null,
+          "giftCardsRedeemed": {
+            "count": 0,
+            "amount": 0
+          },
+          "promotions": {
+            "count": 1,
+            "amount": 5
+          },
+          "errors": []
+        }
       },
       "permissions": {
         "canViewBookings": true,
@@ -735,7 +797,8 @@
           }
         }
       ],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "extras": {
       "pendingSections": {
@@ -872,7 +935,8 @@
         }
       },
       "team": [],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     },
     "full": {
       "pendingSections": {
@@ -949,7 +1013,11 @@
           "completed": 0,
           "inService": 0,
           "pending": 1,
-          "upcoming": 0
+          "upcoming": 0,
+          "total": 1,
+          "cancelled": 0,
+          "other": 1,
+          "statisticsUpcoming": 0
         },
         "emptyLabel": null,
         "salesTrend": [
@@ -980,7 +1048,40 @@
             "staffId": "staff-a",
             "value": 120
           }
-        ]
+        ],
+        "statistics": {
+          "checkIns": 2,
+          "closedTickets": 2,
+          "hours": [
+            {
+              "hour": 9,
+              "checkIns": 2,
+              "sales": 120
+            },
+            {
+              "hour": 10,
+              "checkIns": 0,
+              "sales": 0
+            }
+          ],
+          "services": [
+            {
+              "label": "Gel polish",
+              "count": 2,
+              "sales": 120
+            }
+          ],
+          "giftCardsSold": null,
+          "giftCardsRedeemed": {
+            "count": 0,
+            "amount": 0
+          },
+          "promotions": {
+            "count": 1,
+            "amount": 5
+          },
+          "errors": []
+        }
       },
       "permissions": {
         "canViewBookings": true,
@@ -1119,7 +1220,8 @@
           }
         }
       ],
-      "timezone": "UTC"
+      "timezone": "UTC",
+      "salonId": "00000000-0000-4000-8000-000000000002"
     }
   },
   "navigation": {

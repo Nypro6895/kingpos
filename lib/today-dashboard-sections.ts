@@ -1,3 +1,4 @@
+import { mergeDayStatistics } from "./today-statistics";
 // This module is deliberately client-safe. Server loaders are imported as types only.
 import type { TodayDashboard, TodayLoadError, TodayTeamMember } from "./today-dashboard";
 
@@ -113,6 +114,7 @@ export function mergeTodayDashboardSection(
       next.rightNow.scheduleHref = patch.rightNow.scheduleHref;
       next.rightNow.upcomingBookings = patch.rightNow.upcomingBookings;
       next.performance.bookingStatus = patch.performance.bookingStatus;
+      next.performance.statistics = mergeDayStatistics(base.performance.statistics, patch.performance.statistics, "visits");
     } else if (section === "waiting") {
       next.summary.waiting = patch.summary.waiting;
       next.rightNow.waitingClients = patch.rightNow.waitingClients;
@@ -120,7 +122,7 @@ export function mergeTodayDashboardSection(
       next.summary.sales = patch.summary.sales;
       if (!base.permissions.canViewBookings) next.summary.customers = patch.summary.customers;
       next.businessHours = patch.businessHours;
-      next.performance = { ...patch.performance, bookingStatus: base.performance.bookingStatus };
+      next.performance = { ...patch.performance, bookingStatus: base.performance.bookingStatus, statistics: mergeDayStatistics(base.performance.statistics, patch.performance.statistics, "tickets") };
       const financialById = new Map(patch.team.map((member) => [member.id, member]));
       next.team = base.pendingSections?.sections?.includes("staff") ? patch.team : base.team.map((member) => {
         const financial = financialById.get(member.id);

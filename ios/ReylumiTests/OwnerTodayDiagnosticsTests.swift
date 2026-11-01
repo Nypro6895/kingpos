@@ -14,8 +14,9 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
     private var requestedContextPaths: [String] = []
     private var commandCount = 0
     private var reads: [String: Int] = [:]
+    private var payrollTabs: [String] = []
     init(fixture: [String: Any], failures: Int = 0) { self.fixture = fixture; self.failures = failures }
-    func counts() -> [String: Any] { ["context": contextCount, "commands": commandCount, "reads": reads] }
+    func counts() -> [String: Any] { ["context": contextCount, "commands": commandCount, "reads": reads, "payrollTabs": payrollTabs] }
     func contextPaths() -> [String] { requestedContextPaths }
     func clearCounts() { contextCount = 0; commandCount = 0; reads = [:]; requestedContextPaths = [] }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
@@ -49,6 +50,7 @@ private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
             let value: [String: Any]
             switch name {
             case "page.owner-payroll":
+                payrollTabs.append(args["tab"] as? String ?? "missing")
                 if let ms = fixture["payrollReadDelayMs"] as? UInt64 { try await Task.sleep(nanoseconds: ms * 1_000_000) }
                 value = fixture["payroll"] as! [String: Any]
             case "page.owner-today": value = ["dashboard": (fixture["phases"] as! [String: Any])[phase]!, "isOwner": true]
@@ -128,6 +130,22 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
             XCTAssertTrue(run.trace.snapshot().contains { $0.event == .readCacheHit && $0.category == .today })
             let hits = run.trace.snapshot().filter { $0.event == .readCacheHit && $0.category == .today }.count
             return ["todayDiskCacheHits": hits, "ready": await run.http.counts()]
+        }
+    }
+
+    func testInstalledOwnerTodayStatisticsPieAndHourlySelection() async throws {
+        try await scenario("statistics_pie_and_hour_selection") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            try await self.wait("document.querySelector('[data-today-statistics]')?.innerText.includes('Service mix') && document.querySelectorAll('[data-today-statistics] svg').length===2", in: run.web)
+            let before = await run.http.counts()
+            _ = try await run.web.evaluateJavaScript("(()=>{const p=document.querySelector('[data-today-statistics]');[...p.querySelectorAll('button')].find(b=>b.textContent==='Sales').click();return true})()")
+            try await self.wait("document.querySelector('[data-today-statistics]').innerText.includes('$120.00 before discounts')", in: run.web)
+            _ = try await run.web.evaluateJavaScript("(()=>{const p=document.querySelector('[data-today-statistics]');[...p.querySelectorAll('button')].find(b=>b.textContent==='Count').click();[...p.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')?.startsWith('9a:')).click();return true})()")
+            try await self.wait("document.querySelector('[data-today-statistics]').innerText.includes('2 service items') && document.querySelector('[data-today-statistics]').innerText.includes('9a–10a · 2 Check-ins · $120.00')", in: run.web)
+            let after = await run.http.counts()
+            XCTAssertEqual(after["commands"] as? Int, 0)
+            XCTAssertEqual(before["reads"] as? [String: Int], after["reads"] as? [String: Int], "Chart interaction stays local and must not issue a new server read")
+            return ["statisticsInteractions": true, "before": before, "after": after]
         }
     }
 
@@ -225,6 +243,7 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
                 let coldMs = (ProcessInfo.processInfo.systemUptime - run.startedAt) * 1000
                 let before = await run.http.counts()
                 XCTAssertEqual((before["reads"] as? [String: Int])?["payroll"], 1)
+                XCTAssertEqual(before["payrollTabs"] as? [String], ["shop"], "Actual native request must preserve Shop for server preloading")
                 XCTAssertNil((before["reads"] as? [String: Int])?["shop_money"], "Seeded Shop must not make a second initial read")
                 _ = try await run.web.evaluateJavaScript("window.__payrollMeasurementDOM=document.querySelector('[data-payroll-page]');true")
                 run.controller.navigate("/help")
@@ -305,7 +324,8 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         }
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
-        window.rootViewController = controller; window.isHidden = false
+        window.rootViewController = controller; window.makeKeyAndVisible()
+        XCTAssertTrue(window.isKeyWindow, "Installed frame measurements require the foreground fixture")
         defer { controller.webView?.stopLoading(); window.isHidden = true; window.rootViewController = nil }
         let startedAt = ProcessInfo.processInfo.systemUptime
         controller.initializeWebContentIfNeeded()
@@ -335,6 +355,10 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
     private func attach(_ name: String, run: Run, checkpoints: [String: Any], passed: Bool) async throws {
         let js = (try? await run.web.evaluateJavaScript("window.__reylumiDiagnostics?.snapshot() ?? []")) as? [[String: Any]] ?? []
         let native = try JSONSerialization.jsonObject(with: JSONEncoder().encode(run.trace.snapshot()))
+        if !passed {
+            let state = try? await run.web.evaluateJavaScript("JSON.stringify({visibility:document.visibilityState,path:location.pathname,text:document.body.innerText.slice(0,1200),today:!!document.querySelector('[data-today-dashboard]'),ownerNav:!!document.querySelector('nav[aria-label=Owner]')})")
+            print("REYLUMI_OWNER_DIAGNOSTIC \(String(describing: state))")
+        }
         let firstVisible = js.first { $0["event"] as? String == "data.visible" && $0["area"] as? String == "today" }
         let bootStart = js.first { $0["event"] as? String == "boot.start" }
         let report: [String: Any] = ["schemaVersion": 1, "scenario": name, "candidateBaseCommit": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0", "bundleBuildId": run.controller.bundle.manifest.buildId, "passed": passed, "actualInstalledBundle": true, "newColdWebView": true, "nativeProcessColdStart": false, "syntheticTransport": true, "syntheticServerTiming": true, "physicalDeviceEvidence": false, "nativeTrace": native, "javascriptTrace": js, "checkpoints": checkpoints, "counts": await run.http.counts()]

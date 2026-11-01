@@ -2,6 +2,7 @@
 import { WorkspaceText } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
 import { TicketFilters } from "./ticket-filters";
+import { useRouter } from "next/navigation";
 import {useState,useEffect,useRef} from 'react';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {DailyPosTicketCard} from './closed-ticket-correction-form';
@@ -49,9 +50,11 @@ function formatTime(value: string) {
 function getTicketFilterHref({
   date,
   q,
+  staff,
 }: {
   date: string;
   q?: string;
+  staff?: string;
 }) {
   const params = new URLSearchParams({ date });
 
@@ -59,6 +62,7 @@ function getTicketFilterHref({
     params.set("q", q);
   }
 
+  if (staff) params.set("staff", staff);
   return `/pos-tickets?${params.toString()}`;
 }
 
@@ -222,8 +226,9 @@ function DailyWorkLog({
 }
 
 
-type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{selectedDate:string;snapshotAt?:number;managedRead?:boolean;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
-export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets,bounds,searchQuery,managedRead=false,...props}:Props){
+type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{selectedDate:string;snapshotAt?:number;managedRead?:boolean;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string;selectedStaffId?:string;filterStaff?:Staff[]};
+export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets,bounds,searchQuery,managedRead=false,selectedStaffId="",filterStaff,...props}:Props){
+ const router=useRouter();
  const [query,setQuery]=useState(searchQuery);
  const [live,setLive]=useState<{base:PosTicketWithRelations[];tickets:PosTicketWithRelations[]}|null>(null);
  const tickets=live?.base===initialTickets?live.tickets:initialTickets;
@@ -239,6 +244,23 @@ export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets
      return {base:initialTickets,tickets:(ids?.length?[...current.filter(t=>!ids.includes(t.id)),...next.tickets]:next.tickets).sort((a:PosTicketWithRelations,b:PosTicketWithRelations)=>b.opened_at.localeCompare(a.opened_at))};
    });
  },{enabled:!managedRead,initialReconcile:false,snapshotAt});
- const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,query,dailyNumbers));
- return <FinancialHistoryProvider salonId={salonId} surface="today" start={selectedDate} end={selectedDate} refreshKey={tickets.map(ticket=>`${ticket.id}:${ticket.workspace_revision}:${ticket.updated_at}`).join(",")}><TicketFilters title="POS Tickets" actions={<ContextualSupport />} date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></FinancialHistoryProvider>;
+ const dailyNumbers=buildDailyTicketNumbers(tickets);
+ const filteredTickets = tickets.filter(ticket => !selectedStaffId || ticket.ticket_items.some(item => !item.is_removed && (
+   item.assigned_staff_id === selectedStaffId || item.performed_by_staff_id === selectedStaffId || item.turn_parts?.some(part => part.staff_id === selectedStaffId)
+ )));
+ const groups=groupTicketsByDate(filterTicketsBySearch(filteredTickets,query,dailyNumbers));
+ const staffOptions = new Map((filterStaff ?? props.staff).map(member => [member.id, member.display_name]));
+ for (const ticket of tickets) for (const item of ticket.ticket_items) {
+   if (item.assigned_staff) staffOptions.set(item.assigned_staff.id, item.assigned_staff.display_name);
+   if (item.performed_staff) staffOptions.set(item.performed_staff.id, item.performed_staff.display_name);
+ }
+
+
+ return <FinancialHistoryProvider salonId={salonId} surface="today" start={selectedDate} end={selectedDate} refreshKey={tickets.map(ticket=>`${ticket.id}:${ticket.workspace_revision}:${ticket.updated_at}`).join(",")}><div className="px-4 py-2 sm:px-0"><label className="flex items-center gap-3 text-sm"><WorkspaceText text="Staff" /><select aria-label="Staff" className="h-11 min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-base" value={selectedStaffId} onChange={event => {
+   const params = new URLSearchParams(window.location.search);
+   params.set("date", selectedDate);
+   if (event.target.value) params.set("staff", event.target.value); else params.delete("staff");
+   if (query) params.set("q", query); else params.delete("q");
+   router.replace(`/pos-tickets?${params}`, { scroll: false });
+ }}><option value="">All staff</option>{selectedStaffId && !staffOptions.has(selectedStaffId) ? <option value={selectedStaffId}>Selected staff</option> : null}{Array.from(staffOptions).sort((a,b) => a[1].localeCompare(b[1])).map(([id,name]) => <option key={id} value={id}>{name}</option>)}</select></label></div><TicketFilters title="POS Tickets" actions={<ContextualSupport />} date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query,staff:selectedStaffId})} groups={groups} dailyNumbers={dailyNumbers}/></FinancialHistoryProvider>;
 }

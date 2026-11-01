@@ -7,6 +7,8 @@ import {
   type TodayDashboardSection,
 } from "@/lib/today-dashboard-sections";
 import "server-only";
+import { loadTodayStatistics } from "@/lib/today-statistics-server";
+import { buildDayStatistics, type DayStatistics } from "@/lib/today-statistics";
 import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
 import type { ReadStage } from "@/lib/read-request-timing";
 
@@ -228,10 +230,16 @@ export type TodayStaffFinancialAttribution = {
 };
 
 export type TodayPerformance = {
+  statistics?: DayStatistics | null;
   bookingStatus: {
     active: number;
     completed: number;
     upcoming: number;
+    total?: number;
+    inService?: number;
+    cancelled?: number;
+    other?: number;
+    statisticsUpcoming?: number;
   };
   emptyLabel: string | null;
   salesTrend: TodayPerformancePoint[];
@@ -957,7 +965,10 @@ function summarizeBookings(
     }
   }
 
-  return { active, completed, inService, pending, upcoming };
+  const cancelled = bookings.filter(b => ["cancelled", "no_show"].includes(normalizeBookingStatus(b.status))).length;
+  const statisticsUpcoming = isCurrentDate ? upcoming : bookings.filter(b => ["pending", "confirmed"].includes(normalizeBookingStatus(b.status))).length;
+  const other = Math.max(0, bookings.length - completed - inService - statisticsUpcoming - cancelled);
+  return { active, completed, inService, pending, upcoming, statisticsUpcoming, cancelled, other, total: bookings.length };
 }
 
 function buildHourlyMetricPoints(input: {
@@ -1586,6 +1597,7 @@ export async function getTodayDashboard(
     financialResult,
     notificationsResult,
     quickAccessResult,
+    statisticsResult,
   ] = await Promise.all([
     readStaff && (section !== "financials" || permissions.canViewStaffFinancials) ? loadStaffDashboardData({
       canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
@@ -1653,6 +1665,7 @@ export async function getTodayDashboard(
       : Promise.resolve({ data: null, error: null }),
     Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
     readExtras ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context)) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
+    !core && (readBookings || readFinancials) ? withDashboardDeadline(loadTodayStatistics(context, clock.date, clock.timezone, { visits: readBookings, tickets: readFinancials }), 1800).then(data => ({ data })).catch(() => ({ data: buildDayStatistics({ date: clock.date, timeZone: clock.timezone, now: new Date().toISOString(), visits: null, tickets: null, errors: [readFinancials ? "Service statistics could not be loaded." : "Check-ins could not be loaded."] }) })) : Promise.resolve({ data: null }),
   ]);
   if (readHours) {
     businessHoursResult = await businessHoursRead;
@@ -1729,13 +1742,13 @@ export async function getTodayDashboard(
     greetingName: getGreetingName(context),
     loadErrors,
     noAccess: false,
-    performance: buildPerformance({
+    performance: { ...buildPerformance({
       bookingSummary,
       businessHours,
       financialData,
       report,
       team,
-    }),
+    }), statistics: statisticsResult.data },
     permissions,
     quickAccesses: quickAccessResult.data ?? emptyQuickAccessConfiguration(),
     rightNow: {
