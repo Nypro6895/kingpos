@@ -1,0 +1,13 @@
+VERIFIED RELEASE - 2026-11-02T17:16:28.561Z
+
+Web: reylumi.com, dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr. Source and baseline hashes are in web-live.json.
+
+iOS: Reylumi 1.0.0 (85), source 6f1e61360a7f7ebf165ce6823bc4566a639e7a82. Apple VALID / IN_BETA_TESTING, available to Reylumi Internal and Reylumi support. Both archives and all 246 Swift tests verified. Native bundle matches the bundle used for the actual installed-JS browser checks. No App Store publication or physical acceptance of build 85 is claimed.
+
+Root cause of the missing change: previous release updated the web while installed Settings use compiled React renderers. Connected iPhone 12 Pro Max reported build 82 during the audit. Install build 85 through the existing TestFlight channel to receive the updated bundle.
+
+Includes seven compact Salon Settings pages, compiled All Settings and its shared child editors, Staff hours/service/online-booking action bridge, compact Profile header, Payroll/Today layout changes and queued native/hosted scroll containment. Browser checks at 320/390/844 preserve drafts and avoid page overflow; mobile More menu closes after selection.
+
+Remaining work is classified separately in PENDING-AUDIT.csv. Historical open journal events are not equivalent to missing runtime features. Independent Market platform/publisher work and Check Writer provider/sales/physical-print acceptance remain separate; working changes such as Reward local discovery are not swept into this release. See STATUS.txt for the initial audit and the inherited extra boundary-test limitation.
+
+Receipts: web 1680ac64-690f-4657-96a1-ed91c554c3a9; iOS 44cda52b-c423-4243-a4f5-9f2bbf1d6e9c.

@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "ios84-local-scroll-containment-20261102",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/app.css",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "tests/ios-page-scroll-browser.mjs"
+  ],
+  "summary": "Integrate frozen installed/hosted iOS scroll containment onto actual uploaded baseline 84 and verify signed build 85 with all 246 Swift tests",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102\\artifacts\\ios-settings-followup\\frozen-native",
+    "commit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82"
+  },
+  "validation": [
+    {
+      "name": "Exact frozen 7-file source matches CI; 246 tests and both archives pass",
+      "result": "passed",
+      "evidence": "artifacts/release/native-verified.json"
+    },
+    {
+      "name": "6 browser scroll/retention/rail tests with old-CSS negative control",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/scroll.log"
+    }
+  ],
+  "limitations": [
+    "Physical-device acceptance of build 85 remains pending"
+  ],
+  "id": "d99df9bc-64b5-4453-b4d4-c559d487aaf5",
+  "recordedAt": "2026-11-02T17:15:12.663Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/app.css": "a21adf4c1ec5ae89f0dba7516f98ebabaa7297b0853fadef0c77845ff6b1d79e",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "8dc1fa0e5452b6719fcd69ec3b681de3cdd44a91868b07330b2a623e6040b739",
+    "ios/Reylumi/ReylumiViewController.swift": "e4538c2a23686c62a555364461a33e9f029e696be2c6cad134e92b0d95a5a1d4",
+    "ios/ReylumiTests/AppViewportTests.swift": "364c3037d87315fb00921a724b621ec457e820f2c89dcc81c3176dd4ad4ad84e",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "264f123211e5f925d22533ab30b42d950884caddf52771e34383b8bd462d9439",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "d9d0c0863e3a332b660d35fd1ea795fe7a5140b6eb333adfb18b46a0f1ed8121",
+    "tests/ios-page-scroll-browser.mjs": "8ce501b55d6ddc9c428497f1e67b34a37d8581234a1bd0833aeab79cf5121835"
+  }
+}

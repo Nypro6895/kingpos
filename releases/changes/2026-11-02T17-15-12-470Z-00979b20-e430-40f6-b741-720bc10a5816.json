@@ -1,0 +1,133 @@
+{
+  "kind": "change",
+  "changeId": "settings-ios-followup-20261102",
+  "status": "ready",
+  "summary": "Bundled iOS update includes compact Salon/All Settings, Staff hours action bridge, compact Profile header and Payroll/Today changes plus native scroll containment; replaces previous incorrect web-only native assessment",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/booking-setup/booking-setup-editors.tsx",
+    "app/booking-setup/booking-setup.css",
+    "app/local-app/app.css",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/pos/portable/device-input-settings.css",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/service-catalog.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/role-navigation.ts",
+    "app/salon-profile/salon-profile-studio.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/compact-settings.css",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking-actions.ts",
+    "app/settings/staff-hours-booking.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "app/staff/today/today-layout.module.css",
+    "components/app-local-salon-settings.tsx",
+    "components/salon-publication-status.tsx",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/customer-display-local-images.ts",
+    "lib/dialog-outside-dismiss.ts",
+    "lib/pos-service-catalog-server.ts",
+    "lib/public-explore-card-rpc.ts",
+    "tests/ios-page-scroll-browser.mjs",
+    "tests/settings-ios-parity.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102\\artifacts\\ios-settings-followup\\frozen-native",
+    "commit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82"
+  },
+  "dependencies": [
+    "settings-ios-command-adapter-20261102"
+  ],
+  "requiresNativeBuild": true,
+  "validation": [
+    {
+      "name": "Full TypeScript, scoped lint, settings/permission and parity tests",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/regression.log"
+    },
+    {
+      "name": "Activated source-bound bundle with no unsupported actions",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/local-bundle.log"
+    },
+    {
+      "name": "Actual installed JS Salon/All Settings, navigation/drafts/no overflow at 320/390/844; no writes",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/installed-browser/result.json"
+    },
+    {
+      "name": "246/246 exact Swift tests; unsigned and signed archives match source/bundle; upload accepted, Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/release/native-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical iPhone acceptance of new build pending; connected iPhone currently reports 1.0.0 (82)",
+    "Source remains based on last uploaded native build 84 plus exact verified live web source; independent Market/provider activation remains held",
+    "The inherited unused legacy DeviceAppearance reachability assertion remains documented separately (23/24 extra boundary checks); current POS appearance editor uses the pinned direct Settings path"
+  ],
+  "id": "00979b20-e430-40f6-b741-720bc10a5816",
+  "recordedAt": "2026-11-02T17:15:12.470Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/salon-settings/page.tsx": "bb61c41246642d976f634b91f04579ab2877a4a31f2d1fb330f52b171efd9df0",
+    "app/booking-setup/booking-setup-editors.tsx": "96ae6ca24c5c0f0a2dadb04396ad31cb950c445e1c461cb2a3f60ffe9b5aa67b",
+    "app/booking-setup/booking-setup.css": "efd5af106cf820505180b7caefc5c6906c61f061032d472d2cadced1c852d276",
+    "app/local-app/app.css": "a21adf4c1ec5ae89f0dba7516f98ebabaa7297b0853fadef0c77845ff6b1d79e",
+    "app/payroll/payroll-mobile.module.css": "abfefca48f997659b392e44e318f9c47d6ae1981b0e9dc5de0ac8db018b99aad",
+    "app/payroll/payroll-period-rail.tsx": "c00dda36b6ab30c5479c7958de9663b5d9c1d47abd874a3f4c928480ea6226a6",
+    "app/pos/portable/device-input-settings.css": "4a86d73d4e9b639baa907df4bb9e08756e29b129571bddf3074da3d88be62bfa",
+    "app/pos/portable/device-settings-panel.tsx": "330ef6c8d1b970dde5e322179fc75f3212552b7acf1ba3a872851747939ca41c",
+    "app/pos/service-catalog.tsx": "8da326a4d6746c6cce5839505f665dde0b99679f509dbf904928f542dc15584e",
+    "app/reports/owner-live-reports.tsx": "2f44e5958a07b0d80ac7327349c135a984bef9baf27aa0d6e123be6a1bd6dbb7",
+    "app/role-navigation.ts": "e1bf667966ddc46feee6e05ced35ac694841ea6fc0165980a956594a9592a59b",
+    "app/salon-profile/salon-profile-studio.tsx": "6a2ebe4718e793d7ab202b256526bd704581e7810e29e491702a06b483081b59",
+    "app/salon-profile/salon-profile-view.tsx": "abd4bd24b2cdea3e956c756920a385832e4b527c11fccec72f202a9798b21738",
+    "app/salon-profile/salon-website-header.module.css": "52876508084cf8f0038b14e9dc91dff28cdaa95493d2637eaacbdcbf4a3c1d65",
+    "app/salon-profile/salon-website-header.tsx": "99c094bd18805d45ba96d119362d7764e39d5c68606521bd4c8a71b076532adf",
+    "app/settings/compact-settings-workspace.tsx": "eacdfd1f17309ff4ed8e5a103be7a08a523caf3820d36ad08c09217d997ec8af",
+    "app/settings/compact-settings.css": "cbd24feda0b05864fdbc33b05617e875b1dda5c58d6aade4fa2541378874cfbe",
+    "app/settings/direct-settings-actions.ts": "61d036fd2da219ba672593b9677fca89be4800ecf3f52503e1f6f0b437268440",
+    "app/settings/direct-settings-ui.tsx": "17e7608096450c30c0704ffaf15f414184e018950577805009e6d40927f85fc0",
+    "app/settings/salon-settings-panels.tsx": "8e92fc24c3c7c7c9a68d98c9219fb04f182d756336fa024a4b6d4b74af81086f",
+    "app/settings/settings-hub-client.tsx": "331527b125cda9b4c1c243907c2d2897bf8049eca578fce6218112581a0d18b7",
+    "app/settings/staff-hours-booking-actions.ts": "6d6614bc763d0909d6f3fc6f092465bc72a75f64f1d54a90f813f4c0efcb760f",
+    "app/settings/staff-hours-booking.tsx": "e0a873cfd980c34bc2ae35dda384009ff4d68de526014b51b493c5756381b406",
+    "app/staff/today/owner-attention.module.css": "5f5f62bda9f6d09a79cfc416a58ef4a83f513fb2b836cdee17808f0d00ad87fe",
+    "app/staff/today/today-layout.module.css": "f9fa959959cbd52a8dddb7e7aa0df9068407a1ec5b47f92b110b6006d9606b0f",
+    "components/app-local-salon-settings.tsx": "ef5b0bf7348b1df229b39275ecac0a0e62f5a2402319594ad786c3d440cf98c2",
+    "components/salon-publication-status.tsx": "e21158656366e2d3eda18d60da8791fa9524a45709899ff8c1a40aec5dacd798",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "8dc1fa0e5452b6719fcd69ec3b681de3cdd44a91868b07330b2a623e6040b739",
+    "ios/Reylumi/ReylumiViewController.swift": "e4538c2a23686c62a555364461a33e9f029e696be2c6cad134e92b0d95a5a1d4",
+    "ios/ReylumiTests/AppViewportTests.swift": "364c3037d87315fb00921a724b621ec457e820f2c89dcc81c3176dd4ad4ad84e",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "264f123211e5f925d22533ab30b42d950884caddf52771e34383b8bd462d9439",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "d9d0c0863e3a332b660d35fd1ea795fe7a5140b6eb333adfb18b46a0f1ed8121",
+    "lib/app-local-command-policy.json": "73fefdb378a4295a46defa9d154c2fef7dfc7b7e4b856ae9311f9f86a5d41607",
+    "lib/app-local-commands-server.generated.ts": "f9159b72a0915b98507dc93c458a1dc1e72ac0b0463931beb72fb215069c8d87",
+    "lib/customer-display-local-images.ts": "8a4bb7471e746a77e1ca129fbeac56c096863b63bb89a64ce7f8d8171d2a3def",
+    "lib/dialog-outside-dismiss.ts": "8bac2edf085e3237ad9c5c7323699ccd44354cc5b3cfa9f6b497a9461acd3640",
+    "lib/pos-service-catalog-server.ts": "f9f1d161f98fa7ce0d81e1371970478efbaab6631fb779fe301a3041ddb7bbba",
+    "lib/public-explore-card-rpc.ts": "821df1d96cd6790c8e09189699e1b06ce3399c0d6ccdb7370b28e3224c37eb5e",
+    "tests/ios-page-scroll-browser.mjs": "8ce501b55d6ddc9c428497f1e67b34a37d8581234a1bd0833aeab79cf5121835",
+    "tests/settings-ios-parity.test.mjs": "32aa552434a6140deed211aec651702788ed1bdc40b556b9dbd2e729f6fc0ed6"
+  }
+}

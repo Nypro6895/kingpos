@@ -1,0 +1,66 @@
+{
+  "kind": "release",
+  "summary": "Verified combined compact Salon/All Settings, Staff hours bridge, Profile header, Payroll/Today and iOS scroll fixes available in existing internal TestFlight groups as 1.0.0 (85)",
+  "changes": [
+    "00979b20-e430-40f6-b741-720bc10a5816",
+    "d99df9bc-64b5-4453-b4d4-c559d487aaf5"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "85",
+      "commit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82",
+      "sourceSha256": "4bfff244dd0ca9de33abd9a3bb1ca799e29c6d8541a506723c3f1bb51d61f273",
+      "bundleSha256": "0bb659debb8f80fa1cd491d30c73f9fb5fb8cd81b73ebb2b624f03895a397014",
+      "bundleBuildId": "2f5a2956d1ba78419b9450a170bb44416c2b8c899877bab6ed6b50ff44a228f4",
+      "baseline": {
+        "version": "1.0.0",
+        "build": "84",
+        "commit": "a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26",
+        "workflowRun": 41447623208
+      },
+      "workflowRun": 41484072151,
+      "availabilityWorkflowRun": 41489289699,
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "groups": [
+        "Reylumi Internal",
+        "Reylumi support"
+      ],
+      "evidence": "releases/evidence/settings-ios-followup-20261102",
+      "limitations": [
+        "CI iPhone simulator and actual compiled-bundle browser verification; physical iPhone acceptance of build 85 pending",
+        "Existing internal TestFlight groups available; App Store publication not performed"
+      ]
+    }
+  },
+  "relatedWebRelease": "1680ac64-690f-4657-96a1-ed91c554c3a9",
+  "validation": {
+    "exactSwiftTestsPassed": 246,
+    "exactSwiftTestsSkipped": 0,
+    "unsignedSignedResourcesMatch": true,
+    "installedBundleBrowserViewports": [
+      320,
+      390,
+      844
+    ],
+    "mobileMoreClosesAfterSelection": true,
+    "productionWritesDuringQA": 0,
+    "additionalBoundaryTests": {
+      "passed": 23,
+      "failed": 1,
+      "reason": "Inherited legacy DeviceAppearance reachability assertion expects an unused component; original permission tests pass and current POS appearance path uses direct Settings actions",
+      "evidence": "releases/evidence/settings-ios-followup-20261102/native-boundaries.log"
+    }
+  },
+  "correction": {
+    "priorWebReceipt": "87aa3c05-ee00-4ef3-8404-c1007c071d9c",
+    "reason": "Settings have compiled installed renderers; previous web-only native assessment was incomplete"
+  },
+  "remainingQueue": "releases/evidence/settings-ios-followup-20261102/PENDING-AUDIT.csv",
+  "id": "44cda52b-c423-4243-a4f5-9f2bbf1d6e9c",
+  "recordedAt": "2026-11-02T17:16:09.352Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102"
+}
