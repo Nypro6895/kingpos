@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "profile-header-compact-20261102",
+  "status": "ready",
+  "summary": "Combined release integration on exact live source; preserve newer shipped Settings behavior and freeze validated scoped changes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-studio.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-header.tsx",
+    "components/salon-publication-status.tsx",
+    "docs/profile-header-compact-20261102.md",
+    "tests/profile-header-compact.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-combined-release-20261102\\artifacts\\settings-release\\frozen",
+    "commit": "6c898b8f3cf6918364adb675ec56192f91e0c335"
+  },
+  "validation": [
+    {
+      "name": "Fresh assembled production build and full TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/build-final.log"
+    },
+    {
+      "name": "Actual Settings panels, permissions, draft/save/closure, retention, staff hours and profile browser tests",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/regression-final.log"
+    },
+    {
+      "name": "Scoped ESLint: zero errors, one inherited hook warning",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/lint.log"
+    },
+    {
+      "name": "Unmodified live source retained",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/baseline-source-manifest.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "7dd319b8-6049-4d3b-98b4-e320a113449b",
+  "recordedAt": "2026-11-02T15:50:29.661Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-combined-release-20261102",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/salon-profile/salon-profile-studio.tsx": "6a2ebe4718e793d7ab202b256526bd704581e7810e29e491702a06b483081b59",
+    "app/salon-profile/salon-profile-view.tsx": "abd4bd24b2cdea3e956c756920a385832e4b527c11fccec72f202a9798b21738",
+    "app/salon-profile/salon-website-header.module.css": "52876508084cf8f0038b14e9dc91dff28cdaa95493d2637eaacbdcbf4a3c1d65",
+    "app/salon-profile/salon-website-header.tsx": "99c094bd18805d45ba96d119362d7764e39d5c68606521bd4c8a71b076532adf",
+    "components/salon-publication-status.tsx": "e21158656366e2d3eda18d60da8791fa9524a45709899ff8c1a40aec5dacd798",
+    "docs/profile-header-compact-20261102.md": "911440392a5bb1790b4cdd5de1dcc007a3911a97578fd08c004d9a7da0b4653a",
+    "tests/profile-header-compact.test.mjs": "f1cfe0d612ee87587860ba049fe60ca1b9f39072d5a5b8e903fe44eafb59272e"
+  }
+}

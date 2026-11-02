@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "payroll-today-dividers-20261102",
+  "status": "ready",
+  "summary": "Combined release integration on exact live source; preserve newer shipped Settings behavior and freeze validated scoped changes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/payroll/payroll-mobile.module.css",
+    "app/staff/today/today-layout.module.css",
+    "app/staff/today/owner-attention.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-combined-release-20261102\\artifacts\\settings-release\\frozen",
+    "commit": "6c898b8f3cf6918364adb675ec56192f91e0c335"
+  },
+  "validation": [
+    {
+      "name": "Fresh assembled production build and full TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/build-final.log"
+    },
+    {
+      "name": "Actual Settings panels, permissions, draft/save/closure, retention, staff hours and profile browser tests",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/regression-final.log"
+    },
+    {
+      "name": "Scoped ESLint: zero errors, one inherited hook warning",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/lint.log"
+    },
+    {
+      "name": "Unmodified live source retained",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/baseline-source-manifest.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "20eee3b2-2c03-42d8-b757-9d6d2cc03743",
+  "recordedAt": "2026-11-02T15:50:29.489Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-combined-release-20261102",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/payroll/payroll-mobile.module.css": "abfefca48f997659b392e44e318f9c47d6ae1981b0e9dc5de0ac8db018b99aad",
+    "app/staff/today/today-layout.module.css": "f9fa959959cbd52a8dddb7e7aa0df9068407a1ec5b47f92b110b6006d9606b0f",
+    "app/staff/today/owner-attention.module.css": "5f5f62bda9f6d09a79cfc416a58ef4a83f513fb2b836cdee17808f0d00ad87fe"
+  }
+}
