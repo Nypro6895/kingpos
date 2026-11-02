@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "files": [
+    "app/local-app/app.css",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/AppViewportTests.swift"
+  ],
+  "changeId": "ios84-local-scroll-containment-20261102",
+  "status": "working",
+  "source": {
+    "commit": "822312fe7f2019152465422c5feb6cee8a653456"
+  },
+  "summary": "Expand containment audit to all iOS route templates and installed page scroll roots; queue only for combined release",
+  "channels": [
+    "ios"
+  ],
+  "validation": [],
+  "id": "14ffec68-2206-487e-a441-fc233c1de726",
+  "recordedAt": "2026-11-02T14:59:42.731Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios84-horizontal-containment-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

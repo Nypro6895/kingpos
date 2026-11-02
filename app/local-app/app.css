@@ -1,4 +1,11 @@
 @font-face{font-family:Geist;src:url('/fonts/Geist.woff2') format('woff2');font-display:swap;font-weight:100 900}
+/* Page roots only scroll vertically. Wide tables/period rails own their
+   horizontal scrolling; they must not make the entire retained page draggable. */
+.app-local-body,.app-local-page{min-width:0;max-width:100%}
+.app-local-page{overflow-x:hidden!important;overflow-y:auto;overscroll-behavior-x:none}
+/* Installed iPad landscape can exceed the website's mobile breakpoint. */
+#app,#app *{scrollbar-width:none}
+#app::-webkit-scrollbar,#app *::-webkit-scrollbar{display:none;width:0;height:0}
 @font-face{font-family:Manrope;src:url('/fonts/Manrope.woff2') format('woff2');font-display:swap;font-weight:200 800}
 :root{--font-geist-sans:Geist;--font-booking-sans:Manrope}
 html,body,#app{height:100%;margin:0}body{font-family:Geist,system-ui,sans-serif;background:#fff;color:#241b1f}button,a,input{touch-action:manipulation}button:active,a:active{opacity:.65}button[disabled]{opacity:.5}.app-local-boot{display:flex;min-height:70vh;flex-direction:column;align-items:center;justify-content:center;gap:20px}.app-local-lumi{position:relative;width:112px;height:112px;color:#1d807c}.app-local-lumi svg{display:block;width:100%;height:100%}.app-local-lumi img{position:absolute;left:50%;top:50%;width:46%;height:46%;transform:translate(-50%,-50%);object-fit:contain}.app-local-comet{transform-origin:56px 56px;animation:app-local-orbit 1.7s linear infinite}@keyframes app-local-orbit{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.app-local-comet{animation:none}}
