@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "settings-child-design-correction-20261102",
+  "status": "working",
+  "summary": "Correct acknowledged mismatch between approved compact row design and legacy Settings child forms, starting with the actual Public team editor; prepare actual-component review evidence before publication",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/salon-settings/public-team-settings-editor.tsx",
+    "app/salon-settings/public-team-settings-editor.css"
+  ],
+  "source": {
+    "commit": "a7cc17e"
+  },
+  "validation": [
+    {
+      "name": "Approved preview comparison, actual child-component phone screenshots and behavior verification",
+      "result": "pending"
+    }
+  ],
+  "limitations": [
+    "The prior release was technically published but did not complete the approved child-page design; do not call all child pages visually accepted",
+    "Implementation/review candidate; no publication performed"
+  ],
+  "id": "cd051423-6e29-413d-8a4f-7eae0147ae54",
+  "recordedAt": "2026-11-02T17:19:35.615Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-design-correction-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

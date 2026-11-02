@@ -1,0 +1,21 @@
+{
+  "viewports": [
+    320,
+    375,
+    430,
+    768
+  ],
+  "passed": true,
+  "scope": "Actual component; synthetic data and action responses; not authenticated browser/iOS/device acceptance",
+  "checks": [
+    "compact rows/no overflow",
+    "bulk/order collapsed by default",
+    "direct switch with no implicit save",
+    "cancel restores values",
+    "pending locks editing",
+    "server/transport errors retain draft",
+    "successful retry uses unchanged canonical payload",
+    "inactive/bulk semantics",
+    "read-only cannot write"
+  ]
+}

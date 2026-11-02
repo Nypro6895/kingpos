@@ -173,8 +173,8 @@ function PublicTeamSettingsSection({
   return (
     <section className="scroll-mt-6" id="public-team">
       <SectionHeader
-        description="Choose who appears publicly, who accepts online booking, and who can post to the salon profile."
-        status={`${members.length} staff`}
+        description=""
+
         title="Public team"
       />
 

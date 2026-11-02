@@ -1,0 +1,10 @@
+✔ installed Salon Settings retains every web form field, permission and compact page (2.8198ms)
+✔ real compact Public team: small phone layout, staged changes, bulk semantics, failed saves/retry, pending and read-only (3246.6145ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3485.2277
