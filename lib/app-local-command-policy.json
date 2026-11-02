@@ -499,6 +499,9 @@
     ],
     "app/qr/actions.ts": [
       "loadPersonalQr"
+    ],
+    "app/settings/staff-hours-booking-actions.ts": [
+      "saveStaffHoursBooking"
     ]
   }
 }
