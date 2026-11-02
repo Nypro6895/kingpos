@@ -1,0 +1,14 @@
+{
+  "file": "supabase/migrations/20261101223000_attention_display_context.sql",
+  "sha256": "6b78d5384b7d0760688337d3f1c5c66506bc01dbdac54a646ae394323c0604ce",
+  "normalizedLength": 10660,
+  "normalizedFNV": 3220741401,
+  "project": "bowkoiprvqwjilwaxhda",
+  "applied": true,
+  "readback": {
+    "column": true,
+    "trigger": true,
+    "function": true
+  },
+  "method": "Existing authorized Supabase SQL Editor session; no rows backfilled"
+}

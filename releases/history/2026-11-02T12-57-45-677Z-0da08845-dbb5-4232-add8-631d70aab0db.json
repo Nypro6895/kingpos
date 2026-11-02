@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Publish daily accounting Reports Overview with frozen Attention and Today/Ticket queue",
+  "changes": [
+    "9e04bebb-a168-4583-9fd1-bf993b181a79",
+    "2b4db860-f1b1-4e1d-82a6-87f83f508d5e",
+    "4966244e-a5bc-4fd1-b618-2b6e4189ff64",
+    "efef38f1-7a42-4d8c-88e4-6db6dd429771"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "at": "2026-11-02T12:53:15.296Z",
+      "format": "Vercel direct source content hashes",
+      "mode": "live",
+      "deploymentId": "dpl_HqmigxW39vxi2SRAoYM1y4KjzB6G",
+      "url": "kingpos-omed924ep-kingpos.vercel.app",
+      "aliasDeploymentId": "dpl_HqmigxW39vxi2SRAoYM1y4KjzB6G",
+      "commit": "a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26",
+      "files": 3776,
+      "sourceSha256": "b328ae7c27fbe2f9dc963aad1e0696fab6c18055d33c47a93e77364476e5b690",
+      "overlaySha256": "5a10f04f886b97f49c595599cef8c0a1ffd3416c2ebb7e21a7be3376f44b0d19",
+      "baselineDeploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG",
+      "evidence": "releases/evidence/reports-overview-20261102",
+      "rollback": {
+        "deploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG",
+        "guard": "Only rollback if alias still points to this release"
+      }
+    }
+  },
+  "remaining": "Native channel continues separately; independent held queue decisions preserved.",
+  "id": "0da08845-dbb5-4232-add8-631d70aab0db",
+  "recordedAt": "2026-11-02T12:57:45.677Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102"
+}

@@ -1,0 +1,11 @@
+{
+  "verified": true,
+  "environment": "authenticated Chrome production responsive viewport",
+  "date": "2026-11-01",
+  "width": 390,
+  "documentWidth": 390,
+  "bodyWidth": 390,
+  "overflow": false,
+  "datePickerKeyboardNavigation": true,
+  "physicalIPhone": false
+}

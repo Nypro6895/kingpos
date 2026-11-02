@@ -1,0 +1,69 @@
+{
+  "verified": true,
+  "commit": "a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26",
+  "sourceSha256": "ea397a9bb83367eb5c565bc48e9852abe2d4a3fe8293ff43e5e313ca3a9b63b0",
+  "sourceFiles": 3054,
+  "bundleBuildId": "f4fc425aa80f5279b371ce6424564e75144c0cca9df089a5dc075a0c5a71e940",
+  "bundleSha256": "0e4084671981a26e1f80e7bbb412e6fa997cf450590c8269ce398ff218c58ac8",
+  "servicesCatalogPilot": false,
+  "testCount": 244,
+  "exactTestInventory": true,
+  "version": "1.0.0",
+  "build": "84",
+  "upload": "accepted",
+  "processingState": "VALID",
+  "internalBuildState": "READY_FOR_BETA_TESTING",
+  "unsignedSignedResourcesMatch": true,
+  "measurements": [
+    {
+      "coldReadyMs": 1072.2102083333311,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 3,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 100,
+      "warmReadyMs": 63.420875000019805
+    },
+    {
+      "coldReadyMs": 1794.7102916666609,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 1,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 700,
+      "warmReadyMs": 31.836333333330913
+    }
+  ],
+  "measurementScope": "Installed WKWebView on CI iPhone simulator; synthetic data; not physical network timing",
+  "evidenceFolder": "artifacts/release/native-final"
+}

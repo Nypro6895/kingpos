@@ -1,0 +1,11 @@
+{
+  "baseline": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+  "files": [
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json",
+    "ios/scripts/check-build.sh"
+  ]
+}

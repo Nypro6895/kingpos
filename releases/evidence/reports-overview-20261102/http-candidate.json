@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-02T12:52:59.771Z",
+  "access": "Official authenticated Vercel CLI for protected deployment; no application session or security setting change",
+  "records": [
+    {
+      "route": "/explore",
+      "status": 200,
+      "bytes": 223363
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "bytes": 63704
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "bytes": 214799
+    },
+    {
+      "route": "/staff/today",
+      "status": 200,
+      "bytes": 92578
+    },
+    {
+      "route": "/pos-tickets",
+      "status": 200,
+      "bytes": 79186
+    },
+    {
+      "route": "/payroll",
+      "status": 200,
+      "bytes": 80762
+    },
+    {
+      "route": "/reports",
+      "status": 200,
+      "bytes": 79497
+    },
+    {
+      "route": "/api/experience/today",
+      "status": 401,
+      "bytes": 24
+    },
+    {
+      "route": "/api/pos/owner/reports",
+      "status": 401,
+      "bytes": 0
+    },
+    {
+      "route": "/api/reports/day-profit?date=2026-11-01",
+      "status": 403,
+      "bytes": 0
+    }
+  ]
+}

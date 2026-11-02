@@ -1,0 +1,23 @@
+{
+  "verified": true,
+  "at": "2026-11-02T12:59:15.231Z",
+  "submittedTicketList": {
+    "date": "2026-11-01",
+    "status": "closed",
+    "visibleTickets": 4
+  },
+  "today": {
+    "visualDashboardPreserved": true,
+    "staffWorkingHref": "/pos/check-in",
+    "reportHref": "/reports?date=2026-11-02"
+  },
+  "emptyDay": {
+    "date": "2026-11-02",
+    "expected": 0,
+    "collected": 0,
+    "balance": "Balanced",
+    "checkins": 0,
+    "submittedTickets": 0,
+    "turns": 0
+  }
+}

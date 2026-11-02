@@ -1,0 +1,13 @@
+{
+  "verified": true,
+  "at": "2026-11-02T13:13:50.510Z",
+  "selectedReadyEvents": [
+    "9e04bebb-a168-4583-9fd1-bf993b181a79",
+    "2b4db860-f1b1-4e1d-82a6-87f83f508d5e",
+    "4966244e-a5bc-4fd1-b618-2b6e4189ff64",
+    "efef38f1-7a42-4d8c-88e4-6db6dd429771",
+    "57e3b7de-01c6-4cdd-ad2e-b537fcfc3d96"
+  ],
+  "selectedRemaining": [],
+  "otherQueueDecisions": "pending-decisions.json"
+}

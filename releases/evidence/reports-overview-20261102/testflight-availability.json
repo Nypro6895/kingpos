@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-11-02T13:12:42.109Z",
+  "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+  "appId": "6821394475",
+  "marketingVersion": "1.0.0",
+  "baselineMarketingVersion": "1.0.0",
+  "build": "84",
+  "buildId": "b6dfc40e-f3de-439b-ad9c-96274f08803b",
+  "baselineBuild": "83",
+  "baselineBuildId": "3d401a58-86c3-4f87-b480-c11963eea229",
+  "processingState": "VALID",
+  "expired": false,
+  "expirationDate": "2027-01-31T05:09:56-08:00",
+  "internalBuildState": "IN_BETA_TESTING",
+  "availableToExistingInternalGroup": true,
+  "groups": [
+    {
+      "id": "afe80011-9371-4a4c-afda-025b624f3275",
+      "name": "Reylumi Internal",
+      "isInternalGroup": true,
+      "hasAccessToAllBuilds": true,
+      "hadBaseline": true,
+      "preexistingAutomaticGroup": true,
+      "hasNewBuild": true,
+      "existingDistributionGroup": true,
+      "associationConfirmed": true
+    },
+    {
+      "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+      "name": "Reylumi support",
+      "isInternalGroup": true,
+      "hasAccessToAllBuilds": true,
+      "hadBaseline": true,
+      "preexistingAutomaticGroup": true,
+      "hasNewBuild": true,
+      "existingDistributionGroup": true,
+      "associationConfirmed": true
+    }
+  ],
+  "status": "available-to-existing-internal-group",
+  "limitations": [
+    "This confirms Apple group access, not installation or automatic update on a particular phone.",
+    "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+    "External TestFlight and App Store publication are separate."
+  ]
+}

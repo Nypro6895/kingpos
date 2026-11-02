@@ -1,0 +1,34 @@
+Reports Overview combined release — 2026-11-02
+
+Web source: a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26
+Live deployment: dpl_HqmigxW39vxi2SRAoYM1y4KjzB6G
+Previous deployment: dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG
+
+Behavior
+- Today keeps its existing visual dashboard. Reports Overview is a daily accounting view.
+- Expected retains canonical Daily POS logic. Collected uses entered Cash + Card + Other.
+- Balance automatically compares those sources: Short, Balanced, Over.
+- Staff retains actual check-in order/time, canonical turn counts and POS input amounts.
+- Customer check-ins use recorded requested services. Exact linked closed tickets show actual services, staff and amount due; POS submitted does not imply observed physical completion.
+- A linked ticket is counted once. No name-based linking or invented attendance.
+- Staff filtering changes the customer list only; salon totals remain unchanged.
+- Ticket links reuse existing detail. Return preserves date and staff scope.
+- Small net income disclosure reads canonical Payroll for the selected date on demand.
+- Refresh uses existing authorized workspace events, resume/reconnect and 60-second fallback polling. Offline or missed events cannot guarantee instantaneous cross-device updates.
+
+Verification
+- 25 report/read/attention regression cases passed; scoped TypeScript and lint passed.
+- Responsive component checks: 320, 390, 430, 768, 1280px; no overflow.
+- Production build and exact 3,776-file deployed-source hash verification passed.
+- Authenticated live owner: staff filter, multi-staff whole ticket, ticket detail/back, Daily Closing, Payroll disclosure, submitted-ticket list and Today-to-Report date checked read-only.
+- Production migration for queued Attention installed and read back; no backfill.
+- No physical iPhone acceptance was performed. Native CI and Apple evidence are recorded separately.
+
+Queue decisions and detailed source/hash evidence: releases/evidence/reports-overview-20261102/
+Independent unselected work remains governed by recorded queue decisions.
+
+Native upload verification
+- CI run 41447623208: all 244 exact tests passed; signed/unsigned source and bundled resources match frozen source.
+- Actual archive: 1.0.0 (84), upload accepted, Apple VALID / READY_FOR_BETA_TESTING.
+- Existing internal group availability is verified separately in the final native release receipt.
+Final Apple readback: build 84 IN_BETA_TESTING; available in both existing internal groups. No testers, groups or invitations were changed.

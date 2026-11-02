@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Verified combined Reports/Attention/Today bundle and iOS startup barrier in existing internal TestFlight group",
+  "changes": [
+    "9e04bebb-a168-4583-9fd1-bf993b181a79",
+    "2b4db860-f1b1-4e1d-82a6-87f83f508d5e",
+    "efef38f1-7a42-4d8c-88e4-6db6dd429771",
+    "57e3b7de-01c6-4cdd-ad2e-b537fcfc3d96"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "84",
+      "commit": "a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26",
+      "sourceSha256": "ea397a9bb83367eb5c565bc48e9852abe2d4a3fe8293ff43e5e313ca3a9b63b0",
+      "bundleSha256": "0e4084671981a26e1f80e7bbb412e6fa997cf450590c8269ce398ff218c58ac8",
+      "baseline": {
+        "version": "1.0.0",
+        "build": "83",
+        "commit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+        "run": 41347053508
+      },
+      "workflowRun": 41447623208,
+      "evidence": "releases/evidence/reports-overview-20261102",
+      "limitations": [
+        "CI simulator verification; no physical iPhone acceptance",
+        "Internal TestFlight available; App Store publication not performed"
+      ]
+    }
+  },
+  "id": "c7fe922b-0837-4d38-bd72-cd9dca82f0ff",
+  "recordedAt": "2026-11-02T13:13:12.996Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102"
+}

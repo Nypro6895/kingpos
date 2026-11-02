@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-02T12:57:45.498Z",
+  "environment": "authenticated production owner browser",
+  "route": "/reports?date=2026-11-01",
+  "checks": {
+    "expected": 141,
+    "collected": 111,
+    "balance": "Short 30",
+    "staffTotalsPreservedOnFilter": true,
+    "multiStaffTicketPreserved": true,
+    "ticketDetailOpens": true,
+    "backPreservesDateAndStaff": true,
+    "dailyClosingCash": 25,
+    "dailyClosingCard": 86,
+    "dailyClosingOther": 0,
+    "canonicalPayrollDayProfit": 23.4
+  },
+  "readOnly": true,
+  "limitations": [
+    "No production ticket/payment was created during verification",
+    "No physical iPhone acceptance in this release"
+  ]
+}
