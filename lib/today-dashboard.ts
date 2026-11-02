@@ -1275,7 +1275,7 @@ function buildStaffMetric(input: {
         : input.isCurrentDate
           ? "No staff checked in right now"
           : "No staff check-ins recorded",
-    href: "/staff",
+    href: "/pos/check-in",
     label: input.isCurrentDate ? "Staff Working" : "Staff Worked",
     tone: !input.isCurrentDate
       ? "default"

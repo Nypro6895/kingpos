@@ -1,0 +1,87 @@
+{
+  "kind": "change",
+  "changeId": "reports-accounting-overview-20261102",
+  "status": "ready",
+  "summary": "Approved daily accounting Overview with POS-submit visit linkage, Staff/Turn/POS totals, daily collected balance and existing Ticket navigation. Today design and financial formulas preserved.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/api/pos/owner/reports/route.ts",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos/owner-local-panels.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "components/app-local-ticket-detail.tsx",
+    "lib/app-local-daily-registry.tsx",
+    "lib/owner-reports-read.ts",
+    "lib/pos-workspace-sync.ts",
+    "lib/today-dashboard.ts",
+    "types/daily-report-overview.ts",
+    "lib/daily-report-overview.ts",
+    "lib/daily-report-overview-model.ts",
+    "app/reports/daily-accounting-overview.tsx",
+    "app/reports/daily-accounting-overview.module.css",
+    "app/api/reports/day-profit/route.ts",
+    "tests/daily-report-overview.test.mjs",
+    "tsconfig.attention.json",
+    "tests/owner-reports-read.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\reports-overview-20261102\\artifacts\\release\\frozen",
+    "baselineDeploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG"
+  },
+  "validation": [
+    {
+      "name": "Daily overview and owner-report access regressions",
+      "result": "passed",
+      "evidence": "25 tests; artifacts/release/regression.txt"
+    },
+    {
+      "name": "Responsive actual component fixture",
+      "result": "passed",
+      "evidence": "320/390/430/768/1280; staff filter, Ticket link and Daily Report link; artifacts/release/report-browser-results.json"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck.txt"
+    },
+    {
+      "name": "Installed Safari16 bundle compilation",
+      "result": "passed",
+      "evidence": "artifacts/release/bundle-check.txt"
+    }
+  ],
+  "id": "9e04bebb-a168-4583-9fd1-bf993b181a79",
+  "recordedAt": "2026-11-02T12:47:09.474Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/pos-tickets/[ticketId]/page.tsx": "029e6b98562c323a346455649b2a6d7770ce40288b17454fa761f3e4201f10fa",
+    "app/api/pos/owner/reports/route.ts": "75db5e74bfc5a2e5b72953ff941eb78d74d8901909d0015f03c67495bf974ff3",
+    "app/pos-tickets/owner-live-tickets.tsx": "5701c047adfdbe80822dfb6f760d9aeca17bbb1e409dfcbc4e7098936f0ab3db",
+    "app/pos-tickets/ticket-filters.module.css": "d7d60078c19311252f9650ca0cdbf929a635f6cf0b97c130ec07de3e0ae27310",
+    "app/pos-tickets/ticket-filters.tsx": "3670e7f4bf0c420447305bfe41d9b43753dcd5c180418627d197a3b064ab1aad",
+    "app/pos/owner-local-panels.tsx": "0f50f99cfe608e0078644f48e06dc130de57da778ce02a686a83d560577d6a10",
+    "app/reports/owner-live-reports.tsx": "2f44e5958a07b0d80ac7327349c135a984bef9baf27aa0d6e123be6a1bd6dbb7",
+    "components/app-local-ticket-detail.tsx": "87b62d84520d26f584d555bd5943336cfb5ce319777beab55c61df421affa6d5",
+    "lib/app-local-daily-registry.tsx": "b97821fc42668ce4f8199da60bd0975d8fec354612f915f041a4dbbb57a81d70",
+    "lib/owner-reports-read.ts": "7c5e8dc79ba7a8f31aee1f02464cd87e1931d80ae7158ca7727482e1d8e63783",
+    "lib/pos-workspace-sync.ts": "be82440bad3250f4bdae9be4dcd6750473b09d8298a9f59af265f86c608238a1",
+    "lib/today-dashboard.ts": "55c6e9b48425e38f98c1ae6470d205d2f83bdb93fc9f2ede3b0d5dc4c432c20a",
+    "types/daily-report-overview.ts": "7474371ab02df0282fe1766cd24e82af151c69dad85b0b68bd55a861d3d61123",
+    "lib/daily-report-overview.ts": "342d647896caf8a00221c46a3b4da201d611c5f2bb65b2c1d38fce7f2f5692ba",
+    "lib/daily-report-overview-model.ts": "74697f5845b8dd826e307fa438aa3f33ec25405ed3bb05c9d41aeeee15580cda",
+    "app/reports/daily-accounting-overview.tsx": "54bb424fccfb5edbc93e924cd13cd8817f30cb476992f4580d42f1bea353e36b",
+    "app/reports/daily-accounting-overview.module.css": "40e6d101a91768a673e26d7726209e31a34b70f7dd2f02f79389ff2587354945",
+    "app/api/reports/day-profit/route.ts": "267fdc1ddaa246a5b36c131c9966082679dcb8bf33aa79d34d2f422c6947b306",
+    "tests/daily-report-overview.test.mjs": "35bbe40efcba655f14f9f02711093c4be25cf1c5cd9ef4d5b20d4c276ed360ef",
+    "tsconfig.attention.json": "da69c69dfeaa3d8e9e193f6e8580df9944c478974d9efe8eedb876a94d5309da",
+    "tests/owner-reports-read.test.mjs": "7e186e874ca6fa9ce6b04bf5784b9e57d2c80289d47ce9e184629bfc3d1c69f8"
+  }
+}

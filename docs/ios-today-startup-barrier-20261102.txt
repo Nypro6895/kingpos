@@ -1,0 +1,31 @@
+TODAY COLD-START CONTEXT BARRIER RECOVERY
+Task: ios-today-startup-barrier-20261101
+Baseline: uploaded TestFlight 1.0.0 (83), a284c46594a8cf0b34aacf49cb4aa22cf0f34022
+
+Evidence and limits
+- Owner reports latest app opens Today with "Please reconnect to update this page".
+- No device diagnostic export is available. The exact device failure is unconfirmed.
+- Reproduced the identical native503 in two deterministic Simulator scenarios:
+  (1) cached launch's context GET already failed before the data read;
+  (2) the data read is waiting when that context GET fails transiently.
+- Baseline transport fails both recovery tests. Manual page refresh previously
+  repeated only the data GET and could leave the missing context barrier unrepaired.
+
+Repair
+- Recover the missing online barrier through one fresh context GET for the exact
+  currently displayed, valid private lease. Join the existing context first.
+- Only known transient pending-context failures permit one replacement GET.
+- Preserve existing scope/generation, read-permit and final context-scope checks.
+- Do not replace a newer online selection or revive expired/withdrawn authority.
+- Never replay a command or the successful resource request.
+- Preserve401/403/409; malformed502 and cancellation do not trigger recovery.
+- Persistent service failure remains a visible failure; no unbounded retry loop.
+
+Release handoff
+- Implementation only. No website deployment, native upload or publication.
+- Swift changed: include this exact frozen patch in a new native build. A web-only
+  deployment cannot update the installed transport.
+- Preserve latest uploaded native changes if the native baseline advances.
+- Before publication, rebuild/archive/sign, verify source and bundle provenance,
+  and test cold launch/resume on physical iPhone with transient networking.
+- See releases/evidence/ios-today-startup-barrier-20261102 for validation evidence.

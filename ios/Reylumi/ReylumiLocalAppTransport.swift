@@ -921,23 +921,60 @@ final class ReylumiLocalAppTransport {
         }
         }
     }
+    private func coldReadContextPath(scope: String) -> String? {
+        // A failed cold confirmation can leave a valid displayed lease but no
+        // online barrier or in-flight context. Recover only that exact lease;
+        // a newer online selection or a withdrawn/expired lease must not be
+        // replaced merely because an older resource finished successfully.
+        guard onlineContext == nil, let session, session.scope == scope,
+              session.valid(generation: generation), session.permitsPrivateReads,
+              let path = session.object["contextPath"] as? String
+                ?? (session.object["grant"] as? [String: Any])?["path"] as? String,
+              path.hasPrefix("/"), !path.hasPrefix("//"), session.compatible(path: path) else { return nil }
+        return path
+    }
+    private func transientContextFailure(_ error: Error) -> Bool {
+        let error = error as NSError
+        if error.domain == NSURLErrorDomain {
+            return [-1001, -1003, -1004, -1005, -1006, -1009].contains(error.code)
+        }
+        // 502 also represents malformed envelopes, so it is never retried.
+        return error.domain == "ReylumiLocalApp" && [408, 500, 503, 504].contains(error.code)
+    }
     private func awaitReadContext(scope: String, epoch: Int) async throws {
+        try ensureCurrent(epoch)
         if scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) { return }
         let began = ProcessInfo.processInfo.systemUptime
         diagnostics.record(.contextBarrierStart, category: .read, outcome: .started)
         // A cold cached lease is delivered before its background authorization
         // GET completes. The data GET can finish first; keep the original fresh
         // context barrier rather than treating that ordinary ordering as a 409.
-        if let pending = freshContextTask {
-            do { _ = try await pending.value }
-            catch {
-                diagnostics.record(.contextBarrierEnd, category: .read, outcome: .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
-                let denied = error as NSError
-                if denied.domain == "ReylumiLocalApp", [401, 403, 409].contains(denied.code) { throw error }
-                try ensureCurrent(epoch)
-                if error is CancellationError { throw error }
-                throw failure(503, "Please reconnect to update this page.")
+        do {
+            if let pending = freshContextTask {
+                do { _ = try await pending.value }
+                catch {
+                    guard transientContextFailure(error) else { throw error }
+                    try ensureCurrent(epoch)
+                    // One fresh context GET may repair a transient cold-start
+                    // failure. Never replay the data request or any command,
+                    // cancel a newer flight, or retry an explicit denial.
+                    guard freshContextTask == nil,
+                          let path = coldReadContextPath(scope: scope) else { throw error }
+                    _ = try await freshContext(path: path)
+                }
+            } else if let path = coldReadContextPath(scope: scope) {
+                // The failed background task may already have completed before
+                // the data GET or the user's Try again. Rebuild its missing
+                // barrier instead of returning the same 503 on every retry.
+                _ = try await freshContext(path: path)
             }
+        } catch {
+            diagnostics.record(.contextBarrierEnd, category: .read, outcome: .failed, status: (error as NSError).code, durationMs: (ProcessInfo.processInfo.systemUptime - began) * 1000)
+            let denied = error as NSError
+            if denied.domain == "ReylumiLocalApp", [401, 403, 409].contains(denied.code) { throw error }
+            try ensureCurrent(epoch)
+            if error is CancellationError { throw error }
+            throw failure(503, "Please reconnect to update this page.")
         }
         try ensureCurrent(epoch)
         guard scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) else {

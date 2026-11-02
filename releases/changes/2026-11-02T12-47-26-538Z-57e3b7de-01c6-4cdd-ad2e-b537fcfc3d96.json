@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "ios-today-startup-barrier-20261101",
+  "status": "ready",
+  "summary": "Integrated authorized queued change with daily Reports on current baseline: Repair cold Today private-read context barrier after transient startup confirmation failure; 61 native Simulator tests passed; new iOS binary required",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/AuthLifecycleTransportTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "docs/ios-today-startup-barrier-20261102.txt",
+    "releases/evidence/ios-today-startup-barrier-20261102/native-validation.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\reports-overview-20261102\\artifacts\\release\\frozen"
+  },
+  "validation": [
+    {
+      "name": "Daily overview and owner-report access regressions",
+      "result": "passed",
+      "evidence": "25 tests; artifacts/release/regression.txt"
+    },
+    {
+      "name": "Responsive actual component fixture",
+      "result": "passed",
+      "evidence": "320/390/430/768/1280; staff filter, Ticket link and Daily Report link; artifacts/release/report-browser-results.json"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck.txt"
+    },
+    {
+      "name": "Installed Safari16 bundle compilation",
+      "result": "passed",
+      "evidence": "artifacts/release/bundle-check.txt"
+    }
+  ],
+  "id": "57e3b7de-01c6-4cdd-ad2e-b537fcfc3d96",
+  "recordedAt": "2026-11-02T12:47:26.538Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "6838276e4554be0488a709506e8bfb756ff7b4c9801a85e0099d7d995946e951",
+    "ios/ReylumiTests/AuthLifecycleTransportTests.swift": "94d5d4a7f9e3e3c6df9de8171f7cfc3102e63c79912c5488ec5f904eb4dc72f0",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "637a844279b03c63b087a89241e1a61e5103915a503982eddc5ed3b63b21c01d",
+    "docs/ios-today-startup-barrier-20261102.txt": "5fd6efc990ee2f896a2af4817663ffdc039dffd79a5e000c9a97ba4856f60912",
+    "releases/evidence/ios-today-startup-barrier-20261102/native-validation.json": "272f33f1e994ac1b59e0a10932039ff624fb4e83fe84f152b4417fc5aaf22375"
+  }
+}

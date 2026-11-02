@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { WorkspaceText as T } from "@/components/workspace-language";
 import type { OwnerAttentionData, OwnerAttentionItem } from "@/types/owner-financial-attention";
 import s from "./owner-attention.module.css";
+import { attentionPresentation, attentionTime } from "@/lib/owner-attention-presentation";
 
 export const attentionHref = (key: string) => `/staff/today/attention?item=${encodeURIComponent(key)}`;
 async function call(salonId: string, args: Record<string, unknown>, signal?: AbortSignal) {
@@ -47,8 +48,8 @@ export function AttentionActions({ salonId, viewerId, item, onSaved, closing = f
   return <><div className={`${s.actions} ${compact ? s.compactActions : ""}`}>
     {!closing && <Link href={attentionHref(item.item_key)}><span><T text="View details" /></span></Link>}
     {closing && item.kind === "closing" && <button className={s.primary} disabled={busy || !canConfirm} onClick={() => void save("review_closing")}><T text="Confirm day reviewed" /></button>}
-    {!item.ignored && <button disabled={busy} onClick={() => void save("ignore")}><span><T text={busy ? "Saving…" : "Ignore"} /></span></button>}
-    {item.ignored && <span className={s.meta}><T text="Ignored · hidden from Attention" /></span>}
+    {!item.ignored && <button disabled={busy} onClick={() => void save("ignore")}><span><T text={busy ? "Saving…" : item.kind === "discount" || item.kind === "ticket_change" ? "Mark reviewed" : "Ignore"} /></span></button>}
+    {item.ignored && <span className={s.meta}><T text={item.kind === "discount" || item.kind === "ticket_change" ? "Reviewed · hidden from Attention" : "Ignored · hidden from Attention"} /></span>}
   </div>{closing && item.kind === "closing" && !canConfirm && <p className={s.detail}><T text="Enter actual collections and finish open receipts in Reports before confirming." /></p>}{error && <p role="alert" className={s.error}>{error}</p>}</>;
 }
 
@@ -81,11 +82,24 @@ export function OwnerAttentionPanel({ salonId }: { salonId: string }) {
   return <section className={s.panel} aria-busy={!data && !error}>
     <div className={s.heading}><h2><T text="Needs Attention" /></h2><span className={s.badge}><T text={error ? "Check unavailable" : data ? `${data.total} to review` : "Checking…"} /></span></div>
     {error && <div role="status"><p className={s.error}>{error}</p><button onClick={() => void load()}><T text="Try again" /></button></div>}
-    {data && data.salonId === salonId && data.items.slice(0, 5).map(item => <article className={`${s.item} ${s.notification}`} key={item.item_key}>
-      <div className={s.message}><h3>{item.label}</h3><p className={s.meta}>{item.business_date} · {new Intl.DateTimeFormat("en-US", { dateStyle: "short", timeStyle: "short", timeZone: data.timezone }).format(new Date(item.occurred_at))}</p>
-      <p className={s.detail}>{item.detail}</p></div><div className={s.notificationActions}><AttentionActions salonId={salonId} viewerId={data.viewerId} item={item} compact /></div>
-    </article>)}
+    {data && data.salonId === salonId && data.items.slice(0, 5).map(item => <AttentionNotification key={item.item_key} data={data} item={item} />)}
     {data && !error && data.total === 0 && <p className={s.detail}><T text="No financial items awaiting review." /></p>}
     {data && data.total > 5 && <div className={s.actions}><Link href="/staff/today/attention"><T text={`View all ${data.total} items`} /></Link></div>}
   </section>;
+}
+
+export function AttentionNotification({ data, item, onSaved }: { data: OwnerAttentionData; item: OwnerAttentionItem; onSaved?: () => void }) {
+  const view = attentionPresentation(item);
+  if (!view.ticket) return <article className={`${s.item} ${s.notification}`}>
+    <div className={s.message}><h3>{item.label}</h3><p className={s.meta}>{attentionTime(item, data.timezone, data.today)}</p><p className={s.detail}>{item.detail}</p></div>
+    <div className={s.notificationActions}><AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={item} onSaved={onSaved} compact /></div>
+  </article>;
+  return <article className={s.item + " " + s.notification}>
+    <Link className={s.alertLink} href={attentionHref(item.item_key)}>
+      <div className={s.row}><h3>{view.title}</h3><span aria-hidden="true">›</span></div>
+      <p className={s.meta}>{attentionTime(item, data.timezone, data.today)}{view.ticket && <> · @{view.customer}</>}</p>
+      <p className={s.primaryChange}>{view.primary}</p>
+      {view.ticket && <><p className={s.detail}>{view.service}</p><p className={s.meta}>{view.edited ? "Edited by" : view.created ? "Created by" : "Discount recorded by"} {view.actor} · {view.source}</p></>}
+    </Link>
+  </article>;
 }

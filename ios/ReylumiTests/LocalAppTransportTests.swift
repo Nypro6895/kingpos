@@ -12,10 +12,12 @@ actor AppLocalCookieBox {
 private actor CachedFirstContextHTTP: ReylumiLocalHTTPClient {
     private var held: (URL, String, CheckedContinuation<(Data, HTTPURLResponse), Error>)?
     private(set) var reads = 0
+    private(set) var contexts = 0
     func isContextHeld() -> Bool { held != nil }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let url = request.url!
         if url.path == "/api/app-local/context" {
+            contexts += 1
             let generation = URLComponents(url: url, resolvingAgainstBaseURL: false)!.queryItems!.first { $0.name == "generation" }!.value!
             return try await withCheckedThrowingContinuation { held = (url, generation, $0) }
         }
@@ -301,8 +303,18 @@ final class LocalAppTransportTests: XCTestCase {
             let read = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: lease.scope) }
             for _ in 0..<200 { if await http.reads == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
             try await http.releaseContext(status: status)
+            if status == 503 {
+                // The cold read now makes one fresh confirmation attempt. Keep
+                // the service unavailable for that attempt as well; private
+                // data must remain blocked while its cached draft survives.
+                for _ in 0..<200 { if await http.isContextHeld() { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+                let held = await http.isContextHeld(); XCTAssertTrue(held)
+                try await http.releaseContext(status: status)
+            }
             do { _ = try await read.value; XCTFail("Unconfirmed or revoked authority cannot deliver a fresh private payload") }
             catch { XCTAssertEqual((error as NSError).code, status) }
+            let contexts = await http.contexts, reads = await http.reads
+            XCTAssertEqual(contexts, status == 503 ? 2 : 1); XCTAssertEqual(reads, 1)
             let saved = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: lease.scope)
             if status == 503 { XCTAssertNotNil(saved); XCTAssertEqual(resets, 0) }
             else { XCTAssertNil(saved); XCTAssertEqual(resets, 1) }

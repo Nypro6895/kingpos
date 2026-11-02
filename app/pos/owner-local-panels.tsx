@@ -12,7 +12,6 @@ import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
 import { WorkspaceText } from "@/components/workspace-language";
 import { LumiLoadingStatus } from "@/components/lumi-loading-status";
-import { WorkLogFilters } from "@/app/pos-tickets/work-log-filters";
 import { ownerLocalHref, ownerLocalReadArgs, ownerLocalReadName, type OwnerLocalPanelData } from "@/lib/owner-local-workspace";
 import { saveOwnerLocalSnapshot, useOwnerLocalWorkspace } from "./owner-local-workspace";
 
@@ -26,7 +25,6 @@ export function OwnerLocalPanelBody({ data, snapshotAt, query, attendanceAction 
   if (data.view === "bookings") return <OwnerLiveBookingWorkspace {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "reports") return <OwnerLiveReports {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "tickets") return <main className="mx-auto w-full max-w-7xl px-4 py-4 text-zinc-950 sm:px-6">
-    {ticketsPath === "/pos-tickets" ? <WorkLogFilters query={data.props.searchQuery} selectedDate={data.props.selectedDate} todayHref={ticketsPath + "?date=" + data.props.today} /> : null}
     {new URLSearchParams(query).get("error") ? <p role="alert" className="text-rose-700">{new URLSearchParams(query).get("error")}</p> : null}
     <OwnerLiveTickets {...data.props} returnTo={ticketsPath + "?" + new URLSearchParams({ date: data.props.selectedDate, ...(data.props.searchQuery ? { q: data.props.searchQuery } : {}) })} managedRead snapshotAt={snapshotAt} />
   </main>;

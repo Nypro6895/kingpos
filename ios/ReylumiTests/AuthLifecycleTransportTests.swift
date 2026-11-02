@@ -98,6 +98,92 @@ private actor LifecycleCookieJar {
 
 final class AuthLifecycleTransportTests: XCTestCase {
     private let origin = URL(string: "https://reylumi.com")!
+    @MainActor
+    private func coldBarrierFixture() async throws -> (ReylumiLocalAppTransport, LifecycleHTTP, URL) {
+        let (bundle, directory) = try AppLocalTestFixture.bundle()
+        let http = LifecycleHTTP(try template())
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: UUID().uuidString)
+        let seed = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] })
+        _ = try await seed.freshContext(path: "/staff/today")
+        let cold = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] })
+        return (cold, http, directory)
+    }
+    @MainActor
+    private func waitForContextFailure(_ transport: ReylumiLocalAppTransport) async throws {
+        for _ in 0..<200 {
+            if transport.diagnostics.snapshot().contains(where: { $0.event == .contextFailure }) { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTFail("The cold background context must finish failing before the page retry")
+        throw URLError(.timedOut)
+    }
+    @MainActor
+    func testColdPageRetryRechecksContextAfterBackgroundConfirmationFailed() async throws {
+        let (transport, http, directory) = try await coldBarrierFixture()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        await http.configureContextStatus(503)
+        let cached = try await transport.context(path: "/")
+        XCTAssertEqual(cached["offline"] as? Bool, true)
+        try await waitForContextFailure(transport)
+        await http.configureContextStatus(200)
+        let data = try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: await http.scope)
+        XCTAssertEqual(data["status"] as? Int, 200)
+        XCTAssertEqual(data["offline"] as? Bool, false)
+        let contexts = await http.contexts, reads = await http.readRequests, commands = await http.commands
+        XCTAssertEqual(contexts, 3, "Seed, failed cold confirmation, one fresh confirmation")
+        XCTAssertEqual(reads, 1, "The successful data read is never replayed")
+        XCTAssertEqual(commands, 0)
+        await transport.reset()
+    }
+    @MainActor
+    func testColdReadRecoversOnceWhenPendingConfirmationFailsTransiently() async throws {
+        let (transport, http, directory) = try await coldBarrierFixture()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        await http.configureHoldNextContext()
+        _ = try await transport.context(path: "/")
+        for _ in 0..<200 { if await http.heldCount() == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let pending = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: await http.scope) }
+        for _ in 0..<200 { if transport.diagnostics.snapshot().contains(where: { $0.event == .contextBarrierStart }) { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        try await http.release("context", status: 503)
+        let data = try await pending.value
+        XCTAssertEqual(data["status"] as? Int, 200)
+        let contexts = await http.contexts, reads = await http.readRequests, commands = await http.commands
+        XCTAssertEqual(contexts, 3); XCTAssertEqual(reads, 1); XCTAssertEqual(commands, 0)
+        await transport.reset()
+    }
+    @MainActor
+    func testColdContextRecoveryStopsOnRepeatedServiceFailure() async throws {
+        let (transport, http, directory) = try await coldBarrierFixture()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        await http.configureContextStatus(503)
+        _ = try await transport.context(path: "/")
+        try await waitForContextFailure(transport)
+        do { _ = try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: await http.scope); XCTFail("Persistent failure cannot admit private data") }
+        catch { XCTAssertEqual((error as NSError).code, 503) }
+        let contexts = await http.contexts, reads = await http.readRequests, commands = await http.commands
+        XCTAssertEqual(contexts, 3); XCTAssertEqual(reads, 1); XCTAssertEqual(commands, 0)
+        await transport.reset()
+    }
+    @MainActor
+    func testColdReadNeverRetriesDeniedOrMalformedPendingContext() async throws {
+        for status in [401, 403, 409, 502] {
+            let (transport, http, directory) = try await coldBarrierFixture()
+            defer { try? FileManager.default.removeItem(at: directory) }
+            await http.configureHoldNextContext()
+            _ = try await transport.context(path: "/")
+            for _ in 0..<200 { if await http.heldCount() == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            let pending = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: await http.scope) }
+            for _ in 0..<200 { if transport.diagnostics.snapshot().contains(where: { $0.event == .contextBarrierStart }) { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            try await http.release("context", status: status)
+            do { _ = try await pending.value; XCTFail("A denied or malformed context cannot admit private data") }
+            catch { XCTAssertEqual((error as NSError).code, status == 502 ? 503 : status) }
+            let contexts = await http.contexts, reads = await http.readRequests, commands = await http.commands
+            XCTAssertEqual(contexts, 2, "No recovery GET for status \(status)")
+            XCTAssertEqual(reads, 1); XCTAssertEqual(commands, 0)
+            await transport.reset()
+        }
+    }
     private func template() throws -> [String: Any] {
         let file = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "AuthLifecycleContextFixture", withExtension: "json"))
         return try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])

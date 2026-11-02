@@ -33,7 +33,7 @@ function TicketCalendar({ date, onSelect, onClose }: { date:string; onSelect:(da
   </dialog>,document.body);
 }
 
-export function TicketFilters({date,query,onQueryChange,title,actions}:{title?:string;actions?:ReactNode;date:string;query:string;onQueryChange:(value:string)=>void}) {
+export function TicketFilters({date,query,onQueryChange,title,actions,filters}:{title?:string;actions?:ReactNode;filters?:ReactNode;date:string;query:string;onQueryChange:(value:string)=>void}) {
   const router=useRouter(), pathname=usePathname(), translate=useWorkspaceTranslation();
   const [open,setOpen]=useState(false);
   const [pending,startTransition]=useTransition();
@@ -52,17 +52,19 @@ export function TicketFilters({date,query,onQueryChange,title,actions}:{title?:s
     });
   };
   return <>
+    <header className={styles.header}>
+      {title?<h1 className={styles.title}>{translate(title)}</h1>:null}
+      <div className={styles.headerDate}>
+      <button ref={trigger} data-ticket-date type="button" className={styles.dateButton} aria-label={`${translate("Date")}: ${dateLabel}`} aria-haspopup="dialog" aria-expanded={open} disabled={pending} onClick={()=>setOpen(true)}>{dateLabel}</button>
+      </div>
+      <div className={styles.headerActions}>{filters}{actions}</div>
+    </header>
     <form className={styles.toolbar} data-ticket-toolbar data-owner-ticket-toolbar={title?"true":undefined} role="search" aria-busy={pending}
       onSubmit={event=>{event.preventDefault();(event.currentTarget.elements.namedItem("q") as HTMLInputElement)?.blur();}}>
-      {title?<h1 className="sr-only">{translate(title)}</h1>:null}
-      <button ref={trigger} data-ticket-date type="button" className={styles.dateButton} aria-label={`${translate("Date")}: ${dateLabel}`} title={dateLabel} aria-haspopup="dialog" aria-expanded={open} disabled={pending} onClick={()=>setOpen(true)}>
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/><text x="12" y="18" textAnchor="middle" fill="currentColor" stroke="none" fontSize="7">{Number(date.slice(8))}</text></svg>
-      </button>
       <div className={styles.search}>
         <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
         <input aria-label={translate("Search customer, staff, service, ticket #")} name="q" type="search" enterKeyHint="search" autoComplete="off" placeholder={translate("Customer, staff, service, ticket #")} value={query} onChange={event=>onQueryChange(event.target.value)}/>
       </div>
-      {actions?<div className={styles.actions}>{actions}</div>:null}
     </form>
     {pending?<p role="status" className={styles.status}>{translate("Loading tickets…")}</p>:null}
     {open?<TicketCalendar date={date} onSelect={select} onClose={close}/>:null}

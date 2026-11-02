@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","compilerOptions":{"incremental":false},"include":["next-env.d.ts","app/staff/today/attention-detail.tsx","app/staff/today/owner-attention-panel.tsx","lib/owner-attention-presentation.ts"],"exclude":["node_modules","artifacts"]}

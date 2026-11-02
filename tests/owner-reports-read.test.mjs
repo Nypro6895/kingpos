@@ -31,6 +31,7 @@ function fixture(options = {}) {
     isDateInputValue: value => /^\d{4}-\d{2}-\d{2}$/.test(value ?? ''),
     normalizeReportDate: async (date, ctx) => { calls.push(['normalize', date, ctx]); return date; },
     getDailyPosReport: (date, ctx) => { calls.push(['closing', date, ctx]); return closing.promise; },
+    getDailyReportOverview: (report, ctx) => { calls.push(['accounting', report, ctx]); return overview.promise; },
     getDefaultReportDate: async ctx => { calls.push(['today', ctx]); return '2026-10-28'; },
     canEditDailyPosClosing: async ctx => { calls.push(['edit', ctx]); return true; },
     DAILY_POS_REPORT_PERMISSIONS: { requestCorrection: 'request-correction' },
@@ -44,23 +45,24 @@ function fixture(options = {}) {
   return { calls, context, overview, closing, read: loadFunction('lib/owner-reports-read.ts', 'loadOwnerReportsRead', deps) };
 }
 
-test('Closing data starts while Overview is pending, with no earlier permission hints or partial DTO', async () => {
+test('Accounting entry skips operational facts and returns no partial DTO', async () => {
   const x = fixture(), params = { preset: 'month' };
   let released = false;
   const reading = x.read(params, x.context).then(value => { released = true; return value; });
   await tick();
-  assert.deepEqual(x.calls.map(call => call[0]), ['prepare', 'overview', 'normalize', 'closing']);
+  assert.deepEqual(x.calls.map(call => call[0]), ['today','normalize','prepare','closing','edit','permission','apply']);
   const report = { lock: { isLocked: false }, financials: { expectedTotal: 290 } };
   x.closing.resolve(report);
   await tick();
   assert.equal(released, false);
-  const reportOverview = { range: { endDate: '2026-10-28' }, totals: { gross: 2060, net: 2045 } };
-  x.overview.resolve(reportOverview);
+  const accountingOverview = { visits: [], staff: [] };
+  x.overview.resolve(accountingOverview);
   assert.deepEqual(await reading, {
-    today: '2026-10-28', report, reportOverview, canEdit: true, canApplyCorrection: false, canRequestCorrection: false,
+    today: '2026-10-28', report, reportOverview:{range:{endDate:'2026-10-28'}},accountingOverview, canEdit: true, canApplyCorrection: false, canRequestCorrection: false,
   });
   assert.equal(x.calls.filter(call => call[0] === 'closing').length, 1);
-  assert.equal(x.calls.filter(call => call[0] === 'overview').length, 1);
+  assert.equal(x.calls.filter(call => call[0] === 'overview').length, 0);
+  assert.equal(x.calls.filter(call => call[0] === 'accounting').length, 1);
   for (const call of x.calls.filter(call => ['prepare', 'normalize', 'closing', 'today', 'edit', 'permission', 'apply'].includes(call[0]))) {
     assert.equal(call.at(-1), x.context);
   }
@@ -81,16 +83,16 @@ for (const [input, expected] of [
 test('Denied preparation never starts either data reader', async () => {
   const x = fixture({ denied: true });
   await assert.rejects(x.read({}, x.context), error => error.status === 403);
-  assert.deepEqual(x.calls.map(call => call[0]), ['prepare']);
+  assert.deepEqual(x.calls.map(call => call[0]), ['today','normalize','prepare']);
 });
 
-for (const failure of ['overview', 'closing']) test(failure + ' failure releases no DTO and safely observes the companion', async () => {
+for (const failure of ['overview', 'closing']) test(failure + ' failure releases no DTO', async () => {
   const x = fixture(), reading = x.read({}, x.context);
   await tick();
   const rejected = assert.rejects(reading, /read failed/);
+  if(failure==='overview'){x.closing.resolve({lock:{isLocked:false}});await tick();}
   x[failure].reject(Error('read failed'));
   await rejected;
-  x[failure === 'overview' ? 'closing' : 'overview'].reject(Error('companion failed'));
   await tick();
 });
 

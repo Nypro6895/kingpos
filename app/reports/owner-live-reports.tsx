@@ -3,7 +3,6 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { CompactFilters } from "@/components/compact-filters";
 import styles from "./reports.module.css";
 import { ReportDetails, ReportIcon } from "./report-ui";
-import { ReportRangeFilter } from "./report-controls";
 import {useState,useEffect,useLayoutEffect,useRef,useCallback,useMemo} from 'react';
 import {useSearchParams,usePathname} from 'next/navigation';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
@@ -14,7 +13,8 @@ import {useExperienceResource} from '@/lib/use-experience-resource';
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
 import {ClosingDateForm,ReportTabs} from './report-controls';
 import {DailyClosingForm} from './daily-closing-form';
-import {OperationalReportDashboard} from './operational-report-dashboard';
+import {DailyAccountingOverview,DailyAccountingDate} from './daily-accounting-overview';
+import type {DailyReportOverview} from '@/types/daily-report-overview';
 import type {OperationalReportData} from '@/lib/operational-report';
 import type {DailyPosReport,DailyPosReportStaffRow} from '@/types/pos-daily-closing';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function getReportHref(date: string, reportOverview?: OperationalReportData, reportPath = "/reports") {
+function getReportHref(date: string, reportOverview?: Pick<OperationalReportData,"range">, reportPath = "/reports") {
   const params = new URLSearchParams({ date });
 
   if (reportOverview) {
@@ -64,7 +64,7 @@ function DateSelector({
   selectedDate,
   today,
 }: {
-  reportOverview: OperationalReportData;
+  reportOverview: Pick<OperationalReportData,"range">;
   selectedDate: string;
   today: string;
 }) {
@@ -156,7 +156,7 @@ function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: Dail
 }
 
 
-type Props={viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
+type Props={viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;accountingOverview?:DailyReportOverview;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:Pick<OperationalReportData,"range">;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
   const __vt = useWorkspaceTranslation();
 
@@ -224,14 +224,10 @@ export function OwnerLiveReports(initial:Props){
       <ReportTabs
         expenses={<ShopMoneyWorkspace salonId={salonId} start={reportOverview.range.startDate.slice(0,7)+"-01"} end={new Date(Date.UTC(Number(reportOverview.range.startDate.slice(0,4)),Number(reportOverview.range.startDate.slice(5,7)),0)).toISOString().slice(0,10)} view="expenses"/>}
         onViewChange={onViewChange}
-        overviewTools={<ReportRangeFilter key={`${reportOverview.range.preset}:${reportOverview.range.startDate}:${reportOverview.range.endDate}`} report={reportOverview} selectedClosingDate={report.reportDate} />}
+        overviewTools={<DailyAccountingDate date={report.reportDate} today={today} timeZone={reportOverview.range.timeZone}/>}
         closingTools={<DateSelector reportOverview={reportOverview} selectedDate={report.reportDate} today={today} />}
         overview={
-          <OperationalReportDashboard
-            report={reportOverview}
-            salonName={salonName}
-            selectedClosingDate={report.reportDate}
-          />
+          data.accountingOverview ? <DailyAccountingOverview overview={data.accountingOverview} report={report} query={initial.query} updatedAt={data.snapshotAt} onClosing={()=>{window.history.replaceState(null,"",`${window.location.pathname}${window.location.search}#daily-closing`);window.dispatchEvent(new HashChangeEvent("hashchange"));}}/> : <p role="status"><WorkspaceText text="Loading report details…"/></p>
         }
       >
         <section>

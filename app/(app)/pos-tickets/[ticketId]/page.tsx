@@ -48,7 +48,7 @@ import Link from "next/link";
 
 type PosTicketDetailPageProps = {
   params: Promise<{ ticketId: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; returnTo?: string }>;
 };
 
 const STATUS_LABELS: Record<PosTicketStatus, string> = {
@@ -501,7 +501,7 @@ async function PosTicketDetailPage({
 }: PosTicketDetailPageProps) {
   const __vt = await getWorkspaceTranslation();
 
-  const [{ ticketId }, { error }, context] = await Promise.all([
+  const [{ ticketId }, { error, returnTo }, context] = await Promise.all([
     params,
     searchParams,
     params.then(({ ticketId: id }) =>
@@ -599,8 +599,8 @@ async function PosTicketDetailPage({
     <main className="min-w-0 w-full px-4 py-6 sm:px-6">
       <div className="border-b border-zinc-200 pb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link className="text-sm font-medium text-zinc-950 underline" href="/pos-tickets">
-          <WorkspaceText text="Back to POS Tickets" />
+          <Link className="text-sm font-medium text-zinc-950 underline" href={returnTo && /^\/(reports|pos\/report)\?(?!.*[\\\r\n]).*$/.test(returnTo) ? returnTo : "/pos-tickets"}>
+          <WorkspaceText text={returnTo && /^\/(reports|pos\/report)\?/.test(returnTo) ? "Back to Reports" : "Back to POS Tickets"} />
           </Link>
           <div className="flex items-center gap-3"><StatusBadge status={ticket.status} /><ContextualSupport /></div>
         </div>

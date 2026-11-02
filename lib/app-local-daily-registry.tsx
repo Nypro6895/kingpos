@@ -22,7 +22,7 @@ function TicketPage(props: AppLocalPageProps) {
   const ownerScope = `owner:${props.context?.context.salonId}:${props.context?.context.viewerId}`;
   return <>
     {url.pathname.startsWith("/pos/ticket/") && owner ? <OwnerPosNavigation active="ticket" syncScope={ownerScope} /> : null}
-    <ReadView<AppLocalTicketDetailData> {...props} title="POS Ticket" name="owner.ticket-detail" args={{ ticketId }}>{data => <AppLocalTicketDetail key={`${props.context?.context.scope}:${ticketId}`} data={data} error={url.searchParams.get("error") ?? undefined} />}</ReadView>
+    <ReadView<AppLocalTicketDetailData> {...props} title="POS Ticket" name="owner.ticket-detail" args={{ ticketId }}>{data => <AppLocalTicketDetail key={`${props.context?.context.scope}:${ticketId}`} data={data} error={url.searchParams.get("error") ?? undefined} returnTo={url.searchParams.get("returnTo") ?? undefined} />}</ReadView>
   </>;
 }
 function TaxPage(props: AppLocalPageProps) {

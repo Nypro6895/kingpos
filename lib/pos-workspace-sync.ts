@@ -8,9 +8,9 @@ export type PosResource = "staff" | "tickets" | "booking" | "report" | "waiting"
 export type PosChange = { resource: PosResource; ids?: string[]; reason?: "poll" | "resume" | "reconnect" | "foreground" };
 const all: PosResource[] = ["staff", "tickets", "booking", "report", "waiting", "settings", "catalog"];
 const sourceResources: Record<string, PosResource[]> = {
-  attendance: ["staff"], staff: ["staff"], turn_adjust: ["staff", "report"],
+  attendance: ["staff", "report"], staff: ["staff", "report"], turn_adjust: ["staff", "report"],
   pos: ["staff", "tickets", "report", "waiting", "booking"], booking: ["booking", "waiting"],
-  waiting: ["waiting"], catalog:["catalog"], settings: ["settings"], report: ["report"],
+  waiting: ["waiting", "report"], catalog:["catalog"], settings: ["settings"], report: ["report"],
 };
 type Listener = (change: PosChange) => void;
 type RefreshState = { salonId: string; resource: PosResource; at: number; retryAfter: number; inFlight?: Promise<void>; pending: boolean; full: boolean; authoritative: boolean; ids: Set<string> };
@@ -40,6 +40,7 @@ export function subscribePosChanges(salonId: string, listener: Listener) {
       if (all.includes(payload.resource as PosResource)) {
         const ids = Array.isArray(payload.ids) ? payload.ids.filter((v): v is string => typeof v === "string" && /^[a-f0-9-]{36}$/i.test(v)).slice(0, 100) : undefined;
         emit({ resource: payload.resource as PosResource, ids });
+        if(payload.resource === "staff" || payload.resource === "waiting") emit({resource:"report"});
         if(payload.resource === "tickets") {
           // Ticket IDs are not staff IDs. Reconcile dependent resource snapshots.
           for(const resource of ["staff","report","waiting","booking"] as const) emit({resource});
