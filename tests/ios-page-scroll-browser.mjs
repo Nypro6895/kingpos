@@ -18,7 +18,7 @@ try {
   for (const [width, height] of [[320, 667], [390, 844], [430, 932], [844, 390], [768, 1024], [1024, 768]]) {
     const page = await browser.newPage({ viewport: { width, height } });
     // Both fresh and retained (hidden/revealed) pages use this same root.
-    await page.setContent(`<style>html,body{margin:0;overflow-x:clip}.app-local-body{height:300px}.app-local-page{box-sizing:border-box}.wide{width:2400px;height:50px}.rail{width:100%;overflow-x:auto;overscroll-behavior-x:contain}.tail{height:2400px}${css}</style><div class="app-local-body"><div class="app-local-page"><div class="wide">Overflowing page content</div><div class="rail"><div class="wide">Payroll periods / wide table</div></div><div class="tail">Vertical page content</div></div></div>`);
+    await page.setContent(`<style>html,body{margin:0;overflow-x:clip}.app-local-body{height:300px}.app-local-page{box-sizing:border-box}.wide{width:2400px;height:50px}.rail{width:100%;overflow-x:auto;overscroll-behavior-x:contain}.tail{height:2400px}${css}</style><div id="app"><div class="app-local-body"><div class="app-local-page"><div class="wide">Overflowing page content</div><div class="rail"><div class="wide">Payroll periods / wide table</div></div><div class="tail">Vertical page content</div></div></div></div>`);
     const root = page.locator('.app-local-page');
     const rail = page.locator('.rail');
     await page.mouse.move(120, 25);
@@ -26,6 +26,7 @@ try {
     await page.waitForTimeout(120);
     let state = await root.evaluate(el => ({ x: el.scrollLeft, y: el.scrollTop, mode: getComputedStyle(el).overflowX }));
     assert.equal(state.mode, 'hidden');
+    assert.equal(await root.evaluate(el => getComputedStyle(el).scrollbarWidth), 'none');
     assert.equal(state.x, 0, 'Horizontal input must not move the whole retained page');
     await page.mouse.move(120, 75);
     await page.mouse.wheel(450, 0);
@@ -45,7 +46,7 @@ try {
     // exactly the same DOM and input. This detects a non-effective fixture.
     // A fresh document prevents Chromium wheel-gesture latching to the earlier
     // vertical/hidden-page gesture from hiding a failing negative control.
-    await page.setContent(`<style>html,body{margin:0;overflow-x:clip}.app-local-body{height:300px}.wide{width:2400px;height:50px}${css}.app-local-page{overflow-x:auto!important}</style><div class="app-local-body"><div class="app-local-page"><div class="wide">Previous page behavior</div></div></div>`);
+    await page.setContent(`<style>html,body{margin:0;overflow-x:clip}.app-local-body{height:300px}.wide{width:2400px;height:50px}${css}.app-local-page{overflow-x:auto!important}</style><div id="app"><div class="app-local-body"><div class="app-local-page"><div class="wide">Previous page behavior</div></div></div></div>`);
     await page.mouse.move(100, 25);
     await page.mouse.wheel(450, 0);
     await page.waitForTimeout(120);
