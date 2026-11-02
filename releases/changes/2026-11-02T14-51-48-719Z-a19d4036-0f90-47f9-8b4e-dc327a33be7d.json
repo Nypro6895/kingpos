@@ -1,0 +1,22 @@
+{
+  "status": "working",
+  "source": {
+    "commit": "a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26"
+  },
+  "kind": "change",
+  "changeId": "ios84-local-scroll-containment-20261102",
+  "summary": "Apply root scroll containment to installed local WKWebView missed by previous hosted-only patch",
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift"
+  ],
+  "channels": [
+    "ios"
+  ],
+  "validation": [],
+  "id": "a19d4036-0f90-47f9-8b4e-dc327a33be7d",
+  "recordedAt": "2026-11-02T14:51:48.719Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios84-horizontal-containment-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
