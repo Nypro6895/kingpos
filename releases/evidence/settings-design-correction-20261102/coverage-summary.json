@@ -1,0 +1,96 @@
+{
+  "sourceCommit": "d6b080b2b21a5ddcc9bf65403749acd6ddc14672",
+  "viewports": [
+    320,
+    375,
+    430,
+    768
+  ],
+  "states": 364,
+  "groups": [
+    {
+      "label": "Salon Settings",
+      "screens": 18
+    },
+    {
+      "label": "Staff working hours",
+      "screens": 3
+    },
+    {
+      "label": "Salon information",
+      "screens": 6
+    },
+    {
+      "label": "Public profile",
+      "screens": 8
+    },
+    {
+      "label": "Booking",
+      "screens": 5
+    },
+    {
+      "label": "Staff & team",
+      "screens": 7
+    },
+    {
+      "label": "Payroll",
+      "screens": 3
+    },
+    {
+      "label": "POS & display",
+      "screens": 6
+    },
+    {
+      "label": "Ownership",
+      "screens": 5
+    },
+    {
+      "label": "Salon status",
+      "screens": 3
+    },
+    {
+      "label": "Website appearance",
+      "screens": 3
+    },
+    {
+      "label": "Login & security",
+      "screens": 9
+    },
+    {
+      "label": "Notifications",
+      "screens": 1
+    },
+    {
+      "label": "Connections",
+      "screens": 2
+    },
+    {
+      "label": "Blocked users",
+      "screens": 1
+    },
+    {
+      "label": "Create salon",
+      "screens": 1
+    },
+    {
+      "label": "Personal profile",
+      "screens": 1
+    },
+    {
+      "label": "Personal public profile",
+      "screens": 1
+    },
+    {
+      "label": "Delete account",
+      "screens": 4
+    },
+    {
+      "label": "Shortcuts",
+      "screens": 1
+    },
+    {
+      "label": "Services & prices",
+      "screens": 3
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "d6b080b2b21a5ddcc9bf65403749acd6ddc14672",
+  "sourceSha256": "ccf8f5e8e12d476d39597e3879a8e95db548a1d57ba8b4439d1f4c42a3e34f89",
+  "sourceFiles": 3073,
+  "bundleBuildId": "a66a422c38ab92de3bd2fc8f73c1779ce1f0e11ae5a058574800b0f8915733b5",
+  "bundleManifestSha256": "b945d85f17a2a4080197b30f0e9097ef7dcdcf1eb858b5ec374a46b01c1c162d",
+  "bundleSha256": "1419a3ef92b6db2ea5334456a2a920864553eea8bfdf2eaa48be2ec60d23d152",
+  "bundleFiles": 351,
+  "servicesCatalogPilot": false,
+  "receipt": "ios/build/local-bundle-provenance.json",
+  "receiptSha256": "feeabda20496d2f4ce80cb47646d6a998ad60eb5e7f408cd4fcd8246fd61097e",
+  "coverage": {
+    "total": 147,
+    "bundled": 87,
+    "ordinaryEligible": 87,
+    "missing": []
+  },
+  "note": "Local JS/CSS generation and exact source/package integrity only; no Swift archive, Apple upload or physical-device acceptance."
+}

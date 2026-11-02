@@ -1,0 +1,156 @@
+{
+  "commit": "d6b080b2b21a5ddcc9bf65403749acd6ddc14672",
+  "sha256": "f044b512d6f1ff2ac9bba659b7f1c87807b2de2e2afb76b8a19c0f0c20a3619e",
+  "files": [
+    {
+      "path": "app/(app)/salon-settings/page.tsx",
+      "sha256": "db8b091843cbcd6b72c69ebf6e5c92397b2bd60de096e8aaec183b832b20b93a",
+      "bytes": 37250
+    },
+    {
+      "path": "app/account/account-deletion-panel.tsx",
+      "sha256": "390f8cdb269f299b507ec45ac0dc74b66d68d2cf909f673f31a3f75c3e570d5f",
+      "bytes": 20386
+    },
+    {
+      "path": "app/salon-settings/ownership-section.tsx",
+      "sha256": "1ec3001ff454b310c806369ac61ab6bcee7ce918680ceb6f6b4cc22bf46bebc7",
+      "bytes": 12066
+    },
+    {
+      "path": "app/salon-settings/public-team-settings-editor.css",
+      "sha256": "c888a528f1c02d3ddfc2a7692d06755c97365c3a2cac447b7fc9b6db52fb640f",
+      "bytes": 4398
+    },
+    {
+      "path": "app/salon-settings/public-team-settings-editor.tsx",
+      "sha256": "3b8998970c51c382ffc02da08f5d1566cfe74655fd0951c594ebe3adcfca552d",
+      "bytes": 7143
+    },
+    {
+      "path": "app/salon-settings/salon-lifecycle-section.tsx",
+      "sha256": "705f9f8fbd3916f428c9c35f8230fa0c3be0f619a33fe6c6eabffd4c8d0193f4",
+      "bytes": 15297
+    },
+    {
+      "path": "app/services/services-manager.tsx",
+      "sha256": "29ce8a0683d024a9febf086495b79de20013f5926abcab5c18b0bdc707eadbb9",
+      "bytes": 38287
+    },
+    {
+      "path": "app/settings/booking-plugin-settings.tsx",
+      "sha256": "479a3c4c34c86e8170016c97f8ec2cf1c063d315d1c58d13604367655c3cc238",
+      "bytes": 4545
+    },
+    {
+      "path": "app/settings/compact-settings-workspace.tsx",
+      "sha256": "6fac9fa1bbba82a2763b5aa2296838728f178ffb4d1de85c8e9a729edb842025",
+      "bytes": 4859
+    },
+    {
+      "path": "app/settings/connections-panel.tsx",
+      "sha256": "c2fa2245d497775fbce599a5c2efa3542d44526c84702cb7857604bd6da37713",
+      "bytes": 18277
+    },
+    {
+      "path": "app/settings/direct-settings-panel.tsx",
+      "sha256": "c2249c9b198255401f69e09e24868010104b5e4ff1b6fe670d8924d2c9b573ce",
+      "bytes": 11416
+    },
+    {
+      "path": "app/settings/direct-settings-ui.tsx",
+      "sha256": "8c16194bbc6be2ba85764dc0f94abd503aa0c422cd6056c12c028610994a8619",
+      "bytes": 11917
+    },
+    {
+      "path": "app/settings/login-security/login-security-panel.tsx",
+      "sha256": "82d2a678fff18af556b577a42d22d650e474fb02d3cf7174774d82e9b5d9a794",
+      "bytes": 41365
+    },
+    {
+      "path": "app/settings/ownership-lifecycle-panels.tsx",
+      "sha256": "24e4cd858ef8533477a3565db90b7ff084d35e32f0f8053470a4c9373f836d8e",
+      "bytes": 12223
+    },
+    {
+      "path": "app/settings/plugin-settings-row.tsx",
+      "sha256": "d8fa18a31b33badef0123d638a9db0125905747ed107a2a48a05c1eee8ed3a0d",
+      "bytes": 4052
+    },
+    {
+      "path": "app/settings/pos-settings-panel.tsx",
+      "sha256": "572e774c4519dd5ffbccea8046e3094dea368cb14fc281963ca54b1734ca4e57",
+      "bytes": 15125
+    },
+    {
+      "path": "app/settings/salon-profile-preferences-panel.tsx",
+      "sha256": "8f169b0495846a4b9c9a3205997ea03b4b96fa88b70cc95e76dc0a58fe9f7c42",
+      "bytes": 7240
+    },
+    {
+      "path": "app/settings/salon-settings-panels.tsx",
+      "sha256": "bf9fd3b9652c185fc8b7c8504514c31964562eb48fb4a1b33e622bc26364b018",
+      "bytes": 25312
+    },
+    {
+      "path": "app/settings/settings-child-pages.css",
+      "sha256": "5f0d296a8f26eb8fbd6d62e3038948651f7736e6f44dc01a3d22763fafb26232",
+      "bytes": 3863
+    },
+    {
+      "path": "app/settings/settings-child-pages.tsx",
+      "sha256": "39a82a9b35c06727fa90397a15de8c9500990b7b197c0ba67bfbdaeba1d986da",
+      "bytes": 7354
+    },
+    {
+      "path": "app/settings/settings-compact-children.css",
+      "sha256": "56be1bc884f9735cb59d19933bce6e44b9de88d86ccbe68a2e7d5b6842cabca9",
+      "bytes": 16116
+    },
+    {
+      "path": "app/settings/settings-hub-client.tsx",
+      "sha256": "dd52ae9469b0b3a343e49e513ac70b60d80c2796d57aafe0be2f4f27be214f8c",
+      "bytes": 15676
+    },
+    {
+      "path": "app/settings/staff-hours-booking.tsx",
+      "sha256": "9dbfab58e55d70082a789816ceca52493480bc09e348999f7949a5400d30fcde",
+      "bytes": 4378
+    },
+    {
+      "path": "app/settings/team-payroll-panels.tsx",
+      "sha256": "e859c6ca5a4ec85091c3c407c7ed6c5bf3928f005dcbce1c3f09e12f2223e481",
+      "bytes": 19465
+    },
+    {
+      "path": "components/app-local-salon-settings.tsx",
+      "sha256": "211ab4806bb28a6f410d40d10686503f9c689787bb9bf3db37bdfaf74cebcb9b",
+      "bytes": 34414
+    },
+    {
+      "path": "tests/settings-all-children-runtime.test.mjs",
+      "sha256": "4061b7bb778a795f1e15819debc3fee13f881bc6dafa9f8626504ee3127ac356",
+      "bytes": 19623
+    },
+    {
+      "path": "tests/settings-child-pages.test.mjs",
+      "sha256": "67bfbb8fc17e569ad1e72c33712324d9e5dee103dd7158bc37437c89cbe9aa73",
+      "bytes": 6680
+    },
+    {
+      "path": "tests/settings-public-team-compact.test.mjs",
+      "sha256": "f9ec969fe9d4ba4f007db9571117d2216792d9051bbf1edbaa5bf3bd467a4ed3",
+      "bytes": 9077
+    },
+    {
+      "path": "tests/settings-retained-activity.test.mjs",
+      "sha256": "7d4134d21893c1343e96865ed5cb2d815bcd32f065c94473c0195ffece169498",
+      "bytes": 5787
+    },
+    {
+      "path": "tests/staff-hours-settings-runtime.test.mjs",
+      "sha256": "9a8827a92a10c6fe66cb7740a000a853af0b1c6a74f0c251f565a8ffe464ef08",
+      "bytes": 6675
+    }
+  ]
+}

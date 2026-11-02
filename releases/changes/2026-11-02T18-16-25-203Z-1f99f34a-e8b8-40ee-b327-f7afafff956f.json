@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "settings-child-design-correction-20261102",
+  "status": "needs-integration",
+  "summary": "Complete compact Salon Settings and All Settings child-page implementation, including embedded Services; locally validated and frozen for the next combined web/iOS release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "requiresNativeBuild": true,
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/account/account-deletion-panel.tsx",
+    "app/salon-settings/ownership-section.tsx",
+    "app/salon-settings/public-team-settings-editor.css",
+    "app/salon-settings/public-team-settings-editor.tsx",
+    "app/salon-settings/salon-lifecycle-section.tsx",
+    "app/services/services-manager.tsx",
+    "app/settings/booking-plugin-settings.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/connections-panel.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/settings/plugin-settings-row.tsx",
+    "app/settings/pos-settings-panel.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-child-pages.css",
+    "app/settings/settings-child-pages.tsx",
+    "app/settings/settings-compact-children.css",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "components/app-local-salon-settings.tsx",
+    "tests/settings-all-children-runtime.test.mjs",
+    "tests/settings-child-pages.test.mjs",
+    "tests/settings-public-team-compact.test.mjs",
+    "tests/settings-retained-activity.test.mjs",
+    "tests/staff-hours-settings-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-design-correction-20261102\\artifacts\\settings-design-correction\\frozen-all",
+    "commit": "d6b080b2b21a5ddcc9bf65403749acd6ddc14672",
+    "sha256": "f044b512d6f1ff2ac9bba659b7f1c87807b2de2e2afb76b8a19c0f0c20a3619e"
+  },
+  "validation": [
+    {
+      "name": "Actual component gallery and nested form/role/error/retention regression checks",
+      "result": "passed",
+      "evidence": "releases/evidence/settings-design-correction-20261102/validation-summary.json"
+    },
+    {
+      "name": "Full production web build including TypeScript and scoped lint",
+      "result": "passed",
+      "evidence": "releases/evidence/settings-design-correction-20261102/validation-summary.json"
+    },
+    {
+      "name": "Local iOS JS/CSS bundle exact-source integrity and route coverage",
+      "result": "passed",
+      "evidence": "releases/evidence/settings-design-correction-20261102/native-local-proof.json"
+    },
+    {
+      "name": "Integration against current release baseline, native archive/upload, authenticated and physical iOS QA",
+      "result": "pending",
+      "evidence": "releases/evidence/settings-design-correction-20261102/DESIGN-AUDIT.md"
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "No publication in this implementation task",
+    "Browser fixtures use synthetic data and inert transport; they are not physical iPhone/provider acceptance",
+    "Regenerate native bundle after assembling release source"
+  ],
+  "id": "1f99f34a-e8b8-40ee-b327-f7afafff956f",
+  "recordedAt": "2026-11-02T18:16:25.203Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-design-correction-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

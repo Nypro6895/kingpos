@@ -1,0 +1,21 @@
+{
+  "sourceCommit": "d6b080b2b21a5ddcc9bf65403749acd6ddc14672",
+  "actualEditorViews": 91,
+  "viewChecks": 364,
+  "viewports": [
+    320,
+    375,
+    430,
+    768
+  ],
+  "fixtureGroups": 21,
+  "regressionCases": 15,
+  "personalCases": 1,
+  "allEditorsCase": 1,
+  "typescript": "passed in full production build",
+  "eslint": "0 errors; unchanged services-manager useEffect dependency warning at line 562",
+  "webBuild": "passed",
+  "nativeSourceAndPackage": "passed",
+  "published": false,
+  "deviceAccepted": false
+}

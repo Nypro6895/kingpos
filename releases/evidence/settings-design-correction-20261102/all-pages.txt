@@ -1,0 +1,9 @@
+✔ actual Settings editors: every reachable nested page renders and fits phone widths, preserving lazy verification and safe writes (72915.9223ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73428.4116

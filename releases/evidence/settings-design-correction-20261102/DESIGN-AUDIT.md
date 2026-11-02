@@ -1,31 +1,55 @@
-# Settings design correction — source review of build 85
+# Settings design correction — completed local implementation
 
-The user screenshot is the actual Public team child page. It confirms the released child content did not follow the approved compact preview. Passing build/archive/tests established source and behavior checks, not design acceptance. The previous claim that the whole child-page redesign was complete was incorrect.
+The user's Public team screenshot correctly showed that build 85 did not match the agreed compact child-page design. The earlier whole-design completion claim was incorrect. This revision implements the correction across both Settings entry points and their shared editors.
 
-Reference: `C:/Reylumi/work/salon-settings-compact.html` and `all-settings-compact.html`. Baseline: uploaded build 85, source `6f1e61360a7f7ebf165ce6823bc4566a639e7a82`. This candidate is isolated from production and has not been deployed.
+Source: d6b080b2b21a5ddcc9bf65403749acd6ddc14672. This revision has not been deployed. [Review the real-component screenshot gallery](gallery.html).
 
-| Area | Source finding | Design status / remaining work |
-| --- | --- | --- |
-| Salon Settings overview | Seven grouped destinations, retained form state | Navigation implemented; not proof of child-page completion |
-| Business info | Compact fields, Address/Description still inline disclosures | Partial. Approved preview has dedicated compact address/description children |
-| Public profile / discovery | Existing readiness list, map status/refresh and explanatory content retained | Needs actual per-state visual review and compact row grouping |
-| Opening hours | Compact weekly rows; original special-hours form remains in the page | Partial. Special dates should be a separate concise child flow as previewed |
-| Public team | Four large bulk buttons, vertically stacked per-staff labels, repeated long descriptions and order inputs | Confirmed mismatch from physical screenshot. Actual editor rewritten in this candidate: compact staff rows, direct Booking/Posting switches, collapsed bulk/order/help, Save only when changed |
-| Staff appointments | Original permission switch and explanation | Source preserved; needs visual review against the same row/control rhythm |
-| Ownership | Legacy invitation, transfer and leave forms remain in the standalone section | Needs the preview's compact owner list and separate action/review flows; retain all owner safeguards |
-| Salon status | Existing backup, pause/reactivate and permanent-close panels with extensive forms | Needs compact action rows and deliberate review children; retain all impact and confirmation requirements |
-| All Settings: Profile & contact / Public profile | Shared legacy account/public-profile editors inside the compact shell | Needs actual child screenshots; shell styling does not establish that each editor matches the approved design |
-| Login & security / Blocked users | Original security and privacy editors | Needs separate verification of forms, empty/loading/error and device lists; preserve confirmation boundaries |
-| Notifications / Connections & invitations / Delete account | Original panels with different internal structures | Needs consistent compact rows and isolated action screens; no weakening of confirmations |
-| Salon information / Website & public profile | Shared read/edit sections and legacy profile preferences/media editors | Partial. Card/edit-panel rhythm is not the same as the approved direct-row preview |
-| Services & prices / Booking rules | Existing service manager, availability editor and plugin forms | Needs actual loaded-child review, including drawers, staff/service selectors and empty/error states |
-| Team & invitations / Payroll | Per-person read/edit sections with nested settings | Needs unified staff list and compact per-person child layouts; preserve financial/access logic |
-| POS & devices / Today shortcuts | Existing device, display and shortcut editors | Needs per-section review rather than inheriting shell acceptance |
-| Ownership / Salon status in All Settings | Separate implementations from standalone Salon Settings | Must be reviewed alongside standalone equivalents so the same function does not keep two different styles |
-| Staff profile / Working hours / Add salon / Legal / Help | Additional destinations listed by settings-navigation.ts | Source inventory only; not visually accepted by the previous release |
+## Final presentation
 
-## Public team correction verified locally
+- Salon Settings: seven grouped destinations; Address, Description, publishing requirements, current opening status, special dates, owner invite/transfer/leave, backup, pause/reactivation and permanent-close review open as child screens. Web and installed-app form helpers remain in parity.
+- Public team: compact staff rows, direct Booking/Posting switches, secondary order/bulk/help disclosures and staged Save/Cancel.
+- All Settings: common child navigation around each retained editor, compact fields and right-side switches. Person-specific Staff/Payroll pages; grouped POS/device settings; dedicated security/recovery pages; isolated account-deletion review and owner safeguards. Personal profile, public profile, notifications, connections, Add salon, shortcuts, legal and support share the same row/control rhythm. Staff's own schedule uses the existing compact availability editor.
+- Services inside Settings: one concise row with price/duration/staff summary, separate Active and Online controls, retained detailed editor, and a separate create view. The ordinary Services route keeps its existing layout.
+- Child navigation preserves original form association and mounted drafts. Invalid hidden required fields open their correct child. Save actions and status/retry messages stay with their owning form/plugin; unrelated Save bars remain hidden. Security outside this Settings navigation retains its original section presentation.
 
-Actual React editor and compact workspace are rendered by the preview, with synthetic staff and stubbed server responses. Four viewport widths: 320, 375, 430 and 768. Direct switches do not save implicitly. Cancel restores saved data. Server rejection and connection failure preserve drafts; retry sends the existing canonical batch payload. Pending requests disable editing. Inactive-staff and bulk semantics are preserved. Read-only mode cannot submit. No production writes.
+## Local visual coverage
 
-`preview/index.html` is a working local review artifact; `preview/public-team-375.png` is its screenshot. It is not an authenticated iOS capture. This task remains working: the other child-page gaps above are not declared complete or release-ready.
+91 screenshots from actual product components with synthetic DTOs and inert transport; 364 view checks at 320, 375, 430 and 768px. Traversal records and screenshots are in coverage.json and pages/. These are browser fixtures, not authenticated or physical iPhone screenshots.
+
+| Actual fixture/editor | Captured views at 375px |
+| --- | ---: |
+| Salon Settings | 18 |
+| Staff working hours | 3 |
+| Salon information | 6 |
+| Public profile | 8 |
+| Booking | 5 |
+| Staff & team | 7 |
+| Payroll | 3 |
+| POS & display | 6 |
+| Ownership | 5 |
+| Salon status | 3 |
+| Website appearance | 3 |
+| Login & security | 9 |
+| Notifications | 1 |
+| Connections | 2 |
+| Blocked users | 1 |
+| Create salon | 1 |
+| Personal profile | 1 |
+| Personal public profile | 1 |
+| Delete account | 4 |
+| Shortcuts | 1 |
+| Services & prices | 3 |
+
+Legal/Help use their actual link rows in the hub; per-role staff workspace uses the shared public-profile and availability editors. Those contextual routes have source/shared-component coverage, not a separate authenticated session claim. Map tiles, provider OTP, payment/provider acceptance and physical POS devices are outside these fixtures.
+
+## Validation
+
+- 15 regression cases passed with no skips: browser Back and draft retention, original hidden payloads/required consent/validation, role restrictions, Public team bulk/inactive semantics, rejected and disconnected saves/retry, hours edits/time-off conflicts, owner/closure actions, and retained-reader identity boundaries.
+- Personal profile cancellation, email authorization flow, security sections, public avatar flow and unblock fixture passed. All provider actions were inert.
+- Whole-editor traversal passed with no runtime exceptions or horizontal document overflow. It also checks switch size/position, correct save ownership, lazy verification, compact Services, no navigation writes, real nested profile save failure/retry, canonical salon payload retention, per-staff Payroll target/version/effective-date payload, and Booking Rules' own Save.
+- Full production build including TypeScript passed. Scoped ESLint has zero errors and one unchanged hook dependency warning in services-manager.tsx:562.
+- Local iOS JS/CSS bundle generated and source/package integrity verified at this exact source; 87/87 ordinary eligible routes bundled, zero missing. Swift archive/sign/upload and physical-device QA were not run.
+
+## Integration boundary
+
+Implementation is complete locally and frozen for integration. No web deployment or TestFlight upload was performed. Build 85 remains the earlier published UI until the next authorized combined release. Integrate the source-scope.json files against the then-current production/native baselines, rebuild the web and native bundle, and perform authenticated/device review before claiming live or iPhone acceptance. Generated native assets in this worktree are validation outputs; regenerate them from the assembled release source rather than copying an old bundle.

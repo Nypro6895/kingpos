@@ -1,0 +1,23 @@
+✔ booking view denial prevents every protected settings/setup read (1.7938ms)
+✔ independent reads overlap only after view approval and preserve restricted management (2.3805ms)
+✔ missing settings preserve original defaults and setup failures return no partial DTO (0.6911ms)
+✔ settings database failure cannot return a successful partial result (0.4386ms)
+✔ staff online toggle uses salon-settings permission independently from booking rule management (0.4486ms)
+✔ nested Settings pages preserve real form payloads, browser Back, drafts, consent, validation and error recovery (4090.4763ms)
+✔ compact Settings: nested navigation, lazy editors, salon drafts, failed saves, retry and viewport fit (6721.155ms)
+✔ installed Salon Settings retains every web form field, permission and compact page (2.6654ms)
+✔ owners and closure records show concrete identities and perform inline target actions (1250.9771ms)
+✔ account security and deletion overviews are never durable native reads (0.5772ms)
+✔ real compact Public team: small phone layout, staged changes, bulk semantics, failed saves/retry, pending and read-only (3483.9471ms)
+✔ inactive retained sections do not restart readers when their parent page returns (1072.8738ms)
+✔ section reveal refreshes its own reader while retaining a draft and viewer change discards it (524.7906ms)
+✔ the actual Settings hub uses the retained section boundary (0.7485ms)
+✔ compact availability uses local disclosure, protects drafts and saves without a second refresh (2686.8506ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7044.2189

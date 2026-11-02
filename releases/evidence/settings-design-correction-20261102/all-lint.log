@@ -1,0 +1,5 @@
+
+C:\Reylumi-worktrees\settings-design-correction-20261102\app\services\services-manager.tsx
+  562:6  warning  React Hook useEffect has a missing dependency: '__vt'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
