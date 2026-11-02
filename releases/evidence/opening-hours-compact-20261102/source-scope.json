@@ -1,0 +1,31 @@
+{
+  "commit": "e55e5aa0ee1fe4e907161754124542cc7a142bc8",
+  "baseCommit": "3be5e78",
+  "files": [
+    {
+      "path": "app/settings/salon-settings-panels.tsx",
+      "sha256": "46471899800d5ec93d8c1b6e68316959bc9eeff108f8b538e670cf252ea64083",
+      "baselineSha256": "bf9fd3b9652c185fc8b7c8504514c31964562eb48fb4a1b33e622bc26364b018"
+    },
+    {
+      "path": "app/settings/opening-hours-editor.tsx",
+      "sha256": "9bf59abc7300b2fb0492461edfc2a4688ee6fe61dc595f31c0340a500465eddf",
+      "baselineSha256": null
+    },
+    {
+      "path": "app/settings/opening-hours-editor.css",
+      "sha256": "0da386569938a704321787fd3aace5e9b52048ec4d1ba435e538773fe0052aab",
+      "baselineSha256": null
+    },
+    {
+      "path": "components/time-zone-select.tsx",
+      "sha256": "6d4d12a542f0925c1520962be296b52962f28e7ef5e6d0f7ac690bf8e00cfd92",
+      "baselineSha256": "0a50c709b9d830a24d8ad117a22209e5bde750f77170f744c2baa6b6e2a0e011"
+    },
+    {
+      "path": "tests/opening-hours-compact-runtime.test.mjs",
+      "sha256": "333a1a6dfad5c777ab72f32eef7b85bdb9fa44bca06c186ce51081273c3615eb",
+      "baselineSha256": null
+    }
+  ]
+}

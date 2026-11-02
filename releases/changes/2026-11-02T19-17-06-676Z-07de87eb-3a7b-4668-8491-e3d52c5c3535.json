@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "opening-hours-compact-20261102",
+  "status": "needs-integration",
+  "summary": "Opening hours: seven compact daily summaries, one expanded day with side-by-side times, small remove action, Closed toggle, full-width readable timezone and retained save/cancel/error behavior",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/opening-hours-editor.tsx",
+    "app/settings/opening-hours-editor.css",
+    "components/time-zone-select.tsx",
+    "tests/opening-hours-compact-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\opening-hours-compact-20261102\\artifacts\\opening-hours-compact\\frozen\\source",
+    "commit": "e55e5aa0ee1fe4e907161754124542cc7a142bc8"
+  },
+  "baseline": {
+    "commit": "3be5e78",
+    "snapshot": "C:\\Reylumi-worktrees\\opening-hours-compact-20261102\\artifacts\\opening-hours-compact\\frozen\\baseline",
+    "priorWebDeploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe"
+  },
+  "fileHashes": {
+    "app/settings/salon-settings-panels.tsx": "46471899800d5ec93d8c1b6e68316959bc9eeff108f8b538e670cf252ea64083",
+    "app/settings/opening-hours-editor.tsx": "9bf59abc7300b2fb0492461edfc2a4688ee6fe61dc595f31c0340a500465eddf",
+    "app/settings/opening-hours-editor.css": "0da386569938a704321787fd3aace5e9b52048ec4d1ba435e538773fe0052aab",
+    "components/time-zone-select.tsx": "6d4d12a542f0925c1520962be296b52962f28e7ef5e6d0f7ac690bf8e00cfd92",
+    "tests/opening-hours-compact-runtime.test.mjs": "333a1a6dfad5c777ab72f32eef7b85bdb9fa44bca06c186ce51081273c3615eb"
+  },
+  "validation": [
+    {
+      "name": "Production build and full TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/opening-hours-compact/build-source-pinned.log"
+    },
+    {
+      "name": "Actual editor with every shared Settings stylesheet at 320/375/430/768; drafts, closed/split windows, canonical payload, busy/error/retry/cancel, hidden invalid input, device-zone mismatch, page Back",
+      "result": "passed",
+      "evidence": "releases/evidence/opening-hours-compact-20261102/checks.json"
+    },
+    {
+      "name": "Existing nested Settings navigation regression",
+      "result": "passed",
+      "evidence": "releases/evidence/opening-hours-compact-20261102/runtime-final.log"
+    },
+    {
+      "name": "Scoped lint and diff whitespace",
+      "result": "passed",
+      "evidence": "releases/evidence/opening-hours-compact-20261102/lint.log"
+    }
+  ],
+  "nativeAssessment": "Bundled component/CSS changed; fresh iOS bundle/archive and physical-device acceptance required in next authorized combined release",
+  "deployment": "Not deployed; implementation follow-up after the completed TestFlight 86 release",
+  "id": "07de87eb-3a7b-4668-8491-e3d52c5c3535",
+  "recordedAt": "2026-11-02T19:17:06.676Z",
+  "worktree": "C:\\Reylumi-worktrees\\opening-hours-compact-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

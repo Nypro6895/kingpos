@@ -1,0 +1,10 @@
+✔ Opening hours: compact week, focused day, split hours, cancel, timezone and safe save/retry (6723.4511ms)
+✔ nested Settings pages preserve real form payloads, browser Back, drafts, consent, validation and error recovery (3958.5449ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7139.8451

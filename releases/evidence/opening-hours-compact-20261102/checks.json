@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "width": 320,
+      "rowsCompact": true,
+      "noOverflow": true,
+      "draftsCancelAndRetry": true,
+      "canonicalPayload": true
+    },
+    {
+      "width": 375,
+      "rowsCompact": true,
+      "noOverflow": true,
+      "draftsCancelAndRetry": true,
+      "canonicalPayload": true
+    },
+    {
+      "width": 430,
+      "rowsCompact": true,
+      "noOverflow": true,
+      "draftsCancelAndRetry": true,
+      "canonicalPayload": true
+    },
+    {
+      "width": 768,
+      "rowsCompact": true,
+      "noOverflow": true,
+      "draftsCancelAndRetry": true,
+      "canonicalPayload": true
+    }
+  ],
+  "hiddenRequiredFieldRevealed": true,
+  "salonZonePreservedAcrossDeviceZones": true,
+  "pageBackRetainsDraft": true,
+  "scope": "Real editor, InlineForm, Settings navigation and all shared Settings CSS; synthetic action transport; no hosted or installed-device acceptance"
+}
