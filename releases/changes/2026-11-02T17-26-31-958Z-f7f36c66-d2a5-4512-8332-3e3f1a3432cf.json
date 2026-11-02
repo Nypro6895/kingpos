@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "settings-child-design-correction-20261102",
+  "status": "working",
+  "summary": "Public team actual-component compact correction implemented and validated for review; full Settings child-page redesign remains unfinished as documented by the approved-preview comparison",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "components/app-local-salon-settings.tsx",
+    "app/salon-settings/public-team-settings-editor.tsx",
+    "app/salon-settings/public-team-settings-editor.css",
+    "tests/settings-public-team-compact.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-design-correction-20261102\\artifacts\\settings-design-correction\\frozen-public-team",
+    "commit": "ec43cc599e51cb54fe2b467ef83c344180045d37"
+  },
+  "requiresNativeBuild": true,
+  "validation": [
+    {
+      "name": "Actual editor at 320/375/430/768 with direct controls, staged/cancel, rejected/failed saves and retry, pending locks, read-only, unchanged inactive/bulk semantics",
+      "result": "passed",
+      "evidence": "artifacts/settings-design-correction/preview/checks.json"
+    },
+    {
+      "name": "Full TypeScript, scoped ESLint and web/native form parity",
+      "result": "passed",
+      "evidence": "artifacts/settings-design-correction/types.log"
+    },
+    {
+      "name": "Other Settings child-page design corrections and authenticated iOS/device visual acceptance",
+      "result": "pending",
+      "evidence": "releases/evidence/settings-design-correction-20261102/DESIGN-AUDIT.md"
+    }
+  ],
+  "limitations": [
+    "No publication performed; build 85 remains the prior UI",
+    "Public team is a review candidate, not a claim that all Settings children are complete",
+    "Preview uses actual components with synthetic data and server responses, not a physical iPhone"
+  ],
+  "id": "f7f36c66-d2a5-4512-8332-3e3f1a3432cf",
+  "recordedAt": "2026-11-02T17:26:31.958Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-design-correction-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
