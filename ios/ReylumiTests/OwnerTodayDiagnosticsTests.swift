@@ -277,6 +277,38 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
         }
     }
 
+    func testInstalledTodayAndPayrollPageRootsKeepVerticalAndNestedScroll() async throws {
+        for path in ["/staff/today", "/payroll?tab=shop"] {
+            try await scenario(path.hasPrefix("/payroll") ? "payroll_scroll_containment" : "today_scroll_containment", startPath: path) { run in
+                let selector = path.hasPrefix("/payroll") ? "[data-payroll-page]" : "[data-today-dashboard]"
+                try await self.wait("Boolean(document.querySelector('\(selector)'))", in: run.web)
+                XCTAssertFalse(run.web.scrollView.bounces)
+                XCTAssertTrue(run.web.scrollView.isScrollEnabled)
+                let result = try await run.web.evaluateJavaScript("""
+                (()=>{
+                  const page=document.querySelector('\(selector)').closest('.app-local-page');
+                  if(!page)return {missingPageRoot:true};
+                  const x=getComputedStyle(page).overflowX;
+                  const original=page.getAttribute('style');
+                  const probe=document.createElement('div');
+                  probe.innerHTML='<div style="width:2400px;height:32px">Wide row</div><div data-scroll-rail style="width:100%;overflow-x:auto"><div style="width:2400px;height:32px">Periods</div></div><div style="height:2400px"></div>';
+                  page.prepend(probe);page.style.height='240px';page.style.maxHeight='240px';
+                  const rail=probe.querySelector('[data-scroll-rail]');page.scrollTop=120;rail.scrollLeft=120;
+                  const result={overflowX:x,vertical:page.scrollTop,nested:rail.scrollLeft,documentX:scrollX};
+                  page.scrollTop=0;probe.remove();
+                  if(original===null)page.removeAttribute('style');else page.setAttribute('style',original);
+                  return result;
+                })()
+                """) as? [String: Any] ?? [:]
+                XCTAssertEqual(result["overflowX"] as? String, "hidden", "The installed retained page cannot be a horizontal user-scroll region")
+                XCTAssertEqual(result["vertical"] as? Int, 120)
+                XCTAssertEqual(result["nested"] as? Int, 120)
+                XCTAssertEqual(result["documentX"] as? Int, 0)
+                return ["path": path, "scrollProbe": result]
+            }
+        }
+    }
+
     private struct Run {
         let controller: ReylumiLocalAppViewController
         let web: WKWebView

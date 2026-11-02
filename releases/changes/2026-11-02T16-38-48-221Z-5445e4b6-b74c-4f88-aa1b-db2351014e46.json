@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "settings-ios-followup-20261102",
+  "status": "working",
+  "summary": "Complete bundled iOS Salon/All Settings and include verified compact web changes; correct prior web-only assessment",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "components/app-local-salon-settings.tsx"
+  ],
+  "source": {
+    "commit": "83e8a7fef116855f4d408485c100416fb42a0b64"
+  },
+  "validation": [
+    {
+      "name": "Bundled Settings, native tests/archive and Apple availability",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "5445e4b6-b74c-4f88-aa1b-db2351014e46",
+  "recordedAt": "2026-11-02T16:38:48.221Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

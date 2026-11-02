@@ -16,6 +16,12 @@ final class AppViewportTests: XCTestCase {
         XCTAssertNotEqual(webView.scrollView.pinchGestureRecognizer?.isEnabled, true)
         XCTAssertFalse(webView.scrollView.bouncesZoom)
         XCTAssertFalse(webView.scrollView.alwaysBounceHorizontal)
+        XCTAssertFalse(webView.scrollView.bounces)
+        XCTAssertTrue(webView.scrollView.isDirectionalLockEnabled)
+        XCTAssertTrue(webView.scrollView.isScrollEnabled)
+        controller.view.setNeedsLayout(); controller.view.layoutIfNeeded()
+        XCTAssertFalse(webView.scrollView.showsHorizontalScrollIndicator)
+        XCTAssertFalse(webView.scrollView.showsVerticalScrollIndicator)
         XCTAssertEqual(webView.scrollView.contentInsetAdjustmentBehavior, .never)
         XCTAssertTrue(controller.view.constraints.contains { constraint in
             (constraint.firstItem as? WKWebView) === webView
