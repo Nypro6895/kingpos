@@ -1,0 +1,42 @@
+{
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Both production WKWebView constructors audited against build84",
+      "evidence": "artifacts/horizontal-containment/README.txt"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped diff whitespace and bundled JS syntax"
+    },
+    {
+      "result": "pending",
+      "name": "Native installed-controller regression and unsigned archive CI",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/41466097523"
+    },
+    {
+      "result": "pending",
+      "name": "Physical iPhone Today/Payroll drag acceptance"
+    }
+  ],
+  "summary": "Fixed missing installed-local WebView root bounce policy from uploaded build84; native CI queued, physical drag acceptance pending",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios84-horizontal-containment-20261102\\artifacts\\horizontal-containment\\frozen",
+    "commit": "031cc61d082a7604c34c013565abfa90c9ab177b"
+  },
+  "channels": [
+    "ios"
+  ],
+  "kind": "change",
+  "changeId": "ios84-local-scroll-containment-20261102",
+  "status": "needs-integration",
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift"
+  ],
+  "id": "1b47c2d5-ba41-41d2-9ac3-329f263cbea8",
+  "recordedAt": "2026-11-02T14:54:40.580Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios84-horizontal-containment-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
