@@ -234,7 +234,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
       } as const;
     case "booking": {
       await requirePermission("booking.view", context);
-      const [settingsResult, setup, canManage] = await Promise.all([
+      const [settingsResult, setup, canManage, canManageStaffOnlineBooking] = await Promise.all([
         supabase
         .from("booking_settings")
         .select(BOOKING_SETTINGS_SELECT)
@@ -242,6 +242,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
         .maybeSingle<BookingSettings>(),
         getCurrentSalonBookingSetup(context),
         hasPermission("booking.manage", context),
+        hasPermission("salon_settings.manage", context),
       ]);
       const { data, error } = settingsResult;
       if (error) throw new Error(error.message);
@@ -257,6 +258,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
           }),
         setup,
         canManage,
+        canManageStaffOnlineBooking,
       } as const;
     }
     case "staff-team": {

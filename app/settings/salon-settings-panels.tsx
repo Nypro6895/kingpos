@@ -452,7 +452,7 @@ export function BookingSettingsPanel({
         <div className="mt-3">
           <StaffAvailabilityEditor
             settingsMode
-            renderOnlineBooking={member => <StaffHoursBooking key={member.id} salonId={data.salonId} member={data.setup.staff.find(staff => staff.id === member.id)!} setup={data.setup} canManageOnline={data.canManage} onSaved={onSaved} />}
+            renderOnlineBooking={member => <StaffHoursBooking key={member.id} salonId={data.salonId} member={data.setup.staff.find(staff => staff.id === member.id)!} setup={data.setup} canManageOnline={data.canManageStaffOnlineBooking} onSaved={onSaved} />}
             availabilityRules={data.setup.availabilityRules}
             timeBlocks={data.setup.timeBlocks}
             staff={data.setup.staff}
