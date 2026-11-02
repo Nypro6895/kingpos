@@ -1,0 +1,28 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/opening-hours-editor.tsx",
+    "app/settings/opening-hours-editor.css",
+    "components/time-zone-select.tsx",
+    "tests/opening-hours-compact-runtime.test.mjs"
+  ],
+  "summary": "Compact Opening hours into seven day summaries with focused time-range editing and readable time zone",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Responsive runtime, drafts, time-zone and save payload"
+    }
+  ],
+  "changeId": "opening-hours-compact-20261102",
+  "status": "working",
+  "kind": "change",
+  "id": "e3efdfc8-73ce-4e9f-8ec4-1ac4b2e2847f",
+  "recordedAt": "2026-11-02T19:09:05.611Z",
+  "worktree": "C:\\Reylumi-worktrees\\opening-hours-compact-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
