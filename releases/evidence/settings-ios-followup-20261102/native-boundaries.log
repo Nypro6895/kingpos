@@ -1,0 +1,49 @@
+✔ initial navigation overlaps the original page read under the same fresh scope (2.8174ms)
+✔ navigation authority denial cannot become a successful partial bootstrap (0.5541ms)
+✔ Today initial uses complete endpoint contract and preserves date (0.2382ms)
+✔ Staff default and explicit filters use exactly client resource keys (0.2521ms)
+✔ Personal core and feed start concurrently from same admission (0.2903ms)
+✔ Offline, denial, guest and unconfirmed never attach initial private data (0.191ms)
+✔ Original reader denial propagates without partial bootstrap (0.1651ms)
+✔ Unknown routes and Explore searches keep independent original readers (0.1296ms)
+✔ generic initial data uses exact current-page read and never adjacent or edit flows (1.2505ms)
+✔ fresh hydrated Personal feed is delivered inline without a second Suspense startup (0.2916ms)
+✔ requested Settings panel batches only the current salon and keeps control DTOs transient (5.7846ms)
+✔ Sensitive and unrecognized initial filters cannot trigger business reads (0.1477ms)
+✔ security overview is opt-in transient initial read, never part of settings home (0.3244ms)
+✔ online-only Staff schedule keeps exact filters and its original reader (0.1803ms)
+✔ workday bootstrap uses original attendance identity and cannot borrow another resource scope (0.7418ms)
+✔ appearance read keeps original owner/workspace/permission and expected-salon boundaries (82.3003ms)
+✔ appearance read loads only the selected salon's explicit appearance fields and preserves errors (24.6101ms)
+✖ installed generator resolves exact appearance read without granting it to a paired portable device (313.6788ms)
+✔ expired Help presentation becomes neutral, keeps bilingual return and starts no private reads (574.4175ms)
+✔ cold English Help offers only ordinary home navigation without inventing identity (216.662ms)
+✔ ordinary guest web and other public documents retain their existing login controls (351.8805ms)
+✔ Help without a language uses English return text and no private reads (177.3313ms)
+✔ fresh negotiated native root consumes destination admission instead of rendering under neutral authority (39.8518ms)
+✔ cached offline root, legacy backend and ordinary aliases preserve their original navigation (27.1206ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 23
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1787.1861
+
+✖ failing tests:
+
+test at tests\app-local-device-appearance-boundary.test.mjs:71:1
+✖ installed generator resolves exact appearance read without granting it to a paired portable device (313.6788ms)
+  AssertionError [ERR_ASSERTION]: The real DeviceAppearance path remains reachable in the installed app
+      at TestContext.<anonymous> (file:///C:/Reylumi-worktrees/settings-ios-followup-20261102/tests/app-local-device-appearance-boundary.test.mjs:89:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

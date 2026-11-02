@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "settings-ios-command-adapter-20261102",
+  "status": "ready",
+  "summary": "Enable the exact existing staff online-booking Settings action through the authenticated installed-app bridge; preserve all server permission and salon checks",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-command-trace-names.generated.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102\\artifacts\\ios-settings-followup\\frozen-web",
+    "commit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82"
+  },
+  "validation": [
+    {
+      "name": "Fresh production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/web-build.log"
+    },
+    {
+      "name": "Installed bundle and server command identity match; all unsupported actions rejected by bundler",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/local-bundle.log"
+    },
+    {
+      "name": "Booking/settings permission regressions 6/6",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/regression.log"
+    }
+  ],
+  "id": "ea2f6b32-6a1a-4da2-88bb-a7841f2cc07c",
+  "recordedAt": "2026-11-02T16:44:44.182Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-command-policy.json": "75bf717199c09f0f7fe0271f7b7a563d416285c04daff922797be0867fbab8fb",
+    "lib/app-local-commands-server.generated.ts": "f9159b72a0915b98507dc93c458a1dc1e72ac0b0463931beb72fb215069c8d87",
+    "lib/app-local-command-trace-names.generated.json": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "scope": "Actual rebuilt installed bundle; synthetic owner DTO; Chromium, not physical device",
+  "results": [
+    {
+      "width": 320,
+      "height": 812,
+      "overflow": false,
+      "panes": 7,
+      "commands": [],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "panes": 7,
+      "commands": [],
+      "errors": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "overflow": false,
+      "panes": 7,
+      "commands": [],
+      "errors": []
+    }
+  ]
+}

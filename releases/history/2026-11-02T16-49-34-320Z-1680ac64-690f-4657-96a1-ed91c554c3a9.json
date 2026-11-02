@@ -1,0 +1,56 @@
+{
+  "kind": "release",
+  "summary": "Publish authenticated installed-iOS adapter for staff online-booking Settings; native compact Settings build is still pending",
+  "changes": [
+    "ea2f6b32-6a1a-4da2-88bb-a7841f2cc07c"
+  ],
+  "targets": {
+    "web": {
+      "at": "2026-11-02T16:49:33.178Z",
+      "verified": true,
+      "format": "Vercel direct source content hashes",
+      "mode": "live",
+      "deploymentId": "dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr",
+      "url": "kingpos-fkd52fnne-kingpos.vercel.app",
+      "aliasDeploymentId": "dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr",
+      "commit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82",
+      "files": 3781,
+      "sourceSha256": "219a7b3ada4341fcedcdd0e99fba2b5b2efa6174cce0a8c0c4a21a87973c0e11",
+      "overlaySha256": "6f926be126b4695bc5bf4ccbfc769de1fbbdbfdc79e6f460b392354c72cc6a64",
+      "baselineDeploymentId": "dpl_ANW87cmn5LVuD2qTGLRxtYoy8e9y",
+      "status": "published",
+      "evidence": "releases/evidence/settings-ios-followup-20261102"
+    }
+  },
+  "validation": {
+    "productionBuild": "passed",
+    "installedClient": "Actual compiled bundle with synthetic owner DTO at 320/390/844; not physical iPhone",
+    "publicSettingsHTTP": 200,
+    "protectedMalformedContext": 400,
+    "protectedMalformedCommand": 403
+  },
+  "nativeAssessment": {
+    "required": true,
+    "status": "pending",
+    "workflowRun": 41484072151,
+    "sourceCommit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82",
+    "reason": "Settings and other main UI are compiled into installed JS; web-only publication does not update the installed app"
+  },
+  "correction": {
+    "priorRelease": "87aa3c05-ee00-4ef3-8404-c1007c071d9c",
+    "incorrectAssessment": "No native build required",
+    "verifiedInstalledDevice": {
+      "model": "iPhone 12 Pro Max",
+      "version": "1.0.0",
+      "build": "82"
+    },
+    "lastUploadedNativeBuild": "84"
+  },
+  "rollback": {
+    "deploymentId": "dpl_ANW87cmn5LVuD2qTGLRxtYoy8e9y",
+    "condition": "Only after verifying no intervening release changed live alias"
+  },
+  "id": "1680ac64-690f-4657-96a1-ed91c554c3a9",
+  "recordedAt": "2026-11-02T16:49:34.320Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102"
+}

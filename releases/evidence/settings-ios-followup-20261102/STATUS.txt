@@ -1,0 +1,18 @@
+iOS SETTINGS FOLLOW-UP - 2026-11-02
+
+Root cause: previous Settings release published web only. Both /settings and /salon-settings have compiled installed-app renderers. The separate app-local Salon Settings component still used the old stacked presentation. Existing installed bundles do not inherit changes to web source modules.
+Verified connected physical iPhone 12 Pro Max: Reylumi 1.0.0 (82). Last successfully uploaded native baseline: 1.0.0 (84), a07c49c18adb3e727e4c2b0b9f6a2ebdac106d26, workflow 41447623208.
+
+Assembled source: 6f1e61360a7f7ebf165ce6823bc4566a639e7a82.
+Preserves last uploaded native source, exact live Settings web source and all unrelated shipped source. Includes compact standalone Salon Settings (7 pages), shared compiled All Settings, Staff hours and service/online-booking controls, compact salon Profile header and Payroll/Today changes. Frozen native delta: 40 files.
+Includes frozen iOS scroll event 43608cf0-9292-4cf9-b2aa-caa89126d2a7 (7 files, checked before integration).
+
+New packaging check discovered and fixed a missing action adapter for saveStaffHoursBooking. The same action ID is present in the activated installed bundle and the live authenticated server registry. Existing server-side salon and permission checks are preserved.
+Web adapter deployment: dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr. Baseline: dpl_ANW87cmn5LVuD2qTGLRxtYoy8e9y. All 3781 deployed source hashes verified; only 3 server adapter files changed. Live /settings HTTP 200. Malformed protected context/command requests return 400/403.
+
+Local verification: full TypeScript passed; scoped lint passed; 6 settings/permission regression tests and 1 exact form parity check passed; activated bundle has 98 routes and zero missing routes/unsupported actions. Actual installed JS tested with synthetic owner DTO at 320/390/844: all Salon and All Settings menus, one visible pane, draft retention across navigation, no horizontal page overflow, zero commands/writes. Scroll wheel/retained-page/nested-rail tests passed at 6 sizes with old-CSS negative control.
+Additional native boundary suite: 23/24 passed; inherited DeviceAppearance reachability assertion still expects an unused legacy component/action. Current PosSettingsPanel renders the appearance controls through loadDirectSettings/saveDirectPosGroup. No change was made to weaken or skip the old assertion. Native simulator/archive tests remain authoritative for this exact assembled bundle.
+
+Native workflow: https://github.com/Nypro6895/kingpos/actions/runs/41484072151. Initial source run 41483712175 was cancelled before execution after the missing adapter was discovered locally. Corrected run uses exact commit 6f1e613. Native upload/Apple processing/TestFlight group availability must be verified before recording iOS publication. App Store publication and physical-device acceptance are separate.
+
+Pending audit at start of this follow-up: 109 open journal events: 18 ready, 81 needs-integration, 6 working, 4 blocked. These are historical journal records, not 109 verified missing product features. The previous 4 selected UI groups are published on web. Inherited decisions preserve newer shipped implementations rather than reinserting old snapshots. Market publisher remains held with independent developer-platform activation dependencies. Check Writer first-party code is already present in the deployed baseline; provider/sales/physical printing acceptance remains gated. No unsupported claim that all historical records are shipped.

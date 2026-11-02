@@ -1,0 +1,88 @@
+{
+  "kind": "change",
+  "changeId": "settings-ios-followup-20261102",
+  "status": "needs-integration",
+  "summary": "Bundled iOS update includes compact Salon/All Settings, Staff hours action bridge, compact Profile header and Payroll/Today changes plus native scroll containment; replaces previous incorrect web-only native assessment",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/booking-setup/booking-setup-editors.tsx",
+    "app/booking-setup/booking-setup.css",
+    "app/local-app/app.css",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/pos/portable/device-input-settings.css",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/service-catalog.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/role-navigation.ts",
+    "app/salon-profile/salon-profile-studio.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/compact-settings.css",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking-actions.ts",
+    "app/settings/staff-hours-booking.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "app/staff/today/today-layout.module.css",
+    "components/app-local-salon-settings.tsx",
+    "components/salon-publication-status.tsx",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/customer-display-local-images.ts",
+    "lib/dialog-outside-dismiss.ts",
+    "lib/pos-service-catalog-server.ts",
+    "lib/public-explore-card-rpc.ts",
+    "tests/ios-page-scroll-browser.mjs",
+    "tests/settings-ios-parity.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102\\artifacts\\ios-settings-followup\\frozen-native",
+    "commit": "6f1e61360a7f7ebf165ce6823bc4566a639e7a82"
+  },
+  "dependencies": [],
+  "requiresNativeBuild": true,
+  "validation": [
+    {
+      "name": "Full TypeScript, scoped lint, settings/permission and parity tests",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/regression.log"
+    },
+    {
+      "name": "Activated source-bound bundle with no unsupported actions",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/local-bundle.log"
+    },
+    {
+      "name": "Actual installed JS Salon/All Settings, navigation/drafts/no overflow at 320/390/844; no writes",
+      "result": "passed",
+      "evidence": "artifacts/ios-settings-followup/installed-browser/result.json"
+    },
+    {
+      "name": "Native simulator tests, device archives, upload and Apple availability",
+      "result": "pending",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/41484072151"
+    }
+  ],
+  "limitations": [
+    "Physical iPhone acceptance of new build pending; connected iPhone currently reports 1.0.0 (82)",
+    "Source remains based on last uploaded native build 84 plus exact verified live web source; independent Market/provider activation remains held"
+  ],
+  "id": "62095b84-0c94-40da-bb1f-eb091fc16903",
+  "recordedAt": "2026-11-02T16:47:51.502Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-ios-followup-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

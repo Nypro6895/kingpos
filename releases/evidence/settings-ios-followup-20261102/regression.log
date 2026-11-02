@@ -1,0 +1,14 @@
+✔ booking view denial prevents every protected settings/setup read (1.3092ms)
+✔ independent reads overlap only after view approval and preserve restricted management (1.7239ms)
+✔ missing settings preserve original defaults and setup failures return no partial DTO (0.5952ms)
+✔ settings database failure cannot return a successful partial result (0.4951ms)
+✔ staff online toggle uses salon-settings permission independently from booking rule management (0.4569ms)
+✔ compact Settings: nested navigation, lazy editors, salon drafts, failed saves, retry and viewport fit (5791.1993ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6048.4936
