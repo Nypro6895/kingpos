@@ -1,0 +1,22 @@
+[
+  {
+    "key": "NEXT_PUBLIC_SUPABASE_URL",
+    "sameAsPriorNative": true,
+    "present": true
+  },
+  {
+    "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "sameAsPriorNative": true,
+    "present": true
+  },
+  {
+    "key": "NEXT_PUBLIC_MAPTILER_KEY",
+    "sameAsPriorNative": true,
+    "present": false
+  },
+  {
+    "key": "NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY",
+    "sameAsPriorNative": true,
+    "present": false
+  }
+]

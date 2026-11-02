@@ -1,0 +1,14 @@
+[
+  {
+    "changeId": "settings-reward-combined-release-20261102",
+    "file": "components/rewardlumi/reward-discovery.module.css",
+    "raw": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+    "git": "61154ab3b06f4b1efa1a164a65fd773e6b16cd0b91b9c82058a08720e8be7e9a"
+  },
+  {
+    "changeId": "settings-reward-combined-release-20261102",
+    "file": "supabase/migrations/20261102110000_reward_practical_acceptance.sql",
+    "raw": "ec8488c3f016e489a5aecc7c5f7e9a503fb5521bf2899858b00d118ff0c48586",
+    "git": "dd0aa1eac0583aeaaf7aea9f8117b5be8334109f8b69dafa6eca0149ac2b0d6a"
+  }
+]

@@ -1,0 +1,69 @@
+{
+  "verified": true,
+  "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+  "sourceSha256": "0d1175ea27a0560731f10fbd1368510a6d51e7f1ac6b8e509e808043da7ee480",
+  "sourceFiles": 3104,
+  "bundleBuildId": "25d15129c6b9b8a3e6ae4586ee0db50f21ed4e1a890982d3dcdba6a4ec4eea6a",
+  "bundleSha256": "1d732bfc3c45afaeefa336163fd8f138445e8d61fd8f0ad330f0a392db6b6de2",
+  "servicesCatalogPilot": false,
+  "testCount": 246,
+  "exactTestInventory": true,
+  "version": "1.0.0",
+  "build": "86",
+  "upload": "accepted",
+  "processingState": "VALID",
+  "internalBuildState": "READY_FOR_BETA_TESTING",
+  "unsignedSignedResourcesMatch": true,
+  "measurements": [
+    {
+      "coldReadyMs": 1544.868458333326,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 1,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 100,
+      "warmReadyMs": 79.37229166668658
+    },
+    {
+      "coldReadyMs": 1978.5253750000038,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 2,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 700,
+      "warmReadyMs": 34.0494583333566
+    }
+  ],
+  "measurementScope": "Installed WKWebView on CI iPhone simulator; synthetic data; not physical network timing",
+  "evidenceFolder": "artifacts/settings-deploy-20261102/native-final"
+}

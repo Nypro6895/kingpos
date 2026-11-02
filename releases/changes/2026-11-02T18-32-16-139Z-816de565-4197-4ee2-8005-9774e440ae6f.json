@@ -1,0 +1,109 @@
+{
+  "kind": "change",
+  "changeId": "settings-child-design-correction-20261102",
+  "status": "ready",
+  "summary": "Validated integrated revision: Complete compact Salon Settings and All Settings child-page implementation, including embedded Services; locally validated and frozen for the next combined web/iOS release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/account/account-deletion-panel.tsx",
+    "app/salon-settings/ownership-section.tsx",
+    "app/salon-settings/public-team-settings-editor.css",
+    "app/salon-settings/public-team-settings-editor.tsx",
+    "app/salon-settings/salon-lifecycle-section.tsx",
+    "app/services/services-manager.tsx",
+    "app/settings/booking-plugin-settings.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/connections-panel.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/settings/plugin-settings-row.tsx",
+    "app/settings/pos-settings-panel.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-child-pages.css",
+    "app/settings/settings-child-pages.tsx",
+    "app/settings/settings-compact-children.css",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "components/app-local-salon-settings.tsx",
+    "tests/settings-all-children-runtime.test.mjs",
+    "tests/settings-child-pages.test.mjs",
+    "tests/settings-public-team-compact.test.mjs",
+    "tests/settings-retained-activity.test.mjs",
+    "tests/staff-hours-settings-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+    "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+  },
+  "validation": [
+    {
+      "name": "Fresh full production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/build.log"
+    },
+    {
+      "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+    },
+    {
+      "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+      "result": "passed",
+      "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+    },
+    {
+      "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+    }
+  ],
+  "dependencies": [],
+  "integratedFromEvents": [
+    "1f99f34a-e8b8-40ee-b327-f7afafff956f"
+  ],
+  "id": "816de565-4197-4ee2-8005-9774e440ae6f",
+  "recordedAt": "2026-11-02T18:32:16.139Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/salon-settings/page.tsx": "db8b091843cbcd6b72c69ebf6e5c92397b2bd60de096e8aaec183b832b20b93a",
+    "app/account/account-deletion-panel.tsx": "390f8cdb269f299b507ec45ac0dc74b66d68d2cf909f673f31a3f75c3e570d5f",
+    "app/salon-settings/ownership-section.tsx": "1ec3001ff454b310c806369ac61ab6bcee7ce918680ceb6f6b4cc22bf46bebc7",
+    "app/salon-settings/public-team-settings-editor.css": "c888a528f1c02d3ddfc2a7692d06755c97365c3a2cac447b7fc9b6db52fb640f",
+    "app/salon-settings/public-team-settings-editor.tsx": "3b8998970c51c382ffc02da08f5d1566cfe74655fd0951c594ebe3adcfca552d",
+    "app/salon-settings/salon-lifecycle-section.tsx": "705f9f8fbd3916f428c9c35f8230fa0c3be0f619a33fe6c6eabffd4c8d0193f4",
+    "app/services/services-manager.tsx": "29ce8a0683d024a9febf086495b79de20013f5926abcab5c18b0bdc707eadbb9",
+    "app/settings/booking-plugin-settings.tsx": "479a3c4c34c86e8170016c97f8ec2cf1c063d315d1c58d13604367655c3cc238",
+    "app/settings/compact-settings-workspace.tsx": "6fac9fa1bbba82a2763b5aa2296838728f178ffb4d1de85c8e9a729edb842025",
+    "app/settings/connections-panel.tsx": "c2fa2245d497775fbce599a5c2efa3542d44526c84702cb7857604bd6da37713",
+    "app/settings/direct-settings-panel.tsx": "c2249c9b198255401f69e09e24868010104b5e4ff1b6fe670d8924d2c9b573ce",
+    "app/settings/direct-settings-ui.tsx": "8c16194bbc6be2ba85764dc0f94abd503aa0c422cd6056c12c028610994a8619",
+    "app/settings/login-security/login-security-panel.tsx": "82d2a678fff18af556b577a42d22d650e474fb02d3cf7174774d82e9b5d9a794",
+    "app/settings/ownership-lifecycle-panels.tsx": "24e4cd858ef8533477a3565db90b7ff084d35e32f0f8053470a4c9373f836d8e",
+    "app/settings/plugin-settings-row.tsx": "d8fa18a31b33badef0123d638a9db0125905747ed107a2a48a05c1eee8ed3a0d",
+    "app/settings/pos-settings-panel.tsx": "572e774c4519dd5ffbccea8046e3094dea368cb14fc281963ca54b1734ca4e57",
+    "app/settings/salon-profile-preferences-panel.tsx": "8f169b0495846a4b9c9a3205997ea03b4b96fa88b70cc95e76dc0a58fe9f7c42",
+    "app/settings/salon-settings-panels.tsx": "bf9fd3b9652c185fc8b7c8504514c31964562eb48fb4a1b33e622bc26364b018",
+    "app/settings/settings-child-pages.css": "5f0d296a8f26eb8fbd6d62e3038948651f7736e6f44dc01a3d22763fafb26232",
+    "app/settings/settings-child-pages.tsx": "39a82a9b35c06727fa90397a15de8c9500990b7b197c0ba67bfbdaeba1d986da",
+    "app/settings/settings-compact-children.css": "56be1bc884f9735cb59d19933bce6e44b9de88d86ccbe68a2e7d5b6842cabca9",
+    "app/settings/settings-hub-client.tsx": "dd52ae9469b0b3a343e49e513ac70b60d80c2796d57aafe0be2f4f27be214f8c",
+    "app/settings/staff-hours-booking.tsx": "9dbfab58e55d70082a789816ceca52493480bc09e348999f7949a5400d30fcde",
+    "app/settings/team-payroll-panels.tsx": "e859c6ca5a4ec85091c3c407c7ed6c5bf3928f005dcbce1c3f09e12f2223e481",
+    "components/app-local-salon-settings.tsx": "211ab4806bb28a6f410d40d10686503f9c689787bb9bf3db37bdfaf74cebcb9b",
+    "tests/settings-all-children-runtime.test.mjs": "4061b7bb778a795f1e15819debc3fee13f881bc6dafa9f8626504ee3127ac356",
+    "tests/settings-child-pages.test.mjs": "67bfbb8fc17e569ad1e72c33712324d9e5dee103dd7158bc37437c89cbe9aa73",
+    "tests/settings-public-team-compact.test.mjs": "f9ec969fe9d4ba4f007db9571117d2216792d9051bbf1edbaa5bf3bd467a4ed3",
+    "tests/settings-retained-activity.test.mjs": "7d4134d21893c1343e96865ed5cb2d815bcd32f065c94473c0195ffece169498",
+    "tests/staff-hours-settings-runtime.test.mjs": "9a8827a92a10c6fe66cb7740a000a853af0b1c6a74f0c251f565a8ffe464ef08"
+  }
+}

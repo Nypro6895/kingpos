@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "production-auth-return-urls-20261102",
+  "status": "ready",
+  "summary": "Owner-approved Auth Site URL https://reylumi.com with login** and reset-password** paths persisted after reload",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "releases/evidence/settings-reward-release-20261102/auth-url-verified.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-auth-config",
+    "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+  },
+  "validation": [
+    {
+      "name": "Live Supabase dashboard persisted after full reload; exactly two approved URLs",
+      "result": "passed",
+      "evidence": "releases/evidence/settings-reward-release-20261102/auth-url-verified.json"
+    },
+    {
+      "name": "Existing confirmation template uses ConfirmationURL; no provider message sent",
+      "result": "passed",
+      "evidence": "Dashboard read on 2026-11-02"
+    }
+  ],
+  "externalConfiguration": true,
+  "id": "435389f4-534e-477e-b22f-65d8773c3146",
+  "recordedAt": "2026-11-02T18:40:09.844Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "releases/evidence/settings-reward-release-20261102/auth-url-verified.json": "e62d65f602072f633fd51c12888000e554c60bc49e683a42e644a7c741f5d7a4"
+  }
+}

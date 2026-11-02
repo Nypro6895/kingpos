@@ -1,0 +1,41 @@
+{
+  "kind": "release",
+  "summary": "TestFlight 1.0.0 (86): exact new bundled Settings and Reward source, 246 tests, matching unsigned/signed resources, Apple VALID and existing distribution groups verified",
+  "changes": [
+    "816de565-4197-4ee2-8005-9774e440ae6f",
+    "950777b0-adf7-4ff6-a85d-c32c7109fda0"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "86",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+      "evidence": "releases/evidence/settings-reward-release-20261102/native-availability.json"
+    }
+  },
+  "releaseId": "settings-reward-combined-20261102",
+  "sourceCommit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+  "limitations": [
+    "Physical iPhone acceptance and real email/SMS delivery not exercised",
+    "App Store submission/publication not part of the verified TestFlight channel"
+  ],
+  "rollback": {
+    "webBaselineDeploymentId": "dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr",
+    "previousTestFlight": {
+      "version": "1.0.0",
+      "build": "85"
+    }
+  },
+  "sourceSha256": "0d1175ea27a0560731f10fbd1368510a6d51e7f1ac6b8e509e808043da7ee480",
+  "bundleBuildId": "25d15129c6b9b8a3e6ae4586ee0db50f21ed4e1a890982d3dcdba6a4ec4eea6a",
+  "bundleSha256": "1d732bfc3c45afaeefa336163fd8f138445e8d61fd8f0ad330f0a392db6b6de2",
+  "testCount": 246,
+  "workflowRun": 41501369112,
+  "availabilityRun": 41504334676,
+  "appStoreStatus": "not submitted or published by this release",
+  "id": "516ffe17-e66d-42c1-9f00-af82a7ed0af9",
+  "recordedAt": "2026-11-02T18:51:32.364Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102"
+}

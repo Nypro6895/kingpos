@@ -1,0 +1,100 @@
+{
+  "kind": "change",
+  "changeId": "reward-local-discovery-20261102",
+  "status": "ready",
+  "summary": "Validated integrated revision: Validated practical Reward discovery and owner activation; shared public readiness, attainable offers, versioned saves, truthful receipt terms and authenticated Explore-to-wallet continuity.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/api/rewards/discover/route.ts",
+    "app/api/rewards/owner-discovery/route.ts",
+    "components/rewardlumi/reward-workspaces.tsx",
+    "components/rewardlumi/reward-discovery.tsx",
+    "components/rewardlumi/reward-discovery.module.css",
+    "components/rewardlumi/reward-owner-prompt.tsx",
+    "lib/reward-discovery.ts",
+    "supabase/migrations/20261102100000_reward_local_discovery.sql",
+    "tests/reward-local-discovery.test.mjs",
+    "tests/reward-local-discovery.integration.test.mjs",
+    "tests/reward-local-discovery-ui.mjs",
+    "tests/helpers/reward-local-discovery-ui.tsx",
+    "types/rewardlumi.ts",
+    "components/rewardlumi/reward-owner-setup.tsx",
+    "components/rewardlumi/reward-salon-panel.tsx",
+    "app/api/rewards/program/route.ts",
+    "app/(app)/explore/salons/[salonId]/page.tsx",
+    "supabase/migrations/20261102110000_reward_practical_acceptance.sql",
+    "tests/helpers/reward-parallel-rpc.mjs",
+    "tests/helpers/reward-practical-app.mjs",
+    "tests/reward-actual-app.integration.mjs",
+    "lib/reward-discovery-area.ts",
+    "tests/reward-discovery-area.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+    "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+  },
+  "validation": [
+    {
+      "name": "Fresh full production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/build.log"
+    },
+    {
+      "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+    },
+    {
+      "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+      "result": "passed",
+      "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+    },
+    {
+      "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+    }
+  ],
+  "dependencies": [
+    "rewardlumi-unified-20261029"
+  ],
+  "integratedFromEvents": [
+    "e0305f48-6511-4c22-908a-2d1fc91d2d99"
+  ],
+  "id": "72cb6f73-277b-43cd-adf8-d6c62c3f3011",
+  "recordedAt": "2026-11-02T18:32:16.289Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/explore/explore-client.tsx": "66421486c296e235c66b2106922f97cb2e4377f9b87435edfba882cd339a624b",
+    "app/staff/today/today-dashboard-view.tsx": "38bdbe194dbb21e2b4820771296a2e24a895053e9c46d2d6b6ba6e520df0ee6f",
+    "app/api/rewards/discover/route.ts": "e7732d1f8c750b6636875137ecbb0b5df5ddcf5f6f7fa18708d2f26cd34806f0",
+    "app/api/rewards/owner-discovery/route.ts": "e55824c88e477b2ae5dc6a5ed4b32f7826a141f0972c4340a24c7b1d2f0a9155",
+    "components/rewardlumi/reward-workspaces.tsx": "6a96086ff01392aeb3dccc1ab98182029a98a8ccf9ff18e0422cabfc6a5bb597",
+    "components/rewardlumi/reward-discovery.tsx": "7605a37c41ba811e2cd69c058cb4c8cde9f72f15173fd56a3b4de243a49d5b18",
+    "components/rewardlumi/reward-discovery.module.css": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+    "components/rewardlumi/reward-owner-prompt.tsx": "6ad96617024fdf7a937c4567948cefab27facf99c6bb53e0a0c2bc11ab555f51",
+    "lib/reward-discovery.ts": "f4f6520c71ce35a6e849570345322246e0e9bdc92cedaa2b7a6d5718fdaedf76",
+    "supabase/migrations/20261102100000_reward_local_discovery.sql": "14dc3ab92e1f1507bc2330048a082792f5a7ade1167ad08f9c6dfa36af06f4e8",
+    "tests/reward-local-discovery.test.mjs": "9feb662e42488f89e155267740cb3382946b7993172b6b925f6a1a88a870b86c",
+    "tests/reward-local-discovery.integration.test.mjs": "10e53ae0da36e60b2196fa4f22d2945b9a247fe9c70e2d95a2be8206717c772a",
+    "tests/reward-local-discovery-ui.mjs": "456a8aa80a5934b34a67f4c389705c67594abb1f1964dba6e726b9b44e02fff3",
+    "tests/helpers/reward-local-discovery-ui.tsx": "2b9edb27862b7340add1f0fac3b9ca8dca1b3c3846900acf51e653aa44bbf404",
+    "types/rewardlumi.ts": "9d741136a43f003adddb2098b0de40fd55320060608c9211d06a776313836d65",
+    "components/rewardlumi/reward-owner-setup.tsx": "4b55c849e451349b7b2c6af814e99e1d55b772f8588c2f85feef3d6565acf202",
+    "components/rewardlumi/reward-salon-panel.tsx": "11800b3f1727cc95a4c6027c5f56044e1d046f45d375107655302739c51f98e1",
+    "app/api/rewards/program/route.ts": "b9f8480f06f1d2cf00b68a2bcfd5d2a40329309478768bfc8f89d199cf1a6a3a",
+    "app/(app)/explore/salons/[salonId]/page.tsx": "c56baf51097d7d9e651e5a29b59f1b21327ad7b38acc9434ec9522f6833e1fe6",
+    "supabase/migrations/20261102110000_reward_practical_acceptance.sql": "ec8488c3f016e489a5aecc7c5f7e9a503fb5521bf2899858b00d118ff0c48586",
+    "tests/helpers/reward-parallel-rpc.mjs": "32df796e1c70943807ee44ab3e7bec3aa6528ec404521579a548810401c048c5",
+    "tests/helpers/reward-practical-app.mjs": "b43fa0bb4779f556b6d0520e0d78df72bacc5a7d3fae0872d2197d3b405be488",
+    "tests/reward-actual-app.integration.mjs": "564b03bb1e152958247bf240222459499d64af9fa8cf857a3739782b65fac242",
+    "lib/reward-discovery-area.ts": "8a9b12cf5cead856b0a1ebf4611c51b7bbf9f01fdacab02aa5f6c0bed9f45cef",
+    "tests/reward-discovery-area.test.mjs": "3e524b6901b7a2e69b0b2398569661588d07310ba57565a6704cbd7dd59cf0b9"
+  }
+}

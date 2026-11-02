@@ -1,0 +1,626 @@
+[
+  {
+    "kind": "change",
+    "changeId": "settings-child-design-correction-20261102",
+    "status": "ready",
+    "summary": "Validated integrated revision: Complete compact Salon Settings and All Settings child-page implementation, including embedded Services; locally validated and frozen for the next combined web/iOS release",
+    "channels": [
+      "web",
+      "ios"
+    ],
+    "files": [
+      "app/(app)/salon-settings/page.tsx",
+      "app/account/account-deletion-panel.tsx",
+      "app/salon-settings/ownership-section.tsx",
+      "app/salon-settings/public-team-settings-editor.css",
+      "app/salon-settings/public-team-settings-editor.tsx",
+      "app/salon-settings/salon-lifecycle-section.tsx",
+      "app/services/services-manager.tsx",
+      "app/settings/booking-plugin-settings.tsx",
+      "app/settings/compact-settings-workspace.tsx",
+      "app/settings/connections-panel.tsx",
+      "app/settings/direct-settings-panel.tsx",
+      "app/settings/direct-settings-ui.tsx",
+      "app/settings/login-security/login-security-panel.tsx",
+      "app/settings/ownership-lifecycle-panels.tsx",
+      "app/settings/plugin-settings-row.tsx",
+      "app/settings/pos-settings-panel.tsx",
+      "app/settings/salon-profile-preferences-panel.tsx",
+      "app/settings/salon-settings-panels.tsx",
+      "app/settings/settings-child-pages.css",
+      "app/settings/settings-child-pages.tsx",
+      "app/settings/settings-compact-children.css",
+      "app/settings/settings-hub-client.tsx",
+      "app/settings/staff-hours-booking.tsx",
+      "app/settings/team-payroll-panels.tsx",
+      "components/app-local-salon-settings.tsx",
+      "tests/settings-all-children-runtime.test.mjs",
+      "tests/settings-child-pages.test.mjs",
+      "tests/settings-public-team-compact.test.mjs",
+      "tests/settings-retained-activity.test.mjs",
+      "tests/staff-hours-settings-runtime.test.mjs"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+    },
+    "validation": [
+      {
+        "name": "Fresh full production build and TypeScript",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/build.log"
+      },
+      {
+        "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+      },
+      {
+        "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+        "result": "passed",
+        "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+      },
+      {
+        "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+      }
+    ],
+    "dependencies": [],
+    "integratedFromEvents": [
+      "1f99f34a-e8b8-40ee-b327-f7afafff956f"
+    ],
+    "id": "816de565-4197-4ee2-8005-9774e440ae6f",
+    "recordedAt": "2026-11-02T18:32:16.139Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "deletedFiles": [],
+    "supersedesEvents": [],
+    "fileHashes": {
+      "app/(app)/salon-settings/page.tsx": "db8b091843cbcd6b72c69ebf6e5c92397b2bd60de096e8aaec183b832b20b93a",
+      "app/account/account-deletion-panel.tsx": "390f8cdb269f299b507ec45ac0dc74b66d68d2cf909f673f31a3f75c3e570d5f",
+      "app/salon-settings/ownership-section.tsx": "1ec3001ff454b310c806369ac61ab6bcee7ce918680ceb6f6b4cc22bf46bebc7",
+      "app/salon-settings/public-team-settings-editor.css": "c888a528f1c02d3ddfc2a7692d06755c97365c3a2cac447b7fc9b6db52fb640f",
+      "app/salon-settings/public-team-settings-editor.tsx": "3b8998970c51c382ffc02da08f5d1566cfe74655fd0951c594ebe3adcfca552d",
+      "app/salon-settings/salon-lifecycle-section.tsx": "705f9f8fbd3916f428c9c35f8230fa0c3be0f619a33fe6c6eabffd4c8d0193f4",
+      "app/services/services-manager.tsx": "29ce8a0683d024a9febf086495b79de20013f5926abcab5c18b0bdc707eadbb9",
+      "app/settings/booking-plugin-settings.tsx": "479a3c4c34c86e8170016c97f8ec2cf1c063d315d1c58d13604367655c3cc238",
+      "app/settings/compact-settings-workspace.tsx": "6fac9fa1bbba82a2763b5aa2296838728f178ffb4d1de85c8e9a729edb842025",
+      "app/settings/connections-panel.tsx": "c2fa2245d497775fbce599a5c2efa3542d44526c84702cb7857604bd6da37713",
+      "app/settings/direct-settings-panel.tsx": "c2249c9b198255401f69e09e24868010104b5e4ff1b6fe670d8924d2c9b573ce",
+      "app/settings/direct-settings-ui.tsx": "8c16194bbc6be2ba85764dc0f94abd503aa0c422cd6056c12c028610994a8619",
+      "app/settings/login-security/login-security-panel.tsx": "82d2a678fff18af556b577a42d22d650e474fb02d3cf7174774d82e9b5d9a794",
+      "app/settings/ownership-lifecycle-panels.tsx": "24e4cd858ef8533477a3565db90b7ff084d35e32f0f8053470a4c9373f836d8e",
+      "app/settings/plugin-settings-row.tsx": "d8fa18a31b33badef0123d638a9db0125905747ed107a2a48a05c1eee8ed3a0d",
+      "app/settings/pos-settings-panel.tsx": "572e774c4519dd5ffbccea8046e3094dea368cb14fc281963ca54b1734ca4e57",
+      "app/settings/salon-profile-preferences-panel.tsx": "8f169b0495846a4b9c9a3205997ea03b4b96fa88b70cc95e76dc0a58fe9f7c42",
+      "app/settings/salon-settings-panels.tsx": "bf9fd3b9652c185fc8b7c8504514c31964562eb48fb4a1b33e622bc26364b018",
+      "app/settings/settings-child-pages.css": "5f0d296a8f26eb8fbd6d62e3038948651f7736e6f44dc01a3d22763fafb26232",
+      "app/settings/settings-child-pages.tsx": "39a82a9b35c06727fa90397a15de8c9500990b7b197c0ba67bfbdaeba1d986da",
+      "app/settings/settings-compact-children.css": "56be1bc884f9735cb59d19933bce6e44b9de88d86ccbe68a2e7d5b6842cabca9",
+      "app/settings/settings-hub-client.tsx": "dd52ae9469b0b3a343e49e513ac70b60d80c2796d57aafe0be2f4f27be214f8c",
+      "app/settings/staff-hours-booking.tsx": "9dbfab58e55d70082a789816ceca52493480bc09e348999f7949a5400d30fcde",
+      "app/settings/team-payroll-panels.tsx": "e859c6ca5a4ec85091c3c407c7ed6c5bf3928f005dcbce1c3f09e12f2223e481",
+      "components/app-local-salon-settings.tsx": "211ab4806bb28a6f410d40d10686503f9c689787bb9bf3db37bdfaf74cebcb9b",
+      "tests/settings-all-children-runtime.test.mjs": "4061b7bb778a795f1e15819debc3fee13f881bc6dafa9f8626504ee3127ac356",
+      "tests/settings-child-pages.test.mjs": "67bfbb8fc17e569ad1e72c33712324d9e5dee103dd7158bc37437c89cbe9aa73",
+      "tests/settings-public-team-compact.test.mjs": "f9ec969fe9d4ba4f007db9571117d2216792d9051bbf1edbaa5bf3bd467a4ed3",
+      "tests/settings-retained-activity.test.mjs": "7d4134d21893c1343e96865ed5cb2d815bcd32f065c94473c0195ffece169498",
+      "tests/staff-hours-settings-runtime.test.mjs": "9a8827a92a10c6fe66cb7740a000a853af0b1c6a74f0c251f565a8ffe464ef08"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\changes\\2026-11-02T18-32-16-139Z-816de565-4197-4ee2-8005-9774e440ae6f.json"
+  },
+  {
+    "kind": "change",
+    "changeId": "reward-local-discovery-20261102",
+    "status": "ready",
+    "summary": "Validated integrated revision: Validated practical Reward discovery and owner activation; shared public readiness, attainable offers, versioned saves, truthful receipt terms and authenticated Explore-to-wallet continuity.",
+    "channels": [
+      "web"
+    ],
+    "files": [
+      "app/explore/explore-client.tsx",
+      "app/staff/today/today-dashboard-view.tsx",
+      "app/api/rewards/discover/route.ts",
+      "app/api/rewards/owner-discovery/route.ts",
+      "components/rewardlumi/reward-workspaces.tsx",
+      "components/rewardlumi/reward-discovery.tsx",
+      "components/rewardlumi/reward-discovery.module.css",
+      "components/rewardlumi/reward-owner-prompt.tsx",
+      "lib/reward-discovery.ts",
+      "supabase/migrations/20261102100000_reward_local_discovery.sql",
+      "tests/reward-local-discovery.test.mjs",
+      "tests/reward-local-discovery.integration.test.mjs",
+      "tests/reward-local-discovery-ui.mjs",
+      "tests/helpers/reward-local-discovery-ui.tsx",
+      "types/rewardlumi.ts",
+      "components/rewardlumi/reward-owner-setup.tsx",
+      "components/rewardlumi/reward-salon-panel.tsx",
+      "app/api/rewards/program/route.ts",
+      "app/(app)/explore/salons/[salonId]/page.tsx",
+      "supabase/migrations/20261102110000_reward_practical_acceptance.sql",
+      "tests/helpers/reward-parallel-rpc.mjs",
+      "tests/helpers/reward-practical-app.mjs",
+      "tests/reward-actual-app.integration.mjs",
+      "lib/reward-discovery-area.ts",
+      "tests/reward-discovery-area.test.mjs"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+    },
+    "validation": [
+      {
+        "name": "Fresh full production build and TypeScript",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/build.log"
+      },
+      {
+        "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+      },
+      {
+        "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+        "result": "passed",
+        "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+      },
+      {
+        "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+      }
+    ],
+    "dependencies": [
+      "rewardlumi-unified-20261029"
+    ],
+    "integratedFromEvents": [
+      "e0305f48-6511-4c22-908a-2d1fc91d2d99"
+    ],
+    "id": "72cb6f73-277b-43cd-adf8-d6c62c3f3011",
+    "recordedAt": "2026-11-02T18:32:16.289Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "deletedFiles": [],
+    "supersedesEvents": [],
+    "fileHashes": {
+      "app/explore/explore-client.tsx": "66421486c296e235c66b2106922f97cb2e4377f9b87435edfba882cd339a624b",
+      "app/staff/today/today-dashboard-view.tsx": "38bdbe194dbb21e2b4820771296a2e24a895053e9c46d2d6b6ba6e520df0ee6f",
+      "app/api/rewards/discover/route.ts": "e7732d1f8c750b6636875137ecbb0b5df5ddcf5f6f7fa18708d2f26cd34806f0",
+      "app/api/rewards/owner-discovery/route.ts": "e55824c88e477b2ae5dc6a5ed4b32f7826a141f0972c4340a24c7b1d2f0a9155",
+      "components/rewardlumi/reward-workspaces.tsx": "6a96086ff01392aeb3dccc1ab98182029a98a8ccf9ff18e0422cabfc6a5bb597",
+      "components/rewardlumi/reward-discovery.tsx": "7605a37c41ba811e2cd69c058cb4c8cde9f72f15173fd56a3b4de243a49d5b18",
+      "components/rewardlumi/reward-discovery.module.css": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+      "components/rewardlumi/reward-owner-prompt.tsx": "6ad96617024fdf7a937c4567948cefab27facf99c6bb53e0a0c2bc11ab555f51",
+      "lib/reward-discovery.ts": "f4f6520c71ce35a6e849570345322246e0e9bdc92cedaa2b7a6d5718fdaedf76",
+      "supabase/migrations/20261102100000_reward_local_discovery.sql": "14dc3ab92e1f1507bc2330048a082792f5a7ade1167ad08f9c6dfa36af06f4e8",
+      "tests/reward-local-discovery.test.mjs": "9feb662e42488f89e155267740cb3382946b7993172b6b925f6a1a88a870b86c",
+      "tests/reward-local-discovery.integration.test.mjs": "10e53ae0da36e60b2196fa4f22d2945b9a247fe9c70e2d95a2be8206717c772a",
+      "tests/reward-local-discovery-ui.mjs": "456a8aa80a5934b34a67f4c389705c67594abb1f1964dba6e726b9b44e02fff3",
+      "tests/helpers/reward-local-discovery-ui.tsx": "2b9edb27862b7340add1f0fac3b9ca8dca1b3c3846900acf51e653aa44bbf404",
+      "types/rewardlumi.ts": "9d741136a43f003adddb2098b0de40fd55320060608c9211d06a776313836d65",
+      "components/rewardlumi/reward-owner-setup.tsx": "4b55c849e451349b7b2c6af814e99e1d55b772f8588c2f85feef3d6565acf202",
+      "components/rewardlumi/reward-salon-panel.tsx": "11800b3f1727cc95a4c6027c5f56044e1d046f45d375107655302739c51f98e1",
+      "app/api/rewards/program/route.ts": "b9f8480f06f1d2cf00b68a2bcfd5d2a40329309478768bfc8f89d199cf1a6a3a",
+      "app/(app)/explore/salons/[salonId]/page.tsx": "c56baf51097d7d9e651e5a29b59f1b21327ad7b38acc9434ec9522f6833e1fe6",
+      "supabase/migrations/20261102110000_reward_practical_acceptance.sql": "ec8488c3f016e489a5aecc7c5f7e9a503fb5521bf2899858b00d118ff0c48586",
+      "tests/helpers/reward-parallel-rpc.mjs": "32df796e1c70943807ee44ab3e7bec3aa6528ec404521579a548810401c048c5",
+      "tests/helpers/reward-practical-app.mjs": "b43fa0bb4779f556b6d0520e0d78df72bacc5a7d3fae0872d2197d3b405be488",
+      "tests/reward-actual-app.integration.mjs": "564b03bb1e152958247bf240222459499d64af9fa8cf857a3739782b65fac242",
+      "lib/reward-discovery-area.ts": "8a9b12cf5cead856b0a1ebf4611c51b7bbf9f01fdacab02aa5f6c0bed9f45cef",
+      "tests/reward-discovery-area.test.mjs": "3e524b6901b7a2e69b0b2398569661588d07310ba57565a6704cbd7dd59cf0b9"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\changes\\2026-11-02T18-32-16-289Z-72cb6f73-277b-43cd-adf8-d6c62c3f3011.json"
+  },
+  {
+    "kind": "change",
+    "changeId": "reward-promo-popup-20261102",
+    "status": "ready",
+    "summary": "Validated integrated revision: Validated image-led Reward promotion with action-first/account-aware invitation, signup return context and expandable exact terms; local and financial authority preserved.",
+    "channels": [
+      "web"
+    ],
+    "files": [
+      "components/rewardlumi/reward-discovery.tsx",
+      "components/rewardlumi/reward-discovery.module.css",
+      "tests/reward-local-discovery-ui.mjs",
+      "tests/helpers/reward-local-discovery-ui.tsx",
+      "tests/helpers/reward-practical-app.mjs",
+      "public/images/rewards/nail-care-rewards-v1.webp"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+    },
+    "validation": [
+      {
+        "name": "Fresh full production build and TypeScript",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/build.log"
+      },
+      {
+        "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+      },
+      {
+        "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+        "result": "passed",
+        "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+      },
+      {
+        "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+      }
+    ],
+    "dependencies": [
+      "reward-local-discovery-20261102"
+    ],
+    "integratedFromEvents": [
+      "beb9d271-be8f-4793-86ad-d375a2c4b6e7"
+    ],
+    "id": "681ceff3-449b-4936-b595-c1268cf343d9",
+    "recordedAt": "2026-11-02T18:32:16.437Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "deletedFiles": [],
+    "supersedesEvents": [],
+    "fileHashes": {
+      "components/rewardlumi/reward-discovery.tsx": "7605a37c41ba811e2cd69c058cb4c8cde9f72f15173fd56a3b4de243a49d5b18",
+      "components/rewardlumi/reward-discovery.module.css": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+      "tests/reward-local-discovery-ui.mjs": "456a8aa80a5934b34a67f4c389705c67594abb1f1964dba6e726b9b44e02fff3",
+      "tests/helpers/reward-local-discovery-ui.tsx": "2b9edb27862b7340add1f0fac3b9ca8dca1b3c3846900acf51e653aa44bbf404",
+      "tests/helpers/reward-practical-app.mjs": "b43fa0bb4779f556b6d0520e0d78df72bacc5a7d3fae0872d2197d3b405be488",
+      "public/images/rewards/nail-care-rewards-v1.webp": "a8f4cf7db4e9be9d832c09c406c378b8af47f5151a9710e65f595f6ebb155ef3"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\changes\\2026-11-02T18-32-16-437Z-681ceff3-449b-4936-b595-c1268cf343d9.json"
+  },
+  {
+    "kind": "change",
+    "changeId": "reward-practical-journey-20261102",
+    "status": "ready",
+    "summary": "Validated integrated revision: Validated practical Reward journey: actor/filter-aware invitation and CTA, actual booking readiness, public cover boundary, local context, cancellable details, action-first salon panel, truthful owner metrics and signup confirmation continuity.",
+    "channels": [
+      "web"
+    ],
+    "files": [
+      "components/rewardlumi/reward-discovery.tsx",
+      "components/rewardlumi/reward-discovery.module.css",
+      "components/rewardlumi/reward-salon-panel.tsx",
+      "components/rewardlumi/reward-owner-prompt.tsx",
+      "components/rewardlumi/reward-promo-artwork.tsx",
+      "lib/reward-discovery.ts",
+      "lib/reward-invitation.ts",
+      "lib/reward-public-context.ts",
+      "lib/public-booking.ts",
+      "lib/auth-fragment.ts",
+      "app/api/rewards/program/route.ts",
+      "app/(app)/api/auth/signup/route.ts",
+      "app/login/login-form.tsx",
+      "supabase/migrations/20261102120000_reward_public_promo_context.sql",
+      "tests/reward-local-discovery-ui.mjs",
+      "tests/helpers/reward-local-discovery-ui.tsx",
+      "tests/helpers/reward-practical-app.mjs",
+      "tests/reward-actual-app.integration.mjs",
+      "tests/reward-local-discovery.integration.test.mjs",
+      "tests/reward-invitation.test.mjs",
+      "tests/reward-public-context.runtime.test.mjs",
+      "tests/helpers/reward-public-context-acceptance.mjs",
+      "tests/reward-auth-continuity.test.mjs",
+      "tests/reward-auth-confirmation.integration.mjs",
+      "tests/auth-fragment-runtime.test.mjs"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+    },
+    "validation": [
+      {
+        "name": "Fresh full production build and TypeScript",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/build.log"
+      },
+      {
+        "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+      },
+      {
+        "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+        "result": "passed",
+        "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+      },
+      {
+        "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+      }
+    ],
+    "dependencies": [
+      "reward-local-discovery-20261102",
+      "reward-promo-popup-20261102"
+    ],
+    "integratedFromEvents": [
+      "c2e37f21-b939-4d6b-8945-0dbe3fb52dac"
+    ],
+    "id": "5dcac02d-9231-4f2c-8597-f5f8dd10437e",
+    "recordedAt": "2026-11-02T18:32:16.582Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "deletedFiles": [],
+    "supersedesEvents": [],
+    "fileHashes": {
+      "components/rewardlumi/reward-discovery.tsx": "7605a37c41ba811e2cd69c058cb4c8cde9f72f15173fd56a3b4de243a49d5b18",
+      "components/rewardlumi/reward-discovery.module.css": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+      "components/rewardlumi/reward-salon-panel.tsx": "11800b3f1727cc95a4c6027c5f56044e1d046f45d375107655302739c51f98e1",
+      "components/rewardlumi/reward-owner-prompt.tsx": "6ad96617024fdf7a937c4567948cefab27facf99c6bb53e0a0c2bc11ab555f51",
+      "components/rewardlumi/reward-promo-artwork.tsx": "790717ab570ec9cfca18b53b494ff4267c15da37bdd53025e82d9aba854f0929",
+      "lib/reward-discovery.ts": "f4f6520c71ce35a6e849570345322246e0e9bdc92cedaa2b7a6d5718fdaedf76",
+      "lib/reward-invitation.ts": "712dc406af41b37088871e65b00479d72532a8c0b1b5c7bf705a55f5d23593ac",
+      "lib/reward-public-context.ts": "3a01a463c3f7650fb6e49aff86af89db1e477574cbc311e51866e96d37b2a68f",
+      "lib/public-booking.ts": "65a88a3d0ac06583790e3000fc4e79f37c94f77c1824e1e6c22549743001dc11",
+      "lib/auth-fragment.ts": "28166282b96fb8c3885599339c78b8b7cc6566759d64f9be942de4868ee63876",
+      "app/api/rewards/program/route.ts": "b9f8480f06f1d2cf00b68a2bcfd5d2a40329309478768bfc8f89d199cf1a6a3a",
+      "app/(app)/api/auth/signup/route.ts": "6124289733eeb163c5becdc0eda634fb0d60f76450fb2e213bba8fb4b2900fd4",
+      "app/login/login-form.tsx": "b15e46985c46fe5e6000052da7891421182b75545b78d9a5ffdf299c97ead7a2",
+      "supabase/migrations/20261102120000_reward_public_promo_context.sql": "b5b1badf67f4edd1b2165bb72c9dcad62979dccb8f07dd8b84e9a9574148b654",
+      "tests/reward-local-discovery-ui.mjs": "456a8aa80a5934b34a67f4c389705c67594abb1f1964dba6e726b9b44e02fff3",
+      "tests/helpers/reward-local-discovery-ui.tsx": "2b9edb27862b7340add1f0fac3b9ca8dca1b3c3846900acf51e653aa44bbf404",
+      "tests/helpers/reward-practical-app.mjs": "b43fa0bb4779f556b6d0520e0d78df72bacc5a7d3fae0872d2197d3b405be488",
+      "tests/reward-actual-app.integration.mjs": "564b03bb1e152958247bf240222459499d64af9fa8cf857a3739782b65fac242",
+      "tests/reward-local-discovery.integration.test.mjs": "10e53ae0da36e60b2196fa4f22d2945b9a247fe9c70e2d95a2be8206717c772a",
+      "tests/reward-invitation.test.mjs": "233265e6ff99e53988b919cfe91efe3dd09e9259141d33508f943411bf0eaec8",
+      "tests/reward-public-context.runtime.test.mjs": "d6914d49cb640a39807ba3a172024c92fe876536e995ec7bb10b057d261f68a9",
+      "tests/helpers/reward-public-context-acceptance.mjs": "02b643f33fbf09808ea9b7c65596ca1f0ba1d04070ad86483c821ebc18e2b832",
+      "tests/reward-auth-continuity.test.mjs": "97cc4edc4e6a73af9ca4f9770db8f335e21be0fdbfb0d97e5d95c0ee8f831e53",
+      "tests/reward-auth-confirmation.integration.mjs": "345e3612ab00fb2ea66ff7084905d5d6038b33d9c4de25af3e5f5b008cdb7268",
+      "tests/auth-fragment-runtime.test.mjs": "606bb65ea0b6770e3fdc535496cb6838466b16da97c72e806aa0637570260636"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\changes\\2026-11-02T18-32-16-582Z-5dcac02d-9231-4f2c-8597-f5f8dd10437e.json"
+  },
+  {
+    "kind": "change",
+    "changeId": "settings-reward-combined-release-20261102",
+    "status": "ready",
+    "summary": "Exact current web source, compact Settings and authorized Reward overlays, preserving uploaded iOS native fixes",
+    "channels": [
+      "web",
+      "ios"
+    ],
+    "files": [
+      "app/(app)/api/auth/signup/route.ts",
+      "app/(app)/explore/salons/[salonId]/page.tsx",
+      "app/(app)/salon-settings/page.tsx",
+      "app/account/account-deletion-panel.tsx",
+      "app/api/rewards/discover/route.ts",
+      "app/api/rewards/owner-discovery/route.ts",
+      "app/api/rewards/program/route.ts",
+      "app/explore/explore-client.tsx",
+      "app/local-app/app.css",
+      "app/login/login-form.tsx",
+      "app/salon-settings/ownership-section.tsx",
+      "app/salon-settings/public-team-settings-editor.css",
+      "app/salon-settings/public-team-settings-editor.tsx",
+      "app/salon-settings/salon-lifecycle-section.tsx",
+      "app/services/services-manager.tsx",
+      "app/settings/booking-plugin-settings.tsx",
+      "app/settings/compact-settings-workspace.tsx",
+      "app/settings/connections-panel.tsx",
+      "app/settings/direct-settings-panel.tsx",
+      "app/settings/direct-settings-ui.tsx",
+      "app/settings/login-security/login-security-panel.tsx",
+      "app/settings/ownership-lifecycle-panels.tsx",
+      "app/settings/plugin-settings-row.tsx",
+      "app/settings/pos-settings-panel.tsx",
+      "app/settings/salon-profile-preferences-panel.tsx",
+      "app/settings/salon-settings-panels.tsx",
+      "app/settings/settings-child-pages.css",
+      "app/settings/settings-child-pages.tsx",
+      "app/settings/settings-compact-children.css",
+      "app/settings/settings-hub-client.tsx",
+      "app/settings/staff-hours-booking.tsx",
+      "app/settings/team-payroll-panels.tsx",
+      "app/staff/today/today-dashboard-view.tsx",
+      "components/app-local-salon-settings.tsx",
+      "components/rewardlumi/reward-discovery.module.css",
+      "components/rewardlumi/reward-discovery.tsx",
+      "components/rewardlumi/reward-owner-prompt.tsx",
+      "components/rewardlumi/reward-owner-setup.tsx",
+      "components/rewardlumi/reward-promo-artwork.tsx",
+      "components/rewardlumi/reward-salon-panel.tsx",
+      "components/rewardlumi/reward-workspaces.tsx",
+      "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "ios/Reylumi/ReylumiViewController.swift",
+      "ios/ReylumiTests/AppViewportTests.swift",
+      "ios/ReylumiTests/LocalAppWebViewTests.swift",
+      "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+      "lib/auth-fragment.ts",
+      "lib/public-booking.ts",
+      "lib/reward-discovery-area.ts",
+      "lib/reward-discovery.ts",
+      "lib/reward-invitation.ts",
+      "lib/reward-public-context.ts",
+      "public/images/rewards/nail-care-rewards-v1.webp",
+      "supabase/migrations/20261102100000_reward_local_discovery.sql",
+      "supabase/migrations/20261102110000_reward_practical_acceptance.sql",
+      "supabase/migrations/20261102120000_reward_public_promo_context.sql",
+      "tests/auth-fragment-runtime.test.mjs",
+      "tests/helpers/reward-local-discovery-ui.tsx",
+      "tests/helpers/reward-parallel-rpc.mjs",
+      "tests/helpers/reward-practical-app.mjs",
+      "tests/helpers/reward-public-context-acceptance.mjs",
+      "tests/reward-actual-app.integration.mjs",
+      "tests/reward-auth-confirmation.integration.mjs",
+      "tests/reward-auth-continuity.test.mjs",
+      "tests/reward-discovery-area.test.mjs",
+      "tests/reward-invitation.test.mjs",
+      "tests/reward-local-discovery-ui.mjs",
+      "tests/reward-local-discovery.integration.test.mjs",
+      "tests/reward-local-discovery.test.mjs",
+      "tests/reward-public-context.runtime.test.mjs",
+      "tests/settings-all-children-runtime.test.mjs",
+      "tests/settings-child-pages.test.mjs",
+      "tests/settings-public-team-compact.test.mjs",
+      "tests/settings-retained-activity.test.mjs",
+      "tests/staff-hours-settings-runtime.test.mjs",
+      "types/rewardlumi.ts"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+    },
+    "validation": [
+      {
+        "name": "Fresh full production build and TypeScript",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/build.log"
+      },
+      {
+        "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+      },
+      {
+        "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+        "result": "passed",
+        "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+      },
+      {
+        "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+        "result": "passed",
+        "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+      }
+    ],
+    "dependencies": [
+      "settings-child-design-correction-20261102",
+      "reward-local-discovery-20261102",
+      "reward-promo-popup-20261102",
+      "reward-practical-journey-20261102"
+    ],
+    "integratedFromEvents": [
+      "1f99f34a-e8b8-40ee-b327-f7afafff956f",
+      "e0305f48-6511-4c22-908a-2d1fc91d2d99",
+      "beb9d271-be8f-4793-86ad-d375a2c4b6e7",
+      "c2e37f21-b939-4d6b-8945-0dbe3fb52dac"
+    ],
+    "id": "f8b77a39-7709-4524-ae51-309fdf2cc246",
+    "recordedAt": "2026-11-02T18:32:16.765Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "deletedFiles": [],
+    "supersedesEvents": [],
+    "fileHashes": {
+      "app/(app)/api/auth/signup/route.ts": "6124289733eeb163c5becdc0eda634fb0d60f76450fb2e213bba8fb4b2900fd4",
+      "app/(app)/explore/salons/[salonId]/page.tsx": "c56baf51097d7d9e651e5a29b59f1b21327ad7b38acc9434ec9522f6833e1fe6",
+      "app/(app)/salon-settings/page.tsx": "db8b091843cbcd6b72c69ebf6e5c92397b2bd60de096e8aaec183b832b20b93a",
+      "app/account/account-deletion-panel.tsx": "390f8cdb269f299b507ec45ac0dc74b66d68d2cf909f673f31a3f75c3e570d5f",
+      "app/api/rewards/discover/route.ts": "e7732d1f8c750b6636875137ecbb0b5df5ddcf5f6f7fa18708d2f26cd34806f0",
+      "app/api/rewards/owner-discovery/route.ts": "e55824c88e477b2ae5dc6a5ed4b32f7826a141f0972c4340a24c7b1d2f0a9155",
+      "app/api/rewards/program/route.ts": "b9f8480f06f1d2cf00b68a2bcfd5d2a40329309478768bfc8f89d199cf1a6a3a",
+      "app/explore/explore-client.tsx": "66421486c296e235c66b2106922f97cb2e4377f9b87435edfba882cd339a624b",
+      "app/local-app/app.css": "a21adf4c1ec5ae89f0dba7516f98ebabaa7297b0853fadef0c77845ff6b1d79e",
+      "app/login/login-form.tsx": "b15e46985c46fe5e6000052da7891421182b75545b78d9a5ffdf299c97ead7a2",
+      "app/salon-settings/ownership-section.tsx": "1ec3001ff454b310c806369ac61ab6bcee7ce918680ceb6f6b4cc22bf46bebc7",
+      "app/salon-settings/public-team-settings-editor.css": "c888a528f1c02d3ddfc2a7692d06755c97365c3a2cac447b7fc9b6db52fb640f",
+      "app/salon-settings/public-team-settings-editor.tsx": "3b8998970c51c382ffc02da08f5d1566cfe74655fd0951c594ebe3adcfca552d",
+      "app/salon-settings/salon-lifecycle-section.tsx": "705f9f8fbd3916f428c9c35f8230fa0c3be0f619a33fe6c6eabffd4c8d0193f4",
+      "app/services/services-manager.tsx": "29ce8a0683d024a9febf086495b79de20013f5926abcab5c18b0bdc707eadbb9",
+      "app/settings/booking-plugin-settings.tsx": "479a3c4c34c86e8170016c97f8ec2cf1c063d315d1c58d13604367655c3cc238",
+      "app/settings/compact-settings-workspace.tsx": "6fac9fa1bbba82a2763b5aa2296838728f178ffb4d1de85c8e9a729edb842025",
+      "app/settings/connections-panel.tsx": "c2fa2245d497775fbce599a5c2efa3542d44526c84702cb7857604bd6da37713",
+      "app/settings/direct-settings-panel.tsx": "c2249c9b198255401f69e09e24868010104b5e4ff1b6fe670d8924d2c9b573ce",
+      "app/settings/direct-settings-ui.tsx": "8c16194bbc6be2ba85764dc0f94abd503aa0c422cd6056c12c028610994a8619",
+      "app/settings/login-security/login-security-panel.tsx": "82d2a678fff18af556b577a42d22d650e474fb02d3cf7174774d82e9b5d9a794",
+      "app/settings/ownership-lifecycle-panels.tsx": "24e4cd858ef8533477a3565db90b7ff084d35e32f0f8053470a4c9373f836d8e",
+      "app/settings/plugin-settings-row.tsx": "d8fa18a31b33badef0123d638a9db0125905747ed107a2a48a05c1eee8ed3a0d",
+      "app/settings/pos-settings-panel.tsx": "572e774c4519dd5ffbccea8046e3094dea368cb14fc281963ca54b1734ca4e57",
+      "app/settings/salon-profile-preferences-panel.tsx": "8f169b0495846a4b9c9a3205997ea03b4b96fa88b70cc95e76dc0a58fe9f7c42",
+      "app/settings/salon-settings-panels.tsx": "bf9fd3b9652c185fc8b7c8504514c31964562eb48fb4a1b33e622bc26364b018",
+      "app/settings/settings-child-pages.css": "5f0d296a8f26eb8fbd6d62e3038948651f7736e6f44dc01a3d22763fafb26232",
+      "app/settings/settings-child-pages.tsx": "39a82a9b35c06727fa90397a15de8c9500990b7b197c0ba67bfbdaeba1d986da",
+      "app/settings/settings-compact-children.css": "56be1bc884f9735cb59d19933bce6e44b9de88d86ccbe68a2e7d5b6842cabca9",
+      "app/settings/settings-hub-client.tsx": "dd52ae9469b0b3a343e49e513ac70b60d80c2796d57aafe0be2f4f27be214f8c",
+      "app/settings/staff-hours-booking.tsx": "9dbfab58e55d70082a789816ceca52493480bc09e348999f7949a5400d30fcde",
+      "app/settings/team-payroll-panels.tsx": "e859c6ca5a4ec85091c3c407c7ed6c5bf3928f005dcbce1c3f09e12f2223e481",
+      "app/staff/today/today-dashboard-view.tsx": "38bdbe194dbb21e2b4820771296a2e24a895053e9c46d2d6b6ba6e520df0ee6f",
+      "components/app-local-salon-settings.tsx": "211ab4806bb28a6f410d40d10686503f9c689787bb9bf3db37bdfaf74cebcb9b",
+      "components/rewardlumi/reward-discovery.module.css": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+      "components/rewardlumi/reward-discovery.tsx": "7605a37c41ba811e2cd69c058cb4c8cde9f72f15173fd56a3b4de243a49d5b18",
+      "components/rewardlumi/reward-owner-prompt.tsx": "6ad96617024fdf7a937c4567948cefab27facf99c6bb53e0a0c2bc11ab555f51",
+      "components/rewardlumi/reward-owner-setup.tsx": "4b55c849e451349b7b2c6af814e99e1d55b772f8588c2f85feef3d6565acf202",
+      "components/rewardlumi/reward-promo-artwork.tsx": "790717ab570ec9cfca18b53b494ff4267c15da37bdd53025e82d9aba854f0929",
+      "components/rewardlumi/reward-salon-panel.tsx": "11800b3f1727cc95a4c6027c5f56044e1d046f45d375107655302739c51f98e1",
+      "components/rewardlumi/reward-workspaces.tsx": "6a96086ff01392aeb3dccc1ab98182029a98a8ccf9ff18e0422cabfc6a5bb597",
+      "ios/Reylumi/ReylumiLocalAppViewController.swift": "8dc1fa0e5452b6719fcd69ec3b681de3cdd44a91868b07330b2a623e6040b739",
+      "ios/Reylumi/ReylumiViewController.swift": "e4538c2a23686c62a555364461a33e9f029e696be2c6cad134e92b0d95a5a1d4",
+      "ios/ReylumiTests/AppViewportTests.swift": "364c3037d87315fb00921a724b621ec457e820f2c89dcc81c3176dd4ad4ad84e",
+      "ios/ReylumiTests/LocalAppWebViewTests.swift": "264f123211e5f925d22533ab30b42d950884caddf52771e34383b8bd462d9439",
+      "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "d9d0c0863e3a332b660d35fd1ea795fe7a5140b6eb333adfb18b46a0f1ed8121",
+      "lib/auth-fragment.ts": "28166282b96fb8c3885599339c78b8b7cc6566759d64f9be942de4868ee63876",
+      "lib/public-booking.ts": "65a88a3d0ac06583790e3000fc4e79f37c94f77c1824e1e6c22549743001dc11",
+      "lib/reward-discovery-area.ts": "8a9b12cf5cead856b0a1ebf4611c51b7bbf9f01fdacab02aa5f6c0bed9f45cef",
+      "lib/reward-discovery.ts": "f4f6520c71ce35a6e849570345322246e0e9bdc92cedaa2b7a6d5718fdaedf76",
+      "lib/reward-invitation.ts": "712dc406af41b37088871e65b00479d72532a8c0b1b5c7bf705a55f5d23593ac",
+      "lib/reward-public-context.ts": "3a01a463c3f7650fb6e49aff86af89db1e477574cbc311e51866e96d37b2a68f",
+      "public/images/rewards/nail-care-rewards-v1.webp": "a8f4cf7db4e9be9d832c09c406c378b8af47f5151a9710e65f595f6ebb155ef3",
+      "supabase/migrations/20261102100000_reward_local_discovery.sql": "14dc3ab92e1f1507bc2330048a082792f5a7ade1167ad08f9c6dfa36af06f4e8",
+      "supabase/migrations/20261102110000_reward_practical_acceptance.sql": "ec8488c3f016e489a5aecc7c5f7e9a503fb5521bf2899858b00d118ff0c48586",
+      "supabase/migrations/20261102120000_reward_public_promo_context.sql": "b5b1badf67f4edd1b2165bb72c9dcad62979dccb8f07dd8b84e9a9574148b654",
+      "tests/auth-fragment-runtime.test.mjs": "606bb65ea0b6770e3fdc535496cb6838466b16da97c72e806aa0637570260636",
+      "tests/helpers/reward-local-discovery-ui.tsx": "2b9edb27862b7340add1f0fac3b9ca8dca1b3c3846900acf51e653aa44bbf404",
+      "tests/helpers/reward-parallel-rpc.mjs": "32df796e1c70943807ee44ab3e7bec3aa6528ec404521579a548810401c048c5",
+      "tests/helpers/reward-practical-app.mjs": "b43fa0bb4779f556b6d0520e0d78df72bacc5a7d3fae0872d2197d3b405be488",
+      "tests/helpers/reward-public-context-acceptance.mjs": "02b643f33fbf09808ea9b7c65596ca1f0ba1d04070ad86483c821ebc18e2b832",
+      "tests/reward-actual-app.integration.mjs": "564b03bb1e152958247bf240222459499d64af9fa8cf857a3739782b65fac242",
+      "tests/reward-auth-confirmation.integration.mjs": "345e3612ab00fb2ea66ff7084905d5d6038b33d9c4de25af3e5f5b008cdb7268",
+      "tests/reward-auth-continuity.test.mjs": "97cc4edc4e6a73af9ca4f9770db8f335e21be0fdbfb0d97e5d95c0ee8f831e53",
+      "tests/reward-discovery-area.test.mjs": "3e524b6901b7a2e69b0b2398569661588d07310ba57565a6704cbd7dd59cf0b9",
+      "tests/reward-invitation.test.mjs": "233265e6ff99e53988b919cfe91efe3dd09e9259141d33508f943411bf0eaec8",
+      "tests/reward-local-discovery-ui.mjs": "456a8aa80a5934b34a67f4c389705c67594abb1f1964dba6e726b9b44e02fff3",
+      "tests/reward-local-discovery.integration.test.mjs": "10e53ae0da36e60b2196fa4f22d2945b9a247fe9c70e2d95a2be8206717c772a",
+      "tests/reward-local-discovery.test.mjs": "9feb662e42488f89e155267740cb3382946b7993172b6b925f6a1a88a870b86c",
+      "tests/reward-public-context.runtime.test.mjs": "d6914d49cb640a39807ba3a172024c92fe876536e995ec7bb10b057d261f68a9",
+      "tests/settings-all-children-runtime.test.mjs": "4061b7bb778a795f1e15819debc3fee13f881bc6dafa9f8626504ee3127ac356",
+      "tests/settings-child-pages.test.mjs": "67bfbb8fc17e569ad1e72c33712324d9e5dee103dd7158bc37437c89cbe9aa73",
+      "tests/settings-public-team-compact.test.mjs": "f9ec969fe9d4ba4f007db9571117d2216792d9051bbf1edbaa5bf3bd467a4ed3",
+      "tests/settings-retained-activity.test.mjs": "7d4134d21893c1343e96865ed5cb2d815bcd32f065c94473c0195ffece169498",
+      "tests/staff-hours-settings-runtime.test.mjs": "9a8827a92a10c6fe66cb7740a000a853af0b1c6a74f0c251f565a8ffe464ef08",
+      "types/rewardlumi.ts": "9d741136a43f003adddb2098b0de40fd55320060608c9211d06a776313836d65"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\changes\\2026-11-02T18-32-16-765Z-f8b77a39-7709-4524-ae51-309fdf2cc246.json"
+  },
+  {
+    "kind": "change",
+    "changeId": "production-auth-return-urls-20261102",
+    "status": "ready",
+    "summary": "Owner-approved Auth Site URL https://reylumi.com with login** and reset-password** paths persisted after reload",
+    "channels": [
+      "web"
+    ],
+    "files": [
+      "releases/evidence/settings-reward-release-20261102/auth-url-verified.json"
+    ],
+    "source": {
+      "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-auth-config",
+      "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+    },
+    "validation": [
+      {
+        "name": "Live Supabase dashboard persisted after full reload; exactly two approved URLs",
+        "result": "passed",
+        "evidence": "releases/evidence/settings-reward-release-20261102/auth-url-verified.json"
+      },
+      {
+        "name": "Existing confirmation template uses ConfirmationURL; no provider message sent",
+        "result": "passed",
+        "evidence": "Dashboard read on 2026-11-02"
+      }
+    ],
+    "externalConfiguration": true,
+    "id": "435389f4-534e-477e-b22f-65d8773c3146",
+    "recordedAt": "2026-11-02T18:40:09.844Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "deletedFiles": [],
+    "supersedesEvents": [],
+    "fileHashes": {
+      "releases/evidence/settings-reward-release-20261102/auth-url-verified.json": "e62d65f602072f633fd51c12888000e554c60bc49e683a42e644a7c741f5d7a4"
+    },
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\changes\\2026-11-02T18-40-09-844Z-435389f4-534e-477e-b22f-65d8773c3146.json"
+  }
+]

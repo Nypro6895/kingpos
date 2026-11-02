@@ -1,0 +1,32 @@
+[
+  {
+    "path": "/api/rewards/discover",
+    "status": 200,
+    "cacheControl": "no-store",
+    "body": "{\"salons\":[],\"hasMore\":false,\"needsArea\":true}"
+  },
+  {
+    "path": "/api/rewards/discover?location=Chicago%2C%20IL",
+    "status": 200,
+    "cacheControl": "no-store",
+    "body": "{\"salons\":[],\"hasMore\":false,\"areaLabel\":\"Chicago, IL\"}"
+  },
+  {
+    "path": "/api/rewards/discover?lat=&lon=0",
+    "status": 400,
+    "cacheControl": "no-store",
+    "body": "{\"error\":\"Choose a valid location.\"}"
+  },
+  {
+    "path": "/api/rewards/program?salonId=00000000-0000-4000-8000-000000000000",
+    "status": 200,
+    "cacheControl": "no-store",
+    "body": "{\"salon\":null,\"authenticated\":false}"
+  },
+  {
+    "path": "/api/rewards/owner-discovery",
+    "status": 403,
+    "cacheControl": "no-store",
+    "body": "{\"error\":\"Select your Owner workspace.\"}"
+  }
+]

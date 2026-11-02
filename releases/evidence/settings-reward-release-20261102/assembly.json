@@ -1,0 +1,249 @@
+{
+  "settings": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/account/account-deletion-panel.tsx",
+    "app/salon-settings/ownership-section.tsx",
+    "app/salon-settings/public-team-settings-editor.css",
+    "app/salon-settings/public-team-settings-editor.tsx",
+    "app/salon-settings/salon-lifecycle-section.tsx",
+    "app/services/services-manager.tsx",
+    "app/settings/booking-plugin-settings.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/connections-panel.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/settings/plugin-settings-row.tsx",
+    "app/settings/pos-settings-panel.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-child-pages.css",
+    "app/settings/settings-child-pages.tsx",
+    "app/settings/settings-compact-children.css",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "components/app-local-salon-settings.tsx",
+    "tests/settings-all-children-runtime.test.mjs",
+    "tests/settings-child-pages.test.mjs",
+    "tests/settings-public-team-compact.test.mjs",
+    "tests/settings-retained-activity.test.mjs",
+    "tests/staff-hours-settings-runtime.test.mjs"
+  ],
+  "nativeFiles": [
+    "app/local-app/app.css",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift"
+  ],
+  "reward": [
+    {
+      "file": "app/explore/explore-client.tsx",
+      "mode": "three-way"
+    },
+    {
+      "file": "app/staff/today/today-dashboard-view.tsx",
+      "mode": "three-way"
+    },
+    {
+      "file": "app/api/rewards/discover/route.ts",
+      "mode": "new"
+    },
+    {
+      "file": "app/api/rewards/owner-discovery/route.ts",
+      "mode": "new"
+    },
+    {
+      "file": "components/rewardlumi/reward-workspaces.tsx",
+      "mode": "exact-before-image"
+    },
+    {
+      "file": "components/rewardlumi/reward-discovery.tsx",
+      "mode": "new"
+    },
+    {
+      "file": "components/rewardlumi/reward-discovery.module.css",
+      "mode": "new"
+    },
+    {
+      "file": "components/rewardlumi/reward-owner-prompt.tsx",
+      "mode": "new"
+    },
+    {
+      "file": "lib/reward-discovery.ts",
+      "mode": "new"
+    },
+    {
+      "file": "supabase/migrations/20261102100000_reward_local_discovery.sql",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-local-discovery.test.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-local-discovery.integration.test.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-local-discovery-ui.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/helpers/reward-local-discovery-ui.tsx",
+      "mode": "new"
+    },
+    {
+      "file": "types/rewardlumi.ts",
+      "mode": "exact-before-image"
+    },
+    {
+      "file": "components/rewardlumi/reward-owner-setup.tsx",
+      "mode": "new"
+    },
+    {
+      "file": "components/rewardlumi/reward-salon-panel.tsx",
+      "mode": "new"
+    },
+    {
+      "file": "app/api/rewards/program/route.ts",
+      "mode": "new"
+    },
+    {
+      "file": "app/(app)/explore/salons/[salonId]/page.tsx",
+      "mode": "exact-before-image"
+    },
+    {
+      "file": "supabase/migrations/20261102110000_reward_practical_acceptance.sql",
+      "mode": "new"
+    },
+    {
+      "file": "tests/helpers/reward-parallel-rpc.mjs",
+      "mode": "exact-before-image"
+    },
+    {
+      "file": "tests/helpers/reward-practical-app.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-actual-app.integration.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "lib/reward-discovery-area.ts",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-discovery-area.test.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "public/images/rewards/nail-care-rewards-v1.webp",
+      "mode": "new"
+    },
+    {
+      "file": "components/rewardlumi/reward-promo-artwork.tsx",
+      "mode": "new"
+    },
+    {
+      "file": "lib/reward-invitation.ts",
+      "mode": "new"
+    },
+    {
+      "file": "lib/reward-public-context.ts",
+      "mode": "new"
+    },
+    {
+      "file": "lib/public-booking.ts",
+      "mode": "exact-before-image"
+    },
+    {
+      "file": "lib/auth-fragment.ts",
+      "mode": "new"
+    },
+    {
+      "file": "app/(app)/api/auth/signup/route.ts",
+      "mode": "three-way"
+    },
+    {
+      "file": "supabase/migrations/20261102120000_reward_public_promo_context.sql",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-invitation.test.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-public-context.runtime.test.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/helpers/reward-public-context-acceptance.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-auth-continuity.test.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/reward-auth-confirmation.integration.mjs",
+      "mode": "new"
+    },
+    {
+      "file": "tests/auth-fragment-runtime.test.mjs",
+      "mode": "new"
+    }
+  ],
+  "conflicts": [],
+  "rewardFiles": [
+    "app/explore/explore-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/api/rewards/discover/route.ts",
+    "app/api/rewards/owner-discovery/route.ts",
+    "components/rewardlumi/reward-workspaces.tsx",
+    "components/rewardlumi/reward-discovery.tsx",
+    "components/rewardlumi/reward-discovery.module.css",
+    "components/rewardlumi/reward-owner-prompt.tsx",
+    "lib/reward-discovery.ts",
+    "supabase/migrations/20261102100000_reward_local_discovery.sql",
+    "tests/reward-local-discovery.test.mjs",
+    "tests/reward-local-discovery.integration.test.mjs",
+    "tests/reward-local-discovery-ui.mjs",
+    "tests/helpers/reward-local-discovery-ui.tsx",
+    "types/rewardlumi.ts",
+    "components/rewardlumi/reward-owner-setup.tsx",
+    "components/rewardlumi/reward-salon-panel.tsx",
+    "app/api/rewards/program/route.ts",
+    "app/(app)/explore/salons/[salonId]/page.tsx",
+    "supabase/migrations/20261102110000_reward_practical_acceptance.sql",
+    "tests/helpers/reward-parallel-rpc.mjs",
+    "tests/helpers/reward-practical-app.mjs",
+    "tests/reward-actual-app.integration.mjs",
+    "lib/reward-discovery-area.ts",
+    "tests/reward-discovery-area.test.mjs",
+    "public/images/rewards/nail-care-rewards-v1.webp",
+    "components/rewardlumi/reward-promo-artwork.tsx",
+    "lib/reward-invitation.ts",
+    "lib/reward-public-context.ts",
+    "lib/public-booking.ts",
+    "lib/auth-fragment.ts",
+    "app/(app)/api/auth/signup/route.ts",
+    "app/login/login-form.tsx",
+    "supabase/migrations/20261102120000_reward_public_promo_context.sql",
+    "tests/reward-invitation.test.mjs",
+    "tests/reward-public-context.runtime.test.mjs",
+    "tests/helpers/reward-public-context-acceptance.mjs",
+    "tests/reward-auth-continuity.test.mjs",
+    "tests/reward-auth-confirmation.integration.mjs",
+    "tests/auth-fragment-runtime.test.mjs"
+  ],
+  "resolutions": [
+    {
+      "file": "app/login/login-form.tsx",
+      "resolution": "Union React imports preserves baseline layout/ref and new auth fragment effect"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "web": {
+    "kind": "release",
+    "summary": "Final web and approved Auth configuration acceptance for compact Settings plus authorized Reward combined release",
+    "changes": [
+      "816de565-4197-4ee2-8005-9774e440ae6f",
+      "72cb6f73-277b-43cd-adf8-d6c62c3f3011",
+      "681ceff3-449b-4936-b595-c1268cf343d9",
+      "5dcac02d-9231-4f2c-8597-f5f8dd10437e",
+      "f8b77a39-7709-4524-ae51-309fdf2cc246",
+      "435389f4-534e-477e-b22f-65d8773c3146"
+    ],
+    "targets": {
+      "web": {
+        "status": "published",
+        "verified": true,
+        "deploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe",
+        "baselineDeploymentId": "dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr",
+        "sourceSha256": "5dff6f275f8356f3341cc5de31a9952b7dffbf9ebdd2d7c0d0c873bb5fbec200",
+        "overlaySha256": "e7e79cf8ac140623a1e78904055f4c8f4591139db72d56d0c08a21f0473ebd45",
+        "evidence": "releases/evidence/settings-reward-release-20261102"
+      }
+    },
+    "releaseId": "settings-reward-combined-20261102",
+    "sourceCommit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+    "limitations": [
+      "Physical iPhone acceptance and real email/SMS delivery not exercised",
+      "App Store submission/publication not part of the verified TestFlight channel"
+    ],
+    "rollback": {
+      "webBaselineDeploymentId": "dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr",
+      "previousTestFlight": {
+        "version": "1.0.0",
+        "build": "85"
+      }
+    },
+    "migrations": {
+      "versions": [
+        "20261102100000",
+        "20261102110000",
+        "20261102120000"
+      ],
+      "atomic": true,
+      "existingRewardAuthorityDefinitionsUnchanged": 25
+    },
+    "authConfiguration": {
+      "siteURL": "https://reylumi.com",
+      "redirectURLs": [
+        "https://reylumi.com/login**",
+        "https://reylumi.com/reset-password**"
+      ],
+      "explicitOwnerApproval": true,
+      "persistedAfterReload": true
+    },
+    "id": "9862f419-ea7e-45dd-8753-0dd5fae9bb8d",
+    "recordedAt": "2026-11-02T18:51:18.039Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\history\\2026-11-02T18-51-18-039Z-9862f419-ea7e-45dd-8753-0dd5fae9bb8d.json"
+  },
+  "ios": {
+    "kind": "release",
+    "summary": "TestFlight 1.0.0 (86): exact new bundled Settings and Reward source, 246 tests, matching unsigned/signed resources, Apple VALID and existing distribution groups verified",
+    "changes": [
+      "816de565-4197-4ee2-8005-9774e440ae6f",
+      "950777b0-adf7-4ff6-a85d-c32c7109fda0"
+    ],
+    "targets": {
+      "ios": {
+        "status": "testflight-available",
+        "verified": true,
+        "version": "1.0.0",
+        "build": "86",
+        "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+        "evidence": "releases/evidence/settings-reward-release-20261102/native-availability.json"
+      }
+    },
+    "releaseId": "settings-reward-combined-20261102",
+    "sourceCommit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+    "limitations": [
+      "Physical iPhone acceptance and real email/SMS delivery not exercised",
+      "App Store submission/publication not part of the verified TestFlight channel"
+    ],
+    "rollback": {
+      "webBaselineDeploymentId": "dpl_85Pu28NdunE3xoJ66TrCv2NzNTQr",
+      "previousTestFlight": {
+        "version": "1.0.0",
+        "build": "85"
+      }
+    },
+    "sourceSha256": "0d1175ea27a0560731f10fbd1368510a6d51e7f1ac6b8e509e808043da7ee480",
+    "bundleBuildId": "25d15129c6b9b8a3e6ae4586ee0db50f21ed4e1a890982d3dcdba6a4ec4eea6a",
+    "bundleSha256": "1d732bfc3c45afaeefa336163fd8f138445e8d61fd8f0ad330f0a392db6b6de2",
+    "testCount": 246,
+    "workflowRun": 41501369112,
+    "availabilityRun": 41504334676,
+    "appStoreStatus": "not submitted or published by this release",
+    "id": "516ffe17-e66d-42c1-9f00-af82a7ed0af9",
+    "recordedAt": "2026-11-02T18:51:32.364Z",
+    "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+    "filePath": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\releases\\history\\2026-11-02T18-51-32-364Z-516ffe17-e66d-42c1-9f00-af82a7ed0af9.json"
+  }
+}

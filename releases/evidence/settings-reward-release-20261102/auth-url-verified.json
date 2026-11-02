@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-02T18:39:42.986Z",
+  "approvedBy": "Explicit user confirmation in this deploy turn",
+  "project": "bowkoiprvqwjilwaxhda",
+  "siteURL": "https://reylumi.com",
+  "redirectURLs": [
+    "https://reylumi.com/login**",
+    "https://reylumi.com/reset-password**"
+  ],
+  "verified": "Persisted dashboard values after full reload",
+  "providerMessagesSent": false
+}

@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-02T18:37:21.778Z",
+  "origin": "https://reylumi.com",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "session": "Existing authenticated Owner session",
+  "checks": [
+    {
+      "name": "All Settings salon list and category navigation",
+      "passed": true
+    },
+    {
+      "name": "Website and public profile loads existing owner data",
+      "passed": true
+    },
+    {
+      "name": "Salon information compact summary and nested editor",
+      "passed": true
+    },
+    {
+      "name": "Browser Back returns nested editor to its summary",
+      "passed": true
+    },
+    {
+      "name": "Salon Settings Public team compact two-row staff table",
+      "passed": true
+    },
+    {
+      "name": "Display order and bulk controls disclose only when opened",
+      "passed": true
+    },
+    {
+      "name": "Booking toggle stages 1 staff changed and shows Cancel/Save",
+      "passed": true
+    },
+    {
+      "name": "Cancel restores original booking switch",
+      "passed": true
+    },
+    {
+      "name": "Public team no horizontal overflow",
+      "width": 375,
+      "scrollWidth": 375,
+      "passed": true
+    }
+  ],
+  "writes": "No settings saved; only local draft staged and cancelled",
+  "native": "Browser responsive QA is not physical iPhone or installed TestFlight acceptance"
+}

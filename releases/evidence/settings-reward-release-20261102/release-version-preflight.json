@@ -1,0 +1,523 @@
+{
+  "checkedAt": "2026-11-02T18:45:16.044Z",
+  "operation": "GET only; no metadata, tester, group or release changes",
+  "appId": "6821394475",
+  "requestedVersion": "1.0.0",
+  "eligibleForUpload": true,
+  "blockers": [],
+  "highestUploadedBuild": "85",
+  "nextBuild": "86",
+  "versions": [
+    {
+      "id": "618c4a3b-33d0-4370-a361-0de0ba5c59a8",
+      "version": "1.0.1",
+      "state": "PREPARE_FOR_SUBMISSION"
+    }
+  ],
+  "builds": [
+    {
+      "id": "67edec03-03c3-446f-8ac4-ae0c3372e932",
+      "build": "85",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-11-02T09:10:34-08:00"
+    },
+    {
+      "id": "b6dfc40e-f3de-439b-ad9c-96274f08803b",
+      "build": "84",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-11-02T05:09:56-08:00"
+    },
+    {
+      "id": "3d401a58-86c3-4f87-b480-c11963eea229",
+      "build": "83",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-11-01T12:56:52-08:00"
+    },
+    {
+      "id": "5ab65e21-88f6-447d-bd07-426a304c1c9a",
+      "build": "82",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-11-01T01:28:46-08:00"
+    },
+    {
+      "id": "c066cb53-17ef-4923-b217-66e54ff4be85",
+      "build": "81",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-31T23:17:49-07:00"
+    },
+    {
+      "id": "8db11225-28bb-47a1-8c1a-662babdb3f96",
+      "build": "80",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-31T21:47:13-07:00"
+    },
+    {
+      "id": "32cf4812-4136-4cb6-88db-de85a0921764",
+      "build": "79",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-31T16:31:24-07:00"
+    },
+    {
+      "id": "b98c0189-66cf-409b-af14-1d36d0a0c5d2",
+      "build": "78",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-30T23:55:20-07:00"
+    },
+    {
+      "id": "4f0c4098-2248-47a2-b45e-5847976ca57c",
+      "build": "77",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-30T23:22:36-07:00"
+    },
+    {
+      "id": "0ec14f6a-a1d1-409c-aca7-6fbc1813c2f4",
+      "build": "76",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-30T14:36:31-07:00"
+    },
+    {
+      "id": "454d49da-6713-4cf0-99ab-53291b73d1ae",
+      "build": "75",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-30T12:48:49-07:00"
+    },
+    {
+      "id": "11cc2527-5cc9-4216-8be8-af1c4a3fd1ee",
+      "build": "74",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-30T01:00:09-07:00"
+    },
+    {
+      "id": "660f4335-7894-4209-a9ba-96f32371c4fb",
+      "build": "73",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-30T00:04:29-07:00"
+    },
+    {
+      "id": "141cfc2d-8371-4b5d-b627-bf83c927da4e",
+      "build": "72",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T19:27:59-07:00"
+    },
+    {
+      "id": "85f6eb52-b158-4e2e-946a-3d3f5b01f2d0",
+      "build": "71",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T15:11:08-07:00"
+    },
+    {
+      "id": "cbc36c44-942a-4ba9-8600-5de6465cec7c",
+      "build": "70",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T14:03:59-07:00"
+    },
+    {
+      "id": "0fc78340-22d0-473e-b177-ef6c015ef6b0",
+      "build": "69",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T13:20:54-07:00"
+    },
+    {
+      "id": "3b47c62e-107d-47ed-b793-7b184a7b91d5",
+      "build": "68",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T04:27:26-07:00"
+    },
+    {
+      "id": "b4fb3785-aaa0-4123-9ac9-231e6b6265c6",
+      "build": "67",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T02:58:53-07:00"
+    },
+    {
+      "id": "88089efe-ea5f-4b1b-8011-7fda9fadcc20",
+      "build": "66",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-29T02:27:33-07:00"
+    },
+    {
+      "id": "8b426e08-5995-425a-a48d-346c69590c10",
+      "build": "65",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T22:23:39-07:00"
+    },
+    {
+      "id": "12c1fe8c-49a9-4225-a2d1-14b58871e6e5",
+      "build": "64",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T20:44:34-07:00"
+    },
+    {
+      "id": "8d535020-b33f-48e4-86c8-58a3cae1db5e",
+      "build": "63",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T19:26:19-07:00"
+    },
+    {
+      "id": "b59d9c5f-51f6-4717-91a1-336c9cdd4a95",
+      "build": "62",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T18:39:30-07:00"
+    },
+    {
+      "id": "6a0c0b88-64de-442e-b054-17a5638a5581",
+      "build": "61",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T18:07:04-07:00"
+    },
+    {
+      "id": "06adaa0f-1eab-4019-b96a-6bb0dab312b3",
+      "build": "60",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T17:00:10-07:00"
+    },
+    {
+      "id": "0f7e9eb9-cd53-4302-ab2a-2981dc126b55",
+      "build": "59",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T16:15:19-07:00"
+    },
+    {
+      "id": "e535cff7-7a07-41a0-8230-a23c33c4b414",
+      "build": "58",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T14:11:45-07:00"
+    },
+    {
+      "id": "9cbae559-2dc4-4e5d-b81b-50d612d8503d",
+      "build": "57",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T13:46:24-07:00"
+    },
+    {
+      "id": "2ab7a861-52cf-4d72-bd24-675a89f805c5",
+      "build": "56",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T12:50:30-07:00"
+    },
+    {
+      "id": "6898fb12-7348-4ace-8154-584257df853c",
+      "build": "55",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-28T09:58:21-07:00"
+    },
+    {
+      "id": "1048fed6-ed12-41ee-8465-d858973f5cc5",
+      "build": "54",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-27T12:04:10-07:00"
+    },
+    {
+      "id": "ddfce826-86f3-4dfb-87e2-a48555e461c7",
+      "build": "53",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-26T13:01:37-07:00"
+    },
+    {
+      "id": "5e1f51c7-979d-45c7-8214-eddf6021240c",
+      "build": "52",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-23T12:17:10-07:00"
+    },
+    {
+      "id": "4a0aedc3-28ea-444d-9d0e-65831302843f",
+      "build": "51",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-23T08:47:03-07:00"
+    },
+    {
+      "id": "ec134eae-8830-429c-8f52-cf683d7a9293",
+      "build": "50",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-23T03:26:11-07:00"
+    },
+    {
+      "id": "9e4eb561-235e-4590-ad70-0ecb1c58f0e5",
+      "build": "49",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-23T02:16:33-07:00"
+    },
+    {
+      "id": "57f876fa-382d-4257-943e-1037c7e8b876",
+      "build": "48",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-23T01:12:12-07:00"
+    },
+    {
+      "id": "bdd3d417-a2b9-4a5c-9357-5eba5f898129",
+      "build": "47",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-23T00:00:09-07:00"
+    },
+    {
+      "id": "d233a9c0-8847-4a75-8ab2-b02f0be50417",
+      "build": "46",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-22T14:14:36-07:00"
+    },
+    {
+      "id": "0e3ee01a-8ece-4312-b087-dc9825b9e98d",
+      "build": "45",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-20T00:10:18-07:00"
+    },
+    {
+      "id": "feaf2dc7-536c-4627-93ad-a58fc8253dab",
+      "build": "44",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-19T23:29:33-07:00"
+    },
+    {
+      "id": "d09870ba-8d36-472c-907b-848a28bae592",
+      "build": "43",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-19T19:05:00-07:00"
+    },
+    {
+      "id": "9b0b5cb8-0a0b-44cd-9c53-a2f1ff16e5ea",
+      "build": "42",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-19T18:03:34-07:00"
+    },
+    {
+      "id": "39df2d05-4dbb-4612-b2b0-38d215870850",
+      "build": "41",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-19T13:16:07-07:00"
+    },
+    {
+      "id": "d4f1a995-9773-4a04-97d7-972fb4e59c3d",
+      "build": "40",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-19T10:00:24-07:00"
+    },
+    {
+      "id": "930171d3-d683-4012-9541-ff83bc87d992",
+      "build": "39",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-19T00:19:04-07:00"
+    },
+    {
+      "id": "666bb52c-0afa-4a8e-beda-b3fdaed22272",
+      "build": "38",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-18T22:29:42-07:00"
+    },
+    {
+      "id": "e1781ec0-11f6-4cef-898c-012614c4a43d",
+      "build": "37",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-18T12:11:35-07:00"
+    },
+    {
+      "id": "ccd64bed-1e9c-4f2c-a308-91a4a805ca35",
+      "build": "36",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-18T00:21:53-07:00"
+    },
+    {
+      "id": "49162170-f112-4635-9db3-0920dc84db21",
+      "build": "35",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-17T23:28:34-07:00"
+    },
+    {
+      "id": "7d77ef73-8c2a-4b71-a6f4-1f6198ec42d3",
+      "build": "34",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-17T17:02:41-07:00"
+    },
+    {
+      "id": "724004b8-8c9c-4998-b52a-f64cce84a726",
+      "build": "33",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-17T15:24:14-07:00"
+    },
+    {
+      "id": "c8da597f-f963-4650-8ed3-e0738b3572d4",
+      "build": "32.1",
+      "version": "1.1.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-17T13:22:15-07:00"
+    },
+    {
+      "id": "0338c09a-3554-428c-b064-195db281c018",
+      "build": "31.1",
+      "version": "1.1.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-17T10:47:31-07:00"
+    },
+    {
+      "id": "463a4318-920b-45bc-a030-067d54471792",
+      "build": "30.1",
+      "version": "1.1.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T21:43:39-07:00"
+    },
+    {
+      "id": "b56e963a-00c1-49b0-8fbb-a3628c6b076a",
+      "build": "27.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T18:14:06-07:00"
+    },
+    {
+      "id": "90d76065-dcce-44b7-ab34-e9fb2ca9241e",
+      "build": "26.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T17:39:21-07:00"
+    },
+    {
+      "id": "48a551fd-9b2e-4c1b-a173-10e6f90ca195",
+      "build": "25.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T17:13:17-07:00"
+    },
+    {
+      "id": "171e3bee-89fe-4774-8ce2-d0cdfc9630d0",
+      "build": "24.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T15:47:15-07:00"
+    },
+    {
+      "id": "e7fc7090-d53d-414e-9c62-9b49718d301b",
+      "build": "23.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T15:10:56-07:00"
+    },
+    {
+      "id": "97e05784-1fd9-4255-a484-420a0e9e4b07",
+      "build": "22.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T13:22:26-07:00"
+    },
+    {
+      "id": "a0fcb221-1ebe-4b04-a22f-0de78709c06d",
+      "build": "21.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-16T13:03:23-07:00"
+    },
+    {
+      "id": "3043310c-e3dc-40d9-a745-d54f092df9af",
+      "build": "19.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-15T21:34:42-07:00"
+    },
+    {
+      "id": "4b9865ab-c24f-4b34-b211-c13ca99eec5c",
+      "build": "18.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-15T17:42:57-07:00"
+    },
+    {
+      "id": "21dd9118-3a74-40f9-837a-ecada85876fb",
+      "build": "16.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-15T11:19:04-07:00"
+    },
+    {
+      "id": "d9b87d07-b8aa-4ea8-9716-f24cf756a465",
+      "build": "14.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-14T19:55:54-07:00"
+    },
+    {
+      "id": "431d27bd-be85-4323-b04f-812013fc7434",
+      "build": "5.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-14T10:45:40-07:00"
+    },
+    {
+      "id": "487d1c82-c6db-4f2d-9bc3-faddf3bb4c54",
+      "build": "4.1",
+      "version": "1.0.1",
+      "state": "VALID",
+      "uploadedDate": "2026-10-13T02:25:16-07:00"
+    },
+    {
+      "id": "77df5a1b-091c-4962-834e-247ded71e60e",
+      "build": "3.1",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-10T23:35:13-07:00"
+    },
+    {
+      "id": "66df5180-4209-4dfc-9901-be75db241846",
+      "build": "2.1",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-10T21:58:59-07:00"
+    },
+    {
+      "id": "6b7e98f3-4746-49f1-9d40-64270ee47fc6",
+      "build": "1.2",
+      "version": "1.0.0",
+      "state": "VALID",
+      "uploadedDate": "2026-10-10T09:57:40-07:00"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+✔ login auth-fragment cleanup uses replaceState, preserves next and history state, and leaves unrelated hashes intact (564.365ms)
+✔ reward signup → email-confirmation login → verified-phone completion retains exact salon/book destination (67.2562ms)
+✔ public reward area uses explicit city/state or ZIP without protected-row reads (2.0479ms)
+✔ a chosen referral/welcome/spend filter keeps its invitation even on mixed programs (0.7429ms)
+✔ consumed one-time rewards and unknown eligibility never promise another earning award (0.2176ms)
+✔ no active booking means no direct book target or booking-led recurring headline (0.1511ms)
+✔ precise local context accepts zero distance and never manufactures named-area miles (0.1287ms)
+✔ nail imagery is never used for hair/unknown/mixed categories by default (0.2073ms)
+✔ coordinates never coerce missing or blank GPS to zero; accepts legitimate 0,0 (0.7019ms)
+✔ bounded radius and reward filters; zero earning never advertised (0.253ms)
+✔ public earning copy states receipt rounding and cards match the selected reward (13.5079ms)
+✔ owner example rounds up complete spend thresholds and excludes bonuses (0.212ms)
+✔ owner cost example skips unusable offers and never invents a discount (0.1378ms)
+✔ reward booking CTA reuses the wizard readiness, without asserting slot availability (146.1012ms)
+✔ public reward promotion selects only the same salon explicit cover and fails booking closed (23.662ms)
+✔ nested Settings pages preserve real form payloads, browser Back, drafts, consent, validation and error recovery (3533.138ms)
+✔ real compact Public team: small phone layout, staged changes, bulk semantics, failed saves/retry, pending and read-only (2943.4061ms)
+✔ inactive retained sections do not restart readers when their parent page returns (841.6547ms)
+✔ section reveal refreshes its own reader while retaining a draft and viewer change discards it (449.7281ms)
+✔ the actual Settings hub uses the retained section boundary (1.0707ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3826.8247

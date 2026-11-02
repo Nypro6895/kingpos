@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-02T18:33:45.056Z",
+  "checks": [
+    {
+      "function": "reward_discover",
+      "status": 200,
+      "readOnly": true,
+      "resultKeys": [
+        "salons",
+        "hasMore"
+      ],
+      "salonCount": 0
+    },
+    {
+      "function": "reward_public_program",
+      "status": 200,
+      "readOnly": true,
+      "resultKeys": [
+        "salon"
+      ],
+      "salonCount": null
+    }
+  ]
+}

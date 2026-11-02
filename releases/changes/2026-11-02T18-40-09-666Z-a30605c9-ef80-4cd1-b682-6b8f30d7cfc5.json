@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "production-auth-return-urls-20261102",
+  "status": "working",
+  "summary": "Apply explicit owner-approved production Auth Site URL and login/reset-password redirect allowlist",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "releases/evidence/settings-reward-release-20261102/auth-url-verified.json"
+  ],
+  "occurredAt": "2026-11-02T18:39:00.000Z",
+  "validation": [
+    {
+      "name": "Persisted dashboard values after reload",
+      "result": "pending"
+    }
+  ],
+  "id": "a30605c9-ef80-4cd1-b682-6b8f30d7cfc5",
+  "recordedAt": "2026-11-02T18:40:09.666Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

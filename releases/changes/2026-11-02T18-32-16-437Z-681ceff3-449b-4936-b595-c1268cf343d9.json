@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "reward-promo-popup-20261102",
+  "status": "ready",
+  "summary": "Validated integrated revision: Validated image-led Reward promotion with action-first/account-aware invitation, signup return context and expandable exact terms; local and financial authority preserved.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/rewardlumi/reward-discovery.tsx",
+    "components/rewardlumi/reward-discovery.module.css",
+    "tests/reward-local-discovery-ui.mjs",
+    "tests/helpers/reward-local-discovery-ui.tsx",
+    "tests/helpers/reward-practical-app.mjs",
+    "public/images/rewards/nail-care-rewards-v1.webp"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-compact-release-20261102\\artifacts\\settings-deploy-20261102\\frozen-integrated",
+    "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+  },
+  "validation": [
+    {
+      "name": "Fresh full production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/build.log"
+    },
+    {
+      "name": "20 regressions; auth continuity with current security boundary; staff hours runtime",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/regressions-final.log; artifacts/settings-deploy-20261102/staff-hours.log"
+    },
+    {
+      "name": "Every nested Settings editor at 320/375/430/768, 364 views and safe fixture writes",
+      "result": "passed",
+      "evidence": "artifacts/settings-design-correction/all-pages/coverage.json"
+    },
+    {
+      "name": "Three production migrations atomically recorded; 25 prior Reward authorities unchanged",
+      "result": "passed",
+      "evidence": "artifacts/settings-deploy-20261102/migration-result.txt"
+    }
+  ],
+  "dependencies": [
+    "reward-local-discovery-20261102"
+  ],
+  "integratedFromEvents": [
+    "beb9d271-be8f-4793-86ad-d375a2c4b6e7"
+  ],
+  "id": "681ceff3-449b-4936-b595-c1268cf343d9",
+  "recordedAt": "2026-11-02T18:32:16.437Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-compact-release-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/rewardlumi/reward-discovery.tsx": "7605a37c41ba811e2cd69c058cb4c8cde9f72f15173fd56a3b4de243a49d5b18",
+    "components/rewardlumi/reward-discovery.module.css": "45914a0b0813a0a4b6d48f987c1570bde6ba9c18584ea3f1e67830cb8e7ea341",
+    "tests/reward-local-discovery-ui.mjs": "456a8aa80a5934b34a67f4c389705c67594abb1f1964dba6e726b9b44e02fff3",
+    "tests/helpers/reward-local-discovery-ui.tsx": "2b9edb27862b7340add1f0fac3b9ca8dca1b3c3846900acf51e653aa44bbf404",
+    "tests/helpers/reward-practical-app.mjs": "b43fa0bb4779f556b6d0520e0d78df72bacc5a7d3fae0872d2197d3b405be488",
+    "public/images/rewards/nail-care-rewards-v1.webp": "a8f4cf7db4e9be9d832c09c406c378b8af47f5151a9710e65f595f6ebb155ef3"
+  }
+}
