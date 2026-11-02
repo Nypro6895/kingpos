@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "staff-hours-style-20261102",
+  "status": "ready",
+  "summary": "Final combined integration: accurate staff online-booking permission in addition to compact retained Settings editors",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/booking-setup/booking-setup-editors.tsx",
+    "app/booking-setup/booking-setup.css",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/staff-hours-booking-actions.ts",
+    "tests/staff-hours-settings-runtime.test.mjs",
+    "tests/staff-hours-booking-runtime.test.mjs",
+    "tests/staff-hours-booking-action.test.mjs",
+    "app/settings/direct-settings-actions.ts",
+    "tests/booking-settings-concurrency.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-combined-release-20261102\\artifacts\\settings-release\\frozen-final",
+    "commit": "083337f8d6a05d97af6392c29ecede7ada48fb5c"
+  },
+  "validation": [
+    {
+      "name": "Full production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/build-final.log"
+    },
+    {
+      "name": "21 Settings, profile and staff-hours regression/browser tests, none skipped",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/regression-final.log"
+    },
+    {
+      "name": "Independent booking-rule and staff-online toggle permission contract",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/booking-permission-contract.log"
+    },
+    {
+      "name": "Scope lint",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/permission-lint.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "5d6b8e1b-5cfa-4a69-ab05-94388b8d36af"
+  ],
+  "id": "384ea173-8f1c-4d3d-9e8d-39bb3af7fc35",
+  "recordedAt": "2026-11-02T15:58:25.443Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-combined-release-20261102",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/booking-setup/booking-setup-editors.tsx": "96ae6ca24c5c0f0a2dadb04396ad31cb950c445e1c461cb2a3f60ffe9b5aa67b",
+    "app/booking-setup/booking-setup.css": "efd5af106cf820505180b7caefc5c6906c61f061032d472d2cadced1c852d276",
+    "app/settings/salon-settings-panels.tsx": "2c1ad43fe7e9ad511119a954b2ceac21c0549f1bd51644b3b3f78b37fe9cccfb",
+    "app/settings/staff-hours-booking.tsx": "e0a873cfd980c34bc2ae35dda384009ff4d68de526014b51b493c5756381b406",
+    "app/settings/staff-hours-booking-actions.ts": "6d6614bc763d0909d6f3fc6f092465bc72a75f64f1d54a90f813f4c0efcb760f",
+    "tests/staff-hours-settings-runtime.test.mjs": "fc7add46b848e7181ad275e1b684855918bde30787e4a52587a438ccdb6369db",
+    "tests/staff-hours-booking-runtime.test.mjs": "dce1b70b613943e6ee9c32d6b344945366e05ba15da9b3f59ec91b95f91baaba",
+    "tests/staff-hours-booking-action.test.mjs": "9ecef5808140d386c46431b24e5676273e95769d445948d01575c4690314f7c0",
+    "app/settings/direct-settings-actions.ts": "61d036fd2da219ba672593b9677fca89be4800ecf3f52503e1f6f0b437268440",
+    "tests/booking-settings-concurrency.test.mjs": "46c2298c46decee21b5283702f6bf26c1e349169d60a509759d129d600b14f2e"
+  }
+}
