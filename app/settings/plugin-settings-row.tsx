@@ -53,6 +53,6 @@ export function PluginSettingsRow({ label, pluginName, marketHref, installed, en
     </div>
     <PluginActivationDialog open={activation} onClose={() => setActivation(false)} pluginName={pluginName} marketHref={marketHref} />
     {installed && children}
-    {message && <p className={styles.message} role="status">{t(message)}</p>}
+    {message && <p className={`${styles.message} settings-child-shared-action`} role="status">{t(message)}</p>}
   </section>;
 }

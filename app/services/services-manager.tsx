@@ -781,6 +781,7 @@ export function ServicesManager({
                       <div className="service-row__identity">
                         <strong><WorkspaceText text={config.name || "Untitled service"} /></strong>
                         <span><WorkspaceText text={config.category || "Uncategorized"} /></span>
+                        {embedded?<small className="settings-service-summary-meta">{money(config.basePrice)} · {config.durationMinutes} <WorkspaceText text="min"/> · {config.bookingStaffIds.length} <WorkspaceText text="staff"/></small>:null}
                         {dirty ? <em><WorkspaceText text="Unsaved" /></em> : null}
                       </div>
                       <div className="service-row__value" data-label="Price">

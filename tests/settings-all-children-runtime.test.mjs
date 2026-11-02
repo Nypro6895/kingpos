@@ -92,6 +92,7 @@ test('actual Settings editors: every reachable nested page renders and fits phon
    async function inspect(trail,depth=0){
     assert.deepEqual(errors,[],label+' '+trail.join('/'));
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)){await page.screenshot({path:out+'/overflow.png',fullPage:true});console.log(await page.evaluate(()=>[...document.querySelectorAll('*')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(-12).map(e=>({tag:e.tagName,cls:e.className,w:e.getBoundingClientRect().width,text:e.textContent.slice(0,80)}))));assert.fail(label+' overflow '+width+' '+trail.join('/'));}
+    if(trail.length)assert.equal(await page.locator('.settings-form-actions:visible').evaluateAll(nodes=>nodes.some(n=>{const form=n.closest('form'),current=document.querySelector('[data-settings-current=true]');return current&&form&&!form.contains(current)&&!current.contains(form)})),false,'An unrelated form save must stay hidden');
     const tracks=await page.locator('.settings-toggle-track:visible').evaluateAll(nodes=>nodes.map(n=>({width:n.getBoundingClientRect().width,label:n.parentElement.getBoundingClientRect().right,right:n.getBoundingClientRect().right})));for(const track of tracks){assert.equal(track.width,36,'Compact switch width');assert.ok(track.label-track.right<16,'Switch must be on the trailing edge');}
     const screenshot=slug+'-'+width+(trail.length?'-'+coverage.length:'')+'.png';if(width===375)await page.screenshot({path:out+'/'+screenshot,fullPage:true});
     coverage.push({label,width,trail,screenshot:width===375?screenshot:null});
@@ -106,7 +107,7 @@ test('actual Settings editors: every reachable nested page renders and fits phon
    if(label==='Website appearance')assert.equal(await page.evaluate(()=>window.calls.filter(c=>c==='loadSalonVerificationAction').length),1);
    if(label==='Salon Settings'){const names=await page.locator('.compact-menu button').allTextContents();for(let i=0;i<names.length;i++){await page.locator('.compact-menu button').nth(i).click();await inspect([names[i].trim()]);await page.locator('.compact-back').click();}}
    if(label==='Staff working hours'){await page.locator('.availability-person-toggle').click();await inspect(['Kim']);await page.locator('.availability-day-toggle').first().click();await inspect(['Kim','Monday']);}
-   if(label==='Services & prices'){await page.getByRole('button',{name:'New service',exact:true}).click();await inspect(['New service']);}
+   if(label==='Services & prices'){assert.ok(await page.locator('.service-row__summary').evaluate(n=>n.getBoundingClientRect().height)<140,'Service summary is compact');await page.getByRole('button',{name:'Edit Manicure',exact:true}).click();await inspect(['Manicure']);await page.getByRole('button',{name:'Close Manicure',exact:true}).click();await page.getByRole('button',{name:'New service',exact:true}).click();await inspect(['New service']);assert.equal(await page.locator('.service-row').isVisible(),false,'Create service is its own view');}
 
    assert.equal(await page.evaluate(()=>window.writes.length),0,'Navigation must never write: '+label);await page.close();
   }
