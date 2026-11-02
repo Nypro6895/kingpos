@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "reports-accounting-overview-20261102",
+  "status": "working",
+  "summary": "Implement approved daily accounting overview: staff check-in/turn/POS totals, unified visit-to-submitted-ticket rows, canonical Expected versus Daily Report collected, preserving Today and existing Expenses.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/daily-report-overview.ts",
+    "types/daily-report-overview.ts",
+    "app/reports/daily-accounting-overview.tsx",
+    "app/reports/daily-accounting-overview.module.css",
+    "lib/owner-reports-read.ts",
+    "app/reports/owner-live-reports.tsx",
+    "app/api/pos/owner/reports/route.ts"
+  ],
+  "validation": [
+    {
+      "name": "Implementation and combined release verification",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "baselineDeploymentId": "dpl_FhuQRumBhrgo2QPFCvUrAVbdtPwG",
+    "baselineCommit": "fd0357bd2e8f8b399c274a39e248e16ba2084329"
+  },
+  "id": "9b576490-f4f1-40dc-93aa-04b24b48b1ae",
+  "recordedAt": "2026-11-02T12:28:52.290Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
