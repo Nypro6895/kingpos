@@ -1,4 +1,8 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { BookingDepositSettings } from "./booking-deposit-settings";
 import { BookingRulesSettings, BookSmsSettings } from "./booking-plugin-settings";
@@ -153,7 +157,7 @@ function PublicIdentity({data,onSaved}:{data:Extract<DirectData,{kind:"public-pr
    <img src={data.coverUrl} alt={__vt("Cover image")}/>:null}</div>
   <SettingsIdentity name={data.setting.business_name||__vt("Salon")} imageUrl={data.logoUrl}/>
   <InlineForm changed={!!paths.logo || !!paths.cover || removed.logo || removed.cover} disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
-   <div className="settings-salon-media-row">{(['cover','logo'] as const).map(kind=><details className="settings-media-picker" key={kind}><summary><WorkspaceText text={kind==='logo'?'Change logo':'Change cover'}/></summary><div className="settings-media-picker-content"><input type="hidden" name={kind+'_path'} value={paths[kind]||''}/><input type="hidden" name={'remove_'+kind} value={String(removed[kind])}/><SalonMediaUploader key={kind+'-'+reset} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={__vt(kind==='logo'?'Salon logo':'Cover image')} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div></details>)}</div>
+   <div className="settings-salon-media-row">{(['cover','logo'] as const).map(kind=><SettingsDetails className="settings-media-picker" key={kind}><summary><WorkspaceText text={kind==='logo'?'Change logo':'Change cover'}/></summary><div className="settings-media-picker-content"><input type="hidden" name={kind+'_path'} value={paths[kind]||''}/><input type="hidden" name={'remove_'+kind} value={String(removed[kind])}/><SalonMediaUploader key={kind+'-'+reset} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={__vt(kind==='logo'?'Salon logo':'Cover image')} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div></SettingsDetails>)}</div>
    <Field name="tagline" label={__vt("Tagline")} value={data.profileIdentity?.public_profile_tagline}/><label className="settings-field"><WorkspaceText text="Salon story"/><textarea className={inputClass} name="story" rows={4} defaultValue={data.profileIdentity?.public_profile_story||''}/></label>
   </InlineForm>
  </section>;
@@ -209,9 +213,9 @@ export function SalonDetailsPanel({
             checked={s.allow_staff_applications}
           />
           <p className="text-sm text-zinc-600"><WorkspaceText text="Publishing makes this profile public and allows it to appear in Explore. Booking is configured separately." /></p>
-          <details open={!data.readiness.canEnable}><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Required when enabling visibility from Settings" /></summary>
+          <SettingsDetails open={!data.readiness.canEnable}><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Required when enabling visibility from Settings" /></summary>
             <ul className="mt-2 grid gap-2 text-sm">{data.readiness.items.map(item => <li key={item.id} className="flex flex-wrap justify-between gap-2"><WorkspaceText text={item.label} /><span className={item.complete ? "text-emerald-800" : "text-amber-800"}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span></li>)}</ul>
-          </details>
+          </SettingsDetails>
         </InlineForm></SettingsEditSection>:null}
         <SettingsEditSection title={__vt("Website appearance & verification")} action="Manage" closeOnSave={false}><SalonProfilePreferencesPanel expectedSalonId={data.salonId}/></SettingsEditSection>
       </div>
@@ -250,7 +254,7 @@ export function SalonDetailsPanel({
           <Field name="email" label={__vt("Email")} type="email" value={s.email} />
         </div>
         <Field name="website" label={__vt("Website")} type="url" value={s.website} />
-        <label className="grid gap-1 text-sm">
+        <SettingsChildPage title={<WorkspaceText text="Description"/>} ><label className="grid gap-1 text-sm">
           <WorkspaceText text="Description" />
           <textarea
             name="business_description"
@@ -258,9 +262,9 @@ export function SalonDetailsPanel({
             defaultValue={s.business_description ?? ""}
             rows={3}
           />
-        </label>
+        </label></SettingsChildPage>
         </SettingsFieldGroup>
-        <SettingsFieldGroup title="Salon address">
+        <SettingsChildPage title={<WorkspaceText text="Address"/>} ><SettingsFieldGroup title="Salon address">
         <Field name="address_line1" label={__vt("Address")} value={s.address_line1} />
         <Field
           name="address_line2"
@@ -273,10 +277,10 @@ export function SalonDetailsPanel({
           <Field name="postal_code" label={__vt("ZIP code")} value={s.postal_code} />
           <Field name="country" label={__vt("Country code")} value={s.country} />
         </div>
-        </SettingsFieldGroup>
+        </SettingsFieldGroup></SettingsChildPage>
       </InlineForm>
       </SettingsEditSection>
-      {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? null : <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
+      {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? null : <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
 
         <InlineForm disabled={!data.mapLocation.refreshEnabled} save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
           <p className="text-sm">{[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")}</p>
@@ -284,10 +288,10 @@ export function SalonDetailsPanel({
           <p className="text-sm"><WorkspaceText text={data.mapLocation.statusDescription} /></p>
           <p className="text-sm text-zinc-600"><WorkspaceText text="Save your address above before updating the map." /></p>
         </InlineForm>
-      </div></details>}
+      </div></SettingsDetails>}
       <SettingsEditSection title={__vt("Opening hours")} preview={<div className="settings-hours-preview">{days.map((day,dayOfWeek)=>{const windows=data.hours.weeklyHours.filter(w=>w.dayOfWeek===dayOfWeek);return <SettingsReadRow key={day} label={day} value={windows.length?windows.map(w=>w.opensAtLocal.slice(0,5)+" – "+w.closesAtLocal.slice(0,5)).join(" · "):__vt("Closed")}/>;})}</div>}><OperatingHours data={data} onSaved={onSaved}/></SettingsEditSection>
 
-      <details>
+      <SettingsDetails>
         <summary className="cursor-pointer text-sm font-semibold">
           <WorkspaceText text="Holiday & special hours" />
         </summary>
@@ -343,7 +347,7 @@ export function SalonDetailsPanel({
             <Field name="reason" label={__vt("Reason (optional)")} />
           </InlineForm>
         </div>
-      </details>
+      </SettingsDetails>
     </div>
   );
 }
@@ -424,9 +428,9 @@ export function BookingSettingsPanel({
         >
           <div className="settings-booking-columns"><div className="settings-booking-access"><h3><WorkspaceText text="Booking access" /></h3>
           {bookingChecks.slice(0,4).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
-          <details><summary><WorkspaceText text="Staff assignment" /></summary>{bookingChecks.slice(4,7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}</details>
-          <details><summary><WorkspaceText text="Confirmations & reminders" /></summary>{bookingChecks.slice(7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
-          <Select name="confirmation_mode" label={__vt("Confirmation")} value={s.confirmation_mode} options={[["request_confirmation","Salon approval required"],["instant_booking","Instant booking"]]}/></details>
+          <SettingsDetails><summary><WorkspaceText text="Staff assignment" /></summary>{bookingChecks.slice(4,7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}</SettingsDetails>
+          <SettingsDetails><summary><WorkspaceText text="Confirmations & reminders" /></summary>{bookingChecks.slice(7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
+          <Select name="confirmation_mode" label={__vt("Confirmation")} value={s.confirmation_mode} options={[["request_confirmation","Salon approval required"],["instant_booking","Instant booking"]]}/></SettingsDetails>
           </div><div className="settings-booking-timing"><h3><WorkspaceText text="Timing & scheduling" /></h3><p className="mb-3 text-xs text-zinc-500"><WorkspaceText text="Times use this salon’s booking timezone." /></p><div className="settings-booking-fields">
             <Field name="minimum_lead_time_minutes" label={__vt("Minimum lead time (minutes)")} value={s.minimum_lead_time_minutes} type="number" min={0} max={10080} required/>
             <Field name="maximum_advance_window_days" label={__vt("Book ahead (days)")} value={s.maximum_advance_window_days} type="number" min={1} max={730} required/>
@@ -445,7 +449,7 @@ export function BookingSettingsPanel({
       {data.canManage && data.canManagePlugins ? <BookingDepositSettings key={data.salonId} salonId={data.salonId} /> : null}
       {data.canManage && data.canManagePlugins ? <BookingRulesSettings key={`rules-${data.salonId}`} salonId={data.salonId} /> : null}
       {data.canManage && data.canManagePlugins ? <BookSmsSettings key={`sms-${data.salonId}`} salonId={data.salonId} /> : null}
-      <details>
+      <SettingsDetails>
         <summary className="cursor-pointer text-sm font-semibold">
           <WorkspaceText text="Staff availability & time off" />
         </summary>
@@ -463,7 +467,7 @@ export function BookingSettingsPanel({
             expectedSalonId={data.salonId}
           />
         </div>
-      </details>
+      </SettingsDetails>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
+import { RewardSalonPanel } from "@/components/rewardlumi/reward-salon-panel";
 import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
 import { getPublicSalonProfileData } from "@/lib/salon-profile";
 import type { Metadata } from "next";
@@ -51,6 +52,7 @@ async function PublicSalonProfilePage({
 
   return (
     <main>
+      <RewardSalonPanel salonId={salonId} canBook={data.profile.activeServiceCount > 0 && data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed"} />
       <SalonProfileView
         capabilities={{
           canBook: data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed",

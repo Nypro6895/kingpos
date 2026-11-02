@@ -1,4 +1,6 @@
 "use client";
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 
 import { useEffect, useState, useTransition } from "react";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
@@ -37,10 +39,10 @@ export function BookingRulesSettings({ salonId }: { salonId: string }) {
       setMessage(result.error ?? "Saved.");
     });
   }}>
-    <details className={styles.editor}><summary>{t("Edit booking rules")}</summary>
+    <SettingsDetails className={styles.editor}><summary>{t("Edit booking rules")}</summary>
       <label>{t("Booking rules")}<textarea aria-label={t("Booking rules")} value={state?.content ?? ""} maxLength={6000} rows={4} disabled={busy} onChange={event => update({ content: event.target.value })} /></label>
       <button type="button" disabled={busy} onClick={() => update({ content: BOOKING_POLICY_TEMPLATE })}>{t("Use suggested rules")}</button>
-    </details>
+    </SettingsDetails>
   </PluginSettingsRow>;
 }
 

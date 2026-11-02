@@ -845,6 +845,17 @@ function readinessForContext(context: RawContext): PublicBookingReadinessItem[] 
   ];
 }
 
+/** Public promotion links use the booking page's own metadata/readiness gate.
+ * This confirms that the wizard can open, not that a particular slot is free.
+ */
+export async function getPublicBookingReadiness(salonIdInput: string): Promise<boolean> {
+  const salonId = cleanUuid(salonIdInput);
+  if (!salonId) return false;
+  const context = await loadRawContext(salonId, { includeContentOptions: false, metadataOnly: true });
+  return context.state === "ready" && Boolean(context.settings)
+    && readinessForContext(context).every((item) => item.complete);
+}
+
 function serviceAssignment(context: RawContext, serviceId: string, staffId: string) {
   return context.assignments.find(
     (assignment) => assignment.serviceId === serviceId && assignment.staffId === staffId,

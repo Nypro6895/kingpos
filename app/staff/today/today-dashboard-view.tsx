@@ -5,6 +5,7 @@ import styles from "./today-layout.module.css";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { type MetricTone } from "@/lib/today-metric-assessment";
 import { OwnerMarketPromo } from "@/components/owner-market-promo";
+import { RewardOwnerPrompt } from "@/components/rewardlumi/reward-owner-prompt";
 
 import Link from "next/link";
 
@@ -1296,6 +1297,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
 
         <LoadErrorsBanner errors={dashboard.loadErrors} />
         <SummaryGrid dashboard={dashboard} />
+        {isOwner ? <RewardOwnerPrompt /> : null}
         {retry ? <div role="status" className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm">
           <WorkspaceText text="We couldn’t finish loading. You can try again." />
           <button type="button" className="shrink-0 rounded-lg border px-3 py-2" onClick={retry}><WorkspaceText text="Try again" /></button>

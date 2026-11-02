@@ -1,4 +1,8 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 import { getStaffLegalName } from "@/lib/staff-legal-name";
 import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -143,7 +147,7 @@ function Content({
             <p className="mt-1 text-sm">{getStaffLegalName(data.staff) || <WorkspaceText text="Not set" />}</p>
             <Link className="inline-flex min-h-11 items-center text-sm text-teal-700 underline" href="/account"><WorkspaceText text="Edit legal name in Personal" /></Link>
           </section>
-          <SettingsFieldGroup title="Public staff profile">
+          <SettingsChildPage title={<WorkspaceText text="Public staff profile"/>}>
           <StaffPublicProfileEditor
             expectedSalonId={data.salonId}
             onSaved={reload}
@@ -154,7 +158,7 @@ function Content({
             jobTitle={data.staff.job_title}
             specialties={data.staff.specialties}
           />
-          </SettingsFieldGroup>
+          </SettingsChildPage>
           <SettingsFieldGroup title="Booking preferences">
           <OwnPreferences salonId={data.salonId} />
           </SettingsFieldGroup>
@@ -163,6 +167,7 @@ function Content({
     case "staff-schedule":
       return (
         <StaffAvailabilityEditor
+          settingsMode
           staff={[data.staff]}
           availabilityRules={data.availabilityRules}
           timeBlocks={data.timeBlocks}
@@ -185,7 +190,7 @@ function Content({
             <WorkspaceText text="Access rules are read-only. Manage staff access in Staff & Team." />
           </p>
           {data.catalog.roles.map((role) => (
-            <details
+            <SettingsDetails
               className="rounded-lg border border-zinc-200 bg-white p-4"
               key={role.id}
             >
@@ -197,7 +202,7 @@ function Content({
                   <li key={p.id}>{p.name}</li>
                 ))}
               </ul>
-            </details>
+            </SettingsDetails>
           ))}
         </div>
       );

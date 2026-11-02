@@ -2,13 +2,14 @@
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
+import { clearImplicitAuthFragment } from "@/lib/auth-fragment";
 import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
 import { DeviceInputSettingsButton } from "@/app/pos/portable/device-input-settings";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
 import { fetchWithDeadline } from "@/lib/bounded-get";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
 const inputClassName =
   "mt-2 min-h-[52px] w-full rounded-2xl border bg-white px-4 text-base font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 motion-reduce:transition-none";
@@ -105,6 +106,12 @@ export function LoginForm({
       submitting.current = false;
       setSubmissionPhase(null);
     };
+  }, []);
+
+  useEffect(() => {
+    if (window.location.pathname === "/login") {
+      clearImplicitAuthFragment(window.location, window.history);
+    }
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

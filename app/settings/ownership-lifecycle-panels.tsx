@@ -1,4 +1,6 @@
 "use client";
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useState } from "react";
 import {
@@ -32,9 +34,9 @@ export function OwnershipSettingsPanel({
           <div className="settings-owner-row" key={owner.id}><SettingsIdentity name={owner.name||owner.email||owner.id} subtitle={owner.email||undefined}/>{owner.isCurrentUser?<span className="settings-state-badge"><WorkspaceText text="You"/></span>:null}</div>
         ))}
       </div>
-      <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Former owners" /></summary><div className="mt-3 grid gap-2">
+      <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Former owners" /></summary><div className="mt-3 grid gap-2">
         {data.historyError?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={data.historyError} /></p>:data.history.length?data.history.map(owner=><p key={owner.id} className="text-sm"><WorkspaceText text={owner.email||owner.name||`Deleted account ${owner.accountId}`} /> <WorkspaceText text="left ownership of" /> {data.salonName} <WorkspaceText text="on" /> <WorkspaceText text={new Date(owner.date).toLocaleString("en-US")} />{owner.reason?` · ${owner.reason}`:""}.</p>):<p className="text-sm text-zinc-500"><WorkspaceText text="No former owners are recorded for" /> {data.salonName}.</p>}
-      </div></details>
+      </div></SettingsDetails>
       {([['add_co_owner','Add co-owner'],['transfer_ownership','Transfer ownership']] as const).map(([mode,label])=><SettingsEditSection key={mode} title={__vt(label)} action={mode==='add_co_owner'?"Invite":"Start"}><div className="mt-3">
        <InlineForm save={form=>runDirectOwnership(data.salonId,form)} onSaved={onSaved} label={__vt("Send invitation")}>
         <input type="hidden" name="action" value="invite"/><input type="hidden" name="mode" value={mode}/>
@@ -59,7 +61,7 @@ export function OwnershipSettingsPanel({
           </p>
         </InlineForm>
       ))}
-      <details>
+      <SettingsDetails>
         <summary className="cursor-pointer text-sm font-semibold text-red-700">
           <WorkspaceText text="Leave ownership" />
         </summary>
@@ -84,7 +86,7 @@ export function OwnershipSettingsPanel({
             </p>
           )}
         </div>
-      </details>
+      </SettingsDetails>
     </div>
   );
 }
@@ -168,7 +170,7 @@ export function LifecycleSettingsPanel({
             />
           </InlineForm>
           </SettingsEditSection>
-          <details>
+          <SettingsDetails>
             <summary className="cursor-pointer text-sm font-semibold text-red-700">
               <WorkspaceText text="Permanently close salon" />
             </summary>
@@ -176,12 +178,12 @@ export function LifecycleSettingsPanel({
               {data.closureDetails.appointments.map(booking=>{
                 const customer=Array.isArray(booking.customer)?booking.customer[0]:booking.customer;
                 const staff=Array.isArray(booking.staff)?booking.staff[0]:booking.staff;
-                return <details key={booking.id} className="rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold">{customer?.name||customer?.phone||`Booking ${booking.id}`} · <WorkspaceText text={new Date(booking.start_at).toLocaleString("en-US")} /> · <WorkspaceText text={booking.status.replaceAll('_',' ')} /></summary><div className="mt-3 grid gap-3"><p className="text-sm"><WorkspaceText text="Staff:" /> <WorkspaceText text={staff?.display_name||'Unassigned'} />{customer?.phone?` · ${customer.phone}`:''}</p>
+                return <SettingsDetails key={booking.id} className="rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold">{customer?.name||customer?.phone||`Booking ${booking.id}`} · <WorkspaceText text={new Date(booking.start_at).toLocaleString("en-US")} /> · <WorkspaceText text={booking.status.replaceAll('_',' ')} /></summary><div className="mt-3 grid gap-3"><p className="text-sm"><WorkspaceText text="Staff:" /> <WorkspaceText text={staff?.display_name||'Unassigned'} />{customer?.phone?` · ${customer.phone}`:''}</p>
                 <InlineForm danger label={__vt("Update booking")} onSaved={onSaved} save={form=>resolveSettingsClosureRecord(data.salonId,{kind:'booking',id:booking.id,updatedAt:booking.updated_at,action:form.get('command')==='complete'?'complete':'cancel',reason:String(form.get('reason')||''),confirmed:form.get('confirmed')==='on'})}>
                   <label className="grid gap-1 text-sm"><WorkspaceText text="Action" /><select name="command" className="rounded-md border p-2"><option value="cancel"><WorkspaceText text="Cancel booking" /></option>{booking.status==='in_service'?<option value="complete"><WorkspaceText text="Complete service" /></option>:null}</select></label><Field name="reason" label={__vt("Reason")} required/><Check name="confirmed" label={__vt("Confirm this booking change")} required/>
-                </InlineForm></div></details>;
+                </InlineForm></div></SettingsDetails>;
               })}
-              {data.closureDetails.tickets.map(ticket=>{const customer=Array.isArray(ticket.customer)?ticket.customer[0]:ticket.customer;return <details key={ticket.id} className="rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Ticket" /> {ticket.ticket_number} · {customer?.name||customer?.phone||'Walk-in'} · <WorkspaceText text={new Date(ticket.opened_at).toLocaleString("en-US")} /></summary><div className="mt-3"><InlineForm danger label={__vt("Cancel open ticket")} onSaved={onSaved} save={form=>resolveSettingsClosureRecord(data.salonId,{kind:'ticket',id:ticket.id,updatedAt:ticket.updated_at,reason:String(form.get('reason')||''),confirmed:form.get('confirmed')==='on'})}><Field name="reason" label={__vt("Cancellation reason")} required/><Check name="confirmed" label={__vt("Confirm ticket cancellation")} required/></InlineForm></div></details>;})}
+              {data.closureDetails.tickets.map(ticket=>{const customer=Array.isArray(ticket.customer)?ticket.customer[0]:ticket.customer;return <SettingsDetails key={ticket.id} className="rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Ticket" /> {ticket.ticket_number} · {customer?.name||customer?.phone||'Walk-in'} · <WorkspaceText text={new Date(ticket.opened_at).toLocaleString("en-US")} /></summary><div className="mt-3"><InlineForm danger label={__vt("Cancel open ticket")} onSaved={onSaved} save={form=>resolveSettingsClosureRecord(data.salonId,{kind:'ticket',id:ticket.id,updatedAt:ticket.updated_at,reason:String(form.get('reason')||''),confirmed:form.get('confirmed')==='on'})}><Field name="reason" label={__vt("Cancellation reason")} required/><Check name="confirmed" label={__vt("Confirm ticket cancellation")} required/></InlineForm></div></SettingsDetails>;})}
               {data.review.blockingRecords.filter(record=>record.count>0&&!['future_bookings','pending_bookings','open_pos_tickets'].includes(record.id)).map(record=><p className="text-sm text-amber-800" key={record.id}><WorkspaceText text={record.label} />: {record.count}</p>)}
               {data.review.canClose ? (
                 <InlineForm
@@ -218,7 +220,7 @@ export function LifecycleSettingsPanel({
                 </p>
               )}
             </div>
-          </details>
+          </SettingsDetails>
         </>
       )}
     </div>

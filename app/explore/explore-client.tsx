@@ -5,6 +5,7 @@ import { selectExploreEditorialPosts } from "@/lib/explore-post-presentation";
 import { SalonPostPreview } from "@/components/salon-post-preview";
 import { ExploreInspirationPost } from "./explore-inspiration-post";
 import { ExploreSalonCard } from "./explore-salon-card";
+import { RewardDiscovery } from "@/components/rewardlumi/reward-discovery";
 import { ExploreSocialProvider } from "@/components/explore-social";
 import { PostIdentity } from "@/components/post-identity";
 
@@ -3951,6 +3952,12 @@ export function ExploreClient({
           {searchMode ? <ExploreSearchContext response={activeResponse} pending={isSearching || Boolean(activeSearchFailure)}
             onAreaSelect={area => applySearchShortcut({ location: area })}
             onEditLocation={() => setSearchAreaOpen(true)} /> : null}
+          {!isSearching && !activeSearchFailure ? <RewardDiscovery
+            latitude={(searchMode ? committedSearch.coordinates : locationSource === "gps" ? gpsCoordinates : null)?.latitude}
+            longitude={(searchMode ? committedSearch.coordinates : locationSource === "gps" ? gpsCoordinates : null)?.longitude}
+            location={searchMode ? committedSearch.location : location}
+            category={searchMode ? activeResponse.category : category}
+            viewerId={commentViewer.userId} onChooseArea={() => setSearchAreaOpen(true)} /> : null}
           {homeMode ? (
             <>
               <div className="xl:hidden">

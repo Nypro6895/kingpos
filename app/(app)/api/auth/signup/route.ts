@@ -111,7 +111,9 @@ export async function POST(request: Request) {
     email,
     password,
     options: {
-      emailRedirectTo: new URL(`/api/auth/callback?next=${encodeURIComponent(onboardingPath)}`, request.url).href,
+      // This server client uses email confirmation's implicit flow. It has no
+      // browser PKCE verifier, so confirmation returns to password login.
+      emailRedirectTo: new URL(`${LOGIN_PATH}?next=${encodeURIComponent(onboardingPath)}`, request.url).href,
       data: {
         abuse_signup_ticket: signupTicket,
         display_name: displayName || email,

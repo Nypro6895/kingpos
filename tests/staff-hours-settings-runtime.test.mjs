@@ -6,7 +6,7 @@ import {chromium} from 'playwright-core';
 
 test('compact availability uses local disclosure, protects drafts and saves without a second refresh', {skip:!process.env.ESBUILD_MODULE_PATH,timeout:90000},async()=>{
  const {build}=await import(pathToFileURL(process.env.ESBUILD_MODULE_PATH).href);
- const result=await build({tsconfigRaw:{compilerOptions:{paths:{'@/*':['C:/Reylumi/kingpos/*']}}},stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{StaffAvailabilityEditor}from'./app/booking-setup/booking-setup-editors';window.calls=[];window.nav=[];window.refreshes=0;const root=createRoot(document.getElementById('root'));const staff=['Tracy','David'].map(name=>({id:name,display_name:name,is_active:true,online_booking_enabled:true}));const rules=[1,2,3,4,5].map(day=>({id:String(day),staff_id:'Tracy',day_of_week:day,rule_type:'working',starts_at_local:'09:00',ends_at_local:'17:00',is_active:true}));window.render=(canManage=true)=>root.render(<StaffAvailabilityEditor settingsMode expectedSalonId="salon-test" staff={staff} availabilityRules={rules} timeBlocks={[]} readinessByStaffId={{}} timezone="America/Chicago" canManage={canManage}/>);window.render();`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'stub',setup(b){
+ const result=await build({tsconfigRaw:{compilerOptions:{paths:{'@/*':[process.cwd().replaceAll('\\','/')+'/*']}}},stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{StaffAvailabilityEditor}from'./app/booking-setup/booking-setup-editors';window.calls=[];window.nav=[];window.refreshes=0;const root=createRoot(document.getElementById('root'));const staff=['Tracy','David'].map(name=>({id:name,display_name:name,is_active:true,online_booking_enabled:true}));const rules=[1,2,3,4,5].map(day=>({id:String(day),staff_id:'Tracy',day_of_week:day,rule_type:'working',starts_at_local:'09:00',ends_at_local:'17:00',is_active:true}));window.render=(canManage=true)=>root.render(<StaffAvailabilityEditor settingsMode expectedSalonId="salon-test" staff={staff} availabilityRules={rules} timeBlocks={[]} readinessByStaffId={{}} timezone="America/Chicago" canManage={canManage}/>);window.render();`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'stub',setup(b){
  b.onResolve({filter:/next\/navigation$/},()=>({path:'nav',namespace:'stub'}));
  b.onResolve({filter:/\/actions$/},()=>({path:'actions',namespace:'stub'}));
  b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:a.path==='nav'?`export const usePathname=()=>"/settings";export const useRouter=()=>({replace:url=>window.nav.push(url),refresh:()=>window.refreshes++});`:`export async function saveStaffWeeklyAvailabilityAction(input){window.calls.push({name:'week',input});if(window.hold)await new Promise(resolve=>window.release=resolve);if(window.fail)throw Error('network');return {ok:true}};export async function createStaffTimeBlockAction(input){window.calls.push({name:'off',input});return {ok:false,error:'Existing appointment conflict',conflicts:[{id:'conflict'}]}};export async function cancelStaffTimeBlockAction(input){window.calls.push({name:'cancel',input});return {ok:true}};`}));}}]});
@@ -17,6 +17,7 @@ test('compact availability uses local disclosure, protects drafts and saves with
   await page.route('http://localhost/',r=>r.fulfill({contentType:'text/html',body:'<style>body{margin:0;font-family:Arial}*{box-sizing:border-box}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}'+readFileSync('app/booking-setup/booking-setup.css','utf8')+'</style><div id="root"></div><script src="/app.js"></script>'}));
   await page.route('**/app.js',r=>r.fulfill({contentType:'text/javascript',body:result.outputFiles.find(f=>f.path.endsWith('.js')).text}));
   await page.goto('http://localhost/');
+  await page.waitForTimeout(100);assert.deepEqual(errors,[]);
   await page.getByText(/Mon–Fri/).waitFor();
   await page.screenshot({path:`work/availability-overview-${width}.png`});
   await page.locator('.availability-person-toggle').first().click();
@@ -64,5 +65,3 @@ test('compact availability uses local disclosure, protects drafts and saves with
   assert.deepEqual(errors,[]);await page.close();
  }}finally{await browser.close()}
 });
-
-

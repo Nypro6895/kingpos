@@ -4,7 +4,7 @@ import {spawn} from 'node:child_process';
 export function rewardParallelRpc(f, actor, name, args) {
  const docker=process.env.TEST_DOCKER_PATH||'C:/Program Files/Docker/Docker/resources/bin/docker.exe';
  const context=process.env.TEST_DOCKER_CONTEXT||'desktop-linux';
- if(!/^(?:reward-security|rewardlumi)-[a-z0-9]+-db$/.test(f.evidence.containers.db)||!/^(?:reward_[a-z_]+|gift_card_pos)$/.test(name))throw Error('Expected isolated Reward fixture RPC');
+ if(!/^(?:reward-security|rewardlumi|reward-local-discovery)-[a-z0-9]+-db$/.test(f.evidence.containers.db)||!/^(?:reward_[a-z_]+|gift_card_pos)$/.test(name))throw Error('Expected isolated Reward fixture RPC');
  const config=['url = '+JSON.stringify('http://127.0.0.1:3000/rpc/'+name),'request = "POST"','silent','show-error','include','max-time = 30','header = "Content-Type: application/json"','header = '+JSON.stringify('Authorization: Bearer '+actor.token),'data = '+JSON.stringify(JSON.stringify(args))].join('\n');
  return new Promise((resolve,reject)=>{
   const p=spawn(docker,['--context',context,'exec','-i',f.evidence.containers.db,'curl','--config','-'],{windowsHide:true});let out='',err='';

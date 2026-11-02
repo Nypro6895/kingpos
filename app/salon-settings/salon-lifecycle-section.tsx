@@ -1,4 +1,6 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
@@ -95,7 +97,7 @@ function StatusRow({
   value: string;
 }) {
   return (
-    <div className="grid gap-1 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-lifecycle-row grid gap-1 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <p className="text-xs font-semibold uppercase text-zinc-500"><WorkspaceText text={label} /></p>
       <p className="text-sm font-semibold text-zinc-950">{value}</p>
     </div>
@@ -183,7 +185,7 @@ export function SalonLifecycleSection({
         </div>
 
         <div className="border-t border-zinc-100 px-4 py-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <SettingsChildPage title={<WorkspaceText text="Download salon backup"/>} ><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-zinc-950">
                 <WorkspaceText text="Backup export" />
@@ -200,7 +202,7 @@ export function SalonLifecycleSection({
             >
               <WorkspaceText text={backupPending ? "Preparing..." : "Download backup"} />
             </button>
-          </div>
+          </div></SettingsChildPage>
           {backupNotice ? (
             <p className="mt-3 text-sm font-semibold text-emerald-700">
               {backupNotice}
@@ -225,7 +227,7 @@ export function SalonLifecycleSection({
         ) : null}
 
         {salon.lifecycleStatus === "active" ? (
-          <form
+          <SettingsChildPage title={<WorkspaceText text="Temporarily pause salon"/>} danger><form
             action={disableCurrentSalonAction}
             className="grid gap-3 border-t border-amber-100 bg-amber-50/70 px-4 py-4"
           >
@@ -259,11 +261,11 @@ export function SalonLifecycleSection({
                 <WorkspaceText text="Disable salon" />
               </SubmitButton>
             </div>
-          </form>
+          </form></SettingsChildPage>
         ) : null}
 
         {salon.lifecycleStatus === "disabled" ? (
-          <form
+          <SettingsChildPage title={<WorkspaceText text="Reactivate salon"/>} ><form
             action={reactivateCurrentSalonAction}
             className="grid gap-3 border-t border-emerald-100 bg-emerald-50/70 px-4 py-4"
           >
@@ -297,11 +299,11 @@ export function SalonLifecycleSection({
                 <WorkspaceText text="Reactivate salon" />
               </SubmitButton>
             </div>
-          </form>
+          </form></SettingsChildPage>
         ) : null}
 
         {salon.lifecycleStatus !== "permanently_closed" ? (
-          <div className="border-t border-red-200 bg-red-50/80 px-4 py-4">
+          <SettingsChildPage title={<WorkspaceText text="Permanently close salon"/>} danger><div className="border-t border-red-200 bg-red-50/80 px-4 py-4">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase text-red-800">
@@ -388,7 +390,7 @@ export function SalonLifecycleSection({
                 </SubmitButton>
               </div>
             </form>
-          </div>
+          </div></SettingsChildPage>
         ) : null}
       </div>
     </section></div>

@@ -1,4 +1,5 @@
 "use client";
+import {SettingsChildPage,useSettingsChildNavigation} from "@/app/settings/settings-child-pages";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -202,13 +203,15 @@ function Section({
   label: string;
   right?: React.ReactNode;
 }) {
-  if (["sessions","trusted-devices","two-factor"].includes(id)) return <section className="rounded-lg border border-zinc-200 bg-white" id={id}><h3 className="flex flex-wrap items-center gap-2 px-4 py-3 text-sm font-semibold">{label}{right}</h3>{children}</section>;
-  return (
+  const navigation=useSettingsChildNavigation();
+  if(!navigation){if (["sessions","trusted-devices","two-factor"].includes(id)) return <section className="rounded-lg border border-zinc-200 bg-white" id={id}><h3 className="flex flex-wrap items-center gap-2 px-4 py-3 text-sm font-semibold">{label}{right}</h3>{children}</section>;
+return (
     <details className="scroll-mt-6 rounded-lg border border-zinc-200 bg-white" id={id} open={id==='sessions'||undefined}>
       <summary className="cursor-pointer px-4 py-3 text-sm font-semibold"><WorkspaceText text={label} />{right?<span className="ml-2">{right}</span>:null}</summary>
       <div className="border-t border-zinc-100"><p className="px-4 pt-3 text-xs text-zinc-500">{description}</p>{children}</div>
     </details>
-  );
+  );}
+  return <SettingsChildPage id={id} title={<WorkspaceText text={label}/>} description={description}>{right?<div className="settings-security-page-status">{right}</div>:null}{children}</SettingsChildPage>;
 }
 
 function Field({

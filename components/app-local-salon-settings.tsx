@@ -1,8 +1,12 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 // Full presentation extracted from the shipped Salon Settings page.
-import {WorkspaceText,WorkspaceElement,useWorkspaceTranslation}from"@/components/workspace-language";
+import {WorkspaceText,WorkspaceElement}from"@/components/workspace-language";
 import {TimeZoneSelect}from"@/components/time-zone-select";
-import {ContextualSupport}from"@/components/contextual-support";
+
 import {SubmitButton}from"@/components/submit-button";
 import {createCurrentSalonSpecialHoursAction,deleteCurrentSalonSpecialHoursAction,refreshSalonMapLocation,updateSalonSettings}from"@/app/salon-settings/actions";
 import {SalonOperatingStatusBadge}from"@/components/salon-operating-status-badge";
@@ -17,13 +21,9 @@ import type{StaffDirectoryMember}from"@/lib/staff";
 import type{SalonOperatingHoursSettings,SalonOperatingHoursWindow,SalonSpecialHours}from"@/types/salon-operating-status";
 import type{SalonSetting}from"@/types/salon-setting";
 import type{AppLocalSalonSettingsData}from"@/lib/app-local-business-metadata";
-import Link from"next/link";
-type NavItem = {
-  href: string;
-  label: string;
-  tone?: "danger" | "neutral";
-};
 
+import {CompactSettingsWorkspace,CompactSettingsPane,CompactSaveBar} from "@/app/settings/compact-settings-workspace";
+import Link from "next/link";
 const OPERATING_WEEK_DAYS = [
   { dayOfWeek: 1, label: "Monday" },
   { dayOfWeek: 2, label: "Tuesday" },
@@ -50,7 +50,7 @@ function Field({
   type?: string;
 }) {
   return (
-    <label className="grid gap-1.5">
+    <label className="salon-compact-field grid gap-1.5">
       <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         autoComplete={autoComplete}
@@ -137,8 +137,8 @@ function PublicTeamSettingsSection({
   return (
     <section className="scroll-mt-6" id="public-team">
       <SectionHeader
-        description="Choose who appears publicly, who accepts online booking, and who can post to the salon profile."
-        status={`${members.length} staff`}
+        description=""
+
         title="Public team"
       />
 
@@ -176,7 +176,7 @@ function MapLocationSection({
         : "bg-amber-50 text-amber-700 ring-amber-200";
 
   return (
-    <div className="border-t border-zinc-100 px-4 py-4">
+    <SettingsChildPage title={<WorkspaceText text="Map location"/>} ><div className="border-t border-zinc-100 px-4 py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Map location" /></h3>
@@ -184,7 +184,7 @@ function MapLocationSection({
             <WorkspaceText text={mapLocation.address.formattedAddress || "No public address yet."} />
           </p>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            <WorkspaceText text={mapLocation.statusDescription} />
+            {mapLocation.statusDescription}
           </p>
         </div>
         <StatusPill className={statusClass} label={mapLocation.statusLabel} />
@@ -230,7 +230,7 @@ function MapLocationSection({
           <WorkspaceText text="Refresh map location" />
         </SubmitButton>
       </div>
-    </div>
+    </div></SettingsChildPage>
   );
 }
 
@@ -287,7 +287,7 @@ return (
         title="Operating status"
       />
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
+        <SettingsChildPage title={<WorkspaceText text="Current opening status"/>} ><div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-zinc-950">
               <WorkspaceText text="Customer status preview" />
@@ -301,7 +301,7 @@ return (
             showDetail
             status={operatingSettings.status}
           />
-        </div>
+        </div></SettingsChildPage>
 
         <div className="grid gap-4 px-4 py-4">
           <label className="grid gap-1.5 sm:max-w-xs">
@@ -321,7 +321,7 @@ return (
 
               return (
                 <div
-                  className="grid gap-3 border-b border-zinc-100 px-3 py-3 last:border-b-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center"
+                  className="compact-week-row grid gap-3 border-b border-zinc-100 px-3 py-3 last:border-b-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center"
                   key={day.dayOfWeek}
                 >
                   <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-950">
@@ -368,7 +368,7 @@ return (
           </p>
         </div>
 
-        <div className="border-t border-zinc-100 px-4 py-4">
+        <SettingsChildPage title={<WorkspaceText text="Holiday & special hours"/>} ><div className="border-t border-zinc-100 px-4 py-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-zinc-950">
@@ -484,7 +484,7 @@ return (
               <WorkspaceText text="Add" />
             </SubmitButton>
           </div>
-        </div>
+        </div></SettingsChildPage>
       </div>
     </section>
   );
@@ -522,7 +522,7 @@ function SalonSettingsForm({
   return (
     <form
       action={canManageSettings ? updateSalonSettings : undefined}
-      className="grid gap-5"
+      className="salon-main-form grid gap-5"
     >
       {error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
@@ -542,7 +542,7 @@ function SalonSettingsForm({
         </p>
       ) : null}
 
-      <section className="scroll-mt-6">
+      <CompactSettingsPane id="business-information"><section className="scroll-mt-6">
         <SectionHeader
           description="Core business details customers and staff see across booking, receipts, and public pages."
           id="business-information"
@@ -579,7 +579,7 @@ function SalonSettingsForm({
               name="website"
               type="url"
             />
-            <Field
+            <SettingsDetails className="salon-address-details sm:col-span-2"><summary><WorkspaceText text="Address" /> <span className="text-xs text-zinc-500">{[setting.city,setting.state].filter(Boolean).join(", ")}</span></summary><Field
               autoComplete="address-line1"
               defaultValue={setting.address_line1}
               label="Address line 1"
@@ -615,7 +615,7 @@ function SalonSettingsForm({
               label="Country"
               name="country"
             />
-            <label className="grid gap-1.5 sm:col-span-2">
+            </SettingsDetails><SettingsDetails className="sm:col-span-2"><summary><WorkspaceText text="Business description" /></summary><label className="grid gap-1.5 sm:col-span-2">
               <span className="text-sm font-semibold text-zinc-700">
                 <WorkspaceText text="Business description" />
               </span>
@@ -624,12 +624,12 @@ function SalonSettingsForm({
                 defaultValue={setting.business_description ?? ""}
                 name="business_description"
               />
-            </label>
+            </label></SettingsDetails>
           </div>
         </div>
       </section>
 
-      <section className="scroll-mt-6">
+      </CompactSettingsPane><CompactSettingsPane id="public-profile-discovery"><section className="scroll-mt-6">
         <SectionHeader
           description="Publish the salon on Explore, keep map details accurate, and control staff application visibility."
           id="public-profile-discovery"
@@ -672,7 +672,7 @@ function SalonSettingsForm({
                 </span>
               ) : null}
             </div>
-            <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
+            <SettingsChildPage title={<WorkspaceText text="Publishing requirements"/>} ><div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
               {discoveryReadiness.items.map((item) => (
                 <div
                   className="flex min-h-14 items-center justify-between gap-3 border-b border-zinc-100 px-3 py-2 last:border-b-0"
@@ -710,7 +710,7 @@ function SalonSettingsForm({
                   ) : null}
                 </div>
               ))}
-            </div>
+            </div></SettingsChildPage>
           </div>
 
           <MapLocationSection
@@ -740,12 +740,12 @@ function SalonSettingsForm({
         </div>
       </section>
 
-      <OperatingHoursSection
+      </CompactSettingsPane><CompactSettingsPane id="operating-hours"><OperatingHoursSection
         canManageSettings={canManageSettings}
         operatingSettings={operatingSettings}
-      />
+      /></CompactSettingsPane>
 
-      <div className="sticky bottom-0 z-20 rounded-lg border border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
+      <CompactSaveBar>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-zinc-600">
             <WorkspaceText text="Saves only changed salon details and operating hours." />
@@ -758,83 +758,25 @@ function SalonSettingsForm({
             <WorkspaceText text="Save settings" />
           </SubmitButton>
         </div>
-      </div>
+      </CompactSaveBar>
     </form>
   );
 }
 
 
 export function AppLocalSalonSettings({data,error,lifecycleError,notice,operatingNotice}:{data:AppLocalSalonSettingsData;error?:string;lifecycleError?:string;notice?:string;operatingNotice?:string}){
-const __vt=useWorkspaceTranslation();
-const {setting,lifecycle,operatingSettings,discoveryReadiness,mapLocation,staffDirectory,ownerRoster,closureReview,canManageSettings,canViewStaff,canManageOwnership,canManageLifecycle,isOwner,salonId,workspaceLabel}=data;
-  const navItems: NavItem[] = [
-    { href: "#business-information", label: "Business info" },
-    { href: "#public-profile-discovery", label: "Public profile" },
-    { href: "#operating-hours", label: "Operating status" },
-    ...(isOwner ? [{ href: "#staff-appointment-permission", label: "Staff appointments" }] : []),
-    { href: "#ownership-admins", label: "Ownership" },
-    { href: "#salon-status", label: "Salon status", tone: "danger" },
-    ...(canViewStaff ? [{ href: "#public-team", label: "Public team" }] : []),
-  ];
 
-  return (
-    <div className="settings-style settings-style-page"><main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
-      <div className="grid min-w-0 w-full gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside className="h-fit rounded-lg border border-border-subtle bg-white p-3 lg:sticky lg:top-5">
-          <div className="border-b border-zinc-100 px-2 pb-3">
-            <p className="text-xs font-semibold uppercase text-zinc-500">
-              <WorkspaceText text="Salon settings" />
-            </p>
-            <h1 className="mt-1 truncate text-lg font-semibold text-zinc-950">
-              {setting.business_name}
-            </h1>
-            <p className="mt-1 truncate text-sm text-zinc-500">
-              <WorkspaceText text={workspaceLabel} />
-            </p>
-          </div>
-          <nav aria-label={__vt("Salon settings sections")} className="mt-3 grid gap-1">
-            {navItems.map((item) => (
-              <a
-                className={[
-                  "flex min-h-10 items-center rounded-md px-2.5 py-2 text-sm font-semibold transition hover:bg-zinc-100",
-                  item.tone === "danger" ? "text-red-700" : "text-zinc-700",
-                ].join(" ")}
-                href={item.href}
-                key={item.href}
-              >
-                <WorkspaceText text={item.label} />
-              </a>
-            ))}
-          </nav>
-          <Link
-            className="mt-3 flex min-h-10 items-center rounded-md border border-zinc-200 px-2.5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
-            href="/settings"
-          >
-            <WorkspaceText text="All settings" />
-          </Link>
-        </aside>
-
-        <div className="grid gap-5">
-          <header className="rounded-lg border border-border-subtle bg-white px-5 py-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase text-zinc-500">
-                  <WorkspaceText text="Salon controls" />
-                </p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950">
-                  <WorkspaceText text="Salon settings" />
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-                  <WorkspaceText text="Business details, public visibility, ownership, salon lifecycle, and staff profile controls in one compact workflow." />
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-3"><ContextualSupport /><StatusPill
-                className="bg-zinc-100 text-zinc-700 ring-zinc-200"
-                label={`${__vt("Salon status:")} ${__vt(lifecycle.lifecycleStatus.replaceAll("_", " "))}`}
-              /></div>
-            </div>
-          </header>
-
+const {setting,lifecycle,operatingSettings,discoveryReadiness,mapLocation,staffDirectory,ownerRoster,closureReview,canManageSettings,canViewStaff,canManageOwnership,canManageLifecycle,isOwner,salonId}=data;
+  const items = [
+ {id:"business-information",label:"Business info",group:"Salon profile"},
+ {id:"public-profile-discovery",label:"Public profile",group:"Salon profile"},
+ {id:"operating-hours",label:"Opening hours",group:"Salon profile"},
+ ...(isOwner?[{id:"staff-appointment-permission",label:"Staff appointments",group:"Team & access"}]:[]),
+ ...(canViewStaff?[{id:"public-team",label:"Public team",group:"Team & access"}]:[]),
+ {id:"ownership-admins",label:"Ownership",group:"Team & access"},
+ {id:"salon-status",label:"Salon status",group:"Advanced",danger:true},
+ ];
+ return <CompactSettingsWorkspace items={items} name={setting.business_name} initialPage={lifecycleError || notice ? "salon-status" : operatingNotice ? "operating-hours" : error ? "business-information" : ""}>
           <SalonSettingsForm
             canManageSettings={canManageSettings}
             discoveryReadiness={discoveryReadiness}
@@ -845,8 +787,8 @@ const {setting,lifecycle,operatingSettings,discoveryReadiness,mapLocation,staffD
             setting={setting}
           />
 
-          {isOwner ? <StaffCreationPermission salonId={salonId} /> : null}
-          <SalonOwnershipSection
+          {isOwner ? <CompactSettingsPane id="staff-appointment-permission"><StaffCreationPermission salonId={salonId} /></CompactSettingsPane> : null}
+          <CompactSettingsPane id="ownership-admins"><SalonOwnershipSection
             canManageOwnership={canManageOwnership}
             ownerRoster={ownerRoster}
             permissionsHref="/permissions"
@@ -857,7 +799,7 @@ const {setting,lifecycle,operatingSettings,discoveryReadiness,mapLocation,staffD
             }}
           />
 
-          <SalonLifecycleSection
+          </CompactSettingsPane><CompactSettingsPane id="salon-status"><SalonLifecycleSection
             canManageLifecycle={canManageLifecycle}
             closureReview={closureReview}
             error={lifecycleError}
@@ -871,14 +813,11 @@ const {setting,lifecycle,operatingSettings,discoveryReadiness,mapLocation,staffD
             }}
           />
 
-          {canViewStaff ? (
-            <PublicTeamSettingsSection
+          </CompactSettingsPane>{canViewStaff ? (
+            <CompactSettingsPane id="public-team"><PublicTeamSettingsSection
               canManageSettings={canManageSettings}
               staff={staffDirectory.staff}
-            />
+            /></CompactSettingsPane>
           ) : null}
-        </div>
-      </div>
-    </main></div>
-  );
+    </CompactSettingsWorkspace>;
 }

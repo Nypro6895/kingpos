@@ -1,4 +1,6 @@
 "use client";
+import {SettingsChildPage,SettingsDetails} from "@/app/settings/settings-child-pages";
+
 
 import { WorkspaceText } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
@@ -18,7 +20,7 @@ const button =
   "inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-wait disabled:opacity-50";
 const field =
   "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm";
-const card = "rounded-lg border border-zinc-200 bg-white p-4";
+const card = "settings-compact-connection";
 function address(
   salon: PublicStaffApplicationSalon | StaffConnectionDashboardRequest,
 ) {
@@ -38,7 +40,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
-  const [adding, setAdding] = useState(false);
+
   const [results, setResults] = useState<PublicStaffApplicationSalon[]>([]);
   const [searched, setSearched] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -256,18 +258,11 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
           <section className="grid gap-3">
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-semibold"><WorkspaceText text="Connected salons" /></h3>
-              <button
-                className={button}
-                disabled={busy}
-                aria-expanded={adding}
-                onClick={() => setAdding(!adding)}
-              >
-                <WorkspaceText text={adding ? "Close search" : "+ Add connection"} />
-              </button>
+
             </div>
             {data.salons.length ? (
               data.salons.map((salon) => (
-                <details className={card} key={salon.id}>
+                <SettingsDetails className={card} key={salon.id}>
                   <summary className="cursor-pointer font-semibold">
                     {salon.name}
                     <span className="ml-2 text-xs font-normal text-zinc-500">
@@ -292,7 +287,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                     )}
                   </dl>
                   {onManageSalon?<button className={`${button} mt-3`} onClick={()=>onManageSalon(salon.salonId,salon.mode??"staff")}><WorkspaceText text="Edit" /> <WorkspaceText text={salon.mode==="manage"?"salon settings":"my staff settings"} /></button>:null}
-                </details>
+                </SettingsDetails>
               ))
             ) : (
               <p className={`${card} text-sm text-zinc-500`}>
@@ -300,7 +295,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
               </p>
             )}
           </section>
-          {adding && (
+          {<SettingsChildPage title={<WorkspaceText text="Add connection"/>} defer>
             <section className="grid gap-3">
               <h3 className="font-semibold"><WorkspaceText text="Find a salon" /></h3>
               <form
@@ -436,7 +431,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                 );
               })}
             </section>
-          )}
+          </SettingsChildPage>}
           {applications.length > 0 && (
             <section className="grid gap-3">
               <h3 className="font-semibold"><WorkspaceText text="Pending applications" /></h3>
@@ -444,12 +439,12 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
             </section>
           )}
           {history.length > 0 && (
-            <details>
+            <SettingsDetails>
               <summary className="cursor-pointer text-sm font-semibold text-zinc-600">
                 <WorkspaceText text="Connection history" />
               </summary>
               <div className="mt-3 grid gap-3">{history.map(requestCard)}</div>
-            </details>
+            </SettingsDetails>
           )}
         </>
       )}
