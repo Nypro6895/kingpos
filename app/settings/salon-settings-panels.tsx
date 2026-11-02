@@ -30,6 +30,7 @@ import {
 } from "./direct-settings-ui";
 import { SalonProfilePreferencesPanel } from "./salon-profile-preferences-panel";
 import { StaffAvailabilityEditor } from "@/app/booking-setup/booking-setup-editors";
+import { StaffHoursBooking } from "./staff-hours-booking";
 import { SalonMediaUploader } from "@/app/salon-profile/salon-profile-studio";
 import { saveSettingsProfileIdentity } from "./settings-extra-actions";
 import { refreshSettingsMap } from "./settings-extra-actions";
@@ -133,7 +134,7 @@ function OperatingHours({
                     updateWindows(windows.filter((_, i) => i !== index))
                   }
                 >
-                  <WorkspaceText text="Remove" />
+                  <span aria-hidden="true">×</span>
                 </button>
               </div>
             ) : null,
@@ -151,7 +152,7 @@ function PublicIdentity({data,onSaved}:{data:Extract<DirectData,{kind:"public-pr
    // eslint-disable-next-line @next/next/no-img-element
    <img src={data.coverUrl} alt={__vt("Cover image")}/>:null}</div>
   <SettingsIdentity name={data.setting.business_name||__vt("Salon")} imageUrl={data.logoUrl}/>
-  <InlineForm disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
+  <InlineForm changed={!!paths.logo || !!paths.cover || removed.logo || removed.cover} disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
    <div className="settings-salon-media-row">{(['cover','logo'] as const).map(kind=><details className="settings-media-picker" key={kind}><summary><WorkspaceText text={kind==='logo'?'Change logo':'Change cover'}/></summary><div className="settings-media-picker-content"><input type="hidden" name={kind+'_path'} value={paths[kind]||''}/><input type="hidden" name={'remove_'+kind} value={String(removed[kind])}/><SalonMediaUploader key={kind+'-'+reset} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={__vt(kind==='logo'?'Salon logo':'Cover image')} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div></details>)}</div>
    <Field name="tagline" label={__vt("Tagline")} value={data.profileIdentity?.public_profile_tagline}/><label className="settings-field"><WorkspaceText text="Salon story"/><textarea className={inputClass} name="story" rows={4} defaultValue={data.profileIdentity?.public_profile_story||''}/></label>
   </InlineForm>
@@ -450,6 +451,8 @@ export function BookingSettingsPanel({
         </summary>
         <div className="mt-3">
           <StaffAvailabilityEditor
+            settingsMode
+            renderOnlineBooking={member => <StaffHoursBooking key={member.id} salonId={data.salonId} member={data.setup.staff.find(staff => staff.id === member.id)!} setup={data.setup} canManageOnline={data.canManage} onSaved={onSaved} />}
             availabilityRules={data.setup.availabilityRules}
             timeBlocks={data.setup.timeBlocks}
             staff={data.setup.staff}

@@ -525,6 +525,8 @@ function IntervalEditor({
 }
 
 export function StaffAvailabilityEditor({
+  settingsMode = false,
+  renderOnlineBooking,
   onSaved,
   expectedSalonId,
   initiallyCollapsed = false,
@@ -536,6 +538,8 @@ export function StaffAvailabilityEditor({
   timeBlocks,
   timezone,
 }: {
+  settingsMode?: boolean;
+  renderOnlineBooking?: (member: AvailabilityStaff) => ReactNode;
   onSaved?: () => void | Promise<void>;
   expectedSalonId?: string;
   initiallyCollapsed?: boolean;
@@ -561,7 +565,7 @@ export function StaffAvailabilityEditor({
     (selectedStaffId && staff.some((member) => member.id === selectedStaffId)
       ? selectedStaffId
       : null) ||
-    (initiallyCollapsed ? null : firstStaffId) ||
+    (initiallyCollapsed || settingsMode ? null : firstStaffId) ||
     null;
   const [expandedStaffState, setExpandedStaffState] = useState<{
     key: string;
@@ -658,7 +662,7 @@ export function StaffAvailabilityEditor({
   }, [weekDirty]);
 
   function replaceStaffUrl(staffId: string | null) {
-    if (typeof window === "undefined") {
+    if (settingsMode || typeof window === "undefined") {
       return;
     }
 
@@ -898,7 +902,7 @@ export function StaffAvailabilityEditor({
     );
   }
 
-  if (initiallyCollapsed) {
+  if (initiallyCollapsed || settingsMode) {
     const orderedDays = [...DAYS.slice(1), DAYS[0]];
     const busy = isPending || isTimeOffPending;
     const renderIntervals = (dayId: number, target: keyof DayDraft) => <IntervalEditor
@@ -925,6 +929,7 @@ export function StaffAvailabilityEditor({
           <button type="button" className="availability-person-toggle" aria-expanded={expanded} aria-controls={`compact-staff-${member.id}`} disabled={busy} onClick={() => expandStaff(member.id)}>
             <SetupStaffAvatar staff={member}/><span className="availability-person-name"><strong>{name}</strong>{!expanded ? <><small>{compactWeeklyHours(memberWeek)}</small>{blocks.length ? <small><WorkspaceText text="Time off ·" /> <WorkspaceText text={formatDateRangeText(blocks[0], timezone)} />{blocks.length > 1 ? ` +${blocks.length - 1}` : ""}</small> : null}</> : null}</span><span className={online ? "availability-online" : "availability-offline"}>● <WorkspaceText text={online ? "Online" : "Offline"} /></span><span aria-hidden="true">{expanded ? "⌃" : "⌄"}</span>
           </button>
+          {renderOnlineBooking ? <div hidden={!expanded}>{renderOnlineBooking(member)}</div> : null}
           {expanded ? <div id={`compact-staff-${member.id}`} className="availability-person-editor">
             <Message result={result}/>
             <div className="availability-compact-title"><h3><WorkspaceText text="Weekly hours" /></h3>{canManage ? <button type="button" disabled={busy} onClick={() => {setShowCopy(!showCopy); if(copySourceDay === null) setCopySourceDay(orderedDays.find(day => week[day.id].working.length)?.id ?? 1);}}><WorkspaceText text="Copy hours" /></button> : null}</div>

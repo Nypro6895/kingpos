@@ -1284,7 +1284,6 @@ export function SalonProfileStudio({
   looks,
   notice,
   previewData,
-  publicHref,
   readiness,
   services,
   setting,
@@ -1339,18 +1338,6 @@ export function SalonProfileStudio({
             >
               <WorkspaceText text="Preview" />
             </button>
-            <Link
-              className={[
-                "inline-flex min-h-10 items-center rounded-md border px-4 text-sm font-semibold transition",
-                readiness.isExploreEligible
-                  ? "border-zinc-300 bg-white text-zinc-950 hover:bg-zinc-50"
-                  : "pointer-events-none border-zinc-200 bg-zinc-100 text-zinc-400",
-              ].join(" ")}
-              href={publicHref}
-              aria-disabled={!readiness.isExploreEligible}
-            >
-              <WorkspaceText text="View public profile" />
-            </Link>
             <Link
               className="inline-flex min-h-10 items-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
               href="/salon-settings#public-profile-discovery"

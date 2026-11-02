@@ -12,6 +12,7 @@ import { DirectSettingsPanel } from "./direct-settings-panel";
 import type { DirectSettingsKind } from "./direct-settings-actions";
 import { loadSettingsHub, type SettingsHubIndex } from "./settings-hub-actions";
 import "./settings-hub.css";
+import "./compact-settings.css";
 import "./settings-controls.css";
 import { SettingsIcon } from "./settings-icon";
 import { getSettingCopy, settingsCategories } from "./settings-navigation";
@@ -120,7 +121,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  const singleItemGroup=["create","help","legal"].includes(activeGroup.id);
  const goBack=()=>detail&&!singleItemGroup?navigate(activeGroup.id):navigate("personal","","home");
  function selectGroup(g:SettingGroup){if(["create","help","legal"].includes(g.id))navigate(g.id,g.items[0].id);else navigate(g.id);}
- return <div className="settings-hub" data-mobile-step={search?"home":location.step}>
+ return <div className="settings-hub compact-settings" data-detail={detail} data-mobile-step={search?"home":location.step}>
   <header className="settings-page-header"><h1><WorkspaceText text="All Settings"/></h1><div className="settings-search"><label><SettingsIcon name="search"/><span className="sr-only"><WorkspaceText text="Find a setting or salon"/></span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={__vt("Find a setting or salon…")}/></label><button type="button" aria-label={__vt("Refresh salon list")} disabled={busy} onClick={()=>void reload()}>↻</button></div></header>
   {error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error}/></p>:null}
   <div className="settings-workbench">

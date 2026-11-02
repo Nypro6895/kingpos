@@ -6,7 +6,7 @@ import type { PublicSalonProfile } from "@/types/salon-profile";
 import styles from "./salon-website-header.module.css";
 
 type WebsiteTab = { id: string; label: string };
-export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedTab, introVisible = true, onTab, onTabKeyDown, tools, trust, verified, priceHint, canBook, onBook, canFollow, following, followPending, onFollow, onHours, canShare, onShare, onReport }: {
+export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedTab, introVisible = true, onTab, onTabKeyDown, tools, trust, verified, canBook, onBook, canFollow, following, followPending, onFollow, onHours, canShare, onShare, onReport }: {
   profile: PublicSalonProfile;
   layout: "booking" | "portfolio" | "balanced";
   tabs: WebsiteTab[];
@@ -18,7 +18,6 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
   tools?: ReactNode;
   trust?: ReactNode;
   verified?: ReactNode;
-  priceHint?: string | null;
   canBook: boolean;
   onBook: () => void;
   canFollow: boolean;
@@ -42,17 +41,15 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
         <div className={styles.logo}>{profile.logoImageUrl && failedLogo !== profile.logoImageUrl
           ? <img src={profile.logoImageUrl} alt={`${profile.name} logo`} onError={() => setFailedLogo(profile.logoImageUrl)}/>
           : <span aria-hidden="true">{initials}</span>}</div>
-        <div className={styles.name}><div><h2>{profile.name}</h2>{verified}</div>{locality ? <p>{locality}</p> : null}</div>
+        <div className={styles.name}><div><h2>{profile.name}</h2>{verified}{tools ? <div className={styles.tools}>{tools}</div> : null}</div>{locality ? <p>{locality}</p> : null}</div>
       </div>
-      <div className={styles.tools}>{tools}</div>
       <div className={styles.actions}>
         {canFollow ? <button type="button" className={styles.follow} aria-pressed={following} disabled={followPending} onClick={onFollow}><WorkspaceText text={following ? "✓ Following" : "+ Follow salon"} /></button> : null}
         {canBook ? <button type="button" className={styles.book} onClick={onBook}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
       </div>
     </div>
-    {trust || priceHint || (status && status.kind !== "hours_unset") ? <div className={styles.meta}>
+    {trust || (status && status.kind !== "hours_unset") ? <div className={styles.meta}>
       {trust ? <div className={styles.trust}>{trust}</div> : null}
-      {priceHint ? <span className={styles.priceHint}>{priceHint}</span> : null}
       {status && status.kind !== "hours_unset" ? <button type="button" className={styles.status} data-open={status.isOpen} aria-label={__vt("View salon operating hours")} aria-haspopup="dialog" onClick={onHours}>
         <span aria-hidden="true" className={styles.dot}/><strong><WorkspaceText text={status.label} /></strong>{status.detail ? <><span aria-hidden="true">·</span><span><WorkspaceText text={status.detail} /></span></> : null}
       </button> : null}

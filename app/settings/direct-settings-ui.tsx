@@ -1,6 +1,6 @@
 "use client";
 import { WorkspaceText } from "@/components/workspace-language";
-import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import "./settings-controls.css";
 
 import type { loadDirectSettings } from "./direct-settings-actions";
@@ -33,7 +33,7 @@ export function Field({
 }) {
   return (
     <label className="settings-field">
-      <WorkspaceText text={label} />
+      <span><WorkspaceText text={label} /></span>
       <input
         name={name}
         className={inputClass}
@@ -86,7 +86,7 @@ export function Select({
 }) {
   return (
     <label className="settings-field">
-      <WorkspaceText text={label} />
+      <span><WorkspaceText text={label} /></span>
       <select aria-label={label} className={inputClass} name={name} defaultValue={value}>
         {options.map(([id, text]) => (
           <option key={id} value={id}>
@@ -129,12 +129,16 @@ export function InlineForm({
     [inviteUrl, setInviteUrl] = useState("");
   const lock = useRef(false),
     formRef = useRef<HTMLFormElement>(null);
+  const [detectedActionOnly,setDetectedActionOnly]=useState(false);
+  useEffect(()=>{setDetectedActionOnly(!formRef.current?.querySelector('input:not([type="hidden"]):not([readonly]),select,textarea'));},[children]);
   return (
     <form
       ref={formRef}
       aria-busy={busy}
+      data-settings-dirty={dirty || changed}
       className={`settings-inline-form grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 ${actionOnly?"settings-action-form":""} ${className}`}
       onChange={() => { setDirty(true); setMessage(""); setError(""); }}
+      onInvalidCapture={event=>{let parent=(event.target as HTMLElement).parentElement;while(parent&&parent!==formRef.current){if(parent instanceof HTMLDetailsElement)parent.open=true;parent=parent.parentElement;}}}
       onSubmit={async (event) => {
         event.preventDefault();
         if (lock.current || disabled) return;
@@ -215,7 +219,7 @@ export function InlineForm({
           />
         </label>
       )}
-      <div className="settings-form-actions flex gap-2">
+      <div className="settings-form-actions flex gap-2" hidden={!dirty && !changed && !busy && !actionOnly && !detectedActionOnly}>
         {!actionOnly&&(dirty||changed)?<p role="status"><WorkspaceText text="Unsaved changes" /></p>:null}
         <button
           disabled={busy || disabled}

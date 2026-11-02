@@ -3289,7 +3289,7 @@ export function SalonProfileView({
     if (tab.id === "about") return !isWebsiteView || salonAboutParagraphs(profile).length > 0 || Boolean(profile.addressLine1 || profile.phone || profile.website);
     return true;
   });
-  const mainTabs = visibleTabs.filter(tab => ["discover", "gallery", "services", "team"].includes(tab.id));
+  const mainTabs = visibleTabs.filter(tab => ["discover", "gallery", "services", "team", ...(isWebsiteView ? ["experiences"] : [])].includes(tab.id));
   const hiddenPosts = useHiddenPosts(capabilities.currentUserId);
   const visibleBeautyPosts = data.beautyPosts.filter(post => !hiddenPosts.includes(`beauty_post:${post.id}`));
   const [publishedLooks, setPublishedLooks] = useState<PublicSalonProfileLook[]>([]);
@@ -4379,8 +4379,7 @@ export function SalonProfileView({
           profile={profile} layout={preferences.layout} tabs={mainTabs} extraTabs={visibleTabs.filter(tab => !mainTabs.includes(tab))} selectedTab={effectiveTab} introVisible={preferences.show_featured !== false}
           onTab={id => changeTab(id as TabId)} onTabKeyDown={onTabKeyDown}
           verified={<SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>}
-          trust={<div><SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/><button type="button" className="min-h-11 text-xs font-semibold text-brand-teal underline underline-offset-4" onClick={() => changeTab("experiences")}><WorkspaceText text="Read customer experiences" /></button></div>}
-          priceHint={salonPopularPrice(data.reputationSummary)}
+          trust={<SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} className="text-zinc-600"/>}
           canBook={canShowBook} onBook={() => openBooking({title:"Book appointment"})}
           canFollow={canShowFollow} following={isFollowing} followPending={isPending} onFollow={toggleFollow}
           onHours={() => setHoursInfoOpen(true)} canShare={preferences.allow_sharing} onShare={() => { void shareSalon(); }}
