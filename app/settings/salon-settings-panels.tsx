@@ -219,7 +219,7 @@ export function SalonDetailsPanel({
   return (
     <div className="grid gap-4">
 
-      <SettingsEditSection title={s.business_name||__vt("Salon information")} heading={<SettingsIdentity name={s.business_name||__vt("Salon")} subtitle={[s.city,s.state].filter(Boolean).join(", ")}/>} preview={<div><SettingsReadRow label="Phone" value={s.phone}/><SettingsReadRow label="Email" value={s.email}/><SettingsReadRow label="Website" value={s.website}/><SettingsReadRow label="Address" value={[s.address_line1,s.address_line2,s.city,s.state,s.postal_code,s.country].filter(Boolean).join(", ")}/>{s.business_description?<SettingsReadRow label="Description" value={s.business_description}/>:null}<SettingsReadRow label="Time zone" value={data.hours.timeZone}/></div>}>
+      <SettingsEditSection title={s.business_name||__vt("Salon information")} heading={<SettingsIdentity name={s.business_name||__vt("Salon")} subtitle={[s.city,s.state].filter(Boolean).join(", ")}/>} preview={<div><SettingsReadRow label="Phone" value={s.phone}/><SettingsReadRow label="Email" value={s.email}/><SettingsReadRow label="Website" value={s.website}/><SettingsReadRow label="Address" value={[s.address_line1,s.address_line2,s.city,s.state,s.postal_code,s.country].filter(Boolean).join(", ")}/><SettingsReadRow label="Time zone" value={data.hours.timeZone}/></div>}>
       <InlineForm
         save={(form) =>
           saveDirectSalonProfile(data.salonId, {
