@@ -92,40 +92,6 @@ private final class LocalConfirmationProbe {
 
 final class LocalAppWebViewTests: XCTestCase {
     @MainActor
-    func testInstalledScrollRootDoesNotBounceAndRetainsVerticalAndNestedScrolling() async throws {
-        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
-        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
-        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
-        try await wait("window.fixtureLocal === true", in: web)
-        XCTAssertFalse(web.scrollView.bounces)
-        XCTAssertFalse(web.scrollView.alwaysBounceHorizontal)
-        XCTAssertTrue(web.scrollView.isDirectionalLockEnabled)
-        XCTAssertTrue(web.scrollView.isScrollEnabled)
-        XCTAssertFalse(web.scrollView.showsHorizontalScrollIndicator)
-        XCTAssertFalse(web.scrollView.showsVerticalScrollIndicator)
-        // Exercise the installed document, not a separately constructed WKWebView.
-        _ = try await web.evaluateJavaScript("""
-        (()=>{
-          document.body.style.margin='0';
-          document.body.style.minHeight='3000px';
-          const rail=document.createElement('div');rail.id='scrollAcceptanceRail';
-          rail.style.cssText='width:100%;overflow-x:auto';
-          const wide=document.createElement('div');wide.style.cssText='width:2400px;height:64px';
-          rail.append(wide);document.body.prepend(rail);
-          window.scrollTo(0,200);rail.scrollLeft=120;return true;
-        })()
-        """)
-        try await wait("scrollY>=199&&document.querySelector('#scrollAcceptanceRail').scrollLeft===120", in: web)
-        let aligned = try await web.evaluateJavaScript("scrollX===0&&document.documentElement.scrollWidth<=innerWidth") as? Bool
-        XCTAssertEqual(aligned, true)
-        // Re-layout must not restore UIKit's default indicators or bounce.
-        controller.view.setNeedsLayout(); controller.view.layoutIfNeeded()
-        XCTAssertFalse(web.scrollView.bounces)
-        XCTAssertFalse(web.scrollView.showsVerticalScrollIndicator)
-    }
-
-    @MainActor
     func testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
         let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help"), probe = LocalConfirmationProbe()

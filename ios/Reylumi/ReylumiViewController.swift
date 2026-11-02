@@ -200,9 +200,9 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Rotation/layout must not restore the hosted page's scroll indicators.
-        webView?.scrollView.showsHorizontalScrollIndicator = false
-        webView?.scrollView.showsVerticalScrollIndicator = false
+        // On a short landscape viewport the indicator sits beside the bottom
+        // navigation. Keep native scrolling, without that floating overlay.
+        webView?.scrollView.showsVerticalScrollIndicator = view.bounds.width <= view.bounds.height
     }
 
     @objc private func retryLoad() {

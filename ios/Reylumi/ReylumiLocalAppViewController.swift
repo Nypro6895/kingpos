@@ -107,14 +107,6 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.isOpaque = false; webView.backgroundColor = .white; webView.scrollView.backgroundColor = .white
         webView.scrollView.contentInsetAdjustmentBehavior = .never
-        // This is the installed app's scroll root, separate from the hosted
-        // controller. CSS overflow clipping does not disable native edge bounce.
-        // Nested web tables and period rails keep their own horizontal scrolling.
-        webView.scrollView.bounces = false
-        webView.scrollView.alwaysBounceHorizontal = false
-        webView.scrollView.isDirectionalLockEnabled = true
-        webView.scrollView.showsHorizontalScrollIndicator = false
-        webView.scrollView.showsVerticalScrollIndicator = false
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         view.insertSubview(webView, belowSubview: launchPanel)
         NSLayoutConstraint.activate([
