@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { WorkspaceText } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
 import "./compact-settings.css";
+import {SettingsChildPages} from "./settings-child-pages";
 
 type Item = { id: string; label: string; group: string; danger?: boolean };
 const PageContext = createContext<{ selected: string; open: (id: string) => void }>({ selected: "", open: () => {} });
@@ -50,7 +51,7 @@ export function CompactSettingsWorkspace({ items, children, name, initialPage = 
       {[...new Set(items.map(item => item.group))].map(group => <section key={group}><h2><WorkspaceText text={group} /></h2><div className="compact-list">{items.filter(item => item.group === group).map(item => <button key={item.id} type="button" className={item.danger ? "compact-danger" : ""} onClick={() => open(item.id)}><span><WorkspaceText text={item.label} /></span><span aria-hidden="true">›</span></button>)}</div></section>)}
       <a className="compact-all-link" href="/settings"><WorkspaceText text="All settings" /> ›</a>
     </nav>
-    <div className="compact-page-content">{children}</div>
+    <div className="compact-page-content"><SettingsChildPages label={item?.label||"Salon settings"} resetKey={selected}>{children}</SettingsChildPages></div>
   </div></PageContext.Provider>;
 }
 
@@ -72,5 +73,5 @@ export function CompactSaveBar({ children }: { children: ReactNode }) {
     form.addEventListener("reset", reset);
     return () => { form.removeEventListener("input", change); form.removeEventListener("change", change); form.removeEventListener("reset", reset); };
   }, []);
-  return <div ref={root} hidden={!dirty} data-settings-dirty={dirty} className="compact-save-bar">{children}</div>;
+  return <div ref={root} hidden={!dirty} data-settings-dirty={dirty} className="compact-save-bar settings-page-persistent">{children}</div>;
 }

@@ -1,4 +1,6 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { createOwnerTransferInviteAction } from "@/app/account/actions";
@@ -131,7 +133,7 @@ export function SalonOwnershipSection({
                 </li>
               ))}
             </ul>
-            <button type="button" disabled={isPending || !ownerRoster.canLeave}
+            <SettingsChildPage title={<WorkspaceText text="Leave ownership"/>} danger>            <button type="button" disabled={isPending || !ownerRoster.canLeave}
               className="mt-3 min-h-10 rounded-md border border-red-200 px-4 text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => { setLeaveError(""); setConfirmLeave(true); }}><WorkspaceText text="Leave ownership" /></button>
             {!ownerRoster.canLeave ? <p className="mt-2 text-sm text-amber-700"><WorkspaceText text="You are the last active Owner. Invite another Owner and wait for acceptance before leaving." /></p> : null}
@@ -144,10 +146,10 @@ export function SalonOwnershipSection({
                   const result = await leaveSalonOwnershipAction(salon.id);
                   if (result?.error) setLeaveError(result.error);
                 });
-              } }} />
+              } }} /></SettingsChildPage>
           </div>
         ) : null}
-        <form className="grid gap-4 px-4 py-4" onSubmit={createInvite}>
+        <SettingsChildPage title={<WorkspaceText text="Invite or transfer ownership"/>} ><form className="grid gap-4 px-4 py-4" onSubmit={createInvite}>
           <div>
             <h3 className="text-sm font-semibold text-zinc-950">
               <WorkspaceText text="Owner invitation" />
@@ -244,7 +246,7 @@ export function SalonOwnershipSection({
 
             </div>
           ) : null}
-        </form>
+        </form></SettingsChildPage>
       </div>
     </section></div>
   );

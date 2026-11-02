@@ -1,4 +1,6 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -292,7 +294,7 @@ export function AccountDeletionPanel({
           </div>
         ) : (
           <>
-            <div className="border-b border-zinc-100 px-4 py-4">
+            <SettingsChildPage title={<WorkspaceText text="Ownership review"/>} ><div className="border-b border-zinc-100 px-4 py-4">
               <h3 className="text-sm font-semibold text-zinc-950">
                 <WorkspaceText text="Ownership transfer review" />
               </h3>
@@ -304,10 +306,10 @@ export function AccountDeletionPanel({
               <div className="mt-3">
                 <SalonImpactList salons={impact.ownedSalons} />
               </div>
-            </div>
+            </div></SettingsChildPage>
 
             {lastOwnerCount > 0 ? (
-              <div className="border-b border-red-100 bg-red-50/80 px-4 py-4">
+              <SettingsChildPage title={<WorkspaceText text="Last-owner salons"/>} danger><div className="border-b border-red-100 bg-red-50/80 px-4 py-4">
                 <div className="mb-3">
                   <h3 className="text-sm font-semibold text-red-950">
                     <WorkspaceText text="Last-owner salons" />
@@ -368,11 +370,11 @@ export function AccountDeletionPanel({
                   ))}
                 </div>
 
-              </div>
+              </div></SettingsChildPage>
             ) : null}
 
             <div className="border-b border-zinc-100 px-4 py-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <SettingsChildPage title={<WorkspaceText text="Download account backup"/>} ><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-950">
                     <WorkspaceText text="Backup export" />
@@ -389,7 +391,7 @@ export function AccountDeletionPanel({
                 >
                   <WorkspaceText text={backupPending ? "Preparing..." : "Download backup"} />
                 </button>
-              </div>
+              </div></SettingsChildPage>
               {backupNotice ? (
                 <p className="mt-3 text-sm font-semibold text-emerald-700">
                   {backupNotice}
@@ -402,7 +404,7 @@ export function AccountDeletionPanel({
               ) : null}
             </div>
 
-            <form
+            <SettingsChildPage title={<WorkspaceText text="Review account deletion"/>} danger><form
               className="grid gap-4 bg-red-50/70 px-4 py-4"
               onSubmit={requestDeletion}
             >
@@ -470,7 +472,7 @@ export function AccountDeletionPanel({
                   <WorkspaceText text={requestPending ? "Scheduling..." : "Request account deletion"} />
                 </button>
               </div>
-            </form>
+            </form></SettingsChildPage>
           </>
         )}
       </div>

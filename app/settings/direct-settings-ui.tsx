@@ -2,6 +2,7 @@
 import { WorkspaceText } from "@/components/workspace-language";
 import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import "./settings-controls.css";
+import {SettingsChildPage,useSettingsChildNavigation} from "./settings-child-pages";
 
 import type { loadDirectSettings } from "./direct-settings-actions";
 export type DirectData = Awaited<ReturnType<typeof loadDirectSettings>>;
@@ -264,7 +265,11 @@ export function SettingsSwitch({label,description,checked,disabled,onChange}:{la
 const SettingsEditingContext=createContext<((saved?:boolean)=>void)|null>(null);
 export function SettingsEditSection({title,summary,preview,children,action="Edit",danger=false,heading,closeOnSave=true}:{closeOnSave?:boolean;heading?:ReactNode;title:string;summary?:string;preview?:ReactNode;children:ReactNode;action?:string;danger?:boolean}){
  const [open,setOpen]=useState(false),[mounted,setMounted]=useState(false),[saved,setSaved]=useState(false);const id=useId();
+ const pages=useSettingsChildNavigation(),[resetKey,setResetKey]=useState(0);
  const finish=(success=false)=>{setSaved(success);setOpen(false);setMounted(false);};
+ if(pages)return <SettingsChildPage id={id} title={<WorkspaceText text={title}/>} heading={heading} description={summary} danger={danger} defer resetKey={resetKey}>
+  <SettingsEditingContext.Provider value={closeOnSave?(success=false)=>{setSaved(success);pages.close(id);setResetKey(value=>value+1);}:null}>{children}</SettingsEditingContext.Provider>
+ </SettingsChildPage>;
  return <section className={"settings-edit-section"+(danger?" settings-edit-danger":"")} aria-label={title}>
   <header className="settings-section-heading"><div>{heading||<h3><WorkspaceText text={title}/></h3>}{summary?<p><WorkspaceText text={summary}/></p>:null}</div><button type="button" className="settings-button" aria-expanded={open} aria-controls={id} onClick={()=>{setSaved(false);setMounted(true);setOpen(v=>!v);}}><WorkspaceText text={open?"Close":action}/></button></header>
   {!open&&preview?<div className="settings-section-preview">{preview}</div>:null}
@@ -276,4 +281,3 @@ export function SettingsReadRow({label,value}:{label:string;value:ReactNode}){re
 export function SettingsIdentity({name,subtitle,imageUrl}:{name:string;subtitle?:string;imageUrl?:string|null}){return <div className="settings-identity"><span className="settings-identity-avatar">{imageUrl?
  // eslint-disable-next-line @next/next/no-img-element
  <img src={imageUrl} alt=""/>:name.split(/\s+/).slice(0,2).map(n=>n[0]).join("")}</span><div><strong>{name}</strong>{subtitle?<small>{subtitle}</small>:null}</div></div>;}
-

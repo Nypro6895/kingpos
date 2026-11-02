@@ -1,4 +1,6 @@
 "use client";
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 
 import { useEffect, useRef, useState } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -37,13 +39,13 @@ export function StaffHoursBooking({salonId, member, setup, canManageOnline, onSa
     <div className="staff-hours-booking-row"><div><strong><WorkspaceText text="Online booking" /></strong><small><WorkspaceText text={!member.is_active?"Inactive staff":!enabled?"Off · Not accepting online bookings":!baseline.some(id=>services.some(s=>s.id===id))?"On · Select online services":"On · Online services assigned"}/></small></div>
       <label className="staff-hours-switch"><input type="checkbox" role="switch" aria-label="Allow online booking" checked={enabled} disabled={busy||!canManageOnline||!member.is_active} onChange={e=>void save("toggle",e.target.checked)}/><span aria-hidden="true"/></label>
     </div>
-    <details><summary><WorkspaceText text="Online services"/> · {baseline.filter(id=>services.some(s=>s.id===id)).length}</summary>
+    <SettingsDetails><summary><WorkspaceText text="Online services"/> · {baseline.filter(id=>services.some(s=>s.id===id)).length}</summary>
       {!services.length?<p><WorkspaceText text="No active online services in this salon."/></p>:<fieldset disabled={busy||!setup.permissions.canManageAssignments}>
         <legend className="sr-only"><WorkspaceText text="Online services"/></legend>
         {services.map(service=><label className="staff-hours-service" key={service.id}><input type="checkbox" checked={selected.includes(service.id)} onChange={e=>setSelected(e.target.checked?[...selected,service.id]:selected.filter(id=>id!==service.id))}/><span>{service.name}</span></label>)}
         {dirty?<div className="staff-hours-booking-actions"><button type="button" onClick={()=>void save("services")}><WorkspaceText text={busy?"Saving…":"Save online services"}/></button><button type="button" onClick={()=>setSelected([...baseline])}><WorkspaceText text="Discard"/></button></div>:null}
       </fieldset>}
-    </details>
+    </SettingsDetails>
     {enabled&&setup.readinessByStaffId[member.id]?.reasons.length?<p className="staff-hours-readiness"><WorkspaceText text="Booking readiness:"/> {setup.readinessByStaffId[member.id].reasons.map(reason=>reason.label).join(", ")}</p>:null}
     {message?<p role={error?"alert":"status"}><WorkspaceText text={message}/></p>:null}
   </section>;

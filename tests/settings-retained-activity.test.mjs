@@ -79,5 +79,5 @@ test('the actual Settings hub uses the retained section boundary', () => {
   const source = readFileSync('app/settings/settings-hub-client.tsx', 'utf8');
   assert.match(source, /import\s*\{\s*SettingContent\s*\}\s*from\s*["']\.\/setting-content["']/);
   assert.doesNotMatch(source, /function\s+SettingContent\s*\(/);
-  assert.match(source, /<SettingContent active=\{active\}>\{i\.content\}<\/SettingContent>/);
+  assert.match(source, /<SettingContent active=\{active\}><SettingsChildPages[^>]*>\{i\.content\}<\/SettingsChildPages><\/SettingContent>/);
 });

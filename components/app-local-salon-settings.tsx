@@ -1,4 +1,8 @@
 "use client";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 // Full presentation extracted from the shipped Salon Settings page.
 import {WorkspaceText,WorkspaceElement}from"@/components/workspace-language";
 import {TimeZoneSelect}from"@/components/time-zone-select";
@@ -172,7 +176,7 @@ function MapLocationSection({
         : "bg-amber-50 text-amber-700 ring-amber-200";
 
   return (
-    <div className="border-t border-zinc-100 px-4 py-4">
+    <SettingsChildPage title={<WorkspaceText text="Map location"/>} ><div className="border-t border-zinc-100 px-4 py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Map location" /></h3>
@@ -226,7 +230,7 @@ function MapLocationSection({
           <WorkspaceText text="Refresh map location" />
         </SubmitButton>
       </div>
-    </div>
+    </div></SettingsChildPage>
   );
 }
 
@@ -283,7 +287,7 @@ return (
         title="Operating status"
       />
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
+        <SettingsChildPage title={<WorkspaceText text="Current opening status"/>} ><div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-zinc-950">
               <WorkspaceText text="Customer status preview" />
@@ -297,7 +301,7 @@ return (
             showDetail
             status={operatingSettings.status}
           />
-        </div>
+        </div></SettingsChildPage>
 
         <div className="grid gap-4 px-4 py-4">
           <label className="grid gap-1.5 sm:max-w-xs">
@@ -364,7 +368,7 @@ return (
           </p>
         </div>
 
-        <div className="border-t border-zinc-100 px-4 py-4">
+        <SettingsChildPage title={<WorkspaceText text="Holiday & special hours"/>} ><div className="border-t border-zinc-100 px-4 py-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-zinc-950">
@@ -480,7 +484,7 @@ return (
               <WorkspaceText text="Add" />
             </SubmitButton>
           </div>
-        </div>
+        </div></SettingsChildPage>
       </div>
     </section>
   );
@@ -575,7 +579,7 @@ function SalonSettingsForm({
               name="website"
               type="url"
             />
-            <details className="salon-address-details sm:col-span-2"><summary><WorkspaceText text="Address" /> <span className="text-xs text-zinc-500">{[setting.city,setting.state].filter(Boolean).join(", ")}</span></summary><Field
+            <SettingsDetails className="salon-address-details sm:col-span-2"><summary><WorkspaceText text="Address" /> <span className="text-xs text-zinc-500">{[setting.city,setting.state].filter(Boolean).join(", ")}</span></summary><Field
               autoComplete="address-line1"
               defaultValue={setting.address_line1}
               label="Address line 1"
@@ -611,7 +615,7 @@ function SalonSettingsForm({
               label="Country"
               name="country"
             />
-            </details><details className="sm:col-span-2"><summary><WorkspaceText text="Business description" /></summary><label className="grid gap-1.5 sm:col-span-2">
+            </SettingsDetails><SettingsDetails className="sm:col-span-2"><summary><WorkspaceText text="Business description" /></summary><label className="grid gap-1.5 sm:col-span-2">
               <span className="text-sm font-semibold text-zinc-700">
                 <WorkspaceText text="Business description" />
               </span>
@@ -620,7 +624,7 @@ function SalonSettingsForm({
                 defaultValue={setting.business_description ?? ""}
                 name="business_description"
               />
-            </label></details>
+            </label></SettingsDetails>
           </div>
         </div>
       </section>
@@ -668,7 +672,7 @@ function SalonSettingsForm({
                 </span>
               ) : null}
             </div>
-            <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
+            <SettingsChildPage title={<WorkspaceText text="Publishing requirements"/>} ><div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
               {discoveryReadiness.items.map((item) => (
                 <div
                   className="flex min-h-14 items-center justify-between gap-3 border-b border-zinc-100 px-3 py-2 last:border-b-0"
@@ -706,7 +710,7 @@ function SalonSettingsForm({
                   ) : null}
                 </div>
               ))}
-            </div>
+            </div></SettingsChildPage>
           </div>
 
           <MapLocationSection

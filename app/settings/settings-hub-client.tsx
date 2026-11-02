@@ -19,6 +19,7 @@ import { getSettingCopy, settingsCategories } from "./settings-navigation";
 import Link from "next/link";
 import {BlockedUsersPanel} from "./blocked-users-panel";
 import { SettingContent } from "./setting-content";
+import {SettingsChildPages} from "./settings-child-pages";
 
 const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owner?:boolean}[]=[
  {kind:"salon-profile",label:"Salon information & opening hours",permission:"salon_settings.view"},
@@ -54,7 +55,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
   {id:`staff-${s.id}-schedule`,label:"My working hours & time off",content:<DirectSettingsPanel kind="staff-schedule" salonId={s.id}/>},
  ]}))];
  if(index.accounts.some(a=>a.canCreate))groups.push({id:"create",label:"Add salon",items:[{id:"create-salon",label:"Add salon",content:<SalonListPanel initialCreate createOnly onChanged={reload}/>} ]});
- groups.push({id:"legal",label:"Legal & Privacy",items:[{id:"legal-policies",label:"Policies & terms",content:<nav aria-label={__vt("Legal policies")} className="grid gap-3 text-sm"><Link href="/terms"><WorkspaceText text="Terms of Service" /></Link><Link href="/privacy"><WorkspaceText text="Privacy Policy" /></Link><Link href="/community"><WorkspaceText text="Community Standards" /></Link>{index.hasBusinessWorkspace?<Link href="/business-terms"><WorkspaceText text="Business & Salon Terms" /></Link>:null}</nav>}]});
+ groups.push({id:"legal",label:"Legal & Privacy",items:[{id:"legal-policies",label:"Policies & terms",content:<nav aria-label={__vt("Legal policies")} className="settings-legal-links grid text-sm"><Link href="/terms"><WorkspaceText text="Terms of Service" /></Link><Link href="/privacy"><WorkspaceText text="Privacy Policy" /></Link><Link href="/community"><WorkspaceText text="Community Standards" /></Link>{index.hasBusinessWorkspace?<Link href="/business-terms"><WorkspaceText text="Business & Salon Terms" /></Link>:null}</nav>}]});
  groups.push({id:"help",label:"Help & support",items:[{id:"help-support",label:"Help & support",content:<div className="grid gap-3 text-sm"><p><WorkspaceText text="Contact our team about app functionality, records, calculations or account access." /></p><Link className="text-orange-700 underline" href="/support"><WorkspaceText text="Send a request & view my conversations" /></Link><Link href="/account-recovery" className="underline"><WorkspaceText text="Account recovery" /></Link></div>}]});
  const all=groups.flatMap(g=>g.items);
  const resolveSection=(section:string)=>{
@@ -151,7 +152,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
     <div className="settings-inline-sections" hidden={!detail}>
      {groups.map(g=>g.items.map(i=>{
       const active=detail&&i.id===activeItem?.id;
-      return visited.includes(i.id)?<section key={i.id} id={i.id} className="settings-inline-editor" hidden={!active} aria-label={__vt(getSettingCopy(g.id,i.id).label)}><SettingContent active={active}>{i.content}</SettingContent></section>:null;
+      return visited.includes(i.id)?<section key={i.id} id={i.id} className="settings-inline-editor" hidden={!active} aria-label={__vt(getSettingCopy(g.id,i.id).label)}><SettingContent active={active}><SettingsChildPages showTitle label={getSettingCopy(g.id,i.id).label}>{i.content}</SettingsChildPages></SettingContent></section>:null;
      }))}
     </div>
 

@@ -1,4 +1,6 @@
 "use client";
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
 import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
 import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -37,7 +39,7 @@ export function TeamSettingsPanel({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  const [adding, setAdding] = useState(false);
+  const [addRevision, setAddRevision] = useState(0);
   function editor(staff?: StaffDirectoryMember) {
     return (
       <InlineForm
@@ -45,7 +47,7 @@ export function TeamSettingsPanel({
         label={__vt(staff ? "Save staff" : "Create staff")}
         onSaved={async () => {
           await onSaved();
-          if (!staff) setAdding(false);
+          if (!staff) setAddRevision(value=>value+1);
         }}
         save={(form) => {
           const common = {
@@ -137,14 +139,8 @@ export function TeamSettingsPanel({
     <div className="grid gap-4">
       {data.canManage && (
         <>
-          <button
-            className="min-h-10 justify-self-end rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"
-            onClick={() => setAdding(!adding)}
-          >
-            <WorkspaceText text={adding ? "Close form" : "+ Add staff"} />
-          </button>
-          {adding && editor()}
-          <details>
+          <SettingsEditSection title="Add staff" key={addRevision}>{editor()}</SettingsEditSection>
+          <SettingsDetails>
             <summary className="cursor-pointer text-sm font-semibold">
               <WorkspaceText text="Invite staff" />
             </summary>
@@ -165,7 +161,7 @@ export function TeamSettingsPanel({
                 <Field name="email" label={__vt("Email")} type="email" required />
               </InlineForm>
             </div>
-          </details>
+          </SettingsDetails>
         </>
       )}
       {!data.staff.length && (
@@ -178,10 +174,10 @@ export function TeamSettingsPanel({
             {data.canManage ? (
               <>
                 {editor(staff)}
-                <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public staff profile · photo, bio & specialties" /></summary><div className="mt-3"><StaffPublicProfileEditor expectedSalonId={data.salonId} staffId={staff.id} displayName={staff.staff_profile_display_name||staff.display_name} avatarUrl={staff.staff_profile_avatar_url} bio={staff.public_bio} jobTitle={staff.job_title} specialties={staff.specialties} canEditSalonRole showPasscodeControls={false} onSaved={onSaved}/></div></details>
-                {data.canManagePublicTeam?<details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public team order" /></summary><div className="mt-3"><InlineForm onSaved={onSaved} label={__vt("Save public team order")} save={form=>saveSettingsPublicTeam(data.salonId,[{staffId:staff.id,profileDisplayOrder:number(form,"profile_display_order"),onlineBookingEnabled:staff.online_booking_enabled,salonProfileContentPostingEnabled:staff.salon_profile_content_posting_enabled}])}><Field name="profile_display_order" label={__vt("Display order (lower comes first)")} type="number" min={0} value={staff.profile_display_order}/><p className="text-xs text-zinc-500"><WorkspaceText text={staff.public_profile_visible?"Visible on the salon website":"Hidden on the salon website"} /></p></InlineForm></div></details>:null}
+                <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public staff profile · photo, bio & specialties" /></summary><div className="mt-3"><StaffPublicProfileEditor expectedSalonId={data.salonId} staffId={staff.id} displayName={staff.staff_profile_display_name||staff.display_name} avatarUrl={staff.staff_profile_avatar_url} bio={staff.public_bio} jobTitle={staff.job_title} specialties={staff.specialties} canEditSalonRole showPasscodeControls={false} onSaved={onSaved}/></div></SettingsDetails>
+                {data.canManagePublicTeam?<SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public team order" /></summary><div className="mt-3"><InlineForm onSaved={onSaved} label={__vt("Save public team order")} save={form=>saveSettingsPublicTeam(data.salonId,[{staffId:staff.id,profileDisplayOrder:number(form,"profile_display_order"),onlineBookingEnabled:staff.online_booking_enabled,salonProfileContentPostingEnabled:staff.salon_profile_content_posting_enabled}])}><Field name="profile_display_order" label={__vt("Display order (lower comes first)")} type="number" min={0} value={staff.profile_display_order}/><p className="text-xs text-zinc-500"><WorkspaceText text={staff.public_profile_visible?"Visible on the salon website":"Hidden on the salon website"} /></p></InlineForm></div></SettingsDetails>:null}
                 <DeleteUnusedButton kind="staff" id={staff.id} name={staff.display_name} expectedSalonId={data.salonId} onDeleted={onSaved}/>
-                <details>
+                <SettingsDetails>
                   <summary className="cursor-pointer text-sm font-semibold">
                     <WorkspaceText text="Reset POS passcode" />
                   </summary>
@@ -201,7 +197,7 @@ export function TeamSettingsPanel({
                       />
                     </InlineForm>
                   </div>
-                </details>
+                </SettingsDetails>
               </>
             ) : (
               <p className="text-sm text-zinc-500"><WorkspaceText text="Read-only for your role." /></p>
@@ -457,4 +453,3 @@ export function PayrollSettingsPanel({
     </div>
   );
 }
-

@@ -42,14 +42,14 @@ export function PluginSettingsRow({ label, pluginName, marketHref, installed, en
 }) {
   const t = useWorkspaceTranslation();
   const [activation, setActivation] = useState(false);
-  return <section className={styles.panel} aria-label={t(label)} aria-busy={disabled || saving}>
+  return <section className={`${styles.panel} settings-child-action-scope`} aria-label={t(label)} aria-busy={disabled || saving}>
     <div className={styles.header}>
       <span className={styles.title}>{t(label)}</span>
       <button type="button" role="switch" aria-label={t(label)} aria-checked={enabled} className={styles.toggle} disabled={disabled || saving} onClick={() => {
         if (!enabled && (!installed || !canEnable)) { setActivation(true); return; }
         setActivation(false); onToggle(!enabled);
       }}><span className={`${styles.track} settings-switch-track`} aria-hidden="true"><span className={`${styles.thumb} settings-switch-thumb`} /></span><span aria-hidden="true">{t(enabled ? "On" : "Off")}</span></button>
-      {installed && onSave && <button type="button" className={styles.save} disabled={disabled || saving} onClick={onSave}>{t(saving ? "Saving…" : "Save")}</button>}
+      {installed && onSave && <button type="button" className={`${styles.save} settings-child-shared-action`} disabled={disabled || saving} onClick={onSave}>{t(saving ? "Saving…" : "Save")}</button>}
     </div>
     <PluginActivationDialog open={activation} onClose={() => setActivation(false)} pluginName={pluginName} marketHref={marketHref} />
     {installed && children}

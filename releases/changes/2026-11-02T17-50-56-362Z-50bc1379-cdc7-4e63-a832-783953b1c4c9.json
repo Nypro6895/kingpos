@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "settings-child-design-correction-20261102",
+  "status": "working",
+  "summary": "Expand compact child-page navigation and retained original forms across all Salon Settings and All Settings groups",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "requiresNativeBuild": true,
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/account/account-deletion-panel.tsx",
+    "app/salon-settings/ownership-section.tsx",
+    "app/salon-settings/salon-lifecycle-section.tsx",
+    "app/settings/booking-plugin-settings.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/connections-panel.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/settings/pos-settings-panel.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "components/app-local-salon-settings.tsx"
+  ],
+  "source": {
+    "commit": "8a79b995e806e6f525b29fa390207de9fa350372"
+  },
+  "validation": [
+    {
+      "name": "All child-page design, form boundaries and runtime review",
+      "result": "pending"
+    }
+  ],
+  "id": "50bc1379-cdc7-4e63-a832-783953b1c4c9",
+  "recordedAt": "2026-11-02T17:50:56.362Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-design-correction-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
