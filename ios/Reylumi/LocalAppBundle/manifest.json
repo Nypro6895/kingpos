@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "c5bb3e577875d67b881cc2068c802ebea9fb87370161fc87348318c0dcb03014",
+  "buildId": "70cdc9eb12029e7e69c7b081ba6aa88ecc9e42b76adb1450b1b526fb36024190",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 598616,
-      "sha256": "41d647d7c1b5959b09adc3d4055322601751c2816ba792fd3897602fbba7bfbd",
+      "bytes": 776063,
+      "sha256": "ebb1d0f82adcbbbce66072723a1cf45a3fa7c49c86e5a9defd8946a275c1b6cc",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4403354,
-      "sha256": "b41db7a2adf18e06fb204a04ffa2d7eb133dea8bf9ce58014301ea9174260fc0",
+      "bytes": 5268583,
+      "sha256": "687af2ac9396dffa1352445854f814a241db35e8f2fa5ab21f40658fe83709f7",
       "mime": "text/javascript"
     },
     {
@@ -1480,6 +1480,42 @@
       "mime": "image/webp"
     },
     {
+      "path": "images/profile-defaults/botanical-welcome.webp",
+      "bytes": 61292,
+      "sha256": "0aa99ce9dace41aff493ef2d6a189a119bd12b5b1792b7595f05d7aac8c30574",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/profile-defaults/thumbnail-nails-01.webp",
+      "bytes": 3470,
+      "sha256": "57999f4868b4c9b5b49fefa115518b817a8ad2e05edca7e8c1bd6d64681ac0ac",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/profile-defaults/thumbnail-nails-02.webp",
+      "bytes": 2962,
+      "sha256": "94b6a99c39ceb2d3763897b3939960e8b36578fb0100d0cf9dac9025aeb7b25b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/profile-defaults/thumbnail-nails-03.webp",
+      "bytes": 4120,
+      "sha256": "739dcb076039847b482e14b207bd113a53cacc6dc3483a8b33b7fb7bcb93bf2a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/profile-defaults/thumbnail-nails-04.webp",
+      "bytes": 3006,
+      "sha256": "c9061d795eedd85b8304f29aba9f10a953cd942f95e1798ec62daa5a7996c9ce",
+      "mime": "image/webp"
+    },
+    {
+      "path": "images/rewards/nail-care-rewards-v1.webp",
+      "bytes": 102254,
+      "sha256": "a8f4cf7db4e9be9d832c09c406c378b8af47f5151a9710e65f595f6ebb155ef3",
+      "mime": "image/webp"
+    },
+    {
       "path": "index.html",
       "bytes": 4509,
       "sha256": "d5d25fa0c096d5e1824ae72cd997a41fd2d0720e01daf22b3ecd805231313b83",
@@ -2142,6 +2178,11 @@
       "access": "scoped"
     },
     {
+      "path": "/staff/today/attention",
+      "adapter": "/staff/today/attention",
+      "access": "scoped"
+    },
+    {
       "path": "/support",
       "adapter": "/support",
       "access": "scoped"
@@ -2232,6 +2273,11 @@
       "access": "scoped"
     },
     {
+      "path": "/more/reviews",
+      "adapter": "/more/reviews",
+      "access": "scoped"
+    },
+    {
       "path": "/more/saved-posts",
       "adapter": "/more/saved-posts",
       "access": "scoped"
@@ -2287,8 +2333,18 @@
       "access": "scoped"
     },
     {
+      "path": "/beauty/library",
+      "adapter": "/beauty/library",
+      "access": "scoped"
+    },
+    {
       "path": "/notifications",
       "adapter": "/notifications",
+      "access": "scoped"
+    },
+    {
+      "path": "/rewards",
+      "adapter": "/rewards",
       "access": "scoped"
     },
     {
@@ -2439,11 +2495,6 @@
     {
       "path": "/more/memberships",
       "adapter": "/more/memberships",
-      "access": "scoped"
-    },
-    {
-      "path": "/more/reviews",
-      "adapter": "/more/reviews",
       "access": "scoped"
     },
     {
@@ -2652,7 +2703,8 @@
       "argumentKeys": [
         "staffId",
         "tab",
-        "payPeriodStart"
+        "payPeriodStart",
+        "ticketDate"
       ],
       "access": "scoped",
       "cacheable": true
@@ -2716,6 +2768,16 @@
       ],
       "access": "scoped",
       "cacheable": true
+    },
+    {
+      "name": "page.owner-attention",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "item",
+        "page"
+      ],
+      "access": "scoped",
+      "cacheable": false
     },
     {
       "name": "page.customer-bookings",
@@ -2872,6 +2934,61 @@
       "cacheable": false
     },
     {
+      "name": "http.owner.reward-discovery",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.owner.shop-money",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "op",
+        "salonId",
+        "start",
+        "end"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.owner.attention",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "item",
+        "page"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.financial-input-history",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "surface",
+        "start",
+        "end",
+        "date",
+        "inputEvent"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.owner.reconciliation-cases",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "start",
+        "end"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "http.staff.creation",
       "path": "/api/app-local/read",
       "argumentKeys": [
@@ -2910,6 +3027,16 @@
       ],
       "access": "scoped",
       "cacheable": false
+    },
+    {
+      "name": "customer.reviews",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "page",
+        "experience"
+      ],
+      "access": "scoped",
+      "cacheable": true
     },
     {
       "name": "page.beauty",
@@ -3160,6 +3287,41 @@
       "cacheable": false
     },
     {
+      "name": "http.rewards.discover",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "lat",
+        "lon",
+        "location",
+        "category",
+        "kind",
+        "radius"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.rewards.program",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.post-comments",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "sourceType",
+        "sourceId",
+        "offset",
+        "pageSize"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "page.explore",
       "path": "/api/app-local/read",
       "argumentKeys": [
@@ -3311,6 +3473,13 @@
     },
     {
       "name": "shell.navigation",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.auxiliary",
       "path": "/api/app-local/read",
       "argumentKeys": [],
       "access": "scoped",
@@ -3499,6 +3668,20 @@
     }
   ],
   "commands": [
+    {
+      "name": "action.0dde0f1e1c260096f8675486",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.05073222e31d780f4868f2db",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
     {
       "name": "action.cd9e45d5fdc4291bdc97f8ad",
       "path": "/api/app-local/command",
@@ -4914,13 +5097,6 @@
       ]
     },
     {
-      "name": "action.6db89069f554f5e17880233a",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
       "name": "action.0b1e0a58e14816ae5b2c1e9a",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5362,14 +5538,21 @@
       ]
     },
     {
-      "name": "action.43868b737ff7fd87908af008",
+      "name": "action.2cbdc609b7907c66b94a83c1",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
       ]
     },
     {
-      "name": "action.e9bf91eb64c76739dbe11c91",
+      "name": "action.2c966e30cfb3a4a706a4bfa0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.43868b737ff7fd87908af008",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5405,6 +5588,13 @@
     },
     {
       "name": "action.df00c997ca86dc0f6e4d98f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6dd77a588afdd26a283592ed",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5579,6 +5769,27 @@
       ]
     },
     {
+      "name": "action.9fd4ab0baf110f64f1724bbc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b3c9e30ba50c20ac87db234e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0331240a42531083fcd3a4d7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.0c401bb88ab58561433b2370",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5635,7 +5846,42 @@
       ]
     },
     {
-      "name": "action.84de4a64ca07b333163b0f3c",
+      "name": "action.37bba759b979c3cc4237a556",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ab51fff38ee5ec82fa599d3f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8d438e025b6861f6b975b5bb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.16defd2dd216687f3b42beff",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c5f16ef8fdcbd410e221ea80",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1e0add9927de2b0400796c32",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5646,6 +5892,34 @@
       "path": "/api/app-local/command",
       "argumentKeys": [
         "operation"
+      ]
+    },
+    {
+      "name": "http.owner.attention",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.owner.shop-money",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.benefits.gift-cards",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.benefits.rewards",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
       ]
     },
     {
@@ -5726,6 +6000,20 @@
       "path": "/api/app-local/command",
       "argumentKeys": [
         "sessionId"
+      ]
+    },
+    {
+      "name": "portable.http.gift-cards",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "portable.http.rewards",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
       ]
     },
     {
@@ -5815,10 +6103,10 @@
     ]
   },
   "coverage": {
-    "total": 134,
-    "bundled": 86,
-    "ordinaryEligible": 86,
-    "registeredPatterns": 96,
+    "total": 153,
+    "bundled": 87,
+    "ordinaryEligible": 87,
+    "registeredPatterns": 99,
     "missing": [],
     "online": [
       {
@@ -5830,11 +6118,19 @@
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
       },
       {
+        "path": "/activity/receipts/:ticketId/experience",
+        "reason": "Visit feedback submission uses the existing fresh HTTPS page and authenticated receipt ownership boundary."
+      },
+      {
         "path": "/admin",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
         "path": "/admin/advertising",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/advertising/reviews",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
@@ -5858,6 +6154,10 @@
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
+        "path": "/admin/forum",
+        "reason": "Owner forum and moderation use their original authenticated HTTPS page. No forum posts, chat messages or moderator authority are retained as offline data."
+      },
+      {
         "path": "/admin/inbox",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
@@ -5878,11 +6178,31 @@
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
+        "path": "/admin/market/credits",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
         "path": "/admin/market/tax",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
+        "path": "/admin/membership",
+        "reason": "Membership administration and published plans require fresh HTTPS authority; no membership settings, allocations or billing actions are cached offline."
+      },
+      {
         "path": "/admin/notifications",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/plugins",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/plugins/:pluginId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/plugins/campaigns",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
@@ -5914,11 +6234,19 @@
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
+        "path": "/admin/settings/membership",
+        "reason": "Membership administration and published plans require fresh HTTPS authority; no membership settings, allocations or billing actions are cached offline."
+      },
+      {
         "path": "/admin/settings/support-email",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
         "path": "/admin/settings/twilio",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/system",
         "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
       },
       {
@@ -5950,6 +6278,10 @@
         "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
       },
       {
+        "path": "/check-writer",
+        "reason": "Check Writer uses the original HTTPS Owner/session/MFA, server-only bank encryption and one-time output authority. Financial setup/output is not a retained local page or offline read; old clients keep PDF fallback."
+      },
+      {
         "path": "/claim/:salonId",
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
       },
@@ -5966,12 +6298,24 @@
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
       },
       {
+        "path": "/developers/market",
+        "reason": "Private Market developer/review routes already present in the published baseline remain excluded from the distributed native product; no Market implementation or approval/feature setting is changed or enabled in this wave."
+      },
+      {
         "path": "/forgot-password",
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
       },
       {
+        "path": "/forum",
+        "reason": "Owner forum and moderation use their original authenticated HTTPS page. No forum posts, chat messages or moderator authority are retained as offline data."
+      },
+      {
         "path": "/login",
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/market-review",
+        "reason": "Private Market developer/review routes already present in the published baseline remain excluded from the distributed native product; no Market implementation or approval/feature setting is changed or enabled in this wave."
       },
       {
         "path": "/market/booking-deposit/payment",
@@ -5982,8 +6326,16 @@
         "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
       },
       {
+        "path": "/membership",
+        "reason": "Membership administration and published plans require fresh HTTPS authority; no membership settings, allocations or billing actions are cached offline."
+      },
+      {
         "path": "/ownership/invite/:token",
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/qr",
+        "reason": "Existing signed-in personal QR wallet and entry/visit capabilities use their original permission-aware HTTPS page; no unreviewed local QR renderer or offline financial/customer capability is introduced."
       },
       {
         "path": "/reset-password",
@@ -6006,12 +6358,20 @@
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
       },
       {
+        "path": "/staff/scan",
+        "reason": "Existing staff-bound scan and signup-phone verification retain their original HTTPS authority. No new local renderer, camera permission, invitation, SMS or write is introduced by this inventory correction."
+      },
+      {
         "path": "/support/guest/:threadId",
         "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
       },
       {
         "path": "/visit/:pass",
         "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/welcome/phone",
+        "reason": "Existing staff-bound scan and signup-phone verification retain their original HTTPS authority. No new local renderer, camera permission, invitation, SMS or write is introduced by this inventory correction."
       }
     ],
     "boundedFamilies": {
