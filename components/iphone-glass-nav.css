@@ -5,7 +5,9 @@
     --glass-light-x: 50%;
     left: max(8px, env(safe-area-inset-left));
     right: max(8px, env(safe-area-inset-right));
-    bottom: max(6px, env(safe-area-inset-bottom));
+    /* The native keyboard layout guide already reserves the bottom safe area.
+       Anchor every shared tab bar to that viewport without a second lift. */
+    bottom: 0;
     padding: 4px;
     border: 0;
     border-radius: 36px;

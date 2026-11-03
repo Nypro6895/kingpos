@@ -3,6 +3,14 @@
   "reviewedAt": "2026-10-16",
   "groups": [
     {
+      "reason": "Membership administration and published plans require fresh HTTPS authority; no membership settings, allocations or billing actions are cached offline.",
+      "routes": [
+        "/membership",
+        "/admin/membership",
+        "/admin/settings/membership"
+      ]
+    },
+    {
       "reason": "Owner forum and moderation use their original authenticated HTTPS page. No forum posts, chat messages or moderator authority are retained as offline data.",
       "routes": [
         "/forum",

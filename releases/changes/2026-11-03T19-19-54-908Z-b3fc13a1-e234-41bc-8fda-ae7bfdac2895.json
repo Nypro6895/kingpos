@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "combined-recent-chats-native-20261103",
+  "status": "working",
+  "summary": "Preserve uploaded build89 source and integrate tested recent UI plus bounded Today reset recovery",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-online-routes.json",
+    "lib/app-local-route-inventory.generated.json"
+  ],
+  "validation": [
+    {
+      "name": "Source-bound bundle and Xcode tests",
+      "result": "pending"
+    }
+  ],
+  "id": "b3fc13a1-e234-41bc-8fda-ae7bfdac2895",
+  "recordedAt": "2026-11-03T19:19:54.908Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-recent-ios-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { WorkspaceText as T } from "@/components/workspace-language";
 import type { OwnerAttentionData, OwnerAttentionItem } from "@/types/owner-financial-attention";
 import { asObject, asRows, attentionMoney as money, attentionTicketAmounts, attentionPresentation, attentionTime } from "@/lib/owner-attention-presentation";
-import { AttentionActions, AttentionNotification } from "./owner-attention-panel";
+import { AttentionActions, AttentionNotification, ClosingNotification } from "./owner-attention-panel";
 import s from "./owner-attention.module.css";
 
 function TicketFacts({ value }: { value: unknown }) {
@@ -14,6 +14,7 @@ function TicketFacts({ value }: { value: unknown }) {
 }
 
 export function AttentionDetail({ data, item, onSaved }: { data: OwnerAttentionData; item: OwnerAttentionItem; onSaved?: () => void }) {
+  if (item.kind === "closing") return <ClosingNotification data={data} item={item} onSaved={onSaved} />;
   const facts = item.facts ?? {}, view = attentionPresentation(item);
   const ticketRows = asRows(facts.tickets);
   const collection = asObject(facts.collection), report = asObject(facts.report);

@@ -7,6 +7,9 @@ export type OwnerAttentionItem = {
   detail: string;
   target_href: string;
   ignored: boolean;
+  difference?: number;
+  collected?: number;
+  expected?: number;
   facts?: Record<string, unknown>;
 };
 export type OwnerAttentionData = {

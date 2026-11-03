@@ -18,6 +18,9 @@ export type PlatformAdminMembershipStatus =
   (typeof PLATFORM_ADMIN_MEMBERSHIP_STATUSES)[number];
 
 export const PLATFORM_ADMIN_PERMISSIONS = {
+  membershipRead: "admin.membership.read",
+  membershipConfigure: "admin.membership.configure",
+  membershipManage: "admin.membership.manage",
   access: "admin.access",
   forumModerate: "admin.forum.moderate",
   forumManage: "admin.forum.manage",

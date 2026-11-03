@@ -30,6 +30,8 @@ type AdminNavItem = {
 };
 
 const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+  { href: "/admin/membership", label: "Membership", permission: PLATFORM_ADMIN_PERMISSIONS.membershipRead, group: "Administration", icon: "◇" },
+  { href: "/admin/forum", label: "Owner forum", permission: PLATFORM_ADMIN_PERMISSIONS.forumModerate, group: "Review & support", icon: "☷" },
   { href: "/admin/rewards", label: "Reward campaigns", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Plugins & content", icon: "☆" },
   { href: "/admin", label: "Dashboard", permission: PLATFORM_ADMIN_PERMISSIONS.dashboardRead, group: "Platform", icon: "⌂" },
   { href: "/admin/users", label: "Users", permission: PLATFORM_ADMIN_PERMISSIONS.usersRead, group: "Platform", icon: "♙" },

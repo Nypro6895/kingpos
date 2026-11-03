@@ -13,7 +13,7 @@ test('API refuses unauthenticated, manager, cross-salon and changed-viewer write
 test('Ignore routes only to the owner metadata RPC; stale keys are not accepted',async()=>{
  const f=reset();assert.equal((await post(action)).status,200);assert.deepEqual(f.calls,[['owner_financial_attention_action',{p_salon:'salon',p_item:'discount:1',p_action:'ignore'}]]);
  f.result={error:{code:'40001'}};assert.equal((await post(action)).status,409);
- f.result={error:{code:'22023'}};assert.equal((await post({...action,op:'review_closing'})).status,409);
+ assert.equal((await post({...action,op:'review_closing'})).status,400);
 });
 test('API bounds requests and rejects foreign origins and unknown GET arguments',async()=>{
  reset();assert.equal((await post(action,'https://foreign.example')).status,403);assert.equal((await post({...action,item:'x'.repeat(2200)})).status,400);

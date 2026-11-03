@@ -1,11 +1,11 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { WorkspaceText as T } from "@/components/workspace-language";
 import type { OwnerAttentionData, OwnerAttentionItem } from "@/types/owner-financial-attention";
 import s from "./owner-attention.module.css";
-import { attentionPresentation, attentionTime } from "@/lib/owner-attention-presentation";
+import { attentionMoney, attentionPresentation, attentionTime } from "@/lib/owner-attention-presentation";
 
 export const attentionHref = (key: string) => `/staff/today/attention?item=${encodeURIComponent(key)}`;
 async function call(salonId: string, args: Record<string, unknown>, signal?: AbortSignal) {
@@ -28,7 +28,7 @@ async function call(salonId: string, args: Record<string, unknown>, signal?: Abo
   } finally { clearTimeout(timer); signal?.removeEventListener("abort", abort); }
 }
 
-export function AttentionActions({ salonId, viewerId, item, onSaved, closing = false, compact = false }: { salonId: string; viewerId: string; item: OwnerAttentionItem; onSaved?: () => void; closing?: boolean; compact?: boolean }) {
+export function AttentionActions({ salonId, viewerId, item, onSaved, closing = false, compact = false, ignoreOnly = false }: { salonId: string; viewerId: string; item: OwnerAttentionItem; onSaved?: () => void; closing?: boolean; compact?: boolean; ignoreOnly?: boolean }) {
   const router = useRouter();
   const facts = item.facts;
   const report = facts?.report as { entered?: boolean } | undefined;
@@ -46,11 +46,39 @@ export function AttentionActions({ salonId, viewerId, item, onSaved, closing = f
     finally { setBusy(false); }
   }
   return <><div className={`${s.actions} ${compact ? s.compactActions : ""}`}>
-    {!closing && <Link href={attentionHref(item.item_key)}><span><T text="View details" /></span></Link>}
+    {!closing && !ignoreOnly && <Link href={attentionHref(item.item_key)}><span><T text="View details" /></span></Link>}
     {closing && item.kind === "closing" && <button className={s.primary} disabled={busy || !canConfirm} onClick={() => void save("review_closing")}><T text="Confirm day reviewed" /></button>}
     {!item.ignored && <button disabled={busy} onClick={() => void save("ignore")}><span><T text={busy ? "Saving…" : item.kind === "discount" || item.kind === "ticket_change" ? "Mark reviewed" : "Ignore"} /></span></button>}
     {item.ignored && <span className={s.meta}><T text={item.kind === "discount" || item.kind === "ticket_change" ? "Reviewed · hidden from Attention" : "Ignored · hidden from Attention"} /></span>}
   </div>{closing && item.kind === "closing" && !canConfirm && <p className={s.detail}><T text="Enter actual collections and finish open receipts in Reports before confirming." /></p>}{error && <p role="alert" className={s.error}>{error}</p>}</>;
+}
+
+export function ClosingNotification({ data, item, onSaved }: { data: Pick<OwnerAttentionData, "salonId" | "viewerId" | "today">; item: OwnerAttentionItem; onSaved?: () => void }) {
+  const [open, setOpen] = useState(false);
+  const breakdownId = useId();
+  const difference = item.difference ?? Number(item.facts?.serviceDifference);
+  const previous = new Date(`${data.today}T12:00:00Z`);
+  previous.setUTCDate(previous.getUTCDate() - 1);
+  const yesterday = previous.toISOString().slice(0, 10) === item.business_date;
+  return <article className={`${s.item} ${s.inlineClosing}`}>
+    <div className={s.inlineClosingHeading}>
+      <h3><button className={s.closingToggle} type="button" aria-expanded={open} aria-controls={breakdownId} onClick={() => setOpen(value => !value)}>
+        <span><T text={yesterday ? "Yesterday's closing" : "Closing"} />{!yesterday && <> {item.business_date}</>} · {Number.isFinite(difference) ? <><T text={difference < 0 ? "Short" : "Over"} /> <strong>{attentionMoney(Math.abs(difference))}</strong></> : item.label}</span>
+        <span aria-hidden="true" className={s.closingCaret}>{open ? "⌃" : "⌄"}</span>
+      </button></h3>
+      <AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={item} onSaved={onSaved} ignoreOnly />
+    </div>
+    <div id={breakdownId} hidden={!open}>
+      <dl className={s.closingBreakdown}>
+        <div><dt><T text="Collected" /></dt><dd>{attentionMoney(item.collected ?? item.facts?.actualService)}</dd></div>
+        <div><dt><T text="Expected" /></dt><dd>{attentionMoney(item.expected ?? item.facts?.expectedService)}</dd></div>
+      </dl>
+      <div className={`${s.actions} ${s.inlineClosingActions}`}>
+        <Link href={`/reports?date=${item.business_date}#daily-closing`}><T text="Daily Report" /></Link>
+        <Link href={`/pos-tickets?date=${item.business_date}`}><T text="Tickets" /></Link>
+      </div>
+    </div>
+  </article>;
 }
 
 export function OwnerAttentionPanel({ salonId }: { salonId: string }) {
@@ -89,6 +117,7 @@ export function OwnerAttentionPanel({ salonId }: { salonId: string }) {
 }
 
 export function AttentionNotification({ data, item, onSaved }: { data: OwnerAttentionData; item: OwnerAttentionItem; onSaved?: () => void }) {
+  if (item.kind === "closing") return <ClosingNotification data={data} item={item} onSaved={onSaved} />;
   const view = attentionPresentation(item);
   if (!view.ticket) return <article className={`${s.item} ${s.notification}`}>
     <div className={s.message}><h3>{item.label}</h3><p className={s.meta}>{attentionTime(item, data.timezone, data.today)}</p><p className={s.detail}>{item.detail}</p></div>
