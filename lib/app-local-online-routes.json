@@ -3,6 +3,10 @@
   "reviewedAt": "2026-10-16",
   "groups": [
     {
+      "reason": "Visit feedback submission uses the existing fresh HTTPS page and authenticated receipt ownership boundary.",
+      "routes": ["/activity/receipts/:ticketId/experience"]
+    },
+    {
       "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product.",
       "routes": [
         "/admin",
