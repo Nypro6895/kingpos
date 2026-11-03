@@ -151,11 +151,13 @@ export function ReportTabs({
   onViewChange,
   overviewTools,
   closingTools,
+  expenseTools,
 }: {
   overview: ReactNode;
   expenses?: ReactNode;
   overviewTools?: ReactNode;
   closingTools?: ReactNode;
+  expenseTools?: ReactNode;
   children: ReactNode;
   onViewChange?: (view:"overview"|"closing")=>void;
 }) {
@@ -201,7 +203,7 @@ export function ReportTabs({
         {expenses&&<button type="button" aria-pressed={expenseView} onClick={()=>{setExpenseView(true);window.history.replaceState(null,"",`${window.location.pathname}${window.location.search}#expenses`);}}><WorkspaceText text="Expenses"/></button>}
       </nav>
         <ContextualSupport />
-        <div className={styles.tools}>{closing ? closingTools : overviewTools}</div>
+        <div className={styles.tools}>{expenseView ? expenseTools : closing ? closingTools : overviewTools}</div>
       </div>
       <div className="min-w-0" hidden={!expenseView}>{expenseView&&expenses}</div>
       <div className="min-w-0" hidden={closing||expenseView}>

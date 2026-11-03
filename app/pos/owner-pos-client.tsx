@@ -168,6 +168,10 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const add=()=>{if(!cart)return;const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;replaceAmount.current=true;update({lines:line?[...cart.lines,line]:cart.lines,amount:'',staffId:null,serviceId:null,customServiceName:undefined,activeLineId:null,inputTarget:'amount',step:hasServices?'services':hasStaff?'staff':'amount'});setPickerQuery('');setPanel(hasServices?'services':hasStaff?'staff':null);};
 
   const reset=async()=>{if(busyRef.current)return; if(persist(empty()))setTicketDefaults(pendingDefaults.current);};
+  const clearSubmittedCart=(submittedId:string)=>{
+    if(current.current?.id!==submittedId)return;
+    if(persist(empty()))setTicketDefaults(pendingDefaults.current);
+  };
   const submit=async()=>{
     if(!cart||busyRef.current)return;
     const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;
@@ -178,17 +182,17 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     busyRef.current=true;setBusy(true);setError('');
     try{
       const gift=await giftCheckout.current();
-      if(gift?.ticketId||gift?.giftSaleId){const next=empty();if(persist(next))setTicketDefaults(pendingDefaults.current);return;}
+      if(gift?.ticketId||gift?.giftSaleId){clearSubmittedCart(cart.id);return;}
       if(rewardView?.request){
         if(!navigator.onLine)throw Error("Reconnect before using rewards.");
         const response=await fetch("/api/rewards",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({scope:"pos",op:"owner-submit",args:{cartId:cart.id,receipt:{...benefitReceipt,lines:lines.map(l=>({staffId:l.staffId,serviceId:l.serviceId,serviceLabel:l.serviceLabel,total:l.total,amountInput:l.amountInput,amountParts:l.amountParts}))}}})});
         const result=await response.json();if(!response.ok||!result.ticketId)throw Error(result.error??"Checkout could not be saved.");
-        const next=empty();if(persist(next))setTicketDefaults(pendingDefaults.current);return;
+        clearSubmittedCart(cart.id);return;
       }
       // Use the same durable cart identity across a retry after a lost reply.
       const existing=(await listPortableOperations(scope)).find(op=>op.payload.ownerCartId===cart.id);
       if(!existing)await savePortableOperation(scope,'receipt',{ownerCartId:cart.id,localDraftKey:key,lines,customerId:cart.customer?.id??null,customerName:cart.customer?.name??null,tipAmount:Number(cart.tip||0),discountType:'fixed_amount',discountValue:Number(cart.discount||0)});
-      const next=empty();if(persist(next))setTicketDefaults(pendingDefaults.current);
+      clearSubmittedCart(cart.id);
     }catch(e){setError(e instanceof Error?e.message:'Unable to save this ticket. Your entries have been kept.');}
     finally{busyRef.current=false;setBusy(false);}
   };
@@ -285,7 +289,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
       <div className="owner-tools">
         <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={add}>+ Add</button>
         <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button>
-        <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
+        <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} disabled={busy} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>!busyRef.current&&persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
         {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??<><span className="owner-desktop-label"><WorkspaceText text="Customer" /></span><span className="owner-ios-label"><WorkspaceText text="Customers" /></span></>}</button>:null}
         <button className="owner-customer-shortcut" onClick={()=>setPanel('benefits')}>{rewardView?.request?.status==='confirmed'?'✓ Reward confirmed':rewardView?.request&&rewardView.request.status!=='cancelled'?'Reward requested':rewardView?.available?`${rewardView.available} pts · Rewards / Gift card`:'Rewards / Gift card'}</button>
         <div className="owner-toolbar-sync"><PortableSyncIndicator scope={scope}/></div>

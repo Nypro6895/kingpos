@@ -66,7 +66,7 @@ function SecondaryPage({path,context,navigate}:AppLocalPageProps){
 export function getAppLocalSecondaryPage(path:string):AppLocalPage|null{
  try{
   if(!path.startsWith("/")||path.startsWith("//")||/[\\\u0000-\u001f]/.test(path))return null;
-  const url=new URL(path,"https://reylumi.com");if(url.hash||[...url.searchParams].some(([key,value])=>/token|secret|password|payment/i.test(key)||value.length>512))return null;
+  const url=new URL(path,"https://reylumi.com");if(url.hash&&!(url.pathname==="/reports"&&["#overview","#daily-closing","#expenses"].includes(url.hash))||[...url.searchParams].some(([key,value])=>/token|secret|password|payment/i.test(key)||value.length>512))return null;
   if(url.pathname === "/pos/more" || regularReadPaths[url.pathname] && ownerLocalHref(regularReadPaths[url.pathname]+url.search))return{id:"business.regular:"+url.pathname,title:url.pathname==="/bookings"?"Book":url.pathname==="/reports"?"Report":url.pathname==="/pos/more"?"More":"Ticket",requiresContext:true,Component:RegularBusinessPage,features:["original-navigation-context","shared-authorized-resource"]};
   if(url.pathname==="/"||appLocalRouteAlias(path))return{id:"alias",title:"Reylumi",requiresContext:url.pathname==="/",Component:RedirectPage,features:["equivalent-original-destination"]};
   if(Object.hasOwn(moreContent,url.pathname.replace(/^\/more\//,"")))return{id:"more.static",title:"More",requiresContext:true,Component:StaticMorePage,features:["complete-existing-static-content","no-content-network-request"]};

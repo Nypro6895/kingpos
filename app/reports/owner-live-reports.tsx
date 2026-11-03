@@ -11,6 +11,8 @@ import {experienceResourceCache} from '@/lib/experience-resource-cache';
 import {fetchWorkspaceResource} from '@/lib/fetch-workspace-resource';
 import {useExperienceResource} from '@/lib/use-experience-resource';
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
+import { PayrollPeriodRail } from "@/app/payroll/payroll-period-rail";
+import { reportExpensePeriodHref, type ReportExpensePeriod } from "@/lib/report-expense-period";
 import {ClosingDateForm,ReportTabs} from './report-controls';
 import {DailyClosingForm} from './daily-closing-form';
 import {DailyAccountingOverview,DailyAccountingDate} from './daily-accounting-overview';
@@ -156,11 +158,12 @@ function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: Dail
 }
 
 
-type Props={viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;accountingOverview?:DailyReportOverview;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:Pick<OperationalReportData,"range">;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
+type Props={expensePeriod?:ReportExpensePeriod|null;viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;accountingOverview?:DailyReportOverview;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:Pick<OperationalReportData,"range">;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
   const __vt = useWorkspaceTranslation();
 
  const routeParams=useSearchParams();
+ const pathname=usePathname();
  const params=useMemo(()=>initial.query===undefined?routeParams:new URLSearchParams(initial.query),[initial.query,routeParams]);
  const scope=useExperienceScope()?.context.scope;
  const snapshotKey='owner-reports?'+params.toString();
@@ -222,7 +225,8 @@ export function OwnerLiveReports(initial:Props){
     <main className={styles.page}>
       <h1 className="sr-only"><WorkspaceText text="Reports" /></h1>
       <ReportTabs
-        expenses={<ShopMoneyWorkspace salonId={salonId} start={reportOverview.range.startDate.slice(0,7)+"-01"} end={new Date(Date.UTC(Number(reportOverview.range.startDate.slice(0,4)),Number(reportOverview.range.startDate.slice(5,7)),0)).toISOString().slice(0,10)} view="expenses"/>}
+        expenses={data.expensePeriod === null ? undefined : data.expensePeriod && "period" in data.expensePeriod && !data.expensePeriod.needsAnchor ? <ShopMoneyWorkspace salonId={salonId} start={data.expensePeriod.period.startDate} end={data.expensePeriod.period.endDate} view="expenses" compactExpenses/> : <p role="status"><WorkspaceText text={data.expensePeriod && "error" in data.expensePeriod ? data.expensePeriod.error : data.expensePeriod?.needsAnchor ? "Every-2-weeks payroll needs an anchor date. Update it in Settings." : "Payroll schedule is unavailable. Reopen Reports to retry."}/></p>}
+        expenseTools={data.expensePeriod && "period" in data.expensePeriod && !data.expensePeriod.needsAnchor ? <div><PayrollPeriodRail period={data.expensePeriod.period} months={data.expensePeriod.months} periods={data.expensePeriod.periods} activeTab="expenses" optionsId="report-expense-period-options" hrefForPeriod={period=>reportExpensePeriodHref(period,pathname,params.toString())}/></div> : undefined}
         onViewChange={onViewChange}
         overviewTools={<DailyAccountingDate date={report.reportDate} today={today} timeZone={reportOverview.range.timeZone}/>}
         closingTools={<DateSelector reportOverview={reportOverview} selectedDate={report.reportDate} today={today} />}

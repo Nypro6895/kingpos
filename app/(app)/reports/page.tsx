@@ -9,7 +9,7 @@ import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 
 type ReportsPageProps = {
-  searchParams: Promise<OperationalReportSearchParams>;
+  searchParams: Promise<OperationalReportSearchParams & { expensePeriodStart?: string | string[] }>;
 };
 
 async function ReportsPage({ searchParams }: ReportsPageProps) {
