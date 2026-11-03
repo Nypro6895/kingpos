@@ -16,8 +16,6 @@ function TicketFacts({ value }: { value: unknown }) {
 export function AttentionDetail({ data, item, onSaved }: { data: OwnerAttentionData; item: OwnerAttentionItem; onSaved?: () => void }) {
   if (item.kind === "closing") return <ClosingNotification data={data} item={item} onSaved={onSaved} />;
   const facts = item.facts ?? {}, view = attentionPresentation(item);
-  const ticketRows = asRows(facts.tickets);
-  const collection = asObject(facts.collection), report = asObject(facts.report);
   return <article className={s.panel}>
     <h1>{view.title}</h1><p className={s.meta}>{attentionTime(item, data.timezone, data.today)}</p>
     {view.ticket ? <>
@@ -39,17 +37,6 @@ export function AttentionDetail({ data, item, onSaved }: { data: OwnerAttentionD
         {asRows(view.after.payments).filter(p=>/gift/i.test(String(p.method))).map((p,i)=><p className={s.detail} key={i}>Gift: {money(p.amount)}{p.note ? ' · '+p.note : ""}</p>)}
       </section>}
     </> : <p className={s.detail}>{item.detail}</p>}
-    {item.kind === "closing" && <>
-      <p className={s.notice}><T text="Review the receipts and entered collections below. Confirming records your review of these figures; it does not add payments or change payroll. New financial changes will require a new review." /></p>
-      <div style={{ overflowX: "auto" }}><table className={s.facts}><thead><tr><th><T text="Entered collections" /></th><th><T text="Cash" /></th><th><T text="Card" /></th><th><T text="Other" /></th></tr></thead><tbody>
-        {!!Object.keys(collection).length && <tr><th><T text="Shop Money" /></th><td>{money(collection.cash)}</td><td>{money(collection.card)}</td><td>{money(collection.other)}</td></tr>}
-        {!!Object.keys(report).length && <tr><th><T text={report.entered ? "Daily Report · entered" : "Daily Report · not entered"} /></th><td>{money(report.cash)}</td><td>{money(report.card)}</td><td>{money(report.other)}</td></tr>}
-      </tbody></table></div>
-      {!Object.keys(collection).length && !report.entered && <p className={s.notice}><T text="No confirmed collection entry for this day. Enter and verify actual collections in Reports before confirming your review." /></p>}
-      <p className={s.meta}><T text="These are separate input sources. Do not add them together." /></p>
-      {ticketRows.map(row => <section className={s.item} key={String(row.id)}><div className={s.actions}><Link href={`/pos-tickets/${row.id}`}>{String(row.number)}</Link></div><div style={{ overflowX: "auto" }}><TicketFacts value={row.facts} /></div></section>)}
-      <p className={s.detail}><T text="Check-in records" />: {asRows(facts.visits).length} · <T text="Open tickets" />: {ticketRows.filter(row => asObject(row.facts).status === "open").length}</p>
-    </>}
     {item.kind === "checkin" && <>
       <p className={s.notice}><T text="A missing link is not proof of non-payment. Match this visit to the correct receipt before collecting money again." /></p>
       <p className={s.detail}>{String(facts.customerName)} · {String(facts.visitStatus)} · {new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: data.timezone }).format(new Date(String(facts.checkedInAt)))}</p>
@@ -58,7 +45,7 @@ export function AttentionDetail({ data, item, onSaved }: { data: OwnerAttentionD
       {asRows(facts.possibleTickets).map(row => <section className={s.item} key={String(row.id)}><div className={s.actions}><Link href={`/pos-tickets/${row.id}`}>{String(row.number)}</Link></div><div style={{ overflowX: "auto" }}><TicketFacts value={row.facts} /></div></section>)}
       {!asRows(facts.possibleTickets).length && <p className={s.detail}><T text="No receipt found for this customer on this day. Check other receipts if a different customer was used." /></p>}
     </>}
-    <div className={s.actions}><Link href={item.target_href}><T text={item.kind === "closing" ? "Open report" : item.kind === "checkin" && !facts.ticketId ? "Find receipt" : "Open ticket"} /></Link></div>
+    <div className={s.actions}><Link href={item.target_href}><T text={item.kind === "checkin" && !facts.ticketId ? "Find receipt" : "Open ticket"} /></Link></div>
     <div className={s.item}><AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={item} closing onSaved={onSaved} /></div>
   </article>;
 }
