@@ -1,0 +1,22 @@
+{
+  "dependencies": [],
+  "status": "working",
+  "kind": "change",
+  "changeId": "owner-forum-20261103",
+  "channels": [
+    "web"
+  ],
+  "files": [],
+  "validation": [
+    {
+      "name": "Implementation",
+      "result": "pending"
+    }
+  ],
+  "summary": "Owner forum with blue mobile UI, shared platform moderators, inline moderation, sections and chat",
+  "id": "bc7552f4-4a0a-4863-bd4c-13748d39f2ff",
+  "recordedAt": "2026-11-03T17:58:47.882Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -19,6 +19,8 @@ export type PlatformAdminMembershipStatus =
 
 export const PLATFORM_ADMIN_PERMISSIONS = {
   access: "admin.access",
+  forumModerate: "admin.forum.moderate",
+  forumManage: "admin.forum.manage",
   auditRead: "admin.audit.read",
   businessesRead: "admin.businesses.read",
   businessesUpdate: "admin.businesses.update",

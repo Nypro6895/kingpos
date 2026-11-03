@@ -259,6 +259,7 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
+    { description: "Connect with salon owners, share experience and chat.", href: "/forum", icon: "users", id: "owner-forum", label: "Forum", navigationIcon: "message" },
     { description: "Manage gift card sales, balances and activity.", href: "/gift-cards/manage", icon: "star", id: "owner-gift-cards", label: "Gift Cards", navigationIcon: "star" },
     { description: "Set earning rules and customer rewards.", href: "/reward-system", icon: "star", id: "owner-rewards", label: "Reward System", navigationIcon: "star" },
     { description: "Run ads for your salon.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Advertising", navigationIcon: "star" },
@@ -364,7 +365,7 @@ ROLE_MORE_ITEMS.personal.sort((a, b) => personalPriority.indexOf(a.id) - persona
 export const OWNER_MORE_GROUPS = [
   { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
   { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
-  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-campaigns", "owner-rewards", "owner-gift-cards", "owner-market"] },
+  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-forum", "owner-campaigns", "owner-rewards", "owner-gift-cards", "owner-market"] },
   { id: "settings-support", title: "Settings & support", summary: "Salon setup, workspaces, and help.", ids: ["owner-setting", "owner-my-place", "owner-support", "owner-help"] },
 ];
 const ownerPriority = OWNER_MORE_GROUPS.flatMap(group => group.ids);
@@ -428,6 +429,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: OWNER_LINKS,
     moreLinks: moreNavigationLinks("owner"),
     routePrefixes: [
+      "/forum",
       "/campaigns",
       "/bookings",
       "/check-writer",
