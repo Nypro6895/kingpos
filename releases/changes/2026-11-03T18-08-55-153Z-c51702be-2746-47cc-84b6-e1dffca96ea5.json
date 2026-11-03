@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "files": [],
+  "summary": "Owner forum menu and hosted HTTPS navigation in installed iPhone app",
+  "changeId": "owner-forum-ios-20261103",
+  "validation": [
+    {
+      "name": "Native bundle and archive",
+      "result": "pending"
+    }
+  ],
+  "channels": [
+    "ios"
+  ],
+  "status": "working",
+  "dependencies": [
+    "owner-forum-20261103"
+  ],
+  "id": "c51702be-2746-47cc-84b6-e1dffca96ea5",
+  "recordedAt": "2026-11-03T18:08:55.153Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-ios-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

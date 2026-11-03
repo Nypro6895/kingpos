@@ -159,6 +159,7 @@ function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
             "owner-report",
             "owner-payroll",
             "owner-setting",
+            "owner-forum",
             "owner-market",
             "owner-campaigns",
             "owner-support",

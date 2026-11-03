@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageCount": 148,
+  "pageCount": 150,
   "layoutCount": 17,
   "routes": [
     {
@@ -673,6 +673,40 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(app)/admin/claims/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/admin/forum",
+      "source": "app/(app)/admin/forum/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Fresh authenticated HTTPS forum authority; no offline forum data or moderation.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/forum/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -3223,6 +3257,39 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(app)/forgot-password/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/forum",
+      "source": "app/(app)/forum/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "owner"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Fresh authenticated HTTPS forum authority; no offline forum data or moderation.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/forum/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
