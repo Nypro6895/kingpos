@@ -6,7 +6,8 @@ import type { ForumContext, ForumTopic } from "@/types/forum";
 import Forum from "./forum";
 
 async function ForumPage() {
-  if (!await getCurrentKingUser()) redirect("/login?next=%2Fforum");
+  const account = await getCurrentKingUser();
+  if (!account) redirect("/login?next=%2Fforum");
   let context: ForumContext | undefined;
   let topics: ForumTopic[] = [];
   let message = "";
@@ -19,6 +20,6 @@ async function ForumPage() {
     message = error instanceof Error ? error.message : "Unable to load forum.";
   }
   if (!context) return <section className="mx-auto max-w-xl px-5 py-12"><h1 className="text-2xl font-semibold">Owner forum</h1><p className="mt-4" role="alert">{message}</p><a className="mt-5 inline-block text-blue-600 underline" href="/forum">Try again</a></section>;
-  return <Forum initialContext={context} initialTopics={topics} />;
+  return <Forum initialContext={context} initialTopics={topics} avatarUrl={account.avatar_url} />;
 }
 export default withExperiencePage(ForumPage);

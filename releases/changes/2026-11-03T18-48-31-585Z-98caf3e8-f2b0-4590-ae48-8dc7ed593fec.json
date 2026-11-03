@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "forum-brand-compact-seed-20261103",
+  "status": "working",
+  "summary": "Use logo teal, compact forum-only header, initial bilingual discussions and personas",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/(app)/forum/forum.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/page.tsx",
+    "types/forum.ts",
+    "supabase/migrations/20261103190000_forum_starter_discussions.sql"
+  ],
+  "validation": [
+    {
+      "name": "Implementation",
+      "result": "pending"
+    }
+  ],
+  "id": "98caf3e8-f2b0-4590-ae48-8dc7ed593fec",
+  "recordedAt": "2026-11-03T18:48:31.585Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -2743,6 +2743,9 @@ export function NavigationShell({
     setWorkspacePanelOpen(false);
   }, []);
 
+  // The hosted Owner forum owns its compact navigation and profile header.
+  if (pathname === "/forum") return <>{children}</>;
+
   if (isShelllessPath(pathname)) {
     return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;
   }

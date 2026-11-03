@@ -31,6 +31,32 @@ async function rpc(db,fn,input){return (await db.query(`select ${fn}($1::jsonb) 
 const read=(db,x)=>rpc(db,'forum_read',x),write=(db,x)=>rpc(db,'forum_write',x);
 async function cooldown(db){await db.exec("reset role;update forum_rate_limits set last_at=now()-interval '2 minutes';set role authenticated");}
 
+test('starter discussions preserve authentication, visibility and moderation boundaries',async()=>{
+ const db=await database();
+ try {
+  const usersBefore=(await db.query('select count(*)::int n from users')).rows[0].n;
+  await db.exec(fs.readFileSync('supabase/migrations/20261103190000_forum_starter_discussions.sql','utf8'));
+  assert.equal((await db.query('select count(*)::int n from users')).rows[0].n,usersBefore,'personas never create sign-in accounts');
+  assert.deepEqual((await db.query('select count(*)::int n from forum_topics group by section_id')).rows.map(x=>x.n),[3,3,3,3,3]);
+  assert.equal((await db.query('select count(*)::int n from forum_replies')).rows[0].n,30);
+  await as(db,ids.owner);
+  const feed=await read(db,{mode:'feed'});assert.equal(feed.length,15);
+  assert.ok(feed.every(t=>t.author_id===null&&t.author_name!=='Owner'&&t.author_avatar.startsWith('/brand/forum/')));
+  const detail=await read(db,{mode:'topic',id:feed[0].id});assert.equal(detail.replies.length,2);
+  assert.ok(detail.replies.every(r=>r.author_avatar&&r.author_name!=='Owner'));
+  await assert.rejects(db.query('select * from forum_seed_personas'),/permission denied/);
+  await assert.rejects(write(db,{op:'edit_topic',id:feed[0].id,title:'Cannot impersonate persona',body:'blocked'}),/own|author/i);
+  await cooldown(db);
+  const own=await write(db,{op:'topic',section:feed[0].section_id,title:'A real owner question',body:'Real authenticated owner',seed_persona_id:'mai',author_id:null});
+  assert.equal((await read(db,{mode:'topic',id:own.id})).topic.author_id,ids.owner);
+  assert.equal((await read(db,{mode:'topic',id:own.id})).topic.author_avatar,null);
+  await as(db,ids.mod);await write(db,{op:'delete',kind:'topic',id:feed[0].id,reason:'Moderate starter content'});
+  await as(db,ids.owner);await assert.rejects(read(db,{mode:'topic',id:feed[0].id}),/not found/);
+  await as(db,ids.mod);await write(db,{op:'restore',kind:'topic',id:feed[0].id,reason:'Restore starter content'});
+  await as(db,ids.staff);await assert.rejects(read(db,{mode:'feed'}),/salon owners/);
+ } finally {await db.close();}
+});
+
 test('forum database security, moderation and pagination',async t=>{
  const db=await database();let section,topic,reply,chat,report;
  try{
