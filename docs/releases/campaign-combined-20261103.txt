@@ -1,0 +1,25 @@
+REYLUMI COMBINED RELEASE — 2026-11-03
+
+Web: https://reylumi.com/campaigns
+Deployment: dpl_5uTX9ctmgrPwGEhodjDZQKneMkZa
+Previous deployment: dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs
+Web source: 7b677c06d8e76029a0d02b7dde641b31ea8472a3
+Web source SHA256: 3f361e91b14c442d0cefd8aeff3c817a139982700644b659bf16c49d8ce5d44f
+
+Published: compact Owner Campaign lists with 72x72 thumbnails and full preview; correct automatic-credit consent; independent nonbillable clicks; accurate owner result reporting; contextual appointment check-in; Payroll Shop separators; one-shot visit feedback and customer resolution; shared public Beauty layout and authentication prompts.
+
+Validation: production build and TypeScript, 510 offline assets, 40 integrated component/SQL/browser tests, 101 Campaign regressions. Exact Vercel source verified across 3843 uploaded files; original .vercelignore excludes test-only files. All 3830 existing live-source files retained. Authenticated Owner Campaign acceptance at 390px verified both loaded thumbnails, no horizontal overflow, full preview, report, and unchanged view/click/spend counters. No live ad delivery, purchase, booking or notification was generated as a test.
+
+Migrations committed atomically: 20261103061000_visit_feedback_final.sql and 20261103150000_campaign_measurement_trust.sql. The frozen Campaign timestamp was changed because 20261103010000 is already used by the shipped Reward migration. No historical data deletion or pricing changes.
+
+iOS: 1.0.0 (88), testflight-available; exact source aae0f25b09c7d98d2b5d7d4f8795c75e08c12023; 246 tests, unsigned/signed archive, accepted upload, Apple VALID and existing internal TestFlight association verified. App Store and physical-device installation are not claimed.
+
+Queue: 116 preflight entries were reconciled. 111 journal entries still have pending channels; they include historical overlaps/audits, separate external apps, independent Market gates, provider/signing/hardware holds and Membership awaiting integration. Do not label the full queue published or erase old ready events.
+Membership desktop completed after the source freeze; its new event is preserved in reconciliation. Provider metering and canonical wallet integration remain separate. Check Writer sales stay gated.
+
+Web receipt: C:\Reylumi-worktrees\campaign-combined-deploy-20261103\releases\history\2026-11-03T15-04-37-541Z-cba133b2-2dc6-48ca-86b7-5064e3bad926.json
+Native receipt: C:\Reylumi-worktrees\campaign-combined-deploy-20261103\releases\history\2026-11-03T15-22-35-012Z-3febf494-b14f-4b8c-8d5f-8a4b94d47bec.json
+Full decisions: releases/queues/20261103-campaign-deploy-reconciliation.json
+Read-only live screenshot: artifacts/deploy-20261103/live-owner-campaign-390.png
+
+Late queue: closing-short-over-20261103 completed after source freeze; seven frozen files and hashes preserved under artifacts/deploy-20261103/late-pending-source. It still requires integration; rename its 20261103150000 migration because that version was applied for Campaign in this release.

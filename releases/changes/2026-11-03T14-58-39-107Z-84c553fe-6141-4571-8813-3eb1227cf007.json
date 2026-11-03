@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "payroll-shop-dividers-followup-20261103",
+  "status": "ready",
+  "summary": "Integrated and validated on exact current live source: Fix omitted Payroll Shop groups: use horizontal dividers instead of shadows; shared money groups included",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/payroll/shop-money.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "originalEventId": "732b10ec-6111-4e3b-8c61-c4d552ab8cfa"
+  },
+  "validation": [
+    {
+      "name": "Pinned production build, TypeScript and 510 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/build-pinned.log"
+    },
+    {
+      "name": "40 real component, routing, SQL and workflow checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/integration-final.log"
+    },
+    {
+      "name": "101 Campaign regression checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/campaign-regression.log"
+    },
+    {
+      "name": "Native client Safari16 compile: 937 modules, 341 pinned actions, zero unsupported",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-compile-final.log"
+    },
+    {
+      "name": "All live baseline files retained with only declared scoped modifications",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/preservation.json"
+    }
+  ],
+  "dependencies": [
+    "payroll-today-dividers-20261102"
+  ],
+  "supersedesEvents": [],
+  "notes": "Native compile is source validation only. Archive/upload/Apple availability and physical-device acceptance are separate receipt fields. Production migration and source evidence are preserved under artifacts/deploy-20261103",
+  "id": "84c553fe-6141-4571-8813-3eb1227cf007",
+  "recordedAt": "2026-11-03T14:58:39.107Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/payroll/shop-money.module.css": "0d89afcb23b0c08885529a0636f6f8cf89e97b74cf72e8217ab7fb84b5e85498"
+  }
+}

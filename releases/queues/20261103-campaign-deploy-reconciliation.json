@@ -1,0 +1,2412 @@
+{
+  "at": "2026-11-03T15:23:15.177Z",
+  "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+  "web": {
+    "status": "published",
+    "verified": true,
+    "deploymentId": "dpl_5uTX9ctmgrPwGEhodjDZQKneMkZa",
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "sourceSha256": "3f361e91b14c442d0cefd8aeff3c817a139982700644b659bf16c49d8ce5d44f",
+    "overlaySha256": "83234a58fe12f038a2146b414533fdaaaa80df911901d8ed12c08cf2176aa7d6",
+    "evidence": {
+      "source": "artifacts/deploy-20261103/live-source-verified.json",
+      "http": "artifacts/deploy-20261103/live-http.json",
+      "authenticatedOwner": "artifacts/deploy-20261103/authenticated-live.json",
+      "database": "artifacts/deploy-20261103/migration-result-ui.txt",
+      "pendingAudit": "artifacts/deploy-20261103/pending-audit.json"
+    }
+  },
+  "native": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.0",
+    "build": "88",
+    "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "evidence": {
+      "sourceTestsArchives": "artifacts/deploy-20261103/native-verified.json",
+      "availability": "artifacts/deploy-20261103/availability-verified.json",
+      "artifactDigest": "artifacts/deploy-20261103/native-artifacts-second.json",
+      "workflowRun": 41659326311
+    }
+  },
+  "sourceCommits": {
+    "web": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "ios": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023"
+  },
+  "queueCaptured": 116,
+  "selectedValidatedEvents": [
+    {
+      "changeId": "contextual-booking-checkin-20261103",
+      "eventId": "df85ec81-12de-44d6-8396-957b0f058302",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+        "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+        "originalEventId": "59c9d618-5656-4a59-b9fa-a4f465b15f11"
+      },
+      "fileHashes": {
+        "app/activity/customer-journey.tsx": "c5e3a86fb35916102d5a79a46ef6dbde570d965ad8fbb4b6c2ca4ed73c45c344",
+        "app/activity/customer-journey.module.css": "cbb6473aaa2911c8a660f965216d46305eb90429ad79233dcf134ec0e0505a6f",
+        "lib/customer-journey.ts": "810fd537bf5509dfec351117935dbc35f24ab102158671e80bf132287b4bef05",
+        "tests/customer-journey.test.mjs": "9532ed0e5b61ce50cf8642d5877cd86d3c709ecddbbf922223bc266e2bcdb299",
+        "tests/customer-journey-ui.test.mjs": "f189d6cb0ced25f8cd747f7e1940c80997d8927480cd1201f89f7089a639f863",
+        "docs/contextual-booking-checkin-20261103.md": "d10a025d2790dc7ac1f96afa0e503477ade383f1a1ea3ea8438d682e759b35a5"
+      }
+    },
+    {
+      "changeId": "payroll-shop-dividers-followup-20261103",
+      "eventId": "84c553fe-6141-4571-8813-3eb1227cf007",
+      "channels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+        "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+        "originalEventId": "732b10ec-6111-4e3b-8c61-c4d552ab8cfa"
+      },
+      "fileHashes": {
+        "app/payroll/shop-money.module.css": "0d89afcb23b0c08885529a0636f6f8cf89e97b74cf72e8217ab7fb84b5e85498"
+      }
+    },
+    {
+      "changeId": "visit-feedback-final-20261103",
+      "eventId": "97f16811-9263-45d5-9fef-30f9b7108157",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+        "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+        "originalEventId": "814f0b17-ebac-4c1d-b2fc-64aea1c7885b"
+      },
+      "fileHashes": {
+        "app/(app)/activity/receipts/[ticketId]/experience/page.tsx": "b26bbc64d84f67b12dd01125ada091998516eaf6e4b5db5e66c34744f8bbcb37",
+        "app/activity/actions.ts": "2d643ff627c1727ee5207ab3d371d919d1972e1de99de09981a9f7774d577d7c",
+        "app/activity/customer-journey.module.css": "cbb6473aaa2911c8a660f965216d46305eb90429ad79233dcf134ec0e0505a6f",
+        "app/activity/customer-journey.tsx": "c5e3a86fb35916102d5a79a46ef6dbde570d965ad8fbb4b6c2ca4ed73c45c344",
+        "app/activity/experience-actions.ts": "547c9bb9d57b96e52afaa8d8ad21a53d0fce9162b58f8c152508b2c9cdf2a618",
+        "app/activity/history-details-drawer.tsx": "ef85d6db0c5b47103c3e0193cdbc9448b80adb188403af137b5cbe6b4b5d8f28",
+        "app/activity/my-reviews-list.tsx": "1a4c8b9f950bdfbe2720787d954128d5c56a349c181490f7c86f57d7730919e2",
+        "app/activity/visit-experience-prompt.tsx": "d4a51ab10dc838649dd213a1ccfd026d7173031c27860ad907a5551ad3383896",
+        "app/activity/visit-feedback.module.css": "9c10e5ae0059b6270227feefbe49798e2d60979dbbe9c513f36937d25186db04",
+        "app/activity/visit-reply-controls.tsx": "cedee280c14162f2914685efb69b67f960b4fd0ef6e21e1ec3bd8333d86c4507",
+        "app/salon-profile/salon-profile-view.tsx": "b91a459f3b5f4bafa6696021b95180d3844af6629e0312141ec98ced9ed763ee",
+        "lib/app-local-command-policy.json": "a1e0ce8a7d3cde8ff1e46e886f1f37e3665a17a23c062cb027fc7c33fe03c868",
+        "lib/app-local-commands-server.generated.ts": "a0f26d9aafb852b6481d7f808cd2e8f81573b3f5c69a66849054c0949c84a7f4",
+        "lib/app-local-route-inventory.generated.json": "e9bc861d1db4f7b44b27bc4c08879857e7fd20b9fcc69003f2605b5bc378c6d8",
+        "lib/customer-activity.ts": "21d334cc3b559c5fbe81e747d0693b2a1c6da348a2d277bdfa7834eb69eb7ddc",
+        "scripts/generate-app-local-routes.mjs": "74988500d628da206d40fa09002839fb273e21a5bf8ca6f68ed148d291e78841",
+        "supabase/migrations/20261103061000_visit_feedback_final.sql": "024ecf8fc06d27f8d1abf319ec499e01f266d894606f1796e2cd735d8472665d",
+        "tests/customer-journey-ui.test.mjs": "f189d6cb0ced25f8cd747f7e1940c80997d8927480cd1201f89f7089a639f863",
+        "tests/visit-feedback-final.browser.test.mjs": "c6778c3c82bf40ad1b91f6bbd5372416ab23f994fefc28cb22efd57bed06d4ba",
+        "tests/visit-feedback-final.integration.test.mjs": "e3c8cf25404e92d3b00e96aa7c17d278cc3560e514652ce80207a54dbd48958b",
+        "types/customer-review.ts": "5196c630bdc01672dbc42b34b07d43d90f9a2d4528c470a12b878ba1ce764793"
+      }
+    },
+    {
+      "changeId": "beauty-public-unification-20261103",
+      "eventId": "d65b97f5-3f86-482d-8417-7c39d517e57f",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+        "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+        "originalEventId": "a2ba0379-9067-47d3-80c5-7772c11e734a"
+      },
+      "fileHashes": {
+        "components/beauty-profile-header.tsx": "26cf6145e15e70bf0917a57f951cc78e2e7ed78c33de9603a74db955f92fe5c4",
+        "components/auth-intent-prompt.tsx": "a8bfb1f76886df77ce298e1a5966d5b50573a04b7ffeda6115be2ef75d8726c2",
+        "components/explore-account-actions.tsx": "63afc194cb921763313d9c8e34383aa1b1777c70d09bfcc9cb009c655eddfc9c",
+        "app/saved-post/save-post-button.tsx": "16c40b46b55da7ff8d6c5bc127cd702f18f26df7eeb48a4d206c7e1b90d84f4d",
+        "app/explore/beauty/beauty-follow-button.tsx": "f62853b200304713a4d28b0cb2d3ba379f100e4f16f47975d4fb651e16826382",
+        "app/(app)/explore/beauty/[profileId]/page.tsx": "eed2476099581de169e910a2d2654d739eb5bbcbc965df6b1e779545f8d4ad6f",
+        "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx": "b5871fa05513f8cac2ed5fe431cb476ccf3c2b2a30b1240ede6fb6d0b2585ab1",
+        "app/beauty/beauty-profile-client.tsx": "9c1d9a6ae647de05ba06a806b46033179e2cc65da0b089b76e5c573748a37fb0",
+        "app/explore/explore-feed.tsx": "fa2e33d7c4bf5fe4007bc90499390135c6aff8cff9fe235629c32ff1b2f182e1",
+        "app/explore/explore-client.tsx": "866b4a53432b39c7dd360692b2010d9557a0577f8f524d87e8d18ef270bdd823",
+        "app/salon-profile/salon-profile-view.tsx": "b91a459f3b5f4bafa6696021b95180d3844af6629e0312141ec98ced9ed763ee",
+        "lib/beauty-relationship.ts": "09221b756b1274e34ada5589cf2d67db1c9d8f447740520b7e8f1732ea3c7999",
+        "tests/beauty-public-unification.test.mjs": "7050bccd69825fafdc58bcc47f96285fe974fcb9565b4cc3c5673106baae8c8d",
+        "app/explore/beauty/beauty-profile-read-view.tsx": "92d8adc4aa5f8e6a091991f023853aa3a1029b64f6edb6acdb62bc1a21b56f8e",
+        "app/explore/beauty/beauty-post-read-view.tsx": "749e541be47bfa6bf989e68c433c858ac33a603e9720b0d9a293673e877cec42"
+      }
+    },
+    {
+      "changeId": "campaign-completion-20261103",
+      "eventId": "4acaf7d5-3808-4e76-bcdf-55f072fa2b54",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+        "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+        "originalEventId": "ebc2e6b6-45a3-4940-9bbc-ccb281d36f4e"
+      },
+      "fileHashes": {
+        "app/(app)/explore/campaigns/[campaignId]/page.tsx": "d299393c5e876df88b6adc2a89959be3b23950ba2b4b2b60a418575eb0dae326",
+        "app/api/campaigns/delivery/route.ts": "4992e1ed7d65ff7cc96d16e32e728866b1f00aeed90ad6c8d270b1ec19ab26f8",
+        "app/campaigns/actions.ts": "9d4b2c601d57189f63a35682e36046b3579e9a4ef9b651fd24f75c2b8b58a5e8",
+        "app/campaigns/campaign-results.tsx": "35cacb89e747130f23a96dd75cb6ca8fd9681d8f72a94f83eeeb1139aea881f8",
+        "app/campaigns/campaign-workspace.tsx": "864274f73fdbf394526ff780f234ad56f1d2320ebd6ae16d8c1d618b803057cf",
+        "app/campaigns/credit-panel.tsx": "e9695f24a35fc40796f6a774487b539a2fd4aac8ce0329b619f01a204fb5ee8e",
+        "components/owner-campaign-dialog.tsx": "4ce8bbe9593f3a9fef50c4f56021edd58b819ee58ef6159304b582715f7f2467",
+        "components/owner-campaign.module.css": "fa73639f8d2953f7ba677aee45ade282e621eb93e508828e306fd6eac6b98902",
+        "components/owner-sponsored-post.tsx": "8634d1cafcff88f6d30f201bce7e4cc14e4f93bba4cd54f42544778e910221ca",
+        "docs/campaign-completion-20261103.txt": "918684e97e2f7b96d1d72f9d62f774dfdd0df3d1c44eafafe846733a39fe57f6",
+        "lib/campaign-report.ts": "2df75afd8d779d91b5b377485cba58b36171d47736640a0c976cec43604b71e4",
+        "supabase/migrations/20261103150000_campaign_measurement_trust.sql": "2f891bdb54db414848a5c1838d7ba7d8a031ef920219064a258b36fd8e0dd420",
+        "tests/campaign-accounting-read.test.mjs": "b870b836f6dc5f64fe9bd25a9a03652691e4eb73cc7cb60dcfe690f3e659cfad",
+        "tests/campaign-admission-boundaries.test.mjs": "9f8e06b5236e92cc5bbaf84b628840999564c1d7212bfbc2643a039a71edd265",
+        "tests/campaign-completion-destination.test.mjs": "ef78e1a8e8183f000afe64eda216e1bf0e60bf3d8f05dccc6f58f4875430c2e4",
+        "tests/campaign-completion-route.test.mjs": "52770f43ae8365f9f506b9289f799a614c74a075b91a0e1b3adf8d5e12339e13",
+        "tests/campaign-completion.browser.test.mjs": "865da0b80d38a5c5db7e2294ab935ea67d33ba26c1a39e1e0dc53f6ae7b34296",
+        "tests/campaign-completion.integration.test.mjs": "08a0f6656ff58d4e0d8a796044b710baaaccc47ce8bb4bc5a633ab99184cd41c",
+        "tests/campaign-credit-demand-budget.test.mjs": "d7d624ced756fcf3bbcfbc29f8f93b6b4ad1252aac3a22edb878fdf0d872285e",
+        "tests/campaign-dom-image-readiness.test.mjs": "d3f1c6d5a64227c2a9a2831642418fa47872743bbda7fd96e758b8f6023a8346",
+        "tests/campaign-expiry-settlement.test.mjs": "869f76d8059fccfa1979f171cfe3e92605a0fac2191c6090d13a53b085ccaf8e",
+        "tests/campaign-geo-compat.test.mjs": "0d770e43b0108ef0279b0b79bebea01cfc4ad52732c013d3f65e1395ccf9d589",
+        "tests/campaign-paused-reserve-lifecycle.test.mjs": "f49d76ddcaf46107e64c5fc0df12e6a3f53c8a2c631351fa9ac0d0bc996fa52b",
+        "tests/campaign-status-presentation.test.mjs": "8ae1ec9ab082a8a988764ca87dae2b93ece9e966fe961f86310cbc33b0c8038d",
+        "tests/fixtures/campaign-cumulative-db.mjs": "e351721da2ddebb4c41e635883706fb9a4d8cd694fcf578b959c01f7167eb926",
+        "types/owner-campaign.ts": "9fbcd67bd76443527cc593f559feaf5699c97e9d09a36886cccc7aa1999b6e03"
+      }
+    },
+    {
+      "changeId": "owner-campaign-post-layout-20261103",
+      "eventId": "147f47a1-8cff-4a3d-8bc7-a02f7f9138a7",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+        "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+        "originalEventId": "f7a5d2c5-c1f1-4bec-838d-ff7e7e9bc27a"
+      },
+      "fileHashes": {
+        "app/campaigns/campaign-post-content.tsx": "dd68015f76f3466514af2b1287e047b83ef4d2c8ba74b63949c8c501d413dabe",
+        "app/campaigns/campaign-workspace.tsx": "864274f73fdbf394526ff780f234ad56f1d2320ebd6ae16d8c1d618b803057cf",
+        "app/campaigns/campaign-ui.module.css": "25cedebfa7f8552e6b1485d5e8c103029fc92ff1f3b50c0c83fd3704bf393fdb",
+        "tests/owner-campaign-post-layout.browser.test.mjs": "6187619c13db036c2695c4ab764ed554c3bca9ee695bbc6e04945b552e6556ac",
+        "tests/campaign-completion.browser.test.mjs": "865da0b80d38a5c5db7e2294ab935ea67d33ba26c1a39e1e0dc53f6ae7b34296",
+        "docs/owner-campaign-thumbnail-list-20261103.txt": "3c8adbdf5ef720b4986375cbdf775e4fb54d66ad63c2c0ac68d148d135fee82f",
+        "scripts/audit-combined-deploy-queue-20261103.mjs": "c8ec6eec330120d31dba913ad8daf97d947b0ae93a79738a95ed60ef25270d26",
+        "docs/combined-deploy-queue-20261103.txt": "b6fdf472995b71af478f932dce8b3a73fd512b8500326cfa4704bfff1d57bdb7",
+        "releases/queues/20261103-campaign-combined.json": "04085295b6720047c6aa7a7e9366008caa2794a6a0c56bfaac47447ffed33c7b"
+      }
+    },
+    {
+      "changeId": "campaign-combined-native-adapters-20261103",
+      "eventId": "681d9722-0fbc-4e58-a9ad-0398b15b75af",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+        "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3"
+      },
+      "fileHashes": {
+        "lib/app-local-command-policy.json": "a1e0ce8a7d3cde8ff1e46e886f1f37e3665a17a23c062cb027fc7c33fe03c868",
+        "lib/app-local-commands-server.generated.ts": "a0f26d9aafb852b6481d7f808cd2e8f81573b3f5c69a66849054c0949c84a7f4",
+        "lib/app-local-command-trace-names.generated.json": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154"
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "status": "blocked",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "status": "blocked",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-workspace-cookie-deletion-20261020",
+      "eventId": "f1a21743-b245-433f-bc2f-03a61fa05495",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "auth-session-missing-rejection-20261020",
+      "eventId": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-background-cookie-authority-20261020",
+      "eventId": "bca89a39-186f-412a-81bd-b76075e4d5da",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "help-context-dismiss-20261020",
+      "eventId": "4cff2fad-08e3-42d0-9b22-623957e87395",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "macqa-help-background-integration-20261020",
+      "eventId": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-private-business-cache-admission-20261020",
+      "eventId": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "online-authority-refresh-20261021",
+      "eventId": "62f208d8-136e-439b-bba2-23a9ec001f43",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "refresh-session-availability-tests-20261021",
+      "eventId": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pc-ios-today-session-reliability-20261021",
+      "eventId": "16970911-3725-403f-a83f-915be4271914",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "payroll-hide-review-notices-20261021",
+      "eventId": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "daily-closing-conflict-notice-20261021",
+      "eventId": "a88bc104-8a6e-4cab-b465-99463332dec3",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pc-ios-causal-contracts-20261021",
+      "eventId": "b2617811-8752-4582-bc3a-244b701326d9",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-pc-common-integration-20261021",
+      "eventId": "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "flat-section-canvas-20261021",
+      "eventId": "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "combined-ui-payroll-daily-local-20261021",
+      "eventId": "279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pc-campaign-common-candidate-20261021",
+      "eventId": "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "pc-ios-explicit-guest-continuation-20261021",
+      "eventId": "23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-causal-settlement-reporting-20261021",
+      "eventId": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "windows-portable-startup-offline-admission-20261021",
+      "eventId": "a397b292-7798-4ba5-b16a-71673c11da76",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "campaign-pending-claim-demand-20261021",
+      "eventId": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "unified-windows-portable-integration-20261021",
+      "eventId": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "windows-portable-owner-startup-20261021",
+      "eventId": "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "unified-owner-guest-integration-20261021",
+      "eventId": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-credit-lifecycle-r5-20261021",
+      "eventId": "df7e32b3-7171-47d3-86c6-2335990a478f",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r5-integration-20261021",
+      "eventId": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-production-path-qa-20261021",
+      "eventId": "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-my-work-critical-path-20261021",
+      "eventId": "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "claude-project-review-setup-20261021",
+      "eventId": "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "staff-my-work-verified-read-identity-20261021",
+      "eventId": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+      "eventId": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "claude-pc-mac-simulator-review-20261021",
+      "eventId": "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r6-integration-20261021",
+      "eventId": "e32efba9-d661-4558-8f11-9e605b2383f1",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "local-first-services-pilot-r6",
+      "eventId": "15938439-7e97-493e-b874-fe42810e2ce4",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "r6-confirmed-auth-rejection-20261021",
+      "eventId": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "local-first-services-native-delta-r6",
+      "eventId": "5b41dd44-3397-4098-9235-ee3e693ee515",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r7-auth-integration-20261021",
+      "eventId": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+      "eventId": "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "services-cache-invariants-r6",
+      "eventId": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-auth-observability-qa-20261021",
+      "eventId": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "services-cache-realm-guards-r6",
+      "eventId": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r9-observability-integration-20261022",
+      "eventId": "04ee32a6-3687-4b77-affc-8058500c0f23",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+      "eventId": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "r10-native-bundle-provenance-20261022",
+      "eventId": "13608576-db78-4312-9445-5d173e04315e",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-hosted-login-actual-trace-20261022",
+      "eventId": "93859166-e3ea-4656-92df-3b78c7a2a327",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "auth-request-finite-deadline-20261022",
+      "eventId": "4072b660-7b05-4d67-81bf-43561df0cd04",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "r10-native-reset-pending-20261022",
+      "eventId": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-authenticated-browser-qa-20261023",
+      "eventId": "014d1e2b-713b-4368-925c-6fe55451770d",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-browser-timeout-investigation-20261023",
+      "eventId": "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-first-slice-acceptance-closure-20261023",
+      "eventId": "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-readiness-bundle-xcresult-20261023",
+      "eventId": "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "main-app-qa-20261024-task4",
+      "eventId": "d71a3e3d-4761-459e-baee-29f19edd8729",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-run-again-investigation-20261025",
+      "eventId": "49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "claude-simulator-20261025",
+      "eventId": "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "status": "needs-integration",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-product-audit-20261025",
+      "eventId": "740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "status": "ready",
+      "decision": "separate-app-or-evidence",
+      "reason": "Separate Site, preview/review tooling or audit evidence; no missing Reylumi runtime feature to transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "combined-drako-integration-20261026",
+      "eventId": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "windows-production-guard-command-20261026",
+      "eventId": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "iphone-real-performance-fixes-20261027",
+      "eventId": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "status": "ready",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "iphone-first-load-dal-rpc-20261027",
+      "eventId": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "status": "needs-integration",
+      "decision": "historical-overlap-preserve-baseline",
+      "reason": "Historical overlapping feature/evidence: preserve current shipped implementation and newer consumers. Source comparison retained per file; do not equate old unequal bytes with an absent feature or falsely mark this old event newly published.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "check-writer-secure-addon-20261027",
+      "eventId": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "status": "needs-integration",
+      "decision": "preserve-existing-first-party-code",
+      "reason": "Current deployed baseline already contains Check Writer first-party module, audited subscription logic, readiness helpers and sales-hold migration. Latest readiness runtime matches existing source; sales/provider/physical printing remain gated. Do not roll back newer code to an older initial snapshot.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "iphone-batched-handoff-release-20261028",
+      "eventId": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-real-developer-platform-20261028",
+      "eventId": "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-owner-integration-20261028",
+      "eventId": "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-developer-journey-20261028",
+      "eventId": "8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-developer-journey-qa-20261028",
+      "eventId": "6030270a-ae7a-43d7-a554-fae70218a27b",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "iphone-route-bootstrap-module-loading-20261028",
+      "eventId": "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "iphone-bounded-comment-count-read-batch-20261028",
+      "eventId": "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-self-hosted-design-20261028",
+      "eventId": "39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "check-writer-audit-price-20261028",
+      "eventId": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "status": "needs-integration",
+      "decision": "preserve-existing-first-party-code",
+      "reason": "Current deployed baseline already contains Check Writer first-party module, audited subscription logic, readiness helpers and sales-hold migration. Latest readiness runtime matches existing source; sales/provider/physical printing remain gated. Do not roll back newer code to an older initial snapshot.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "check-writer-wait-combined-deploy-20261028",
+      "eventId": "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "status": "needs-integration",
+      "decision": "preserve-existing-first-party-code",
+      "reason": "Current deployed baseline already contains Check Writer first-party module, audited subscription logic, readiness helpers and sales-hold migration. Latest readiness runtime matches existing source; sales/provider/physical printing remain gated. Do not roll back newer code to an older initial snapshot.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-published-data-qr-20261028",
+      "eventId": "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-published-qa-20261028",
+      "eventId": "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qa-controller-repair-20261028",
+      "eventId": "98110f68-e929-4630-83de-e4bceca6c10e",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-replacement-qa-20261028",
+      "eventId": "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-developer-read-recovery-20261028",
+      "eventId": "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-p0-reproduction-plan-20261028",
+      "eventId": "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-p0-zero-key-real-20261028",
+      "eventId": "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-https-transport-preflight-20261028",
+      "eventId": "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-https-transport-clarification-20261028",
+      "eventId": "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qa-hosting-options-20261028",
+      "eventId": "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-consent-version-reset-20261028",
+      "eventId": "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "eventId": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "status": "needs-integration",
+      "decision": "preserve-existing-first-party-code",
+      "reason": "Current deployed baseline already contains Check Writer first-party module, audited subscription logic, readiness helpers and sales-hold migration. Latest readiness runtime matches existing source; sales/provider/physical printing remain gated. Do not roll back newer code to an older initial snapshot.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-account-owner-polish-20261028",
+      "eventId": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "check-writer-next-combined-release-20261029",
+      "eventId": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "status": "needs-integration",
+      "decision": "preserve-existing-first-party-code",
+      "reason": "Current deployed baseline already contains Check Writer first-party module, audited subscription logic, readiness helpers and sales-hold migration. Latest readiness runtime matches existing source; sales/provider/physical printing remain gated. Do not roll back newer code to an older initial snapshot.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-publishers-20261029",
+      "eventId": "8440f0d3-3379-4671-ba85-9c29f97a7654",
+      "status": "ready",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-navigation-update-diagnostics-20261029",
+      "eventId": "aa1bae2f-2795-4902-b686-0810dcefb5e8",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-release-preflight-20261029",
+      "eventId": "b3d98000-f142-404b-ae55-00461eca1174",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-lifecycle-confirmation-20261029",
+      "eventId": "575397a0-f257-4f00-96dd-18a9757ccf95",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-mutation-contracts-20261029",
+      "eventId": "f52bf254-0889-4672-94b4-936ec73bf86c",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-commerce-read-models-20261029",
+      "eventId": "391def0c-5b2d-45bf-9f93-32b51f5460a3",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-durable-20261029",
+      "eventId": "96ce9eb7-e8aa-4214-8c1d-111561e50189",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-refund-reconciliation-20261029",
+      "eventId": "fe1ec11f-13be-4f1f-8365-a3118886eefe",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-serverless-20261029",
+      "eventId": "299dab3a-8cc2-404e-bfab-6886071d8a88",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-mfa-20261030",
+      "eventId": "ac31b334-2041-4d84-b61d-5f8a24e3d68f",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-account-bootstrap-20261030",
+      "eventId": "1484c573-84bb-4bd1-94bf-2ee635e52a77",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-profile-context-20261030",
+      "eventId": "61386e4a-6bca-43c6-9422-e5fd908ec8ec",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-staging-final-20261030",
+      "eventId": "0683af47-de0e-48e4-8eb6-e1bcdbe4adca",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qa-origin-prep-20261030",
+      "eventId": "0b037403-3371-4a62-bbac-cae7248fbbef",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-owner-review-final-20261030",
+      "eventId": "b2599c95-0948-4ae6-96d4-803ba975e3bf",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "personal-qr-universal-links-provisioning-20261030",
+      "eventId": "512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+      "status": "blocked",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "personal-camera-qr-next-combined-20261029",
+      "eventId": "fe67808b-ad4b-4f2a-b260-a76d3d36ab79",
+      "status": "blocked",
+      "decision": "hold-unfinished",
+      "reason": "Existing blocked/working event is not a validated finished release candidate; source and files preserved.",
+      "channels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-qa-resource-gate-20261030",
+      "eventId": "88e91bf8-4105-4e05-8727-721fd791085d",
+      "status": "needs-integration",
+      "decision": "hold-independent-platform",
+      "reason": "Independent developer Market chain remains excluded/default-off with hosted/resource/activation gates; publisher feature depends on that missing platform. No new platform activation or QA resource provisioning in this main-app release.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "beauty-shortcut-home-20261029",
+      "eventId": "750d4a2a-e76f-4603-871a-78df3eebe8b0",
+      "status": "needs-integration",
+      "decision": "preserve-newer-shipped-source",
+      "reason": "Current baseline already contains Beauty home, Library and five-item navigation; relevant navigation file and core home files match frozen feature; remaining files include newer edits. No wholesale transplant.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "reylumi-membership-design-20261102",
+      "eventId": "2b288e4d-bac1-4e79-a6f8-045b2bf7116a",
+      "status": "needs-integration",
+      "decision": "design-only-not-product",
+      "reason": "Standalone membership design requires product/commercial choices; no runtime feature was requested by that artifact.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "contextual-booking-checkin-20261103",
+      "eventId": "59c9d618-5656-4a59-b9fa-a4f465b15f11",
+      "status": "needs-integration",
+      "decision": "integrated",
+      "reason": "Frozen scoped source three-way integrated against all 3830 verified live files.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "payroll-shop-dividers-followup-20261103",
+      "eventId": "732b10ec-6111-4e3b-8c61-c4d552ab8cfa",
+      "status": "needs-integration",
+      "decision": "integrated",
+      "reason": "Frozen scoped source three-way integrated against all 3830 verified live files.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "visit-feedback-final-20261103",
+      "eventId": "814f0b17-ebac-4c1d-b2fc-64aea1c7885b",
+      "status": "needs-integration",
+      "decision": "integrated",
+      "reason": "Frozen scoped source three-way integrated against all 3830 verified live files.",
+      "channels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "beauty-public-unification-20261103",
+      "eventId": "a2ba0379-9067-47d3-80c5-7772c11e734a",
+      "status": "needs-integration",
+      "decision": "integrated",
+      "reason": "Frozen scoped source three-way integrated against all 3830 verified live files.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "campaign-completion-20261103",
+      "eventId": "ebc2e6b6-45a3-4940-9bbc-ccb281d36f4e",
+      "status": "ready",
+      "decision": "integrated",
+      "reason": "Frozen scoped source three-way integrated against all 3830 verified live files.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "membership-admin-20261103",
+      "eventId": "63960593-bed6-4cde-9299-783d46df3ed8",
+      "status": "needs-integration",
+      "decision": "hold-membership-in-progress",
+      "reason": "Mutable source and active desktop revision; provider/commercial integration not complete.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "membership-admin-desktop-20261103",
+      "eventId": "14742262-f123-4f41-bd60-1bb58bfc1bbe",
+      "status": "working",
+      "decision": "hold-unfinished",
+      "reason": "Mutable source and active desktop revision; provider/commercial integration not complete.",
+      "channels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "owner-campaign-post-layout-20261103",
+      "eventId": "f7a5d2c5-c1f1-4bec-838d-ff7e7e9bc27a",
+      "status": "ready",
+      "decision": "integrated",
+      "reason": "Frozen scoped source three-way integrated against all 3830 verified live files.",
+      "channels": [
+        "web"
+      ]
+    }
+  ],
+  "newEvidenceSinceFreeze": [
+    {
+      "changeId": "membership-admin-desktop-20261103",
+      "eventId": "a3010b0a-0c56-4145-a125-a9518c74a867",
+      "status": "needs-integration",
+      "decision": "hold-next-integration",
+      "reason": "Desktop implementation completed after the frozen release scope. Membership has separate unpublished commercial configuration and credit buckets; provider metering, canonical Campaign/SMS wallet linkage and hosted permission acceptance remain separate. No enrollment, plan pricing or billing activation performed."
+    },
+    {
+      "changeId": "closing-short-over-20261103",
+      "eventId": "9dbf49af-fab3-4fea-abcc-6ed98af860f3",
+      "status": "needs-integration",
+      "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\late-pending-source\\9dbf49af-fab3-4fea-abcc-6ed98af860f3",
+      "files": [
+        {
+          "file": "app/api/owner-attention/route.ts",
+          "bytes": 3785,
+          "sha256": "86ddd49da0b0a3911f04c1aa464e6ee6b11b81b63b31f53d90d147073ee30a0a"
+        },
+        {
+          "file": "app/staff/today/attention-detail.tsx",
+          "bytes": 5872,
+          "sha256": "4cd69cce39113166255c8229ecc09e3b044b55d9cd94204b2bab5c95540dcb6a"
+        },
+        {
+          "file": "app/staff/today/owner-attention-panel.tsx",
+          "bytes": 6225,
+          "sha256": "ee8441d1a9248fee72329ec108ca5bb493afbd36e117773fc6683dbae225c14e"
+        },
+        {
+          "file": "supabase/migrations/20261103150000_closing_attention_short_over.sql",
+          "bytes": 9127,
+          "sha256": "45f1159fe6df62de91adb3b658daa758440675b55d2a722fa217c184624216a8"
+        },
+        {
+          "file": "tests/owner-attention-api.test.mjs",
+          "bytes": 3257,
+          "sha256": "4552dbfbe3a8daf7ec012bb79991ac9718da6f6e8926e7154e84c16dd46f6538"
+        },
+        {
+          "file": "tests/closing-short-over.test.mjs",
+          "bytes": 3615,
+          "sha256": "a2554feb19c8b68f88bb5e1ec0de6fad4c7c4cf282a9ecf445d76841d51fe6af"
+        },
+        {
+          "file": "tests/closing-short-over-browser.mjs",
+          "bytes": 5338,
+          "sha256": "302b7a3dd8dce3a71e875c751f419e157c104491bd3fb6a0b9a9ed66da4b0b6d"
+        }
+      ],
+      "decision": "hold-next-integration",
+      "reason": "Completed after release freeze. Requires current live integration and fresh validation. Its 20261103150000 migration version now collides with the Campaign migration actually applied by this release; assign a new version before integration."
+    }
+  ],
+  "remainingPending": [
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-workspace-cookie-deletion-20261020",
+      "eventId": "f1a21743-b245-433f-bc2f-03a61fa05495",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "auth-session-missing-rejection-20261020",
+      "eventId": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-background-cookie-authority-20261020",
+      "eventId": "bca89a39-186f-412a-81bd-b76075e4d5da",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "help-context-dismiss-20261020",
+      "eventId": "4cff2fad-08e3-42d0-9b22-623957e87395",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "macqa-help-background-integration-20261020",
+      "eventId": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-private-business-cache-admission-20261020",
+      "eventId": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "online-authority-refresh-20261021",
+      "eventId": "62f208d8-136e-439b-bba2-23a9ec001f43",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "refresh-session-availability-tests-20261021",
+      "eventId": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pc-ios-today-session-reliability-20261021",
+      "eventId": "16970911-3725-403f-a83f-915be4271914",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "payroll-hide-review-notices-20261021",
+      "eventId": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "daily-closing-conflict-notice-20261021",
+      "eventId": "a88bc104-8a6e-4cab-b465-99463332dec3",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pc-ios-causal-contracts-20261021",
+      "eventId": "b2617811-8752-4582-bc3a-244b701326d9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-pc-common-integration-20261021",
+      "eventId": "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "flat-section-canvas-20261021",
+      "eventId": "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "combined-ui-payroll-daily-local-20261021",
+      "eventId": "279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "pc-campaign-common-candidate-20261021",
+      "eventId": "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "pc-ios-explicit-guest-continuation-20261021",
+      "eventId": "23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-causal-settlement-reporting-20261021",
+      "eventId": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "windows-portable-startup-offline-admission-20261021",
+      "eventId": "a397b292-7798-4ba5-b16a-71673c11da76",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "campaign-pending-claim-demand-20261021",
+      "eventId": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "unified-windows-portable-integration-20261021",
+      "eventId": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "windows-portable-owner-startup-20261021",
+      "eventId": "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "unified-owner-guest-integration-20261021",
+      "eventId": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-credit-lifecycle-r5-20261021",
+      "eventId": "df7e32b3-7171-47d3-86c6-2335990a478f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r5-integration-20261021",
+      "eventId": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-production-path-qa-20261021",
+      "eventId": "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+      "status": "working",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-my-work-critical-path-20261021",
+      "eventId": "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "claude-project-review-setup-20261021",
+      "eventId": "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "staff-my-work-verified-read-identity-20261021",
+      "eventId": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+      "eventId": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "claude-pc-mac-simulator-review-20261021",
+      "eventId": "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r6-integration-20261021",
+      "eventId": "e32efba9-d661-4558-8f11-9e605b2383f1",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "local-first-services-pilot-r6",
+      "eventId": "15938439-7e97-493e-b874-fe42810e2ce4",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "r6-confirmed-auth-rejection-20261021",
+      "eventId": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "local-first-services-native-delta-r6",
+      "eventId": "5b41dd44-3397-4098-9235-ee3e693ee515",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r7-auth-integration-20261021",
+      "eventId": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+      "eventId": "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "services-cache-invariants-r6",
+      "eventId": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-auth-observability-qa-20261021",
+      "eventId": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "services-cache-realm-guards-r6",
+      "eventId": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r9-observability-integration-20261022",
+      "eventId": "04ee32a6-3687-4b77-affc-8058500c0f23",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+      "eventId": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "r10-native-bundle-provenance-20261022",
+      "eventId": "13608576-db78-4312-9445-5d173e04315e",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "ios-hosted-login-actual-trace-20261022",
+      "eventId": "93859166-e3ea-4656-92df-3b78c7a2a327",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "auth-request-finite-deadline-20261022",
+      "eventId": "4072b660-7b05-4d67-81bf-43561df0cd04",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "r10-native-reset-pending-20261022",
+      "eventId": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-authenticated-browser-qa-20261023",
+      "eventId": "014d1e2b-713b-4368-925c-6fe55451770d",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-browser-timeout-investigation-20261023",
+      "eventId": "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-first-slice-acceptance-closure-20261023",
+      "eventId": "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "ios-readiness-bundle-xcresult-20261023",
+      "eventId": "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "main-app-qa-20261024-task4",
+      "eventId": "d71a3e3d-4761-459e-baee-29f19edd8729",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-run-again-investigation-20261025",
+      "eventId": "49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "claude-simulator-20261025",
+      "eventId": "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "campaign-product-audit-20261025",
+      "eventId": "740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "combined-drako-integration-20261026",
+      "eventId": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "windows-production-guard-command-20261026",
+      "eventId": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "iphone-real-performance-fixes-20261027",
+      "eventId": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "iphone-first-load-dal-rpc-20261027",
+      "eventId": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "check-writer-secure-addon-20261027",
+      "eventId": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "iphone-batched-handoff-release-20261028",
+      "eventId": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-real-developer-platform-20261028",
+      "eventId": "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-owner-integration-20261028",
+      "eventId": "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-developer-journey-20261028",
+      "eventId": "8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-developer-journey-qa-20261028",
+      "eventId": "6030270a-ae7a-43d7-a554-fae70218a27b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "iphone-route-bootstrap-module-loading-20261028",
+      "eventId": "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+      "status": "working",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "iphone-bounded-comment-count-read-batch-20261028",
+      "eventId": "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+      "status": "working",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-self-hosted-design-20261028",
+      "eventId": "39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "check-writer-audit-price-20261028",
+      "eventId": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "check-writer-wait-combined-deploy-20261028",
+      "eventId": "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-published-data-qr-20261028",
+      "eventId": "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-published-qa-20261028",
+      "eventId": "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qa-controller-repair-20261028",
+      "eventId": "98110f68-e929-4630-83de-e4bceca6c10e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-replacement-qa-20261028",
+      "eventId": "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-developer-read-recovery-20261028",
+      "eventId": "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-p0-reproduction-plan-20261028",
+      "eventId": "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-p0-zero-key-real-20261028",
+      "eventId": "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-https-transport-preflight-20261028",
+      "eventId": "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-https-transport-clarification-20261028",
+      "eventId": "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qa-hosting-options-20261028",
+      "eventId": "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-consent-version-reset-20261028",
+      "eventId": "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "eventId": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-account-owner-polish-20261028",
+      "eventId": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "check-writer-next-combined-release-20261029",
+      "eventId": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-publishers-20261029",
+      "eventId": "8440f0d3-3379-4671-ba85-9c29f97a7654",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-navigation-update-diagnostics-20261029",
+      "eventId": "aa1bae2f-2795-4902-b686-0810dcefb5e8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-release-preflight-20261029",
+      "eventId": "b3d98000-f142-404b-ae55-00461eca1174",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-lifecycle-confirmation-20261029",
+      "eventId": "575397a0-f257-4f00-96dd-18a9757ccf95",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-mutation-contracts-20261029",
+      "eventId": "f52bf254-0889-4672-94b4-936ec73bf86c",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-commerce-read-models-20261029",
+      "eventId": "391def0c-5b2d-45bf-9f93-32b51f5460a3",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-durable-20261029",
+      "eventId": "96ce9eb7-e8aa-4214-8c1d-111561e50189",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-refund-reconciliation-20261029",
+      "eventId": "fe1ec11f-13be-4f1f-8365-a3118886eefe",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-serverless-20261029",
+      "eventId": "299dab3a-8cc2-404e-bfab-6886071d8a88",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qr-mfa-20261030",
+      "eventId": "ac31b334-2041-4d84-b61d-5f8a24e3d68f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-account-bootstrap-20261030",
+      "eventId": "1484c573-84bb-4bd1-94bf-2ee635e52a77",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-profile-context-20261030",
+      "eventId": "61386e4a-6bca-43c6-9422-e5fd908ec8ec",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-staging-final-20261030",
+      "eventId": "0683af47-de0e-48e4-8eb6-e1bcdbe4adca",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-qa-origin-prep-20261030",
+      "eventId": "0b037403-3371-4a62-bbac-cae7248fbbef",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "market-owner-review-final-20261030",
+      "eventId": "b2599c95-0948-4ae6-96d4-803ba975e3bf",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "personal-qr-universal-links-provisioning-20261030",
+      "eventId": "512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+      "status": "blocked",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "personal-camera-qr-next-combined-20261029",
+      "eventId": "fe67808b-ad4b-4f2a-b260-a76d3d36ab79",
+      "status": "blocked",
+      "pendingChannels": [
+        "ios"
+      ]
+    },
+    {
+      "changeId": "market-qa-resource-gate-20261030",
+      "eventId": "88e91bf8-4105-4e05-8727-721fd791085d",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "beauty-shortcut-home-20261029",
+      "eventId": "750d4a2a-e76f-4603-871a-78df3eebe8b0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "reylumi-membership-design-20261102",
+      "eventId": "2b288e4d-bac1-4e79-a6f8-045b2bf7116a",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "membership-admin-20261103",
+      "eventId": "63960593-bed6-4cde-9299-783d46df3ed8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "membership-admin-desktop-20261103",
+      "eventId": "a3010b0a-0c56-4145-a125-a9518c74a867",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    },
+    {
+      "changeId": "closing-short-over-20261103",
+      "eventId": "9dbf49af-fab3-4fea-abcc-6ed98af860f3",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ]
+    }
+  ],
+  "evidence": {
+    "webReceipt": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\releases\\history\\2026-11-03T15-04-37-541Z-cba133b2-2dc6-48ca-86b7-5064e3bad926.json",
+    "nativeReceipt": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\releases\\history\\2026-11-03T15-22-35-012Z-3febf494-b14f-4b8c-8d5f-8a4b94d47bec.json",
+    "worktreeInventory": "C:/Reylumi-worktrees/campaign-completion-20261103/artifacts/combined-deploy-queue-20261103/worktrees-final.json",
+    "queueArchiveSha256": "f9b03d354fca2186cd9bad9eba4c360852e3e32dc4d8c78739940f90460cd8da",
+    "detailedAudit": "artifacts/deploy-20261103/pending-audit.json"
+  }
+}

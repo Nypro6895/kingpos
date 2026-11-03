@@ -1,0 +1,57 @@
+{
+  "kind": "release",
+  "summary": "Publish approved compact Campaign thumbnail lists, trustworthy Campaign measurement and four completed customer/UI changes on the exact live baseline",
+  "changes": [
+    "df85ec81-12de-44d6-8396-957b0f058302",
+    "84c553fe-6141-4571-8813-3eb1227cf007",
+    "97f16811-9263-45d5-9fef-30f9b7108157",
+    "d65b97f5-3f86-482d-8417-7c39d517e57f",
+    "4acaf7d5-3808-4e76-bcdf-55f072fa2b54",
+    "147f47a1-8cff-4a3d-8bc7-a02f7f9138a7",
+    "681d9722-0fbc-4e58-a9ad-0398b15b75af"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_5uTX9ctmgrPwGEhodjDZQKneMkZa",
+      "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+      "sourceSha256": "3f361e91b14c442d0cefd8aeff3c817a139982700644b659bf16c49d8ce5d44f",
+      "overlaySha256": "83234a58fe12f038a2146b414533fdaaaa80df911901d8ed12c08cf2176aa7d6",
+      "evidence": {
+        "source": "artifacts/deploy-20261103/live-source-verified.json",
+        "http": "artifacts/deploy-20261103/live-http.json",
+        "authenticatedOwner": "artifacts/deploy-20261103/authenticated-live.json",
+        "database": "artifacts/deploy-20261103/migration-result-ui.txt",
+        "pendingAudit": "artifacts/deploy-20261103/pending-audit.json"
+      }
+    }
+  },
+  "sourceCommit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+  "migrations": {
+    "migrations": [
+      "20261103061000_visit_feedback_final.sql",
+      "20261103150000_campaign_measurement_trust.sql"
+    ],
+    "atomic": true,
+    "sha256": "a0a5d0e9dbf0ca97fc279e814c2f489f7db93e15356a813e54f9c84c8937d54c"
+  },
+  "native": {
+    "status": "in-progress",
+    "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "run": 41659326311
+  },
+  "limitations": [
+    "Authenticated Owner Campaign browser acceptance is read-only; no live ad impression/click, payment, booking or customer notification was generated as a test.",
+    "Physical iPhone, independent developer Market activation, Membership in progress, blocked Universal Links signing and Check Writer sales/provider/physical-printing gates remain unverified.",
+    "iOS publication requires a separate source/archive/upload/Apple receipt."
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "previousNativeBuild": "87",
+    "note": "Retain additive schema and audit history during rollback; check current alias before restoring this coordinator release."
+  },
+  "id": "cba133b2-2dc6-48ca-86b7-5064e3bad926",
+  "recordedAt": "2026-11-03T15:04:37.541Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103"
+}

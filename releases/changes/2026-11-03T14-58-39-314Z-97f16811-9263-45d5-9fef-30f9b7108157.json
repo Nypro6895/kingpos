@@ -1,0 +1,98 @@
+{
+  "kind": "change",
+  "changeId": "visit-feedback-final-20261103",
+  "status": "ready",
+  "summary": "Integrated and validated on exact current live source: Implemented approved compact History links and one-shot feedback/reply; only the customer confirms resolution; frozen source validated locally",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/activity/receipts/[ticketId]/experience/page.tsx",
+    "app/activity/actions.ts",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "app/activity/experience-actions.ts",
+    "app/activity/history-details-drawer.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/activity/visit-experience-prompt.tsx",
+    "app/activity/visit-feedback.module.css",
+    "app/activity/visit-reply-controls.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-route-inventory.generated.json",
+    "lib/customer-activity.ts",
+    "scripts/generate-app-local-routes.mjs",
+    "supabase/migrations/20261103061000_visit_feedback_final.sql",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/visit-feedback-final.browser.test.mjs",
+    "tests/visit-feedback-final.integration.test.mjs",
+    "types/customer-review.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "originalEventId": "814f0b17-ebac-4c1d-b2fc-64aea1c7885b"
+  },
+  "validation": [
+    {
+      "name": "Pinned production build, TypeScript and 510 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/build-pinned.log"
+    },
+    {
+      "name": "40 real component, routing, SQL and workflow checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/integration-final.log"
+    },
+    {
+      "name": "101 Campaign regression checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/campaign-regression.log"
+    },
+    {
+      "name": "Native client Safari16 compile: 937 modules, 341 pinned actions, zero unsupported",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-compile-final.log"
+    },
+    {
+      "name": "All live baseline files retained with only declared scoped modifications",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/preservation.json"
+    }
+  ],
+  "dependencies": [
+    "review-experience-flow-20261029"
+  ],
+  "supersedesEvents": [],
+  "notes": "Native compile is source validation only. Archive/upload/Apple availability and physical-device acceptance are separate receipt fields. Production migration and source evidence are preserved under artifacts/deploy-20261103",
+  "id": "97f16811-9263-45d5-9fef-30f9b7108157",
+  "recordedAt": "2026-11-03T14:58:39.314Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/activity/receipts/[ticketId]/experience/page.tsx": "b26bbc64d84f67b12dd01125ada091998516eaf6e4b5db5e66c34744f8bbcb37",
+    "app/activity/actions.ts": "2d643ff627c1727ee5207ab3d371d919d1972e1de99de09981a9f7774d577d7c",
+    "app/activity/customer-journey.module.css": "cbb6473aaa2911c8a660f965216d46305eb90429ad79233dcf134ec0e0505a6f",
+    "app/activity/customer-journey.tsx": "c5e3a86fb35916102d5a79a46ef6dbde570d965ad8fbb4b6c2ca4ed73c45c344",
+    "app/activity/experience-actions.ts": "547c9bb9d57b96e52afaa8d8ad21a53d0fce9162b58f8c152508b2c9cdf2a618",
+    "app/activity/history-details-drawer.tsx": "ef85d6db0c5b47103c3e0193cdbc9448b80adb188403af137b5cbe6b4b5d8f28",
+    "app/activity/my-reviews-list.tsx": "1a4c8b9f950bdfbe2720787d954128d5c56a349c181490f7c86f57d7730919e2",
+    "app/activity/visit-experience-prompt.tsx": "d4a51ab10dc838649dd213a1ccfd026d7173031c27860ad907a5551ad3383896",
+    "app/activity/visit-feedback.module.css": "9c10e5ae0059b6270227feefbe49798e2d60979dbbe9c513f36937d25186db04",
+    "app/activity/visit-reply-controls.tsx": "cedee280c14162f2914685efb69b67f960b4fd0ef6e21e1ec3bd8333d86c4507",
+    "app/salon-profile/salon-profile-view.tsx": "b91a459f3b5f4bafa6696021b95180d3844af6629e0312141ec98ced9ed763ee",
+    "lib/app-local-command-policy.json": "a1e0ce8a7d3cde8ff1e46e886f1f37e3665a17a23c062cb027fc7c33fe03c868",
+    "lib/app-local-commands-server.generated.ts": "a0f26d9aafb852b6481d7f808cd2e8f81573b3f5c69a66849054c0949c84a7f4",
+    "lib/app-local-route-inventory.generated.json": "e9bc861d1db4f7b44b27bc4c08879857e7fd20b9fcc69003f2605b5bc378c6d8",
+    "lib/customer-activity.ts": "21d334cc3b559c5fbe81e747d0693b2a1c6da348a2d277bdfa7834eb69eb7ddc",
+    "scripts/generate-app-local-routes.mjs": "74988500d628da206d40fa09002839fb273e21a5bf8ca6f68ed148d291e78841",
+    "supabase/migrations/20261103061000_visit_feedback_final.sql": "024ecf8fc06d27f8d1abf319ec499e01f266d894606f1796e2cd735d8472665d",
+    "tests/customer-journey-ui.test.mjs": "f189d6cb0ced25f8cd747f7e1940c80997d8927480cd1201f89f7089a639f863",
+    "tests/visit-feedback-final.browser.test.mjs": "c6778c3c82bf40ad1b91f6bbd5372416ab23f994fefc28cb22efd57bed06d4ba",
+    "tests/visit-feedback-final.integration.test.mjs": "e3c8cf25404e92d3b00e96aa7c17d278cc3560e514652ce80207a54dbd48958b",
+    "types/customer-review.ts": "5196c630bdc01672dbc42b34b07d43d90f9a2d4528c470a12b878ba1ce764793"
+  }
+}

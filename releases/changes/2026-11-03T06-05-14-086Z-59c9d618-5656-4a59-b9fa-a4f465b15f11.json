@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "contextual-booking-checkin-20261103",
+  "status": "needs-integration",
+  "summary": "Completed inline appointment check-in (-15/+60 min), with arrival suppression and live clock; frozen local checks passed, pending combined web/native integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/activity/customer-journey.tsx",
+    "app/activity/customer-journey.module.css",
+    "lib/customer-journey.ts",
+    "tests/customer-journey.test.mjs",
+    "tests/customer-journey-ui.test.mjs",
+    "docs/contextual-booking-checkin-20261103.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\contextual-booking-checkin-20261103\\artifacts\\contextual-booking-checkin-20261103\\frozen",
+    "commit": "6865c6c00b9b72389ae3f46482cab4bae3e7009d"
+  },
+  "validation": [
+    {
+      "name": "Journey logic, browser and native scoped history reads",
+      "result": "passed",
+      "evidence": "17/17 tests; browser widths 360/390/428/768/1280; exact timing, expiry, arrival prop update, empty state"
+    },
+    {
+      "name": "Full TypeScript, scoped ESLint and diff check",
+      "result": "passed"
+    },
+    {
+      "name": "Installed client compile",
+      "result": "passed",
+      "evidence": "Safari16 verify-only; 933 modules, 338 actions, zero unsupported actions"
+    },
+    {
+      "name": "Assembled production build and physical iPhone acceptance",
+      "result": "pending",
+      "evidence": "Coordinator must integrate against current baseline and rebuild native bundled app; no deploy/upload authorized"
+    }
+  ],
+  "dependencies": [],
+  "id": "59c9d618-5656-4a59-b9fa-a4f465b15f11",
+  "recordedAt": "2026-11-03T06:05:14.086Z",
+  "worktree": "C:\\Reylumi-worktrees\\contextual-booking-checkin-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

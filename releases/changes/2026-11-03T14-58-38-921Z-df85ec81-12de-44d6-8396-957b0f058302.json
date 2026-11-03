@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "contextual-booking-checkin-20261103",
+  "status": "ready",
+  "summary": "Integrated and validated on exact current live source: Completed inline appointment check-in (-15/+60 min), with arrival suppression and live clock; frozen local checks passed, pending combined web/native integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/activity/customer-journey.tsx",
+    "app/activity/customer-journey.module.css",
+    "lib/customer-journey.ts",
+    "tests/customer-journey.test.mjs",
+    "tests/customer-journey-ui.test.mjs",
+    "docs/contextual-booking-checkin-20261103.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "originalEventId": "59c9d618-5656-4a59-b9fa-a4f465b15f11"
+  },
+  "validation": [
+    {
+      "name": "Pinned production build, TypeScript and 510 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/build-pinned.log"
+    },
+    {
+      "name": "40 real component, routing, SQL and workflow checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/integration-final.log"
+    },
+    {
+      "name": "101 Campaign regression checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/campaign-regression.log"
+    },
+    {
+      "name": "Native client Safari16 compile: 937 modules, 341 pinned actions, zero unsupported",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-compile-final.log"
+    },
+    {
+      "name": "All live baseline files retained with only declared scoped modifications",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/preservation.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "notes": "Native compile is source validation only. Archive/upload/Apple availability and physical-device acceptance are separate receipt fields. Production migration and source evidence are preserved under artifacts/deploy-20261103",
+  "id": "df85ec81-12de-44d6-8396-957b0f058302",
+  "recordedAt": "2026-11-03T14:58:38.921Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/activity/customer-journey.tsx": "c5e3a86fb35916102d5a79a46ef6dbde570d965ad8fbb4b6c2ca4ed73c45c344",
+    "app/activity/customer-journey.module.css": "cbb6473aaa2911c8a660f965216d46305eb90429ad79233dcf134ec0e0505a6f",
+    "lib/customer-journey.ts": "810fd537bf5509dfec351117935dbc35f24ab102158671e80bf132287b4bef05",
+    "tests/customer-journey.test.mjs": "9532ed0e5b61ce50cf8642d5877cd86d3c709ecddbbf922223bc266e2bcdb299",
+    "tests/customer-journey-ui.test.mjs": "f189d6cb0ced25f8cd747f7e1940c80997d8927480cd1201f89f7089a639f863",
+    "docs/contextual-booking-checkin-20261103.md": "d10a025d2790dc7ac1f96afa0e503477ade383f1a1ea3ea8438d682e759b35a5"
+  }
+}

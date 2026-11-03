@@ -1,0 +1,118 @@
+{
+  "kind": "change",
+  "changeId": "campaign-completion-20261103",
+  "status": "ready",
+  "summary": "Fix Campaign consent denomination, independent nonbillable clicks, bounded sponsored cards, truthful statuses and read-only outcome reporting; preserve prices, wallet rules and existing privacy scope",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/explore/campaigns/[campaignId]/page.tsx",
+    "app/api/campaigns/delivery/route.ts",
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-results.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-panel.tsx",
+    "components/owner-campaign-dialog.tsx",
+    "components/owner-campaign.module.css",
+    "components/owner-sponsored-post.tsx",
+    "docs/campaign-completion-20261103.txt",
+    "lib/campaign-report.ts",
+    "supabase/migrations/20261103010000_campaign_measurement_trust.sql",
+    "tests/campaign-accounting-read.test.mjs",
+    "tests/campaign-admission-boundaries.test.mjs",
+    "tests/campaign-completion-destination.test.mjs",
+    "tests/campaign-completion-route.test.mjs",
+    "tests/campaign-completion.browser.test.mjs",
+    "tests/campaign-completion.integration.test.mjs",
+    "tests/campaign-credit-demand-budget.test.mjs",
+    "tests/campaign-dom-image-readiness.test.mjs",
+    "tests/campaign-expiry-settlement.test.mjs",
+    "tests/campaign-geo-compat.test.mjs",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs",
+    "tests/campaign-status-presentation.test.mjs",
+    "tests/fixtures/campaign-cumulative-db.mjs",
+    "types/owner-campaign.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\campaign-completion\\frozen",
+    "commit": "83e8a7fef116855f4d408485c100416fb42a0b64"
+  },
+  "validation": [
+    {
+      "name": "Campaign regression tests (100)",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/regression.log"
+    },
+    {
+      "name": "New SQL/report/consent tests (6)",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/new-tests-final.log"
+    },
+    {
+      "name": "Real API module tests (1)",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/route-tests.log"
+    },
+    {
+      "name": "Custom destination tests (1)",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/destination-tests.log"
+    },
+    {
+      "name": "Chrome component/image browser tests (2), 320/390/1280px",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/browser-final.log"
+    },
+    {
+      "name": "Production npm run build with TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/build-final.log"
+    },
+    {
+      "name": "Changed-source ESLint",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/lint.log"
+    },
+    {
+      "name": "Git whitespace with existing CRLF source policy",
+      "result": "passed",
+      "evidence": "artifacts/campaign-completion/diff-check.log"
+    }
+  ],
+  "dependencies": [],
+  "notes": "Apply additive 20261103010000 migration after current Campaign lifecycle/geo/run-again chain before web. Ready means local frozen overlay; not deployed, provider/native/live acceptance and refund/dispute policy remain separate. See docs/campaign-completion-20261103.txt.",
+  "id": "6b6c7247-7e00-4dde-9679-0c762fad1719",
+  "recordedAt": "2026-11-03T06:56:23.919Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-completion-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/explore/campaigns/[campaignId]/page.tsx": "02041a982e474b32003ec2df4fdb6492014907e0ab02f33609fc4e1650777adb",
+    "app/api/campaigns/delivery/route.ts": "40f73559a3f1d0de40216ca7f3c9688a4200d3fa4e6f7ff1a3c543e5fa04f621",
+    "app/campaigns/actions.ts": "7ab3954016068d5c0c41b7128ed3fa24409d7d92c9a180cf7b8b51be55290ee7",
+    "app/campaigns/campaign-results.tsx": "c0562f0b877904409b29b374402235f87ca2cda49ebfe35bcea60bbefc64b9a6",
+    "app/campaigns/campaign-workspace.tsx": "895930c3e0e7c0fe705ac65773ca447ebf68af4724dc4eb159df676fcb4180a4",
+    "app/campaigns/credit-panel.tsx": "7eb8202e47f8176ba90799b76dc5f340c3f2c5c774ab6b7e74ab03fc0e5ac3d1",
+    "components/owner-campaign-dialog.tsx": "e4d1925b2d785703d5e320ac5ee6fee4f359d26bf55db2df53a096ff22695c7e",
+    "components/owner-campaign.module.css": "0d10db594e13818c6046610baa71f1a612fb8b91b9a552ca68bca729fb711913",
+    "components/owner-sponsored-post.tsx": "7e5cad5dbfad2f3b4f1bda9ae8329ea44eec4620340474cfd5abce21acd571b3",
+    "docs/campaign-completion-20261103.txt": "a9cbd9e286049b1971d41bf499985829587066aec576e09088509098f1e7a6e9",
+    "lib/campaign-report.ts": "2df75afd8d779d91b5b377485cba58b36171d47736640a0c976cec43604b71e4",
+    "supabase/migrations/20261103010000_campaign_measurement_trust.sql": "2f891bdb54db414848a5c1838d7ba7d8a031ef920219064a258b36fd8e0dd420",
+    "tests/campaign-accounting-read.test.mjs": "f2d5f74ccc355c78f4f145a62f26d6c52b8f1a3db5fdebc9eb5910f34366657c",
+    "tests/campaign-admission-boundaries.test.mjs": "b7743b2a8418987150b358be7ad08e80a57df3b3716187b81a32d61fb7a9de8f",
+    "tests/campaign-completion-destination.test.mjs": "7d0c2ddf63adf2d513f16fe72f977edc8d141159b685571e7a98b7ee297aa29c",
+    "tests/campaign-completion-route.test.mjs": "cefefa72d9b6a24b48068bac34f9c104cdbdf2f11980e26e16dc731096b81cc9",
+    "tests/campaign-completion.browser.test.mjs": "94aa6220f28f63118afd3110045533f03a430815196f582af0f7d9b0603853f0",
+    "tests/campaign-completion.integration.test.mjs": "5b60d494503394fcdd54bb6e1b3e8040be40cf2e0136d10d69f362bec2f1944c",
+    "tests/campaign-credit-demand-budget.test.mjs": "d7d624ced756fcf3bbcfbc29f8f93b6b4ad1252aac3a22edb878fdf0d872285e",
+    "tests/campaign-dom-image-readiness.test.mjs": "7b22fbea48f886467083a7f585cfc42cfc416ab171d6962e29ca4a44c8b2035c",
+    "tests/campaign-expiry-settlement.test.mjs": "5ee3dc543382a193c9cae5d97321d4718bd9d1935f9ca6894bd93bcc2b70e423",
+    "tests/campaign-geo-compat.test.mjs": "c6de40269545e4024c53792924aed38582bdd7ab4b37f97e4bcaa0519a682731",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs": "f49d76ddcaf46107e64c5fc0df12e6a3f53c8a2c631351fa9ac0d0bc996fa52b",
+    "tests/campaign-status-presentation.test.mjs": "dca2ca6b559947c75aa170768626120ebe42349bd9a15b1cae75f60c9d8ffd72",
+    "tests/fixtures/campaign-cumulative-db.mjs": "4084c4b0ae2445e0222ad12241c4027e3b804b19483ccf096f309b6cc94c9cfb",
+    "types/owner-campaign.ts": "ab51e9f6f12cecc65c107eb6bbdddc002d55ce513a4a142b8233275c0f4d2fa0"
+  }
+}

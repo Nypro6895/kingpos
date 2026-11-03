@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "owner-campaign-post-layout-20261103",
+  "status": "ready",
+  "summary": "Owner-approved compact thumbnail Campaigns/History list; verified source queued for combined release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/campaigns/campaign-post-content.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/campaign-ui.module.css",
+    "tests/owner-campaign-post-layout.browser.test.mjs",
+    "tests/campaign-completion.browser.test.mjs",
+    "docs/owner-campaign-thumbnail-list-20261103.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\owner-campaign-thumbnail-list\\approved-source",
+    "baselineCommit": "a636c1b"
+  },
+  "dependencies": [
+    "campaign-completion-20261103"
+  ],
+  "validation": [
+    {
+      "name": "Thumbnail list and existing Campaign browser suites",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-thumbnail-list/browser.log"
+    },
+    {
+      "name": "Source TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-thumbnail-list/typecheck.log"
+    },
+    {
+      "name": "Changed source ESLint",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-thumbnail-list/lint.log"
+    },
+    {
+      "name": "Owner authorization to implement thumbnail list and consolidate deploy queue",
+      "result": "passed",
+      "evidence": "User instruction in this chat on 2026-11-03"
+    },
+    {
+      "name": "Production build, full TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-thumbnail-list/build-approved.log"
+    }
+  ],
+  "notes": "Approved implementation; no deployment. Integrate after campaign-completion-20261103. This thumbnail list replaces the unapproved full-photo proposal.",
+  "id": "1e4af305-6b20-491d-9742-d896a884427d",
+  "recordedAt": "2026-11-03T14:39:52.109Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-completion-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/campaigns/campaign-post-content.tsx": "dd68015f76f3466514af2b1287e047b83ef4d2c8ba74b63949c8c501d413dabe",
+    "app/campaigns/campaign-workspace.tsx": "ee7b6f727363a22ebb96582d313e87fdd6e09d56fb0ccc17a3350873264880ea",
+    "app/campaigns/campaign-ui.module.css": "8c30de210f1ce5f494e1b9f792a11d1f5bbc73cd975727cd96b1d902f638deb5",
+    "tests/owner-campaign-post-layout.browser.test.mjs": "a26f2932d20c7b04f7e2ec2544987784d1669bf6d6309818e3471ba0a40de4f4",
+    "tests/campaign-completion.browser.test.mjs": "a65c1519560b023367021ce81b7a32fc8f0e8b04784a138b5c26d4a6f00da4da",
+    "docs/owner-campaign-thumbnail-list-20261103.txt": "3c8adbdf5ef720b4986375cbdf775e4fb54d66ad63c2c0ac68d148d135fee82f"
+  }
+}

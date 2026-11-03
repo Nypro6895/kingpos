@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "visit-feedback-final-20261103",
+  "status": "needs-integration",
+  "summary": "Implemented approved compact History links and one-shot feedback/reply; only the customer confirms resolution; frozen source validated locally",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/activity/receipts/[ticketId]/experience/page.tsx",
+    "app/activity/actions.ts",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "app/activity/experience-actions.ts",
+    "app/activity/history-details-drawer.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/activity/visit-experience-prompt.tsx",
+    "app/activity/visit-feedback.module.css",
+    "app/activity/visit-reply-controls.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-route-inventory.generated.json",
+    "lib/customer-activity.ts",
+    "scripts/generate-app-local-routes.mjs",
+    "supabase/migrations/20261103061000_visit_feedback_final.sql",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/visit-feedback-final.browser.test.mjs",
+    "tests/visit-feedback-final.integration.test.mjs",
+    "types/customer-review.ts"
+  ],
+  "dependencies": [
+    "review-experience-flow-20261029"
+  ],
+  "source": {
+    "snapshot": "artifacts/visit-feedback-final/frozen",
+    "commit": "8a1bb51b0dcde5f1549d9873a66787adff9a17b6"
+  },
+  "validation": [
+    {
+      "name": "Production Next build and source TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/visit-feedback-final/validation.json"
+    },
+    {
+      "name": "Database and real-component/History focused checks: 16/16",
+      "result": "passed",
+      "evidence": "artifacts/visit-feedback-final/browser/results.json"
+    },
+    {
+      "name": "Scoped ESLint, patch reversal check and frozen hashes",
+      "result": "passed",
+      "evidence": "artifacts/visit-feedback-final/source-manifest.json"
+    },
+    {
+      "name": "Current-production baseline integration, authenticated notification QA, native rebuild/device acceptance",
+      "result": "pending",
+      "evidence": "artifacts/visit-feedback-final/HANDOFF.md"
+    }
+  ],
+  "id": "814f0b17-ebac-4c1d-b2fc-64aea1c7885b",
+  "recordedAt": "2026-11-03T06:12:25.666Z",
+  "worktree": "C:\\Reylumi-worktrees\\visit-feedback-final-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

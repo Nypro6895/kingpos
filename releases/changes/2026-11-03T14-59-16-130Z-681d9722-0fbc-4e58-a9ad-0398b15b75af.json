@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "campaign-combined-native-adapters-20261103",
+  "status": "ready",
+  "summary": "Pin owner Campaign read-only actions alongside existing actions for the rebuilt installed app; retain shipped native command identities",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-command-trace-names.generated.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3"
+  },
+  "validation": [
+    {
+      "name": "Pinned production build, TypeScript and 510 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/build-pinned.log"
+    },
+    {
+      "name": "40 real component, routing, SQL and workflow checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/integration-final.log"
+    },
+    {
+      "name": "101 Campaign regression checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/campaign-regression.log"
+    },
+    {
+      "name": "Native client Safari16 compile: 937 modules, 341 pinned actions, zero unsupported",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-compile-final.log"
+    },
+    {
+      "name": "All live baseline files retained with only declared scoped modifications",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/preservation.json"
+    }
+  ],
+  "dependencies": [
+    "contextual-booking-checkin-20261103",
+    "payroll-shop-dividers-followup-20261103",
+    "visit-feedback-final-20261103",
+    "beauty-public-unification-20261103",
+    "campaign-completion-20261103",
+    "owner-campaign-post-layout-20261103"
+  ],
+  "id": "681d9722-0fbc-4e58-a9ad-0398b15b75af",
+  "recordedAt": "2026-11-03T14:59:16.130Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-command-policy.json": "a1e0ce8a7d3cde8ff1e46e886f1f37e3665a17a23c062cb027fc7c33fe03c868",
+    "lib/app-local-commands-server.generated.ts": "a0f26d9aafb852b6481d7f808cd2e8f81573b3f5c69a66849054c0949c84a7f4",
+    "lib/app-local-command-trace-names.generated.json": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154"
+  }
+}

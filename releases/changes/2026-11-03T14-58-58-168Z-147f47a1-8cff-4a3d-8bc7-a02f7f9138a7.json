@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "owner-campaign-post-layout-20261103",
+  "status": "ready",
+  "summary": "Integrated and validated on exact current live source: Owner-approved thumbnail Campaigns list implemented and validated; consolidated 115-item deploy queue with isolated source bundles, hashes and explicit integration holds",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/campaign-post-content.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/campaign-ui.module.css",
+    "tests/owner-campaign-post-layout.browser.test.mjs",
+    "tests/campaign-completion.browser.test.mjs",
+    "docs/owner-campaign-thumbnail-list-20261103.txt",
+    "scripts/audit-combined-deploy-queue-20261103.mjs",
+    "docs/combined-deploy-queue-20261103.txt",
+    "releases/queues/20261103-campaign-combined.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "originalEventId": "f7a5d2c5-c1f1-4bec-838d-ff7e7e9bc27a"
+  },
+  "validation": [
+    {
+      "name": "Pinned production build, TypeScript and 510 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/build-pinned.log"
+    },
+    {
+      "name": "40 real component, routing, SQL and workflow checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/integration-final.log"
+    },
+    {
+      "name": "101 Campaign regression checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/campaign-regression.log"
+    },
+    {
+      "name": "Native client Safari16 compile: 937 modules, 341 pinned actions, zero unsupported",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-compile-final.log"
+    },
+    {
+      "name": "All live baseline files retained with only declared scoped modifications",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/preservation.json"
+    }
+  ],
+  "dependencies": [
+    "campaign-completion-20261103"
+  ],
+  "supersedesEvents": [
+    "f7a5d2c5-c1f1-4bec-838d-ff7e7e9bc27a"
+  ],
+  "notes": "Native compile is source validation only. Archive/upload/Apple availability and physical-device acceptance are separate receipt fields. Production migration and source evidence are preserved under artifacts/deploy-20261103",
+  "id": "147f47a1-8cff-4a3d-8bc7-a02f7f9138a7",
+  "recordedAt": "2026-11-03T14:58:58.168Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/campaigns/campaign-post-content.tsx": "dd68015f76f3466514af2b1287e047b83ef4d2c8ba74b63949c8c501d413dabe",
+    "app/campaigns/campaign-workspace.tsx": "864274f73fdbf394526ff780f234ad56f1d2320ebd6ae16d8c1d618b803057cf",
+    "app/campaigns/campaign-ui.module.css": "25cedebfa7f8552e6b1485d5e8c103029fc92ff1f3b50c0c83fd3704bf393fdb",
+    "tests/owner-campaign-post-layout.browser.test.mjs": "6187619c13db036c2695c4ab764ed554c3bca9ee695bbc6e04945b552e6556ac",
+    "tests/campaign-completion.browser.test.mjs": "865da0b80d38a5c5db7e2294ab935ea67d33ba26c1a39e1e0dc53f6ae7b34296",
+    "docs/owner-campaign-thumbnail-list-20261103.txt": "3c8adbdf5ef720b4986375cbdf775e4fb54d66ad63c2c0ac68d148d135fee82f",
+    "scripts/audit-combined-deploy-queue-20261103.mjs": "c8ec6eec330120d31dba913ad8daf97d947b0ae93a79738a95ed60ef25270d26",
+    "docs/combined-deploy-queue-20261103.txt": "b6fdf472995b71af478f932dce8b3a73fd512b8500326cfa4704bfff1d57bdb7",
+    "releases/queues/20261103-campaign-combined.json": "04085295b6720047c6aa7a7e9366008caa2794a6a0c56bfaac47447ffed33c7b"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "payroll-shop-dividers-followup-20261103",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/payroll/shop-money.module.css"
+  ],
+  "dependencies": [
+    "payroll-today-dividers-20261102"
+  ],
+  "status": "needs-integration",
+  "summary": "Fix omitted Payroll Shop groups: use horizontal dividers instead of shadows; shared money groups included",
+  "source": {
+    "snapshot": "artifacts/payroll-shop-dividers-20261103/frozen"
+  },
+  "validation": [
+    {
+      "name": "PostCSS syntax parse",
+      "result": "passed"
+    },
+    {
+      "name": "Authenticated browser/iPhone visual review",
+      "result": "pending"
+    }
+  ],
+  "id": "732b10ec-6111-4e3b-8c61-c4d552ab8cfa",
+  "recordedAt": "2026-11-03T06:10:43.408Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-today-dividers-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "beauty-public-unification-20261103",
+  "status": "needs-integration",
+  "summary": "Compact shared Beauty identity and public layouts; remove fake booking slots/private-looking shortcuts; fix signup versus session-recovery prompts across related surfaces",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/beauty-profile-header.tsx",
+    "components/auth-intent-prompt.tsx",
+    "components/explore-account-actions.tsx",
+    "app/saved-post/save-post-button.tsx",
+    "app/explore/beauty/beauty-follow-button.tsx",
+    "app/(app)/explore/beauty/[profileId]/page.tsx",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/explore/explore-feed.tsx",
+    "app/explore/explore-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "lib/beauty-relationship.ts",
+    "tests/beauty-public-unification.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/beauty-public-unification-20261103/artifacts/beauty-public-unification/frozen"
+  },
+  "validation": [
+    {
+      "name": "core logic/render/contracts/Share tests",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/tests-core.log: 56 passed"
+    },
+    {
+      "name": "Chrome shared post mutations",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/tests-chrome.log: 7 passed"
+    },
+    {
+      "name": "source-only TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/typescript.log"
+    },
+    {
+      "name": "Next selected actual route compile",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/next-selected-compile.log"
+    },
+    {
+      "name": "responsive fixture layout",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/visual-results.json: 10 checks"
+    },
+    {
+      "name": "scoped patch content verification",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/patch-validation.json"
+    },
+    {
+      "name": "full app production compile",
+      "result": "failed",
+      "evidence": "artifacts/beauty-public-unification/next-full-compile.log: pre-existing images/normalize runtime configuration incompatible with cacheComponents"
+    },
+    {
+      "name": "WebKit and authenticated physical iPhone",
+      "result": "pending",
+      "evidence": "WebKit is not installed; physical/live session acceptance not performed"
+    }
+  ],
+  "dependencies": [],
+  "id": "a2ba0379-9067-47d3-80c5-7772c11e734a",
+  "recordedAt": "2026-11-03T06:13:53.973Z",
+  "worktree": "C:\\Reylumi-worktrees\\beauty-public-unification-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

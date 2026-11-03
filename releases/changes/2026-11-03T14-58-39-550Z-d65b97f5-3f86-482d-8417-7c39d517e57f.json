@@ -1,0 +1,84 @@
+{
+  "kind": "change",
+  "changeId": "beauty-public-unification-20261103",
+  "status": "ready",
+  "summary": "Integrated and validated on exact current live source: Compact shared Beauty identity and public layouts; remove fake booking slots/private-looking shortcuts; fix signup versus session-recovery prompts across related surfaces",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/beauty-profile-header.tsx",
+    "components/auth-intent-prompt.tsx",
+    "components/explore-account-actions.tsx",
+    "app/saved-post/save-post-button.tsx",
+    "app/explore/beauty/beauty-follow-button.tsx",
+    "app/(app)/explore/beauty/[profileId]/page.tsx",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/explore/explore-feed.tsx",
+    "app/explore/explore-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "lib/beauty-relationship.ts",
+    "tests/beauty-public-unification.test.mjs",
+    "app/explore/beauty/beauty-profile-read-view.tsx",
+    "app/explore/beauty/beauty-post-read-view.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-integrated",
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "baselineDeploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "originalEventId": "a2ba0379-9067-47d3-80c5-7772c11e734a"
+  },
+  "validation": [
+    {
+      "name": "Pinned production build, TypeScript and 510 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/build-pinned.log"
+    },
+    {
+      "name": "40 real component, routing, SQL and workflow checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/integration-final.log"
+    },
+    {
+      "name": "101 Campaign regression checks",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/campaign-regression.log"
+    },
+    {
+      "name": "Native client Safari16 compile: 937 modules, 341 pinned actions, zero unsupported",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-compile-final.log"
+    },
+    {
+      "name": "All live baseline files retained with only declared scoped modifications",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/preservation.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "notes": "Native compile is source validation only. Archive/upload/Apple availability and physical-device acceptance are separate receipt fields. Production migration and source evidence are preserved under artifacts/deploy-20261103",
+  "id": "d65b97f5-3f86-482d-8417-7c39d517e57f",
+  "recordedAt": "2026-11-03T14:58:39.550Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "fileHashes": {
+    "components/beauty-profile-header.tsx": "26cf6145e15e70bf0917a57f951cc78e2e7ed78c33de9603a74db955f92fe5c4",
+    "components/auth-intent-prompt.tsx": "a8bfb1f76886df77ce298e1a5966d5b50573a04b7ffeda6115be2ef75d8726c2",
+    "components/explore-account-actions.tsx": "63afc194cb921763313d9c8e34383aa1b1777c70d09bfcc9cb009c655eddfc9c",
+    "app/saved-post/save-post-button.tsx": "16c40b46b55da7ff8d6c5bc127cd702f18f26df7eeb48a4d206c7e1b90d84f4d",
+    "app/explore/beauty/beauty-follow-button.tsx": "f62853b200304713a4d28b0cb2d3ba379f100e4f16f47975d4fb651e16826382",
+    "app/(app)/explore/beauty/[profileId]/page.tsx": "eed2476099581de169e910a2d2654d739eb5bbcbc965df6b1e779545f8d4ad6f",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx": "b5871fa05513f8cac2ed5fe431cb476ccf3c2b2a30b1240ede6fb6d0b2585ab1",
+    "app/beauty/beauty-profile-client.tsx": "9c1d9a6ae647de05ba06a806b46033179e2cc65da0b089b76e5c573748a37fb0",
+    "app/explore/explore-feed.tsx": "fa2e33d7c4bf5fe4007bc90499390135c6aff8cff9fe235629c32ff1b2f182e1",
+    "app/explore/explore-client.tsx": "866b4a53432b39c7dd360692b2010d9557a0577f8f524d87e8d18ef270bdd823",
+    "app/salon-profile/salon-profile-view.tsx": "b91a459f3b5f4bafa6696021b95180d3844af6629e0312141ec98ced9ed763ee",
+    "lib/beauty-relationship.ts": "09221b756b1274e34ada5589cf2d67db1c9d8f447740520b7e8f1732ea3c7999",
+    "tests/beauty-public-unification.test.mjs": "7050bccd69825fafdc58bcc47f96285fe974fcb9565b4cc3c5673106baae8c8d",
+    "app/explore/beauty/beauty-profile-read-view.tsx": "92d8adc4aa5f8e6a091991f023853aa3a1029b64f6edb6acdb62bc1a21b56f8e",
+    "app/explore/beauty/beauty-post-read-view.tsx": "749e541be47bfa6bf989e68c433c858ac33a603e9720b0d9a293673e877cec42"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "file": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103-combined-release.zip",
+  "bytes": 49146905,
+  "sha256": "a50bbd41a90557d68974da3931923799cd224b08094da588462e632f29341c20",
+  "roundTrip": {
+    "zipEntries": 156,
+    "verified": true,
+    "files": 130
+  },
+  "previousPendingSourceArchive": {
+    "sha256": "f9b03d354fca2186cd9bad9eba4c360852e3e32dc4d8c78739940f90460cd8da",
+    "includedAs": "all-pending-source-capture.zip"
+  },
+  "webReceipt": "cba133b2-2dc6-48ca-86b7-5064e3bad926",
+  "nativeReceipt": "3febf494-b14f-4b8c-8d5f-8a4b94d47bec",
+  "containsPrivateEnvironmentFiles": false
+}

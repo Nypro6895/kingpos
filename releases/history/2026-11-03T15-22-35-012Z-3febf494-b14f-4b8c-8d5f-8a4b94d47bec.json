@@ -1,0 +1,47 @@
+{
+  "kind": "release",
+  "summary": "Pinned-source iOS update for Campaign thumbnails/reporting, contextual appointment check-in, final visit feedback and unified Beauty views; verified tests, archives, accepted upload, Apple VALID and existing internal TestFlight availability",
+  "changes": [
+    "df85ec81-12de-44d6-8396-957b0f058302",
+    "97f16811-9263-45d5-9fef-30f9b7108157",
+    "d65b97f5-3f86-482d-8417-7c39d517e57f",
+    "4acaf7d5-3808-4e76-bcdf-55f072fa2b54",
+    "147f47a1-8cff-4a3d-8bc7-a02f7f9138a7",
+    "64ead3a5-c13a-48ce-a967-cede9f77b67c"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "88",
+      "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+      "evidence": {
+        "sourceTestsArchives": "artifacts/deploy-20261103/native-verified.json",
+        "availability": "artifacts/deploy-20261103/availability-verified.json",
+        "artifactDigest": "artifacts/deploy-20261103/native-artifacts-second.json",
+        "workflowRun": 41659326311
+      }
+    }
+  },
+  "nativeBaseline": {
+    "version": "1.0.0",
+    "build": "87",
+    "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d"
+  },
+  "sourceSha256": "a90cbf83c97e29a363194912f7f802b4b222f9027efef2c661c0b2e3e37fda60",
+  "bundleSha256": "2de4469a9014ae91005a03a74ca4614db6fcc4876bb4af4d1c497a63b37ae9c8",
+  "testCount": 246,
+  "limitations": [
+    "TestFlight availability is not App Store publication.",
+    "Physical iPhone installation, provider delivery, live transactions and hardware printing not exercised.",
+    "Blocked independent Market, Membership provider/billing integration, Universal Links signing and Check Writer sales gates remain unchanged."
+  ],
+  "rollback": {
+    "previousNativeBuild": "87",
+    "note": "Previous binary retained; no tester/group invitations or distribution configuration changed."
+  },
+  "id": "3febf494-b14f-4b8c-8d5f-8a4b94d47bec",
+  "recordedAt": "2026-11-03T15:22:35.012Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103"
+}

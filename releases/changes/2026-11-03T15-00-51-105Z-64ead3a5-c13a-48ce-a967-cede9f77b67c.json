@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "campaign-combined-native-adapters-20261103",
+  "status": "ready",
+  "summary": "Installed-app adapters plus explicit authenticated HTTPS route for the new visit feedback form; activated bundle has complete coverage",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "lib/app-local-online-routes.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103\\artifacts\\deploy-20261103\\frozen-native-adapters",
+    "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023"
+  },
+  "validation": [
+    {
+      "name": "Activated production bundle generation, 99 route patterns, zero missing routes, pinned mappings",
+      "result": "passed",
+      "evidence": "artifacts/deploy-20261103/native-prepare-final.log"
+    }
+  ],
+  "dependencies": [
+    "contextual-booking-checkin-20261103",
+    "payroll-shop-dividers-followup-20261103",
+    "visit-feedback-final-20261103",
+    "beauty-public-unification-20261103",
+    "campaign-completion-20261103",
+    "owner-campaign-post-layout-20261103"
+  ],
+  "supersedesEvents": [
+    "681d9722-0fbc-4e58-a9ad-0398b15b75af"
+  ],
+  "notes": "Previous adapter event remains the exact web candidate source. Native archive/upload and Apple availability require a separate verified receipt.",
+  "id": "64ead3a5-c13a-48ce-a967-cede9f77b67c",
+  "recordedAt": "2026-11-03T15:00:51.105Z",
+  "worktree": "C:\\Reylumi-worktrees\\campaign-combined-deploy-20261103",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/app-local-command-policy.json": "a1e0ce8a7d3cde8ff1e46e886f1f37e3665a17a23c062cb027fc7c33fe03c868",
+    "lib/app-local-commands-server.generated.ts": "a0f26d9aafb852b6481d7f808cd2e8f81573b3f5c69a66849054c0949c84a7f4",
+    "lib/app-local-command-trace-names.generated.json": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154",
+    "lib/app-local-online-routes.json": "53ac3c48a84b986c6b687719b7ff30e04500b95678187935d9f0f939458509b1"
+  }
+}
