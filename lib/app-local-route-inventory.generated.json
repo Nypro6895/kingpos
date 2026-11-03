@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageCount": 150,
+  "pageCount": 153,
   "layoutCount": 17,
   "routes": [
     {
@@ -1030,6 +1030,40 @@
       "authority": "server-validated-context-and-resource-ownership"
     },
     {
+      "route": "/admin/membership",
+      "source": "app/(app)/admin/membership/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Fresh online Membership authority, no offline settings, allocations or billing.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/membership/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
       "route": "/admin/notifications",
       "source": "app/(app)/admin/notifications/page.tsx",
       "layouts": [
@@ -1501,6 +1535,40 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(app)/admin/settings/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/admin/settings/membership",
+      "source": "app/(app)/admin/settings/membership/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "admin"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Fresh online Membership authority, no offline settings, allocations or billing.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/admin/settings/membership/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
@@ -3764,6 +3832,42 @@
       "ui": {
         "availability": "local-module-registration",
         "source": "app/(legal)/market/payment-return/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/membership",
+      "source": "app/(legal)/membership/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "guest",
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Fresh online Membership authority, no offline settings, allocations or billing.",
+      "clientModules": [],
+      "propsLoaders": [],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(legal)/membership/page.tsx",
         "bundledContent": false,
         "rendererReady": false,
         "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
