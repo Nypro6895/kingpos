@@ -45,6 +45,7 @@ export default function Forum({ initialContext, initialTopics }: { initialContex
   const [reply, setReply] = useState("");
   const [message, setMessage] = useState("");
   const request = useRef(0);
+  const navigation = useRef(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const composeDialog = useRef<HTMLDialogElement>(null);
   const firstLoad = useRef(true);
@@ -55,6 +56,7 @@ export default function Forum({ initialContext, initialTopics }: { initialContex
   const sectionName = (id: string) => context.sections.find(x => x.id === id)?.name ?? "Section";
 
   function navigate(next: View, id = "") {
+    navigation.current++;
     request.current++;
     setView(next); setTopicId(id); setError(""); setNotice(""); setLoading(false);
     if (next === "topic") setDetail(null);
@@ -67,6 +69,7 @@ export default function Forum({ initialContext, initialTopics }: { initialContex
 
   useEffect(() => {
     function restore() {
+      navigation.current++;
       const p = new URLSearchParams(window.location.search), id = p.get("topic"), v = p.get("view");
       if (id && /^[0-9a-f-]{36}$/i.test(id)) { setTopicId(id); setView("topic"); }
       else if (["sections", "chat", "saved", "mine", "write", "manage"].includes(v ?? "")) setView(v as View);
@@ -110,7 +113,7 @@ export default function Forum({ initialContext, initialTopics }: { initialContex
     if (mode === "sections") mode = "context";
     if (view === "manage" && panel === "sections") { void refreshContext().catch(e => setError(e.message)); return; }
     setLoading(true); setError("");
-    void readForum({ mode, id: topicId, q: search, state, section, unanswered }).then(response => {
+    void readForum({ mode, id: topicId, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered }).then(response => {
       if (canceled || seq !== request.current) return;
       if (response.error) { setError(response.error); return; }
       if (view === "topic") { const d = response.data as Detail; setReplyMore(d.replies.length > 30); setDetail({ ...d, replies: d.replies.slice(0, 30) }); }
@@ -179,7 +182,7 @@ export default function Forum({ initialContext, initialTopics }: { initialContex
     if (busy || loading) return;
     const last = topics.at(-1); if (!last) return;
     setLoading(true); const seq = request.current;
-    try { const r = await readForum({ mode: view === "manage" ? "removed" : view, q: search, state, section, unanswered, before: last.created_at, cursor_id: last.id, before_pinned: last.pinned }); if (seq !== request.current) return; if (r.error) setError(r.error); else { const rows = r.data as ForumTopic[]; setTopics(old => [...old, ...rows.slice(0, 20)]); setTopicsMore(rows.length > 20); } }
+    try { const r = await readForum({ mode: view === "manage" ? "removed" : view, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered, before: last.created_at, cursor_id: last.id, before_pinned: last.pinned }); if (seq !== request.current) return; if (r.error) setError(r.error); else { const rows = r.data as ForumTopic[]; setTopics(old => [...old, ...rows.slice(0, 20)]); setTopicsMore(rows.length > 20); } }
     finally { if (seq === request.current) setLoading(false); }
   }
   async function olderChat() {
@@ -197,9 +200,10 @@ export default function Forum({ initialContext, initialTopics }: { initialContex
 
   async function submitPost(e: FormEvent) {
     e.preventDefault();
+    const started = navigation.current;
     const result = await mutate({ op: editingTopic ? "edit_topic" : "topic", id: editingTopic ?? "", ...draft }, editingTopic ? "Topic updated." : "Topic published.");
     const id = editingTopic ?? result?.id;
-    if (result && id) { setDraft({ title: "", body: "", section: activeSections[0]?.id ?? "", state: "" }); setEditingTopic(null); navigate("topic", id); }
+    if (result && id) { setDraft({ title: "", body: "", section: activeSections[0]?.id ?? "", state: "" }); setEditingTopic(null); if (navigation.current === started) navigate("topic", id); }
   }
 
   return <section className={s.forum} aria-label="Owner forum">
