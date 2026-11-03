@@ -1,0 +1,44 @@
+✔ inherited self-consistent bundle cannot pass without an actual source-bound preparation (244.7849ms)
+✔ stale inherited assets are removed before a rebuilt bundle receives provenance (484.234ms)
+✔ cleanup refuses a linked generated directory and preserves its target bytes (211.4226ms)
+✔ prepare runs the builder with activation only and verifies the exact emitted bytes and mappings (749.4025ms)
+✔ changed tracked source or a new untracked source blocks packaging even while old bundle integrity passes (566.3388ms)
+✔ a different Git commit requires new preparation even when source bytes are unchanged (597.2901ms)
+✔ changing generated mappings is rejected despite their exclusion from recursive source inputs (562.8823ms)
+✔ self-consistent replacement bundle and unexpected extra resource cannot reuse a prepared receipt (1134.4926ms)
+✔ archive/export copy must match receipt and checkout bundle exactly (645.2358ms)
+✔ failed, unconfigured or inactive rebuild deletes prior receipt instead of silently retaining it (1677.5019ms)
+✔ source mutation during generation fails closed without writing a receipt (343.7455ms)
+✔ generated Xcode projects and journals do not become recursive source inputs (564.5805ms)
+✔ archive and IPA upload gates are placed before signing side effects and before upload (0.5041ms)
+✔ fresh admitted online proof supplies only the already verified foreground staff identity (1.4204ms)
+✔ offline, expired, denied and crossed account/salon/scope proofs cannot replace identity resolution (0.2866ms)
+✔ missing and JSON-null prior money are retained evidence, while explicit zero proves a distinct prior amount (15.5321ms)
+✔ work date is context and context-only rewrites do not create an income edit (0.966ms)
+✔ Daily Report captured not-entered is a known domain state; a missing field remains unknown (2.3318ms)
+✔ known draft and creation never acquire an Edited state, including non-ticket initialization (0.328ms)
+✔ real captured legacy edits remain valid and no current net-pay snapshots are inferred (0.8831ms)
+✔ check clearing/restoring and period notes are metadata; missing prior metadata remains unknown (1.1691ms)
+✔ a bonus edit with check metadata remains one income event and a separate neutral metadata projection (0.5793ms)
+✔ a confirmed field plus an unknown later amount keeps the known earlier amount without a false arrow (1.409ms)
+✔ ticket service names, allocation, split, note and status stay legitimate edits without changing money (1.4661ms)
+✔ own projection selectors never borrow another staff member or parent financial facts (0.555ms)
+✔ attaches edits by stable original object and business day, never edit timestamp (15.4047ms)
+✔ creation, draft and semantic no-op never acquire an edited row (1.1152ms)
+✔ missing legacy classification remains visible but duplicate event projections count once (0.4527ms)
+✔ staff/day selector extracts only captured own projection and retains both sides of reassignment (0.5832ms)
+✔ period inputs use original range; kinds keep bonus/settings/ticket explanations on their object (0.1514ms)
+✔ default zero bonus initialization is silent and explicit zero after a real value is retained (0.3188ms)
+✔ payment evidence keeps actual amounts and paid date separate from paid flags without rendering IDs (20.6187ms)
+✔ historical paid flags do not synthesize payments and overlapping period evidence deduplicates original receipts (0.7191ms)
+✔ Staff evidence panel compares current calculated pay with original actual payments without exposing any payment editor (5.9772ms)
+✔ reward signup → email-confirmation login → verified-phone completion retains exact salon/book destination (106.2606ms)
+✔ public reward area uses explicit city/state or ZIP without protected-row reads (1.7008ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7847.9865

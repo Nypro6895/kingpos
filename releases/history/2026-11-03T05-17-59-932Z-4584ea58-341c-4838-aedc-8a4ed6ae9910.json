@@ -1,0 +1,58 @@
+{
+  "kind": "release",
+  "summary": "Web publication of11validated pending product groups on exact current production baseline; iOS pinned-source CI is still running and is not marked published",
+  "changes": [
+    "fc46b814-c964-44b3-a54e-12fbe20df748",
+    "d51fdcf5-3975-4538-a696-b48b034161c4",
+    "40736280-3cff-4309-876f-6d892607e4ac",
+    "f4762113-7b20-46f1-aecd-247dc4caa904",
+    "04a74df3-8e20-42ca-b73b-854cac9e62d7",
+    "e4ea950f-c710-49b3-9462-97877f0b9c6e",
+    "6fa1f854-9e61-4698-8afa-4ea3c77e2d75",
+    "6b0d37c1-466e-46f5-8a1f-a8f93f9ce693",
+    "90d9391c-864e-4494-ae69-159799434c5b",
+    "7375362f-73a1-4e4a-a16a-6f04550d4469",
+    "74f71ef3-df1a-4998-823f-9d7bb08076fc",
+    "75e80ac0-4778-4706-8096-f1e345a257a0"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+      "baselineDeploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe",
+      "sourceSha256": "c7552647e1dc73983cb19365f4eb1bda6b55a0da2675f03de3c995c1b87e787c",
+      "overlaySha256": "7ebcb686d027f13cb7e66234483b5210bb48179fd25097c9d5f579de866b262e",
+      "evidence": {
+        "source": "artifacts/combined-release-20261102/live-source-verified.json",
+        "http": "artifacts/combined-release-20261102/live-http.json",
+        "schema": "artifacts/combined-release-20261102/schema-live-check.json",
+        "authenticatedOwner": "artifacts/combined-release-20261102/authenticated-live.json",
+        "pendingAudit": "artifacts/combined-release-20261102/pending-audit.json"
+      }
+    }
+  },
+  "sourceCommit": "925eabfaa091b35dd73ca22ecc983d06f057105d",
+  "migrations": {
+    "migrations": [
+      "20261103010000_reward_wallet_recency.sql",
+      "20261103021000_post_comment_avatar_identity.sql",
+      "20261103022000_staff_ticket_portal.sql"
+    ],
+    "atomic": true,
+    "sha256": "334a5400742cbf81e700ebaeff66d138287e4fc4ec1829f6f3e6db471261233e"
+  },
+  "limitations": [
+    "Authenticated Staff browser/device acceptance was unavailable in the current Owner session; actual components and strict runtime/PostgreSQL boundaries were tested locally",
+    "Physical iPhone, provider delivery and printing not exercised",
+    "Separate developer Market, Universal Links provisioning and design-only membership remain outside validated runtime publication"
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe",
+    "previousNativeBuild": "86",
+    "note": "Additive database changes preserve old clients; do not remove audit data during rollback"
+  },
+  "id": "4584ea58-341c-4838-aedc-8a4ed6ae9910",
+  "recordedAt": "2026-11-03T05:17:59.932Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102"
+}

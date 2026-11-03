@@ -1,0 +1,9 @@
+{
+  "migrations": [
+    "20261103010000_reward_wallet_recency.sql",
+    "20261103021000_post_comment_avatar_identity.sql",
+    "20261103022000_staff_ticket_portal.sql"
+  ],
+  "atomic": true,
+  "sha256": "334a5400742cbf81e700ebaeff66d138287e4fc4ec1829f6f3e6db471261233e"
+}

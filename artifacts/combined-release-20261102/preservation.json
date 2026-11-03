@@ -1,0 +1,11 @@
+{
+  "baselineDeploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe",
+  "baselineFiles": 3803,
+  "byteIdenticalPreserved": 3677,
+  "unexpectedChanges": [],
+  "nativeBaseline": {
+    "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+    "version": "1.0.0",
+    "build": "86"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "kind": "change",
+  "changeId": "comment-role-avatars-20261102",
+  "status": "ready",
+  "summary": "Integrated and validated on exact production baseline: Fix all shared post comment/reply avatars by saved personal, staff or salon persona; source and local validation complete",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "types/post-comments.ts",
+    "lib/post-comments.ts",
+    "lib/explore-comment-identity.ts",
+    "app/post-comments/post-comment-thread.tsx",
+    "app/post-comments/comment-avatar.tsx",
+    "supabase/migrations/20261103021000_post_comment_avatar_identity.sql",
+    "tests/comment-avatar-identity.test.mjs",
+    "tests/explore-comment-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-web-ios-20261102\\artifacts\\combined-release-20261102\\frozen-integrated",
+    "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d"
+  },
+  "validation": [
+    {
+      "name": "Exact Vercel candidate full build/TypeScript, source3830hashes and17HTTP/authorization checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/candidate-source-verified.json; artifacts/combined-release-20261102/cloud-build.log; artifacts/combined-release-20261102/http-candidate.json"
+    },
+    {
+      "name": "80 focused integration tests plus36financial/native-preservation and17staff-read tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/final-integration-tests.log; artifacts/combined-release-20261102/preservation-tests.log; artifacts/combined-release-20261102/staff-read-preservation.log"
+    },
+    {
+      "name": "Responsive actual-component fixtures and main iPhone navigation; no added lint errors versus live baseline",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/glass-nav-browser.log; artifacts/combined-release-20261102/lint-baseline-comparison.json"
+    },
+    {
+      "name": "Activated99-route source-bound native bundle (Services pilot OFF);343reviewedcommands; no missing routes",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/native-prepare.log"
+    },
+    {
+      "name": "Production migrations3atomic and live read-only RPC privacy checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/migration-result.json; artifacts/combined-release-20261102/schema-live-check.json"
+    }
+  ],
+  "dependencies": [],
+  "integratedFromEvents": [
+    "b21016bb-0b60-4ba3-859f-9c6443bc31c4"
+  ],
+  "nativePublication": "Signed CI upload and Apple availability are verified separately from source readiness.",
+  "id": "04a74df3-8e20-42ca-b73b-854cac9e62d7",
+  "recordedAt": "2026-11-03T05:14:53.849Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "types/post-comments.ts": "3ce5613d262bef45e92e5ffd1cf34d16f391d00f654d7a8bedae6343ba568bb6",
+    "lib/post-comments.ts": "94ddb29752e9006bca0bab6cd0dd0d3e40731fac1099fcb20f1042decb9d5322",
+    "lib/explore-comment-identity.ts": "06d93da01a62892f61c2bb7316b3d19e8b9f70f415f4b068e57ca2028a4a1000",
+    "app/post-comments/post-comment-thread.tsx": "00bd8dfe45db48d437a91fd9253770bd34d01adce0f57c50400000eb5b2bbecb",
+    "app/post-comments/comment-avatar.tsx": "57bc259a22214fc9cddfab7530c391e5938993e4b6ba1c9531659566dda144f2",
+    "supabase/migrations/20261103021000_post_comment_avatar_identity.sql": "6e61e7a5f1da965bb611226617b111af9337505f89b78e55efcca4e88dab9f89",
+    "tests/comment-avatar-identity.test.mjs": "d67ee75f9d8cd9cc332cc67706f5d59b2133963b8127792e84946688b0264042",
+    "tests/explore-comment-runtime.test.mjs": "fea2972b7960f75a8da083090df5b0a9b2d3bc9d6818d79c0cc97772ede5fe82"
+  }
+}

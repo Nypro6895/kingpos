@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-03T05:09:34.517Z",
+  "checks": [
+    {
+      "name": "get_post_comment_identities",
+      "status": 200,
+      "readOnly": true,
+      "code": null,
+      "rows": 0
+    },
+    {
+      "name": "get_my_staff_tickets",
+      "status": 401,
+      "readOnly": true,
+      "code": "42501",
+      "rows": null
+    },
+    {
+      "name": "reward_personal",
+      "status": 401,
+      "readOnly": true,
+      "code": "42501",
+      "rows": null
+    }
+  ]
+}

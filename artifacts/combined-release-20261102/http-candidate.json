@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-03T05:14:11.955Z",
+  "applicationSession": false,
+  "infrastructureAccess": "Official authenticated Vercel curl via Node executable; no shell interpolation",
+  "records": [
+    {
+      "route": "/salon-profile",
+      "status": 200,
+      "bytes": 81480
+    },
+    {
+      "route": "/settings",
+      "status": 200,
+      "bytes": 83420
+    },
+    {
+      "route": "/salon-settings",
+      "status": 200,
+      "bytes": 79704
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "bytes": 65395
+    },
+    {
+      "route": "/staff/today",
+      "status": 200,
+      "bytes": 93322
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "bytes": 216494
+    },
+    {
+      "route": "/explore",
+      "status": 200,
+      "bytes": 223028
+    },
+    {
+      "route": "/staff/my-work?tab=payroll",
+      "status": 200,
+      "bytes": 79450
+    },
+    {
+      "route": "/staff/my-work?tab=tickets&ticketDate=2026-10-30",
+      "status": 200,
+      "bytes": 79594
+    },
+    {
+      "route": "/pos-tickets",
+      "status": 200,
+      "bytes": 79314
+    },
+    {
+      "route": "/payroll",
+      "status": 200,
+      "bytes": 81272
+    },
+    {
+      "route": "/reports",
+      "status": 200,
+      "bytes": 79625
+    },
+    {
+      "route": "/rewards",
+      "status": 200,
+      "bytes": 76333
+    },
+    {
+      "route": "/reward-system",
+      "status": 200,
+      "bytes": 76247
+    },
+    {
+      "route": "/api/experience/today",
+      "status": 401,
+      "bytes": 24
+    },
+    {
+      "route": "/api/pos/owner/reports",
+      "status": 401,
+      "bytes": 0
+    },
+    {
+      "route": "/api/experience/my-work?tab=tickets&ticketDate=2026-10-30",
+      "status": 401,
+      "bytes": 24
+    }
+  ]
+}

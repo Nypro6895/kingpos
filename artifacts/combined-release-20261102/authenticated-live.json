@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-03T05:17:52.247Z",
+  "role": "Owner",
+  "checks": [
+    "Settings loaded after new deployment",
+    "Salon public profile existing data visible",
+    "Salon information loaded",
+    "Opening hours has seven daily summaries",
+    "Monday expands with Opens/Closes and Open switch",
+    "Time zone remains America/Chicago"
+  ],
+  "actions": "Read-only navigation and disclosure expansion; no form values changed or submitted",
+  "staffAcceptance": "Current browser role is Owner; authenticated Staff My Pay/Tickets not available in this session",
+  "physicalDevice": false
+}

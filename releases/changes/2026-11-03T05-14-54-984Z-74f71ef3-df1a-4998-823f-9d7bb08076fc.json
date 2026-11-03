@@ -1,0 +1,93 @@
+{
+  "kind": "change",
+  "changeId": "staff-pay-tickets-20261102",
+  "status": "ready",
+  "summary": "Integrated and validated on exact production baseline: Implemented Services-first Staff My Pay, informational Tip payout tile, daily raw-services/tip totals without duplicate take-home; independent own-ticket date tab with scoped edit history. Full app build awaits unrelated baseline fix.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/experience/my-work/route.ts",
+    "app/staff/my-work/staff-my-work-client.tsx",
+    "app/staff/my-work/staff-my-work-view.tsx",
+    "app/staff/my-work/staff-pay-analysis.module.css",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/my-work/staff-tickets.module.css",
+    "app/staff/my-work/staff-tickets.tsx",
+    "lib/staff-my-work-experience.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "lib/staff-tickets.ts",
+    "supabase/migrations/20261103022000_staff_ticket_portal.sql",
+    "tests/staff-pay-analysis.test.mjs",
+    "tests/staff-pay-tickets-ui.test.mjs",
+    "tests/staff-tickets-security.test.mjs",
+    "tests/staff-tickets-resource.test.mjs",
+    "app/staff/my-work/staff-payroll-daily-rows.tsx",
+    "lib/app-local-role-resources.ts",
+    "lib/app-local-role-resources-server.ts",
+    "lib/app-local-page-registry.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-web-ios-20261102\\artifacts\\combined-release-20261102\\frozen-integrated",
+    "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d"
+  },
+  "validation": [
+    {
+      "name": "Exact Vercel candidate full build/TypeScript, source3830hashes and17HTTP/authorization checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/candidate-source-verified.json; artifacts/combined-release-20261102/cloud-build.log; artifacts/combined-release-20261102/http-candidate.json"
+    },
+    {
+      "name": "80 focused integration tests plus36financial/native-preservation and17staff-read tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/final-integration-tests.log; artifacts/combined-release-20261102/preservation-tests.log; artifacts/combined-release-20261102/staff-read-preservation.log"
+    },
+    {
+      "name": "Responsive actual-component fixtures and main iPhone navigation; no added lint errors versus live baseline",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/glass-nav-browser.log; artifacts/combined-release-20261102/lint-baseline-comparison.json"
+    },
+    {
+      "name": "Activated99-route source-bound native bundle (Services pilot OFF);343reviewedcommands; no missing routes",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/native-prepare.log"
+    },
+    {
+      "name": "Production migrations3atomic and live read-only RPC privacy checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/migration-result.json; artifacts/combined-release-20261102/schema-live-check.json"
+    }
+  ],
+  "dependencies": [],
+  "integratedFromEvents": [
+    "56b38c63-16c0-489b-9cdf-b81e9e7c7464"
+  ],
+  "nativePublication": "Signed CI upload and Apple availability are verified separately from source readiness.",
+  "id": "74f71ef3-df1a-4998-823f-9d7bb08076fc",
+  "recordedAt": "2026-11-03T05:14:54.984Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/experience/my-work/route.ts": "4b4f0123b542f4976b3cde1ce5efa89ce2e70736112743776dc66a486e3360d8",
+    "app/staff/my-work/staff-my-work-client.tsx": "ed22787bef2df52ee319f5367bdec66b880fc014be673205da8cb8487682271a",
+    "app/staff/my-work/staff-my-work-view.tsx": "57834a4a24ae7785753073421874f6389c2be062b972fc7b2bae9b733c4edb9d",
+    "app/staff/my-work/staff-pay-analysis.module.css": "81c007cac012b25a147f1fbdca24017850719caa2079cda7f5e8d3af45cfd72d",
+    "app/staff/my-work/staff-pay-analysis.tsx": "47e2719ea64ab75b1d4e6876d58b8ea24536cf956664889ce14ebc0b15b88a25",
+    "app/staff/my-work/staff-tickets.module.css": "d4462bf2545f198279f33893426a38cbcdf7e03a10d933aed8054d3046838fe7",
+    "app/staff/my-work/staff-tickets.tsx": "7e96fa7e1805c98b20eaf5533e14b86468247f480368d04eb0626b299489868c",
+    "lib/staff-my-work-experience.ts": "a0651f0fcd6703f82c00fc822904890a5a0200dd39b0b383a30564df1a528447",
+    "lib/staff-my-work-resource-server.ts": "549f4ef391bd2c4875c025897897c80a76c352aa004291ec7d0d9d4e1f4b7c53",
+    "lib/staff-tickets.ts": "c5baee19c018f5cc128edbab8b38b95aaf01bf5b9ae20f11d9b35e2db307926a",
+    "supabase/migrations/20261103022000_staff_ticket_portal.sql": "5c1837dbf5051ae51e57d589d3030429c966fe647255d440b209cf8d46b63b2d",
+    "tests/staff-pay-analysis.test.mjs": "42a833ff7c27c348e409cb061d4112fe0aa8ffd98799679314b41459b5764ee5",
+    "tests/staff-pay-tickets-ui.test.mjs": "592204bbfb0c5a520d34ea5e09a4edab6f028fc17135ca6a055bbb831f50ad37",
+    "tests/staff-tickets-security.test.mjs": "392f1ee65ac1a7535b145343056bb97e5209902424322508416cccf93059d4bc",
+    "tests/staff-tickets-resource.test.mjs": "24e04d8892abb174cd3a2d447b81dd10ec7367324985cb6b834f39001d307131",
+    "app/staff/my-work/staff-payroll-daily-rows.tsx": "3989b325756c012891baef4861cbdf3c2d85110b88c4aa4ccf38a09eb5f34246",
+    "lib/app-local-role-resources.ts": "122e9bfbf699757d9be5ff455d11d58b56905ee7725f4de9f164ff11b303bbac",
+    "lib/app-local-role-resources-server.ts": "704b2bcd23473f7fb6aeea3089de84ab30a824e58db0c4792f6046bdd37a38ef",
+    "lib/app-local-page-registry.tsx": "24749ae2189c28fcfe719bb197b2e64f5d1f394c981b26a0c62649209eafd536"
+  }
+}

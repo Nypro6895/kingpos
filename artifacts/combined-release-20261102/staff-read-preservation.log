@@ -1,0 +1,25 @@
+✔ action.efc196d40c1355cb97795327 shares transport and getter validation only for this request (16.908ms)
+✔ action.d14797e33bdffa7d9940f9f4 shares transport and getter validation only for this request (1.8032ms)
+✔ action.71559420db869529e30eabcb shares transport and getter validation only for this request (0.9524ms)
+✔ original route still denies wrong origin, changed scope and non-owner before data release (1.0453ms)
+✔ a save retains fresh transport and handler checks and is never replayed (0.674ms)
+✔ unlisted action and HTTP command never receive a read scope (0.1327ms)
+✔ concurrent requests never share authority and an explicit final probe stays fresh (0.2208ms)
+✔ attendance bootstrap and page share one original read only within this request (53.1985ms)
+✔ final revocation probe, explicit context and postwrite phase do not borrow attendance snapshot (14.9134ms)
+✔ calls outside an explicit read scope remain fresh (9.8961ms)
+✔ verified snapshot preserves the original ticket amounts without a serialized preliminary clock read (64.264ms)
+✔ midnight date comes from the same snapshot as the tickets (20.2134ms)
+✔ invalid snapshot identity/date never escapes as an empty or preliminary date (29.0189ms)
+✔ an unbranded identity cannot reach the snapshot or the clock (8.6777ms)
+✔ legacy anonymous and missing-Staff fallbacks retain their original business date (15.2671ms)
+✔ legacy readers still fail if their required business clock is unavailable (8.9699ms)
+✔ full Staff DTO still performs the fresh final revocation probe after data reads (15.3678ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 392.0357

@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-03T05:02:47.524Z",
+  "project": "bowkoiprvqwjilwaxhda",
+  "migrationCount": 3,
+  "staffTickets": "get_my_staff_tickets(uuid,date)",
+  "staffLedgerRLS": true,
+  "anonymousStaffRPC": false,
+  "anonymousAvatarRPC": true,
+  "executedSQLMatchesFrozenBatch": true
+}

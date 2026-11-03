@@ -1,0 +1,9 @@
+{
+  "baselineCommit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb",
+  "baselineBuild": "86",
+  "nativeSourceFiles": 74,
+  "unchangedNativeFiles": 74,
+  "changedNativeFiles": [],
+  "bundledWebRegenerated": true,
+  "existingTestInventoryRetained": true
+}

@@ -1,0 +1,18 @@
+Coordinated release 2026-11-02 America/Chicago
+
+Live web: https://reylumi.com
+Deployment: dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs
+Baseline: dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe
+Pinned code: 925eabfaa091b35dd73ca22ecc983d06f057105d
+
+Integrated product groups: Staff My Pay/Tickets; compact opening hours; saved-persona comment avatars; Reward experience; Beauty composer; iPhone glass navigation; general overlay lifecycle; salon preview dismissal; all-role shell repairs; reward/gift Owner shell; Personal More cleanup.
+
+Verification: 80 integration tests, 36 preservation tests, 17 staff read/identity tests; activated native bundle99routes; scoped lint has the same two pre-existing baseline errors, with no added errors. Fresh local and cloud production builds/TypeScript passed. Exact3830source hashes verified on candidate and live.17candidateHTTP/authorization checks,9live checks. Live Owner Settings/public profile/opening hours read-only QA passed. Staff authenticated/device QA unavailable in current Owner browser.
+
+Three migrations atomically applied and recorded: 20261103010000_reward_wallet_recency,20261103021000_post_comment_avatar_identity,20261103022000_staff_ticket_portal. Staff ledger remains private/RLS; anonymous Staff and wallet RPCs return401. Detailed new ticket edit capture begins at migration; old activities do not invent before/after values.
+
+Native: CI run41582011530 uses the exact pinned code; source baseline is uploaded TestFlight1.0.0(86). Archive/sign/upload/Apple/existing-group availability must be read from native-verified.json and availability-verified.json, not inferred from this note. No App Store publication or physical device acceptance is claimed.
+
+Pending inventory:119 original events,11integrated product groups. See pending-audit.json for every event. Historical overlapping patches preserve current shipped implementations and are not falsely marked newly published. Separate developer Market remains blocked on hosted/security/provider resources and commercial decisions. Check Writer code/readiness remain preserved but sales/provider/physical-print gates stay closed. Universal Links still lacks compatible Associated Domains provisioning and device acceptance. Membership artifact is design-only; other working/blocked tasks are retained unchanged.
+
+196 linked worktrees were inventoried; unrelated tracked/untracked/ignored source and running task locations were not reorganized or cleaned.

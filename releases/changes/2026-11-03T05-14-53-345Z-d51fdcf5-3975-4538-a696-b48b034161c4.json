@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "all-role-shell-20261102",
+  "status": "ready",
+  "summary": "Integrated and validated on exact production baseline: Complete 153-page shell audit; restore 10 missing page templates and correct Staff invitation role; preserve explicit dedicated layouts",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "app/navigation-shell.tsx",
+    "tests/navigation-shell-coverage.test.cjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-web-ios-20261102\\artifacts\\combined-release-20261102\\frozen-integrated",
+    "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d"
+  },
+  "validation": [
+    {
+      "name": "Exact Vercel candidate full build/TypeScript, source3830hashes and17HTTP/authorization checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/candidate-source-verified.json; artifacts/combined-release-20261102/cloud-build.log; artifacts/combined-release-20261102/http-candidate.json"
+    },
+    {
+      "name": "80 focused integration tests plus36financial/native-preservation and17staff-read tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/final-integration-tests.log; artifacts/combined-release-20261102/preservation-tests.log; artifacts/combined-release-20261102/staff-read-preservation.log"
+    },
+    {
+      "name": "Responsive actual-component fixtures and main iPhone navigation; no added lint errors versus live baseline",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/glass-nav-browser.log; artifacts/combined-release-20261102/lint-baseline-comparison.json"
+    },
+    {
+      "name": "Activated99-route source-bound native bundle (Services pilot OFF);343reviewedcommands; no missing routes",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/native-prepare.log"
+    },
+    {
+      "name": "Production migrations3atomic and live read-only RPC privacy checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/migration-result.json; artifacts/combined-release-20261102/schema-live-check.json"
+    }
+  ],
+  "dependencies": [
+    "reward-gift-shell-20261102"
+  ],
+  "integratedFromEvents": [
+    "c910d948-c0ea-4005-942f-b88cf3b47c67"
+  ],
+  "nativePublication": "Signed CI upload and Apple availability are verified separately from source readiness.",
+  "id": "d51fdcf5-3975-4538-a696-b48b034161c4",
+  "recordedAt": "2026-11-03T05:14:53.345Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "cfeb4ab63c806f373d25fb12f33527ce119f44544d1a32d167629089c0204c5f",
+    "app/navigation-shell.tsx": "6bbc841ae0efdec2938ea5ebe968ecc9256e05406f2c95e619e2d1a918a8b1c5",
+    "tests/navigation-shell-coverage.test.cjs": "df577fcbb77c8f8afc3578755392ce9167312de9505a8d105b3952bd23324c49"
+  }
+}

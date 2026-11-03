@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-03T05:16:00.089Z",
+  "applicationSession": false,
+  "records": [
+    {
+      "route": "/explore",
+      "status": 200,
+      "bytes": 222828
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "bytes": 65325
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "bytes": 216476
+    },
+    {
+      "route": "/settings",
+      "status": 200,
+      "bytes": 83403
+    },
+    {
+      "route": "/staff/my-work?tab=payroll",
+      "status": 200,
+      "bytes": 79431
+    },
+    {
+      "route": "/staff/my-work?tab=tickets&ticketDate=2026-10-30",
+      "status": 200,
+      "bytes": 79575
+    },
+    {
+      "route": "/reward-system",
+      "status": 200,
+      "bytes": 76230
+    },
+    {
+      "route": "/rewards",
+      "status": 200,
+      "bytes": 76316
+    },
+    {
+      "route": "/api/experience/my-work?tab=tickets&ticketDate=2026-10-30",
+      "status": 401,
+      "bytes": 24
+    }
+  ]
+}

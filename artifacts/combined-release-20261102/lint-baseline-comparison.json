@@ -1,0 +1,24 @@
+[
+  {
+    "file": "app/explore/explore-client.tsx",
+    "before": 1,
+    "after": 1,
+    "rulesBefore": [
+      "react-hooks/set-state-in-effect"
+    ],
+    "rulesAfter": [
+      "react-hooks/set-state-in-effect"
+    ]
+  },
+  {
+    "file": "app/pos/owner-pos-client.tsx",
+    "before": 1,
+    "after": 1,
+    "rulesBefore": [
+      "react-hooks/set-state-in-effect"
+    ],
+    "rulesAfter": [
+      "react-hooks/set-state-in-effect"
+    ]
+  }
+]

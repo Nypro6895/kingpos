@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "personal-more-cleanup-20261102",
+  "status": "ready",
+  "summary": "Integrated and validated on exact production baseline: Remove duplicate Personal Gift Cards, align menu order and remove redundant Back to More controls",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "app/(app)/more/page.tsx",
+    "app/(app)/more/[section]/page.tsx",
+    "components/app-local-more.tsx",
+    "components/app-local-social-views.tsx",
+    "lib/app-local-secondary-registry.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-web-ios-20261102\\artifacts\\combined-release-20261102\\frozen-integrated",
+    "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d"
+  },
+  "validation": [
+    {
+      "name": "Exact Vercel candidate full build/TypeScript, source3830hashes and17HTTP/authorization checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/candidate-source-verified.json; artifacts/combined-release-20261102/cloud-build.log; artifacts/combined-release-20261102/http-candidate.json"
+    },
+    {
+      "name": "80 focused integration tests plus36financial/native-preservation and17staff-read tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/final-integration-tests.log; artifacts/combined-release-20261102/preservation-tests.log; artifacts/combined-release-20261102/staff-read-preservation.log"
+    },
+    {
+      "name": "Responsive actual-component fixtures and main iPhone navigation; no added lint errors versus live baseline",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/glass-nav-browser.log; artifacts/combined-release-20261102/lint-baseline-comparison.json"
+    },
+    {
+      "name": "Activated99-route source-bound native bundle (Services pilot OFF);343reviewedcommands; no missing routes",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/native-prepare.log"
+    },
+    {
+      "name": "Production migrations3atomic and live read-only RPC privacy checks",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-20261102/migration-result.json; artifacts/combined-release-20261102/schema-live-check.json"
+    }
+  ],
+  "dependencies": [],
+  "integratedFromEvents": [
+    "23c6355f-9b2a-4b2b-a2c4-7ab3936e27fc"
+  ],
+  "nativePublication": "Signed CI upload and Apple availability are verified separately from source readiness.",
+  "id": "40736280-3cff-4309-876f-6d892607e4ac",
+  "recordedAt": "2026-11-03T05:14:53.513Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "cfeb4ab63c806f373d25fb12f33527ce119f44544d1a32d167629089c0204c5f",
+    "app/(app)/more/page.tsx": "04c056ff7d904c4d95d7c19e60ba1c238ec286454100123a7702f52ffbb06de2",
+    "app/(app)/more/[section]/page.tsx": "852444f20337e0e626619e46825ea8e6776a9f91486e4090572998c1a63587da",
+    "components/app-local-more.tsx": "7f307e0bf878ace0c67787587576b09c9c8aaaa2048bffd7af3bf84051954190",
+    "components/app-local-social-views.tsx": "6e778d41fb97587832a47190f0759d94f964048754547e289007130bdcd47402",
+    "lib/app-local-secondary-registry.tsx": "58151a9be8cf04af7c6c1984b3d3eb72cc49b16de821a1958afb58d2a6283446"
+  }
+}

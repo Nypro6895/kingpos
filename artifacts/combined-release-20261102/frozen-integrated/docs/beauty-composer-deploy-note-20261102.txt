@@ -1,0 +1,28 @@
+BEAUTY COMPOSER — CHỜ DEPLOY CHUNG
+Ngày: 2026-11-02 America/Chicago
+Chỉ dẫn chủ project: Mọi thay đổi trong task này đưa vào ghi chú chờ deploy chung.
+Không deploy riêng, không tự đặt lịch phát hành.
+
+Phạm vi:
+- Sửa nút đăng bài bị che: Post cố định ở đầu form; modal phủ trên thanh điều hướng.
+- Điều chỉnh theo visualViewport và safe area; thu gọn ảnh, nút thêm ảnh và trạng thái tải.
+- Cho tag tiệm ở cả bài thường và Before & After; chọn, bỏ tag hoặc tìm tiệm khác.
+- Gom gợi ý theo tiệm, ưu tiên tần suất trong tối đa 8 lịch sử ghé gần đây do server cung cấp; không tự tag.
+- Giữ nguyên backend xác minh/rewards và logic đăng bài.
+
+Nguồn cố định:
+Worktree: C:\Reylumi-worktrees\beauty-composer-20261102
+Change ID: beauty-composer-20261102
+Event hoàn thành local: 37cc7ae1-18a7-41db-a97e-c2e3f364ed09
+Snapshot gốc: artifacts/beauty-composer-20261102/frozen
+Delta riêng: artifacts/beauty-composer-20261102/composer-only.patch
+Before source: artifacts/beauty-composer-20261102/before/beauty-profile-client.tsx
+Evidence: artifacts/beauty-composer-20261102/handoff.md và browser-checks.json
+Preview: artifacts/beauty-composer-20261102/preview-iphone.png
+
+Kiểm tra đã đạt: ESLint; TypeScript trong phạm vi sửa; fixture JSX thật + modal thật trên Chromium ở 5 kích thước. Dữ liệu và action trong preview là mẫu.
+Còn chờ: tích hợp đúng baseline hiện hành, full build, tài khoản thật/search/upload/publish, iOS WebKit và bàn phím/safe area trên iPhone thật.
+Kênh: web; không đổi Swift hoặc bundled native source.
+Trạng thái: needs-integration, chưa deploy.
+
+Lưu ý ghép nguồn: client ban đầu đã có sửa từ công việc khác. Áp delta task vào baseline mới và thêm beauty-composer-dialog.tsx; không chép đè toàn bộ client frozen để tránh mang theo thay đổi ngoài phạm vi.
