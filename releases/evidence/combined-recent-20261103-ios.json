@@ -1,0 +1,141 @@
+{
+  "verified": true,
+  "nativeCommandMappingsMatchDeployedWeb": true,
+  "publicConfigurationMatchesBuild89": true,
+  "commit": "738a36013d1a6f0d7e75b5638bcf0608cd7f91b1",
+  "sourceSha256": "b11bd84e401b2f288f579a575b428c4f6025027236c70335c7227a845b190455",
+  "sourceFiles": 3230,
+  "bundleBuildId": "9549084c81e489a6728e4c7a32cd5aad20f9804e379ffc241223e80b9a91794b",
+  "bundleSha256": "86bddb4b6931d9d7342a9ddd9ac96d50a461376bbdeff7d3797403989dd12df2",
+  "servicesCatalogPilot": false,
+  "testCount": 246,
+  "exactTestInventory": true,
+  "version": "1.0.0",
+  "build": "90",
+  "upload": "accepted",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "unsignedSignedResourcesMatch": true,
+  "measurements": [
+    {
+      "coldReadyMs": 3086.6429583333,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 1,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 100,
+      "warmReadyMs": 29.777708333313058
+    },
+    {
+      "coldReadyMs": 5732.587541666703,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 1,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 700,
+      "warmReadyMs": 43.31675000003088
+    }
+  ],
+  "measurementScope": "Installed WKWebView on CI iPhone simulator; synthetic data; not physical network timing",
+  "evidenceFolder": "artifacts/combined-release/native-final",
+  "verificationScope": "Exact source, tests, archives, upload and Apple VALID",
+  "testflightAvailable": true,
+  "processingEvidence": "artifacts/combined-release/availability-final/testflight-availability.json",
+  "workflowRun": 41728835922,
+  "availability": {
+    "verified": true,
+    "sourceCommit": "738a36013d1a6f0d7e75b5638bcf0608cd7f91b1",
+    "workflowRun": 41731782863,
+    "checkedAt": "2026-11-03T22:33:26.551Z",
+    "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+    "appId": "6821394475",
+    "marketingVersion": "1.0.0",
+    "baselineMarketingVersion": "1.0.0",
+    "build": "90",
+    "buildId": "c6f281c6-1071-4501-bc17-be07a39deefd",
+    "baselineBuild": "89",
+    "baselineBuildId": "ca91f286-342e-4302-a3ee-4edc970fd6fc",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2027-02-01T14:31:36-08:00",
+    "internalBuildState": "IN_BETA_TESTING",
+    "availableToExistingInternalGroup": true,
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      },
+      {
+        "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+        "name": "Reylumi support",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      }
+    ],
+    "status": "available-to-existing-internal-group",
+    "limitations": [
+      "This confirms Apple group access, not installation or automatic update on a particular phone.",
+      "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+      "External TestFlight and App Store publication are separate."
+    ]
+  },
+  "artifact": [
+    {
+      "id": 13277845583,
+      "digest": "sha256:4fadddffb9c3404524cf89d103d8af60d47ceef5f7f88b755543b9ae6eb8b022"
+    }
+  ],
+  "baseline": {
+    "version": "1.0.0",
+    "build": "89",
+    "commit": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e"
+  },
+  "limitations": [
+    "TestFlight availability is not App Store publication.",
+    "Physical iPhone installation and authenticated production Owner/Admin UI validation remain pending.",
+    "No group/tester/invitation changes or live payment transactions."
+  ],
+  "webRelease": "97591e0b-4757-456b-89ef-c5ef8162e597"
+}

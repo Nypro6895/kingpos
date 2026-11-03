@@ -1,0 +1,39 @@
+{
+  "kind": "release",
+  "summary": "Combined recent-chat iOS release: source-bound bundle, full simulator inventory, archives/upload and existing internal TestFlight availability verified.",
+  "changes": [
+    "212a7ecc-d45a-422c-81ad-942ea148932f",
+    "d5600632-11dd-4ba8-a05d-175df81360a4",
+    "0edac084-9cfe-444f-bb27-6395f002912b",
+    "64f74e27-5a7b-4748-ae9f-eeb633719055",
+    "3603dbd4-3179-45b2-82cc-bb133b043ece",
+    "25a8ee28-dc69-4dd8-9f72-bb6cf3d87734",
+    "57be9488-330e-4259-ae62-9cf40d347cf7",
+    "8b27b8d8-8a18-419b-b126-258bf4e526e7",
+    "88ffef72-910a-4ae5-a7ae-0f9eff51ef6d",
+    "f3184430-2039-4939-b1aa-47353ceb295d"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "90",
+      "commit": "738a36013d1a6f0d7e75b5638bcf0608cd7f91b1",
+      "evidence": "releases/evidence/combined-recent-20261103-ios.json"
+    }
+  },
+  "nativeBaseline": {
+    "version": "1.0.0",
+    "build": "89",
+    "commit": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e"
+  },
+  "limitations": [
+    "TestFlight availability is not App Store publication.",
+    "Physical iPhone installation and authenticated production Owner/Admin UI validation remain pending.",
+    "No group/tester/invitation changes or live payment transactions."
+  ],
+  "id": "f2c1909c-c9c4-46d5-9316-f2a4a11d1a96",
+  "recordedAt": "2026-11-03T22:34:03.853Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-recent-chats-20261103"
+}

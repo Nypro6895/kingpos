@@ -144,5 +144,12 @@
     "ad3f2da3-dfaf-4139-aef6-9e0e05d76dfa",
     "15df8c40-e214-4360-8e5e-6dc9907d4acc"
   ],
-  "originalEvents": []
+  "originalEvents": [],
+  "sqlSourceIntegrity": {
+    "matchingMigrations": 5,
+    "rlsDisabled": 0,
+    "membershipSelling": 0,
+    "membershipEnrollments": 0,
+    "evidence": "releases/evidence/combined-recent-20261103-sql.png"
+  }
 }

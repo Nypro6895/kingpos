@@ -1,0 +1,29 @@
+{
+  "kind": "release",
+  "summary": "Combined recent chats published: exact web source live and iOS 1.0.0 (90) available in existing internal TestFlight group. Owner UI/device QA pending; Market trial release held.",
+  "changes": [
+    "9db2b4d4-6bf4-4c00-9ef8-f2ea06189a3c"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+      "baselineDeploymentId": "dpl_HH57U1pRRCGKBEi8eGRdy5JtcEuA",
+      "sourceSha256": "3a224594f4da17adac3165c802901f5f73039a18df9b40a97367127f74410324",
+      "overlaySha256": "46323fe1d0c826f8973004ee7f332ac1ccaa85a4c51ab27a4ca06b55eb32abd9",
+      "evidence": "releases/evidence/combined-recent-20261103-web.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "90",
+      "commit": "738a36013d1a6f0d7e75b5638bcf0608cd7f91b1",
+      "evidence": "releases/evidence/combined-recent-20261103-ios.json"
+    }
+  },
+  "id": "5f825f76-7425-455e-9bc6-549e0f1dda79",
+  "recordedAt": "2026-11-03T22:34:29.934Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-recent-chats-20261103"
+}
