@@ -1,5 +1,7 @@
 export const APP_LOCAL_EXPLORE_PATHS = ["/explore"] as const;
 export const APP_LOCAL_EXPLORE_READS = [
+  { name: "http.rewards.discover", path: "/api/rewards/discover", method: "GET", argumentKeys: ["lat", "lon", "location", "category", "kind", "radius"], retain: false },
+  { name: "http.rewards.program", path: "/api/rewards/program", method: "GET", argumentKeys: ["salonId"], retain: false },
   { name: "http.explore.post-comments", path: "/api/post-comments", method: "GET", argumentKeys: ["sourceType", "sourceId", "offset", "pageSize"], retain: false },
   { name: "page.explore", argumentKeys: ["query"], retain: true },
   { name: "page.explore-extras", argumentKeys: ["query"], retain: true },

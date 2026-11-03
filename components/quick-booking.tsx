@@ -1,9 +1,10 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import type { PublicBookingPageData } from "@/lib/public-booking";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useCloseOnNavigation, useTransientOverlay } from "@/components/overlay-dismissal";
 import styles from "./quick-booking.module.css";
 import { useExploreAuthenticated } from "@/components/explore-account-actions";
 
@@ -30,11 +31,13 @@ export function QuickBooking() {
 
   const authenticated = useExploreAuthenticated();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const opener = useRef<HTMLElement | null>(null);
   const busy = useRef(false);
   const activeHref = useRef<string | null>(null);
   const warmContext = useRef<{ href: string; started: number; controller: AbortController; promise: Promise<PublicBookingPageData> } | null>(null);
   const [href, setHref] = useState<string | null>(null);
+  useTransientOverlay(() => { activeHref.current = null; setHref(null); }, Boolean(href));
   const [data, setData] = useState<PublicBookingPageData | null>(null);
   const [Wizard, setWizard] = useState<BookingComponent | null>(null);
   const [error, setError] = useState("");

@@ -1,4 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -50,7 +52,9 @@ export function SalonOperatingStatusBadge({
   status,
 }: SalonOperatingStatusBadgeProps) {
   const [opened, setOpened] = useState(false);
+  useTransientOverlay(() => setOpened(false), opened);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialogRef);
   useEffect(() => {
     const element = dialogRef.current;
     if (opened && element && !element.open) element.showModal();

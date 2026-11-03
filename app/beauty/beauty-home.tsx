@@ -7,6 +7,7 @@ import type { BeautyProfileSummary, BeautyTimelinePost } from "@/types/beauty";
 import { BeautyQuickQr } from "./beauty-quick-qr";
 import "./beauty-home.css";
 import { BeautyHomeIcon } from "./beauty-home-icon";
+import { BeautyRewardSummary } from "./beauty-reward-summary";
 
 export function BeautyHome({ profile, posts, viewerId, appointment, favorites, onCompose }: {
   profile: BeautyProfileSummary;
@@ -35,10 +36,7 @@ export function BeautyHome({ profile, posts, viewerId, appointment, favorites, o
       <button type="button" aria-label="Write a Beauty post" onClick={() => onCompose(false)}><BeautyHomeIcon name="write"/></button>
       <button type="button" aria-label="Post a Beauty photo" onClick={() => onCompose(true)}><BeautyHomeIcon name="photo"/></button>
     </div>
-    <section className="beauty-home-rewards" aria-label="My Rewards, coming soon">
-      <div><h2>My Rewards</h2><p>Coming soon</p></div>
-      <div className="beauty-home-reward-art" aria-hidden="true"><span className="beauty-home-pedestal"/><span className="beauty-home-star">✦</span><span className="beauty-home-star-small">✦</span><span className="beauty-home-sparkle">✧</span></div>
-    </section>
+    <BeautyRewardSummary key={viewerId ?? "guest"} viewerId={viewerId}/>
     <section className="beauty-home-bookings" aria-labelledby="beauty-bookings-title">
       <div className="beauty-home-section-heading"><h2 id="beauty-bookings-title">My Bookings</h2><Link href="/my-bookings">See all</Link></div>
       {appointment}

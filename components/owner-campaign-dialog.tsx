@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -35,6 +36,7 @@ export function OwnerCampaignDialog({ target, settings, initialLocation, onClose
   const [photoState,setPhotoState]=useState<"preparing"|"ready"|"failed">(prepareCreative?"preparing":"ready");
   useEffect(()=>{if(!prepareCreative)return;let active=true;void prepareCreative().then(()=>{if(active)setPhotoState("ready");},()=>{if(active)setPhotoState("failed");});return()=>{active=false;};},[prepareCreative]);
   const ref = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(ref);
   const opener = useRef<HTMLElement | null>(null);
   const exampleViews = baseViews * Math.min(7, settings.maxDays);
   let quote = { dailyCents: 0, totalCents: 0 }, quoteError = "";

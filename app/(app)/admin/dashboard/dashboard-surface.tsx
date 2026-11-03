@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import Link from "next/link";
 import { DashboardIcon } from "./dashboard-icons";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -19,6 +20,7 @@ function localInput(value: string | null) { if (!value) return ""; const d = new
 
 export function DashboardSurface({ children, loadedAt, initialSelection = null }: { children: ReactNode; loadedAt: string; initialSelection?: Selection | null }) {
   const [selection, setSelection] = useState<Selection | null>(initialSelection);
+  useTransientOverlay(() => setSelection(null), Boolean(selection) && !initialSelection);
   const [record, setRecord] = useState<DashboardRecord | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);

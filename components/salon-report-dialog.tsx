@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type RefObject } from "react";
@@ -13,6 +14,7 @@ export function SalonReportDialog({ salon, onClose, returnFocusRef }: { salon: S
   const host = useOverlayPortalHost();
   const titleId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const requestId = useRef<string | null>(null);
   const submitting = useRef(false);
   const [reason, setReason] = useState("");

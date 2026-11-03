@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { adRequest, prepareAdImage } from "@/lib/advertising-client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { NavigationProgress } from "@/components/feedback-link";
@@ -314,6 +315,7 @@ export function ExploreAdvertising({
     [pathname, device],
   );
   const [popup, setPopup] = useState<Campaign | null>(null);
+  useTransientOverlay(() => setPopup(null), Boolean(popup));
   const [ticker, setTicker] = useState<Campaign | null>(null);
   const navigation = useAdNavigation(record);
   useEffect(() => {

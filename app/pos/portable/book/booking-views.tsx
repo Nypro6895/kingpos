@@ -1,4 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 import { CustomerName } from "@/components/customer-name";
@@ -43,6 +45,7 @@ function AppointmentDetails({ item, timezone, close, actions }: {
   const __vt = useWorkspaceTranslation();
 
   const ref = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(ref);
   useEffect(() => { ref.current?.showModal(); }, []);
   return <dialog ref={ref} className={styles.dialog} onClose={close} aria-labelledby="booking-details-title">
     <div className={styles.dialogHeading}>
@@ -75,6 +78,7 @@ export function BookingViews({ appointments, data, date, view, showDates, action
   const __vt = useWorkspaceTranslation();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  useTransientOverlay(() => setSelectedId(null), Boolean(selectedId));
   const selected = appointments.find(item => item.id === selectedId) ?? null;
   const setSelected = (item: PortableBookAppointment | null) => setSelectedId(item?.id ?? null);
   return <>

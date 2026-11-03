@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "combined-web-ios-20261102",
+  "status": "working",
+  "summary": "Authorized combined web/iOS release: exact live baseline, pending-journal reconciliation, selected scoped patches, routine integration and new native upload",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "baselineDeploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe",
+    "baselineCommit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+  },
+  "validation": [
+    {
+      "name": "Assembly and acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "89d10517-5107-4817-96e3-91190bf03c33",
+  "recordedAt": "2026-11-03T04:55:32.538Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

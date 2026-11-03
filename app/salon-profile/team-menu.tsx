@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
@@ -15,6 +16,7 @@ export function TeamMenu({members,canBook,bookingHref,onOpen}: {
   const __vt = useWorkspaceTranslation();
 
   const [selected,setSelected]=useState<string|null>(null);
+  useTransientOverlay(() => setSelected(null), Boolean(selected));
   const root=useRef<HTMLUListElement>(null);
   const id=useId();
   useEffect(()=>{

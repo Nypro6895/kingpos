@@ -1,4 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {useEffect,useRef,useState} from 'react';
 import {beginSalonVerificationAction,confirmSalonVerificationAction,loadSalonVerificationAction} from './salon-verification-actions';
@@ -7,7 +9,9 @@ export function SalonVerificationPanel({expectedSalonId}: {expectedSalonId?: str
   const __vt = useWorkspaceTranslation();
 
  const [requests,setRequests]=useState<SalonVerificationRequest[]>([]),[error,setError]=useState(''),[loaded,setLoaded]=useState(false),[accessAllowed,setAccessAllowed]=useState(false),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[requestId,setRequestId]=useState<string|null>(null),[code,setCode]=useState('');
+  useTransientOverlay(() => setOpen(false), open);
  const dialog=useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
  useEffect(()=>{let active=true;loadSalonVerificationAction(expectedSalonId).then(result=>{if(active){setRequests(result.requests);setError(result.error??'');setAccessAllowed(!result.error);setLoaded(true);}}).catch(()=>{if(active){setError('Could not load verification.');setLoaded(true);}});return()=>{active=false;};},[expectedSalonId]);
  useEffect(()=>{if(open)dialog.current?.showModal();else dialog.current?.close();},[open]);
  const current=requests[0],status=current?.status;

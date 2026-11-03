@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { toggleBeautyProfileFollowAction } from "@/app/explore/actions";
 import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
@@ -28,6 +29,7 @@ export function BeautyFollowButton({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  useTransientOverlay(() => setAuthPromptOpen(false), authPromptOpen);
   const [isPending, startTransition] = useTransition();
 
   function toggleFollow() {

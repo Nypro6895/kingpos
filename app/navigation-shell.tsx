@@ -1,5 +1,7 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import "./salon-manage-spacing.css";
+import { useIPhoneGlassNav } from "@/components/use-iphone-glass-nav";
 import { handleExploreLogoClick } from "@/lib/explore-entry-navigation";
 import { ExploreHeaderSearchSlot } from "@/app/explore/explore-header-search-slot";
 
@@ -407,31 +409,19 @@ function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
     return "salon";
   }
 
-  if (
-    ROLE_NAVIGATION.personal.routePrefixes.some((prefix) =>
-      matchesPath(pathname, prefix),
-    )
-  ) {
-    return "personal";
+  // A nested management route must keep its own shell, for example
+  // /gift-cards/manage inside the personal /gift-cards destination.
+  let bestMatch: RouteWorkspaceKind | null = null;
+  let bestLength = -1;
+  for (const role of ["personal", "staff", "owner"] as const) {
+    for (const prefix of ROLE_NAVIGATION[role].routePrefixes) {
+      if (prefix.length > bestLength && matchesPath(pathname, prefix)) {
+        bestMatch = role === "owner" ? "manage" : role;
+        bestLength = prefix.length;
+      }
+    }
   }
-
-  if (
-    ROLE_NAVIGATION.staff.routePrefixes.some((prefix) =>
-      matchesPath(pathname, prefix),
-    )
-  ) {
-    return "staff";
-  }
-
-  if (
-    ROLE_NAVIGATION.owner.routePrefixes.some((prefix) =>
-      matchesPath(pathname, prefix),
-    )
-  ) {
-    return "manage";
-  }
-
-  return null;
+  return bestMatch;
 }
 
 function routeNavigationForWorkspaceKind(input: {
@@ -1321,6 +1311,7 @@ function CustomerDesktopWorkspaceSwitcher({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), isOpen);
   const navigation = useWorkspaceNavigationFeedback();
   const { pendingKey } = navigation;
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -1973,6 +1964,7 @@ function CustomerMobileHeader({
   const __vt = useWorkspaceTranslation();
 
   const [isContextOpen, setContextOpen] = useState(false);
+  useTransientOverlay(() => setContextOpen(false), isContextOpen);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const shouldRestoreContextFocusRef = useRef(false);
   const label = customerWorkspaceLabel(currentWorkspace, accountLabel);
@@ -2640,9 +2632,11 @@ function MobileBottomNav({
   searchParams: SearchParamsReader;
 }) {
   const __vt = useWorkspaceTranslation();
+  const glassNavRef = useIPhoneGlassNav(!/^\/pos(?:\/|$)/.test(pathname));
 
   return (
     <nav
+      ref={glassNavRef}
       aria-label={__vt(ariaLabel)}
       className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-50 grid border-t border-border-subtle bg-surface px-1 pb-[env(safe-area-inset-bottom)] pt-2.5 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] lg:hidden"
       style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
@@ -2739,6 +2733,7 @@ export function NavigationShell({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isWorkspacePanelOpen, setWorkspacePanelOpen] = useState(false);
+  useTransientOverlay(() => setWorkspacePanelOpen(false), isWorkspacePanelOpen);
   const workspacePanelReturnFocusRef = useRef<HTMLButtonElement | null>(null);
   const openWorkspacePanel = useCallback((button: HTMLButtonElement) => {
     workspacePanelReturnFocusRef.current = button;

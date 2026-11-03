@@ -5,6 +5,7 @@ import { WorkspaceText } from "@/components/workspace-language";
 import { SettingsIconShape } from "@/components/settings-icon";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
+  PERSONAL_MORE_GROUPS,
   ROLE_MORE_ITEMS,
   OWNER_MORE_GROUPS,
   roleNavigationKindForContext,
@@ -136,38 +137,10 @@ function formatItemCount(count: number) {
 }
 
 function personalMoreItems(): MoreContent {
-  return {
-    sections: [
-      {
-        id: "workspace",
-        items: pickMoreItems(ROLE_MORE_ITEMS.personal, ["personal-my-place"]),
-        summary: "Choose the account, salon, or workplace you want to use.",
-        title: "Workspace",
-      },
-      {
-        id: "beauty-history",
-        items: pickMoreItems(ROLE_MORE_ITEMS.personal, [
-          "personal-qr",
-          "personal-activity",
-          "personal-saved-post",
-          "personal-following",
-        ]),
-        summary: "Review visits, saved posts, and followed shops or Beauty profiles.",
-        title: "Beauty & history",
-      },
-      {
-        id: "account",
-        items: pickMoreItems(ROLE_MORE_ITEMS.personal, [
-          "personal-memberships",
-          "personal-reviews",
-          "personal-gift-cards",
-          "personal-reports",
-        ]),
-        summary: "Manage memberships, reviews, rewards, and support history.",
-        title: "Account",
-      },
-    ],
-  };
+  return { sections: PERSONAL_MORE_GROUPS.map(group => ({
+    id: group.id, title: group.title, summary: group.summary,
+    items: pickMoreItems(ROLE_MORE_ITEMS.personal, group.ids),
+  })) };
 }
 
 function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {

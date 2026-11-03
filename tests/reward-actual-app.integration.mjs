@@ -14,5 +14,5 @@ try{
  // Membership fixture uses the real one-time welcome grant, no arbitrary balance.
  f.sql(`select reward_join('${salon}','${customer.profileId}')`);
  await rewardPracticalApp(f,{owner,customer,salon,account});
- console.log('PASS actual authenticated Next owner save, Explore, popup, salon context and wallet.');
+ console.log('PASS actual authenticated Next owner save, Reward feed post, salon context, Beauty latest membership, separate wallet and quick booking.');
 }finally{f.close()}

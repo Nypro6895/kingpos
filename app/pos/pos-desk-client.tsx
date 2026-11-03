@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
@@ -600,11 +601,13 @@ export function PosDeskClient({
   const [serviceSearch, setServiceSearch] = useState("");
   const [showCustomerCreateModal, setShowCustomerCreateModal] = useState(false);
   const [showCustomService, setShowCustomService] = useState(false);
+  useTransientOverlay(() => setShowCustomService(false), showCustomService);
   const [parkedVisitIds, setParkedVisitIds] = useState<string[]>([]);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [turnAdjustStaff, setTurnAdjustStaff] = useState<PosDeskStaff | null>(
     null,
   );
+  useTransientOverlay(() => setTurnAdjustStaff(null), Boolean(turnAdjustStaff));
   const [turnAdjustDelta, setTurnAdjustDelta] = useState(0);
   const [turnAdjustReason, setTurnAdjustReason] = useState("");
   const [turnAdjustOperatorStaffId, setTurnAdjustOperatorStaffId] =
@@ -624,11 +627,13 @@ export function PosDeskClient({
     null,
   );
   const [waitingDrawerOpen, setWaitingDrawerOpen] = useState(false);
+  useTransientOverlay(() => setWaitingDrawerOpen(false), waitingDrawerOpen);
   const [waitingDrawerPlacement, setWaitingDrawerPlacement] =
     useState<WaitingDrawerPlacement | null>(null);
   const [openWaitingVisitMenuId, setOpenWaitingVisitMenuId] = useState<
     string | null
   >(null);
+  useTransientOverlay(() => setOpenWaitingVisitMenuId(null), Boolean(openWaitingVisitMenuId));
 
   const [toast, setToast] = useState<PosToast | null>(null);
   const [customerClaim, setCustomerClaim] =
@@ -698,6 +703,7 @@ export function PosDeskClient({
   const [receiptScanError, setReceiptScanError] = useState("");
   const [currentWaitingVisits, setCurrentWaitingVisits] = useState(waitingVisits);
   const [editingVisit, setEditingVisit] = useState<CustomerVisitQueueItem | null>(null);
+  useTransientOverlay(() => setEditingVisit(null), Boolean(editingVisit));
   const [visitEditName, setVisitEditName] = useState("");
   const [visitEditPhone, setVisitEditPhone] = useState("");
   const waitingRequestRunning = useRef(false);

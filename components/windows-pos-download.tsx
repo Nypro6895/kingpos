@@ -1,4 +1,6 @@
 'use client';
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from 'react';
@@ -48,7 +50,9 @@ export function WindowsPosDownloadPrompt({ authenticated }: { authenticated:bool
 
   const pathname = usePathname();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const [release,setRelease] = useState<{href:string;version:string;edition:'test'|'release'}|null>(null);
+  useTransientOverlay(() => setRelease(null), Boolean(release));
   const [error,setError] = useState('');
   const [busy,setBusy] = useState(false);
   const [downloaded,setDownloaded] = useState(false);

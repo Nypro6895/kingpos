@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import styles from "./account-profile-editor.module.css";
@@ -506,6 +507,7 @@ export function AccountProfileEditor({
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneOtpSuccessMessage, setPhoneOtpSuccessMessage] = useState("");
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
+  useTransientOverlay(() => setPhoneVerificationOpen(false), phoneVerificationOpen);
   const [resendWaitSeconds, setResendWaitSeconds] = useState(0);
   const [progress, setProgress] = useState(0);
   const [savedAvatarUrl, setSavedAvatarUrl] = useState(user.avatar_url);

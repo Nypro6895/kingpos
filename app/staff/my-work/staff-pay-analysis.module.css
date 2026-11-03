@@ -75,3 +75,8 @@
   .period { gap: 8px; font-size: 11px; }
   .stats dd { font-size: 19px; }
 }
+.servicesMain dt { font-weight: 650; color: #19252d; }
+.servicesMain dd { font-size: 18px; }
+.split { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding-inline: 14px; }
+.split > div + div { padding-left: 10px; }
+.split dd { font-size: clamp(16px, 4.4vw, 22px); overflow-wrap: anywhere; }

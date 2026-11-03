@@ -1,0 +1,33 @@
+.portal { color: #19252d; font-size: 14px; }
+.datePicker { display: grid; grid-template-columns: 44px minmax(0,1fr) 44px; align-items: center; border: 1px solid #e6eaee; border-radius: 10px; margin-bottom: 6px; }
+.datePicker > a { display: grid; place-items: center; min-height: 52px; font-size: 26px; }
+.datePicker label { min-width: 0; display: grid; justify-items: center; padding: 8px; }
+.datePicker label span { font-size: 11px; color: #63717c; }
+.datePicker input { min-width: 0; max-width: 100%; background: white; color: inherit; border: 0; min-height: 36px; font: inherit; font-weight: 600; }
+.datePicker a:focus-visible,.datePicker input:focus-visible, .ticket summary:focus-visible { outline: 2px solid #216346; outline-offset: 2px; }
+.note { font-size: 12px; color: #63717c; margin: 8px 0 14px; }
+.totals { display: flex; gap: 24px; background: #f5f7f8; padding: 12px; }
+.ticket { border-block: 1px solid #e6eaee; margin-bottom: 12px; }
+.ticket > summary { cursor: pointer; min-height: 48px; padding: 12px 0; list-style: none; }
+.ticket > summary::-webkit-details-marker { display: none; }
+.heading { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.heading::after { content: '⌄'; margin-left: auto; }
+.ticket[open] .heading::after { content: '⌃'; }
+.badge { color: #a64726; background: #fff2eb; border-radius: 12px; padding: 2px 8px; font-size: 11px; }
+.preview { font-size: 12px; color: #63717c; margin: 4px 0; overflow-wrap: anywhere; }
+.detail { padding-bottom: 14px; }
+.services { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.services th { text-align: left; font-size: 12px; color: #63717c; font-weight: 500; }
+.services td,.services th { border-bottom: 1px solid #e6eaee; padding: 10px 0; overflow-wrap: anywhere; }
+.services td:last-child,.services th:last-child { text-align: right; width: 95px; font-variant-numeric: tabular-nums; }
+.detail small { display: block; color: #63717c; font-size: 11px; margin-top: 3px; }
+.removed { color: #63717c; }
+.removed td:first-child { text-decoration: line-through; }
+.facts { margin-block: 10px; }
+.facts > div { display: flex; justify-content: space-between; padding: 6px 0; }
+.facts dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+.history { border-top: 1px solid #e6eaee; }
+.history summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
+.history article { padding: 10px 12px; border-left: 2px solid #e6eaee; margin-bottom: 10px; font-size: 12px; overflow-wrap: anywhere; }
+.history ul { padding-left: 16px; margin-top: 8px; }
+.empty { border: 1px dashed #e6eaee; padding: 20px; color: #63717c; }

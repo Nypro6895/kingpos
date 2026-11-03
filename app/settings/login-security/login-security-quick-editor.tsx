@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -389,6 +390,7 @@ export function LoginSecurityQuickEditor({
 
   const router = useRouter();
   const [dialog, setDialog] = useState<QuickDialog | null>(null);
+  useTransientOverlay(() => setDialog(null), Boolean(dialog));
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [pendingKey, setPendingKey] = useState<PendingKey | null>(null);

@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
@@ -131,7 +132,9 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   const [serviceIds, setServiceIds] = useState<string[]>(data.services[0] ? [data.services[0].id] : []);
   const serviceId = serviceIds[0] ?? "";
   const [editing, setEditing] = useState<PortableBookAppointment | null>(null);
+  useTransientOverlay(() => setEditing(null), Boolean(editing));
   const [statusTarget, setStatusTarget] = useState<PortableBookAppointment | null>(null);
+  useTransientOverlay(() => setStatusTarget(null), Boolean(statusTarget));
   const latestEditing = appointments.find(item => item.id === editing?.id) ?? editing;
   const editingChanged = !!editing && !!latestEditing && (editing.updatedAt !== latestEditing.updatedAt || editing.status !== latestEditing.status || editing.ticketId !== latestEditing.ticketId);
   const latestStatusTarget = appointments.find(item => item.id === statusTarget?.id) ?? statusTarget;

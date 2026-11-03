@@ -1,3 +1,4 @@
+import { validStaffTicketDate } from "@/lib/staff-tickets";
 import { getExperienceContext } from "@/lib/experience-context";
 import { createLiveResourceSnapshot, liveResourceResponse } from "@/lib/experience-live-resource-server";
 import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
@@ -21,10 +22,12 @@ export async function GET(request: Request) {
     if (query.get("staffId") !== identity.staff.id) return failure("Staff profile changed", 409);
     if (request.headers.get("X-Reylumi-Background-Read") === "1" && !await getTrustedStaffOfflineBinding({ context: identity.context, staff: identity.staff })) return failure("Staff account approval required", 403);
     const tab = query.get("tab") ?? "daily";
-    if (!["daily", "payroll", "analysis"].includes(tab)) return failure("Invalid tab", 400);
+    if (!["daily", "payroll", "tickets", "analysis"].includes(tab)) return failure("Invalid tab", 400);
     const payPeriodStart = query.get("payPeriodStart") ?? undefined;
     if (payPeriodStart && !/^\d{4}-\d{2}-\d{2}(?::\d{4}-\d{2}-\d{2})?$/.test(payPeriodStart)) return failure("Invalid pay period", 400);
-    const data = await loadStaffMyWorkResource(identity, { tab, payPeriodStart });
+    const ticketDate = query.get("ticketDate") ?? undefined;
+    if (ticketDate !== undefined && !validStaffTicketDate(ticketDate)) return failure("Invalid ticket date", 400);
+    const data = await loadStaffMyWorkResource(identity, { tab, payPeriodStart, ticketDate });
     if ((tab === "payroll" && !data.payrollData) || (tab === "analysis" && !data.analysisData)) return failure("Temporarily unavailable", 503);
     return liveResourceResponse(request, createLiveResourceSnapshot(data, ["generatedAt"]));
   } catch (error) {

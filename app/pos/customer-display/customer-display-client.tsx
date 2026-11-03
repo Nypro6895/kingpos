@@ -1,6 +1,8 @@
 "use client";
 import { GiftCustomerControl } from "@/components/gift-card/pos-gift-card";
 import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import "./customer-display-responsive.css";
 import { CustomerIdleScreen } from "./customer-idle-screen";
 import { CUSTOMER_DISPLAY_APPEARANCE_CHANGED } from "@/lib/customer-display-preferences";
@@ -1346,7 +1348,9 @@ function TransactionSummaryContent({
 
 function TransactionSummary(props: Parameters<typeof TransactionSummaryContent>[0]) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialogRef);
   const [receiptOpen, setReceiptOpen] = useState(false);
+  useTransientOverlay(() => setReceiptOpen(false), receiptOpen);
   const __vt = useWorkspaceTranslation();
 
   useEffect(() => {

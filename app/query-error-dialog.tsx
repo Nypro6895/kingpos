@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionDialog } from "@/app/action-dialog";
@@ -26,6 +27,7 @@ export function QueryErrorDialog({
   const __vt = useWorkspaceTranslation();
 
   const [isOpen, setOpen] = useState(Boolean(message));
+  useTransientOverlay(() => setOpen(false), isOpen);
 
   if (!message) {
     return null;

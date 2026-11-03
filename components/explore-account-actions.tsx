@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   createContext,
@@ -62,8 +63,10 @@ export function ExploreAccountActionsProvider({
 
   const pathname = usePathname();
   const [contact, setContact] = useState<BookIntent | null>(null);
+  useTransientOverlay(() => setContact(null), Boolean(contact));
   const [message, setMessage] = useState("");
   const [authPrompt, setAuthPrompt] = useState(false);
+  useTransientOverlay(() => setAuthPrompt(false), authPrompt);
   useEffect(() => {
     const show = (event: Event) =>
       setContact((event as CustomEvent<BookIntent>).detail);
@@ -236,6 +239,7 @@ export function ExploreBookButton({
 
   const authenticated = useContext(Auth);
   const [prompt, setPrompt] = useState(false);
+  useTransientOverlay(() => setPrompt(false), prompt);
   const destination =
     href && /^\/(?:book|booking)\/[0-9a-f-]{36}(?:[/?#]|$)/i.test(href)
       ? href
@@ -326,6 +330,7 @@ function FavoriteLoveButton({ kind, itemKey, name, className, initialActive, aut
 }) {
   const __vt = useWorkspaceTranslation();
   const [prompt, setPrompt] = useState(false);
+  useTransientOverlay(() => setPrompt(false), prompt);
   const [active, setActive] = useState(authenticated && Boolean(initialActive));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

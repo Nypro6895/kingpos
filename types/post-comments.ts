@@ -28,6 +28,7 @@ export type PostComment = {
   actingSalonId?: string | null;
   salonName?: string | null;
   authorDisplayName: string;
+  authorAvatarUrl?: string | null;
   authorUserId: string | null;
   beautyPostId: string | null;
   body: string;

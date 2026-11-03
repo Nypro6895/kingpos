@@ -3,6 +3,7 @@ import { geistSans, geistMono, manrope } from "@/app/fonts";
 import { Suspense } from "react";
 import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
 import { AppStartupShell } from "@/components/app-startup-shell";
+import { OverlayDismissal } from "@/components/overlay-dismissal";
 import ExperienceMediaCache from "@/components/experience-media-cache";
 import { ExperienceOfflineBootstrap } from "@/components/experience-offline-bootstrap";
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full bg-white antialiased`}>
     <head><ExperienceOfflineBootstrap /></head>
     <body className="min-h-full bg-white text-zinc-950">
+      <Suspense fallback={null}><OverlayDismissal /></Suspense>
       <Suspense fallback={null}><ExperienceMediaCache supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""} /></Suspense>
       <Suspense fallback={<AppStartupShell />}>{children}</Suspense>
     </body>

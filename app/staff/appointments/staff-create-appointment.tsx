@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import "./staff-appointments.css";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,6 +28,7 @@ function StaffCreateForm({salonId, date}: {salonId: string; date: string}) {
   const __vt = useWorkspaceTranslation();
 
   const router = useRouter(), dialog = useRef<HTMLDialogElement>(null), inFlight = useRef(false);
+  useNativeDialogNavigation(dialog);
   const [enabled,setEnabled]=useState(true), [catalog,setCatalog]=useState<Catalog|null>(null), [busy,setBusy]=useState(false), [error,setError]=useState("");
   const [staffId,setStaffId]=useState(""), [serviceIds,setServiceIds]=useState<string[]>([]), [key,setKey]=useState("");
   const [success,setSuccess]=useState("");

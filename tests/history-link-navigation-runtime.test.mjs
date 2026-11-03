@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+const root='C:/Reylumi-worktrees/overlay-navigation-audit-20261102';
+let resolveLoad,shown=0,reset;const tasks=[];const refs=[];
+const result=ts.transpileModule(readFileSync(root+'/app/activity/history-link-control.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}});
+const exportsObject={};
+const jsx=(type,props)=>({type,props});
+vm.runInNewContext(result.outputText,{exports:exportsObject,require(name){
+ if(name==='react/jsx-runtime')return {jsx,jsxs:jsx};
+ if(name==='react')return {useState:value=>[value,()=>{}],useTransition:()=>[false,fn=>tasks.push(fn())],useRef:value=>{const ref={current:value};refs.push(ref);return ref;}};
+ if(name==='next/navigation')return {useRouter:()=>({refresh(){}})};
+ if(name.includes('overlay-dismissal'))return {useTransientOverlay:fn=>{reset=fn;},useNativeDialogNavigation(){}};
+ if(name.includes('workspace-language'))return {WorkspaceText:'Text'};
+ if(name.includes('history-link-actions'))return {loadHistoryEvidenceAction:()=>new Promise(resolve=>{resolveLoad=resolve;}),setHistoryLinkAction:()=>({})};
+ if(name.includes('booking-history'))return {historyTicketTotals:()=>({})};
+ throw Error(name);
+}});
+const tree=exportsObject.HistoryLinkControl({bookingId:'booking',owner:true});refs[0].current={showModal(){shown++;},close(){}};
+const button=tree.props.children.find(n=>n?.type==='button');button.props.onClick();reset();resolveLoad({evidence:{}});await Promise.all(tasks);
+assert.equal(shown,0,'A late history request cannot open a dialog after navigation');
+console.log('PASS: actual HistoryLinkControl suppresses late popup after navigation reset.');

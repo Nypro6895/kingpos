@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { AdminIcon } from "../_components/admin-icon";
 import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import Link from "next/link";
@@ -25,10 +26,14 @@ function UserRowMenu({label,children}:{label:string;children:ReactNode}) {
 }
 export function UsersWorkspace({users,context,query,initialUserId,initialTab='profile',identityReady}:Props) {
  const router=useRouter();const [selected,setSelected]=useState<string[]>([]);
- const [current,setCurrent]=useState<string|null>(initialUserId??null);const [tab,setTab]=useState<UserDrawerTab>(initialTab);
+ const [current,setCurrent]=useState<string|null>(initialUserId??null);
+ useTransientOverlay(() => setCurrent(null), Boolean(current) && !initialUserId);const [tab,setTab]=useState<UserDrawerTab>(initialTab);
  const [data,setData]=useState<UserWorkspace|null>(null);const [error,setError]=useState('');const [loading,setLoading]=useState(false);
- const [mode,setMode]=useState<'invite'|'create'|null>(null);const [caseId,setCaseId]=useState<string|null>(null);
- const [bulk,setBulk]=useState<'suspend'|'restore'|null>(null);const [notice,setNotice]=useState<UserOperationResult|null>(null);
+ const [mode,setMode]=useState<'invite'|'create'|null>(null);
+  useTransientOverlay(() => setMode(null), Boolean(mode));const [caseId,setCaseId]=useState<string|null>(null);
+  useTransientOverlay(() => setCaseId(null), Boolean(caseId));
+ const [bulk,setBulk]=useState<'suspend'|'restore'|null>(null);
+  useTransientOverlay(() => setBulk(null), Boolean(bulk));const [notice,setNotice]=useState<UserOperationResult|null>(null);
  const [revision,setRevision]=useState(0);const [dirty,setDirty]=useState(false);const [mobile,setMobile]=useState(false);
  const drawerRef=useRef<HTMLElement>(null);const opener=useRef<HTMLElement|null>(null);const allRef=useRef<HTMLInputElement>(null);
  const can=(p:typeof P[keyof typeof P])=>context.permissions.includes(p);const open=!!current||!!mode;

@@ -30,6 +30,7 @@ function commentHarness(create, load = async () => ({ items: [], totalCount: 0, 
       if (name === "@/lib/explore-comment-identity") return { commentIdentityKey: () => 'personal' };
       if (name === "@/lib/comment-identity") return { commentDisplayName: ({ authorName }) => authorName || 'You' };
       if (name === "./inline-comment-composer") return { InlineCommentComposer: "InlineCommentComposer" };
+      if (name === "./comment-avatar") return { CommentAvatar: "CommentAvatar" };
       if (name === "next/link") return {};
       if (name === "@/lib/comment-request") return { prepareCommentRequest, completeCommentRequest };
       if (name === "@/lib/request-timeout") return { withRequestTimeout };

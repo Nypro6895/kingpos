@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -17,12 +18,14 @@ export function PortableDraftControls<T>({ scope, active, activity, value, label
   const key = `kingpos:parked-tickets:v1:${scope}`;
   const [saved, setSaved] = useState<Saved<T>[]>([]);
   const [pending, setPending] = useState<Saved<T> | null>(null);
+  useTransientOverlay(() => setPending(null), Boolean(pending));
   const savedChange = useRef(onSavedChange);
   useEffect(() => { savedChange.current = onSavedChange; }, [onSavedChange]);
   useEffect(() => { savedChange.current?.(saved.map(row => row.value)); }, [saved]);
   const [open, setOpen] = useState(false);
   const [parking, setParking] = useState(false);
   const parkingRef = useRef(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [seconds, setSeconds] = useState(60);
   const [error, setError] = useState("");

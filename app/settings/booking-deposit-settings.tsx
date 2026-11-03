@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { useEffect, useState, useTransition } from "react";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
@@ -13,6 +14,7 @@ export function BookingDepositSettings({ salonId }: { salonId: string }) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [showActivation, setShowActivation] = useState(false);
+  useTransientOverlay(() => setShowActivation(false), showActivation);
   const [busy, startTransition] = useTransition();
 
   useEffect(() => {

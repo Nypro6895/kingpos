@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import { useEffect, useId, useRef } from "react";
 import { WorkspaceText as Text, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -9,6 +10,7 @@ import styles from "./staff-pay-change-notice.module.css";
 export function StaffPayChangeNotice({ changes, staffId }: { changes: PayrollLiveChange[]; staffId?: string }) {
   const rows = staffPayChanges(changes, staffId);
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const trigger = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const t = useWorkspaceTranslation();

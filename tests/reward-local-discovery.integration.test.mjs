@@ -95,14 +95,14 @@ test('Local reward discovery: real PostgreSQL, Auth, tenant authority and bounde
   assert.equal(f.rpc(owner,'reward_owner_discovery',{p_salon:zero}).earning,false);
   assert.ok(f.http(3000,'/rpc/reward_discovery_offers','POST',{p_salon:near,p_offers:rule.offers}).status>=400);
  });
- await t.test('production React discovery component with real anonymous RPC data on mobile and desktop',async()=>{
+ await t.test('production React reward feed and owner activation/conflict with real isolated RPC data',async()=>{
   let setupStarted=false;
   await checkRewardDiscoveryUI({
    discover:q=>discover({p_city:q.get('location')?.startsWith('Chicago')?'Chicago':'Madison',p_state:q.get('location')?.startsWith('Chicago')?'IL':'WI',p_country:'US',p_category:q.get('category')||null,p_kind:q.get('kind')||'all'}),
    owner:()=>f.rpc(owner,'reward_owner_discovery',{p_salon:near}),
    program:id=>({...f.rpc(null,'reward_public_program',{p_salon:id}),authenticated:false}),
    setup:(op,args)=>{if(op==='load'&&!setupStarted){save(near,{...rule,enabled:false,nearby:false});setupStarted=true;}return f.rpc(owner,'reward_owner',{p_salon:near,p_op:op,p_args:args});},
-   output:'artifacts/reward-practical-v3/browser-sql',
+   output:'artifacts/reward-experience-v4/feed-rpc-ui',
   });
  });
  await t.test('new customer discovery → linked visit → three paid receipts → consent → pause → real redemption and retry',()=>{

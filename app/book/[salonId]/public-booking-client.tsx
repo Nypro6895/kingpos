@@ -1,5 +1,7 @@
 "use client";
 import { browserPublicOrigin } from "@/lib/browser-public-origin";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import "@/components/booking-ui/public-booking.css";
 import { useExperienceScope } from "@/components/experience-scope";
 import { useScopedUiDraft } from "@/lib/use-scoped-ui-draft";
@@ -728,7 +730,9 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   const [accountSessionChanged, setAccountSessionChanged] = useState(false);
   const [keepInitialStaff, setKeepInitialStaff] = useState(true);
   const [optionsServiceId, setOptionsServiceId] = useState<string | null>(null);
+  useTransientOverlay(() => setOptionsServiceId(null), Boolean(optionsServiceId));
   const optionsDialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(optionsDialog);
   const timesRail = useRef<HTMLDivElement>(null);
   const timeDrag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
   useEffect(() => {

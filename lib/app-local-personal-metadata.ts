@@ -12,4 +12,4 @@ export const APP_LOCAL_PERSONAL_READS = {
   "http.notifications.feed": { argumentKeys: ["filter","limit","before","id"], cacheable: false },
 } as const;
 export const APP_LOCAL_PERSONAL_COMMANDS = { "http.notifications.viewed": { argumentKeys: ["input"] } } as const;
-export const APP_LOCAL_PERSONAL_PATHS = ["/beauty","/beauty/library","/notifications","/more/reviews"];
+export const APP_LOCAL_PERSONAL_PATHS = ["/beauty","/beauty/library","/notifications","/more/reviews","/rewards"];

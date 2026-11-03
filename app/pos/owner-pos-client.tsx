@@ -4,6 +4,8 @@ import { OwnerCartBenefits } from "@/components/rewardlumi/owner-cart-benefits";
 import type { RewardView } from "@/types/rewardlumi";
 import { GiftDeliveryReceipt, type GiftCheckout } from "@/components/gift-card/pos-gift-card";
 import type { GiftSession } from "@/types/gift-card";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { Activity, useCallback,useEffect, useRef, useState } from "react";
@@ -106,9 +108,11 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
   const [panel,setPanel]=useState<'staff'|'services'|'customer'|'ticket'|'custom'|'benefits'|null>(null);
   const [customName,setCustomName]=useState('');
+  useTransientOverlay(() => setPanel(null), Boolean(panel));
   const [pickerQuery,setPickerQuery]=useState('');
 
   const dialog=useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const [query,setQuery]=useState(''),[customers,setCustomers]=useState<PosDeskCustomer[]>([]);
   const pendingDefaults=useRef(initial.defaults);
   const [ticketDefaults,setTicketDefaults]=useState(initial.defaults);

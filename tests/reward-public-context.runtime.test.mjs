@@ -43,7 +43,7 @@ test('reward booking CTA reuses the wizard readiness, without asserting slot ava
 test('public reward promotion selects only the same salon explicit cover and fails booking closed', async () => {
   const media = moduleFromSource('lib/salon-profile-media.ts');
   const defaults = moduleFromSource('lib/default-nail-images.ts');
-  let cover = `${salon}/profile/cover/test.webp`, listing = null, operating = { status: { kind: 'open' } }, bookable = true;
+  let cover = `${salon}/profile/cover/test.webp`, logo = `${salon}/profile/logo/test.webp`, listing = null, operating = { status: { kind: 'open' } }, bookable = true;
   const helper = moduleFromSource('lib/reward-public-context.ts', {
     '@/lib/default-nail-images': defaults,
     '@/lib/public-booking': { getPublicBookingReadiness: async () => bookable },
@@ -52,11 +52,16 @@ test('public reward promotion selects only the same salon explicit cover and fai
     '@/lib/salon-operating-status': { getPublicSalonOperatingHours: async () => operating },
   });
   const db = { rpc: async name => name === 'get_public_salon_profile'
-    ? { data: [{ salon_id: salon, salon_name: 'Hair studio', cover_path: cover, service_categories: ['Hair'] }], error: null }
+    ? { data: [{ salon_id: salon, salon_name: 'Hair studio', cover_path: cover, logo_path: logo, service_categories: ['Hair'] }], error: null }
     : { data: listing ? [listing] : [], error: null } };
   let context = await helper.getRewardPublicSalonContext(db, salon);
   assert.equal(context.canBook, true);
   assert.equal(context.coverImageSource, 'salon');
+  assert.equal(context.logoImageUrl, `https://public.example/${logo}`);
+  for (const invalid of [`${staff}/profile/logo/test.webp`, `${salon}/profile/cover/logo.webp`, `${salon}/reviews/test.webp`, 'https://private.example/client.webp']) {
+    logo = invalid;
+    assert.equal((await helper.getRewardPublicSalonContext(db, salon)).logoImageUrl, null);
+  }
   for (const invalid of [`${staff}/profile/cover/test.webp`, `${salon}/reviews/test.webp`, `${salon}/looks/${service}/test.webp`, 'https://private.example/client.webp', `${salon}/profile/cover/../test.webp`]) {
     cover = invalid;
     context = await helper.getRewardPublicSalonContext(db, salon);

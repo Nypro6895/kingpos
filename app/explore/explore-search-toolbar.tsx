@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -124,6 +125,7 @@ function ExploreAreaDialog({ location, scopePolicy, locating, onApply, onCurrent
   onCurrentLocation: () => void; onClose: () => void; onRestoreFocus: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const [draftLocation, setDraftLocation] = useState(location);
   const [expand, setExpand] = useState(scopePolicy === "expandable");
   useEffect(() => {

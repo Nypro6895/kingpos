@@ -2,7 +2,7 @@
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 const subscribe = () => () => {};
 const onClient = () => true;
@@ -21,7 +21,7 @@ export function ContentViewer({ children, onClose, open = true, className = "", 
   const mounted = useSyncExternalStore(subscribe, onClient, onServer);
   const overlayRef = useRef<HTMLDivElement>(null);
   const close = useEffectEvent(onClose);
-  useCloseOnNavigation(onClose, open);
+  useTransientOverlay(onClose, open, true);
 
   useLayoutEffect(() => {
     const overlay = overlayRef.current;

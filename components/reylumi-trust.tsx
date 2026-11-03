@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import type {
@@ -193,7 +194,9 @@ export function LumiTrustPopover({
   const __vt = useWorkspaceTranslation();
 
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [pinned, setPinned] = useState(false);
+  useTransientOverlay(() => setPinned(false), pinned);
   const [panelPosition, setPanelPosition] = useState({
     left: LUMI_TRUST_POPOVER_VIEWPORT_MARGIN,
     top: LUMI_TRUST_POPOVER_VIEWPORT_MARGIN,

@@ -55,7 +55,11 @@ export function SalonPostPreview({ item, viewer, onClose, location, service, pri
       </div>
       <div className={styles.body}>
         <header className={styles.header}>
-          <Link prefetch={false} href={salonHref} className={styles.identity} aria-label={`${t("View salon")} ${item.salonName}`}>
+          <Link prefetch={false} href={salonHref} className={styles.identity} aria-label={`${t("View salon")} ${item.salonName}`}
+            onClick={event => {
+              // Close before native/kept-alive navigation can hide this page and suspend its listeners.
+              if (!event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) onClose();
+            }}>
             <span className={styles.logo}>
               {logo && failedLogo !== logo ? <Image src={logo} alt={`${item.salonName} logo`} width={40} height={40} unoptimized onError={() => setFailedLogo(logo)} />
                 : <ReylumiIcon name="home" className="size-5" />}

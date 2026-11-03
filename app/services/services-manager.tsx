@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
 import { WorkspaceToolbar, toolbarStyles } from "@/components/workspace-toolbar";
@@ -467,6 +468,7 @@ export function ServicesManager({
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<SaveServiceConfigsResult | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  useTransientOverlay(() => setShowCreate(false), showCreate);
   const [refreshFailed, setRefreshFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dirtyIds = Object.keys(drafts);

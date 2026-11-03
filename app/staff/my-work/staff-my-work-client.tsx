@@ -17,6 +17,8 @@ export function StaffMyWorkClient({ initialSnapshot, scope, params }: {
   const query = new URLSearchParams({ tab: staffMyWorkActiveTab(params.tab), staffId: initialSnapshot.data.staff.id });
   const period = staffMyWorkStringParam(params.payPeriodStart);
   if (period) query.set("payPeriodStart", period);
+  const ticketDate = staffMyWorkStringParam(params.ticketDate);
+  if (ticketDate) query.set("ticketDate", ticketDate);
   const endpoint = `/api/experience/my-work?${query}`;
   const { data, available, refresh, ensureFresh } = useExperienceResource({
     scope, key: endpoint, tags: resources, initialData: initialSnapshot,

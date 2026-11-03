@@ -17,7 +17,7 @@ import type{AppLocalTransformations as TransformationsData,AppLocalVisit}from"./
 const uuid=/^[a-f0-9-]{36}$/i;
 export function appLocalRouteAlias(path:string):string|null{
  const url=new URL(path,"https://reylumi.com");
- const target:Record<string,string>={"/businesses/create":"/salons/new"};
+ const target:Record<string,string>={"/businesses/create":"/salons/new","/more/gift-cards":"/gift-cards"};
  if(target[url.pathname])return target[url.pathname]+url.search;
  if(url.pathname==="/explore/wisconsin"){
   const query=new URLSearchParams({location:url.searchParams.get("city")&&url.searchParams.get("city")!=="All"?`${url.searchParams.get("city")!.slice(0,160)}, WI`:"WI",scope:"fixed"});
@@ -45,13 +45,13 @@ function ShowcasePage({path}:AppLocalPageProps){const look=getExploreShowcaseLoo
 const moreContent:Record<string,{actionHref:string;actionLabel:string;description:string}>={
  memberships:{actionHref:"/explore",actionLabel:"Browse salons",description:"Customer memberships will appear here when they are available for your account."},
  reviews:{actionHref:"/explore",actionLabel:"Explore salons",description:"Reviews posted from your customer account will appear here."},
- "gift-cards":{actionHref:"/more",actionLabel:"Back to More",description:"Gift card balances and history will appear here when they are available."},
+ "gift-cards":{actionHref:"/gift-cards",actionLabel:"View gift cards",description:"Gift card balances and history will appear here when they are available."},
  reports:{actionHref:"/notifications",actionLabel:"Open notifications",description:"Support updates tied to your customer account will appear here when they are available."},
 };
 function StaticMorePage({path,context}:AppLocalPageProps){
  if(!context?.context.authenticated)return <main className="p-6"><Link href={`/login?next=${encodeURIComponent(path)}`}>Sign in to view your account.</Link></main>;
  const content=moreContent[new URL(path,"https://reylumi.com").pathname.split("/").at(-1)!];
- return <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8"><div className="mx-auto grid w-full max-w-3xl gap-5"><Link className="w-fit rounded-full px-2 py-1 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" href="/more"><WorkspaceText text="Back to More"/></Link><section className="content-surface grid gap-4 border-border-subtle bg-surface px-5 py-8 text-center rounded-none border-y shadow-none"><p className="mx-auto max-w-md text-sm leading-6 text-text-secondary">{content.description}</p><Link className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-brand-orange px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#ef5d28] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" href={content.actionHref}><WorkspaceText text={content.actionLabel}/></Link></section></div></main>;
+ return <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8"><div className="mx-auto grid w-full max-w-3xl gap-5"><section className="content-surface grid gap-4 border-border-subtle bg-surface px-5 py-8 text-center rounded-none border-y shadow-none"><p className="mx-auto max-w-md text-sm leading-6 text-text-secondary">{content.description}</p><Link className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-brand-orange px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#ef5d28] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" href={content.actionHref}><WorkspaceText text={content.actionLabel}/></Link></section></div></main>;
 }
 function SecondaryPage({path,context,navigate}:AppLocalPageProps){
  const url=new URL(path,"https://reylumi.com"),directory=url.pathname.startsWith("/explore/wisconsin/"),visit=url.pathname.startsWith("/notifications/visits/"),id=url.pathname.split("/").at(-1)!,name=directory?"public.directory":visit?"customer.visit":"owner.transformations",args=directory?{businessId:id}:visit?{visitId:id}:{};

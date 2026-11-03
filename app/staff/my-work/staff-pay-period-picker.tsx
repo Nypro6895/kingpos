@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ export function StaffPayPeriodPicker({ options, selected, tab = "payroll" }: { o
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const gesture = useRef<{ x: number; y: number } | null>(null);
   const suppressClick = useRef(false);
   const dialogId = useId();

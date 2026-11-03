@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ export function AdminSupportHub() {
   const router = useRouter();
   const [feed, setFeed] = useState<Feed>({ items: [], unread_count: 0 });
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  useTransientOverlay(() => setNotificationsOpen(false), notificationsOpen);
   const [reportId, setReportId] = useState<string | null>(null);
   const [conversation, setConversation] = useState<SupportConversation | null>(null);
   const [error, setError] = useState("");

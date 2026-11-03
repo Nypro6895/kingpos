@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
 import { desktopDevice } from "@/lib/portable-device-storage";
@@ -20,6 +21,7 @@ export function PortableTouchKeyboard({ enabled: override, scopeSelector = "[dat
 function TouchKeyboard({ scopeSelector, desktopOnly }: { scopeSelector: string; desktopOnly: boolean }) {
   const __vt = useWorkspaceTranslation();
   const [editor, setEditor] = useState<Editor | null>(null);
+  useTransientOverlay(() => setEditor(null), Boolean(editor));
   const [shift, setShift] = useState(false);
   const [symbols, setSymbols] = useState(false);
   const [dateValue, setDateValue] = useState("");

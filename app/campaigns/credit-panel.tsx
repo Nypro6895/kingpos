@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -13,6 +14,7 @@ export type CreditView = "add" | "payment" | "auto" | "ledger";
 export function CreditPanel({ wallet, initialView, onClose, onRefresh }: { wallet: CampaignWallet; initialView?: CreditView; onClose?: () => void; onRefresh?: () => Promise<void> }) {
   const t = useWorkspaceTranslation();
   const [view,setView]=useState<CreditView | null>(initialView ?? null), [message,setMessage]=useState(""), [busy,start]=useTransition();
+  useTransientOverlay(() => setView(null), Boolean(view));
   const [pack,setPack]=useState(500), [saveCard,setSaveCard]=useState(false), [amount,setAmount]=useState(wallet.topup_credits), [threshold,setThreshold]=useState(displayCredits(wallet.threshold_credits)), [limit,setLimit]=useState(displayCredits(wallet.monthly_limit_cents)), [consent,setConsent]=useState(false), [autoReview,setAutoReview]=useState(false);
   const [card,setCard]=useState<Awaited<ReturnType<typeof loadCampaignCardAction>> | undefined>(),[cardError,setCardError]=useState("");
   const [ledger,setLedger]=useState<CampaignLedgerEntry[]>([]),[ledgerMore,setLedgerMore]=useState(false),[ledgerError,setLedgerError]=useState("");

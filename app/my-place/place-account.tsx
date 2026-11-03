@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useState, useTransition } from "react";
@@ -48,6 +49,7 @@ export function AccountRow({
   const __vt = useWorkspaceTranslation();
 
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [data, setData] = useState<PlaceAccountDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, start] = useTransition();

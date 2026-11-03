@@ -1,6 +1,7 @@
 "use client";
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { createOwnerTransferInviteAction } from "@/app/account/actions";
@@ -34,6 +35,7 @@ export function SalonOwnershipSection({
   const __vt = useWorkspaceTranslation();
 
   const [confirmLeave, setConfirmLeave] = useState(false);
+  useTransientOverlay(() => setConfirmLeave(false), confirmLeave);
   const [leaveError, setLeaveError] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");

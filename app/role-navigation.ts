@@ -77,6 +77,7 @@ export type RoleNavigationConfig = {
 };
 
 export const SHARED_CONTEXT_ROUTE_PREFIXES = [
+  "/accept-invite",
   "/account",
   "/explore",
   "/help",
@@ -84,8 +85,12 @@ export const SHARED_CONTEXT_ROUTE_PREFIXES = [
   "/market",
   "/my-place",
   "/notifications",
+  "/ownership/invite",
+  "/security-check",
   "/settings",
+  "/staff/invite",
   "/support",
+  "/welcome",
 ] as const;
 
 export function roleNavigationKindForContext(input: {
@@ -201,14 +206,6 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       id: "personal-reviews",
       label: "Reviews",
       navigationIcon: "star",
-    },
-    {
-      description: "Gift cards available to your customer account.",
-      href: "/more/gift-cards",
-      icon: "gift",
-      id: "personal-gift-cards",
-      label: "Gift Cards",
-      navigationIcon: "receipt",
     },
     {
       description: "Report a problem, contact us and continue your support conversations.",
@@ -356,6 +353,14 @@ for (const kind of ["owner", "staff"] as const) {
   ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Report / Contact",description:"Report an issue and view your requests."});
 }
 
+export const PERSONAL_MORE_GROUPS = [
+  { id: "visits-benefits", title: "Visits & benefits", summary: "Check in, review visits, and use your rewards and gift cards.", ids: ["personal-qr", "personal-activity", "personal-rewards", "personal-gift-cards", "personal-memberships"] },
+  { id: "saved-following", title: "Saved & following", summary: "Your saved posts, followed profiles, and reviews.", ids: ["personal-saved-post", "personal-following", "personal-reviews"] },
+  { id: "workspace-support", title: "Workspace & support", summary: "Switch workspaces and find help.", ids: ["personal-my-place", "personal-help", "personal-reports"] },
+];
+const personalPriority = PERSONAL_MORE_GROUPS.flatMap(group => group.ids);
+ROLE_MORE_ITEMS.personal.sort((a, b) => personalPriority.indexOf(a.id) - personalPriority.indexOf(b.id));
+
 export const OWNER_MORE_GROUPS = [
   { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
   { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
@@ -391,11 +396,14 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
       "/beauty",
       "/claim",
       "/businesses",
+      "/gift-cards",
       "/my-bookings",
       "/permissions",
       "/roles",
+      "/rewards",
       "/salons",
       "/staff/connections",
+      "/tax-company",
     ],
   },
   staff: {
@@ -422,11 +430,14 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     routePrefixes: [
       "/campaigns",
       "/bookings",
+      "/check-writer",
       "/customers",
+      "/gift-cards/manage",
       "/payroll",
       "/pos",
       "/pos-tickets",
       "/reports",
+      "/reward-system",
       "/salon-settings",
       "/services",
       "/staff",

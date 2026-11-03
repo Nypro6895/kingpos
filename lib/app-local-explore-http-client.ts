@@ -3,6 +3,7 @@
 import { getAppLocalHost, type AppLocalHost } from "./app-local-host";
 import { getAppLocalCommandScope } from "./app-local-command-client";
 import type { AppLocalHttpResponse } from "./app-local-http-client";
+import { validateAppLocalRewardQuery } from "./app-local-reward-query";
 export { APP_LOCAL_EXPLORE_READS, APP_LOCAL_EXPLORE_COMMANDS, APP_LOCAL_EXPLORE_PATHS } from "./app-local-explore-metadata";
 
 function response(value: AppLocalHttpResponse) {
@@ -22,11 +23,16 @@ export function createAppLocalExploreHttpFetch(options: { scope: () => string | 
     const host = (options.host ?? getAppLocalHost)(); if (!host.isNative) return original(input, init);
     const request = input instanceof Request ? input : undefined, url = localUrl(request?.url ?? String(input));
     const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
-    if (!url || !(method === "GET" && ["/api/explore/suggestions", "/api/explore/salon-social", "/api/post-comments"].includes(url.pathname) || method === "POST" && ["/api/explore/search", "/api/explore/feed", "/api/explore/area"].includes(url.pathname))) return original(input, init);
+    const reward = method !== "GET" ? undefined : url?.pathname === "/api/rewards/discover" ? "http.rewards.discover" : url?.pathname === "/api/rewards/program" ? "http.rewards.program" : undefined;
+    if (!url || !(reward || method === "GET" && ["/api/explore/suggestions", "/api/explore/salon-social", "/api/post-comments"].includes(url.pathname) || method === "POST" && ["/api/explore/search", "/api/explore/feed", "/api/explore/area"].includes(url.pathname))) return original(input, init);
     const signal = init?.signal ?? request?.signal; cancelled(signal);
     const scope = options.scope(); if (!scope) throw new Error("Connect to open Explore.");
     let name: string, args: Record<string, unknown>;
-    if (method === "GET") {
+    if (reward) {
+      if ([...url.searchParams.keys()].some(key => url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported reward request");
+      name = reward; args = Object.fromEntries(url.searchParams);
+      validateAppLocalRewardQuery(reward, args);
+    } else if (method === "GET") {
       const comments = url.pathname === "/api/post-comments", social = url.pathname === "/api/explore/salon-social";
       const keys = comments ? ["sourceType", "sourceId", "offset", "pageSize"] : social ? ["ids"] : ["q", "location", "category"];
       if ([...url.searchParams].some(([key, value]) => !keys.includes(key) || value.length > (social ? 8192 : 512) || url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported Explore request");
@@ -50,6 +56,7 @@ export function createAppLocalExploreHttpFetch(options: { scope: () => string | 
       return response(value);
     }
     const value = await host.read<AppLocalHttpResponse>(name, args, { scope, signal: signal ?? undefined });
+    cancelled(signal);
     if (options.scope() !== scope || value.scope !== scope || !value.data) throw new Error("Your account has changed.");
     return response(value.data);
   };

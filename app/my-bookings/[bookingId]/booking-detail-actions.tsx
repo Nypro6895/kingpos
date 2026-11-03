@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 
 import {
@@ -614,8 +615,11 @@ export function BookingDetailActions({
   canViewSalon,
 }: BookingDetailActionsProps) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  useTransientOverlay(() => setRescheduleOpen(false), rescheduleOpen);
   const [cancelOpen, setCancelOpen] = useState(false);
+  useTransientOverlay(() => setCancelOpen(false), cancelOpen);
   const [contactOpen, setContactOpen] = useState(false);
+  useTransientOverlay(() => setContactOpen(false), contactOpen);
   const contactOptions = useMemo(() => contactLinks(booking), [booking]);
   const upcoming = canChange;
 

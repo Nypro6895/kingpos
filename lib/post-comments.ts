@@ -4,6 +4,7 @@ import { assertAbuseRequest } from "@/lib/abuse-server";
 import "server-only";
 
 import { commentDisplayName } from "@/lib/comment-identity";
+import { normalizeSalonProfileMediaPath, SALON_PROFILE_MEDIA_BUCKET } from "@/lib/salon-profile-media";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
@@ -33,6 +34,7 @@ type CommentRow = {
   acting_salon_id?: string | null;
   salon_name?: string | null;
   author_display_name: string | null;
+  author_avatar_url?: string | null;
   author_user_id: string | null;
   beauty_post_id?: string | null;
   body: string;
@@ -174,6 +176,7 @@ function mapCommentRow(row: CommentRow): PostComment {
     salonName: row.salon_name ?? null,
     authorDisplayName: commentDisplayName({ authorName: row.author_display_name, isSalonReply: row.is_salon_reply === true, salonName: row.salon_name }),
     authorUserId: row.author_user_id,
+    authorAvatarUrl: row.author_avatar_url ?? null,
     beautyPostId: row.beauty_post_id ?? null,
     body: row.body,
     moderationPending: row.status === "reported",
@@ -210,6 +213,7 @@ export async function getPostCommentViewer(
     canReplyAsSalon: options.canReplyAsSalon === true,
     isAuthenticated: Boolean(user),
     userId: user?.id ?? null,
+    identity: { name: user ? displayNameForUser(user) : "Guest", role: "personal", salonId: null, avatarUrl: user?.avatar_url ?? null },
   };
 }
 
@@ -217,6 +221,28 @@ async function mapCommentRows(rows: CommentRow[]) {
   const client = createSupabaseServerClient();
   const names = new Map<string, string>();
   const readable = await getReadableSupabaseClient();
+  // Resolve from the comment's immutable persona, never from the viewer or target salon.
+  // This bounded RPC exposes only identities of readable comments, including for guests.
+  if (readable && rows.length) {
+    try {
+      const batches = await Promise.all(Array.from({ length: Math.ceil(rows.length / 256) }, (_, index) =>
+        readable.rpc("get_post_comment_identities", { p_comment_ids: rows.slice(index * 256, (index + 1) * 256).map(row => row.id) })));
+      if (batches.every(batch => !batch.error && Array.isArray(batch.data))) {
+        const data = batches.flatMap(batch => batch.data);
+        const identities = new Map(data.map(identity => [identity.id, identity]));
+        return rows.map(row => {
+          const identity = identities.get(row.id);
+          const avatarPath = normalizeSalonProfileMediaPath(identity?.salon_logo_path ?? identity?.staff_avatar_path);
+          const avatar = avatarPath && client
+            ? client.storage.from(SALON_PROFILE_MEDIA_BUCKET).getPublicUrl(avatarPath).data.publicUrl
+            : identity?.author_avatar_url ?? null;
+          return mapCommentRow({ ...row, ...(identity ?? {}), author_avatar_url: avatar });
+        });
+      }
+    } catch {
+      // A missing migration or temporary identity lookup failure must not hide comments.
+    }
+  }
   if (readable && rows.length) {
     const metadata = await readable.from("salon_profile_comments").select("id,acting_role,acting_salon_id").in("id", rows.map(row => row.id));
     const byId = new Map((metadata.data ?? []).map(row => [row.id, row]));

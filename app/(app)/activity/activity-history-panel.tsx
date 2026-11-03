@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 
 import { HistoryDetailsDrawer } from "@/app/activity/history-details-drawer";
@@ -274,6 +275,7 @@ function ActivityDesktopRow({ activity, onDetails }: HistoryRowProps) {
 
 export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: ActivityHistoryPanelProps) {
   const [selectedActivity, setSelectedActivity] = useState<CustomerActivity | null>(() => initialSelectedBookingId ? activities.find(activity => activity.type !== "visit" && activity.bookingId === initialSelectedBookingId) ?? null : null);
+  useTransientOverlay(() => setSelectedActivity(null), Boolean(selectedActivity) && !initialSelectedBookingId);
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<ActivityTypeFilter>("all");

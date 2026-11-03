@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {useEffect,useRef,useState} from "react";
 import {createPortal} from "react-dom";
@@ -9,7 +10,8 @@ import styles from "@/components/owner-campaign.module.css";
 export function CreateCampaign({onClose,onCreated}:{onClose:()=>void;onCreated:(target:CampaignCreativeTarget,prepare:()=>Promise<CampaignCreativeTarget>)=>void}){
   const __vt = useWorkspaceTranslation();
 
-  const dialog=useRef<HTMLDialogElement>(null);const opener=useRef<HTMLElement|null>(null);
+  const dialog=useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);const opener=useRef<HTMLElement|null>(null);
   const [id]=useState(()=>crypto.randomUUID());const [image,setImage]=useState<File|null>(null);const [preview,setPreview]=useState("");const busy=false;const [error,setError]=useState("");
   useEffect(()=>{opener.current=document.activeElement as HTMLElement;const element=dialog.current;element?.showModal();return()=>{element?.close();opener.current?.focus();};},[]);
   useEffect(()=>{

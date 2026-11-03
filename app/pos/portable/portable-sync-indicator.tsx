@@ -1,4 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
 import { useEffect, useState, useRef } from "react";
@@ -31,10 +33,13 @@ export function PortableSyncIndicator({ scope, visible = true }: { scope: string
   const [items, setItems] = useState<PortableOperation[]>([]);
   const [storageError, setStorageError] = useState(false);
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [cancelling, setCancelling] = useState<PortableOperation | null>(null);
+  useTransientOverlay(() => setCancelling(null), Boolean(cancelling));
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
   const confirmation = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(confirmation);
   useEffect(() => {
     if (cancelling) confirmation.current?.showModal();
     else confirmation.current?.close();

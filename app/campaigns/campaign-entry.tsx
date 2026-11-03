@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -6,6 +7,7 @@ import { PluginActivationDialog } from "@/app/settings/plugin-activation-dialog"
 import styles from "./campaign-ui.module.css";
 export function CampaignActivation() {
   const [open,setOpen]=useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   return <main className={styles.page}><header className={styles.heading}><h1><WorkspaceText text="Your salon, discovered"/></h1><p><WorkspaceText text="Create an ad so more customers discover your salon."/></p></header><label className={styles.toggleOff}><WorkspaceText text="Activate advertising for your salon"/><input type="checkbox" role="switch" checked={false} onChange={()=>setOpen(true)}/></label><PluginActivationDialog open={open} onClose={()=>setOpen(false)} pluginName="Campaigns" marketHref="/market?q=Campaigns&activate=campaigns&returnTo=campaigns"/></main>;
 }
 export function CampaignLoadError() {

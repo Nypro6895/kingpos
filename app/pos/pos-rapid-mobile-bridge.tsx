@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { mergePortableStaff, usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 
@@ -63,6 +64,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
   const allowServiceClickRef = useRef(false);
   const [isMobile, setIsMobile] = useState(false);
   const [stage, setStage] = useState<RapidStage>(null);
+  useTransientOverlay(() => setStage(null), Boolean(stage));
   const [pendingService, setPendingService] = useState<PosDeskService | null>(null);
   const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null);
   const [currentInput, setCurrentInput] = useState("$0");

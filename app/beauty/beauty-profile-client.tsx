@@ -1,5 +1,7 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { compressImageCanvas } from "@/lib/image-upload-client";
+import { BeautyComposerDialog } from "./beauty-composer-dialog";
 import { ContentViewer } from "@/components/content-viewer";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import { mediaBatchProgress, type MediaUploadPhase } from "@/lib/media-upload-progress";
@@ -206,6 +208,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [status, setStatus] = useState("");
   const hintId = `share-reward-hint-${post.id}`;
   const dialogTitleId = `share-post-title-${post.id}`;
@@ -917,6 +920,7 @@ export function BeautyProfileClient({
     return () => window.removeEventListener(POST_CHANGED_EVENT, changed);
   }, [commentViewer.userId]);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  useTransientOverlay(() => setProfileEditorOpen(false), profileEditorOpen);
   const [profileDraftBio, setProfileDraftBio] = useState(initialProfile.bio ?? "");
   const [profileDraftVisibility, setProfileDraftVisibility] =
     useState<BeautyProfileVisibility>(initialProfile.visibility);
@@ -960,6 +964,7 @@ export function BeautyProfileClient({
   );
   const [loadingMore, setLoadingMore] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  useTransientOverlay(() => setComposerOpen(false), composerOpen);
   const [composerMode, setComposerMode] = useState<ComposerMode>("regular");
   const [caption, setCaption] = useState("");
   const [normalMedia, setNormalMedia] = useState<UploadedBeautyMedia[]>([]);
@@ -993,6 +998,16 @@ export function BeautyProfileClient({
       : [beforeMedia, afterMedia].filter(
           (item): item is UploadedBeautyMedia => Boolean(item),
         );
+  // Rank only the visit history supplied by the server.
+  const suggestedSalons = useMemo(() => {
+    const grouped = new Map<string, { candidate: BeautyRecentVisitCandidate; count: number }>();
+    for (const candidate of visitCandidates) {
+      const existing = grouped.get(candidate.salonId);
+      if (existing) existing.count += 1;
+      else grouped.set(candidate.salonId, { candidate, count: 1 });
+    }
+    return [...grouped.values()].sort((a, b) => b.count - a.count).slice(0, 4).map(item => item.candidate);
+  }, [visitCandidates]);
   const composerBusy = uploading || publishing;
   const profileEditorBusy = profileUpload !== null || savingProfile;
   const displayedCoverUrl = removeCover
@@ -1009,7 +1024,7 @@ export function BeautyProfileClient({
     [activeFilter, posts],
   );
   const composerTitle =
-    composerMode === "before_after" ? "Create Before & After" : "Share a beauty moment";
+    composerMode === "before_after" ? "Before & After" : "New post";
   const composerDescription =
     composerMode === "before_after"
       ? "Add the transformation, then choose the salon visit if it applies."
@@ -1083,7 +1098,7 @@ export function BeautyProfileClient({
   }, [profileEditorOpen]);
 
   useEffect(() => {
-    if (!composerOpen || composerMode !== "before_after" || !manualSalonSearchOpen) {
+    if (!composerOpen || !manualSalonSearchOpen) {
       return;
     }
 
@@ -1442,7 +1457,7 @@ export function BeautyProfileClient({
     setComposerMode(mode);
     setComposerOpen(true);
     setComposerError("");
-    setManualSalonSearchOpen(mode === "before_after" && visitCandidates.length === 0);
+    setManualSalonSearchOpen(visitCandidates.length === 0);
   }
 
   function resetComposer(cleanup: boolean) {
@@ -2208,23 +2223,13 @@ export function BeautyProfileClient({
       ) : null}
 
       {composerOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-6">
-          <button
-            aria-label="Close composer"
-            className="absolute inset-0 cursor-default"
-            onClick={closeComposer}
-            type="button"
-          />
+        <BeautyComposerDialog busy={composerBusy} onClose={closeComposer}>
           <div
-            aria-describedby="beauty-composer-description"
-            aria-labelledby="beauty-composer-title"
-            aria-modal="true"
-            className="settings-style relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+            className="settings-style relative outline-none flex h-full min-h-0 w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:h-auto sm:max-h-full sm:max-w-2xl sm:rounded-2xl"
             ref={composerDialogRef}
-            role="dialog"
             tabIndex={-1}
           >
-            <div className="flex min-h-16 items-start justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
+            <div className="flex shrink-0 min-h-16 items-start justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
               <div>
                 <h2
                   className="text-lg font-extrabold text-text-primary"
@@ -2239,6 +2244,7 @@ export function BeautyProfileClient({
                   {composerDescription}
                 </p>
               </div>
+              <div className="flex shrink-0 items-center gap-1">
               <button
                 className="min-h-10 rounded-full px-3 text-sm font-bold text-text-secondary transition hover:bg-surface-muted hover:text-text-primary"
                 disabled={composerBusy}
@@ -2247,10 +2253,14 @@ export function BeautyProfileClient({
               >
                 Close
               </button>
+              <button type="button" onClick={publishPost} disabled={composerBusy} className="min-h-11 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white disabled:opacity-60">
+                {publishing ? "Posting..." : "Post"}
+              </button>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overscroll-contain overflow-auto px-4 py-4 sm:px-5">
-              <div className="grid gap-5">
+              <div className="grid gap-4">
                 <div className="flex gap-2" aria-label="Post type"><button type="button" className="beauty-action" aria-pressed={composerMode === "regular"} disabled={composerBusy} onClick={() => setComposerMode("regular")}>Photo</button><button type="button" className="beauty-action" aria-pressed={composerMode === "before_after"} disabled={composerBusy} onClick={() => setComposerMode("before_after")}>Before &amp; After</button></div>
                 {composerMode === "regular" ? (
                   <>
@@ -2259,7 +2269,8 @@ export function BeautyProfileClient({
                         Caption
                       </span>
                       <textarea
-                        className="min-h-28 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                        className="min-h-24 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                        disabled={composerBusy}
                         maxLength={2200}
                         onChange={(event) => setCaption(event.currentTarget.value)}
                         placeholder="What changed, what you loved, or how it feels..."
@@ -2272,7 +2283,7 @@ export function BeautyProfileClient({
                           Photos
                         </p>
                         <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
-                          Add up to four images.
+                          Up to 4 photos.
                         </p>
                       </div>
                       <input
@@ -2286,7 +2297,7 @@ export function BeautyProfileClient({
                         type="file"
                       />
                       <button
-                        className="min-h-28 rounded-2xl border border-dashed border-border-subtle bg-surface-muted px-4 text-sm font-extrabold text-text-secondary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
+                        className="min-h-12 rounded-2xl border border-dashed border-border-subtle bg-surface-muted px-4 text-sm font-extrabold text-text-secondary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={composerBusy || normalMedia.length >= 4}
                         onClick={() => normalFileInputRef.current?.click()}
                         type="button"
@@ -2296,7 +2307,7 @@ export function BeautyProfileClient({
                           : "Add photos"}
                       </button>
                       {normalMedia.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <div className="grid grid-cols-4 gap-2">
                           {normalMedia.map((media) => (
                             <div
                               className="relative aspect-square overflow-hidden rounded-2xl bg-surface-muted"
@@ -2310,12 +2321,12 @@ export function BeautyProfileClient({
                               />
                               <button
                                 aria-label="Remove photo"
-                                className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-sm font-extrabold text-text-primary shadow-sm"
+                                className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-sm font-extrabold text-text-primary shadow-sm"
                                 disabled={composerBusy}
                                 onClick={() => removeNormalMedia(media)}
                                 type="button"
                               >
-                                x
+                                ×
                               </button>
                             </div>
                           ))}
@@ -2393,6 +2404,7 @@ export function BeautyProfileClient({
                       </span>
                       <textarea
                         className="min-h-24 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                        disabled={composerBusy}
                         maxLength={2200}
                         onChange={(event) => setCaption(event.currentTarget.value)}
                         placeholder="Optional: what changed or how it feels..."
@@ -2400,23 +2412,27 @@ export function BeautyProfileClient({
                       />
                     </label>
 
+
+                  </>
+                )}
+
                     <section className="grid gap-3">
                       <div>
                         <p className="text-xs font-bold uppercase text-text-secondary">
-                          Where was this done?
+                          Tag a salon
                         </p>
                         <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
-                          Verified salon transformations may qualify for Beauty rewards.
+                          {composerMode === "before_after" ? "Choose the salon for this transformation." : "Optional · give your salon credit."}
                         </p>
                       </div>
 
-                      {visitCandidates.length > 0 && !manualSalonSearchOpen ? (
+                      {visitCandidates.length > 0 ? (
                         <div className="grid gap-2">
                           <p className="text-sm font-extrabold text-text-primary">
-                            Was this from a recent visit?
+                            From your visits
                           </p>
                           <div className="grid gap-2">
-                            {visitCandidates.slice(0, 4).map((candidate) => (
+                            {suggestedSalons.map((candidate) => (
                               <button
                                 className={classNames(
                                   "rounded-2xl px-3 py-3 text-left text-sm ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal",
@@ -2427,6 +2443,7 @@ export function BeautyProfileClient({
                                     : "bg-surface-muted text-text-primary ring-divider-subtle hover:ring-brand-teal/35",
                                 )}
                                 disabled={composerBusy}
+                                aria-pressed={attribution?.salonId === candidate.salonId}
                                 key={candidate.visitKey}
                                 onClick={() => selectVisitCandidate(candidate)}
                                 type="button"
@@ -2470,6 +2487,7 @@ export function BeautyProfileClient({
                               onChange={(event) =>
                                 updateSalonQuery(event.currentTarget.value)
                               }
+                              disabled={composerBusy}
                               placeholder="Search salon"
                               value={salonQuery}
                             />
@@ -2484,6 +2502,7 @@ export function BeautyProfileClient({
                               {salonResults.map((salon) => (
                                 <button
                                   className="rounded-2xl bg-surface-muted px-3 py-3 text-left text-sm ring-1 ring-divider-subtle transition hover:ring-brand-orange/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                                  disabled={composerBusy}
                                   key={salon.salonId}
                                   onClick={() => selectSalonResult(salon)}
                                   type="button"
@@ -2508,12 +2527,15 @@ export function BeautyProfileClient({
 
                       {attribution ? (
                         <div className="grid gap-3 rounded-2xl bg-brand-teal-soft p-3 ring-1 ring-brand-teal/20">
+                          <div className="flex items-center justify-between gap-2">
                           <p className="text-sm font-extrabold text-brand-teal">
                             {attribution.salonName}
                             {attribution.staffName
                               ? ` with ${attribution.staffName}`
                               : ""}
                           </p>
+                          <button type="button" disabled={composerBusy} className="min-h-11 px-2 text-sm font-bold text-brand-teal" onClick={() => { setAttribution(null); setSalonQuery(""); setSalonResults([]); }}>Remove tag</button>
+                          </div>
                           {attribution.source === "customer_claimed" &&
                           selectedStaffOptions.length > 0 ? (
                             <label className="grid gap-1.5">
@@ -2525,6 +2547,7 @@ export function BeautyProfileClient({
                                 onChange={(event) =>
                                   updateSelectedStaff(event.currentTarget.value)
                                 }
+                                disabled={composerBusy}
                                 value={attribution.staffId ?? ""}
                               >
                                 <option value="">No specific professional</option>
@@ -2539,15 +2562,14 @@ export function BeautyProfileClient({
                         </div>
                       ) : null}
                     </section>
-                  </>
-                )}
 
-                {uploading || (uploadPhase === "complete" && currentComposerMedia.length > 0) ? (
+                {uploading ? (
                   <MediaUploadProgress phase={uploadPhase} progress={uploadProgress} current={uploadBatch.current} total={uploadBatch.total} />
                 ) : null}
 
+                {uploadPhase === "complete" && !uploading && currentComposerMedia.length > 0 ? <p role="status" className="text-sm font-semibold text-brand-teal">✓ {currentComposerMedia.length} photo{currentComposerMedia.length === 1 ? "" : "s"} ready</p> : null}
                 {composerError ? (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
+                  <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
                     {composerError}
                   </p>
                 ) : null}
@@ -2558,26 +2580,8 @@ export function BeautyProfileClient({
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:flex-row sm:justify-end sm:px-5 sm:py-4">
-              <button
-                className="min-h-11 w-full rounded-full border border-border-subtle px-4 text-sm font-extrabold text-text-primary sm:w-auto"
-                disabled={composerBusy}
-                onClick={closeComposer}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="min-h-11 w-full rounded-full bg-brand-orange px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-brand-orange-hover disabled:cursor-wait disabled:opacity-60 sm:w-auto"
-                disabled={composerBusy}
-                onClick={publishPost}
-                type="button"
-              >
-                {publishing ? "Publishing..." : "Publish"}
-              </button>
-            </div>
           </div>
-        </div>
+        </BeautyComposerDialog>
       ) : null}
     </main>
   );

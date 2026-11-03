@@ -1,8 +1,8 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ConnectionsPanel } from "@/app/settings/connections-panel";
 import { SalonListPanel } from "@/app/settings/salon-list-panel";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 
 import { DirectSettingsPanel } from "@/app/settings/direct-settings-panel";
 import { AccountDeletionPanel } from "@/app/account/account-deletion-panel";
@@ -573,7 +573,7 @@ function SettingsDetailDrawer({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  useCloseOnNavigation(onClose, Boolean(row));
+  // Navigation resets local owner state; the explicit close action may update a URL or ask about a draft.
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
 
@@ -729,6 +729,7 @@ export function AllSettingsClient({
   const requestedSection = params.get("section");
   const [lastRequestedSection, setLastRequestedSection] = useState(requestedSection);
   const [openRowId, setOpenRowId] = useState<string | null>(requestedSection === "notifications" ? "account-notifications" : requestedSection === "salon-profile" ? "salon-profile" : null);
+  useTransientOverlay(() => setOpenRowId(null), Boolean(openRowId));
   if (lastRequestedSection !== requestedSection) {
     setLastRequestedSection(requestedSection);
     if (requestedSection === "notifications") setOpenRowId("account-notifications");

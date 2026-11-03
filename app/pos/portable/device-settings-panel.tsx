@@ -1,5 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -68,6 +70,8 @@ function ApplicationSettings() {
 
 export function DeviceInputSettingsButton({ desktopOnly=false }: {desktopOnly?:boolean}) {
   const t=useWorkspaceTranslation();const [open,setOpen]=useState(false);const [error,setError]=useState("");const dialog=useRef<HTMLDialogElement>(null);const desktop=useSyncExternalStore(subscribeDesktop,readDesktop,serverDesktop);
+  useTransientOverlay(() => setOpen(false), open);
+  useNativeDialogNavigation(dialog);
   useEffect(()=>{if(open)dialog.current?.showModal();},[open]);if(desktopOnly&&!desktop)return null;
   return <><button type="button" aria-label={t("Device settings")} title={t("Device settings")} onClick={()=>setOpen(true)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-orange-500"><WorkspaceNavigationIcon name="gear" className="h-5 w-5" /></button>
     {open&&createPortal(<dialog ref={dialog} onPointerDown={dialogOutsidePointerDown} onClick={dialogOutsideClick} aria-label={t("Device settings")} onClose={()=>setOpen(false)} className="portable-device-settings" data-touch-keyboard="off"><header><h2><WorkspaceText text="Settings" /></h2><button type="button" aria-label={t("Close settings")} onClick={()=>dialog.current?.close()}>×</button></header>

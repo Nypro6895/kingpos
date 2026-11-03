@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
@@ -259,6 +260,7 @@ export function PortableCheckInClient({
   const [localData, setLocalData] = useState<PortableCheckInData | null>(null);
   const localDataBase = useRef(data);
   const [modal, setModal] = useState<ModalState>(null);
+  useTransientOverlay(() => setModal(null), Boolean(modal));
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);

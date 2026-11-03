@@ -3,6 +3,7 @@ import { hasAppLocalPublicAnchor } from "./app-local-public-anchor";
 import { useEffect } from "react";
 import Link from "next/link";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
+import { RewardSalonPanel } from "@/components/rewardlumi/reward-salon-panel";
 import { BeautyProfileReadView } from "@/app/explore/beauty/beauty-profile-read-view";
 import { BeautyPostReadView } from "@/app/explore/beauty/beauty-post-read-view";
 import { NailInspirationCard } from "@/app/explore/nail-inspiration";
@@ -36,12 +37,12 @@ export function AppLocalPublicView({ data, path }: { data: AppLocalPublicData; p
     if (expected.pathname + expected.search !== location.pathname + location.search || !hasAppLocalPublicAnchor(current)) return;
     const frame = requestAnimationFrame(() => {
       // Salon tabs own their own activation, filtering and Trust disclosure.
-      if (data.view !== "beauty-post") return;
-      document.getElementById("comments")?.scrollIntoView({ block: "start" });
+      if (data.view === "salon" && location.hash === "#salon-rewards") document.getElementById("salon-rewards")?.scrollIntoView({ block: "start" });
+      if (data.view === "beauty-post") document.getElementById("comments")?.scrollIntoView({ block: "start" });
     });
     return () => cancelAnimationFrame(frame);
   }, [data, path]);
-  if (data.view === "salon") return <main><SalonProfileView {...data.props} /></main>;
+  if (data.view === "salon") return <main><RewardSalonPanel key={`${data.props.data.profile.salonId}:${data.props.capabilities?.currentUserId ?? "guest"}`} salonId={data.props.data.profile.salonId} canBook={data.props.capabilities?.canBook === true && data.props.data.profile.activeServiceCount > 0} /><SalonProfileView {...data.props} /></main>;
   if (data.view === "beauty") return <BeautyProfileReadView page={data.page} />;
   if (data.view === "beauty-post") return <BeautyPostReadView item={data.item} commentViewer={data.commentViewer} profileId={data.profileId} postId={data.postId} />;
   if (data.view === "booking") return <PublicBookingClient data={data.data} />;

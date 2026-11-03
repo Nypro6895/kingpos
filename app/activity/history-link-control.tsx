@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay, useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { WorkspaceText } from "@/components/workspace-language";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -12,12 +13,17 @@ export function HistoryLinkControl({ bookingId, evidence: initial, timezone = "A
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
+  const requestEpoch = useRef(0);
+  useTransientOverlay(() => { requestEpoch.current += 1; dialog.current?.close(); });
   const router = useRouter();
   const time = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: timezone }).format(new Date(value));
   function open() {
+    const epoch = requestEpoch.current;
     startTransition(async () => {
       setError("");
       const result = await loadHistoryEvidenceAction(bookingId);
+      if (requestEpoch.current !== epoch) return;
       if (result.error) { setError(result.error); return; }
       setEvidence(result.evidence);
       dialog.current?.showModal();

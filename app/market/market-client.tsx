@@ -1,5 +1,7 @@
 "use client";
 import {CheckWriterPanel} from "./check-writer-panel";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import {openMarketPayment} from "@/lib/open-market-payment";
 import {BookSmsPanel} from "./booksms-panel";
 import type {BookSmsState} from "@/types/booksms";
@@ -144,11 +146,15 @@ export function MarketClient({ checkWriter = {active:false,subscribed:false}, au
   const [pluginMessage, setPluginMessage] = useState(pluginLoadError);
   const added = [...(checkWriter.active || checkWriter.subscribed || checkWriter.installed ? ["print-check"] : []),...(booksms?.installed?["booksms"]:[]),...(taxCompany.active || taxCompany.subscribed ? ["tax-company"] : []),...(relayAdded ? ["service-relay"] : []),...(bookingDeposit?.installed || bookingDeposit?.subscribed ? ["booking-deposit"] : []),...(bookingPolicy.active || bookingPolicy.subscribed ? ["booking-policy"] : []),...(checkinReceipt.active || checkinReceipt.subscribed ? ["checkin-receipt"] : []),...(installed ? ["payroll-data-download"] : []),...(campaignAdded ? ["campaigns"] : []), ...(vietnamese.installed || vietnamese.has_subscription ? ["vietnamese-language"] : [])];
   const [comingSoon, setComingSoon] = useState(false);
+  useTransientOverlay(() => setComingSoon(false), comingSoon);
   const [selectedApp, setSelected] = useState<MarketApp | null>(null);
+  useTransientOverlay(() => setSelected(null), Boolean(selectedApp));
   const selected = selectedApp ? apps.find(app => app.id === selectedApp.id) ?? selectedApp : null;
   const [developer, setDeveloper] = useState(false);
+  useTransientOverlay(() => setDeveloper(false), developer);
 
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const open = Boolean(selected || developer);
 
   useEffect(() => {

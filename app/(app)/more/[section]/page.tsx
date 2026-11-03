@@ -59,12 +59,6 @@ const MORE_SECTIONS: Record<string, MoreSection> = {
     description:
       "Reviews posted from your customer account will appear here.",
   },
-  "gift-cards": {
-    actionHref: "/more",
-    actionLabel: "Back to More",
-    description:
-      "Gift card balances and history will appear here when they are available.",
-  },
   reports: {
     actionHref: "/notifications",
     actionLabel: "Open notifications",
@@ -220,16 +214,6 @@ async function removeFollowingAction(formData: FormData) {
   }
 }
 
-function BackLink() {
-  return (
-    <Link
-      className="w-fit rounded-full px-2 py-1 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-      href="/more"
-    >
-      <WorkspaceText text="Back to More" />
-    </Link>
-  );
-}
 
 function EmptyState({
   actionHref,
@@ -584,7 +568,7 @@ async function MoreSectionPage({
   const normalizedSection = normalizeSection(section);
 
     if (normalizedSection === "reviews") {
-      return <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6"><div className="mx-auto grid w-full max-w-3xl gap-5"><BackLink /><MyReviews page={Math.min(1001,parseSavedPostPage(stringParam(rawSearchParams.page)))} experienceId={stringParam(rawSearchParams.experience)} /></div></main>;
+      return <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6"><div className="mx-auto grid w-full max-w-3xl gap-5"><MyReviews page={Math.min(1001,parseSavedPostPage(stringParam(rawSearchParams.page)))} experienceId={stringParam(rawSearchParams.experience)} /></div></main>;
     }
 
   if (normalizedSection === "saved-post") {
@@ -603,7 +587,6 @@ async function MoreSectionPage({
     return (
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <BackLink />
           <SavedPostsSection
             filter={filter}
             hasNext={hasNext}
@@ -652,7 +635,6 @@ async function MoreSectionPage({
     return (
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <BackLink />
           <FollowingSection
             filter={filter}
             items={following.items}
@@ -665,6 +647,8 @@ async function MoreSectionPage({
     );
   }
 
+  if (normalizedSection === "gift-cards") redirect("/gift-cards");
+
   const content = MORE_SECTIONS[normalizedSection];
 
   if (!content) {
@@ -674,7 +658,6 @@ async function MoreSectionPage({
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-3xl gap-5">
-        <BackLink />
         <EmptyState {...content} />
       </div>
     </main>

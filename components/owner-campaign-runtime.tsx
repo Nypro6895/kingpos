@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { dismissCampaignPromptAction, ownerCampaignPromptAction } from "@/app/campaigns/actions";
@@ -13,6 +14,7 @@ export function OwnerCampaignRuntime({ scope, settings, location, availableCredi
   const pathname = usePathname();
   const excluded = pathname.startsWith("/pos/portable") || pathname.startsWith("/admin") || pathname.startsWith("/campaigns");
   const [prompt, setPrompt] = useState<CampaignPrompt | null>(null);
+  useTransientOverlay(() => setPrompt(null), Boolean(prompt));
   useEffect(() => {
     if (excluded || !settings.enabled) return;
     let alive = true;

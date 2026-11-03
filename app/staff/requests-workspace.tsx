@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -83,6 +84,7 @@ export function RequestsWorkspace({
   const [selected, setSelected] = useState<string | null>(
     initialRequest ?? (initialInvite ? "invite" : null),
   );
+  useTransientOverlay(() => setSelected(null), Boolean(selected));
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const entry = entries.find((item) => item.id === selected);

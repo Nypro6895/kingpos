@@ -7,8 +7,8 @@ const subscribe = () => () => {};
 const getDeviceZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const getServerZone = () => "";
 
-type Props = Omit<SelectHTMLAttributes<HTMLSelectElement>, "children">;
-export function TimeZoneSelect(props: Props) {
+type Props = Omit<SelectHTMLAttributes<HTMLSelectElement>, "children"> & { compactLabel?: boolean };
+export function TimeZoneSelect({ compactLabel = false, ...props }: Props) {
   const __vt = useWorkspaceTranslation();
 
   const deviceZone = useSyncExternalStore(subscribe, getDeviceZone, getServerZone);
@@ -24,7 +24,7 @@ export function TimeZoneSelect(props: Props) {
   const extra = [current, deviceZone].filter((zone, index, all) => zone && !TIME_ZONE_OPTIONS.some(value => value === zone) && all.indexOf(zone) === index);
   return <select {...props} ref={ref}>
     {!current && !deviceZone ? <option value=""><WorkspaceText text="Choose time zone" /></option> : null}
-    {deviceZone ? <optgroup label={__vt("Device time zone")}><option value={deviceZone}><WorkspaceText text="Use device time zone —" /> {deviceZone.replaceAll("_", " ")}</option></optgroup> : null}
+    {deviceZone ? <optgroup label={__vt("Device time zone")}><option value={deviceZone}>{compactLabel ? deviceZone.replaceAll("_", " ").replaceAll("/", " / ") : <><WorkspaceText text="Use device time zone —" /> {deviceZone.replaceAll("_", " ")}</>}</option></optgroup> : null}
     <optgroup label={__vt("Choose a time zone")}>
       {[...extra, ...TIME_ZONE_OPTIONS].map(zone => <option key={zone} value={zone}>{zone.replaceAll("_", " ").replaceAll("/", " / ")}</option>)}
     </optgroup>

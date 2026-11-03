@@ -1,4 +1,5 @@
 import "server-only";
+import { validStaffTicketDate } from "./staff-tickets";
 
 import { createHash } from "node:crypto";
 import { getRequestBusinessContext } from "./request-business-context";
@@ -76,11 +77,13 @@ async function readAppLocalRoleResourceInContext(name: string, args: unknown, op
     if (!identity.context.user) throw new AppLocalRoleReadError(401, "Sign in required");
     if (!identity.context.currentSalon || !identity.context.currentAccount || !identity.staff) throw new AppLocalRoleReadError(403, "Staff access changed");
     if (getExperienceContext(identity.context).scope !== options.scope || query.get("staffId") !== identity.staff.id) throw new AppLocalRoleReadError(409, "Staff workspace changed");
-    const tab = oneOf(query.get("tab"), ["daily", "payroll", "analysis"], "daily");
+    const tab = oneOf(query.get("tab"), ["daily", "payroll", "tickets", "analysis"], "daily");
     const payPeriodStart = query.get("payPeriodStart") ?? undefined;
     if (payPeriodStart && !/^\d{4}-\d{2}-\d{2}(?::\d{4}-\d{2}-\d{2})?$/.test(payPeriodStart)) throw new AppLocalRoleReadError(400, "Invalid pay period");
-    const result = await runReadWithDeadline(loadStaffMyWorkResource(identity, { tab, payPeriodStart }, options.timing), 12000);
-    if (tab === "payroll" && !result.payrollData || tab === "analysis" && !result.analysisData) throw new AppLocalRoleReadError(503, "Please try again");
+    const ticketDate = query.get("ticketDate") ?? undefined;
+    if (ticketDate !== undefined && !validStaffTicketDate(ticketDate)) throw new AppLocalRoleReadError(400, "Invalid ticket date");
+    const result = await runReadWithDeadline(loadStaffMyWorkResource(identity, { tab, payPeriodStart, ticketDate }, options.timing), 12000);
+    if (tab === "payroll" && !result.payrollData || tab === "analysis" && !result.analysisData || tab === "tickets" && !result.ticketsData) throw new AppLocalRoleReadError(503, "Please try again");
     data = result;
   } else {
     const readContext = () => runReadWithDeadline(getRequestBusinessContext(), 12000);

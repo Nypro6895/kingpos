@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ export function DesktopUpdate() {
 
   const [state, setState] = useState<DesktopUpdateState | null>(null);
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {

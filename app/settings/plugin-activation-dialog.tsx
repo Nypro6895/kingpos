@@ -1,4 +1,5 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
@@ -10,6 +11,7 @@ export function PluginActivationDialog({ open, onClose, pluginName, marketHref }
 }) {
   const t = useWorkspaceTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const titleId = useId();
   const descriptionId = useId();
   useEffect(() => {

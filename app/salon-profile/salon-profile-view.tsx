@@ -1,6 +1,7 @@
 "use client";
 import { VisitReplyControls } from "@/app/activity/visit-reply-controls";
 import { salonProfileAnchor } from "@/lib/salon-profile-anchor";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
 import { PublicationPanel } from "./publication-panel";
@@ -1174,7 +1175,7 @@ function Modal({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  useCloseOnNavigation(onClose);
+  // Navigation resets local owner state; the explicit close action may update a URL or ask about a draft.
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const latestOnCloseRef = useRef(onClose);
@@ -3276,9 +3277,13 @@ export function SalonProfileView({
   const [editedPreferences, setEditedPreferences] = useState<SalonProfilePreferences | null>(null);
   const preferences = editedPreferences ?? data.preferences ?? DEFAULT_PROFILE_PREFERENCES;
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
+  useTransientOverlay(() => setProfileSettingsOpen(false), profileSettingsOpen);
   const [operatingHoursOpen, setOperatingHoursOpen] = useState(false);
+  useTransientOverlay(() => setOperatingHoursOpen(false), operatingHoursOpen);
   const [hoursInfoOpen, setHoursInfoOpen] = useState(false);
+  useTransientOverlay(() => setHoursInfoOpen(false), hoursInfoOpen);
   const [contentManagerOpen, setContentManagerOpen] = useState(false);
+  useTransientOverlay(() => setContentManagerOpen(false), contentManagerOpen);
   const [publishedPosts, setPublishedPosts] = useState<ProfileFeedItem[]>([]);
   const hasGalleryPhotos = [...data.feed, ...publishedPosts].some(post => post.imageUrl)
     || data.looks.some(look => look.imageUrl) || data.beautyPosts.some(post => post.media.some(media => media.url));
@@ -3314,22 +3319,32 @@ export function SalonProfileView({
   const [detailLook, setDetailLook] = useState<PublicSalonProfileLook | null>(
     null,
   );
+  useTransientOverlay(() => setDetailLook(null), Boolean(detailLook));
   const [detailPost, setDetailPost] = useState<ProfileFeedItem | null>(null);
+  useTransientOverlay(() => setDetailPost(null), Boolean(detailPost));
   const [detailBeautyPost, setDetailBeautyPost] =
     useState<PublicSalonProfileBeautyPost | null>(null);
+  useTransientOverlay(() => setDetailBeautyPost(null), Boolean(detailBeautyPost));
   const [detailStaff, setDetailStaff] =
     useState<PublicSalonProfileStaff | null>(null);
+  useTransientOverlay(() => setDetailStaff(null), Boolean(detailStaff));
   const [composerType, setComposerType] = useState<ComposerType | null>(null);
+  useTransientOverlay(() => setComposerType(null), Boolean(composerType));
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  useTransientOverlay(() => setProfileEditorOpen(false), profileEditorOpen);
   const [publicationOpen, setPublicationOpen] = useState(false);
+  useTransientOverlay(() => setPublicationOpen(false), publicationOpen);
   const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
+  useTransientOverlay(() => setOwnerMenuOpen(false), ownerMenuOpen);
   const [salonReportOpen, setSalonReportOpen] = useState(false);
+  useTransientOverlay(() => setSalonReportOpen(false), salonReportOpen);
   useCloseOnNavigation(() => setOwnerMenuOpen(false), ownerMenuOpen);
   const ownerMenuButtonRef = useRef<HTMLButtonElement | null>(null);
   const ownerMenuRef = useRef<HTMLDivElement | null>(null);
   const [experienceFilter, setExperienceFilter] =
     useState<"all" | "issues" | "verified" | "good">("all");
   const [commentTarget, setCommentTarget] = useState<PostCommentTarget | null>(null);
+  useTransientOverlay(() => setCommentTarget(null), Boolean(commentTarget));
   const [commentCountOverrides, setCommentCountOverrides] = useState(
     new Map<string, number>(),
   );
@@ -3439,6 +3454,7 @@ export function SalonProfileView({
   const [statusMessage, setStatusMessage] = useState("");
   const [authPromptIntent, setAuthPromptIntent] =
     useState<AuthPromptIntent | null>(null);
+  useTransientOverlay(() => setAuthPromptIntent(null), Boolean(authPromptIntent));
   const [surpriseIndex, setSurpriseIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
   function bookingHref(context: BookingContext) {

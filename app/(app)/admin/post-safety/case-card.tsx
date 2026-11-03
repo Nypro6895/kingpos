@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import {useCallback, useEffect, useRef, useState, useTransition, type ReactNode} from "react";
 import {createPortal} from "react-dom";
 import {useRouter} from "next/navigation";
@@ -39,7 +40,9 @@ function PostMedia({item,large=false}: {item:AdminPostSafetyCase;large?:boolean}
 }
 export function PostSafetyCaseCard({item,canReview,canSuspend,canContact,viewerId,onDecision,onBusyChange,onRelated}: {item:AdminPostSafetyCase;canReview:boolean;canSuspend:boolean;canContact:boolean;viewerId?:string;onDecision?:(action:string)=>void;onBusyChange?:(busy:boolean)=>void;onRelated?:(kind:string,value:string)=>void}){
  const [actionsOpen,setActionsOpen]=useState(false);
- const reviewRequestId=useRef<string|null>(null);const router=useRouter();const [dialog,setDialog]=useState<string|null>(null);const [note,setNote]=useState("");const [publicMessage,setPublicMessage]=useState("");const [notice,setNotice]=useState<{ok:boolean;message:string}|null>(null);const [busy,startTransition]=useTransition();const [tab,setTab]=useState("record");const [copied,setCopied]=useState(false);
+  useTransientOverlay(() => setActionsOpen(false), actionsOpen);
+ const reviewRequestId=useRef<string|null>(null);const router=useRouter();const [dialog,setDialog]=useState<string|null>(null);
+  useTransientOverlay(() => setDialog(null), Boolean(dialog));const [note,setNote]=useState("");const [publicMessage,setPublicMessage]=useState("");const [notice,setNotice]=useState<{ok:boolean;message:string}|null>(null);const [busy,startTransition]=useTransition();const [tab,setTab]=useState("record");const [copied,setCopied]=useState(false);
  useEffect(()=>{onBusyChange?.(busy);},[busy,onBusyChange]);
  const close=useCallback(()=>{if(!busy)setDialog(null);},[busy]);const open=(value:string)=>{reviewRequestId.current=null;setNotice(null);setPublicMessage("");setNote("");setDialog(value);};
  const post=item.current_post??item.content_snapshot;const pending=item.status==="pending";const decision=dialog?decisions[dialog]:undefined;const href=originalPostHref(item);

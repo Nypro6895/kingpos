@@ -3,8 +3,9 @@ import type { StaffGreetingHistory } from "@/lib/staff-greeting";
 import type { StaffAssignedWorkTicket } from "@/lib/staff-workdays";
 import type { Staff } from "@/types/staff";
 
-export type StaffPortalTab = "daily" | "payroll" | "analysis";
+export type StaffPortalTab = "daily" | "payroll" | "tickets" | "analysis";
 export type StaffMyWorkSearchParams = {
+  ticketDate?: string | string[];
   cycleType?: string | string[]; end?: string | string[]; error?: string | string[];
   month?: string | string[]; payPeriodStart?: string | string[]; profile?: string | string[];
   preset?: string | string[]; segment?: string | string[]; start?: string | string[]; tab?: string | string[];
@@ -29,6 +30,7 @@ export type StaffMyWorkResource = {
   staffAvatarUrl: string | null;
   payrollData: StaffPayrollView | null;
   analysisData: StaffAnalysisView | null;
+  ticketsData?: import("./staff-tickets").StaffTicketsData | null;
   generatedAt: string;
 };
 
@@ -38,5 +40,5 @@ export function staffMyWorkStringParam(value: string | string[] | undefined) {
 
 export function staffMyWorkActiveTab(tab: string | string[] | undefined): StaffPortalTab {
   const value = staffMyWorkStringParam(tab);
-  return value === "payroll" || value === "analysis" ? value : "daily";
+  return value === "payroll" || value === "analysis" || value === "tickets" ? value : "daily";
 }

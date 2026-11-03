@@ -18,10 +18,11 @@ export function getExperienceOfflinePath(href: string, origin = "https://reylumi
     const url = new URL(href, origin);
     if (url.origin !== new URL(origin).origin || url.username || url.password || url.hash) return null;
     const path = url.pathname.replace(/\/$/, "") || "/";
-    if (!/^(?:\/(?:pos(?:\/(?:ticket(?:\/[\w-]+)?|book|check-in|report|settings))?|pos\/portable(?:\/(?:ticket|book|check-in|report|today))?|staff\/(?:today|my-work|workday|appointments)|payroll|customers(?:\/[\w-]+)?|activity(?:\/receipts\/[\w-]+)?|my-bookings(?:\/[\w-]+)?|my-place|more(?:\/(?:saved-post|following))?|beauty|explore(?:\/favorites)?|market|notifications))$/.test(path)) return null;
+    if (!/^(?:\/(?:pos(?:\/(?:ticket(?:\/[\w-]+)?|book|check-in|report|settings))?|pos\/portable(?:\/(?:ticket|book|check-in|report|today))?|staff\/(?:today|my-work|workday|appointments)|payroll|customers(?:\/[\w-]+)?|activity(?:\/receipts\/[\w-]+)?|my-bookings(?:\/[\w-]+)?|my-place|more(?:\/(?:saved-post|following))?|beauty|rewards|explore(?:\/favorites)?|market|notifications))$/.test(path)) return null;
     if (/(?:^|\/)(?:new|edit|create|delete|checkout|payment|setup)(?:\/|$)/.test(path)) return null;
     for (const [key, value] of url.searchParams) if (SECRET.test(key) || value.length > 512 || /(?:token|secret|password)=/i.test(value)) return null;
     if (path === "/market" && [...url.searchParams.keys()].some(key => !["q", "category"].includes(key))) return null;
+    if (path === "/rewards" && url.search) return null;
     url.searchParams.sort();
     return path + url.search;
   } catch { return null; }

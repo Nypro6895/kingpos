@@ -1,7 +1,6 @@
 import { CampaignPluginConfiguration, CampaignPluginProvider } from "@/components/campaign-plugin-context";
 import { campaignWalletAction } from "@/app/campaigns/credit-actions";
 import { AbuseNotice } from "@/components/abuse-notice";
-import { OverlayDismissal } from "@/components/overlay-dismissal";
 import { WindowsPosDownloadPrompt } from "@/components/windows-pos-download";
 import { SalonSwitcher } from "@/app/salon-switcher";
 import { getRequestBusinessContext as getCurrentBusinessContext } from "@/lib/request-business-context";
@@ -68,7 +67,6 @@ export default async function RootLayout({
         <WorkspaceLanguageProvider scope={experience.scope} enabled={false} portableEnabled={false} expiresAt={null}>
         <Suspense fallback={null}><OptionalLanguageConfiguration context={context} scope={experience.scope} /></Suspense>
         <AbuseNotice userId={context.user?.id ?? null} />
-        <OverlayDismissal />
         <WindowsPosDownloadPrompt authenticated={Boolean(context.user)} />
         <SessionExpiryPrompt authenticated={Boolean(context.user)} />
         <OwnerQueueRuntime scope={isSalonManageContext(context)&&context.currentSalon&&context.user?`owner:${context.currentSalon.id}:${context.user.id}`:null}/>

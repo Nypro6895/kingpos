@@ -26,6 +26,9 @@ export async function getRewardPublicSalonContext(db: SupabaseClient, salonId: s
   const parsedCover = parseSalonProfileMediaPath(coverPath);
   const salonCover = parsedCover?.salonId === salonId && parsedCover.kind === "cover"
     ? getSalonProfileMediaUrl(coverPath) : null;
+  const logoPath = typeof profile.logo_path === "string" ? profile.logo_path : null;
+  const parsedLogo = parseSalonProfileMediaPath(logoPath);
+  const logoImageUrl = parsedLogo?.salonId === salonId && parsedLogo.kind === "logo" ? getSalonProfileMediaUrl(logoPath) : null;
   const coverImageUrl = salonCover ?? resolveBusinessCoverImage({
     id: salonId,
     name: typeof profile.salon_name === "string" ? profile.salon_name : undefined,
@@ -36,6 +39,7 @@ export async function getRewardPublicSalonContext(db: SupabaseClient, salonId: s
     canBook: !directoryResult.error && listing?.claim_state !== "unclaimed"
       && Boolean(operatingHours) && operatingHours?.status.kind !== "permanently_closed" && bookingReady,
     coverImageUrl,
+    logoImageUrl,
     coverImageSource: salonCover ? "salon" as const : coverImageUrl ? "illustration" as const : null,
     serviceCategories,
   };

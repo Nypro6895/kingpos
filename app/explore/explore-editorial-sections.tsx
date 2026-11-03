@@ -7,7 +7,7 @@ import { SalonFeedPostPreview } from "@/components/salon-post-preview";
 import { ExploreFeedCard } from "./explore-feed";
 import { ExploreInspirationPost } from "./explore-inspiration-post";
 import type { PostCommentViewer } from "@/types/post-comments";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ExploreViewportImage as Image } from "./explore-viewport-image";
 import Link from "next/link";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
@@ -48,7 +48,7 @@ function EntryTile({entry,onOpen,onOpenFeed,viewer,priority=false,compact=false,
 }
 
 /** Presentation only: reuse the filtered, loaded photos and the existing reference catalog. */
-export function ExploreLookEditorial({looks,posts=[],viewer,category,location,onExplore,onOpen,mode="fresh"}:{looks:ExploreInspirationItem[];posts?:ExploreFeedItem[];viewer:PostCommentViewer;category:string;location:string;onExplore:()=>void;onOpen:(item:ExploreInspirationItem)=>void;mode?:"fresh"|"recommended"}) {
+export function ExploreLookEditorial({looks,posts=[],viewer,category,location,onExplore,onOpen,mode="fresh",onShownSalonIds}:{looks:ExploreInspirationItem[];posts?:ExploreFeedItem[];viewer:PostCommentViewer;category:string;location:string;onExplore:()=>void;onOpen:(item:ExploreInspirationItem)=>void;mode?:"fresh"|"recommended";onShownSalonIds?:(ids:string[])=>void}) {
   const social=useExploreSocial();
   const [openedPost,setOpenedPost]=useState<ExploreFeedItem|null>(null);
   const eligible=looks.filter(look=>look.imageUrl?.trim() && !social.states[look.salonId]?.hidden).filter((look,index,all)=>all.findIndex(other=>other.imageUrl===look.imageUrl)===index);
@@ -65,6 +65,8 @@ export function ExploreLookEditorial({looks,posts=[],viewer,category,location,on
   const real=source.slice(start,start+3);
   const references=exploreEditorialReferences(category,location,Math.max(0,6-source.length),source.map(entry=>entry.image)).map(referenceEntry);
   const entries=real.concat(references.slice(mode === "fresh"?0:Math.max(0,3-source.length))).slice(0,3);
+  const shownSalonKey = [...new Set(entries.flatMap(entry => entry.feed?.sourceType === "salon" && entry.feed.salon ? [entry.feed.salon.id] : entry.look ? [entry.look.salonId] : []))].join(",");
+  useEffect(() => { onShownSalonIds?.(shownSalonKey ? shownSalonKey.split(",") : []); }, [onShownSalonIds, shownSalonKey]);
   if(!entries.length)return null;
   const featured=entries[0];
   return <section className={styles.section} data-testid={mode === "fresh"?"explore-fresh-editorial":"explore-recommended-editorial"}>

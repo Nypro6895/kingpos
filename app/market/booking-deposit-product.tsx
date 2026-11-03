@@ -1,4 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +28,9 @@ export function BookingDepositProduct({ salonId, installed = false, cancelled = 
   const [busy, startTransition] = useTransition();
   const [message, setMessage] = useState("");
   const [photo, setPhoto] = useState<number | null>(null);
+  useTransientOverlay(() => setPhoto(null), Boolean(photo));
   const viewer = useRef<HTMLDialogElement>(null), alive = useRef(true), pending = useRef(false);
+  useNativeDialogNavigation(viewer);
   useEffect(() => { alive.current = true; const dialog = viewer.current; return () => { alive.current = false; dialog?.close(); }; }, []);
   useEffect(() => {
     if (photo !== null && !viewer.current?.open) viewer.current?.showModal();

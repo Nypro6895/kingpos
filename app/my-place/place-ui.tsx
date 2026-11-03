@@ -1,6 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
-import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   useEffect,
   useId,
@@ -43,7 +43,7 @@ export function Field({
   return (
     <label className="grid gap-1.5 text-sm font-medium text-zinc-700">
       <span>
-        <WorkspaceText text={label} />
+        {label}
         {required ? " *" : ""}
       </span>
       <input
@@ -76,14 +76,12 @@ export function Notice({
 }
 
 export function Avatar({ workspace }: { workspace: CurrentWorkspaceOption }) {
-  const __vt = useWorkspaceTranslation();
-
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#eee5df] bg-[#fff0e8] text-sm font-bold text-[#ad542d]">
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#eee5df] bg-[#fff0e8] text-sm font-bold text-[#ad542d]">
       {workspace.avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          alt={__vt("")}
+          alt=""
           className="h-full w-full object-cover"
           src={workspace.avatarUrl}
         />
@@ -106,11 +104,11 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="min-w-0 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 px-4 pt-2 sm:px-5">
-        <h2 className="flex items-center gap-2 text-sm font-medium text-zinc-600">
-          <WorkspaceText text={title} />
-          <span className="text-xs font-normal text-zinc-500">
+    <section className="content-surface overflow-hidden border-[#eae3dd] bg-white rounded-none border-y shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f1ebe6] px-4 py-3 sm:px-5">
+        <h2 className="flex items-center gap-2.5 text-base font-bold text-[#302a28]">
+          {title}
+          <span className="rounded-md bg-[#f6f3f0] px-2 py-0.5 text-xs font-semibold text-zinc-500">
             {count}
           </span>
         </h2>
@@ -136,9 +134,8 @@ export function Sheet({
   onClose: () => void;
   children: ReactNode;
 }) {
-  const __vt = useWorkspaceTranslation();
-
   const ref = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(ref);
   const backdropPointer = useRef(false);
   const titleId = useId();
   useEffect(() => {
@@ -155,7 +152,7 @@ export function Sheet({
   }, []);
   function close() {
     if (busy) return;
-    if (!dirty || window.confirm(__vt("Discard your unsaved changes?"))) onClose();
+    if (!dirty || window.confirm("Discard your unsaved changes?")) onClose();
   }
   return (
     <dialog
@@ -194,14 +191,14 @@ export function Sheet({
       <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#eee5df] bg-white px-5 py-4">
         <div>
           <h2 id={titleId} className="text-lg font-bold">
-            <WorkspaceText text={title} />
+            {title}
           </h2>
           {subtitle ? (
-            <p className="mt-1 text-sm text-zinc-500"><WorkspaceText text={subtitle} /></p>
+            <p className="mt-1 text-sm text-zinc-500">{subtitle}</p>
           ) : null}
         </div>
         <button
-          aria-label={__vt("Close panel")}
+          aria-label="Close panel"
           className={button}
           disabled={busy}
           onClick={close}
@@ -229,7 +226,7 @@ export function FormFooter({
         disabled={busy}
         type="submit"
       >
-        <WorkspaceText text={busy ? "Saving…" : label} />
+        {busy ? "Saving…" : label}
       </button>
     </div>
   );
@@ -244,14 +241,14 @@ export function LoadState({
 }) {
   return error ? (
     <Notice error>
-      <WorkspaceText text={error} />{" "}
+      {error}{" "}
       <button className="ml-2 underline" onClick={retry}>
-        <WorkspaceText text="Retry" />
+        Retry
       </button>
     </Notice>
   ) : (
     <p role="status" className="py-4 text-sm text-zinc-500">
-      <WorkspaceText text="Loading details…" />
+      Loading details…
     </p>
   );
 }

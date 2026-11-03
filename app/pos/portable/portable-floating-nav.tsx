@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
@@ -894,6 +895,7 @@ export function PortableFloatingNav({
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(false);
   const [isMenuMounted, setIsMenuMounted] = useState(false);
+  useTransientOverlay(() => { setIsOpen(false); setIsMenuMounted(false); }, isMenuMounted);
   const [isDimmed, setIsDimmed] = useState(false);
   const [dragTilt, setDragTilt] = useState(0);
 

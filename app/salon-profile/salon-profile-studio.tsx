@@ -1,11 +1,12 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import { ActionFeedback } from "@/components/action-feedback";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
-import { useCloseOnNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
+import { useOverlayPortalHost } from "@/components/overlay-dismissal";
 import { createPortal } from "react-dom";
 
 import {
@@ -391,7 +392,7 @@ function Drawer({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  useCloseOnNavigation(onClose);
+  // Navigation resets local owner state; the explicit close action may update a URL or ask about a draft.
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const portalHost = useOverlayPortalHost();
 
@@ -1293,6 +1294,7 @@ export function SalonProfileStudio({
   const __vt = useWorkspaceTranslation();
 
   const [drawer, setDrawer] = useState<DrawerId | null>(null);
+  useTransientOverlay(() => setDrawer(null), Boolean(drawer));
   const [libraryTab, setLibraryTab] = useState<LibraryTab>("all");
   const [isPending, startTransition] = useTransition();
   const logoUrl = previewData.profile.logoImageUrl;

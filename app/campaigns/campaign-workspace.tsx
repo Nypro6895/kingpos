@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState, useTransition } from "react";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useRouter } from "next/navigation";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { WorkspaceNavigationIcon as Icon } from "@/components/workspace-navigation-icon";
@@ -30,6 +31,13 @@ export function CampaignWorkspace({ initialCampaigns, initialActive, initialErro
   const [dialogError,setDialogError]=useState("");
   const [now,setNow]=useState(()=>Date.now());
   const [choose,setChoose]=useState(false),[newCreative,setNewCreative]=useState(false),[draft,setDraft]=useState<CreativeDraft|null>(null),[posts,setPosts]=useState<CampaignCreativeTarget[]|null>(null),[postError,setPostError]=useState(""),[showPosts,setShowPosts]=useState(false),[detail,setDetail]=useState<OwnerCampaign|null>(null),[edit,setEdit]=useState<OwnerCampaign|null>(null),[cap,setCap]=useState(0),[keep,setKeep]=useState(false),[creditView,setCreditView]=useState<CreditView|undefined>(initialCreditView),[cancel,setCancel]=useState<OwnerCampaign|null>(null);
+  useTransientOverlay(() => setChoose(false), choose);
+  useTransientOverlay(() => setNewCreative(false), newCreative);
+  useTransientOverlay(() => setDraft(null), Boolean(draft));
+  useTransientOverlay(() => setShowPosts(false), showPosts);
+  useTransientOverlay(() => setDetail(null), Boolean(detail));
+  useTransientOverlay(() => setEdit(null), Boolean(edit));
+  useTransientOverlay(() => setCancel(null), Boolean(cancel));
   const refresh=useCallback(async()=>{const [latest,working,w]=await Promise.all([loadOwnerCampaignsAction(),loadOwnerCampaignsAction(0,true),campaignWalletAction()]);setNow(Date.now());setCampaigns(latest.campaigns);setActive(working.campaigns);setHasMore(latest.hasMore);setBalance(w);router.refresh();},[router]);
   useEffect(()=>{let active=true;const timer=setInterval(()=>{if(document.visibilityState!=="visible")return;setNow(Date.now());Promise.all([loadOwnerCampaignsAction(0,true),campaignWalletAction()]).then(([result,w])=>{if(active){setActive(result.campaigns);setBalance(w);setDetail(current=>current?result.campaigns.find(c=>c.id===current.id)??current:null);}}).catch(()=>{if(active)setMessage("Updates are delayed. Refresh to see the latest results.");});},30000);return()=>{active=false;clearInterval(timer);};},[]);
   const text=(s:string)=><WorkspaceText text={s}/>;

@@ -9,6 +9,7 @@ function load(path, overrides = {}) {
   const exports = {};
   const localRequire = name => {
     if (name in overrides) return overrides[name];
+    if (name === '@/components/overlay-dismissal') return {useTransientOverlay(){},useNativeDialogNavigation(){}};
     if (name === '@/components/workspace-language') return {
       WorkspaceText: ({ text }) => text,
       WorkspaceElement: ({ as = 'div', children, ...props }) => require('react').createElement(as, props, children),
@@ -22,8 +23,9 @@ function load(path, overrides = {}) {
     };
     if (name === './staff-pay-period-picker') return load('app/staff/my-work/staff-pay-period-picker.tsx');
     if (name === './current-payroll-download-actions') return {downloadMyCurrentPayroll(){throw new Error('Download is not invoked by a static render');}};
+    if (name.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (name.startsWith('@/app/')) return load(name.replace('@/', '') + '.tsx');
-    if (name === 'next/navigation') return { useRouter: () => ({ push() {} }) };
+    if (name === 'next/navigation') return { useRouter: () => ({ push() {} }), useSearchParams:()=>new URLSearchParams() };
     if (name === 'next/link') return { __esModule: true, default: ({ children, ...props }) => require('react').createElement('a', props, children) };
     if (name.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (name.startsWith('@/lib/')) return load(name.replace('@/', '') + '.ts');
@@ -80,14 +82,14 @@ test('each staff uses its own owner settings when payroll has no entries',()=>{
 });
 const {renderToStaticMarkup}=require('react-dom/server');
 const {StaffMyPay}=load('app/staff/my-work/staff-pay-analysis.tsx');
-test('My Pay renders final payouts, daily tip and total, individual settings without cash percent',()=>{
+test('My Pay preserves final payouts, shows service sales and rates, and does not repeat take-home',()=>{
   const data={period:staffPeriodAt({cycle_type:'semi_monthly'},'2026-09-25'),periodOptions:[],settings:[],status:{kind:'live',label:'In progress'},latestStatement:null,paystub:null,
-    line:{final_staff_income:125,final_cash_amount:75,final_check_amount:50,base_cash_amount:40,check_net:40,gross_sales:200,staff_commission_gross:120,tip_amount:5,bonus_amount:0,tax_withheld:0,
+    line:{final_staff_income:125,final_cash_amount:75,final_check_amount:50,base_cash_amount:40,check_net:40,gross_sales:200,staff_commission_gross:120,tip_amount:5,bonus_amount:0,tax_withheld:0,check_rate_used:40,dailyTotals:[],
       settings_used_snapshot:[{payType:'commission',commissionRate:60,taxRate:20,taxTips:false,taxBonus:true}]},
-    dailyRows:[{id:'one',businessDate:'2026-09-24',commissionGross:60,tipAmount:5},{id:'two',businessDate:'2026-09-25',commissionGross:60,tipAmount:0}]};
+    dailyRows:[{id:'one',businessDate:'2026-09-24',commissionGross:60,shopGross:100,tipAmount:5},{id:'two',businessDate:'2026-09-25',commissionGross:60,shopGross:100,tipAmount:0}]};
   const html=renderToStaticMarkup(React.createElement(StaffMyPay,{data}));
-  for(const value of ['Commission 60%','Tax ','20','Tip · ','No tax','Bonus · ','$75.00','$50.00','$65.00','$60.00','<tfoot>']) assert.ok(html.includes(value),value);
-  assert.ok(!html.includes('Cash %')); assert.ok(!html.includes('$40.00')); assert.ok(!html.includes('Custom range'));
+  for(const value of ['Commission 60%','Tax ','20','Tip · ','No tax','Bonus · ','$75.00','$50.00','$100.00','Cash 60% · Check 40%','Commission · 60%','Tax hold · 20%','<tfoot>']) assert.ok(html.includes(value),value);
+  assert.equal((html.match(/Current take-home pay/g)??[]).length,1); assert.equal((html.match(/Take-home pay/g)??[]).length,0); assert.ok(html.includes('Services')); assert.ok(!html.includes('$65.00')); assert.ok(!html.includes('Cash %')); assert.ok(!html.includes('$40.00')); assert.ok(!html.includes('Custom range'));
 });
 
 test('My Pay renders the actual payment comparison with current pay, without a Staff money editor or paid-flag inference',()=>{

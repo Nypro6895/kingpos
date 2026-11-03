@@ -1,5 +1,6 @@
 "use client";
 import { ActionFeedback } from "@/components/action-feedback";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { countBookedAppointments } from "@/lib/booking-count";
 import { bookingPhoneDisplay } from "@/lib/booking-phone-display";
 import { bookingHintCalendarDates, bookingHintStaff, generateBookingSlotHints } from "@/lib/booking-slot-hints";
@@ -15,6 +16,7 @@ import "./booking-workspace.css";
 import proposalStyles from "./appointment-progress.module.css";
 import { SchedulePicker } from "@/components/booking-ui/schedule-picker";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useOverlayPortalHost } from "@/components/overlay-dismissal";
 import { HistoryLinkControl } from "@/app/activity/history-link-control";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
@@ -2680,7 +2682,7 @@ function ModalFrame({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  useCloseOnNavigation(onClose);
+  // Navigation resets local owner state; the explicit close action may update a URL or ask about a draft.
   const frameRef = useRef<HTMLDivElement | null>(null);
   const portalHost = useBookingModalPortalHost();
 
@@ -4319,6 +4321,7 @@ function AppointmentTableRow({
   const professionalAnchorRef = useRef<HTMLButtonElement | null>(null);
   const statusAnchorRef = useRef<HTMLButtonElement | null>(null);
   const [popover, setPopover] = useState<AppointmentRowEditMode | null>(null);
+  useTransientOverlay(() => setPopover(null), Boolean(popover));
   const [draft, setDraft] = useState(() =>
     appointmentRowDraftFromBooking(booking, timezone),
   );
@@ -6640,7 +6643,9 @@ function BookingPagePanel({
 
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [previewOpen, setPreviewOpen] = useState(false);
+  useTransientOverlay(() => setPreviewOpen(false), previewOpen);
   const [activeSetup, setActiveSetup] = useState<QuickSetupPanelId | null>(null);
+  useTransientOverlay(() => setActiveSetup(null), Boolean(activeSetup));
   const [focusedStaffId, setFocusedStaffId] = useState<string | null>(null);
   const [focusedServiceId, setFocusedServiceId] = useState<string | null>(null);
   const readiness = bookingReadinessSteps({
@@ -7258,6 +7263,7 @@ export function BookingWorkspaceClient({
   const [showCreate, setShowCreate] = useState(false);
   const calendarHintDates = useMemo(() => bookingHintCalendarDates(range, filters),
     [range, filters]);
+  useTransientOverlay(() => setShowCreate(false), showCreate);
   const [createdNotice, setCreatedNotice] = useState(false);
   const [timeline, setTimeline] = useState(false);
   const navigation = useRef<HTMLDivElement>(null);

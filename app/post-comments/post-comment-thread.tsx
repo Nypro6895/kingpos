@@ -2,6 +2,7 @@
 import {BlockUserButton} from "@/components/block-user-button";
 import { commentIdentityKey } from "@/lib/explore-comment-identity";
 import { InlineCommentComposer } from "./inline-comment-composer";
+import { CommentAvatar } from "./comment-avatar";
 import Link from "next/link";
 import { commentDisplayName } from "@/lib/comment-identity";
 
@@ -65,7 +66,10 @@ function mergeComments(current: DraftComment[], incoming: PostComment[]) {
   const next = new Map(current.map((comment) => [comment.id, comment]));
 
   for (const comment of incoming) {
-    next.set(comment.id, comment);
+    next.set(comment.id, {
+      ...comment,
+      authorAvatarUrl: comment.authorAvatarUrl === undefined ? next.get(comment.id)?.authorAvatarUrl : comment.authorAvatarUrl,
+    });
   }
 
   return Array.from(next.values());
@@ -298,7 +302,10 @@ function createOptimisticComment(input: {
 
   return {
     salonName: input.target.salonName ?? null,
-    authorDisplayName: input.viewer.identity?.name ?? (input.asSalonReply ? commentDisplayName({isSalonReply:true,salonName:input.target.salonName}) : "You"),
+    actingRole: input.asSalonReply ? "salon" : input.viewer.identity?.role ?? "personal",
+    actingSalonId: input.asSalonReply ? input.target.salonId : input.viewer.identity?.salonId ?? null,
+    authorAvatarUrl: input.asSalonReply ? null : input.viewer.identity?.avatarUrl ?? null,
+    authorDisplayName: input.asSalonReply ? commentDisplayName({isSalonReply:true,salonName:input.target.salonName}) : input.viewer.identity?.name ?? "You",
     authorUserId: input.viewer.userId,
     beautyPostId: input.target.sourceType === "beauty_post" ? input.target.sourceId : null,
     body: input.body,
@@ -504,6 +511,9 @@ function PostCommentThreadContent({
 
           if (incoming) {
             setComments((current) => {
+              // Realtime rows have no joined salon identity. Let the authoritative read
+              // resolve the acting salon, which can differ from the post's salon.
+              if (incoming.actingRole === "salon") return current;
               const salonName = target.salonName ?? current.find(comment => comment.salonId === incoming.salonId && comment.salonName)?.salonName;
               // Resolve missing salon identity through the authoritative reload below.
               if (incoming.isSalonReply && !salonName) return current;
@@ -676,7 +686,7 @@ function PostCommentThreadContent({
       body: nextBody,
       parentComment,
       target,
-      viewer,
+      viewer: inlineComposer || viewer.identity?.role === "personal" ? viewer : { ...viewer, identity: undefined },
     });
     const previousBody = body;
     const previousReply = replyTo;
@@ -992,7 +1002,7 @@ function CommentItem({
 
   return (
     <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 gap-y-2" id={`comment-${comment.id}`}>
-      <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-600">{comment.authorDisplayName.slice(0, 2).toUpperCase()}</span>
+      <CommentAvatar name={comment.authorDisplayName} avatarUrl={comment.authorAvatarUrl} />
       <div
         className={[
           "rounded-2xl px-3 py-2",

@@ -5,6 +5,8 @@ import {BeautyHomeIcon} from "@/app/beauty/beauty-home-icon";
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { NotificationCenterClient } from "@/app/notifications/notification-center-client";
 import { getAppLocalHost } from "./app-local-host";
+import { AppLocalRewardWallet } from "./app-local-reward-wallet";
+import { rewardWalletSalonAnchor } from "./reward-wallet-anchor";
 import { useAppLocalResource } from "./app-local-resource";
 import type { AppLocalPage,AppLocalPageProps } from "./app-local-page-registry";
 import type { AppLocalBeautyData,AppLocalNotificationData } from "./app-local-personal-metadata";
@@ -17,15 +19,20 @@ function NextAppointment({booking,compact=false}:{booking:AppLocalBeautyData["bo
   </section>;
 }
 function PersonalPage(props:AppLocalPageProps){
-  const url=new URL(props.path,"https://reylumi.com"),beauty=url.pathname==="/beauty"||url.pathname==="/beauty/library",args=beauty?{}:{filter:url.searchParams.get("filter")==="unread"?"unread":"all"};
-  const resource=useAppLocalResource<AppLocalBeautyData|AppLocalNotificationData>(props.context?.context.scope,beauty?"page.beauty":"page.notifications",args,{enabled:Boolean(props.context?.context.authenticated)});
-  const title=beauty?"Beauty":"Notifications";
-  if(!props.context?.context.authenticated)return <main className="p-6"><h1 className="text-2xl font-semibold">{title}</h1><button className="mt-4 rounded border px-4 py-2" onClick={()=>void getAppLocalHost().openOnline("/login?next="+encodeURIComponent(url.pathname))}>Sign in</button></main>;
+  const url=new URL(props.path,"https://reylumi.com"),rewards=url.pathname==="/rewards",beauty=url.pathname==="/beauty"||url.pathname==="/beauty/library",args=beauty?{}:{filter:url.searchParams.get("filter")==="unread"?"unread":"all"};
+  const resource=useAppLocalResource<AppLocalBeautyData|AppLocalNotificationData>(props.context?.context.scope,beauty?"page.beauty":"page.notifications",args,{enabled:!rewards&&Boolean(props.context?.context.authenticated)});
+  const title=rewards?"My Rewards":beauty?"Beauty":"Notifications";
+  if(!props.context?.context.authenticated)return <main className="p-6"><h1 className="text-2xl font-semibold">{title}</h1><button className="mt-4 rounded border px-4 py-2" onClick={()=>void getAppLocalHost().openOnline("/login?next="+encodeURIComponent(url.pathname+(rewards?url.hash:"")))}>Sign in</button></main>;
+  if(rewards)return <AppLocalRewardWallet key={props.context.context.scope} path={props.path} viewerId={props.context.context.viewerId??undefined}/>;
   if(!resource.data)return <main className="p-6" aria-busy={resource.loading||resource.refreshing}><h1 className="text-2xl font-semibold">{title}</h1>{resource.error?<><p role="alert">{resource.error}</p><button className="mt-4 rounded border px-4 py-2" onClick={()=>void resource.refresh()}>Try again</button></>:<p className="mt-4">Opening…</p>}</main>;
   if(beauty){const data=resource.data as AppLocalBeautyData;return <BeautyProfileClient key={url.pathname} home={url.pathname==="/beauty"} appointment={url.pathname==="/beauty"?<NextAppointment compact booking={data.booking}/>:undefined} favorites={<NativeFavorites posts={data.favorites}/>} commentViewer={data.commentViewer} initialTimeline={data.profile.timeline} profile={data.profile.profile} visitCandidates={data.profile.visitCandidates}/>;}
   return <NotificationCenterClient {...resource.data as AppLocalNotificationData}/>;
 }
 export function getAppLocalPersonalPage(path:string):AppLocalPage|null{
+  if(path.startsWith("/")&&!path.startsWith("//")&&!/[\\\u0000-\u001f]/.test(path)&&path.length<=4096){
+    const url=new URL(path,"https://reylumi.com");
+    if(url.pathname==="/rewards")return url.search||url.hash&&!rewardWalletSalonAnchor(url.hash)?null:{id:"personal.rewards",title:"My Rewards",requiresContext:true,Component:PersonalPage,features:["original-wallet","existing-scoped-post-transport","exact-salon-anchor"]};
+  }
   const pathname=path.split("?")[0];if(pathname!=="/beauty"&&pathname!=="/beauty/library"&&pathname!=="/notifications")return null;
   return{id:pathname.startsWith("/beauty")?"personal.beauty":"personal.notifications",title:pathname.startsWith("/beauty")?"Beauty":"Notifications",requiresContext:true,Component:PersonalPage,features:["complete-original-view","scoped-retained-data","existing-guarded-actions"]};
 }

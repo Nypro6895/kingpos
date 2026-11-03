@@ -1,5 +1,5 @@
 "use client";
-import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
@@ -25,6 +25,7 @@ const serverOnline = () => true;
 export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChanged }: { activity: CustomerActivity; onClose: () => void; initialDetails?: { booking: CustomerBookingDetail | null; receipt: CustomerActivityReceipt | null }; onChanged?: () => void }) {
   useCloseOnNavigation(onClose);
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
   useDialogViewport(dialog, Boolean(portalHost));
   useEffect(() => { let active = true; queueMicrotask(() => { if (active) setPortalHost(document.body); }); return () => { active = false; }; }, []);
@@ -106,7 +107,7 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
               <img src={logo} alt={`${activity.salon.name} logo`} className="h-full w-full object-cover" />
             ) : activity.salon.name.slice(0, 2)}
           </span>
-          <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6">{canViewSalon ? <Link prefetch={false} href={`/explore/salons/${activity.salon.id}`} className="hover:underline">{activity.salon.name}</Link> : activity.salon.name}</h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
+          <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6">{activity.salon.name}</h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
             <div className="mt-1 text-xs leading-5 text-text-secondary">{address ? <p>{address}</p> : null}{city ? <p>{city}</p> : null}</div>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-brand-teal">
               {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>Call salon</a> : null}
@@ -135,7 +136,6 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
         <dt className="text-sm font-semibold text-text-primary">Paid at salon</dt><dd className="text-right text-lg font-semibold text-text-primary">{money(total)}</dd>
         {receipt.payments.length ? <><dt>Payment method</dt><dd className="text-right">{receipt.payments.map(payment => payment.label).join(", ")}</dd></> : null}
       </dl> : activity.type !== "visit" ? <section className="border-b border-border-subtle py-3"><p className="flex items-center justify-between gap-3 font-semibold"><span>Estimated total</span><span className="text-lg">{money(total)}</span></p><p className="mt-1 text-[11px] text-text-secondary">Booking estimate. Final amount is recorded by the salon.</p></section> : null}
-      {booking ? <BookingDepositReceipt booking={booking} /> : null}
       {booking && (booking.inspiration || booking.public_notes || booking.no_show_reason || booking.cancellation_reason) ? <details className="border-b border-border-subtle py-2">
         <summary className="flex min-h-10 cursor-pointer list-none items-center gap-3 text-xs">
           {booking.inspiration?.imageUrl ? (

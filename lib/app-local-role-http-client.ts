@@ -36,6 +36,7 @@ export function createAppLocalRoleHttpFetch(options: { scope: () => string | und
       const [name, rule] = read, allowed: readonly string[] = rule.argumentKeys;
       if ([...url.searchParams].some(([key, item]) => !allowed.includes(key) || item.length > 512 || url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported application query");
       const result = await host.read<AppLocalHttpResponse>(name, Object.fromEntries(url.searchParams), { scope, signal: signal ?? undefined });
+      cancelled(signal);
       if (result.scope !== scope || options.scope() !== scope || !result.data) throw new Error("Your account has changed. Please reopen this page.");
       return response(result.data);
     }

@@ -4,7 +4,7 @@ export type RewardDiscoverySalon = {
   id: string; name: string; city: string | null; state: string | null; distanceMiles: number | null;
   spendCents: number; spendPoints: number; welcomePoints: number; firstBookingPoints: number;
   visitPoints: number; conversionPoints: number; version: number; offers: RewardDiscoveryOffer[];
-  canBook?: boolean; coverImageUrl?: string|null; coverImageSource?: "salon"|"illustration"|null; serviceCategories?:string[];
+  canBook?: boolean; logoImageUrl?: string|null; coverImageUrl?: string|null; coverImageSource?: "salon"|"illustration"|null; serviceCategories?:string[];
 };
 export type RewardEarningEligibility = {welcome:boolean;firstBooking:boolean;spend:boolean;visit:boolean;beforeAfter:boolean};
 export type RewardPublicProgram = {salon:RewardDiscoverySalon|null;joined:boolean;available:number|null;earningEligibility?:RewardEarningEligibility;authenticated?:boolean};

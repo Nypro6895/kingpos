@@ -2,6 +2,7 @@
 import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
 import { useExploreEditorialFeed } from "./use-explore-editorial-feed";
 import { selectExploreEditorialPosts } from "@/lib/explore-post-presentation";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { SalonPostPreview } from "@/components/salon-post-preview";
 import { ExploreInspirationPost } from "./explore-inspiration-post";
 import { ExploreSalonCard } from "./explore-salon-card";
@@ -1643,6 +1644,7 @@ function NearYouHomeSection({
   userCoordinates: GpsCoordinates | null;
 }) {
   const [mapOpen, setMapOpen] = useState(false);
+  useTransientOverlay(() => setMapOpen(false), mapOpen);
   const [preferredSelectedSalonId, setPreferredSelectedSalonId] =
     useState<string | null>(null);
   const cardRefs = useRef(new Map<string, HTMLDivElement>());
@@ -2333,8 +2335,10 @@ function DesktopLooksNearYouSection({
   userCoordinates,
   mode = "fresh",
   posts,
+  onShownSalonIds,
 }: {
   posts?: ExploreFeedItem[];
+  onShownSalonIds?: (ids: string[]) => void;
   mode?: "fresh" | "recommended";
   looks: ExploreInspirationItem[];
   mapSalons: ExploreMapSalon[];
@@ -2344,8 +2348,10 @@ function DesktopLooksNearYouSection({
   userCoordinates: GpsCoordinates | null;
 }) {
   const [mapOpen, setMapOpen] = useState(false);
+  useTransientOverlay(() => setMapOpen(false), mapOpen);
   const [selectedItem, setSelectedItem] =
     useState<ExploreInspirationItem | null>(null);
+  useTransientOverlay(() => setSelectedItem(null), Boolean(selectedItem));
   const [preferredSelectedSalonId, setPreferredSelectedSalonId] =
     useState<string | null>(null);
   const mapAvailable = Boolean(MAPTILER_BROWSER_KEY && mapSalons.length > 0);
@@ -2361,7 +2367,7 @@ function DesktopLooksNearYouSection({
   return (
     <section className="grid gap-5" data-testid="desktop-looks-near-you">
       <div className={mapOpen && mapAvailable ? "grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]" : "grid gap-5"}>
-        <ExploreLookEditorial posts={posts?.filter(item=>!hidden.includes(`${item.sourceType === "personal" ? "beauty_post" : item.contentType === "update" ? "salon_profile_update" : "salon_profile_look"}:${item.contentId}`))} viewer={viewer} looks={visibleLooks} category={category} location={location} onExplore={onExplore} onOpen={setSelectedItem} mode={mode}/>
+        <ExploreLookEditorial posts={posts?.filter(item=>!hidden.includes(`${item.sourceType === "personal" ? "beauty_post" : item.contentType === "update" ? "salon_profile_update" : "salon_profile_look"}:${item.contentId}`))} viewer={viewer} looks={visibleLooks} category={category} location={location} onExplore={onExplore} onOpen={setSelectedItem} mode={mode} onShownSalonIds={onShownSalonIds}/>
           {mapOpen && mapAvailable ? (
             <div className="sticky top-4 hidden self-start xl:block">
               <ExploreMap
@@ -2558,6 +2564,7 @@ function DesktopDiscoveryMarketplace({
   onSelectCategory,
   selectedCategory,
   strictLocation,
+  rewardCoordinates,
 }: {
   activeResults: ExploreSearchResult[];
   activeDiscoveryResult: ExploreDiscoveryResultKind | null;
@@ -2578,9 +2585,11 @@ function DesktopDiscoveryMarketplace({
   selectedCategory: string;
   workspaceLocation: ExploreInitialLocation;
   strictLocation: boolean;
+  rewardCoordinates?: GpsCoordinates | null;
 }) {
   const alternatingShortcuts = useMemo(() => exploreAlternatingShortcuts(discoveryShortcuts), [discoveryShortcuts]);
   const defaultLocation = formatDisplayLocation(location);
+  const [rewardAdjacentSalonIds, setRewardAdjacentSalonIds] = useState<string[]>([]);
   const filters = useMemo<DesktopDiscoveryFilterState>(() => ({
     availability: "any",
     date: "any",
@@ -2695,8 +2704,10 @@ function DesktopDiscoveryMarketplace({
       {
         key: "looks",
         render: () => (
+          <div className="grid gap-8">
           <DesktopLooksNearYouSection
             posts={editorialPosts}
+            onShownSalonIds={setRewardAdjacentSalonIds}
             looks={filteredLooks}
             mapSalons={mapSalons}
             category={selectedCategory}
@@ -2704,6 +2715,10 @@ function DesktopDiscoveryMarketplace({
             onExplore={() => onDiscoveryShortcutSelect(alternatingShortcuts[0])}
             userCoordinates={gpsCoordinates}
           />
+          <RewardDiscovery latitude={rewardCoordinates?.latitude} longitude={rewardCoordinates?.longitude}
+            location={filters.location} category={selectedCategory} viewerId={commentViewer.userId}
+            adjacentSalonIds={rewardAdjacentSalonIds} />
+          </div>
         ),
         title: "Fresh looks",
       },
@@ -2773,6 +2788,8 @@ function DesktopDiscoveryMarketplace({
       mapSalons,
       postHrefBySalonId,
       topSalons,
+      rewardCoordinates,
+      rewardAdjacentSalonIds,
     ],
   );
 
@@ -2813,6 +2830,7 @@ function ExploreHomeSections({
   location,
   gpsCoordinates,
   strictLocation,
+  rewardCoordinates,
 }: {
   activeDiscoveryResult: ExploreDiscoveryResultKind | null;
   commentViewer: PostCommentViewer;
@@ -2828,11 +2846,13 @@ function ExploreHomeSections({
   location: string;
   gpsCoordinates: GpsCoordinates | null;
   strictLocation: boolean;
+  rewardCoordinates?: GpsCoordinates | null;
 }) {
   const discovery = useMemo(() => ({ category: selectedCategory, location,
     latitude: gpsCoordinates?.latitude, longitude: gpsCoordinates?.longitude, strictLocation,
   }), [selectedCategory, location, gpsCoordinates, strictLocation]);
   const feedSessionKey = `mobile:${JSON.stringify(discovery)}`;
+  const [rewardAdjacentSalonIds, setRewardAdjacentSalonIds] = useState<string[]>([]);
   const editorialPage = useExploreEditorialFeed(discovery, commentViewer.userId, "mobile");
   const editorialPosts = useMemo(()=>selectExploreEditorialPosts(editorialPage?.items ?? []),[editorialPage]);
   const filterFeedItem = useCallback((item:ExploreFeedItem)=>!editorialPosts.some(post=>post.contentId===item.contentId && post.contentType===item.contentType),[editorialPosts]);
@@ -2861,7 +2881,10 @@ function ExploreHomeSections({
       ) : null}
 
       <div className="grid gap-10 pb-8" data-testid="mobile-editorial-sections">
-        <DesktopLooksNearYouSection posts={editorialPosts} looks={content.inspiration.items.filter(item => lookMatchesDiscoveryCategory(item, selectedCategory) && (!location || [item.salonCity,item.salonState].filter(Boolean).join(", ").toLowerCase().includes(location.toLowerCase())))} mapSalons={[]} category={selectedCategory} location={location} onExplore={() => { const shortcut=exploreAlternatingShortcuts(discoveryShortcuts)[0]; if(shortcut) onDiscoveryShortcutSelect(shortcut); }} userCoordinates={gpsCoordinates}/>
+        <DesktopLooksNearYouSection posts={editorialPosts} onShownSalonIds={setRewardAdjacentSalonIds} looks={content.inspiration.items.filter(item => lookMatchesDiscoveryCategory(item, selectedCategory) && (!location || [item.salonCity,item.salonState].filter(Boolean).join(", ").toLowerCase().includes(location.toLowerCase())))} mapSalons={[]} category={selectedCategory} location={location} onExplore={() => { const shortcut=exploreAlternatingShortcuts(discoveryShortcuts)[0]; if(shortcut) onDiscoveryShortcutSelect(shortcut); }} userCoordinates={gpsCoordinates}/>
+        <RewardDiscovery latitude={rewardCoordinates?.latitude} longitude={rewardCoordinates?.longitude}
+          location={location} category={selectedCategory} viewerId={commentViewer.userId}
+          adjacentSalonIds={rewardAdjacentSalonIds} />
         <DesktopLooksNearYouSection mode="recommended" posts={editorialPosts} looks={content.inspiration.items.filter(item => lookMatchesDiscoveryCategory(item, selectedCategory) && (!location || [item.salonCity,item.salonState].filter(Boolean).join(", ").toLowerCase().includes(location.toLowerCase())))} mapSalons={[]} category={selectedCategory} location={location} onExplore={() => { const shortcut=exploreAlternatingShortcuts(discoveryShortcuts)[0]; if(shortcut) onDiscoveryShortcutSelect(shortcut); }} userCoordinates={gpsCoordinates}/>
         <ExploreSalonDirectory salons={allDiscoverySalons.filter(salon=>salonMatchesDiscoveryCategory(salon,selectedCategory))} category={selectedCategory} location={location}/>
         <ExploreBookingEditorial salons={availableTodayResults({content,nearYouSalons,searchResults:[]}).filter(salon=>salonMatchesDiscoveryCategory(salon,selectedCategory))} contactSalons={allDiscoverySalons.filter(salon=>salonMatchesDiscoveryCategory(salon,selectedCategory))} category={selectedCategory} location={location}/>
@@ -3161,6 +3184,7 @@ export function ExploreClient({
     message: string;
   } | null>(null);
   const [searchAreaOpen, setSearchAreaOpen] = useState(false);
+  useTransientOverlay(() => setSearchAreaOpen(false), searchAreaOpen);
   const [searchResetVersion, setSearchResetVersion] = useState(0);
   const [pendingIdeasHeight, setPendingIdeasHeight] = useState<number | null>(null);
   const [explicitSearchMode, setExplicitSearchMode] =
@@ -3952,12 +3976,6 @@ export function ExploreClient({
           {searchMode ? <ExploreSearchContext response={activeResponse} pending={isSearching || Boolean(activeSearchFailure)}
             onAreaSelect={area => applySearchShortcut({ location: area })}
             onEditLocation={() => setSearchAreaOpen(true)} /> : null}
-          {!isSearching && !activeSearchFailure ? <RewardDiscovery
-            latitude={(searchMode ? committedSearch.coordinates : locationSource === "gps" ? gpsCoordinates : null)?.latitude}
-            longitude={(searchMode ? committedSearch.coordinates : locationSource === "gps" ? gpsCoordinates : null)?.longitude}
-            location={searchMode ? committedSearch.location : location}
-            category={searchMode ? activeResponse.category : category}
-            viewerId={commentViewer.userId} onChooseArea={() => setSearchAreaOpen(true)} /> : null}
           {homeMode ? (
             <>
               <div className="xl:hidden">
@@ -3971,6 +3989,7 @@ export function ExploreClient({
                   startupExtrasPending={startupExtrasPending}
                   location={location}
                   gpsCoordinates={gpsCoordinates}
+                  rewardCoordinates={locationSource === "gps" ? gpsCoordinates : null}
                   strictLocation={hasUrlLocation}
                   nearYouSalons={nearYouSalons}
                   onDiscoveryShortcutSelect={selectDiscoveryShortcut}
@@ -3986,6 +4005,7 @@ export function ExploreClient({
                 commentViewer={commentViewer}
                 content={homeContent}
                 gpsCoordinates={gpsCoordinates}
+                rewardCoordinates={locationSource === "gps" ? gpsCoordinates : null}
                 location={location}
                 nearYouSalons={nearYouSalons}
                 onApplySearchShortcut={applySearchShortcut}

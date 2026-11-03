@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import type { PendingOwnerTransferInvite } from "@/lib/owner-transfer";
@@ -76,6 +77,7 @@ export function MyPlaceClient({
     error?: boolean;
   } | null>(error ? { text: error, error: true } : null);
   const [panel, setPanel] = useState<Panel | null>(null);
+  useTransientOverlay(() => setPanel(null), Boolean(panel));
   const [busy, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const lock = useRef(false);

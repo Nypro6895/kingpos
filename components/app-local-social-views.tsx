@@ -82,16 +82,6 @@ function followingHref(input: {
   return queryString ? `/more/following?${queryString}` : "/more/following";
 }
 
-function BackLink() {
-  return (
-    <Link
-      className="w-fit rounded-full px-2 py-1 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-      href="/more"
-    >
-      <WorkspaceText text="Back to More" />
-    </Link>
-  );
-}
 
 function EmptyState({
   actionHref,
@@ -429,6 +419,6 @@ function FollowingSection({
 }
 
 
-export function AppLocalSavedPosts({data}:{data:AppLocalSavedPostsData}){return <main className="mx-auto grid max-w-6xl gap-5 p-6"><BackLink/><h1 className="text-3xl font-semibold">Saved posts</h1><SavedPostsSection {...data} filter={data.filter as AccountSavedPostFilter}/></main>}
-export function AppLocalFollowing({data}:{data:AppLocalFollowingData}){return <main className="mx-auto grid max-w-4xl gap-5 p-6"><BackLink/><h1 className="text-3xl font-semibold">Following</h1><FollowingSection {...data}/></main>}
+export function AppLocalSavedPosts({data}:{data:AppLocalSavedPostsData}){return <main className="mx-auto grid max-w-6xl gap-5 p-6"><h1 className="text-3xl font-semibold">Saved posts</h1><SavedPostsSection {...data} filter={data.filter as AccountSavedPostFilter}/></main>}
+export function AppLocalFollowing({data}:{data:AppLocalFollowingData}){return <main className="mx-auto grid max-w-4xl gap-5 p-6"><h1 className="text-3xl font-semibold">Following</h1><FollowingSection {...data}/></main>}
 export function AppLocalFavorites({data}:{data:AppLocalFavoritesData}) { const {salons,favorites,next}=data;return <main className="w-full min-w-0 space-y-5 p-6"><Link href="/explore" className="text-brand-orange">← Explore</Link><h1 className="text-3xl font-semibold">Your favorites ♡</h1><p className="text-zinc-600">Your saved directory places and inspiration previews.</p><div className="flex gap-4"><Link className="text-brand-orange" href="/more/saved-post">Saved posts</Link><Link className="text-brand-orange" href="/more/following">Followed salons &amp; artists</Link></div>{salons.length?<><SavedSalonList items={salons}/>{data.hasMoreSalons?<Link href={`/explore/favorites?salons=${data.salonOffset+20}`} className="text-brand-orange">More salons →</Link>:null}</>:null}{favorites.length?favorites.map(item=>item.nailLookId&&nailLookById(item.nailLookId)?<NailInspirationCard key={item.key} look={nailLookById(item.nailLookId)!} initialSaved/>:<article key={item.key} className="flex min-w-0 items-center justify-between gap-4 border-b border-divider-subtle py-4"><Link href={item.href} className="font-semibold">{item.name}</Link><ExploreReferenceLove itemKey={item.key} name={item.name} initialActive/></article>):<p className="bg-orange-50 p-5">Find something you love on Explore and tap the heart to keep it here.</p>}{next?<Link className="text-brand-orange" href={`/explore/favorites?after=${encodeURIComponent(next)}`}>More favorites →</Link>:null}</main>}

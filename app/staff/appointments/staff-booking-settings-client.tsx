@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
@@ -301,6 +302,7 @@ export function StaffBookingSettings({
 
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [preferences, setPreferences] = useState<{ online: boolean; notifications: boolean } | null>(null);
   const [preferenceError, setPreferenceError] = useState("");
   const [preferencePending, startPreferenceTransition] = useTransition();

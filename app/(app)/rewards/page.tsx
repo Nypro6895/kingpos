@@ -5,7 +5,7 @@ import { RewardWallet } from "@/components/rewardlumi/reward-workspaces";
 async function Page() {
   const context = await getCurrentBusinessContext();
   if (!context.user) redirect("/login");
-  return <RewardWallet key={context.user.id} />;
+  return <RewardWallet key={context.user.id} viewerId={context.user.id} />;
 }
 
 export default withExperiencePage(Page);

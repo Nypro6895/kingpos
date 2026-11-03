@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
@@ -26,6 +27,7 @@ function SocialProvider({ viewerId, children }: { viewerId: string | null; child
   const [message, setMessage] = useState("");
   const [undo, setUndo] = useState<string | null>(null);
   const [prompt, setPrompt] = useState(false);
+  useTransientOverlay(() => setPrompt(false), prompt);
   const registered = useRef(new Set<string>()), pending = useRef(new Set<string>()), changed = useRef(new Set<string>()), locks = useRef(new Set<string>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null), alive = useRef(true);
   const flush = useRef<() => void>(() => {});

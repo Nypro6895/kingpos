@@ -11,7 +11,6 @@ import { SalonPublicationStatus } from "@/components/salon-publication-status";
 import { useState } from "react";
 import {
   saveDirectSalonProfile,
-  saveDirectHours,
   saveDirectSpecialHours,
   saveDirectBooking,
 } from "./direct-settings-actions";
@@ -26,7 +25,6 @@ import {
   Select,
   InlineForm,
   inputClass,
-  buttonClass,
   text,
   number,
   checked,
@@ -38,7 +36,7 @@ import { StaffHoursBooking } from "./staff-hours-booking";
 import { SalonMediaUploader } from "@/app/salon-profile/salon-profile-studio";
 import { saveSettingsProfileIdentity } from "./settings-extra-actions";
 import { refreshSettingsMap } from "./settings-extra-actions";
-import type { SalonOperatingHoursSettings } from "@/types/salon-operating-status";
+import { OpeningHoursEditor as OperatingHours } from "./opening-hours-editor";
 
 type ProfileData = Extract<
   DirectData,
@@ -53,101 +51,6 @@ const days = [
   "Friday",
   "Saturday",
 ];
-function OperatingHours({
-  data,
-  onSaved,
-}: {
-  data: Extract<DirectData,{kind:"salon-profile"}>;
-  onSaved: () => Promise<void>;
-}) {
-  const __vt = useWorkspaceTranslation();
-
-  const [windows, setWindows] = useState<
-    SalonOperatingHoursSettings["weeklyHours"]
-  >(data.hours.weeklyHours);
-  const [hoursChanged, setHoursChanged] = useState(false);
-  const [loadedHours, setLoadedHours] = useState(data.hours.weeklyHours);
-  if (loadedHours !== data.hours.weeklyHours && !hoursChanged) {
-    setLoadedHours(data.hours.weeklyHours);
-    setWindows(data.hours.weeklyHours);
-  }
-  function updateWindows(value: typeof windows | ((current: typeof windows) => typeof windows)) {
-    setWindows(value);
-    setHoursChanged(true);
-  }
-  return (
-    <InlineForm
-      save={(form) =>
-        saveDirectHours(data.salonId, {
-          timeZone: text(form, "timezone"),
-          weeklyHours: windows,
-        })
-      }
-      onSaved={async () => { setLoadedHours(data.hours.weeklyHours); setHoursChanged(false); await onSaved(); }}
-      onCancel={() => { setWindows(data.hours.weeklyHours); setHoursChanged(false); }}
-      changed={hoursChanged}
-      label={__vt("Save opening hours")}
-    >
-      <p className="text-sm text-zinc-600"><WorkspaceText text="Opening hours tell customers when the salon is open. Booking hours and staff availability are managed separately in Booking rules & availability." /></p>
-      <label className="grid gap-1 text-sm"><WorkspaceText text="Time zone" /><TimeZoneSelect name="timezone" className={inputClass} defaultValue={data.hours.timeZone} required /></label>
-      {days.map((day, dayOfWeek) => (
-        <div className="settings-hours-day grid gap-2 border-t border-zinc-100 pt-3" key={day}>
-          <div className="settings-hours-day-heading flex items-center justify-between">
-            <span className="text-sm font-medium">{day}</span>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() =>
-                updateWindows([
-                  ...windows,
-                  {
-                    dayOfWeek,
-                    opensAtLocal: "09:00",
-                    closesAtLocal: "17:00",
-                    sortOrder: windows.filter((w) => w.dayOfWeek === dayOfWeek)
-                      .length,
-                  },
-                ])
-              }
-            >
-              <WorkspaceText text="Add hours" />
-            </button>
-          </div>
-          {!windows.some((w) => w.dayOfWeek === dayOfWeek) && (
-            <span className="text-sm text-zinc-500"><WorkspaceText text="Closed" /></span>
-          )}
-          {windows.map((window, index) =>
-            window.dayOfWeek === dayOfWeek ? (
-              <div
-                className="settings-hours-window grid grid-cols-[1fr_1fr_auto] items-end gap-2"
-                key={`${day}-${index}`}
-              >
-                {(["opensAtLocal", "closesAtLocal"] as const).map((key) => (
-                  <label className="grid gap-1 text-sm" key={key}>
-                    <WorkspaceText text={key === "opensAtLocal" ? "Opens" : "Closes"} />
-                    <input className={inputClass} type="time" required
-                      value={window[key].slice(0, 5)}
-                      onChange={(event) => updateWindows((current) => current.map((item, i) => i === index ? {...item, [key]: event.target.value} : item))} />
-                  </label>
-                ))}
-                <button
-                  className={buttonClass}
-                  type="button"
-                  aria-label={__vt(`Remove ${day} hours`)}
-                  onClick={() =>
-                    updateWindows(windows.filter((_, i) => i !== index))
-                  }
-                >
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-            ) : null,
-          )}
-        </div>
-      ))}
-    </InlineForm>
-  );
-}
 function PublicIdentity({data,onSaved}:{data:Extract<DirectData,{kind:"public-profile"}>;onSaved:()=>Promise<void>}){
  const __vt=useWorkspaceTranslation();
  const [paths,setPaths]=useState<{logo:string|null;cover:string|null}>({logo:null,cover:null}),[removed,setRemoved]=useState({logo:false,cover:false}),[uploading,setUploading]=useState({logo:false,cover:false}),[reset,setReset]=useState(0);

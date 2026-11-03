@@ -1,6 +1,7 @@
 import { StaffRelay } from "@/app/service-relay/staff-relay";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
+import { StaffTickets } from "./staff-tickets";
 import { StaffGreeting } from "./staff-greeting";
 import { StaffMyPay, StaffMyAnalysis } from "./staff-pay-analysis";
 import { StaffDailyMetrics, StaffDailyTickets } from "./staff-daily-overview";
@@ -16,6 +17,7 @@ type StaffPortalTabItem = { href: string; id: StaffPortalTabId; label: string };
 const STAFF_PORTAL_TABS: Array<Omit<StaffPortalTabItem, "href">> = [
   { id: "daily", label: "Daily" },
   { id: "payroll", label: "My Pay" },
+  { id: "tickets", label: "Tickets" },
   { id: "analysis", label: "Analysis" },
   { id: "profile", label: "Staff Profile" },
 ];
@@ -40,7 +42,7 @@ function formatWorkDate(value: string) {
 function getActiveTab(tab: string | string[] | undefined): StaffPortalTab {
   const value = Array.isArray(tab) ? tab[0] : tab;
 
-  if (value === "payroll" || value === "analysis") {
+  if (value === "payroll" || value === "analysis" || value === "tickets") {
     return value;
   }
 
@@ -52,7 +54,7 @@ function stringParam(value: string | string[] | undefined) {
 }
 
 function buildStaffPortalTabs(params: StaffMyWorkSearchParams | undefined) {
-  const periodParamNames = ["payPeriodStart"] as const;
+  const periodParamNames = ["payPeriodStart", "ticketDate"] as const;
 
   return STAFF_PORTAL_TABS.map((tab) => {
     if (tab.id === "profile") {
@@ -221,6 +223,8 @@ export function StaffMyWorkView({ resource, params, scope, relay,historyQuery }:
               <WorkspaceText text="My Payroll could not load right now." /> <StaffLoadRetry automatic={false} />
             </p>
           )
+        ) : activeTab === "tickets" ? (
+          resource.ticketsData ? <StaffTickets data={resource.ticketsData} timezone={salonTimezone} payPeriodStart={stringParam(params.payPeriodStart)} /> : <p className="mt-8 text-sm text-red-700"><WorkspaceText text="Tickets could not load right now." /> <StaffLoadRetry automatic={false} /></p>
         ) : activeTab === "analysis" ? (
           analysisData ? (
             <StaffMyAnalysis data={analysisData} today={today} />

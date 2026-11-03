@@ -1,5 +1,7 @@
 "use client";
 import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
@@ -30,6 +32,7 @@ function AdjustmentDialog({ mode, onClose, ...props }: Props & { mode: Adjustmen
   const __vt = useWorkspaceTranslation();
 
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const input = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const inputId = useId();
@@ -109,6 +112,7 @@ export function CompactCheckoutAdjustments(props: Props) {
   const __vt = useWorkspaceTranslation();
 
   const [mode, setMode] = useState<Adjustment | null>(null);
+  useTransientOverlay(() => setMode(null), Boolean(mode));
   const trigger = useRef<HTMLButtonElement | null>(null);
   function close() {
     setMode(null);

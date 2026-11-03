@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
@@ -14,6 +15,7 @@ export function PluginActivationPrompt({ pluginName, label = pluginName }: { plu
 export function PluginActivationButton({ pluginName, label, buttonLabel = "Activate" }: { pluginName: string; label: string; buttonLabel?: string }) {
   const t = useWorkspaceTranslation();
   const [activation, setActivation] = useState(false);
+  useTransientOverlay(() => setActivation(false), activation);
   return <section className={styles.panel} aria-label={t(label)}>
     <div className={styles.header}><span className={styles.title}>{t(label)}</span><button type="button" className={styles.save} onClick={() => setActivation(true)}>{t(buttonLabel)}</button></div>
     <PluginActivationDialog open={activation} onClose={() => setActivation(false)} pluginName={pluginName} marketHref={`/market?q=${encodeURIComponent(pluginName)}`} />
@@ -42,6 +44,7 @@ export function PluginSettingsRow({ label, pluginName, marketHref, installed, en
 }) {
   const t = useWorkspaceTranslation();
   const [activation, setActivation] = useState(false);
+  useTransientOverlay(() => setActivation(false), activation);
   return <section className={`${styles.panel} settings-child-action-scope`} aria-label={t(label)} aria-busy={disabled || saving}>
     <div className={styles.header}>
       <span className={styles.title}>{t(label)}</span>

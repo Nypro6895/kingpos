@@ -124,8 +124,8 @@ function useStaffIdentity(props: AppLocalPageProps, view: string) {
 }
 function StaffPage(props: AppLocalPageProps) {
   const path = urlFor(props.path).pathname, view = path === "/staff/workday" ? "workday" : path === "/staff/appointments" ? "schedule" : "my-work";
-  const identity = useStaffIdentity(props, view), params = queryFor(props.path, ["range", "status", "bookingId", "date", "quickId", "view", "tab", "payPeriodStart", "profile", "error"]);
-  const args = { ...queryFor(props.path, view === "schedule" ? ["range", "status", "bookingId", "date", "quickId", "view"] : view === "my-work" ? ["tab", "payPeriodStart"] : []), staffId: identity.data?.staffId ?? "" };
+  const identity = useStaffIdentity(props, view), params = queryFor(props.path, ["range", "status", "bookingId", "date", "quickId", "view", "tab", "payPeriodStart", "ticketDate", "profile", "error"]);
+  const args = { ...queryFor(props.path, view === "schedule" ? ["range", "status", "bookingId", "date", "quickId", "view"] : view === "my-work" ? ["tab", "payPeriodStart", "ticketDate"] : []), staffId: identity.data?.staffId ?? "" };
   const state = useAppLocalResource<StaffMyWorkResource | StaffScheduleResource | StaffWorkdayResource>(identity.data?.resourceScope, view === "my-work" ? "staff.my-work" : `staff.${view}`, args, { enabled: Boolean(identity.data) });
   if (!identity.data || !state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{view === "my-work" ? "My Work" : view === "schedule" ? "Appointments" : "Workday"}</h1>{identity.error || state.error ? <p role="alert">{identity.error ?? state.error}</p> : <p role="status">Opening…</p>}</main>;
   if (view === "my-work") return <StaffMyWorkView resource={state.data as StaffMyWorkResource} params={params as StaffMyWorkSearchParams} scope={identity.data.resourceScope} historyQuery={urlFor(props.path).search} relay={<AppLocalStaffRelay scope={identity.data.resourceScope} salonId={identity.data.salonId} staffId={identity.data.staffId}/>} />;

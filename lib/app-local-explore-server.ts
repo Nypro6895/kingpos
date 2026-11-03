@@ -21,6 +21,9 @@ import { POST as areaPOST } from "@/app/api/explore/area/route";
 import { GET as suggestionsGET } from "@/app/api/explore/suggestions/route";
 import { GET as postCommentsGET } from "@/app/api/post-comments/route";
 import { GET as salonSocialGET } from "@/app/api/explore/salon-social/route";
+import { GET as rewardDiscoverGET } from "@/app/api/rewards/discover/route";
+import { GET as rewardProgramGET } from "@/app/api/rewards/program/route";
+import { APP_LOCAL_REWARD_PUBLIC_READS, validateAppLocalRewardQuery } from "./app-local-reward-query";
 import { APP_LOCAL_EXPLORE_QUERY_KEYS } from "./app-local-explore-metadata";
 import type { AppLocalExploreCore, AppLocalExploreExtras } from "./app-local-explore-types";
 import type { ExploreFeedPage, ExploreLocationSource, ExploreUtilityContent } from "@/types/explore";
@@ -101,12 +104,13 @@ async function wire(response: Response): Promise<AppLocalHttpResponse> {
   for (const name of ["content-type", "cache-control", "etag", "server-timing"]) { const value = response.headers.get(name); if (value) selected[name] = value; }
   return { status: response.status, headers: selected, body: await response.text() };
 }
-const reads = new Set(["http.explore.post-comments", "http.explore.search", "http.explore.feed-page", "http.explore.feed-updates", "http.explore.feed-validate", "http.explore.area", "http.explore.suggestions", "http.explore.salon-social"]);
+const reads = new Set(["http.rewards.discover", "http.rewards.program", "http.explore.post-comments", "http.explore.search", "http.explore.feed-page", "http.explore.feed-updates", "http.explore.feed-validate", "http.explore.area", "http.explore.suggestions", "http.explore.salon-social"]);
 /** POST-shaped original search/feed reads remain named GET resources on the host. */
 export async function readAppLocalExploreResource(name: string, args: Record<string, unknown> = {}, options: { scope?: string; etag?: string; signal?: AbortSignal } = {}): Promise<AppLocalRead<AppLocalExploreCore | AppLocalExploreExtras | ExploreFeedPage | null | AppLocalHttpResponse> | null> {
   if (!["page.explore", "page.explore-extras", "page.explore-feed"].includes(name) && !reads.has(name)) return null;
   if (options.signal?.aborted) throw options.signal.reason;
   const { context, current } = await authorized(options.scope);
+  if (options.signal?.aborted) throw options.signal.reason;
   if (["page.explore", "page.explore-extras", "page.explore-feed"].includes(name)) {
     const query = queryArgs(args);
     const load = async () => name === "page.explore" ? await explorePage(context, query) : name === "page.explore-extras" ? await exploreExtras(context, query) : await exploreFeed(context, query);
@@ -116,7 +120,13 @@ export async function readAppLocalExploreResource(name: string, args: Record<str
   }
   const requestHeaders = new Headers(); if (current.get("cookie")) requestHeaders.set("cookie", current.get("cookie")!);
   let response: Response;
-  if (name === "http.explore.post-comments" || name === "http.explore.suggestions" || name === "http.explore.salon-social") {
+  if (name === "http.rewards.discover" || name === "http.rewards.program") {
+    validateAppLocalRewardQuery(name, args);
+    const url = new URL(APP_LOCAL_REWARD_PUBLIC_READS[name].path, "https://reylumi.com");
+    url.search = new URLSearchParams(args as Record<string, string>).toString();
+    const request = new NextRequest(url, { headers: requestHeaders, signal: options.signal });
+    response = await (name === "http.rewards.discover" ? rewardDiscoverGET : rewardProgramGET)(request);
+  } else if (name === "http.explore.post-comments" || name === "http.explore.suggestions" || name === "http.explore.salon-social") {
     const comments = name === "http.explore.post-comments", social = name === "http.explore.salon-social";
     const keys = comments ? ["sourceType", "sourceId", "offset", "pageSize"] : social ? ["ids"] : ["q", "location", "category"];
     if (Object.entries(args).some(([key, value]) => !keys.includes(key) || typeof value !== "string" || value.length > (social ? 8192 : 512))) fail(400, "Unsupported Explore request");

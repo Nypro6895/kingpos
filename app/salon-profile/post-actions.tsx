@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -25,7 +26,9 @@ export function PostActions({ plain = false, extraActions = [], onOpen, onShare,
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [mode, setMode] = useState<"report" | "edit" | "archive" | "delete" | "block" | null>(null);
+  useTransientOverlay(() => setMode(null), Boolean(mode));
   const [salonReportOpen, setSalonReportOpen] = useState(false);
+  useTransientOverlay(() => setSalonReportOpen(false), salonReportOpen);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [message, setMessage] = useState("");
   const ref = useRef<HTMLDetailsElement>(null);
@@ -33,6 +36,7 @@ export function PostActions({ plain = false, extraActions = [], onOpen, onShare,
   const menuRef = useRef<HTMLDivElement>(null);
   const acting = useRef(false);
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [busy, setBusy] = useState(false);
   const [position, setPosition] = useState({ left: 8, top: 8 });
   const permissionKey = [viewerId ?? "guest", target?.sourceType ?? "", target?.sourceId ?? ""].join(":");

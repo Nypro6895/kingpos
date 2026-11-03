@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -171,6 +172,7 @@ function SavePostButtonInner({
   );
   const [message, setMessage] = useState("");
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  useTransientOverlay(() => setAuthPromptOpen(false), authPromptOpen);
   const stableSalonId = stableTarget.salonId;
   const stableSourceId = stableTarget.sourceId;
   const stableSourceType = stableTarget.sourceType;

@@ -1,5 +1,6 @@
 "use client";
 import { visibleTicketAdjustments, type TicketAdjustmentEventAction } from "@/lib/pos-ticket-adjustment-history";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
 import {TicketHistoryDisclosure,type TicketLegacyHistoryEntry} from "./ticket-history-disclosure";
@@ -1109,6 +1110,7 @@ export function DailyPosTicketCard({
   const [isEditing, setIsEditing] = useState(false);
   const [isCorrectionMode, setIsCorrectionMode] = useState(false);
   const [showLockedConfirmation, setShowLockedConfirmation] = useState(false);
+  useTransientOverlay(() => setShowLockedConfirmation(false), showLockedConfirmation);
   const [selectorTarget, setSelectorTarget] = useState<SelectorTarget>(null);
   const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
   const [lines, setLines] = useState<EditableLine[]>(initialLines);
