@@ -1,0 +1,32 @@
+{
+  "kind": "release",
+  "summary": "Published compact 44px forum header using actual logo teal, logo left and profile right, no workspace switcher. Initial discussions remain separately pending database application.",
+  "changes": [
+    "36ec01cb-f683-460f-93aa-6ba3cdc98733"
+  ],
+  "sourceCommit": "73ba22eec77ebd1f2b63b720274be6e132eea912",
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HH57U1pRRCGKBEi8eGRdy5JtcEuA",
+      "baselineDeploymentId": "dpl_DAGw9ipA5UyFGjKNNMkGxHfpjJuJ",
+      "sourceSha256": "bbdb6a098af25c542be7efc70c8511419f7fc42f0dcb39fad4ab4189cdddc5e0",
+      "overlaySha256": "937af120025776b34b6ce0842b5e56b254fb517118354f08d5b6b323d2af967b",
+      "evidence": {
+        "source": "artifacts/forum-brand/live-source-verified.json",
+        "http": "artifacts/forum-brand/live-http.json",
+        "browser": "artifacts/forum-brand/browser/result.json"
+      }
+    }
+  },
+  "nativeAssessment": "No new native build: /forum is an existing HTTPS-hosted route in build 89; all new assets and header render from the hosted forum; no Swift, local-route behavior or bridge changes.",
+  "pending": {
+    "event": "1d2321e5-c327-449a-9f81-73fa9689a8c0",
+    "content": "15 topics / 30 replies / 8 editorial personas prepared and tested; not applied to production because Chrome controller remains unavailable after reconnect.",
+    "liveAuthenticatedVisualCheck": "Pending: browser controller error"
+  },
+  "id": "cc3123cd-56be-4372-88a7-fe5e902e6da9",
+  "recordedAt": "2026-11-03T18:59:53.122Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103"
+}
