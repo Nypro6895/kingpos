@@ -1,0 +1,98 @@
+{
+  "workflow": {
+    "id": 41691415021,
+    "sha": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/Nypro6895/kingpos/actions/runs/41691415021"
+  },
+  "version": "1.0.0",
+  "build": "89",
+  "sourceCommit": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e",
+  "uploadAccepted": true,
+  "processing": {
+    "build": "89",
+    "buildId": "ca91f286-342e-4302-a3ee-4edc970fd6fc",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-11-03T18:38:27.331Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "testExecution": {
+    "expectedCount": 246,
+    "passedCount": 246,
+    "failureCount": 0,
+    "coverageVerified": true,
+    "caseInventorySha256": "a17b02d260ac47be8557d62a3494964e5b5574eed4d82254f93f2c8d8fc27f3a"
+  },
+  "bundle": {
+    "buildId": "f41233d5980f3fb35a49997f4b9a8162dd8bb4b3a1e3d030491f765c208c0c54",
+    "sourceSha256": "2c5ca7f6333571558cc30b505d1ed7ecdd503a81ca94f63b8ea98fd14d3ea7f4",
+    "manifestSha256": "81348664efb551fc4d5c8c90e2a73dad873a2724b43a01625f480c0a60b635e3",
+    "sha256": "0fa0289a1513e82dbc665784ad3954a4686e816d22d69abff42af3b2e613e187"
+  },
+  "selectedSourceHashes": [
+    {
+      "file": "app/role-navigation.ts",
+      "sha256": "1ad362e07099a8ae3005df50127f41de3f8cdda1b8de919808998951c2a6994f"
+    },
+    {
+      "file": "types/platform-admin.ts",
+      "sha256": "c924392729ca96da2f1bab12311f4d7aaf914b7da10e73f326d3cc8f9c9a4c25"
+    },
+    {
+      "file": "types/forum.ts",
+      "sha256": "91158b2d2083ce205566e3e021fc8fa87a1c977467d18c116c9a13ce1d8b51c4"
+    },
+    {
+      "file": "lib/forum/server.ts",
+      "sha256": "3a22f6e792827ae3020ab2c224c8692fc3a4da9e2455ab1d69095dd83b0ea825"
+    },
+    {
+      "file": "app/(app)/forum/actions.ts",
+      "sha256": "57a8b4c2cb7c3747b0741472a77550c6bf9cce3adeaf0ac6a2f9d5195bc71e8a"
+    },
+    {
+      "file": "app/(app)/forum/page.tsx",
+      "sha256": "05ac722dd47e1add26175c5dcb86485f8ce50ff5024348b1acdc0ca7962bc639"
+    },
+    {
+      "file": "app/(app)/forum/forum.tsx",
+      "sha256": "71e8137ccf5daa573ba78dfc6ea5bd548768f61cf541ae2a2ddb207fc78c4acc"
+    },
+    {
+      "file": "app/(app)/forum/forum.module.css",
+      "sha256": "5b4697210106fe79a389c20866046c2fc46d60e3d15f2e671a4b5b5c00f635ff"
+    },
+    {
+      "file": "app/(app)/admin/forum/page.tsx",
+      "sha256": "2145acddf30b52bf4bac46d627448d4068ad445cf5991ff21bf97ec98d99409e"
+    },
+    {
+      "file": "supabase/migrations/20261103180000_owner_forum.sql",
+      "sha256": "f333e9651712221b0c26895b4a809e1a5ed21e4941b7f21065e541c01e1879fe"
+    },
+    {
+      "file": "tests/forum-runtime.test.mjs",
+      "sha256": "00fdf188d7a93985c23883870a96d1392ad185fbff1446817be9aac12a5a79fc"
+    },
+    {
+      "file": "components/app-local-more.tsx",
+      "sha256": "94d99795e2be723320671014a16b820636b2dc9d13e6cdd955b89dc85e037b31"
+    },
+    {
+      "file": "lib/app-local-online-routes.json",
+      "sha256": "f4c35e3ad4d5854ea520554b89e3e2b3c7b9d72caa664ad639e7928d4dff7b69"
+    },
+    {
+      "file": "lib/app-local-route-inventory.generated.json",
+      "sha256": "7730901ee80c6ab7a5dd1f94120ee874c33eaf48385c0d503cd5aa4c10f504e1"
+    },
+    {
+      "file": "scripts/generate-app-local-routes.mjs",
+      "sha256": "7a58b66e5e65cc99f464e6386f5b8f4c53708f5a66c3d2cab7bcb32ea8721c05"
+    }
+  ],
+  "noTesterInvitationsOrGroupChanges": true,
+  "appStorePublication": false
+}

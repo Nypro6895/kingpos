@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "owner-forum-ios-20261103",
+  "status": "ready",
+  "summary": "Owner Forum entry in installed iPhone menu opens fresh HTTPS forum; preserve actual uploaded native baseline and all existing local features.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "types/platform-admin.ts",
+    "types/forum.ts",
+    "lib/forum/server.ts",
+    "app/(app)/forum/actions.ts",
+    "app/(app)/forum/page.tsx",
+    "app/(app)/forum/forum.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/admin/forum/page.tsx",
+    "supabase/migrations/20261103180000_owner_forum.sql",
+    "tests/forum-runtime.test.mjs",
+    "components/app-local-more.tsx",
+    "lib/app-local-online-routes.json",
+    "lib/app-local-route-inventory.generated.json",
+    "scripts/generate-app-local-routes.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\owner-forum-ios-20261103\\artifacts\\owner-forum-ios\\frozen-ready",
+    "commit": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e"
+  },
+  "validation": [
+    {
+      "name": "13 source-bound bundle/signing/upload gate tests",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum-ios/bundle-tests.txt"
+    },
+    {
+      "name": "246 exact UIKit/WebKit simulator cases, zero failures/skips",
+      "result": "passed",
+      "evidence": "releases/evidence/owner-forum-20261103-native.json"
+    },
+    {
+      "name": "Signed archive/source provenance and Apple VALID/IN_BETA_TESTING",
+      "result": "passed",
+      "evidence": "releases/evidence/owner-forum-20261103-native.json"
+    }
+  ],
+  "dependencies": [
+    "owner-forum-20261103"
+  ],
+  "id": "68913857-fee2-4fec-8820-45644ba86a49",
+  "recordedAt": "2026-11-03T18:40:40.334Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-ios-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "d5caaac462ff4b9b5ddb6f4c0625ef251d380b123a79f791ae8ca7d7910521e8",
+    "types/platform-admin.ts": "c924392729ca96da2f1bab12311f4d7aaf914b7da10e73f326d3cc8f9c9a4c25",
+    "types/forum.ts": "91158b2d2083ce205566e3e021fc8fa87a1c977467d18c116c9a13ce1d8b51c4",
+    "lib/forum/server.ts": "3a22f6e792827ae3020ab2c224c8692fc3a4da9e2455ab1d69095dd83b0ea825",
+    "app/(app)/forum/actions.ts": "57a8b4c2cb7c3747b0741472a77550c6bf9cce3adeaf0ac6a2f9d5195bc71e8a",
+    "app/(app)/forum/page.tsx": "05ac722dd47e1add26175c5dcb86485f8ce50ff5024348b1acdc0ca7962bc639",
+    "app/(app)/forum/forum.tsx": "71e8137ccf5daa573ba78dfc6ea5bd548768f61cf541ae2a2ddb207fc78c4acc",
+    "app/(app)/forum/forum.module.css": "5b4697210106fe79a389c20866046c2fc46d60e3d15f2e671a4b5b5c00f635ff",
+    "app/(app)/admin/forum/page.tsx": "2145acddf30b52bf4bac46d627448d4068ad445cf5991ff21bf97ec98d99409e",
+    "supabase/migrations/20261103180000_owner_forum.sql": "f333e9651712221b0c26895b4a809e1a5ed21e4941b7f21065e541c01e1879fe",
+    "tests/forum-runtime.test.mjs": "00fdf188d7a93985c23883870a96d1392ad185fbff1446817be9aac12a5a79fc",
+    "components/app-local-more.tsx": "a3c99d9bdec0c67fd226c5f191b03bf4b8fcde5b7004b1314f1d0e8cea382a5b",
+    "lib/app-local-online-routes.json": "f4c35e3ad4d5854ea520554b89e3e2b3c7b9d72caa664ad639e7928d4dff7b69",
+    "lib/app-local-route-inventory.generated.json": "7730901ee80c6ab7a5dd1f94120ee874c33eaf48385c0d503cd5aa4c10f504e1",
+    "scripts/generate-app-local-routes.mjs": "dbe7f9f4b4a43f2c50d5e97a5221c0256a4f2675a8e238d230b73c0d2faf9ffd"
+  }
+}

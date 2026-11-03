@@ -1,0 +1,29 @@
+{
+  "kind": "release",
+  "summary": "Owner forum iPhone menu available in TestFlight 1.0.0 (89); 246 simulator tests and exact uploaded source/bundle verified. No App Store release claimed.",
+  "changes": [
+    "68913857-fee2-4fec-8820-45644ba86a49"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "89",
+      "commit": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e",
+      "evidence": "releases/evidence/owner-forum-20261103-native.json"
+    }
+  },
+  "baselineNative": {
+    "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "build": "88"
+  },
+  "web": {
+    "deploymentId": "dpl_DAGw9ipA5UyFGjKNNMkGxHfpjJuJ",
+    "url": "https://reylumi.com/forum"
+  },
+  "workflowRun": 41691415021,
+  "id": "96a6a6d4-4aa5-4274-ba15-9dc5a4de1e66",
+  "recordedAt": "2026-11-03T18:40:40.607Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-ios-20261103"
+}
