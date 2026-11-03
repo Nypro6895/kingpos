@@ -13,3 +13,7 @@
 
 /* Restore native modal centering after the shared CSS reset. */
 .dialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;max-height:calc(100dvh - 32px);max-width:calc(100vw - 24px)}
+/* Bound the measured article so long creative cannot make a view impossible. */
+.sponsoredTitle{margin-top:12px!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;line-height:1.4}
+.sponsoredCaption{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:anywhere;white-space:normal}
+.sponsoredIdentity{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;margin-bottom:0}

@@ -442,6 +442,7 @@ function SavePostButtonInner({
       </span>
       {authPromptOpen ? (
         <AuthIntentPrompt
+          returningUser={isAuthenticated === true}
           kicker="Save intent"
           onClose={() => {setAuthPromptOpen(false);clearExploreIntent();}}
           title={__vt("Save this look?")}

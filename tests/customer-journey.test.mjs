@@ -4,6 +4,33 @@ import {build} from 'esbuild';
 import {journeyFixture,journeyId} from './helpers/customer-journey-fixture.mjs';
 const b=await build({entryPoints:['lib/customer-journey.ts'],bundle:true,write:false,platform:'node',format:'esm'});
 const {customerJourneyGroups:groups,customerJourneyTab:tab,customerVisitQrHref:qr,isActiveCustomerVisit:active,customerVisitArrivedAt:arrived}=await import('data:text/javascript;base64,'+Buffer.from(b.outputFiles[0].text).toString('base64'));
+const {canCheckInForAppointment:eligible}=await import('data:text/javascript;base64,'+Buffer.from(b.outputFiles[0].text).toString('base64'));
+
+test('appointment check-in opens at -15 minutes, remains through +60, and rejects invalid instants',()=>{
+ const item=journeyFixture().upcoming[0],start=Date.parse(item.startAt);
+ for(const [delta,expected] of [[-900001,false],[-900000,true],[-1,true],[0,true],[3600000,true],[3600001,false]])assert.equal(eligible(item,start+delta),expected,String(delta));
+ assert.equal(eligible({...item,startAt:'invalid'},start),false);assert.equal(eligible(item,NaN),false);
+ assert.equal(eligible({...item,startAt:'2026-10-30T09:00:00-05:00'},start),true,'time zone offsets represent the same instant');
+});
+
+test('arrival, visit, receipt and terminal statuses suppress a second check-in',()=>{
+ const item=journeyFixture().upcoming[0],now=Date.parse(item.startAt);
+ for(const status of ['checked_in','in_service','completed','cancelled','no_show']){
+  assert.equal(eligible({...item,bookingStatus:status},now),false,status);
+  assert.equal(eligible({...item,status},now),false,status);
+ }
+ for(const historyEvidence of [{checkedInAt:item.startAt},{visitId:journeyId(90)},{ticket:{ticketId:journeyId(80)}}])assert.equal(eligible({...item,historyEvidence},now),false);
+ for(const visitState of ['waiting','in_service','checkout','completed','cancelled'])assert.equal(eligible({...item,visitState},now),false);
+ assert.equal(eligible(journeyFixture().history[1],now),false,'receipt is never an appointment');
+});
+
+test('just-started appointment from server history remains accessible in Upcoming until expiry without changing data',()=>{
+ const item={...journeyFixture().upcoming[0],status:'past_appointment'},data={upcoming:[],history:[item]},before=JSON.stringify(data),start=Date.parse(item.startAt);
+ const during=groups(data,start+1800000);assert.deepEqual(during.upcoming,[item]);assert.deepEqual(during.history,[]);
+ const expired=groups(data,start+3600001);assert.deepEqual(expired.upcoming,[]);assert.deepEqual(expired.history,[item]);
+ assert.equal(JSON.stringify(data),before);
+ const paid={...journeyFixture().history[1],bookingId:item.bookingId};assert.equal(groups({...data,history:[item,paid]},start).upcoming.length,0,'linked receipts still win');
+});
 test('linked receipt replaces only its exact appointment; preserve recorded totals and input references',()=>{
  const data=journeyFixture(),before=JSON.stringify(data),view=groups(data),paid=data.history[1];
  assert.equal(view.history.filter(x=>x.type==='purchase').length,1);

@@ -1,0 +1,25 @@
+OWNER CAMPAIGN THUMBNAIL LIST — 03/11/2026
+Owner correction: use small thumbnails in a list, replacing the full-photo proposal.
+Local source base: 7095eb0. Owner authorized implementation and consolidation into the deploy queue on 2026-11-03. This revision is not deployed.
+
+Campaigns and History use a 72x72 thumbnail on the left; title, status, area and
+two-line caption on the right. Tap the thumbnail to open the existing full-photo
+owner preview. List metrics are a single compact row; inline charts remain in
+the detailed results view. Credits and original actions remain available.
+Thin separators replace large repeated photo panels.
+Image errors retain all controls and Retry photo. Owner inspection still uses
+only the existing read-only preview action, with no ad delivery/impression call.
+
+Evidence: artifacts/owner-campaign-thumbnail-list/browser.log (two browser suites),
+browser/*.png at 320/390/1280px, lint.log, typecheck.log.
+Browser checks: thumbnail dimensions, full preview opening, Campaigns/History,
+Settings, image retry, no overflow, no owner impression requests; prior
+consent/click tests remain passing. Screenshot content/photos are sample fixtures.
+No finance, review, billing, attribution or delivery logic changed.
+
+This is the owner-selected implementation for the combined queue. The previous full-width
+photo layout is superseded as a design proposal and must not be shipped as final.
+Preserve the earlier campaign-completion financial/delivery changes when
+integrating this revision. No deployment is authorized by this handoff.
+
+Approved-source verification: npm run build passed (including TypeScript and offline assets). Browser suites and scoped ESLint passed. No live publication or provider transaction was performed.

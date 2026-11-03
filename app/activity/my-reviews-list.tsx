@@ -1,25 +1,41 @@
 "use client";
 import Link from "next/link";
+import { useRef, useState, useTransition } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
-import { VisitExperiencePrompt } from "./visit-experience-prompt";
-import type { MyReviewsData } from "@/types/customer-review";
-
+import { resolveMyVisitExperienceAction } from "./experience-actions";
+import type { MyReview, MyReviewsData } from "@/types/customer-review";
+import styles from "./visit-feedback.module.css";
+function date(value: string) { return new Date(value).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric",timeZone:"America/Chicago"}); }
+function ReviewCard({ review }: { review: MyReview }) {
+  const [resolved,setResolved]=useState(Boolean(review.customer_resolved_at));
+  const [error,setError]=useState("");
+  const [pending,startTransition]=useTransition();
+  const busy=useRef(false);
+  function resolve() {
+    if(busy.current) return;
+    busy.current=true;
+    startTransition(async()=>{
+      setError("");
+      try { const result=await resolveMyVisitExperienceAction(review.id); if(result.error) setError(result.error); else setResolved(true); }
+      catch { setError("Resolution could not be saved. Please try again."); }
+      finally { busy.current=false; }
+    });
+  }
+  return <article id={"experience-"+review.id} className={styles.card}>
+    <div className={styles.head}><h2>{review.salon_name}</h2><span className={styles.sentiment} data-issue={review.feedback_state === "issue"}><WorkspaceText text={review.feedback_state === "issue" ? "Had an issue" : review.feedback_state === "good" ? "Good experience" : "Experience"} /></span></div>
+    <div className={styles.meta}><span><WorkspaceText text="Shared" /> <time dateTime={review.created_at}>{date(review.created_at)}</time>{review.edited_at ? <> · <WorkspaceText text="Edited" /></> : null}</span>{review.ticket_id ? <Link className={styles.link} href={"/activity/receipts/"+review.ticket_id}><WorkspaceText text="Receipt" /></Link> : null}</div>
+    <p className={review.body ? styles.body : styles.muted}>{review.body || <WorkspaceText text="Shared without a written comment." />}</p>
+    {review.reply_body ? <div className={styles.reply}><div className={styles.replyHead}><strong><WorkspaceText text="Salon reply" /></strong>{review.reply_created_at ? <time dateTime={review.reply_created_at}>{date(review.reply_created_at)}</time> : null}</div><p className={styles.body}>{review.reply_body}</p></div> : null}
+    {review.feedback_state === "issue" ? resolved ? <p role="status" className={styles.resolved}><WorkspaceText text="Resolved · Confirmed by you" /></p> : review.reply_body ? <div className={styles.resolution}><span><WorkspaceText text="Issue resolved?" /></span><button type="button" disabled={pending} onClick={resolve} className={styles.link}><WorkspaceText text={pending ? "Saving…" : "Mark as resolved"} /></button></div> : <p className={styles.muted}><WorkspaceText text="Awaiting salon reply." /></p> : null}
+    {error ? <p role="alert" className={styles.error}><WorkspaceText text={error} /></p> : null}
+  </article>;
+}
 export function MyReviewsList({ rows, page, focused, error }: MyReviewsData) {
-  if (error) return <section role="alert" className="grid gap-3 bg-white p-5"><h1 className="text-xl font-semibold"><WorkspaceText text="My Reviews" /></h1><p><WorkspaceText text={error} /></p><Link href="/more/reviews"><WorkspaceText text="Try again" /></Link></section>;
-  return <section className="grid min-w-0 gap-4">
-    <h1 className="text-xl font-semibold"><WorkspaceText text="My Reviews" /></h1>
-    <p className="text-sm leading-6 text-text-secondary"><WorkspaceText text="Your shared experiences and salon replies. The number of reviews here may differ from the independent customer sample used by LUMI Truth." /></p>
-    {focused ? <Link className="min-h-11 text-brand-teal underline" href="/more/reviews"><WorkspaceText text="All my reviews" /></Link> : null}
-    {rows.length === 0 ? <div className="grid gap-3 bg-white p-5"><p><WorkspaceText text="No shared experiences yet." /></p><Link className="min-h-11 text-brand-teal underline" href="/activity"><WorkspaceText text="Review a visit in Activity" /></Link></div> : rows.slice(0,10).map(review => <article key={review.id} id={`experience-${review.id}`} className="grid min-w-0 gap-3 bg-white p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2"><h2 className="font-semibold">{review.salon_name}</h2><span className="text-xs"><WorkspaceText text={review.verified ? "Verified Visit" : "Experience"} /></span></div>
-      <p className="text-xs text-text-secondary"><time dateTime={review.created_at}>{new Date(review.created_at).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric",timeZone:"America/Chicago"})}</time>{review.edited_at ? <> · <WorkspaceText text="Edited" /></> : null}</p>
-      <p className="font-medium"><WorkspaceText text={review.feedback_state === "issue" ? "Issue shared" : review.feedback_state === "good" ? "Good experience" : "Experience"} /></p>
-      {review.body ? <p className="whitespace-pre-wrap break-words text-sm leading-6">{review.body}</p> : <p className="text-sm text-text-secondary"><WorkspaceText text="Quick feedback, no details added." /></p>}
-      {review.reply_body ? <div className="grid gap-2 border-l-2 border-brand-teal bg-surface-muted p-3"><p className="text-xs font-semibold"><WorkspaceText text="Salon reply" /></p><p className="whitespace-pre-wrap break-words text-sm leading-6">{review.reply_body}</p>{review.reply_created_at ? <time className="text-xs text-text-secondary" dateTime={review.reply_created_at}>{new Date(review.reply_created_at).toLocaleDateString("en-US",{timeZone:"America/Chicago"})}</time> : null}</div> : null}
-      {review.feedback_state === "issue" ? <p className="text-xs leading-5 text-text-secondary"><WorkspaceText text={review.issue_status === "resolved" ? "Salon marked this issue as handled. This does not change your feedback or its eligibility for LUMI Truth." : review.issue_status === "acknowledged" ? "The salon has acknowledged your issue." : "Awaiting a salon response."} /></p> : null}
-      {review.verified && review.ticket_id && review.feedback_state ? <VisitExperiencePrompt key={`${review.id}:${review.edited_at}`} compact actionLabel="Edit my feedback" countsTowardReputation={false} initialBody={review.body} initialState={review.feedback_state} salonName={review.salon_name} ticketId={review.ticket_id} windowDays={0} /> : null}
-      <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-brand-teal">{review.ticket_id ? <Link className="flex min-h-11 items-center underline" href={`/activity/receipts/${review.ticket_id}`}><WorkspaceText text="View receipt" /></Link> : null}{review.salon_public ? <Link className="flex min-h-11 items-center underline" href={`/explore/salons/${review.salon_id}#customer-experiences`}><WorkspaceText text="View salon experiences" /></Link> : null}</div>
-    </article>)}
-    {!focused ? <nav aria-label="Review pages" className="flex flex-wrap gap-5 text-sm text-brand-teal">{page>1 ? <Link className="min-h-11 underline" href={`/more/reviews?page=${page-1}`}><WorkspaceText text="Previous" /></Link> : null}{rows.length>10 && page<1001 ? <Link className="min-h-11 underline" href={`/more/reviews?page=${page+1}`}><WorkspaceText text="Next" /></Link> : null}</nav> : null}
+  if (error) return <section role="alert" className={styles.list}><h1 className={styles.title}><WorkspaceText text="My experiences" /></h1><p><WorkspaceText text={error} /></p><Link className={styles.link} href="/more/reviews"><WorkspaceText text="Try again" /></Link></section>;
+  return <section className={styles.list}>
+    <div><h1 className={styles.title}><WorkspaceText text="My experiences" /></h1><p className={styles.muted}><WorkspaceText text="Your feedback and salon replies." /></p></div>
+    {focused ? <Link className={styles.link} href="/more/reviews"><WorkspaceText text="All my experiences" /></Link> : null}
+    {rows.length === 0 ? <div><p className={styles.muted}><WorkspaceText text={focused ? "This experience is unavailable." : "No shared experiences yet."} /></p><Link className={styles.link} href="/my-bookings?tab=history"><WorkspaceText text="View visit history" /></Link></div> : rows.slice(0,10).map(review => <ReviewCard key={review.id} review={review} />)}
+    {!focused ? <nav aria-label="Experience pages" className={styles.pagination}>{page>1 ? <Link className={styles.link} href={"/more/reviews?page="+(page-1)}><WorkspaceText text="Previous" /></Link> : null}{rows.length>10 && page<1001 ? <Link className={styles.link} href={"/more/reviews?page="+(page+1)}><WorkspaceText text="Next" /></Link> : null}</nav> : null}
   </section>;
 }

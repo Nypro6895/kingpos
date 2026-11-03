@@ -9,6 +9,7 @@ import styles from "./auth-intent-prompt.module.css";
 
 type AuthIntentPromptProps = {
   children: ReactNode;
+  returningUser?: boolean;
   guestHref?: string;
   guestLabel?: string;
   kicker: string;
@@ -31,6 +32,7 @@ export function AuthIntentPrompt({
   kicker,
   onClose,
   primaryLabel = "Create account",
+  returningUser = false,
   showProviderOptions = false,
   title,
 }: AuthIntentPromptProps) {
@@ -92,7 +94,7 @@ export function AuthIntentPrompt({
               {kicker}
             </p>
             <h2 className="mt-1 text-xl font-semibold" id={titleId}>
-              <WorkspaceText text={title} />
+              <WorkspaceText text={returningUser ? "Sign in again" : title} />
             </h2>
           </div>
           <button
@@ -104,8 +106,8 @@ export function AuthIntentPrompt({
             <ReylumiIcon className="h-4 w-4" name="close" />
           </button>
         </div>
-        <div className="text-sm leading-6 text-text-secondary">{children}</div>
-        {guestHref ? (
+        <div className="text-sm leading-6 text-text-secondary">{returningUser ? <WorkspaceText text="Your session needs to be refreshed. Sign in again to continue with your account." /> : children}</div>
+        {returningUser ? <Link className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-orange px-5 text-sm font-semibold text-white" href={loginHref}><WorkspaceText text="Sign in again" /></Link> : guestHref ? (
           <div className="grid gap-3">
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-[0.75rem] bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"

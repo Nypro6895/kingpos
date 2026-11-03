@@ -17,7 +17,7 @@ function classify(route) {
   if (route === '/help' || route === '/help/[slug]') {
     classification = 'public-static'; renderStrategy = 'bundled-content'; rendererId = route === '/help' ? 'help.home' : 'help.guide';
   } else if (legal.has(route)) classification = 'public-static';
-  else if (auth.has(route) || /^\/(?:booking-payment|booking\/manage|deletion-status|ownership\/invite|staff\/invite|check-in|visit|claim)(?:\/|$)/.test(route)
+  else if (route === '/activity/receipts/[ticketId]/experience' || auth.has(route) || /^\/(?:booking-payment|booking\/manage|deletion-status|ownership\/invite|staff\/invite|check-in|visit|claim)(?:\/|$)/.test(route)
     || route.startsWith('/admin') || creation.has(route) || ['/check-writer', '/qr', '/staff/scan', '/welcome/phone', '/developers/market', '/market-review', '/market/payment-return', '/market/orders/[orderId]', '/market/booking-deposit/payment', '/market/booking-deposit/settings', '/settings/login-security', '/settings/recovery-back-office', '/pos/customer-display', '/pos/customer-display/setup', '/support/guest/[threadId]', '/contact-support', '/payroll/tax-company/settings'].includes(route)) {
     classification = 'sensitive-writes'; scope = 'none'; renderStrategy = 'online-only'; rendererId = null;
     roles = ['/developers/market','/market-review'].includes(route) ? [] : route.startsWith('/admin') ? ['admin'] : route === '/check-writer' ? ['owner'] : route === '/staff/scan' ? ['staff'] : allRoles;

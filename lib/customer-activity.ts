@@ -69,6 +69,7 @@ export type CustomerActivityService = {
 export type CustomerActivityVisitExperienceState = "good" | "issue";
 
 export type CustomerActivityVerifiedVisit = {
+  experienceId?: string | null;
   countsTowardReputation: boolean;
   experienceBody: string | null;
   experienceCreatedAt: string | null;
@@ -316,6 +317,7 @@ function parseVerifiedVisit(value: unknown): CustomerActivityVerifiedVisit | nul
 
   return {
     countsTowardReputation: raw.countsTowardReputation === true,
+    experienceId: readUuid(raw.experienceId),
     experienceBody: readString(raw.experienceBody),
     experienceCreatedAt: readString(raw.experienceCreatedAt),
     experienceState: readExperienceState(raw.experienceState),

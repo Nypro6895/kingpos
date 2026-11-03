@@ -140,7 +140,7 @@ export function ExploreAccountActionsProvider({
     <Auth.Provider value={authenticated}>
       {children}
       {authPrompt ? (
-        <AuthIntentPrompt
+        <AuthIntentPrompt returningUser={authenticated}
           kicker="A little self-care"
           title={__vt("Your next beauty moment ✨")}
           onClose={() => {
@@ -268,7 +268,7 @@ export function ExploreBookButton({
         <WorkspaceText text={!compact ? "Book" : null} />
       </button>
       {prompt ? (
-        <AuthIntentPrompt
+        <AuthIntentPrompt returningUser={authenticated}
           kicker="A little self-care"
           title={__vt("Your next beauty moment ✨")}
           onClose={() => {
@@ -414,7 +414,7 @@ function FavoriteLoveButton({ kind, itemKey, name, className, initialActive, aut
         </span>
       ) : null}
       {prompt ? (
-        <AuthIntentPrompt
+        <AuthIntentPrompt returningUser={authenticated}
           kicker={kind === "salon" ? "Made for your favorites" : "A little inspiration"}
           title={__vt(kind === "salon" ? "Keep this salon close ♡" : "Keep what you love")}
           onClose={() => {

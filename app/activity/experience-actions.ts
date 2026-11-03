@@ -20,6 +20,19 @@ async function mutate(salonId: string, rpc: string, args: Record<string, unknown
 export async function replyToVisitExperienceAction(input: { salonId: string; experienceId: string; body: string; requestId: string }) {
   return mutate(input.salonId, "reply_to_visit_experience", { p_salon: input.salonId, p_experience: input.experienceId, p_body: input.body, p_request: input.requestId });
 }
-export async function setVisitExperienceStatusAction(input: { salonId: string; experienceId: string; status: "acknowledged" | "resolved" }) {
-  return mutate(input.salonId, "set_visit_experience_status", { p_salon: input.salonId, p_experience: input.experienceId, p_status: input.status });
+export async function resolveMyVisitExperienceAction(experienceId: string) {
+  try {
+    const supabase = await createAuthenticatedSupabaseServerClient();
+    if (!supabase) return { error: "Sign in to confirm resolution." };
+    const { error } = await supabase.rpc("resolve_my_visit_experience", { p_experience: experienceId });
+    if (error) return { error: "Resolution could not be saved. Please try again." };
+    for (const path of ["/more/reviews", "/salon-profile", "/explore", "/activity", "/my-bookings"]) revalidatePath(path);
+    return { error: null };
+  } catch { return { error: "Resolution could not be saved. Please try again." }; }
+}
+
+// Retain the old native command ID; older apps cannot resolve on behalf of customers.
+export async function setVisitExperienceStatusAction(_input: { salonId: string; experienceId: string; status: "acknowledged" | "resolved" }) {
+  void _input;
+  return { error: "Only the customer can confirm resolution." };
 }

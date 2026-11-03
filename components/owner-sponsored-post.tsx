@@ -4,7 +4,7 @@ import Image from "next/image";
 import { campaignDeliveryRequest } from "@/lib/campaign-delivery-area";
 import { adRequest, prepareAdImage } from "@/lib/advertising-client";
 import styles from "./owner-campaign.module.css";
-type Ad = { title: string; caption: string; image: string | null; href: string; ticket: string };
+type Ad = { title: string; caption: string; image: string | null; href: string; ticket: string; salonName?: string | null; salonLocation?: string };
 export function OwnerSponsoredPost({ location, latitude, longitude, query }: { query?: string; location?: string; latitude?:number|null; longitude?:number|null }) {
   const selection = useMemo(() => campaignDeliveryRequest(location,latitude,longitude,query),[location,latitude,longitude,query]);
   const requestKey = selection?.key ?? null;
@@ -39,7 +39,6 @@ function SponsoredCard({ad}:{ad:Ad}) {
     });
     return () => abort.abort();
   }, [ad.ticket, ad.image]);
-  const [admittedTicket, setAdmittedTicket] = useState<string | null>(null);
   const [dismissedTicket, setDismissedTicket] = useState<string | null>(null);
   const imageLoaded = useCallback(() => setLoadedImage({ ticket: ad.ticket, src: ad.image ?? "" }), [ad.ticket, ad.image]);
   const imageFailed = useCallback(() => setDismissedTicket(ad.ticket), [ad.ticket]);
@@ -70,7 +69,7 @@ function SponsoredCard({ad}:{ad:Ad}) {
         }
         void claim.then(ok => {
           if (disposed) return;
-          if (ok) setAdmittedTicket(ad.ticket); else setDismissedTicket(ad.ticket);
+          if (!ok) setDismissedTicket(ad.ticket);
         });
       }, 1000);
     };
@@ -92,11 +91,12 @@ function SponsoredCard({ad}:{ad:Ad}) {
   </div>;
   return <article ref={ref} className={styles.card} aria-label="Sponsored post">
     <div className={styles.cardHeader}><span className={styles.eyebrow}>SPONSORED</span><button className={styles.close} aria-label="Hide sponsored post" onClick={() => setDismissedTicket(ad.ticket)}>×</button></div>
+    {ad.salonName?<p className={`${styles.muted} ${styles.sponsoredIdentity}`}><strong>{ad.salonName}</strong>{ad.salonLocation?` · ${ad.salonLocation}`:""}</p>:null}
     {ad.image ? <Image unoptimized src={ad.image} alt="" width={640} height={400} sizes="(max-width: 600px) 100vw, 50vw" onLoad={imageLoaded} onError={imageFailed} style={{ width: "100%", height: "auto", maxHeight: 320, objectFit: "cover", borderRadius: 14, margin: "12px 0" }} /> : null}
-    <h3 style={{ marginTop: 12 }}>{ad.title}</h3>{ad.caption ? <p className={styles.muted}>{ad.caption}</p> : null}
+    <h3 className={styles.sponsoredTitle}>{ad.title}</h3>{ad.caption ? <p className={`${styles.muted} ${styles.sponsoredCaption}`}>{ad.caption}</p> : null}
     <a className={styles.primary} href={ad.href} onClick={() => {
-      // Navigation is immediate. An early click cannot create an unearned, billable view.
-      if (admittedTicket === ad.ticket) void adRequest("/api/campaigns/delivery", { method: "POST", keepalive: true,
+      // A signed click is non-billable and independent of the one-second view claim.
+      void adRequest("/api/campaigns/delivery", { method: "POST", keepalive: true,
         headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: ad.ticket, kind: "click" }) }).catch(() => {});
     }}>Discover this post →</a>
   </article>;

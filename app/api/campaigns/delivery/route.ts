@@ -36,6 +36,10 @@ async function selectCampaign(request: Request,input:{location?:string;latitude?
     const visitorHash = campaignVisitorHash(campaignVisitorIdentity(request.headers,visitor,context.user?.id ?? null));
     const { data, error } = await client.rpc(intent ? "owner_campaign_search_candidates" : "owner_campaign_candidates", { p_area:area,p_visitor:visitorHash,p_viewer:context.user?.id ?? null,...(intent ? {p_terms:intent.terms,p_kind:intent.kind,p_category:intent.category} : {}) });
     if (error || !data?.length) return Response.json(null,{headers:noStore});
+    // Public business identity helps a customer recognize who is advertising.
+    // Resolve the batch once; never invent ratings, offers or appointment times.
+    const { data: salons } = await client.from("locations").select("id,name,city,state").in("id", [...new Set(data.map((candidate: (typeof data)[number]) => candidate.salon_id))]);
+    const businesses = new Map((salons ?? []).map(salon => [salon.id, salon]));
     const materialize = async (candidate: (typeof data)[number]) => {
       const { data: post } = await client.rpc("owner_campaign_post", {p_type:candidate.source_type,p_source:candidate.source_id,p_salon:candidate.salon_id});
       if (!post) return null;
@@ -53,7 +57,9 @@ async function selectCampaign(request: Request,input:{location?:string;latitude?
       }
       if (candidate.source_type === "salon_profile_look" && !image) return null;
       const ticket = signCampaignTicket({id:candidate.id,visitor:visitorHash,viewer:context.user?.id ?? null,area,expires:Date.now()+600000,nonce:crypto.randomUUID()});
-      return { title:candidate.title,caption:post.caption ?? post.summary ?? "",image,href,ticket };
+      const business = businesses.get(candidate.salon_id);
+      return { title:candidate.title,caption:post.caption ?? post.summary ?? "",image,href,ticket,
+        salonName:business?.name ?? null,salonLocation:[business?.city,business?.state].filter(Boolean).join(", ") };
     };
     const ads = [];
     if (input.batch) {
@@ -90,7 +96,7 @@ export async function POST(request: Request) {
     const context = await getCurrentBusinessContext();
     if (ticket.visitor !== campaignVisitorHash(campaignVisitorIdentity(request.headers,visitor,context.user?.id ?? null))) return Response.json({ok:false},{status:403});
     if (ticket.viewer !== (context.user?.id ?? null)) return Response.json({ok:false},{status:403});
-    const { data, error } = await advertisingClient().rpc("owner_campaign_admit", {p_id:ticket.id,p_visitor:ticket.visitor,p_kind:body.kind,p_area:ticket.area,p_viewer:ticket.viewer,p_nonce:ticket.nonce});
+    const { data, error } = await advertisingClient().rpc(body.kind === "click" ? "owner_campaign_click" : "owner_campaign_admit", {p_id:ticket.id,p_visitor:ticket.visitor,...(body.kind === "view" ? {p_kind:"view"} : {}),p_area:ticket.area,p_viewer:ticket.viewer,p_nonce:ticket.nonce});
     return Response.json({ok:!error && data===true},{headers:noStore});
   } catch { return Response.json({ok:false},{status:400,headers:noStore}); }
 }

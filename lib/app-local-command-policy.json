@@ -423,6 +423,8 @@
       "dismissCampaignPromptAction",
       "fundSavedCampaignAction",
       "loadOwnerCampaignsAction",
+      "loadOwnerCampaignAction",
+      "loadCampaignReportAction",
       "ownerCampaignPromptAction",
       "loadCampaignResultsAction",
       "saveCampaignLimitAction",
@@ -495,6 +497,7 @@
     ],
     "app/activity/experience-actions.ts": [
       "replyToVisitExperienceAction",
+      "resolveMyVisitExperienceAction",
       "setVisitExperienceStatusAction"
     ],
     "app/qr/actions.ts": [

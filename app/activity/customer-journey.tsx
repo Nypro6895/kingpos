@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CustomerActivity, CustomerActivityData, CustomerBookingActivity, CustomerActivityReceipt } from "@/lib/customer-activity";
 import type { CustomerBookingDetail } from "@/lib/customer-bookings";
-import { customerJourneyGroups, customerVisitQrHref, customerVisitArrivedAt, isActiveCustomerVisit, type CustomerJourneyTab } from "@/lib/customer-journey";
+import { canCheckInForAppointment, customerJourneyGroups, customerVisitQrHref, customerVisitArrivedAt, isActiveCustomerVisit, type CustomerJourneyTab } from "@/lib/customer-journey";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 import { searchTextMatches } from "@/lib/search-normalization";
 import { useExperienceScope } from "@/components/experience-scope";
@@ -13,6 +13,7 @@ import { loadCustomerHistoryRead } from "@/lib/customer-history-client";
 import { HistoryDetailsDrawer } from "./history-details-drawer";
 import { MyCustomerProfiles } from "./my-customer-profiles";
 import styles from "./customer-journey.module.css";
+import feedbackStyles from "./visit-feedback.module.css";
 
 const PAGE_SIZE = 10;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,12 +41,20 @@ function amount(item: CustomerActivity) {
   if (item.type === "visit" || ["cancelled", "no_show"].includes(item.status)) return "";
   return `${item.type === "booking" ? "Est. " : ""}${new Intl.NumberFormat("en-US", { style:"currency",currency:item.currency }).format(item.total)}`;
 }
-function JourneyRow({ item, onOpen }: { item: CustomerActivity; onOpen: (item: CustomerActivity) => void }) {
-  return <button type="button" className={styles.row} onClick={() => onOpen(item)} aria-label={`Details: ${item.salon.name}, ${format(item,{month:"short",day:"numeric"})}, ${status(item)}`}>
+function JourneyRow({ item, onOpen, now }: { item: CustomerActivity; onOpen: (item: CustomerActivity) => void; now: number | null }) {
+  const checkin = now !== null && canCheckInForAppointment(item, now);
+  const label = checkin && item.status === "past_appointment" ? "Ready to check in" : status(item);
+  const visit = item.type === "purchase" ? item.verifiedVisit : null;
+  const feedbackHref = item.type === "purchase" && visit ? visit.experienceId
+    ? "/more/reviews?experience="+visit.experienceId : visit.experienceState
+      ? "/more/reviews" : "/activity/receipts/"+item.ticketId+"/experience" : null;
+  return <article aria-label={`${kind(item)} at ${item.salon.name}`}><div className={styles.row}>
+    <button type="button" className={styles.rowOpen} onClick={() => onOpen(item)} aria-label={"Details: "+item.salon.name+", "+format(item,{month:"short",day:"numeric"})+", "+label} />
     <span className={styles.date}><span className={styles.dateBadge}><small>{format(item,{month:"short"})}</small><strong>{format(item,{day:"numeric"})}</strong></span><span className={styles.time}>{format(item,{hour:"numeric",minute:"2-digit"})}</span></span>
-    <span className={styles.body}><strong>{item.salon.name}</strong><span className={styles.kind}>{kind(item)}</span><span className={styles.services}>{item.services.map(service=>service.name).join(" · ") || item.title}</span><span className={styles.badge} data-tone={tone(item)}>{status(item)}</span></span>
+    <span className={styles.body}><strong>{item.salon.name}</strong><span className={styles.kind}>{kind(item)}</span><span className={styles.services}>{item.services.map(service=>service.name).join(" · ") || item.title}</span></span>
     <span className={styles.end}><strong className={styles.amount}>{amount(item)}</strong><span className={styles.chevron} aria-hidden>›</span></span>
-  </button>;
+    <div className={styles.utility}><span className={styles.badge} data-tone={tone(item)}>{label}</span>{feedbackHref ? <Link prefetch={false} className={feedbackStyles.link} href={feedbackHref}>{visit?.experienceState ? "View experience" : "Share experience"}</Link> : null}</div>
+  </div>{checkin?<section className={styles.appointmentCheckin} aria-label={`Check in for ${item.salon.name}`}><p>At the salon? Scan the salon QR, or show your QR to staff.</p><div className={styles.actions}><Link prefetch={false} href="/qr?scan=1" className={`${styles.button} ${styles.primary}`}>Check in</Link><Link prefetch={false} href="/qr" className={styles.button}>My QR</Link></div></section>:null}</article>;
 }
 
 /** Only explicit legacy deep links outside the bounded list need this read.
@@ -71,7 +80,32 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
   const [filters,setFilters]=useState(false); const [menu,setMenu]=useState(false); const [profiles,setProfiles]=useState(false);
   const panelId=useId(),filterTitleId=useId();const [localRefreshError,setLocalRefreshError]=useState("");const refreshBusy=useRef(false);
   const [selected,setSelected]=useState<CustomerActivity|null>(null);const [deepId,setDeepId]=useState(initialSelectedBookingId);
-  const filterDialog=useRef<HTMLDialogElement>(null);const groups=useMemo(()=>customerJourneyGroups(activity),[activity]);
+  const filterDialog=useRef<HTMLDialogElement>(null);
+  const [now,setNow]=useState<number|null>(null);
+  const groups=useMemo(()=>customerJourneyGroups(activity,now??undefined),[activity,now]);
+  // Check exact opening/expiry boundaries and resume after backgrounding.
+  // A bounded read while eligible also catches a staff-side check-in.
+  useEffect(()=>{
+    let timer:ReturnType<typeof setTimeout>;
+    let disposed=false;
+    const records=[...activity.upcoming,...activity.history];
+    const tick=(revalidate=false)=>{
+      if(disposed)return;
+      const time=Date.now();setNow(time);
+      const eligible=records.some(item=>canCheckInForAppointment(item,time));
+      if(revalidate&&eligible&&document.visibilityState!=="hidden"&&onRefresh&&!refreshBusy.current){
+        refreshBusy.current=true;
+        void onRefresh().catch(()=>{}).finally(()=>{refreshBusy.current=false;});
+      }
+      const boundaries=records.flatMap(item=>item.type==="booking"?[Date.parse(item.startAt)-15*60_000,Date.parse(item.startAt)+60*60_000+1]:[]).filter(value=>value>time);
+      const delay=Math.min(30_000,...boundaries.map(value=>value-time));
+      clearTimeout(timer);timer=setTimeout(()=>tick(true),delay);
+    };
+    const resume=()=>{if(document.visibilityState!=="hidden")tick(true);};
+    timer=setTimeout(()=>tick(),0);
+    window.addEventListener("focus",resume);document.addEventListener("visibilitychange",resume);
+    return()=>{disposed=true;clearTimeout(timer);window.removeEventListener("focus",resume);document.removeEventListener("visibilitychange",resume);};
+  },[activity,onRefresh]);
   const closeFilters=()=>{filterDialog.current?.close();setFilters(false);}; useCloseOnNavigation(closeFilters);
   useEffect(()=>{if(!filters)return;const element=filterDialog.current,previous=document.body.style.overflow;document.body.style.overflow="hidden";if(!element?.open)element?.showModal();return()=>{element?.close();document.body.style.overflow=previous;};},[filters]);
   const current=tab==="upcoming"?groups.upcoming:groups.history;
@@ -90,11 +124,11 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
     {message?<p role="status" className={styles.muted}>{message}</p>:null}{error||localRefreshError?<p role="alert">{error||localRefreshError}</p>:null}{refreshing?<p role="status" className={styles.muted}>Updating records…</p>:null}
     <div className={styles.tabs} role="tablist" aria-label="Appointments and visits"><button type="button" role="tab" aria-selected={tab==="upcoming"} aria-controls={panelId} onClick={()=>switchTab("upcoming")}>Upcoming</button><button type="button" role="tab" aria-selected={tab==="history"} aria-controls={panelId} onClick={()=>switchTab("history")}>History</button></div>
     {tab==="upcoming"?<>
-      {groups.active.length?<section aria-label="At salon"><h2 className={styles.month}>At salon</h2>{groups.active.map(item=><article className={styles.active} key={item.id}><span className={styles.badge} data-tone="teal">{status(item)}</span><h3>{item.salon.name}</h3>{customerVisitArrivedAt(item)?<p className={styles.muted}>Arrived · {new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:item.timezone??"America/Chicago"}).format(new Date(customerVisitArrivedAt(item)!))}</p>:null}<p className={styles.muted}>{item.services.map(s=>s.name).join(" · ")}</p><div className={styles.actions}><Link prefetch={false} className={styles.button} href={customerVisitQrHref(item)}>View my QR</Link><Link prefetch={false} className={styles.button} href={customerVisitQrHref(item)}>Visit details</Link></div></article>)}</section>:<section className={styles.checkin} aria-label="Salon check-in"><div><h2>At the salon?</h2><p>Scan the salon QR, or show your QR to staff.</p></div><div className={styles.actions}><Link prefetch={false} href="/qr?scan=1" className={`${styles.button} ${styles.primary}`}>Check in at salon</Link><Link prefetch={false} href="/qr" className={styles.button}>My QR</Link></div></section>}
+      {groups.active.length?<section aria-label="At salon"><h2 className={styles.month}>At salon</h2>{groups.active.map(item=><article className={styles.active} key={item.id}><span className={styles.badge} data-tone="teal">{status(item)}</span><h3>{item.salon.name}</h3>{customerVisitArrivedAt(item)?<p className={styles.muted}>Arrived · {new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:item.timezone??"America/Chicago"}).format(new Date(customerVisitArrivedAt(item)!))}</p>:null}<p className={styles.muted}>{item.services.map(s=>s.name).join(" · ")}</p><div className={styles.actions}><Link prefetch={false} className={styles.button} href={customerVisitQrHref(item)}>View my QR</Link><Link prefetch={false} className={styles.button} href={customerVisitQrHref(item)}>Visit details</Link></div></article>)}</section>:null}
     </>:null}
     {current.length?<div className={styles.toolbar}><input className={styles.search} aria-label="Search appointments and visits" type="search" value={query} placeholder="Salon, service or date" onChange={e=>{setQuery(e.target.value);setPage(1);}}/><button className={styles.iconButton} type="button" aria-label="Filter appointments and visits" aria-haspopup="dialog" onClick={()=>setFilters(true)}><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M4 7h16M7 12h10M10 17h4"/></svg>{type!=="all"||recordStatus!=="all"||month!=="all"?<span aria-hidden>•</span>:null}</button></div>:null}
     <section id={panelId} role="tabpanel" aria-label={tab==="upcoming"?"Upcoming appointments":"Salon history"}>
-      {!current.length?<div className={styles.empty}><h2>{tab==="upcoming"?"No upcoming appointments":"No salon history yet"}</h2><p>{tab==="upcoming"?"Your next appointment will appear here after you book.":"Past appointments, visits and receipts will appear here."}</p><Link prefetch={false} className={`${styles.button} ${styles.primary}`} href="/explore">Find a salon</Link></div>:!rows.length?<div className={styles.empty}><h2>No matching records</h2><p>Try another salon, date or service.</p><button className={styles.button} onClick={reset}>Clear filters</button></div>:<div className={styles.list}>{rows.map((item,index)=><div key={item.id}>{index===0||monthKey(rows[index-1])!==monthKey(item)?<h2 className={styles.month}>{monthKey(item)}</h2>:null}<JourneyRow item={item} onOpen={open}/></div>)}</div>}
+      {!current.length?<div className={styles.empty}><h2>{tab==="upcoming"?"No upcoming appointments":"No salon history yet"}</h2><p>{tab==="upcoming"?"Your next appointment will appear here after you book.":"Past appointments, visits and receipts will appear here."}</p><Link prefetch={false} className={`${styles.button} ${styles.primary}`} href="/explore">Find a salon</Link></div>:!rows.length?<div className={styles.empty}><h2>No matching records</h2><p>Try another salon, date or service.</p><button className={styles.button} onClick={reset}>Clear filters</button></div>:<div className={styles.list}>{rows.map((item,index)=><div key={item.id}>{index===0||monthKey(rows[index-1])!==monthKey(item)?<h2 className={styles.month}>{monthKey(item)}</h2>:null}<JourneyRow item={item} onOpen={open} now={now}/></div>)}</div>}
       {pageCount>1?<div className={styles.pagination}><button type="button" disabled={currentPage===1} onClick={()=>setPage(currentPage-1)}>Previous</button><span>{currentPage} / {pageCount}</span><button type="button" disabled={currentPage===pageCount} onClick={()=>setPage(currentPage+1)}>Next</button></div>:null}
       {tab==="upcoming"&&current.length?<p className={`${styles.muted} mt-4`}>Times shown in the salon’s time zone.</p>:null}
     </section>

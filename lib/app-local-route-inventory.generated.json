@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageCount": 147,
+  "pageCount": 148,
   "layoutCount": 17,
   "routes": [
     {
@@ -279,6 +279,51 @@
       "data": {
         "policy": "scoped-authorized-snapshot",
         "scope": "viewer",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/activity/receipts/[ticketId]/experience",
+      "source": "app/(app)/activity/receipts/[ticketId]/experience/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "sensitive-writes",
+      "roles": [
+        "guest",
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "scope": "none",
+      "renderStrategy": "online-only",
+      "rendererId": null,
+      "readResources": [],
+      "onlineReason": "Credential, token, recovery, creation or sensitive confirmation flow uses its existing online page.",
+      "clientModules": [
+        {
+          "source": "app/activity/visit-experience-prompt.tsx",
+          "exports": [
+            "VisitExperiencePrompt"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/customer-activity#getCustomerActivityReceipt"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/activity/receipts/[ticketId]/experience/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "online-only",
+        "scope": "none",
         "requiresFreshServerAuthorityForWrites": true
       },
       "actions": "existing-online-confirmation",

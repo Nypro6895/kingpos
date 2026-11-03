@@ -2,26 +2,22 @@ import { withExperiencePage } from "@/components/experience-page";
 import { getBeautyProfileRoutePage } from "@/lib/beauty-relationship";
 import { BeautyProfileReadView } from "@/app/explore/beauty/beauty-profile-read-view";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 type PublicBeautyProfilePageProps = {
-  params: Promise<{
-    profileId: string;
-  }>;
-  searchParams: Promise<{
-    customerId?: string;
-  }>;
+  params: Promise<{ profileId: string }>;
+  searchParams: Promise<{ customerId?: string; before?: string; post?: string }>;
 };
 
 export async function generateMetadata({
   params,
   searchParams,
 }: PublicBeautyProfilePageProps): Promise<Metadata> {
-  const [{ profileId }, { customerId }] = await Promise.all([
+  const [{ profileId }, query] = await Promise.all([
     params,
     searchParams,
   ]);
-  const page = await getBeautyProfileRoutePage({ customerId, profileId });
+  const page = await getBeautyProfileRoutePage({ customerId: query.customerId, profileId, cursor: query.before && query.post ? {createdAt:query.before,postId:query.post} : null });
 
   if (!page) {
     return {
@@ -47,16 +43,17 @@ async function PublicBeautyProfilePage({
   params,
   searchParams,
 }: PublicBeautyProfilePageProps) {
-  const [{ profileId }, { customerId }] = await Promise.all([
+  const [{ profileId }, query] = await Promise.all([
     params,
     searchParams,
   ]);
-  const page = await getBeautyProfileRoutePage({ customerId, profileId });
+  const page = await getBeautyProfileRoutePage({ customerId: query.customerId, profileId, cursor: query.before && query.post ? {createdAt:query.before,postId:query.post} : null });
 
   if (!page) {
     notFound();
   }
 
+  if (page.profile.isSelf) redirect("/beauty");
   return <BeautyProfileReadView page={page} />;
 }
 

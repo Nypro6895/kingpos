@@ -11,3 +11,14 @@
 @media(prefers-reduced-motion:no-preference){.skeleton{animation:journeyPulse 1.8s ease-in-out infinite}@keyframes journeyPulse{50%{opacity:.5}}}
 .heading .iconButton{border-color:transparent}.menu{display:flex;gap:16px;flex-wrap:wrap}
 .menuLink{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:var(--color-brand-teal,#16827d)}
+
+.appointmentCheckin{padding:0 0 16px 62px}.appointmentCheckin p{font-size:12px;line-height:19px;color:var(--color-text-secondary,#8c8187)}.appointmentCheckin .actions{margin-top:8px;max-width:420px}
+@media(min-width:640px){.appointmentCheckin{padding-left:80px}}
+
+/* Status and feedback share one utility line, inside the existing visit row. */
+.row{position:relative;grid-template-columns:44px minmax(0,1fr) 62px;column-gap:8px;row-gap:0;padding:10px 0;min-height:112px}
+.rowOpen{position:absolute;inset:0;width:100%;border:0;background:transparent;cursor:pointer;z-index:0;border-radius:4px}
+.rowOpen:focus-visible{outline:2px solid var(--color-brand-orange,#f26f3d);outline-offset:2px}
+.date{grid-column:1;grid-row:1 / span 2;pointer-events:none}.body{grid-column:2;grid-row:1;pointer-events:none}.end{grid-column:3;grid-row:1;pointer-events:none}
+.utility{grid-column:2 / -1;grid-row:2;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;pointer-events:none}.utility>a{position:relative;z-index:1;pointer-events:auto;flex-shrink:0}.utility .badge{font-size:10px;line-height:15px}.body>strong{font-size:14px;line-height:20px}.end{gap:18px}
+@media(min-width:640px){.row{grid-template-columns:64px minmax(0,1fr) 110px;column-gap:16px}.body>strong{font-size:15px}}

@@ -612,10 +612,9 @@ function imageAlt(item: ExploreFeedItem) {
 
 function FeedAvatar({ item }: { item: ExploreFeedItem }) {
   const avatarUrl =
-    item.author.avatarUrl ??
-    (item.author.kind === "salon" ? item.salon?.logoImageUrl : null);
+    item.sourceType === "salon" ? item.salon?.logoImageUrl : item.author.avatarUrl;
   const avatarName =
-    item.author.kind === "salon"
+    item.sourceType === "salon"
       ? (item.salon?.name ?? item.author.name)
       : item.author.name;
 
@@ -630,7 +629,7 @@ function FeedAvatar({ item }: { item: ExploreFeedItem }) {
           src={avatarUrl}
         />
       ) : (
-        initialsFor(item.author.name)
+        initialsFor(avatarName)
       )}
     </span>
   );
@@ -1374,15 +1373,14 @@ export function ExploreFeedCard({featured=false,item,onCommentCountChange,viewer
  const personName=item.sourceType==="personal"?item.author.name:item.salonAuthorRole==="staff"?item.salonAuthorName:null;
  const authorName=explorePostIdentity({source:item.sourceType,salonName:item.salon?.name,authorName:personName??item.author.name,authorRole:item.salonAuthorRole}).primary;
  const authorHref=item.sourceType==="personal"&&item.personal?.profileId?`/explore/beauty/${item.personal.profileId}`:item.salon?.href??href;
- const tagged=!recommendation&&item.salon&&authorName!==item.salon.name;
+
  if(social.state.hidden||(commentTarget&&hiddenPosts.includes(postIdentity(commentTarget))))return null;
  const header=<div className="flex min-w-0 items-center gap-2 px-3 py-2" data-feed-identity>
-  <Link prefetch={false} href={authorHref} aria-label={`Open ${authorName}`} className="shrink-0">{!recommendation&&item.sourceType==='salon'&&personName?<span className="grid size-9 place-items-center rounded-full bg-orange-50 text-xs font-semibold text-brand-orange">{personName.split(/\s+/).slice(0,2).map(word=>word[0]).join('')}</span>:<FeedAvatar item={item}/>}</Link>
+  <Link prefetch={false} href={authorHref} aria-label={`Open ${item.sourceType === "salon" ? item.salon?.name ?? authorName : authorName}`} className="shrink-0">{<FeedAvatar item={item}/>}</Link>
   <div className="min-w-0 flex-1">
    <div className="flex min-w-0 flex-wrap items-center gap-x-1 text-sm">
-    <Link prefetch={false} href={authorHref} className="min-w-0 truncate font-semibold" title={authorName}>{authorName}</Link>
-    {tagged?<><span className="text-text-muted">Â·</span><Link prefetch={false} href={item.salon!.href??href} className="min-w-0 truncate font-medium" title={item.salon!.name}>{item.salon!.name}</Link></>:null}
-    {salon?<ExploreSalonFollow salon={salon}/>:null}
+    <PostIdentity source={item.sourceType} salonName={item.salon?.name} salonHref={item.salon?.href} authorName={personName || item.author.name} authorHref={item.sourceType === "personal" ? authorHref : null} authorRole={item.salonAuthorRole} />
+    {salon && item.sourceType === "salon" ? <ExploreSalonFollow salon={salon}/> : null}
    </div>
    <p className="text-xs text-text-muted">{item.platformIntroduction ? "Introduction by Reylumi" : recommendation?[item.serviceCategory,item.salon?.city,item.salon?.state].filter(Boolean).join(' Â· '):timeAgo(item.publishedAt)}</p>
   </div>

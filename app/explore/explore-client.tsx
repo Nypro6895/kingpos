@@ -2437,7 +2437,7 @@ function DesktopTrustValueModule() {
     {
       icon: "heart",
       label: "Save intent",
-      text: "Guests can browse first and create an account when they save or book.",
+      text: "Keep favorite looks and salons together for your next visit.",
     },
   ];
 

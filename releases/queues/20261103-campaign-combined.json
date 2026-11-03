@@ -1,0 +1,3782 @@
+{
+  "schema": 1,
+  "capturedAt": "2026-11-03T14:41:58.077Z",
+  "summary": {
+    "capturedAt": "2026-11-03T14:41:58.077Z",
+    "startedAt": "2026-11-03T14:41:10.194Z",
+    "worktrees": 201,
+    "dirtyWorktrees": 148,
+    "gitReadErrors": 0,
+    "unregisteredDirtyWorktreeCandidates": 80,
+    "pendingEvents": 115,
+    "pendingChangeIds": 115,
+    "statuses": {
+      "blocked": 4,
+      "ready": 20,
+      "needs-integration": 85,
+      "working": 6
+    },
+    "classes": {
+      "hold-blocked": 4,
+      "ready-snapshot-verified": 20,
+      "needs-integration-validation": 55,
+      "needs-source-repair": 29,
+      "hold-working": 6,
+      "source-unresolved": 1
+    },
+    "channels": {
+      "web": 102,
+      "ios": 49
+    },
+    "copiedFiles": 2052,
+    "copiedBytes": 63014817,
+    "overlappingFilePaths": 380,
+    "conflictingAvailableHashPaths": 225,
+    "verifiedReleaseReceipts": 152,
+    "productionAliasCaptured": false,
+    "assembledBuild": false,
+    "deployed": false,
+    "supportingFilesRecovered": 76,
+    "supportingBytes": 9690826,
+    "supplementalAt": "2026-11-03T14:43:47.817Z",
+    "copiedSourceHashesReverified": 2052
+  },
+  "artifactManifest": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\queue-final.json",
+  "artifactManifestSha256": "22f3ed07418a9d5460b19f9fd1289eef0f5a57e79bd330cbc51677440996cc59",
+  "archive": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103.zip",
+  "archiveSha256": "f9b03d354fca2186cd9bad9eba4c360852e3e32dc4d8c78739940f90460cd8da",
+  "scope": "201 registered linked worktrees; 115 pending journal change IDs. Administrative handoff is recorded after this capture. Not an assembled release or proof of live publication.",
+  "integrationDiscoveryOrder": [
+    "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+    "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+    "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+    "482469b7-4009-48f1-a0af-13a6c6a26f88",
+    "493385b7-012b-4d66-a589-5790acf7018a",
+    "f1a21743-b245-433f-bc2f-03a61fa05495",
+    "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+    "bca89a39-186f-412a-81bd-b76075e4d5da",
+    "4cff2fad-08e3-42d0-9b22-623957e87395",
+    "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+    "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+    "62f208d8-136e-439b-bba2-23a9ec001f43",
+    "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+    "16970911-3725-403f-a83f-915be4271914",
+    "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+    "a88bc104-8a6e-4cab-b465-99463332dec3",
+    "b2617811-8752-4582-bc3a-244b701326d9",
+    "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+    "279874eb-b273-4373-a124-1dc6ce64bfe8",
+    "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+    "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+    "23ccd32b-8260-4b62-8016-44d4a25832b8",
+    "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+    "a397b292-7798-4ba5-b16a-71673c11da76",
+    "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+    "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+    "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+    "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+    "df7e32b3-7171-47d3-86c6-2335990a478f",
+    "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+    "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+    "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+    "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+    "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+    "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+    "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+    "e32efba9-d661-4558-8f11-9e605b2383f1",
+    "15938439-7e97-493e-b874-fe42810e2ce4",
+    "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+    "5b41dd44-3397-4098-9235-ee3e693ee515",
+    "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+    "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+    "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+    "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+    "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+    "04ee32a6-3687-4b77-affc-8058500c0f23",
+    "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+    "13608576-db78-4312-9445-5d173e04315e",
+    "93859166-e3ea-4656-92df-3b78c7a2a327",
+    "4072b660-7b05-4d67-81bf-43561df0cd04",
+    "4e03d52a-13c1-4830-b01d-71a869fbd826",
+    "014d1e2b-713b-4368-925c-6fe55451770d",
+    "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+    "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+    "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+    "d71a3e3d-4761-459e-baee-29f19edd8729",
+    "49dff70c-9008-4332-bcc7-f33e0e84972c",
+    "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+    "740d1552-bbbd-4289-aeef-8485cf7c966f",
+    "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+    "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+    "c9cd3897-34eb-417b-81a7-9865c2e94121",
+    "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+    "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+    "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+    "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+    "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+    "8764fb61-1b14-4c63-a1a6-2116d9567582",
+    "6030270a-ae7a-43d7-a554-fae70218a27b",
+    "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+    "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+    "39e90f2a-2bce-401c-9068-f900a6a6007b",
+    "a487d2ab-008b-41c0-9699-c4107a62c95e",
+    "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+    "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+    "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+    "98110f68-e929-4630-83de-e4bceca6c10e",
+    "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+    "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+    "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+    "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+    "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+    "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+    "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+    "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+    "6db51b3f-1463-4749-93e9-bae876ed2f68",
+    "38a1918e-9db2-4be0-bead-7892aeb06b15",
+    "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+    "8440f0d3-3379-4671-ba85-9c29f97a7654",
+    "aa1bae2f-2795-4902-b686-0810dcefb5e8",
+    "b3d98000-f142-404b-ae55-00461eca1174",
+    "575397a0-f257-4f00-96dd-18a9757ccf95",
+    "f52bf254-0889-4672-94b4-936ec73bf86c",
+    "391def0c-5b2d-45bf-9f93-32b51f5460a3",
+    "96ce9eb7-e8aa-4214-8c1d-111561e50189",
+    "fe1ec11f-13be-4f1f-8365-a3118886eefe",
+    "299dab3a-8cc2-404e-bfab-6886071d8a88",
+    "ac31b334-2041-4d84-b61d-5f8a24e3d68f",
+    "1484c573-84bb-4bd1-94bf-2ee635e52a77",
+    "61386e4a-6bca-43c6-9422-e5fd908ec8ec",
+    "0683af47-de0e-48e4-8eb6-e1bcdbe4adca",
+    "0b037403-3371-4a62-bbac-cae7248fbbef",
+    "b2599c95-0948-4ae6-96d4-803ba975e3bf",
+    "512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+    "fe67808b-ad4b-4f2a-b260-a76d3d36ab79",
+    "88e91bf8-4105-4e05-8727-721fd791085d",
+    "750d4a2a-e76f-4603-871a-78df3eebe8b0",
+    "2b288e4d-bac1-4e79-a6f8-045b2bf7116a",
+    "59c9d618-5656-4a59-b9fa-a4f465b15f11",
+    "732b10ec-6111-4e3b-8c61-c4d552ab8cfa",
+    "814f0b17-ebac-4c1d-b2fc-64aea1c7885b",
+    "a2ba0379-9067-47d3-80c5-7772c11e734a",
+    "ebc2e6b6-45a3-4940-9bbc-ccb281d36f4e",
+    "63960593-bed6-4cde-9299-783d46df3ed8",
+    "1e4af305-6b20-491d-9742-d896a884427d"
+  ],
+  "dependencyCycles": [],
+  "entries": [
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "status": "blocked",
+      "queueClass": "hold-blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-page-pilot-source.zip",
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "external plugin/service; do not mix into KingPOS web by assumption"
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "status": "blocked",
+      "queueClass": "hold-blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-page-pilot-v2-source.zip",
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "external plugin/service; do not mix into KingPOS web by assumption"
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-pilot-graph-runtime-frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "artifacts/facebook-nails-pilot-20261016/lib/service.ts",
+        "artifacts/facebook-nails-pilot-20261016/tests/workflow.test.mjs"
+      ],
+      "deploymentTargetReview": "external plugin/service; do not mix into KingPOS web by assumption"
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-post-now-frozen-5e73140",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "artifacts/facebook-nails-pilot-20261016/lib/service.ts",
+        "artifacts/facebook-nails-pilot-20261016/tests/workflow.test.mjs"
+      ],
+      "deploymentTargetReview": "external plugin/service; do not mix into KingPOS web by assumption"
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\work\\explore-preview-logos-20261017\\completed-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\493385b7-012b-4d66-a589-5790acf7018a",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "explore-anywhere-search-20261017"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-workspace-cookie-deletion-20261020",
+      "eventId": "f1a21743-b245-433f-bc2f-03a61fa05495",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-fix-frozen\\cee9482db037f573696edca17ab91dbfb3d67860",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\f1a21743-b245-433f-bc2f-03a61fa05495",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "auth-session-missing-rejection-20261020",
+      "eventId": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\auth-rejection-cf992a1-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "lib/supabase/auth-rest.ts",
+        "tests/read-auth-coalescing.test.mjs",
+        "tests/experience-auth-availability.test.mjs",
+        "tests/read-backend-profile.test.mjs",
+        "tests/read-deadline-sdk-contract.test.mjs",
+        "tests/app-local-command-backend-trace.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-background-cookie-authority-20261020",
+      "eventId": "bca89a39-186f-412a-81bd-b76075e4d5da",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\bg-cookie-d5ecb7a-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\bca89a39-186f-412a-81bd-b76075e4d5da",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "ios-workspace-cookie-deletion-20261020"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiBackgroundSync.swift",
+        "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "help-context-dismiss-20261020",
+      "eventId": "4cff2fad-08e3-42d0-9b22-623957e87395",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\help-context-dismiss-20261020\\frozen-8ed23dd-raw-selected",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\4cff2fad-08e3-42d0-9b22-623957e87395",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "ios-workspace-cookie-deletion-20261020",
+        "auth-session-missing-rejection-20261020"
+      ],
+      "overlappingFiles": [
+        "app/navigation-shell.tsx",
+        "components/app-local-shell.tsx",
+        "tests/app-local-help-dismiss-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "macqa-help-background-integration-20261020",
+      "eventId": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\frozen-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "issues": [
+        "Declared file missing: app/navigation-shell.tsx",
+        "Declared file missing: components/app-local-shell.tsx",
+        "Declared file missing: lib/supabase/auth-rest.ts",
+        "Declared file missing: tests/app-local-command-backend-trace.test.mjs",
+        "Declared file missing: tests/app-local-help-dismiss-ui.test.mjs",
+        "Declared file missing: tests/experience-auth-availability.test.mjs",
+        "Declared file missing: tests/read-auth-coalescing.test.mjs",
+        "Declared file missing: tests/read-backend-profile.test.mjs",
+        "Declared file missing: tests/read-deadline-sdk-contract.test.mjs"
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "ios-workspace-cookie-deletion-20261020",
+        "auth-session-missing-rejection-20261020",
+        "help-context-dismiss-20261020",
+        "ios-background-cookie-authority-20261020"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift",
+        "lib/supabase/auth-rest.ts",
+        "tests/read-auth-coalescing.test.mjs",
+        "tests/experience-auth-availability.test.mjs",
+        "tests/read-backend-profile.test.mjs",
+        "tests/read-deadline-sdk-contract.test.mjs",
+        "tests/app-local-command-backend-trace.test.mjs",
+        "ios/Reylumi/ReylumiBackgroundSync.swift",
+        "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+        "app/navigation-shell.tsx",
+        "components/app-local-shell.tsx",
+        "tests/app-local-help-dismiss-ui.test.mjs",
+        "ios/Reylumi/LocalAppBundle/app.css",
+        "ios/Reylumi/LocalAppBundle/app.js",
+        "ios/Reylumi/LocalAppBundle/manifest.json"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-private-business-cache-admission-20261020",
+      "eventId": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\business-cache-7a88853-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "macqa-help-background-integration-20261020",
+        "help-context-dismiss-20261020",
+        "ios-background-cookie-authority-20261020"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "online-authority-refresh-20261021",
+      "eventId": "62f208d8-136e-439b-bba2-23a9ec001f43",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh-final-source\\frozen-e8177a596060693fc2a23044247713c941fae035",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\62f208d8-136e-439b-bba2-23a9ec001f43",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "business-cache-admission-20261020"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "refresh-session-availability-tests-20261021",
+      "eventId": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\test-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "tests/refresh-session-availability.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "pc-ios-today-session-reliability-20261021",
+      "eventId": "16970911-3725-403f-a83f-915be4271914",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\frozen-patch",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\16970911-3725-403f-a83f-915be4271914",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "online-authority-refresh-20261021"
+      ],
+      "overlappingFiles": [
+        "lib/supabase/auth-rest.ts",
+        "tests/read-auth-coalescing.test.mjs",
+        "tests/experience-auth-availability.test.mjs",
+        "tests/read-backend-profile.test.mjs",
+        "tests/read-deadline-sdk-contract.test.mjs",
+        "tests/app-local-command-backend-trace.test.mjs",
+        "tests/refresh-session-availability.test.mjs",
+        "lib/read-request-timing.ts",
+        "tests/context-today-timing.test.mjs",
+        "lib/supabase/auth-rejection.ts"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "payroll-hide-review-notices-20261021",
+      "eventId": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "payroll-period-ledger-20261015"
+      ],
+      "overlappingFiles": [
+        "app/(app)/payroll/page.tsx",
+        "lib/app-local-owner-payroll-view.tsx",
+        "app/payroll/payroll-ledger-panel.tsx",
+        "app/payroll/tax-company-table.tsx",
+        "app/staff/my-work/staff-pay-analysis.tsx",
+        "tests/payroll-status-presentation.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "daily-closing-conflict-notice-20261021",
+      "eventId": "a88bc104-8a6e-4cab-b465-99463332dec3",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-4\\snapshot",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a88bc104-8a6e-4cab-b465-99463332dec3",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "lib/daily-closing-save.ts",
+        "app/reports/closing-save-notice.tsx",
+        "tests/daily-closing-conflicts.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "pc-ios-causal-contracts-20261021",
+      "eventId": "b2617811-8752-4582-bc3a-244b701326d9",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\continuation-final-source-2026-10-21T15-10-17-035Z",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\b2617811-8752-4582-bc3a-244b701326d9",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "pc-ios-today-session-reliability-20261021"
+      ],
+      "overlappingFiles": [
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/session-restart-credential-contract.test.mjs",
+        "tests/app-local-critical-path.test.mjs",
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/salon-business-clock.ts",
+        "lib/today-dashboard.ts",
+        "lib/customer-visits.ts",
+        "tests/today-owned-read-rpc-cancellation.test.mjs",
+        "tests/today-dashboard-progressive.test.mjs",
+        "tests/app-local-same-home-recovery.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-pc-common-integration-20261021",
+      "eventId": "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-candidate",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "campaign-search-relevance-20261021",
+        "pc-ios-today-session-reliability-20261021",
+        "pc-ios-causal-contracts-20261021",
+        "combined-ui-payroll-daily-local-20261021"
+      ],
+      "overlappingFiles": [
+        "app/navigation-shell.tsx",
+        "lib/daily-closing-save.ts",
+        "app/reports/closing-save-notice.tsx",
+        "tests/daily-closing-conflicts.test.mjs",
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/session-restart-credential-contract.test.mjs",
+        "tests/app-local-critical-path.test.mjs",
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/salon-business-clock.ts",
+        "lib/today-dashboard.ts",
+        "lib/customer-visits.ts",
+        "tests/today-owned-read-rpc-cancellation.test.mjs",
+        "tests/today-dashboard-progressive.test.mjs",
+        "tests/app-local-same-home-recovery.test.mjs",
+        "app/(app)/account/page.tsx",
+        "app/(app)/beauty/page.tsx",
+        "app/(app)/claim/customer/page.tsx",
+        "app/(app)/customers/[customerId]/page.tsx",
+        "app/(app)/customers/page.tsx",
+        "app/(app)/explore/favorites/page.tsx",
+        "app/(app)/explore/looks/[lookId]/page.tsx",
+        "app/(app)/market/orders/[orderId]/page.tsx",
+        "app/(app)/my-bookings/page.tsx",
+        "app/(app)/ownership/invite/[token]/page.tsx",
+        "app/(app)/permissions/page.tsx",
+        "app/(app)/pos-tickets/[ticketId]/page.tsx",
+        "app/(app)/roles/page.tsx",
+        "app/(app)/salon-profile/client-transformations/page.tsx",
+        "app/(app)/salon-settings/page.tsx",
+        "app/(app)/staff/connections/page.tsx",
+        "app/(app)/staff/invite/[token]/page.tsx",
+        "app/(app)/staff/my-work/loading.tsx",
+        "app/(app)/staff/page.tsx",
+        "app/(app)/tax-company/install/page.tsx",
+        "app/(legal)/contact-support/page.tsx",
+        "app/api/app-local/command/route.ts",
+        "app/api/campaigns/delivery/route.ts",
+        "app/beauty/beauty-appointment.tsx",
+        "app/beauty/beauty-profile-client.tsx",
+        "app/beauty/beauty-profile.css",
+        "app/book/[salonId]/booking-wizard.module.css",
+        "app/booking-setup/booking-setup.css",
+        "app/booking/manage/[token]/guest-manage.module.css",
+        "app/bookings/booking-workspace-client.tsx",
+        "app/campaigns/actions.ts",
+        "app/campaigns/campaign-preview.tsx",
+        "app/campaigns/campaign-ui.module.css",
+        "app/campaigns/campaign-workspace.tsx",
+        "app/campaigns/preview-actions.ts",
+        "app/claim/claim-panel.tsx",
+        "app/explore/beauty/beauty-post-read-view.tsx",
+        "app/explore/beauty/beauty-profile-read-view.tsx",
+        "app/explore/explore-client.tsx",
+        "app/explore/nail-inspiration.tsx",
+        "app/globals.css",
+        "app/help/help.module.css",
+        "app/legal/legal-components.tsx",
+        "app/market/bank-checkout-panel.tsx",
+        "app/market/booking-deposit-product.module.css",
+        "app/market/booking-deposit.module.css",
+        "app/market/booksms-panel.tsx",
+        "app/market/market.module.css",
+        "app/ownership/owner-transfer-acceptance-panel.tsx",
+        "app/pos/customer-display/customer-display-client.tsx",
+        "app/pos/owner-pos.css",
+        "app/pos/portable/report/portable-report-closing-form.tsx",
+        "app/reports/daily-closing-form.tsx",
+        "app/reports/operational-report-dashboard.tsx",
+        "app/reports/owner-live-reports.tsx",
+        "app/salon-profile/publication-panel.tsx",
+        "app/salon-profile/salon-profile-studio.tsx",
+        "app/salon-profile/salon-profile-view.tsx",
+        "app/salon-profile/salon-website-header.module.css",
+        "app/salon-profile/salon-website-home.module.css",
+        "app/salon-profile/website-photo-feed.module.css",
+        "app/salons/claim-suggestions.tsx",
+        "app/salons/salon-management-page.tsx",
+        "app/service-relay/service-relay.module.css",
+        "app/services/services.css",
+        "app/settings/settings-hub.css",
+        "app/staff/appointments/staff-appointments.css",
+        "app/staff/invite/[token]/staff-invite-signup-form.tsx",
+        "app/staff/my-work/staff-daily-overview.module.css",
+        "app/staff/my-work/staff-my-work-view.tsx",
+        "app/staff/requests-workspace.tsx",
+        "app/staff/today/quick-access-editor.tsx",
+        "app/staff/today/today-dashboard-view.tsx",
+        "app/staff/workday/staff-workday-view.tsx",
+        "app/tax-company/tax-company.module.css",
+        "app/workspace-hub-ui.tsx",
+        "components/app-local-customer-views.tsx",
+        "components/app-local-market-order.tsx",
+        "components/app-local-salon-settings.tsx",
+        "components/app-local-salons.tsx",
+        "components/app-local-showcase-look.tsx",
+        "components/app-local-social-views.tsx",
+        "components/app-local-tax-company.tsx",
+        "components/app-local-ticket-detail.tsx",
+        "components/app-local-transformations.tsx",
+        "components/owner-sponsored-post.tsx",
+        "lib/app-local-command-policy.json",
+        "lib/app-local-commands-server.generated.ts",
+        "lib/app-local-owner-customer-detail-view.tsx",
+        "lib/app-local-owner-customers-view.tsx",
+        "lib/app-local-owner-staff-view.tsx",
+        "lib/app-local-personal-registry.tsx",
+        "lib/app-local-shell-http-client.ts",
+        "lib/app-local-shell-metadata.ts",
+        "lib/app-local-shell-server.ts",
+        "lib/campaign-delivery-area.ts",
+        "lib/campaign-search-intent.ts",
+        "supabase/migrations/20261021010000_campaign_selection_daily_cap.sql",
+        "supabase/migrations/20261021020000_campaign_search_relevance.sql",
+        "supabase/migrations/20261021030000_campaign_geo_alias_compat.sql",
+        "tests/campaign-admission-boundaries.test.mjs",
+        "tests/campaign-delivery-area.test.mjs",
+        "tests/campaign-delivery-placement-ui.test.mjs",
+        "tests/campaign-delivery-route.test.mjs",
+        "tests/campaign-dom-image-readiness.test.mjs",
+        "tests/campaign-geo-compat.test.mjs",
+        "tests/campaign-impression-ui-boundaries.test.mjs",
+        "tests/campaign-local-rotation.test.mjs",
+        "tests/campaign-native-delivery.test.mjs",
+        "tests/campaign-owner-preview.test.mjs",
+        "tests/campaign-progressive-ui.test.mjs",
+        "tests/campaign-search-cost.test.mjs",
+        "tests/campaign-search-preview-ui.test.mjs",
+        "tests/campaign-search-relevance.test.mjs",
+        "tests/campaign-search-route.test.mjs",
+        "tests/campaign-selection-cost.test.mjs",
+        "tests/campaign-selection-daily-cap.test.mjs",
+        "tests/campaign-status-readonly.test.mjs",
+        "tests/campaign-ticket-boundaries.test.mjs",
+        "tests/fixtures/campaign-progressive-ui.mjs",
+        "tests/fixtures/campaign-search-preview-ui.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "flat-section-canvas-20261021",
+      "eventId": "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-3\\frozen-payroll-final",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "payroll-hide-review-notices-20261021",
+        "daily-closing-conflict-notice-20261021"
+      ],
+      "overlappingFiles": [
+        "app/(app)/payroll/page.tsx",
+        "lib/app-local-owner-payroll-view.tsx",
+        "app/payroll/payroll-ledger-panel.tsx",
+        "app/payroll/tax-company-table.tsx",
+        "app/(app)/payroll/tax-company/page.tsx",
+        "app/payroll/data-download-panel.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "app/payroll/shop-income-daily-table.tsx",
+        "components/app-local-payroll-tax.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "combined-ui-payroll-daily-local-20261021",
+      "eventId": "279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-3\\frozen-payroll-final",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "flat-section-canvas-20261021",
+        "payroll-hide-review-notices-20261021",
+        "daily-closing-conflict-notice-20261021"
+      ],
+      "overlappingFiles": [
+        "app/navigation-shell.tsx",
+        "app/(app)/payroll/page.tsx",
+        "lib/app-local-owner-payroll-view.tsx",
+        "app/payroll/payroll-ledger-panel.tsx",
+        "app/payroll/tax-company-table.tsx",
+        "app/staff/my-work/staff-pay-analysis.tsx",
+        "tests/payroll-status-presentation.test.mjs",
+        "lib/daily-closing-save.ts",
+        "app/reports/closing-save-notice.tsx",
+        "tests/daily-closing-conflicts.test.mjs",
+        "app/(app)/account/page.tsx",
+        "app/(app)/beauty/page.tsx",
+        "app/(app)/claim/customer/page.tsx",
+        "app/(app)/customers/[customerId]/page.tsx",
+        "app/(app)/customers/page.tsx",
+        "app/(app)/explore/favorites/page.tsx",
+        "app/(app)/explore/looks/[lookId]/page.tsx",
+        "app/(app)/market/orders/[orderId]/page.tsx",
+        "app/(app)/my-bookings/page.tsx",
+        "app/(app)/ownership/invite/[token]/page.tsx",
+        "app/(app)/permissions/page.tsx",
+        "app/(app)/pos-tickets/[ticketId]/page.tsx",
+        "app/(app)/roles/page.tsx",
+        "app/(app)/salon-profile/client-transformations/page.tsx",
+        "app/(app)/salon-settings/page.tsx",
+        "app/(app)/staff/connections/page.tsx",
+        "app/(app)/staff/invite/[token]/page.tsx",
+        "app/(app)/staff/my-work/loading.tsx",
+        "app/(app)/staff/page.tsx",
+        "app/(app)/tax-company/install/page.tsx",
+        "app/(legal)/contact-support/page.tsx",
+        "app/beauty/beauty-appointment.tsx",
+        "app/beauty/beauty-profile-client.tsx",
+        "app/beauty/beauty-profile.css",
+        "app/book/[salonId]/booking-wizard.module.css",
+        "app/booking-setup/booking-setup.css",
+        "app/booking/manage/[token]/guest-manage.module.css",
+        "app/bookings/booking-workspace-client.tsx",
+        "app/campaigns/campaign-ui.module.css",
+        "app/claim/claim-panel.tsx",
+        "app/explore/beauty/beauty-post-read-view.tsx",
+        "app/explore/beauty/beauty-profile-read-view.tsx",
+        "app/explore/explore-client.tsx",
+        "app/explore/nail-inspiration.tsx",
+        "app/globals.css",
+        "app/help/help.module.css",
+        "app/legal/legal-components.tsx",
+        "app/market/bank-checkout-panel.tsx",
+        "app/market/booking-deposit-product.module.css",
+        "app/market/booking-deposit.module.css",
+        "app/market/booksms-panel.tsx",
+        "app/market/market.module.css",
+        "app/ownership/owner-transfer-acceptance-panel.tsx",
+        "app/pos/customer-display/customer-display-client.tsx",
+        "app/pos/owner-pos.css",
+        "app/pos/portable/report/portable-report-closing-form.tsx",
+        "app/reports/daily-closing-form.tsx",
+        "app/reports/operational-report-dashboard.tsx",
+        "app/reports/owner-live-reports.tsx",
+        "app/salon-profile/publication-panel.tsx",
+        "app/salon-profile/salon-profile-studio.tsx",
+        "app/salon-profile/salon-profile-view.tsx",
+        "app/salon-profile/salon-website-header.module.css",
+        "app/salon-profile/salon-website-home.module.css",
+        "app/salon-profile/website-photo-feed.module.css",
+        "app/salons/claim-suggestions.tsx",
+        "app/salons/salon-management-page.tsx",
+        "app/service-relay/service-relay.module.css",
+        "app/services/services.css",
+        "app/settings/settings-hub.css",
+        "app/staff/appointments/staff-appointments.css",
+        "app/staff/invite/[token]/staff-invite-signup-form.tsx",
+        "app/staff/my-work/staff-daily-overview.module.css",
+        "app/staff/my-work/staff-my-work-view.tsx",
+        "app/staff/requests-workspace.tsx",
+        "app/staff/today/quick-access-editor.tsx",
+        "app/staff/today/today-dashboard-view.tsx",
+        "app/staff/workday/staff-workday-view.tsx",
+        "app/tax-company/tax-company.module.css",
+        "app/workspace-hub-ui.tsx",
+        "components/app-local-customer-views.tsx",
+        "components/app-local-market-order.tsx",
+        "components/app-local-salon-settings.tsx",
+        "components/app-local-salons.tsx",
+        "components/app-local-showcase-look.tsx",
+        "components/app-local-social-views.tsx",
+        "components/app-local-tax-company.tsx",
+        "components/app-local-ticket-detail.tsx",
+        "components/app-local-transformations.tsx",
+        "lib/app-local-owner-customer-detail-view.tsx",
+        "lib/app-local-owner-customers-view.tsx",
+        "lib/app-local-owner-staff-view.tsx",
+        "lib/app-local-personal-registry.tsx",
+        "app/(app)/payroll/tax-company/page.tsx",
+        "app/payroll/data-download-panel.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "app/payroll/shop-income-daily-table.tsx",
+        "components/app-local-payroll-tax.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "pc-campaign-common-candidate-20261021",
+      "eventId": "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-candidate-r2",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "campaign-search-relevance-20261021",
+        "pc-ios-today-session-reliability-20261021",
+        "pc-ios-causal-contracts-20261021",
+        "combined-ui-payroll-daily-local-20261021"
+      ],
+      "overlappingFiles": [
+        "app/navigation-shell.tsx",
+        "app/(app)/payroll/page.tsx",
+        "lib/app-local-owner-payroll-view.tsx",
+        "app/payroll/payroll-ledger-panel.tsx",
+        "app/payroll/tax-company-table.tsx",
+        "lib/daily-closing-save.ts",
+        "app/reports/closing-save-notice.tsx",
+        "tests/daily-closing-conflicts.test.mjs",
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/session-restart-credential-contract.test.mjs",
+        "tests/app-local-critical-path.test.mjs",
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/salon-business-clock.ts",
+        "lib/today-dashboard.ts",
+        "lib/customer-visits.ts",
+        "tests/today-owned-read-rpc-cancellation.test.mjs",
+        "tests/today-dashboard-progressive.test.mjs",
+        "tests/app-local-same-home-recovery.test.mjs",
+        "app/(app)/account/page.tsx",
+        "app/(app)/beauty/page.tsx",
+        "app/(app)/claim/customer/page.tsx",
+        "app/(app)/customers/[customerId]/page.tsx",
+        "app/(app)/customers/page.tsx",
+        "app/(app)/explore/favorites/page.tsx",
+        "app/(app)/explore/looks/[lookId]/page.tsx",
+        "app/(app)/market/orders/[orderId]/page.tsx",
+        "app/(app)/my-bookings/page.tsx",
+        "app/(app)/ownership/invite/[token]/page.tsx",
+        "app/(app)/permissions/page.tsx",
+        "app/(app)/pos-tickets/[ticketId]/page.tsx",
+        "app/(app)/roles/page.tsx",
+        "app/(app)/salon-profile/client-transformations/page.tsx",
+        "app/(app)/salon-settings/page.tsx",
+        "app/(app)/staff/connections/page.tsx",
+        "app/(app)/staff/invite/[token]/page.tsx",
+        "app/(app)/staff/my-work/loading.tsx",
+        "app/(app)/staff/page.tsx",
+        "app/(app)/tax-company/install/page.tsx",
+        "app/(legal)/contact-support/page.tsx",
+        "app/api/app-local/command/route.ts",
+        "app/api/campaigns/delivery/route.ts",
+        "app/beauty/beauty-appointment.tsx",
+        "app/beauty/beauty-profile-client.tsx",
+        "app/beauty/beauty-profile.css",
+        "app/book/[salonId]/booking-wizard.module.css",
+        "app/booking-setup/booking-setup.css",
+        "app/booking/manage/[token]/guest-manage.module.css",
+        "app/bookings/booking-workspace-client.tsx",
+        "app/campaigns/actions.ts",
+        "app/campaigns/campaign-preview.tsx",
+        "app/campaigns/campaign-ui.module.css",
+        "app/campaigns/campaign-workspace.tsx",
+        "app/campaigns/preview-actions.ts",
+        "app/claim/claim-panel.tsx",
+        "app/explore/beauty/beauty-post-read-view.tsx",
+        "app/explore/beauty/beauty-profile-read-view.tsx",
+        "app/explore/explore-client.tsx",
+        "app/explore/nail-inspiration.tsx",
+        "app/globals.css",
+        "app/help/help.module.css",
+        "app/legal/legal-components.tsx",
+        "app/market/bank-checkout-panel.tsx",
+        "app/market/booking-deposit-product.module.css",
+        "app/market/booking-deposit.module.css",
+        "app/market/booksms-panel.tsx",
+        "app/market/market.module.css",
+        "app/ownership/owner-transfer-acceptance-panel.tsx",
+        "app/pos/customer-display/customer-display-client.tsx",
+        "app/pos/owner-pos.css",
+        "app/pos/portable/report/portable-report-closing-form.tsx",
+        "app/reports/daily-closing-form.tsx",
+        "app/reports/operational-report-dashboard.tsx",
+        "app/reports/owner-live-reports.tsx",
+        "app/salon-profile/publication-panel.tsx",
+        "app/salon-profile/salon-profile-studio.tsx",
+        "app/salon-profile/salon-profile-view.tsx",
+        "app/salon-profile/salon-website-header.module.css",
+        "app/salon-profile/salon-website-home.module.css",
+        "app/salon-profile/website-photo-feed.module.css",
+        "app/salons/claim-suggestions.tsx",
+        "app/salons/salon-management-page.tsx",
+        "app/service-relay/service-relay.module.css",
+        "app/services/services.css",
+        "app/settings/settings-hub.css",
+        "app/staff/appointments/staff-appointments.css",
+        "app/staff/invite/[token]/staff-invite-signup-form.tsx",
+        "app/staff/my-work/staff-daily-overview.module.css",
+        "app/staff/my-work/staff-my-work-view.tsx",
+        "app/staff/requests-workspace.tsx",
+        "app/staff/today/quick-access-editor.tsx",
+        "app/staff/today/today-dashboard-view.tsx",
+        "app/staff/workday/staff-workday-view.tsx",
+        "app/tax-company/tax-company.module.css",
+        "app/workspace-hub-ui.tsx",
+        "components/app-local-customer-views.tsx",
+        "components/app-local-market-order.tsx",
+        "components/app-local-salon-settings.tsx",
+        "components/app-local-salons.tsx",
+        "components/app-local-showcase-look.tsx",
+        "components/app-local-social-views.tsx",
+        "components/app-local-tax-company.tsx",
+        "components/app-local-ticket-detail.tsx",
+        "components/app-local-transformations.tsx",
+        "components/owner-sponsored-post.tsx",
+        "lib/app-local-command-policy.json",
+        "lib/app-local-commands-server.generated.ts",
+        "lib/app-local-owner-customer-detail-view.tsx",
+        "lib/app-local-owner-customers-view.tsx",
+        "lib/app-local-owner-staff-view.tsx",
+        "lib/app-local-personal-registry.tsx",
+        "lib/app-local-shell-http-client.ts",
+        "lib/app-local-shell-metadata.ts",
+        "lib/app-local-shell-server.ts",
+        "lib/campaign-delivery-area.ts",
+        "lib/campaign-search-intent.ts",
+        "supabase/migrations/20261021010000_campaign_selection_daily_cap.sql",
+        "supabase/migrations/20261021020000_campaign_search_relevance.sql",
+        "supabase/migrations/20261021030000_campaign_geo_alias_compat.sql",
+        "tests/campaign-admission-boundaries.test.mjs",
+        "tests/campaign-delivery-area.test.mjs",
+        "tests/campaign-delivery-placement-ui.test.mjs",
+        "tests/campaign-delivery-route.test.mjs",
+        "tests/campaign-dom-image-readiness.test.mjs",
+        "tests/campaign-geo-compat.test.mjs",
+        "tests/campaign-impression-ui-boundaries.test.mjs",
+        "tests/campaign-local-rotation.test.mjs",
+        "tests/campaign-native-delivery.test.mjs",
+        "tests/campaign-owner-preview.test.mjs",
+        "tests/campaign-progressive-ui.test.mjs",
+        "tests/campaign-search-cost.test.mjs",
+        "tests/campaign-search-preview-ui.test.mjs",
+        "tests/campaign-search-relevance.test.mjs",
+        "tests/campaign-search-route.test.mjs",
+        "tests/campaign-selection-cost.test.mjs",
+        "tests/campaign-selection-daily-cap.test.mjs",
+        "tests/campaign-status-readonly.test.mjs",
+        "tests/campaign-ticket-boundaries.test.mjs",
+        "tests/fixtures/campaign-progressive-ui.mjs",
+        "tests/fixtures/campaign-search-preview-ui.mjs",
+        "app/(app)/payroll/tax-company/page.tsx",
+        "app/payroll/data-download-panel.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "app/payroll/shop-income-daily-table.tsx",
+        "components/app-local-payroll-tax.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "pc-ios-explicit-guest-continuation-20261021",
+      "eventId": "23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\guest-continuation\\frozen\\2026-10-21T16-23-54-954Z\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "pc-ios-causal-contracts-20261021"
+      ],
+      "overlappingFiles": [
+        "components/app-local-shell.tsx",
+        "app/local-app/entry.tsx",
+        "tests/app-local-expiry-guest-continuation-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-causal-settlement-reporting-20261021",
+      "eventId": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "pc-campaign-common-candidate-20261021"
+      ],
+      "overlappingFiles": [
+        "app/campaigns/actions.ts",
+        "app/campaigns/campaign-preview.tsx",
+        "app/campaigns/campaign-workspace.tsx",
+        "app/campaigns/preview-actions.ts",
+        "tests/campaign-owner-preview.test.mjs",
+        "tests/campaign-search-preview-ui.test.mjs",
+        "tests/campaign-status-readonly.test.mjs",
+        "tests/fixtures/campaign-search-preview-ui.mjs",
+        "lib/campaign-payments.ts",
+        "lib/campaign-status.ts",
+        "tests/campaign-accounting-read.test.mjs",
+        "tests/campaign-credit-queue.test.mjs",
+        "tests/campaign-expiry-settlement.test.mjs",
+        "tests/campaign-owner-status-ui.test.mjs",
+        "tests/campaign-status-presentation.test.mjs",
+        "tests/fixtures/campaign-cumulative-db.mjs",
+        "tests/fixtures/campaign-owner-status-ui.mjs",
+        "types/owner-campaign.ts"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "windows-portable-startup-offline-admission-20261021",
+      "eventId": "a397b292-7798-4ba5-b16a-71673c11da76",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-patch",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a397b292-7798-4ba5-b16a-71673c11da76",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "lib/portable-offline-admission.ts",
+        "components/experience-scope.tsx",
+        "app/pos/portable/portable-offline-shell.tsx",
+        "tests/portable-offline-admission-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-pending-claim-demand-20261021",
+      "eventId": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "campaign-causal-settlement-reporting-20261021"
+      ],
+      "overlappingFiles": [
+        "tests/campaign-pending-claim-demand.test.mjs",
+        "tests/campaign-pending-claim-worker.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "unified-windows-portable-integration-20261021",
+      "eventId": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "campaign-pending-claim-demand-20261021",
+        "windows-portable-startup-offline-admission-20261021"
+      ],
+      "overlappingFiles": [
+        "lib/portable-offline-admission.ts",
+        "components/experience-scope.tsx",
+        "app/pos/portable/portable-offline-shell.tsx",
+        "tests/portable-offline-admission-ui.test.mjs",
+        "tests/campaign-pending-claim-demand.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "windows-portable-owner-startup-20261021",
+      "eventId": "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-owner-combined",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "windows-portable-startup-offline-admission-20261021"
+      ],
+      "overlappingFiles": [
+        "components/experience-scope.tsx",
+        "tests/owner-offline-admission-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "unified-owner-guest-integration-20261021",
+      "eventId": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "unified-windows-portable-integration-20261021",
+        "windows-portable-owner-startup-20261021",
+        "pc-ios-explicit-guest-continuation-20261021"
+      ],
+      "overlappingFiles": [
+        "components/app-local-shell.tsx",
+        "app/local-app/entry.tsx",
+        "tests/app-local-expiry-guest-continuation-ui.test.mjs",
+        "components/experience-scope.tsx",
+        "tests/owner-offline-admission-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-credit-lifecycle-r5-20261021",
+      "eventId": "df7e32b3-7171-47d3-86c6-2335990a478f",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\df7e32b3-7171-47d3-86c6-2335990a478f",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "unified-owner-guest-integration-20261021"
+      ],
+      "overlappingFiles": [
+        "app/campaigns/campaign-preview.tsx",
+        "app/campaigns/campaign-workspace.tsx",
+        "tests/fixtures/campaign-search-preview-ui.mjs",
+        "lib/campaign-payments.ts",
+        "lib/campaign-status.ts",
+        "tests/campaign-credit-queue.test.mjs",
+        "tests/campaign-owner-status-ui.test.mjs",
+        "tests/campaign-status-presentation.test.mjs",
+        "tests/fixtures/campaign-owner-status-ui.mjs",
+        "tests/campaign-pending-claim-worker.test.mjs",
+        "app/campaigns/credit-panel.tsx",
+        "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+        "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+        "tests/campaign-credit-demand-budget.test.mjs",
+        "tests/campaign-paused-reserve-lifecycle.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-final-r5-integration-20261021",
+      "eventId": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "unified-owner-guest-integration-20261021",
+        "campaign-credit-lifecycle-r5-20261021"
+      ],
+      "overlappingFiles": [
+        "app/campaigns/campaign-preview.tsx",
+        "app/campaigns/campaign-workspace.tsx",
+        "tests/fixtures/campaign-search-preview-ui.mjs",
+        "lib/campaign-payments.ts",
+        "lib/campaign-status.ts",
+        "tests/campaign-credit-queue.test.mjs",
+        "tests/campaign-owner-status-ui.test.mjs",
+        "tests/campaign-status-presentation.test.mjs",
+        "tests/fixtures/campaign-owner-status-ui.mjs",
+        "tests/campaign-pending-claim-worker.test.mjs",
+        "app/campaigns/credit-panel.tsx",
+        "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+        "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+        "tests/campaign-credit-demand-budget.test.mjs",
+        "tests/campaign-paused-reserve-lifecycle.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-production-path-qa-20261021",
+      "eventId": "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+      "status": "working",
+      "queueClass": "hold-working",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\session-restart\\option-A-production-path-20261021",
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "unified-owner-guest-integration-20261021"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-my-work-critical-path-20261021",
+      "eventId": "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\common-source-transition\\private-native\\c701-20261021T2109-frozen\\Project",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "unified-owner-guest-integration-20261021"
+      ],
+      "overlappingFiles": [
+        "lib/read-request-timing.ts",
+        "lib/staff-my-work-resource-server.ts",
+        "lib/app-local-role-resources-server.ts",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "tests/live-workspace-experience.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "claude-project-review-setup-20261021",
+      "eventId": "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos-release-snapshots\\claude-project-review-pc-ready-20261021-172940",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "CLAUDE.md",
+        ".claude/commands/review-project.md",
+        "docs/claude-review.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "staff-my-work-verified-read-identity-20261021",
+      "eventId": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\frozen-implementation-20261021T223721238421Z\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "lib/staff-my-work-resource-server.ts",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "tests/live-workspace-experience.test.mjs",
+        "lib/read-context-scope.ts",
+        "lib/staff-portal-identity.ts",
+        "lib/staff-workdays.ts",
+        "tests/staff-my-work-verified-read-identity.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+      "eventId": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\role-read-reuse\\frozen-implementation-20261021T224009609534Z\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "ios-my-work-critical-path-20261021"
+      ],
+      "overlappingFiles": [
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/app-local-role-read-cache.ts",
+        "tests/app-local-role-read-cache.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "claude-pc-mac-simulator-review-20261021",
+      "eventId": "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos-release-snapshots\\claude-pc-mac-simulator-ready-20261021-174403",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "claude-project-review-setup-20261021"
+      ],
+      "overlappingFiles": [
+        "CLAUDE.md",
+        ".claude/commands/review-project.md",
+        "docs/claude-review.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-final-r6-integration-20261021",
+      "eventId": "e32efba9-d661-4558-8f11-9e605b2383f1",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\e32efba9-d661-4558-8f11-9e605b2383f1",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r5-integration-20261021"
+      ],
+      "overlappingFiles": [
+        "lib/read-request-timing.ts",
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/staff-my-work-resource-server.ts",
+        "lib/app-local-role-resources-server.ts",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "tests/live-workspace-experience.test.mjs",
+        "lib/read-context-scope.ts",
+        "lib/staff-portal-identity.ts",
+        "lib/staff-workdays.ts",
+        "tests/staff-my-work-verified-read-identity.test.mjs",
+        "lib/app-local-role-read-cache.ts",
+        "tests/app-local-role-read-cache.test.mjs",
+        "tests/app-local-read-cancellation.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "local-first-services-pilot-r6",
+      "eventId": "15938439-7e97-493e-b874-fe42810e2ce4",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\15938439-7e97-493e-b874-fe42810e2ce4",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "R6 functional6e0a61b",
+        "Auth owner reconcile additive notify:false hook in lib/reset-experience-cache.ts; preserve ongoing auth changes",
+        "Future iOS Services admission/resource/registry integration and exact custom-origin authenticated tests; no new bridge required",
+        "R6 app-local-page-admission-ui fixture exports require separate repair;10failures reproduced on untouched baseline"
+      ],
+      "overlappingFiles": [
+        "app/(app)/layout.tsx",
+        "app/(app)/services/page.tsx",
+        "app/api/services/catalog-pilot/route.ts",
+        "app/services/services-catalog-pilot.tsx",
+        "components/services-catalog-cache-lifecycle.tsx",
+        "docs/local-first-services-pilot.txt",
+        "lib/reset-experience-cache.ts",
+        "lib/services-catalog-cache.ts",
+        "lib/services-catalog-controller.ts",
+        "lib/services-catalog-pilot-flag.ts",
+        "lib/services-catalog-runtime.ts",
+        "tests/services-catalog-admission.test.mjs",
+        "tests/services-catalog-browser.test.mjs",
+        "tests/services-catalog-cache.test.mjs",
+        "tests/services-catalog-controller.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "r6-confirmed-auth-rejection-20261021",
+      "eventId": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\delivery-20261021T233505722271Z\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r6-integration-20261021"
+      ],
+      "overlappingFiles": [
+        "tests/read-auth-coalescing.test.mjs",
+        "tests/experience-auth-availability.test.mjs",
+        "lib/supabase/auth-rejection.ts",
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/session-restart-credential-contract.test.mjs",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "tests/live-workspace-experience.test.mjs",
+        "lib/staff-portal-identity.ts",
+        "tests/staff-my-work-verified-read-identity.test.mjs",
+        "lib/supabase/server.ts",
+        "tests/app-local-read-auth-rejection.test.mjs",
+        "app/api/experience/my-work/route.ts"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "local-first-services-native-delta-r6",
+      "eventId": "5b41dd44-3397-4098-9235-ee3e693ee515",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\5b41dd44-3397-4098-9235-ee3e693ee515",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "Frozen local-first pilot functionaldbad6b0e / metadata5d6558c",
+        "Auth specialist frozen handoff pending; reconcile optional notify:false hook and its exception guard without replacing auth logic",
+        "Real Swift transport/live authorized QA context and physical iPhone acceptance"
+      ],
+      "overlappingFiles": [
+        "app/api/services/catalog-pilot/route.ts",
+        "app/services/services-catalog-pilot.tsx",
+        "docs/local-first-services-pilot.txt",
+        "lib/reset-experience-cache.ts",
+        "lib/services-catalog-cache.ts",
+        "lib/services-catalog-controller.ts",
+        "lib/services-catalog-runtime.ts",
+        "tests/services-catalog-admission.test.mjs",
+        "tests/services-catalog-browser.test.mjs",
+        "tests/services-catalog-cache.test.mjs",
+        "tests/services-catalog-controller.test.mjs",
+        "app/services/services-catalog-native-page.tsx",
+        "lib/app-local-page-registry.tsx",
+        "lib/app-local-platform-resources-server.ts",
+        "lib/app-local-platform-types.ts",
+        "lib/services-catalog-admission-server.ts",
+        "lib/services-catalog-native-flag.ts",
+        "lib/services-catalog-native-runtime.ts",
+        "scripts/build-app-local-bundle.mjs",
+        "tests/app-local-page-admission-ui.test.mjs",
+        "tests/services-catalog-host-admission.test.mjs",
+        "tests/services-catalog-native-flag.test.mjs",
+        "tests/services-catalog-native-registry.test.mjs",
+        "tests/services-catalog-native-runtime.test.mjs",
+        "tests/services-catalog-reset-isolation.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-final-r7-auth-integration-20261021",
+      "eventId": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r6-integration-20261021",
+        "r6-confirmed-auth-rejection-20261021"
+      ],
+      "overlappingFiles": [
+        "tests/read-auth-coalescing.test.mjs",
+        "tests/experience-auth-availability.test.mjs",
+        "lib/supabase/auth-rejection.ts",
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/session-restart-credential-contract.test.mjs",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "tests/live-workspace-experience.test.mjs",
+        "lib/staff-portal-identity.ts",
+        "tests/staff-my-work-verified-read-identity.test.mjs",
+        "lib/supabase/server.ts",
+        "tests/app-local-read-auth-rejection.test.mjs",
+        "app/api/experience/my-work/route.ts",
+        "tests/app-local-page-admission-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+      "eventId": "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r8-pilot-off",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r7-auth-integration-20261021"
+      ],
+      "overlappingFiles": [
+        "app/(app)/layout.tsx",
+        "app/(app)/services/page.tsx",
+        "app/api/services/catalog-pilot/route.ts",
+        "app/services/services-catalog-pilot.tsx",
+        "components/services-catalog-cache-lifecycle.tsx",
+        "docs/local-first-services-pilot.txt",
+        "lib/reset-experience-cache.ts",
+        "lib/services-catalog-cache.ts",
+        "lib/services-catalog-controller.ts",
+        "lib/services-catalog-pilot-flag.ts",
+        "lib/services-catalog-runtime.ts",
+        "tests/services-catalog-admission.test.mjs",
+        "tests/services-catalog-browser.test.mjs",
+        "tests/services-catalog-cache.test.mjs",
+        "tests/services-catalog-controller.test.mjs",
+        "app/services/services-catalog-native-page.tsx",
+        "lib/app-local-page-registry.tsx",
+        "lib/app-local-platform-resources-server.ts",
+        "lib/app-local-platform-types.ts",
+        "lib/services-catalog-admission-server.ts",
+        "lib/services-catalog-native-flag.ts",
+        "lib/services-catalog-native-runtime.ts",
+        "scripts/build-app-local-bundle.mjs",
+        "tests/services-catalog-host-admission.test.mjs",
+        "tests/services-catalog-native-flag.test.mjs",
+        "tests/services-catalog-native-registry.test.mjs",
+        "tests/services-catalog-native-runtime.test.mjs",
+        "tests/services-catalog-reset-isolation.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "services-cache-invariants-r6",
+      "eventId": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "Frozen native Services metadata89d8e4e / functional00f3c909",
+        "Coordinator assembled auth+pilot candidate; preserve auth classification and existing notify:false exception isolation",
+        "Authenticated Simulator Swift/backend acceptance, measurement and operational rollback"
+      ],
+      "overlappingFiles": [
+        "app/(app)/services/page.tsx",
+        "app/services/services-catalog-pilot.tsx",
+        "lib/services-catalog-cache.ts",
+        "lib/services-catalog-controller.ts",
+        "lib/services-catalog-runtime.ts",
+        "tests/services-catalog-cache.test.mjs",
+        "tests/services-catalog-controller.test.mjs",
+        "lib/app-local-page-registry.tsx",
+        "tests/services-catalog-native-registry.test.mjs",
+        "app/services/services-manager.tsx",
+        "docs/services-catalog-invariants.txt",
+        "docs/services-catalog-measurement-protocol.txt",
+        "tests/services-catalog-mutation.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-auth-observability-qa-20261021",
+      "eventId": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "r6-confirmed-auth-rejection-20261021"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "lib/read-request-timing.ts",
+        "tests/context-today-timing.test.mjs",
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/staff-my-work-resource-server.ts",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "lib/staff-portal-identity.ts",
+        "lib/app-local-role-read-cache.ts",
+        "tests/app-local-role-read-cache.test.mjs",
+        "tests/app-local-read-cancellation.test.mjs",
+        "lib/supabase/server.ts",
+        "tests/app-local-scoped-invalidation-ui.test.mjs",
+        "scripts/ios/acceptance-report.mjs",
+        "tests/ios-acceptance-report.test.mjs",
+        "docs/ios-acceptance-measurement.md",
+        "app/api/app-local/read/route.ts",
+        "app/api/app-local/context/route.ts",
+        "lib/read-request-trace-protocol.ts",
+        "lib/app-local-host.ts",
+        "lib/experience-trace.ts",
+        "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+        "ios/Reylumi/ReylumiLocalAppViewController.swift",
+        "tests/app-local-read-correlation.test.mjs",
+        "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+        "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+        "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+        "tests/app-local-staff-online-access.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "services-cache-realm-guards-r6",
+      "eventId": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "Frozen Services invariants metadata38b1d123 / functional2d0b2619",
+        "Coordinator assembled auth+pilot candidate with original30s admission and production disabled",
+        "Authenticated Simulator acceptance, real Services measurements and operational rollback"
+      ],
+      "overlappingFiles": [
+        "docs/services-catalog-realm-guards.txt",
+        "tests/services-catalog-realm-guards.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-final-r9-observability-integration-20261022",
+      "eventId": "04ee32a6-3687-4b77-affc-8058500c0f23",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\04ee32a6-3687-4b77-affc-8058500c0f23",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r8-pilot-off-integration-20261022",
+        "ios-auth-observability-qa-20261021"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "tests/refresh-session-availability.test.mjs",
+        "lib/read-request-timing.ts",
+        "tests/context-today-timing.test.mjs",
+        "tests/owner-today-failure-causality.test.mjs",
+        "tests/app-local-role-return-cache.test.mjs",
+        "lib/app-local-resource.ts",
+        "app/local-app/entry.tsx",
+        "lib/staff-my-work-resource-server.ts",
+        "tests/staff-my-work-critical-path.test.mjs",
+        "lib/staff-portal-identity.ts",
+        "lib/app-local-role-read-cache.ts",
+        "tests/app-local-role-read-cache.test.mjs",
+        "tests/app-local-read-cancellation.test.mjs",
+        "lib/supabase/server.ts",
+        "tests/app-local-page-admission-ui.test.mjs",
+        "tests/services-catalog-host-admission.test.mjs",
+        "tests/app-local-scoped-invalidation-ui.test.mjs",
+        "scripts/ios/acceptance-report.mjs",
+        "tests/ios-acceptance-report.test.mjs",
+        "docs/ios-acceptance-measurement.md",
+        "app/api/app-local/read/route.ts",
+        "app/api/app-local/context/route.ts",
+        "lib/read-request-trace-protocol.ts",
+        "lib/app-local-host.ts",
+        "lib/experience-trace.ts",
+        "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+        "ios/Reylumi/ReylumiLocalAppViewController.swift",
+        "tests/app-local-read-correlation.test.mjs",
+        "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+        "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+        "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+        "tests/app-local-staff-online-access.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+      "eventId": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r9-observability-integration-20261022"
+      ],
+      "overlappingFiles": [
+        "app/local-app/entry.tsx",
+        "app/(app)/services/page.tsx",
+        "app/services/services-catalog-pilot.tsx",
+        "lib/services-catalog-cache.ts",
+        "lib/services-catalog-controller.ts",
+        "lib/services-catalog-runtime.ts",
+        "tests/services-catalog-cache.test.mjs",
+        "tests/services-catalog-controller.test.mjs",
+        "lib/app-local-page-registry.tsx",
+        "tests/services-catalog-native-registry.test.mjs",
+        "app/services/services-manager.tsx",
+        "docs/services-catalog-invariants.txt",
+        "docs/services-catalog-measurement-protocol.txt",
+        "tests/services-catalog-mutation.test.mjs",
+        "docs/services-catalog-realm-guards.txt",
+        "tests/services-catalog-realm-guards.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "r10-native-bundle-provenance-20261022",
+      "eventId": "13608576-db78-4312-9445-5d173e04315e",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\frozen-source-lf",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\13608576-db78-4312-9445-5d173e04315e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "reylumi-final-r10-services-invariants-integration-20261022"
+      ],
+      "overlappingFiles": [
+        "ios/scripts/check-build.sh"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-hosted-login-actual-trace-20261022",
+      "eventId": "93859166-e3ea-4656-92df-3b78c7a2a327",
+      "status": "working",
+      "queueClass": "hold-working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r10-services",
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "auth-request-finite-deadline-20261022",
+      "eventId": "4072b660-7b05-4d67-81bf-43561df0cd04",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos-r10-login-deadline-20261022",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\4072b660-7b05-4d67-81bf-43561df0cd04",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "r10-native-reset-pending-20261022",
+      "eventId": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\kingpos-r10-native-reset-pending-20261022",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "app/local-app/entry.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-authenticated-browser-qa-20261023",
+      "eventId": "014d1e2b-713b-4368-925c-6fe55451770d",
+      "status": "needs-integration",
+      "queueClass": "source-unresolved",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": null,
+      "sourceVerified": false,
+      "issues": [
+        "Declared source is absent; source files were not guessed from another checkout."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-private-metadata-review-20261022"
+      ],
+      "overlappingFiles": [
+        "tests/helpers/isolated-supabase-fixture.mjs",
+        "tests/helpers/market-browser-fixture.mjs",
+        "tests/market-registry.browser-harness.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-browser-timeout-investigation-20261023",
+      "eventId": "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-22\\task\\market-private\\artifacts\\market-private\\browser-qa\\2026-10-23T07-50-59-527Z\\harness-source",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "issues": [
+        "Declared file missing: tests/market-browser-transport.test.mjs",
+        "Declared file missing: tests/market-next-timing.test.mjs"
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-private-metadata-review-20261022",
+        "market-authenticated-browser-qa-20261023"
+      ],
+      "overlappingFiles": [
+        "tests/helpers/isolated-supabase-fixture.mjs",
+        "tests/helpers/market-browser-fixture.mjs",
+        "tests/market-registry.browser-harness.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-first-slice-acceptance-closure-20261023",
+      "eventId": "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-22\\task\\market-private\\artifacts\\market-private\\acceptance-fullstack\\2026-10-23T08-28-29-754Z-8d8bf297\\closure-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-private-metadata-review-20261022",
+        "market-browser-timeout-investigation-20261023"
+      ],
+      "overlappingFiles": [
+        "tests/helpers/isolated-supabase-fixture.mjs",
+        "tests/isolated-supabase-fixture.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "ios-readiness-bundle-xcresult-20261023",
+      "eventId": "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Reylumi\\.migration-20261023\\ios-readiness-fixed-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "ios/Reylumi/LocalAppBundle/app.css",
+        "ios/Reylumi/LocalAppBundle/app.js",
+        "ios/Reylumi/LocalAppBundle/manifest.json",
+        "scripts/build-app-local-bundle.mjs",
+        "ios/scripts/check-build.sh"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "main-app-qa-20261024-task4",
+      "eventId": "d71a3e3d-4761-459e-baee-29f19edd8729",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-23\\task-4\\frozen-overlay",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\d71a3e3d-4761-459e-baee-29f19edd8729",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-run-again-investigation-20261025",
+      "eventId": "49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\kingpos\\artifacts\\campaign-run-again-investigation-20261025\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "campaign-run-again-20261023"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "claude-simulator-20261025",
+      "eventId": "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Reylumi\\kingpos\\artifacts\\claude-simulator-20261025\\source",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "issues": [
+        "Declared file missing: artifacts/claude-simulator-20261025/source/ios/Reylumi/ReylumiApp.swift",
+        "Declared file missing: artifacts/claude-simulator-20261025/source/ios/Reylumi/Info-Debug.plist",
+        "Declared file missing: artifacts/claude-simulator-20261025/source/ios/project.yml",
+        "Declared file missing: artifacts/claude-simulator-20261025/source-inventory-final.json",
+        "Declared file missing: artifacts/claude-simulator-20261025/simulator-receipt.json",
+        "Declared file missing: artifacts/claude-simulator-20261025/CLAUDE-SIMULATOR-HANDOFF-VI.md"
+      ],
+      "recoveredSupportingFiles": 6,
+      "dependencies": [
+        "live-qa-audit-20261025"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-product-audit-20261025",
+      "eventId": "740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\kingpos\\artifacts\\campaign-product-audit-20261025\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "combined-drako-integration-20261026",
+      "eventId": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+      "status": "working",
+      "queueClass": "hold-working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-25\\task-2\\candidate-drako-20261026",
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "windows-production-guard-command-20261026",
+      "eventId": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-20261026\\guard-frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "iphone-real-performance-fixes-20261027",
+      "eventId": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-performance-fixes-20261027\\ready-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "ios/Reylumi/LocalAppBundle/app.css",
+        "ios/Reylumi/LocalAppBundle/app.js",
+        "ios/Reylumi/LocalAppBundle/manifest.json",
+        "app/local-app/entry.tsx",
+        "lib/today-dashboard.ts",
+        "app/bookings/booking-workspace-client.tsx",
+        "lib/read-context-scope.ts",
+        "lib/supabase/server.ts",
+        "lib/app-local-platform-resources-server.ts",
+        "lib/app-local-platform-types.ts",
+        "app/staff/today/today-progressive-client.tsx",
+        "lib/today-dashboard-sections.ts",
+        "tests/app-local-prefetch-runtime.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "iphone-first-load-dal-rpc-20261027",
+      "eventId": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-dal-rpc-20261027\\ready-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "iphone-real-performance-fixes-20261027"
+      ],
+      "overlappingFiles": [
+        "ios/Reylumi/ReylumiLocalAppTransport.swift",
+        "ios/Reylumi/LocalAppBundle/app.css",
+        "ios/Reylumi/LocalAppBundle/app.js",
+        "ios/Reylumi/LocalAppBundle/manifest.json",
+        "lib/app-local-resource.ts",
+        "lib/read-context-scope.ts",
+        "lib/supabase/server.ts",
+        "lib/app-local-page-registry.tsx",
+        "app/staff/today/today-progressive-client.tsx",
+        "lib/today-dashboard-sections.ts",
+        "tests/app-local-prefetch-runtime.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "check-writer-secure-addon-20261027",
+      "eventId": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Projects\\Reylumi Plugins\\Check Writer\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "app/(app)/payroll/page.tsx",
+        "app/market/sample-apps.ts",
+        "lib/market-commerce.ts",
+        "lib/market-catalog-view.ts",
+        "lib/market-experience-data.ts",
+        "app/market/market-client.tsx",
+        "ios/Reylumi/NativeBridge.js",
+        "ios/Reylumi/ReylumiViewController.swift",
+        ".env.example",
+        "package.json",
+        "package-lock.json",
+        "lib/vietnamese-dictionary.ts",
+        "docs/check-writer.md",
+        "app/check-writer/check-writer.tsx",
+        "app/check-writer/check-writer.module.css",
+        "app/api/check-writer/route.ts",
+        "app/api/check-writer/pdf/route.ts",
+        "lib/check-writer-server.ts",
+        "lib/check-writer-rules.ts",
+        "lib/check-writer-crypto.ts",
+        "lib/check-writer-pdf.ts",
+        "lib/check-writer-market.ts",
+        "app/market/check-writer-panel.tsx",
+        "lib/vietnamese-check-writer.json",
+        "tests/check-writer-runtime.test.mjs",
+        "tests/check-writer-api.test.mjs",
+        "tests/check-writer.integration.test.mjs",
+        "tests/check-writer-ui.test.mjs",
+        "tests/check-writer-payroll-read.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "iphone-batched-handoff-release-20261028",
+      "eventId": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+      "status": "working",
+      "queueClass": "hold-working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": null,
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "iphone-first-load-dal-rpc-20261027",
+        "iphone-real-performance-fixes-20261027"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-real-developer-platform-20261028",
+      "eventId": "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-real\\frozen-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "tests/helpers/isolated-supabase-fixture.mjs",
+        "tests/isolated-supabase-fixture.test.mjs",
+        "app/(market-platform)/developer-platform/actions.ts",
+        "app/(market-platform)/developer-platform/form.tsx",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "app/(market-platform)/developer-platform/platform.module.css",
+        "app/api/market-platform/manifest/route.ts",
+        "app/api/market-platform/stripe-test-webhook/route.ts",
+        "app/api/market-platform/v1/salon/route.ts",
+        "app/api/market-platform/v1/token/route.ts",
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-developer-platform.md",
+        "examples/market-hosted-app/server.mjs",
+        "lib/market-platform/commerce.ts",
+        "lib/market-platform/server.ts",
+        "lib/market-platform/stripe-test.ts",
+        "scripts/market-platform-local.mjs",
+        "supabase/migrations/20261028043000_market_platform.sql",
+        "supabase/migrations/20261028050000_market_platform_commerce.sql",
+        "tests/helpers/market-platform-local.mjs",
+        "tests/market-platform-actions.test.mjs",
+        "tests/market-platform-browser.test.mjs",
+        "tests/market-platform-commerce-boundary.test.mjs",
+        "tests/market-platform-payments.test.mjs",
+        "tests/market-platform-routes-boundary.test.mjs",
+        "tests/market-platform.fullstack.test.mjs",
+        "tests/market-platform.integration.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-owner-integration-20261028",
+      "eventId": "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-owner-integration\\frozen-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-real-developer-platform-20261028"
+      ],
+      "overlappingFiles": [
+        "tests/helpers/isolated-supabase-fixture.mjs",
+        "tests/isolated-supabase-fixture.test.mjs",
+        "lib/market-experience-data.ts",
+        "app/market/market-client.tsx",
+        "lib/vietnamese-dictionary.ts",
+        "app/(market-platform)/developer-platform/actions.ts",
+        "app/(market-platform)/developer-platform/form.tsx",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "app/(market-platform)/developer-platform/platform.module.css",
+        "app/api/market-platform/manifest/route.ts",
+        "app/api/market-platform/stripe-test-webhook/route.ts",
+        "app/api/market-platform/v1/salon/route.ts",
+        "app/api/market-platform/v1/token/route.ts",
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-developer-platform.md",
+        "examples/market-hosted-app/server.mjs",
+        "lib/market-platform/commerce.ts",
+        "lib/market-platform/server.ts",
+        "lib/market-platform/stripe-test.ts",
+        "scripts/market-platform-local.mjs",
+        "supabase/migrations/20261028043000_market_platform.sql",
+        "supabase/migrations/20261028050000_market_platform_commerce.sql",
+        "tests/helpers/market-platform-local.mjs",
+        "tests/market-platform-actions.test.mjs",
+        "tests/market-platform-browser.test.mjs",
+        "tests/market-platform-commerce-boundary.test.mjs",
+        "tests/market-platform-payments.test.mjs",
+        "tests/market-platform-routes-boundary.test.mjs",
+        "tests/market-platform.fullstack.test.mjs",
+        "tests/market-platform.integration.test.mjs",
+        "app/(market-platform)/developer-platform/guide/page.tsx",
+        "app/(market-platform)/developer-platform/sections.tsx",
+        "app/market/developer-app-actions.ts",
+        "app/market/developer-apps.module.css",
+        "app/market/developer-apps.tsx",
+        "lib/market-platform/owner.ts",
+        "lib/vietnamese-developer-market.json",
+        "tests/market-owner-actions.test.mjs",
+        "tests/market-owner-connections.integration.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-developer-journey-20261028",
+      "eventId": "8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-developer-journey\\frozen-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-owner-integration-20261028"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/page.tsx",
+        "app/(market-platform)/developer-platform/platform.module.css",
+        "tests/market-platform-browser.test.mjs",
+        "app/(market-platform)/developer-platform/sections.tsx",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "lib/market-platform/journey.ts",
+        "app/(market-platform)/developer-platform/journey.tsx",
+        "tests/market-developer-journey.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-developer-journey-qa-20261028",
+      "eventId": "6030270a-ae7a-43d7-a554-fae70218a27b",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-developer-journey-qa\\frozen-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\6030270a-ae7a-43d7-a554-fae70218a27b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-developer-journey-20261028"
+      ],
+      "overlappingFiles": [
+        "docs/market-acceptance-checklist-20261028.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "iphone-route-bootstrap-module-loading-20261028",
+      "eventId": "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+      "status": "working",
+      "queueClass": "hold-working",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": null,
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "iphone-bounded-comment-count-read-batch-20261028",
+      "eventId": "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+      "status": "working",
+      "queueClass": "hold-working",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": null,
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-self-hosted-design-20261028",
+      "eventId": "39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-self-hosted-design\\frozen-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-developer-journey-qa-20261028"
+      ],
+      "overlappingFiles": [
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-self-hosted-controls-and-first-data-groups.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "check-writer-audit-price-20261028",
+      "eventId": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Projects\\Reylumi Plugins\\Check Writer\\audit-20261028\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "check-writer-secure-addon-20261027"
+      ],
+      "overlappingFiles": [
+        "app/market/sample-apps.ts",
+        "lib/market-commerce.ts",
+        "lib/market-catalog-view.ts",
+        "app/market/market-client.tsx",
+        "ios/Reylumi/NativeBridge.js",
+        "ios/Reylumi/ReylumiViewController.swift",
+        "docs/check-writer.md",
+        "app/check-writer/check-writer.tsx",
+        "app/check-writer/check-writer.module.css",
+        "app/api/check-writer/route.ts",
+        "app/api/check-writer/pdf/route.ts",
+        "lib/check-writer-server.ts",
+        "lib/check-writer-rules.ts",
+        "lib/check-writer-crypto.ts",
+        "lib/check-writer-pdf.ts",
+        "lib/check-writer-market.ts",
+        "app/market/check-writer-panel.tsx",
+        "lib/vietnamese-check-writer.json",
+        "tests/check-writer-runtime.test.mjs",
+        "tests/check-writer-api.test.mjs",
+        "tests/check-writer.integration.test.mjs",
+        "tests/check-writer-ui.test.mjs",
+        "tests/check-writer-payroll-read.test.mjs",
+        "app/market/card-payment-actions.ts"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "check-writer-wait-combined-deploy-20261028",
+      "eventId": "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Projects\\Reylumi Plugins\\Check Writer\\deploy-note-snapshot",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "check-writer-audit-price-20261028"
+      ],
+      "overlappingFiles": [
+        "docs/check-writer-deploy-note.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-published-data-qr-20261028",
+      "eventId": "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-published-data\\frozen-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-self-hosted-design-20261028"
+      ],
+      "overlappingFiles": [
+        "package.json",
+        "package-lock.json",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-developer-platform.md",
+        "tests/market-platform-actions.test.mjs",
+        "app/(market-platform)/developer-platform/guide/page.tsx",
+        "app/market/developer-apps.tsx",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "lib/market-platform/journey.ts",
+        "app/(market-platform)/developer-platform/journey.tsx",
+        "tests/market-developer-journey.test.mjs",
+        "docs/market-self-hosted-controls-and-first-data-groups.md",
+        "docs/market-published-data-contract.md",
+        "examples/qr-menu/README.md",
+        "examples/qr-menu/manifest.json",
+        "examples/qr-menu/package-lock.json",
+        "examples/qr-menu/package.json",
+        "examples/qr-menu/server.mjs",
+        "public/developer/qr-menu-example.zip",
+        "tests/market-published-data.integration.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-published-qa-20261028",
+      "eventId": "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-published-qa\\frozen-report",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-published-data-qr-20261028"
+      ],
+      "overlappingFiles": [
+        "artifacts/market-published-qa/run.mjs",
+        "artifacts/market-published-qa/report.md",
+        "artifacts/market-published-qa/results.json"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qa-controller-repair-20261028",
+      "eventId": "98110f68-e929-4630-83de-e4bceca6c10e",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-published-qa\\frozen-closeout",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\98110f68-e929-4630-83de-e4bceca6c10e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-published-qa-20261028"
+      ],
+      "overlappingFiles": [
+        "artifacts/market-published-qa/run.mjs",
+        "artifacts/market-published-qa/report.md",
+        "artifacts/market-published-qa/results.json"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qr-replacement-qa-20261028",
+      "eventId": "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-published-qa\\replacement-1\\frozen-source",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "issues": [
+        "Declared file missing: artifacts/market-published-qa/replacement-1/report.md",
+        "Declared file missing: artifacts/market-published-qa/replacement-1/results.json",
+        "Declared file missing: artifacts/market-published-qa/replacement-1/review-vi.md"
+      ],
+      "recoveredSupportingFiles": 3,
+      "dependencies": [
+        "market-published-data-qr-20261028"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/page.tsx",
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-developer-platform.md",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "artifacts/market-published-qa/run.mjs",
+        "artifacts/market-published-qa/replacement-1/report.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-developer-read-recovery-20261028",
+      "eventId": "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-published-qa\\replacement-1\\frozen-source",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "issues": [
+        "Declared file missing: artifacts/market-published-qa/replacement-1/report.md"
+      ],
+      "recoveredSupportingFiles": 1,
+      "dependencies": [
+        "market-published-data-qr-20261028"
+      ],
+      "overlappingFiles": [
+        "lib/vietnamese-developer-market.json",
+        "artifacts/market-published-qa/replacement-1/report.md",
+        "app/(app)/market/page.tsx",
+        "app/market/market-developer-recovery.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-p0-reproduction-plan-20261028",
+      "eventId": "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-p0-reproduction-plan\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "issues": [
+        "Declared file missing: artifacts/market-p0-reproduction-plan/plan-vi.md",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/render-fixture.mjs",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/render-fixture.test.mjs",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/serve-render-fixture.mjs",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/browser-entry.tsx",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/browser-cases.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/fixture.js",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/render-evidence.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/render-tests-final.log",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/browser-launch.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/source-equivalence.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/closure.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/index.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/delivery-manifest.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/01-valid-query-four-scopes.jpg",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/02-valid-permissions-dialog.jpg",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/03-fault-native-settings.jpg",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/04-fault-owner-shape.jpg",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/visuals/05-fault-manifest-shape.jpg"
+      ],
+      "recoveredSupportingFiles": 19,
+      "dependencies": [
+        "market-developer-read-recovery-20261028"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-p0-zero-key-real-20261028",
+      "eventId": "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-p0-reproduction-plan\\frozen-zero-key",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "issues": [
+        "Declared file missing: artifacts/market-p0-reproduction-plan/zero-key-manifest.json",
+        "Declared file missing: artifacts/market-p0-reproduction-plan/zero-key-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-https-transport-preflight-20261028",
+      "eventId": "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-https-transport-preflight\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "issues": [
+        "Declared file missing: artifacts/market-https-transport-preflight/report-vi.md",
+        "Declared file missing: artifacts/market-https-transport-preflight/evidence.json",
+        "Declared file missing: artifacts/market-https-transport-preflight/evidence.zip"
+      ],
+      "recoveredSupportingFiles": 3,
+      "dependencies": [],
+      "overlappingFiles": [
+        "artifacts/market-https-transport-preflight/report-vi.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-https-transport-clarification-20261028",
+      "eventId": "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-https-transport-preflight\\frozen-clarification",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "issues": [
+        "Declared file missing: artifacts/market-https-transport-preflight/report-vi.md",
+        "Declared file missing: artifacts/market-https-transport-preflight/clarification.json",
+        "Declared file missing: artifacts/market-https-transport-preflight/clarification.zip"
+      ],
+      "recoveredSupportingFiles": 3,
+      "dependencies": [],
+      "overlappingFiles": [
+        "artifacts/market-https-transport-preflight/report-vi.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qa-hosting-options-20261028",
+      "eventId": "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-qa-hosting-options\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "issues": [
+        "Declared file missing: artifacts/market-qa-hosting-options/report-vi.md",
+        "Declared file missing: artifacts/market-qa-hosting-options/evidence.json",
+        "Declared file missing: artifacts/market-qa-hosting-options/evidence.zip"
+      ],
+      "recoveredSupportingFiles": 3,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-consent-version-reset-20261028",
+      "eventId": "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-consent-version-reset\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "issues": [
+        "Declared file missing: artifacts/market-consent-version-reset/manifest.json",
+        "Declared file missing: artifacts/market-consent-version-reset/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-developer-read-recovery-20261028"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "app/market/developer-apps.tsx",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "eventId": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Projects\\Reylumi Plugins\\Check Writer\\readiness-20261028\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "check-writer-audit-price-20261028"
+      ],
+      "overlappingFiles": [
+        ".env.example",
+        "docs/check-writer.md",
+        "lib/check-writer-market.ts",
+        "tests/check-writer.integration.test.mjs",
+        "app/market/card-payment-actions.ts"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-account-owner-polish-20261028",
+      "eventId": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-account-owner-polish\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "issues": [
+        "Declared file missing: artifacts/market-account-owner-polish/manifest.json",
+        "Declared file missing: artifacts/market-account-owner-polish/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-consent-version-reset-20261028"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/form.tsx",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "app/(market-platform)/developer-platform/platform.module.css",
+        "docs/market-developer-platform-readiness.md",
+        "app/(market-platform)/developer-platform/sections.tsx",
+        "app/market/developer-apps.tsx",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md",
+        "app/(market-platform)/developer-platform/account-panel.tsx",
+        "tests/market-developer-account.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "check-writer-next-combined-release-20261029",
+      "eventId": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Projects\\Reylumi Plugins\\Check Writer\\owner-direction-20261029",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "check-writer-release-gates-20261028"
+      ],
+      "overlappingFiles": [
+        "docs/check-writer-deploy-note.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-publishers-20261029",
+      "eventId": "8440f0d3-3379-4671-ba85-9c29f97a7654",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\market-publishers-20261029\\artifacts\\market-publisher-backend-20261029\\source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\8440f0d3-3379-4671-ba85-9c29f97a7654",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "market-account-owner-polish-20261028"
+      ],
+      "overlappingFiles": [
+        "app/market/market-client.tsx",
+        "lib/vietnamese-dictionary.ts",
+        "app/(market-platform)/developer-platform/actions.ts",
+        "lib/market-platform/server.ts",
+        "tests/helpers/market-platform-local.mjs",
+        "tests/market-platform-actions.test.mjs",
+        "app/market/developer-apps.tsx",
+        "lib/vietnamese-developer-market.json",
+        "app/(app)/market/page.tsx",
+        "app/market/market-developer-recovery.tsx",
+        "app/(market-platform)/developer-platform/account-panel.tsx",
+        "tests/market-developer-account.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-navigation-update-diagnostics-20261029",
+      "eventId": "aa1bae2f-2795-4902-b686-0810dcefb5e8",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-milestone-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\aa1bae2f-2795-4902-b686-0810dcefb5e8",
+      "issues": [
+        "Declared file missing: artifacts/market-milestone-20261029/manifest.json",
+        "Declared file missing: artifacts/market-milestone-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-account-owner-polish-20261028"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/form.tsx",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "docs/market-developer-platform-readiness.md",
+        "app/(market-platform)/developer-platform/sections.tsx",
+        "app/market/developer-app-actions.ts",
+        "app/market/developer-apps.module.css",
+        "app/market/developer-apps.tsx",
+        "lib/market-platform/owner.ts",
+        "lib/vietnamese-developer-market.json",
+        "tests/market-owner-actions.test.mjs",
+        "tests/market-owner-connections.integration.test.mjs",
+        "docs/market-acceptance-checklist-20261028.md",
+        "tests/market-published-data.integration.test.mjs",
+        "docs/market-local-checkpoint-20261028.md",
+        "tests/market-developer-account.test.mjs",
+        "tests/market-developer-form-recovery.test.mjs",
+        "docs/market-current-acceptance-proposal-20261029.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-release-preflight-20261029",
+      "eventId": "b3d98000-f142-404b-ae55-00461eca1174",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-release-preflight-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\b3d98000-f142-404b-ae55-00461eca1174",
+      "issues": [
+        "Declared file missing: artifacts/market-release-preflight-20261029/manifest.json",
+        "Declared file missing: artifacts/market-release-preflight-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-navigation-update-diagnostics-20261029"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/actions.ts",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "app/(market-platform)/developer-platform/platform.module.css",
+        "docs/market-developer-platform-readiness.md",
+        "tests/market-platform-actions.test.mjs",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md",
+        "docs/market-current-acceptance-proposal-20261029.md",
+        "lib/market-platform/manifest-preflight.ts"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-lifecycle-confirmation-20261029",
+      "eventId": "575397a0-f257-4f00-96dd-18a9757ccf95",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-lifecycle-confirmation-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\575397a0-f257-4f00-96dd-18a9757ccf95",
+      "issues": [
+        "Declared file missing: artifacts/market-lifecycle-confirmation-20261029/manifest.json",
+        "Declared file missing: artifacts/market-lifecycle-confirmation-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-release-preflight-20261029"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/actions.ts",
+        "docs/market-developer-platform-readiness.md",
+        "tests/market-platform-actions.test.mjs",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md",
+        "tests/market-single-owner-lifecycle.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-mutation-contracts-20261029",
+      "eventId": "f52bf254-0889-4672-94b4-936ec73bf86c",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-mutation-contracts-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\f52bf254-0889-4672-94b4-936ec73bf86c",
+      "issues": [
+        "Declared file missing: artifacts/market-mutation-contracts-20261029/manifest.json",
+        "Declared file missing: artifacts/market-mutation-contracts-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-lifecycle-confirmation-20261029"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/actions.ts",
+        "app/(market-platform)/developer-platform/form.tsx",
+        "docs/market-developer-platform-readiness.md",
+        "lib/market-platform/commerce.ts",
+        "lib/market-platform/server.ts",
+        "tests/market-platform-actions.test.mjs",
+        "tests/market-platform-commerce-boundary.test.mjs",
+        "app/market/developer-app-actions.ts",
+        "app/market/developer-apps.module.css",
+        "app/market/developer-apps.tsx",
+        "lib/vietnamese-developer-market.json",
+        "tests/market-owner-actions.test.mjs",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md",
+        "tests/market-developer-form-recovery.test.mjs",
+        "lib/market-platform/manifest-preflight.ts",
+        "tests/market-single-owner-lifecycle.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-commerce-read-models-20261029",
+      "eventId": "391def0c-5b2d-45bf-9f93-32b51f5460a3",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-commerce-read-models-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\391def0c-5b2d-45bf-9f93-32b51f5460a3",
+      "issues": [
+        "Declared file missing: artifacts/market-commerce-read-models-20261029/manifest.json",
+        "Declared file missing: artifacts/market-commerce-read-models-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-mutation-contracts-20261029"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "lib/market-platform/commerce.ts",
+        "tests/market-platform-commerce-boundary.test.mjs",
+        "tests/market-platform.integration.test.mjs",
+        "app/(market-platform)/developer-platform/guide/page.tsx",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md",
+        "lib/market-platform/commerce-read-model.ts",
+        "app/(market-platform)/developer-platform/recovery-guide.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qr-durable-20261029",
+      "eventId": "96ce9eb7-e8aa-4214-8c1d-111561e50189",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-qr-durable-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\96ce9eb7-e8aa-4214-8c1d-111561e50189",
+      "issues": [
+        "Declared file missing: artifacts/market-qr-durable-20261029/manifest.json",
+        "Declared file missing: artifacts/market-qr-durable-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-commerce-read-models-20261029"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/guide/page.tsx",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-published-data-contract.md",
+        "examples/qr-menu/README.md",
+        "examples/qr-menu/manifest.json",
+        "examples/qr-menu/package-lock.json",
+        "examples/qr-menu/package.json",
+        "examples/qr-menu/server.mjs",
+        "public/developer/qr-menu-example.zip",
+        "docs/market-local-checkpoint-20261028.md",
+        "app/(market-platform)/developer-platform/recovery-guide.tsx",
+        "examples/qr-menu/postgres-store.mjs",
+        "examples/qr-menu/storage.sql",
+        "examples/qr-menu/STORAGE.md",
+        "tests/qr-menu-durable.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-refund-reconciliation-20261029",
+      "eventId": "fe1ec11f-13be-4f1f-8365-a3118886eefe",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-refund-reconciliation-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\fe1ec11f-13be-4f1f-8365-a3118886eefe",
+      "issues": [
+        "Declared file missing: artifacts/market-refund-reconciliation-20261029/manifest.json",
+        "Declared file missing: artifacts/market-refund-reconciliation-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-commerce-read-models-20261029",
+        "market-qr-durable-20261029"
+      ],
+      "overlappingFiles": [
+        "app/(market-platform)/developer-platform/actions.ts",
+        "app/(market-platform)/developer-platform/page.tsx",
+        "docs/market-developer-platform-readiness.md",
+        "lib/market-platform/commerce.ts",
+        "lib/market-platform/server.ts",
+        "tests/market-platform-actions.test.mjs",
+        "tests/market-platform-commerce-boundary.test.mjs",
+        "tests/market-platform.integration.test.mjs",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md",
+        "tests/market-single-owner-lifecycle.test.mjs",
+        "lib/market-platform/commerce-read-model.ts",
+        "tests/qr-menu-durable.test.mjs",
+        "docs/market-staging-proposal-20261029.md",
+        "docs/market-staging-decision-20261029.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qr-serverless-20261029",
+      "eventId": "299dab3a-8cc2-404e-bfab-6886071d8a88",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-qr-serverless-20261029\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\299dab3a-8cc2-404e-bfab-6886071d8a88",
+      "issues": [
+        "Declared file missing: artifacts/market-qr-serverless-20261029/manifest.json",
+        "Declared file missing: artifacts/market-qr-serverless-20261029/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-qr-durable-20261029",
+        "market-refund-reconciliation-20261029"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "app/(market-platform)/developer-platform/guide/page.tsx",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "examples/qr-menu/README.md",
+        "examples/qr-menu/manifest.json",
+        "examples/qr-menu/package-lock.json",
+        "examples/qr-menu/package.json",
+        "examples/qr-menu/server.mjs",
+        "public/developer/qr-menu-example.zip",
+        "docs/market-local-checkpoint-20261028.md",
+        "app/(market-platform)/developer-platform/recovery-guide.tsx",
+        "examples/qr-menu/postgres-store.mjs",
+        "examples/qr-menu/storage.sql",
+        "examples/qr-menu/STORAGE.md",
+        "tests/qr-menu-durable.test.mjs",
+        "docs/market-staging-proposal-20261029.md",
+        "docs/market-staging-decision-20261029.md",
+        "examples/qr-menu/hosted-auth.mjs",
+        "examples/qr-menu/HOSTED.md",
+        "examples/market-qa-bootstrap/80-qr-role.sql",
+        "examples/market-qa-bootstrap/bundle/09-storage.sql",
+        "examples/market-qa-bootstrap/bundle/10-80-qr-role.sql",
+        "examples/market-qa-bootstrap/bundle/manifest.json",
+        "examples/market-qa-bootstrap/README.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qr-mfa-20261030",
+      "eventId": "ac31b334-2041-4d84-b61d-5f8a24e3d68f",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-qr-mfa-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\ac31b334-2041-4d84-b61d-5f8a24e3d68f",
+      "issues": [
+        "Declared file missing: artifacts/market-qr-mfa-20261030/manifest.json",
+        "Declared file missing: artifacts/market-qr-mfa-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-qr-serverless-20261029"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "lib/vietnamese-developer-market.json",
+        "docs/market-acceptance-checklist-20261028.md",
+        "examples/qr-menu/README.md",
+        "public/developer/qr-menu-example.zip",
+        "docs/market-local-checkpoint-20261028.md",
+        "app/(market-platform)/developer-platform/recovery-guide.tsx",
+        "examples/qr-menu/storage.sql",
+        "examples/qr-menu/STORAGE.md",
+        "docs/market-staging-proposal-20261029.md",
+        "docs/market-staging-decision-20261029.md",
+        "examples/qr-menu/hosted-auth.mjs",
+        "examples/qr-menu/HOSTED.md",
+        "examples/market-qa-bootstrap/80-qr-role.sql",
+        "examples/market-qa-bootstrap/bundle/09-storage.sql",
+        "examples/market-qa-bootstrap/bundle/10-80-qr-role.sql",
+        "examples/market-qa-bootstrap/bundle/manifest.json",
+        "examples/market-qa-bootstrap/README.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-account-bootstrap-20261030",
+      "eventId": "1484c573-84bb-4bd1-94bf-2ee635e52a77",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-account-bootstrap-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\1484c573-84bb-4bd1-94bf-2ee635e52a77",
+      "issues": [
+        "Declared file missing: artifacts/market-account-bootstrap-20261030/manifest.json",
+        "Declared file missing: artifacts/market-account-bootstrap-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-qr-mfa-20261030",
+        "market-qr-serverless-20261029"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-acceptance-checklist-20261028.md",
+        "public/developer/qr-menu-example.zip",
+        "docs/market-local-checkpoint-20261028.md",
+        "docs/market-staging-proposal-20261029.md",
+        "docs/market-staging-decision-20261029.md",
+        "examples/qr-menu/HOSTED.md",
+        "examples/market-qa-bootstrap/README.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-profile-context-20261030",
+      "eventId": "61386e4a-6bca-43c6-9422-e5fd908ec8ec",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-profile-context-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\61386e4a-6bca-43c6-9422-e5fd908ec8ec",
+      "issues": [
+        "Declared file missing: artifacts/market-profile-context-20261030/manifest.json",
+        "Declared file missing: artifacts/market-profile-context-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-account-bootstrap-20261030",
+        "market-qr-mfa-20261030"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-acceptance-checklist-20261028.md",
+        "public/developer/qr-menu-example.zip",
+        "docs/market-local-checkpoint-20261028.md",
+        "docs/market-staging-proposal-20261029.md",
+        "docs/market-staging-decision-20261029.md",
+        "examples/qr-menu/HOSTED.md",
+        "examples/market-qa-bootstrap/README.md",
+        "examples/market-qa-bootstrap/CONTEXT.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-staging-final-20261030",
+      "eventId": "0683af47-de0e-48e4-8eb6-e1bcdbe4adca",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-staging-final-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\0683af47-de0e-48e4-8eb6-e1bcdbe4adca",
+      "issues": [
+        "Declared file missing: artifacts/market-staging-final-20261030/manifest.json",
+        "Declared file missing: artifacts/market-staging-final-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-profile-context-20261030",
+        "market-qr-mfa-20261030"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-acceptance-checklist-20261028.md",
+        "public/developer/qr-menu-example.zip",
+        "docs/market-local-checkpoint-20261028.md",
+        "docs/market-staging-proposal-20261029.md",
+        "docs/market-staging-decision-20261029.md",
+        "examples/qr-menu/HOSTED.md",
+        "examples/market-qa-bootstrap/README.md",
+        "examples/market-qa-bootstrap/CONTEXT.md",
+        "docs/market-staging-final-20261030.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qa-origin-prep-20261030",
+      "eventId": "0b037403-3371-4a62-bbac-cae7248fbbef",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-qa-origin-prep-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\0b037403-3371-4a62-bbac-cae7248fbbef",
+      "issues": [
+        "Declared file missing: artifacts/market-qa-origin-prep-20261030/manifest.json",
+        "Declared file missing: artifacts/market-qa-origin-prep-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-staging-final-20261030"
+      ],
+      "overlappingFiles": [
+        "docs/market-developer-platform-readiness.md",
+        "docs/market-acceptance-checklist-20261028.md",
+        "docs/market-local-checkpoint-20261028.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-owner-review-final-20261030",
+      "eventId": "b2599c95-0948-4ae6-96d4-803ba975e3bf",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-owner-review-final-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\b2599c95-0948-4ae6-96d4-803ba975e3bf",
+      "issues": [
+        "Declared file missing: artifacts/market-owner-review-final-20261030/manifest.json",
+        "Declared file missing: artifacts/market-owner-review-final-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-qa-origin-prep-20261030"
+      ],
+      "overlappingFiles": [
+        "docs/market-staging-final-20261030.md"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "personal-qr-universal-links-provisioning-20261030",
+      "eventId": "512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+      "status": "blocked",
+      "queueClass": "hold-blocked",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": "C:\\Reylumi-worktrees\\personal-qr-camera-20261029\\artifacts\\personal-qr-camera-20261029\\source",
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "personal-qr-camera-20261029"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "personal-camera-qr-next-combined-20261029",
+      "eventId": "fe67808b-ad4b-4f2a-b260-a76d3d36ab79",
+      "status": "blocked",
+      "queueClass": "hold-blocked",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": null,
+      "sourceVerified": false,
+      "issues": [
+        "Not a completed releasable change."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "personal-qr-universal-links-provisioning-20261030"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "market-qa-resource-gate-20261030",
+      "eventId": "88e91bf8-4105-4e05-8727-721fd791085d",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-qa-resource-gate-20261030\\frozen",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\88e91bf8-4105-4e05-8727-721fd791085d",
+      "issues": [
+        "Declared file missing: artifacts/market-qa-resource-gate-20261030/manifest.json",
+        "Declared file missing: artifacts/market-qa-resource-gate-20261030/source-evidence.zip"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [
+        "market-owner-review-final-20261030"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "beauty-shortcut-home-20261029",
+      "eventId": "750d4a2a-e76f-4603-871a-78df3eebe8b0",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\beauty-shortcut-home-20261029\\artifacts\\beauty-shortcut-home\\source-navigation-v2",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\750d4a2a-e76f-4603-871a-78df3eebe8b0",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "app/navigation-shell.tsx",
+        "app/(app)/beauty/page.tsx",
+        "app/beauty/beauty-appointment.tsx",
+        "app/beauty/beauty-profile-client.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "reylumi-membership-design-20261102",
+      "eventId": "2b288e4d-bac1-4e79-a6f8-045b2bf7116a",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\membership-preview-20261102\\docs\\membership-preview",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\2b288e4d-bac1-4e79-a6f8-045b2bf7116a",
+      "issues": [
+        "Declared file missing: docs/membership-preview/index.html",
+        "Declared file missing: docs/membership-preview/design.md"
+      ],
+      "recoveredSupportingFiles": 2,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "contextual-booking-checkin-20261103",
+      "eventId": "59c9d618-5656-4a59-b9fa-a4f465b15f11",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Reylumi-worktrees\\contextual-booking-checkin-20261103\\artifacts\\contextual-booking-checkin-20261103\\frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\59c9d618-5656-4a59-b9fa-a4f465b15f11",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "app/activity/customer-journey.tsx",
+        "app/activity/customer-journey.module.css",
+        "tests/customer-journey-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "payroll-shop-dividers-followup-20261103",
+      "eventId": "732b10ec-6111-4e3b-8c61-c4d552ab8cfa",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\payroll-today-dividers-20261102\\artifacts\\payroll-shop-dividers-20261103\\frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\732b10ec-6111-4e3b-8c61-c4d552ab8cfa",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "payroll-today-dividers-20261102"
+      ],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "visit-feedback-final-20261103",
+      "eventId": "814f0b17-ebac-4c1d-b2fc-64aea1c7885b",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": "C:\\Reylumi-worktrees\\visit-feedback-final-20261103\\artifacts\\visit-feedback-final\\frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\814f0b17-ebac-4c1d-b2fc-64aea1c7885b",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "review-experience-flow-20261029"
+      ],
+      "overlappingFiles": [
+        "app/salon-profile/salon-profile-view.tsx",
+        "lib/app-local-command-policy.json",
+        "lib/app-local-commands-server.generated.ts",
+        "app/activity/customer-journey.tsx",
+        "app/activity/customer-journey.module.css",
+        "tests/customer-journey-ui.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "beauty-public-unification-20261103",
+      "eventId": "a2ba0379-9067-47d3-80c5-7772c11e734a",
+      "status": "needs-integration",
+      "queueClass": "needs-integration-validation",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\beauty-public-unification-20261103\\artifacts\\beauty-public-unification\\frozen",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\a2ba0379-9067-47d3-80c5-7772c11e734a",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "app/beauty/beauty-profile-client.tsx",
+        "app/explore/explore-client.tsx",
+        "app/salon-profile/salon-profile-view.tsx"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "campaign-completion-20261103",
+      "eventId": "ebc2e6b6-45a3-4940-9bbc-ccb281d36f4e",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\campaign-completion\\frozen-final",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\ebc2e6b6-45a3-4940-9bbc-ccb281d36f4e",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [
+        "app/api/campaigns/delivery/route.ts",
+        "app/campaigns/actions.ts",
+        "app/campaigns/campaign-workspace.tsx",
+        "components/owner-sponsored-post.tsx",
+        "tests/campaign-admission-boundaries.test.mjs",
+        "tests/campaign-dom-image-readiness.test.mjs",
+        "tests/campaign-geo-compat.test.mjs",
+        "tests/campaign-accounting-read.test.mjs",
+        "tests/campaign-expiry-settlement.test.mjs",
+        "tests/campaign-status-presentation.test.mjs",
+        "tests/fixtures/campaign-cumulative-db.mjs",
+        "types/owner-campaign.ts",
+        "app/campaigns/credit-panel.tsx",
+        "tests/campaign-credit-demand-budget.test.mjs",
+        "tests/campaign-paused-reserve-lifecycle.test.mjs",
+        "tests/campaign-completion.browser.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "membership-admin-20261103",
+      "eventId": "63960593-bed6-4cde-9299-783d46df3ed8",
+      "status": "needs-integration",
+      "queueClass": "needs-source-repair",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\membership-admin-20261103",
+      "sourceVerified": false,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\63960593-bed6-4cde-9299-783d46df3ed8",
+      "issues": [
+        "Declared snapshot is a mutable registered worktree, not an immutable frozen source."
+      ],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [],
+      "overlappingFiles": [],
+      "deploymentTargetReview": "confirm against production source at integration"
+    },
+    {
+      "changeId": "owner-campaign-post-layout-20261103",
+      "eventId": "1e4af305-6b20-491d-9742-d896a884427d",
+      "status": "ready",
+      "queueClass": "ready-snapshot-verified",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\owner-campaign-thumbnail-list\\approved-source",
+      "sourceVerified": true,
+      "bundlePath": "C:\\Reylumi-worktrees\\campaign-completion-20261103\\artifacts\\combined-deploy-queue-20261103\\sources-2026-11-03T14-41-10-194Z\\1e4af305-6b20-491d-9742-d896a884427d",
+      "issues": [],
+      "recoveredSupportingFiles": 0,
+      "dependencies": [
+        "campaign-completion-20261103"
+      ],
+      "overlappingFiles": [
+        "app/campaigns/campaign-ui.module.css",
+        "app/campaigns/campaign-workspace.tsx",
+        "tests/campaign-completion.browser.test.mjs"
+      ],
+      "deploymentTargetReview": "confirm against production source at integration"
+    }
+  ],
+  "notes": [
+    "This is a queue manifest and source collection, not one assembled deployable application.",
+    "Pending journal state is not independent proof that old source remains unshipped. Compare with exact live source before publication.",
+    "Supporting recovery never changes the original source-verification result or another chat record.",
+    "Files in dirty worktrees are discovery candidates, not authorized release selections."
+  ]
+}

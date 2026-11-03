@@ -1,9 +1,7 @@
 "use client";
 import { PostIdentity } from "@/components/post-identity";
 import {ExploreBookButton} from "@/components/explore-account-actions";
-import {SalonTrustLine} from "@/components/salon-trust-line";
 import type { getPublicExploreBeautyPost } from "@/lib/explore-personal";
-import type { PostCommentViewer } from "@/types/post-comments";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { PostShareButton } from "@/components/post-share-button";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
@@ -12,7 +10,7 @@ import { ReylumiIcon } from "@/components/reylumi-icons";
 import type { ExploreFeedItem, ExploreFeedMedia } from "@/types/explore";
 import Image from "next/image";
 import Link from "next/link";
-
+import type {PostCommentViewer} from "@/types/post-comments";
 function mediaAspectRatio(media: ExploreFeedMedia | undefined) {
   if (media?.aspectRatio && media.aspectRatio > 0) {
     return `${Math.min(1.55, Math.max(0.72, media.aspectRatio))}`;
@@ -65,10 +63,6 @@ function verificationLabel(item: ExploreFeedItem) {
   return item.verification?.state === "verified" ? "Verified visit" : null;
 }
 
-function bookingCountLabel(count: number) {
-  return `${count} booked`;
-}
-
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -108,27 +102,6 @@ function bookingDurationLabel(item: ExploreFeedItem) {
       ? "Time varies"
       : null;
 }
-
-function bookingDistanceLabel(item: ExploreFeedItem) {
-  const distance = item.bookingMeta.distanceMiles;
-
-  if (distance === null) {
-    return null;
-  }
-
-  return distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`;
-}
-
-function bookingAvailabilityLabel(item: ExploreFeedItem) {
-  return (
-    item.bookingMeta.availabilityLabel ??
-    (item.salon?.operatingStatus.isOpen
-      ? "Available today"
-      : item.salon?.operatingStatus.nextOpensLabel) ??
-    null
-  );
-}
-
 
 function locationLabel(item: ExploreFeedItem) {
   return [item.salon?.city, item.salon?.state].filter(Boolean).join(", ") || null;
@@ -202,267 +175,45 @@ function PostMedia({ item }: { item: ExploreFeedItem }) {
   return firstMedia ? <SingleMedia item={item} media={firstMedia} /> : null;
 }
 
-function LookMediaStage({ item }: { item: ExploreFeedItem }) {
-  const thumbnails = item.media.slice(0, 6);
-
-  return (
-    <div className="grid gap-2 lg:grid-cols-[4.75rem_minmax(0,1fr)]">
-      {thumbnails.length > 1 ? (
-        <div className="hidden grid-rows-6 gap-2 lg:grid">
-          {thumbnails.map((media) => (
-            <div
-              className="relative min-h-16 overflow-hidden rounded-[0.65rem] bg-surface-muted ring-1 ring-divider-subtle/80"
-              key={media.id}
-            >
-              <Image
-                alt=""
-                className="object-cover"
-                fill
-                sizes="76px"
-                src={media.imageUrl}
-              />
-            </div>
-          ))}
-        </div>
-      ) : null}
-      <div className="relative">
-        <PostMedia item={item} />
-        <div className="absolute left-3 top-3 flex gap-2">
-          <Link
-            aria-label="Back to Explore"
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/92 text-text-primary shadow-sm ring-1 ring-white/80 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href={{ pathname: "/explore" }}
-          >
-            <ReylumiIcon className="h-4 w-4" name="chevron-left" />
-          </Link>
-        </div>
-        <button
-          aria-label="More options"
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center bg-transparent text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          type="button"
-        >
-          <ReylumiIcon className="h-4 w-4" name="more" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function LookStat({
-  icon,
-  label,
-  value,
-}: {
-  icon: "bookmark" | "calendar" | "image" | "message";
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="grid min-w-0 justify-items-center gap-1 bg-white px-3 py-2 text-center rounded-none border-0 shadow-none">
-      <ReylumiIcon className="h-4 w-4 text-text-secondary" name={icon} />
-      <p className="text-sm font-semibold text-text-primary">{value}</p>
-      <p className="text-[11px] font-semibold text-text-muted">{label}</p>
-    </div>
-  );
-}
-
-function AvailabilityChips({ item }: { item: ExploreFeedItem }) {
-  const availability = bookingAvailabilityLabel(item);
-  const times = availability
-    ? ["2:30 PM", "3:30 PM", "4:30 PM", "+ More"]
-    : ["Check times"];
-
-  return (
-    <div className="grid gap-2">
-      {availability ? (
-        <p className="text-xs font-semibold text-emerald-700">
-          {availability}
-        </p>
-      ) : null}
-      <div className="flex flex-wrap gap-2">
-        {times.map((time) => (
-          <span
-            className="rounded-[0.55rem] bg-white px-3 py-2 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle/80"
-            key={time}
-          >
-            {time}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function BeautyPostReadView({ item, commentViewer, profileId, postId }: { item: NonNullable<Awaited<ReturnType<typeof getPublicExploreBeautyPost>>>; commentViewer: PostCommentViewer; profileId: string; postId: string }) {
+export function BeautyPostReadView({item,commentViewer,profileId,postId}:{item:NonNullable<Awaited<ReturnType<typeof getPublicExploreBeautyPost>>>;commentViewer:PostCommentViewer;profileId:string;postId:string}){
   const booking = item.booking?.eligible ? item.booking : null;
-  const bookingHref = booking?.href ?? null;
+  const price = item.serviceName ? bookingPriceLabel(item) : null;
+  const duration = item.serviceName ? bookingDurationLabel(item) : null;
   const verifiedLabel = verificationLabel(item);
-  const bookedCount = booking?.bookedCount ?? null;
-  const showPostTypeBadge = item.personal?.postType !== "before_after";
-  const detailContext =
-    [
-      showPostTypeBadge ? postLabel(item) : null,
-      locationLabel(item),
-    ]
-      .filter(Boolean)
-      .join(" / ") || postLabel(item);
-  const serviceTitle = item.serviceName ?? item.serviceCategory ?? postLabel(item);
-  const price = bookingPriceLabel(item);
-  const duration = bookingDurationLabel(item);
-  const distance = bookingDistanceLabel(item);
-  const salonLocation = locationLabel(item);
-  const bookedCountText =
-    bookedCount !== null ? bookingCountLabel(bookedCount) : null;
-
-  return (
-    <main className="min-h-screen bg-[#fffaf7] px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-      <article
-        className="mx-auto grid max-w-none gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,26rem)]"
-        id={`post-${item.id}`}
-      >
-        <section className="grid gap-3 bg-white p-2 sm:p-3 rounded-none border-0 shadow-none">
-          <LookMediaStage item={item} />
-          <div className="grid grid-cols-4 gap-2">
-            <LookStat
-              icon="bookmark"
-              label="Saves"
-              value={String(item.saveTarget?.saveCount ?? 0)}
-            />
-            <LookStat
-              icon="calendar"
-              label="Booked"
-              value={bookedCountText?.replace(" booked", "") ?? "0"}
-            />
-            <LookStat
-              icon="image"
-              label="Photos"
-              value={String(item.media.length)}
-            />
-            <LookStat
-              icon="message"
-              label="Comments"
-              value={String(item.commentCount)}
-            />
+  return <main className="min-h-screen bg-surface-muted px-3 py-4 sm:px-6">
+    <article className="mx-auto grid w-full max-w-3xl gap-4" id={"post-" + item.id}>
+      <div className="flex items-center justify-between gap-3 text-sm"><Link href={"/explore/beauty/" + profileId} className="min-w-0 truncate py-2 font-semibold text-text-secondary">Back to {item.author.name}</Link><span className="shrink-0 text-xs text-text-muted">{formatDate(item.publishedAt)}</span></div>
+      <section className="min-w-0 overflow-hidden rounded-2xl border border-divider-subtle bg-surface">
+        <header className="flex min-w-0 items-center gap-3 px-3 py-3 sm:px-4">
+          <Link href={"/explore/beauty/" + profileId} aria-label={"Open " + item.author.name} className="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-sm font-semibold text-brand-orange">
+            {item.author.avatarUrl ? <Image alt="" src={item.author.avatarUrl} fill sizes="40px" className="object-cover" /> : initialsFor(item.author.name)}
+          </Link>
+          <div className="min-w-0 flex-1 text-sm"><PostHeaderTitle item={item} /></div>
+          {verifiedLabel ? <span className="rounded-full bg-brand-teal-soft px-2 py-1 text-[11px] font-semibold text-brand-teal">{verifiedLabel}</span> : null}
+        </header>
+        <PostMedia item={item} />
+        <div className="grid gap-3 px-3 py-3 sm:px-4">
+          {item.caption ? <h1 className="whitespace-pre-wrap break-words text-base font-normal leading-6">{item.caption}</h1> : <h1 className="text-base font-semibold">{postLabel(item)}</h1>}
+          <div className="post-action-toolbar">
+            {item.saveTarget ? <SavePostButton size="toolbar" initialSaved={item.saveTarget.saved} saveCount={item.saveTarget.saveCount} isAuthenticated={commentViewer.isAuthenticated} target={item.saveTarget} /> : null}
+            <a href="#comments" aria-label="Comment"><ReylumiIcon name="message" /><span>Comment</span></a>
+            <PostShareButton href={item.destination.href || "/explore/beauty/" + profileId + "/posts/" + postId} title={item.caption || item.author.name} />
+            <ExploreBookButton href={booking?.href ?? null} name={item.salon?.name ?? item.author.name} contactHref={item.salon?.href} />
           </div>
-          <section className="bg-white p-3 rounded-none border-0 shadow-none">
-            <h2 className="text-sm font-semibold text-text-primary">
-              About this look
-            </h2>
-            {item.caption ? (
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-secondary">
-                {item.caption}
-              </p>
-            ) : (
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
-                This look is ready to compare by shop, artist, service, price,
-                duration, and availability.
-              </p>
-            )}
-          </section>
-        </section>
-
-        <aside className="grid content-start gap-3">
-          <section className="grid gap-4 bg-white p-4 rounded-none border-0 shadow-none">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-text-primary text-sm font-semibold text-white">
-                {item.author.avatarUrl ? (
-                  <Image
-                    alt={`${item.author.name} profile`}
-                    className="object-cover"
-                    fill
-                    sizes="48px"
-                    src={item.author.avatarUrl}
-                  />
-                ) : (
-                  initialsFor(item.author.name)
-                )}
-              </span>
-              <span className="min-w-0">
-                <PostHeaderTitle item={item} />
-                {item.salon?<SalonTrustLine signals={item.salon.trust} href={item.salon.href} name={item.salon.name} distance={distance} expanded className="text-text-secondary"/>:null}
-                {salonLocation?<span className="block text-[11px] text-text-secondary">{salonLocation}</span>:null}
-              </span>
-            </div>
-
-            <div>
-              <h1 className="text-xl font-semibold leading-tight text-text-primary">
-                {serviceTitle}
-              </h1>
-              <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm font-semibold text-text-secondary">
-                {price ? <span className="text-text-primary">{price}</span> : null}
-                {duration ? <span>{duration}</span> : null}
-                <span>{detailContext}</span>
-              </p>
-              <p className="mt-2 text-xs font-semibold text-text-muted">
-                {formatDate(item.publishedAt)}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {item.serviceName || item.serviceCategory ? (
-                <span className="rounded-full bg-brand-orange-soft px-3 py-1 text-xs font-semibold text-brand-orange">
-                  {item.serviceName ?? item.serviceCategory}
-                </span>
-              ) : null}
-              {showPostTypeBadge ? (
-                <span className="rounded-full bg-brand-teal-soft px-3 py-1 text-xs font-semibold text-brand-teal">
-                  {postLabel(item)}
-                </span>
-              ) : null}
-              {verifiedLabel ? (
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                  {verifiedLabel}
-                </span>
-              ) : null}
-            </div>
-
-            <AvailabilityChips item={item} />
-
-            <div className="post-action-toolbar">
-              {item.saveTarget ? <SavePostButton size="toolbar" initialSaved={item.saveTarget.saved} saveCount={item.saveTarget.saveCount} isAuthenticated={commentViewer.isAuthenticated} target={item.saveTarget} /> : null}
-              <a href="#comments" aria-label="Comment"><ReylumiIcon name="message" /><span>Comment</span></a>
-              <PostShareButton href={item.destination.href || "/explore/beauty/" + profileId + "/posts/" + postId} title={item.caption || item.author.name} />
-              <ExploreBookButton href={bookingHref} name={item.salon?.name??item.author.name} contactHref={item.salon?.href}/>
-            </div>
-
-
-            {item.salon?.href ? (
-              <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-[0.75rem] bg-surface-muted px-4 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={item.salon.href}
-              >
-                View salon
-              </Link>
-            ) : null}
-
-            <div className="bg-brand-orange-soft/45 p-3 text-sm leading-6 text-text-secondary rounded-none border-0 shadow-none">
-              <span className="font-semibold text-brand-orange">
-                Create an account
-              </span>{" "}
-              to save this look and book faster next time.
-            </div>
-          </section>
-
-        </aside>
-      </article>
-
-      <section
-        className="mx-auto mt-4 max-w-none bg-white p-4 rounded-none border-0 shadow-none"
-        id="comments"
-      >
-          <PostCommentThread
-            initialCount={item.commentCount}
-            target={{
-              profileId: item.personal.profileId,
-              salonId: item.salon?.id ?? null,
-              sourceId: item.id,
-              sourceType: "beauty_post",
-              title: item.caption ?? postLabel(item),
-            }}
-            viewer={commentViewer}
-          />
+        </div>
+        {item.salon ? <section className="grid gap-2 border-t border-divider-subtle px-3 py-3 sm:px-4" aria-label="Salon and booking">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0"><p className="break-words text-sm font-semibold">{item.salon.name}</p>{locationLabel(item) ? <p className="mt-0.5 text-xs text-text-secondary">{locationLabel(item)}</p> : null}</div>
+            {item.salon.href ? <Link href={item.salon.href} className="inline-flex min-h-11 items-center rounded-full border border-divider-subtle px-4 text-sm font-semibold">View salon</Link> : null}
+          </div>
+          {item.serviceName ? <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary"><span>{item.serviceName}</span>{price ? <span>{price}</span> : null}{duration ? <span>{duration}</span> : null}</p> : null}
+          {booking ? <p className="text-xs text-text-secondary">Choose Book to check available services and times.</p> : null}
+        </section> : null}
       </section>
-    </main>
-  );
+      <section id="comments" className="min-w-0 rounded-2xl border border-divider-subtle bg-surface p-3 sm:p-4">
+        <PostCommentThread initialCount={item.commentCount} target={{ profileId: item.personal.profileId, salonId: item.salon?.id ?? null, sourceId: item.id, sourceType: "beauty_post", title: item.caption ?? postLabel(item) }} viewer={commentViewer} />
+      </section>
+    </article>
+  </main>;
 }
 

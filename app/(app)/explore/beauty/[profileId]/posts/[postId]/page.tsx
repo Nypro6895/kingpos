@@ -1,5 +1,6 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { getPublicExploreBeautyPost } from "@/lib/explore-personal";
+import { getPublicBeautyProfile } from "@/lib/beauty-relationship";
 import { getPostCommentViewer } from "@/lib/post-comments";
 import { BeautyPostReadView } from "@/app/explore/beauty/beauty-post-read-view";
 import type { ExploreFeedItem } from "@/types/explore";
@@ -23,7 +24,8 @@ export async function generateMetadata({
   params,
 }: PublicBeautyPostPageProps): Promise<Metadata> {
   const { postId, profileId } = await params;
-  const item = await getPublicExploreBeautyPost({ postId, profileId });
+  const profile = await getPublicBeautyProfile(profileId);
+  const item = profile.ok && profile.profile ? await getPublicExploreBeautyPost({ postId, profileId }) : null;
 
   if (!item) {
     return {
@@ -41,12 +43,13 @@ async function PublicBeautyPostPage({
   params,
 }: PublicBeautyPostPageProps) {
   const { postId, profileId } = await params;
-  const [item, commentViewer] = await Promise.all([
+  const [item, commentViewer, profile] = await Promise.all([
     getPublicExploreBeautyPost({ postId, profileId }),
     getPostCommentViewer(),
+    getPublicBeautyProfile(profileId),
   ]);
 
-  if (!item || item.personal.profileId !== profileId) {
+  if (!profile.ok || !profile.profile || !item || item.personal.profileId !== profileId) {
     notFound();
   }
 

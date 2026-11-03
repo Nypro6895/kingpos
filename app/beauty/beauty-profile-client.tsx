@@ -6,6 +6,7 @@ import { ContentViewer } from "@/components/content-viewer";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import { mediaBatchProgress, type MediaUploadPhase } from "@/lib/media-upload-progress";
 
+import { BeautyProfileHeader } from "@/components/beauty-profile-header";
 import { SettingsIcon } from "@/components/settings-icon";
 import { POST_CHANGED_EVENT, usePostCaption } from "@/components/post-change-state";
 import type { PostChange } from "@/types/post-actions";
@@ -25,7 +26,6 @@ import {
 import Link from "next/link";
 import { createPortal, flushSync } from "react-dom";
 import { BeautyHome } from "./beauty-home";
-import NextImage from "next/image";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import "./beauty-profile.css";
 import { BeautyLibrary } from "./beauty-library";
@@ -1823,12 +1823,7 @@ export function BeautyProfileClient({
         {home ? <BeautyHome profile={profile} posts={posts} viewerId={commentViewer.userId} appointment={appointment} favorites={favorites} onCompose={photo => {
           flushSync(() => openComposer("regular"));
           if (photo) normalFileInputRef.current?.click();
-        }}/> : <><section className="beauty-identity">
-          <div className="beauty-cover">{profile.coverImageUrl ? <NextImage alt={`${profile.displayName} Beauty cover`} src={profile.coverImageUrl} fill sizes="(min-width: 1024px) 960px, 100vw" /> : null}
-            {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null}
-          </div>
-          <div className="beauty-person"><ProfileAvatar className="beauty-profile-avatar" profile={profile} /><div><h1 className="text-2xl font-semibold">{profile.displayName}</h1>{profile.bio ? <p className="mt-1 text-sm text-text-secondary">{profile.bio}</p> : null}<p className="mt-1 text-xs text-text-secondary">{profile.visibility === "public" ? "Public profile" : "Private profile"}</p></div></div>
-        </section>
+        }}/> : <>        <BeautyProfileHeader profile={profile} actions={profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="grid size-11 place-items-center rounded-full bg-surface text-text-primary shadow-sm" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null} />
         <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav>
         {section !== "library" && profile.isSelf ? <button type="button" className="beauty-composer" onClick={() => openComposer("regular")}><ProfileAvatar profile={profile} /><span className="flex-1 text-left text-sm text-text-secondary">Share a beauty moment…</span><ReylumiIcon name="image" /></button> : null}
         {section === "library" ? <section aria-label="Your photo library"><BeautyLibrary posts={posts} />{hasMore ? <button type="button" className="beauty-action mt-3" disabled={loadingMore} onClick={() => void loadMorePosts()}>{loadingMore ? "Loading…" : "Load more photos"}</button> : null}{timelineError ? <p role="alert" className="text-sm text-red-700">{timelineError}</p> : null}</section> : null}

@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 type VisitExperienceResult =
   | {
       countsTowardReputation: boolean;
+      experienceId: string | null;
       error: null;
       feedbackState: "good" | "issue";
       salonId: string;
@@ -73,6 +74,7 @@ export async function recordVisitExperienceAction(input: {
   const salonId = typeof payload.salonId === "string" ? payload.salonId : "";
 
   revalidatePath("/activity");
+  revalidatePath("/my-bookings");
     revalidatePath("/more/reviews");
   revalidatePath(`/activity/receipts/${input.ticketId}`);
   revalidatePath("/explore");
@@ -82,6 +84,7 @@ export async function recordVisitExperienceAction(input: {
   }
 
   return {
+    experienceId: typeof payload.experienceId === "string" ? payload.experienceId : null,
     countsTowardReputation: payload.countsTowardReputation === true,
     error: null,
     feedbackState,

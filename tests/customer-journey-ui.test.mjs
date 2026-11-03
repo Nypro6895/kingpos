@@ -9,19 +9,19 @@ import ts from 'typescript';
 import {chromium} from 'playwright-core';
 
 test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, safe mutations and bounded rows',{timeout:90000},async()=>{
- const root=process.cwd(),out='artifacts/customer-journey-20261029/browser';fs.mkdirSync(out,{recursive:true});
+ const root=process.cwd(),out='artifacts/contextual-booking-checkin-20261103/browser';fs.mkdirSync(out,{recursive:true});
  const bundle=await build({bundle:true,write:false,outdir:'fixture',format:'iife',jsx:'automatic',stdin:{resolveDir:root,loader:'tsx',contents:`
  import React from 'react';import{createRoot}from'react-dom/client';
  import{CustomerJourney,CustomerJourneyLoading}from'./app/activity/customer-journey';
  import{journeyFixture,journeyId}from'./tests/helpers/customer-journey-fixture.mjs';
  window.data=journeyFixture();window.reads=[];window.writes=[];window.refreshes=0;window.scope='scope-A';window.routes=[];
  window.details=(input)=>{const row=[...window.data.upcoming,...window.data.history].find(x=>x.type==="booking"&&x.bookingId===input.bookingId)||window.data.upcoming[0];const receipt=input.ticketId?{...window.data.history.find(x=>x.type==='purchase'),id:input.ticketId,closedAt:'2026-10-28T20:00:00Z',openedAt:'2026-10-28T19:00:00Z',services:[{id:'l1',name:'Gel Manicure',quantity:1,lineTotal:40,staffName:'Alex'},{id:'l2',name:'Classic Pedicure',quantity:1,lineTotal:50,staffName:'Alex'}],totals:{subtotal:90,discount_amount:0,tax_amount:0,tip_amount:18,total:108},payments:[{label:'Card',amount:108}],salon:{...row.salon,phone:'+15555550100'}}:null;return {booking:input.bookingId?{id:input.bookingId,status:row.bookingStatus||'confirmed',salon_id:journeyId(1),salon_timezone_snapshot:'America/Chicago',start_at:row.startAt,end_at:row.endAt,lines:row.services.map((s,i)=>({id:'line'+i,service_name_snapshot:s.name,line_total:s.lineTotal,quantity:1,duration_minutes:45,currentServiceBookable:true,assignedStaff:{displayName:'Alex'}})),salon:{name:row.salon.name,displayName:row.salon.name,city:'Milwaukee',state:'WI',phone:'+15555550100',publicDiscoveryEnabled:true},historyEvidence:row.historyEvidence}:null,receipt,error:null};};
- const app=createRoot(document.getElementById('root'));let revision=0;window.show=(options={})=>{app.render(options.failed?<CustomerJourneyLoading failed="Temporary connection issue" onRetry={()=>window.show()}/>:<CustomerJourney key={++revision} activity={window.data} {...options} onRefresh={async()=>{window.refreshes++}}/>)};window.show();
+ const app=createRoot(document.getElementById('root'));let revision=0;window.show=(options={})=>{app.render(options.failed?<CustomerJourneyLoading failed="Temporary connection issue" onRetry={()=>window.show()}/>:<CustomerJourney key={++revision} activity={window.data} {...options} onRefresh={async()=>{window.refreshes++}}/>)};window.update=()=>app.render(<CustomerJourney key={revision} activity={window.data} onRefresh={async()=>{window.refreshes++}}/>);window.show();
  `},plugins:[{name:'isolated-read-write-boundaries',setup(b){
   const stubs={
    'experience-scope':`export function useExperienceScope(){return{context:{authenticated:true,scope:window.scope}}}`,
    'workspace-language':`export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>text=>text;`,
-   'overlay-dismissal':`export function useCloseOnNavigation(){}`,
+   'overlay-dismissal':`export function useCloseOnNavigation(){};export function useNativeDialogNavigation(){};export function useTransientOverlay(){}`,
    'use-persistent-read-view':`export function usePersistentReadView(){}`,
    'customer-history-client':`export async function loadCustomerHistoryRead(scope,input){window.reads.push({scope,input});return window.details(input)}`,
    'next/link':`export default function Link({href,children,prefetch,...props}){return <a href={href} {...props}>{children}</a>}`,
@@ -38,7 +38,7 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
  fs.writeFileSync(path.join(out,'fixture.html'),html);
  const server=createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html)});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH??'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
- try{const page=await browser.newPage({viewport:{width:428,height:926}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port);
+ try{const page=await browser.newPage({viewport:{width:428,height:926}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.install({time:new Date('2026-10-29T20:00:00Z')});await page.goto('http://127.0.0.1:'+server.address().port);
   await page.getByRole('heading',{name:'Appointments & visits'}).waitFor();
   assert.equal(await page.getByRole('link',{name:'View my QR',exact:true}).getAttribute('href'),'/qr?visit=00000000-0000-4000-8000-000000000090');
   assert.ok((await page.getByLabel('At salon').textContent()).includes('1:55 PM'),'arrival is server arrival, not2:30 appointment');
@@ -55,9 +55,26 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
   await page.getByRole('tab',{name:'Upcoming',exact:true}).click();await page.getByRole('button',{name:/Details:.*Confirmed/}).click();await page.getByRole('button',{name:'Reschedule',exact:true}).waitFor();await page.getByRole('button',{name:'Cancel appointment',exact:true}).click();await page.getByRole('heading',{name:'Cancel this appointment?',exact:true}).waitFor();assert.equal(await page.evaluate(()=>window.writes.length),0,'opening cancellation is read only');
   const dialogs=page.getByRole('dialog');assert.equal(await dialogs.count(),2,'nested confirmation preserves outer drawer');await page.getByRole('button',{name:'Keep appointment',exact:true}).click();await page.getByRole('button',{name:'Close history details'}).click();
   await page.evaluate(()=>window.show({initialSelectedBookingId:'00000000-0000-4000-8000-000000009999'}));await page.getByRole('button',{name:'Close history details'}).waitFor();const deepReadCount=await page.evaluate(()=>window.reads.filter(x=>x.input.bookingId?.endsWith('009999')).length);assert.equal(deepReadCount,1,'outside-window legacy deep link is authorized once, then seeded into drawer');await page.getByRole('button',{name:'Close history details'}).click();
-  await page.evaluate(()=>{window.data={...window.data,history:[],upcoming:[]};window.show()});await page.getByRole('heading',{name:'No upcoming appointments'}).waitFor();assert.equal(await page.getByRole('link',{name:'Check in at salon'}).getAttribute('href'),'/qr?scan=1');assert.equal(await page.getByRole('link',{name:'My QR',exact:true}).getAttribute('href'),'/qr');
+  await page.evaluate(()=>{window.booking={...window.data.upcoming[0],startAt:'2026-10-29T20:15:01Z',endAt:'2026-10-29T21:00:01Z',occurredAt:'2026-10-29T20:15:01Z'};window.data={...window.data,history:[],upcoming:[window.booking]};window.show()});
+  await page.getByRole('button',{name:/Details:.*Confirmed/}).waitFor();
+  assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0,'outside window');
+  await page.clock.fastForward(1001);await page.getByRole('link',{name:'Check in',exact:true}).waitFor();
+  assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).getAttribute('href'),'/qr?scan=1');
+  assert.equal(await page.getByRole('link',{name:'My QR',exact:true}).getAttribute('href'),'/qr');
+  assert.equal(await page.getByRole('article').filter({has:page.getByRole('link',{name:'Check in',exact:true})}).count(),1,'inside appointment, with sibling links outside detail button');
+  await page.screenshot({path:path.join(out,'appointment-checkin.png'),fullPage:true});
+  for(const width of [360,390,428,768,1280]){await page.setViewportSize({width,height:926});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'eligible row overflow '+width);}
+  await page.evaluate(()=>{window.data={...window.data,upcoming:[],history:[{...window.booking,status:'past_appointment'}]};window.show()});
+  await page.getByRole('link',{name:'Check in',exact:true}).waitFor();
+  await page.clock.fastForward(75*60*1000+1);
+  await page.getByRole('heading',{name:'No upcoming appointments'}).waitFor();assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0,'auto expiry');
+  await page.clock.setSystemTime(new Date('2026-10-29T20:15:01Z'));
+  await page.evaluate(()=>{window.data={...window.data,history:[],upcoming:[window.booking]};window.show()});await page.getByRole('link',{name:'Check in',exact:true}).waitFor();
+  await page.evaluate(()=>{window.data={...window.data,upcoming:[{...window.booking,status:'checked_in',bookingStatus:'checked_in',visitState:'waiting',historyEvidence:{checkedInAt:'2026-10-29T20:15:01Z',visitId:'00000000-0000-4000-8000-000000000090'}}]};window.update()});
+  await page.getByLabel('At salon',{exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0,'arrival hides check-in');
+  await page.evaluate(()=>{window.data={...window.data,history:[],upcoming:[]};window.show()});await page.getByRole('heading',{name:'No upcoming appointments'}).waitFor();assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0);assert.equal(await page.getByRole('link',{name:'My QR',exact:true}).count(),0);await page.screenshot({path:path.join(out,'empty-no-checkin.png'),fullPage:true});
   await page.evaluate(()=>window.show({failed:true}));await page.getByRole('button',{name:'Try again'}).click();await page.getByRole('heading',{name:'No upcoming appointments'}).waitFor();
   for(const width of [360,390,428,768,1280]){await page.setViewportSize({width,height:926});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'no horizontal overflow '+width);}
-  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({passed:true,realComponents:true,network:'Server action and identity boundaries isolated; no live account or DB writes',widths:[360,390,428,768,1280],checks:['tabs','receipt amount once','active arrival time','status filter','Escape restores scroll','one details read','no refresh on read-only close','nested cancellation opens without write','deep link one read','check-in scanner href','Personal QR href','empty','retry','responsive overflow'],limits:'Browser/component proof; not native or production E2E'},null,2));
+  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({passed:true,realComponents:true,network:'Server action and identity boundaries isolated; no live account or DB writes',widths:[360,390,428,768,1280],checks:['tabs','receipt amount once','active arrival time','status filter','Escape restores scroll','one details read','no refresh on read-only close','nested cancellation opens without write','deep link one read','check-in scanner href','Personal QR href','opens automatically at -15m','expires automatically after +60m','past appointment remains reachable during check-in','arrival suppresses check-in on prop update','empty has no check-in','retry','responsive overflow'],limits:'Browser/component proof; not native or production E2E'},null,2));
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });

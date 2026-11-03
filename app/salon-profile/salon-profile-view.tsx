@@ -2574,7 +2574,7 @@ function ExperienceCard({
       ) : canReplyToExperience ? (
         <ReviewReplyForm onPosted={onPosted} review={experience} />
       ) : null}
-        {experience.feedbackState === "issue" ? <p className="mt-3 text-xs leading-5 text-zinc-600"><WorkspaceText text={experience.issueStatus === "resolved" ? "Salon marked this issue as handled. This does not change your feedback or its eligibility for LUMI Truth." : experience.issueStatus === "acknowledged" ? "The salon has acknowledged your issue." : "Awaiting a salon response."} /></p> : null}
+        {experience.feedbackState === "issue" ? <p className="mt-3 text-xs leading-5 text-zinc-600"><WorkspaceText text={experience.issueStatus === "resolved" ? "This issue was marked resolved. The original feedback remains unchanged." : experience.issueStatus === "acknowledged" ? "The salon has acknowledged your issue." : "Awaiting a salon response."} /></p> : null}
         {canReplyAsSalon && experience.source === "experience" ? <VisitReplyControls salonId={experience.salonId} experienceId={experience.id} hasReply={Boolean(experience.replyBody)} issueStatus={experience.feedbackState === "issue" ? experience.issueStatus : null} onChanged={onPosted} /> : null}
     </article>
   );
@@ -4550,6 +4550,7 @@ export function SalonProfileView({
 
       {authPromptIntent ? (
         <AuthIntentPrompt
+          returningUser={capabilities.isAuthenticated}
           kicker={authPromptIntent === "follow" ? "Follow intent" : "Save intent"}
           onClose={() => setAuthPromptIntent(null)}
           title={
