@@ -1,0 +1,9 @@
+Running altool at path '/Applications/Xcode_26.3.app/Contents/SharedFrameworks/ContentDelivery.framework/Resources/altool'...
+
+2026-11-03 05:25:18.185  INFO: [ContentDelivery.Uploader.600002DE4040] 
+==========================================
+UPLOAD SUCCEEDED with no errors
+Delivery UUID: ad45c33b-e4ef-4ce0-a0eb-b317d8dc9d1e
+Transferred 34502321 bytes in 1.140 seconds (30.3MB/s, 242.159Mbps)
+==========================================
+No errors uploading archive at '/Users/runner/work/kingpos/kingpos/ios/build/export/Reylumi.ipa'.

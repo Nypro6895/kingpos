@@ -1,0 +1,8 @@
+import fs from 'node:fs';
+import {recordEvent} from '../../scripts/release-journal.mjs';
+const out='artifacts/combined-release-20261102';
+const native=JSON.parse(fs.readFileSync(out+'/native-upload-verified.json'));
+const events=JSON.parse(fs.readFileSync(out+'/ready-events.json'));
+if(!native.verified||native.upload!=='accepted'||native.testCount!==246)throw Error('Native upload verification missing');
+const event=recordEvent({kind:'release',summary:'Pinned-source iOS 1.0.0(87) passed 246 tests, unsigned/signed archive and upload; Apple processing/availability is not yet confirmed',changes:events.filter(e=>e.channels.includes('ios')).map(e=>e.id),targets:{ios:{status:'uploaded',verified:true,version:native.version,build:native.build,commit:native.commit,evidence:{sourceTestsArchivesUpload:out+'/native-upload-verified.json',artifactDigest:out+'/native-artifacts.json',uploadLog:out+'/native-final/testflight-upload.log',availability:out+'/availability-first/testflight-availability.json'}}},nativeBaseline:{version:'1.0.0',build:'86',commit:'82d18ca57de161240ecff8d5ca21fb8be40d3ebb'},sourceSha256:native.sourceSha256,bundleSha256:native.bundleSha256,workflow:{run:41582011530,result:'failure',reason:'Upload succeeded; post-upload Apple visibility polling exhausted after 15 minutes'},limitations:['uploaded does not mark these events as published on iOS','Apple processing VALID, existing group association, installation and App Store publication remain unconfirmed'],rollback:{previousNativeBuild:'86',note:'Existing build retained; no tester/group/distribution setting was changed'}});
+fs.writeFileSync(out+'/native-upload-receipt.json',JSON.stringify(event,null,2));console.log({id:event.id,status:event.targets.ios.status,build:native.build});

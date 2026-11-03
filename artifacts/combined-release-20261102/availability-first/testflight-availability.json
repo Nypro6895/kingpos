@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-03T05:36:06.835Z",
+  "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+  "appId": "6821394475",
+  "marketingVersion": "1.0.0",
+  "build": "87",
+  "baselineBuild": "86",
+  "availableToExistingInternalGroup": false,
+  "status": "not-yet-confirmed",
+  "error": "Exact app/marketing version/build is not uniquely visible: 87",
+  "limitations": [
+    "A failed or incomplete read does not prove that Apple has rejected the build.",
+    "No distribution settings were changed."
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "kind": "release",
+  "summary": "iOS 1.0.0(87) exact pinned source passed 246 tests, archives, upload, Apple VALID and existing internal TestFlight group availability",
+  "changes": [
+    "d51fdcf5-3975-4538-a696-b48b034161c4",
+    "40736280-3cff-4309-876f-6d892607e4ac",
+    "f4762113-7b20-46f1-aecd-247dc4caa904",
+    "04a74df3-8e20-42ca-b73b-854cac9e62d7",
+    "7375362f-73a1-4e4a-a16a-6f04550d4469",
+    "74f71ef3-df1a-4998-823f-9d7bb08076fc",
+    "75e80ac0-4778-4706-8096-f1e345a257a0"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "87",
+      "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d",
+      "evidence": {
+        "sourceTestsArchives": "artifacts/combined-release-20261102/native-verified.json",
+        "availability": "artifacts/combined-release-20261102/availability-verified.json",
+        "nativeArtifactDigest": "artifacts/combined-release-20261102/native-artifacts.json",
+        "availabilityArtifactDigest": "artifacts/combined-release-20261102/availability-artifacts.json"
+      }
+    }
+  },
+  "nativeBaseline": {
+    "version": "1.0.0",
+    "build": "86",
+    "commit": "82d18ca57de161240ecff8d5ca21fb8be40d3ebb"
+  },
+  "sourceSha256": "a4bbc8ffb404ec8b65d42304438756464db88d4dec0571ad6db8b4a874818ee6",
+  "bundleSha256": "a9726a158ba4fdfc2b50a7b054d068b8546fc2a0644c63f9f9860d1dfcf65614",
+  "testCount": 246,
+  "workflow": {
+    "uploadRun": 41582011530,
+    "availabilityRun": 41585343527,
+    "note": "Upload run post-upload visibility polling expired just before Apple exposed the build; independent read-only audit confirms VALID and both existing groups. No binary reupload."
+  },
+  "limitations": [
+    "TestFlight internal availability is not App Store publication",
+    "Physical iPhone installation and authenticated Staff acceptance not performed",
+    "Blocked independent Market, Universal Links provisioning, membership design-only and Check Writer sales gates remain unchanged"
+  ],
+  "rollback": {
+    "previousNativeBuild": "86",
+    "note": "Previous build retained; no testers/groups/distribution configuration changed"
+  },
+  "id": "a92275d8-42e8-4a57-acce-ee72a3204007",
+  "recordedAt": "2026-11-03T05:42:14.257Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-web-ios-20261102"
+}

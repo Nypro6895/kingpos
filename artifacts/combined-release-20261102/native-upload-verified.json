@@ -1,0 +1,72 @@
+{
+  "verified": true,
+  "nativeCommandMappingsMatchDeployedWeb": true,
+  "publicConfigurationMatchesBuild86": true,
+  "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d",
+  "sourceSha256": "a4bbc8ffb404ec8b65d42304438756464db88d4dec0571ad6db8b4a874818ee6",
+  "sourceFiles": 3159,
+  "bundleBuildId": "9a8d9bbc9e02895bf5b6a14e3af29c0ae3c2dc9863e95a56af80eb4fd325b543",
+  "bundleSha256": "a9726a158ba4fdfc2b50a7b054d068b8546fc2a0644c63f9f9860d1dfcf65614",
+  "servicesCatalogPilot": false,
+  "testCount": 246,
+  "exactTestInventory": true,
+  "version": "1.0.0",
+  "build": "87",
+  "upload": "accepted",
+  "processingState": "NOT_CONFIRMED",
+  "unsignedSignedResourcesMatch": true,
+  "measurements": [
+    {
+      "coldReadyMs": 1380.08816666661,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 3,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 100,
+      "warmReadyMs": 35.3816666666944
+    },
+    {
+      "coldReadyMs": 2480.722541666637,
+      "counts": {
+        "commands": 0,
+        "context": 1,
+        "payrollTabs": [
+          "shop"
+        ],
+        "reads": {
+          "advertising": 2,
+          "other": 1,
+          "payroll": 1,
+          "shell_configuration": 1,
+          "shell_navigation": 1,
+          "shell_notice": 1,
+          "shell_summary": 1,
+          "today_full": 1
+        }
+      },
+      "physicalDevice": false,
+      "retainedDOM": true,
+      "syntheticReadDelayMs": 700,
+      "warmReadyMs": 16.51216666664368
+    }
+  ],
+  "measurementScope": "Installed WKWebView on CI iPhone simulator; synthetic data; not physical network timing",
+  "evidenceFolder": "artifacts/combined-release-20261102/native-final",
+  "verificationScope": "Exact source, tests, archives and accepted upload only; Apple processing and TestFlight availability unconfirmed",
+  "testflightAvailable": false
+}

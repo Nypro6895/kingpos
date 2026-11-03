@@ -1,0 +1,50 @@
+{
+  "completedAt": "2026-11-03T05:42:57.055Z",
+  "sourceCommit": "925eabfaa091b35dd73ca22ecc983d06f057105d",
+  "web": {
+    "url": "https://reylumi.com",
+    "status": "published",
+    "verified": true,
+    "deploymentId": "dpl_CvqQGy7Y2HCiEuiFpgv5QPnRrWcs",
+    "baselineDeploymentId": "dpl_EVaJDu9vbjpkpzHy4zS864YQsRMe",
+    "sourceSha256": "c7552647e1dc73983cb19365f4eb1bda6b55a0da2675f03de3c995c1b87e787c",
+    "overlaySha256": "7ebcb686d027f13cb7e66234483b5210bb48179fd25097c9d5f579de866b262e",
+    "evidence": {
+      "source": "artifacts/combined-release-20261102/live-source-verified.json",
+      "http": "artifacts/combined-release-20261102/live-http.json",
+      "schema": "artifacts/combined-release-20261102/schema-live-check.json",
+      "authenticatedOwner": "artifacts/combined-release-20261102/authenticated-live.json",
+      "pendingAudit": "artifacts/combined-release-20261102/pending-audit.json"
+    },
+    "receipt": "4584ea58-341c-4838-aedc-8a4ed6ae9910"
+  },
+  "ios": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.0",
+    "build": "87",
+    "commit": "925eabfaa091b35dd73ca22ecc983d06f057105d",
+    "evidence": {
+      "sourceTestsArchives": "artifacts/combined-release-20261102/native-verified.json",
+      "availability": "artifacts/combined-release-20261102/availability-verified.json",
+      "nativeArtifactDigest": "artifacts/combined-release-20261102/native-artifacts.json",
+      "availabilityArtifactDigest": "artifacts/combined-release-20261102/availability-artifacts.json"
+    },
+    "receipt": "a92275d8-42e8-4a57-acce-ee72a3204007",
+    "uploadReceipt": "5a13cc58-d701-45f6-b450-4531ed83c9ce",
+    "groupCount": 2,
+    "appStorePublished": false,
+    "physicalDeviceVerified": false
+  },
+  "productGroups": 11,
+  "remaining": {
+    "hold-unfinished": 10,
+    "separate-app-or-evidence": 9,
+    "historical-overlap-preserve-baseline": 46,
+    "hold-independent-platform": 36,
+    "preserve-existing-first-party-code": 5,
+    "preserve-newer-shipped-source": 1,
+    "integrated": 11,
+    "design-only-not-product": 1
+  }
+}
