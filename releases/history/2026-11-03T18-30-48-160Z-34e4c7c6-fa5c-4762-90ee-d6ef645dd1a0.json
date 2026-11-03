@@ -1,0 +1,30 @@
+{
+  "kind": "release",
+  "summary": "Final owner forum follow-up published: moderation queue filters and delayed publication navigation verified. Original forum schema/features remain from verified production baseline.",
+  "changes": [
+    "90d55dcb-1144-4b11-9e85-da933e4a8a15"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DAGw9ipA5UyFGjKNNMkGxHfpjJuJ",
+      "baselineDeploymentId": "dpl_2B6ifdfLS4T1pxBjGLzoP1sBM1qd",
+      "sourceSha256": "d103b844761400e4b9635aae9e7e999c5a6ad66c853a269f44d7054dfc31d140",
+      "overlaySha256": "e02341b2bd11df87e7cf62fc4ffb302ca6a49ebc5a123fabfc080aa5ee4a75cb",
+      "evidence": {
+        "source": "artifacts/owner-forum/polish/live-source-verified.json",
+        "http": "artifacts/owner-forum/polish/live-http.json",
+        "browser": "artifacts/owner-forum/browser-tests-final.txt",
+        "mobile": "artifacts/owner-forum/live-iphone-admin.png",
+        "owner": "artifacts/owner-forum/live-owner-verification.json"
+      }
+    }
+  },
+  "sourceCommit": "c5e79c4b9cfd7e5c6644d60330215658e0df83e2",
+  "assembledSourceCommit": "1d668b07ba7b37b8c86e2bf365eb483afb9dcc29",
+  "baseRelease": "54a84fcf-b6dd-4fd9-ac2d-1b1b8a2a3a9d",
+  "id": "34e4c7c6-fa5c-4762-90ee-d6ef645dd1a0",
+  "recordedAt": "2026-11-03T18:30:48.160Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103"
+}

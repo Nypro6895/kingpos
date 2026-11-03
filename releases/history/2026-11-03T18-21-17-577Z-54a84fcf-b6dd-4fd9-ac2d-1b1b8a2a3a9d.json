@@ -1,0 +1,50 @@
+{
+  "kind": "release",
+  "summary": "Owner forum published: blue responsive UI, shared Platform Mod/Admin, inline moderation/restrictions, sections, topic search and state filters, bookmarks and general chat. Native menu update in progress in TestFlight workflow 41691415021.",
+  "changes": [
+    "396a523c-e44b-4208-849f-5ab2aa2b8d36"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_2B6ifdfLS4T1pxBjGLzoP1sBM1qd",
+      "baselineDeploymentId": "dpl_3h9iNLcgqtj9ksoZVQ6GuTLCVaJf",
+      "sourceSha256": "83e2005748d400667409a20ad2738be1cff80be8247d71f32d1712e2388ffd76",
+      "overlaySha256": "b58730b661c683feb29430157dfe1a68a4819ec0e6f73691f4505b67d38537d3",
+      "evidence": {
+        "source": "artifacts/owner-forum/live-source-verified.json",
+        "http": "artifacts/owner-forum/live-http.json",
+        "backend": "artifacts/owner-forum/backend-verification.json",
+        "migration": "artifacts/owner-forum/migration-result.json",
+        "mobile": "artifacts/owner-forum/live-iphone-admin.png"
+      }
+    }
+  },
+  "sourceCommit": "bf022064479e6e17745313ed0279c17f9a74a6a2",
+  "migrations": [
+    {
+      "name": "20261103180000_owner_forum.sql",
+      "sha256": "7c34878bd6862dd2d61372828f2f6307d8fbff9842298ec82b279ec3b93f6d73"
+    },
+    {
+      "name": "20261103181500_forum_feed_indexes.sql",
+      "sha256": "e666c170458624debab1ad180b704919295c0fe84ace336f2252853ffe9efa3c"
+    }
+  ],
+  "native": {
+    "required": true,
+    "sourceCommit": "f58b411f4b9b168edc54cbf9d8619317b5a90c8e",
+    "baselineUploadedCommit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "workflowRun": 41691415021,
+    "status": "building"
+  },
+  "rollback": {
+    "webBaseline": "dpl_3h9iNLcgqtj9ksoZVQ6GuTLCVaJf",
+    "schema": "Additive forum tables retained; no existing salon/account records changed"
+  },
+  "unrelatedPendingChanges": "Preserved in shared journal; release used exact verified live source plus only the forum overlay.",
+  "id": "54a84fcf-b6dd-4fd9-ac2d-1b1b8a2a3a9d",
+  "recordedAt": "2026-11-03T18:21:17.577Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103"
+}
