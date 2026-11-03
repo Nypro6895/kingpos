@@ -16,7 +16,7 @@ test('closing attention follows canonical comparison; ignore is per owner and co
    create function public.daily_input_reconciliation_values(uuid,date) returns jsonb language sql stable as $$
     select jsonb_build_object('expectedService',expected,'actualService',actual,'serviceDifference',difference)
     from comparison_fixture where salon_id=$1 and business_date=$2 $$;`);
-  await db.exec(fs.readFileSync('supabase/migrations/20261103150000_closing_attention_short_over.sql','utf8'));
+  await db.exec(fs.readFileSync('supabase/migrations/20261103221000_closing_attention_short_over.sql','utf8'));
   await db.exec(`insert into locations values('${salon}');insert into users values('${owner}'),('20000000-0000-4000-8000-000000000002');
    select set_config('test.user_id','${owner}',false);
    insert into comparison_fixture values('${salon}','2026-10-30',111,111,0),('${salon}','2026-10-31',100,90,-10),('${salon}','2026-11-01',100,110,10),('${salon}','2026-10-29',100,null,null);
