@@ -19,7 +19,8 @@ import { checkDate } from "@/lib/check-writer-rules";
 export const UNLOCK_COOKIE = "reylumi-check-writer-unlock";
 export async function checkWriterContext(paid = false, unlocked = false) {
   const { client, salonId } = await marketPluginContext();
-  const { user, currentSalon } = await getCurrentBusinessContext();
+  const context = await getCurrentBusinessContext();
+  const { user, currentSalon } = context;
   if (!user || !currentSalon)
     throw Error("Choose an active salon in your Owner workspace.");
   const service = marketServiceClient();
@@ -42,14 +43,14 @@ export async function checkWriterContext(paid = false, unlocked = false) {
     .digest("hex");
   if (unlocked && !validUnlock(binding, jar.get(UNLOCK_COOKIE)?.value))
     throw Error("Unlock Check Writer to continue.");
-  return { client, service, salonId, user, currentSalon, binding };
+  return { client, service, salonId, user, currentSalon, binding, context };
 }
 export async function checkWriterState(
   runId?: string,
   options: { payroll?: boolean } = {},
 ) {
   const ctx = await checkWriterContext();
-  const [settings, subscription, runs, checks, events] = await Promise.all([
+  const [settings, subscription, runs, checks, events, businessDate] = await Promise.all([
     ctx.service
       .from("check_writer_settings")
       .select("public_config,next_number,version")
@@ -79,6 +80,7 @@ export async function checkWriterState(
       .eq("salon_id", ctx.salonId)
       .order("created_at", { ascending: false })
       .limit(200),
+    getContextBusinessDate(ctx.context),
   ]);
   if ([settings, subscription, checks, events].some((r) => r.error))
     throw Error("Check Writer data could not load.");
@@ -194,9 +196,7 @@ export async function checkWriterState(
   return {
     payrollError,
     operationalReady: checkWriterCryptoReady(),
-    businessDate: await getContextBusinessDate(
-      await getCurrentBusinessContext(),
-    ),
+    businessDate,
     salonId: ctx.salonId,
     settings: publicSettings,
     salonIssuer: salon.name,
