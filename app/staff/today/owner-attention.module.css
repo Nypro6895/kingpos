@@ -48,3 +48,19 @@
 .summary { display:grid; gap:10px; padding-block:16px; border-top:1px solid #f0f0f1; font-size:14px; }
 .summary dd { margin:0; font-variant-numeric:tabular-nums; }
 .summary>div:last-child { font-size:17px; font-weight:650; }
+
+.inlineClosingHeading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.inlineClosingHeading h3 { flex:1; min-width:0; margin:0; font-size:14px; font-weight:500; color:#9a3412; }
+.inlineClosingHeading strong { font-weight:650; font-variant-numeric:tabular-nums; margin-left:4px; }
+.inlineClosingHeading time { flex-shrink:0; font-size:11px; margin:0; }
+.actions.inlineClosingActions { display:flex; flex-wrap:nowrap; gap:8px; margin-top:10px; }
+.actions.inlineClosingActions a { min-height:44px; padding:7px 12px; font-size:12px; font-weight:600; text-decoration:none; border-radius:7px; white-space:nowrap; }
+.actions.inlineClosingActions a:nth-child(2) { background:white; border-color:#e4e4e7 !important; color:#52525b; }
+.actions.inlineClosingActions button { min-height:44px; margin-left:auto; padding:7px 4px; font-size:12px; border:0; background:transparent; color:#71717a; }
+.inlineClosingHeading .inlineClosingActions { flex-shrink:0; margin-top:0; }
+.closingToggle { display:flex; align-items:center; gap:8px; width:100%; min-height:44px; padding:0; border:0; background:transparent; color:inherit; font:inherit; line-height:1.6; text-align:left; cursor:pointer; }
+.closingCaret { color:#a1a1aa; }
+.closingBreakdown { display:flex; flex-wrap:wrap; gap:8px 24px; margin:6px 0 12px; padding:0; }
+.closingBreakdown>div { display:flex; align-items:baseline; gap:6px; font-size:13px; }
+.closingBreakdown dt { color:#71717a; }
+.closingBreakdown dd { margin:0; font-weight:600; font-variant-numeric:tabular-nums; }

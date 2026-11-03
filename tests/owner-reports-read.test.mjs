@@ -23,6 +23,7 @@ function fixture(options = {}) {
   const calls = [], overview = deferred(), closing = deferred();
   const context = { user: { id: 'viewer' }, currentSalon: { id: 'salon', name: 'Test salon' } };
   const deps = {
+    loadReportExpensePeriod: async (ctx, timezone, selected) => { calls.push(["expense-period", selected, ctx]); return { marker: "schedule only" }; },
     prepareOperationalReport: async (params, ctx) => {
       calls.push(['prepare', params, ctx]);
       if (options.denied) throw Object.assign(Error('denied'), { status: 403 });
@@ -50,7 +51,7 @@ test('Accounting entry skips operational facts and returns no partial DTO', asyn
   let released = false;
   const reading = x.read(params, x.context).then(value => { released = true; return value; });
   await tick();
-  assert.deepEqual(x.calls.map(call => call[0]), ['today','normalize','prepare','closing','edit','permission','apply']);
+  assert.deepEqual(x.calls.map(call => call[0]), ['today','normalize','prepare','closing','edit','permission','apply','expense-period']);
   const report = { lock: { isLocked: false }, financials: { expectedTotal: 290 } };
   x.closing.resolve(report);
   await tick();
@@ -58,7 +59,7 @@ test('Accounting entry skips operational facts and returns no partial DTO', asyn
   const accountingOverview = { visits: [], staff: [] };
   x.overview.resolve(accountingOverview);
   assert.deepEqual(await reading, {
-    today: '2026-10-28', report, reportOverview:{range:{endDate:'2026-10-28'}},accountingOverview, canEdit: true, canApplyCorrection: false, canRequestCorrection: false,
+    today: '2026-10-28', expensePeriod: { marker: 'schedule only' }, report, reportOverview:{range:{endDate:'2026-10-28'}},accountingOverview, canEdit: true, canApplyCorrection: false, canRequestCorrection: false,
   });
   assert.equal(x.calls.filter(call => call[0] === 'closing').length, 1);
   assert.equal(x.calls.filter(call => call[0] === 'overview').length, 0);

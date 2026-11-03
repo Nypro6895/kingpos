@@ -9,10 +9,11 @@ import { usePayrollEdits } from "./payroll-edit-boundary";
 import styles from "./payroll-mobile.module.css";
 import {WorkspaceNavigationIcon} from "@/components/workspace-navigation-icon";
 
-export function PayrollPeriodRail({ period, activeTab, months, periods, needsAnchor = false }: {
-  period: PayrollPeriod; activeTab: string; months: PayrollRailChoice[]; periods: PayrollRailChoice[]; needsAnchor?: boolean;
+export function PayrollPeriodRail({ period, activeTab, months, periods, needsAnchor = false, hrefForPeriod, optionsId = "payroll-period-options" }: {
+  period: PayrollPeriod; activeTab: string; months: PayrollRailChoice[]; periods: PayrollRailChoice[]; needsAnchor?: boolean; hrefForPeriod?: (period: PayrollPeriod) => string; optionsId?: string;
 }) {
   const router = useRouter();
+  const href = (target: PayrollPeriod) => hrefForPeriod ? hrefForPeriod(target) : payrollPeriodHref(target, activeTab);
   const { blocked } = usePayrollEdits();
   const [notice, setNotice] = useState(false);
   const [open, setOpen] = useState(false);
@@ -23,7 +24,7 @@ export function PayrollPeriodRail({ period, activeTab, months, periods, needsAnc
   const next = choices.find(choice => choice.period.startDate > period.endDate);
   const go = (choice: PayrollRailChoice | undefined) => {
     if (blocked) { setNotice(true); return; }
-    if (choice) { setOpen(false); router.push(payrollPeriodHref(choice.period, activeTab), { scroll: false }); }
+    if (choice) { setOpen(false); router.push(href(choice.period), { scroll: false }); }
   };
   return <section className={styles.periodRails} aria-label="Payroll period">
     <div className={styles.compactPeriod}
@@ -41,12 +42,12 @@ export function PayrollPeriodRail({ period, activeTab, months, periods, needsAnc
       onPointerCancel={() => { drag.current = null; moved.current = true; }}
       onClickCapture={event => { if (moved.current) { event.preventDefault(); event.stopPropagation(); moved.current = false; } }}>
       <button type="button" aria-label="Previous pay period" disabled={!previous} onClick={() => go(previous)}>‹</button>
-      <button type="button" aria-expanded={open} aria-controls="payroll-period-options" onClick={() => setOpen(value => !value)}><WorkspaceNavigationIcon name="calendar" className={styles.periodIcon}/>{period.label} <span aria-hidden="true">⌄</span></button>
+      <button type="button" aria-expanded={open} aria-controls={optionsId} onClick={() => setOpen(value => !value)}><WorkspaceNavigationIcon name="calendar" className={styles.periodIcon}/>{period.label} <span aria-hidden="true">⌄</span></button>
       <button type="button" aria-label="Next pay period" disabled={!next} onClick={() => go(next)}>›</button>
     </div>
-    {open && <div id="payroll-period-options" className={styles.periodOptions} onKeyDown={event => { if (event.key === "Escape") setOpen(false); }}>
-      {choices.map(choice => <Link key={choice.period.startDate} href={payrollPeriodHref(choice.period, activeTab)} scroll={false} prefetch={false} onClick={() => setOpen(false)} aria-current={choice.period.startDate === period.startDate && choice.period.endDate === period.endDate ? "date" : undefined}>{choice.title} · {choice.subtitle}</Link>)}
-      {periods.length > 0 && <details><summary><WorkspaceText text="Whole month" /></summary>{months.map(choice => <Link key={choice.period.startDate} href={payrollPeriodHref(choice.period, activeTab)} scroll={false} prefetch={false} onClick={() => setOpen(false)}>{choice.title} {choice.subtitle}</Link>)}</details>}
+    {open && <div id={optionsId} className={styles.periodOptions} onKeyDown={event => { if (event.key === "Escape") setOpen(false); }}>
+      {choices.map(choice => <Link key={choice.period.startDate} href={href(choice.period)} scroll={false} prefetch={false} onClick={() => setOpen(false)} aria-current={choice.period.startDate === period.startDate && choice.period.endDate === period.endDate ? "date" : undefined}>{choice.title} · {choice.subtitle}</Link>)}
+      {periods.length > 0 && months.length > 0 && <details><summary><WorkspaceText text="Whole month" /></summary>{months.map(choice => <Link key={choice.period.startDate} href={href(choice.period)} scroll={false} prefetch={false} onClick={() => setOpen(false)}>{choice.title} {choice.subtitle}</Link>)}</details>}
     </div>}
     {notice && blocked && <p role="alert" className={styles.context}><WorkspaceText text="Finish saving your edits before leaving or saving a statement." /></p>}
     {needsAnchor && <p role="status" className={styles.context}><WorkspaceText text="Every-2-weeks payroll needs an anchor date. Update it in Settings." /></p>}

@@ -456,6 +456,10 @@ function routeNavigationForWorkspaceKind(input: {
       : ROLE_NAVIGATION.owner;
   }
 
+  if (input.routeWorkspaceKind === "salon") {
+    return ROLE_NAVIGATION.personal;
+  }
+
   return null;
 }
 

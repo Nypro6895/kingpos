@@ -329,7 +329,7 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
       ) : null}
 
       <div className="flex justify-between gap-2 px-4 py-2 text-xs font-normal text-zinc-600">
-        <span>{data.upcomingBookings.length + data.bookingHistory.length} <WorkspaceText text="appts" /></span><span>{formatMoney(data.finalizedSpend)} <WorkspaceText text="Finalized POS spend" /></span>
+        <span>{data.upcomingBookings.length + data.bookingHistory.length} <WorkspaceText text={data.upcomingBookings.length + data.bookingHistory.length === 1 ? "appt" : "appts"} /></span><span>{formatMoney(data.finalizedSpend)} <WorkspaceText text="Finalized POS spend" /></span>
       </div>
       <div className="grid min-w-0 gap-2">
         <section className="grid min-w-0 content-start gap-1">

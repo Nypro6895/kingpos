@@ -26,7 +26,7 @@ export type OwnerLocalPanelData =
   | { view: "workspace"; props: OwnerWorkspaceReference }
   | { view: "denied"; message: string };
 
-const queryNames = new Set(["bookingId", "date", "q", "range", "request", "section", "service", "source", "staff", "staffId", "status", "tab", "view", "preset", "start", "end", "error"]);
+const queryNames = new Set(["bookingId", "date", "q", "range", "request", "section", "service", "source", "staff", "staffId", "status", "tab", "view", "preset", "start", "end", "expensePeriodStart", "error"]);
 /** Only declared read filters enter local keys. Action/payment URLs keep their original transport. */
 export function ownerLocalHref(value: string): string | null {
   try {

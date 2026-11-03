@@ -86,9 +86,11 @@ test('source routes share identity, retain server visibility resolver, and forwa
  const read=p=>readFileSync(p,'utf8');
  for(const p of ['app/explore/beauty/beauty-profile-read-view.tsx','app/beauty/beauty-profile-client.tsx'])assert.match(read(p),/<BeautyProfileHeader/);
  assert.match(read('lib/beauty-relationship.ts'),/cursor: input.cursor/);
- const feed=read('app/explore/explore-feed.tsx');const card=feed.slice(feed.indexOf('function FeedHeaderTitle('),feed.indexOf('function FeedHeaderTitle(')+1000);assert.match(card,/<PostIdentity/);assert.doesNotMatch(card,/[ÂÃ]/);
+ const feed=read('app/explore/explore-feed.tsx');const card=feed.slice(feed.indexOf('function ExploreFeedCard('),feed.indexOf('function ExploreFeedCard(')+4000);assert.match(card,/<PostIdentity/);assert.doesNotMatch(card,/[ÂÃ]/);
 });
 
 test('blocked or private profiles cannot be bypassed through a direct post URL or metadata',async()=>{globalThis.__beautyAudit=fixture();globalThis.__beautyAudit.profileAccess={ok:false,profile:null};await assert.rejects(()=>render(postRoute),/NOT_FOUND/);assert.equal((await postRoute.generateMetadata(props)).title,'Beauty post not found | Reylumi');});
 
 test('known account session recovery offers login and never signup; guests retain signup',()=>{globalThis.window={location:{pathname:'/explore',search:'',hash:''}};globalThis.document={body:{}};for(const returningUser of [true,false]){const html=renderToStaticMarkup(React.createElement(authPrompt.AuthIntentPrompt,{returningUser,kicker:'Save intent',title:'Save this look?',onClose:()=>{}},'Create a free account'));if(returningUser){assert.match(html,/Sign in again/);assert.match(html,/href="\/login\?next=/);assert.doesNotMatch(html,/href="\/signup|Create a free account|Create account/);}else{assert.match(html,/href="\/signup/);}}});
+
+test('profile metadata reads identity without loading the post page or private relationship content',async()=>{globalThis.__beautyAudit=fixture();const metadata=await profileRoute.generateMetadata(props);assert.equal(metadata.title,'Nene | Reylumi Beauty');assert.equal(globalThis.__beautyAudit.profileInput,undefined);globalThis.__beautyAudit.profileAccess={ok:false,profile:null};assert.equal((await profileRoute.generateMetadata(props)).title,'Beauty profile | Reylumi');});

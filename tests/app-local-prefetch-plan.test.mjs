@@ -4,7 +4,7 @@ import { build } from 'esbuild';
 import { readFileSync } from 'node:fs';
 
 const bundled = await build({ entryPoints: ['lib/app-local-prefetch-plan.ts'], bundle: true, write: false, platform: 'node', format: 'esm' });
-const { appLocalPrefetchPlan: plan, appLocalTodayPrefetchJobs: today } = await import('data:text/javascript;base64,' + Buffer.from(bundled.outputFiles[0].text).toString('base64'));
+const { appLocalPrefetchPlan: plan, appLocalPrefetchRouteKey: routeKey, appLocalTodayPrefetchJobs: today } = await import('data:text/javascript;base64,' + Buffer.from(bundled.outputFiles[0].text).toString('base64'));
 const now = Date.parse('2026-10-27T12:00:00Z');
 const viewer = '00000000-0000-4000-8000-000000000001', salon = '00000000-0000-4000-8000-000000000002';
 const staff = '00000000-0000-4000-8000-000000000003', revision = '00000000-0000-4000-8000-000000000004';
@@ -24,7 +24,7 @@ test('owner priority matches real mounted cache keys and ordinary default views'
   assert.deepEqual(jobs.slice(0, 11).map(row => row.name), ['page.owner-today', 'owner.bookings', 'owner.salon-profile', 'page.notifications', 'owner.workspace', 'owner.tickets', 'owner.reports', 'page.owner-customers', 'page.owner-staff', 'page.services', 'page.owner-payroll']);
   assert.deepEqual(jobs[0].args, {}, 'omitting phase selects the original complete endpoint response');
   for (const name of ['owner.bookings', 'owner.workspace', 'owner.tickets', 'owner.reports']) assert.deepEqual(jobs.find(row => row.name === name).args, { query: '' });
-  assert.deepEqual(jobs.find(row => row.name === 'page.owner-payroll').args, { tab: 'overview' });
+  assert.deepEqual(jobs.find(row => row.name === 'page.owner-payroll').args, { tab: 'shop' });
   assert.ok(jobs.some(row => row.name === 'page.more') && jobs.some(row => row.name === 'page.my-place'));
   assert.ok(!jobs.some(row => /^staff\.|^customer\.|page\.customer-|page\.beauty/.test(row.name)));
 });
@@ -78,7 +78,7 @@ test('accepted authority is never inferred from display role, arbitrary online p
 test('current route comes first with component-exact query arguments and deduplicates the default', () => {
   assert.deepEqual(first('owner', '/bookings?staff=Alice&date=2026-10-20').args, { query: 'date=2026-10-20&staff=Alice' });
   assert.equal(first('owner', '/reports?date=2026-10-20').name, 'owner.reports');
-  assert.deepEqual(first('owner', '/payroll?tab=analytics&month=2026-10&overviewStaff=Alice').args, { month: '2026-10', tab: 'overview' });
+  assert.deepEqual(first('owner', '/payroll?tab=analytics&month=2026-10&overviewStaff=Alice').args, { month: '2026-10', tab: 'analytics' });
   assert.deepEqual(first('owner', '/customers?q=Sam&page=2').args, { page: '2', q: 'Sam' });
   assert.deepEqual(first('owner', '/staff?filter=active&q=Sam&error=notice').args, { error: 'notice', filter: 'active', q: 'Sam' });
   assert.deepEqual(first('staff', '/staff/my-work?tab=payroll&payPeriodStart=2026-10-01&error=notice').args, { tab: 'payroll', payPeriodStart: '2026-10-01', staffId: staff });
@@ -86,6 +86,27 @@ test('current route comes first with component-exact query arguments and dedupli
   assert.deepEqual(first('customer', '/more/favorite-shop?q=Sam').args, { q: 'Sam', filter: 'shop' });
   assert.deepEqual(first('customer', '/explore?q=nails&page=2&location=Chicago').args, { query: 'location=Chicago&q=nails' });
   assert.equal(plan(context('owner'), '/pos', now).filter(row => row.name === 'owner.workspace').length, 1);
+});
+
+test('Staff Tickets prefetch preserves the selected date in its foreground cache key', () => {
+  for (const ticketDate of ['2026-10-20', '2026-10-26']) {
+    const jobs = plan(context('staff'), `/staff/my-work?tab=tickets&ticketDate=${ticketDate}&error=notice`, now);
+    const tickets = jobs.filter(job => job.name === 'staff.my-work' && job.args.tab === 'tickets');
+    assert.equal(tickets.length, 1);
+    assert.deepEqual(tickets[0].args, { tab: 'tickets', ticketDate, staffId: staff });
+  }
+  assert.deepEqual(first('staff', '/staff/my-work?tab=tickets').args, { tab: 'tickets', staffId: staff });
+});
+
+test('selected route identity retains filters and aliases while normalizing query order and Explore paging', () => {
+  assert.equal(routeKey('/staff/my-work?ticketDate=2026-10-20&tab=tickets#ticket-record'), routeKey('/staff/my-work?tab=tickets&ticketDate=2026-10-20'));
+  assert.notEqual(routeKey('/staff/my-work?tab=tickets'), routeKey('/staff/my-work?tab=payroll'));
+  assert.notEqual(routeKey('/staff/my-work?tab=tickets&ticketDate=2026-10-20'), routeKey('/staff/my-work?tab=tickets&ticketDate=2026-10-21'));
+  assert.equal(routeKey('/explore?q=nails&page=2&location=Chicago'), routeKey('/explore?location=Chicago&q=nails'));
+  assert.notEqual(routeKey('/explore?q=nails'), routeKey('/explore'));
+  for (const path of ['/bookings?staff=Alice&date=2026-10-20', '/reports?date=2026-10-20', '/pos-tickets?date=2026-10-20']) {
+    assert.equal(routeKey(first('owner', path).path), routeKey(path), path);
+  }
 });
 
 test('forms, recovery and sensitive callbacks cannot start speculative work', () => {

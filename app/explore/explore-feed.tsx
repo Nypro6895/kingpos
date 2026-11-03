@@ -1382,7 +1382,7 @@ export function ExploreFeedCard({featured=false,item,onCommentCountChange,viewer
     <PostIdentity source={item.sourceType} salonName={item.salon?.name} salonHref={item.salon?.href} authorName={personName || item.author.name} authorHref={item.sourceType === "personal" ? authorHref : null} authorRole={item.salonAuthorRole} />
     {salon && item.sourceType === "salon" ? <ExploreSalonFollow salon={salon}/> : null}
    </div>
-   <p className="text-xs text-text-muted">{item.platformIntroduction ? "Introduction by Reylumi" : recommendation?[item.serviceCategory,item.salon?.city,item.salon?.state].filter(Boolean).join(' Â· '):timeAgo(item.publishedAt)}</p>
+   <p className="text-xs text-text-muted">{item.platformIntroduction ? "Introduction by Reylumi" : recommendation?[item.serviceCategory,item.salon?.city,item.salon?.state].filter(Boolean).join(' · '):timeAgo(item.publishedAt)}</p>
   </div>
   {salon?<ExploreSalonMenu salon={salon} target={commentTarget??undefined}/>:commentTarget?<PostActions plain target={commentTarget} viewerId={viewer.userId}/>:null}
  </div>;
@@ -1905,7 +1905,7 @@ function ExploreFeedContent({
           return (
             <Fragment key={feedItemKey(item)}>
               {item.discoveryScope === "wider" ? (
-                <p className="px-2 pt-2 text-xs font-medium text-text-muted">{[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` Â· ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
+                <p className="px-2 pt-2 text-xs font-medium text-text-muted">{[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` · ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
               ) : null}
               <div data-explore-content-key={item.contentKey}>
               <ExploreFeedCard

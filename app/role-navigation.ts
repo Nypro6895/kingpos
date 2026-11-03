@@ -91,6 +91,16 @@ export const SHARED_CONTEXT_ROUTE_PREFIXES = [
   "/staff/invite",
   "/support",
   "/welcome",
+  "/legal",
+  "/privacy",
+  "/terms",
+  "/business-terms",
+  "/community",
+  "/contact-support",
+  "/deletion-status",
+  "/ownership",
+  "/tax-company",
+  "/workspace",
 ] as const;
 
 export function roleNavigationKindForContext(input: {

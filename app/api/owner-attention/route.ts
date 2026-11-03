@@ -37,12 +37,11 @@ export async function POST(request: NextRequest) {
       if (!Number.isSafeInteger(page) || page < 0 || page > 100000) return fail("Invalid page", 400);
       return Response.json(await readOwnerFinancialAttention(context, body.item, page), { headers });
     }
-    if (!["ignore", "review_closing"].includes(body.op) || !body.item) return fail("Invalid action", 400);
+    if (body.op !== "ignore" || !body.item) return fail("Invalid action", 400);
     if (body.viewerId !== context.user.id) return fail("Account changed. Reopen this item.", 409);
     const db = await createAuthenticatedSupabaseServerClient();
     if (!db) return fail("Authentication unavailable", 503);
     const result = await db.rpc("owner_financial_attention_action", { p_salon: context.currentSalon.id, p_item: body.item, p_action: body.op });
-    if (result.error?.code === "22023") return fail("Verify entered collections and finish open receipts in Reports before confirming.", 409);
     if (result.error) return fail(result.error.code === "40001" ? "This item changed. Refresh before continuing." : "Unable to save. Please retry.", result.error.code === "40001" ? 409 : 503);
     return Response.json({ ok: true }, { headers });
   } catch {

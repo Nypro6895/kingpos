@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "paths": {
+      "@/types/reylumi-membership": [
+        "C:/Reylumi-worktrees/membership-admin-20261103/types/reylumi-membership.ts"
+      ],
+      "@/types/platform-admin": [
+        "C:/Reylumi-worktrees/membership-admin-20261103/types/platform-admin.ts"
+      ],
+      "@/lib/membership-model": [
+        "C:/Reylumi-worktrees/membership-admin-20261103/lib/membership-model.ts"
+      ],
+      "@/lib/platform-admin/membership": [
+        "C:/Reylumi-worktrees/membership-admin-20261103/lib/platform-admin/membership.ts"
+      ],
+      "@/*": [
+        "C:/Reylumi/kingpos/*"
+      ]
+    }
+  },
+  "include": [
+    "../../app/(app)/admin/membership/**/*.ts",
+    "../../app/(app)/admin/membership/**/*.tsx",
+    "../../app/(legal)/membership/**/*.tsx",
+    "../../lib/platform-admin/membership.ts",
+    "../../lib/membership-model.ts",
+    "../../types/reylumi-membership.ts",
+    "C:/Reylumi/kingpos/next-env.d.ts"
+  ],
+  "exclude": [
+    "../../node_modules"
+  ]
+}

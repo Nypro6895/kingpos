@@ -35,7 +35,7 @@ export function StaffTickets({ data, timezone, payPeriodStart }: { data: StaffTi
     </div>
     <p className={styles.note}><WorkspaceText text="Choose any date · Salon local time" /></p>
     <div className={styles.totals}><span><WorkspaceText text="Services" /> <strong>{money(completed.reduce((sum, ticket) => sum + ticket.serviceTotal, 0))}</strong></span><span><WorkspaceText text="Tip" /> <strong>{money(completed.reduce((sum, ticket) => sum + (ticket.tip ?? 0), 0))}</strong></span></div>
-    <p className={styles.note}>{data.tickets.length} <WorkspaceText text="tickets · Totals include completed tickets with earnings only" /></p>
+    <p className={styles.note}>{data.tickets.length} <WorkspaceText text={data.tickets.length === 1 ? "ticket · Totals include completed tickets with earnings only" : "tickets · Totals include completed tickets with earnings only"} /></p>
     {!data.tickets.length && <p className={styles.empty}><WorkspaceText text="No tickets assigned to you on this date." /></p>}
     {data.tickets.map(ticket => <details key={ticket.id} className={styles.ticket}>
       <summary><div className={styles.heading}><strong>{ticket.ticketNumber} · {stamp(ticket.openedAt, timezone)}</strong>{(ticket.history.length > 0 || ticket.activity.some(event => /updated|removed|deleted|voided|cancelled|adjust/.test(event.action))) && <span className={styles.badge}><WorkspaceText text="Edited" /></span>}</div>

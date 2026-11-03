@@ -905,6 +905,7 @@ export function BeautyProfileClient({
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const loadingMoreRef = useRef(false);
+  const timelineGenerationRef = useRef(0);
   const publishingRef = useRef(false);
   const profileSavingRef = useRef(false);
   const objectUrlsRef = useRef(new Set<string>());
@@ -1036,11 +1037,14 @@ export function BeautyProfileClient({
     }
 
     loadingMoreRef.current = true;
+    const generation = timelineGenerationRef.current;
     setLoadingMore(true);
     setTimelineError("");
 
     try {
       const page = await loadBeautyTimelineAction(profile.id, cursor);
+
+      if (generation !== timelineGenerationRef.current) return;
 
       if (page.error) {
         setTimelineError(page.error);
@@ -1055,9 +1059,13 @@ export function BeautyProfileClient({
       });
       setCursor(page.nextCursor);
       setHasMore(page.hasMore);
+    } catch (error) {
+      if (generation === timelineGenerationRef.current) throw error;
     } finally {
-      loadingMoreRef.current = false;
-      setLoadingMore(false);
+      if (generation === timelineGenerationRef.current) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
     }
   }, [cursor, profile.id]);
 
@@ -1768,6 +1776,11 @@ export function BeautyProfileClient({
         const newestPost = result.timeline.items[0];
         const newestVerification = newestPost?.verification;
 
+        // A successful publish replaces the timeline boundary. Retire older
+        // pagination replies and their finalizers before admitting a new page.
+        timelineGenerationRef.current += 1;
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
         setPosts(result.timeline.items);
         setCursor(result.timeline.nextCursor);
         setHasMore(result.timeline.hasMore);

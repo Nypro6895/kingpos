@@ -209,6 +209,8 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Customer profile": "Hồ sơ khách hàng", "Visit history": "Lịch sử ghé tiệm",
   "Booking history": "Lịch sử đặt hẹn", "Payment history": "Lịch sử thanh toán",
   "Ticket history": "Lịch sử phiếu", "New ticket": "Phiếu mới", Ticket: "Phiếu", Tickets: "Phiếu",
+  "ticket · Totals include completed tickets with earnings only": "phiếu · Tổng chỉ gồm phiếu đã hoàn tất có thu nhập",
+  "tickets · Totals include completed tickets with earnings only": "phiếu · Tổng chỉ gồm phiếu đã hoàn tất có thu nhập",
   "Open tickets": "Phiếu đang mở", "Closed tickets": "Phiếu đã đóng", "Add item": "Thêm mục",
   "Add payment": "Thêm thanh toán", "Split payment": "Chia thanh toán", "Payment received": "Đã nhận thanh toán",
   "Balance due": "Số tiền còn lại", "Amount due": "Số tiền cần thanh toán", Receipt: "Biên lai",
