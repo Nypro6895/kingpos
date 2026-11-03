@@ -22,6 +22,7 @@ async function database(){const db=new PGlite();await db.exec(`
  await db.exec(`insert into salon_memberships(user_id,role_id) select u.id,r.id from users u cross join roles r where (u.display_name in ('owner','other') and r.code='OWNER') or (u.display_name='staff' and r.code='STAFF');
  insert into platform_admin_memberships(user_id,role_id) select u.id,r.id from users u cross join platform_admin_roles r where (u.display_name='mod' and r.slug='moderator') or (u.display_name='admin' and r.slug='platform_owner');`);
  await db.exec(fs.readFileSync('supabase/migrations/20261103180000_owner_forum.sql','utf8'));
+ await db.exec(fs.readFileSync('supabase/migrations/20261103181500_forum_feed_indexes.sql','utf8'));
  return db;
 }
 async function as(db,user){await db.exec('reset role');await db.query("select set_config('test.user_id',$1,false)",[user??'']);await db.exec('set role authenticated');}
@@ -98,6 +99,18 @@ test('forum database security, moderation and pagination',async t=>{
   await db.exec('reset role');await db.query("insert into forum_topics(author_id,section_id,title,body,created_at) select $1,$2,'Page topic '||i,'page body','2026-11-01'::timestamptz from generate_series(1,55) i",[ids.owner,section]);
   await as(db,ids.owner);const found=new Set();let input={mode:'feed'};for(let page=0;page<4;page++){const rows=await read(db,input),shown=rows.slice(0,20);for(const r of shown){assert.equal(found.has(r.id),false);found.add(r.id)}if(rows.length<=20)break;const last=shown.at(-1);input={mode:'feed',before:last.created_at,cursor_id:last.id};}assert.equal(found.size,56);
   await db.exec('reset role');await db.query("insert into forum_chat(author_id,body) select $1,'Chat '||i from generate_series(1,70) i",[ids.owner]);await as(db,ids.owner);const first=await read(db,{mode:'chat'});assert.equal(first.length,41);const older=await read(db,{mode:'chat',before_id:first[1].id});assert.ok(older.every(x=>BigInt(x.id)<BigInt(first[1].id)));
+ });
+ await t.test('authors can edit and remove their own content without moderator authority',async()=>{
+  await as(db,ids.other);await cooldown(db);await assert.rejects(write(db,{op:'edit_topic',id:topic,title:'Unauthorized edit',body:'Not my topic'}),/Only the author/);
+  await as(db,ids.owner);await cooldown(db);await write(db,{op:'edit_topic',id:topic,title:'Updated weekend turn discussion',body:'Updated by the original owner'});assert.equal((await read(db,{mode:'topic',id:topic})).topic.body,'Updated by the original owner');
+  await as(db,ids.other);await cooldown(db);await assert.rejects(write(db,{op:'remove_own',kind:'topic',id:topic}),/Only the author/);
+  await as(db,ids.owner);await cooldown(db);await write(db,{op:'remove_own',kind:'topic',id:topic});await assert.rejects(read(db,{mode:'topic',id:topic}),/not found/);
+  await as(db,ids.mod);await write(db,{op:'restore',kind:'topic',id:topic,reason:'Restore for pagination test'});
+ });
+ await t.test('pinned topics sort first without breaking keyset pagination',async()=>{
+  await as(db,ids.mod);const rows=await read(db,{mode:'feed'});const pinned=rows.at(-1).id;await write(db,{op:'pin',kind:'topic',id:pinned,reason:'Useful owner guide'});
+  await as(db,ids.owner);const first=await read(db,{mode:'feed'});assert.equal(first[0].id,pinned);const seen=new Set();let input={mode:'feed'};
+  for(let page=0;page<4;page++){const a=await read(db,input),shown=a.slice(0,20);for(const x of shown){assert.equal(seen.has(x.id),false);seen.add(x.id)}if(a.length<=20)break;const last=shown.at(-1);input={mode:'feed',before:last.created_at,cursor_id:last.id,before_pinned:last.pinned};}assert.equal(seen.size,56);
  });
  }finally{await db.close()}
 });
