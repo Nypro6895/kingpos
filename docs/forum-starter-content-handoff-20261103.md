@@ -9,3 +9,7 @@ Migration `20261103190000_forum_starter_discussions.sql` is committed but NOT ap
 Apply via the existing Supabase SQL workflow, transactionally record the exact body in schema_migrations, then verify 15/30/8 counts, 3 topics per section, RLS and denied anonymous/direct access. Production apply/verify scripts and local passing checks are in artifacts/forum-brand. The same transaction passed the real PostgreSQL local fixture. No seed data has been posted to production. Chrome controller errors persisted after reset and owner reconnect.
 
 Pending journal event: 1d2321e5-c327-449a-9f81-73fa9689a8c0. Source commit: 73ba22eec77ebd1f2b63b720274be6e132eea912.
+
+## Superseding content revision
+
+Do not apply the initial content alone. Apply 20261103200000_forum_starter_content_rewrite in the same transaction. The approved direction is now 12 Vietnamese / 3 English posts about daily nail work, salon operations and practical Reylumi use. See forum-starter-content-rewrite-20261103.md. Both migrations remain pending.
