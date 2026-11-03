@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "iphone-pos-draft-submit-race-20261103",
+  "status": "needs-integration",
+  "summary": "Owner POS rejects saved-ticket takeover and parking while Submit is pending; all three successful submission paths clear only their submitted cart identity",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "tests/owner-pos-draft-submit-race.test.mjs",
+    "tests/helpers/owner-pos-draft-submit-harness.mjs"
+  ],
+  "source": {
+    "baseCommit": "56a438560c937bbee0872e2eaccc27698569d4bc",
+    "snapshot": "artifacts/iphone-quality-audit-20261103/pos-saved-restore-submit-repro-frozen"
+  },
+  "dependencies": [],
+  "incorporatesEvent": "115afd03-7260-4075-b329-f25fafe8131c",
+  "validation": [
+    {
+      "name": "Actual TSX callbacks: queue/reward/gift busy locks, rejected stale takeover keeps saved B, identity fence, failure unlock, duplicate Submit and durable dedup; 13 passed, 0 failed/skipped",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/pos-saved-restore-submit-repro-verification.json"
+    },
+    {
+      "name": "Original synthetic reproduction loses saved B before fix; fixed source refuses takeover and preserves B",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/pos-saved-restore-submit-repro-before.json"
+    },
+    {
+      "name": "Full project TypeScript validation and scoped CRLF-aware whitespace / patch reverse check",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/pos-saved-restore-submit-repro-verification.json"
+    },
+    {
+      "name": "Scoped ESLint baseline comparison: 0 introduced diagnostics; the same untouched owner-pos-client.tsx:93 set-state-in-effect error exists before and after (full ESLint is not clean)",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/pos-saved-restore-submit-repro-verification.json"
+    },
+    {
+      "name": "Current release integration, inherited lint reconciliation, native verification/build and corrected physical-iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "3779d46a-d671-47d2-949b-6f9d67e1acf8",
+  "recordedAt": "2026-11-03T19:20:21.115Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

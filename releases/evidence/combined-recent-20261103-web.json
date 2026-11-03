@@ -1,0 +1,148 @@
+{
+  "verified": true,
+  "deploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+  "url": "kingpos-9cu7dxuk8-kingpos.vercel.app",
+  "sourceCommit": "645d331af141ff7730f7e38258262ad8461cad75",
+  "files": 3886,
+  "baselineDeploymentId": "dpl_HH57U1pRRCGKBEi8eGRdy5JtcEuA",
+  "aliasDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+  "sourceSha256": "3a224594f4da17adac3165c802901f5f73039a18df9b40a97367127f74410324",
+  "overlaySha256": "46323fe1d0c826f8973004ee7f332ac1ccaa85a4c51ab27a4ca06b55eb32abd9",
+  "verifiedAt": "2026-11-03T22:18:20.950Z",
+  "http": {
+    "passed": true,
+    "at": "2026-11-03T22:18:26.334Z",
+    "checks": [
+      {
+        "route": "/forum",
+        "status": 200
+      },
+      {
+        "route": "/admin/forum",
+        "status": 200
+      },
+      {
+        "route": "/explore",
+        "status": 200
+      },
+      {
+        "route": "/market",
+        "status": 200
+      },
+      {
+        "route": "/payroll",
+        "status": 200
+      },
+      {
+        "route": "/check-writer",
+        "status": 200
+      },
+      {
+        "route": "/privacy",
+        "status": 200
+      },
+      {
+        "route": "/membership",
+        "status": 200
+      },
+      {
+        "route": "/admin/membership",
+        "status": 200
+      },
+      {
+        "route": "/reports",
+        "status": 200
+      },
+      {
+        "route": "/api/check-writer",
+        "status": 403
+      }
+    ],
+    "scope": "Anonymous read-only smoke checks; no real posts, messages or restrictions created"
+  },
+  "migrations": {
+    "files": [
+      {
+        "file": "202611030001_reylumi_membership_admin.sql",
+        "version": "202611030001",
+        "sha256": "c16fb6ba8016724ccaa5dd5345b97d7e41dcde2c537c17d2ba3153bac196d578"
+      },
+      {
+        "file": "202611030002_membership_desktop_settings.sql",
+        "version": "202611030002",
+        "sha256": "1f893cf9ab30ca553592196809928d9002cde04648135a044d432f7aa35be1ec"
+      },
+      {
+        "file": "20261103221000_closing_attention_short_over.sql",
+        "version": "20261103221000",
+        "sha256": "738bd185cc139e40a4feca266994617d65958c000c155034633464161f745d59"
+      },
+      {
+        "file": "20261103190000_forum_starter_discussions.sql",
+        "version": "20261103190000",
+        "sha256": "b0a3767cefdf8f59234b7aeeee54fbcb48668bd5a02eb9a764c36aef02afc0e5"
+      },
+      {
+        "file": "20261103200000_forum_starter_content_rewrite.sql",
+        "version": "20261103200000",
+        "sha256": "85fe5e368e7a52bf45b36711bb41a45d644eb2c50671766709b4083c7b3a0fb9"
+      }
+    ],
+    "sha256": "e62a4189b3220cce3fd48fc4981fcd6bfcf27660f4ba0b34363a6adb516d225d",
+    "applied": true,
+    "verifiedAt": "2026-11-03T22:12:52.298Z",
+    "verification": {
+      "forum_topics": 15,
+      "forum_replies": 30,
+      "membership_drafts": 3,
+      "migrations": 5
+    }
+  },
+  "rpc": [
+    {
+      "name": "reylumi_membership_public",
+      "status": 200,
+      "passed": true,
+      "publishedPlans": 0
+    },
+    {
+      "name": "reylumi_membership_website_public",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "name": "reylumi_membership_workspace",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "name": "forum_read",
+      "status": 401,
+      "passed": true
+    }
+  ],
+  "authenticatedUI": "pending owner login",
+  "ios": "Workflow 41728835922 running; not yet uploaded/available",
+  "held": [
+    "Market trials/provider release remains held by owning task; no billing activation"
+  ],
+  "changes": [
+    "c36ecf13-4cb7-4fe3-9f37-eb870c2426d4",
+    "9c2d1021-1eae-4a88-b810-d4d228d8203e",
+    "a624142a-0a6a-4c91-af9a-3919906f916e",
+    "bc1f0562-44c7-44e5-986c-2097799e3784",
+    "e777f0d5-3577-4e53-9bc7-774aaea9a26f",
+    "65350ee6-7a03-495e-96b4-e1c0d7e59a65",
+    "25549d99-dd1a-4fcb-94d2-c38bc967907a",
+    "eb7b546b-162d-425e-b60b-39c284a61056",
+    "70f1744a-1d79-4ec0-9304-2ab97f182857",
+    "ebebfd29-b9b9-460c-a9da-bf03994d3082",
+    "85fdba81-7b50-4118-bd9e-b6804a75fc53",
+    "791800ff-6dc4-434c-9885-255fbe290699",
+    "fd1b236c-9690-43d0-88f1-ee0e84e7bf47",
+    "f6dd0bff-de72-4a74-acc7-a987dde9f5c5",
+    "ad3f2da3-dfaf-4139-aef6-9e0e05d76dfa",
+    "15df8c40-e214-4360-8e5e-6dc9907d4acc"
+  ],
+  "originalEvents": []
+}

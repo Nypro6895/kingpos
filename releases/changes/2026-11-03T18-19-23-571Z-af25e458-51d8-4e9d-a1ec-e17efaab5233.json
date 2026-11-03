@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "iphone-quality-prefetch-20261103",
+  "status": "needs-integration",
+  "summary": "Preserve Staff Tickets date keys and count inactive query tabs within the two-read speculative budget; actual hook fixture drops six reads to three with 39 checks passing",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-prefetch-plan.ts",
+    "lib/app-local-prefetch.ts",
+    "tests/app-local-prefetch-plan.test.mjs",
+    "tests/app-local-prefetch-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/iphone-quality-audit-20261103/prefetch-frozen-route-budget",
+    "baseCommit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023"
+  },
+  "validation": [
+    {
+      "name": "39 plan, actual hook Chromium runtime and priority scheduler checks, 0 failed/skipped",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/prefetch-route-budget-checks.json"
+    },
+    {
+      "name": "Both changed product sources ESLint and scoped git diff --check",
+      "result": "passed"
+    },
+    {
+      "name": "Current native baseline integration, regenerated signed bundle and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvent": "b97532ad-a88f-43d5-9e63-259b7e17e5b5",
+  "journalNote": "The prior completion is retained: journal policy permits supersedesEvents only on fully validated ready revisions; native integration/device validation remains pending.",
+  "id": "af25e458-51d8-4e9d-a1ec-e17efaab5233",
+  "recordedAt": "2026-11-03T18:19:23.571Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

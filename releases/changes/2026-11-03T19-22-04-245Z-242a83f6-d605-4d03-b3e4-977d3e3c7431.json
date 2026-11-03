@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "iphone-reports-expense-pay-period-20261103",
+  "status": "needs-integration",
+  "summary": "Reports Expenses follows configured payroll periods with the shared selector and compact list/total, preserving existing Shop Money readers, formulas and writes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/reports/page.tsx",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/report-controls.tsx",
+    "lib/app-local-secondary-registry.tsx",
+    "lib/owner-local-workspace.ts",
+    "lib/owner-reports-read.ts",
+    "lib/report-expense-period.ts",
+    "lib/report-expense-period-server.ts",
+    "tests/owner-reports-read.test.mjs",
+    "tests/report-expense-period.test.mjs",
+    "tests/report-expense-period-browser.mjs"
+  ],
+  "source": {
+    "commit": "56a438560c937bbee0872e2eaccc27698569d4bc",
+    "snapshot": "artifacts/iphone-quality-audit-20261103/expense-period-frozen"
+  },
+  "validation": [
+    {
+      "name": "Consolidated source/unit/browser suite:124 tests passed including34 focused Expenses checks",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/followup-clarified-scope/combined-tests.log"
+    },
+    {
+      "name": "Actual428px source components: pending/reverse replies, compact Add/Edit and tax note, legacy Payroll controls",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/expense-period-ui/browser-evidence.json"
+    },
+    {
+      "name": "Exact frozen source hashes and baseline-normalized untouched SQL/read/formula source",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/expense-period-handoff.json"
+    },
+    {
+      "name": "Final consolidated lint/project TypeScript/native verify",
+      "result": "pending",
+      "evidence": "artifacts/iphone-quality-audit-20261103/followup-clarified-scope/"
+    },
+    {
+      "name": "Rebuilt native and physical iPhone acceptance after integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "242a83f6-d605-4d03-b3e4-977d3e3c7431",
+  "recordedAt": "2026-11-03T19:22:04.245Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

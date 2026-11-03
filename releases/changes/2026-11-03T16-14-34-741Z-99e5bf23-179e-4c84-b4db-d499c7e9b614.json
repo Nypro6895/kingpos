@@ -1,0 +1,38 @@
+{
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "artifacts/iphone-bottom-low/checks.json",
+      "name": "Chrome shared navigation fixture: four sizes and three platform exclusions, bottom edge assertions"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped whitespace"
+    },
+    {
+      "result": "pending",
+      "name": "Current release integration and physical iPhone keyboard/safe-area acceptance"
+    }
+  ],
+  "summary": "Remove redundant bottom offset from shared iPhone glass navigation across app routes",
+  "status": "needs-integration",
+  "files": [
+    "components/iphone-glass-nav.css"
+  ],
+  "changeId": "iphone-bottom-low-20261103",
+  "source": {
+    "snapshot": "artifacts/iphone-bottom-low/frozen"
+  },
+  "kind": "change",
+  "dependencies": [
+    "iphone-bottom-glass-20261102"
+  ],
+  "channels": [
+    "web"
+  ],
+  "id": "99e5bf23-179e-4c84-b4db-d499c7e9b614",
+  "recordedAt": "2026-11-03T16:14:34.741Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-bottom-low-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

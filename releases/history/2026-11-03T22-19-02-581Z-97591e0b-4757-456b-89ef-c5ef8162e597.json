@@ -1,0 +1,37 @@
+{
+  "kind": "release",
+  "summary": "Combined recent-chat web release: integrated forum content, draft Membership admin, Closing and completed interface/runtime fixes; native processing separate.",
+  "changes": [
+    "c36ecf13-4cb7-4fe3-9f37-eb870c2426d4",
+    "9c2d1021-1eae-4a88-b810-d4d228d8203e",
+    "a624142a-0a6a-4c91-af9a-3919906f916e",
+    "bc1f0562-44c7-44e5-986c-2097799e3784",
+    "e777f0d5-3577-4e53-9bc7-774aaea9a26f",
+    "65350ee6-7a03-495e-96b4-e1c0d7e59a65",
+    "25549d99-dd1a-4fcb-94d2-c38bc967907a",
+    "eb7b546b-162d-425e-b60b-39c284a61056",
+    "70f1744a-1d79-4ec0-9304-2ab97f182857",
+    "ebebfd29-b9b9-460c-a9da-bf03994d3082",
+    "85fdba81-7b50-4118-bd9e-b6804a75fc53",
+    "791800ff-6dc4-434c-9885-255fbe290699",
+    "fd1b236c-9690-43d0-88f1-ee0e84e7bf47",
+    "f6dd0bff-de72-4a74-acc7-a987dde9f5c5",
+    "ad3f2da3-dfaf-4139-aef6-9e0e05d76dfa",
+    "15df8c40-e214-4360-8e5e-6dc9907d4acc"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+      "baselineDeploymentId": "dpl_HH57U1pRRCGKBEi8eGRdy5JtcEuA",
+      "sourceSha256": "3a224594f4da17adac3165c802901f5f73039a18df9b40a97367127f74410324",
+      "overlaySha256": "46323fe1d0c826f8973004ee7f332ac1ccaa85a4c51ab27a4ca06b55eb32abd9",
+      "commit": "645d331af141ff7730f7e38258262ad8461cad75",
+      "evidence": "releases/evidence/combined-recent-20261103-web.json"
+    }
+  },
+  "id": "97591e0b-4757-456b-89ef-c5ef8162e597",
+  "recordedAt": "2026-11-03T22:19:02.581Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-recent-chats-20261103"
+}

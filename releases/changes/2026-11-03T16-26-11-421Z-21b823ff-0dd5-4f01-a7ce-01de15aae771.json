@@ -1,0 +1,58 @@
+{
+  "changeId": "membership-admin-next-verification-20261103",
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "Cache Components enabled, actual current AdminShell and current Settings module compiled. Generated fixture skips full-project type validation.",
+      "name": "Isolated Next.js production-mode compilation"
+    },
+    {
+      "result": "passed",
+      "evidence": "Publish/grant/credit/queued renewal; signed session; read-only direct Server Action replay denied; role revocation on Back after existing refresh window; expired/missing session denial. Local auth/PostgREST fixture plus actual admin SQL.",
+      "name": "Actual Server Action and access-control runtime"
+    },
+    {
+      "result": "passed",
+      "evidence": "Changed product modules checked against current canonical shared dependencies",
+      "name": "Scoped membership TypeScript and ESLint"
+    },
+    {
+      "result": "passed",
+      "evidence": "Before/after hashes recorded in docs/membership/next-verification.json",
+      "name": "Shared canonical files preserved"
+    },
+    {
+      "result": "pending",
+      "evidence": "Isolated candidate only; no production source baseline, hosted auth/provider test, production migration or deploy.",
+      "name": "Full release build and hosted acceptance"
+    }
+  ],
+  "source": {
+    "commit": "c0249289a151a20802b8824e35cb6843642520bf",
+    "snapshot": "C:/Reylumi-worktrees/membership-admin-20261103"
+  },
+  "summary": "Completed isolated Next production-mode candidate verification using current Platform Admin auth/session, ExperienceScopeProvider and actual membership Server Actions. Added current Settings composition, experience wrappers and Cache Components compatibility fix. Canonical working files preserved; no deployment or billing changes.",
+  "files": [
+    "app/(app)/admin/membership/page.tsx",
+    "app/(app)/admin/membership/settings-links.tsx",
+    "app/(app)/admin/settings/page.tsx",
+    "app/(legal)/membership/page.tsx",
+    "docs/membership/implementation.md",
+    "docs/membership/next-verification.json",
+    "scripts/verify-membership-next.mjs"
+  ],
+  "status": "needs-integration",
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [
+    "membership-admin-20261103",
+    "membership-admin-desktop-20261103"
+  ],
+  "id": "21b823ff-0dd5-4f01-a7ce-01de15aae771",
+  "recordedAt": "2026-11-03T16:26:11.421Z",
+  "worktree": "C:\\Reylumi-worktrees\\membership-admin-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

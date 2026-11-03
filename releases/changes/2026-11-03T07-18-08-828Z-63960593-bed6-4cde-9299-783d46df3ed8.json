@@ -1,0 +1,64 @@
+{
+  "validation": [
+    {
+      "name": "Migration/RPC integration",
+      "evidence": "10 tests passing in isolated PGlite; versions, authorization, idempotency, overlaps, credit, rollover, support and history",
+      "result": "passed"
+    },
+    {
+      "name": "React and SQL browser integration",
+      "evidence": "Edge headless 390/1440px, publish/enroll/grant/credit/service/history/public projection; no overflow or page errors",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped TypeScript and ESLint",
+      "evidence": "Canonical shared dependencies; new modules only",
+      "result": "passed"
+    },
+    {
+      "name": "Production/provider/native acceptance",
+      "evidence": "No migration/deployment/charges. Full assembled build, current auth and plugin/provider integration still required.",
+      "result": "pending"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "source": {
+    "commit": "9cc6ff74acb9eb1c14e22bc089385b389f9cf379",
+    "snapshot": "C:/Reylumi-worktrees/membership-admin-20261103"
+  },
+  "status": "needs-integration",
+  "dependencies": [],
+  "summary": "Admin-first membership configuration, salon terms, credit ledger, technical service workflow and public benefits website completed locally. Requires fresh baseline integration; provider metering, plugin access guards and automatic billing remain separate integration work. No production enrollment authority.",
+  "files": [
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "app/(app)/admin/membership/actions.ts",
+    "app/(app)/admin/membership/membership.module.css",
+    "app/(app)/admin/membership/page.tsx",
+    "app/(app)/admin/membership/workspace.tsx",
+    "app/(app)/admin/settings/membership/page.tsx",
+    "app/(app)/admin/settings/page.tsx",
+    "app/(legal)/membership/page.tsx",
+    "app/(legal)/membership/website.module.css",
+    "app/(legal)/membership/website.tsx",
+    "docs/membership/implementation.md",
+    "docs/membership/tsconfig.verify.json",
+    "lib/membership-model.ts",
+    "lib/platform-admin/membership.ts",
+    "scripts/verify-membership-browser.mjs",
+    "supabase/migrations/202611030001_reylumi_membership_admin.sql",
+    "tests/fixtures/membership-browser-actions.ts",
+    "tests/fixtures/membership-browser-entry.tsx",
+    "tests/reylumi-membership.integration.test.mjs",
+    "types/platform-admin.ts",
+    "types/reylumi-membership.ts"
+  ],
+  "changeId": "membership-admin-20261103",
+  "kind": "change",
+  "id": "63960593-bed6-4cde-9299-783d46df3ed8",
+  "recordedAt": "2026-11-03T07:18:08.828Z",
+  "worktree": "C:\\Reylumi-worktrees\\membership-admin-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

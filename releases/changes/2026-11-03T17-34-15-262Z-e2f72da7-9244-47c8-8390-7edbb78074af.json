@@ -1,0 +1,53 @@
+{
+  "dependencies": [
+    "owner-financial-attention"
+  ],
+  "summary": "Owner approved 2026-11-03: queue final v4 closing notification for next explicitly authorized combined release only. Use frozen-breakdown-v4; earlier v1-v3 layouts are obsolete. Do not deploy, schedule or apply production migration separately.",
+  "status": "needs-integration",
+  "source": {
+    "snapshot": "artifacts/closing-short-over/frozen-breakdown-v4",
+    "commit": "100cdc095863a6dd05d63f3b7c27a26f82f60522"
+  },
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "changeId": "closing-short-over-20261103",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "SQL/API tests",
+      "evidence": "4 tests"
+    },
+    {
+      "result": "passed",
+      "name": "Chromium fixture 320/390/430/768px",
+      "evidence": "Expand control, two date links, Ignore and no overflow; visual inspection closing-390.png"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped TypeScript/ESLint/diff"
+    },
+    {
+      "result": "pending",
+      "name": "Production integration/build/device",
+      "evidence": "No deployment or production migration"
+    }
+  ],
+  "files": [
+    "app/api/owner-attention/route.ts",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/attention-detail.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "types/owner-financial-attention.ts",
+    "supabase/migrations/20261103150000_closing_attention_short_over.sql",
+    "tests/closing-short-over.test.mjs",
+    "tests/closing-short-over-browser.mjs",
+    "tests/owner-attention-api.test.mjs"
+  ],
+  "id": "e2f72da7-9244-47c8-8390-7edbb78074af",
+  "recordedAt": "2026-11-03T17:34:15.262Z",
+  "worktree": "C:\\Reylumi-worktrees\\closing-short-over-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

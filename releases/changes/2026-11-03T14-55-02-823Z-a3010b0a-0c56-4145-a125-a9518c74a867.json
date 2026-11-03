@@ -1,0 +1,61 @@
+{
+  "source": {
+    "commit": "4be32e888c4e2a188bff7eddf110f2e6020195b8",
+    "snapshot": "C:/Reylumi-worktrees/membership-admin-20261103"
+  },
+  "changeId": "membership-admin-desktop-20261103",
+  "summary": "Completed approved desktop Platform Admin redesign: default Manage with one row per salon and direct balances/actions; Settings three-column plans, usage and website; task/session-based service benefits without minute quotas; persisted draft/public website copy. Implementation only, no deployment or live commercial changes.",
+  "files": [
+    "app/(app)/admin/membership/actions.ts",
+    "app/(app)/admin/membership/desktop-settings.tsx",
+    "app/(app)/admin/membership/membership.module.css",
+    "app/(app)/admin/membership/operations.tsx",
+    "app/(app)/admin/membership/workspace.tsx",
+    "app/(legal)/membership/page.tsx",
+    "app/(legal)/membership/website.tsx",
+    "docs/membership/implementation.md",
+    "lib/membership-model.ts",
+    "lib/platform-admin/membership.ts",
+    "scripts/verify-membership-browser.mjs",
+    "supabase/migrations/202611030002_membership_desktop_settings.sql",
+    "tests/fixtures/membership-browser-actions.ts",
+    "tests/fixtures/membership-browser-entry.tsx",
+    "tests/membership-desktop.integration.test.mjs",
+    "types/reylumi-membership.ts"
+  ],
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Legacy plus desktop SQL regression",
+      "evidence": "16 tests passed: immutable versions, permissions, atomic settings rollback, website privacy, current balances, queued renewals and task completion without minute deductions"
+    },
+    {
+      "result": "passed",
+      "name": "Browser desktop flow with current Platform Admin CSS",
+      "evidence": "Real React plus both migrations in isolated PGlite; compact desktop matrix, draft/publish, website preview, direct SMS/campaign adjustment, practical technical completion, readonly controls and no phone document overflow"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped TypeScript, ESLint and patch whitespace",
+      "evidence": "New and changed product modules with canonical shared dependencies"
+    },
+    {
+      "result": "pending",
+      "name": "Assembled production release checks",
+      "evidence": "No deployment or production migration; fresh source baseline and actual hosted auth/build checks belong to the separately authorized release."
+    }
+  ],
+  "dependencies": [
+    "membership-admin-20261103"
+  ],
+  "status": "needs-integration",
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "id": "a3010b0a-0c56-4145-a125-a9518c74a867",
+  "recordedAt": "2026-11-03T14:55:02.823Z",
+  "worktree": "C:\\Reylumi-worktrees\\membership-admin-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "iphone-owner-gift-metrics-20261103",
+  "status": "needs-integration",
+  "summary": "Use a scoped responsive Gift Card metric grid with intact amounts and human-readable English/Vietnamese labels",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/gift-card/manage-gift-cards.tsx",
+    "components/gift-card/gift-card.css",
+    "lib/vietnamese-workspace-copy.json"
+  ],
+  "source": {
+    "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "snapshot": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103\\artifacts\\iphone-quality-audit-20261103\\gift-metrics-frozen"
+  },
+  "hashes": {
+    "components/gift-card/manage-gift-cards.tsx": "294cd1fa50e9a67bd0fa1535350d91e1bdfc881da3ef2bcb87a8c3c5f3a27b36",
+    "components/gift-card/gift-card.css": "ea9d773da4006be26a5e3804c1c1986a46e909c68554c30773e763ff9ad95e7d",
+    "lib/vietnamese-workspace-copy.json": "14639410630b52bc97cc8e2d2ed495d732bd832765061fe3a84bdee9483ac9ba"
+  },
+  "validation": [
+    {
+      "name": "20 actual ManageGiftCards/WorkspaceLanguageProvider render states across five widths, two languages and zero/large values",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/gift-metrics-verification.json"
+    },
+    {
+      "name": "Scoped ESLint, targeted TypeScript program and minimal diff whitespace",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/gift-metrics-verification.json"
+    },
+    {
+      "name": "Integrated production/native build and corrected-binary physical acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "Presentation-only; no monetary calculations, request behavior, settings or financial actions changed.",
+    "Local browser rendering with synthetic read response does not establish corrected-binary physical acceptance.",
+    "Installed build88 unchanged; regenerate native bundle/provenance and build a future binary for iPhone delivery.",
+    "Frozen dictionary is baseline88 plus only the five Gift metric entries. Current shared dictionary also contains the separate Customer appt/appts patch; merge both disjoint hunks and never replace the shared dictionary wholesale."
+  ],
+  "id": "c8b0fe70-5df7-4a08-9090-b969f8438a81",
+  "recordedAt": "2026-11-03T18:43:04.566Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

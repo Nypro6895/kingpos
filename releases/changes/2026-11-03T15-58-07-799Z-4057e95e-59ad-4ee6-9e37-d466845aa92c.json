@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "role-chrome-20261103",
+  "status": "needs-integration",
+  "summary": "Optimized role-aware header/bottom menu; preserve Help/Legal content through workspace shell failures; queued for the next authorized combined deploy only",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/legal/legal-navigation-shell.tsx",
+    "app/role-navigation.ts",
+    "app/navigation-shell.tsx",
+    "tests/mobile-landscape-legal-runtime.test.mjs",
+    "tests/role-chrome-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\role-chrome-20261103\\optimized-v2\\frozen",
+    "patch": "artifacts/role-chrome-20261103/optimized-v2/scoped.patch",
+    "hashes": "artifacts/role-chrome-20261103/optimized-v2/hashes.json"
+  },
+  "validation": [
+    {
+      "name": "25 regression tests including 285 Chromium fixture cases",
+      "result": "passed",
+      "evidence": "artifacts/role-chrome-20261103/optimized-v2/tests.txt"
+    },
+    {
+      "name": "ESLint and scoped patch reverse application",
+      "result": "passed",
+      "evidence": "artifacts/role-chrome-20261103/optimized-v2/lint.txt"
+    },
+    {
+      "name": "fresh integrated build, authenticated pages and physical iPhone",
+      "result": "pending",
+      "evidence": "artifacts/role-chrome-20261103/optimized-v2/DEPLOY-QUEUE.md"
+    }
+  ],
+  "id": "4057e95e-59ad-4ee6-9e37-d466845aa92c",
+  "recordedAt": "2026-11-03T15:58:07.799Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,41 @@
+{
+  "summary": "Bounded fresh Today admission recovery after native cookie reset or lost hosted-return context",
+  "status": "needs-integration",
+  "changeId": "ios-session-reset-recovery-20261103",
+  "kind": "change",
+  "files": [
+    "app/local-app/entry.tsx",
+    "tests/app-local-session-reset-recovery.test.mjs",
+    "docs/ios-session-reset-recovery-20261103.txt"
+  ],
+  "channels": [
+    "ios"
+  ],
+  "validation": [
+    {
+      "name": "26 Node regression tests",
+      "result": "passed"
+    },
+    {
+      "name": "Installed app QA bundle compilation, 99 routes, missing=0",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped CRLF-aware whitespace",
+      "result": "passed"
+    },
+    {
+      "result": "pending",
+      "evidence": "docs/ios-session-reset-recovery-20261103.txt",
+      "name": "Signed native bundle, Xcode/archive and physical iPhone acceptance"
+    }
+  ],
+  "source": {
+    "commit": "102a2a8cc8fca2e0638c70301faef4006c209949"
+  },
+  "id": "4f7877c9-3250-4ae0-8624-f08da4053cb5",
+  "recordedAt": "2026-11-03T16:07:47.693Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-session-reset-recovery-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

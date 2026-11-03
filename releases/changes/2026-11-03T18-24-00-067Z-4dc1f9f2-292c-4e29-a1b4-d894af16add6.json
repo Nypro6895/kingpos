@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "iphone-owner-refresh-20261103",
+  "status": "needs-integration",
+  "summary": "Pause hidden Check In parent reads without unmounting attendance actions, and reconcile native Owner Today through tagged same-salon live hints with in-flight invalidation protection",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-local-panels.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-resource.ts",
+    "tests/native-today-first-load.test.mjs",
+    "tests/owner-panel-active-read.test.mjs"
+  ],
+  "source": {
+    "commit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "snapshot": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103\\artifacts\\iphone-quality-audit-20261103\\owner-refresh-frozen"
+  },
+  "validation": [
+    {
+      "name": "Focused component regressions for hidden reads, cross-salon/denied rejection, burst coalescing, in-flight follow-up, bootstrap/full-first/offline behavior",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/owner-refresh-verification.json"
+    },
+    {
+      "name": "69 surrounding bootstrap/shell/prefetch/reports/priority regressions",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/owner-refresh-verification.json"
+    },
+    {
+      "name": "Scoped ESLint and minimal diff whitespace check",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/owner-refresh-verification.json"
+    },
+    {
+      "name": "Whole-project TypeScript check",
+      "result": "failed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/owner-refresh-verification.json"
+    },
+    {
+      "name": "Production/native build and physical corrected-binary acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "Component/browser runtime verification uses synthetic named transport and actual broker/cache logic; no production writes or physical transaction cross-device test.",
+    "Native bundled JS changes require regenerated verified bundle and a future iOS build; installed TestFlight88 is unchanged.",
+    "Production build and physical acceptance of the corrected native binary remain integration work."
+  ],
+  "hashes": {
+    "app/pos/owner-local-panels.tsx": "bd72a0837bf77354fa2ff90342667425a6989e509300b42c7e693c79489e78c4",
+    "app/staff/today/today-progressive-client.tsx": "235729119f00296abc4637c30d346e10284a34082813689a42ec30116b279de8",
+    "lib/app-local-page-registry.tsx": "dc40f118fb2a1a2005a9398e637580957d4aa521b2ef0e9e8fcd8fef17091ff7",
+    "lib/app-local-resource.ts": "b57f00269884140193d38b12afbc1011853a04b36195443725277ac7e3cf4aad",
+    "tests/native-today-first-load.test.mjs": "1218f11a7d41e91899299e042fc4a72538c1ffe8ef4b33f5377278a5a6570141",
+    "tests/owner-panel-active-read.test.mjs": "7f369be9739d9f730602cc8f4f2496a9b7af17b9dc47f3e9be6fea155e941ac5"
+  },
+  "id": "4dc1f9f2-292c-4e29-a1b4-d894af16add6",
+  "recordedAt": "2026-11-03T18:24:00.067Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "iphone-beauty-pagination-race-20261103",
+  "status": "needs-integration",
+  "summary": "Retire old Beauty pagination replies, failures and finalizers after successful own-post Publish so they cannot skip a post or overwrite the new cursor",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/beauty/beauty-profile-client.tsx",
+    "tests/beauty-timeline-publish-race.test.mjs"
+  ],
+  "source": {
+    "baseCommit": "6756a459a5b1881930e75165b3f1b415b99d8b0d",
+    "snapshot": "artifacts/iphone-quality-audit-20261103/beauty-pagination-race-frozen",
+    "hashes": {
+      "app/beauty/beauty-profile-client.tsx": "e10b71df7b8d6627da91f5e1c7ff920e119c6f5e8f65b48a28ede9e63b3cc5a2",
+      "tests/beauty-timeline-publish-race.test.mjs": "ef879ccd463edacc53f109994e8b4309b189f0dfb9763bed46ef53fe005e8a46"
+    }
+  },
+  "validation": [
+    {
+      "name": "Three actual-component hook/callback browser regressions passed; baseline failure reproduced; no real writes",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/beauty-pagination-race-verification.json"
+    },
+    {
+      "name": "Beauty client ESLint, complete project TypeScript via existing validation config, whitespace check and frozen patch reverse check",
+      "result": "passed"
+    },
+    {
+      "name": "Current release integration, regenerated native bundle and corrected-binary iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "scope": "Only stale pagination generation fencing. No automatic new-post insertion, banners, props synchronization, refresh UI, composer/draft policy or server mutation changes. Prior retained-props behavior is withdrawn as a defect under the user's manual-only refresh policy.",
+  "id": "0eb9e7db-1a32-4a38-bd95-6c26f6dbed5b",
+  "recordedAt": "2026-11-03T19:16:58.217Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

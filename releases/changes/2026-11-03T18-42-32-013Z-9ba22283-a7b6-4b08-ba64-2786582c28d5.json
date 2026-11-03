@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "iphone-quality-customer-appt-copy-20261103",
+  "status": "needs-integration",
+  "summary": "Native and hosted Customer list/detail summaries display 1 appt versus 0/2 appts; both forms translate to lịch hẹn",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx",
+    "lib/app-local-owner-customers-view.tsx",
+    "lib/app-local-owner-customer-detail-view.tsx",
+    "lib/vietnamese-workspace-copy.json"
+  ],
+  "source": {
+    "baseCommit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "snapshot": "artifacts/iphone-quality-audit-20261103/customer-appt-copy-frozen"
+  },
+  "validation": [
+    {
+      "name": "Four actual sources compile; actual summary JSX with real dictionary: 0/1/2 in en/vi, 24 passed",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/customer-appt-copy-rendered.json"
+    },
+    {
+      "name": "Four Customer sources ESLint: 0 errors; unchanged native-list StatusBadge unused warning",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped CRLF-aware whitespace and dictionary JSON syntax",
+      "result": "passed"
+    },
+    {
+      "name": "Current release integration, regenerated native bundle and physical corrected-binary acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "dictionaryIntegration": "Frozen dictionary and patch isolate only appt/appts keys on build88. Preserve concurrent Gift metric translations when integrating; do not replace the whole shared JSON file.",
+  "id": "9ba22283-a7b6-4b08-ba64-2786582c28d5",
+  "recordedAt": "2026-11-03T18:42:32.013Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

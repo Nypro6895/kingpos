@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "beauty-public-unification-20261103",
+  "status": "needs-integration",
+  "summary": "Optimized Beauty public UI and account-session prompts; queued for next owner-authorized combined deployment only",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/beauty-profile-header.tsx",
+    "components/auth-intent-prompt.tsx",
+    "components/explore-account-actions.tsx",
+    "app/saved-post/save-post-button.tsx",
+    "app/explore/beauty/beauty-follow-button.tsx",
+    "app/(app)/explore/beauty/[profileId]/page.tsx",
+    "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/explore/explore-feed.tsx",
+    "app/explore/explore-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "lib/beauty-relationship.ts",
+    "tests/beauty-public-unification.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/beauty-public-unification-20261103/artifacts/beauty-public-unification/revision-2/frozen"
+  },
+  "validation": [
+    {
+      "name": "Chrome shared post mutations",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/tests-chrome.log: 7 passed"
+    },
+    {
+      "name": "responsive fixture layout",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/visual-results.json: 10 checks"
+    },
+    {
+      "name": "full app production compile",
+      "result": "failed",
+      "evidence": "artifacts/beauty-public-unification/next-full-compile.log: pre-existing images/normalize runtime configuration incompatible with cacheComponents"
+    },
+    {
+      "name": "WebKit and authenticated physical iPhone",
+      "result": "pending",
+      "evidence": "WebKit is not installed; physical/live session acceptance not performed"
+    },
+    {
+      "name": "optimized core tests",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/tests-optimized.log: 57 passed"
+    },
+    {
+      "name": "source-only TypeScript and targeted ESLint",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/typescript-optimized.log; artifacts/beauty-public-unification/eslint-optimized.log"
+    },
+    {
+      "name": "four selected actual routes compile mode",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/next-optimized-compile.log"
+    },
+    {
+      "name": "revision 2 scoped patch",
+      "result": "passed",
+      "evidence": "artifacts/beauty-public-unification/revision-2/patch-validation.json: 13 files match normalized frozen hashes"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "releaseIntent": "next-authorized-combined-release-only",
+  "priorRevisionEventId": "a2ba0379-9067-47d3-80c5-7772c11e734a",
+  "id": "ffae1100-6293-4d2d-bc1b-d7cfae64b66e",
+  "recordedAt": "2026-11-03T17:26:32.035Z",
+  "worktree": "C:\\Reylumi-worktrees\\beauty-public-unification-20261103",
+  "deletedFiles": []
+}
