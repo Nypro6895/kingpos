@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-11-03T17:38:13.419Z",
+  "operation": "GET requests only; no checkout, charge, invoice or subscription created",
+  "checks": {
+    "configured": true,
+    "enabled": true,
+    "mode": "live",
+    "webhookSecretConfigured": true,
+    "publishableKeyConfigured": true,
+    "portalConfigured": true,
+    "accountStatus": 200,
+    "accountMatches": true,
+    "chargesEnabled": true,
+    "payoutsEnabled": true,
+    "webhookReadStatus": 200,
+    "existingWebhookFound": true,
+    "webhookEnabled": true,
+    "webhookURLMatches": true,
+    "webhookEvents": [
+      "checkout.session.completed",
+      "checkout.session.expired",
+      "invoice.paid",
+      "invoice.payment_failed",
+      "customer.subscription.updated",
+      "customer.subscription.deleted",
+      "charge.refunded",
+      "payment_intent.succeeded",
+      "credit_note.created",
+      "credit_note.voided"
+    ]
+  }
+}

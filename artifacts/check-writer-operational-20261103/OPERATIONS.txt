@@ -1,0 +1,23 @@
+Check Writer — live software release,2026-11-03 America/Chicago
+
+Open Owner workspace → Market → Check Writer. Approved planUSD4.90/month/salon; tax/fees are shown before payment. Buy with card is available. The Owner must choose and complete the purchase; this release did not charge or subscribe the audit salon.
+After payment is confirmed by the existing provider pipeline: open Check Writer, unlock with the existing account/MFA flow, enter bank/check settings, select Payroll or Standalone check, review, create, then download/print. Never enter bank information in chat. Printing does not mark Payroll paid or alter canonical financial calculations.
+Check Writer is hosted over original authenticated HTTPS in the current iOS app. No new iOS installation is required for this server/schema/configuration release.
+
+Completed:
+- Three migrations applied atomically and recorded.8private/RLS tables,zero anonymous executable Check Writer functions.
+- Exact current production source preserved; only lib/check-writer-server.ts changed to reuse context and load business date in parallel.
+- New32byte server-only sensitive production encryption key; protected current-Windows-account DPAPI recovery file outside Git. Preserve existing key/versions; do not regenerate after bank data is saved.
+- Catalog and runtime activation enabled only for print-check at490cents/month/salon.
+- Existing Stripe account/live mode/webhook/portal configuration checked using GET only. No payment,invoice,subscription or bank action created.
+-40focused tests;18real PostgreSQL tests including concurrency;2Market/Safari integration regressions; local/cloud production builds,TypeScript,scoped lint;9candidate and9live HTTP checks; exact3843source hashes.
+- Live authenticated Owner read verified operationalReady=true,payroll available,no load error. Market shows enabled Buy with card at approved price. Existing audit salon remains unsubscribed.
+- LetterPDF with Vietnamese payee,two independent stubs,correct amount and blank signature visually reviewed with fabricated data. No production negotiable check generated.
+
+Practical acceptance still required before real checks: configure the salon's real bank/stock privately,print an alignment/sample on the actual printer/stock,verify AirPrint/Windows settings and MICR/bank requirements. These physical or bank checks are not proven by PDF rendering or simulator tests. No live charged subscription or real printed check was exercised by the agent.
+
+Source commit:6a2772cea774e52c88f4951a41a0d9bd54f1c33e
+Web deployment:dpl_3h9iNLcgqtj9ksoZVQ6GuTLCVaJf
+Baseline:dpl_5uTX9ctmgrPwGEhodjDZQKneMkZa
+Native baseline remains1.0.0(88); Universal Links unchanged.
+Evidence:release-receipt.json,live-owner-state.json,live-owner-market.json,backend-final-verification.json,catalog-activation.json.

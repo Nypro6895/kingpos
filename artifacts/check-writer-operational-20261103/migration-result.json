@@ -1,0 +1,13 @@
+{
+  "exactSQLVerified": true,
+  "transactionCommitted": true,
+  "verification": {
+    "tables": 8,
+    "catalog": {
+      "price": 490,
+      "ready": false
+    },
+    "allPrivate": true,
+    "anonExecutableFunctions": 0
+  }
+}

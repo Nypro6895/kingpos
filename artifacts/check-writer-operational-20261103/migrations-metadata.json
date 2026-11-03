@@ -1,0 +1,17 @@
+[
+  {
+    "name": "20261028040000_check_writer.sql",
+    "version": "20261028040000",
+    "sha256": "8451080bce2dbf2d1ed17e4a1727c4b0bdb85679fcf16fff553d427f1193b3c8"
+  },
+  {
+    "name": "20261028193000_check_writer_output_and_price.sql",
+    "version": "20261028193000",
+    "sha256": "66ff47113676230443ea09858afda8fe54ae98ad639c858105a013e2101fac95"
+  },
+  {
+    "name": "20261029040000_check_writer_sales_hold.sql",
+    "version": "20261029040000",
+    "sha256": "c41fd7097dd719902b450852e25799d40f74a6a8ebf982ccc417d2b08d124793"
+  }
+]

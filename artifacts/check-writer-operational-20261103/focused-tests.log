@@ -1,0 +1,50 @@
+▶ Check Writer API: origin, tenant context, unlock, payroll tampering, encrypted settings and MFA
+  ✔ cross-origin rejected before authentication or storage (14.7198ms)
+  ✔ owner and short-lived unlock are required (1.5707ms)
+  ✔ stale salon UI cannot issue into the newly selected salon (0.433ms)
+  ✔ tampered or foreign payroll lines cannot issue (1.8651ms)
+  ✔ payroll canonical name, amount and selected details survive preview/issuance (149.2866ms)
+  ✔ settings store ciphertext, return no bank secret and enforce routing checksum (1.5994ms)
+  ✔ rate limit rejects before credential verification (0.4218ms)
+  ✔ password unlock produces HttpOnly five-minute cookie (0.6302ms)
+  ✔ MFA cannot fall back to password and failed OTP never grants cookie (0.9072ms)
+  ✔ expired paid access still allows verified safety void (0.4584ms)
+✔ Check Writer API: origin, tenant context, unlock, payroll tampering, encrypted settings and MFA (173.7092ms)
+✔ subscription lifecycle fails closed and permits provider-verified cancellation (25.7086ms)
+✔ real Market card panel uses $4.90, blocks unavailable/active sales and checks verified return on iOS/Windows (1275.6352ms)
+✔ live payroll integration reads the existing calculator, fingerprints meaningful changes and never saves a payroll statement (2.2202ms)
+✔ preflight rejects accidental live target, enabled sales and malformed crypto without displaying values (0.9123ms)
+✔ existing provider reconciliation enforces Check Writer invoice/account/salon/price and refund facts (provider responses are fixtures) (32.3965ms)
+✔ key rotation retains old snapshots and malformed configuration never reveals key material (3.2846ms)
+✔ request parsing rejects oversized chunked bodies before JSON parsing (13.5426ms)
+✔ exact cents, routing checksum, Gregorian dates, safe text and independent stub options (0.7742ms)
+✔ bank encryption is randomized, tamper resistant and salon bound; unlock is short-lived and session bound (0.5041ms)
+✔ PDF embeds Vietnamese text and MICR, Letter dimensions, two stubs and a blank hand-signature line (184.333ms)
+✔ checkout stays closed without explicit sales release and valid crypto; no provider or DB call (34.4516ms)
+✔ Check Writer UI: mobile/desktop payroll, standalone, two stubs, verification, history and device-only calibration (5520.0799ms)
+▶ Check Writer database: isolation, atomic issuance, unchanged payroll and audited lifecycle
+  ✔ checkout stays closed at zero price with Reylumi ownership (6.3927ms)
+  ✔ approved monthly price is 490 cents and fulfillment is enabled (0.8407ms)
+  ✔ release hold preserves approved price but prevents card reservation (2.8103ms)
+  ✔ unpaid and cross-tenant owners cannot write (4.7808ms)
+  ✔ authenticated/anonymous have no direct bank, check or RPC access (3.3492ms)
+  ✔ idempotent replay, hash mismatch and unique numbering (9.883ms)
+  ✔ invalid batch rolls back checks, batch reservation and number (2.1776ms)
+  ✔ canonical payroll amounts and stub fields; payroll remains unchanged (6.1588ms)
+  ✔ stale payroll, changed amount and draft payroll fail closed (4.8853ms)
+  ✔ reprint reasons, void cannot print, number never reused (4.687ms)
+  ✔ live Payroll snapshots stay inside the plugin and block overlapping or stale checks (3.5603ms)
+  ✔ lost creation recovery and cancellation block late requests (6.508ms)
+  ✔ batch output is atomic, stale counters and repeated dispatch are rejected (12.7294ms)
+  ✔ existing card pipeline grants and revokes only verified paid access (9.1754ms)
+  ✔ expired access blocks issuance, retains void and history (1.7978ms)
+  ✔ unlock attempts are durably rate limited (1.8131ms)
+✔ Check Writer database: isolation, atomic issuance, unchanged payroll and audited lifecycle (1159.188ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5882.724

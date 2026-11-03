@@ -1,0 +1,10 @@
+{
+  "newNativeBuildRequired": false,
+  "baselineVersion": "1.0.0",
+  "baselineBuild": "88",
+  "baselineCommit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+  "reason": "Only server-side state read optimization, hosted schema and server-only production configuration. Check Writer remains original HTTPS route in installed binary; no Swift, bridge, bundled module, asset, entitlement or native config changed.",
+  "selectedCode": [
+    "lib/check-writer-server.ts"
+  ]
+}

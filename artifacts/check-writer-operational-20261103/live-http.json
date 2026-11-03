@@ -1,0 +1,43 @@
+{
+  "at": "2026-11-03T17:48:38.434Z",
+  "passed": true,
+  "applicationSession": false,
+  "checks": [
+    {
+      "route": "/check-writer",
+      "status": 200
+    },
+    {
+      "route": "/market?activate=print-check&q=Check%20Writer",
+      "status": 200
+    },
+    {
+      "route": "/payroll",
+      "status": 200
+    },
+    {
+      "route": "/staff/my-work?tab=payroll",
+      "status": 200
+    },
+    {
+      "route": "/explore",
+      "status": 200
+    },
+    {
+      "route": "/privacy",
+      "status": 200
+    },
+    {
+      "route": "/.well-known/apple-app-site-association",
+      "status": 200
+    },
+    {
+      "route": "/api/check-writer",
+      "status": 403
+    },
+    {
+      "route": "/api/check-writer/pdf",
+      "status": 405
+    }
+  ]
+}

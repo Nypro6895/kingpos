@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-03T17:39:16.864Z",
+  "serverOnly": true,
+  "productionOnly": true,
+  "keyVersion": "v1",
+  "keyBytes": 32,
+  "provider": "Vercel sensitive production environment",
+  "protectedBackup": "Current Windows account DPAPI; outside repository",
+  "variableId": "MQoioFNGJvRlCFyf",
+  "valuesLogged": false
+}

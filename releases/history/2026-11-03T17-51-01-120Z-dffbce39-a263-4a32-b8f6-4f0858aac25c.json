@@ -1,0 +1,86 @@
+{
+  "kind": "release",
+  "summary": "Check Writer software/backend activated on live web and existing iOS HTTPS route: private schema,server-only bank encryption,approvedUSD4.90monthly registration; Owner state/Market verified without charging or issuing checks",
+  "changes": [
+    "628a8718-1b54-4769-92db-3ff28ddc3411"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_3h9iNLcgqtj9ksoZVQ6GuTLCVaJf",
+      "baselineDeploymentId": "dpl_5uTX9ctmgrPwGEhodjDZQKneMkZa",
+      "sourceSha256": "75668f7ac0b83c6d963971b9ae8515be4bf138ac6de214032c06354a7373664f",
+      "overlaySha256": "f6b1f165f45e39ae60c89dd42b10d3b80c3e4bd209f8b2206ddf313741df4c4f",
+      "evidence": {
+        "source": "artifacts/check-writer-operational-20261103/live-source-verified.json",
+        "http": "artifacts/check-writer-operational-20261103/live-http.json",
+        "backend": "artifacts/check-writer-operational-20261103/backend-final-verification.json",
+        "owner": "artifacts/check-writer-operational-20261103/live-owner-state.json",
+        "market": "artifacts/check-writer-operational-20261103/live-owner-market.json",
+        "activation": "artifacts/check-writer-operational-20261103/catalog-activation.json"
+      }
+    }
+  },
+  "sourceCommit": "6a2772cea774e52c88f4951a41a0d9bd54f1c33e",
+  "migrations": [
+    {
+      "name": "20261028040000_check_writer.sql",
+      "version": "20261028040000",
+      "sha256": "8451080bce2dbf2d1ed17e4a1727c4b0bdb85679fcf16fff553d427f1193b3c8"
+    },
+    {
+      "name": "20261028193000_check_writer_output_and_price.sql",
+      "version": "20261028193000",
+      "sha256": "66ff47113676230443ea09858afda8fe54ae98ad639c858105a013e2101fac95"
+    },
+    {
+      "name": "20261029040000_check_writer_sales_hold.sql",
+      "version": "20261029040000",
+      "sha256": "c41fd7097dd719902b450852e25799d40f74a6a8ebf982ccc417d2b08d124793"
+    }
+  ],
+  "configuration": {
+    "at": "2026-11-03T17:39:16.864Z",
+    "serverOnly": true,
+    "productionOnly": true,
+    "keyVersion": "v1",
+    "keyBytes": 32,
+    "provider": "Vercel sensitive production environment",
+    "protectedBackup": "Current Windows account DPAPI; outside repository",
+    "variableId": "MQoioFNGJvRlCFyf",
+    "valuesLogged": false
+  },
+  "nativeAssessment": {
+    "newNativeBuildRequired": false,
+    "baselineVersion": "1.0.0",
+    "baselineBuild": "88",
+    "baselineCommit": "aae0f25b09c7d98d2b5d7d4f8795c75e08c12023",
+    "reason": "Only server-side state read optimization, hosted schema and server-only production configuration. Check Writer remains original HTTPS route in installed binary; no Swift, bridge, bundled module, asset, entitlement or native config changed.",
+    "selectedCode": [
+      "lib/check-writer-server.ts"
+    ]
+  },
+  "acceptance": {
+    "softwareAndHostedBackend": true,
+    "existingLiveProviderGETChecks": true,
+    "liveChargedSubscription": false,
+    "actualProductionCheckIssued": false,
+    "physicalPrinterAirPrintOrMICRAcceptance": false,
+    "bankAcceptance": false,
+    "ownerSalonActivated": false
+  },
+  "limitations": [
+    "Existing Owner salon remains unpaid/inactive until its Owner chooses to subscribe. No free or fabricated paid access granted.",
+    "No real charge,invoice,production check or print was created as testing. Owner must validate check stock/printer alignment and bank requirements before real use.",
+    "No new native binary or Universal Links change in this release."
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_5uTX9ctmgrPwGEhodjDZQKneMkZa",
+    "disableNewCheckWriterSales": "Set print-check fulfillment_ready=false and runtime sales flag false, retain encryption key and all history/schema",
+    "note": "Do not drop tables,change bank encryption key or undo unrelated releases"
+  },
+  "id": "dffbce39-a263-4a32-b8f6-4f0858aac25c",
+  "recordedAt": "2026-11-03T17:51:01.120Z",
+  "worktree": "C:\\Reylumi-worktrees\\check-writer-operational-20261103"
+}

@@ -1,0 +1,27 @@
+▶ Check Writer database: isolation, atomic issuance, unchanged payroll and audited lifecycle
+  ✔ checkout stays closed at zero price with Reylumi ownership (7.7105ms)
+  ✔ approved monthly price is 490 cents and fulfillment is enabled (1.2118ms)
+  ✔ release hold preserves approved price but prevents card reservation (3.9596ms)
+  ✔ unpaid and cross-tenant owners cannot write (5.6794ms)
+  ✔ authenticated/anonymous have no direct bank, check or RPC access (6.973ms)
+  ✔ idempotent replay, hash mismatch and unique numbering (10.9829ms)
+  ✔ invalid batch rolls back checks, batch reservation and number (4.309ms)
+  ✔ canonical payroll amounts and stub fields; payroll remains unchanged (6.926ms)
+  ✔ stale payroll, changed amount and draft payroll fail closed (8.8179ms)
+  ✔ reprint reasons, void cannot print, number never reused (8.9645ms)
+  ✔ live Payroll snapshots stay inside the plugin and block overlapping or stale checks (7.7039ms)
+  ✔ lost creation recovery and cancellation block late requests (13.0024ms)
+  ✔ batch output is atomic, stale counters and repeated dispatch are rejected (19.1988ms)
+  ✔ real PostgreSQL concurrent sessions issue once and allow only one output (17.3776ms)
+  ✔ existing card pipeline grants and revokes only verified paid access (12.672ms)
+  ✔ expired access blocks issuance, retains void and history (4.1799ms)
+  ✔ unlock attempts are durably rate limited (4.0671ms)
+✔ Check Writer database: isolation, atomic issuance, unchanged payroll and audited lifecycle (960.0992ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1020.9161

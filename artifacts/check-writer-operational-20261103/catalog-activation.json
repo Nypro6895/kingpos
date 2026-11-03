@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-11-03T17:49:33.159Z",
+  "exactSQLVerified": true,
+  "result": {
+    "plugin": "print-check",
+    "published": true,
+    "priceCents": 490,
+    "fulfillmentReady": true
+  }
+}
