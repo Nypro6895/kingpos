@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-03T22:48:38.720Z",
+  "environment": "Production Chrome desktop; authenticated salon Owner and Platform Owner session",
+  "webDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+  "scope": "Read-only production UI verification after user completed login",
+  "checks": [
+    {
+      "name": "Forum latest list",
+      "passed": true,
+      "details": "15 practical nails/worklife/salon/Reylumi topics visible, each reports two replies; logo left/profile right, compact teal header."
+    },
+    {
+      "name": "Topic detail",
+      "passed": true,
+      "details": "Opened a seeded Vietnamese topic; full body and both replies rendered; Reply as current signed-in owner."
+    },
+    {
+      "name": "Inline management menu",
+      "passed": true,
+      "details": "Report, Delete, Lock, Pin and Move section controls visible."
+    },
+    {
+      "name": "General chat",
+      "passed": true,
+      "details": "Loaded empty conversation and message composer; no message submitted."
+    },
+    {
+      "name": "Forum moderation workspace",
+      "passed": true,
+      "details": "Reports and Restricted accounts load empty states. Five sections render Add/Edit/Move up/down controls."
+    },
+    {
+      "name": "Platform Team integration",
+      "passed": true,
+      "details": "Forum link opens Platform Admin Team. Add Existing User role selector includes Moderator; no user chosen or role changed."
+    },
+    {
+      "name": "Admin forum entry",
+      "passed": true,
+      "details": "Admin sidebar opens /admin/forum with moderation and platform-team links and correct forum-only restriction explanation."
+    },
+    {
+      "name": "Membership admin",
+      "passed": true,
+      "details": "Manage loads zero enrolled salons; Settings shows Essential/Growth/Premium, blank prices and Enrollment unchecked."
+    }
+  ],
+  "limitations": [
+    "No posts/replies/chat messages created or deleted; no restriction, section order, role, plan, price or enrollment changed.",
+    "Separate Moderator and denied-role accounts were not exercised in production.",
+    "Physical iPhone installation/device QA remains pending."
+  ],
+  "screenshots": [
+    "releases/evidence/combined-recent-20261103-live-forum-owner.png",
+    "releases/evidence/combined-recent-20261103-live-forum-management.png",
+    "releases/evidence/combined-recent-20261103-live-forum-sections.png",
+    "releases/evidence/combined-recent-20261103-live-membership-drafts.png"
+  ]
+}
