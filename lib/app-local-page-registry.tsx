@@ -133,7 +133,7 @@ function StaffPage(props: AppLocalPageProps) {
   const schedule = state.data as StaffScheduleResource;
   return <StaffScheduleView data={schedule.result} salonId={schedule.salonId} params={params} />;
 }
-function TodayPage(props: AppLocalPageProps) { return <AppLocalTodayClient scope={props.context!.context.scope} requestedDate={ticketNotificationDate(queryFor(props.path, ["date","inputEvent","eventDate"]))} historyQuery={urlFor(props.path).search} />; }
+function TodayPage(props: AppLocalPageProps) { return <AppLocalTodayClient scope={props.context!.context.scope} salonId={props.context!.context.salonId ?? ""} requestedDate={ticketNotificationDate(queryFor(props.path, ["date","inputEvent","eventDate"]))} historyQuery={urlFor(props.path).search} />; }
 function OwnerAttentionPage(props: AppLocalPageProps) {
   const query = queryFor(props.path, ["item", "page"]);
   return <ReadView<OwnerAttentionData> {...props} name="page.owner-attention" args={query} title="Financial attention">{(data, refresh) => <main className="mx-auto max-w-4xl p-4"><a href="/staff/today">← Today</a>{query.item ? data.items[0] ? <AttentionDetail data={data} item={data.items[0]} onSaved={() => void refresh()} /> : <p>This item changed or was resolved. <a href="/staff/today/attention">Open current attention</a></p> : <AttentionList data={data} page={Number(query.page ?? 0)} onSaved={() => void refresh()} />}</main>}</ReadView>;

@@ -131,10 +131,70 @@ test('startup bounds hidden reads and navigation still opens an unwarmed financi
   await page.evaluate(() => { window.dispatchEvent(new Event('reylumi:foreground')); window.dispatchEvent(new Event('online')); });
   await page.waitForTimeout(200);
   assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.owner-payroll').length), 0);
-  await page.evaluate(() => window.configure({path:'/payroll', foreground:{name:'page.owner-payroll',args:{tab:'overview'}}}));
+  await page.evaluate(() => window.configure({path:'/payroll', foreground:{name:'page.owner-payroll',args:{tab:'shop'}}}));
   await page.getByTestId('foreground').filter({hasText:'page.owner-payroll:'}).waitFor();
   assert.equal(await page.evaluate(() => window.h.reads.filter(row => row.name === 'page.owner-payroll').length), 1);
   assert.equal(await page.evaluate(() => window.h.commands.length), 0);
+});
+
+test('dated Staff Tickets prefetch reuses the selected foreground read', options, async t => {
+  const page = await fixture(t), value = context('staff');
+  const args = { tab: 'tickets', ticketDate: '2026-10-20', staffId: staff };
+  await page.evaluate(cfg => window.configure(cfg), {
+    context: value, path: '/staff/my-work?tab=tickets&ticketDate=2026-10-20',
+    foreground: { name: 'staff.my-work', args }, runtime: true,
+  });
+  await page.getByTestId('foreground').filter({ hasText: 'staff.my-work:' }).waitFor();
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'staff.schedule' && row.finished));
+  await page.waitForTimeout(250);
+  const tickets = await page.evaluate(() => window.h.reads.filter(row => row.name === 'staff.my-work' && row.args.tab === 'tickets'));
+  assert.equal(tickets.length, 1, 'prefetch must reuse the dated foreground DTO without an extra undated Tickets read');
+  assert.deepEqual(tickets[0].args, args);
+  const reads = await page.evaluate(() => window.h.reads.map(({ name, args }) => ({ name, args })));
+  assert.deepEqual(reads, [
+    { name: 'staff.my-work', args },
+    { name: 'staff.my-work', args: { staffId: staff } },
+    { name: 'staff.schedule', args: { staffId: staff } },
+  ], 'other same-path tabs must share the two-read speculative budget');
+  await page.evaluate(() => window.configure({ path: '/staff/my-work?tab=analysis', foreground: null }));
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'staff.my-work' && row.args.tab === 'analysis'));
+  assert.equal(await page.evaluate(() => window.h.reads.length), 4, 'a newly selected tab remains eligible after the speculative budget is exhausted');
+  assert.equal(await page.evaluate(() => window.h.reads.some(row => row.args.tab === 'payroll')), false);
+  assert.equal(await page.evaluate(() => window.h.commands.length), 0);
+});
+
+test('filtered Staff schedule and Owner aliases keep the selected DTO plus two speculative reads', options, async t => {
+  const cases = [
+    ['staff', '/staff/appointments?view=week&date=2026-10-20', { name: 'staff.schedule', args: { view: 'week', date: '2026-10-20', staffId: staff } }],
+    ['owner', '/bookings?staff=Alice&date=2026-10-20', { name: 'owner.bookings', args: { query: 'date=2026-10-20&staff=Alice' } }],
+    ['owner', '/reports?date=2026-10-20', { name: 'owner.reports', args: { query: 'date=2026-10-20' } }],
+    ['owner', '/pos-tickets?date=2026-10-20', { name: 'owner.tickets', args: { query: 'date=2026-10-20' } }],
+  ];
+  for (const [kind, path, foreground] of cases) {
+    const page = await fixture(t), value = context(kind);
+    await page.evaluate(cfg => window.configure(cfg), { context: value, path, foreground, runtime: true });
+    await page.waitForFunction(() => window.h.reads.length >= 3 && window.h.reads.every(row => row.finished));
+    await page.waitForTimeout(250);
+    const reads = await page.evaluate(() => window.h.reads);
+    assert.equal(reads.length, 3, path);
+    assert.equal(reads.filter(row => row.name === foreground.name && JSON.stringify(row.args) === JSON.stringify(Object.fromEntries(Object.entries(foreground.args).sort(([a], [b]) => a.localeCompare(b))))).length, 1, path);
+    assert.equal(await page.evaluate(() => window.h.commands.length), 0);
+  }
+});
+
+test('Explore query order and page-only changes keep selected startup reads eligible after the hidden budget', options, async t => {
+  const page = await fixture(t), value = context('customer');
+  await page.evaluate(cfg => window.configure(cfg), { context: value, path: '/beauty', foreground: { name: 'page.beauty' }, runtime: true });
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.my-place' && row.finished));
+  assert.equal(await page.evaluate(() => window.h.reads.length), 3);
+  await page.evaluate(() => window.configure({ path: '/explore?q=nails&page=2&location=Chicago', foreground: null }));
+  await page.waitForFunction(() => window.h.reads.some(row => row.name === 'page.explore-feed' && row.args.query === 'location=Chicago&q=nails' && row.finished));
+  await page.waitForTimeout(250);
+  const added = await page.evaluate(() => window.h.reads.slice(3).map(({ name, args }) => ({ name, args })));
+  assert.deepEqual(added, ['page.explore', 'page.explore-extras', 'page.explore-feed'].map(name => ({ name, args: { query: 'location=Chicago&q=nails' } })));
+  await page.evaluate(() => window.configure({ path: '/explore?location=Chicago&q=nails&page=3' }));
+  await page.waitForTimeout(200);
+  assert.equal(await page.evaluate(() => window.h.reads.length), 6, 'changing only the retained cursor page must not repeat startup reads');
 });
 
 test('selecting the held preload reuses and promotes its one read', options, async t => {

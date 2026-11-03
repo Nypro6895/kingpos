@@ -1,13 +1,13 @@
 "use client";
 
-import { Activity, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Activity, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { OwnerLiveBookingWorkspace } from "@/app/bookings/owner-live-booking-workspace";
 import { OwnerLiveTickets } from "@/app/pos-tickets/owner-live-tickets";
 import { OwnerLiveReports } from "@/app/reports/owner-live-reports";
 import { PortableCheckInClient } from "@/app/pos/portable/check-in/portable-check-in-client";
 import { ownerSubmitAttendance } from "@/app/pos/owner-check-in-actions";
 import { getAppLocalHost } from "@/lib/app-local-host";
-import { useAppLocalResource, seedAppLocalResource } from "@/lib/app-local-resource";
+import { useAppLocalResource, seedAppLocalResource, invalidateAppLocalResource } from "@/lib/app-local-resource";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -33,11 +33,16 @@ export function OwnerLocalPanelBody({ data, snapshotAt, query, attendanceAction 
 
 export function OwnerPanel({ href, active, scope, salonId, navigate, attendanceAction, ticketsPath }: { href: string; active: boolean; scope: string; salonId: string; navigate: Navigate; attendanceAction?: AttendanceAction; ticketsPath?: string }) {
   const name = ownerLocalReadName(href.split("?")[0]), args = ownerLocalReadArgs(href), query = String(args.query ?? "");
-  const resource = useAppLocalResource<OwnerLocalPanelData>(scope, name, args);
+  const resource = useAppLocalResource<OwnerLocalPanelData>(scope, name, args, { enabled: active });
   const current = useRef(resource);
   const lifetime = useRef({ generation: 0 });
   useEffect(() => { current.current = resource; }, [resource]);
-  useEffect(() => { const state = lifetime.current; state.generation++; return () => { state.generation++; }; }, [scope, href]);
+  useLayoutEffect(() => { const state = lifetime.current; state.generation++; return () => { state.generation++; }; }, [scope, href, active]);
+  useEffect(() => {
+    // Check In keeps its pending attendance UI mounted while another panel is
+    // visible. Its parent reads still sleep and reconcile once on return.
+    if (!active) void invalidateAppLocalResource(scope, name, { query });
+  }, [active, scope, name, query]);
   usePosResourceRefresh(salonId, name === "owner.check-in" ? "staff" : name === "owner.tickets" ? "tickets" : name === "owner.bookings" ? "booking" : "report", async ids => {
     if (name !== "owner.check-in" || !ids?.length || current.current.data?.view !== "check-in") { await resource.refresh(); return; }
     const started = lifetime.current.generation, response = await getAppLocalHost().read<OwnerLocalPanelData>(name, { ...args, ids }, { scope });
@@ -46,11 +51,11 @@ export function OwnerPanel({ href, active, scope, salonId, navigate, attendanceA
     if (patch.data.salonId !== salonId) return;
     const data: OwnerLocalPanelData = { view: "check-in", props: { data: { ...patch.data, staff: mergeStaffRoster(previous.staff, patch.data.staff, previous.today === patch.data.today ? ids : undefined) } } };
     const merged = { ...response, data }; seedAppLocalResource(scope, name, args, merged); await saveOwnerLocalSnapshot(scope, name, args, merged);
-  }, { initialReconcile: false });
-  usePosResourceRefresh(salonId, "settings", async () => { await resource.refresh(); }, { enabled: name === "owner.bookings", initialReconcile: false });
-  usePosResourceRefresh(salonId, "catalog", async () => { await resource.refresh(); }, { enabled: name === "owner.bookings", initialReconcile: false });
+  }, { enabled: active, initialReconcile: false });
+  usePosResourceRefresh(salonId, "settings", async () => { await resource.refresh(); }, { enabled: active && name === "owner.bookings", initialReconcile: false });
+  usePosResourceRefresh(salonId, "catalog", async () => { await resource.refresh(); }, { enabled: active && name === "owner.bookings", initialReconcile: false });
   return <div hidden={!active} data-owner-local-panel={href}>
-    {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void resource.refresh(); }} active={active} ticketsPath={ticketsPath} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
+    {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void invalidateAppLocalResource(scope, name, args); }} active={active} ticketsPath={ticketsPath} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
       <h1 className="text-xl font-semibold"><WorkspaceText text={name === "owner.check-in" ? "Check In" : name === "owner.bookings" ? "Bookings" : name === "owner.tickets" ? "Tickets" : "Reports"} /></h1>
       {resource.error || typeof navigator !== "undefined" && !navigator.onLine ? <p className="mt-4 text-sm text-zinc-600"><WorkspaceText text="Connect to open this view. Your current ticket has been kept." /></p> : <LumiLoadingStatus />}
       {resource.error ? <button type="button" className="mt-3 rounded border px-4 py-2" onClick={() => void resource.refresh()}><WorkspaceText text="Try again" /></button> : null}

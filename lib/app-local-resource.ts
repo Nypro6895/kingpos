@@ -49,6 +49,29 @@ function cellFor(scope: string, name: string, args: unknown) {
 }
 function emit(cell: Cell, patch: Partial<AppLocalResourceState<unknown>>) { cell.state = { ...cell.state, ...patch }; for (const listener of cell.listeners) listener(); }
 function retainActiveResource(cell: Cell) { cell.active++; return () => { cell.active--; }; }
+function invalidateResourceCell(scope: string, name: string, args: Record<string, unknown>, cell: Cell) {
+  cell.invalidated = true;
+  cell.revision++;
+  // An authoritative hint must also withdraw an older in-flight cache read.
+  // Hidden readers retain their display state and reconcile when enabled again.
+  appLocalResourceCache.forget(cell.context);
+  if (cell.pending) cell.revalidate = true;
+  else if (cell.active) void refreshAppLocalResource(scope, name, args);
+}
+/** Invalidate an existing named cell without refreshing unrelated page/shell reads. */
+export async function invalidateAppLocalResource(scope: string, name: string, args: Record<string, unknown> = {}): Promise<void> {
+  const key = JSON.stringify([scope, name, stable(args)]), cell = cells.get(key);
+  if (!cell) return;
+  invalidateResourceCell(scope, name, args, cell);
+  // A hint received during an earlier read owns its follow-up too. Joining only
+  // the old promise would let a live subscriber mark that old result current.
+  let pending = cell.pending;
+  while (pending) {
+    await pending;
+    if (cells.get(key) !== cell || cell.pending === pending) return;
+    pending = cell.pending;
+  }
+}
 function roleReadAuthority(value: AppLocalContext, generation?: string): AppLocalRoleReadAuthority | null {
   const context = value.context;
   // Personal/unknown tenants do not establish a same-salon cache boundary.
@@ -172,16 +195,7 @@ if (typeof window !== "undefined") {
     for (const [key, cell] of cells) {
       const [owner, name, args] = JSON.parse(key) as [string, string, Record<string, unknown>];
       if (scope !== owner || !appLocalCommandAffectsResource(name, source)) continue;
-      cell.invalidated = true;
-      cell.revision++;
-      // A successful command invalidates even an earlier read still in flight.
-      // The cache owns cancellation; only the current cell schedules its repair.
-      appLocalResourceCache.forget(cell.context);
-      if (cell.pending) cell.revalidate = true;
-      // Activity keeps subscriptions and DOM, but detaches operational effects.
-      // Mark hidden data stale and reconcile once when its view returns.
-      if (!cell.active) continue;
-      if (!cell.pending) void refreshAppLocalResource(owner, name, args);
+      invalidateResourceCell(owner, name, args, cell);
     }
   });
 }
@@ -411,17 +425,18 @@ export function useAppLocalResource<T>(scope: string | undefined, name: string, 
   const initialSatisfied = Boolean(options.initialOnly && (state.data !== undefined && !state.offline || state.error));
   const available = appLocalResourceCache.isAvailable(cell.context);
   const refresh = useCallback(() => actualScope ? refreshAppLocalResource<T>(actualScope, name, JSON.parse(signature)) : Promise.resolve(), [actualScope, name, signature]);
+  const ensureFresh = useCallback(() => actualScope ? refreshAppLocalResource<T>(actualScope, name, JSON.parse(signature), { force: false, freshForMs: options.refreshAfterMs }) : Promise.resolve(), [actualScope, name, signature, options.refreshAfterMs]);
   useEffect(() => {
     if (!actualScope || !available || options.enabled === false || initialSatisfied) return;
     const release = retainActiveResource(cell);
     let alive = true;
-    const ensureFresh = () => {
+    const refreshVisible = () => {
       if (!alive || !canAutomaticallyRefreshRead()) return;
-      void refreshAppLocalResource<T>(actualScope, name, JSON.parse(signature), { force: false, freshForMs: options.refreshAfterMs });
+      void ensureFresh();
     };
-    void restoreBeforeRefresh(actualScope, name, JSON.parse(signature)).then(ensureFresh);
-    const unsubscribe = subscribeReadRefresh(ensureFresh);
+    void restoreBeforeRefresh(actualScope, name, JSON.parse(signature)).then(refreshVisible);
+    const unsubscribe = subscribeReadRefresh(refreshVisible);
     return () => { alive = false; release(); unsubscribe(); };
-  }, [actualScope, name, signature, options.enabled, options.refreshAfterMs, cell, refresh, available, initialSatisfied]);
-  return { ...state, data: available ? state.data : undefined, refresh, available };
+  }, [actualScope, name, signature, options.enabled, cell, ensureFresh, available, initialSatisfied]);
+  return { ...state, data: available ? state.data : undefined, refresh, ensureFresh, available };
 }

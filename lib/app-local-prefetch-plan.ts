@@ -13,6 +13,17 @@ type Audience = "owner" | "staff" | "personal" | "guest";
 const origin = "https://reylumi.com";
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
+/** Only the selected filter/tab is foreground-equivalent. Query order and
+ * fragments do not change a read; Explore paging stays with its retained cursor
+ * and is deliberately absent from the startup DTO arguments. Alias descriptors
+ * already retain the caller's pathname in currentJobs below. */
+export function appLocalPrefetchRouteKey(path: string): string {
+  const url = new URL(path, origin);
+  if (url.pathname === "/explore") url.searchParams.delete("page");
+  url.searchParams.sort();
+  return url.pathname + url.search;
+}
+
 /** Descriptors never grant access. Entry must first accept this exact context;
  * every scheduled read still goes through the existing scoped read transport. */
 function audience(value: AppLocalContext, now: number): Audience | null {
@@ -115,7 +126,7 @@ function currentJobs(role: Audience, value: AppLocalContext, url: URL): Job[] {
   if (role === "staff") {
     const id = staffId(value); if (!id) return [];
     if (pathname === "/salon-profile") return [read(path, "owner.salon-profile")];
-    if (pathname === "/staff/my-work") return [read(path, "staff.my-work", { ...query(url, ["tab", "payPeriodStart"]), staffId: id })];
+    if (pathname === "/staff/my-work") return [read(path, "staff.my-work", { ...query(url, ["tab", "payPeriodStart", "ticketDate"]), staffId: id })];
     if (pathname === "/staff/appointments") return [read(path, "staff.schedule", { ...query(url, ["range", "status", "bookingId", "date", "quickId", "view"]), staffId: id })];
     if (pathname === "/staff/workday") return [read(path, "staff.workday", { staffId: id })];
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { discardAppLocalResources, refreshAppLocalResource, seedAppLocalResource, useAppLocalResource } from "@/lib/app-local-resource";
+import { discardAppLocalResources, invalidateAppLocalResource, refreshAppLocalResource, seedAppLocalResource, useAppLocalResource } from "@/lib/app-local-resource";
 import { useExperienceScope } from "@/components/experience-scope";
 import { experienceResourceCache } from "@/lib/experience-resource-cache";
 import { fetchLiveExperienceResource } from "@/lib/fetch-live-experience-resource";
@@ -57,8 +57,10 @@ function WebSectionReader({ scope, salonId, date, currentDate, section, accept, 
   return <ReadFailure section={section} error={resource.error || Boolean(resource.data?.data.loadErrors.length)} retry={resource.refresh} refreshing={resource.refreshing} />;
 }
 
-function NativeSectionReader({ scope, date, section, initialReadPending, accept, fail, deny }: ReaderProps) {
+function NativeSectionReader({ scope, salonId, date, section, initialReadPending, accept, fail, deny }: ReaderProps) {
   const state = useAppLocalResource<PageData>(scope, "page.owner-today", { date, phase: section }, {enabled:!initialReadPending});
+  const refresh = useCallback(() => invalidateAppLocalResource(scope, "page.owner-today", { date, phase: section }), [scope, date, section]);
+  useLiveExperienceRefresh(salonId, tags[section], refresh, Boolean(salonId) && state.available && !state.accessDenied && !initialReadPending, { automaticRefresh: state.ensureFresh });
   useEffect(() => { if (state.data) accept(section, state.data.dashboard); }, [accept, section, state.data]);
   useEffect(() => { if (!state.available || state.accessDenied) deny(); }, [deny, state.available, state.accessDenied]);
   useEffect(() => { if (state.error && !state.refreshing && state.available && !state.accessDenied) fail(section); }, [fail, section, state.error, state.refreshing, state.available, state.accessDenied]);
@@ -124,11 +126,11 @@ export function TodayProgressiveClient(props: { initialDashboard: TodayDashboard
 }
 
 /** Native uses the existing named-read bridge and its signed argument policy. */
-export function AppLocalTodayClient({ scope, requestedDate,historyQuery }: { scope: string; requestedDate?: string;historyQuery?:string }) {
-  return <NativeTodayFrame scope={scope} requestedDate={requestedDate} historyQuery={historyQuery} completeFirst />;
+export function AppLocalTodayClient({ scope, salonId, requestedDate,historyQuery }: { scope: string; salonId: string; requestedDate?: string;historyQuery?:string }) {
+  return <NativeTodayFrame scope={scope} salonId={salonId} requestedDate={requestedDate} historyQuery={historyQuery} completeFirst />;
 }
 
-function NativeTodayFrame({scope,requestedDate,completeFirst,historyQuery}: {scope:string;requestedDate?:string;completeFirst:boolean;historyQuery?:string}) {
+function NativeTodayFrame({scope,salonId,requestedDate,completeFirst,historyQuery}: {scope:string;salonId:string;requestedDate?:string;completeFirst:boolean;historyQuery?:string}) {
   // The original endpoint selects the complete response when phase is omitted.
   const args = useMemo(() => ({ ...(requestedDate ? { date: requestedDate } : {}), ...(!completeFirst ? {phase:"shell"} : {}) }), [requestedDate,completeFirst]);
   const state = useAppLocalResource<PageData>(scope, "page.owner-today", args, {initialOnly:completeFirst});
@@ -177,9 +179,9 @@ function NativeTodayFrame({scope,requestedDate,completeFirst,historyQuery}: {sco
   };
   // The complete endpoint rejects partial upstream failures. Fall back to the
   // original independent sections rather than blanking every working section.
-  if (completeFirst && state.error && !state.data && state.available && !state.accessDenied) return <NativeTodayFrame scope={scope} requestedDate={requestedDate} historyQuery={historyQuery} completeFirst={false} />;
+  if (completeFirst && state.error && !state.data && state.available && !state.accessDenied) return <NativeTodayFrame scope={scope} salonId={salonId} requestedDate={requestedDate} historyQuery={historyQuery} completeFirst={false} />;
   if (!state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">Today</h1>
     {state.error || !state.loading && !state.refreshing ? <div role="status"><p>{state.error ?? "Connect to load Today."}</p><button type="button" disabled={recovering} onClick={() => void (needsRecovery.current ? recover() : state.refresh())}>Try again</button></div> : <p role="status">Opening…</p>}
   </main>;
-  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId="" isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} historyQuery={historyQuery} /></>;
+  return <>{state.error && <div role="status"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div>}<TodayProgressiveClient initialDashboard={state.data.dashboard} scope={scope} salonId={salonId} isOwner={state.data.isOwner} native nativeInitialPending={completeFirst && Boolean(state.offline)} recovery={{ run: recover, busy: recovering, error: recoveryError }} historyQuery={historyQuery} /></>;
 }

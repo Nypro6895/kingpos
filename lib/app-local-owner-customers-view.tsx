@@ -215,7 +215,7 @@ function CustomerList({
                   <span className="min-w-0 truncate">
                     {customer.isWalkingGroup ? `${customer.groupedCustomerIds?.length ?? 1} walk-ins · ` : ""}
                     {customer.metrics.upcoming_start_at ? <Link className="text-orange-700 underline" href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}><WorkspaceText text="Upcoming" /> {formatDateTime(customer.metrics.upcoming_start_at)}</Link> : <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at)} />}
-                    {" · "}{customer.metrics.appointment_count} <WorkspaceText text="appts" />
+                    {" · "}{customer.metrics.appointment_count} <WorkspaceText text={customer.metrics.appointment_count === 1 ? "appt" : "appts"} />
                   </span>
                   <Link className="shrink-0 tabular-nums text-zinc-700" href={detailHref}>{formatMoney(customer.metrics.finalized_spend)}{customer.metrics.active_pos_ticket_count > 0 ? ` · ${customer.metrics.active_pos_ticket_count} open` : ""}</Link>
                 </div>

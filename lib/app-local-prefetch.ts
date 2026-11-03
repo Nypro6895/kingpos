@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { AppLocalContext } from "./app-local-host";
 import { prefetchAppLocalResource } from "./app-local-resource";
-import { appLocalPrefetchPlan, appLocalTodayPrefetchJobs, type AppLocalPrefetchJob } from "./app-local-prefetch-plan";
+import { appLocalPrefetchPlan, appLocalPrefetchRouteKey, appLocalTodayPrefetchJobs, type AppLocalPrefetchJob } from "./app-local-prefetch-plan";
 import { readPriorityScheduler } from "./read-priority-scheduler";
 
 type Connection = EventTarget & { saveData?: boolean; effectiveType?: string };
@@ -25,9 +25,9 @@ const jobKey = (job: AppLocalPrefetchJob) => JSON.stringify([job.name, job.args]
  * remain eligible after that budget; previously visited offline DTOs stay intact.
  */
 export function useAppLocalPrefetch(context: AppLocalContext | null, path: string) {
-  const current = useRef({ context, path });
+  const current = useRef({ context, path, route: appLocalPrefetchRouteKey(path) });
   const wake = useRef<(() => void) | undefined>(undefined);
-  useLayoutEffect(() => { current.current = { context, path }; }, [context, path]);
+  useLayoutEffect(() => { current.current = { context, path, route: appLocalPrefetchRouteKey(path) }; }, [context, path]);
   const identity = identityOf(context);
   useEffect(() => { readPriorityScheduler.setActiveRoute(path); wake.current?.(); }, [path]);
   useEffect(() => {
@@ -39,7 +39,7 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
     const controller = new AbortController(), done = new Set<string>(), pending = new Map<string, AppLocalPrefetchJob>();
     const append = (jobs: AppLocalPrefetchJob[]) => { for (const job of jobs) if (!done.has(jobKey(job))) pending.set(jobKey(job), job); };
     append(appLocalPrefetchPlan(value, current.current.path));
-    const matches = (job: AppLocalPrefetchJob) => job.path.split("?")[0] === current.current.path.split("?")[0];
+    const matches = (job: AppLocalPrefetchJob) => appLocalPrefetchRouteKey(job.path) === current.current.route;
     const run = async () => {
       if (working || !active || denied || !canPrefetchAppLocalReads()) return;
       working = true;
