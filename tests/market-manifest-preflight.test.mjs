@@ -15,7 +15,7 @@ const cases=[
  ['same-origin callback path',m=>{m.launchUrl='https://developer.reylumi.com/new-path'},true],
 ];
 test('local declaration checks match the current actual SQL validator for supported and denied cases',async t=>{
- const db=new PGlite();try{await db.exec('create schema market_platform;');const original=fs.readFileSync('supabase/migrations/20261028043000_market_platform.sql','utf8').match(/create function market_platform\.validate_manifest\(p jsonb\)[\s\S]*?end \$\$;/)[0];await db.exec(original);const updated=fs.readFileSync('supabase/migrations/20261028210000_market_published_data.sql','utf8').match(/alter function market_platform\.validate_manifest\(jsonb\)[\s\S]*?end \$\$;/)[0];await db.exec(updated);
+ const db=new PGlite();try{await db.exec('create schema market_platform;');const original=fs.readFileSync('supabase/migrations/20261104230000_market_platform.sql','utf8').match(/create function market_platform\.validate_manifest\(p jsonb\)[\s\S]*?end \$\$;/)[0];await db.exec(original);const updated=fs.readFileSync('supabase/migrations/20261104230500_market_published_data.sql','utf8').match(/alter function market_platform\.validate_manifest\(jsonb\)[\s\S]*?end \$\$;/)[0];await db.exec(updated);
  for(const [name,change,expected] of cases)await t.test(name,async()=>{const m=base();change(m);assert.equal(inspect(m).ok,expected);let accepted=true;try{await db.query('select market_platform.validate_manifest($1::jsonb)',[JSON.stringify(m)]);}catch{accepted=false;}assert.equal(accepted,expected);});
  }finally{await db.close();}
 });

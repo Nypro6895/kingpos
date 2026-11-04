@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {contextFixture,contextId as id} from './helpers/market-context-fixture.mjs';
-const migration='supabase/migrations/20261103010000_market_publication_drafts_evidence.sql';
+const migration='supabase/migrations/20261104230700_market_publication_drafts_evidence.sql';
 const profile=name=>({displayName:name,tagline:'Public menu',businessPhone:'',businessAddress:'',website:'https://salon.example.com',timezone:'America/Chicago',brandColor:'#145946',hours:[]});
 const manifest={schemaVersion:1,type:'hosted-app',version:'1.0.0',name:'Synthetic continuity app',description:'Synthetic public profile continuity test app.',launchUrl:'https://qr.example.com/connect',privacyUrl:'https://qr.example.com/privacy',supportUrl:'https://qr.example.com/support',scopes:['salon:profile:read'],price:{currency:'usd',amountCents:0,billing:'one-time-version'}};
 const hash=s=>createHash('sha256').update(s).digest('hex');

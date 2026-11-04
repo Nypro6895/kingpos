@@ -21,9 +21,9 @@ test('market platform: durable self-service, immutable artifacts, review, consen
  for(let n=1;n<=4;n++)await db.query('insert into users(id) values($1)',[id(n)]);
  await db.query("insert into locations(id,name,owner_id) values($1,'Salon A',$2),($3,'Salon B',$4)",[id(20),id(1),id(21),id(2)]);
  await db.query('insert into market_private.reviewers(user_id) values($1),($2)',[id(3),id(1)]);
- await db.exec(readFileSync('supabase/migrations/20261028043000_market_platform.sql','utf8'));
- await db.exec(readFileSync('supabase/migrations/20261028050000_market_platform_commerce.sql','utf8'));
- await db.exec(readFileSync('supabase/migrations/20261030041500_market_platform_refund_intents.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261104230000_market_platform.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261104230100_market_platform_commerce.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261104230600_market_platform_refund_intents.sql','utf8'));
  const actor=async(n,role='authenticated')=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[n?id(n):'']);await db.exec(`set role ${role}`);};
  const rpc=async(name,args=[],types=[])=> (await db.query(`select public.market_platform_${name}(${args.map((_,i)=>`$${i+1}::${types[i]??'text'}`).join(',')}) value`,args)).rows[0].value;
  await actor(1);

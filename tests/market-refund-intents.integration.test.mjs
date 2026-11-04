@@ -9,7 +9,7 @@ test('actual refund-intent SQL: authority, stable intent, legacy age, immutabili
  create table market_platform.payouts(id text);
  create function market_platform.actor() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  create function public.market_billing_require_admin() returns uuid language plpgsql as $$begin if market_platform.actor() is distinct from '${id(1)}'::uuid then raise exception using errcode='42501',message='Financial admin required.';end if;return market_platform.actor();end$$;`);
- await db.exec(readFileSync('supabase/migrations/20261030041500_market_platform_refund_intents.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261104230600_market_platform_refund_intents.sql','utf8'));
  const actor=async(user,role='authenticated')=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[user?id(user):'']);await db.exec(`set role ${role}`);};
  const quote=async(order)=> (await db.query('select public.market_platform_refund_quote($1) value',[id(order)])).rows[0].value;
  const observe=async(intent,refund,status)=> (await db.query('select public.market_platform_refund_observation_apply($1,$2,$3) value',[intent,refund,status])).rows[0].value;

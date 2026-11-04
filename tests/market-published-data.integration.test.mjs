@@ -89,12 +89,12 @@ test("four published groups: tenant, exact scope/version, publication revision, 
     id(3),
   ]);
   for (const name of [
-    "20261028043000_market_platform.sql",
-    "20261028050000_market_platform_commerce.sql",
-    "20261028060000_market_owner_connections.sql",
-    "20261028063000_market_developer_tools.sql",
-    "20261028070000_market_provider_accounting.sql",
-    "20261028210000_market_published_data.sql",
+    "20261104230000_market_platform.sql",
+    "20261104230100_market_platform_commerce.sql",
+    "20261104230200_market_owner_connections.sql",
+    "20261104230300_market_developer_tools.sql",
+    "20261104230400_market_provider_accounting.sql",
+    "20261104230500_market_published_data.sql",
   ])
     await db.exec(readFileSync("supabase/migrations/" + name, "utf8"));
   await db.exec("update market_platform.settings set enabled=true");

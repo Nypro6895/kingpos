@@ -10,7 +10,7 @@ test('current single-owner lifecycle: rejection, immutable resubmission, update/
  for(let n=1;n<=4;n++)await db.query('insert into users(id) values($1)',[id(n)]);
  await db.query("insert into locations(id,name,owner_id) values($1,'Synthetic A',$2),($3,'Synthetic B',$4)",[id(20),id(1),id(21),id(2)]);
  await db.query('insert into market_private.reviewers(user_id) values($1),($2)',[id(1),id(3)]);
- for(const migration of ['20261028043000_market_platform.sql','20261028050000_market_platform_commerce.sql','20261028060000_market_owner_connections.sql','20261028063000_market_developer_tools.sql','20261028070000_market_provider_accounting.sql','20261028210000_market_published_data.sql','20261030041500_market_platform_refund_intents.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+migration,'utf8'));
+ for(const migration of ['20261104230000_market_platform.sql','20261104230100_market_platform_commerce.sql','20261104230200_market_owner_connections.sql','20261104230300_market_developer_tools.sql','20261104230400_market_provider_accounting.sql','20261104230500_market_published_data.sql','20261104230600_market_platform_refund_intents.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+migration,'utf8'));
  await db.exec('update market_platform.settings set enabled=true');
  const actor=async n=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[n?id(n):'']);await db.exec('set role authenticated');};
  const rpc=async(name,args=[],types=[]) => {

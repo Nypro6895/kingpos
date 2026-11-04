@@ -122,6 +122,7 @@ export async function startIsolatedSupabase(labelPrefix = 'booking-access', imag
     await ready(() => sql("select to_regclass('storage.objects') is not null and to_regclass('storage.buckets') is not null") === 't', 'Fixture Storage schema unavailable');
     const migrations = path.join(process.cwd(), 'supabase/migrations');
     for (const file of fs.readdirSync(migrations).filter(n => n.endsWith('.sql')).sort()) {
+      if (options.excludeMigrations?.includes(file)) continue;
       const bytes = fs.readFileSync(path.join(migrations, file));
       // Replay the SQL text with the same LF convention as the deployed Linux
       // checkout. PL/pgSQL pg_get_functiondef guards compare literal newlines;
