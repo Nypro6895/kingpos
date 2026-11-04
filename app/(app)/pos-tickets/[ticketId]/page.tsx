@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import {getContextBusinessTimezone} from "@/lib/salon-business-clock";
 import {TicketDetailInlineHistory} from "@/app/pos-tickets/closed-ticket-correction-form";
 import { withExperiencePage } from "@/components/experience-page";
@@ -620,7 +622,7 @@ async function PosTicketDetailPage({
           </p>
           <p>
             <span className="font-medium text-zinc-950"><WorkspaceText text="Assigned Salon:" /></span>{" "}
-            {context.currentSalon.name}
+            <SalonName name={context.currentSalon.name} salonId={context.currentSalon.id}/>
           </p>
         </div>
         </TicketDetailInlineHistory>
@@ -1098,7 +1100,7 @@ async function PosTicketDetailPage({
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5">
           <div className="border-b border-zinc-200 pb-4 text-sm">
             <p className="text-lg font-semibold text-zinc-950">
-              {receipt.header.salon_name}
+              <SalonName name={receipt.header.salon_name} salonId={context.currentSalon?.id}/>
             </p>
             {receipt.header.salon_phone ? (
               <p className="mt-1 text-zinc-700">{receipt.header.salon_phone}</p>

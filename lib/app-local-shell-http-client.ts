@@ -10,21 +10,25 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
     const local = url.protocol === base.protocol && url.hostname === base.hostname && url.port === base.port;
     if (!options.host().isNative || url.username || url.password || url.hash || !(local || url.origin === "https://reylumi.com") || raw.startsWith("//") && !local) return options.fetch(input, init);
     const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
-    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising", "/api/campaigns/delivery": "http.shell.campaigns" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event", "/api/campaigns/delivery": "http.shell.campaign-event" } as Record<string, string>)[url.pathname] : undefined;
+    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/forum/latest": "http.shell.forum-latest", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising", "/api/campaigns/delivery": "http.shell.campaigns" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/membership/salon-badges": "http.shell.membership-badges", "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event", "/api/campaigns/delivery": "http.shell.campaign-event" } as Record<string, string>)[url.pathname] : undefined;
     if (!name) return options.fetch(input, init);
     const scope = options.scope(), signal = init?.signal ?? request?.signal; if (!scope) throw new Error("Connect to verify your account."); if (signal?.aborted) throw signal.reason;
     let data: AppLocalHttpResponse;
     try {
       if (method === "GET") {
-        if (name === "http.shell.session" && url.search) throw new Error("Unsupported session scope.");
+        if (["http.shell.session", "http.shell.forum-latest"].includes(name) && url.search) throw new Error("Unsupported session scope.");
         if ([...url.searchParams].some(([key]) => url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported shell request.");
         const result = await options.host().read<AppLocalHttpResponse>(name, Object.fromEntries(url.searchParams), { scope, signal: signal ?? undefined });
         if (!result.data) throw new Error("Could not open this page."); data = result.data;
       } else {
         const body = typeof init?.body === "string" ? init.body : request ? await request.clone().text() : "";
-        if (body.length > 2048) throw new Error("The request could not be sent.");
+        if (body.length > (name === "http.shell.membership-badges" ? 10000 : 2048)) throw new Error("The request could not be sent.");
         const parsed = body ? JSON.parse(body) : {};
-        if (name === "http.shell.campaign-event" && parsed?.kind === "select") {
+        if (name === "http.shell.membership-badges") {
+          const result = await options.host().read<AppLocalHttpResponse>(name, {input: body}, {scope,signal:signal ?? undefined});
+          if (!result.data) throw new Error("Could not load membership.");
+          data = result.data;
+        } else if (name === "http.shell.campaign-event" && parsed?.kind === "select") {
           if (Object.keys(parsed).some(key => !["kind","location","latitude","longitude","batch","query"].includes(key)) || typeof parsed.location !== "string" || (parsed.query !== undefined && (typeof parsed.query !== "string" || parsed.query.length > 160)) || typeof parsed.latitude !== "number" || typeof parsed.longitude !== "number" || !Number.isFinite(parsed.latitude) || !Number.isFinite(parsed.longitude) || Math.abs(parsed.latitude)>90 || Math.abs(parsed.longitude)>180) throw new Error("Choose a valid location.");
           const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {location:parsed.location,latitude:String(parsed.latitude),longitude:String(parsed.longitude),...(parsed.batch === true ? {batch:"1"} : {}),...(parsed.query ? {query:parsed.query} : {})}, {scope,signal:signal ?? undefined});
           if (!result.data) throw new Error("Could not load advertising.");

@@ -17,6 +17,12 @@
       ],
       "@/*": [
         "C:/Reylumi/kingpos/*"
+      ],
+      "@/components/salon-member-badge": [
+        "C:/Reylumi-worktrees/membership-admin-20261103/components/salon-member-badge.tsx"
+      ],
+      "@/lib/salon-member-store": [
+        "C:/Reylumi-worktrees/membership-admin-20261103/lib/salon-member-store.ts"
       ]
     }
   },
@@ -27,7 +33,14 @@
     "../../lib/platform-admin/membership.ts",
     "../../lib/membership-model.ts",
     "../../types/reylumi-membership.ts",
-    "C:/Reylumi/kingpos/next-env.d.ts"
+    "C:/Reylumi/kingpos/next-env.d.ts",
+    "../../components/salon-member-badge.tsx",
+    "../../components/post-identity.tsx",
+    "../../components/saved-salon-list.tsx",
+    "../../app/explore/explore-salon-card.tsx",
+    "../../app/salon-profile/salon-website-header.tsx",
+    "../../lib/salon-member-store.ts",
+    "../../app/api/membership/salon-badges/route.ts"
   ],
   "exclude": [
     "../../node_modules"

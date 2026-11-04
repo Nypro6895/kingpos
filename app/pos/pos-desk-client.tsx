@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
@@ -3630,7 +3632,7 @@ export function PosDeskClient({
               )}
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold leading-tight">
-                  {salonName}
+                  <SalonName name={salonName} salonId={staffRealtimeSalonId} currentSalon/>
                 </p>
                 <p className="text-[11px] font-medium leading-tight text-zinc-500">
                   {today ? `${today} / ` : null}
@@ -3643,7 +3645,7 @@ export function PosDeskClient({
             </div>
           ) : (
             <div>
-              <p className="text-lg font-semibold">{salonName}</p>
+              <p className="text-lg font-semibold"><SalonName name={salonName} salonId={staffRealtimeSalonId} currentSalon/></p>
               <ReceiptClock />
             </div>
           )}

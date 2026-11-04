@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
 
@@ -83,7 +85,7 @@ function SalonImpactList({
           key={salon.id}
         >
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-semibold text-zinc-950"><a href={`/explore/salons/${salon.id}`} className="hover:underline">{salon.name}</a></p>
+            <p className="text-sm font-semibold text-zinc-950"><a href={`/explore/salons/${salon.id}`} className="hover:underline"><SalonName name={salon.name} salonId={salon.id}/></a></p>
             <p className="text-xs font-semibold uppercase text-zinc-500">
               <WorkspaceText text={salon.lifecycleStatus.replace("_", " ")} />
             </p>
@@ -325,7 +327,7 @@ export function AccountDeletionPanel({
                       key={`transfer-${salon.id}`}
                     >
                       <p className="text-sm font-semibold text-zinc-950">
-                        <WorkspaceText text="Transfer" /> {salon.name}
+                        <WorkspaceText text="Transfer" /> <SalonName name={salon.name} salonId={salon.id}/>
                       </p>
                       <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                         <input

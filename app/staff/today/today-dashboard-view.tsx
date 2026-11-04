@@ -1,3 +1,6 @@
+
+import { SalonName } from "@/components/salon-member-badge";
+import { TodayForumPreview } from "./today-forum-preview";
 import { TodayStatistics } from "./today-statistics";
 import {OwnerAttentionPanel} from "./owner-attention-panel";
 import {QuickExpense} from "@/app/reports/quick-expense";
@@ -1233,7 +1236,7 @@ function RestrictedDashboard({ dashboard }: { dashboard: TodayDashboard }) {
             <span aria-hidden="true">{"\uD83D\uDC4B"}</span>
           </h1>
           <p className="mt-2 text-sm font-medium text-zinc-500">
-            {dashboard.salonName}
+            <SalonName name={dashboard.salonName} currentSalon/>
             {" \u00B7 "}
             <WorkspaceText text={formatDashboardDate(dashboard.date)} />
           </p>
@@ -1317,6 +1320,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
             .map((shortcut) => shortcut.id)
             .join(":")}
         />}
+        {isOwner ? <TodayForumPreview key={dashboard.salonId} /> : null}
         {isOwner ? <OwnerMarketPromo /> : null}
       </div>
     </main>

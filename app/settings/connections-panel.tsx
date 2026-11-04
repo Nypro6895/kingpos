@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import {SettingsChildPage,SettingsDetails} from "@/app/settings/settings-child-pages";
 
 
@@ -113,7 +115,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
       <article className={card} key={request.id}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h4 className="font-semibold">{request.salon_name}</h4>
+            <h4 className="font-semibold"><SalonName name={request.salon_name} salonId={request.salon_id}/></h4>
             <p className="mt-1 text-sm text-zinc-500">{address(request)}</p>
           </div>
           <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs capitalize">
@@ -226,7 +228,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
       ) : (
         <>
           {data.ownersError?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={data.ownersError} /></p>:null}
-          {data.ownerInvites.map(invite=><article className={card} key={invite.id}><p className="font-semibold">{invite.salonName} · <WorkspaceText text={invite.mode==="add_co_owner"?"Co-owner invitation":"Ownership transfer"} /></p>{invite.message?<p className="mt-2 text-sm"><WorkspaceText text={invite.message} /></p>:null}<p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Expires" /> <WorkspaceText text={date(invite.expiresAt)} /></p><div className="mt-3 flex gap-2"><button className={button} disabled={busy} onClick={()=>void run({action:"owner-accept",requestId:invite.id})}><WorkspaceText text="Accept ownership" /></button><button className={button} disabled={busy} onClick={()=>void run({action:"owner-ignore",requestId:invite.id})}><WorkspaceText text="Decline" /></button></div></article>)}
+          {data.ownerInvites.map(invite=><article className={card} key={invite.id}><p className="font-semibold"><SalonName name={invite.salonName} reference={{kind:"invitation",value:invite.id}}/> · <WorkspaceText text={invite.mode==="add_co_owner"?"Co-owner invitation":"Ownership transfer"} /></p>{invite.message?<p className="mt-2 text-sm"><WorkspaceText text={invite.message} /></p>:null}<p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Expires" /> <WorkspaceText text={date(invite.expiresAt)} /></p><div className="mt-3 flex gap-2"><button className={button} disabled={busy} onClick={()=>void run({action:"owner-accept",requestId:invite.id})}><WorkspaceText text="Accept ownership" /></button><button className={button} disabled={busy} onClick={()=>void run({action:"owner-ignore",requestId:invite.id})}><WorkspaceText text="Decline" /></button></div></article>)}
           {data.requestsError && (
             <div
               role="alert"
@@ -264,7 +266,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
               data.salons.map((salon) => (
                 <SettingsDetails className={card} key={salon.id}>
                   <summary className="cursor-pointer font-semibold">
-                    {salon.name}
+                    <SalonName name={salon.name} salonId={salon.salonId}/>
                     <span className="ml-2 text-xs font-normal text-zinc-500">
                       {salon.role}
                     </span>
@@ -365,7 +367,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                 );
                 return (
                   <article className={card} key={salon.salon_id}>
-                    <h4 className="font-semibold">{salon.salon_name}</h4>
+                    <h4 className="font-semibold"><SalonName name={salon.salon_name} salonId={salon.salon_id}/></h4>
                     <p className="mt-1 text-sm text-zinc-500">
                       {address(salon)}
                     </p>

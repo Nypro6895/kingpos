@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 
@@ -145,7 +147,7 @@ function SalonIdentity({ activity }: { activity: CustomerActivity }) {
   return <div className="flex min-w-0 items-center gap-2">
     <SalonLogo salon={activity.salon} />
     <div className="min-w-0">
-      <p className="truncate text-sm">{activity.salon.name}</p>
+      <p className="truncate text-sm"><SalonName name={activity.salon.name} salonId={activity.salon.id}/></p>
       <p className="mt-0.5 text-[11px] text-text-secondary md:mt-1 md:text-xs">{activityTypeLabel(activity)}</p>
     </div>
   </div>;

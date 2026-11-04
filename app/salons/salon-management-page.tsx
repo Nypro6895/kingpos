@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
 
@@ -210,7 +212,7 @@ function SalonList({
           return (
             <li className="grid grid-cols-12 gap-3 px-5 py-4" key={salon.id}>
               <div className="col-span-12 sm:col-span-3">
-                <p className="font-medium text-zinc-950"><a href={`/settings?section=salon-${encodeURIComponent(salon.id)}-salon-profile`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salon.name}</a></p>
+                <p className="font-medium text-zinc-950"><a href={`/settings?section=salon-${encodeURIComponent(salon.id)}-salon-profile`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange"><SalonName name={salon.name} salonId={salon.id}/></a></p>
                 {isCurrentSalon ? (
                   <span className="mt-2 inline-flex rounded-md bg-zinc-950 px-2 py-1 text-xs font-medium text-white">
                     <WorkspaceText text="Current Salon" />

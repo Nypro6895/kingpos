@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -223,7 +225,7 @@ export function SalonDetailsPanel({
   }
   return (
     <Sheet
-      title={details?.salon.name ?? workspace.label}
+      title={<SalonName name={details?.salon.name ?? workspace.label} salonId={workspace.salonId}/>}
       subtitle={__vt(workspace.roleLabel)}
       busy={busy || logoBusy}
       dirty={dirty}
@@ -512,7 +514,7 @@ export function ApplyPanel({
                   setError(null);
                 }}
               >
-                <span className="block text-sm font-bold">{s.salon_name}</span>
+                <span className="block text-sm font-bold"><SalonName name={s.salon_name} salonId={s.salon_id}/></span>
                 <span className="mt-1 block text-xs text-zinc-500">
                   {[s.address_line1, s.city, s.state]
                     .filter(Boolean)
@@ -543,7 +545,7 @@ export function ApplyPanel({
             }}
           >
             <div>
-              <h3 className="font-bold">{selected.salon_name}</h3>
+              <h3 className="font-bold"><SalonName name={selected.salon_name} salonId={selected.salon_id}/></h3>
               <p className="mt-1 text-sm text-zinc-500">
                 {[selected.address_line1, selected.city, selected.state]
                   .filter(Boolean)

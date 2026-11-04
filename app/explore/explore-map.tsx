@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import {ExploreSalonLove,ExploreBookButton} from "@/components/explore-account-actions";
 import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
 import {salonPopularPrice} from "@/lib/salon-identity";
@@ -248,11 +250,11 @@ export function ExploreMap({
                 className="line-clamp-1 min-w-0 rounded-md text-sm font-semibold text-zinc-950 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                 href={selectedSalon.href}
               >
-                {selectedSalon.name}
+                <SalonName name={selectedSalon.name} salonId={selectedSalon.id}/>
               </Link>
             ) : (
               <p className="line-clamp-1 min-w-0 text-sm font-semibold text-zinc-950">
-                {selectedSalon.name}
+                <SalonName name={selectedSalon.name} salonId={selectedSalon.id}/>
               </p>
             )}
             <SalonVerifiedBadge verified={selectedSalon.trust.identityVerified}/>

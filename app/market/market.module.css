@@ -58,3 +58,5 @@
 
 .vietnameseChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
 .ownerPreviewImage{display:block;width:100%;height:auto;background:#fafbf9}
+
+.card h3 button{appearance:none;border:0;background:transparent;padding:0;color:inherit;font:inherit;line-height:inherit;min-height:44px;max-width:100%;overflow-wrap:anywhere}

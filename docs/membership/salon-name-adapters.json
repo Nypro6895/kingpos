@@ -1,0 +1,3153 @@
+{
+  "version": 1,
+  "base": "C:/Reylumi/kingpos",
+  "coverage": [
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1658,
+      "start": 66975,
+      "end": 66992,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1667,
+      "start": 68537,
+      "end": 68554,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1678,
+      "start": 70355,
+      "end": 70372,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1692,
+      "start": 72350,
+      "end": 72367,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1713,
+      "start": 74948,
+      "end": 74965,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1731,
+      "start": 79483,
+      "end": 79500,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "line": 1751,
+      "start": 85681,
+      "end": 85698,
+      "name": "data.salon.name",
+      "id": "data.salon.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salon.salonId}"
+    },
+    {
+      "file": "app/account/account-deletion-panel.tsx",
+      "line": 84,
+      "start": 2276,
+      "end": 2288,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/account/account-deletion-panel.tsx",
+      "line": 326,
+      "start": 12792,
+      "end": 12804,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/activity/history-details-drawer.tsx",
+      "line": 83,
+      "start": 7787,
+      "end": 7808,
+      "name": "activity.salon.name",
+      "id": "activity.salon.id",
+      "via": "object",
+      "attributes": "salonId={activity.salon.id}"
+    },
+    {
+      "file": "app/(app)/activity/activity-history-panel.tsx",
+      "line": 145,
+      "start": 4389,
+      "end": 4410,
+      "name": "activity.salon.name",
+      "id": "activity.salon.id",
+      "via": "object",
+      "attributes": "salonId={activity.salon.id}"
+    },
+    {
+      "file": "app/activity/my-customer-profiles.tsx",
+      "line": 27,
+      "start": 1890,
+      "end": 1907,
+      "name": "group.salonName",
+      "id": "group.salonId",
+      "via": "object",
+      "attributes": "salonId={group.salonId}"
+    },
+    {
+      "file": "app/(app)/activity/page.tsx",
+      "line": 159,
+      "start": 5117,
+      "end": 5138,
+      "name": "activity.salon.name",
+      "id": "activity.salon.id",
+      "via": "object",
+      "attributes": "salonId={activity.salon.id}"
+    },
+    {
+      "file": "app/(app)/activity/receipts/[ticketId]/page.tsx",
+      "line": 105,
+      "start": 3160,
+      "end": 3180,
+      "name": "receipt.salon.name",
+      "id": "receipt.salon.id",
+      "via": "object",
+      "attributes": "salonId={receipt.salon.id}"
+    },
+    {
+      "file": "app/(app)/admin/dashboard/dashboard-detail.tsx",
+      "line": 44,
+      "start": 3450,
+      "end": 3466,
+      "name": "row.salon_name",
+      "id": "row.salon_id",
+      "via": "object",
+      "attributes": "salonId={row.salon_id}"
+    },
+    {
+      "file": "app/(app)/admin/claims/page.tsx",
+      "line": 27,
+      "start": 3648,
+      "end": 3664,
+      "name": "row.salon_name",
+      "id": "row.salon_id",
+      "via": "object",
+      "attributes": "salonId={row.salon_id}"
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "line": 426,
+      "start": 15783,
+      "end": 15791,
+      "name": "b.name",
+      "id": "b.id",
+      "via": "object",
+      "attributes": "salonId={b.id}"
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "line": 615,
+      "start": 23696,
+      "end": 23707,
+      "name": "task.name",
+      "id": "task.location_id",
+      "via": "object",
+      "attributes": "salonId={task.location_id}"
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "line": 671,
+      "start": 26115,
+      "end": 26123,
+      "name": "b.name",
+      "id": "b.id",
+      "via": "object",
+      "attributes": "salonId={b.id}"
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "line": 717,
+      "start": 28007,
+      "end": 28015,
+      "name": "b.name",
+      "id": "b.id",
+      "via": "object",
+      "attributes": "salonId={b.id}"
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "line": 942,
+      "start": 37659,
+      "end": 37669,
+      "name": "row.name",
+      "id": "row.id",
+      "via": "object",
+      "attributes": "salonId={row.id}"
+    },
+    {
+      "file": "app/(app)/admin/users/[userId]/security-panel.tsx",
+      "line": 28,
+      "start": 4622,
+      "end": 4634,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/(app)/admin/verification/page.tsx",
+      "line": 24,
+      "start": 3434,
+      "end": 3450,
+      "name": "row.salon_name",
+      "id": "row.salon_id",
+      "via": "object",
+      "attributes": "salonId={row.salon_id}"
+    },
+    {
+      "file": "components/salon-report-dialog.tsx",
+      "line": 59,
+      "start": 3093,
+      "end": 3105,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/beauty/beauty-profile-client.tsx",
+      "line": 843,
+      "start": 27919,
+      "end": 27942,
+      "name": "attribution.salonName",
+      "id": "attribution.salonId",
+      "via": "object",
+      "attributes": "salonId={attribution.salonId}"
+    },
+    {
+      "file": "app/beauty/beauty-profile-client.tsx",
+      "line": 2426,
+      "start": 95312,
+      "end": 95333,
+      "name": "candidate.salonName",
+      "id": "candidate.salonId",
+      "via": "object",
+      "attributes": "salonId={candidate.salonId}"
+    },
+    {
+      "file": "app/beauty/beauty-profile-client.tsx",
+      "line": 2483,
+      "start": 98799,
+      "end": 98816,
+      "name": "salon.salonName",
+      "id": "salon.salonId",
+      "via": "object",
+      "attributes": "salonId={salon.salonId}"
+    },
+    {
+      "file": "app/beauty/beauty-profile-client.tsx",
+      "line": 2503,
+      "start": 99844,
+      "end": 99867,
+      "name": "attribution.salonName",
+      "id": "attribution.salonId",
+      "via": "object",
+      "attributes": "salonId={attribution.salonId}"
+    },
+    {
+      "file": "app/booking/manage/[token]/guest-manage-client.tsx",
+      "line": 81,
+      "start": 6171,
+      "end": 6183,
+      "name": "salon.name",
+      "id": "`/explore/salons/${booking.salonId}`",
+      "via": "href",
+      "attributes": "href={`/explore/salons/${booking.salonId}`}"
+    },
+    {
+      "file": "app/bookings/booking-workspace-client.tsx",
+      "line": 6804,
+      "start": 245463,
+      "end": 245474,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "salonName",
+        "previewMode",
+        "setPreviewMode",
+        "previewOpen",
+        "setPreviewOpen"
+      ],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/(app)/claim/[salonId]/page.tsx",
+      "line": 24,
+      "start": 1576,
+      "end": 1595,
+      "name": "data.profile.name",
+      "id": "data.profile.salonId",
+      "via": "object",
+      "attributes": "salonId={data.profile.salonId}"
+    },
+    {
+      "file": "app/(app)/claim/customer/page.tsx",
+      "line": 190,
+      "start": 5950,
+      "end": 5974,
+      "name": "preview.data.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "alreadyLinked",
+        "expiresAt",
+        "salonName"
+      ],
+      "scope": [
+        "token",
+        "preview"
+      ],
+      "attributes": "reference={{kind:\"claim\",value:token}}"
+    },
+    {
+      "file": "components/salon-post-preview.tsx",
+      "line": 63,
+      "start": 3841,
+      "end": 3857,
+      "name": "item.salonName",
+      "id": "item.salonId",
+      "via": "object",
+      "attributes": "salonId={item.salonId}"
+    },
+    {
+      "file": "app/explore/explore-inspiration-post.tsx",
+      "line": 24,
+      "start": 2881,
+      "end": 2897,
+      "name": "item.salonName",
+      "id": "item.salonId",
+      "via": "object",
+      "attributes": "salonId={item.salonId}"
+    },
+    {
+      "file": "app/explore/explore-salon-card.tsx",
+      "line": 26,
+      "start": 2888,
+      "end": 2900,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/explore/explore-salon-card.tsx",
+      "line": 33,
+      "start": 3548,
+      "end": 3560,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/explore/explore-feed.tsx",
+      "line": 1046,
+      "start": 31483,
+      "end": 31494,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "salonName",
+        "itemContextLabel",
+        "FeedSalonIdentityLine",
+        "FeedDiscoveryPreview",
+        "EXPLORE_FEED_SESSION_KEY",
+        "EXPLORE_FEED_SESSION_VERSION",
+        "EXPLORE_FEED_SESSION_TTL_MS",
+        "EXPLORE_FEED_SESSION_ITEM_LIMIT",
+        "EXPLORE_FEED_SESSION_ROUTE_LIMIT",
+        "EXPLORE_FEED_SESSION_BYTE_LIMIT"
+      ],
+      "attributes": "salonId={item.salon?.id}"
+    },
+    {
+      "file": "app/explore/explore-feed.tsx",
+      "line": 1379,
+      "start": 42555,
+      "end": 42573,
+      "name": "item.salon!.name",
+      "id": "item.salon!.id",
+      "via": "object",
+      "attributes": "salonId={item.salon!.id}"
+    },
+    {
+      "file": "app/explore/nail-inspiration.tsx",
+      "line": 97,
+      "start": 8943,
+      "end": 8955,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/explore/nail-inspiration.tsx",
+      "line": 110,
+      "start": 10447,
+      "end": 10459,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/explore/explore-editorial-sections.tsx",
+      "line": 89,
+      "start": 8748,
+      "end": 8760,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/explore/explore-map.tsx",
+      "line": 251,
+      "start": 8637,
+      "end": 8657,
+      "name": "selectedSalon.name",
+      "id": "selectedSalon.id",
+      "via": "object",
+      "attributes": "salonId={selectedSalon.id}"
+    },
+    {
+      "file": "app/explore/explore-map.tsx",
+      "line": 255,
+      "start": 8805,
+      "end": 8825,
+      "name": "selectedSalon.name",
+      "id": "selectedSalon.id",
+      "via": "object",
+      "attributes": "salonId={selectedSalon.id}"
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "line": 1815,
+      "start": 55246,
+      "end": 55266,
+      "name": "selectedSalon.name",
+      "id": "selectedSalon.id",
+      "via": "object",
+      "attributes": "salonId={selectedSalon.id}"
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "line": 3005,
+      "start": 95506,
+      "end": 95518,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "components/saved-salon-list.tsx",
+      "line": 10,
+      "start": 1288,
+      "end": 1304,
+      "name": "row.salon_name",
+      "id": "row.salon_id",
+      "via": "object",
+      "attributes": "salonId={row.salon_id}"
+    },
+    {
+      "file": "app/(app)/explore/looks/[lookId]/page.tsx",
+      "line": 129,
+      "start": 4184,
+      "end": 4200,
+      "name": "item.salonName",
+      "id": "item.href",
+      "via": "href",
+      "attributes": "href={item.href}"
+    },
+    {
+      "file": "app/(app)/explore/looks/[lookId]/page.tsx",
+      "line": 235,
+      "start": 8736,
+      "end": 8752,
+      "name": "look.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "availability",
+        "bookingHref",
+        "category",
+        "description",
+        "distanceMiles",
+        "durationMinutes",
+        "gallery",
+        "heroTitle",
+        "id",
+        "imageUrl",
+        "price",
+        "rating",
+        "related",
+        "reviews",
+        "salonName",
+        "searchHref",
+        "service",
+        "slots",
+        "stats",
+        "tags"
+      ],
+      "scope": [
+        "generateMetadata"
+      ],
+      "attributes": "href={look.bookingHref}"
+    },
+    {
+      "file": "app/salon-profile/salon-website-home.tsx",
+      "line": 194,
+      "start": 17605,
+      "end": 17624,
+      "name": "data.profile.name",
+      "id": "data.profile.salonId",
+      "via": "object",
+      "attributes": "salonId={data.profile.salonId}"
+    },
+    {
+      "file": "app/salon-profile/salon-website-home.tsx",
+      "line": 209,
+      "start": 20406,
+      "end": 20425,
+      "name": "data.profile.name",
+      "id": "data.profile.salonId",
+      "via": "object",
+      "attributes": "salonId={data.profile.salonId}"
+    },
+    {
+      "file": "app/salon-profile/salon-website-header.tsx",
+      "line": 45,
+      "start": 2158,
+      "end": 2172,
+      "name": "profile.name",
+      "id": "profile.salonId",
+      "via": "object",
+      "attributes": "salonId={profile.salonId}"
+    },
+    {
+      "file": "app/salon-profile/salon-profile-view.tsx",
+      "line": 1780,
+      "start": 58103,
+      "end": 58122,
+      "name": "data.profile.name",
+      "id": "data.profile.salonId",
+      "via": "object",
+      "attributes": "salonId={data.profile.salonId}"
+    },
+    {
+      "file": "app/salon-profile/salon-profile-view.tsx",
+      "line": 4218,
+      "start": 162249,
+      "end": 162263,
+      "name": "profile.name",
+      "id": "profile.salonId",
+      "via": "object",
+      "attributes": "salonId={profile.salonId}"
+    },
+    {
+      "file": "app/salon-profile/salon-profile-view.tsx",
+      "line": 4395,
+      "start": 174294,
+      "end": 174308,
+      "name": "profile.name",
+      "id": "profile.salonId",
+      "via": "object",
+      "attributes": "salonId={profile.salonId}"
+    },
+    {
+      "file": "app/(app)/more/[section]/page.tsx",
+      "line": 289,
+      "start": 8817,
+      "end": 8833,
+      "name": "post.salonName",
+      "id": "post.salonId",
+      "via": "object",
+      "attributes": "salonId={post.salonId}"
+    },
+    {
+      "file": "app/(app)/my-bookings/page.tsx",
+      "line": 245,
+      "start": 8016,
+      "end": 8027,
+      "name": "salonName",
+      "id": "`/explore/salons/${booking.salon_id}`",
+      "via": "href",
+      "attributes": "href={`/explore/salons/${booking.salon_id}`}"
+    },
+    {
+      "file": "app/my-place/place-panels.tsx",
+      "line": 515,
+      "start": 16866,
+      "end": 16880,
+      "name": "s.salon_name",
+      "id": "s.salon_id",
+      "via": "object",
+      "attributes": "salonId={s.salon_id}"
+    },
+    {
+      "file": "app/my-place/place-panels.tsx",
+      "line": 546,
+      "start": 17991,
+      "end": 18012,
+      "name": "selected.salon_name",
+      "id": "selected.salon_id",
+      "via": "object",
+      "attributes": "salonId={selected.salon_id}"
+    },
+    {
+      "file": "app/my-place/my-place-client.tsx",
+      "line": 301,
+      "start": 12676,
+      "end": 12694,
+      "name": "invite.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "id",
+        "salonName",
+        "mode",
+        "message",
+        "expiresAt"
+      ],
+      "scope": [
+        "invite",
+        "salons",
+        "ownerInvites",
+        "ownerInvitesError",
+        "salonRow",
+        "salonRequests"
+      ],
+      "attributes": "reference={{kind:\"invitation\",value:invite.id}}"
+    },
+    {
+      "file": "app/(app)/notifications/visits/[visitId]/page.tsx",
+      "line": 23,
+      "start": 1014,
+      "end": 1030,
+      "name": "data.salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "data"
+      ],
+      "attributes": "reference={{kind:\"visit\",value:visitId}}"
+    },
+    {
+      "file": "app/(app)/payroll/tax-company/settings/page.tsx",
+      "line": 14,
+      "start": 1086,
+      "end": 1104,
+      "name": "state.salon_name",
+      "id": null,
+      "via": null,
+      "properties": [
+        "active",
+        "enabled",
+        "salon_name",
+        "login_id",
+        "connections"
+      ],
+      "scope": [],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/pos/portable/check-in/portable-check-in-client.tsx",
+      "line": 569,
+      "start": 18983,
+      "end": 19003,
+      "name": "viewData.salonName",
+      "id": "viewData.salonId",
+      "via": "object",
+      "attributes": "salonId={viewData.salonId}"
+    },
+    {
+      "file": "app/reports/operational-report-dashboard.tsx",
+      "line": 668,
+      "start": 24782,
+      "end": 24793,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "salonName",
+        "DataNotes",
+        "OperationalReportDashboard"
+      ],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/(app)/pos-tickets/[ticketId]/page.tsx",
+      "line": 576,
+      "start": 18841,
+      "end": 18868,
+      "name": "context.currentSalon.name",
+      "id": "context.currentSalon.id",
+      "via": "object",
+      "attributes": "salonId={context.currentSalon.id}"
+    },
+    {
+      "file": "app/(app)/pos-tickets/[ticketId]/page.tsx",
+      "line": 1043,
+      "start": 40401,
+      "end": 40428,
+      "name": "receipt.header.salon_name",
+      "id": null,
+      "via": null,
+      "properties": [
+        "salon_name",
+        "salon_phone",
+        "ticket_number",
+        "customer_name",
+        "created_time",
+        "closed_time",
+        "ticket_status",
+        "receipt_status"
+      ],
+      "scope": [
+        "context",
+        "receipt"
+      ],
+      "attributes": "salonId={context.currentSalon?.id}"
+    },
+    {
+      "file": "app/pos/customer-display/customer-idle-screen.tsx",
+      "line": 19,
+      "start": 1750,
+      "end": 1761,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "token",
+        "salonName"
+      ],
+      "attributes": "reference={{kind:\"display\",value:token}}"
+    },
+    {
+      "file": "app/pos/customer-display/checkin-receipt-panel.tsx",
+      "line": 66,
+      "start": 3757,
+      "end": 3776,
+      "name": "receipt.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "visitId",
+        "queueNumber",
+        "businessDate",
+        "salonName",
+        "customerName"
+      ],
+      "scope": [
+        "token",
+        "receipt",
+        "setReceipt",
+        "CheckinReceiptPanel"
+      ],
+      "attributes": "reference={{kind:\"display\",value:token}}"
+    },
+    {
+      "file": "app/pos/customer-display/customer-display-client.tsx",
+      "line": 1374,
+      "start": 45973,
+      "end": 45999,
+      "name": "props.settings.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "appDownloadUrl",
+        "customerBackgroundImageUrl",
+        "customerLeftAdImageUrl",
+        "customerLeftAdText",
+        "customerPromoBody",
+        "customerPromoTitle",
+        "customerRightAdImageUrl",
+        "customerRightAdText",
+        "customerShowBarcode",
+        "customerShowCustomerName",
+        "customerShowReceiptStatus",
+        "customerShowSalonName",
+        "customerShowServiceName",
+        "customerShowStaffName",
+        "salonLogoUrl",
+        "salonName",
+        "tipSuggestions"
+      ],
+      "scope": [
+        "receiptOpen",
+        "setReceiptOpen",
+        "hasMeaningfulReceipt",
+        "SalonBrand",
+        "PhoneEntryPanel",
+        "RECEIPT_PANEL_STYLE",
+        "RECEIPT_HEADER_STYLE",
+        "RECEIPT_TITLE_STYLE",
+        "RECEIPT_TOTAL_STYLE",
+        "RECEIPT_LINES_SECTION_STYLE",
+        "RECEIPT_COLUMNS_STYLE",
+        "RECEIPT_COLUMN_HEADER_STYLE",
+        "RECEIPT_LINE_REGION_STYLE",
+        "RECEIPT_LINE_ROW_STYLE",
+        "RECEIPT_ITEM_TEXT_STYLE",
+        "RECEIPT_SUMMARY_STYLE",
+        "RECEIPT_FOOTER_STYLE"
+      ],
+      "attributes": ""
+    },
+    {
+      "file": "app/pos/pos-desk-client.tsx",
+      "line": 3599,
+      "start": 134678,
+      "end": 134689,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "activeSession",
+        "salonLogoUrl",
+        "salonName",
+        "createNextStaffEntry",
+        "submitReceipt",
+        "cancelActiveSession",
+        "saveTipToSession",
+        "submitReceiptAction",
+        "receiptLocked",
+        "receiptLockMessage",
+        "liveDraftToken",
+        "staffRealtimeSalonId",
+        "receiptScan",
+        "setReceiptScan",
+        "receiptScanBusy",
+        "setReceiptScanBusy",
+        "receiptScanError",
+        "setReceiptScanError",
+        "completedLocalReceipt",
+        "focusReceiptMoneyInput",
+        "saveCustomerToSession",
+        "resetReceipt",
+        "getSalonInitials",
+        "ReceiptClock",
+        "liveLineToSessionLine"
+      ],
+      "attributes": "salonId={staffRealtimeSalonId} currentSalon"
+    },
+    {
+      "file": "app/pos/pos-desk-client.tsx",
+      "line": 3612,
+      "start": 135169,
+      "end": 135180,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "activeSession",
+        "salonLogoUrl",
+        "salonName",
+        "createNextStaffEntry",
+        "submitReceipt",
+        "cancelActiveSession",
+        "saveTipToSession",
+        "submitReceiptAction",
+        "receiptLocked",
+        "receiptLockMessage",
+        "liveDraftToken",
+        "staffRealtimeSalonId",
+        "receiptScan",
+        "setReceiptScan",
+        "receiptScanBusy",
+        "setReceiptScanBusy",
+        "receiptScanError",
+        "setReceiptScanError",
+        "completedLocalReceipt",
+        "focusReceiptMoneyInput",
+        "saveCustomerToSession",
+        "resetReceipt",
+        "getSalonInitials",
+        "ReceiptClock",
+        "liveLineToSessionLine"
+      ],
+      "attributes": "salonId={staffRealtimeSalonId} currentSalon"
+    },
+    {
+      "file": "app/pos/portable/book/booking-editor.tsx",
+      "line": 87,
+      "start": 6589,
+      "end": 6607,
+      "name": "p.data.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "openingHours",
+        "staffServiceAssignments",
+        "canCreateTicket",
+        "notificationSetup",
+        "bookingPolicy",
+        "appointments",
+        "canCancel",
+        "canCreate",
+        "date",
+        "salonName",
+        "services",
+        "setupMessage",
+        "staff",
+        "timezone"
+      ],
+      "scope": [],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/pos/portable/portable-workspace-tabs.tsx",
+      "line": 163,
+      "start": 4837,
+      "end": 4848,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "salonLogoUrl",
+        "salonName",
+        "salonTimezone",
+        "SalonBrand"
+      ],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/qr/personal-qr-client.tsx",
+      "line": 85,
+      "start": 6302,
+      "end": 6321,
+      "name": "catalog.salonName",
+      "id": "catalog.salonId",
+      "via": "object",
+      "attributes": "salonId={catalog.salonId}"
+    },
+    {
+      "file": "app/qr/personal-qr-client.tsx",
+      "line": 111,
+      "start": 10221,
+      "end": 10238,
+      "name": "visit.salonName",
+      "id": "visit.salonId",
+      "via": "object",
+      "attributes": "salonId={visit.salonId}"
+    },
+    {
+      "file": "app/qr/personal-qr-client.tsx",
+      "line": 119,
+      "start": 11077,
+      "end": 11094,
+      "name": "visit.salonName",
+      "id": "visit.salonId",
+      "via": "object",
+      "attributes": "salonId={visit.salonId}"
+    },
+    {
+      "file": "app/(app)/salon-profile/client-transformations/page.tsx",
+      "line": 343,
+      "start": 9310,
+      "end": 9321,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "salonName"
+      ],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/salon-settings/ownership-section.tsx",
+      "line": 156,
+      "start": 7626,
+      "end": 7638,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/salons/claim-suggestions.tsx",
+      "line": 62,
+      "start": 4512,
+      "end": 4522,
+      "name": "row.name",
+      "id": "row.salon_id",
+      "via": "object",
+      "attributes": "salonId={row.salon_id}"
+    },
+    {
+      "file": "app/salons/salon-management-page.tsx",
+      "line": 213,
+      "start": 8402,
+      "end": 8414,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/settings/connections-panel.tsx",
+      "line": 114,
+      "start": 3935,
+      "end": 3955,
+      "name": "request.salon_name",
+      "id": "request.salon_id",
+      "via": "object",
+      "attributes": "salonId={request.salon_id}"
+    },
+    {
+      "file": "app/settings/connections-panel.tsx",
+      "line": 227,
+      "start": 7956,
+      "end": 7974,
+      "name": "invite.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "id",
+        "salonName",
+        "mode",
+        "message",
+        "expiresAt"
+      ],
+      "scope": [
+        "invite",
+        "onManageSalon",
+        "data",
+        "setData"
+      ],
+      "attributes": "reference={{kind:\"invitation\",value:invite.id}}"
+    },
+    {
+      "file": "app/settings/connections-panel.tsx",
+      "line": 272,
+      "start": 10507,
+      "end": 10519,
+      "name": "salon.name",
+      "id": "salon.salonId",
+      "via": "object",
+      "attributes": "salonId={salon.salonId}"
+    },
+    {
+      "file": "app/settings/connections-panel.tsx",
+      "line": 373,
+      "start": 15239,
+      "end": 15257,
+      "name": "salon.salon_name",
+      "id": "salon.salon_id",
+      "via": "object",
+      "attributes": "salonId={salon.salon_id}"
+    },
+    {
+      "file": "app/settings/salon-list-panel.tsx",
+      "line": 259,
+      "start": 9106,
+      "end": 9118,
+      "name": "match.name",
+      "id": "match.salon_id",
+      "via": "object",
+      "attributes": "salonId={match.salon_id}"
+    },
+    {
+      "file": "app/settings/salon-list-panel.tsx",
+      "line": 330,
+      "start": 12090,
+      "end": 12102,
+      "name": "salon.name",
+      "id": "salon.salon_id",
+      "via": "object",
+      "attributes": "salonId={salon.salon_id}"
+    },
+    {
+      "file": "app/settings/ownership-lifecycle-panels.tsx",
+      "line": 31,
+      "start": 1021,
+      "end": 1037,
+      "name": "data.salonName",
+      "id": "data.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salonId}"
+    },
+    {
+      "file": "app/settings/ownership-lifecycle-panels.tsx",
+      "line": 41,
+      "start": 1805,
+      "end": 1821,
+      "name": "data.salonName",
+      "id": "data.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salonId}"
+    },
+    {
+      "file": "app/settings/ownership-lifecycle-panels.tsx",
+      "line": 41,
+      "start": 2060,
+      "end": 2076,
+      "name": "data.salonName",
+      "id": "data.salonId",
+      "via": "object",
+      "attributes": "salonId={data.salonId}"
+    },
+    {
+      "file": "app/(app)/staff/connections/page.tsx",
+      "line": 127,
+      "start": 3297,
+      "end": 3317,
+      "name": "request.salon_name",
+      "id": "request.salon_id",
+      "via": "object",
+      "attributes": "salonId={request.salon_id}"
+    },
+    {
+      "file": "app/(app)/staff/connections/page.tsx",
+      "line": 176,
+      "start": 5202,
+      "end": 5222,
+      "name": "request.salon_name",
+      "id": "request.salon_id",
+      "via": "object",
+      "attributes": "salonId={request.salon_id}"
+    },
+    {
+      "file": "app/(app)/staff/connections/page.tsx",
+      "line": 226,
+      "start": 7170,
+      "end": 7188,
+      "name": "salon.salon_name",
+      "id": "salon.salon_id",
+      "via": "object",
+      "attributes": "salonId={salon.salon_id}"
+    },
+    {
+      "file": "app/(app)/staff/connections/page.tsx",
+      "line": 303,
+      "start": 10175,
+      "end": 10195,
+      "name": "request.salon_name",
+      "id": "request.salon_id",
+      "via": "object",
+      "attributes": "salonId={request.salon_id}"
+    },
+    {
+      "file": "app/staff/today/today-dashboard-view.tsx",
+      "line": 1744,
+      "start": 55832,
+      "end": 55853,
+      "name": "dashboard.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "pendingSections",
+        "attention",
+        "businessHours",
+        "date",
+        "dayView",
+        "generatedAt",
+        "greetingName",
+        "loadErrors",
+        "noAccess",
+        "performance",
+        "permissions",
+        "quickAccesses",
+        "rightNow",
+        "salonName",
+        "summary",
+        "team",
+        "timezone"
+      ],
+      "scope": [
+        "dashboard",
+        "formatDashboardDate",
+        "RestrictedDashboard",
+        "TodayDashboardView"
+      ],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/staff/today/today-dashboard-view.tsx",
+      "line": 1795,
+      "start": 58091,
+      "end": 58112,
+      "name": "dashboard.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "pendingSections",
+        "attention",
+        "businessHours",
+        "date",
+        "dayView",
+        "generatedAt",
+        "greetingName",
+        "loadErrors",
+        "noAccess",
+        "performance",
+        "permissions",
+        "quickAccesses",
+        "rightNow",
+        "salonName",
+        "summary",
+        "team",
+        "timezone"
+      ],
+      "scope": [
+        "dashboard",
+        "formatDashboardDate",
+        "RestrictedDashboard",
+        "TodayDashboardView"
+      ],
+      "attributes": "currentSalon"
+    },
+    {
+      "file": "app/(app)/staff/workday/page.tsx",
+      "line": 138,
+      "start": 4256,
+      "end": 4283,
+      "name": "context.currentSalon.name",
+      "id": "context.currentSalon.id",
+      "via": "object",
+      "attributes": "salonId={context.currentSalon.id}"
+    },
+    {
+      "file": "app/support/support-ui.tsx",
+      "line": 35,
+      "start": 5894,
+      "end": 5916,
+      "name": "c.context.salon_name",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [],
+      "attributes": "salonId={typeof c.context.salon_id===\"string\"?c.context.salon_id:null}"
+    },
+    {
+      "file": "app/(app)/tax-company/page.tsx",
+      "line": 18,
+      "start": 2278,
+      "end": 2290,
+      "name": "salon.name",
+      "id": "salon.id",
+      "via": "object",
+      "attributes": "salonId={salon.id}"
+    },
+    {
+      "file": "app/(app)/tax-company/[salonId]/page.tsx",
+      "line": 21,
+      "start": 1571,
+      "end": 1588,
+      "name": "data.salon.name",
+      "id": "data.salon.id",
+      "via": "object",
+      "attributes": "salonId={data.salon.id}"
+    },
+    {
+      "file": "app/signup/phone/signup-phone-form.tsx",
+      "line": 76,
+      "start": 4330,
+      "end": 4345,
+      "name": "row.salonName",
+      "id": null,
+      "via": null,
+      "properties": [
+        "id",
+        "name",
+        "salonName",
+        "linked"
+      ],
+      "scope": [],
+      "attributes": "",
+      "exception": "Pre-auth phone-history labels intentionally omit canonical salon IDs; cannot grant affiliation from a name."
+    },
+    {
+      "file": "app/check-in/[entry]/phone-checkin.tsx",
+      "line": 15,
+      "start": 1201,
+      "end": 1212,
+      "name": "salonName",
+      "id": null,
+      "via": null,
+      "properties": [],
+      "scope": [
+        "entry",
+        "salonName"
+      ],
+      "attributes": "reference={{kind:\"entry\",value:entry}}"
+    }
+  ],
+  "files": [
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "sha256": "5dc327f34941b6c08146f36493f5ff31f6bbcf1fd160efee29384fcd85f9c7ce",
+      "edits": [
+        {
+          "start": 85681,
+          "end": 85698,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 79483,
+          "end": 79500,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 74948,
+          "end": 74965,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 72350,
+          "end": 72367,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 70355,
+          "end": 70372,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 68537,
+          "end": 68554,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 66975,
+          "end": 66992,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/account/account-deletion-panel.tsx",
+      "sha256": "af143152f20047dbb518c1f889e2c4fbb3b9ce5850de7fbd484ba8b97ce92278",
+      "edits": [
+        {
+          "start": 12792,
+          "end": 12804,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 2276,
+          "end": 2288,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/activity/history-details-drawer.tsx",
+      "sha256": "21b733484fc36d92d2478bc80c5b01d81c4c4e53ba44506d4f5ab51831540c91",
+      "edits": [
+        {
+          "start": 7787,
+          "end": 7808,
+          "before": "{activity.salon.name}",
+          "after": "<SalonName name={activity.salon.name} salonId={activity.salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/activity/activity-history-panel.tsx",
+      "sha256": "46ead79557664885146108ff736dd55cf848dddec58e429049f9f5d02099c8df",
+      "edits": [
+        {
+          "start": 4389,
+          "end": 4410,
+          "before": "{activity.salon.name}",
+          "after": "<SalonName name={activity.salon.name} salonId={activity.salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/activity/my-customer-profiles.tsx",
+      "sha256": "8f18aec0cf4c42fb96ca8fe0e20800f3c0a9b33a18c528797d8c5bd0c8376dff",
+      "edits": [
+        {
+          "start": 1890,
+          "end": 1907,
+          "before": "{group.salonName}",
+          "after": "<SalonName name={group.salonName} salonId={group.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/activity/page.tsx",
+      "sha256": "51d73341ba8b7525bf1c43c7a40202afc336d821b60e2d9f1916339a41adc9ab",
+      "edits": [
+        {
+          "start": 5117,
+          "end": 5138,
+          "before": "{activity.salon.name}",
+          "after": "<SalonName name={activity.salon.name} salonId={activity.salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/activity/receipts/[ticketId]/page.tsx",
+      "sha256": "8063e55eb58e493655912dcca3225d58f68e8743da0d35a555292124c2b4b3e2",
+      "edits": [
+        {
+          "start": 3160,
+          "end": 3180,
+          "before": "{receipt.salon.name}",
+          "after": "<SalonName name={receipt.salon.name} salonId={receipt.salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/dashboard/dashboard-detail.tsx",
+      "sha256": "fa9b916406649311ae70cf9dbb97eb9fe762c8e0dbc144c884952b92165e9710",
+      "edits": [
+        {
+          "start": 3450,
+          "end": 3466,
+          "before": "{row.salon_name}",
+          "after": "<SalonName name={row.salon_name} salonId={row.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/claims/page.tsx",
+      "sha256": "0018dcdae148823604e76c25a9272eae670b1333fcf98c47baa07822df80da2d",
+      "edits": [
+        {
+          "start": 3648,
+          "end": 3664,
+          "before": "{row.salon_name}",
+          "after": "<SalonName name={row.salon_name} salonId={row.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "sha256": "b451320acf88faafe467f5379ec95e9f4be0db8c7d48aeeff543404bb3d6adc9",
+      "edits": [
+        {
+          "start": 37659,
+          "end": 37669,
+          "before": "{row.name}",
+          "after": "<SalonName name={row.name} salonId={row.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 28007,
+          "end": 28015,
+          "before": "{b.name}",
+          "after": "<SalonName name={b.name} salonId={b.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 26115,
+          "end": 26123,
+          "before": "{b.name}",
+          "after": "<SalonName name={b.name} salonId={b.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 23696,
+          "end": 23707,
+          "before": "{task.name}",
+          "after": "<SalonName name={task.name} salonId={task.location_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 15783,
+          "end": 15791,
+          "before": "{b.name}",
+          "after": "<SalonName name={b.name} salonId={b.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/users/[userId]/security-panel.tsx",
+      "sha256": "50fc6c28993ecc84932d6b8047380ff342a9e8082be94bb3c23b8b0928b4b5f8",
+      "edits": [
+        {
+          "start": 4622,
+          "end": 4634,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/verification/page.tsx",
+      "sha256": "0edba8b94e943ce90a89e463e891c98fe363de46fe683ea393d03488e2815b1b",
+      "edits": [
+        {
+          "start": 3434,
+          "end": 3450,
+          "before": "{row.salon_name}",
+          "after": "<SalonName name={row.salon_name} salonId={row.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "components/salon-report-dialog.tsx",
+      "sha256": "25e0ae8a11ee80c40a8e8d6b2b92d4c2704c147baf280f904e5ab04e2e85d98c",
+      "edits": [
+        {
+          "start": 3093,
+          "end": 3105,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/beauty/beauty-profile-client.tsx",
+      "sha256": "136e104e9d06ca9223f99017018780aa935b2ef48a777cacc796251c34f35da4",
+      "edits": [
+        {
+          "start": 99844,
+          "end": 99867,
+          "before": "{attribution.salonName}",
+          "after": "<SalonName name={attribution.salonName} salonId={attribution.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 98799,
+          "end": 98816,
+          "before": "{salon.salonName}",
+          "after": "<SalonName name={salon.salonName} salonId={salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 95312,
+          "end": 95333,
+          "before": "{candidate.salonName}",
+          "after": "<SalonName name={candidate.salonName} salonId={candidate.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 27919,
+          "end": 27942,
+          "before": "{attribution.salonName}",
+          "after": "<SalonName name={attribution.salonName} salonId={attribution.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/booking/manage/[token]/guest-manage-client.tsx",
+      "sha256": "89ef3d9339e8d700aba117f7b86341d2cf558c9c787a3b43497a1edb81723b8c",
+      "edits": [
+        {
+          "start": 6171,
+          "end": 6183,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} href={`/explore/salons/${booking.salonId}`}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/bookings/booking-workspace-client.tsx",
+      "sha256": "bd7deca65a47fbb2533efff2994c76326fa60d627ebdde76e6a7da27d2db3b24",
+      "edits": [
+        {
+          "start": 245463,
+          "end": 245474,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/claim/[salonId]/page.tsx",
+      "sha256": "d8114c1536b112f0d5f4dba75f6795f25afba00ffd9168d8ada6368b009c41c8",
+      "edits": [
+        {
+          "start": 1576,
+          "end": 1595,
+          "before": "{data.profile.name}",
+          "after": "<SalonName name={data.profile.name} salonId={data.profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/claim/customer/page.tsx",
+      "sha256": "a6897ee196a0f278ebff687ed658d3aba8d94868e167d7eb16b8f6d9e2ccc008",
+      "edits": [
+        {
+          "start": 5950,
+          "end": 5974,
+          "before": "{preview.data.salonName}",
+          "after": "<SalonName name={preview.data.salonName} reference={{kind:\"claim\",value:token}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "components/salon-post-preview.tsx",
+      "sha256": "2d1e8247ec6bc5c78c8f8df041cc59eb1e68f4b6c15cd777db478f681960b0a2",
+      "edits": [
+        {
+          "start": 3841,
+          "end": 3857,
+          "before": "{item.salonName}",
+          "after": "<SalonName name={item.salonName} salonId={item.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/explore-inspiration-post.tsx",
+      "sha256": "5caf56058e56aaa4a8d371ba922f6a01c63fd8c1f6a7b945dcd9d75300473ac0",
+      "edits": [
+        {
+          "start": 2881,
+          "end": 2897,
+          "before": "{item.salonName}",
+          "after": "<SalonName name={item.salonName} salonId={item.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/explore-salon-card.tsx",
+      "sha256": "f9a0cf2eeaccef3df67d0efef938dd01d4c0a8d0fc4e8a7a19df1c4e0eccf181",
+      "edits": [
+        {
+          "start": 3548,
+          "end": 3560,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 2888,
+          "end": 2900,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/explore-feed.tsx",
+      "sha256": "e2f63843482dfc51a7ac5e57d163649cc46989365297eb1d18c378da39c607f4",
+      "edits": [
+        {
+          "start": 42555,
+          "end": 42573,
+          "before": "{item.salon!.name}",
+          "after": "<SalonName name={item.salon!.name} salonId={item.salon!.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 31483,
+          "end": 31494,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} salonId={item.salon?.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/nail-inspiration.tsx",
+      "sha256": "83aead1fb3b048aa764f19716cfdaa9bbc757a9166244da2a14245c5ed7f34f7",
+      "edits": [
+        {
+          "start": 10447,
+          "end": 10459,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 8943,
+          "end": 8955,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/explore-editorial-sections.tsx",
+      "sha256": "a6a8c93bf694735ac4c56eea9861a5c82a57300dd37d652041df0eb6eef7448b",
+      "edits": [
+        {
+          "start": 8748,
+          "end": 8760,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/explore-map.tsx",
+      "sha256": "4d5ec522a52ccb933cc710b2f2ee0712ec17358fba5e3f25f6f21bc320cfb443",
+      "edits": [
+        {
+          "start": 8805,
+          "end": 8825,
+          "before": "{selectedSalon.name}",
+          "after": "<SalonName name={selectedSalon.name} salonId={selectedSalon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 8637,
+          "end": 8657,
+          "before": "{selectedSalon.name}",
+          "after": "<SalonName name={selectedSalon.name} salonId={selectedSalon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "sha256": "c2a546193e8fa0bb6c9b1430d126562f10da96274e69a8c190600e4fa3336842",
+      "edits": [
+        {
+          "start": 95506,
+          "end": 95518,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 55246,
+          "end": 55266,
+          "before": "{selectedSalon.name}",
+          "after": "<SalonName name={selectedSalon.name} salonId={selectedSalon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "components/saved-salon-list.tsx",
+      "sha256": "c060775773b278d14de871088c13a6229b0b920e4e733d98323fc76c9da70093",
+      "edits": [
+        {
+          "start": 1288,
+          "end": 1304,
+          "before": "{row.salon_name}",
+          "after": "<SalonName name={row.salon_name} salonId={row.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/explore/looks/[lookId]/page.tsx",
+      "sha256": "b1eb9e7fc47d6f76e0303ea454da79f4e402468759db2fea9a552e16d518f7d2",
+      "edits": [
+        {
+          "start": 8736,
+          "end": 8752,
+          "before": "{look.salonName}",
+          "after": "<SalonName name={look.salonName} href={look.bookingHref}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 4184,
+          "end": 4200,
+          "before": "{item.salonName}",
+          "after": "<SalonName name={item.salonName} href={item.href}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/salon-profile/salon-website-home.tsx",
+      "sha256": "056b89634fc3f249b50ff22a49f41d0bdd796640e867710b8a67991045fa32eb",
+      "edits": [
+        {
+          "start": 20406,
+          "end": 20425,
+          "before": "{data.profile.name}",
+          "after": "<SalonName name={data.profile.name} salonId={data.profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 17605,
+          "end": 17624,
+          "before": "{data.profile.name}",
+          "after": "<SalonName name={data.profile.name} salonId={data.profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/salon-profile/salon-website-header.tsx",
+      "sha256": "d0063775e209dbd1f2a545c57e51a24b5e8b07aabc768081a8dabbc57499519b",
+      "edits": [
+        {
+          "start": 2158,
+          "end": 2172,
+          "before": "{profile.name}",
+          "after": "<SalonName name={profile.name} salonId={profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/salon-profile/salon-profile-view.tsx",
+      "sha256": "de79604b63926a873893c67f27f7ed1a17c51e92c1191fa08578420967f4ae72",
+      "edits": [
+        {
+          "start": 174294,
+          "end": 174308,
+          "before": "{profile.name}",
+          "after": "<SalonName name={profile.name} salonId={profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 162249,
+          "end": 162263,
+          "before": "{profile.name}",
+          "after": "<SalonName name={profile.name} salonId={profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 58103,
+          "end": 58122,
+          "before": "{data.profile.name}",
+          "after": "<SalonName name={data.profile.name} salonId={data.profile.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/more/[section]/page.tsx",
+      "sha256": "1ac4e4cc282228970223977b550a887d49be39757acbdb84115d84620a0953dc",
+      "edits": [
+        {
+          "start": 8817,
+          "end": 8833,
+          "before": "{post.salonName}",
+          "after": "<SalonName name={post.salonName} salonId={post.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/my-bookings/page.tsx",
+      "sha256": "a4f036245f13ac4cdc6ccbeb83204e590dd46bcacb3eb0f15ecb6311068c29af",
+      "edits": [
+        {
+          "start": 8016,
+          "end": 8027,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} href={`/explore/salons/${booking.salon_id}`}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/my-place/place-panels.tsx",
+      "sha256": "b02c94ea3c9af8980419d9e2fc4bf6754a480dd344212a2195d25c17e4b4210b",
+      "edits": [
+        {
+          "start": 17991,
+          "end": 18012,
+          "before": "{selected.salon_name}",
+          "after": "<SalonName name={selected.salon_name} salonId={selected.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 16866,
+          "end": 16880,
+          "before": "{s.salon_name}",
+          "after": "<SalonName name={s.salon_name} salonId={s.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 6530,
+          "end": 6576,
+          "before": "title={details?.salon.name ?? workspace.label}",
+          "after": "title={<SalonName name={details?.salon.name ?? workspace.label} salonId={workspace.salonId}/>}",
+          "reason": "Salon settings drawer identity"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/my-place/my-place-client.tsx",
+      "sha256": "878f1353a16705fac904f3ae14cf60576bba7b4bd9f4a1dbdc9507fb8efa8424",
+      "edits": [
+        {
+          "start": 12676,
+          "end": 12694,
+          "before": "{invite.salonName}",
+          "after": "<SalonName name={invite.salonName} reference={{kind:\"invitation\",value:invite.id}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 7223,
+          "end": 7263,
+          "before": "<WorkspaceText text={workspace.label} />",
+          "after": "{workspace.type===\"salon\"?<SalonName name={workspace.label} salonId={workspace.salonId}/>:<WorkspaceText text={workspace.label}/>}",
+          "reason": "Salon list and quick-workspace identity"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/notifications/visits/[visitId]/page.tsx",
+      "sha256": "ebc581a3de6a4230390a0cfc961fc5d1244ddca6850782458f8a285bff8678df",
+      "edits": [
+        {
+          "start": 1014,
+          "end": 1030,
+          "before": "{data.salonName}",
+          "after": "<SalonName name={data.salonName} reference={{kind:\"visit\",value:visitId}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/payroll/tax-company/settings/page.tsx",
+      "sha256": "37e5e8cfde6677aa9acd55dbdb1cfd3ddac246f63a16cdf9c1eda1decffe830a",
+      "edits": [
+        {
+          "start": 1086,
+          "end": 1104,
+          "before": "{state.salon_name}",
+          "after": "<SalonName name={state.salon_name} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/portable/check-in/portable-check-in-client.tsx",
+      "sha256": "f2c18c5eb53bb8735345027b8c165eeef0db92326a44bbd05ff0c7293580af94",
+      "edits": [
+        {
+          "start": 18983,
+          "end": 19003,
+          "before": "{viewData.salonName}",
+          "after": "<SalonName name={viewData.salonName} salonId={viewData.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/reports/operational-report-dashboard.tsx",
+      "sha256": "45baa9000f723b7ded05c6c3f173e06e13e3df48c01bdfb8fa0588843e73801d",
+      "edits": [
+        {
+          "start": 24782,
+          "end": 24793,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/pos-tickets/[ticketId]/page.tsx",
+      "sha256": "e1e0dc53ef34dac79405ba8c58caa53d3c099372fb9920915e6f622087262c71",
+      "edits": [
+        {
+          "start": 40401,
+          "end": 40428,
+          "before": "{receipt.header.salon_name}",
+          "after": "<SalonName name={receipt.header.salon_name} salonId={context.currentSalon?.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 18841,
+          "end": 18868,
+          "before": "{context.currentSalon.name}",
+          "after": "<SalonName name={context.currentSalon.name} salonId={context.currentSalon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/customer-display/customer-idle-screen.tsx",
+      "sha256": "e97931f1e4ca3da47bf77a600c01d92d15d79443a787d8be868e18cf469745d7",
+      "edits": [
+        {
+          "start": 1750,
+          "end": 1761,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} reference={{kind:\"display\",value:token}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/customer-display/checkin-receipt-panel.tsx",
+      "sha256": "2a99d7cb377f37ed53ff75fe45eb92689a71f16983690cc37235fe83d9369daa",
+      "edits": [
+        {
+          "start": 3757,
+          "end": 3776,
+          "before": "{receipt.salonName}",
+          "after": "<SalonName name={receipt.salonName} reference={{kind:\"display\",value:token}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/customer-display/customer-display-client.tsx",
+      "sha256": "ba9c5a5ba6b50d2bab95405d35ec0a19b347a4295425cff0140a5bd878c2f0d1",
+      "edits": [
+        {
+          "start": 102459,
+          "end": 102459,
+          "before": "",
+          "after": "</SalonIdentityContext>",
+          "reason": "Inherited salon authority"
+        },
+        {
+          "start": 95499,
+          "end": 95499,
+          "before": "",
+          "after": "<SalonIdentityContext reference={{kind:\"display\",value:token}}>",
+          "reason": "Inherited salon authority"
+        },
+        {
+          "start": 45973,
+          "end": 45999,
+          "before": "{props.settings.salonName}",
+          "after": "<SalonName name={props.settings.salonName} />",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 11651,
+          "end": 11664,
+          "before": "{displayName}",
+          "after": "<SalonName name={displayName}/>",
+          "reason": "Customer display salon branding"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName, SalonIdentityContext } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/pos-desk-client.tsx",
+      "sha256": "013c165ff017688c27cf724f181174a6c4f1ef87137482d1cfb7bd16ec6cc7b9",
+      "edits": [
+        {
+          "start": 135169,
+          "end": 135180,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} salonId={staffRealtimeSalonId} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 134678,
+          "end": 134689,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} salonId={staffRealtimeSalonId} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/portable/book/booking-editor.tsx",
+      "sha256": "801b7b9e7ab423ed6ca9740c72dc741ba7caea817a0bc491d30f0d4e5fef4d8c",
+      "edits": [
+        {
+          "start": 6589,
+          "end": 6607,
+          "before": "{p.data.salonName}",
+          "after": "<SalonName name={p.data.salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/pos/portable/portable-workspace-tabs.tsx",
+      "sha256": "6f1e3c4746030c7884cbd3535a32891e3ef9a5f227be45f40dd2e1238a0b1fd0",
+      "edits": [
+        {
+          "start": 4837,
+          "end": 4848,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/qr/personal-qr-client.tsx",
+      "sha256": "060b2fa9a0d957d4ce614e9d0027df38c53deb599198df55219dc28d38b82a8b",
+      "edits": [
+        {
+          "start": 11077,
+          "end": 11094,
+          "before": "{visit.salonName}",
+          "after": "<SalonName name={visit.salonName} salonId={visit.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 10221,
+          "end": 10238,
+          "before": "{visit.salonName}",
+          "after": "<SalonName name={visit.salonName} salonId={visit.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 6302,
+          "end": 6321,
+          "before": "{catalog.salonName}",
+          "after": "<SalonName name={catalog.salonName} salonId={catalog.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/salon-profile/client-transformations/page.tsx",
+      "sha256": "a99131adcc8946343f6732ab87979ee558b6655fbbec7002d03a5a9c3dd4b156",
+      "edits": [
+        {
+          "start": 9310,
+          "end": 9321,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/salon-settings/ownership-section.tsx",
+      "sha256": "8f0fffc9593594d7c48cc576a02bcbd0a239833492138b1b302f763d8e01a480",
+      "edits": [
+        {
+          "start": 7626,
+          "end": 7638,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/salons/claim-suggestions.tsx",
+      "sha256": "4bb20dc1b949f366fd9b4e353c1ab885c928e6f3f7aa145d0f09e0d58ea1c67c",
+      "edits": [
+        {
+          "start": 4512,
+          "end": 4522,
+          "before": "{row.name}",
+          "after": "<SalonName name={row.name} salonId={row.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/salons/salon-management-page.tsx",
+      "sha256": "0ab2e9ff8e5c3c500e393160462ad00df8ddb07880a8ebb1033fbc3e49bb0d4a",
+      "edits": [
+        {
+          "start": 8402,
+          "end": 8414,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/settings/connections-panel.tsx",
+      "sha256": "1d10d388b917a2fbbde5414c30abcfec13628e1f4d2481c79ddd6589ea2e33d1",
+      "edits": [
+        {
+          "start": 15239,
+          "end": 15257,
+          "before": "{salon.salon_name}",
+          "after": "<SalonName name={salon.salon_name} salonId={salon.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 10507,
+          "end": 10519,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 7956,
+          "end": 7974,
+          "before": "{invite.salonName}",
+          "after": "<SalonName name={invite.salonName} reference={{kind:\"invitation\",value:invite.id}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 3935,
+          "end": 3955,
+          "before": "{request.salon_name}",
+          "after": "<SalonName name={request.salon_name} salonId={request.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/settings/salon-list-panel.tsx",
+      "sha256": "36c00e05de1bf7a872b34388d06862fd0a03c94c0671fe2609f3f7560e054413",
+      "edits": [
+        {
+          "start": 12090,
+          "end": 12102,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 9106,
+          "end": 9118,
+          "before": "{match.name}",
+          "after": "<SalonName name={match.name} salonId={match.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/settings/ownership-lifecycle-panels.tsx",
+      "sha256": "980dafdf6c0c3661b20307c6699b5aabeae5894e44cfd3c8a10fb5715900e4fa",
+      "edits": [
+        {
+          "start": 2060,
+          "end": 2076,
+          "before": "{data.salonName}",
+          "after": "<SalonName name={data.salonName} salonId={data.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 1805,
+          "end": 1821,
+          "before": "{data.salonName}",
+          "after": "<SalonName name={data.salonName} salonId={data.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 1021,
+          "end": 1037,
+          "before": "{data.salonName}",
+          "after": "<SalonName name={data.salonName} salonId={data.salonId}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/staff/connections/page.tsx",
+      "sha256": "1a145522935db0e8cf1814d4d2f94340dc2a0c5192f3b5fb81bcfeac8c599625",
+      "edits": [
+        {
+          "start": 10175,
+          "end": 10195,
+          "before": "{request.salon_name}",
+          "after": "<SalonName name={request.salon_name} salonId={request.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 7170,
+          "end": 7188,
+          "before": "{salon.salon_name}",
+          "after": "<SalonName name={salon.salon_name} salonId={salon.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 5202,
+          "end": 5222,
+          "before": "{request.salon_name}",
+          "after": "<SalonName name={request.salon_name} salonId={request.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 3297,
+          "end": 3317,
+          "before": "{request.salon_name}",
+          "after": "<SalonName name={request.salon_name} salonId={request.salon_id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/staff/today/today-dashboard-view.tsx",
+      "sha256": "117b5738d622687920fedeecbbc44bb8f4e8e601b9bd551e9a0f06d48cb55c55",
+      "edits": [
+        {
+          "start": 58091,
+          "end": 58112,
+          "before": "{dashboard.salonName}",
+          "after": "<SalonName name={dashboard.salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 55832,
+          "end": 55853,
+          "before": "{dashboard.salonName}",
+          "after": "<SalonName name={dashboard.salonName} currentSalon/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/staff/workday/page.tsx",
+      "sha256": "0a95ba745013eefcfecb0251e95141af0e6cd57fc651d2f3943b603ce4a7a609",
+      "edits": [
+        {
+          "start": 4256,
+          "end": 4283,
+          "before": "{context.currentSalon.name}",
+          "after": "<SalonName name={context.currentSalon.name} salonId={context.currentSalon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/support/support-ui.tsx",
+      "sha256": "88bc440983b4226c35df9cb2d8e41111d04c99ec040def220a5e54c6bdc058dd",
+      "edits": [
+        {
+          "start": 5894,
+          "end": 5916,
+          "before": "{c.context.salon_name}",
+          "after": "<SalonName name={c.context.salon_name} salonId={typeof c.context.salon_id===\"string\"?c.context.salon_id:null}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/tax-company/page.tsx",
+      "sha256": "7a4edf982b3747a87efc88bd1152cf99461c3873b9a50aac2fda5f95e2a1e485",
+      "edits": [
+        {
+          "start": 2278,
+          "end": 2290,
+          "before": "{salon.name}",
+          "after": "<SalonName name={salon.name} salonId={salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/tax-company/[salonId]/page.tsx",
+      "sha256": "340baf817081752c7f1ea7dfe606f6cfc9497906d2351340192dee7a5f332c6e",
+      "edits": [
+        {
+          "start": 1571,
+          "end": 1588,
+          "before": "{data.salon.name}",
+          "after": "<SalonName name={data.salon.name} salonId={data.salon.id}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/signup/phone/signup-phone-form.tsx",
+      "sha256": "76f518fdf9bffa1fd0164c689860a3ac5a86ecc1c567b13161451ec555e8ec5a",
+      "edits": [
+        {
+          "start": 4330,
+          "end": 4345,
+          "before": "{row.salonName}",
+          "after": "<SalonName name={row.salonName} />",
+          "reason": "Pre-auth phone-history labels intentionally omit canonical salon IDs; cannot grant affiliation from a name."
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/check-in/[entry]/phone-checkin.tsx",
+      "sha256": "ae5671432a7185ba79ef4f9544f5d37a0df81b492721971514e8fc3007aeea85",
+      "edits": [
+        {
+          "start": 1201,
+          "end": 1212,
+          "before": "{salonName}",
+          "after": "<SalonName name={salonName} reference={{kind:\"entry\",value:entry}}/>",
+          "reason": "Canonical salon name and affiliation"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "components/post-identity.tsx",
+      "sha256": "ae7b6c49176ffe1e5f4ddb2921937e79e2025ef59550abed2abdfe9ad0122ce7",
+      "edits": [
+        {
+          "start": 892,
+          "end": 946,
+          "before": "{name(identity.secondaryName, identity.secondaryHref)}",
+          "after": "{!identity.salonPrimary ? nameWithMember(identity.secondaryName, identity.secondaryHref) : name(identity.secondaryName, identity.secondaryHref)}",
+          "reason": "Salon attribution only"
+        },
+        {
+          "start": 667,
+          "end": 717,
+          "before": "{name(identity.primaryName, identity.primaryHref)}",
+          "after": "{identity.salonPrimary ? nameWithMember(identity.primaryName, identity.primaryHref) : name(identity.primaryName, identity.primaryHref)}",
+          "reason": "Salon publisher identity"
+        },
+        {
+          "start": 535,
+          "end": 568,
+          "before": "  return <span data-post-identity",
+          "after": "  const nameWithMember = (text: string, href?: string | null) => nameNode(<SalonName name={text} href={href}/>, href);\n  function nameNode(node: React.ReactNode, href?: string | null) { return href ? <Link prefetch={false} className=\"min-w-0\" href={href}>{node}</Link> : node; }\n  return <span data-post-identity",
+          "reason": "Shared salon identity helper"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/navigation-shell.tsx",
+      "sha256": "21d358e0ee9f4bb195729b96ea66fcaa830decc74aead82b9fbec904abe18ce2",
+      "edits": [
+        {
+          "start": 102579,
+          "end": 102579,
+          "before": "",
+          "after": "\nfunction WorkspaceMemberName({workspace,name,subtitle=false}:{workspace:CurrentWorkspaceOption|null;name:string;subtitle?:boolean}) { const salon=workspace?.type===\"salon\" && (subtitle?workspace.salonMode===\"staff\":workspace.salonMode!==\"staff\"); return salon ? <SalonName name={name} salonId={workspace.salonId}/> : <WorkspaceText text={name}/>; }\n",
+          "reason": "Role-aware workspace identity"
+        },
+        {
+          "start": 76426,
+          "end": 76440,
+          "before": "{currentLabel}",
+          "after": "<WorkspaceMemberName workspace={currentWorkspace} name={currentLabel}/>",
+          "reason": "Current workspace name"
+        },
+        {
+          "start": 72503,
+          "end": 72536,
+          "before": "<WorkspaceText text={subtitle} />",
+          "after": "<WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>",
+          "reason": "Staff salon subtitle"
+        },
+        {
+          "start": 72274,
+          "end": 72304,
+          "before": "<WorkspaceText text={label} />",
+          "after": "<WorkspaceMemberName workspace={workspace} name={label}/>",
+          "reason": "Workspace name, desktop/mobile switcher"
+        },
+        {
+          "start": 69174,
+          "end": 69204,
+          "before": "<WorkspaceText text={label} />",
+          "after": "<WorkspaceMemberName workspace={currentWorkspace} name={label}/>",
+          "reason": "Workspace name, desktop/mobile switcher"
+        },
+        {
+          "start": 46424,
+          "end": 46484,
+          "before": "<WorkspaceText text={isPending ? \"Opening...\" : subtitle} />",
+          "after": "{isPending ? <WorkspaceText text=\"Opening...\"/> : <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>}",
+          "reason": "Switching workspace subtitle"
+        },
+        {
+          "start": 46242,
+          "end": 46272,
+          "before": "<WorkspaceText text={label} />",
+          "after": "<WorkspaceMemberName workspace={workspace} name={label}/>",
+          "reason": "Workspace name, desktop/mobile switcher"
+        },
+        {
+          "start": 43324,
+          "end": 43338,
+          "before": "{currentLabel}",
+          "after": "<WorkspaceMemberName workspace={currentWorkspace} name={currentLabel}/>",
+          "reason": "Current workspace name"
+        },
+        {
+          "start": 19421,
+          "end": 19481,
+          "before": "<WorkspaceText text={isPending ? \"Opening...\" : subtitle} />",
+          "after": "{isPending ? <WorkspaceText text=\"Opening...\"/> : <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>}",
+          "reason": "Switching workspace subtitle"
+        },
+        {
+          "start": 19282,
+          "end": 19312,
+          "before": "<WorkspaceText text={label} />",
+          "after": "<WorkspaceMemberName workspace={workspace} name={label}/>",
+          "reason": "Workspace name, desktop/mobile switcher"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/workspace-hub-ui.tsx",
+      "sha256": "5924de478e7ff65d76ad30a3342a398f03b9d181b096c34fe2aab96ffa42aca0",
+      "edits": [
+        {
+          "start": 21573,
+          "end": 21620,
+          "before": "<WorkspaceText text={currentWorkspace.label} />",
+          "after": "{currentWorkspace.type===\"salon\"?<SalonName name={currentWorkspace.label} salonId={currentWorkspace.salonId}/>:<WorkspaceText text={currentWorkspace.label}/>}",
+          "reason": "Salon list and quick-workspace identity"
+        },
+        {
+          "start": 19522,
+          "end": 19571,
+          "before": "<WorkspaceText text={shortcut.workspace.label} />",
+          "after": "{shortcut.workspace.type===\"salon\"?<SalonName name={shortcut.workspace.label} salonId={shortcut.workspace.salonId}/>:<WorkspaceText text={shortcut.workspace.label}/>}",
+          "reason": "Salon list and quick-workspace identity"
+        },
+        {
+          "start": 16886,
+          "end": 16926,
+          "before": "<WorkspaceText text={workspace.label} />",
+          "after": "{workspace.type===\"salon\"?<SalonName name={workspace.label} salonId={workspace.salonId}/>:<WorkspaceText text={workspace.label}/>}",
+          "reason": "Salon list and quick-workspace identity"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/my-place/place-ui.tsx",
+      "sha256": "85a0da476cd5ed373b71c15f1f01d84e225d732bef2f693c52aa74dfd64e4bb6",
+      "edits": [
+        {
+          "start": 5864,
+          "end": 5894,
+          "before": "<WorkspaceText text={title} />",
+          "after": "{typeof title===\"string\"?<WorkspaceText text={title}/>:title}",
+          "reason": "Accessible drawer heading"
+        },
+        {
+          "start": 3615,
+          "end": 3629,
+          "before": "title: string;",
+          "after": "title: ReactNode;",
+          "reason": "Keep Sheet text labels and accept salon identity heading"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/businesses/[businessId]/page.tsx",
+      "sha256": "9eb06a2fcb3b33fbbf69caa5ec48f20ece584296b687db1a88c3ca664302b43c",
+      "edits": [
+        {
+          "start": 4581,
+          "end": 4602,
+          "before": "label={location.name}",
+          "after": "label={<SalonName name={location.name} salonId={location.id}/>}",
+          "reason": "Related business salon identity"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/post-comments/post-comment-thread.tsx",
+      "sha256": "53cbd10f9fc161e37c2933316d69330ace097225eb37196dff7904f9fb552d66",
+      "edits": [
+        {
+          "start": 33364,
+          "end": 33391,
+          "before": "{comment.authorDisplayName}",
+          "after": "{comment.isSalonReply && !comment.optimistic ? <SalonName name={comment.authorDisplayName} salonId={comment.actingSalonId ?? comment.salonId}/> : comment.authorDisplayName}",
+          "reason": "Confirmed salon reply identity"
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/pos/portable/layout.tsx",
+      "sha256": "7a310da69123027d0bdc5c53df2b9ce95abad9c71259c4f9e4277ffa6e3ecaae",
+      "edits": [
+        {
+          "start": 6392,
+          "end": 6453,
+          "before": "</PortableWorkspaceStateProvider></WorkspaceLanguageProvider>",
+          "after": "</PortableWorkspaceStateProvider></WorkspaceLanguageProvider></SalonIdentityContext>",
+          "reason": "Portable inherited salon identity"
+        },
+        {
+          "start": 5373,
+          "end": 5415,
+          "before": "<WorkspaceLanguageProvider portableSession",
+          "after": "<SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession",
+          "reason": "Portable inherited salon identity"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonIdentityContext } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/locations/[locationId]/page.tsx",
+      "sha256": "09b9f187cf8e26a4ed1a998f3e48fcd7b8875d3ee2aa3247b59387e8a15088e5",
+      "edits": [
+        {
+          "start": 2766,
+          "end": 2794,
+          "before": "title={detail.location.name}",
+          "after": "title={<SalonName name={detail.location.name} salonId={detail.location.id}/>}",
+          "reason": "Admin business title"
+        },
+        {
+          "start": 0,
+          "end": 0,
+          "before": "",
+          "after": "\nimport { SalonName } from \"@/components/salon-member-badge\";\n",
+          "reason": "Shared compact salon identity import"
+        }
+      ]
+    },
+    {
+      "file": "app/(app)/admin/_components/admin-ui.tsx",
+      "sha256": "2584309edb56a5e7b983e31a83e1b602bacd89a1edd877b61e4b6b400f218098",
+      "edits": [
+        {
+          "start": 7622,
+          "end": 7636,
+          "before": "title: string;",
+          "after": "title: ReactNode;",
+          "reason": "Allow accessible salon identity in Admin heading"
+        }
+      ]
+    },
+    {
+      "file": "app/salon-profile/salon-website-header.module.css",
+      "sha256": "daa96c32c9232f99b63fe54a2c2fffa01514abdea8efcdc9d88603a3e88f31b5",
+      "edits": [
+        {
+          "start": 793,
+          "end": 811,
+          "before": ".name h2{margin:0;",
+          "after": ".name h2{min-width:0;flex:1;margin:0;",
+          "reason": "Long salon heading yields space without clipping membership marker"
+        }
+      ]
+    }
+  ]
+}

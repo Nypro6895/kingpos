@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
 import { useExploreEditorialFeed } from "./use-explore-editorial-feed";
 import { selectExploreEditorialPosts } from "@/lib/explore-post-presentation";
@@ -1788,7 +1790,7 @@ function NearYouHomeSection({
                 </p>
                 {selectedSalon ? (
                   <p className="truncate text-xs font-medium text-text-secondary">
-                    {selectedSalon.name}
+                    <SalonName name={selectedSalon.name} salonId={selectedSalon.id}/>
                   </p>
                 ) : null}
               </div>
@@ -3024,7 +3026,7 @@ function SearchContinuationFeedReady({ response, coordinates, viewerId, onChoose
   const renderSalon = (salon: ExploreSearchResult) => <div key={salon.id} className="space-y-3">
     <div className="flex items-center gap-3 px-1">
       <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-surface-muted"><SalonLogoContent salon={salon} size={40} /></div>
-      <div><p className="font-semibold text-text-primary">{salon.name}</p><p className="text-sm text-text-secondary">{formatSalonLocation(salon)}</p></div>
+      <div><p className="font-semibold text-text-primary"><SalonName name={salon.name} salonId={salon.id}/></p><p className="text-sm text-text-secondary">{formatSalonLocation(salon)}</p></div>
     </div>
     <SalonCard featured rankAriaLabel={isExplorePrimarySearchResult(salon) ? "Search match" : "Discover this salon"} rankLabel={isExplorePrimarySearchResult(salon) ? "Match" : "Discover"} salon={salon} />
   </div>;

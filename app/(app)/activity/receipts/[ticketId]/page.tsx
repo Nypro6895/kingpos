@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import {
   getCustomerActivityReceipt,
@@ -102,7 +104,7 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-extrabold leading-tight text-text-primary">
-              {receipt.salon.name}
+              <SalonName name={receipt.salon.name} salonId={receipt.salon.id}/>
             </h1>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">
               Paid at salon

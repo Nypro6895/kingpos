@@ -1,0 +1,591 @@
+{
+  "scope": "Fresh synthetic canonical profile/current-context/lifecycle SQL subset; NOT full app shell/Auth/notification/abuse bootstrap",
+  "featureEnabled": false,
+  "financeEnabled": false,
+  "authAccountsCreated": 0,
+  "canonicalRoutesChanged": false,
+  "profileWriteColumns": [
+    "display_name",
+    "first_name",
+    "last_name",
+    "language",
+    "timezone"
+  ],
+  "canonicalContextTables": 10,
+  "canonicalHelpers": 9,
+  "securityMutations": false,
+  "normalization": "LF/one final newline; seven Market SQL outer wrappers removed as declared in provenance",
+  "remaining": [
+    "Canonical signup/login/record_account_login_session/notifications/booking/abuse",
+    "Full profile phone/avatar/deletion/transfer workflows",
+    "App-layout subscriptions/queue/advertising/provider dependencies",
+    "Real GoTrue/PostgREST/HTTPS/Storage/SMS and managed PG"
+  ],
+  "files": [
+    {
+      "source": "examples/market-qa-bootstrap/context-preflight.sql",
+      "name": "00-context-preflight.sql",
+      "rawSha256": "d7dce8ba8a220251c5b0add9735c6ddde13884a4cf88955fdd74a59564247b20",
+      "executedSha256": "d7dce8ba8a220251c5b0add9735c6ddde13884a4cf88955fdd74a59564247b20"
+    },
+    {
+      "source": "explicit canonical context slices + declared QA restrictions",
+      "name": "01-context-tables.sql",
+      "executedSha256": "86d92073cd3303a3bb5dfcbf6a0c3d9fd5f5ed3fdb8baa8035a979a4a8d899ea",
+      "provenance": [
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create or replace function public.set_updated_at(",
+          "startLine": 4,
+          "endLine": 12,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "f667a925d7de14a94a1909cc87b0990deb1e5e6c029b08620db7473c22ea7831"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.users (",
+          "startLine": 14,
+          "endLine": 29,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "0c384a3c1c0c8e55d1db8ded2229bd5ffde49d23045cc4954dc165e16e6570eb"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.accounts (",
+          "startLine": 35,
+          "endLine": 41,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "c6f4e09f861870dcfdb99795d98e14687eaf78246bce79af661d6bd00ff39a17"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.locations (",
+          "startLine": 47,
+          "endLine": 70,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "02fd70c94aef003c4f9d62f27f7e1c836d3bfb4e63a377d58689e0727f9454b5"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.roles (",
+          "startLine": 81,
+          "endLine": 91,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "3c6ad8b30b3620c373d5f42bf074350b9184348432fca6754374d4c8f341ad15"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.permissions (",
+          "startLine": 97,
+          "endLine": 106,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "60fb1f2b7bcce9dacc205c40a4ee81cea74bdeeef3032db24819a7febe55c1df"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.role_permissions (",
+          "startLine": 112,
+          "endLine": 118,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "f72c96ef36a500bef541373cec70a967c4ab911e84dcac3440c53f9e17b82def"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.account_memberships (",
+          "startLine": 120,
+          "endLine": 130,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "7932d5679c9db829a384452ac7b6dda334b6238af44fba03cd0efecfd4651fde"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.salon_memberships (",
+          "startLine": 136,
+          "endLine": 147,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "371bc9c808509aa6ed6ade2d19f85d6b92e45bb71b18b309eb1885301df9127e"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.staff (",
+          "startLine": 183,
+          "endLine": 206,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "9fbdfd77cced38da0cd5a1dccaac76d51ed0d951bdabed03780f5b072b94f961"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create table public.salon_settings (",
+          "startLine": 251,
+          "endLine": 274,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "1c7364df3139c9bc28ff8d7df303521be5fae0c215dd8478f8d68d59bebc47a6"
+        },
+        {
+          "source": "supabase/migrations/202608210001_account_salon_lifecycle_foundation.sql",
+          "start": "alter table public.users\n  add column if not exists deletion_requested_at",
+          "startLine": 1,
+          "endLine": 5,
+          "rawSha256": "6f055730d76c7dde809cbd85ff9544a38e13182e8865c4b3d73788e49e17103f",
+          "sliceSha256": "bb53f58c6aff7e3d9fc01f7f97e86b5adb663532438b58bdb9cb810bd3879e34"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "alter table public.users\n  add column if not exists deletion_finalization_started_at",
+          "startLine": 1,
+          "endLine": 6,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "e45a206f145a8764d7fd6537f9d2bb3bc47e956d283288ed359b04cda781f3ed"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create table if not exists public.deleted_auth_identities (",
+          "startLine": 11,
+          "endLine": 16,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "50dffcae8c1e4d25cd291a695b40318c4092aa76700ef3546059845d88945cc5"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_users_updated_at",
+          "startLine": 31,
+          "endLine": 33,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "1d5ba3929ee508806b89c59fe67485c78877c4536b6b735ce3bcbf9c467088ee"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_accounts_updated_at",
+          "startLine": 43,
+          "endLine": 45,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "5d762aba9f4e3581f8fbaf351461f6ddde61b675bcbf7130d517ad4a3269729d"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_locations_updated_at",
+          "startLine": 77,
+          "endLine": 79,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "a59c88d51068db15feee01536827c91a3b0fd9aa91350b9d40d4c350947594c8"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_roles_updated_at",
+          "startLine": 93,
+          "endLine": 95,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "e7294a482aae69c1fbc07906ca2696e15007b2bfa953ff55620ea933752d6b81"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_permissions_updated_at",
+          "startLine": 108,
+          "endLine": 110,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "0132ad612e589a36f1c0531eba8de13e29333f8498ec180e862f2cd89d492d4c"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_account_memberships_updated_at",
+          "startLine": 132,
+          "endLine": 134,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "86ae1928a244ffc088d8a731ff2fe76f13493511538cb97fea5ece4defc30649"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_salon_memberships_updated_at",
+          "startLine": 152,
+          "endLine": 154,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "89778512c614507c8f0859cc04b2d393cc4630d21b313f7cbe772e00980fe188"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_staff_updated_at",
+          "startLine": 211,
+          "endLine": 213,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "67a8f37cf3a860ac703a02802b3442b94ccd0f7e6b20b93caa876315432856e1"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create trigger set_salon_settings_updated_at",
+          "startLine": 276,
+          "endLine": 278,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "59eab429894389bb36166c84252f6619f5d2f94f8789756182c0406b2d2001fc"
+        }
+      ]
+    },
+    {
+      "source": "explicit canonical context slices + declared QA restrictions",
+      "name": "02-context-helpers.sql",
+      "executedSha256": "57d0fd3dfff7de9fb3fb85698196ddf847199a67bd3dd9ffc50ebbdd4b5f92be",
+      "provenance": [
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create or replace function public.current_public_user_id(",
+          "startLine": 2282,
+          "endLine": 2293,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "48807b5b8e5f3b9171841cf9257f92975ac6fe90f5079f77d6ada48f7dba7ee2"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create or replace function public.user_belongs_to_account(",
+          "startLine": 2295,
+          "endLine": 2309,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "7bcceb971625dbd0a2d1005497f462a49d7d20d6428f5228ada3b097bf9022f6"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create or replace function public.user_has_account_permission(",
+          "startLine": 2332,
+          "endLine": 2356,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "1e737e66f086836642cb9c6c9d3d059a1cc8cfaac43b3930d16a42f3b6b5559e"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create or replace function public.user_can_manage_salon(",
+          "startLine": 377,
+          "endLine": 406,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "0aea2e63ba565617bed5478f1b702d0224b19318690882c9ade5d662f8183eb7"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create or replace function public.user_has_salon_permission(",
+          "startLine": 408,
+          "endLine": 438,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "a63f0bff6f00d395d73e433973f43cd5980c4af718c65a89d6abfa07e3f793f3"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create or replace function public.lifecycle_user_is_salon_owner(",
+          "startLine": 290,
+          "endLine": 335,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "faac129f47a14aa5dde1d3ebd4a28f6bf36524468607db708cc8d27627529587"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create or replace function public.auth_identity_is_deleted(",
+          "startLine": 256,
+          "endLine": 270,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "92220d30e9ff416ecc9940b1282a6d3f9f467524add45e9bad5c0d96b5b2a0cc"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create or replace function public.seed_default_roles_for_account(",
+          "startLine": 4051,
+          "endLine": 4119,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "e5a6ef080ccc034855ffea496d0115bb75dbdc3445af6993adfb514812338c44"
+        },
+        {
+          "source": "supabase/migrations/202608210003_account_deletion_flow.sql",
+          "start": "create or replace function public.ensure_personal_account_for_current_user(",
+          "startLine": 23,
+          "endLine": 133,
+          "rawSha256": "2b562345f747a7fcb6ceec43d7b36103f8c8d5b57ffcc57be350c52135d2b08e",
+          "sliceSha256": "608c595163d6b33a4e9e502851c1a7d8d7242d11321603782f3a64d042d6d2e1"
+        }
+      ]
+    },
+    {
+      "source": "explicit canonical context slices + declared QA restrictions",
+      "name": "03-context-rls.sql",
+      "executedSha256": "05095e4304438972254b9e735928f9dea4362804d4fdfc717fcd03f45e931d77",
+      "provenance": [
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"users_self_read\"",
+          "startLine": 7153,
+          "endLine": 7155,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "26e7249352e691d291d8bb9a4d38b2a29928ea6aa8e128ae5e54970e1415d856"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"users_self_update\"",
+          "startLine": 7161,
+          "endLine": 7164,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "ffdd9c19621afd5a06fa7aa5bc98766b9ab2ccb45bdf54665e894245c42dec65"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"account_member_read_accounts\"",
+          "startLine": 7166,
+          "endLine": 7168,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "6fdd080d31dab6fe4b8112f455efad9527588cbad2f048e8913b1f47c8d5becb"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"account_member_read_locations\"",
+          "startLine": 7175,
+          "endLine": 7177,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "ec5ae7a722a58ef883b657ba03e391bfa8b156f4be3738b5c827c5d3cbe5b176"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"account_member_read_roles\"",
+          "startLine": 7197,
+          "endLine": 7199,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "06725cab576f2e6221ee9497075fa190d389b3ff1ecabdd5ac5f60dc77ee7911"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"public_read_permissions\"",
+          "startLine": 7201,
+          "endLine": 7203,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "7a812387539c7711bd1096ea602de41e047f22283776d1749047293899e8f24b"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"account_member_read_role_permissions\"",
+          "startLine": 7205,
+          "endLine": 7211,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "fcfdb17a35c75c2193e61ab12fd1504f048e25ac051c78bd7d9e95e68b3f4853"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"member_read_account_memberships\"",
+          "startLine": 7213,
+          "endLine": 7215,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "0a69d46a29e8f22f4c4feaa866f124c545fd0acd0145b368dfa7a306c4dbbc37"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"member_read_salon_memberships\"",
+          "startLine": 7217,
+          "endLine": 7219,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "917cb40f0bb8b9738b66cc43875243f7b46b64954d717211e03d580b1579622e"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"salon_member_read_staff\"",
+          "startLine": 7233,
+          "endLine": 7235,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "315b0387c1c2552d404c7ff1f3a8c923e94ca86f91305194993531b99faaf906"
+        },
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create policy \"salon_member_read_settings\"",
+          "startLine": 7188,
+          "endLine": 7190,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "e0f09fee12fc6e1215f527bdffe4d8ce674a2b01b771790883ba109f9907b803"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create policy \"salon_member_read_accounts\"",
+          "startLine": 441,
+          "endLine": 451,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "26ec29756e2f9a91168d0543e188b7974779f2ebef92f437a32eb4dd26a43299"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create policy \"salon_member_read_locations_by_membership\"",
+          "startLine": 454,
+          "endLine": 464,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "0e4cc85563cbfcaf62fccd41b3ea3b7fa0ad627c5964da2deedd2f61a081d3cf"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create policy \"salon_member_read_roles\"",
+          "startLine": 467,
+          "endLine": 477,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "dff408881491386e4609ed88fe30f9fbc7027114b696f23c7aeeb81a80c709bd"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create policy \"salon_member_read_own_role_permissions\"",
+          "startLine": 480,
+          "endLine": 490,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "044abef3fb5b1f350a48870e132bf7763c61962ae4fca9ecbca09e848757d25e"
+        },
+        {
+          "source": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+          "start": "create policy \"salon_member_read_account_memberships_for_salon_account\"",
+          "startLine": 493,
+          "endLine": 503,
+          "rawSha256": "e4c93ceeda8d6c8f5401e71a55479e721564693025231ae82cac12581fc62052",
+          "sliceSha256": "ad514fd8f638effdb685a27aff67ba3cac46e5d153e6dc2887e88c85f32b240a"
+        }
+      ]
+    },
+    {
+      "source": "supabase/migrations/20261028043000_market_platform.sql",
+      "name": "04-20261028043000_market_platform.sql",
+      "rawSha256": "07800590066ef83696e9f6ff8a4aa676346201f637722e8929024e28431aeab5",
+      "executedSha256": "04b343d0ca254815d3d59f51deb087ec72d218b116ce3d1eb312c038d7bdf32c",
+      "sourceExecutedSha256": "7107a89a7c71a339b829ba70df3d55073db55202588b8a65f93d41ab06ee336f",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "supabase/migrations/20261028050000_market_platform_commerce.sql",
+      "name": "05-20261028050000_market_platform_commerce.sql",
+      "rawSha256": "e1b22dbc81bf6a122172235e1ba9f6ea6705e5c87deeff2695bf99fa95fc9382",
+      "executedSha256": "5df0019f087f7bc40b56d69931466660e425b3d5a74f5c151380c824a4626c87",
+      "sourceExecutedSha256": "e1b22dbc81bf6a122172235e1ba9f6ea6705e5c87deeff2695bf99fa95fc9382",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "supabase/migrations/20261028060000_market_owner_connections.sql",
+      "name": "06-20261028060000_market_owner_connections.sql",
+      "rawSha256": "22ad168a344216cb7b85b362e44bcfd363b1aabe4e5900d5f628528566e36065",
+      "executedSha256": "be79e3577c03b5d4f0fa46c2ae58fd014be4ba8ce0468b71f1d1f2a9434f62fa",
+      "sourceExecutedSha256": "78125db40514063b6fdd84228d2b68c9efe0f635955833130dd5d158303ed8f1",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "supabase/migrations/20261028063000_market_developer_tools.sql",
+      "name": "07-20261028063000_market_developer_tools.sql",
+      "rawSha256": "1ee92defff0a14fc60d9662ab2231d59b9dc3d331dc11518c09e2e7c12c5fae6",
+      "executedSha256": "ba20cd4e1060afe17b6a5ddcbb809cb8cec5981d41a7fd3d27a8acedb4ab84dc",
+      "sourceExecutedSha256": "1ee92defff0a14fc60d9662ab2231d59b9dc3d331dc11518c09e2e7c12c5fae6",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "supabase/migrations/20261028070000_market_provider_accounting.sql",
+      "name": "08-20261028070000_market_provider_accounting.sql",
+      "rawSha256": "ae49add942988e7212d98020b99051db3162c27a10dc5585237754445a1b7f36",
+      "executedSha256": "0ab16fc15189c56da84dcd9c080e0f0269fee4f1a86ec60bd37329b7d8307df9",
+      "sourceExecutedSha256": "ae49add942988e7212d98020b99051db3162c27a10dc5585237754445a1b7f36",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "supabase/migrations/20261028210000_market_published_data.sql",
+      "name": "09-20261028210000_market_published_data.sql",
+      "rawSha256": "9c311423e6626502288af8ec36a4466a430fa4c91f346559425cfe3fc4cf97d9",
+      "executedSha256": "66445d3959ddbbcdc5b9be1cbe4e6cc440fa3b7cbf5eddd6ab4427e511b6dd59",
+      "sourceExecutedSha256": "b65a1431caa7ff8c03896057805fa28fcaed0d1434bb8974a2de3ad3056fb0c6",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "supabase/migrations/20261030041500_market_platform_refund_intents.sql",
+      "name": "10-20261030041500_market_platform_refund_intents.sql",
+      "rawSha256": "1d8ded3236c5a634cf8f031aa10b42a59112f5a47f53f991831cf492e8d7b3f4",
+      "executedSha256": "05839395624e879efb895ec9b031d427cb02fbfd618840b2fbc1cac109cf5589",
+      "sourceExecutedSha256": "1253a1230fd67843f4a133294c0091a013b2ed3ccd5e7448277182c0706d9175",
+      "transformation": "Remove exact outer begin;/commit; and normalize one final LF for one atomic companion transaction; SQL statements unchanged"
+    },
+    {
+      "source": "examples/qr-menu/storage.sql",
+      "name": "11-qr-storage.sql",
+      "rawSha256": "97350d781e0b7c15fd71383f5df97cdb0b0361482597b6ef78228fb9d605e025",
+      "executedSha256": "e86b444ec0581a42cd631003f3f2281549b7b5f23ebb3d1b7107acc8f6a9a2ab"
+    },
+    {
+      "source": "examples/market-qa-bootstrap/80-qr-role.sql",
+      "name": "12-qr-role.sql",
+      "rawSha256": "c21ed8d639de068bc659184af72a7f8bd1b12c3e558b2a322ca2a11ad1b84ae8",
+      "executedSha256": "5feea67d958b28626f72b4a75867d2a0e60420bc87576a44989f7951e8afa941"
+    },
+    {
+      "source": "examples/market-qa-bootstrap/context-fixtures.sql",
+      "name": "13-context-fixtures.sql",
+      "rawSha256": "fda4c9736e478734e946eb4958a2d0e6159b64f7d4bfb6f501cbb8487810733c",
+      "executedSha256": "fda4c9736e478734e946eb4958a2d0e6159b64f7d4bfb6f501cbb8487810733c"
+    },
+    {
+      "source": "explicit canonical slices + QA-only read restrictions",
+      "name": "14-security-read-contract.sql",
+      "executedSha256": "52a89022c000b7d8448ce9bd5bd044f73b5cf19103cac0b6ddf6b908dc4a1b2c",
+      "provenance": [
+        {
+          "source": "supabase/migrations/202607240001_account_salon_baseline.sql",
+          "start": "create or replace function public.set_updated_at()",
+          "end": "create table public.users (",
+          "startLine": 4,
+          "endLine": 13,
+          "rawSha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+          "sliceSha256": "c38e6910c04bdc933c02c3df476471c084b1b23a151c236c9e6eaba1fd2fb0e7"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create table if not exists public.account_security_preferences (",
+          "end": "drop policy if exists \"account_security_preferences_self_read\"",
+          "startLine": 1,
+          "endLine": 232,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "f9edb941f27d9c367d93f43caf75bb252e61a4e3a77a0f186536806ea136caec"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create policy \"account_security_preferences_self_read\"",
+          "end": "drop policy if exists \"account_security_preferences_self_insert\"",
+          "startLine": 235,
+          "endLine": 239,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "6bc2b25f52a32834bdc3bcf5c4a1af1341dd4aaf54fddaff2cf1cf3cc0addd11"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create policy \"account_login_sessions_self_read\"",
+          "end": "drop policy if exists \"account_login_sessions_support_read\"",
+          "startLine": 264,
+          "endLine": 268,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "ea91bb37c85aeab5d0de7798c20d12d6a3fbc372a306f7b37b6f09b75690f267"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create policy \"account_trusted_devices_self_read\"",
+          "end": "drop policy if exists \"account_trusted_devices_support_read\"",
+          "startLine": 293,
+          "endLine": 297,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "771df3bdeafeded3a2430a90af2f36b4373ba71b89221c84e73ca165f5d33a14"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create policy \"account_login_activity_self_read\"",
+          "end": "drop policy if exists \"account_login_activity_support_read\"",
+          "startLine": 322,
+          "endLine": 326,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "232d6d53893354091bcd400b73a930f115722b20368d95cdafe37e11c9b5b3c6"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create policy \"account_recovery_codes_self_read\"",
+          "end": "drop policy if exists \"account_recovery_codes_self_insert\"",
+          "startLine": 343,
+          "endLine": 347,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "c281f3e1d52dfed2bd174000876b9feacd2e185680250c20cf05b9653f0efa5b"
+        },
+        {
+          "source": "supabase/migrations/202608300001_account_login_security.sql",
+          "start": "create policy \"account_recovery_requests_self_read\"",
+          "end": "drop policy if exists \"account_recovery_requests_support_read\"",
+          "startLine": 365,
+          "endLine": 369,
+          "rawSha256": "12535589e059702fcc11f7f64c700e41ae88541211f674ec647ef2acf912402e",
+          "sliceSha256": "b0ebbf856e5e1be319942a183c6c83c827cf498012b6f2ab2e7ca16b0fbe4e21"
+        }
+      ]
+    }
+  ],
+  "graphSha256": "886fe3229941c6fcee5ff70e31baf86a626a13b9ada89f88d43ad72f9fcc90fc"
+}

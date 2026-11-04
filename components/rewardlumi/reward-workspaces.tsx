@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BookingRewardEstimate } from "./booking-reward-pending";
 import { useRef } from "react";
 import { useExperienceScope } from "@/components/experience-scope";
 import { rewardEarnLines } from "@/lib/reward-discovery";
@@ -34,6 +35,7 @@ function SalonRewards({ card }: { card: RewardView }) {
     <div className={styles.cardTop}><div className={styles.points}><strong>{card.available.toLocaleString("en-US")}</strong><span>points available</span></div><span className={styles.gift} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 10h16v11H4zM3 6h18v4H3zM12 6v15"/><path d="M12 6H8.5a2.5 2.5 0 1 1 2.4-3.2L12 6Zm0 0h3.5a2.5 2.5 0 1 0-2.4-3.2L12 6Z"/></svg></span></div>
     <h2 id={`reward-name-${card.salonId}`}>{card.salonName}</h2>
     {balanceLine && <p className={styles.balanceNote}>{balanceLine}</p>}
+    {card.pendingBookings?.map(reward => <div key={reward.bookingId}><BookingRewardEstimate reward={reward}/><Link className={styles.salonLink} href={`/my-bookings?details=${encodeURIComponent(reward.bookingId)}`}>View appointment</Link></div>)}
     {!card.enabled && <p className={styles.paused}>New earning paused · your points are kept.</p>}
     {next ? <div className={styles.nextReward}>
       <p>{next.remaining ? <><strong>{next.remaining.toLocaleString("en-US")} more points</strong> for {next.offer.title}</> : <><span className={styles.readyDot} aria-hidden="true"/>Enough points for <strong>{next.offer.title}</strong></>}</p>

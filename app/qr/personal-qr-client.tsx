@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -87,7 +89,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
     {error && <div role="alert" className={styles.notice}><WorkspaceText text={error} /><div><button type="button" disabled={!online || busy} onClick={() => void refresh()}><WorkspaceText text="Refresh" /></button> <Link href="/account"><WorkspaceText text="Account" /></Link></div></div>}
     {catalog ? <section className={styles.card} aria-label="Choose check-in services">
       <h2><WorkspaceText text="Hello," /> {customerName.split(/\s+/)[0].toUpperCase()}!</h2>
-      <p className={styles.muted}>{catalog.salonName}</p>
+      <p className={styles.muted}><SalonName name={catalog.salonName} salonId={catalog.salonId}/></p>
       <p><WorkspaceText text="What can we do for you today?" /></p>
       <form onSubmit={event => { event.preventDefault(); void checkin(); }}>
         <p className={styles.muted}><WorkspaceText text="Select up to 8 services." /></p>
@@ -115,7 +117,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
 }
 
 function VisitRow({ visit, onOpen }: { visit: PersonalQrVisit; onOpen: () => void }) {
-  return <button type="button" className={styles.visitRow} onClick={onOpen}><span><strong>{visit.salonName}</strong><span className={styles.muted}>#{visit.queueNumber ?? "—"}</span></span><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></button>;
+  return <button type="button" className={styles.visitRow} onClick={onOpen}><span><strong><SalonName name={visit.salonName} salonId={visit.salonId}/></strong><span className={styles.muted}>#{visit.queueNumber ?? "—"}</span></span><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></button>;
 }
 function PersonalVisit({ visit, online }: { visit: PersonalQrVisit; online: boolean }) {
   const [expanded, setExpanded] = useState(false);
@@ -123,7 +125,7 @@ function PersonalVisit({ visit, online }: { visit: PersonalQrVisit; online: bool
   const totals = visit.receipt ? historyTicketTotals(visit.receipt) : null;
   const lines = visit.receipt ? visit.receipt.services.map(line => ({ id: line.id, serviceName: line.name, staffName: line.staffName ?? "", amount: line.lineTotal })) : visit.lines;
   return <section className={styles.card} aria-label="Visit status and prices">
-    <div className={styles.heading}><h2>{visit.salonName}</h2><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></div>
+    <div className={styles.heading}><h2><SalonName name={visit.salonName} salonId={visit.salonId}/></h2><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></div>
     <p>#{visit.queueNumber ?? "—"}</p>
     {visit.ready && <div role="status" className={styles.ready}><strong><WorkspaceText text="Your staff is ready" /></strong><p>{visit.ready.staffName ?? ""}{visit.ready.chair && <> · <WorkspaceText text="Chair" /> {visit.ready.chair}</>}</p></div>}
     {!!visit.workingStaff.length && !finished && <p className={styles.muted}>{visit.workingStaff.join(" · ")} · <WorkspaceText text="Working" /></p>}

@@ -1,4 +1,7 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
+import { BookingRewardPending } from "@/components/rewardlumi/booking-reward-pending";
 import { browserPublicOrigin } from "@/lib/browser-public-origin";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
@@ -1532,6 +1535,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
           return;
         }
         if (response.ok && response.bookingId) {
+          window.dispatchEvent(new Event("reylumi:rewards-changed"));
           draftCompleted.current = true;
           clearStoredBookingDraft(data);
           if (response.accountLinked && !embedded) {
@@ -1690,7 +1694,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   const selectedServiceNames = summaryLines.map(line => line.service.name).join(" + ");
   const addMoreButton = <button type="button" className={compact.textLink} disabled={isPending} onClick={() => { setKeepInitialStaff(false); setCategory("All"); setSearch(""); setError(null); setStep(STEP_SERVICES); }}>+ Add more</button>;
 
-  if (payment) return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`}><section className={compact.shell}><header className={compact.header}><div><strong>{data.salon.name}</strong><p>Appointment payment</p></div>{embedded ? <button type="button" aria-label="Close payment" onClick={onClose}>×</button> : null}</header><div className="p-4"><BookingCardPayment payment={payment} /></div></section></main>;
+  if (payment) return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`}><section className={compact.shell}><header className={compact.header}><div><strong><SalonName name={data.salon.name} salonId={data.salon.salonId}/></strong><p>Appointment payment</p></div>{embedded ? <button type="button" aria-label="Close payment" onClick={onClose}>×</button> : null}</header><div className="p-4"><BookingCardPayment payment={payment} /></div></section></main>;
 
   return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`} data-booking-surface="public" onInputCapture={durableBookingDraft.markEdited} onClickCapture={durableBookingDraft.markEdited} data-booking-complete={step === STEP_DONE ? "true" : undefined} data-booking-flow-state={bookingFlowState} data-testid="public-booking-root">
     <section className={compact.shell} data-testid="public-booking-shell">
@@ -1699,7 +1703,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         <div className={compact.salon}>{data.salon.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className={compact.logo} src={data.salon.logoUrl} alt="" />
-        ) : null}<a href={`/explore/salons/${data.salon.salonId}`} className="hover:underline">{data.salon.name}</a></div>
+        ) : null}<a href={`/explore/salons/${data.salon.salonId}`} className="hover:underline"><SalonName name={data.salon.name} salonId={data.salon.salonId}/></a></div>
         <a className={compact.icon} href="/explore" aria-label="Close booking">&times;</a>
       </header>}
       {!embedded && step < STEP_DONE ? <nav className={compact.progress} aria-label="Booking progress" data-testid="public-booking-stepper">
@@ -1710,7 +1714,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         {error ? <div className={compact.error} role="alert"><p>{error}</p>{accountSessionChanged ? <a className={`${compact.textLink} mt-1 inline-block text-sm font-medium underline underline-offset-2`} href={signInHref} onClick={storeDraftForAuth}>sign in</a> : null}</div> : null}
         {!error && activeInspiration?.message && (activeInspiration.status === "service_unavailable" || activeInspiration.status === "staff_unavailable") ? <p className={compact.error} role="status">{activeInspiration.message}</p> : null}
         {step === STEP_SERVICES ? <section>
-          <h1>Choose services</h1>{embedded ? <p className={`${compact.muted} mb-3`}>{keepInitialStaff && data.initialSelection.staffId ? `With ${data.staff.find(staff => staff.id === data.initialSelection.staffId)?.displayName ?? "your selected staff"} \u00b7 ` : ""}{data.salon.name}</p> : null}
+          <h1>Choose services</h1>{embedded ? <p className={`${compact.muted} mb-3`}>{keepInitialStaff && data.initialSelection.staffId ? `With ${data.staff.find(staff => staff.id === data.initialSelection.staffId)?.displayName ?? "your selected staff"} \u00b7 ` : ""}<SalonName name={data.salon.name} salonId={data.salon.salonId}/></p> : null}
           <input className={compact.field} value={search} onChange={event => setSearch(event.target.value)} placeholder="Search services..." aria-label="Search services" type="search" />
           <div className={compact.tabs} aria-label="Service categories">{["All", ...categoryNames.filter(name => name !== "All")].map(name => <button key={name} type="button" aria-pressed={category === name} onClick={() => setCategory(name)}>{name}</button>)}</div>
           <div className={compact.list}>{visibleServices.map(service => {
@@ -1724,7 +1728,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
           })}</div>
           {visibleServices.length === 0 ? <p className={compact.muted}>No matching services.</p> : null}
         </section> : null}
-        {step === STEP_PROFESSIONAL ? <section><h1>Choose staff</h1>{embedded ? <p className={compact.muted}>{data.salon.name}</p> : null}
+        {step === STEP_PROFESSIONAL ? <section><h1>Choose staff</h1>{embedded ? <p className={compact.muted}><SalonName name={data.salon.name} salonId={data.salon.salonId}/></p> : null}
           {staffGroups.map(line => {
             const options = splitStaff ? serviceStaffNames(data, (line as SummaryLine).service.id) : eligibleStaff;
             const value = splitStaff ? staffMode === "specific" ? staffId : lineStaffByKey[line.key] ?? "" : staffMode === "specific" ? staffId : "";
@@ -1745,7 +1749,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         </section> : null}
         {step === STEP_TIME ? <section><h1>Choose start time</h1>{embedded ? <div className={compact.quickSelection}>{activeInspiration?.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={activeInspiration.imageUrl} alt="" />) : null}<div><div className={compact.selectionTitle}><strong>{selectedServiceNames}</strong>{addMoreButton}</div><p className={compact.muted}>{data.staff.find(staff => staff.id === staffId)?.displayName ?? "Any available"} &middot; {data.salon.name}</p><p className={compact.muted}>{minutes(totalMinutes)} &middot; Est. {money(total)}</p></div></div> : null}
+          <img src={activeInspiration.imageUrl} alt="" />) : null}<div><div className={compact.selectionTitle}><strong>{selectedServiceNames}</strong>{addMoreButton}</div><p className={compact.muted}>{data.staff.find(staff => staff.id === staffId)?.displayName ?? "Any available"} &middot; <SalonName name={data.salon.name} salonId={data.salon.salonId}/></p><p className={compact.muted}>{minutes(totalMinutes)} &middot; Est. {money(total)}</p></div></div> : null}
           <div className={compact.dates} aria-label="Choose a date">{dateStrip.map(day => <button key={day.value} type="button" aria-label={day.label} aria-pressed={day.value === date} onClick={() => { manualDate.current = true; setSelectedSlotStart(""); setDate(day.value); }}><span>{embedded && day.value === zonedDateKey(new Date(), settings.timezoneIana) ? "Today" : embedded && day.value === addDaysKey(zonedDateKey(new Date(), settings.timezoneIana), 1) ? "Tomorrow" : day.label.split(",")[0].split(" ")[0]}</span><strong>{embedded ? new Intl.DateTimeFormat("en-US", {month:"short",day:"numeric",timeZone:"UTC"}).format(new Date(`${day.value}T12:00:00Z`)) : Number(day.value.slice(-2))}</strong></button>)}</div>
           <div className="flex items-center justify-between gap-3"><label className={compact.textLink}>Choose date<input className="max-w-[9rem] text-xs text-text-secondary" type="date" aria-label="Choose another date" value={date} min={zonedDateKey(new Date(), settings.timezoneIana)} max={addDaysKey(zonedDateKey(new Date(), settings.timezoneIana), settings.maximumAdvanceWindowDays)} onChange={event => { if (event.target.value) { manualDate.current = true; setSelectedSlotStart(""); setDate(event.target.value); } }} /></label></div>
           <div className={compact.timePicker}>
@@ -1763,7 +1767,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         </section> : null}
         {isReview ? <section><h1>Review &amp; confirm</h1>
           <div className={compact.receipt}>
-            <div className={compact.receiptHeader}>{embedded ? <ReylumiIcon className="h-5 w-5 shrink-0" name="calendar" /> : null}<div><strong>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "Choose a time"}{selectedSlot ? `\u2013${formatTime(selectedSlot.endAt, settings.timezoneIana)}` : ""}</strong><p className={compact.muted}>{data.salon.name} &middot; {salonLocation}</p></div></div>
+            <div className={compact.receiptHeader}>{embedded ? <ReylumiIcon className="h-5 w-5 shrink-0" name="calendar" /> : null}<div><strong>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "Choose a time"}{selectedSlot ? `\u2013${formatTime(selectedSlot.endAt, settings.timezoneIana)}` : ""}</strong><p className={compact.muted}><SalonName name={data.salon.name} salonId={data.salon.salonId}/> &middot; {salonLocation}</p></div></div>
             {embedded && step < STEP_DONE ? <div className={compact.selectionTitle}><strong>Services</strong>{addMoreButton}</div> : null}
             {summaryLines.map((line,index) => <div className={compact.receiptRow} key={line.key}><div><strong>{line.service.name}</strong><p className={compact.muted}>{selectedSlot?.lines[index]?.staffName ?? "Any available"} &middot; {minutes(selectedSlot?.lines[index]?.durationMinutes ?? line.service.durationMinutes)}{line.parentName ? ` \u00b7 Add-on for ${line.parentName}` : ""}</p></div><strong>{money(selectedSlot?.lines[index]?.unitPrice ?? line.service.basePrice)}</strong></div>)}
           {activeInspiration ? <details className={compact.notes}><summary>{embedded ? "Inspiration (optional)" : "Booked look & notes"}</summary><div className="flex gap-3">{activeInspiration.imageUrl ? (
@@ -1783,9 +1787,10 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
           <input aria-hidden="true" tabIndex={-1} className="hidden" autoComplete="off" value={honeypot} onChange={event => setHoneypot(event.target.value)} />
           {data.bookingDeposit ? <div className="mt-4 grid gap-3 rounded-xl border border-zinc-200 p-4"><h2 className="font-semibold">{data.bookingDeposit.mode === "full" ? "Pay before booking" : "Appointment deposit"}</h2><p>Due now: {money(bookingDepositCents(Math.round(total * 100), data.bookingDeposit) / 100)} · Remaining at salon: {money(Math.max(0, total - bookingDepositCents(Math.round(total * 100), data.bookingDeposit) / 100))}</p><p className={compact.muted}>{data.bookingDeposit.testMode ? "Test mode — no money will be charged. Completing checkout creates a test-marked appointment." : "Your appointment is submitted after payment succeeds. The salon pays processing fees."}</p>{data.bookingDeposit.checkout === "both" ? <fieldset disabled={Boolean(payment)} className="flex flex-wrap gap-4"><legend className="mb-2 text-sm">How would you like to pay?</legend><label><input type="radio" name="booking-payment-method" checked={paymentCheckout === "embedded"} onChange={() => setPaymentCheckout("embedded")} /> Enter card here</label><label><input type="radio" name="booking-payment-method" checked={paymentCheckout === "hosted"} onChange={() => setPaymentCheckout("hosted")} /> Stripe checkout</label></fieldset> : null}{payment ? <BookingCardPayment payment={payment} /> : null}</div> : <p className={`${compact.muted} mt-3`}>{embedded ? "No online payment required." : "Estimate only. The salon records the final amount."}</p>}
         </section> : null}
-        {step === STEP_DONE && !embedded && result?.ok ? <section><h1 id="public-booking-confirmation-title" tabIndex={-1}>{confirmationTitle}</h1><p className={compact.muted}>{result.message}</p><div className={`${compact.receipt} mt-4`}><strong>{data.salon.name}</strong><p>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : ""}</p><p className={compact.muted}>{summaryServices.map(service => service.name).join(" / ")}</p></div>{embedded && result.accountLinked ? <a className={`${compact.primary} mt-4`} href={`/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}`}>View booking</a> : manageHref ? <a className={`${compact.primary} mt-4`} href={manageHref}>Manage booking</a> : null}{embedded ? <button type="button" className={compact.textLink} onClick={onClose}>Continue exploring</button> : null}{!result.accountLinked ? <p className={`${compact.muted} mt-2`}>Save your secure manage link to change this appointment.</p> : null}</section> : null}
+        {step === STEP_DONE && !embedded && result?.ok ? <section><h1 id="public-booking-confirmation-title" tabIndex={-1}>{confirmationTitle}</h1><p className={compact.muted}>{result.message}</p><div className={`${compact.receipt} mt-4`}><strong><SalonName name={data.salon.name} salonId={data.salon.salonId}/></strong><p>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : ""}</p><p className={compact.muted}>{summaryServices.map(service => service.name).join(" / ")}</p></div>{embedded && result.accountLinked ? <a className={`${compact.primary} mt-4`} href={`/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}`}>View booking</a> : manageHref ? <a className={`${compact.primary} mt-4`} href={manageHref}>Manage booking</a> : null}{embedded ? <button type="button" className={compact.textLink} onClick={onClose}>Continue exploring</button> : null}{!result.accountLinked ? <p className={`${compact.muted} mt-2`}>Save your secure manage link to change this appointment.</p> : null}</section> : null}
       </div>
       {embedded && step === STEP_DONE && result?.ok ? <div className={compact.success} role="status"><ReylumiIcon name={bookingConfirmed ? "check" : "calendar"} className="h-4 w-4 shrink-0" /><span>{bookingConfirmed ? "Your appointment is confirmed." : "Awaiting salon confirmation."}</span><a href={result.accountLinked ? `/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}` : manageHref ?? "/my-bookings"}>View booking</a></div> : null}
+      {step === STEP_DONE && result?.ok && result.accountLinked && result.bookingId ? <BookingRewardPending key={result.bookingId} bookingId={result.bookingId}/> : null}
       {step < STEP_DONE ? <footer className={compact.footer}><div className={compact.footerMeta} hidden={embedded && (step === STEP_TIME || step === STEP_REVIEW)}><div className={compact.footerSelection}><div className={compact.selectionTitle}><strong>{selectedServiceNames || "Choose services"}</strong>{step > STEP_SERVICES ? addMoreButton : null}</div><small>{minutes(totalMinutes)}</small></div><strong>{money(total)} est.</strong></div><button className={compact.primary} data-testid="public-booking-next" type="button" disabled={primaryActionDisabled} onClick={activatePrimaryAction}>{primaryActionLabel}</button></footer> : null}
       {optionsServiceId && optionsParent ? <dialog className={compact.dialog} ref={optionsDialog} aria-labelledby="service-options-title" onClose={() => setOptionsServiceId(null)} onClick={event => { if (event.target === event.currentTarget) optionsDialog.current?.close(); }}><div className={compact.dialogTitle}><h2 id="service-options-title">{optionsParent.name} options</h2><button type="button" className={compact.icon} aria-label="Close service options" onClick={() => optionsDialog.current?.close()}>&times;</button></div>
         <BookingAddOnGroups parentServiceId={optionsServiceId}

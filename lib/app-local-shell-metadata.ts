@@ -30,6 +30,8 @@ export const APP_LOCAL_SHELL_READS = [
   { name: "shell.configuration", argumentKeys: [], retain: true },
   { name: "shell.summary", argumentKeys: [], retain: true },
   { name: "shell.notice", argumentKeys: [], retain: true },
+  { name: "http.shell.forum-latest", argumentKeys: [], retain: false },
+  { name: "http.shell.membership-badges", argumentKeys: ["input"], retain: false },
   { name: "http.shell.session", argumentKeys: [], retain: false },
   { name: "http.shell.quick-booking", argumentKeys: ["salonId", "inspiration", "lookId", "serviceId", "staffId", "date", "startAt", "source"], retain: false },
   { name: "http.shell.campaigns", argumentKeys: ["location", "latitude", "longitude", "batch", "query"], retain: false },

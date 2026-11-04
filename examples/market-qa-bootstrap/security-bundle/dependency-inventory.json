@@ -1,0 +1,871 @@
+{
+  "scope": "Explicit finite inventory; source/SQL contracts only, not a complete recursive dependency closure or hosted acceptance",
+  "selectedEntry": "/developer-platform with independently verified, prebound synthetic Auth identity; no signup or whole app-shell assumption",
+  "securitySubset": "Canonical seven-table definitions and six self-read policies; projection-only reads, all security mutations denied",
+  "routes": [
+    {
+      "id": "signup",
+      "route": "/signup → POST /api/auth/signup",
+      "sources": [
+        {
+          "source": "app/(app)/api/auth/signup/route.ts",
+          "rawSha256": "c8da1db0dfd91f8da466d9ff9b523c488857cd3de724711c2ef273294d8974c6",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/abuse-server.ts",
+          "rawSha256": "aec8c3333c435b79c448563bc5c78d819d0b724a7b1101dedfa877b04b8a97ce",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "abuse_preflight",
+            "issue_abuse_signup_ticket",
+            "record_abuse_bot_event"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/advertising-attribution.ts",
+          "rawSha256": "964dc68ecb0077a1fdfdd1738f1726f1dec773138f783ae471e4440459e5cfdf",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "record_advertising_event"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/post-auth-routing.ts",
+          "rawSha256": "014c864cdc30c6b05b8d7217d117329b5f496c8343efb1381a1e2ac795b7ed1e",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/users/current-user.ts",
+          "rawSha256": "6c7ce22b08d9514244b33772ede09819f54ee75078947a17f1717531825fe0ac",
+          "literalTableCalls": [
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "GoTrue signUp/email confirmation",
+        "abuse_preflight",
+        "issue_abuse_signup_ticket",
+        "record_abuse_bot_event",
+        "advertising attribution",
+        "public.users full projection and insert policy",
+        "business-context bootstrap"
+      ],
+      "artifact": "Not supplied; canonical route unchanged",
+      "localProof": "inventory source hashes; no signup executed",
+      "unverified": "Abuse enforcement, Auth provisioning, mail, profile creation and post-signup navigation"
+    },
+    {
+      "id": "login",
+      "route": "/login → POST /api/auth/login",
+      "sources": [
+        {
+          "source": "app/(app)/api/auth/login/route.ts",
+          "rawSha256": "4c4d1c9985397cbfd3370e827f6c67fed871557ab2fd4e93b9fd541662d600d2",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/abuse-server.ts",
+          "rawSha256": "aec8c3333c435b79c448563bc5c78d819d0b724a7b1101dedfa877b04b8a97ce",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "abuse_preflight",
+            "issue_abuse_signup_ticket",
+            "record_abuse_bot_event"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/post-auth-routing.ts",
+          "rawSha256": "014c864cdc30c6b05b8d7217d117329b5f496c8343efb1381a1e2ac795b7ed1e",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/supabase/server.ts",
+          "rawSha256": "bc7844df449ded7d9006b4947cfe4100dee6274b24e64660243b6f9eee2290fb",
+          "literalTableCalls": [
+            "account_login_sessions",
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "GoTrue password/AAL",
+        "abuse_preflight",
+        "record_account_login_session",
+        "app_notifications → bookings FK and event-key index",
+        "users.last_login_at/updated_at",
+        "workspace routing"
+      ],
+      "artifact": "security-bundle: session status SELECT only; no recording RPC",
+      "localProof": "security projection/RLS tests; recording RPC absent",
+      "unverified": "Canonical password login, notification side effects and session-cookie issuance"
+    },
+    {
+      "id": "mfa",
+      "route": "/login MFA → POST /api/auth/mfa/verify",
+      "sources": [
+        {
+          "source": "app/(app)/api/auth/mfa/verify/route.ts",
+          "rawSha256": "72c94a6e3653b95b728576b4851a8dd4d16239a609ee561ed7f8437d9c5284a6",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/supabase/server.ts",
+          "rawSha256": "bc7844df449ded7d9006b4947cfe4100dee6274b24e64660243b6f9eee2290fb",
+          "literalTableCalls": [
+            "account_login_sessions",
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/system-sms.ts",
+          "rawSha256": "c961f5472b5991cdbfff228bf615b116f7549531c61c218ee32b64faf8a29bcb",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Canonical pending-MFA cookies",
+        "GoTrue challenge/verify and assurance",
+        "system SMS configuration for phone",
+        "record_account_login_session",
+        "workspace routing"
+      ],
+      "artifact": "No canonical Auth mutation; QR app TOTP is a separate implemented resolver",
+      "localProof": "Existing tests/qr-menu-mfa.test.mjs only for QR app",
+      "unverified": "Canonical MFA enrollment, SMS, verified cookie transition and hosted session recording"
+    },
+    {
+      "id": "callback-session-logout",
+      "route": "/api/auth/callback, /api/auth/session, /api/auth/logout",
+      "sources": [
+        {
+          "source": "app/(app)/api/auth/callback/route.ts",
+          "rawSha256": "8edb365a385a5ee1d3b8614cd48272daba5df09b32a995d90fe6211d1ab824cc",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "app/(app)/api/auth/session/route.ts",
+          "rawSha256": "b8df8bbc29612c10a405a8c33de69224bc589765b75511c3c98ef21e61051471",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "app/(app)/api/auth/logout/route.ts",
+          "rawSha256": "89ade266816ebcb342ab28d670c3492356ae44f23503b1a897b67d5626379ae4",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/supabase/server.ts",
+          "rawSha256": "bc7844df449ded7d9006b4947cfe4100dee6274b24e64660243b6f9eee2290fb",
+          "literalTableCalls": [
+            "account_login_sessions",
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "GoTrue verified token/refresh/signOut",
+        "users.status",
+        "account_login_sessions status/revoke",
+        "Auth tombstone lookup for missing profiles",
+        "canonical cookie/session policy"
+      ],
+      "artifact": "Base users.status + security-bundle session status read; no revoke write",
+      "localProof": "SQL status read/foreign subject denial",
+      "unverified": "Real refresh/logout/callback cookies and provider revocation"
+    },
+    {
+      "id": "developer",
+      "route": "/developer-platform and its register/profile/version/testing actions",
+      "sources": [
+        {
+          "source": "app/(market-platform)/developer-platform/page.tsx",
+          "rawSha256": "3d37bb1c75f5849f5b27dd830fa90a95e8a760c7a037d1dcd2f3d428a4dde1a7",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": [
+            "accounting_workspace",
+            "commerce_workspace",
+            "finance_workspace",
+            "workspace"
+          ]
+        },
+        {
+          "source": "app/(market-platform)/developer-platform/actions.ts",
+          "rawSha256": "06b611a24415510e00972686dc0533d49f487a58d4273af5fd1938efa54c2d72",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "app/(market-platform)/developer-platform/account-panel.tsx",
+          "rawSha256": "58595bb334d3ddd3ce6422c7f506afe0531965a1a4c438c533faa371d0c7a2af",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/market-platform/server.ts",
+          "rawSha256": "774894a3db7f6f4928e45a0dcc0516698da2bbb83da43656ca03bd44aa3af5a0",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/supabase/server.ts",
+          "rawSha256": "bc7844df449ded7d9006b4947cfe4100dee6274b24e64660243b6f9eee2290fb",
+          "literalTableCalls": [
+            "account_login_sessions",
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Verified Auth client",
+        "current_public_user_id",
+        "users.status",
+        "market_platform_* workspace/register/profile/version/review/sandbox RPC",
+        "account_login_sessions status read when cookie present"
+      ],
+      "artifact": "Base12 Market migrations + optional14-file security read bundle",
+      "localProof": "Existing Market RPC lifecycle tests + security status contract; route source inventory",
+      "unverified": "Real Next→GoTrue→PostgREST browser actions and security links outside this shell"
+    },
+    {
+      "id": "profile",
+      "route": "/account and personal profile/avatar/phone/deletion actions",
+      "sources": [
+        {
+          "source": "app/(app)/account/page.tsx",
+          "rawSha256": "59e52775ef449863922c9a9ddafe7daa8e921c779d199f806b1706d83b1da116",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "app/account/actions.ts",
+          "rawSha256": "fe4dbf962b989d9586c570912aacd82255057c15ce1c0ca8f7f58e9a89494dd0",
+          "literalTableCalls": [
+            "users"
+          ],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/users/current-user.ts",
+          "rawSha256": "6c7ce22b08d9514244b33772ede09819f54ee75078947a17f1717531825fe0ac",
+          "literalTableCalls": [
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-deletion.ts",
+          "rawSha256": "0df4c1c59c3632c863b0087556a7dc2ec789f5a1f4d337076af037f4556fc980",
+          "literalTableCalls": [
+            "account_memberships",
+            "locations",
+            "roles",
+            "salon_memberships"
+          ],
+          "literalRpcCalls": [
+            "cancel_account_deletion",
+            "get_account_deletion_owner_counts",
+            "get_my_account_deletion_receipt",
+            "request_account_deletion"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/customer-identity-claims.ts",
+          "rawSha256": "42e19b20e569a1e5c9965268262f1111795882a1df80d29721f492ea5c44237f",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "claim_customer_from_token",
+            "claim_customers_for_verified_phone",
+            "get_customer_claim_token_preview",
+            "inspect_customer_phone_claim",
+            "issue_customer_claim_token"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/customer-phone-verification.ts",
+          "rawSha256": "ac1d930a44130622b7f999be464bfaac1738e2d03ee059c2a0e3ae4236ff6d62",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "begin_customer_phone_otp_challenge",
+            "begin_customer_phone_otp_verification",
+            "complete_customer_phone_otp_challenge",
+            "record_customer_phone_otp_send_failed",
+            "record_customer_phone_otp_verify_failure",
+            "record_customer_verified_phone_from_auth"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/owner-transfer.ts",
+          "rawSha256": "82cdd6f7022c6c5904ed5442c63671cac79c2aa281a6a32cb4783cad6a98354e",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "accept_salon_owner_transfer_invite",
+            "accept_salon_owner_transfer_invite_by_id",
+            "create_salon_owner_transfer_invite",
+            "get_salon_owner_roster",
+            "ignore_owner_transfer_invite",
+            "list_my_owner_transfer_invites",
+            "relinquish_current_salon_ownership",
+            "revoke_salon_owner_transfer_invite"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/platform-admin/auth.ts",
+          "rawSha256": "f2a5066b9084a604dd3327e59b10cbeb5ab23f86dbedb1ed090c6215620b69eb",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "get_current_platform_admin_context"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "users full USER_SELECT projection/defaults/self insert/update RLS",
+        "get_current_platform_admin_context",
+        "Storage avatar bucket/policies",
+        "verified phone/customer claims",
+        "deletion/tombstone/export/owner-transfer contracts",
+        "app shell"
+      ],
+      "artifact": "Not supplied; base users intentionally minimal",
+      "localProof": "Full USER_SELECT fails as an explicit missing-schema negative control",
+      "unverified": "Profile read/write, avatar, phone, ownership transfer and deletion"
+    },
+    {
+      "id": "security-read",
+      "route": "/settings/login-security overview",
+      "sources": [
+        {
+          "source": "app/(app)/settings/login-security/page.tsx",
+          "rawSha256": "ed2c1671c28b356f3c19c626607a11c2ab42f015afa4bb8272c599818eb53982",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/users/current-user.ts",
+          "rawSha256": "6c7ce22b08d9514244b33772ede09819f54ee75078947a17f1717531825fe0ac",
+          "literalTableCalls": [
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/login-sms-alerts.ts",
+          "rawSha256": "2041c693991f0455563300dfca450e69d82d55a51ac63ca90557b4d556c3c317",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Six security overview table projections with self RLS",
+        "KingUser full profile",
+        "GoTrue factor list/assurance",
+        "system SMS readiness",
+        "app shell"
+      ],
+      "artifact": "security-bundle supplies SQL projections/self-read only",
+      "localProof": "Actual canonical SELECT strings execute; foreign subject reads zero, digest/events denied",
+      "unverified": "Whole Next security page, real factor/SMS state and shell"
+    },
+    {
+      "id": "security-writes",
+      "route": "/settings/login-security session/trusted-device/contact/password actions",
+      "sources": [
+        {
+          "source": "app/settings/login-security/actions.ts",
+          "rawSha256": "675c57287a88f391e4323e93dfbdda647e7efe682b4182106052e72c0ad400fb",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/supabase/server.ts",
+          "rawSha256": "bc7844df449ded7d9006b4947cfe4100dee6274b24e64660243b6f9eee2290fb",
+          "literalTableCalls": [
+            "account_login_sessions",
+            "users"
+          ],
+          "literalRpcCalls": [
+            "auth_identity_is_deleted"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Security self insert/update policies",
+        "account_login_activity insert",
+        "GoTrue password reauthentication/updateUser/signOut",
+        "current user and app shell"
+      ],
+      "artifact": "Intentionally denied in read-only subset; no fake success RPC",
+      "localProof": "Own/foreign insert/update/delete denied by QA grants",
+      "unverified": "All canonical security mutations and provider side effects"
+    },
+    {
+      "id": "security-enrollment",
+      "route": "/settings/login-security TOTP/phone enrollment and removal",
+      "sources": [
+        {
+          "source": "app/settings/login-security/actions.ts",
+          "rawSha256": "675c57287a88f391e4323e93dfbdda647e7efe682b4182106052e72c0ad400fb",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/system-sms.ts",
+          "rawSha256": "c961f5472b5991cdbfff228bf615b116f7549531c61c218ee32b64faf8a29bcb",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "GoTrue enroll/challenge/verify/unenroll",
+        "system SMS readiness and provider",
+        "activity insert",
+        "canonical AAL/session cookies"
+      ],
+      "artifact": "Not supplied or executed; existing QR challenge does not enroll factors",
+      "localProof": "No provisioned factors; route inventory only",
+      "unverified": "Real enrollment/removal, SMS and account recovery protections"
+    },
+    {
+      "id": "security-recovery",
+      "route": "/settings/login-security recovery contacts/codes/cases",
+      "sources": [
+        {
+          "source": "app/settings/login-security/actions.ts",
+          "rawSha256": "675c57287a88f391e4323e93dfbdda647e7efe682b4182106052e72c0ad400fb",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/account-security.ts",
+          "rawSha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+          "literalTableCalls": [
+            "account_login_activity",
+            "account_login_sessions",
+            "account_recovery_codes",
+            "account_recovery_requests",
+            "account_security_preferences",
+            "account_trusted_devices"
+          ],
+          "literalRpcCalls": [
+            "record_account_login_session"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "account_recovery_codes digest/revoke writes",
+        "account_recovery_requests writes",
+        "security preferences and activity",
+        "full current-user/app shell"
+      ],
+      "artifact": "Only summary SELECT projections supplied; code_digest and all writes denied",
+      "localProof": "Own summary/foreign rows isolation; no code generated",
+      "unverified": "Code generation/rotation, contact verification and support workflow"
+    },
+    {
+      "id": "public-recovery",
+      "route": "/account-recovery, /api/auth/forgot-password",
+      "sources": [
+        {
+          "source": "app/account-recovery/actions.ts",
+          "rawSha256": "91c19b400e492a20e1e7a91b005f732bd9c942c15139810ac410d4f8aab3df13",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "redeem_account_recovery_code"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "app/(app)/api/auth/forgot-password/route.ts",
+          "rawSha256": "f170b7cf6c2209be51a618fd403834a2e513b29c8609bb901db6c9db499fe12b",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/abuse-server.ts",
+          "rawSha256": "aec8c3333c435b79c448563bc5c78d819d0b724a7b1101dedfa877b04b8a97ce",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "abuse_preflight",
+            "issue_abuse_signup_ticket",
+            "record_abuse_bot_event"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "redeem_account_recovery_code",
+        "users phone/email/created_at",
+        "recovery request events/activity",
+        "GoTrue resetPasswordForEmail",
+        "abuse_preflight",
+        "canonical support-admin helpers/workflow"
+      ],
+      "artifact": "No redemption or support RPC installed; no password reset sent",
+      "localProof": "RPC absence and anon/QR data denial",
+      "unverified": "Public recovery, mail, anti-abuse and reviewed support resolution"
+    },
+    {
+      "id": "owner-shell",
+      "route": "/market inside (app) layout",
+      "sources": [
+        {
+          "source": "app/(app)/market/page.tsx",
+          "rawSha256": "3506456045b0fcc74d34f64eed445071c584e1ce1ea88619ec64dd9a45f13fb4",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "app/(app)/layout.tsx",
+          "rawSha256": "999f61fae5b77e640f630441a853f97ddee8636db761362c12fe0a8edf322f50",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/current-context.ts",
+          "rawSha256": "9d4276ed4a931e467dec9b803bf116d06f4d8953d53faa46f2eb94618dfeb63f",
+          "literalTableCalls": [
+            "account_memberships",
+            "accounts",
+            "locations",
+            "roles",
+            "salon_memberships",
+            "salon_settings",
+            "staff"
+          ],
+          "literalRpcCalls": [
+            "ensure_personal_account_for_current_user"
+          ],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/membership-permissions.ts",
+          "rawSha256": "2bb522e79aedf7a348ee7ecfcb5a098ace44ff0226e199d30137fdccd0b5b52f",
+          "literalTableCalls": [
+            "permissions",
+            "role_permissions"
+          ],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/market-experience-data.ts",
+          "rawSha256": "8537563852a70e482cfdd84b47a24f284e7dd37ab6f448ad78822b005a68e854",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/market-installation-counts.ts",
+          "rawSha256": "5a814eb716c7f2f29fb32d9ea15caef78b970d5f7843efec16e45bb0c3222ad0",
+          "literalTableCalls": [
+            "campaign_wallets",
+            "checkin_receipt_subscriptions",
+            "salon_market_plugins",
+            "vietnamese_plugin_subscriptions"
+          ],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Full accounts/roles/locations/account_memberships projections",
+        "salon_memberships",
+        "staff",
+        "salon_settings",
+        "permissions/role_permissions",
+        "ensure_personal_account_for_current_user",
+        "salon_market_plugins",
+        "campaign_wallets",
+        "subscription/payment/tax/language/booking read contracts",
+        "queue/advertising/switcher/client live resources"
+      ],
+      "artifact": "Base12 has minimal fixture authority only; no whole shell bootstrap",
+      "localProof": "Current projection mismatch and absent dependencies recorded; Owner SQL contract remains separately tested",
+      "unverified": "Signed-in Owner current-salon shell/navigation and composite Market reads"
+    },
+    {
+      "id": "owner-activate",
+      "route": "Owner Market consent/install/update/remove/open and /api/market-platform/authorize",
+      "sources": [
+        {
+          "source": "lib/market-platform/owner.ts",
+          "rawSha256": "0296215cef6fccf20719c652ea0216f74dfe8ec17a5b464a73d9a02a22a2dad3",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": [
+            "owner_workspace"
+          ]
+        },
+        {
+          "source": "app/market/developer-app-actions.ts",
+          "rawSha256": "d4dfb76f7106ce75aaf1b9e311edb45197c1ea4ccf63000aa28f71581573a563",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": [
+            "connection_owner_check",
+            "connection_start",
+            "install",
+            "owner_workspace",
+            "revoke"
+          ]
+        },
+        {
+          "source": "app/api/market-platform/authorize/route.ts",
+          "rawSha256": "eb1317a56c8786b31c7c05c3fc2f463068a9424a2ec705766cfdf00e3c02684a",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": [
+            "authorize"
+          ]
+        },
+        {
+          "source": "lib/market-platform/server.ts",
+          "rawSha256": "774894a3db7f6f4928e45a0dcc0516698da2bbb83da43656ca03bd44aa3af5a0",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Canonical current Owner salon resolver",
+        "market_platform_owner_workspace/install/uninstall/authorization RPC",
+        "reviewed version/hash/consent",
+        "state/PKCE/confidential backend exchange"
+      ],
+      "artifact": "Base12 Market RPCs and QR reference; no replacement Owner resolver",
+      "localProof": "Existing tests/market-qa-bootstrap.test.mjs, market lifecycle/QR suites",
+      "unverified": "Real Owner browser→Next→GoTrue/PostgREST→external HTTPS round trip"
+    },
+    {
+      "id": "published-data",
+      "route": "Owner published-data controls and plugin four read APIs",
+      "sources": [
+        {
+          "source": "app/market/developer-app-actions.ts",
+          "rawSha256": "d4dfb76f7106ce75aaf1b9e311edb45197c1ea4ccf63000aa28f71581573a563",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": [
+            "connection_owner_check",
+            "connection_start",
+            "install",
+            "owner_workspace",
+            "revoke"
+          ]
+        },
+        {
+          "source": "lib/market-platform/published-contract.ts",
+          "rawSha256": "611b592e92dcd0ba405b2aa3a72565207562b1cd3a0a530a2d1ccc887ed19422",
+          "literalTableCalls": [],
+          "literalRpcCalls": [],
+          "platformRpcOperations": []
+        },
+        {
+          "source": "lib/market-platform/published-server.ts",
+          "rawSha256": "8132aadc13ec23380f98216fc90eb1aa3f136fbd7b00e989fff9c328d07119d7",
+          "literalTableCalls": [],
+          "literalRpcCalls": [
+            "market_platform_"
+          ],
+          "platformRpcOperations": []
+        }
+      ],
+      "dependencies": [
+        "Market published-group revisions/authorization",
+        "current Owner salon",
+        "media assets/storage gateway",
+        "verified plugin grant and current installation/version"
+      ],
+      "artifact": "Base12 SQL + reference API contracts; storage objects/gateway not provisioned",
+      "localProof": "Existing published-data/QR tests, not hosted storage",
+      "unverified": "Real image pipeline, storage policies and hosted revocation acceptance"
+    }
+  ],
+  "readiness": "NOT a full app/Auth bootstrap; no hosted acceptance"
+}

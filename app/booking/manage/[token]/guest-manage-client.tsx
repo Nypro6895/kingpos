@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { cancelGuestBookingAction, claimGuestBookingAction, loadGuestManageSlotsAction, rescheduleGuestBookingAction } from "@/app/book/actions";
 import type { GuestManagePageData, PublicBookingSlot } from "@/lib/public-booking";
 import { useRef, useState, useTransition } from "react";
@@ -78,7 +80,7 @@ function GuestManageReady({data,token,currentUser,claimIntent}:Omit<Props,"data"
   }
   return <main className={styles.root} data-testid="manage-booking-root"><section className={styles.receipt}>
     <header className={styles.header}><h1>Booking details</h1><a className={styles.link} href="/explore">Explore</a></header>
-    <section className={styles.salon}><span className={styles.logo}>{salon.name.slice(0,2)}</span><div><div className={styles.row}><h2><a href={`/explore/salons/${booking.salonId}`} className="hover:underline">{salon.name}</a></h2><span className={styles.muted}>{booking.status.replaceAll("_"," ")}</span></div><p className={styles.muted}>{salon.addressLine1}</p><p className={styles.muted}>{[salon.city,salon.state].filter(Boolean).join(", ")}</p><div className={styles.links}>{salon.phone?<a href={`tel:${salon.phone.replace(/[^\d+]/g,"")}`}>Call salon</a>:null}<a href={`/explore/salons/${booking.salonId}`}>View salon</a></div></div></section>
+    <section className={styles.salon}><span className={styles.logo}>{salon.name.slice(0,2)}</span><div><div className={styles.row}><h2><a href={`/explore/salons/${booking.salonId}`} className="hover:underline"><SalonName name={salon.name} href={`/explore/salons/${booking.salonId}`}/></a></h2><span className={styles.muted}>{booking.status.replaceAll("_"," ")}</span></div><p className={styles.muted}>{salon.addressLine1}</p><p className={styles.muted}>{[salon.city,salon.state].filter(Boolean).join(", ")}</p><div className={styles.links}>{salon.phone?<a href={`tel:${salon.phone.replace(/[^\d+]/g,"")}`}>Call salon</a>:null}<a href={`/explore/salons/${booking.salonId}`}>View salon</a></div></div></section>
     <section className={styles.section}><h2>{format(booking.startAt,{weekday:"short",month:"short",day:"numeric",year:"numeric"})}</h2><p className={styles.time}>{time(booking.startAt)}&ndash;{time(booking.endAt)}</p><p className={styles.muted}>{duration} min</p></section>
     <section className={styles.section}><h3 className={styles.muted}>Services</h3>{lines.map((line,index)=><div className={styles.service} key={`${line.serviceId}:${index}`}><div><strong>{line.serviceName}</strong><p className={styles.muted}>{line.staffName} &middot; {line.durationMinutes} min</p></div><strong>{money(line.unitPrice)}</strong></div>)}</section>
     <section className={styles.section}><div className={styles.row}><h2 className={styles.totalLabel}>Estimated total</h2><strong className={styles.total}>{money(total)}</strong></div><p className={styles.muted}>Booking estimate. Final amount is recorded by the salon.</p></section>

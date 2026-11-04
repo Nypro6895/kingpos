@@ -16,3 +16,5 @@ export type ForumRestriction = { user_id: string; display_name: string; scope: s
 export type ForumAudit = { id: string; action: string; target_type: string; target_id: string; reason: string; actor_name: string; created_at: string };
 export type ForumInput = Record<string, string | boolean | null>;
 export type ForumResult<T> = { data: T; error?: never } | { data?: never; error: string };
+
+export type ForumPreview = { id: string; title: string; excerpt: string; created_at: string };

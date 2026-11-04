@@ -1,4 +1,7 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
+import { BookingRewardPending } from "@/components/rewardlumi/booking-reward-pending";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -107,7 +110,7 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
               <img src={logo} alt={`${activity.salon.name} logo`} className="h-full w-full object-cover" />
             ) : activity.salon.name.slice(0, 2)}
           </span>
-          <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6">{activity.salon.name}</h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
+          <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6"><SalonName name={activity.salon.name} salonId={activity.salon.id}/></h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
             <div className="mt-1 text-xs leading-5 text-text-secondary">{address ? <p>{address}</p> : null}{city ? <p>{city}</p> : null}</div>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-brand-teal">
               {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>Call salon</a> : null}
@@ -156,8 +159,9 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
       {booking && receipt ? <details className="border-b border-border-subtle py-2 text-xs"><summary className="cursor-pointer py-2">Original booking · Est. {money(booking.lines?.reduce((sum,line) => sum+Number(line.line_total),0) ?? 0)}</summary><ul>{booking.lines?.map(line => <li className="flex justify-between py-1" key={line.id}><span>{line.service_name_snapshot}</span><span>{money(line.line_total)}</span></li>)}</ul></details> : null}
       <div className="grid gap-2 pt-3">
         {booking ? <HistoryLinkControl bookingId={booking.id} evidence={booking.historyEvidence} timezone={timezone} onChanged={()=>{setRetry(value=>value+1);onChanged?.();}}/> : null}
+        {bookingId && !receipt && !["cancelled", "no_show"].includes(booking?.status ?? activity.status) ? <BookingRewardPending key={`${bookingId}:${booking?.status ?? activity.status}:${retry}`} bookingId={bookingId}/> : null}
         {receipt?.verifiedVisit ? <VisitExperiencePrompt compact actionLabel="Report experience" countsTowardReputation={receipt.verifiedVisit.countsTowardReputation} experienceId={receipt.verifiedVisit.experienceId} initialBody={receipt.verifiedVisit.experienceBody} initialState={receipt.verifiedVisit.experienceState} salonName={activity.salon.name} ticketId={receipt.ticketId} windowDays={receipt.verifiedVisit.windowDays} /> : null}
-        {booking ? <BookingDetailActions embedded onChanged={newBookingId => { if (newBookingId) setActiveBookingId(newBookingId); setRetry(value => value+1); onChanged?.(); }} booking={booking} canViewSalon={canViewSalon} canChange={canChange} canBookAgain={!canChange && Boolean(booking.lines?.some(line => line.currentServiceBookable))} /> : data && activity.type !== "booking" ? <Link prefetch={false} className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-orange px-4 text-white" href={`/book/${activity.salon.id}`}>Rebook</Link> : null}
+        {booking ? <BookingDetailActions embedded onChanged={newBookingId => { window.dispatchEvent(new Event("reylumi:rewards-changed")); if (newBookingId) setActiveBookingId(newBookingId); setRetry(value => value+1); onChanged?.(); }} booking={booking} canViewSalon={canViewSalon} canChange={canChange} canBookAgain={!canChange && Boolean(booking.lines?.some(line => line.currentServiceBookable))} /> : data && activity.type !== "booking" ? <Link prefetch={false} className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-orange px-4 text-white" href={`/book/${activity.salon.id}`}>Rebook</Link> : null}
       </div>
     </div>
   </dialog>, portalHost) : null;

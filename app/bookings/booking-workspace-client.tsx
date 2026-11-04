@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { ActionFeedback } from "@/components/action-feedback";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { countBookedAppointments } from "@/lib/booking-count";
@@ -6739,7 +6741,7 @@ function BookingPagePanel({
         <div className="flex flex-col gap-3 border-b border-[#f0e6df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className={styles.eyebrow}><WorkspaceText text="Customer preview" /></p>
-            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]"><a href="/salon-profile" className="hover:underline">{salonName}</a></h2>
+            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]"><a href="/salon-profile" className="hover:underline"><SalonName name={salonName} currentSalon/></a></h2>
           </div>
           <div className="flex rounded-xl border border-[#ffd6c4] bg-white p-1">
             {(["desktop", "mobile"] as const).map((mode) => (

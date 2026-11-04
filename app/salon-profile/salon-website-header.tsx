@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 /* eslint-disable @next/next/no-img-element -- Salon logo public URL. */
 import { useState, type KeyboardEvent, type ReactNode } from "react";
@@ -41,7 +43,7 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
         <div className={styles.logo}>{profile.logoImageUrl && failedLogo !== profile.logoImageUrl
           ? <img src={profile.logoImageUrl} alt={`${profile.name} logo`} onError={() => setFailedLogo(profile.logoImageUrl)}/>
           : <span aria-hidden="true">{initials}</span>}</div>
-        <div className={styles.name}><div><h2>{profile.name}</h2>{verified}{tools ? <div className={styles.tools}>{tools}</div> : null}</div>{locality ? <p>{locality}</p> : null}</div>
+        <div className={styles.name}><div><h2><SalonName name={profile.name} salonId={profile.salonId}/></h2>{verified}{tools ? <div className={styles.tools}>{tools}</div> : null}</div>{locality ? <p>{locality}</p> : null}</div>
       </div>
       <div className={styles.actions}>
         {canFollow ? <button type="button" className={styles.follow} aria-pressed={following} disabled={followPending} onClick={onFollow}><WorkspaceText text={following ? "✓ Following" : "+ Follow salon"} /></button> : null}

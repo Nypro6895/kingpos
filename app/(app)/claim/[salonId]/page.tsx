@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import {notFound,redirect} from 'next/navigation';
 import Link from 'next/link';
@@ -23,7 +25,7 @@ async function BusinessClaimPage({params}:{params:Promise<{salonId:string}>}) {
  return <main className="mx-auto w-full max-w-xl px-4 py-8">
  <Link href={`/explore/salons/${salonId}`} className="text-sm text-zinc-500 underline">Back to salon</Link>
  <h1 className="mt-4 text-2xl font-semibold">{data.directoryListing?.claimState==='unclaimed'?'Claim your salon':'Request management access'}</h1>
- <div className="mt-4 rounded-2xl bg-zinc-50 p-4"><h2 className="font-semibold">{data.profile.name}</h2><p className="mt-1 text-sm text-zinc-600">{[data.profile.addressLine1,data.profile.addressLine2,data.profile.city,data.profile.state].filter(Boolean).join(', ')}</p><p className="text-sm text-zinc-600">{data.profile.phone}</p></div>
+ <div className="mt-4 rounded-2xl bg-zinc-50 p-4"><h2 className="font-semibold"><SalonName name={data.profile.name} salonId={data.profile.salonId}/></h2><p className="mt-1 text-sm text-zinc-600">{[data.profile.addressLine1,data.profile.addressLine2,data.profile.city,data.profile.state].filter(Boolean).join(', ')}</p><p className="text-sm text-zinc-600">{data.profile.phone}</p></div>
  {error || modeError || claimMode==='unavailable'?<p role="alert" className="mt-4 rounded-xl bg-amber-50 p-4 text-sm">Ownership requests are temporarily unavailable. Please try again later.</p>:<ClaimPanel key={`${request?.id??"new"}:${request?.status??"new"}:${claimMode}`} salonId={salonId} phone={data.profile.phone} unclaimed={phoneClaimAvailable} messagingReady={await businessClaimMessagingReady()} deliveryMethods={await businessClaimDeliveryMethods()} uploadsReady={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)} initialRequest={request}/>}
  </main>;
 }

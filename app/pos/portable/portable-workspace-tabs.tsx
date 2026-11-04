@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -161,7 +163,7 @@ function SalonBrand({
       </span>
       <span className="min-w-0">
         <span className="block truncate text-[15px] font-semibold text-zinc-950">
-          {salonName}
+          <SalonName name={salonName} currentSalon/>
         </span>
         <span className="block truncate text-xs font-medium tabular-nums text-zinc-500">
           <WorkspaceText text={clock || "Loading time..."} />

@@ -133,7 +133,7 @@ export function AdminPageHeader({
   actions?: ReactNode;
   children?: ReactNode;
   eyebrow: string;
-  title: string;
+  title: ReactNode;
 }) {
   return (
     <header className="admin-page-header flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end sm:justify-between">

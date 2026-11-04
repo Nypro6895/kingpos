@@ -1,4 +1,5 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
 import { WorkspaceText } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 import { checkInStaffWorkday, checkOutStaffWorkday, updateStaffWorkdayStatus } from "@/app/staff/workday/actions";
@@ -77,7 +78,7 @@ export function StaffWorkdayView({ data, error }: { data: StaffWorkdayReadData; 
           <p>
             <span className="block text-zinc-500"><WorkspaceText text="Salon" /></span>
             <span className="font-semibold text-zinc-950">
-              {data.salonName}
+              <SalonName name={data.salonName} currentSalon/>
             </span>
           </p>
           <p>

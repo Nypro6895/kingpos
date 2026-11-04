@@ -1,0 +1,5 @@
+.views{flex-wrap:wrap;gap:20px}
+.views button[aria-pressed=true]{border-color:var(--brand-orange);color:var(--text-primary)}
+.search{display:grid;gap:8px;max-width:520px;margin:20px 0;font-size:13px;font-weight:600}
+.search input{width:100%;min-width:0;padding:12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface);color:var(--text-primary);font:inherit}
+.search input:focus-visible{outline:2px solid var(--brand-teal);outline-offset:2px}

@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import {
@@ -340,7 +342,7 @@ function RequestCard({
         </div>
 
         <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm font-semibold text-zinc-600">
-          <span><WorkspaceText text="For" /> {salonName}</span>
+          <span><WorkspaceText text="For" /> <SalonName name={salonName} currentSalon/></span>
           {request.staffName ? <span><WorkspaceText text="with" /> {request.staffName}</span> : null}
           <VerificationBadge state={request.verificationState} />
         </div>

@@ -1,0 +1,10 @@
+{
+  "canonical": "C:/Reylumi/kingpos",
+  "files": {
+    "components/post-identity.tsx": "ae7b6c49176ffe1e5f4ddb2921937e79e2025ef59550abed2abdfe9ad0122ce7",
+    "components/saved-salon-list.tsx": "c060775773b278d14de871088c13a6229b0b920e4e733d98323fc76c9da70093",
+    "app/explore/explore-salon-card.tsx": "f9a0cf2eeaccef3df67d0efef938dd01d4c0a8d0fc4e8a7a19df1c4e0eccf181",
+    "app/salon-profile/salon-website-header.tsx": "d0063775e209dbd1f2a545c57e51a24b5e8b07aabc768081a8dabbc57499519b"
+  },
+  "note": "Apply scoped member badge edits to the current release baseline; do not overwrite newer shared files wholesale."
+}

@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -549,7 +551,7 @@ export function WorkspaceListItem({
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
-            <WorkspaceText text={workspace.label} />
+            {workspace.type==="salon"?<SalonName name={workspace.label} salonId={workspace.salonId}/>:<WorkspaceText text={workspace.label}/>}
           </span>
           {subtitle ? (
             <span
@@ -626,7 +628,7 @@ export function QuickAccessItem({
       />
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold text-zinc-950">
-          <WorkspaceText text={shortcut.workspace.label} />
+          {shortcut.workspace.type==="salon"?<SalonName name={shortcut.workspace.label} salonId={shortcut.workspace.salonId}/>:<WorkspaceText text={shortcut.workspace.label}/>}
         </span>
         <span
           className={cn(
@@ -685,7 +687,7 @@ export function CurrentWorkspaceCard({
         />
         <div className="min-w-0">
           <p className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-950">
-            <span className="truncate"><WorkspaceText text={currentWorkspace.label} /></span>
+            <span className="truncate">{currentWorkspace.type==="salon"?<SalonName name={currentWorkspace.label} salonId={currentWorkspace.salonId}/>:<WorkspaceText text={currentWorkspace.label}/>}</span>
             {badge ? (
               <span className="shrink-0 rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-normal text-zinc-600">
                 {badge}

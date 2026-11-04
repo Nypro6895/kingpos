@@ -1,0 +1,11 @@
+{
+  "approved": false,
+  "marketOrigin": "",
+  "qrOrigin": "",
+  "supabaseOrigin": "",
+  "postgresHost": "",
+  "postgresPort": 6543,
+  "postgresUser": "",
+  "appClientId": "",
+  "allowedAuthUsers": []
+}

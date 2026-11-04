@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import Link from "next/link";
 import { taxCompanyReport } from "@/lib/tax-company";
@@ -19,7 +21,7 @@ async function TaxSalonPage({ params, searchParams }: { params: Promise<{ salonI
   return <main className={styles.page}>
     <div className={styles.reportTop}>
       <section className={styles.reportIntro}>
-        <div><Link href="/tax-company" className={styles.back}>← My salons</Link><h1>{data.salon.name}</h1><p className={styles.muted}>{address || "Address not added"}{data.salon.phone ? ` · ${data.salon.phone}` : ""}</p></div>
+        <div><Link href="/tax-company" className={styles.back}>← My salons</Link><h1><SalonName name={data.salon.name} salonId={data.salon.id}/></h1><p className={styles.muted}>{address || "Address not added"}{data.salon.phone ? ` · ${data.salon.phone}` : ""}</p></div>
         <div><p className={styles.eyebrow}>Tax payroll</p><p className={styles.schedule}>{taxPayrollScheduleLabel(data.payrollSetting?.cycle_type)}</p><p className={styles.muted}>Follows the salon’s payroll schedule.</p></div>
         <TaxPeriodPicker salonId={salonId} options={data.periodOptions} selected={data.period.value} />
         <div className={styles.actions}><span className={data.run ? styles.badge : styles.inactive}>{data.run ? `${data.run.status === "paid" ? "Paid" : "Printed"} · Version ${data.run.version}` : "Awaiting statement"}</span><span className={styles.muted}>{data.lines.length} staff</span></div>

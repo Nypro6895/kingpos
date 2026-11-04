@@ -40,15 +40,18 @@ export function useRewardWallet({ viewerId, transport, enabled = true }: { viewe
     mounted.current = true; suspended.current = false; pending.current = false; lastRead.current = 0; epoch.current++;
     const invalidate = () => { epoch.current++; request.current++; pending.current = false; };
     const refresh = () => { if (document.visibilityState === "visible" && navigator.onLine) void read(); };
+    const changed = () => { invalidate(); lastRead.current = 0; void read(true); };
     const reset = () => {
       invalidate(); suspended.current = true;
       setSnapshot({ key, cards: null, error: "Your account has changed. Reopen My Rewards to refresh.", loading: false, invalidated: true });
     };
     void Promise.resolve().then(() => { if (active) void read(true); });
+    window.addEventListener("reylumi:rewards-changed", changed);
     window.addEventListener("online", refresh); window.addEventListener("focus", refresh); window.addEventListener("reylumi:foreground", refresh);
     document.addEventListener("visibilitychange", refresh); window.addEventListener("reylumi:experience-reset", reset);
     return () => {
       active = false; mounted.current = false; invalidate();
+      window.removeEventListener("reylumi:rewards-changed", changed);
       window.removeEventListener("online", refresh); window.removeEventListener("focus", refresh); window.removeEventListener("reylumi:foreground", refresh);
       document.removeEventListener("visibilitychange", refresh); window.removeEventListener("reylumi:experience-reset", reset);
     };

@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText } from "@/components/workspace-language";
 
@@ -124,7 +126,7 @@ function StaffInvitationCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-lg font-semibold text-zinc-950">
-            {request.salon_name}
+            <SalonName name={request.salon_name} salonId={request.salon_id}/>
           </p>
           {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
           <p className="mt-2 text-sm text-zinc-600">
@@ -173,7 +175,7 @@ function StaffApplicationCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-lg font-semibold text-zinc-950">
-            {request.salon_name}
+            <SalonName name={request.salon_name} salonId={request.salon_id}/>
           </p>
           {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
           <p className="mt-2 text-sm text-zinc-600">
@@ -223,7 +225,7 @@ function SalonResultCard({ salon }: { salon: PublicStaffApplicationSalon }) {
   return (
     <article className="content-surface grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
       <div>
-        <p className="text-lg font-semibold text-zinc-950">{salon.salon_name}</p>
+        <p className="text-lg font-semibold text-zinc-950"><SalonName name={salon.salon_name} salonId={salon.salon_id}/></p>
         {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
       </div>
       <form action={submitStaffSalonApplicationFormAction} className="grid gap-3">
@@ -300,7 +302,7 @@ async function StaffConnectionsPage({
                 href="/staff/my-work"
                 key={request.id}
               >
-                {request.salon_name} <WorkspaceText text="· Open staff workplace" />
+                <SalonName name={request.salon_name} salonId={request.salon_id}/> <WorkspaceText text="· Open staff workplace" />
               </Link>
             ))}
           </div>

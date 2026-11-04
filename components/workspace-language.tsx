@@ -63,6 +63,9 @@ export function useWorkspaceTranslation() {
   const translator = useContext(LanguageContext);
   return <T,>(text: T): T => typeof text === "string" && translator ? translator(text, true) as T : text;
 }
+export function useWorkspaceLocale() {
+  return useContext(LanguageContext) ? "vi-VN" : "en-US";
+}
 export function workspaceDialogText(text: string) {
   const language = dialogLanguage;
   if (typeof document === "undefined" || !language || document.documentElement.lang !== "vi" || language.pathname !== window.location.pathname

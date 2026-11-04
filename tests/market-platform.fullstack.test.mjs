@@ -1,0 +1,44 @@
+import test from 'node:test';
+import {assertSuspensionFences} from './helpers/market-suspension-race.mjs';
+import assert from 'node:assert/strict';
+import {randomUUID,randomBytes,createHash} from 'node:crypto';
+import {startIsolatedSupabase} from './helpers/isolated-supabase-fixture.mjs';
+const quote=value=>`'${value}'::uuid`;
+test('Market platform: full migrations and real GoTrue/PostgREST identities', {skip:process.env.RUN_MARKET_PLATFORM_FULLSTACK!=='1',timeout:600000},async()=>{
+ const fixture=await startIsolatedSupabase('market-platform',{boundedResources:true,normalizeMigrationLineEndings:true,cachedImages:{db:'public.ecr.aws/supabase/postgres:17.11.0.006',auth:'public.ecr.aws/supabase/gotrue:v2.197.0',storage:'public.ecr.aws/supabase/storage-api:v1.84.19',rest:'public.ecr.aws/supabase/postgrest:v16.5'}});
+ const evidence={completed:false,checks:[]};
+ try{
+  const developer=fixture.person('platform-developer'),other=fixture.person('platform-other'),reviewer=fixture.person('platform-reviewer');
+  const rpc=(person,name,args={})=>fixture.http(3000,`/rpc/market_platform_${name}`,'POST',args,person?.token);
+  assert.equal(rpc(developer,'workspace').status,403);
+  fixture.sql(`update market_platform.settings set enabled=true;insert into market_private.reviewers(user_id) values(${quote(reviewer.profileId)});`);
+  assert.equal(rpc(developer,'register',{p_name:'Synthetic developer company'}).status,200);
+  assert.equal(rpc(null,'register',{p_name:'Anonymous company'}).status,401);
+  const manifest={schemaVersion:1,type:'hosted-app',version:'1.0.0',name:'Synthetic hosted app',description:'A real authenticated sandbox API test.',launchUrl:'https://developer.reylumi.com/app',privacyUrl:'https://developer.reylumi.com/privacy',supportUrl:'https://developer.reylumi.com/support',scopes:['salon:identity:read'],price:{currency:'usd',amountCents:0,billing:'one-time-version'}};
+  const args={p_app:null,p_manifest:manifest,p_request:randomUUID()};
+  const submission=rpc(developer,'submit',args);assert.equal(submission.status,200,JSON.stringify(submission.data));const version=submission.data;
+  assert.equal(rpc(developer,'submit',args).data.id,version.id);
+  assert.equal(rpc(other,'submit',{...args,p_app:version.app_id}).status,403);
+  assert.equal(rpc(developer,'review',{p_version:version.id,p_sha256:version.sha256,p_decision:'approved',p_reason:'Cannot self approve'}).status,403);
+  const token='rmp_'+randomBytes(32).toString('base64url'),tokenHash=createHash('sha256').update(token).digest('hex');
+  assert.equal(rpc(other,'sandbox',{p_version:version.id,p_token_hash:tokenHash}).status,403);
+  const sandbox=rpc(developer,'sandbox',{p_version:version.id,p_token_hash:tokenHash});assert.equal(sandbox.status,200,JSON.stringify(sandbox.data));
+  const resource=rpc(null,'runtime',{p_token:token});assert.equal(resource.status,200,JSON.stringify(resource.data));assert.equal(resource.data.synthetic,true);assert.equal(resource.data.name,'Synthetic Test Salon');
+  assert.equal(rpc(developer,'workspace').data.sandboxes[0].request_count,1);
+  const digest=value=>createHash('sha256').update(value).digest('hex'),secret='rmc_'+randomBytes(32).toString('base64url'),code='rma_'+randomBytes(32).toString('base64url'),verifier=randomBytes(32).toString('base64url'),access='rmp_'+randomBytes(32).toString('base64url'),refresh='rmr_'+randomBytes(32).toString('base64url');assert.equal(rpc(developer,'rotate_client',{p_app:version.app_id,p_secret_hash:digest(secret)}).status,200);const launch=rpc(developer,'sandbox_connection_start',{p_version:version.id});assert.equal(launch.status,200);assert.equal(launch.data.synthetic,true);assert.equal(rpc(other,'sandbox_authorize',{p_installation:sandbox.data.id,p_client:version.app_id,p_challenge:createHash('sha256').update(verifier).digest('base64url'),p_code_hash:digest(code)}).status,403);assert.equal(rpc(developer,'sandbox_authorize',{p_installation:sandbox.data.id,p_client:version.app_id,p_challenge:createHash('sha256').update(verifier).digest('base64url'),p_code_hash:digest(code)}).status,200);const exchangeArgs={p_client:version.app_id,p_client_secret:secret,p_code:code,p_verifier:verifier,p_access_hash:digest(access),p_refresh_hash:digest(refresh)};assert.equal(rpc(null,'exchange_code',exchangeArgs).status,200);assert.ok([401,403].includes(rpc(null,'exchange_code',exchangeArgs).status));assert.equal(rpc(null,'runtime',{p_token:access}).data.synthetic,true);assert.equal(rpc(developer,'sandbox',{p_version:version.id,p_token_hash:digest('rmp_'+'z'.repeat(43))}).status,200);assert.equal(rpc(developer,'sandbox',{p_version:version.id,p_token_hash:tokenHash}).status,200);assert.ok([401,403].includes(rpc(null,'runtime',{p_token:access}).status),'sandbox digest cycle cannot revive OAuth access on PG17');assert.ok([401,403].includes(rpc(null,'refresh_client',{p_client:version.app_id,p_client_secret:secret,p_refresh_token:refresh,p_access_hash:digest(access),p_refresh_hash:digest('rmr_'+'q'.repeat(43))}).status));
+  const nextCode='rma_'+randomBytes(32).toString('base64url');assert.equal(rpc(developer,'sandbox_authorize',{p_installation:sandbox.data.id,p_client:version.app_id,p_challenge:createHash('sha256').update(verifier).digest('base64url'),p_code_hash:digest(nextCode)}).status,200);const newAccess='rmp_'+randomBytes(32).toString('base64url'),newRefresh='rmr_'+randomBytes(32).toString('base64url');assert.equal(rpc(null,'exchange_code',{...exchangeArgs,p_code:nextCode,p_access_hash:digest(newAccess),p_refresh_hash:digest(newRefresh)}).status,200);const receiptArgs={p_client:version.app_id,p_client_secret:secret,p_refresh_token:newRefresh,p_request:randomUUID(),p_retry_hash:digest('synthetic receipt key'),p_receipt:{iv:'a'.repeat(16),tag:'b'.repeat(22),data:'c'.repeat(64)},p_access_hash:digest('rmp_'+'j'.repeat(43)),p_refresh_hash:digest('rmr_'+'k'.repeat(43))};const receipt=rpc(null,'refresh_client_retry',receiptArgs);assert.equal(receipt.status,200);assert.deepEqual(rpc(null,'refresh_client_retry',receiptArgs).data,receipt.data);assert.equal(rpc(developer,'sandbox',{p_version:version.id,p_token_hash:digest('rmp_'+'y'.repeat(43))}).status,200);assert.ok([401,403].includes(rpc(null,'refresh_client_retry',receiptArgs).status));assert.equal(fixture.sql(`select count(*) from market_platform.refresh_receipts where client_id=${quote(version.app_id)}`),'0','reset/suspend removes receipt metadata on PG17');
+  assert.equal(rpc(developer,'moderate',{p_app:version.app_id,p_active:false,p_reason:'Incident suspend'}).status,200);
+  assert.equal(rpc(reviewer,'moderate',{p_app:version.app_id,p_active:true,p_reason:'Independent restore'}).status,200);
+  assert.ok([401,403].includes(rpc(null,'runtime',{p_token:token}).status),'restore cannot revive legacy sandbox');
+  assert.ok([401,403].includes(rpc(null,'refresh_client_retry',receiptArgs).status),'restore cannot revive receipt');
+  assert.equal(rpc(reviewer,'workspace').data.queue.length,1);
+  assert.equal(rpc(developer,'profile_save',{p_name:'Renamed synthetic publisher',p_email:'support@example.com',p_website:'https://plugin.example.com',p_description:'Synthetic contact'}).status,200);assert.equal(rpc(reviewer,'review_exact',{p_publisher_name:'Synthetic developer company',p_version:version.id,p_sha256:version.sha256,p_decision:'approved',p_reason:'Stale publisher shown in queue'}).status,409);
+  const reviewed=rpc(reviewer,'review_exact',{p_publisher_name:'Renamed synthetic publisher',p_version:version.id,p_sha256:version.sha256,p_decision:'approved',p_reason:'Synthetic independent review complete'});assert.equal(reviewed.status,200,JSON.stringify(reviewed.data));
+  assert.equal(rpc(other,'workspace').data.catalog[0].id,version.id);
+  assert.equal(fixture.http(3000,'/market_platform_versions?select=*','GET',undefined,developer.token).status,404);
+  await assertSuspensionFences(fixture,developer,reviewer,version);
+  fixture.sql(`update users set status='suspended' where id=${quote(developer.profileId)}`);
+  assert.ok([401,403].includes(rpc(developer,'workspace').status));assert.ok([401,403].includes(rpc(null,'runtime',{p_token:token}).status));
+  evidence.completed=true;evidence.checks=['All migrations applied in disposable Supabase','Real GoTrue signup and session identity mapping','PostgREST anonymous and authenticated ACLs','Self-service registration and interruption retry','Cross-developer ownership denial','Synthetic salon runtime and bounded activity','Independent immutable-hash and displayed-publisher review','Opaque refresh receipt replay and epoch denial on PostgreSQL17','Preapproval synthetic client/PKCE exchange, replay denial and monotonic reset epoch on PostgreSQL17','Suspension revokes account and sandbox runtime'];
+ }catch(error){console.error(fixture.redact(String(error.stack)));throw error;}finally{fixture.save('market-platform-workflow.json',evidence);await fixture.close();}
+});

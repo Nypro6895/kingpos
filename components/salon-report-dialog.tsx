@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import Link from "next/link";
@@ -58,7 +60,7 @@ export function SalonReportDialog({ salon, onClose, returnFocusRef }: { salon: S
     onClick={event => { if (event.target === event.currentTarget && !busy) onClose(); }}>
     <div className="grid gap-4 p-5">
       <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0"><h2 id={titleId} className="text-lg font-semibold"><WorkspaceText text="Report salon" /></h2><p className="break-words text-sm text-zinc-600">{salon.name}</p></div>
+        <div className="min-w-0"><h2 id={titleId} className="text-lg font-semibold"><WorkspaceText text="Report salon" /></h2><p className="break-words text-sm text-zinc-600"><SalonName name={salon.name} salonId={salon.id}/></p></div>
         <button type="button" disabled={busy} aria-label={translate("Close report")} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-xl" onClick={onClose}>×</button>
       </header>
       {submitted ? <>

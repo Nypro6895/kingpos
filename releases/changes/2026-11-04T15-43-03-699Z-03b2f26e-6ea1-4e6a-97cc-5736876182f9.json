@@ -1,0 +1,23 @@
+{
+  "status": "working",
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/combined-membership-release-20261104",
+    "baselineCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+  },
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "kind": "change",
+  "changeId": "combined-membership-release-20261104",
+  "summary": "Owner-authorized combined release: capture exact current production source, reconcile all pending events, integrate compatible recent changes and membership affiliation, validate web and assess required native update.",
+  "files": [
+    "scripts/release-journal.mjs"
+  ],
+  "id": "03b2f26e-6ea1-4e6a-97cc-5736876182f9",
+  "recordedAt": "2026-11-04T15:43:03.699Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-membership-release-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

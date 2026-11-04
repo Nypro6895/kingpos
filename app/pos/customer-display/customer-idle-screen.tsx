@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useEffect, useState, type ReactNode } from "react";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CustomerRelayEntry } from "@/app/service-relay/customer-relay";
@@ -19,7 +21,7 @@ export function CustomerIdleScreen({ token, images, title, body, salonName, back
   const slide = displayImages.length ? Math.floor(Math.max(0, seconds - preferences.idleSeconds) / preferences.slideSeconds) % displayImages.length : 0;
   const [failedImage, setFailedImage] = useState<string | null>(null);
   return <section className="customer-idle-screen" style={backgroundImageUrl ? { backgroundImage: `linear-gradient(rgba(250,250,250,.86),rgba(250,250,250,.86)),url(${JSON.stringify(backgroundImageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined} aria-label={t("Customer welcome screen")} data-ad-visible={showAd} data-ad-layout={preferences.layout}>
-    <header className="customer-idle-heading"><strong>{salonName}</strong>{fullscreenControl}</header>
+    <header className="customer-idle-heading"><strong><SalonName name={salonName} reference={{kind:"display",value:token}}/></strong>{fullscreenControl}</header>
     <div className="customer-idle-layout">
       {showAd && <section className="customer-idle-ad" aria-label={t("Salon promotion")}>
         {displayImages[slide] !== failedImage && <img src={displayImages[slide]} alt="" onError={() => setFailedImage(displayImages[slide])} />}

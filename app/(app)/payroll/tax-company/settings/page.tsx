@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import Link from "next/link";
 import { taxCompanySettings } from "@/lib/tax-company";
@@ -12,7 +14,7 @@ async function TaxSettings({ searchParams }: { searchParams: Promise<{ message?:
   let state: Awaited<ReturnType<typeof taxCompanySettings>>;
   try { state = await taxCompanySettings(); } catch (error) { return <main className={styles.page}><p role="alert" className={styles.notice}>{error instanceof Error ? error.message : "Settings unavailable."}</p><Link href="/market">Open Market</Link></main>; }
   return <main className={`${styles.page} ${styles.settings}`}>
-    <header><Link href="/payroll" className={styles.back}>← Payroll</Link><div className={styles.header}><div><p className={styles.eyebrow}>{state.salon_name}</p><h1>Tax Company settings</h1></div><span className={state.active && state.enabled ? styles.badge : styles.inactive}>{state.active && state.enabled ? "Sharing enabled" : state.active ? "Ready to connect" : "Plugin inactive"}</span></div></header>
+    <header><Link href="/payroll" className={styles.back}>← Payroll</Link><div className={styles.header}><div><p className={styles.eyebrow}><SalonName name={state.salon_name} currentSalon/></p><h1>Tax Company settings</h1></div><span className={state.active && state.enabled ? styles.badge : styles.inactive}>{state.active && state.enabled ? "Sharing enabled" : state.active ? "Ready to connect" : "Plugin inactive"}</span></div></header>
     {query.message && <p role="status" className={styles.notice}>{query.message}</p>}
     <PluginMarketStatus pluginName="Tax Company" label="Connect your tax company" active={state.active} />
     <div className={styles.stack}>
