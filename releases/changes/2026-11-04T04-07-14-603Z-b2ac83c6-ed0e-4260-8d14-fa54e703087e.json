@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "quality-campaign-prompt-invalidation-20261103",
+  "status": "working",
+  "summary": "Avoid unrelated native DTO invalidation after the owner campaign suggestion eligibility claim; preserve actual campaign writes and all authorization",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-campaign-prompt-invalidation.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Generated native proxy, live resource cache, role quarantine and authority guard regressions",
+      "result": "pending"
+    }
+  ],
+  "id": "b2ac83c6-ed0e-4260-8d14-fa54e703087e",
+  "recordedAt": "2026-11-04T04:07:14.603Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

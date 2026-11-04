@@ -1,0 +1,2261 @@
+{
+  "recordedAt": "2026-11-04T04:08:39.995Z",
+  "stage": "Verified shipped build91; follow-up narrow performance correction is in progress",
+  "native": {
+    "verified": true,
+    "checkedAt": "2026-11-04T03:30:24.439Z",
+    "sourceCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+    "sourceSha256": "1813aabf7c4deb9784da985929274d33f1ce4bca954568bcf567737e09a387fb",
+    "sourceFiles": 3303,
+    "sourceBasis": "Exact committed Git blob bytes, not Windows working-file CRLF",
+    "nativeSourceFilesVerified": 74,
+    "version": "1.0.0",
+    "build": "91",
+    "workflowRun": 41765278823,
+    "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/41765278823",
+    "artifactId": 13292469762,
+    "artifactSha256": "5bc7c819a4cf48587cf8c6ba843fa66f7f38f23b979149f360b515f6b5af02b4",
+    "testExecution": {
+      "count": 246,
+      "hostInvocations": 14,
+      "coverageVerified": true,
+      "startedAndPassedExactlyOnce": true,
+      "failures": 0,
+      "skips": 0,
+      "missing": 0,
+      "duplicates": 0,
+      "caseInventorySha256": "a17b02d260ac47be8557d62a3494964e5b5574eed4d82254f93f2c8d8fc27f3a"
+    },
+    "unsignedArchive": "passed and bundle/native source hashes verified",
+    "signedArchiveAndExport": "upload step passed strict signing verification and source-bound package verification; hashes match unsigned resources",
+    "bundleBuildId": "d20ac683fd3c257230461d039ebefa8fdd9bad89ac04f68c48e3c83ed0fa969e",
+    "bundleSha256": "3607fdcc16668e24698cefbbdc3e432fb088eaeb47d995a60fbe163234c504f1",
+    "bundleManifestSha256": "b27e8eaddcbe27ee5a2a7b0c59cd6e14850740e09dbd38d2419f7d5cf0c2c9d7",
+    "servicesCatalogPilot": false,
+    "upload": "accepted",
+    "processing": {
+      "build": "91",
+      "buildId": "5605b195-b97f-4e49-80d7-9abd7ec2eb37",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "checkedAt": "2026-11-04T03:27:09.848Z",
+      "operation": "Read-only; no tester invitations or group changes"
+    },
+    "publicConfigurationMatchesNative90": true,
+    "publicConfiguration": {
+      "NEXT_PUBLIC_SUPABASE_URL": {
+        "present": true,
+        "sha256": "380439b4fcc3f0d1ca303d18100074b7f9dbc311db63b43644ea6f287cadbb4b"
+      },
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
+        "present": true,
+        "sha256": "539f9c330a4a53e062c86b2fe5cca2e47e5515337191edf64a16992b4467fe13"
+      },
+      "NEXT_PUBLIC_MAPTILER_KEY": {
+        "present": false,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY": {
+        "present": false,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "deployedWeb": {
+      "deploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+      "sourceCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+      "sourceSha256": "3d0a928820356cf6cfc6586343362cb3bbf5531011b03f0eaa89b74f02bc5470",
+      "sourceFiles": 4067,
+      "nativeGeneratedMappingsMatch": true,
+      "generatedMappings": [
+        {
+          "path": "lib/app-local-commands-server.generated.ts",
+          "bytes": 73500,
+          "sha256": "87a947bfc9f3c2fae1a7368cc147d31deff0c90ea1a13645e4769517c9623261"
+        },
+        {
+          "path": "lib/app-local-command-trace-names.generated.json",
+          "bytes": 859,
+          "sha256": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154"
+        }
+      ]
+    },
+    "testflightAvailable": true,
+    "availability": {
+      "checkedAt": "2026-11-04T03:29:42.922Z",
+      "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+      "appId": "6821394475",
+      "marketingVersion": "1.0.0",
+      "baselineMarketingVersion": "1.0.0",
+      "build": "91",
+      "buildId": "5605b195-b97f-4e49-80d7-9abd7ec2eb37",
+      "baselineBuild": "90",
+      "baselineBuildId": "c6f281c6-1071-4501-bc17-be07a39deefd",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2027-02-01T19:25:26-08:00",
+      "internalBuildState": "IN_BETA_TESTING",
+      "availableToExistingInternalGroup": true,
+      "groups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal",
+          "isInternalGroup": true,
+          "hasAccessToAllBuilds": true,
+          "hadBaseline": true,
+          "preexistingAutomaticGroup": true,
+          "hasNewBuild": true,
+          "existingDistributionGroup": true,
+          "associationConfirmed": true
+        }
+      ],
+      "status": "available-to-existing-internal-group",
+      "limitations": [
+        "This confirms Apple group access, not installation or automatic update on a particular phone.",
+        "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+        "External TestFlight and App Store publication are separate."
+      ]
+    },
+    "availabilityEvidence": {
+      "workflowRun": 41767444205,
+      "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/41767444205",
+      "sourceCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+      "branch": "codex/quality-native-frozen-20261103",
+      "artifactId": 13292744452,
+      "artifactSha256": "cecee088b86d471f1d609101cfc4fb7748760d154fe21ffcf6af4e83f7f93076",
+      "receipt": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103\\artifacts\\release-combined-20261103\\native91-availability-41767444205\\testflight-availability.json"
+    },
+    "evidence": {
+      "archiveReceipts": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103\\artifacts\\release-combined-20261103\\native-91-41765278823",
+      "artifactZip": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103\\artifacts\\release-combined-20261103\\native-91-41765278823.zip",
+      "metadata": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103\\artifacts\\release-combined-20261103\\native-91-41765278823-metadata.json",
+      "sourceInventory": "C:/Reylumi-worktrees/iphone-quality-audit-20261103/artifacts/release-combined-20261103/native-0af7fc91-expected-gitblob.json",
+      "privatePhysicalEvidence": "/Users/nytruong/Developer/ReylumiFullAudit-20261103/ReleaseQA-1793757764562980000"
+    },
+    "limits": [
+      "TestFlight availability is distinct from installation and physical QA; see physical-final-qa.json.",
+      "Raw diagnostics and test logs are excluded from compact Git release evidence."
+    ]
+  },
+  "physicalAtFreeze": {
+    "schemaVersion": 1,
+    "recordedAtUTC": "2026-11-04T04:03:26Z",
+    "scope": "Targeted read-only physical acceptance of the final combined web/iOS release",
+    "verified": true,
+    "overallStatus": "pass-covered-flows-with-performance-observations",
+    "device": {
+      "model": "iPhone 12 Pro Max",
+      "physical": true,
+      "controlledFrom": "Mac via existing XCTest QA driver"
+    },
+    "installedVersion": "1.0.0",
+    "installedBuild": "91",
+    "provenance": {
+      "nativeSourceCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+      "bundleBuildId": "d20ac683fd3c257230461d039ebefa8fdd9bad89ac04f68c48e3c83ed0fa969e",
+      "nativeReceipt": "artifacts/quality-combined-release/final-native-verified.json",
+      "webSourceCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+      "webDeployment": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+    },
+    "installVerification": {
+      "testFlightUpdateCompleted": true,
+      "testFlightOpenBuild91Observed": true,
+      "independentInstalledAppMetadataConfirmed": true,
+      "diagnosticAppBuildAndBundleMatch": true,
+      "sessionPreserved": true,
+      "note": "Physical acceptance followed independent installed-version metadata; the Update button alone was not used as proof."
+    },
+    "roleOrder": [
+      "Personal",
+      "Staff",
+      "Owner"
+    ],
+    "initialStateNote": "The retained Owner session was observed at installation startup before the ordered role audit began.",
+    "coverage": {
+      "Personal": {
+        "status": "pass",
+        "routes": [
+          "Explore",
+          "Beauty",
+          "Bookings",
+          "Library",
+          "Report / Contact",
+          "Help"
+        ],
+        "assertions": [
+          "Feed and profile data reached settled states.",
+          "Beauty composer launcher was visible; no draft text was entered or posted.",
+          "Bookings updating state cleared.",
+          "Library remained available after background/foreground.",
+          "Support was opened read-only; nothing was typed or sent.",
+          "Help diagnostic export produced a fresh native report."
+        ],
+        "privateEvidencePrefixes": [
+          "personal91-"
+        ],
+        "foregroundRoute": "Library"
+      },
+      "Staff": {
+        "status": "pass",
+        "routes": [
+          "Today",
+          "My Pay",
+          "Tickets",
+          "Analysis",
+          "Schedule",
+          "Help"
+        ],
+        "assertions": [
+          "Role switch reached the Staff portal with settled Today data.",
+          "My Pay and Tickets loaded.",
+          "Tickets remained available after background/foreground.",
+          "Analysis rendered its period summary and chart; Schedule reached its settled assigned-appointment state.",
+          "Cold relaunch preserved authentication and Staff role; initial route was Explore before opening Today.",
+          "Help diagnostic export produced a fresh native report."
+        ],
+        "privateEvidencePrefixes": [
+          "staff91-"
+        ],
+        "traceCoverageNote": "Staff diagnostic export preceded the later Analysis/Schedule checks; the export does not establish transport coverage for those later checks."
+      },
+      "Owner": {
+        "status": "pass",
+        "routes": [
+          "Today",
+          "Reports Overview",
+          "Reports Expenses",
+          "Market Discover",
+          "Market My features",
+          "Forum latest feed",
+          "Forum Following",
+          "Help"
+        ],
+        "assertions": [
+          "Owner role switch and cold relaunch preserved authentication and Owner navigation.",
+          "Reports Overview reached settled data.",
+          "Expenses current/previous/current cycle, return navigation and foreground checks passed.",
+          "Market cards and existing feature status loaded; checkout-unavailable state was observed.",
+          "Forum feed rendered, scrolling worked and Following reached settled content.",
+          "Help diagnostic export produced a fresh native report."
+        ],
+        "privateEvidencePrefixes": [
+          "owner91-"
+        ],
+        "foregroundRoute": "Reports Expenses"
+      }
+    },
+    "expensePeriodCycle": {
+      "status": "pass",
+      "selector": "Shared payroll-period selector",
+      "currentPeriod": "2026-11-01/2026-11-15",
+      "previousPeriod": "2026-10-16/2026-10-31",
+      "sequence": [
+        "current settled",
+        "previous settled empty state",
+        "current settled again",
+        "Overview then Expenses",
+        "background then foreground",
+        "later return from Help to Expenses"
+      ],
+      "assertions": {
+        "selectorAndDisplayedRowsAligned": true,
+        "currentListAndTotalRestored": true,
+        "previousPeriodRowsNotRetainedOnCurrent": true,
+        "currentTotalConsistentAfterReturnAndForeground": true,
+        "compactTableVisuallyReviewed": true,
+        "settledLoadingStateCleared": true
+      },
+      "evidence": [
+        "owner91-expenses-current-ready",
+        "owner91-expenses-previous-ready",
+        "owner91-expenses-current-again-ready",
+        "owner91-expenses-resume",
+        "owner91-final-expenses",
+        "expenses91-assertions.json"
+      ],
+      "boundary": "Display/filter consistency was checked against existing records; no financial records were created or independently recomputed."
+    },
+    "helpExport": {
+      "status": "pass",
+      "userGesture": "Save diagnostic report",
+      "exports": 3,
+      "roles": [
+        "Personal",
+        "Staff",
+        "Owner"
+      ],
+      "nativeShareSheetObserved": true,
+      "freshFolderPerExportVerified": true,
+      "usbCopyToPrivateEvidence": true,
+      "appVersionBuildAndBundleChecked": true,
+      "shareSheetDismissedWithoutChoosingTarget": true,
+      "saveToFilesOrThirdPartyShareAcceptance": false,
+      "nativeEntryCap": 512,
+      "javascriptEntryCap": 256,
+      "rawDiagnosticsInGit": false,
+      "reports": [
+        {
+          "role": "Personal",
+          "sha256": "d55cae6c5b8f4a912779b52183a3d72f4eb5648238374162a51703b330edce70"
+        },
+        {
+          "role": "Staff",
+          "sha256": "d20909583b321330e9919a95be870b0e1560563e1a66b7975e74bee6316d9905"
+        },
+        {
+          "role": "Owner",
+          "sha256": "f902d6de43eac9aec9f4fcddaec650f17a3f500279c617211d730aa96c29c33f"
+        }
+      ]
+    },
+    "uiTimingSamples": {
+      "measurement": "XCTest tap-to-first-observed accessibility marker, including input and accessibility overhead; not pure HTTP, first paint or a whole-route SLA.",
+      "samples": [
+        {
+          "role": "Staff",
+          "route": "My Pay",
+          "milliseconds": 2338.505
+        },
+        {
+          "role": "Staff",
+          "route": "Tickets",
+          "milliseconds": 2028.783
+        },
+        {
+          "role": "Owner",
+          "route": "Expenses final return",
+          "milliseconds": 1688.179
+        }
+      ]
+    },
+    "traceAggregates": {
+      "Personal": {
+        "analysis": "artifacts/quality-combined-release/personal-trace-analysis.json",
+        "nativeEntries": 512,
+        "javascriptEntries": 256,
+        "completeSession": false,
+        "httpStarts": 31,
+        "completed": 31,
+        "readRequests": 20,
+        "readMedianMs": 662.445,
+        "readMaxMs": 987.777,
+        "contextRequests": 6,
+        "commandProxyRequests": 5,
+        "commandNote": "Three hidden-identity action reads and one saved-state action read are source-classified. One generic Rewards adapter branch cannot be classified without redacted arguments; UI navigation intentionally performed no business write.",
+        "redundantReadProven": false
+      },
+      "Staff": {
+        "analysis": "artifacts/quality-combined-release/staff-trace-analysis.json",
+        "nativeEntries": 512,
+        "javascriptEntries": 256,
+        "completeSession": false,
+        "httpStarts": 28,
+        "completed": 27,
+        "cancelledContext": 1,
+        "readRequests": 16,
+        "readMedianMs": 671.575,
+        "readMaxMs": 3764.362,
+        "redundantReadProven": false
+      },
+      "Owner": {
+        "analysis": "artifacts/quality-combined-release/owner-trace-analysis.json",
+        "status": "awaiting-independent-retained-window-analysis",
+        "nativeEntries": 512,
+        "javascriptEntries": 256,
+        "completeSession": false
+      },
+      "rules": [
+        "Counts describe bounded retained windows, not complete role sessions.",
+        "JS cache/delivery lifecycle events are not separate HTTP requests.",
+        "Native and JavaScript clocks have different origins; numerical timestamps are not directly aligned.",
+        "Only matching retained request IDs support per-request server-stage attribution.",
+        "Conditional 304 responses still involve networking.",
+        "Redacted resource/argument/viewer keys prevent concluding redundancy from simultaneous requests alone."
+      ]
+    },
+    "performanceObservations": [
+      {
+        "id": "staff-read-tail-latency",
+        "status": "observed-cause-unproven",
+        "detail": "Two Staff read transports took 3764.362 ms and 3495.413 ms while their echoed instrumented server totals were 425.5 ms and 202.0 ms. The remaining gap is outside those server stages; this evidence does not identify network, OS/client scheduling, connection setup, pre-instrumentation server startup or transfer as the cause.",
+        "furtherProductEditJustified": false
+      },
+      {
+        "id": "personal-hidden-read-overlap",
+        "status": "unproven-redundancy",
+        "detail": "Two hidden-identity action transports overlap, but admitted viewer/cache keys and triggering causes are redacted. Existing coalescing was source-reviewed by the independent analyst; no duplicate-read fix is justified solely by the trace.",
+        "furtherProductEditJustified": false
+      }
+    ],
+    "tooling": {
+      "driverResultIdentityAndActionChecked": true,
+      "staleBuild91ResponsesAccepted": 0,
+      "excludedEarlierBuild90StaleResponses": 4,
+      "excludedAssumptions": [
+        {
+          "flow": "Staff Help return",
+          "detail": "A guessed Today target was absent in the public Help shell; matched:false caused no tap. The observed Back to app button restored Staff."
+        },
+        {
+          "flow": "Forum launcher",
+          "detail": "An accessibility-exposed clipped Forum row initially caused a tap on the visible settings footer. This attempt is excluded from Forum route acceptance. After scrolling Forum into the visible central menu area, actual Forum navigation passed."
+        },
+        {
+          "flow": "Staff Analysis timing",
+          "detail": "An incorrect readiness marker Daily timed out although the settled Analysis page rendered. That observer timeout is excluded from product latency measurements."
+        }
+      ],
+      "remoteToolRoundTripsExcludedFromProductTiming": true,
+      "controllerNormalTimeLimitRenewedWithFreshSnapshot": true,
+      "controllerStoppedCleanly": true
+    },
+    "newConfirmedProductIssues": [],
+    "userDecisionsRequiredInCoveredFlows": [],
+    "limits": [
+      "This is targeted acceptance, not exhaustive every-route, every-role or all-device quality certification.",
+      "No whole-app sub-second, startup, frame-rate or maximum-optimization claim is made.",
+      "Bounded diagnostic buffers omit earlier events; UI coverage and retained transport coverage differ.",
+      "Cold/route transitions can initially display cached content or loading states; settled state was checked, not a first-paint performance SLA.",
+      "Financial writes, POS submission/payment/reset, payroll changes, booking mutations, follow/post/message writes, plugin activation/install and checkout were not exercised.",
+      "Camera permissions, QR capture, Universal Links, printer, offline/network-loss behavior, third-party sharing and Save to Files were not accepted in this pass.",
+      "No VoiceOver or large-text matrix, broad concurrency/load test or independent full financial reconciliation was performed."
+    ],
+    "privateEvidence": {
+      "retained": true,
+      "manifest": "physical91-private-manifest.json",
+      "indexedFiles": 208,
+      "expenseAssertions": "expenses91-assertions.json",
+      "location": "Private Mac QA folder and ignored old-audit diagnostics folder; absolute paths supplied separately to the release coordinator.",
+      "screenshotsAndRawTreesInGit": false,
+      "accountNamesCustomerNamesAmountsAndDeviceIdentifierOmitted": true
+    },
+    "handoff": {
+      "appRole": "Owner",
+      "route": "Reports Expenses",
+      "period": "current configured pay period",
+      "state": "settled",
+      "lastVerifiedUTC": "2026-11-04T04:02:32Z",
+      "controller": "stopped",
+      "sessionAndDataPreserved": true
+    }
+  },
+  "traceAnalysis": {
+    "personal": {
+      "schemaVersion": 1,
+      "analyzedAtUTC": "2026-11-04T03:50:41.539Z",
+      "scope": "Personal91 physical-export retained diagnostic windows; source-read only",
+      "input": {
+        "sha256": "d55cae6c5b8f4a912779b52183a3d72f4eb5648238374162a51703b330edce70",
+        "rawPrivate": true,
+        "rawCopiedOrStaged": false,
+        "appVersion": "1.0.0",
+        "appBuild": "91",
+        "bundleBuild": "d20ac683fd3c257230461d039ebefa8fdd9bad89ac04f68c48e3c83ed0fa969e",
+        "exportedAtUTC": "2026-11-04T03:37:09.641Z"
+      },
+      "provenance": {
+        "webCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+        "webDeployment": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+        "nativeCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+        "nativeWorkflowRun": 41765278823,
+        "registrySha256": "87a947bfc9f3c2fae1a7368cc147d31deff0c90ea1a13645e4769517c9623261",
+        "traceNamesSha256": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154",
+        "evidence": "artifacts/quality-combined-release/final-native-verified.json; old audit artifacts/release-combined-20261103/native-0af7fc91-expected-gitblob.json",
+        "comparedSharedCommandAndHiddenPostSourcesIdentical": true
+      },
+      "windows": {
+        "native": {
+          "retained": 512,
+          "limit": 512,
+          "sequenceFirst": 713,
+          "sequenceLast": 1224,
+          "earlierSequenceNumbersAbsent": 712,
+          "elapsedFirstMs": 60195.534,
+          "elapsedLastMs": 237728.159,
+          "retainedSpanMs": 177532.626
+        },
+        "javascript": {
+          "retained": 256,
+          "limit": 256,
+          "sequenceFirst": 127,
+          "sequenceLast": 382,
+          "earlierSequenceNumbersAbsent": 126,
+          "atFirstMs": 40702,
+          "atLastMs": 289589,
+          "retainedSpanMs": 248887
+        },
+        "completeSession": false,
+        "clockWarning": "Native systemUptime and JS performance.now have different origins. No JS UTC origin is exported. Windows cannot be directly aligned by their numeric timestamps; request correlation is used where present."
+      },
+      "http": {
+        "uniqueStarts": 31,
+        "uniqueRequestIds": 31,
+        "matchedCompletions": 31,
+        "unmatchedStarts": 0,
+        "unmatchedEnds": 0,
+        "outcomes": {
+          "completed": 31
+        },
+        "statuses": {
+          "200": 23,
+          "304": 8
+        },
+        "byKind": {
+          "read": {
+            "count": 20,
+            "statuses": {
+              "200": 12,
+              "304": 8
+            },
+            "duration": {
+              "n": 20,
+              "minMs": 423.082,
+              "medianMs": 662.445,
+              "p95NearestRankMs": 849.089,
+              "maxMs": 987.777
+            }
+          },
+          "context": {
+            "count": 6,
+            "statuses": {
+              "200": 6
+            },
+            "duration": {
+              "n": 6,
+              "minMs": 450.553,
+              "medianMs": 630.748,
+              "p95NearestRankMs": 697.996,
+              "maxMs": 697.996
+            }
+          },
+          "command": {
+            "count": 5,
+            "statuses": {
+              "200": 5
+            },
+            "duration": {
+              "n": 5,
+              "minMs": 551.521,
+              "medianMs": 684.563,
+              "p95NearestRankMs": 908.274,
+              "maxMs": 908.274
+            }
+          }
+        },
+        "peakConcurrent": 4,
+        "durationsAre": "Native HTTP-start to HTTP-end transport measurements; exclude preceding context preflight, route scheduling and UI rendering."
+      },
+      "nativeCaching": {
+        "contextRequestEvents": 6,
+        "contextHttpStarts": 6,
+        "contextJoinEvents": 6,
+        "contextCacheHitEvents": 2,
+        "readCacheHitEvents": 2,
+        "readCacheMissEvents": 1,
+        "interpretation": "Join/cache events are lifecycle observations. Cached context may also refresh in background; do not multiply them into HTTP requests or equate cache hit with zero networking."
+      },
+      "javascript": {
+        "networkMetadataEvents": 53,
+        "networkMetadataByEvent": {
+          "cache.read.end": 19,
+          "cache.accept": 19,
+          "context.reject": 1,
+          "context.read.end": 4,
+          "context.accept": 10
+        },
+        "cacheReadEndsByLayer": {
+          "app-local": 19,
+          "cache": 19
+        },
+        "appLocalReadEnds": 19,
+        "appLocalReadStatuses": {
+          "200": 4,
+          "304": 15
+        },
+        "appLocalReadDuration": {
+          "n": 19,
+          "minMs": 489,
+          "medianMs": 854,
+          "p95NearestRankMs": 2341,
+          "maxMs": 2341
+        },
+        "readEndsByAreaAndPhase": {
+          "shell:none": 6,
+          "today:staff": 1,
+          "today:bookings": 1,
+          "today:waiting": 1,
+          "today:extras": 1,
+          "today:financials": 1,
+          "other:none": 8
+        },
+        "contextReadEndSource": {
+          "network": 4,
+          "cache": 2,
+          "joined": 1
+        },
+        "errorEvents": 0,
+        "nonFailureRejects": [
+          {
+            "contextReason": "handoff",
+            "status": null
+          }
+        ],
+        "interpretation": "53 network metadata rows are 19 read.end + 19 accept + 1 context.reject + 4 context.read.end + 10 context.accept; not 53 HTTP. Context handoff rejection is not an HTTP failure. Area/phase is not an exact admitted resource or role identifier."
+      },
+      "serverTiming": {
+        "totalEvents": 312,
+        "attributableEvents": 225,
+        "attributableRequests": 23,
+        "unattributedEvents": 87,
+        "attributedBackendCallCounts": {
+          "read": {
+            "backend_auth": 12,
+            "backend_rest": 36,
+            "backend_rpc": 23
+          },
+          "context": {
+            "backend_auth": 6,
+            "backend_rest": 18,
+            "backend_rpc": 6
+          },
+          "command": {
+            "backend_auth": 22,
+            "backend_rest": 45,
+            "backend_rpc": 13
+          }
+        },
+        "attributedStages": {
+          "auth": {
+            "n": 23,
+            "minMs": 0,
+            "medianMs": 207.4,
+            "p95NearestRankMs": 410.8,
+            "maxMs": 479.8
+          },
+          "auth_user": {
+            "n": 18,
+            "minMs": 33.5,
+            "medianMs": 74.15,
+            "p95NearestRankMs": 119.6,
+            "maxMs": 119.6
+          },
+          "auth_status": {
+            "n": 18,
+            "minMs": 42.7,
+            "medianMs": 83.1,
+            "p95NearestRankMs": 204.6,
+            "maxMs": 204.6
+          },
+          "auth_session": {
+            "n": 18,
+            "minMs": 52.9,
+            "medianMs": 84.95,
+            "p95NearestRankMs": 219.7,
+            "maxMs": 219.7
+          },
+          "load": {
+            "n": 12,
+            "minMs": 234.1,
+            "medianMs": 324.1,
+            "p95NearestRankMs": 526.5,
+            "maxMs": 526.5
+          },
+          "serialize": {
+            "n": 18,
+            "minMs": 0,
+            "medianMs": 0.1,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.1
+          },
+          "backend_auth": {
+            "n": 23,
+            "minMs": 33.4,
+            "medianMs": 77,
+            "p95NearestRankMs": 176.5,
+            "maxMs": 390.6
+          },
+          "backend_rest": {
+            "n": 23,
+            "minMs": 158.2,
+            "medianMs": 309.7,
+            "p95NearestRankMs": 506.3,
+            "maxMs": 1042.4
+          },
+          "backend_rpc": {
+            "n": 23,
+            "minMs": 131.9,
+            "medianMs": 246.2,
+            "p95NearestRankMs": 400.5,
+            "maxMs": 419.4
+          },
+          "total": {
+            "n": 23,
+            "minMs": 208.3,
+            "medianMs": 411.5,
+            "p95NearestRankMs": 625.9,
+            "maxMs": 711.8
+          },
+          "validate": {
+            "n": 6,
+            "minMs": 0,
+            "medianMs": 0,
+            "p95NearestRankMs": 0,
+            "maxMs": 0
+          },
+          "lease": {
+            "n": 6,
+            "minMs": 0.3,
+            "medianMs": 0.4,
+            "p95NearestRankMs": 0.5,
+            "maxMs": 0.5
+          },
+          "proxy_refresh": {
+            "n": 5,
+            "minMs": 0,
+            "medianMs": 0,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.1
+          },
+          "handler": {
+            "n": 5,
+            "minMs": 128.1,
+            "medianMs": 268.6,
+            "p95NearestRankMs": 409.6,
+            "maxMs": 409.6
+          },
+          "workspace": {
+            "n": 4,
+            "minMs": 0,
+            "medianMs": 0,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.1
+          }
+        },
+        "rules": [
+          "Only nonempty matching UUIDs with retained httpStart are attributed.87 unbound timing rows are excluded from backend per-request/count totals, including leading entries whose starts were evicted.",
+          "ServerTiming parent/child/backend durations overlap and backend operations may run concurrently; do not add them to derive wall latency.",
+          "responseBytes/sizedResponses describe only measured backend responses, not full HTTP payload or complete DB IO."
+        ]
+      },
+      "commands": {
+        "count": 5,
+        "allStatus200": true,
+        "operations": [
+          {
+            "name": "http.benefits.rewards",
+            "totalMs": 1646.191,
+            "preflightMs": 730.09,
+            "httpMs": 908.274,
+            "status": 200
+          },
+          {
+            "name": "action.f800612a0d9d66f726d969d2",
+            "totalMs": 1245.139,
+            "preflightMs": 650.42,
+            "httpMs": 584.522,
+            "status": 200
+          },
+          {
+            "name": "action.40084b43686b6b73dc4dc79b",
+            "totalMs": 1550.337,
+            "preflightMs": 648.494,
+            "httpMs": 896.735,
+            "status": 200
+          },
+          {
+            "name": "action.f800612a0d9d66f726d969d2",
+            "totalMs": 1277.863,
+            "preflightMs": 718.326,
+            "httpMs": 551.521,
+            "status": 200
+          },
+          {
+            "name": "action.f800612a0d9d66f726d969d2",
+            "totalMs": 1414.173,
+            "preflightMs": 719.471,
+            "httpMs": 684.563,
+            "status": 200
+          }
+        ],
+        "mapping": [
+          {
+            "transportName": "action.f800612a0d9d66f726d969d2",
+            "count": 3,
+            "action": "loadHiddenPostIdentitiesAction",
+            "classification": "Read-only no-formal-argument action, implicit authenticated/safety viewer.",
+            "registryLines": [
+              200,
+              545
+            ],
+            "source": "app/post-moderation/actions.ts:14-15; lib/post-hidden-server.ts:4-9",
+            "callback": "components/post-safety.tsx:53 sync(); initial mount79; focus/storage/hidden/block events63-82",
+            "coalescing": "Map keyed by viewerId/guest24-25, WeakMap coalesces same browser event/key63-69; resolved promise reused until invalidation; failure clears61."
+          },
+          {
+            "transportName": "action.40084b43686b6b73dc4dc79b",
+            "count": 1,
+            "action": "getAccountSavedPostStatesAction",
+            "classification": "Reads saved-post state/session/counts; arguments not exported.",
+            "registryLines": [
+              80,
+              425
+            ],
+            "source": "app/saved-post/actions.ts:121-145",
+            "callback": "app/beauty/beauty-profile-client.tsx:942-956; app/saved-post/save-post-button.tsx:181-225"
+          },
+          {
+            "transportName": "http.benefits.rewards",
+            "count": 1,
+            "action": "Generic POST /api/rewards",
+            "classification": "Transport command supports reads and writes. Missing scope/op/args prevents identifying the invoked branch; POST is not evidence of a business write.",
+            "source": "lib/app-local-platform-types.ts:69; lib/app-local-role-http-server.ts:69-71; app/api/rewards/route.ts:28-65"
+          }
+        ],
+        "concurrentSameCommandObservation": {
+          "transportName": "action.f800612a0d9d66f726d969d2",
+          "overlappingOperations": 2,
+          "startSeparationMs": 0.05,
+          "classification": "Observed overlap only; no proven same admitted resource/cache key or root cause.",
+          "whyNotProven": "Zero formal arguments are confirmed, but implicit viewer/session, viewer cache key, route and triggering event are absent. Distinct events or viewer keys can legitimately invalidate separate promises; diagnostic cannot assign cause."
+        }
+      },
+      "findings": [
+        {
+          "id": "personal-retained-http-success",
+          "status": "observed",
+          "detail": "All 31 retained native HTTP starts have successful matching completions; no retained failed/cancelled HTTP outcome."
+        },
+        {
+          "id": "personal-js-count-duplication",
+          "status": "analysis-correction",
+          "detail": "Delivery/cache metadata layers repeat observations.53 JS network-tagged rows and38cache.read.end rows do not represent53 or 38 HTTP."
+        },
+        {
+          "id": "personal-hidden-read-overlap",
+          "status": "unproven-cause-no-product-edit",
+          "detail": "Two concurrent hidden-post action transports observed; same admitted viewer/key and triggering cause are not recorded. No confirmed redundant-read bug or authorization weakening is inferred."
+        },
+        {
+          "id": "personal-source-mapping",
+          "status": "verified",
+          "detail": "Five command transports map to3 known source operations. Four actions are read-only; generic Rewards branch cannot be classified without absent arguments."
+        }
+      ],
+      "provenNewProductBugs": [],
+      "limitations": [
+        "Rolling buffers omit earlier events; counts are only retained-window counts and not full Personal session totals.",
+        "Navigation/role, resource names/args, viewer/cache keys and triggering browser Event identity are redacted. Previous role handoff or tagged Today phases cannot be interpreted as unauthorized UI/data from these fields.",
+        "No initial-screen timing, first paint, frame/compositor metrics, route-to-visible timing or complete request waterfall survives this export. No whole-app latency, cold-start SLA or broad subsecond acceptance claim follows.",
+        "HTTP304 is a completed conditional network response, not a cache-only zero-network read.",
+        "Small observed request samples do not establish long-run percentiles or throughput.",
+        "Physical UI acceptance is owned by the Mac agent and is separate from this source/trace analysis."
+      ],
+      "sourceRefs": [
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+          "lines": [
+            102,
+            118,
+            127,
+            137
+          ],
+          "supports": "Native bounded 512-entry ring and systemUptime clock; UTC metadata separately exported."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            435,
+            449
+          ],
+          "supports": "Client HTTP correlation retained; response Server-Timing correlation echo-gated; legacy read timing may be unbound."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            505,
+            511,
+            1025,
+            1031,
+            1055,
+            1072
+          ],
+          "supports": "Command fresh-context preflight, in-flight context joining, then command POST; no shortcut without supported getter contract."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/experience-trace.ts",
+          "lines": [
+            43,
+            57,
+            65,
+            85
+          ],
+          "supports": "JS bounded256-entry ring, performance.now clock, sanitized fields, sequence counter."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/app-local-resource.ts",
+          "lines": [
+            311,
+            313,
+            339
+          ],
+          "supports": "cache.read.end and cache.accept reuse response metadata; do not count as separate HTTP."
+        }
+      ],
+      "actionsPerformed": {
+        "sourceEdits": false,
+        "newNetworkRequests": false,
+        "productOrToolUi": false,
+        "productionBusinessWrites": false,
+        "privateRawCopiedOrStaged": false,
+        "output": "sanitized aggregates, source evidence and limitations only"
+      }
+    },
+    "staff": {
+      "schemaVersion": 1,
+      "analyzedAtUTC": "2026-11-04T03:53:12.573Z",
+      "scope": "Staff91 physical-export retained diagnostic windows; source-read only",
+      "input": {
+        "sha256": "d20909583b321330e9919a95be870b0e1560563e1a66b7975e74bee6316d9905",
+        "rawPrivate": true,
+        "rawCopiedOrStaged": false,
+        "appVersion": "1.0.0",
+        "appBuild": "91",
+        "bundleBuild": "d20ac683fd3c257230461d039ebefa8fdd9bad89ac04f68c48e3c83ed0fa969e",
+        "exportedAtUTC": "2026-11-04T03:46:40.389Z"
+      },
+      "provenance": {
+        "webCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+        "webDeployment": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+        "nativeCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+        "nativeWorkflowRun": 41765278823,
+        "registrySha256": "87a947bfc9f3c2fae1a7368cc147d31deff0c90ea1a13645e4769517c9623261",
+        "traceNamesSha256": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154",
+        "evidence": "artifacts/quality-combined-release/final-native-verified.json; old audit artifacts/release-combined-20261103/native-0af7fc91-expected-gitblob.json",
+        "comparedSharedCommandAndHiddenPostSourcesIdentical": true
+      },
+      "windows": {
+        "native": {
+          "retained": 512,
+          "limit": 512,
+          "sequenceFirst": 543,
+          "sequenceLast": 1054,
+          "earlierSequenceNumbersAbsent": 542,
+          "elapsedFirstMs": 100127.787,
+          "elapsedLastMs": 288005.279,
+          "retainedSpanMs": 187877.492
+        },
+        "javascript": {
+          "retained": 256,
+          "limit": 256,
+          "sequenceFirst": 92,
+          "sequenceLast": 347,
+          "earlierSequenceNumbersAbsent": 91,
+          "atFirstMs": 1647,
+          "atLastMs": 290840,
+          "retainedSpanMs": 289193
+        },
+        "completeSession": false,
+        "clockWarning": "Native systemUptime and JS performance.now have different origins. No JS UTC origin is exported. Windows cannot be directly aligned by their numeric timestamps; request correlation is used where present."
+      },
+      "http": {
+        "uniqueStarts": 28,
+        "uniqueRequestIds": 28,
+        "matchedTerminalOutcomes": 28,
+        "completed": 27,
+        "cancelled": 1,
+        "unmatchedStarts": 0,
+        "unmatchedTerminals": [
+          {
+            "event": "httpEnd",
+            "kind": "read",
+            "outcome": "completed",
+            "status": 200,
+            "durationMs": 641.947
+          }
+        ],
+        "matchedStatuses": {
+          "200": 22,
+          "304": 5,
+          "-999": 1
+        },
+        "completedStatuses": {
+          "200": 22,
+          "304": 5
+        },
+        "completedDuration": {
+          "n": 27,
+          "minMs": 424.467,
+          "medianMs": 778.83,
+          "p95NearestRankMs": 3495.413,
+          "maxMs": 3764.362
+        },
+        "byKind": {
+          "read": {
+            "count": 16,
+            "outcomes": {
+              "completed": 16
+            },
+            "statuses": {
+              "200": 11,
+              "304": 5
+            },
+            "completedDuration": {
+              "n": 16,
+              "minMs": 424.467,
+              "medianMs": 671.575,
+              "p95NearestRankMs": 3764.362,
+              "maxMs": 3764.362
+            }
+          },
+          "context": {
+            "count": 12,
+            "outcomes": {
+              "completed": 11,
+              "cancelled": 1
+            },
+            "statuses": {
+              "200": 11,
+              "-999": 1
+            },
+            "completedDuration": {
+              "n": 11,
+              "minMs": 467.028,
+              "medianMs": 795.014,
+              "p95NearestRankMs": 1923.151,
+              "maxMs": 1923.151
+            }
+          }
+        },
+        "peakConcurrent": 5,
+        "cancellation": [
+          {
+            "event": "httpFailure",
+            "kind": "context",
+            "status": -999,
+            "durationMs": 6.536,
+            "cause": "Not identified. Native records cancelled when Task.isCancelled; status is NSError.code. No JS row carries this cancellation correlation. Independent clocks prevent assigning a specific reset/navigation event."
+          }
+        ],
+        "tailSamples": [
+          {
+            "kind": "read",
+            "status": 200,
+            "httpDurationMs": 3764.362,
+            "correlatedServerStages": {
+              "auth": {
+                "durationMs": 0
+              },
+              "load": {
+                "durationMs": 425.3
+              },
+              "backend_auth": {
+                "durationMs": 38.1,
+                "backendCalls": 1
+              },
+              "backend_rest": {
+                "durationMs": 276.7,
+                "backendCalls": 5
+              },
+              "backend_rpc": {
+                "durationMs": 296.1,
+                "backendCalls": 3
+              },
+              "total": {
+                "durationMs": 425.5
+              }
+            },
+            "httpMinusServerTimingTotalMs": 3338.862
+          },
+          {
+            "kind": "read",
+            "status": 200,
+            "httpDurationMs": 3495.413,
+            "correlatedServerStages": {
+              "auth": {
+                "durationMs": 0
+              },
+              "load": {
+                "durationMs": 201.8
+              },
+              "backend_auth": {
+                "durationMs": 26.4,
+                "backendCalls": 1
+              },
+              "backend_rest": {
+                "durationMs": 123.4,
+                "backendCalls": 3
+              },
+              "backend_rpc": {
+                "durationMs": 163.9,
+                "backendCalls": 2
+              },
+              "total": {
+                "durationMs": 202
+              }
+            },
+            "httpMinusServerTimingTotalMs": 3293.413
+          },
+          {
+            "kind": "context",
+            "status": 200,
+            "httpDurationMs": 1923.151,
+            "correlatedServerStages": {
+              "auth": {
+                "durationMs": 299.4
+              },
+              "backend_auth": {
+                "durationMs": 73,
+                "backendCalls": 1
+              },
+              "backend_rest": {
+                "durationMs": 220.2,
+                "backendCalls": 4
+              },
+              "backend_rpc": {
+                "durationMs": 220.2,
+                "backendCalls": 3
+              },
+              "total": {
+                "durationMs": 340.8
+              }
+            },
+            "httpMinusServerTimingTotalMs": 1582.351
+          }
+        ],
+        "durationsAre": "Native HTTP-start to HTTP-end transport measurements; exclude preceding context preflight, route scheduling and UI rendering."
+      },
+      "nativeCaching": {
+        "eventCounts": {
+          "readDelivered": 17,
+          "readCacheMiss": 3,
+          "contextRequest": 12,
+          "contextEnvelope": 22,
+          "contextDelivered": 11,
+          "contextFailure": 1
+        },
+        "interpretation": "Counts are only this rolling window. No contextJoin/cacheHit/native cachePersist events are retained; their absence does not prove the full session never used a cache."
+      },
+      "javascript": {
+        "networkMetadataEvents": 72,
+        "networkMetadataByEvent": {
+          "cache.read.end": 16,
+          "cache.accept": 16,
+          "context.accept": 27,
+          "context.read.end": 13
+        },
+        "cacheReadEndsByLayer": {
+          "app-local": 16,
+          "cache": 16
+        },
+        "appLocalReadEnds": 16,
+        "appLocalReadStatuses": {
+          "200": 9,
+          "304": 7
+        },
+        "appLocalReadDuration": {
+          "n": 16,
+          "minMs": 423,
+          "medianMs": 760,
+          "p95NearestRankMs": 2514,
+          "maxMs": 2514
+        },
+        "contextReadEndSource": {
+          "network": 13,
+          "metadata-absent": 1,
+          "joined": 1
+        },
+        "authAbortEvents": 2,
+        "authJoinEvents": 1,
+        "cacheEventCounts": {
+          "cache.miss": 8,
+          "cache.restore.end": 10,
+          "cache.refresh": 16,
+          "cache.hit": 2,
+          "cache.read.start": 30,
+          "cache.accept": 17,
+          "cache.read.end": 32,
+          "cache.restore.start": 8,
+          "cache.reset": 2
+        },
+        "interpretation": "72 network metadata rows are 16 read.end + 16 accept + 27 context.accept + 13 context.read.end, not 72 HTTP. The 32 cache.read.end rows are 16 app-local + 16 cache-layer observations; one initial start fell outside the retained window. JS auth.abort is not automatically an HTTP failure."
+      },
+      "serverTiming": {
+        "totalEvents": 333,
+        "attributableEvents": 258,
+        "attributableRequests": 22,
+        "missingValidRequestIdEvents": 58,
+        "requestStartNotRetainedEvents": 17,
+        "unattributedEvents": 75,
+        "attributedBackendCallCounts": {
+          "read": {
+            "backend_auth": 13,
+            "backend_rest": 59,
+            "backend_rpc": 31
+          },
+          "context": {
+            "backend_auth": 11,
+            "backend_rest": 44,
+            "backend_rpc": 33
+          }
+        },
+        "attributedStages": {
+          "auth": {
+            "n": 22,
+            "minMs": 0,
+            "medianMs": 117.9,
+            "p95NearestRankMs": 443.5,
+            "maxMs": 484.9
+          },
+          "auth_user": {
+            "n": 22,
+            "minMs": 26.5,
+            "medianMs": 64.35,
+            "p95NearestRankMs": 120.4,
+            "maxMs": 127.7
+          },
+          "auth_session": {
+            "n": 22,
+            "minMs": 44.2,
+            "medianMs": 88.9,
+            "p95NearestRankMs": 136.9,
+            "maxMs": 139.8
+          },
+          "auth_status": {
+            "n": 22,
+            "minMs": 44.6,
+            "medianMs": 79.45,
+            "p95NearestRankMs": 145,
+            "maxMs": 203.9
+          },
+          "staff_resolve": {
+            "n": 14,
+            "minMs": 42.8,
+            "medianMs": 66.65,
+            "p95NearestRankMs": 132.2,
+            "maxMs": 132.2
+          },
+          "load": {
+            "n": 11,
+            "minMs": 201.8,
+            "medianMs": 362.3,
+            "p95NearestRankMs": 831.8,
+            "maxMs": 831.8
+          },
+          "serialize": {
+            "n": 22,
+            "minMs": 0,
+            "medianMs": 0.1,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.2
+          },
+          "backend_auth": {
+            "n": 22,
+            "minMs": 26.4,
+            "medianMs": 64.25,
+            "p95NearestRankMs": 120.2,
+            "maxMs": 127.6
+          },
+          "backend_rest": {
+            "n": 22,
+            "minMs": 123.4,
+            "medianMs": 272.95,
+            "p95NearestRankMs": 496.6,
+            "maxMs": 1431.1
+          },
+          "backend_rpc": {
+            "n": 22,
+            "minMs": 163.9,
+            "medianMs": 250.85,
+            "p95NearestRankMs": 435.5,
+            "maxMs": 1035.5
+          },
+          "total": {
+            "n": 22,
+            "minMs": 202,
+            "medianMs": 379.4,
+            "p95NearestRankMs": 585.6,
+            "maxMs": 832.2
+          },
+          "validate": {
+            "n": 11,
+            "minMs": 0,
+            "medianMs": 0,
+            "p95NearestRankMs": 0,
+            "maxMs": 0
+          },
+          "lease": {
+            "n": 11,
+            "minMs": 35.4,
+            "medianMs": 43.7,
+            "p95NearestRankMs": 86.3,
+            "maxMs": 86.3
+          },
+          "staff_identity": {
+            "n": 2,
+            "minMs": 254.7,
+            "medianMs": 276.9,
+            "p95NearestRankMs": 299.1,
+            "maxMs": 299.1
+          },
+          "staff_assigned": {
+            "n": 2,
+            "minMs": 49.3,
+            "medianMs": 90.15,
+            "p95NearestRankMs": 131,
+            "maxMs": 131
+          },
+          "staff_timezone": {
+            "n": 2,
+            "minMs": 42.7,
+            "medianMs": 88.7,
+            "p95NearestRankMs": 134.7,
+            "maxMs": 134.7
+          },
+          "staff_greeting": {
+            "n": 2,
+            "minMs": 45.7,
+            "medianMs": 92.65,
+            "p95NearestRankMs": 139.6,
+            "maxMs": 139.6
+          },
+          "staff_attendance": {
+            "n": 2,
+            "minMs": 80.6,
+            "medianMs": 81.05,
+            "p95NearestRankMs": 81.5,
+            "maxMs": 81.5
+          },
+          "staff_pay_tab": {
+            "n": 1,
+            "minMs": 400.3,
+            "medianMs": 400.3,
+            "p95NearestRankMs": 400.3,
+            "maxMs": 400.3
+          },
+          "staff_revalidate": {
+            "n": 2,
+            "minMs": 131.4,
+            "medianMs": 165.8,
+            "p95NearestRankMs": 200.2,
+            "maxMs": 200.2
+          }
+        },
+        "rules": [
+          "Only valid UUIDs with retained httpStart are attributed.58 missing-UUID rows and 17 with a non-retained start are excluded; no attachment by adjacency.",
+          "All 22 attributed requests completed with 200. The 5 retained 304 responses have no attributable timing rows.",
+          "Parent/child/backend timings overlap; backend operations may run concurrently. Backend stage sums are not additional wall latency.",
+          "responseBytes/sizedResponses cover measured backend responses only, not complete wire/DB payload."
+        ]
+      },
+      "commands": {
+        "retainedStartEvents": 0,
+        "retainedEndEvents": 0,
+        "names": [],
+        "interpretation": "No command transport is retained in this Staff window. This is not a complete-session no-command assertion."
+      },
+      "findings": [
+        {
+          "id": "staff-retained-http-outcomes",
+          "status": "observed",
+          "detail": "28 retained unique HTTP starts have 28 matching terminal outcomes: 27 completed and 1 cancelled context request. One additional completed read has no retained start and is excluded from matched duration/outcome totals."
+        },
+        {
+          "id": "staff-context-cancelled",
+          "status": "cause-unproven-no-product-edit",
+          "detail": "One context task cancelled after 6.536 ms with NSError −999; contextFailure also records −999. No terminal authorization/business failure is established and no specific lifecycle cause is inferred."
+        },
+        {
+          "id": "staff-tail-latency",
+          "status": "observed-local-trace-limitation",
+          "detail": "Two completed read transports took 3.764 s and 3.495 s while echoed Server-Timing total was 425.5 ms and 202.0 ms respectively. Context maximum was 1.923 s with echoed total 340.8 ms. The gap is measured outside instrumented server stages; network, OS/client scheduling, connection setup, server startup before instrumentation and response transfer are not distinguished. No resource/argument or redundant-read cause is proven."
+        },
+        {
+          "id": "staff-no-proven-redundancy",
+          "status": "no-product-edit",
+          "detail": "Parallel HTTP and repeated metadata alone do not establish duplicate resource+args+scope keys. No proven redundant read is identified."
+        }
+      ],
+      "provenNewProductBugs": [],
+      "limitations": [
+        "Rolling buffers omit earlier events; counts are only retained-window counts and not full Personal session totals.",
+        "Navigation/role, resource names/args, viewer/cache keys and triggering browser Event identity are redacted. Previous role handoff or tagged Today phases cannot be interpreted as unauthorized UI/data from these fields.",
+        "No initial-screen timing, first paint, frame/compositor metrics, route-to-visible timing or complete request waterfall survives this export. No whole-app latency, cold-start SLA or broad subsecond acceptance claim follows.",
+        "HTTP304 is a completed conditional network response, not a cache-only zero-network read.",
+        "Small observed request samples do not establish long-run percentiles or throughput.",
+        "Physical UI acceptance is owned by the Mac agent and is separate from this source/trace analysis.",
+        "Staff physical Today/MyPay/Tickets/foreground/Help acceptance was reported by the Mac agent; this analysis does not independently observe UI.",
+        "One completed HTTP end and 17 timing rows predate the retained request-start window. Cancellation causes and identity fences cannot be reconstructed from neighboring rows."
+      ],
+      "sourceRefs": [
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+          "lines": [
+            102,
+            118,
+            127,
+            137
+          ],
+          "supports": "Native bounded 512-entry ring and systemUptime clock; UTC metadata separately exported."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            435,
+            449
+          ],
+          "supports": "Client HTTP correlation retained; response Server-Timing correlation echo-gated; legacy read timing may be unbound."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            505,
+            511,
+            1025,
+            1031,
+            1055,
+            1072
+          ],
+          "supports": "Command fresh-context preflight, in-flight context joining, then command POST; no shortcut without supported getter contract."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/experience-trace.ts",
+          "lines": [
+            43,
+            57,
+            65,
+            85
+          ],
+          "supports": "JS bounded256-entry ring, performance.now clock, sanitized fields, sequence counter."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/app-local-resource.ts",
+          "lines": [
+            311,
+            313,
+            339
+          ],
+          "supports": "cache.read.end and cache.accept reuse response metadata; do not count as separate HTTP."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            451,
+            452
+          ],
+          "supports": "HTTP error outcome chooses cancelled when Task.isCancelled; status is NSError.code, not a classification based on−999 alone."
+        }
+      ],
+      "actionsPerformed": {
+        "sourceEdits": false,
+        "newNetworkRequests": false,
+        "productOrToolUi": false,
+        "productionBusinessWrites": false,
+        "privateRawCopiedOrStaged": false,
+        "output": "sanitized aggregates, source evidence and limitations only"
+      }
+    },
+    "owner": {
+      "schemaVersion": 1,
+      "analyzedAtUTC": "2026-11-04T04:07:42.444Z",
+      "scope": "Owner91 physical-export retained diagnostic windows; exact source causal review only",
+      "input": {
+        "sha256": "f902d6de43eac9aec9f4fcddaec650f17a3f500279c617211d730aa96c29c33f",
+        "rawPrivate": true,
+        "rawCopiedOrStaged": false,
+        "appVersion": "1.0.0",
+        "appBuild": "91",
+        "bundleBuild": "d20ac683fd3c257230461d039ebefa8fdd9bad89ac04f68c48e3c83ed0fa969e",
+        "exportedAtUTC": "2026-11-04T04:00:11.328Z"
+      },
+      "provenance": {
+        "webCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+        "webDeployment": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+        "nativeCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+        "nativeWorkflowRun": 41765278823,
+        "registrySha256": "87a947bfc9f3c2fae1a7368cc147d31deff0c90ea1a13645e4769517c9623261",
+        "traceNamesSha256": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154",
+        "evidence": "artifacts/quality-combined-release/final-native-verified.json; old audit artifacts/release-combined-20261103/native-0af7fc91-expected-gitblob.json",
+        "comparedSharedCommandAndHiddenPostSourcesIdentical": true
+      },
+      "physicalUiPhaseContext": {
+        "source": "Mac agent report only; no automatic request-to-phase clock assignment",
+        "ownerBeforeColdLaunchUTC": "2026-11-04T03:51:54Z",
+        "expensesUTC": [
+          "2026-11-04T03:52:25Z",
+          "2026-11-04T03:53:36Z"
+        ],
+        "marketUTC": [
+          "2026-11-04T03:55:11Z",
+          "2026-11-04T03:55:56Z"
+        ],
+        "forumUTC": [
+          "2026-11-04T03:57:43Z",
+          "2026-11-04T03:58:31Z"
+        ],
+        "acceptanceReported": "Expenses current/previous/current, away/back and foreground passed. Market and Forum Following exercised without edits/payment."
+      },
+      "windows": {
+        "native": {
+          "retained": 512,
+          "limit": 512,
+          "sequenceFirst": 1177,
+          "sequenceLast": 1688,
+          "earlierSequenceNumbersAbsent": 1176,
+          "elapsedFirstMs": 137844.305,
+          "elapsedLastMs": 409178.987,
+          "retainedSpanMs": 271334.682
+        },
+        "javascript": {
+          "retained": 256,
+          "limit": 256,
+          "sequenceFirst": 222,
+          "sequenceLast": 477,
+          "earlierSequenceNumbersAbsent": 221,
+          "atFirstMs": 76648,
+          "atLastMs": 408831,
+          "retainedSpanMs": 332183
+        },
+        "completeSession": false,
+        "clockWarning": "Native systemUptime and JS performance.now have different origins. No JS UTC origin is exported. Windows cannot be directly aligned by their numeric timestamps; request correlation is used where present."
+      },
+      "http": {
+        "uniqueStarts": 32,
+        "uniqueRequestIds": 32,
+        "matchedTerminalOutcomes": 32,
+        "completed": 30,
+        "cancelled": 2,
+        "otherFailureOutcomes": 0,
+        "unmatchedStarts": 0,
+        "unmatchedTerminals": 0,
+        "completedStatuses": {
+          "200": 22,
+          "304": 8
+        },
+        "completedDuration": {
+          "n": 30,
+          "minMs": 341.833,
+          "medianMs": 726.083,
+          "p95NearestRankMs": 1521.459,
+          "maxMs": 2208.481
+        },
+        "byKind": {
+          "context": {
+            "count": 7,
+            "outcomes": {
+              "completed": 7
+            },
+            "statuses": {
+              "200": 7
+            },
+            "completedDuration": {
+              "n": 7,
+              "minMs": 341.833,
+              "medianMs": 402.887,
+              "p95NearestRankMs": 896.496,
+              "maxMs": 896.496
+            }
+          },
+          "command": {
+            "count": 3,
+            "outcomes": {
+              "completed": 3
+            },
+            "statuses": {
+              "200": 3
+            },
+            "completedDuration": {
+              "n": 3,
+              "minMs": 883.06,
+              "medianMs": 993.15,
+              "p95NearestRankMs": 997.248,
+              "maxMs": 997.248
+            }
+          },
+          "read": {
+            "count": 22,
+            "outcomes": {
+              "completed": 20,
+              "cancelled": 2
+            },
+            "statuses": {
+              "200": 12,
+              "304": 8,
+              "-999": 2
+            },
+            "completedDuration": {
+              "n": 20,
+              "minMs": 384.327,
+              "medianMs": 744.496,
+              "p95NearestRankMs": 1521.459,
+              "maxMs": 2208.481
+            }
+          }
+        },
+        "peakConcurrent": 5,
+        "peakConcurrentContexts": 1,
+        "peakConcurrentReads": 4,
+        "cancellation": [
+          {
+            "event": "httpFailure",
+            "kind": "read",
+            "status": -999,
+            "durationMs": 545.723,
+            "cause": "Unknown from trace. Source uses Task.isCancelled; aborted scheduler/consumer, scope reset, native read/context cancellation or process termination can cancel read work. No sample assigned to a particular route/lifecycle event."
+          },
+          {
+            "event": "httpFailure",
+            "kind": "read",
+            "status": -999,
+            "durationMs": 544.472,
+            "cause": "Unknown from trace. Source uses Task.isCancelled; aborted scheduler/consumer, scope reset, native read/context cancellation or process termination can cancel read work. No sample assigned to a particular route/lifecycle event."
+          }
+        ],
+        "tailSamples": [
+          {
+            "kind": "read",
+            "status": 200,
+            "httpDurationMs": 2208.481,
+            "correlatedServerStages": {
+              "auth": {
+                "durationMs": 640.4
+              },
+              "load": {
+                "durationMs": 1677.2
+              },
+              "backend_auth": {
+                "durationMs": 139.3,
+                "backendCalls": 1
+              },
+              "backend_rest": {
+                "durationMs": 3552.6,
+                "backendCalls": 17
+              },
+              "backend_rpc": {
+                "durationMs": 1690.2,
+                "backendCalls": 16
+              },
+              "total": {
+                "durationMs": 1677.6
+              }
+            },
+            "httpMinusServerTimingTotalMs": 530.881
+          },
+          {
+            "kind": "read",
+            "status": 304,
+            "httpDurationMs": 1521.459,
+            "correlatedServerStages": {}
+          },
+          {
+            "kind": "command",
+            "status": 200,
+            "httpDurationMs": 997.248,
+            "correlatedServerStages": {
+              "auth": {
+                "durationMs": 310
+              },
+              "backend_auth": {
+                "durationMs": 229.1,
+                "backendCalls": 4
+              },
+              "backend_rest": {
+                "durationMs": 493.1,
+                "backendCalls": 8
+              },
+              "backend_rpc": {
+                "durationMs": 220.5,
+                "backendCalls": 2
+              },
+              "total": {
+                "durationMs": 759.6
+              }
+            },
+            "httpMinusServerTimingTotalMs": 237.648
+          },
+          {
+            "kind": "command",
+            "status": 200,
+            "httpDurationMs": 993.15,
+            "correlatedServerStages": {
+              "auth": {
+                "durationMs": 286.1
+              },
+              "backend_auth": {
+                "durationMs": 180.6,
+                "backendCalls": 4
+              },
+              "backend_rest": {
+                "durationMs": 391.3,
+                "backendCalls": 8
+              },
+              "backend_rpc": {
+                "durationMs": 227.9,
+                "backendCalls": 2
+              },
+              "total": {
+                "durationMs": 675.2
+              }
+            },
+            "httpMinusServerTimingTotalMs": 317.95
+          }
+        ],
+        "durationsAre": "Native HTTP-start to HTTP-end transport measurements; exclude preceding context preflight, route scheduling and UI rendering."
+      },
+      "nativeCaching": {
+        "contextRequestEvents": 7,
+        "contextHttpStarts": 7,
+        "contextJoinEvents": 0,
+        "contextCacheHitEvents": 0,
+        "readCacheHitEvents": 6,
+        "readCacheMissEvents": 1,
+        "cachePersistEvents": 10,
+        "interpretation": "Seven context HTTP intervals do not overlap. Each of three command operations encompasses a fresh-context preflight; authorization is an existing contract. Repetition alone is not duplicate-context proof, and names/args/path keys remain absent."
+      },
+      "javascript": {
+        "networkMetadataEvents": 52,
+        "networkMetadataByEvent": {
+          "cache.read.end": 16,
+          "cache.accept": 16,
+          "context.accept": 15,
+          "context.read.end": 5
+        },
+        "cacheReadEndsByLayer": {
+          "app-local": 23,
+          "cache": 23
+        },
+        "appLocalReadEnds": 23,
+        "appLocalReadSource": {
+          "network": 16,
+          "metadata-absent": 7
+        },
+        "appLocalReadDuration": {
+          "n": 23,
+          "minMs": 403,
+          "medianMs": 793,
+          "p95NearestRankMs": 1938,
+          "maxMs": 2308
+        },
+        "readEndsByAreaAndPhase": {
+          "other:none": 7,
+          "shell:none": 10,
+          "today:none": 1,
+          "today:staff": 1,
+          "today:bookings": 1,
+          "today:waiting": 1,
+          "today:financials": 1,
+          "today:extras": 1
+        },
+        "contextReadEndSource": {
+          "network": 5
+        },
+        "authStarts": 9,
+        "authEnds": 9,
+        "authAbortEvents": 0,
+        "contextAcceptReasons": {
+          "lease-valid": 15
+        },
+        "interpretation": "52 network metadata rows are 16 read.end + 16 accept + 15 context.accept + 5 context.read.end, not 52 HTTP. 46 cache.read.end rows are 23 app-local + 23 cache-layer observations. Seven app-local completions lack read-source metadata; do not infer that all seven are native cache hits."
+      },
+      "serverTiming": {
+        "totalEvents": 315,
+        "attributableEvents": 231,
+        "attributableRequests": 22,
+        "missingValidRequestIdEvents": 80,
+        "requestStartNotRetainedEvents": 4,
+        "unattributedEvents": 84,
+        "attributedBackendCallCounts": {
+          "context": {
+            "backend_auth": 7,
+            "backend_rest": 21,
+            "backend_rpc": 7
+          },
+          "command": {
+            "backend_auth": 12,
+            "backend_rest": 24,
+            "backend_rpc": 6
+          },
+          "read": {
+            "backend_auth": 12,
+            "backend_rest": 54,
+            "backend_rpc": 39
+          }
+        },
+        "attributedStages": {
+          "auth": {
+            "n": 22,
+            "minMs": 0,
+            "medianMs": 176,
+            "p95NearestRankMs": 439.6,
+            "maxMs": 640.4
+          },
+          "validate": {
+            "n": 7,
+            "minMs": 0,
+            "medianMs": 0,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.1
+          },
+          "auth_user": {
+            "n": 19,
+            "minMs": 25.7,
+            "medianMs": 68.9,
+            "p95NearestRankMs": 186.5,
+            "maxMs": 186.5
+          },
+          "auth_session": {
+            "n": 19,
+            "minMs": 28.3,
+            "medianMs": 111.1,
+            "p95NearestRankMs": 231.7,
+            "maxMs": 231.7
+          },
+          "auth_status": {
+            "n": 19,
+            "minMs": 56.6,
+            "medianMs": 92.8,
+            "p95NearestRankMs": 153,
+            "maxMs": 153
+          },
+          "lease": {
+            "n": 7,
+            "minMs": 0.6,
+            "medianMs": 0.7,
+            "p95NearestRankMs": 1.8,
+            "maxMs": 1.8
+          },
+          "serialize": {
+            "n": 19,
+            "minMs": 0.1,
+            "medianMs": 0.1,
+            "p95NearestRankMs": 0.2,
+            "maxMs": 0.2
+          },
+          "backend_auth": {
+            "n": 22,
+            "minMs": 25.6,
+            "medianMs": 71.2,
+            "p95NearestRankMs": 186.4,
+            "maxMs": 229.1
+          },
+          "backend_rest": {
+            "n": 22,
+            "minMs": 133.9,
+            "medianMs": 312.15,
+            "p95NearestRankMs": 579.9,
+            "maxMs": 3552.6
+          },
+          "backend_rpc": {
+            "n": 22,
+            "minMs": 118,
+            "medianMs": 259.8,
+            "p95NearestRankMs": 768.8,
+            "maxMs": 1690.2
+          },
+          "total": {
+            "n": 22,
+            "minMs": 165.4,
+            "medianMs": 439.9,
+            "p95NearestRankMs": 845.1,
+            "maxMs": 1677.6
+          },
+          "proxy_refresh": {
+            "n": 3,
+            "minMs": 0.1,
+            "medianMs": 0.1,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.1
+          },
+          "workspace": {
+            "n": 3,
+            "minMs": 0.1,
+            "medianMs": 0.1,
+            "p95NearestRankMs": 0.1,
+            "maxMs": 0.1
+          },
+          "handler": {
+            "n": 3,
+            "minMs": 344,
+            "medianMs": 385.3,
+            "p95NearestRankMs": 445.4,
+            "maxMs": 445.4
+          },
+          "load": {
+            "n": 12,
+            "minMs": 253.1,
+            "medianMs": 483.35,
+            "p95NearestRankMs": 1677.2,
+            "maxMs": 1677.2
+          },
+          "clock": {
+            "n": 1,
+            "minMs": 70.7,
+            "medianMs": 70.7,
+            "p95NearestRankMs": 70.7,
+            "maxMs": 70.7
+          },
+          "extras": {
+            "n": 1,
+            "minMs": 84.6,
+            "medianMs": 84.6,
+            "p95NearestRankMs": 84.6,
+            "maxMs": 84.6
+          },
+          "hours": {
+            "n": 1,
+            "minMs": 106.8,
+            "medianMs": 106.8,
+            "p95NearestRankMs": 106.8,
+            "maxMs": 106.8
+          },
+          "waiting": {
+            "n": 1,
+            "minMs": 103.7,
+            "medianMs": 103.7,
+            "p95NearestRankMs": 103.7,
+            "maxMs": 103.7
+          },
+          "bookings": {
+            "n": 1,
+            "minMs": 259.8,
+            "medianMs": 259.8,
+            "p95NearestRankMs": 259.8,
+            "maxMs": 259.8
+          },
+          "staff_board": {
+            "n": 1,
+            "minMs": 262.9,
+            "medianMs": 262.9,
+            "p95NearestRankMs": 262.9,
+            "maxMs": 262.9
+          },
+          "staff_activity": {
+            "n": 1,
+            "minMs": 148.5,
+            "medianMs": 148.5,
+            "p95NearestRankMs": 148.5,
+            "maxMs": 148.5
+          },
+          "financial_report": {
+            "n": 1,
+            "minMs": 654.5,
+            "medianMs": 654.5,
+            "p95NearestRankMs": 654.5,
+            "maxMs": 654.5
+          },
+          "financial_compare": {
+            "n": 1,
+            "minMs": 960.4,
+            "medianMs": 960.4,
+            "p95NearestRankMs": 960.4,
+            "maxMs": 960.4
+          },
+          "today_full": {
+            "n": 1,
+            "minMs": 1035.6,
+            "medianMs": 1035.6,
+            "p95NearestRankMs": 1035.6,
+            "maxMs": 1035.6
+          }
+        },
+        "rules": [
+          "Only valid UUIDs with retained HTTP starts are attributed. 80 missing-UUID rows and 4 whose starts predate the window are excluded.",
+          "The 22 attributed requests completed with 200. Retained 304s have no attributable timing rows.",
+          "Server stage/parent/backend durations overlap and operations may run concurrently. No addition into route latency or SQL query counts.",
+          "Response byte metadata is partial backend instrumentation, not complete wire/DB IO."
+        ]
+      },
+      "commands": {
+        "count": 3,
+        "operations": [
+          {
+            "name": "action.43868b737ff7fd87908af008",
+            "status": 200,
+            "totalMs": 1407.258,
+            "preflightMs": 404.8,
+            "httpMs": 993.15
+          },
+          {
+            "name": "action.43868b737ff7fd87908af008",
+            "status": 200,
+            "totalMs": 1395.226,
+            "preflightMs": 392.968,
+            "httpMs": 997.248
+          },
+          {
+            "name": "action.43868b737ff7fd87908af008",
+            "status": 200,
+            "totalMs": 1258.839,
+            "preflightMs": 365.076,
+            "httpMs": 883.06
+          }
+        ],
+        "mapping": [
+          {
+            "transportName": "action.43868b737ff7fd87908af008",
+            "count": 3,
+            "action": "ownerCampaignPromptAction",
+            "registryFile": "lib/app-local-commands-server.generated.ts",
+            "registryLines": [
+              293,
+              638
+            ],
+            "source": "app/campaigns/actions.ts:26-32",
+            "callback": "components/owner-campaign-runtime.tsx:18-28",
+            "classification": "Owner UX suggestion claim; may update prompt bookkeeping. Not a pure getter; no financial/campaign creation. Actual eligible result/mutation is not retained."
+          }
+        ],
+        "concurrentOperations": 0,
+        "interpretation": "POST command transport is not evidence of a user business/financial write. All three operations retain original fresh authorization preflight. No concurrent duplicate context is proven."
+      },
+      "sourceConfirmedPerformanceFindings": [
+        {
+          "id": "owner-campaign-prompt-broad-invalidation",
+          "classification": "Source-confirmed over-broad invalidation; runtime resulting-read count not proven",
+          "sourcePath": [
+            "Automatic owner prompt check calls ownerCampaignPromptAction.",
+            "Generated native proxy marks this export invalidate=true because its name is outside getter-prefix heuristic.",
+            "Successful same-epoch delivery emits app-local-command-complete even when returned prompt is null.",
+            "Resource listener clears role-read quarantine and invalidates all same-scope cells for campaign source; active cells refresh."
+          ],
+          "rpcImpact": "Only eligible prompt UX bookkeeping claimed_at/claimed_by can change. Null result changes nothing. No campaign, invoice, payment, funding or wallet accounting is created by this RPC.",
+          "consumerReview": "Exact pinned-source gitgrep found no app/lib/component badge, campaign-list or DTO consumer of prompt claimed fields/count. Direct table references exist only in owning migration and campaign actions; claim fields affect claim cooldown/eligibility. Other campaign/badge readers use campaign/status/wallet data unaffected by this claim.",
+          "runtimeEvidence": "Three completed prompt command transports with fresh authorization preflight are retained. Result values and command-complete/resource-key identity are absent, so no individual following read or duplicate key is attributed solely by timing.",
+          "recommendedNarrowChange": "Set invalidate=false only for app/campaigns/actions.ts#ownerCampaignPromptAction in native proxy policy. Preserve native freshContext/server/RPC authorization and all create/dismiss/payment/other-action invalidation. No new badge invalidation is needed for this claim-only action in pinned source.",
+          "meaningfulTestsProposedNotRun": [
+            "Execute actual generated proxy + real command client/resource listener with active Expenses/Market/Forum/shell cells and settled role cache. Null and eligible prompt results cause zero unrelated refreshes/cache clearing while returned prompt reaches UI.",
+            "Separate campaign mutation still emits completion and refreshes affected resources; unknown action policy remains conservative.",
+            "Changed scope/generation while claim is pending rejects stale delivery and cannot open prompt or invalidate destination resources.",
+            "Claim RPC fixture: null/cooldown no write; eligible claim changes only claim fields; campaign/payment/wallet aggregates unchanged, authorization/cooldown retained."
+          ],
+          "optionalSeparateAutomaticSchedulingConcern": "Client receives promptsEnabled but current runtime checks only enabled before scheduling. If separately optimized, gate only automatic checks/timers/post-published and include promptsEnabled dependency; preserve explicit manual promote listener registered in the same effect. No change proposed to current behavior here.",
+          "codeChangedByThisAnalysis": false
+        }
+      ],
+      "runtimeProvenRedundantRequests": [],
+      "provenNewFunctionalBugs": [],
+      "findings": [
+        {
+          "id": "owner-retained-http-outcomes",
+          "status": "observed",
+          "detail": "32 retained unique HTTP starts have 32 matching outcomes: 30 completed, 2 read tasks cancelled with −999. No other retained HTTP failure outcome."
+        },
+        {
+          "id": "owner-context-not-duplicated-concurrently",
+          "status": "observed-no-bug-proven",
+          "detail": "Seven context HTTP intervals have peak concurrency 1; all completed 200. The trace provides no exact context route/cache key, so sequential rereads cannot be classified redundant."
+        },
+        {
+          "id": "owner-tail-latency",
+          "status": "observed",
+          "detail": "One read took 2.208 s with correlated server total 1.678 s/load 1.677 s. Exact resource is redacted, so no Reports/Market/Forum attribution or SQL-specific fix is inferred."
+        },
+        {
+          "id": "owner-prompt-broad-invalidation",
+          "status": "source-confirmed-review-needed",
+          "detail": "Automatic prompt-claim completion invalidates unrelated native resource caches even for null/claim-only result. Narrow exact-action proxy exception is supported by RPC and consumer review; no runtime count of induced reads is claimed."
+        }
+      ],
+      "limitations": [
+        "Rolling buffers omit earlier events; counts are only retained-window counts and not full Personal session totals.",
+        "Navigation/role, resource names/args, viewer/cache keys and triggering browser Event identity are redacted. Previous role handoff or tagged Today phases cannot be interpreted as unauthorized UI/data from these fields.",
+        "No initial-screen timing, first paint, frame/compositor metrics, route-to-visible timing or complete request waterfall survives this export. No whole-app latency, cold-start SLA or broad subsecond acceptance claim follows.",
+        "HTTP304 is a completed conditional network response, not a cache-only zero-network read.",
+        "Small observed request samples do not establish long-run percentiles or throughput.",
+        "Physical UI acceptance is owned by the Mac agent and is separate from this source/trace analysis.",
+        "Earlier sequence numbers are absent; do not use this bounded export as complete coverage of all Expenses/Market/Forum phase requests.",
+        "Source-confirmed broad invalidation is distinguished from runtime attribution: command-complete/source/resource-key fields and result payloads are not exported.",
+        "Actual prompt eligibility/bookkeeping changes cannot be inferred from 200 responses.",
+        "This analysis proposes tests but did not edit product code, run a new network request or deploy the proposed fix."
+      ],
+      "sourceRefs": [
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+          "lines": [
+            102,
+            118,
+            127,
+            137
+          ],
+          "supports": "Native bounded 512-entry ring and systemUptime clock; UTC metadata separately exported."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            435,
+            449
+          ],
+          "supports": "Client HTTP correlation retained; response Server-Timing correlation echo-gated; legacy read timing may be unbound."
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            505,
+            511,
+            1025,
+            1031,
+            1055,
+            1072
+          ],
+          "supports": "Command fresh-context preflight, in-flight context joining, then command POST; no shortcut without supported getter contract."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/experience-trace.ts",
+          "lines": [
+            43,
+            57,
+            65,
+            85
+          ],
+          "supports": "JS bounded256-entry ring, performance.now clock, sanitized fields, sequence counter."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/app-local-resource.ts",
+          "lines": [
+            311,
+            313,
+            339
+          ],
+          "supports": "cache.read.end and cache.accept reuse response metadata; do not count as separate HTTP."
+        },
+        {
+          "file": "app/campaigns/actions.ts",
+          "lines": [
+            26,
+            32
+          ],
+          "sha256": "9d4b2c601d57189f63a35682e36046b3579e9a4ef9b651fd24f75c2b8b58a5e8",
+          "supports": "Owner/settings guards then claim RPC; returns null or prompt. Not a pure getter.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "file": "components/owner-campaign-runtime.tsx",
+          "lines": [
+            18,
+            28
+          ],
+          "sha256": "b7d4b0fb135eb1bb0d6d3a29d8075bddfc8faab38cfb73b99287f1bb2f3d7aef",
+          "supports": "Effect depends on scope/pathname/excluded/settings.enabled; 2 s automatic check, 800 ms after post-published; visible/modal guard; manual promote listener.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "file": "scripts/build-app-local-bundle.mjs",
+          "lines": [
+            65,
+            66
+          ],
+          "sha256": "a239a8ef3eb4c5c038f4d9360902f98a6f26a492288a304d5d3ccd02bc3af87a",
+          "supports": "Name-based heuristic sets invalidate=true for ownerCampaignPromptAction.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "file": "lib/app-local-command-client.ts",
+          "lines": [
+            23,
+            37
+          ],
+          "sha256": "012e71ddf867997c33eb1b2ff228091fe25adfea1a6c1d230d26d59eb16a6dda",
+          "supports": "Same-scope/generation success emits command-complete independent of null result when invalidate=true.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "file": "lib/app-local-resource.ts",
+          "lines": [
+            52,
+            59,
+            190,
+            198
+          ],
+          "sha256": "f66d702fc037e343a84a025642dac08763410c0cb26f8c8d8a6446a9fe33dd4d",
+          "supports": "Command listener clears role cache and invalidates matching-scope cells; active cells refresh or schedule after pending work.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "file": "lib/app-local-resource-invalidation.ts",
+          "lines": [
+            11,
+            13
+          ],
+          "sha256": "ce5c3ad6f3711429af4f78b0b6aa354ef76b1cee8a251d483b9ef095a5362aa3",
+          "supports": "Campaign source has no exception and defaults to all resources.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "file": "supabase/migrations/202610080002_owner_campaigns.sql",
+          "lines": [
+            93,
+            110
+          ],
+          "sha256": "270fec5292b974a2b558668287756dd98239373b49ec36a71a64e683a7153dbf",
+          "supports": "Latest and only claim definition. Owner/lock/settings/cooldown/eligibility; null if no candidate; only eligible prompt claimed_at/claimed_by update. No financial/campaign creation.",
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "identicalInNative0af": true
+        },
+        {
+          "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "lines": [
+            452
+          ],
+          "supports": "Cancelled outcome uses Task.isCancelled; status is NSError.code."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/read-priority-scheduler.ts",
+          "lines": [
+            79,
+            88,
+            115,
+            117,
+            141,
+            146
+          ],
+          "supports": "Speculative preemption, no-consumer abort, pause and scope cancellation can stop read work."
+        },
+        {
+          "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+          "file": "lib/app-local-host.ts",
+          "lines": [
+            75,
+            90
+          ],
+          "supports": "Abort listener sends native cancel only for read/context, not commands."
+        }
+      ],
+      "actionsPerformed": {
+        "sourceEdits": false,
+        "newNetworkRequests": false,
+        "productOrToolUi": false,
+        "productionBusinessWritesByAnalysis": false,
+        "privateRawCopiedOrStaged": false,
+        "output": "sanitized aggregates, source evidence and limitations only"
+      }
+    }
+  },
+  "followup": {
+    "status": "in-progress-not-published",
+    "changeId": "quality-campaign-prompt-invalidation-20261103",
+    "scope": "Suppress broad native resource invalidation only for the existing UX prompt-claim action. Preserve RPC, business writes, prompt cadence and fresh authorization."
+  },
+  "appStore": "Not submitted or published in this release"
+}

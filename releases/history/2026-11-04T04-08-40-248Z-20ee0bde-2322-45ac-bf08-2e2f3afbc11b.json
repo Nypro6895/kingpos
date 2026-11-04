@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Record exact-source build91 Internal TestFlight availability and covered physical acceptance; trace-led narrow cache-invalidation follow-up tracked separately",
+  "changes": [
+    "505500e9-4510-46dd-8ace-58b49a66f61c",
+    "c649701f-0231-4843-a19b-4819a3bc1ec9",
+    "25c65eb1-4208-4bb6-ad54-926e5ca126de",
+    "6fc734ff-1b91-4b5a-aa04-70725a5e9d79",
+    "a40f0bbd-189c-4bc9-86d0-273895d97d8e",
+    "2adfc681-495d-415f-b9cb-8dc6bdcecba6",
+    "d2c891bb-bbe1-481c-a881-d5c198417cb6",
+    "412fe803-6500-4830-8605-7add5b094705",
+    "5baa0e28-dc5d-415c-afb9-0da765dc336f",
+    "98dff1fd-d7dc-41e8-9987-9ee616472404",
+    "a8caa10d-d1d4-4c8a-953c-a1fe2c7901e5",
+    "388aa20f-684e-4919-9beb-46d02fa1ca0c",
+    "9892d0ae-5e3d-4b9c-821f-1802793cf619",
+    "98868faa-4b43-496a-a974-05380341cd08"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "91",
+      "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+      "sourceSha256": "1813aabf7c4deb9784da985929274d33f1ce4bca954568bcf567737e09a387fb",
+      "bundleBuildId": "d20ac683fd3c257230461d039ebefa8fdd9bad89ac04f68c48e3c83ed0fa969e",
+      "workflowRun": 41765278823,
+      "evidence": "releases/evidence/quality-combined-20261103-build91.json"
+    }
+  },
+  "id": "20ee0bde-2322-45ac-bf08-2e2f3afbc11b",
+  "recordedAt": "2026-11-04T04:08:40.248Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103"
+}

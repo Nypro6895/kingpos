@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "quality-campaign-prompt-invalidation-20261103",
+  "status": "ready",
+  "summary": "Prevent the Owner campaign suggestion eligibility claim from refetching unrelated native page DTOs; keep actual campaign write invalidation and all command authority checks",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-campaign-prompt-invalidation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\campaign-prompt-invalidation\\frozen-source",
+    "basedOnCommit": "c5e15a538fb79b4f0b415da4cf03c35cee4357f1"
+  },
+  "validation": [
+    {
+      "name": "Generated production proxy, original command client and real resource/role cache regression: 7 passed",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/campaign-prompt-invalidation/focused-final.log"
+    },
+    {
+      "name": "Focused plus adjacent Today/prefetch/getter regression: 40 passed, 0 skipped",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/campaign-prompt-invalidation/fixed-regression.log"
+    },
+    {
+      "name": "Pre-fix counterfactual reproduces 4 extra Owner reads for both null and claimed prompt",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/campaign-prompt-invalidation/pre-fix-regression.log"
+    },
+    {
+      "name": "Consumer review and unchanged server/action/RPC/cadence/authority guard source; syntax and whitespace checks",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/campaign-prompt-invalidation/validation-summary.json"
+    }
+  ],
+  "notes": [
+    "Only the native bundler exact app/campaigns/actions.ts#ownerCampaignPromptAction classification changes. No getter whitelist, module-wide suppression, business data mutation or server authorization change.",
+    "Fresh native bundle and device acceptance remain the release coordinator responsibility; local tests do not establish deployment."
+  ],
+  "id": "7e0a074f-d2f2-4fd5-a3c9-8c68e5d54afe",
+  "recordedAt": "2026-11-04T04:11:40.008Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "scripts/build-app-local-bundle.mjs": "611fa06c356bee7ea7b3b5e8bb8be1367ebcd09aa87da5ebae0c52fe8169015b",
+    "tests/app-local-campaign-prompt-invalidation.test.mjs": "683018641d1b13267c909038d882ab44c3221c4fab7e96c7233d12b0ca0cef65"
+  }
+}

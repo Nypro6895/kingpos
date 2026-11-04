@@ -62,7 +62,11 @@ const nextPlugin = {
         // Reading trial status is the same owner-checked server action as its
         // explicit start. Only a start invalidates native consumers; invalidating
         // status reads would refresh Market and trigger another status read.
-        const invalidates = originalModule === 'app/market/trial-actions.ts' && name === 'marketTrialAction' ? 'values[1]===true' : String(!/^(load|get|read|search|referenceLoveStates)/.test(name));
+        // Claiming a suggestion only records its display cooldown. No page DTO
+        // consumes that bookkeeping; treating it as a business write refreshes
+        // every mounted Owner resource even when no suggestion was returned.
+        const invalidates = originalModule === 'app/campaigns/actions.ts' && name === 'ownerCampaignPromptAction' ? 'false'
+          : originalModule === 'app/market/trial-actions.ts' && name === 'marketTrialAction' ? 'values[1]===true' : String(!/^(load|get|read|search|referenceLoveStates)/.test(name));
         if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${invalidates},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
         unsupported.set(originalModule + '#' + name, true);
         return `export const ${name}=()=>{throw new Error(${JSON.stringify('__unsupported_action:' + originalModule + '#' + name)})};`;
