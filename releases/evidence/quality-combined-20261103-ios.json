@@ -1,0 +1,552 @@
+{
+  "at": "2026-11-04T04:55:31.061Z",
+  "verified": true,
+  "checkedAt": "2026-11-04T04:36:45.529Z",
+  "sourceCommit": "7ece58d03fea9cd48378eda5b4e50da2ed4f0ff1",
+  "sourceSha256": "d9c72aeedfa58e598e847bd5a41a66bc56bb5ef28fce0cefb62c5615e1c93515",
+  "sourceFiles": 3305,
+  "sourceBasis": "Exact committed Git blob bytes, not Windows working-file CRLF",
+  "nativeSourceFilesVerified": 74,
+  "version": "1.0.0",
+  "build": "92",
+  "workflowRun": 41771829186,
+  "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/41771829186",
+  "artifactId": 13296031831,
+  "artifactSha256": "0da5c0129e4f67e6ca94a30265caf946bbdcb67b9851857c018eb5f30c1f76bd",
+  "testExecution": {
+    "count": 246,
+    "hostInvocations": 14,
+    "coverageVerified": true,
+    "startedAndPassedExactlyOnce": true,
+    "failures": 0,
+    "skips": 0,
+    "missing": 0,
+    "duplicates": 0,
+    "caseInventorySha256": "a17b02d260ac47be8557d62a3494964e5b5574eed4d82254f93f2c8d8fc27f3a"
+  },
+  "unsignedArchive": "CI receipt/source/bundle hashes and246unique passed tests verified",
+  "signedArchiveAndExport": "CI successful signing/upload step enforces strict archive codesign and exported LocalAppBundle source verification; signed receipt source/bundle hashes match unsigned. IPA binary was not independently re-signed or hashed here.",
+  "bundleBuildId": "f57a318d648815c3afbab9132ecfabd896597870c1de2fd189b72204d313d6d6",
+  "bundleSha256": "3b8ea2981698f9814e066d7cbeff4185eef246044d76e1d13f132b3582050e5e",
+  "bundleManifestSha256": "a5fdf495e7249dd2659453a5f78736e0ceaa9f375179d1fce19014015913fe1f",
+  "bundleDiffersFromNative91": true,
+  "embeddedPromptProxy": {
+    "verified": true,
+    "command": "action.43868b737ff7fd87908af008",
+    "invalidate": false,
+    "appJsSha256": "711528a305663616eb658b4e0e43f4a8f0b208e5df8209770aab82a9e6cefe4b",
+    "method": "Local generated app.js AST inspection bound to exact CI provenance/unsigned/signed resource hash. No independent IPA inspection.",
+    "evidence": "C:/Reylumi-worktrees/quality-combined-release-20261103/artifacts/quality-combined-release/native-next/local-proxy-inspection.json"
+  },
+  "servicesCatalogPilot": false,
+  "upload": "accepted",
+  "processing": {
+    "build": "92",
+    "buildId": "2cc389a1-aea5-479b-b82b-f4add682f08f",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-11-04T04:34:37.047Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "publicConfigurationMatchesNative91": true,
+  "publicConfiguration": {
+    "NEXT_PUBLIC_SUPABASE_URL": {
+      "present": true,
+      "sha256": "380439b4fcc3f0d1ca303d18100074b7f9dbc311db63b43644ea6f287cadbb4b"
+    },
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
+      "present": true,
+      "sha256": "539f9c330a4a53e062c86b2fe5cca2e47e5515337191edf64a16992b4467fe13"
+    },
+    "NEXT_PUBLIC_MAPTILER_KEY": {
+      "present": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "NEXT_PUBLIC_BOOKING_STRIPE_PUBLISHABLE_KEY": {
+      "present": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "deployedWeb": {
+    "deploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+    "sourceCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "sourceSha256": "3d0a928820356cf6cfc6586343362cb3bbf5531011b03f0eaa89b74f02bc5470",
+    "sourceFiles": 4067,
+    "nativeGeneratedMappingsMatch": true,
+    "generatedMappings": [
+      {
+        "path": "lib/app-local-commands-server.generated.ts",
+        "bytes": 73500,
+        "sha256": "87a947bfc9f3c2fae1a7368cc147d31deff0c90ea1a13645e4769517c9623261"
+      },
+      {
+        "path": "lib/app-local-command-trace-names.generated.json",
+        "bytes": 859,
+        "sha256": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154"
+      }
+    ]
+  },
+  "testflightAvailable": true,
+  "availability": {
+    "checkedAt": "2026-11-04T04:36:05.875Z",
+    "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+    "appId": "6821394475",
+    "marketingVersion": "1.0.0",
+    "baselineMarketingVersion": "1.0.0",
+    "build": "92",
+    "buildId": "2cc389a1-aea5-479b-b82b-f4add682f08f",
+    "baselineBuild": "91",
+    "baselineBuildId": "5605b195-b97f-4e49-80d7-9abd7ec2eb37",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2027-02-01T20:33:23-08:00",
+    "internalBuildState": "IN_BETA_TESTING",
+    "availableToExistingInternalGroup": true,
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      }
+    ],
+    "status": "available-to-existing-internal-group",
+    "limitations": [
+      "This confirms Apple group access, not installation or automatic update on a particular phone.",
+      "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+      "External TestFlight and App Store publication are separate."
+    ]
+  },
+  "availabilityEvidence": {
+    "workflowRun": 41774170007,
+    "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/41774170007",
+    "sourceCommit": "7ece58d03fea9cd48378eda5b4e50da2ed4f0ff1",
+    "branch": "codex/quality-native-prompt-frozen-20261103",
+    "artifactId": 13295614467,
+    "artifactSha256": "63351f2c01db04e4cc72e954b1ac19be01313ea9d46a4e6087bcbfb96f021095",
+    "receipt": "artifacts/quality-combined-release/native-next/availability-41774170007/testflight-availability.json"
+  },
+  "evidence": {
+    "archiveReceipts": "artifacts/quality-combined-release/native-next/receipts-41771829186",
+    "artifactZip": "artifacts/quality-combined-release/native-next/run-41771829186.zip",
+    "metadata": "artifacts/quality-combined-release/native-next/run-final-metadata.json",
+    "sourceInventory": "C:/Reylumi-worktrees/quality-combined-release-20261103/artifacts/quality-combined-release/native-next/expected-gitblob.json",
+    "baseline91Receipt": "C:/Reylumi-worktrees/quality-combined-release-20261103/artifacts/quality-combined-release/native-build91-verified.json"
+  },
+  "limits": [
+    "CI artifact provides receipts/logs, not an IPA/archive binary for independent codesign/IPA-digest inspection. Successful script steps enforce signing/export bundle checks.",
+    "TestFlight availability is distinct from installation and physical acceptance; see the separately recorded actual next-build device evidence.",
+    "No workflow dispatch, upload, tester/group change or production mutation was performed by this verifier."
+  ],
+  "physical": {
+    "schemaVersion": 1,
+    "recordedAtUTC": "2026-11-04T04:54:49.235Z",
+    "scope": "Limited physical regression smoke after the narrow native campaign-prompt invalidation fix; earlier broader build91 evidence is preserved separately.",
+    "verified": true,
+    "overallStatus": "pass-limited-regression-smoke-with-performance-observations",
+    "device": {
+      "model": "iPhone 12 Pro Max",
+      "physical": true,
+      "controlledFrom": "Mac via existing XCTest QA driver",
+      "osVersion": "27.0.1"
+    },
+    "installedVersion": "1.0.0",
+    "installedBuild": "92",
+    "provenance": {
+      "nativeSourceCommit": "7ece58d03fea9cd48378eda5b4e50da2ed4f0ff1",
+      "bundleBuildId": "f57a318d648815c3afbab9132ecfabd896597870c1de2fd189b72204d313d6d6",
+      "nativeReceipt": "artifacts/quality-combined-release/final-native-verified.json",
+      "webSourceCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+      "webDeployment": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+      "nativeFrozenReceipt": "artifacts/quality-combined-release/native-build92-verified.json"
+    },
+    "installVerification": {
+      "testFlightUpdateCompleted": true,
+      "testFlightOpenBuild92Observed": true,
+      "independentInstalledAppMetadataConfirmed": true,
+      "installedMetadataCheckedAtUTC": "2026-11-04T04:38:20Z",
+      "diagnosticAppBuildAndBundleMatch": true,
+      "sessionPreserved": true,
+      "note": "One standard TestFlight Update was followed by Open92, independent devicectl installed-app metadata, and fresh USB diagnostic metadata. No installation claim is inferred solely from the Update button."
+    },
+    "roleOrder": [
+      "Personal",
+      "Staff",
+      "Owner"
+    ],
+    "initialStateNote": "The retained Owner session was observed at installation startup before the ordered role audit began.",
+    "coverage": {
+      "Personal": {
+        "status": "pass",
+        "scope": "quick regression smoke",
+        "routes": [
+          "Explore",
+          "Beauty",
+          "Library"
+        ],
+        "assertions": [
+          "Personal role switch reached settled Explore content with Customer navigation.",
+          "Beauty composer launcher and rewards area rendered; loading state cleared.",
+          "Library profile and timeline rendered.",
+          "No post, comment, save, booking or profile edit was submitted."
+        ],
+        "privateEvidencePrefixes": [
+          "personal92-"
+        ]
+      },
+      "Staff": {
+        "status": "pass",
+        "scope": "quick regression smoke plus fresh transport export",
+        "routes": [
+          "Explore after cold relaunch",
+          "Today",
+          "My Pay",
+          "Tickets",
+          "Help"
+        ],
+        "assertions": [
+          "Staff persona was already selected before cold relaunch.",
+          "Cold relaunch initially opened Explore with Staff navigation; opening Today was a route transition.",
+          "Today, My Pay and Tickets reached settled states.",
+          "My Pay screenshot was visually reviewed.",
+          "Help export produced a fresh report with actual92 metadata."
+        ],
+        "privateEvidencePrefixes": [
+          "staff92-"
+        ],
+        "traceCoverageNote": "Fresh cold-launch export retained native sequences1–400 and JavaScript sequences1–164; this remains a bounded capture, not the entire role session."
+      },
+      "Owner": {
+        "status": "pass",
+        "scope": "targeted regression smoke",
+        "routes": [
+          "Today",
+          "Reports Overview",
+          "Reports Expenses",
+          "Market Discover",
+          "Market My features",
+          "Forum latest feed",
+          "Forum Following",
+          "Help"
+        ],
+        "assertions": [
+          "Owner persona and navigation remained available after cold relaunch.",
+          "Today settled; no campaign prompt modal was observed.",
+          "Expenses period cycle, away/back and foreground checks passed.",
+          "Market cards/logo, existing feature status and checkout-unavailable state were visually reviewed.",
+          "Forum latest feed rendered, scrolling worked and Following reached settled content.",
+          "Early and Expense-phase Help exports produced fresh reports with actual92 metadata."
+        ],
+        "privateEvidencePrefixes": [
+          "owner92-",
+          "owner92early-",
+          "owner92expenses-"
+        ],
+        "foregroundRoute": "Reports Expenses"
+      }
+    },
+    "expensePeriodCycle": {
+      "status": "pass",
+      "selector": "Shared payroll-period selector",
+      "currentPeriod": "2026-11-01/2026-11-15",
+      "previousPeriod": "2026-10-16/2026-10-31",
+      "sequence": [
+        "current settled",
+        "previous settled empty state",
+        "current settled again",
+        "Overview then Expenses",
+        "background then foreground",
+        "later return from Forum to Expenses"
+      ],
+      "assertions": {
+        "selectorAndDisplayedRowsAligned": true,
+        "currentListAndTotalRestored": true,
+        "previousPeriodRowsNotRetainedOnCurrent": true,
+        "currentTotalConsistentAfterReturnAndForeground": true,
+        "compactTableVisuallyReviewed": true,
+        "settledLoadingStateCleared": true
+      },
+      "evidence": [
+        "owner92-expenses-current",
+        "owner92-expenses-previous",
+        "owner92-expenses-current-again",
+        "owner92-expenses-return",
+        "owner92-expenses-resume",
+        "owner92-final-expenses",
+        "expenses92-assertions.json"
+      ],
+      "boundary": "Display/filter consistency was checked against existing records; no financial records were created or independently recomputed."
+    },
+    "helpExport": {
+      "status": "pass",
+      "userGesture": "Save diagnostic report",
+      "exports": 3,
+      "phases": [
+        "Staff after Today/My Pay/Tickets",
+        "Owner early after cold Today",
+        "Owner after Expenses cycle and foreground"
+      ],
+      "nativeShareSheetObserved": true,
+      "freshFolderPerExportVerified": true,
+      "usbCopyToPrivateEvidence": true,
+      "appVersionBuildAndBundleChecked": true,
+      "shareSheetDismissedWithoutChoosingTarget": true,
+      "saveToFilesOrThirdPartyShareAcceptance": false,
+      "nativeEntryCap": 512,
+      "javascriptEntryCap": 256,
+      "rawDiagnosticsInGit": false,
+      "reports": [
+        {
+          "phase": "Staff",
+          "sha256": "1a09583216111f2870f999920584134944eea9ee152ce90822dfcc206d98353f",
+          "nativeEntries": 400,
+          "javascriptEntries": 164
+        },
+        {
+          "phase": "Owner early",
+          "sha256": "f0e2e9a053fdfe81274419efdf703c4d9adc9cf247ce27840ef8bcbfd4da0822",
+          "nativeEntries": 291,
+          "javascriptEntries": 124
+        },
+        {
+          "phase": "Owner Expenses",
+          "sha256": "b36ee4866365eac0164dd89be364e110d51d030d213276be32a7a6318487d816",
+          "nativeEntries": 512,
+          "javascriptEntries": 256
+        }
+      ]
+    },
+    "uiTimingSamples": {
+      "measurement": "XCTest tap-to-first-observed accessibility marker, including input and accessibility overhead; not pure HTTP, first paint or a whole-route SLA.",
+      "samples": [
+        {
+          "role": "Staff",
+          "route": "Today from Explore",
+          "milliseconds": 3722.138
+        },
+        {
+          "role": "Owner",
+          "route": "Expenses initial",
+          "milliseconds": 1678.97
+        },
+        {
+          "role": "Owner",
+          "route": "Expenses previous period",
+          "milliseconds": 1814.566
+        },
+        {
+          "role": "Owner",
+          "route": "Expenses current again",
+          "milliseconds": 1620.329
+        },
+        {
+          "role": "Owner",
+          "route": "Expenses return from Overview",
+          "milliseconds": 1744.616
+        },
+        {
+          "role": "Owner",
+          "route": "Expenses final return",
+          "milliseconds": 1885.72
+        }
+      ],
+      "followingObservation": "Following still showed Getting things ready at the first roughly2-second follow-up snapshot and was settled at the later snapshot. Exact ready time was not continuously measured; tool round-trip time is not treated as app latency."
+    },
+    "traceAggregates": {
+      "Staff": {
+        "analysis": "artifacts/quality-combined-release/staff-followup-trace-analysis.json",
+        "analysisSha256": "aeb7271529e36399c480e7fae6c7492040883a99eef9b5240a2d31cc8ee9a5e4",
+        "nativeEntries": 400,
+        "javascriptEntries": 164,
+        "completeSession": false,
+        "httpStarts": 25,
+        "completed": 20,
+        "status200": 19,
+        "status409": 1,
+        "cancelled": 5,
+        "otherTransportFailures": 0,
+        "interpretation": "Early409/no delivered read followed by source-consistent stale-scope display withdrawal and fresh-context recovery. Cancellation initiators are not individually established by the trace. The observed UI remained authenticated Staff.",
+        "laterStaffCategorySegment": {
+          "httpRequests": 9,
+          "status200": 9,
+          "readRequests": 7,
+          "readMinMs": 443.774,
+          "readMedianMs": 761.087,
+          "readMaxMs": 925.555
+        },
+        "runtimeRedundancyProven": false
+      },
+      "OwnerEarly": {
+        "analysis": "artifacts/quality-combined-release/owner-followup-trace-analysis.json",
+        "analysisSha256": "363fc01b6df810f7387ecaf1e8055fdab5bb7e71c10e06e4db748a0f392f6e55",
+        "nativeEntries": 291,
+        "javascriptEntries": 124,
+        "completeSession": false,
+        "httpStarts": 16,
+        "completed": 15,
+        "cancelled": 1,
+        "httpErrorStatuses": 0,
+        "naturalPromptCommandCompleted": 1,
+        "promptHttpStatus": 200,
+        "proxyInvalidateFalseVerifiedBySourceBoundInspection": true,
+        "inducedReadOrSavingsCountProven": false,
+        "runtimeRedundancyProven": false
+      },
+      "OwnerExpenses": {
+        "analysis": "artifacts/quality-combined-release/owner-expenses-followup-trace-analysis.json",
+        "analysisSha256": "7c539877d1dd6a50cef6cc1a3f17e0d8e21f71a7b1ba850c270e50b7e49c8963",
+        "nativeEntries": 512,
+        "javascriptEntries": 256,
+        "completeSession": false,
+        "httpStarts": 31,
+        "completed": 31,
+        "status200": 30,
+        "status304": 1,
+        "cancelled": 0,
+        "httpErrorStatuses": 0,
+        "orphanTerminalExcluded": 1,
+        "readRequests": 28,
+        "readMedianMs": 733.113,
+        "readMaxMs": 1147.87,
+        "runtimeRedundancyProven": false
+      },
+      "rules": [
+        "Each summary describes its own retained window; overlapping Owner snapshots are not added together.",
+        "JS cache/delivery lifecycle rows are not separate HTTP requests.",
+        "Native and JavaScript clocks have separate origins; correlation uses request IDs and deltas within one clock.",
+        "Only retained uniquely matching request IDs support per-request server-stage attribution.",
+        "Conditional304 responses still involve networking.",
+        "Resource names, arguments, viewer keys and triggering event identity are redacted; concurrent reads alone do not prove redundancy.",
+        "Market/Forum navigation occurred after these exports; their functional UI pass is separate from retained transport coverage."
+      ]
+    },
+    "performanceObservations": [
+      {
+        "id": "staff-generic-cold-read-tail",
+        "status": "observed-cause-partly-unresolved",
+        "detail": "One generic startup read took3321.887ms with an echoed instrumented server total1923.5ms; the remaining1398.387ms spans uninstrumented transport/drain/actor-resume work. Exact resource and URLSession phase metrics are absent. Pre-HTTP cookie capture and post-HTTP reconcile are outside the measured interval and do not explain that gap.",
+        "noFurtherProductEditProven": true
+      },
+      {
+        "id": "later-staff-sample",
+        "status": "bounded-observation",
+        "detail": "After the first Staff-category context delivery, nine retained HTTP operations completed200; seven reads ranged443.774–925.555ms. This is not a controlled speed comparison with91 or an all-route SLA."
+      },
+      {
+        "id": "owner-expense-phase",
+        "status": "bounded-observation",
+        "detail": "All31matched HTTP operations in the retained Expense-phase window completed, with one304 and no matched cancellations or HTTP errors. Resource names are redacted; these counts are not31expense-list loads."
+      }
+    ],
+    "tooling": {
+      "driverResultIdentityAndActionChecked": true,
+      "staleBuild92ResponsesAccepted": 0,
+      "readyMarkerTimeouts": 0,
+      "misTargetedUiInputsObserved": 0,
+      "rdmReadTimeoutsRecoveredByPollingSameProcess": 2,
+      "remoteToolRoundTripsExcludedFromProductTiming": true,
+      "controllerStartedWithFreshSnapshot": true,
+      "controllerStoppedCleanly": true,
+      "note": "Existing XCTest controller was used; no old tap/stop command was replayed. Delayed RDM read responses did not cause repeated UI inputs."
+    },
+    "newConfirmedProductIssues": [],
+    "userDecisionsRequiredInCoveredFlows": [],
+    "limits": [
+      "Build92 is a limited regression smoke following a narrow native proxy-policy change; broader build91 coverage is preserved separately.",
+      "This is targeted acceptance, not exhaustive every-route, every-role or all-device quality certification.",
+      "No whole-app sub-second, startup, frame-rate or maximum-optimization claim is made.",
+      "The Expense-phase buffer reached capacity; early Owner and Staff captures were saved separately before eviction. UI coverage and retained transport coverage differ.",
+      "Cold/route transitions can initially display cached content or loading states; settled state was checked, not a first-paint performance SLA.",
+      "Financial writes, POS submission/payment/reset, payroll changes, booking mutations, follow/post/message writes, plugin activation/install and checkout were not exercised.",
+      "Camera permissions, QR capture, Universal Links, printer, offline/network-loss behavior, third-party sharing and Save to Files were not accepted in this pass.",
+      "No VoiceOver or large-text matrix, broad concurrency/load test or independent full financial reconciliation was performed."
+    ],
+    "privateEvidence": {
+      "retained": true,
+      "manifest": "Build92/physical92-private-manifest.json",
+      "indexedFiles": 173,
+      "expenseAssertions": "Build92/expenses92-assertions.json",
+      "location": "Private Mac QA Build92 folder and ignored old-audit diagnostics92 folder; absolute paths supplied separately to the release coordinator.",
+      "screenshotsAndRawTreesInGit": false,
+      "accountNamesCustomerNamesAmountsAndDeviceIdentifierOmitted": true
+    },
+    "handoff": {
+      "appRole": "Owner",
+      "route": "Reports Expenses",
+      "period": "current configured pay period",
+      "state": "settled",
+      "lastVerifiedUTC": "2026-11-04T04:52:16Z",
+      "controller": "stopped",
+      "sessionAndDataPreserved": true
+    },
+    "previousBuild91Evidence": {
+      "physical": "artifacts/quality-combined-release/physical-build91-qa.json",
+      "physicalSha256": "76ccdbde5cee9af79f251267e9625fa660c9aff03ad7d28762c3f1337aa3b097",
+      "native": "artifacts/quality-combined-release/native-build91-verified.json",
+      "nativeSha256": "917926d4b3acdf3959a9066ab872976c25fc1a5d5f3309b1ee0cf26b696aa7e8",
+      "note": "Immutable snapshots. Their broader coverage and earlier trace observations are not represented as newly repeated build92 checks."
+    },
+    "sourceFixAcceptance": {
+      "action": "ownerCampaignPromptAction",
+      "sourceCommit": "7ece58d03fea9cd48378eda5b4e50da2ed4f0ff1",
+      "policy": "invalidate=false for this exact prompt-claim action",
+      "scope": "Prompt eligibility/claim completion skips broad native resource invalidation; other campaign mutations retain their invalidation policy. Fresh native/server authorization, RPC and automatic cadence remain unchanged.",
+      "causalProof": "Production-generated proxy and actual resource-listener regression, plus source-bound generated app.js inspection referenced by owner-followup-trace-analysis.json.",
+      "supplementaryRuntimeEvidence": "One natural prompt transport completed200 in the early Owner window. Its result eligibility and per-resource command causality are not exported.",
+      "httpSavingsPercentageProven": false,
+      "automaticPromptClaimMayUpdateUxBookkeeping": true,
+      "financialOrContentWritesInvokedByQA": false
+    }
+  },
+  "baseline": {
+    "version": "1.0.0",
+    "build": "91",
+    "sourceCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+    "sourceSha256": "1813aabf7c4deb9784da985929274d33f1ce4bca954568bcf567737e09a387fb",
+    "receiptId": "20ee0bde-2322-45ac-bf08-2e2f3afbc11b",
+    "evidence": "releases/evidence/quality-combined-20261103-build91.json",
+    "physicalFullCoveredPassBuild": "91"
+  },
+  "changes": [
+    "7e0a074f-d2f2-4fd5-a3c9-8c68e5d54afe"
+  ],
+  "combinedFeatureReceipt": "20ee0bde-2322-45ac-bf08-2e2f3afbc11b",
+  "web": {
+    "verified": true,
+    "at": "2026-11-04T04:42:58.321Z",
+    "deploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+    "url": "kingpos-rbqx9ceaf-kingpos.vercel.app",
+    "sourceCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "files": 4067,
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "aliasDeploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+    "sourceSha256": "3d0a928820356cf6cfc6586343362cb3bbf5531011b03f0eaa89b74f02bc5470",
+    "overlaySha256": "1036f8e33e54eb284085450a376961f2e523e650f2f130a571d27d94a5f27f23",
+    "receiptId": "02179c7f-9e7e-485e-8e08-6d9b0961e4d1"
+  },
+  "performanceEvidence": "releases/evidence/quality-combined-20261103-performance.json",
+  "held": [
+    "Independent unfinished Market developer/publisher-platform foundation and MarketV1-dependent subset",
+    "Separate applications and design-only previews",
+    "Deferred Payroll Tools optimization",
+    "Production payment/trial activation/SMS/provider test actions",
+    "Private or raw QA archives/screenshots/diagnostics in source commits"
+  ],
+  "appStore": "Existing Internal TestFlight availability verified; no App Store submission/publication in this release.",
+  "rollback": {
+    "performed": false,
+    "previousVerifiedNative": {
+      "version": "1.0.0",
+      "build": "91",
+      "sourceCommit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+      "availableEvidence": "releases/evidence/quality-combined-20261103-build91.json"
+    },
+    "webPreviousDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "procedure": "Preserve the actually shipped91 baseline for any corrective native build. For web rollback, recapture current alias/source and preserve unrelated changes plus server read/command contracts required by installed91/92 before any promotion. The previous deployment ID is a baseline reference; assess native compatibility before restoring it. Additive schema remains in place; no destructive reversal or ledger rewrite."
+  }
+}

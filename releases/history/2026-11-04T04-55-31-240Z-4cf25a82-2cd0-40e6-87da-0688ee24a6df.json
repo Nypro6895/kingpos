@@ -1,0 +1,24 @@
+{
+  "kind": "release",
+  "summary": "Publish exact-source Reylumi1.0.0(92) native cache correction after full CI, Apple availability and ordered physical acceptance; combined features already recorded in91",
+  "changes": [
+    "7e0a074f-d2f2-4fd5-a3c9-8c68e5d54afe"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "92",
+      "commit": "7ece58d03fea9cd48378eda5b4e50da2ed4f0ff1",
+      "sourceSha256": "d9c72aeedfa58e598e847bd5a41a66bc56bb5ef28fce0cefb62c5615e1c93515",
+      "bundleBuildId": "f57a318d648815c3afbab9132ecfabd896597870c1de2fd189b72204d313d6d6",
+      "baselineBuild": "91",
+      "workflowRun": 41771829186,
+      "evidence": "releases/evidence/quality-combined-20261103-ios.json"
+    }
+  },
+  "id": "4cf25a82-2cd0-40e6-87da-0688ee24a6df",
+  "recordedAt": "2026-11-04T04:55:31.240Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103"
+}
