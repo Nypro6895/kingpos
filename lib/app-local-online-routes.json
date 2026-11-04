@@ -84,6 +84,12 @@
       ]
     },
     {
+      "reason": "The existing one-shot visit feedback form is classified online-only and requires a fresh owned receipt plus the original server write authority. Keep its canonical HTTPS page rather than treating it as a retained local receipt renderer.",
+      "routes": [
+        "/activity/receipts/:ticketId/experience"
+      ]
+    },
+    {
       "reason": "Existing staff-bound scan and signup-phone verification retain their original HTTPS authority. No new local renderer, camera permission, invitation, SMS or write is introduced by this inventory correction.",
       "routes": [
         "/staff/scan",
