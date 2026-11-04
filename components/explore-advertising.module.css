@@ -182,3 +182,5 @@
 .topReserve :global([data-testid="customer-desktop-header"]) {
   top: 38px;
 }
+.forumPlacement{margin:0;padding:12px 0;border-bottom:1px solid #e7e8e9;max-width:100%;content-visibility:auto;contain-intrinsic-size:auto 200px}
+.forumCard{display:block;color:#17191b!important;background:white;text-decoration:none;font-size:13px;line-height:1.4}.forumSponsored{display:block;font-size:10px;color:#717578;margin-bottom:4px}.forumCard strong{display:block;font-size:15px}.forumCard p{margin:5px 0;font-size:13px}.forumCard img{display:block;width:100%;height:auto;max-height:240px;object-fit:cover;border-radius:9px;margin-top:8px}.forumCta{display:block;text-align:right;color:#1d807c;font-size:12px;font-weight:650;padding-top:8px}

@@ -2,6 +2,7 @@
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 
+import { MarketTrialPanel } from "./trial-panel";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -73,6 +74,7 @@ export function BookingDepositProduct({ salonId, installed = false, cancelled = 
     <section className={styles.about} aria-labelledby="deposit-about"><h2 id="deposit-about">{t("About this plugin")}</h2><p className={styles.description}>{t("Collect part or all of the service price when customers book online.")}</p>
       <ul className={styles.features}>{features.map(([title, detail]) => <li key={title}><span className={styles.check} aria-hidden="true">✓</span><div><strong>{t(title)}</strong><p>{t(detail)}</p></div></li>)}</ul>
     </section>
+    {salonId && <MarketTrialPanel key={salonId} pluginId="booking-deposit" salonId={salonId} />}
     <footer className={styles.action}>
       {cancelled && <p className={styles.notice} role="status">{t("Checkout cancelled. You can add Booking Deposit whenever you are ready.")}</p>}
       {message && <p className={styles.notice} role="alert">{t(message)}</p>}

@@ -19,7 +19,7 @@ export async function beginBookingDepositCheckoutAction(expectedSalonId?: string
     const { client, salonId } = await marketPluginContext();
     if (!expectedSalonId || salonId !== expectedSalonId) throw new Error("Your salon changed. Reload this page before continuing.");
     const state = await bookingDepositPurchaseState(salonId);
-    if (state.paid) {
+    if (state.active) {
       if (!state.installed) {
         const { error } = await client.rpc("booking_deposit_install", { p_salon: salonId, p_installed: true });
         if (error) throw new Error("Booking Deposit could not be added. Please try again.");

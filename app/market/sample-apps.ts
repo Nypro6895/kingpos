@@ -118,3 +118,9 @@ sampleApps.push({ id: "service-relay", name: "Phone Checkin", category: "Operati
 for (const app of sampleApps) app.available = ["service-relay", "payroll-data-download", "campaigns", "vietnamese-language", "checkin-receipt"].includes(app.id);
 
 sampleApps.push({ id: "booking-policy", name: "Booking Rules", category: "Customer care", symbol: "BR", color: "blue", publisher: "reylumi", available: true, price: "$0.99 / month", trial: "Monthly subscription · Per salon", summary: "Publish your salon's booking rules for customers to review.", description: "Create your own booking rules, start with suggested basics, and display them in your salon's booking flow.", features: ["Editable booking rules", "Suggested starter rules", "Customer preview", "Publish or hide without losing your draft"], permissions: ["Owners manage their salon's booking rules", "Customers can read published rules"], workflow: ["Review and customize suggested rules", "Subscribe for $0.99 per month", "Publish for customers to review before booking"], plans: [{ name: "Booking Rules", price: "$0.99 / month", detail: "USD · Per salon · Custom rules and customer preview." }] });
+
+// First-party runtime trials are independent of paid checkout availability.
+for (const app of sampleApps) {
+  if (["booking-policy", "booking-deposit", "checkin-receipt", "tax-company", "booksms", "print-check"].includes(app.id)) app.trial = "5-day free trial · No card required";
+  if (app.id === "service-relay") app.trial = "Free activation available · No card required";
+}

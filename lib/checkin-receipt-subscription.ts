@@ -1,3 +1,4 @@
+import { marketAccessActive, marketPaidActive } from "@/lib/market-access";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { marketServiceClient, marketStripe, marketPaymentReady, marketPaymentSettings, assertLegacyMarketCheckoutAllowed } from "@/lib/market-payments";
@@ -5,9 +6,9 @@ import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
 import { CHECKIN_RECEIPT_PLUGIN, CHECKIN_RECEIPT_MONTHLY_CENTS, type CheckinReceiptSubscription } from "@/types/checkin-receipt";
 
 export async function checkinReceiptSubscription(salonId: string): Promise<CheckinReceiptSubscription> {
-  const { data, error } = await marketServiceClient().from("checkin_receipt_subscriptions").select("paid_until,stripe_subscription").eq("salon_id", salonId).maybeSingle();
+  const { data, error } = await marketServiceClient().from("checkin_receipt_subscriptions").select("paid_until,trial_ends_at,stripe_subscription").eq("salon_id", salonId).maybeSingle();
   if (error) throw new Error("Check-in Receipt requires the latest database update.");
-  return { active: Boolean(data?.paid_until && Date.parse(data.paid_until) > Date.now()), subscribed: Boolean(data?.stripe_subscription) };
+  return { active: marketAccessActive(data), paid: marketPaidActive(data), subscribed: Boolean(data?.stripe_subscription) };
 }
 export async function syncCheckinReceiptSubscription(id: string) {
   if (!/^sub_[a-zA-Z0-9]+$/.test(id)) throw new Error("Invalid subscription.");

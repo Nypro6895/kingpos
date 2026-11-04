@@ -51,10 +51,11 @@ export function VietnamesePluginPanel({ initialState, onChange, paymentsAvailabl
       <label><input type="checkbox" checked={staff} onChange={event => setStaff(event.target.checked)} />Áp dụng cho nhân viên của tiệm: lịch hẹn, lịch làm việc, lương và các yêu cầu với chủ tiệm.</label>
       <label><input type="checkbox" checked={portable} onChange={event => setPortable(event.target.checked)} />Áp dụng cho Portable (ứng dụng POS trên máy tính của tiệm).</label>
     </fieldset>
-    {state.installed && <p>{state.active ? trial ? `Dùng thử đến ${new Date(state.trial_ends_at!).toLocaleString("vi-VN")}.` : "Plugin đang hoạt động." : "Dùng thử đã kết thúc. Đăng ký để tiếp tục sử dụng."}</p>}
+    {state.installed && <p>{state.paid ? "Quyền truy cập trả phí đang hoạt động." : state.active ? trial ? `Dùng thử đến ${new Date(state.trial_ends_at!).toLocaleString("vi-VN")}.` : "Plugin đang hoạt động." : "Dùng thử đã kết thúc. Đăng ký để tiếp tục sử dụng."}</p>}
+    {state.installed && state.paid && trial && <p>Dùng thử đến {new Date(state.trial_ends_at!).toLocaleString("vi-VN")}.</p>}
     <p role="status">{message}</p>
     {!bankCheckout && !paymentsAvailable && !state.has_subscription && <p>Thanh toán thuê bao hiện chưa sẵn sàng. Chuyển khoản ngân hàng chưa được hỗ trợ.</p>}
-    {prepaid && <p>Bạn vẫn có quyền sử dụng đến hết kỳ đã thanh toán. Có thể đăng ký lại khi kỳ này kết thúc.</p>}
+    {prepaid && state.paid && <p>Bạn vẫn có quyền sử dụng đến hết kỳ đã thanh toán. Có thể đăng ký lại khi kỳ này kết thúc.</p>}
     <div className={styles.languageActions}>
       <button className={styles.primary} disabled={busy} aria-busy={busy && operation === "save"} onClick={() => save(true)}><ActionFeedback pending={busy && operation === "save"} pendingLabel="Đang lưu…">{state.installed ? "Lưu tùy chọn" : state.trial_ends_at ? "Thêm lại plugin" : "Dùng thử miễn phí 5 ngày"}</ActionFeedback></button>
       {state.installed && <button className={styles.secondary} disabled={busy} aria-busy={busy && operation === "remove"} onClick={() => save(false)}><ActionFeedback pending={busy && operation === "remove"} pendingLabel="Đang gỡ…">Gỡ plugin</ActionFeedback></button>}

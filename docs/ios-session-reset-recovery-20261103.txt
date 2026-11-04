@@ -1,0 +1,32 @@
+Today session reset recovery - 2026-11-03
+
+Baseline: 6865c6c00b9b72389ae3f46482cab4bae3e7009d (build 87 release receipt).
+Screenshot matches the local shell's reset admission failure. Without device
+diagnostics it does not identify which native reset reason occurred.
+
+Verified source defects:
+- externalCookies clears private admission and aborts context work, but previously
+  performed no fresh recovery; the shell could remain on the screenshot error.
+- explicitReset waits for hosted-return context delivery; a missing delivery
+  previously ended at the same error after 25 seconds without a fresh read.
+
+Change: after cookie invalidation, withdraw old private content/commands/caches
+and perform one fresh context read. After a lost explicit-reset delivery, perform
+the same bounded read at the watchdog deadline. Share a per-authority-family
+attempt budget until user navigation or explicit retry. Repeated resets stop.
+401/403/409 denials, logout, mismatched metadata and public routes do not trigger
+cookie recovery. No writes or interrupted operations are replayed.
+
+Validation: 26 Node tests passed, including production reset-handler execution,
+startup bridge recovery, home admission, root handoff and Staff identity.
+Installed-app bundle compiled: 351 files, 99 routes, 343 commands, missing=0.
+QA build ID: 5737d83a9c1431d75a7b4b2f3ef837c74f19fd5ba33ccf75be767368a9ae7ef2.
+This was an unsigned QA bundle (productionReady=false); generated assets were
+not retained as release artifacts. Scoped CRLF-aware whitespace check passed.
+
+Release requirements: integrate the source patch on the exact current native
+baseline, regenerate/sign bundle with verified provenance, run Xcode tests and
+archive, and test cold start/resume, hosted login/role return, external cookie
+rotation, denied session, and repeated reset on iPhone. Native app update is
+required; a web-only deployment cannot update this bundled entrypoint.
+No web deployment, native upload or physical-device acceptance in this task.

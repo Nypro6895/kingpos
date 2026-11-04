@@ -19,7 +19,7 @@ async function BookingDepositSettingsPage({ searchParams }: { searchParams: Prom
   catch { redirect("/market/booking-deposit"); }
   if (query.salon && query.salon !== salonId) return <main className={styles.settingsPage}><h1>Booking Deposit</h1><p role="alert"><WorkspaceText text="Select the salon used for this purchase, then try again." /></p><Link href="/market/booking-deposit"><WorkspaceText text="Back to plugin" /></Link></main>;
   const [purchase, state] = await Promise.all([bookingDepositPurchaseState(salonId), bookingDepositState(salonId)]);
-  if (!purchase.paid || !state.installed) redirect("/market/booking-deposit");
+  if (!purchase.active || !state.installed) redirect("/market/booking-deposit");
   return <main className={styles.settingsPage}>
     <Link className={styles.back} href="/market/booking-deposit">← <WorkspaceText text="Back to plugin" /></Link>
     <h1>Booking Deposit</h1><p className={styles.settingsIntro}><WorkspaceText text="Choose how much customers pay when they book." /></p>

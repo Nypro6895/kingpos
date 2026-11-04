@@ -17,7 +17,7 @@ async function BookingDepositPage({ searchParams }: { searchParams: Promise<{ ca
     try {
       const { salonId } = await marketPluginContext();
       const purchase = await bookingDepositPurchaseState(salonId);
-      installed = Boolean(purchase.installed && purchase.paid);
+      installed = Boolean(purchase.installed && purchase.active);
     } catch { /* Public product information remains available. Checkout rechecks permissions. */ }
   }
   return <BookingDepositProduct key={context.currentSalon?.id ?? "guest"} salonId={context.currentSalon?.id} installed={installed} cancelled={query.cancelled === "1"} />;

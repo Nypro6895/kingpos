@@ -9,6 +9,7 @@ import { useRememberedExperience } from "@/lib/use-remembered-experience";
 import { clearExperienceState } from "@/lib/experience-state";
 import { getExperienceDeviceGeneration } from "@/lib/experience-persistent-cache";
 import styles from "@/app/help/help.module.css";
+import { AppLocalDiagnosticExport } from "./app-local-diagnostic-export";
 
 type Props = { slug?: string; language?: HelpLanguage; support?: boolean; experienceScope?: string; navigate: (href: string) => void };
 const browseResetEvents = ["reylumi:experience-reset", "reylumi:app-local-reset", "reylumi:app-local-access-changed", "reylumi:experience-access-changed", "reylumi:offline-clear"];
@@ -43,7 +44,7 @@ export function AppLocalHelp({ slug, language = "en", support = false, experienc
     event.preventDefault(); navigate(helpHref(href, language));
   }}>{children}</a>;
   const languages = <div className={styles.languages} role="group" aria-label={t("Help language")}>{(["en", "vi"] as const).map(value => <button key={value} type="button" lang={value} aria-pressed={language === value} onClick={() => navigate(helpHref(slug ? `/help/${slug}` : "/help", value))}>{value === "en" ? "English" : "Tiếng Việt"}</button>)}</div>;
-  if (support) return <main lang={language} className={styles.shell}><h1>{t(APP_LOCAL_SUPPORT_INSTRUCTIONS.title)}</h1><p>{t(APP_LOCAL_SUPPORT_INSTRUCTIONS.introduction)}</p>{APP_LOCAL_SUPPORT_INSTRUCTIONS.sections.map(section => <section key={section.href} className={styles.section}><h2>{t(section.title)}</h2><p>{t(section.body)}</p>{link(section.href, t(section.title))}</section>)}<p>{t(APP_LOCAL_SUPPORT_INSTRUCTIONS.confirmation)}</p></main>;
+  if (support) return <main lang={language} className={styles.shell}><h1>{t(APP_LOCAL_SUPPORT_INSTRUCTIONS.title)}</h1><p>{t(APP_LOCAL_SUPPORT_INSTRUCTIONS.introduction)}</p>{APP_LOCAL_SUPPORT_INSTRUCTIONS.sections.map(section => <section key={section.href} className={styles.section}><h2>{t(section.title)}</h2><p>{t(section.body)}</p>{link(section.href, t(section.title))}</section>)}<p>{t(APP_LOCAL_SUPPORT_INSTRUCTIONS.confirmation)}</p><AppLocalDiagnosticExport language={language}/></main>;
   if (!slug) {
     const matches = searchHelpGuides(query, role);
     return <main lang={language} className={styles.shell}>{languages}<header className={styles.hero}><h1>{t("Reylumi Help")}</h1><p>{t("Follow the guides in order, or jump to the task you need.")}</p></header>
@@ -52,7 +53,7 @@ export function AppLocalHelp({ slug, language = "en", support = false, experienc
         <div className={styles.filters} role="group" aria-label={t("Filter by role")}>{(["all", "customer", "owner", "staff"] as const).map(value => <button key={value} type="button" aria-pressed={role === value} onClick={() => setRole(value)}>{t(({ all: "All roles", customer: "Customers", owner: "Salon owners", staff: "Staff members" })[value])}</button>)}</div>
         <p role="status">{t("Guides found")}: {matches.length}</p><ol className={styles.catalog} id="help-results">{matches.map((item, index) => { const guide = getAppLocalHelpGuide(item.slug, language)!; return <li key={guide.slug}>{link(`/help/${guide.slug}`, <><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div className={styles.guideCopy}><strong className={styles.guideTitle}>{guide.title}</strong><span className={styles.summary}>{guide.summary}</span></div><span aria-hidden="true">→</span></>, styles.catalogLink)}</li>; })}</ol>
         {!matches.length ? <p>{t("No matching guides. Try a shorter phrase or another role.")}</p> : null}{query || role !== "all" ? <button type="button" onClick={() => { setQuery(""); setRole("all"); }}>{t("Reset search")}</button> : null}
-      </section><p>{link("/support", t("Contact support"))}</p></main>;
+      </section><p>{link("/support", t("Contact support"))}</p><AppLocalDiagnosticExport language={language}/></main>;
   }
   const guide = getAppLocalHelpGuide(slug, language);
   if (!guide) return <main lang={language} className={styles.shell}><h1>{t("Reylumi Help")}</h1>{link("/help", t("Back to all guides"))}</main>;

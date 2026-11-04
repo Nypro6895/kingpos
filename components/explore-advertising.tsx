@@ -26,6 +26,7 @@ import type {
 } from "@/types/explore-advertising";
 import {
   chooseCampaign,
+  forumCampaignAt,
   shuffleCampaigns,
   campaignMatches,
 } from "@/lib/explore-advertising-rules";
@@ -93,9 +94,11 @@ function select(campaigns: Campaign[], kind: Campaign["kind"]) {
 export function ImageAd({
   campaign,
   preview = false,
+  forum = false,
 }: {
   campaign: Campaign;
   preview?: boolean;
+  forum?: boolean;
 }) {
   const __vt = useWorkspaceTranslation();
 
@@ -104,7 +107,7 @@ export function ImageAd({
   const Tag = campaign.href && !preview ? "a" : "div";
   return (
     <Tag
-      className={styles.imageLink}
+      className={forum ? styles.forumCard : styles.imageLink}
       {...(campaign.href && !preview
         ? {
             href: campaign.href,
@@ -124,18 +127,19 @@ export function ImageAd({
           }
         : {})}
       aria-label={__vt(campaign.name)}
-      style={{ background: campaign.background, color: campaign.color }}
+      style={forum ? undefined : { background: campaign.background, color: campaign.color }}
     >
+      {forum ? <><span className={styles.forumSponsored}>Được tài trợ</span><strong>{campaign.name}</strong>{campaign.text ? <p>{campaign.text}</p> : null}</> : null}
       {campaign.imageUrl ? (
         <img src={campaign.imageUrl} srcSet={imageSrcset(campaign)} sizes="(max-width: 600px) 90vw, 380px" width={campaign.imageWidth} height={campaign.imageHeight} decoding="async" alt={__vt(campaign.name)} />
       ) : null}
-      {campaign.text || !campaign.imageUrl ? (
+      {!forum && (campaign.text || !campaign.imageUrl) ? (
         <div className={styles.message}>
           <strong>{campaign.name}</strong>
           {campaign.text ? <p><WorkspaceText text={campaign.text} /></p> : null}
         </div>
       ) : null}
-      <span className={styles.sponsored}><WorkspaceText text="Sponsored" /></span>
+      {forum ? (campaign.href ? <span className={styles.forumCta}>Xem chi tiết</span> : null) : <span className={styles.sponsored}><WorkspaceText text="Sponsored" /></span>}
       <NavigationProgress pending={navigation.pending} />
     </Tag>
   );
@@ -175,10 +179,12 @@ export function ExploreAdSlot({
   desktop = false,
   slotIndex = 0,
   position,
+  campaignId,
 }: {
   desktop?: boolean;
   slotIndex?: number;
   position?: CampaignPlacement;
+  campaignId?: string;
 }) {
   const __vt = useWorkspaceTranslation();
 
@@ -186,7 +192,7 @@ export function ExploreAdSlot({
   const slotId = useId();
   const location = position ?? (desktop ? "sidebar" : "feed");
   const campaign =
-    campaigns.filter((item) =>
+    campaigns.filter((item) => (!campaignId || item.id === campaignId) &&
       (item.placements ?? ["sidebar", "feed"]).includes(location),
     )[slotIndex] ?? null;
   const [visible, setVisible] = useState(false);
@@ -245,14 +251,20 @@ export function ExploreAdSlot({
       style={{ visibility: admitted ? "visible" : "hidden" }}
       aria-label={__vt("Advertisement")}
       className={
-        position ? styles.pagePlacement : desktop ? styles.desktop : styles.feed
+          position === "forum" ? styles.forumPlacement : position ? styles.pagePlacement : desktop ? styles.desktop : styles.feed
       }
     >
       {admitted ? <AdDisplayConfirmation campaign={campaign} onDenied={() => setVisible(false)} /> : null}
-      <ImageAd campaign={campaign} />
+        <ImageAd campaign={campaign} forum={position === "forum"} />
     </aside>
   );
 }
+export function ForumCampaignSlot({ postIndex }: { postIndex: number }) {
+  const { campaigns }=useContext(Context);
+  const campaign=forumCampaignAt(campaigns,postIndex);
+  return campaign ? <ExploreAdSlot position="forum" campaignId={campaign.id}/> : null;
+}
+
 export function ExploreAdvertising({
   children,
   audience = "guest",

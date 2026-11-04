@@ -1,3 +1,4 @@
+import { marketAccessActive, marketPaidActive } from "@/lib/market-access";
 import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { marketServiceClient, marketPaymentSettings } from "@/lib/market-payments";
@@ -40,7 +41,7 @@ export async function bookingDepositState(salonId: string): Promise<BookingDepos
   }
   const testMode = (await marketPaymentSettings()).booking_deposit_test_enabled === true;
   return { ...EMPTY_BOOKING_DEPOSIT, enabled: data?.enabled ?? false, mode: data?.mode ?? "fixed", checkout: data?.checkout ?? "both", value: Number(data?.value ?? 20), testMode, installed: Boolean(data?.installed),
-    active: Boolean(data?.installed && (testMode || (data?.paid_until && Date.parse(data.paid_until) > Date.now()))), subscribed: Boolean(data?.stripe_subscription), connected };
+    active: Boolean(data?.installed && (testMode || marketAccessActive(data))), paid: marketPaidActive(data), subscribed: Boolean(data?.stripe_subscription), connected };
 }
 export async function prepareBookingDeposit(args: Record<string, unknown>, totalCents: number, actorId: string | null, requested: "embedded" | "hosted"): Promise<PublicBookingActionResult | null> {
   const salonId = String(args.p_salon_id);

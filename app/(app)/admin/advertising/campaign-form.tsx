@@ -31,6 +31,7 @@ export function CampaignForm({
     devices: (campaign?.devices ?? ["desktop", "mobile"]).join(","),
     placements: (campaign?.placements ?? ["sidebar", "feed"]).join(","),
     locations: (campaign?.locations ?? ["/explore"]).join("\n"),
+    forumEvery: String(campaign?.forumEvery ?? 6),
     popupTrigger: campaign?.popupTrigger ?? "delay",
     scrollPercent: String(campaign?.scrollPercent ?? 35),
     id: campaign?.id ?? "",
@@ -244,6 +245,7 @@ export function CampaignForm({
                   ["feed", "Explore mobile feed"],
                   ["page-top", "Page start"],
                   ["page-bottom", "Page end"],
+                  ...(values.kind === "placement" ? [["forum", "Forum · between posts"] as [string,string]] : []),
                 ],
               ],
             ] as [string, string, [string, string][]][]
@@ -262,6 +264,7 @@ export function CampaignForm({
                         .filter((item) => item !== value);
                       if (e.target.checked) selected.push(value);
                       change(key, selected.join(","));
+                      if(key==="placements" && value==="forum" && e.target.checked) change("locations", [...new Set([...values.locations.split(/[\n,]+/).filter(Boolean), "/forum"])].join("\n"));
                     }}
                   />
                   {text}
@@ -272,6 +275,7 @@ export function CampaignForm({
               ) : null}
             </fieldset>
           ))}
+          {values.placements.split(",").includes("forum") && <div className={styles.full}><p>Forum appearance: sponsored posts between discussions.</p>{control("forumEvery","Show after every N posts (3–30)","number")}</div>}
           <div className={styles.full}>
             {control(
               "locations",
@@ -285,6 +289,7 @@ export function CampaignForm({
             <div className={styles.locationPresets}>
               {[
                 "/explore",
+                "/forum",
                 "/staff",
                 "/bookings",
                 "/salon-profile",

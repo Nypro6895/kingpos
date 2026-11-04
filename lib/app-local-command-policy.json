@@ -175,7 +175,8 @@
     ],
     "app/market/card-payment-actions.ts": [
       "refreshCardPurchase",
-      "startCardCheckout"
+      "startCardCheckout",
+      "manageCardSubscription"
     ],
     "app/market/vietnamese-actions.ts": [
       "setVietnamesePlugin",
@@ -505,6 +506,12 @@
     ],
     "app/settings/staff-hours-booking-actions.ts": [
       "saveStaffHoursBooking"
+    ],
+    "app/market/trial-actions.ts": [
+      "marketTrialAction"
+    ],
+    "app/market/payment-return-actions.ts": [
+      "reconcileMarketReturnAction"
     ]
   }
 }

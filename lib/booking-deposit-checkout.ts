@@ -18,12 +18,24 @@ export async function prepareBookingDepositCheckout(expectedSalonId: string) {
     // No new schema or changes to checkout for other plugins are required.
     const { data: row, error } = await client.rpc("market_card_reserve", { p_salon: salonId, p_plugin: "booking-deposit" });
     if (error || !row) throw new Error(error?.message || "Payment could not open. Please try again.");
-    if (row.subscription_id) return { complete: await syncCardSubscription(row.subscription_id) };
+    let savedSubscriptionActive = false;
+    if (row.subscription_id) {
+      savedSubscriptionActive = await syncCardSubscription(row.subscription_id);
+      if (savedSubscriptionActive) return { complete: true };
+      if (!row.session_id) throw new Error("The existing subscription is still being confirmed. Check payment status before paying again.");
+    }
     let session;
     if (row.session_id) {
       session = await paymentStripe(`checkout/sessions/${row.session_id}`, undefined, undefined, config);
-      if (session.status === "complete") return { complete: typeof session.subscription === "string" && await syncCardSubscription(session.subscription) };
+      if (session.status === "complete") {
+        const paid = typeof session.subscription === "string" && (session.subscription === row.subscription_id ? savedSubscriptionActive : await syncCardSubscription(session.subscription));
+        if (paid) return { complete: true };
+        throw new Error("No active paid access was confirmed. Check payment status before paying again.");
+      }
       if (session.status === "open" && session.ui_mode === "hosted" && session.success_url === successUrl) return { url: checkoutUrl(session.url) };
+      // An unpaid subscription can still own its original open Checkout. Never
+      // expire or replace that subscription while recovering its saved session.
+      if (row.subscription_id || session.subscription) throw new Error("The existing subscription is still being confirmed. Check payment status before paying again.");
       if (session.status === "open") {
         const expired = await paymentStripe(`checkout/sessions/${row.session_id}/expire`, new URLSearchParams(), undefined, config);
         if (expired.status !== "expired") throw new Error("Payment is still being confirmed. Check again in a moment.");

@@ -1,0 +1,13 @@
+# Forum continuous feed — 2026-11-03
+
+Scope: implement the first two approved forum mockups. Existing Notifications and Settings screens remain; forum delivery/preferences are added to those existing systems. Owner bottom navigation reuses MobileBottomNav without redefining its links.
+
+Implemented: logo button returns internally to /forum; compact brand header; scrolling section tabs and fixed Following; real account avatars with silhouette fallback; small follow action below post; automatic owner/participant subscriptions with durable opt-out; bounded previews/keyset feed after comments; forum-only native sponsored placement in existing Campaign with 3–30-post interval. Existing campaign admission, targeting, confirmation and frequency accounting remain in use. No campaigns activated by this change.
+
+Migration: supabase/migrations/20261104010000_forum_continuous_feed.sql. Additive subscription state and unified notification integration. Actor identity and forum access remain enforced in existing RPCs; subscription tables are not directly exposed. No starter content, real accounts, billing or enrollments changed. Migration has been tested in PGlite, not applied to production.
+
+Validation: 22 database tests; 2 Campaign tests; 7 existing notification destination tests. Browser fixture renders the actual Forum component and CSS with controlled server-action responses, at 320/390/428/768 px. It checks pinned Following, no horizontal overflow, follow/unfollow, following feed, internal logo navigation, browser back, and continuation posts after replies. Its ads are stubbed; Campaign rules are tested separately. Screenshots cover forum content only; the existing global app navigation is not part of this fixture. These checks do not constitute authenticated production or physical iPhone acceptance.
+
+Evidence: artifacts/forum-v2/{regression-tests.txt,campaign-tests.txt,notification-tests.txt,browser-check.txt,home-iphone.png,post-iphone.png,production-build-final.txt}. Runtime fixture scripts are under the same directory.
+
+Release: base 82b99c0; read-only live guard confirmed dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS on 2026-11-03. This implementation has not been published. Apply the new SQL before enabling the UI. A subsequent coordinated release must recapture the current live source, reconcile pending completed changes and run the production guard. Native assessment: NavigationShell, notification categories and shared Campaign components are bundled by the iOS build, so a new native bundle is required from the latest actually uploaded source (build 90 / 738a36013d1a6f0d7e75b5638bcf0608cd7f91b1), retaining its native changes. Hosted forum changes alone do not prove native acceptance.

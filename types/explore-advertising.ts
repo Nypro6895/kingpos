@@ -1,6 +1,6 @@
 export type CampaignKind = "popup" | "placement" | "ticker";
 export type CampaignAudience = "guest" | "personal" | "staff" | "owner";
-export type CampaignPlacement = "sidebar" | "feed" | "page-top" | "page-bottom";
+export type CampaignPlacement = "sidebar" | "feed" | "page-top" | "page-bottom" | "forum";
 export type Campaign = {
   id: string;
   name: string;
@@ -11,6 +11,7 @@ export type Campaign = {
   locations?: string[];
   placements?: CampaignPlacement[];
   devices?: ("desktop" | "mobile")[];
+  forumEvery?: number;
   popupTrigger?: "delay" | "scroll";
   scrollPercent?: number;
   imageUrl: string;

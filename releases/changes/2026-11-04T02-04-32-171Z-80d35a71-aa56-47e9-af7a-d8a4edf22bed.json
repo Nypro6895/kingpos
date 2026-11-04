@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "help-local-diagnostic-export-20261103",
+  "status": "working",
+  "summary": "Add a user-invoked capability-gated local diagnostic export action in bundled Help support",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "components/app-local-help.tsx",
+    "components/app-local-diagnostic-export.tsx",
+    "app/help/help-copy.json",
+    "tests/app-local-diagnostic-export.test.mjs"
+  ],
+  "source": {
+    "commit": "645d331af141ff7730f7e38258262ad8461cad75"
+  },
+  "validation": [
+    {
+      "name": "Actual component capability gating, user-only export, pending/error/retry and no network",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "80d35a71-aa56-47e9-af7a-d8a4edf22bed",
+  "recordedAt": "2026-11-04T02:04:32.171Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,3 +1,4 @@
+import { checkWriterAccessActive } from "./check-writer-access";
 import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
 import { createHash } from "node:crypto";
@@ -58,7 +59,7 @@ export async function checkWriterState(
       .maybeSingle(),
     ctx.service
       .from("check_writer_subscriptions")
-      .select("paid_until,stripe_subscription,payment_owner")
+      .select("paid_until,stripe_subscription,payment_owner,trial_ends_at,trial_owner")
       .eq("salon_id", ctx.salonId)
       .maybeSingle(),
     ctx.service
@@ -201,9 +202,7 @@ export async function checkWriterState(
     settings: publicSettings,
     salonIssuer: salon.name,
     salonAddress: address,
-    active:
-      subscription.data?.payment_owner === ctx.user.id &&
-      Date.parse(subscription.data?.paid_until ?? "") > Date.now(),
+    active: checkWriterAccessActive(subscription.data, ctx.user.id),
     subscribed: Boolean(subscription.data?.stripe_subscription),
     runs: runOptions,
     selectedRun,

@@ -12,6 +12,7 @@ export function CheckWriterPanel({
     subscribed: boolean;
     installed?: boolean;
     operationalReady?: boolean;
+    trialReady?: boolean;
   };
 }) {
   const t = useWorkspaceTranslation(),
@@ -21,14 +22,15 @@ export function CheckWriterPanel({
     <section>
       <p>{t("Created by Reylumi")}</p>
       <p>{t("$4.90 / month · Per salon")}</p>
-      {state.operationalReady === false && (
+      {state.operationalReady === false && !state.trialReady && (
         <p>{t("Check Writer is being configured. Please try again later.")}</p>
       )}
+      {state.trialReady && state.operationalReady === false && <p>{t("Free trial available. Paid purchases are being prepared.")}</p>}
       <p>
         {t(
           state.active
             ? "Check Writer is active for this salon."
-            : "Activate paid access to create payroll and standalone checks.",
+            : "Start the free trial or activate paid access to create payroll and standalone checks.",
         )}
       </p>
       {(state.active || state.installed) && (

@@ -1,4 +1,5 @@
 import {checkWriterMarketState} from "@/lib/check-writer-market";
+import { reconcileMarketPaymentReturn } from "@/lib/market-payment-return";
 import "server-only";
 import {bookSmsState} from "@/lib/booksms";
 import { taxCompanySubscription } from "@/lib/tax-company-subscription";
@@ -21,6 +22,9 @@ import type { MarketExperienceData } from "@/types/market-experience";
 import { getExperienceContext } from "@/lib/experience-context";
 
 export async function loadMarketExperienceData(context: CurrentBusinessContext, query: { bookingStripe?: string; payment?: string } = {}): Promise<MarketExperienceData> {
+  if (query.payment === "received" && context.currentSalon) {
+    await reconcileMarketPaymentReturn(context.currentSalon.id).catch(() => {});
+  }
   // These are independent reads. Keep their error precedence deterministic while
   // avoiding a serial chain of optional subscription/settings requests.
   const [installationCounts, bankBillingState, relayInstalled, payroll, campaign, language,
@@ -53,5 +57,5 @@ export async function loadMarketExperienceData(context: CurrentBusinessContext, 
   if (payroll.error) error = payroll.error;
   error ||= language.error;
   const paymentsAvailable = bankBillingState.settings.version === 0 && language.enabled && marketPaymentReady();
-  return { checkWriter, automaticTax, cardReady: Boolean(cardConfig?.enabled && cardConfig.mode === "live" && cardConfig.webhookSecret), booksms, experienceScope: getExperienceContext(context).scope, taxCompany, bankBillingState, paymentsAvailable, paymentReturn: query.payment === "received" || query.payment === "cancelled" ? query.payment : undefined, serviceRelayInstalled: relayInstalled, bookingDeposit, bookingPolicy, installationCounts, checkinReceipt, vietnameseState: language.vietnamese, vietnamesePublished: language.published, campaignInstalled: campaign?.installed ?? false, payrollDownloadInstalled: payroll.installed, pluginLoadError: error };
+  return { checkWriter, marketSalonId: context.currentSalon?.id, automaticTax, cardReady: Boolean(cardConfig?.enabled && cardConfig.mode === "live" && cardConfig.webhookSecret), booksms, experienceScope: getExperienceContext(context).scope, taxCompany, bankBillingState, paymentsAvailable, paymentReturn: query.payment === "received" || query.payment === "cancelled" ? query.payment : undefined, serviceRelayInstalled: relayInstalled, bookingDeposit, bookingPolicy, installationCounts, checkinReceipt, vietnameseState: language.vietnamese, vietnamesePublished: language.published, campaignInstalled: campaign?.installed ?? false, payrollDownloadInstalled: payroll.installed, pluginLoadError: error };
 }

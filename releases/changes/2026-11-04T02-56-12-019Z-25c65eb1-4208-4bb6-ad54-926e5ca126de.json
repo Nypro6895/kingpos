@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "quality-settings-current-boundary-20261103",
+  "status": "ready",
+  "summary": "Replace retired DeviceAppearance UI reachability assertion with current Settings POS display transport and original authorization checks",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/app-local-device-appearance-boundary.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\frozen-settings-boundary",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "baselineCommit": "645d331af141ff7730f7e38258262ad8461cad75",
+    "sourceSha256": "fd0a609e0f387da4635082b65342d740fbf32f198d9f33f3b559e99b583f05c1"
+  },
+  "validation": [
+    {
+      "name": "New assembled-source scoped regression and original owning browser fixtures",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\completed-summary.json"
+    },
+    {
+      "name": "Affected TypeScript/TSX lint and whole-project no-emit TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\lint-diagnostics.json"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [],
+  "previousWorkingEvent": "fc2f9867-6cad-4270-8278-b7c2a1ef5e5f",
+  "acceptanceLimits": "Local integrated source only. No production SQL/env/provider operations or physical acceptance of a new binary; root owns final build, publication and device verification.",
+  "id": "25c65eb1-4208-4bb6-ad54-926e5ca126de",
+  "recordedAt": "2026-11-04T02:56:12.019Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/app-local-device-appearance-boundary.test.mjs": "bf8eed8a0e0bb9e0c2f56b093411c06d8e0a779351fda1f30b918e3e4ff6f357"
+  }
+}

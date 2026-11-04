@@ -107,7 +107,7 @@ test("real Market card panel uses $4.90, blocks unavailable/active sales and che
                     ? `export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>x=>x;`
                     : a.path.includes("check-writer-actions")
                       ? `export async function manageCheckWriterSubscription(){return {url:'https://billing.stripe.com/p/session/demo'}}`
-                      : `export async function startCardCheckout(id,external){window.started={id,external};return {checkoutUrl:'https://checkout.stripe.com/c/pay/demo'}};export async function refreshCardPurchase(){window.checked=(window.checked||0)+1;return {message:'Payment still pending verification.'}}`,
+                      : `export async function manageCardSubscription(){return {url:'https://billing.stripe.com/p/session/demo'}};export async function startCardCheckout(id,external){window.started={id,external};return {checkoutUrl:'https://checkout.stripe.com/c/pay/demo'}};export async function refreshCardPurchase(){window.checked=(window.checked||0)+1;return {message:'Payment still pending verification.'}}`,
           }));
         },
       },

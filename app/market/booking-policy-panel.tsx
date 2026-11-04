@@ -23,10 +23,10 @@ export function BookingPolicyPanel({ state, paymentsAvailable = true, bankChecko
    <button type="button" className={styles.secondary} onClick={()=>setContent(BOOKING_POLICY_TEMPLATE)}>Use suggested rules</button>
    <label><input type="checkbox" checked={published} onChange={event=>setPublished(event.target.checked)} />Show rules on the salon&apos;s booking page</label>
   </fieldset>
-  <p>{state.active ? "Subscription active. Saved rules appear when publication is enabled." : "Save your draft now. Rules become visible after your subscription is active and publication is enabled."}</p>
+  <p>{state.active ? "Access active. Saved rules appear when publication is enabled." : "Save your draft now. Rules become visible after your subscription is active and publication is enabled."}</p>
   {!bankCheckout && !paymentsAvailable && !state.subscribed && <p>Subscription checkout is currently unavailable. You can still save your draft. Bank transfer is not available yet.</p>}
   {state.subscribed && !state.active && <p>Payment needs attention. Open Manage subscription to review your invoice or payment method.</p>}
-  {state.active && !state.subscribed && <p>Your paid access remains available until the end of this period. Subscribe again after it ends.</p>}
+  {state.active && state.paid && !state.subscribed && <p>Your paid access remains available until the end of this period. Subscribe again after it ends.</p>}
   <p role="status">{message}</p>
   <div className={styles.languageActions}>
    <button className={styles.primary} disabled={busy || (published && !content.trim())} aria-busy={busy&&operation==="save"} onClick={()=>{setOperation("save");setMessage("");startTransition(async()=>{try{const result=await saveBookingPolicy(content,published);setMessage(result.error??"Booking rules saved.");if(!result.error)router.refresh();}catch{setMessage("Your changes could not be confirmed. Your draft is still here. Review the current rules before retrying.");}finally{setOperation(null);}});}}><ActionFeedback pending={busy&&operation==="save"} pendingLabel="Saving…">Save rules</ActionFeedback></button>

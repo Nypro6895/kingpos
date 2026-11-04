@@ -9,6 +9,7 @@ export type BookingDepositSettings = {
 };
 export type BookingDepositState = BookingDepositSettings & {
   active: boolean;
+  paid?: boolean;
   subscribed: boolean;
   connected: boolean;
   installed?: boolean;

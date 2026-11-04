@@ -1,3 +1,4 @@
+import { marketAccessActive, marketPaidActive } from "@/lib/market-access";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { marketPluginContext } from "@/lib/market-plugins";
@@ -8,9 +9,9 @@ import { TAX_COMPANY_PLUGIN, TAX_COMPANY_MONTHLY_CENTS, type TaxCompanyState } f
 export async function taxCompanySubscription(salonId: string): Promise<TaxCompanyState> {
   const scope = await marketPluginContext();
   if (scope.salonId !== salonId) throw new Error("Salon owner access required.");
-  const { data, error } = await marketServiceClient().from("tax_company_subscriptions").select("paid_until,stripe_subscription").eq("salon_id", salonId).maybeSingle();
+  const { data, error } = await marketServiceClient().from("tax_company_subscriptions").select("paid_until,trial_ends_at,stripe_subscription").eq("salon_id", salonId).maybeSingle();
   if (error) throw new Error("Tax Company requires the latest database update.");
-  return { active: Boolean(data?.paid_until && Date.parse(data.paid_until) > Date.now()), subscribed: Boolean(data?.stripe_subscription) };
+  return { active: marketAccessActive(data), paid: marketPaidActive(data), subscribed: Boolean(data?.stripe_subscription) };
 }
 export async function syncTaxCompanySubscription(id: string) {
   if (!/^sub_[a-zA-Z0-9]+$/.test(id)) throw new Error("Invalid subscription.");

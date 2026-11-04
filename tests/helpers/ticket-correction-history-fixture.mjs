@@ -8,7 +8,7 @@ export const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 export const replacements={
  '@/components/workspace-language':'export const WorkspaceText=({text})=>text;export const WorkspaceElement=({as:Tag="div",children,...props})=><Tag {...props}>{children}</Tag>;',
  '@/app/pos-tickets/actions':'export const correctClosedPosTicketInline=async()=>{};export const submitLockedStaffFinancialCorrection=async()=>{};',
- 'next/navigation':'export const useSearchParams=()=>new URLSearchParams(typeof location!=="undefined"?location.search:"");',
+ 'next/navigation':'export const useSearchParams=()=>new URLSearchParams(typeof location!=="undefined"?location.search:"");export const usePathname=()=>typeof location!=="undefined"?location.pathname:"/pos-tickets";',
 };
 export const fixturePlugin={name:'isolated-ticket-transport',setup(b){
  if(b.initialOptions.platform==='node')b.onLoad({filter:/\.module\.css$/},()=>({loader:'js',contents:'export default new Proxy({},{get:(_,key)=>String(key)});'}));

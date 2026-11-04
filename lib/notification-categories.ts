@@ -1,4 +1,5 @@
 export const NOTIFICATION_CATEGORIES = [
+  { id:"forum", label:"Forum replies", description:"Replies to your posts and discussions you participate in or follow.", enabled:true },
   {
     id: "booking",
     label: "Booking updates",
@@ -64,6 +65,7 @@ export type NotificationPreferences = Partial<
 export function notificationCategory(
   type: string,
 ): NotificationCategory | "security" {
+  if (type.startsWith("forum_")) return "forum";
   if (type === "login_alert" || type.startsWith("security_")) return "security";
   if (type === "booking_reminder") return "reminders";
   if (type === "payment_receipt") return "receipts";

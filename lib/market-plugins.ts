@@ -11,7 +11,7 @@ export async function marketPluginContext() {
   }
   const client = await createAuthenticatedSupabaseServerClient();
   if (!client) throw new Error("Please sign in again.");
-  return { client, salonId: context.currentSalon.id };
+  return { client, salonId: context.currentSalon.id, userId: context.user.id };
 }
 
 export async function payrollDataPluginInstalled() {

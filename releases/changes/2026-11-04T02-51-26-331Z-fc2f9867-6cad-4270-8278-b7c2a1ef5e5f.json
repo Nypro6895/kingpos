@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "quality-settings-current-boundary-20261103",
+  "status": "working",
+  "summary": "Replace retired DeviceAppearance reachability assertion with the current Settings POS display path and original target-salon authorization regression fixtures",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/app-local-device-appearance-boundary.test.mjs"
+  ],
+  "source": {
+    "baselineCommit": "645d331af141ff7730f7e38258262ad8461cad75"
+  },
+  "validation": [
+    {
+      "name": "Current named-read and legacy authority boundary tests",
+      "result": "pending"
+    }
+  ],
+  "id": "fc2f9867-6cad-4270-8278-b7c2a1ef5e5f",
+  "recordedAt": "2026-11-04T02:51:26.331Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

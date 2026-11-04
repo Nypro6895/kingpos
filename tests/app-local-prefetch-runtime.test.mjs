@@ -359,6 +359,19 @@ test('a 304 validation clears a disk clock skew before a later changed network r
   await page.getByTestId('foreground').filter({ hasText: 'later-network-change' }).waitFor();
 });
 
+test('a native Market 304 advances verified access without changing its saved DTO timestamp', options, async t => {
+  const page = await fixture(t), value = context('owner');
+  await page.evaluate(cfg => window.configure(cfg), { context: value, path: '/market', foreground: { name: 'page.market' }, runtime: false });
+  await page.waitForFunction(() => window.foregroundState?.data && !window.foregroundState.refreshing);
+  const before = await page.evaluate(() => ({updatedAt:window.foregroundState.updatedAt,verifiedAt:window.foregroundState.verifiedAt}));
+  assert.ok(before.verifiedAt > 0);
+  await page.evaluate(() => { window.holdRead('page.market'); void window.foregroundState.refresh(); });
+  await page.waitForFunction(() => window.h.reads.filter(row => row.name === 'page.market').length === 2);
+  await page.evaluate(() => window.releaseRead(window.h.reads.filter(row => row.name === 'page.market').at(-1).id, { status:304,data:undefined,updatedAt:Date.now() }));
+  await page.waitForFunction(previous => !window.foregroundState.refreshing && window.foregroundState.verifiedAt > previous, before.verifiedAt);
+  assert.equal(await page.evaluate(() => window.foregroundState.updatedAt),before.updatedAt);
+});
+
 test('workspace gesture stops old speculative HTTP before command preflight; foreground and new identity continue', options, async t => {
   const page=await fixture(t), previous=context('owner'), next=context('staff','b');
   await page.evaluate(()=>window.holdRead('owner.bookings',{ignoreAbort:true}));

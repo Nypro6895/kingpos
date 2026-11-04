@@ -59,7 +59,11 @@ const nextPlugin = {
       const names = ast.statements.filter(node => ts.isFunctionDeclaration(node) && node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword)).map(node => node.name?.text).filter(Boolean);
       const proxies = names.map(name => {
         const id = commandNames.get(originalModule + '#' + name);
-        if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${!/^(load|get|read|search|referenceLoveStates)/.test(name)},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
+        // Reading trial status is the same owner-checked server action as its
+        // explicit start. Only a start invalidates native consumers; invalidating
+        // status reads would refresh Market and trigger another status read.
+        const invalidates = originalModule === 'app/market/trial-actions.ts' && name === 'marketTrialAction' ? 'values[1]===true' : String(!/^(load|get|read|search|referenceLoveStates)/.test(name));
+        if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${invalidates},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
         unsupported.set(originalModule + '#' + name, true);
         return `export const ${name}=()=>{throw new Error(${JSON.stringify('__unsupported_action:' + originalModule + '#' + name)})};`;
       });

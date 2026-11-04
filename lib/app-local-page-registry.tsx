@@ -17,6 +17,7 @@ import { StaffWorkdayView } from "@/app/staff/workday/staff-workday-view";
 import { AppLocalTodayClient } from "@/app/staff/today/today-progressive-client";
 import { AttentionDetail, AttentionList } from "@/app/staff/today/attention-detail";
 import type { OwnerAttentionData } from "@/types/owner-financial-attention";
+import { AppLocalMarket } from "./app-local-market";
 import { MarketClient } from "@/app/market/market-client";
 import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
 import { SettingsLoading } from "@/app/settings/settings-loading";
@@ -41,11 +42,11 @@ import type { AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData
 
 export type AppLocalPageProps = { path: string; context: AppLocalContext | null; navigate: (href: string) => void; host?: AppLocalHost };
 export type AppLocalPage = { id: string; title: string; requiresContext: boolean; Component: ComponentType<AppLocalPageProps>; features: readonly string[] };
-type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean}) => ReactNode; publicView?: (scope?: string) => ReactNode };
+type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean;verifiedAt?:number}) => ReactNode; publicView?: (scope?: string) => ReactNode };
 function ReadView<T>({ context, name, args = {}, title, children, publicView }: ReadViewProps<T>) {
   const scope = context?.context.scope;
   const state = useAppLocalResource<T>(scope, name, args, { enabled: Boolean(scope) });
-  if (state.data !== undefined && context) return children(state.data, state.refresh,{error:state.error,refreshing:state.refreshing});
+  if (state.data !== undefined && context) return children(state.data, state.refresh,{error:state.error,refreshing:state.refreshing,verifiedAt:state.verifiedAt});
   if (publicView) return publicView(scope);
   if (name === "customer.activity") return <CustomerJourneyLoading failed={state.error} onRetry={()=>void state.refresh()}/>;
   if (name === "page.settings") return <main className="settings-hub settings-route-loading"><h1>{title}</h1>{state.error?<div role="alert"><p>{state.error}</p><button type="button" onClick={()=>void state.refresh()}>Try again</button></div>:<SettingsLoading/>}</main>;
@@ -69,7 +70,7 @@ function SupportPage(props: AppLocalPageProps) {
 function SupportCasePage(props: AppLocalPageProps) { return <ReadView<AppLocalSupportCaseData> {...props} name="page.support-case" args={{ caseId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Report / Contact">{(data, refresh) => <AppLocalSupportConversation data={data} refresh={refresh} />}</ReadView>; }
 function MarketPage(props: AppLocalPageProps) {
   const browse = marketBrowseFromQuery(queryFor(props.path, ["q", "category"]));
-  return <ReadView<MarketExperienceData> {...props} name="page.market" title="Market" publicView={scope => <MarketClient paymentsAvailable={false} experienceScope={scope} initialBrowse={browse} />} >{data => <MarketClient {...data} initialBrowse={browse} />}</ReadView>;
+  return <ReadView<MarketExperienceData> {...props} name="page.market" title="Market" publicView={scope => <MarketClient paymentsAvailable={false} experienceScope={scope} initialBrowse={browse} />} >{(data,refresh,feedback) => <AppLocalMarket data={data} refresh={refresh} verifiedAt={feedback.verifiedAt} returnSequence={urlFor(props.path).searchParams.get("marketReturn")} initialBrowse={browse} />}</ReadView>;
 }
 function DepositPage(props: AppLocalPageProps) {
   const cancelled = urlFor(props.path).searchParams.get("cancelled") === "1";

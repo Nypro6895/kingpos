@@ -1,3 +1,4 @@
+import { marketAccessActive, marketPaidActive } from "@/lib/market-access";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { marketPluginContext } from "@/lib/market-plugins";
@@ -8,9 +9,9 @@ import { BOOKING_POLICY_PLUGIN, BOOKING_POLICY_MONTHLY_CENTS, type BookingPolicy
 export async function bookingPolicySubscription(salonId: string): Promise<BookingPolicyState> {
   const scope = await marketPluginContext();
   if (scope.salonId !== salonId) throw new Error("Salon owner access required.");
-  const { data, error } = await marketServiceClient().from("booking_policy_subscriptions").select("paid_until,stripe_subscription,content,published").eq("salon_id", salonId).maybeSingle();
+  const { data, error } = await marketServiceClient().from("booking_policy_subscriptions").select("paid_until,trial_ends_at,stripe_subscription,content,published").eq("salon_id", salonId).maybeSingle();
   if (error) throw new Error("Booking Rules requires the latest database update.");
-  return { content: data?.content ?? "", published: data?.published ?? false, active: Boolean(data?.paid_until && Date.parse(data.paid_until) > Date.now()), subscribed: Boolean(data?.stripe_subscription) };
+  return { content: data?.content ?? "", published: data?.published ?? false, active: marketAccessActive(data), paid: marketPaidActive(data), subscribed: Boolean(data?.stripe_subscription) };
 }
 export async function syncBookingPolicySubscription(id: string) {
   if (!/^sub_[a-zA-Z0-9]+$/.test(id)) throw new Error("Invalid subscription.");

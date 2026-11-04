@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "market-logo-allocation-20261103",
+  "status": "working",
+  "summary": "Construct only the selected Market logo mark and measure allocation/render cost with identical SVG output",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/market/app-logo.tsx",
+    "tests/market-logo-allocation.test.mjs"
+  ],
+  "source": {
+    "commit": "96f6e4fee23cdd79cfa3812d6faa404101507090"
+  },
+  "validation": [
+    {
+      "name": "Real TSX element-allocation and rendering parity benchmark",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "bb17a164-4669-4339-8ed6-84e6ae59d41f",
+  "recordedAt": "2026-11-04T01:56:58.208Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

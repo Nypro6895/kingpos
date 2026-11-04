@@ -1,4 +1,8 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+/* Scan live UI code only; release snapshots and datasets are not UI sources. */
+@source "./";
+@source "../components";
+@source "../lib";
 /* Keep the document on its horizontal origin; tables and period rails retain
    their own horizontal scrolling. Clip avoids creating a second scroll root. */
 html,

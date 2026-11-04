@@ -1,18 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { readForum, writeForum } from "./actions";
 import type { ForumAudit, ForumContext, ForumInput, ForumMessage, ForumReply, ForumReport, ForumRestriction, ForumSection, ForumTopic } from "@/types/forum";
 import s from "./forum.module.css";
+import { ForumAvatar, ForumIcon } from "./forum-avatar";
+import { forumRelativeTime } from "@/lib/forum-presentation";
+import { ContinuationFeed, ForumLoadMore } from "./continuation-feed";
+import { ForumCampaignSlot } from "@/components/explore-advertising";
 
 const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY".split(" ");
-type View = "feed" | "sections" | "chat" | "saved" | "mine" | "topic" | "write" | "manage";
+type View = "feed" | "sections" | "chat" | "saved" | "following" | "mine" | "topic" | "write" | "manage";
 type Moderation = { op: string; kind?: string; id: string; label: string };
 type Detail = { topic: ForumTopic; replies: ForumReply[] };
 const time = (v: string) => new Date(v).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-const initials = (v: string) => v.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+
 
 export default function Forum({ initialContext, initialTopics, avatarUrl }: { initialContext: ForumContext; initialTopics: ForumTopic[]; avatarUrl?: string | null }) {
   const [context, setContext] = useState(initialContext);
@@ -26,6 +30,12 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   const [audit, setAudit] = useState<ForumAudit[]>([]);
   const [panel, setPanel] = useState("reports");
   const [topicId, setTopicId] = useState("");
+  const [focusReply, setFocusReply] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const followPending = useRef(false);
+  const pagePending = useRef(false);
+  const seenTopic = useRef("");
+  const restoredPosition = useRef("");
   const [state, setState] = useState("");
   const [section, setSection] = useState("");
   const [query, setQuery] = useState("");
@@ -70,27 +80,30 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   const canModerate = context.can_moderate;
   const sectionName = (id: string) => context.sections.find(x => x.id === id)?.name ?? "Section";
 
-  function navigate(next: View, id = "") {
+  function navigate(next: View, id = "", nextSection = section) {
+    try { sessionStorage.setItem('forum-position:'+user+':'+(topicId || view), String(window.scrollY)); } catch {}
     if (menu.current) menu.current.open = false;
     if (profile.current) profile.current.open = false;
-    navigation.current++;
+    navigation.current++; seenTopic.current=""; restoredPosition.current="";
     request.current++;
-    setView(next); setTopicId(id); setError(""); setNotice(""); setLoading(false);
+    setFocusReply(""); if(next==="topic" && id!==topicId)setReply(""); setView(next); setTopicId(id); setError(""); setNotice(""); setLoading(false);
     if (next === "topic") setDetail(null);
     const url = new URL(window.location.href);
-    url.searchParams.delete("topic"); url.searchParams.delete("view");
+    url.searchParams.delete("topic"); url.searchParams.delete("view"); url.searchParams.delete("reply");
+    if (nextSection) url.searchParams.set("section", nextSection); else url.searchParams.delete("section");
     if (next === "topic") url.searchParams.set("topic", id);
     else if (next !== "feed") url.searchParams.set("view", next);
-    window.history.pushState(null, "", url);
+    window.history.pushState(null, "", url); window.scrollTo({top:0, behavior:"instant"});
   }
 
   useEffect(() => {
     function restore() {
-      navigation.current++;
+      navigation.current++; request.current++; seenTopic.current=""; restoredPosition.current=""; setDetail(null); setReply("");
       const p = new URLSearchParams(window.location.search), id = p.get("topic"), v = p.get("view");
+      setSection(p.get("section") ?? ""); setFocusReply(/^[0-9a-f-]{36}$/i.test(p.get("reply") ?? "") ? p.get("reply")! : "");
       if (id && /^[0-9a-f-]{36}$/i.test(id)) { setTopicId(id); setView("topic"); }
-      else if (["sections", "chat", "saved", "mine", "write", "manage"].includes(v ?? "")) setView(v as View);
-      else setView("feed");
+      else if (["sections", "chat", "saved", "following", "mine", "write", "manage"].includes(v ?? "")) { setTopicId(""); setView(v as View); }
+      else { setTopicId(""); setView("feed"); }
     }
     let alive = true;
     window.addEventListener("popstate", restore);
@@ -117,7 +130,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   }, []);
 
   useEffect(() => {
-    const seq = ++request.current;
+    const seq = ++request.current; pagePending.current=false;
     let canceled = false;
     if (["write", "sections"].includes(view)) return;
     if (view === "manage" && !canModerate) return;
@@ -130,7 +143,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     if (mode === "sections") mode = "context";
     if (view === "manage" && panel === "sections") { void refreshContext().catch(e => setError(e.message)); return; }
     setLoading(true); setError("");
-    void readForum({ mode, id: topicId, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered }).then(response => {
+    void readForum({ mode, id: topicId, reply_id: focusReply, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered }).then(response => {
       if (canceled || seq !== request.current) return;
       if (response.error) { setError(response.error); return; }
       if (view === "topic") { const d = response.data as Detail; setReplyMore(d.replies.length > 30); setDetail({ ...d, replies: d.replies.slice(0, 30) }); }
@@ -143,7 +156,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     }
     void load();
     return () => { canceled = true; };
-  }, [view, topicId, search, state, section, unanswered, panel, revision, canModerate, refreshContext]);
+  }, [view, topicId, focusReply, search, state, section, unanswered, panel, revision, canModerate, refreshContext]);
 
   // Chat is the only live surface. No background sockets or polling on other pages.
   useEffect(() => {
@@ -181,6 +194,8 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
 
   function controls(kind: string, id: string, author: string | null, deleted = false, topic?: ForumTopic) {
     return <details className={s.tools}><summary aria-label="Content actions">•••</summary><div>
+      {topic && !deleted && <button disabled={busy} onClick={()=>void mutate({op:"bookmark",id,enabled:!topic.bookmarked},topic.bookmarked?"Đã bỏ lưu":"Đã lưu bài viết")}>{topic.bookmarked?"Bỏ lưu bài viết":"Lưu bài viết"}</button>}
+      {topic && view==="topic" && id===topicId && author===user && !topic.locked && !deleted && <button onClick={()=>{setEditingTopic(id);setDraft({title:topic.title,body:topic.body??"",section:topic.section_id,state:topic.state??""});navigate("write");}}>Sửa bài viết</button>}
       {!deleted && <button onClick={() => setModeration({ op: "report", kind, id, label: "Report content" })}>Report</button>}
       {!deleted && author === user && !canModerate && kind !== "chat" && <button onClick={() => setModeration({ op: "remove_own", kind, id, label: "Delete your content" })}>Delete my content</button>}
       {canModerate && <>
@@ -191,16 +206,39 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     </div></details>;
   }
 
+  const sectionLabel = (id: string) => ({"Owner lounge":"Đời thợ nails","Salon operations":"Vận hành tiệm","Team & hiring":"Thợ & tuyển dụng","Marketing":"Khách & marketing"}[sectionName(id)] ?? sectionName(id));
   function topicRow(t: ForumTopic) {
-    return <article className={s.post} key={t.id}><div className={s.row}><span className={s.category}>{sectionName(t.section_id)}{t.state ? ` · ${t.state}` : " · Nationwide"}</span>{controls("topic", t.id, t.author_id, Boolean(t.deleted_at), t)}</div><button className={s.topicTitle} onClick={() => navigate("topic", t.id)}>{t.title}</button><div className={s.meta}><span className={s.avatar}>{t.author_avatar ? <Image unoptimized src={t.author_avatar} alt="" width="27" height="27" loading="lazy" /> : initials(t.author_name)}</span><span>{t.author_name} · {time(t.created_at)}</span></div><div className={s.row}><span className={s.meta}>{t.reply_count ?? 0} replies</span><span className={s.badges}>{t.pinned && <span>Pinned</span>}{t.locked && <span>Locked</span>}{t.deleted_at && <span>Deleted</span>}{t.reply_count === 0 && <span>Unanswered</span>}</span></div></article>;
+    return <article className={s.post} key={t.id} data-forum-topic={t.id}>
+      <div className={s.row}><div className={s.author}><ForumAvatar src={t.author_avatar}/><div><div><strong>{t.author_name}</strong><span className={s.metaTime}> · {forumRelativeTime(t.created_at)}</span></div><small>{sectionLabel(t.section_id)}{t.state ? ' · '+t.state : ''}</small></div></div>{controls("topic",t.id,t.author_id,Boolean(t.deleted_at),t)}</div>
+      <button className={s.topicTitle} onClick={() => navigate("topic",t.id)}>{t.title}</button>
+      {t.body && <p className={s.excerpt}>{t.body}</p>}
+      <div className={s.row}><button className={s.replyCount} onClick={() => navigate("topic",t.id)}><ForumIcon name="reply"/>{t.reply_count ?? 0} trả lời</button><button className={s.readPost} onClick={() => navigate("topic",t.id)}>Xem bài</button></div>
+      {(t.pinned || t.locked || t.deleted_at || Boolean(t.unread_replies)) && <div className={s.badges}>{t.pinned && <span>Đã ghim</span>}{t.locked && <span>Đã khóa</span>}{t.deleted_at && <span>Đã xóa</span>}{Boolean(t.unread_replies) && <span>{t.unread_replies} trả lời mới</span>}</div>}
+    </article>;
   }
+  async function followPost() {
+    if (!detail || followPending.current) return;
+    followPending.current=true; setBusy(true); const id=detail.topic.id, enabled=!detail.topic.following;
+    try { const result=await writeForum({op:"follow",id,enabled}); if(result.error) setError(result.error);
+      else setDetail(old=>old?.topic.id===id ? {...old,topic:{...old.topic,following:enabled}} : old);
+    } catch { setError("Không lưu được lựa chọn theo dõi. Vui lòng thử lại."); }
+    finally { followPending.current=false;setBusy(false); }
+  }
+  useEffect(()=>{
+    if(view!=="topic" || !detail || loading || detail.topic.id!==topicId) return;
+    if(seenTopic.current!==topicId) { seenTopic.current=topicId; void writeForum({op:"seen",id:topicId}).catch(()=>{}); }
+    const restoreKey=topicId+":"+focusReply; if(restoredPosition.current===restoreKey)return;restoredPosition.current=restoreKey;
+    const target=focusReply ? document.getElementById('forum-reply-'+focusReply) : null;
+    if(target) { target.scrollIntoView({block:"center"}); return; }
+    try { const offset=Number(sessionStorage.getItem('forum-position:'+user+':'+topicId)); if(offset>0) window.scrollTo({top:offset,behavior:"instant"}); } catch {}
+  },[view,topicId,detail?.topic.id,loading,focusReply,user]);
 
   async function moreTopics() {
-    if (busy || loading) return;
+    if (busy || loading || pagePending.current) return;
     const last = topics.at(-1); if (!last) return;
-    setLoading(true); const seq = request.current;
+    pagePending.current=true; setLoading(true); const seq = request.current;
     try { const r = await readForum({ mode: view === "manage" ? "removed" : view, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered, before: last.created_at, cursor_id: last.id, before_pinned: last.pinned }); if (seq !== request.current) return; if (r.error) setError(r.error); else { const rows = r.data as ForumTopic[]; setTopics(old => [...old, ...rows.slice(0, 20)]); setTopicsMore(rows.length > 20); } }
-    finally { if (seq === request.current) setLoading(false); }
+    finally { if (seq === request.current) { pagePending.current=false; setLoading(false); } }
   }
   async function olderChat() {
     if (!messages[0] || loading) return;
@@ -224,20 +262,25 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   }
 
   return <section className={s.forum} aria-label="Owner forum">
+    <div className={s.stickyHeader}>
     <header className={s.header} aria-label="Forum header">
-      <Link href="/today" className={s.logo} aria-label="Reylumi · Owner home"><Image unoptimized src="/brand/forum-logo.webp" alt="Reylumi" width="112" height="31" /></Link>
+      <button type="button" className={s.logo} aria-label="Reylumi · Forum home" onClick={()=>{setSection("");setQuery("");setState("");setUnanswered(false);navigate("feed","","");}}><Image unoptimized src="/brand/forum-logo.webp" alt="Reylumi" width={112} height={31}/></button>
       <h1 className={s.srOnly}>Owner forum</h1>
-      <details ref={menu} className={s.navMenu}><summary aria-label="Forum menu">{({feed:"Diễn đàn",sections:"Chuyên mục",chat:"Chat chung",saved:"Đã lưu",mine:"Bài của tôi",topic:"Thảo luận",write:"Viết bài",manage:"Quản lý"})[view]} <span aria-hidden="true">⌄</span></summary><nav aria-label="Forum"><button onClick={() => navigate("feed")}>Latest</button><button onClick={() => navigate("sections")}>Sections</button><button onClick={() => navigate("chat")}>General chat</button><button onClick={() => navigate("saved")}>Saved topics</button><button onClick={() => navigate("mine")}>My topics</button>{canModerate && <button onClick={() => navigate("manage")}>Manage</button>}<button onClick={() => { setEditingTopic(null); navigate("write"); }}>+ New topic</button></nav></details>
-      <details ref={profile} className={s.profile}><summary aria-label="Your profile"><span className={s.avatar}>{avatarUrl ? <Image unoptimized src={avatarUrl} alt="" width="30" height="30" referrerPolicy="no-referrer" /> : initials(context.display_name)}</span></summary><div><strong>{context.display_name}</strong><Link href="/account">Hồ sơ cá nhân</Link><Link href="/today">Trang Owner</Link><Link href="/support">Trợ giúp</Link></div></details>
+      <button type="button" className={s.iconButton} aria-label="Tìm kiếm & bộ lọc" aria-expanded={showSearch} onClick={()=>setShowSearch(v=>!v)}><ForumIcon name="search"/></button>
+      <details ref={profile} className={s.profile}><summary aria-label="Your profile and forum menu"><ForumAvatar src={avatarUrl}/></summary><div><strong>{context.display_name}</strong><nav aria-label="Forum"><button onClick={()=>navigate("feed")}>Mới nhất</button><button onClick={()=>navigate("following")}>Following</button><button onClick={()=>navigate("chat")}>Chat chung</button><button onClick={()=>navigate("saved")}>Đã lưu</button><button onClick={()=>navigate("mine")}>Bài của tôi</button>{canModerate && <button onClick={()=>navigate("manage")}>Quản lý</button>}</nav><Link href="/account">Hồ sơ cá nhân</Link><Link href="/support">Trợ giúp</Link></div></details>
+      <button type="button" className={s.iconButton} aria-label="New topic" onClick={()=>{setEditingTopic(null);navigate("write");}}><ForumIcon name="compose"/></button>
     </header>
+    <nav className={s.categoryTabs} aria-label="Chuyên mục diễn đàn"><div className={s.scrollTabs}><button aria-current={view==="feed"&&!section ? "page":undefined} onClick={()=>{setSection("");navigate("feed","","");}}>Mới nhất</button>{activeSections.map(x=><button key={x.id} aria-current={section===x.id&&view!=="following"?"page":undefined} onClick={()=>{setSection(x.id);navigate("feed","",x.id);}}>{sectionLabel(x.id)}</button>)}</div><button className={s.followingTab} aria-current={view==="following"?"page":undefined} onClick={()=>{setSection("");navigate("following","","");}}>Following</button></nav>
+    </div>
+    {showSearch && <div className={s.searchPanel}><div className={s.search}><input autoFocus type="search" aria-label="Search forum" placeholder="Tìm trong diễn đàn…" value={query} maxLength={150} onChange={e=>{setQuery(e.target.value);if(view==="topic")navigate("feed");}}/></div><div className={s.filters}><select aria-label="State" value={state} onChange={e=>setState(e.target.value)}><option value="">Tất cả tiểu bang</option>{STATES.map(x=><option key={x}>{x}</option>)}</select><label><input type="checkbox" checked={unanswered} onChange={e=>setUnanswered(e.target.checked)}/>Chưa có trả lời</label></div></div>}
     {context.restriction && <div className={s.warning}>Your {context.restriction.scope === "all" ? "forum participation" : context.restriction.scope} is restricted{context.restriction.expires_at ? ` until ${time(context.restriction.expires_at)}` : " until further notice"}. {context.restriction.reason} <Link href="/support">Contact support</Link></div>}
     {error && <div className={s.warning} role="alert">{error} <button onClick={() => setRevision(n => n + 1)}>Retry loading</button></div>}
     {notice && <p className={s.notice} role="status">{notice}</p>}
     {loading && <p className={s.loading} role="status">Loading…</p>}
-    {["feed", "saved", "mine"].includes(view) && <><div className={s.feedTools}><details className={s.filterPanel}><summary>Tìm kiếm & bộ lọc{[state, section, search, unanswered].some(Boolean) ? " · Đang lọc" : ""}</summary><div className={s.search}><input type="search" aria-label="Search forum" placeholder="Tìm trong diễn đàn…" maxLength={150} value={query} onChange={e => setQuery(e.target.value)} /></div><div className={s.filters}><select aria-label="State" value={state} onChange={e => setState(e.target.value)}><option value="">All states</option>{STATES.map(x => <option key={x}>{x}</option>)}</select><select aria-label="Section" value={section} onChange={e => setSection(e.target.value)}><option value="">All sections</option>{activeSections.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select><label><input type="checkbox" checked={unanswered} onChange={e => setUnanswered(e.target.checked)} /> Unanswered</label></div></details><button className={s.primary} aria-label="New topic" onClick={() => {setEditingTopic(null);navigate("write");}}>＋</button></div>{view !== "feed" && <h2>{view === "saved" ? "Saved topics" : "My topics"}</h2>}<div aria-busy={loading}>{topics.map(topicRow)}</div>{!topics.length && !loading && <div className={s.empty}><h2>Start a conversation</h2><p>No topics match this view. Share a question or clear your filters.</p><button onClick={() => { setState(""); setSection(""); setQuery(""); setUnanswered(false); }}>Clear filters</button></div>}{topicsMore && <button disabled={loading} onClick={moreTopics}>More topics →</button>}</>}
+    {["feed","saved","following","mine"].includes(view) && <><div aria-busy={loading}>{topics.map((topic,index)=><Fragment key={topic.id}>{topicRow(topic)}<ForumCampaignSlot postIndex={index+1}/></Fragment>)}</div>{!topics.length&&!loading&&<div className={s.empty}><h2>{view==="following"?"Chưa có bài đang follow":"Chưa có bài viết"}</h2><p>{view==="following"?"Mở một bài và chọn Follow this post. Bài bạn đăng hoặc đã trả lời cũng xuất hiện ở đây.":"Chia sẻ câu chuyện của bạn hoặc thử bỏ bộ lọc."}</p></div>}{topicsMore&&<ForumLoadMore enabled={!loading&&!error} load={()=>void moreTopics()}><button disabled={loading} onClick={moreTopics}>Xem thêm bài viết</button></ForumLoadMore>}</>}
     {view === "sections" && <div className={s.sections}>{activeSections.map(x => <button key={x.id} onClick={() => { setSection(x.id); navigate("feed"); }}><span><strong>{x.name}</strong><small>{x.description}</small></span><span>→</span></button>)}</div>}
     {view === "write" && <form className={s.compose} onSubmit={submitPost}><div className={s.row}><h2>{editingTopic ? "Edit topic" : "New topic"}</h2><button type="button" onClick={() => navigate("feed")}>Back</button></div><p className={s.meta}>Draft text is saved for this browser session.</p><label>Title<input required minLength={5} maxLength={180} value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} placeholder="What would you like to share?" /></label><div className={s.pickers}><label>Section<select disabled={Boolean(editingTopic)} required value={draft.section} onChange={e => setDraft({ ...draft, section: e.target.value })}>{activeSections.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>State<select disabled={Boolean(editingTopic)} value={draft.state} onChange={e => setDraft({ ...draft, state: e.target.value })}><option value="">Nationwide</option>{STATES.map(x => <option key={x}>{x}</option>)}</select></label></div><label>Content<textarea required maxLength={20000} rows={9} value={draft.body} onChange={e => setDraft({ ...draft, body: e.target.value })} placeholder="Your experience could help another salon owner…" /></label><p className={s.meta}>Never include customer contact details, payroll records or other private information.</p><button className={s.primary} disabled={busy}>{busy ? "Saving…" : editingTopic ? "Save changes" : "Publish topic"}</button></form>}
-    {view === "topic" && detail && <><button className={s.back} onClick={() => navigate("feed")}>‹ Back to topics</button><article className={s.detail}><div className={s.row}><span className={s.category}>{sectionName(detail.topic.section_id)} · {detail.topic.state ?? "Nationwide"}</span>{controls("topic", detail.topic.id, detail.topic.author_id, Boolean(detail.topic.deleted_at), detail.topic)}</div><h2>{detail.topic.title}</h2><div className={s.meta}><span className={s.avatar}>{detail.topic.author_avatar ? <Image unoptimized src={detail.topic.author_avatar} alt="" width="27" height="27" /> : initials(detail.topic.author_name)}</span>{detail.topic.author_name} · {time(detail.topic.created_at)}</div><p className={s.body}>{detail.topic.body}</p><div className={s.row}><button disabled={busy} onClick={() => void mutate({ op: "bookmark", id: detail.topic.id, enabled: !detail.topic.bookmarked }, detail.topic.bookmarked ? "Bookmark removed." : "Topic saved.")}>{detail.topic.bookmarked ? "✓ Saved" : "+ Save topic"}</button>{detail.topic.author_id === user && !detail.topic.locked && !detail.topic.deleted_at && <button onClick={() => { setEditingTopic(detail.topic.id); setDraft({ title: detail.topic.title, body: detail.topic.body ?? "", section: detail.topic.section_id, state: detail.topic.state ?? "" }); navigate("write"); }}>Edit topic</button>}<span className={s.meta}>{detail.topic.locked ? "Discussion locked" : "Open discussion"}{detail.topic.deleted_at ? " · Deleted" : ""}</span></div></article><h3>Discussion</h3>{detail.replies.map(x => <article className={`${s.reply} ${x.deleted_at ? s.deleted : ""}`} key={x.id}><div className={s.row}><div className={s.meta}><span className={s.avatar}>{x.author_avatar ? <Image unoptimized src={x.author_avatar} alt="" width="27" height="27" loading="lazy" /> : initials(x.author_name)}</span>{x.author_name} · {time(x.created_at)}</div>{controls("reply", x.id, x.author_id, Boolean(x.deleted_at))}</div><p className={s.body}>{x.body}</p>{x.deleted_at && <span className={s.meta}>Deleted · visible to moderators</span>}</article>)}{replyMore && <button disabled={loading} onClick={moreReplies}>More replies →</button>}{!detail.topic.locked && !detail.topic.deleted_at && <form className={s.replyForm} onSubmit={async e => { e.preventDefault(); if (await mutate({ op: "reply", id: topicId, body: reply }, "Reply posted.")) setReply(""); }}><label>Reply as {context.display_name}<textarea required maxLength={10000} rows={3} value={reply} onChange={e => setReply(e.target.value)} /></label><button className={s.primary} disabled={busy}>Send reply</button></form>}</>}
+    {view === "topic" && detail?.topic.id === topicId && <><article className={s.detail}><div className={s.row}><span className={s.category}>{sectionName(detail.topic.section_id)} · {detail.topic.state ?? "Nationwide"}</span>{controls("topic", detail.topic.id, detail.topic.author_id, Boolean(detail.topic.deleted_at), detail.topic)}</div><h2>{detail.topic.title}</h2><div className={s.meta}><ForumAvatar src={detail.topic.author_avatar}/>{detail.topic.author_name} · {time(detail.topic.created_at)}</div><p className={s.body}>{detail.topic.body}</p><button className={s.followPost} aria-pressed={Boolean(detail.topic.following)} disabled={busy} onClick={()=>void followPost()}>{detail.topic.following ? "Following this post" : "Follow this post"}</button>{detail.topic.locked && <p className={s.meta}>Thảo luận đã khóa</p>}</article><h3>Bình luận · {detail.replies.length}{replyMore?"+":""}</h3>{focusReply && <button onClick={()=>{setFocusReply("");const u=new URL(window.location.href);u.searchParams.delete("reply");window.history.replaceState(null,"",u);setRevision(n=>n+1);}}>Xem từ bình luận đầu</button>}{detail.replies.map(x => <article className={`${s.reply} ${x.deleted_at ? s.deleted : ""}`} key={x.id} id={"forum-reply-"+x.id} data-unread={focusReply===x.id || undefined}><div className={s.row}><div className={s.meta}><ForumAvatar src={x.author_avatar}/>{x.author_name} · {time(x.created_at)}</div>{controls("reply", x.id, x.author_id, Boolean(x.deleted_at))}</div><p className={s.body}>{x.body}</p>{x.deleted_at && <span className={s.meta}>Deleted · visible to moderators</span>}</article>)}{replyMore && <button disabled={loading} onClick={moreReplies}>More replies →</button>}{!detail.topic.locked && !detail.topic.deleted_at && <form className={s.replyForm} onSubmit={async e => { e.preventDefault(); const started=navigation.current, body=reply; if (await mutate({ op: "reply", id: topicId, body }, "Reply posted.") && navigation.current===started) setReply(current=>current===body?"":current); }}><label><span className={s.srOnly}>Reply as {context.display_name}</span><textarea placeholder="Viết bình luận…" required maxLength={10000} rows={1} value={reply} onChange={e => setReply(e.target.value)} /></label><button className={s.primary} disabled={busy}>Gửi</button></form>}{!replyMore && !detail.topic.deleted_at && <ContinuationFeed key={topicId} topicId={topicId} renderTopic={topicRow}/>}</>}
     {view === "chat" && <div className={s.chat}><div className={s.row}><div><h2>Owner lounge</h2><span className={s.meta}>Every owner can read and join this conversation.</span></div><button disabled={loading} onClick={() => setRevision(n => n + 1)}>Refresh</button></div><p className={s.chatPin}>Be respectful. Use topics for discussions worth keeping.</p>{chatHistory && <button onClick={() => { setChatHistory(false); setRevision(n => n + 1); }}>Return to latest messages</button>}{chatMore && <button disabled={loading} onClick={olderChat}>Earlier messages</button>}<div aria-live="polite">{messages.map(x => <article key={x.id} className={`${s.message} ${x.author_id === user ? s.own : ""}`}><div className={s.row}><span className={s.meta}>{x.author_name} · {time(x.created_at)}</span>{controls("chat", x.id, x.author_id)}</div><p>{x.body}</p></article>)}</div>{!messages.length && !loading && <p className={s.empty}>Be the first to say hello.</p>}<form className={s.chatCompose} onSubmit={async e => { e.preventDefault(); if (await mutate({ op: "chat", body: message }, "Message sent.")) { setMessage(""); setChatHistory(false); } }}><label className={s.srOnly} htmlFor="forum-message">Message</label><input id="forum-message" required maxLength={2000} placeholder="Message the community…" value={message} onChange={e => setMessage(e.target.value)} /><button className={s.primary} disabled={busy}>Send</button></form></div>}
     {view === "manage" && canModerate && <section className={s.management}><div className={s.row}><h2>Forum management</h2><Link href="/admin/team">Platform team ↗</Link></div><p className={s.meta}>Moderators come from Platform Admin Team. Restrictions apply only to the forum and chat.</p><div className={s.managementTabs}>{[["reports", "Reports"], ["restrictions", "Restricted accounts"], ["removed", "Deleted topics"], ["audit", "History"], ...(context.can_manage ? [["sections", "Sections"]] : [])].map(([id, label]) => <button key={id} aria-pressed={panel === id} onClick={() => setPanel(id)}>{label}</button>)}</div>
       {panel === "reports" && <>{reports.map(x => <article className={s.case} key={x.id}><div className={s.category}>{x.target_type} report · {time(x.created_at)}</div><p><strong>{x.reason}</strong></p><p className={s.body}>{x.preview ?? "Content unavailable"}</p><span className={s.meta}>Reported by {x.reporter_name}</span><div className={s.wrap}>{x.topic_id && <button onClick={() => navigate("topic", x.topic_id!)}>Open discussion</button>}<button onClick={() => setModeration({ op: "delete", kind: x.target_type, id: x.target_id, label: "Delete reported content" })}>Delete content</button>{x.author_id && <button onClick={() => setModeration({ op: "restrict", id: x.author_id!, label: "Restrict author" })}>Restrict author</button>}<button onClick={() => setModeration({ op: "resolve", id: x.id, label: "Resolve report" })}>Resolve</button></div></article>)}{!reports.length && !loading && <p className={s.empty}>No open reports.</p>}</>}

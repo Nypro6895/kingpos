@@ -4,6 +4,7 @@ export const VIETNAMESE_TRIAL_DAYS = 5;
 export type VietnamesePluginState = {
   installed: boolean;
   active: boolean;
+  paid?: boolean;
   staff_enabled: boolean;
   portable_enabled: boolean;
   trial_ends_at: string | null;

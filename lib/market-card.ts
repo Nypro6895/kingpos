@@ -18,7 +18,7 @@ export async function syncCardSubscription(subscriptionId:string) {
  if(invoice?.status==='paid'&&!paid)throw Error('The invoice needs reconciliation with a successful card payment.');
  const charge=invoice?.payment_intent?.latest_charge;
  const refunded=charge?.amount_refunded??0;
- const end=sub.current_period_end;
+ const end=sub.items?.data?.[0]?.current_period_end??sub.current_period_end;
  if(paid&&(!Number.isSafeInteger(end)||end<=0))throw Error('Invalid paid period.');
  if(paid&&automatic)await recordMarketTaxInvoice(invoice,purchase,config);
  const {error:applyError}=await client.rpc('market_card_apply',{p_id:id,p_subscription:sub.id,p_customer:typeof sub.customer==='string'?sub.customer:sub.customer.id,p_status:sub.status==='incomplete_expired'?'expired':sub.status,p_invoice:invoice?.id??null,p_amount:paid?invoice.amount_paid:null,p_refunded:paid?refunded:0,p_intent:invoice?.payment_intent?.id??null,p_until:paid?new Date(end*1000).toISOString():null,p_observed:observed});
@@ -49,7 +49,18 @@ export async function processCardEvent(eventId:string) {
  if(event.type==='checkout.session.completed'&&obj.metadata?.campaign_card_setup)await fulfillCampaignCardSetup(obj.id);
  if(event.type==='checkout.session.expired'&&obj.metadata?.campaign_credit_order)await expireCreditCheckout(obj.metadata.campaign_credit_order);
  let subscription=event.type.startsWith('customer.subscription.')?obj.id:obj.subscription;
- if((event.type==='charge.refunded'||event.type.startsWith('credit_note.'))&&obj.invoice)subscription=await syncCardInvoice(obj.invoice);
+ let invoice=obj.invoice;
+ // Event objects retain their original API shape. Newer Stripe versions omit
+ // these links; retrieve the object through our pinned API before applying it.
+ if(event.type==='charge.refunded'&&!invoice){
+  if(!/^ch_[A-Za-z0-9]+$/.test(obj.id??''))throw Error('Invalid refunded charge.');
+  const charge=await paymentStripe(`charges/${obj.id}`);
+  if(charge.id!==obj.id||charge.livemode!==true)throw Error('Refunded charge does not match the event.');
+  if(charge.invoice!==null&&(typeof charge.invoice!=='string'||!/^in_[A-Za-z0-9]+$/.test(charge.invoice)))throw Error('Refunded charge invoice could not be checked.');
+  invoice=charge.invoice;
+ }
+ if((event.type==='charge.refunded'||event.type.startsWith('credit_note.'))&&invoice)subscription=await syncCardInvoice(invoice);
+ else if(event.type.startsWith('invoice.')&&typeof subscription!=='string'&&/^in_[A-Za-z0-9]+$/.test(obj.id??''))subscription=await syncCardInvoice(obj.id);
  if(typeof subscription==='string')await syncCardSubscription(subscription);
  else if(event.type==='checkout.session.expired'&&obj.metadata?.market_card_purchase){const {error}=await client.from('market_card_purchases').update({status:'expired',updated_at:new Date().toISOString()}).eq('id',obj.metadata.market_card_purchase).in('status',['creating','open']);if(error)throw Error('Expired checkout could not be recorded.');}
  const {error}=await client.from('market_card_events').update({status:'processed',last_error:null,updated_at:new Date().toISOString()}).eq('id',eventId);if(error)throw Error('Event confirmation failed.');

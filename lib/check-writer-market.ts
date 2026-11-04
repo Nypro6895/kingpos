@@ -1,6 +1,6 @@
 import "server-only";
 import { checkWriterContext } from "./check-writer-server";
-import { checkWriterSalesReady } from "./check-writer-readiness";
+import { checkWriterSalesReady, checkWriterTrialReady } from "./check-writer-readiness";
 import { checkWriterSubscription } from "./check-writer-subscription";
 export async function checkWriterMarketState() {
   try {
@@ -8,6 +8,7 @@ export async function checkWriterMarketState() {
     return {
       ...(await checkWriterSubscription(ctx.service, ctx.salonId, ctx.user.id)),
       operationalReady: checkWriterSalesReady(),
+      trialReady: checkWriterTrialReady(),
     };
   } catch {
     return { active: false, subscribed: false };

@@ -1,3 +1,4 @@
+import { marketAccessActive } from "@/lib/market-access";
 import "server-only";
 import { marketPluginContext } from "@/lib/market-plugins";
 import { marketServiceClient, marketStripe } from "@/lib/market-payments";
@@ -9,9 +10,9 @@ export const BOOKING_DEPOSIT_PRODUCT_PATH = "/market/booking-deposit";
 
 export async function bookingDepositPurchaseState(salonId: string) {
   const { data, error } = await marketServiceClient().from("booking_deposit_subscriptions")
-    .select("installed,paid_until,stripe_subscription,stripe_checkout").eq("salon_id", salonId).maybeSingle();
+    .select("installed,paid_until,trial_ends_at,stripe_subscription,stripe_checkout").eq("salon_id", salonId).maybeSingle();
   if (error) throw new Error("Booking Deposit could not load. Please try again.");
-  return { ...data, paid: Boolean(data?.paid_until && Date.parse(data.paid_until) > Date.now()) };
+  return { ...data, active: marketAccessActive(data), paid: Boolean(data?.paid_until && Date.parse(data.paid_until) > Date.now()) };
 }
 
 // A checkout return URL is only a navigation hint. Paid access comes from the

@@ -547,7 +547,7 @@ final class ReylumiAppContainer: UIViewController {
     func returnToMarket(sequence: Int) {
         guard sequence > marketReturnSequence else { return }; marketReturnSequence = sequence
         loadViewIfNeeded()
-        if let local { if presentedViewController != nil { dismiss(animated: true) }; local.navigate("/market") }
+        if let local { if presentedViewController != nil { dismiss(animated: true) }; local.navigate("/market?marketReturn=\(sequence)") }
         else { hosted?.returnToMarket(sequence: sequence) }
     }
     func openPersonalCheckin(path: String?, sequence: Int) {

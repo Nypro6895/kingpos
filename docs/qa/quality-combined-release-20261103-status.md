@@ -1,0 +1,13 @@
+# Combined quality release source freeze
+
+Live baseline recaptured under the release lock: dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS, source645d331af141ff7730f7e38258262ad8461cad75. All3886 deployed source files were retrieved and individually verified. Latest actually uploaded native baseline:1.0.0(90), source738a36013d1a6f0d7e75b5638bcf0608cd7f91b1; source/archive/Apple receipts were verified independently and the physical iPhone runs90.
+
+The assembled source adds MarketV8, Forum continuous feed, lazy Market logo rendering, capability-gated Help local diagnostic export, the two omitted bounded session-recovery hunks, and Closing history copy. It preserves the newer deployed Ticket interface, native90 fixes, existing authorization boundaries, financial formulas and Payroll Tools. Beauty keeps explicit refresh; POS has no redesign. Expenses uses the existing configured Payroll periods and authoritative totals.
+
+Final assembled source checks:438/438 regression tests, full TypeScript,54-file lint with zero errors and two inherited unused-variable warnings,16 Closing-history browser checks, three Expenses browser cases, and the complete Next production build passed. Market logo allocation dropped2821to155 across32 parity cases while rendered output stayed byte-identical; local CPU measurements are not iPhone load-time claims.
+
+The production ledger preflight found368 existing entries and none of the three new versions. Additive migration atomicity, preservation guards and replay checks must pass before applying. Exact migration receipts, web source/candidate verification, native246-case execution/archive/upload, Apple existing-group availability and final physical Personal→Staff→Owner acceptance remain separate release gates; source checks alone do not assert publication.
+
+Only CHECK_WRITER_TRIAL_ENABLED=true was added for the new deployment. Existing encryption and sales environment records were verified unchanged. The V8 handoff's stale instruction to force SALES_ENABLED=false is not applied over the actual live configuration. No key was created or rotated, and no trial, purchase, message or provider action was performed. BookSMS paid pricing/fulfillment hold is preserved.
+
+The pending inventory distinguishes historical overlap already preserved in the live baseline, independent unfinished developer-platform work and separate applications from integrated completed changes. Those independent scopes are not published by this release. Final publication receipts are recorded in releases/history with exact ready event IDs and evidence; deployment and TestFlight availability must be read there, not inferred from this source-freeze document.

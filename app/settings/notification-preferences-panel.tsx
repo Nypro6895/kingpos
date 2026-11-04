@@ -116,7 +116,7 @@ export function NotificationPreferencesPanel() {
       <p className="text-xs text-zinc-500"><WorkspaceText text="Changes save automatically" /></p>
       {[
         {title:"Bookings & visits",categories:["booking","reminders","receipts","check_in"]},
-        {title:"Team & activity",categories:["team","comments","following"]},
+        {title:"Team & activity",categories:["team","comments","forum","following"]},
       ].map(group=><SettingsFieldGroup key={group.title} title={group.title}>
         <div className="settings-switch-list">{NOTIFICATION_CATEGORIES.filter(c=>group.categories.includes(c.id)).map(c=>
           <SettingsSwitch key={c.id} label={c.label} description={c.description}

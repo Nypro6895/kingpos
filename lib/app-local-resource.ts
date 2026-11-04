@@ -24,7 +24,7 @@ function traceResource(name: string, args: Record<string, unknown>): Pick<Experi
 // access. Native resets still cancel every retained local request below.
 export const appLocalResourceCache = createExperienceResourceCache({ canUse: () => typeof window !== "undefined" });
 
-export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; loading: boolean; refreshing: boolean; error?: string; accessDenied?: boolean; offline?: boolean };
+export type AppLocalResourceState<T> = { data?: T; etag?: string; updatedAt: number; verifiedAt?: number; loading: boolean; refreshing: boolean; error?: string; accessDenied?: boolean; offline?: boolean };
 // Cells contain React view state only. Request ownership, freshness, conditional
 // responses and failure cooldown belong to the shared scoped read cache.
 type Cell = { context: ExperienceResourceContext; state: AppLocalResourceState<unknown>; listeners: Set<() => void>; active: number; validatedAt: number; invalidated?: boolean; epoch: number; revision: number; deliveryRevision: number; revalidate?: boolean; hydrated?: Promise<void>; pending?: Promise<void> };
@@ -43,7 +43,7 @@ function cellFor(scope: string, name: string, args: unknown) {
     if (cells.size >= 128) for (const [id, existing] of cells) if (!existing.listeners.size && !existing.pending) { cells.delete(id); break; }
     const context = { scope: scope || "unavailable", key: "app-local:" + JSON.stringify([name, stable(args)]) };
     const retained = appLocalResourceCache.get<AppLocalRead<unknown>>(context), saved = retained?.data;
-    cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, loading: !saved, refreshing: false, offline: saved?.offline }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0, deliveryRevision: 0 }; cells.set(key, cell);
+    cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, verifiedAt: saved && !saved.offline ? retained?.updatedAt : undefined, loading: !saved, refreshing: false, offline: saved?.offline }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0, deliveryRevision: 0 }; cells.set(key, cell);
   }
   return { key, cell };
 }
@@ -128,7 +128,7 @@ export function reconcileAppLocalRoleResources(value: AppLocalContext, generatio
     // Fresh context proves access, not DTO freshness. Revalidate in background;
     // skip an older durable hydration and preserve the original DTO timestamp.
     cell.invalidated = true; cell.validatedAt = 0; cell.hydrated = Promise.resolve(); cell.deliveryRevision++;
-    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
+    emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, verifiedAt: snapshot.offline ? undefined : cell.validatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
   }
 }
 function resourceDomain(name: string) {
@@ -148,7 +148,7 @@ export function resetAppLocalResources(scope?: string) {
     if (scope && cell.context.scope !== scope) continue;
     cell.revision++;
     cell.epoch = epoch;
-    emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined });
+    emit(cell, { data: undefined, etag: undefined, updatedAt: 0, verifiedAt: undefined, loading: false, refreshing: false, error: undefined });
     cells.delete(key);
   }
 }
@@ -175,7 +175,7 @@ export async function discardAppLocalResources(scope: string, name: string, args
     // Do not race a late old durable writer during this recovery. Fresh reads
     // repopulate their own authorized snapshots through the existing transport.
     replacement.hydrated = Promise.resolve();
-    emit(cell, { data: undefined, etag: undefined, updatedAt: 0, loading: false, refreshing: false, error: undefined, accessDenied: false });
+    emit(cell, { data: undefined, etag: undefined, updatedAt: 0, verifiedAt: undefined, loading: false, refreshing: false, error: undefined, accessDenied: false });
   }
   return true;
 }
@@ -335,7 +335,7 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     cell.validatedAt = appLocalResourceCache.get(cell.context)?.updatedAt ?? transportValidatedAt ?? cell.validatedAt;
     if (snapshot.updatedAt >= cell.state.updatedAt || cell.state.offline && !snapshot.offline) {
       cell.deliveryRevision++;
-      emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
+      emit(cell, { data: snapshot.data, etag: snapshot.etag, updatedAt: snapshot.updatedAt, verifiedAt: snapshot.offline ? undefined : cell.validatedAt, loading: false, refreshing: false, accessDenied: false, offline: Boolean(snapshot.offline) });
       recordExperienceTrace("cache.accept", { source: "app-local", status: acceptedReadStatus, offline: Boolean(snapshot.offline), ...traceResource(name, args), ...acceptedReadTrace });
     }
     // Native retains only envelopes it fetched and authorized itself. JavaScript

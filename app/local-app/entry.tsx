@@ -479,14 +479,26 @@ function App() {
             || usable(admitted.current[authorityFamily(current.current)]) || request.current
             || workspaceResolution.current || workspaceRecovery.current || workspaceGesture.current || handoffPath.current || pageRecovery.current
             || isPublic(current.current) || getAppLocalPage(current.current)?.requiresContext === false) return;
-          setError("reset");
+          // Recover a lost hosted-return context through one fresh read.
+          // The old private tree remains unmounted throughout recovery.
+          const key = `native-reset:${authorityFamily(current.current)}`;
+          if (recoveryAttempts.current.has(key)) { setError("reset"); return; }
+          recoveryAttempts.current.add(key);
+          void verify({ fresh: true });
         }, 25_000);
       }
       const key = `${authorityFamily(current.current)}:${detail?.scope ?? ""}`;
       // One fresh authority recovery per user navigation. Context rejection or
       // a second failing read stops at an actionable retry, never a retry loop.
-      if (detail?.reason === "resource" && !isPublic(current.current) && !recoveryAttempts.current.has(key)) {
-        recoveryAttempts.current.add(key); setError(false); void verify({ fresh: true });
+      // Cookie invalidation is not a server denial. Check current authority once
+      // after withdrawing old admission; never replay the interrupted operation.
+      const cookieReset = getAppLocalHost().isNative && detail?.reason === "externalCookies"
+        && !Object.prototype.hasOwnProperty.call(detail, "status")
+        && host?.version === 1 && detail.generation === host.generation
+        && Number.isSafeInteger(detail.scopeEpoch) && detail.scopeEpoch === host.scopeEpoch;
+      const recoveryKey = cookieReset ? `native-reset:${authorityFamily(current.current)}` : key;
+      if ((detail?.reason === "resource" || cookieReset) && !isPublic(current.current) && !recoveryAttempts.current.has(recoveryKey)) {
+        recoveryAttempts.current.add(recoveryKey); setError(false); void verify({ fresh: true });
       }
     };
     const handoff = (event: Event) => {

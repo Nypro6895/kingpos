@@ -42,7 +42,7 @@ export async function readAppLocalCommerceResource(name:string,args:Record<strin
    let market:Awaited<ReturnType<typeof marketPluginContext>>;try{market=await marketPluginContext();}catch{fail(403,"Open your owner workspace first.");}
    if(!context.currentSalon||context.currentSalon.id!==market.salonId)fail(409,"Your salon changed.");
    if(name==="owner.deposit-settings"){
-    const[purchase,state]=await Promise.all([bookingDepositPurchaseState(market.salonId),bookingDepositState(market.salonId)]);data={salonId:market.salonId,state,paid:purchase.paid};
+    const[purchase,state]=await Promise.all([bookingDepositPurchaseState(market.salonId),bookingDepositState(market.salonId)]);data={salonId:market.salonId,state,paid:purchase.paid,active:purchase.active};
    }else{
     const billing=await marketBankBillingState(market.salonId);if(!billing.available)fail(503,"The order could not be checked.");
     const order=billing.orders.find(row=>row.id===args.orderId);if(!order)fail(404,"This order is no longer available.");data={order,business:{id:context.currentSalon.id,name:context.currentSalon.name}};

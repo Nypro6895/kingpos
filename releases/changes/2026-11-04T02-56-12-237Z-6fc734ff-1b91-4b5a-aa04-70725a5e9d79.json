@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "quality-ticket-history-fixture-navigation-20261103",
+  "status": "ready",
+  "summary": "Keep the original ticket history renderer compatible with the current OverlayDismissal pathname hook",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/helpers/ticket-correction-history-fixture.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\frozen-ticket-history-fixture",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "baselineCommit": "645d331af141ff7730f7e38258262ad8461cad75",
+    "sourceSha256": "0a92ab277acf98d7ff6c77a2ec49e0d3ae8f1f987b92e2b65cfd293797942abe"
+  },
+  "validation": [
+    {
+      "name": "New assembled-source scoped regression and original owning browser fixtures",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\completed-summary.json"
+    },
+    {
+      "name": "Affected TypeScript/TSX lint and whole-project no-emit TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\lint-diagnostics.json"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [],
+  "previousWorkingEvent": "eaaf5453-86bf-40ae-b299-d7217040e81e",
+  "acceptanceLimits": "Local integrated source only. No production SQL/env/provider operations or physical acceptance of a new binary; root owns final build, publication and device verification.",
+  "id": "6fc734ff-1b91-4b5a-aa04-70725a5e9d79",
+  "recordedAt": "2026-11-04T02:56:12.237Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/helpers/ticket-correction-history-fixture.mjs": "0ca4397687ebcdd443cdd244df5cf2064808db37b65d20e19ee00fc5537ab013"
+  }
+}

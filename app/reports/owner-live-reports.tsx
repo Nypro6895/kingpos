@@ -238,9 +238,9 @@ export function OwnerLiveReports(initial:Props){
           <h2 className="sr-only"><WorkspaceText text="Daily Closing" /></h2>
 
 
-          {report.lock.liveTotalsDifferFromSnapshot ? (
+          {report.lock.isLocked && report.lock.liveTotalsDifferFromSnapshot ? (
             <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              <WorkspaceText text="Current POS data differs from the locked snapshot. Corrections are recorded through adjustment records." />
+              <WorkspaceText text="Tickets changed after this day was locked. The locked closing is kept; later corrections are listed in Closing Inputs history." />
             </p>
           ) : null}
 

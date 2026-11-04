@@ -10,7 +10,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         guard sequence > marketReturnSequence else { return }
         marketReturnSequence = sequence
         loadViewIfNeeded()
-        openPublicDestination("/market")
+        openPublicDestination("/market", query: [URLQueryItem(name: "payment", value: "received")])
     }
     private var webView: WKWebView!
     func openPersonalCheckin(entry: String) {

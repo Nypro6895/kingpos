@@ -1,6 +1,6 @@
 export const TAX_COMPANY_PLUGIN = "tax-company";
 export const TAX_COMPANY_MONTHLY_CENTS = 790;
-export type TaxCompanyState = { active: boolean; subscribed: boolean };
+export type TaxCompanyState = { active: boolean; paid?: boolean; subscribed: boolean };
 export type TaxCompanyNote = { content: string; version: number; updated_at: string | null };
 export type TaxCompanySalon = {
   id: string; name: string; active: boolean; connected_at: string;

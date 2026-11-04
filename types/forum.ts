@@ -7,7 +7,7 @@ export type ForumContext = {
 export type ForumTopic = {
   id: string; author_id: string | null; author_name: string; author_avatar?: string | null; section_id: string;
   title: string; body?: string; state: string | null; created_at: string; updated_at: string;
-  pinned: boolean; locked: boolean; deleted_at: string | null; reply_count?: number; bookmarked: boolean;
+  following?: boolean; unread_replies?: number; pinned: boolean; locked: boolean; deleted_at: string | null; reply_count?: number; bookmarked: boolean;
 };
 export type ForumReply = { id: string; topic_id: string; author_id: string | null; author_name: string; author_avatar?: string | null; body: string; created_at: string; deleted_at: string | null };
 export type ForumMessage = { id: string; author_id: string | null; author_name: string; author_avatar?: string | null; body: string; created_at: string };

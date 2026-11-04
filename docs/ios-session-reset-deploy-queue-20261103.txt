@@ -1,0 +1,22 @@
+COMBINED RELEASE QUEUE - 2026-11-03 (America/Chicago)
+
+Owner instruction: "đưa vào hàng chờ deploy chung".
+Include Today session-reset recovery in the next explicitly authorized combined
+release. No standalone deployment, native upload or scheduled release authorized.
+
+Change ID: ios-session-reset-recovery-20261103
+Frozen implementation commit: 102a2a8cc8fca2e0638c70301faef4006c209949
+Implementation event: 4f7877c9-3250-4ae0-8624-f08da4053cb5
+Worktree: C:\Reylumi-worktrees\ios-session-reset-recovery-20261103
+Scope: app/local-app/entry.tsx and its regression test/documentation.
+Channel: iOS; requires a newly built native app with regenerated bundled JS.
+Status: needs-integration; 26 Node tests and QA bundle compilation passed.
+
+Coordinator must integrate on the current uploaded native source, retain other
+shipped features, verify bundle provenance, run Xcode tests/archive and physical
+iPhone acceptance for cold start/resume, hosted return, cookie rotation, denied
+sessions and repeated resets. Do not treat a web-only release or a higher build
+number as proof this patch is included. Do not mark the implementation published
+until the exact selected source and Apple distribution state are verified.
+
+Technical evidence: docs/ios-session-reset-recovery-20261103.txt.

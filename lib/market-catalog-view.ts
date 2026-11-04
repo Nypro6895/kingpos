@@ -5,6 +5,7 @@ type CatalogPrice = {
   plugin_id: string; name?: string; publisher?: string; price_cents: number;
   published: boolean; fulfillment_ready: boolean; monthly_sms_limit?:number;
 };
+import { MARKET_TRIAL_PLUGINS } from "@/lib/market-access";
 const PREVIEW_TRIAL = "Preview · Paid sales are not available yet";
 const SEPARATE_BILLING_PLUGINS = new Set(["payroll-data-download", "campaigns", "service-relay"]);
 function validPlan(plan: CatalogPrice) {
@@ -27,9 +28,9 @@ export function marketAppsWithBankPricing(apps: MarketApp[], catalog: CatalogPri
     const old = MARKET_PRICE_DEFAULTS[app.id];
     if (!plan) return app;
     const name = plan.name?.trim() || app.name, publisher = plan.publisher?.trim() || app.publisher;
-    if (app.id === "print-check" && (!plan.fulfillment_ready || plan.price_cents === 0)) return {...app, name, publisher, price:plan.price_cents>0?monthlyPrice(plan):"$4.90 / month", available:false, trial:"Paid sales are not available yet", plans:[]};
+    if (app.id === "print-check" && (!plan.fulfillment_ready || plan.price_cents === 0)) return {...app, name, publisher, price:plan.price_cents>0?monthlyPrice(plan):"$4.90 / month", available:false, trial:"5-day free trial · Paid sales are not available yet", plans:[]};
     const price = monthlyPrice(plan);
-    if (app.id === "booksms") return {...app,available:plan.published && plan.fulfillment_ready,price:plan.fulfillment_ready?monthlyPrice(plan):"Price pending",trial:plan.fulfillment_ready?`Monthly paid access · ${plan.monthly_sms_limit??0} SMS per calendar month (UTC)`:"Price and SMS allowance are being prepared; purchases are closed"};
+    if (app.id === "booksms") return {...app,available:plan.published && plan.fulfillment_ready,price:plan.fulfillment_ready?monthlyPrice(plan):"Price pending",trial:plan.fulfillment_ready?`5-day free trial · Paid plan: ${plan.monthly_sms_limit??0} SMS per calendar month (UTC)`:"5-day free trial · Paid price and SMS allowance are being prepared"};
     if (old === undefined) {
       // A published proposal is visible, but cannot activate or accept payment.
       return { ...app, name, publisher, price, available: false,
@@ -39,7 +40,7 @@ export function marketAppsWithBankPricing(apps: MarketApp[], catalog: CatalogPri
     const replacePrice = (text: string) => text.replaceAll(`$${(old / 100).toFixed(2)}`, amount);
     const ready = plan.published && plan.fulfillment_ready;
     return { ...app, name, publisher, price, available: ready, description: replacePrice(app.description),
-      trial: ready ? app.id === "vietnamese-language" ? "5-day free trial · Optional monthly subscription" : "Monthly subscription · Cancel future renewal anytime" : PREVIEW_TRIAL,
+      trial: ready ? app.id === "vietnamese-language" ? "5-day free trial · Optional monthly subscription" : "5-day free trial · Optional monthly subscription" : MARKET_TRIAL_PLUGINS.some(id => id === app.id) ? "5-day free trial · Paid sales are not available yet" : PREVIEW_TRIAL,
       features: app.features.map(replacePrice), workflow: app.workflow?.map(replacePrice),
       plans: ready ? app.plans?.map(item => ({ ...item, price, detail: `${replacePrice(item.detail)} · Card subscription; total tax and fees are shown before payment.` })) : [previewPlan(name, price)] };
   });

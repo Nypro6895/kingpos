@@ -6,4 +6,4 @@ If you are running late, please call the salon. We may need to adjust your servi
 Please select all services you need when booking. Additional services depend on available time.
 Please tell us about any allergies or special requirements before your visit.
 Prices shown when booking are estimates. Please confirm the final service and price with the salon before treatment.`;
-export type BookingPolicyState = { active: boolean; subscribed: boolean; content: string; published: boolean };
+export type BookingPolicyState = { active: boolean; paid?: boolean; subscribed: boolean; content: string; published: boolean };

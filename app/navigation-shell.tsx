@@ -2748,7 +2748,13 @@ export function NavigationShell({
   }, []);
 
   // The hosted Owner forum owns its compact navigation and profile header.
-  if (pathname === "/forum") return <>{children}</>;
+  if (pathname === "/forum") return <>
+    {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
+    <CustomerShellContextProvider isCustomerShell notificationSummary={notificationSummary}>
+      <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</div>
+      <MobileBottomNav ariaLabel={ROLE_NAVIGATION.owner.ariaLabel} links={ROLE_NAVIGATION.owner.links} notificationSummary={notificationSummary} pathname={pathname} roleKind="owner" searchParams={searchParams} />
+    </CustomerShellContextProvider>
+  </>;
 
   if (isShelllessPath(pathname)) {
     return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;

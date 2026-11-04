@@ -101,7 +101,7 @@ async function readAppLocalPlatformResourceInContext(name: string, input: unknow
       try {
         const { salonId } = await marketPluginContext();
         const state = await bookingDepositPurchaseState(salonId);
-        installed = Boolean(state.installed && state.paid);
+        installed = Boolean(state.installed && state.active);
       } catch { /* Keep the original public product behavior; checkout rechecks its authority. */ }
     }
     data = { salonId: context.currentSalon?.id, installed };

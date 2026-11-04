@@ -180,7 +180,7 @@ export function appNotificationToFeedItem(
   notification: AppNotification,
   now = new Date(),
 ): NotificationFeedItem {
-  const kindLabel = titleCase(notification.notification_type || "Notification");
+  const kindLabel = notification.notification_type.startsWith("forum_") ? "Forum reply" : titleCase(notification.notification_type || "Notification");
   const destination = resolveAppNotificationDestination(notification);
 
   return {

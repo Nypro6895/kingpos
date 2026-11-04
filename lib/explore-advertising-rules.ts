@@ -5,6 +5,7 @@ export function campaignMatches(
   audience: CampaignAudience,
   device: "desktop" | "mobile",
 ) {
+  if(path === "/forum" && (campaign.kind!=="placement" || !campaign.placements?.includes("forum"))) return false;
   return (
     (campaign.audiences ?? ["guest", "personal", "staff", "owner"]).includes(
       audience,
@@ -132,7 +133,7 @@ export function parseCampaign(form: FormData): Campaign {
   for (const [key, values, allowed] of [
     ["audiences", audiences, ["guest", "personal", "staff", "owner"]],
     ["devices", devices, ["desktop", "mobile"]],
-    ["placements", placements, ["sidebar", "feed", "page-top", "page-bottom"]],
+    ["placements", placements, ["sidebar", "feed", "page-top", "page-bottom", "forum"]],
   ] as const)
     if (
       !values.length ||
@@ -163,6 +164,7 @@ export function parseCampaign(form: FormData): Campaign {
     placements: placements as NonNullable<Campaign["placements"]>,
     locations,
     popupTrigger: popupTrigger as Campaign["popupTrigger"],
+    forumEvery: form.has("forumEvery") ? number("forumEvery", 3, 30) : 6,
     scrollPercent: form.has("scrollPercent")
       ? number("scrollPercent", 1, 100)
       : 35,
@@ -182,6 +184,8 @@ export function parseCampaign(form: FormData): Campaign {
   };
   if (!/^[0-9a-f-]{36}$/i.test(campaign.id))
     errors.id = "Invalid campaign identifier. Reopen the editor.";
+  if (!Number.isInteger(campaign.forumEvery)) errors.forumEvery="Use a whole number of posts.";
+  if (placements.includes("forum") && kind!=="placement") errors.placements="Forum supports in-feed placement campaigns only.";
   if (!campaign.name) errors.name = "Enter a campaign name.";
   for (const key of ["background", "color"] as const)
     if (!/^#[0-9a-f]{6}$/i.test(campaign[key]))
@@ -201,4 +205,10 @@ export function parseCampaign(form: FormData): Campaign {
       "A popup needs a close button or an automatic close duration.";
   if (Object.keys(errors).length) throw new CampaignValidationError(errors);
   return campaign;
+}
+
+export function forumCampaignAt(campaigns: Campaign[], postIndex: number) {
+  if (!Number.isInteger(postIndex) || postIndex < 1) return null;
+  const eligible=campaigns.filter(c=>c.kind==="placement" && c.placements?.includes("forum") && postIndex % (c.forumEvery ?? 6) === 0);
+  return eligible[Math.max(0,Math.floor(postIndex/(eligible[0]?.forumEvery ?? 6))-1)%Math.max(eligible.length,1)] ?? null;
 }

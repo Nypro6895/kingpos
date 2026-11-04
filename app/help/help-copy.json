@@ -546,5 +546,9 @@
   "Reconcile live income with payment evidence": "Đối chiếu thu nhập trực tiếp với chứng từ đã trả",
   "The live calculation agrees with current source data; change notes explain updates and actual payment evidence is reviewed separately.": "Số tính trực tiếp khớp dữ liệu nguồn hiện tại; ghi chú giải thích thay đổi và chứng từ đã trả được đối chiếu riêng.",
   "A period previously calculated at $500 can show $600 after a valid source correction. A recorded $500 payment stays $500 with its original payment date and note; recalculation does not transfer another $100.": "Kỳ từng tính $500 có thể thành $600 sau sửa dữ liệu nguồn hợp lệ. Chứng từ đã trả $500 vẫn giữ $500 cùng ngày và ghi chú gốc; việc tính lại không tự chuyển thêm $100.",
-  "If a save is not confirmed, check the saved result before retrying. Do not create a second payment to work around a pending result.": "Nếu chưa xác nhận được việc lưu, kiểm tra kết quả đã lưu trước khi thử lại. Không tạo khoản thanh toán thứ hai để xử lý kết quả còn chờ."
+  "If a save is not confirmed, check the saved result before retrying. Do not create a second payment to work around a pending result.": "Nếu chưa xác nhận được việc lưu, kiểm tra kết quả đã lưu trước khi thử lại. Không tạo khoản thanh toán thứ hai để xử lý kết quả còn chờ.",
+  "Save diagnostic report": "Lưu báo cáo chẩn đoán",
+  "Opening save options…": "Đang mở tùy chọn lưu…",
+  "Choose where to save the report.": "Chọn nơi lưu báo cáo.",
+  "Could not open the diagnostic report. Try again.": "Không mở được báo cáo chẩn đoán. Hãy thử lại."
 }
