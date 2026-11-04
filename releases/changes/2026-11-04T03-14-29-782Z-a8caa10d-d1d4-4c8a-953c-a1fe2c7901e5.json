@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "quality-generated-command-registry-20261103",
+  "status": "ready",
+  "summary": "Freeze the regenerated combined production command registry with 344 validated pinned server actions",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-commands-server.generated.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "422707102a677996afa987bf40af643e2eda6fadf7b1f89fc8868794e46be454",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    },
+    {
+      "name": "344 pinned production server actions validated",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/server-command-validation.log"
+    }
+  ],
+  "dependencies": [
+    "market-iphone-integration-20261103"
+  ],
+  "incorporatesEvents": [],
+  "revisesEvents": [],
+  "previousWorkingEvent": "efbd9136-9147-4a51-bbd6-7bfe420107a8",
+  "integrationNotes": [],
+  "originalSourceAttribution": [],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "a8caa10d-d1d4-4c8a-953c-a1fe2c7901e5",
+  "recordedAt": "2026-11-04T03:14:29.782Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-commands-server.generated.ts": "87a947bfc9f3c2fae1a7368cc147d31deff0c90ea1a13645e4769517c9623261"
+  }
+}

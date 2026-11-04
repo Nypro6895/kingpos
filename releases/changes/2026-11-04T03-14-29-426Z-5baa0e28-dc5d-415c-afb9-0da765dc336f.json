@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "market-logo-allocation-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated market-logo-allocation-20261103 against the frozen combined release source",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/market/app-logo.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "c02a06d81d8212ce4c30509aaa1ca18697e36064d26eb059209379eb03bb1690",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    },
+    {
+      "name": "Original four portable logo parity/allocation/CPU/coalescing tests, all passed",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/logo-test-portability-tests.log"
+    }
+  ],
+  "dependencies": [
+    "quality-market-logo-test-portability-20261103"
+  ],
+  "incorporatesEvents": [
+    "e6e76c62-8210-414d-b364-0c273c720566"
+  ],
+  "revisesEvents": [
+    "e6e76c62-8210-414d-b364-0c273c720566"
+  ],
+  "integrationNotes": [
+    "Original allocation/coalescing tests and sanitized before-source fixture are preserved by the separate portable-test ready revision. Product mark output and rendering optimization are unchanged."
+  ],
+  "originalSourceAttribution": [
+    {
+      "eventId": "e6e76c62-8210-414d-b364-0c273c720566",
+      "changeId": "market-logo-allocation-20261103",
+      "sourceCommit": "96f6e4fee23cdd79cfa3812d6faa404101507090",
+      "archiveSha256": null
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "liveConfigurationPreservation": "The prior sales=false handoff instruction does not override verified existing live sales configuration. Only the intended trial enable flag was added by the coordinator; crypto keys, sales state and BookSMS paid fulfillment hold remain unchanged.",
+  "id": "5baa0e28-dc5d-415c-afb9-0da765dc336f",
+  "recordedAt": "2026-11-04T03:14:29.426Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/market/app-logo.tsx": "8802dae36c8aa8a364376b88bad9bca320fe97e15a3bb515e81c070ee15cca85"
+  }
+}

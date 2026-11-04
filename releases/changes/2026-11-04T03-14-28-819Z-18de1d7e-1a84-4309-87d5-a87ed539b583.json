@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "market-stripe-sandbox-qa-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated market-stripe-sandbox-qa-20261103 against the frozen combined release source",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/market-card.ts",
+    "tests/market-card-event-compat.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "6c48f70ae936e90a1d0a6ac8ee97bb65d0e66fb9e752dc4330036737b37ed090",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    }
+  ],
+  "dependencies": [
+    "market-reylumi-trials-20261103",
+    "market-runtime-optimization-20261103"
+  ],
+  "incorporatesEvents": [
+    "a30103b1-0ab9-4a71-aef8-1dfa145eaf77"
+  ],
+  "revisesEvents": [
+    "a30103b1-0ab9-4a71-aef8-1dfa145eaf77"
+  ],
+  "integrationNotes": [],
+  "originalSourceAttribution": [
+    {
+      "eventId": "a30103b1-0ab9-4a71-aef8-1dfa145eaf77",
+      "changeId": "market-stripe-sandbox-qa-20261103",
+      "sourceCommit": "612638d95c1197267267a567923b358f74e74939",
+      "archiveSha256": "033964c2add286bd5421413f160048dcea1608c8391bcc26c880d107e2c3ba3e"
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "liveConfigurationPreservation": "The prior sales=false handoff instruction does not override verified existing live sales configuration. Only the intended trial enable flag was added by the coordinator; crypto keys, sales state and BookSMS paid fulfillment hold remain unchanged.",
+  "id": "18de1d7e-1a84-4309-87d5-a87ed539b583",
+  "recordedAt": "2026-11-04T03:14:28.819Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/market-card.ts": "cec83e53af53bcc6674077687d6fc1d641ff18383054209bf7f17a4896f56f0a",
+    "tests/market-card-event-compat.test.mjs": "97fc120784766f6091209dd1d47d1feb0c3c916217e592b42100f7858489df24"
+  }
+}

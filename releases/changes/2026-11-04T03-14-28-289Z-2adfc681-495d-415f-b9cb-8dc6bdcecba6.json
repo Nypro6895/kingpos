@@ -1,0 +1,108 @@
+{
+  "kind": "change",
+  "changeId": "forum-continuous-feed-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated forum-continuous-feed-20261103 against the frozen combined release source",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/advertising/campaign-form.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "app/navigation-shell.tsx",
+    "app/settings/notification-preferences-panel.tsx",
+    "components/explore-advertising.module.css",
+    "components/explore-advertising.tsx",
+    "lib/explore-advertising-rules.ts",
+    "lib/notification-categories.ts",
+    "lib/notification-feed-items.ts",
+    "lib/vietnamese-dictionary.ts",
+    "types/explore-advertising.ts",
+    "types/forum.ts",
+    "app/(app)/forum/continuation-feed.tsx",
+    "app/(app)/forum/forum-avatar.tsx",
+    "docs/forum/continuous-feed-20261103.md",
+    "lib/forum-presentation.ts",
+    "supabase/migrations/20261104010000_forum_continuous_feed.sql",
+    "tests/fixtures/forum-browser-build.cjs",
+    "tests/fixtures/forum-browser-server.cjs",
+    "tests/forum-campaign.test.mjs",
+    "tests/forum-continuous-feed.test.mjs",
+    "tests/forum-ui.browser.cjs",
+    "tests/helpers/forum-database.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "9739ffdbcfb22b25dc89ca0e5ee96bd3e02887cb9b6e189c72a96858f16926cf",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [
+    "53fafd22-191a-47cd-83de-93f1db8132a8"
+  ],
+  "revisesEvents": [
+    "53fafd22-191a-47cd-83de-93f1db8132a8"
+  ],
+  "integrationNotes": [],
+  "originalSourceAttribution": [
+    {
+      "eventId": "53fafd22-191a-47cd-83de-93f1db8132a8",
+      "changeId": "forum-continuous-feed-20261103",
+      "sourceCommit": "75b5228682db82d008facf218791b525d3d3d231",
+      "archiveSha256": null
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "2adfc681-495d-415f-b9cb-8dc6bdcecba6",
+  "recordedAt": "2026-11-04T03:14:28.289Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/advertising/campaign-form.tsx": "20086c7a9fd4430512b01fd00af85071316f7b03aad0fa498c5e5438e6b1a25a",
+    "app/(app)/forum/forum.module.css": "40aee6abf4a24705757045951973966a049fec5092894c9f447de45061328eb9",
+    "app/(app)/forum/forum.tsx": "8870ad1e1f43539b304e1c841c13288199a718a4bc01eefb7d978181f2985841",
+    "app/navigation-shell.tsx": "17d0c54da7946ce75a0284b22743dfc7e377db2c6c0aba51beb80687da5b0d3c",
+    "app/settings/notification-preferences-panel.tsx": "9f2a70fa51cae91b10d3d994a39ab43a7a2a0c2e3143475f29200a5bba0e35e2",
+    "components/explore-advertising.module.css": "e5e24a25b6673707879a3b71a9e60b19ba25b31206781dda83fe4530f876a957",
+    "components/explore-advertising.tsx": "5af402c644a4d8fbbc2380d657ac5fdd8893097b7a2fb5d5a13e4e4de6b46ea1",
+    "lib/explore-advertising-rules.ts": "53206439f063d7baf14fb544ea4c7935dd152f5167bd590aca9cb38860ebc0e4",
+    "lib/notification-categories.ts": "0a56b48af350a626d44218f263be1f849b5424886cb67e70947e716227abf6d1",
+    "lib/notification-feed-items.ts": "4334c475f1ac9f3ad7dfc43a0632d91d05cfc567d6cc12a62c932edf4c5200a6",
+    "lib/vietnamese-dictionary.ts": "4f3e9188e038daa4e8a1e176a64ac8f7ebfb5e3a818b066b0fbfe7f374bd7473",
+    "types/explore-advertising.ts": "037fa71683d36e29006c321378cee39c4c01199bf59d57050c10d96bab0b0c66",
+    "types/forum.ts": "e24239c8f275d041d4240f1bb9402a6bdccad7b066eda7594baff78f778ef734",
+    "app/(app)/forum/continuation-feed.tsx": "f973d3174d14cf3c105e6725bbd9eaaac89212a6480db27984971c3985472dd6",
+    "app/(app)/forum/forum-avatar.tsx": "2d555af5128097b31b25ae7ddebbd6118ce1ef82e13ff8124603525436fc0341",
+    "docs/forum/continuous-feed-20261103.md": "32c09001648de605fb65acca49b5ea494b8891f89fbf0649a500c44610159740",
+    "lib/forum-presentation.ts": "2e602f5ef81e8b6a462ba961d68fe9d9c20183f50bf2e067f69c0d68c873ec62",
+    "supabase/migrations/20261104010000_forum_continuous_feed.sql": "46c28c8c4056c1cae4b773234d96aa1595a23723376da3f4d1525fa15163e4e3",
+    "tests/fixtures/forum-browser-build.cjs": "26da6a983ded728fa1caf4d31ba9f568c645a5d32c63d6e0940b6704d8eaeccd",
+    "tests/fixtures/forum-browser-server.cjs": "9f74de84a7a55b92b0978867c779e3ec0cefc23d98631e0df9221ad732de7647",
+    "tests/forum-campaign.test.mjs": "c188e804b0171cc7be028c075b253056da0530581908cd1cbcecd4236b0e3a94",
+    "tests/forum-continuous-feed.test.mjs": "dc3969f2d51bf4e0080ee5a2b4c0cd633b9a3d0e8997a94f69c79810e7c1345e",
+    "tests/forum-ui.browser.cjs": "aa357215cefed31cda23e175a7308b4de0a25f54f5abc01a3cfb080a337daf5d",
+    "tests/helpers/forum-database.mjs": "3406294f3f3fbceb32bf89d7312d047fbb265995e4741995d44da4f1653a5c4a"
+  }
+}

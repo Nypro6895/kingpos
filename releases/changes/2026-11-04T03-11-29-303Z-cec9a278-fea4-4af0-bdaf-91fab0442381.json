@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "quality-market-logo-test-portability-20261103",
+  "status": "working",
+  "summary": "Make the Market logo allocation regression reproducible from a clean source checkout using its sanitized public before-source fixture",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/market-logo-allocation.test.mjs",
+    "tests/market-read-coalescing.test.mjs",
+    "tests/fixtures/market-app-logo-before.tsx.txt"
+  ],
+  "source": {
+    "productCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360"
+  },
+  "validation": [
+    {
+      "name": "Original four Market logo parity/allocation/CPU/coalescing tests from portable test source",
+      "result": "pending"
+    }
+  ],
+  "id": "cec9a278-fea4-4af0-bdaf-91fab0442381",
+  "recordedAt": "2026-11-04T03:11:29.303Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

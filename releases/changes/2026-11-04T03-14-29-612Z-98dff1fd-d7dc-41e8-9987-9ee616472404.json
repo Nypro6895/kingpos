@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "help-local-diagnostic-export-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated help-local-diagnostic-export-20261103 against the frozen combined release source",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "components/app-local-help.tsx",
+    "components/app-local-diagnostic-export.tsx",
+    "app/help/help-copy.json",
+    "tests/app-local-diagnostic-export.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "b9f0bd577098edd3c77dd5351fb3f2984f935a79e460d7d1763a8e1fee05015b",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    },
+    {
+      "name": "Original capability/reachability/pending/retry and EN/VI browser cases retained with unchanged Help source hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release-20261103/help-diagnostic-export/browser-checks.json"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [
+    "08618fd5-e44d-44e0-9c0f-60ba4bfe937d"
+  ],
+  "revisesEvents": [
+    "08618fd5-e44d-44e0-9c0f-60ba4bfe937d"
+  ],
+  "integrationNotes": [],
+  "originalSourceAttribution": [
+    {
+      "eventId": "08618fd5-e44d-44e0-9c0f-60ba4bfe937d",
+      "changeId": "help-local-diagnostic-export-20261103",
+      "sourceCommit": "645d331af141ff7730f7e38258262ad8461cad75",
+      "archiveSha256": null
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "98dff1fd-d7dc-41e8-9987-9ee616472404",
+  "recordedAt": "2026-11-04T03:14:29.612Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/app-local-help.tsx": "738f0bc0097584407a4a68f897c163fd60f13522592355882dd0d3d4d81fc0f2",
+    "components/app-local-diagnostic-export.tsx": "a71d64fb702700a70692726e60efafcf713792af53045ca7a1d22a59ae5cdf03",
+    "app/help/help-copy.json": "5e8d16f5f63629bf67dea74fbe9f04194ab6e898ae6d88819aebf81f23696d6b",
+    "tests/app-local-diagnostic-export.test.mjs": "c31c72e8702d36e292b2b6d727e8a082bdc5d004201d8017f576f7a58f0ab27b"
+  }
+}

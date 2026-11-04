@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "quality-generated-command-registry-20261103",
+  "status": "working",
+  "summary": "Attribute the regenerated production command registry to the frozen combined source and its pinned-action validation",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-commands-server.generated.ts"
+  ],
+  "source": {
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360"
+  },
+  "validation": [
+    {
+      "name": "Exact frozen registry hash and 344 pinned server actions",
+      "result": "pending"
+    }
+  ],
+  "id": "efbd9136-9147-4a51-bbd6-7bfe420107a8",
+  "recordedAt": "2026-11-04T03:09:26.747Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

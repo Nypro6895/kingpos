@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Publish verified combined quality/Market V8/Forum web release; native publication tracked separately",
+  "changes": [
+    "505500e9-4510-46dd-8ace-58b49a66f61c",
+    "c649701f-0231-4843-a19b-4819a3bc1ec9",
+    "25c65eb1-4208-4bb6-ad54-926e5ca126de",
+    "6fc734ff-1b91-4b5a-aa04-70725a5e9d79",
+    "5a3b1c06-60ca-4151-b6c7-9c0e9d8669e9",
+    "2adfc681-495d-415f-b9cb-8dc6bdcecba6",
+    "9db76491-3669-4eca-8894-5e9565c215b3",
+    "35298254-4bff-4392-b518-921886b3fd1b",
+    "18de1d7e-1a84-4309-87d5-a87ed539b583",
+    "d2c891bb-bbe1-481c-a881-d5c198417cb6",
+    "412fe803-6500-4830-8605-7add5b094705",
+    "5baa0e28-dc5d-415c-afb9-0da765dc336f",
+    "a8caa10d-d1d4-4c8a-953c-a1fe2c7901e5",
+    "388aa20f-684e-4919-9beb-46d02fa1ca0c",
+    "98868faa-4b43-496a-a974-05380341cd08"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+      "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+      "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+      "sourceSha256": "3d0a928820356cf6cfc6586343362cb3bbf5531011b03f0eaa89b74f02bc5470",
+      "overlaySha256": "1036f8e33e54eb284085450a376961f2e523e650f2f130a571d27d94a5f27f23",
+      "evidence": "releases/evidence/quality-combined-20261103-web.json"
+    }
+  },
+  "id": "02179c7f-9e7e-485e-8e08-6d9b0961e4d1",
+  "recordedAt": "2026-11-04T03:15:37.970Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103"
+}

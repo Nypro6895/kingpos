@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "quality-market-logo-test-portability-20261103",
+  "status": "ready",
+  "summary": "Make the original four Market logo parity, allocation, CPU and coalescing regressions portable to a clean source checkout",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/market-logo-allocation.test.mjs",
+    "tests/market-read-coalescing.test.mjs",
+    "tests/fixtures/market-app-logo-before.tsx.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "7decc32a7a7eb1d98b8a54307d8c196cf49cbf05d49b55d59baf9eee9ea66a7d",
+    "productCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "testSupportStatus": "Frozen source; coordinator will commit alongside journal metadata",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    },
+    {
+      "name": "Original four portable logo parity/allocation/CPU/coalescing tests, all passed",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/logo-test-portability-tests.log"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [],
+  "revisesEvents": [],
+  "previousWorkingEvent": "cec9a278-fea4-4af0-bdaf-91fab0442381",
+  "integrationNotes": [
+    "The before fixture is exact sanitized public TSX bytes, stored as .tsx.txt so application TypeScript does not resolve its historic relative imports. No product renderer or allocation assertions changed."
+  ],
+  "originalSourceAttribution": [],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "388aa20f-684e-4919-9beb-46d02fa1ca0c",
+  "recordedAt": "2026-11-04T03:14:29.944Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/market-logo-allocation.test.mjs": "6d385cb9ceb2b3e408779971877b08c0b0d6c9ee8e8bfbc7372486337d3b1903",
+    "tests/market-read-coalescing.test.mjs": "03f1c8972cea36ac2a7bca1d56392acaa17abac69966802e5e9c08b04f9fd31a",
+    "tests/fixtures/market-app-logo-before.tsx.txt": "3e7dc6f42cc9fba6594642bc2c28f80012e2fb16991793b51f2a8d9f1d7c577e"
+  }
+}

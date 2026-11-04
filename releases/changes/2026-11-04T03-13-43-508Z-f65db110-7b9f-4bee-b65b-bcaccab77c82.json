@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "quality-native-online-inventory-20261103",
+  "status": "working",
+  "summary": "Attribute the existing sensitive receipt experience route to native online admission without changing its hosted renderer or authorization",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-online-routes.json"
+  ],
+  "source": {
+    "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0"
+  },
+  "validation": [
+    {
+      "name": "Activated source-bound production bundle: productionReady true and zero missing routes",
+      "result": "pending"
+    }
+  ],
+  "id": "f65db110-7b9f-4bee-b65b-bcaccab77c82",
+  "recordedAt": "2026-11-04T03:13:43.508Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

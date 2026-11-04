@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "quality-native-online-inventory-20261103",
+  "status": "ready",
+  "summary": "Declare the existing sensitive online receipt experience route in native admission with no renderer or authority bypass",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-online-routes.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "1c81eb068773b8d2f8be06688f54681933ba63e367fbe5850d6ba7cacccabd26",
+    "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Activated production bundle from exact native source: productionReady true, missing0, routes99, commands347",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/native-local-prepare.log"
+    },
+    {
+      "name": "Exact local source-bound native provenance and one-file inventory-only delta",
+      "result": "passed",
+      "evidence": "ios/build/local-bundle-provenance.json"
+    }
+  ],
+  "dependencies": [
+    "market-iphone-integration-20261103"
+  ],
+  "incorporatesEvents": [],
+  "revisesEvents": [],
+  "previousWorkingEvent": "f65db110-7b9f-4bee-b65b-bcaccab77c82",
+  "integrationNotes": [
+    "Only the reviewed online route inventory changed from the web product commit. The existing hosted sensitive-writes, scope-none and online-only classification remains authoritative; no local renderer was added."
+  ],
+  "originalSourceAttribution": [],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "9892d0ae-5e3d-4b9c-821f-1802793cf619",
+  "recordedAt": "2026-11-04T03:14:30.102Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-online-routes.json": "ab412bc73fbf2936257f6809b55d43f5fe3decf2c293fb1dc2a859ce6516969d"
+  }
+}

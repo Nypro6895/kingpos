@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "market-runtime-optimization-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated market-runtime-optimization-20261103 against the frozen combined release source",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/globals.css",
+    "app/market/card-checkout-panel.tsx",
+    "app/market/market-client.tsx",
+    "app/market/market-experience-client.tsx",
+    "app/market/trial-panel.tsx",
+    "lib/refresh-market-experience.ts",
+    "tests/lazy-payment-sdk-ui.test.mjs",
+    "tests/market-refresh-ui.test.mjs",
+    "tests/market-tax-reconciliation.test.mjs",
+    "tests/tailwind-runtime-sources.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "61104335e697f1941e7eddcb136286bcac45a3e144ccde3fe149e752d5962931",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    }
+  ],
+  "dependencies": [
+    "market-reylumi-trials-20261103"
+  ],
+  "incorporatesEvents": [
+    "8065dd19-98a6-459b-8d93-dde6f33d7978"
+  ],
+  "revisesEvents": [
+    "8065dd19-98a6-459b-8d93-dde6f33d7978"
+  ],
+  "integrationNotes": [],
+  "originalSourceAttribution": [
+    {
+      "eventId": "8065dd19-98a6-459b-8d93-dde6f33d7978",
+      "changeId": "market-runtime-optimization-20261103",
+      "sourceCommit": "612638d95c1197267267a567923b358f74e74939",
+      "archiveSha256": "033964c2add286bd5421413f160048dcea1608c8391bcc26c880d107e2c3ba3e"
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "liveConfigurationPreservation": "The prior sales=false handoff instruction does not override verified existing live sales configuration. Only the intended trial enable flag was added by the coordinator; crypto keys, sales state and BookSMS paid fulfillment hold remain unchanged.",
+  "id": "35298254-4bff-4392-b518-921886b3fd1b",
+  "recordedAt": "2026-11-04T03:14:28.643Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/globals.css": "f31e6e872532e7eabb0db6fe58a201353417d6282fb2652c796ff7fba5658fe3",
+    "app/market/card-checkout-panel.tsx": "3d91dd8addeb9de5c5b758174ed94e081186bc3668fce4eb4de76d531101e338",
+    "app/market/market-client.tsx": "511d26b1bc8b63b1870af315882053b76c6b5e2b7c20b66cf811b3fd2ec5730d",
+    "app/market/market-experience-client.tsx": "ec3ce0488f058c039bb10a1e8215df7b40a1a874a6f2d64f2b0655a796c28900",
+    "app/market/trial-panel.tsx": "1db76e91b4033a8696ab6f56c850d666d169996078aa0087482831c45035c85e",
+    "lib/refresh-market-experience.ts": "6937d6bae42995862955b55d1d95036b6857b82c89d86ebaf4b4275dc85d8e25",
+    "tests/lazy-payment-sdk-ui.test.mjs": "8ea46e956d6971b81b095a565b1397b05d7a490bacb18db7c7ffb145b8a75425",
+    "tests/market-refresh-ui.test.mjs": "15397fc6756272b5f004cab083334596c6ef93b97ff2183ab291ff0a499b465c",
+    "tests/market-tax-reconciliation.test.mjs": "b46062099cf36f0373925cb0fed5b86c1f6ed07ea75c67bcf6e809fe52242011",
+    "tests/tailwind-runtime-sources.test.mjs": "22904b5c3bd64b8c9aaff1540397b9e40d56785abb39fcb8f3daedb59e78c6b0"
+  }
+}

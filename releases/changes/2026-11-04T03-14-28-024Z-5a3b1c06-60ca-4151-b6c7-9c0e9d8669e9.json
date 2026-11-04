@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "closing-save-history-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated closing-save-history-20261103 against the frozen combined release source",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/reports/daily-input-inline-history.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "tests/inline-financial-history-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "6af53a42243374ec4c64440219128cc61347c42a269edb484ad1f19fdbb5b78a",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [
+    "7beda914-d92d-45de-8d6c-14183f940728"
+  ],
+  "revisesEvents": [
+    "7beda914-d92d-45de-8d6c-14183f940728"
+  ],
+  "integrationNotes": [],
+  "originalSourceAttribution": [
+    {
+      "eventId": "7beda914-d92d-45de-8d6c-14183f940728",
+      "changeId": "closing-save-history-20261103",
+      "sourceCommit": null,
+      "archiveSha256": null
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "5a3b1c06-60ca-4151-b6c7-9c0e9d8669e9",
+  "recordedAt": "2026-11-04T03:14:28.024Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/reports/daily-input-inline-history.tsx": "2f13dbf8715811cd6b33a97aa6ef9f86b51349be787fd1551efdf525e3042d2d",
+    "app/reports/owner-live-reports.tsx": "b18e83ddff0bba09eb0570839cbe11f9a6daf642ebcc256aa090305b9bb8ae0b",
+    "tests/inline-financial-history-browser.mjs": "18ce14c9a0176e0f13d86af5babd18d0d644c4b86c08d64ae0542dd5d6233f2f"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "ios-session-reset-recovery-20261103",
+  "status": "ready",
+  "summary": "Finalize integrated ios-session-reset-recovery-20261103 against the frozen combined release source",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "tests/app-local-session-reset-recovery.test.mjs",
+    "docs/ios-session-reset-recovery-20261103.txt",
+    "docs/ios-session-reset-deploy-queue-20261103.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\quality-combined-release\\ready-final-product-snapshot",
+    "sourceSha256": "d8c30e57365d010dff724d7cd7b0bb933d60745b4d86313667f3601012b764df",
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "fileBindings": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+  },
+  "validation": [
+    {
+      "name": "Final assembled source regressions: 438 passed, zero failures or skips; relevant current-source browser checks",
+      "result": "passed",
+      "evidence": "artifacts/release-combined-20261103/resumed-integration-validation/completed-summary.json"
+    },
+    {
+      "name": "Final production Next build exit 0",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/production-build-result.json"
+    },
+    {
+      "name": "Immutable product commit or separately frozen nonruntime test-support hashes",
+      "result": "passed",
+      "evidence": "artifacts/quality-combined-release/ready-final-product-snapshot/source-bindings.json"
+    }
+  ],
+  "dependencies": [],
+  "incorporatesEvents": [
+    "4f7877c9-3250-4ae0-8624-f08da4053cb5",
+    "d10b98da-6364-43df-a0ea-95677ddd7e11"
+  ],
+  "revisesEvents": [
+    "4f7877c9-3250-4ae0-8624-f08da4053cb5",
+    "d10b98da-6364-43df-a0ea-95677ddd7e11"
+  ],
+  "integrationNotes": [],
+  "originalSourceAttribution": [
+    {
+      "eventId": "4f7877c9-3250-4ae0-8624-f08da4053cb5",
+      "changeId": "ios-session-reset-recovery-20261103",
+      "sourceCommit": "102a2a8cc8fca2e0638c70301faef4006c209949",
+      "archiveSha256": null
+    },
+    {
+      "eventId": "d10b98da-6364-43df-a0ea-95677ddd7e11",
+      "changeId": "ios-session-reset-recovery-20261103",
+      "sourceCommit": "af5c6065cfc9c6b5102ca5f0f65ff4700085d903",
+      "archiveSha256": null
+    }
+  ],
+  "acceptanceLimits": "Ready means the frozen integrated source and stated local checks passed. Web publication, new native execution/archive/upload, Apple availability and final physical acceptance are separate verified release receipts. No production payment, activation, message or new device permission was performed for this revision.",
+  "id": "a40f0bbd-189c-4bc9-86d0-273895d97d8e",
+  "recordedAt": "2026-11-04T03:14:27.813Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "20679b9e6546a5f3869ef2d53fa8bf3cf56d25fa44dcfc04de0e43594b8c1787",
+    "tests/app-local-session-reset-recovery.test.mjs": "c7e6c6714ad0bd79fd04b6d6d9c81e6aa3295fc1612ebac429a8b250ea5a34d4",
+    "docs/ios-session-reset-recovery-20261103.txt": "3d2d890bca1bebf8a975a5472a2581ca7f53b8a9b81bfdefc66938555e198e40",
+    "docs/ios-session-reset-deploy-queue-20261103.txt": "672132bb216f39a2fb724081ab92776d5d927551414897cc2ffb94daba41d922"
+  }
+}

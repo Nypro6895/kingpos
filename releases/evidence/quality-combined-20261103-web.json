@@ -1,0 +1,618 @@
+{
+  "at": "2026-11-04T03:12:45.994Z",
+  "verified": true,
+  "deploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+  "url": "kingpos-rbqx9ceaf-kingpos.vercel.app",
+  "sourceCommit": "2844e9c3fd047bc9fc2969322be10bfaa388a360",
+  "files": 4067,
+  "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+  "aliasDeploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+  "sourceSha256": "3d0a928820356cf6cfc6586343362cb3bbf5531011b03f0eaa89b74f02bc5470",
+  "overlaySha256": "1036f8e33e54eb284085450a376961f2e523e650f2f130a571d27d94a5f27f23",
+  "checks": [
+    {
+      "name": "scoped-regression",
+      "exitCode": 0,
+      "summary": {
+        "tests": 438,
+        "pass": 438,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "closing-history-browser",
+      "exitCode": 0
+    },
+    {
+      "name": "expense-period-browser",
+      "exitCode": 0
+    },
+    {
+      "name": "lint",
+      "files": 54,
+      "exitCode": 0,
+      "diagnostics": [
+        {
+          "file": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\app\\reports\\owner-live-reports.tsx",
+          "line": 54,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'NoPermissionState' is defined but never used."
+        },
+        {
+          "file": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\app\\reports\\owner-live-reports.tsx",
+          "line": 180,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'salonName' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0
+    }
+  ],
+  "productionBuild": {
+    "at": "2026-11-04T02:57:24.984Z",
+    "exit": 0,
+    "backgroundDispatchDisabled": true,
+    "command": "next build --webpack",
+    "localOnlyEnvironmentFallbacks": true
+  },
+  "candidateHttp": {
+    "at": "2026-11-04T03:12:36.930Z",
+    "deploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+    "codes": {
+      "help": 200,
+      "legal": 200,
+      "forum": 200,
+      "context": 400,
+      "asset": 200
+    },
+    "contextExpectedError": "Invalid device generation",
+    "candidateProtection": "Existing Vercel protection preserved; authenticated CLI read used for candidate, public live access checked separately",
+    "scope": "Read-only public UI/static assets and context rejection, not authenticated role acceptance"
+  },
+  "liveHttp": {
+    "at": "2026-11-04T03:12:47.935Z",
+    "scope": "Unauthenticated HTTP and static-asset availability; timings are release-client observations, not iPhone performance.",
+    "base": "https://reylumi.com",
+    "results": [
+      {
+        "path": "/help",
+        "status": 200,
+        "ttfbMs": 474,
+        "totalMs": 1010,
+        "bytes": 64752,
+        "redirect": null,
+        "nextAsset": "/_next/static/css/b63d36c1404718d8.css?dpl=dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+      },
+      {
+        "path": "/legal",
+        "status": 200,
+        "ttfbMs": 431,
+        "totalMs": 1682,
+        "bytes": 94360,
+        "redirect": null,
+        "nextAsset": "/_next/static/css/b63d36c1404718d8.css?dpl=dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+      },
+      {
+        "path": "/login",
+        "status": 200,
+        "ttfbMs": 515,
+        "totalMs": 1780,
+        "bytes": 96802,
+        "redirect": null,
+        "nextAsset": "/_next/static/css/b63d36c1404718d8.css?dpl=dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+      },
+      {
+        "path": "/forum",
+        "status": 200,
+        "ttfbMs": 356,
+        "totalMs": 607,
+        "bytes": 74183,
+        "redirect": null,
+        "nextAsset": "/_next/static/css/b63d36c1404718d8.css?dpl=dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+      },
+      {
+        "path": "/market",
+        "status": 200,
+        "ttfbMs": 487,
+        "totalMs": 1012,
+        "bytes": 123806,
+        "redirect": null,
+        "nextAsset": "/_next/static/css/b63d36c1404718d8.css?dpl=dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp"
+      },
+      {
+        "path": "/api/app-local/context",
+        "status": 400,
+        "ttfbMs": 467,
+        "totalMs": 468,
+        "bytes": 37,
+        "redirect": null,
+        "nextAsset": null
+      }
+    ],
+    "staticAssetStatus": 200
+  },
+  "migrations": {
+    "observedVia": "Verified native Chrome Supabase SQL result",
+    "project": "bowkoiprvqwjilwaxhda",
+    "atomicApplyCompleted": true,
+    "existingRowsAndAuthorityPreservationGuardPassed": true,
+    "lineEndings": "Windows UI uses CRLF; exact ledger source matches after CRLF to LF normalization. Original raw replay guard safely rejects this newline variant; no ledger rewrite performed.",
+    "checks": {
+      "forum_indexes": true,
+      "forum_trigger": true,
+      "trial_owner_fk": true,
+      "forum_table_keys": true,
+      "booksms_card_paths": true,
+      "trial_owner_column": true,
+      "forum_rpc_authority": true,
+      "forum_table_columns": true,
+      "trial_expiry_schema": true,
+      "forum_helpers_private": true,
+      "market_trial_authority": true,
+      "exact_normalized_ledger": true,
+      "forum_table_private_rls": true,
+      "forum_follow_seen_branches": true,
+      "runtime_paid_gates_patched": true,
+      "forum_notification_category": true,
+      "trial_owner_pair_constraint": true,
+      "forum_notification_column_fk": true,
+      "forum_read_write_actor_guard": true,
+      "forum_reply_inapp_only_source": true,
+      "check_writer_service_authority": true,
+      "notification_preference_constraint": true
+    },
+    "ledger": [
+      {
+        "name": "market_plugin_trials",
+        "rawMd5": "cd6fb7c6f70b3c13036e58bb0876dcba",
+        "version": "20261103201759",
+        "rawIsExactLf": false,
+        "expectedLfMd5": "03eb6047ebd588f9d7bcc5705d142c76",
+        "normalizedMd5": "03eb6047ebd588f9d7bcc5705d142c76",
+        "rawIsExactCrlf": true,
+        "statementCount": 1,
+        "exactNormalizedMatch": true
+      },
+      {
+        "name": "check_writer_trial",
+        "rawMd5": "11429a2087f06cc2c7244136f5af6be9",
+        "version": "20261103204157",
+        "rawIsExactLf": false,
+        "expectedLfMd5": "0ca303bc6d429119bafaca978d9de17a",
+        "normalizedMd5": "0ca303bc6d429119bafaca978d9de17a",
+        "rawIsExactCrlf": true,
+        "statementCount": 1,
+        "exactNormalizedMatch": true
+      },
+      {
+        "name": "forum_continuous_feed",
+        "rawMd5": "57f49d85574fb474aab6771445c2565e",
+        "version": "20261104010000",
+        "rawIsExactLf": false,
+        "expectedLfMd5": "4b8b65ee7f9af0915607fded1de5bcaa",
+        "normalizedMd5": "4b8b65ee7f9af0915607fded1de5bcaa",
+        "rawIsExactCrlf": true,
+        "statementCount": 1,
+        "exactNormalizedMatch": true
+      }
+    ],
+    "passed": true,
+    "categories": {
+      "forum": "forum",
+      "booking": "booking",
+      "receipt": "receipts"
+    },
+    "verifiedAt": "2026-11-04T03:11:23.50204+00:00",
+    "ledgerTotal": 371,
+    "indexFingerprints": {
+      "forum_participation": "fc057be5eac5eac4ad25b6bbc9d2427e",
+      "forum_subscriptions_topic": "38080bfba1db48e0c71fece485168b7c",
+      "forum_unread_notification": "24e058a5927ec47c9f8853c502d3f2cc"
+    },
+    "targetLedgerCount": 3,
+    "functionFingerprints": [
+      {
+        "anon": false,
+        "signature": "booking_deposit_save(uuid,boolean,text,numeric,text)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "165c7ede8596acef26af4ff64035c062"
+      },
+      {
+        "anon": false,
+        "signature": "booksms_has_access(uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "a5111bc48ab1539f661ce08ec01b2a02"
+      },
+      {
+        "anon": false,
+        "signature": "booksms_owner_state(uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "6eb65e9de05754ddfbf87b3859a304a0"
+      },
+      {
+        "anon": false,
+        "signature": "booksms_save(uuid,uuid,boolean,text,jsonb)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "74420fb5da61b22435428be95232a991"
+      },
+      {
+        "anon": false,
+        "signature": "check_writer_assert(uuid,uuid,boolean)",
+        "searchPath": [
+          "search_path=pg_catalog, public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "d07b729ded23b3e6ed39a25765206b2f"
+      },
+      {
+        "anon": false,
+        "signature": "check_writer_trial(uuid,uuid,boolean)",
+        "searchPath": [
+          "search_path=pg_catalog, public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "9e26a144c2e70cd9d69193b84f07cc48"
+      },
+      {
+        "anon": false,
+        "signature": "forum_actor()",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "ee9b8e76b5124fdb16ca3959e3050132"
+      },
+      {
+        "anon": false,
+        "signature": "forum_is_following(uuid,uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "5f5b8ae7a01b0dc02861ef27e8ff3e8a"
+      },
+      {
+        "anon": false,
+        "signature": "forum_notify_reply()",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "d1b376ba59f777d34af1a2aaa1259da2"
+      },
+      {
+        "anon": false,
+        "signature": "forum_read(jsonb)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "b26fcda7fcad50ce4e44f6e05f3536e4"
+      },
+      {
+        "anon": false,
+        "signature": "forum_write(jsonb)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "619dd5d3f61088e922cc9195555d4740"
+      },
+      {
+        "anon": true,
+        "signature": "issue_checkin_receipt(text,uuid)",
+        "searchPath": [
+          "search_path=public, pg_temp"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "2771e5d170429a59c6ebf8c2d177bf04"
+      },
+      {
+        "anon": false,
+        "signature": "market_card_apply(uuid,text,text,text,text,integer,integer,text,timestamp with time zone,timestamp with time zone)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "5839c06c6746391dfcba892886884297"
+      },
+      {
+        "anon": false,
+        "signature": "market_card_reserve(uuid,text)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "2de41976df16aab78adab5ad9f6bb41d"
+      },
+      {
+        "anon": false,
+        "signature": "market_plugin_trial(uuid,text,boolean)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "c3ea7b9b99403fecae80a5c19469901a"
+      },
+      {
+        "anon": true,
+        "signature": "notification_category(text)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": false,
+        "authenticated": true,
+        "securityDefiner": false,
+        "normalizedDefinitionMd5": "5520f32324af4b1b83931a5ef022a87f"
+      },
+      {
+        "anon": false,
+        "signature": "notification_delivery_enabled(uuid,text,text)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": false,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "0300d2cf2c8eb2fd222bc4ea391dd436"
+      },
+      {
+        "anon": false,
+        "signature": "personal_qr_ensure_receipt_for_visit(uuid,uuid)",
+        "searchPath": [
+          "search_path=public, pg_temp"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "b6cc636009661255f1ca93a655f6c498"
+      },
+      {
+        "anon": true,
+        "signature": "public_booking_deposit(uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "75de859bfb7d204f5314a9f27ba4992d"
+      },
+      {
+        "anon": true,
+        "signature": "public_booking_policy(uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "2107d4dc499851fe21b58a4dbed56ed3"
+      },
+      {
+        "anon": false,
+        "signature": "resolve_checkin_receipt(uuid,uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": true,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "a9276f5a687752c83f99f24c7247c990"
+      },
+      {
+        "anon": false,
+        "signature": "staff_scan_available(uuid)",
+        "searchPath": [
+          "search_path=public, pg_temp"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": false,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "438377b77905e11ba3c099c9f904366d"
+      },
+      {
+        "anon": false,
+        "signature": "tax_company_connect(text,text)",
+        "searchPath": [
+          "search_path=public, extensions"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "003e263fe686fd7cb11d83c30404808b"
+      },
+      {
+        "anon": false,
+        "signature": "tax_company_has_access(uuid)",
+        "searchPath": [
+          "search_path=public"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "d8e89e0fdd1956a46131df4589a5121e"
+      },
+      {
+        "anon": false,
+        "signature": "tax_company_settings(uuid,text,boolean)",
+        "searchPath": [
+          "search_path=public, extensions"
+        ],
+        "serviceRole": false,
+        "hasTrialGate": true,
+        "authenticated": true,
+        "securityDefiner": true,
+        "normalizedDefinitionMd5": "1e5201d60817e7cb79038e0e323302c6"
+      }
+    ],
+    "constraintFingerprints": [
+      {
+        "name": "app_notifications_forum_topic_id_fkey",
+        "table": "app_notifications",
+        "valid": true,
+        "definitionMd5": "0e931ac7a9239c4216d4396e1ef89c57"
+      },
+      {
+        "name": "check_writer_subscriptions_trial_owner_fkey",
+        "table": "check_writer_subscriptions",
+        "valid": true,
+        "definitionMd5": "2d15e568628be6be5adad727b05a183f"
+      },
+      {
+        "name": "check_writer_trial_owner_check",
+        "table": "check_writer_subscriptions",
+        "valid": true,
+        "definitionMd5": "e9aee9aff9e2c716d351ec89eed9a875"
+      },
+      {
+        "name": "forum_subscriptions_pkey",
+        "table": "forum_subscriptions",
+        "valid": true,
+        "definitionMd5": "a440906bfb2fbc6f1e3ec08133062dfe"
+      },
+      {
+        "name": "forum_subscriptions_topic_id_fkey",
+        "table": "forum_subscriptions",
+        "valid": true,
+        "definitionMd5": "779ad368d96a89dafb800b3672dbfdb1"
+      },
+      {
+        "name": "forum_subscriptions_user_id_fkey",
+        "table": "forum_subscriptions",
+        "valid": true,
+        "definitionMd5": "e208476b0e6d80576b69508e9d165e3f"
+      },
+      {
+        "name": "notification_preferences_category_check",
+        "table": "notification_preferences",
+        "valid": true,
+        "definitionMd5": "160c6f1be1c0dcf2efd67e94a4f8c9c2"
+      }
+    ]
+  },
+  "environment": {
+    "at": "2026-11-04T03:01:46.265Z",
+    "changed": true,
+    "flag": "CHECK_WRITER_TRIAL_ENABLED",
+    "value": true,
+    "existingEncryptionPreserved": true,
+    "salesFlagPreserved": true,
+    "preservedNames": [
+      "CHECK_WRITER_SALES_ENABLED",
+      "CHECK_WRITER_ENCRYPTION_KEY"
+    ],
+    "scope": "Existing production key and sales flag retained byte-for-byte; only non-secret trial feature flag added. No key creation/rotation, no paid readiness change from crypto configuration. Existing deployments remain immutable."
+  },
+  "changes": [
+    "505500e9-4510-46dd-8ace-58b49a66f61c",
+    "c649701f-0231-4843-a19b-4819a3bc1ec9",
+    "25c65eb1-4208-4bb6-ad54-926e5ca126de",
+    "6fc734ff-1b91-4b5a-aa04-70725a5e9d79",
+    "5a3b1c06-60ca-4151-b6c7-9c0e9d8669e9",
+    "2adfc681-495d-415f-b9cb-8dc6bdcecba6",
+    "9db76491-3669-4eca-8894-5e9565c215b3",
+    "35298254-4bff-4392-b518-921886b3fd1b",
+    "18de1d7e-1a84-4309-87d5-a87ed539b583",
+    "d2c891bb-bbe1-481c-a881-d5c198417cb6",
+    "412fe803-6500-4830-8605-7add5b094705",
+    "5baa0e28-dc5d-415c-afb9-0da765dc336f",
+    "a8caa10d-d1d4-4c8a-953c-a1fe2c7901e5",
+    "388aa20f-684e-4919-9beb-46d02fa1ca0c",
+    "98868faa-4b43-496a-a974-05380341cd08"
+  ],
+  "native": {
+    "status": "tests-and-archive-running-not-published",
+    "commit": "0af7fc91b797c2a97cb274509c68d58c5f0384c0",
+    "workflowRun": 41765278823,
+    "baselineVersion": "1.0.0",
+    "baselineBuild": "90"
+  },
+  "held": [
+    "Independent unfinished Market developer/publisher-platform foundation and MarketV1-dependent subset",
+    "Separate applications and design-only previews",
+    "Deferred Payroll Tools optimization",
+    "Production payment/trial activation/SMS/provider test actions",
+    "Private or raw QA archives/screenshots/diagnostics in source commits"
+  ],
+  "scope": "Completed compatible product sources integrated. Historical already-shipped behavior preserved; independent unfinished developer platform/separate applications are excluded.",
+  "rollback": {
+    "webDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "sql": "Additive schema remains compatible with the previous web/native baseline; no destructive reversal or ledger rewrite is authorized."
+  }
+}
