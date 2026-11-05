@@ -136,6 +136,12 @@ final class OwnerTodayDiagnosticsTests: XCTestCase {
     func testInstalledOwnerTodayStatisticsPieAndHourlySelection() async throws {
         try await scenario("statistics_pie_and_hour_selection") { run in
             try await self.wait(self.fullReady, in: run.web)
+            try await self.wait("!!document.querySelector('[data-today-statistics]')", in: run.web)
+            // Statistics starts collapsed in the compact Today layout. Exercise
+            // the same disclosure a user opens before inspecting the charts.
+            let initiallyCollapsed = try await run.web.evaluateJavaScript("document.querySelector('[data-today-statistics]')?.closest('details')?.open===false") as? Bool
+            XCTAssertEqual(initiallyCollapsed, true)
+            _ = try await run.web.evaluateJavaScript("document.querySelector('[data-today-statistics]').closest('details').querySelector('summary').click();true")
             try await self.wait("document.querySelector('[data-today-statistics]')?.innerText.includes('Service mix') && document.querySelectorAll('[data-today-statistics] svg').length===2", in: run.web)
             // The chart becomes visible before deferred shell initialization
             // finishes. Establish its quiet baseline before measuring clicks;

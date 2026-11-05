@@ -3,10 +3,11 @@ import fs from 'node:fs';
 import http from 'node:http';
 import {chromium} from 'playwright-core';
 import assert from 'node:assert/strict';
-const out='artifacts/testflight90-review';
+const out='artifacts/combined-deploy/visual';
+fs.mkdirSync(out,{recursive:true});
 const mocks={
  'next/link':'export default function Link({href,children,prefetch,...props}){return <a href={href} {...props}>{children}</a>}',
- 'next/navigation':'export const useRouter=()=>({replace(){},push(){},refresh(){}});',
+ 'next/navigation':'export const usePathname=()=>location.pathname;export const useSearchParams=()=>new URLSearchParams(location.search);export const useRouter=()=>({replace(){},push(){},refresh(){}});',
  '@/components/workspace-language':'export const useWorkspaceTranslation=()=>value=>value;export const WorkspaceText=({text})=><>{text}</>;',
  '@/components/rewardlumi/visit-rewards':'export const VisitRewards=()=>null;',
  '@/components/rewardlumi/visit-gift-cards':'export const VisitGiftCards=()=>null;',
