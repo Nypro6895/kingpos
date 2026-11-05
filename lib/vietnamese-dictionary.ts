@@ -11,8 +11,10 @@ import localFirstCopy from "@/lib/vietnamese-local-first-copy.json";
 import campaignCopy from "@/lib/vietnamese-campaign-copy.json";
 import staffScanCopy from "@/lib/vietnamese-staff-scan.json";
 import personalQrCopy from "@/lib/vietnamese-personal-qr.json";
+import contextCopy from "@/lib/vietnamese-context-copy.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
+  "From the forum": "Mới từ diễn đàn",
   "Forum replies":"Trả lời trong diễn đàn", "Forum reply":"Diễn đàn", "Replies to your posts and discussions you participate in or follow.":"Trả lời bài của bạn và các chủ đề bạn tham gia hoặc theo dõi.",
   "An app account is linked to this staff profile": "Hồ sơ nhân viên này đã liên kết tài khoản ứng dụng",
   "Legal name is used for Staff and Payroll.": "Tên pháp lý được dùng cho hồ sơ nhân viên và bảng lương.",
@@ -89,6 +91,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Login & security": "Đăng nhập & bảo mật",
   "Notifications & connections": "Thông báo & kết nối",
   "My staff workspace": "Không gian làm việc của tôi",
+  ...contextCopy,
   "Report / Contact": "Báo lỗi / Liên hệ",
   "Report an issue and continue conversations with our team.": "Báo lỗi và tiếp tục trao đổi với đội ngũ hỗ trợ.",
   "Last updated": "Cập nhật lần cuối",
@@ -103,7 +106,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Something else": "Vấn đề khác",
   "Advertising": "Quảng cáo",
   "Activate": "Kích hoạt",
-  "Close dialog": "Đóng thông báo",
+  "Close dialog": "Đóng hộp thoại",
   "Activate this feature in Market.": "Vào Market để kích hoạt chức năng này.",
   "Save salon": "Lưu tiệm",
   "Unsave salon": "Bỏ lưu tiệm",
@@ -128,7 +131,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Why are you reporting this salon?": "Vì sao bạn báo cáo tiệm này?",
   "Incorrect salon information": "Thông tin tiệm không chính xác",
   "Salon is closed or does not exist": "Tiệm đã đóng cửa hoặc không tồn tại",
-  "Duplicate salon profile": "Hồ sơ tiệm bị trùng",
+  "Duplicate salon profile": "Trang tiệm bị trùng",
   "Scam, fraud or impersonation": "Lừa đảo, gian lận hoặc mạo danh",
   "Inappropriate or harmful content": "Nội dung không phù hợp hoặc gây hại",
   "Other problem": "Vấn đề khác",
@@ -140,11 +143,11 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "This salon is no longer available.": "Tiệm này không còn khả dụng.",
   "Check In": "Điểm danh", Report: "Báo cáo", POS: "Bán hàng",
   Owner: "Chủ tiệm", Staff: "Nhân viên", Today: "Hôm nay", Schedule: "Lịch làm việc",
-  Book: "Đặt lịch", Bookings: "Lịch hẹn", Profile: "Hồ sơ", Post: "Bài đăng",
+  Book: "Đặt lịch", Bookings: "Lịch hẹn", Profile: "Trang cá nhân", Post: "Bài đăng",
   Notifications: "Thông báo", More: "Thêm", "My Place": "Không gian của tôi",
   Payroll: "Lương", Reports: "Báo cáo", Customers: "Khách hàng", Services: "Dịch vụ",
-  Settings: "Cài đặt", Market: "Chợ ứng dụng", Campaigns: "Chiến dịch",
-  "Salon profile": "Hồ sơ tiệm", "Salon settings": "Cài đặt tiệm", "Salon Profile": "Hồ sơ tiệm",
+  Settings: "Cài đặt", Market: "Market", Campaigns: "Chiến dịch",
+  "Salon profile": "Trang tiệm", "Salon settings": "Cài đặt tiệm", "Salon Profile": "Trang tiệm",
   "Salon Settings": "Cài đặt tiệm", "Point of sale": "Bán hàng", "POS Tickets": "Phiếu bán hàng",
   "POS settings": "Cài đặt bán hàng", "POS Settings": "Cài đặt bán hàng",
   "Sign out": "Đăng xuất", "Switch workspace": "Chuyển không gian làm việc",
@@ -196,7 +199,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Download CSV": "Tải CSV", "Financial data": "Dữ liệu tài chính", "Customer data": "Dữ liệu khách hàng",
   "Staff data": "Dữ liệu nhân viên", "Select all": "Chọn tất cả", "Select categories": "Chọn danh mục",
   "Business name": "Tên doanh nghiệp", "Salon name": "Tên tiệm", "Business details": "Thông tin doanh nghiệp",
-  "Contact information": "Thông tin liên hệ", "Public profile": "Hồ sơ công khai",
+  "Contact information": "Thông tin liên hệ", "Public profile": "Trang công khai",
   "Operating hours": "Giờ mở cửa", "Opening hours": "Giờ mở cửa", "Business hours": "Giờ làm việc",
   "Save hours": "Lưu giờ làm việc", Monday: "Thứ Hai", Tuesday: "Thứ Ba", Wednesday: "Thứ Tư",
   Thursday: "Thứ Năm", Friday: "Thứ Sáu", Saturday: "Thứ Bảy", Sunday: "Chủ Nhật",
@@ -233,10 +236,10 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Add to Reylumi": "Thêm vào Reylumi", "Remove from Reylumi": "Gỡ khỏi Reylumi",
   Turns: "Lượt", Start: "Bắt đầu", End: "Kết thúc", Clear: "Xóa", Comment: "Bình luận",
   Actions: "Thao tác", Note: "Ghi chú", Reason: "Lý do", Retry: "Thử lại", View: "Xem",
-  Remaining: "Còn lại", "All Settings": "Tất cả cài đặt", Professional: "Chuyên viên",
+  Remaining: "Còn lại", "All Settings": "Tất cả cài đặt", Professional: "Nhân viên",
   "Note (optional)": "Ghi chú (không bắt buộc)", Calendar: "Lịch", Period: "Kỳ",
   "+ Add Staff": "+ Thêm nhân viên", Saved: "Đã lưu", Reconciliation: "Đối soát",
-  No: "Không", Yes: "Có", "Slot interval": "Khoảng cách khung giờ", Confirmation: "Xác nhận",
+  No: "Không", Yes: "Có", "Slot interval": "Khoảng cách giữa các giờ đặt lịch", Confirmation: "Xác nhận",
   "Request confirmation": "Yêu cầu xác nhận", "Instant booking": "Đặt lịch tức thì",
   "Override reason": "Lý do điều chỉnh", "Total:": "Tổng cộng:", "Subtotal:": "Tạm tính:",
   "Customer:": "Khách hàng:", "Reason:": "Lý do:", "Note:": "Ghi chú:",
@@ -246,7 +249,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Available for salon operations and POS.": "Dùng cho hoạt động tiệm và bán hàng.",
   "Booking staff": "Nhân viên nhận lịch", "Correction History": "Lịch sử điều chỉnh",
   History: "Lịch sử", "No POS work log for this date.": "Chưa có nhật ký bán hàng trong ngày này.",
-  "Publish now": "Đăng ngay", "Publication settings": "Cài đặt đăng bài", "Edit profile": "Chỉnh sửa hồ sơ",
+  "Publish now": "Đăng ngay", "Publication settings": "Cài đặt đăng bài", "Edit profile": "Chỉnh sửa trang cá nhân",
   Share: "Chia sẻ", Decline: "Từ chối", "Updated Total": "Tổng sau điều chỉnh", Page: "Trang",
   "Help & support": "Trợ giúp và hỗ trợ", "Booking hours": "Giờ nhận lịch",
   "Bookable services": "Dịch vụ có thể đặt lịch", New: "Mới", Confirmed: "Đã xác nhận",
@@ -270,7 +273,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Check-in time": "Giờ điểm danh", "Check-out time": "Giờ kết thúc ca", "Work hours": "Giờ làm",
   "Staff attendance": "Điểm danh nhân viên", "Attendance": "Điểm danh", "Waiting": "Đang chờ",
   "In service": "Đang phục vụ", "Ready": "Sẵn sàng", "Finished": "Đã xong", "Queue": "Hàng chờ",
-  "Waiting list": "Danh sách chờ", "Add to queue": "Thêm vào hàng chờ", "Quick access": "Truy cập nhanh",
+  "Waiting list": "Danh sách chờ", "Add to queue": "Thêm vào hàng chờ", "Quick access": "Lối tắt",
   "Income analysis": "Phân tích thu nhập", "Analysis": "Phân tích", "My payroll": "Lương của tôi",
   "My schedule": "Lịch làm việc của tôi", "Workday": "Ngày làm việc", "Request time off": "Xin nghỉ phép",
   "Connection": "Kết nối", "Connections": "Kết nối", "Connected": "Đã kết nối",
@@ -289,7 +292,22 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Closing Inputs": "Nhập tiền chốt ngày",
 
 };
-const templates = Object.entries(VIETNAMESE_UI).filter(([key]) => /\{\d+\}/.test(key)).map(([key, value]) => {
+// JSX decodes entities before text reaches the translator. Alias only known
+// dictionary keys, without decoding or otherwise rewriting user-entered values.
+const uiEntities: Record<string, string> = {
+  "&apos;": "'", "&#39;": "'", "&quot;": '"', "&amp;": "&",
+  "&gt;": ">", "&lt;": "<", "&copy;": "©", "&middot;": "·", "&times;": "×",
+};
+for (const [key, value] of Object.entries(VIETNAMESE_UI)) {
+  const decoded = key.replace(/&(?:apos|quot|amp|gt|lt|copy|middot|times);|&#39;/g, entity => uiEntities[entity]);
+  if (decoded !== key && !Object.hasOwn(VIETNAMESE_UI, decoded)) VIETNAMESE_UI[decoded] = value;
+}
+
+// Prefer the most specific sentence. Otherwise "Book {0}" consumes
+// "Book with Amy" before "Book with {0}" can translate the action correctly.
+const templates = Object.entries(VIETNAMESE_UI).filter(([key]) => /\{\d+\}/.test(key))
+  .sort(([left], [right]) => right.replace(/\{\d+\}/g, "").length - left.replace(/\{\d+\}/g, "").length)
+  .map(([key, value]) => {
   const slots: string[] = [];
   const escaped = key.split(/(\{\d+\})/).map(part => {
     if (/^\{\d+\}$/.test(part)) { slots.push(part); return "([\\s\\S]*?)"; }

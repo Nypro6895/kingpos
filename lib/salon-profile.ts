@@ -946,6 +946,7 @@ export async function getCurrentSalonProfileManageData(
       context: resolvedContext,
       looks: [],
       readiness: getSalonProfileReadiness({
+        salonStatus: resolvedContext.currentSalon?.status,
         looks: [],
         services: [],
         setting,
@@ -1041,6 +1042,7 @@ export async function getCurrentSalonProfileManageData(
     looks,
     contentPage: contentPage === undefined ? undefined : { nextPage: hasMore ? contentPage + 1 : null, managed: true },
     readiness: getSalonProfileReadiness({
+      salonStatus: salon.status,
       looks,
       publishedLookCount: publishedCountResult?.data?.length ?? undefined,
       services,

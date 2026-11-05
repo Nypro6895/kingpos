@@ -7,11 +7,11 @@ export const settingCopy = {
   notifications: {label:'Notifications', description:'Choose which updates you receive', icon:'bell'},
   connections: {label:'Connections & invitations', description:'Connected salons and pending invitations', icon:'link'},
   'delete-account': {label:'Delete personal account', description:'Review account deletion and its impact', icon:'trash', danger:true},
-  'salon-profile': {label:'Salon information', description:'Contact, address and opening hours', icon:'store'},
-  'public-profile': {label:'Website & public profile', description:'Photos, appearance and publishing', icon:'globe'},
-  services: {label:'Services & prices', description:'Services, prices and eligible booking staff', icon:'scissors'},
-  booking: {label:'Booking rules', description:'Booking times, availability and preferences', icon:'calendar'},
-  'staff-team': {label:'Team & invitations', description:'Staff, access and public team', icon:'team'},
+  'salon-profile': {label:'Salon information', description:'Name, contact details and address', icon:'store'},
+  'public-profile': {label:'Go online', description:'Public profile, photos and online booking', icon:'globe'},
+  services: {label:'Services & prices', description:'Services, prices and appointment lengths', icon:'scissors'},
+  booking: {label:'Hours & booking', description:'Opening hours, staff schedules and online appointments', icon:'calendar'},
+  'staff-team': {label:'Team', description:'Who takes appointments, their services and access', icon:'team'},
   payroll: {label:'Payroll', description:'Pay cycle and staff payroll', icon:'wallet'},
   'pos-display': {label:'POS & devices', description:'POS access, devices and customer display', icon:'device'},
   shortcuts: {label:'Today shortcuts', description:'Choose your workspace quick actions', icon:'grid'},
@@ -37,9 +37,8 @@ export function settingsCategories(groupId:string): {title:string;keys:string[]}
     {title:'Account actions',keys:['delete-account']},
   ];
   if(groupId.startsWith('salon-')) return [
-    {title:'Salon',keys:['salon-profile','public-profile']},
-    {title:'Services & booking',keys:['services','booking']},
-    {title:'People & pay',keys:['staff-team','payroll']},
+    {title:'Set up your salon',keys:['salon-profile','services','staff-team','booking','public-profile']},
+    {title:'Daily management',keys:['payroll']},
     {title:'Workspace',keys:['pos-display','shortcuts']},
     {title:'Owner controls',keys:['ownership','close-salon']},
   ];

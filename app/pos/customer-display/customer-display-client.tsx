@@ -1,4 +1,6 @@
 "use client";
+import { SalonName, SalonIdentityContext } from "@/components/salon-member-badge";
+
 import { GiftCustomerControl } from "@/components/gift-card/pos-gift-card";
 import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
@@ -442,7 +444,7 @@ function SalonBrand({
               isLight ? "text-white" : "text-zinc-950",
             ].join(" ")}
           >
-            {displayName}
+            <SalonName name={displayName}/>
           </p>
         </div>
       ) : null}
@@ -1377,7 +1379,7 @@ function TransactionSummary(props: Parameters<typeof TransactionSummaryContent>[
         <div className="min-w-0">
           {props.settings.customerShowSalonName ? (
             <p className="truncate text-sm font-semibold text-zinc-700">
-              {props.settings.salonName}
+              <SalonName name={props.settings.salonName} />
             </p>
           ) : null}
           <p className="text-xl font-semibold text-teal-800">
@@ -2690,7 +2692,7 @@ export function CustomerDisplayClient({
   }
 
   return (
-    <div className={rootClass} ref={rootRef}>
+    <SalonIdentityContext reference={{kind:"display",value:token}}><div className={rootClass} ref={rootRef}>
       <GiftCustomerControl token={token} />
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
@@ -2831,6 +2833,7 @@ export function CustomerDisplayClient({
           </CheckInShell>
         )}
       </div>
-    </div>
+    </div></SalonIdentityContext>
   );
 }
+

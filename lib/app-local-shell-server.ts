@@ -14,6 +14,8 @@ import { ownerCampaignSettings } from "./owner-campaigns";
 import { getWorkspacePendingSummary } from "./workspace-pending";
 import { getWorkspaceTranslation } from "./workspace-language-server";
 import { runReadWithDeadline } from "./bounded-get";
+import { GET as forumLatestGET } from "@/app/api/forum/latest/route";
+import { POST as membershipBadgesPOST } from "@/app/api/membership/salon-badges/route";
 import { GET as sessionGET } from "@/app/(app)/api/auth/session/route";
 import { POST as logoutPOST } from "@/app/(app)/api/auth/logout/route";
 import { selectWorkspaceContext } from "@/lib/workspace-selection";
@@ -107,7 +109,7 @@ async function auxiliaryPart<T>(read: () => Promise<T>): Promise<AppLocalShellPa
 export async function readAppLocalShellResource(name: string, args: Record<string, unknown> = {}, options: { scope?: string; etag?: string; signal?: AbortSignal } = {}): Promise<AppLocalRead<AppLocalShellNavigation | AppLocalShellConfiguration | AppLocalShellSummary | AppLocalShellNotice | AppLocalShellAuxiliary | AppLocalHttpResponse> | null> {
   const rule = APP_LOCAL_SHELL_READS.find(value => value.name === name); if (!rule) return null;
   const allowed: readonly string[] = rule.argumentKeys;
-  if (Object.entries(args).some(([key, value]) => !allowed.includes(key) || typeof value !== "string" || value.length > 512)) fail(400, "Unsupported shell request.");
+  if (Object.entries(args).some(([key, value]) => !allowed.includes(key) || typeof value !== "string" || value.length > (name === "http.shell.membership-badges" && key === "input" ? 10000 : 512))) fail(400, "Unsupported shell request.");
   if (options.signal?.aborted) throw options.signal.reason;
   const { context, current } = await authorized(options.scope); const scope = options.scope!;
   let data: AppLocalShellNavigation | AppLocalShellConfiguration | AppLocalShellSummary | AppLocalShellNotice | AppLocalShellAuxiliary | AppLocalHttpResponse;
@@ -136,6 +138,14 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
       url.search = new URLSearchParams(args as Record<string,string>).toString();
       data = await wire(await campaignGET(new NextRequest(url,{headers:forwarded(current),signal:options.signal})));
     }
+  }
+  else if (name === "http.shell.forum-latest") {
+    data = await wire(await forumLatestGET());
+  }
+  else if (name === "http.shell.membership-badges") {
+    const headers = forwarded(current); headers.set("content-type","application/json");
+    const request = new NextRequest("https://reylumi.com/api/membership/salon-badges", {method:"POST",headers,signal:options.signal,body:typeof args.input === "string" ? args.input : "{}"});
+    data = await wire(await membershipBadgesPOST(request));
   }
   else {
     const path = name === "http.shell.session" ? "/api/auth/session" : name === "http.shell.quick-booking" ? "/api/public-booking/context" : "/api/explore/advertising";

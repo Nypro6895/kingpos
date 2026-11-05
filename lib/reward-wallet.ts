@@ -29,6 +29,7 @@ export function validateRewardWallet(cards: unknown): asserts cards is RewardVie
   if (!Array.isArray(cards) || cards.some(card => !card || typeof card.salonId !== "string" || typeof card.salonName !== "string"
     || typeof card.enabled !== "boolean"
     || ![card.available, card.pending, card.reserved].every(value => Number.isSafeInteger(value) && value >= 0)
+    || (card.pendingBookings !== undefined && (!Array.isArray(card.pendingBookings) || card.pendingBookings.some((row: { bookingId: unknown; points: number; firstBookingPoints: number; visitPoints: number; spendPoints: number; at: string }) => !row || typeof row.bookingId !== "string" || !Number.isFinite(Date.parse(row.at)) || ![row.points, row.firstBookingPoints, row.visitPoints, row.spendPoints].every(value => Number.isSafeInteger(value) && value >= 0))))
     || !Array.isArray(card.offers) || card.offers.some((offer: RewardOffer) => !offer || typeof offer.id !== "string" || typeof offer.title !== "string"
       || ![offer.points, offer.valueCents, offer.minimumCents].every(value => Number.isSafeInteger(value) && value >= 0))
     || (card.history && (!Array.isArray(card.history) || card.history.some((row: { id: unknown; reason: unknown; at: string; delta: number }) => !row || typeof row.id !== "string" || typeof row.reason !== "string" || !Number.isFinite(Date.parse(row.at)) || !Number.isSafeInteger(row.delta)))))) throw new Error("Your rewards could not be updated. Please try again.");

@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
 import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
@@ -120,7 +122,7 @@ async function AdminBusinessDetailPage({
                 {detail.locations.map((location) => (
                   <Field
                     key={location.id}
-                    label={location.name}
+                    label={<SalonName name={location.name} salonId={location.id}/>}
                     value={
                       <Link
                         className="font-bold text-orange-700"

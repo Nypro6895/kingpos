@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { resolvePostIdentity } from "@/lib/post-identity";
 import { SalonIntroduction } from "@/components/salon-introduction";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -198,7 +200,7 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
       <div className={styles.recent} data-count={latest.length} data-reference-listing={latest.length === 1 && latest[0].id === data.directoryListing?.referencePostId}>{latest.map(post => <article key={`${post.contentType}-${post.id}`} className={styles.post} data-has-image={hasImage(post)}>
         <button id={`${post.contentType}-${post.id}`} type="button" className={styles.postOpen} onClick={() => onPost(post)}>
           {hasImage(post) ? <div className={styles.postMedia}><WebsiteImage src={post.imageUrl!} alt={post.title || "Salon post"} loading="lazy" onError={() => imageFailed(post.imageUrl!)}/><NailIllustrationCredit imageUrl={post.imageUrl} className={styles.imageCredit}/></div> : null}
-          <div className={styles.postBody}><span className="mb-1 grid gap-0.5 text-sm"><strong>{data.profile.name}</strong>{post.authorRole === "staff" ? <small className="font-normal text-zinc-500"><WorkspaceText text="By" /> {resolvePostIdentity({source:"salon",salonName:data.profile.name,authorName:post.authorName,authorRole:post.authorRole}).secondaryName}</small> : null}</span><strong>{post.title || post.caption || "Salon update"}</strong>
+          <div className={styles.postBody}><span className="mb-1 grid gap-0.5 text-sm"><strong><SalonName name={data.profile.name} salonId={data.profile.salonId}/></strong>{post.authorRole === "staff" ? <small className="font-normal text-zinc-500"><WorkspaceText text="By" /> {resolvePostIdentity({source:"salon",salonName:data.profile.name,authorName:post.authorName,authorRole:post.authorRole}).secondaryName}</small> : null}</span><strong>{post.title || post.caption || "Salon update"}</strong>
             {post.caption && post.caption !== post.title ? <p className={styles.clamp}><WorkspaceText text={post.caption} /></p> : null}
             {post.id === data.directoryListing?.referencePostId ? <small><WorkspaceText text="Reylumi · Reference information" /></small> : null}
             {post.publishedAt ? <time dateTime={post.publishedAt}><WorkspaceText text={new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })} /></time> : null}
@@ -213,7 +215,7 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
     {showTeam ? <section className={styles.team}>{heading("Our team", onTeam)}<WebsiteTeam members={data.staff.slice(0, 3)} canBook={canBook} onBook={onBook} onOpen={onStaff} salonId={data.profile.salonId}/></section> : null}
     {aboutParagraphs.length ? <section className={styles.about}>{heading(`About ${data.profile.name}`)}<details className={styles.aboutText}><summary><WorkspaceText text="Our story" /></summary>{aboutParagraphs.map((text, index) => <p key={index}><WorkspaceText text={text} /></p>)}</details></section> : null}
     {feedPhotos.length ? <section className={styles.photoFeed} aria-label={__vt("More salon photos")}><WebsitePhotoFeed key={data.profile.salonId} photos={feedPhotos} onOpen={openLibraryPhoto} renderActions={libraryActions} renderEngagement={libraryEngagement}/></section> : null}
-    <footer className={styles.footer}><strong>{data.profile.name}</strong>{locality ? <span>{locality}</span> : null}</footer>
+    <footer className={styles.footer}><strong><SalonName name={data.profile.name} salonId={data.profile.salonId}/></strong>{locality ? <span>{locality}</span> : null}</footer>
   </div>;
 }
 

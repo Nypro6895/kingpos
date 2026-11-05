@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { ActionFeedback } from "@/components/action-feedback";
 import { AdminIcon, type AdminIconName } from "../_components/admin-icon";
 import Link from "next/link";
@@ -424,7 +426,7 @@ export function BusinessesWorkspace({
                             <Icon name="store" />
                           </span>
                           <span>
-                            <strong>{b.name}</strong>
+                            <strong><SalonName name={b.name} salonId={b.id}/></strong>
                             <small>
                               {address(b) || "Address not provided"}
                             </small>
@@ -613,7 +615,7 @@ export function BusinessesWorkspace({
                       className={s.textButton}
                       onClick={() => open(task.location_id)}
                     >
-                      <strong>{task.name}</strong>
+                      <strong><SalonName name={task.name} salonId={task.location_id}/></strong>
                     </button>
                     <small>
                       {task.label} · {date(task.created_at, true)}
@@ -669,7 +671,7 @@ export function BusinessesWorkspace({
                     <Icon name="flag" />
                   </span>
                   <div>
-                    <strong>{b.name}</strong>
+                    <strong><SalonName name={b.name} salonId={b.id}/></strong>
                     <small>
                       Missing contact information · {b.assignee || "Unassigned"}
                     </small>
@@ -715,7 +717,7 @@ export function BusinessesWorkspace({
                     <Icon name="flag" />
                   </span>
                   <div>
-                    <strong>{b.name}</strong>
+                    <strong><SalonName name={b.name} salonId={b.id}/></strong>
                     <small>{b.followup_reason}</small>
                     <small>
                       {b.assignee || "Unassigned"} ·{" "}
@@ -940,7 +942,7 @@ export function BusinessesWorkspace({
                           ) : (
                             <dl>
                               <dt>Business name</dt>
-                              <dd>{row.name}</dd>
+                              <dd><SalonName name={row.name} salonId={row.id}/></dd>
                               <dt>Address</dt>
                               <dd>{address(row) || "Not provided"}</dd>
                               <dt>Phone</dt>

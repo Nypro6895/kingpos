@@ -60,6 +60,7 @@ async function countActiveServicesForSalon(input: {
     .from("services")
     .select("id", { count: "exact", head: true })
     .eq("salon_id", input.salonId)
+    .is("booking_parent_service_id", null)
     .eq("is_active", true);
 
   if (error) {

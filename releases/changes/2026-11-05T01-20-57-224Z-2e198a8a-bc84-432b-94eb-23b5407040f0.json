@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "post-tag-book-comment-20261104",
+  "status": "needs-integration",
+  "summary": "Fix tagged personal/staff post Book fallback and keep focused comment composer above mobile keyboard",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/post-comments/post-comment-thread.tsx",
+    "components/explore-account-actions.tsx",
+    "components/use-comment-composer-visibility.ts",
+    "lib/comment-composer-visibility.ts",
+    "lib/public-booking-routes.ts",
+    "tests/public-booking-routes.test.mjs",
+    "tests/tagged-post-book-button.test.mjs",
+    "tests/comment-composer-keyboard-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/post-tag-book-comment/source",
+    "commit": "722634c0265f87974f10847410c9c89bb00e3b45"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Route, button, authentication intent and public wizard regressions (17)",
+      "result": "passed"
+    },
+    {
+      "name": "Chromium real ContentViewer/hook keyboard and visual viewport fixture",
+      "result": "passed",
+      "evidence": "artifacts/post-tag-book-comment/keyboard-browser-result.json"
+    },
+    {
+      "name": "ESLint changed code/tests and diff whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled release build and authenticated hosted salon acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Physical iPhone keyboard and bundled native shipping acceptance",
+      "result": "pending"
+    }
+  ],
+  "evidence": "artifacts/post-tag-book-comment/HANDOFF.txt",
+  "id": "2e198a8a-bc84-432b-94eb-23b5407040f0",
+  "recordedAt": "2026-11-05T01:20:57.224Z",
+  "worktree": "C:\\Reylumi-worktrees\\post-tag-book-comment-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

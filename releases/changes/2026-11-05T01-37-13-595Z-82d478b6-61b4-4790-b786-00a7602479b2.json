@@ -1,0 +1,20 @@
+{
+  "files": [],
+  "kind": "change",
+  "source": {
+    "commit": "2844e9c3fd047bc9fc2969322be10bfaa388a360"
+  },
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Arrange salon settings and add actionable booking setup guidance",
+  "changeId": "salon-online-settings-20261104",
+  "validation": [],
+  "id": "82d478b6-61b4-4790-b786-00a7602479b2",
+  "recordedAt": "2026-11-05T01:37:13.595Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

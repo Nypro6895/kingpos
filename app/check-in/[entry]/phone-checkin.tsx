@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { CustomerIdentityChoices } from "@/components/customer-identity-choices";
 import type { CustomerIdentityChoice } from "@/types/customer-identity";
 import { useRef, useState } from "react";
@@ -12,7 +14,7 @@ export function PhoneRelayCheckin({ entry, salonName, services, initialName = ""
   const [candidates, setCandidates] = useState<CustomerIdentityChoice[]>([]);
   const choice = useRef<string | null | undefined>(undefined);
   const form = useRef<HTMLFormElement>(null);
-  return <main className={`${styles.panel} ${styles.pass}`}><h1 className="text-2xl font-semibold">{salonName}</h1><p>Check in · Choose your services</p><form ref={form} onSubmit={async event => {
+  return <main className={`${styles.panel} ${styles.pass}`}><h1 className="text-2xl font-semibold"><SalonName name={salonName} reference={{kind:"entry",value:entry}}/></h1><p>Check in · Choose your services</p><form ref={form} onSubmit={async event => {
     event.preventDefault(); if (inFlight.current) return;
     inFlight.current = true; setBusy(true); setError(""); request.current ??= crypto.randomUUID();
     try { const result = await phoneRelayCheckin({ entry, phone, name, services: selected, request: request.current, identityChoice: choice.current ?? undefined, newCustomer: choice.current === null }); if (result.error) { setError(result.error); setCandidates(result.candidates ?? []); } else if (result.pass) router.replace(`/visit/${result.pass}`); else setError("Check-in saved. Ask the front desk for your number."); }

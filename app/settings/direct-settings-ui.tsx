@@ -263,8 +263,8 @@ export function SettingsSwitch({label,description,checked,disabled,onChange}:{la
 }
 
 const SettingsEditingContext=createContext<((saved?:boolean)=>void)|null>(null);
-export function SettingsEditSection({title,summary,preview,children,action="Edit",danger=false,heading,closeOnSave=true}:{closeOnSave?:boolean;heading?:ReactNode;title:string;summary?:string;preview?:ReactNode;children:ReactNode;action?:string;danger?:boolean}){
- const [open,setOpen]=useState(false),[mounted,setMounted]=useState(false),[saved,setSaved]=useState(false);const id=useId();
+export function SettingsEditSection({title,summary,preview,children,action="Edit",danger=false,heading,closeOnSave=true,id:providedId}:{id?:string;closeOnSave?:boolean;heading?:ReactNode;title:string;summary?:string;preview?:ReactNode;children:ReactNode;action?:string;danger?:boolean}){
+ const [open,setOpen]=useState(false),[mounted,setMounted]=useState(false),[saved,setSaved]=useState(false);const generatedId=useId();const id=providedId||generatedId;
  const pages=useSettingsChildNavigation(),[resetKey,setResetKey]=useState(0);
  const finish=(success=false)=>{setSaved(success);setOpen(false);setMounted(false);};
  if(pages)return <SettingsChildPage id={id} title={<WorkspaceText text={title}/>} heading={heading} description={summary} danger={danger} defer resetKey={resetKey}>

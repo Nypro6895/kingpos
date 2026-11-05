@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import { MyReviews } from "@/app/activity/my-reviews";
 import { WorkspaceLink } from "@/components/workspace-link";
@@ -272,7 +274,7 @@ function SavedPostCard({ post, index }: { post: AccountSavedPost; index: number 
       </div>
       <Link href={post.href} className={styles.caption}>
         <h2>{post.title}</h2>
-        {post.salonName ? <p>{post.salonName}</p> : null}
+        {post.salonName ? <p><SalonName name={post.salonName} salonId={post.salonId}/></p> : null}
       </Link>
     </article>
   );

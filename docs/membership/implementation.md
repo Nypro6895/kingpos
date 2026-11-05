@@ -60,3 +60,7 @@ Two compatibility fixes are included: membership pages now use the current exper
 Shared navigation/permission/settings overlays are assembled from current canonical source in the generated candidate, with before-hashes and preservation checks recorded in `next-verification.json`. The canonical working files are not modified. Fixture Settings navigation screens only mount the authorized Membership links, not the live provider administration panels.
 
 The generated fixture skips full-project type validation; new/changed membership source passes the scoped TypeScript check and ESLint separately. This is an isolated Next production-mode compilation and local runtime verification, not the full release source build, hosted Supabase/GoTrue acceptance, provider acceptance or deployment. No production secrets are loaded: the child environment is restricted to system variables and ephemeral fixture configuration. Fixture servers close after the check.
+
+## Universal salon member identity
+
+The subsequent web-wide badge revision and its scoped-source integration instructions are documented in [everywhere-implementation.md](everywhere-implementation.md). It supersedes the initial four shared identity adapters without changing membership pricing, credit balances or financial calculations.

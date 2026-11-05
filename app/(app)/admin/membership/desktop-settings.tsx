@@ -59,9 +59,11 @@ export function DesktopSettings({ plans, website, section, busy, editable, comma
             {row("Initial setup / delivery", (p, i) => <div className={s.setupCell}>{select(i, 'initial setup', serviceBenefits(p.config).setup, [['included', 'Included'], ['not_included', 'Not included'], ['by_agreement', 'By agreement']], v => service(i, 'setup', v))}{select(i, 'setup delivery', serviceBenefits(p.config).method, [['remote', 'Remote'], ['onsite', 'On-site'], ['by_agreement', 'By agreement']], v => service(i, 'method', v))}</div>)}
             {row("Training sessions", (p, i) => <input aria-label={`${p.key} training sessions`} type="number" min={0} max={100} step={1} placeholder="By agreement" value={serviceBenefits(p.config).training_sessions ?? ''} onChange={e => service(i, 'training_sessions', e.target.value === '' ? null : Number(e.target.value))} />)}
             {row("Support", (p, i) => select(i, 'support level', serviceBenefits(p.config).support, [['standard', 'Standard'], ['priority', 'Priority'], ['dedicated', 'Dedicated contact']], v => service(i, 'support', v)))}
+            {row("Reylumi member blue check", (p, i) => <label className={s.check}><input type="checkbox" checked={p.config.salon_member_badge === true} onChange={e => update(i, 'salon_member_badge', e.target.checked)} />Included</label>)}
             {row("Enrollment", (p, i) => <label className={s.check}><input type="checkbox" checked={p.selling} onChange={e => { const checked=e.target.checked; setDrafts(rows => rows.map((x,n)=>n===i?{...x,selling:checked,config:{...x.config,enrollment_open:checked}}:x)); }} />Open</label>)}
           </tbody></table></div>
           <p className={s.muted}>Blank prices mean “to be confirmed”. Enrollment switches apply on publication. Setup and training are managed by scope or session, not by minutes.</p>
+          <p className={s.muted}>The blue check identifies an active Reylumi member salon. It is separate from identity approval and customer feedback. Published benefits apply to new salon terms.</p>
         </div>
         <div hidden={section !== "usage"} data-settings-section="usage">
           <div className={s.tableWrap}><table className={s.settingsTable}><thead><tr><th>Included service</th>{drafts.map(p => <th key={p.key}>{p.config.name}</th>)}</tr></thead><tbody>

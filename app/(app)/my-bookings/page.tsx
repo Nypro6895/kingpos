@@ -1,3 +1,4 @@
+
 import { withExperiencePage } from "@/components/experience-page";
 import { CustomerActivityClient } from "@/app/activity/customer-activity-client";
 import { CustomerActivityError } from "@/app/activity/customer-activity-view";

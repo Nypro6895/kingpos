@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { BeautyComposerDialog } from "./beauty-composer-dialog";
@@ -846,7 +848,7 @@ function PostCard({
       <div className="grid gap-3 px-1 pb-1">
         {attribution ? (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-            <Link href={`/explore/salons/${attribution.salonId}`} className="font-semibold text-text-primary hover:text-brand-orange">{attribution.salonName}</Link>
+            <Link href={`/explore/salons/${attribution.salonId}`} className="font-semibold text-text-primary hover:text-brand-orange"><SalonName name={attribution.salonName} salonId={attribution.salonId}/></Link>
             {post.salonPublication ? <span className="text-[11px] text-text-muted">Salon publication: {post.salonPublication.status}</span> : null}
             {attribution.staffName ? (
               <p className="font-semibold text-text-secondary">
@@ -2457,7 +2459,7 @@ export function BeautyProfileClient({
                                 type="button"
                               >
                                 <span className="block font-extrabold">
-                                  {candidate.salonName}
+                                  <SalonName name={candidate.salonName} salonId={candidate.salonId}/>
                                 </span>
                                 <span className="mt-1 block font-semibold text-text-secondary">
                                   {sourceLabel(candidate.source)} -{" "}
@@ -2516,7 +2518,7 @@ export function BeautyProfileClient({
                                   type="button"
                                 >
                                   <span className="block font-extrabold text-text-primary">
-                                    {salon.salonName}
+                                    <SalonName name={salon.salonName} salonId={salon.salonId}/>
                                   </span>
                                   {[salon.city, salon.state].filter(Boolean)
                                     .length > 0 ? (
@@ -2537,7 +2539,7 @@ export function BeautyProfileClient({
                         <div className="grid gap-3 rounded-2xl bg-brand-teal-soft p-3 ring-1 ring-brand-teal/20">
                           <div className="flex items-center justify-between gap-2">
                           <p className="text-sm font-extrabold text-brand-teal">
-                            {attribution.salonName}
+                            <SalonName name={attribution.salonName} salonId={attribution.salonId}/>
                             {attribution.staffName
                               ? ` with ${attribution.staffName}`
                               : ""}

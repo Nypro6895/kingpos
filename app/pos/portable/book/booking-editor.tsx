@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import { ActionFeedback } from "@/components/action-feedback";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -85,7 +87,7 @@ export function BookingEditor(p: Props) {
   const autoAllowed=p.data.bookingPolicy?.autoAssignEnabled !== false;
   const missingStaff=!autoAllowed && p.staffIds.some(id=>!id);
   return <aside ref={panel} className={styles.editor} role="region" aria-label={__vt(p.editing ? "Edit appointment" : "New appointment")}>
-    <header className={styles.editorHeading}><div><h2>{p.editing ? "Edit appointment" : <WorkspaceText text="New appointment" />}</h2><small>{p.data.salonName}</small></div><button type="button" aria-label={__vt("Close appointment editor")} onClick={close} disabled={p.busy}>×</button></header>
+    <header className={styles.editorHeading}><div><h2>{p.editing ? "Edit appointment" : <WorkspaceText text="New appointment" />}</h2><small><SalonName name={p.data.salonName} currentSalon/></small></div><button type="button" aria-label={__vt("Close appointment editor")} onClick={close} disabled={p.busy}>×</button></header>
     <div className={styles.editorBody} inert={picker !== null || discard || p.busy}>
       <div className={styles.editorLabel}><WorkspaceText text="Customer" /></div>
       <button type="button" className={styles.editorCustomer} onClick={()=>open({kind:"customer"})}><span className={styles.avatar}>{p.customerName.slice(0,1)||"+"}</span><span><strong><WorkspaceText text={p.customerName||"Find or add customer"} /></strong><small><WorkspaceText text={p.customerPhone||"Search name or phone"} /></small></span><span>›</span></button>

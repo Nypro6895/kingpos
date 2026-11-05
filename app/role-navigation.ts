@@ -147,7 +147,7 @@ const STAFF_LINKS: NavigationLink[] = [
 const OWNER_LINKS: NavigationLink[] = [
   { href: "/staff/today", icon: "home", id: "owner-today", label: "Today" },
   { href: "/bookings", icon: "book", id: "owner-book", label: "Book" },
-  { href: "/salon-profile", icon: "store", id: "owner-profile", label: "Profile" },
+  { href: "/salon-profile", icon: "store", id: "owner-profile", label: "Salon profile" },
   {
     href: "/notifications",
     icon: "bell",

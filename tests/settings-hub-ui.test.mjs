@@ -58,7 +58,7 @@ test('grouped Settings retains drafts, scopes saves, uses distinct icons, and re
   await group(page,'Salon limited');assert.equal(await nav.getByRole('button').count(),2);assert.equal(await nav.getByRole('button',{name:/Ownership|Payroll|closure/}).count(),0);
   await group(page,'My work salon');assert.equal(await nav.getByRole('button').count(),2);await nav.getByRole('button',{name:/Working hours/}).click();await page.locator('.settings-inline-editor:visible').getByLabel('Fixture setting').waitFor();
   assert.equal((await page.evaluate(()=>window.calls)).at(-1).kind,'staff-schedule');
-  await home(page);await page.getByLabel('Find a setting or salon').fill('opening hours');await page.getByRole('button',{name:/Salon information.*Salon one/}).click();assert.equal(await page.locator('.settings-inline-editor:visible').getAttribute('id'),'salon-one-salon-profile');
+  await home(page);await page.getByLabel('Find a setting or salon').fill('opening hours');await page.getByRole('button',{name:/Hours & booking.*Salon one/}).click();assert.equal(await page.locator('.settings-inline-editor:visible').getAttribute('id'),'salon-one-booking');
   await group(page,'Add salon');await page.getByText('Create salon in place').waitFor();
   await group(page,'Legal & Privacy');await page.getByRole('link',{name:'Privacy Policy',exact:true}).waitFor();
   await group(page,'Help & support');await page.getByRole('link',{name:'Account recovery',exact:true}).waitFor();
@@ -73,7 +73,7 @@ test('deep links and Vietnamese search open the correct editor without extra nav
   for(const [section,id] of [['profile','personal-profile'],['salon-two-booking','salon-two-booking'],['staff-schedule','staff-work-schedule']]){
    const {page,errors}=await open(browser,bundle,390,`/?section=${section}`);assert.equal(await page.locator('.settings-inline-editor:visible').getAttribute('id'),id);await noOverflow(page);assert.deepEqual(errors,[]);await page.close();
   }
-  const {page}=await open(browser,bundle,390,'/?vi');await page.getByLabel('Tìm cài đặt hoặc tiệm').fill('giờ mở cửa');await page.getByRole('button',{name:/Thông tin tiệm.*Salon one/}).click();assert.equal(await page.locator('.settings-inline-editor:visible').getAttribute('id'),'salon-one-salon-profile');await page.close();
+  const {page}=await open(browser,bundle,390,'/?vi');await page.getByLabel('Tìm cài đặt hoặc tiệm').fill('giờ mở cửa');await page.getByRole('button',{name:/Giờ mở cửa & đặt lịch.*Salon one/}).click();assert.equal(await page.locator('.settings-inline-editor:visible').getAttribute('id'),'salon-one-booking');await page.close();
  }finally{await browser.close();}
 });
 
@@ -87,7 +87,7 @@ test('notification groups share switches and preserve state after a failed save'
   // Retry initial load after installing the local API fixture if the effect already ran.
   if(await page.getByRole('button',{name:'Retry',exact:true}).count())await page.getByRole('button',{name:'Retry',exact:true}).click();
   const booking=page.getByRole('switch',{name:/^Booking updates/});await booking.waitFor();await page.waitForFunction(()=>!document.querySelector('[role=switch]').disabled);
-  assert.equal(await page.getByRole('switch').count(),8);assert.equal(await booking.getAttribute('aria-checked'),'true');await booking.click();await page.getByRole('alert').waitFor();assert.equal(await booking.getAttribute('aria-checked'),'true');await booking.click();await page.waitForFunction(()=>document.querySelector('[role=switch]').getAttribute('aria-checked')==='false');assert.equal(writes,2);await noOverflow(page);assert.deepEqual(errors,[]);
+  assert.equal(await page.getByRole('switch').count(),9);assert.equal(await page.getByRole('switch',{name:/Forum replies/}).count(),1);assert.equal(await booking.getAttribute('aria-checked'),'true');await booking.click();await page.getByRole('alert').waitFor();assert.equal(await booking.getAttribute('aria-checked'),'true');await booking.click();await page.waitForFunction(()=>document.querySelector('[role=switch]').getAttribute('aria-checked')==='false');assert.equal(writes,2);await noOverflow(page);assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 });
 

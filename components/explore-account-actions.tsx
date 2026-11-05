@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { openQuickBooking } from "@/lib/quick-booking-client";
+import { resolveExploreBookingHref } from "@/lib/public-booking-routes";
 import {
   salonLoveAction,
   referenceLoveAction,
@@ -85,8 +86,9 @@ export function ExploreAccountActionsProvider({
           sessionStorage.removeItem(KEY);
           if (Date.now() - intent.at < 86400000) {
             if (intent.kind === "book") {
-              if (intent.book.href)
-                setTimeout(() => openQuickBooking(intent.book.href!), 0);
+              const destination = resolveExploreBookingHref(intent.book.href, intent.book.contactHref);
+              if (destination)
+                setTimeout(() => openQuickBooking(destination), 0);
               else setTimeout(() => setContact(intent.book), 0);
             } else if (intent.kind === "reference") {
               void referenceLoveAction(intent.itemKey, true).then((result) => {
@@ -240,10 +242,7 @@ export function ExploreBookButton({
   const authenticated = useContext(Auth);
   const [prompt, setPrompt] = useState(false);
   useTransientOverlay(() => setPrompt(false), prompt);
-  const destination =
-    href && /^\/(?:book|booking)\/[0-9a-f-]{36}(?:[/?#]|$)/i.test(href)
-      ? href
-      : null;
+  const destination = resolveExploreBookingHref(href, contactHref);
   const book: BookIntent = { href: destination, name, contactHref, phoneHref };
   return (
     <>

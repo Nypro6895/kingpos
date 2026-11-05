@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
@@ -593,7 +595,7 @@ export function PortableCheckInClient({
           </div>}
           <div className="min-w-0">
             {showSalonBranding && <h1 className="truncate text-xl font-semibold leading-tight text-zinc-950">
-              {viewData.salonName}
+              <SalonName name={viewData.salonName} salonId={viewData.salonId}/>
             </h1>}
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium leading-tight text-zinc-600">
               <time>{clock.date || viewData.today}</time>

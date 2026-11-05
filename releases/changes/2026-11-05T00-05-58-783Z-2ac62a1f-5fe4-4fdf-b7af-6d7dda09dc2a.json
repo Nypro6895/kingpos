@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "vietnamese-context-20261104",
+  "status": "needs-integration",
+  "summary": "Correct 1678 Vietnamese dictionary entries and add 600 missing UI keys; disambiguate profile labels, prioritize specific templates and resolve JSX-decoded entities",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "app/staff/staff-directory-editor.tsx",
+    "artifacts/vietnamese-context-20261104/REPORT.md",
+    "artifacts/vietnamese-context-20261104/changes.json",
+    "artifacts/vietnamese-context-20261104/coverage.json",
+    "artifacts/vietnamese-context-20261104/start.json",
+    "artifacts/vietnamese-context-20261104/translation-validation.txt",
+    "artifacts/vietnamese-context-20261104/validation.txt",
+    "lib/current-context.ts",
+    "lib/vietnamese-booking-deposit-market.json",
+    "lib/vietnamese-campaign-copy.json",
+    "lib/vietnamese-context-copy.json",
+    "lib/vietnamese-developer-market.json",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-help-copy.json",
+    "lib/vietnamese-payroll-mobile.json",
+    "lib/vietnamese-salon-setup.json",
+    "lib/vietnamese-workspace-copy.json",
+    "scripts/revise-vietnamese-context.mjs",
+    "tests/vietnamese-context.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\vietnamese-context-20261104\\artifacts\\vietnamese-context-20261104\\frozen",
+    "commit": "21b346af3a026c42ce1dc75418eb0edef2dcffa7"
+  },
+  "validation": [
+    {
+      "name": "Vietnamese context, JSON integrity, dynamic values, actual Chrome customer form and navigation tests (29)",
+      "result": "passed",
+      "evidence": "artifacts/vietnamese-context-20261104/validation.txt"
+    },
+    {
+      "name": "Workspace copy coverage: 448 files, 6722 occurrences, zero missing keys",
+      "result": "passed",
+      "evidence": "artifacts/vietnamese-context-20261104/coverage.json"
+    },
+    {
+      "name": "TypeScript/TSX syntax and Git diff whitespace checks",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled production build and authenticated hosted/iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "2ac62a1f-5fe4-4fdf-b7af-6d7dda09dc2a",
+  "recordedAt": "2026-11-05T00:05:58.783Z",
+  "worktree": "C:\\Reylumi-worktrees\\vietnamese-context-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

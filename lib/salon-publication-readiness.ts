@@ -2,8 +2,7 @@ import type { SalonProfileReadiness, SalonProfileLook, SalonProfileSetting } fro
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 
-// These are two existing entry-point policies for the SAME publication flag.
-// Preserve every enforced condition until their business-rule consolidation is approved.
+// Settings and the profile studio share the same explicit publication requirements.
 // Public route availability must be read from the server, never inferred from a checklist.
 type DiscoverySettingSnapshot = {
   address_line1?: string | null;
@@ -31,15 +30,6 @@ export type SalonDiscoveryReadiness = {
 
 function hasText(value: string | null | undefined) {
   return Boolean(value?.trim());
-}
-
-function getLocationLabel(setting: SalonProfileSetting) {
-  return [
-    setting.address_line1,
-    setting.city,
-    setting.state,
-    setting.postal_code,
-  ].filter(hasText);
 }
 
 export function getSalonDiscoveryReadiness(input: {
@@ -116,6 +106,7 @@ export function getSalonDiscoveryReadiness(input: {
 }
 
 export function getSalonProfileReadiness(input: {
+  salonStatus: string | null | undefined;
   looks: SalonProfileLook[];
   publishedLookCount?: number;
   services: Service[];
@@ -126,54 +117,15 @@ export function getSalonProfileReadiness(input: {
     (look) => look.status === "published",
   ).length;
   const activeServiceCount = input.services.filter(
-    (service) => service.is_active,
+    (service) => service.is_active && !service.booking_parent_service_id,
   ).length;
   const activeStaffCount = input.staff.filter((member) => member.is_active).length;
-  const requiredItems = [
-    {
-      complete: hasText(input.setting.business_name),
-      id: "business-name",
-      label: "Public business name",
-      required: true,
-    },
-    {
-      complete: hasText(input.setting.public_profile_tagline),
-      id: "tagline",
-      label: "Tagline",
-      required: true,
-    },
-    {
-      complete: hasText(input.setting.public_profile_logo_path),
-      id: "logo",
-      label: "Logo",
-      required: true,
-    },
-    {
-      complete: hasText(input.setting.public_profile_cover_path),
-      id: "cover",
-      label: "Cover image",
-      required: true,
-    },
-    {
-      complete: getLocationLabel(input.setting).length >= 4 && hasText(input.setting.phone),
-      id: "location-contact",
-      label: "Valid location and contact",
-      required: true,
-    },
-    {
-      complete: activeServiceCount > 0,
-      id: "active-service",
-      label: "At least one active service",
-      required: true,
-    },
-    {
-      complete: publishedLookCount > 0,
-      id: "published-look",
-      label: "At least one published look",
-      required: true,
-    },
-  ];
+  const requiredItems = getSalonDiscoveryReadiness({salonStatus:input.salonStatus,activeServiceCount,setting:input.setting}).items.map(item=>({...item,required:true}));
   const optionalItems = [
+    {complete:hasText(input.setting.public_profile_tagline),id:"tagline",label:"Tagline",required:false},
+    {complete:hasText(input.setting.public_profile_logo_path),id:"logo",label:"Logo",required:false},
+    {complete:hasText(input.setting.public_profile_cover_path),id:"cover",label:"Cover image",required:false},
+    {complete:publishedLookCount>0,id:"published-look",label:"At least one published look",required:false},
     {
       complete: hasText(input.setting.public_profile_story),
       id: "story",
@@ -200,7 +152,7 @@ export function getSalonProfileReadiness(input: {
     },
   ];
   const items = [...requiredItems, ...optionalItems];
-  const completedCount = items.filter((item) => item.complete).length;
+  const completedCount = requiredItems.filter((item) => item.complete).length;
   const missingRequiredItems = requiredItems
     .filter((item) => item.required && !item.complete)
     .map((item) => item.label);
@@ -209,7 +161,7 @@ export function getSalonProfileReadiness(input: {
 
   return {
     canPublish,
-    completionPercent: Math.round((completedCount / items.length) * 100),
+    completionPercent: Math.round((completedCount / requiredItems.length) * 100),
     isExploreEligible: isPublished,
     items,
     missingRequiredItems,

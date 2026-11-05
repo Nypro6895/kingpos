@@ -1,0 +1,429 @@
+{
+  "verifiedAt": "2026-11-04T07:14:00.863Z",
+  "scope": "Local source/candidate and sample browser fixtures; no deployment or production mutation",
+  "sharedFiles": 72,
+  "directNames": 100,
+  "sourceFiles": [
+    {
+      "file": "app/book/[salonId]/public-booking-client.tsx",
+      "baselineSha256": "5dc327f34941b6c08146f36493f5ff31f6bbcf1fd160efee29384fcd85f9c7ce",
+      "candidateSha256": "32ad1ee0386c5ee0c71d1b8c2be087ff6e7b5d1c84ba0565522a58a38fc3161d"
+    },
+    {
+      "file": "app/account/account-deletion-panel.tsx",
+      "baselineSha256": "af143152f20047dbb518c1f889e2c4fbb3b9ce5850de7fbd484ba8b97ce92278",
+      "candidateSha256": "a5c0ca4c022783ef11278fa3b76571d1de3ad4bc38ab35301ac28af674c1b6bc"
+    },
+    {
+      "file": "app/activity/history-details-drawer.tsx",
+      "baselineSha256": "21b733484fc36d92d2478bc80c5b01d81c4c4e53ba44506d4f5ab51831540c91",
+      "candidateSha256": "35049ac6efa7492f5d1e6573c939ec24d006d5ab961830fa371ca732b7cc4c00"
+    },
+    {
+      "file": "app/(app)/activity/activity-history-panel.tsx",
+      "baselineSha256": "46ead79557664885146108ff736dd55cf848dddec58e429049f9f5d02099c8df",
+      "candidateSha256": "c03180319e71a076b94868dd4cd72d049ae76c295b72c7af92e8c1fef8a49a91"
+    },
+    {
+      "file": "app/activity/my-customer-profiles.tsx",
+      "baselineSha256": "8f18aec0cf4c42fb96ca8fe0e20800f3c0a9b33a18c528797d8c5bd0c8376dff",
+      "candidateSha256": "21ba232278f3d487341ddeb7319f731267c77cae89f1fdb0686a7a7fb9f6e444"
+    },
+    {
+      "file": "app/(app)/activity/page.tsx",
+      "baselineSha256": "51d73341ba8b7525bf1c43c7a40202afc336d821b60e2d9f1916339a41adc9ab",
+      "candidateSha256": "891dbe2cb82c3dffd2d496a63f4b3f56ddc2587cdcc41bfa38fddae57b33d648"
+    },
+    {
+      "file": "app/(app)/activity/receipts/[ticketId]/page.tsx",
+      "baselineSha256": "8063e55eb58e493655912dcca3225d58f68e8743da0d35a555292124c2b4b3e2",
+      "candidateSha256": "5eff832901c28f1cf607a507750ca981da272322aedab7fad069a18ba8148ff7"
+    },
+    {
+      "file": "app/(app)/admin/dashboard/dashboard-detail.tsx",
+      "baselineSha256": "fa9b916406649311ae70cf9dbb97eb9fe762c8e0dbc144c884952b92165e9710",
+      "candidateSha256": "448a33d8832726da4890dd7583af2408ee51ce53f01927951910945223acdf65"
+    },
+    {
+      "file": "app/(app)/admin/claims/page.tsx",
+      "baselineSha256": "0018dcdae148823604e76c25a9272eae670b1333fcf98c47baa07822df80da2d",
+      "candidateSha256": "04096494e8ad7b4d7e1b7c8d76ea2cc3bc59e28718b0345918ab25741d342d52"
+    },
+    {
+      "file": "app/(app)/admin/locations/businesses-workspace.tsx",
+      "baselineSha256": "b451320acf88faafe467f5379ec95e9f4be0db8c7d48aeeff543404bb3d6adc9",
+      "candidateSha256": "80bc1e9be227ab058c623ae0b5331507a26de76e887b6ead32e244188505650e"
+    },
+    {
+      "file": "app/(app)/admin/users/[userId]/security-panel.tsx",
+      "baselineSha256": "50fc6c28993ecc84932d6b8047380ff342a9e8082be94bb3c23b8b0928b4b5f8",
+      "candidateSha256": "b951479c51e1258530afd2e4b29d12bb3f984b9d74b172d07baf907a582614f1"
+    },
+    {
+      "file": "app/(app)/admin/verification/page.tsx",
+      "baselineSha256": "0edba8b94e943ce90a89e463e891c98fe363de46fe683ea393d03488e2815b1b",
+      "candidateSha256": "784c0d00304fb2317386d77f37d09b2bcd6a8c13b2e92b6f74aa31655f94ce9d"
+    },
+    {
+      "file": "components/salon-report-dialog.tsx",
+      "baselineSha256": "25e0ae8a11ee80c40a8e8d6b2b92d4c2704c147baf280f904e5ab04e2e85d98c",
+      "candidateSha256": "6ef55e450a4a720c9c16661845847737833821d40dc7d20ad7dded959e9cb2ba"
+    },
+    {
+      "file": "app/beauty/beauty-profile-client.tsx",
+      "baselineSha256": "136e104e9d06ca9223f99017018780aa935b2ef48a777cacc796251c34f35da4",
+      "candidateSha256": "8f1d9a8057f2bdc9eb78535718bbd0d93d6e145998bacaada7f28015c8241634"
+    },
+    {
+      "file": "app/booking/manage/[token]/guest-manage-client.tsx",
+      "baselineSha256": "89ef3d9339e8d700aba117f7b86341d2cf558c9c787a3b43497a1edb81723b8c",
+      "candidateSha256": "037176f9450d239e55fe092cd9efb35c0da9e52559b4c3c14d10789b0cca8617"
+    },
+    {
+      "file": "app/bookings/booking-workspace-client.tsx",
+      "baselineSha256": "bd7deca65a47fbb2533efff2994c76326fa60d627ebdde76e6a7da27d2db3b24",
+      "candidateSha256": "95d972100bd1632ec823b5db38a39f9dce9b47568d9db61bce9d6c2ccc9f4045"
+    },
+    {
+      "file": "app/(app)/claim/[salonId]/page.tsx",
+      "baselineSha256": "d8114c1536b112f0d5f4dba75f6795f25afba00ffd9168d8ada6368b009c41c8",
+      "candidateSha256": "415c1fcb26d2284fb5f7959250b686a2e4a89423ec258d13978bfce9612f4762"
+    },
+    {
+      "file": "app/(app)/claim/customer/page.tsx",
+      "baselineSha256": "a6897ee196a0f278ebff687ed658d3aba8d94868e167d7eb16b8f6d9e2ccc008",
+      "candidateSha256": "5772b2fc3d27d251ee3680e907b17a2f523d4ceeb4d176f46ef305a00a9703a7"
+    },
+    {
+      "file": "components/salon-post-preview.tsx",
+      "baselineSha256": "2d1e8247ec6bc5c78c8f8df041cc59eb1e68f4b6c15cd777db478f681960b0a2",
+      "candidateSha256": "e2070d00be88a318bb1f4f67a4b4d5e1e5ef844a5a863c159b408a44d75274a2"
+    },
+    {
+      "file": "app/explore/explore-inspiration-post.tsx",
+      "baselineSha256": "5caf56058e56aaa4a8d371ba922f6a01c63fd8c1f6a7b945dcd9d75300473ac0",
+      "candidateSha256": "05c873ecc972da7aebd57bf6eb0cb1dd956c8331f540eb021742d087ef77622e"
+    },
+    {
+      "file": "app/explore/explore-salon-card.tsx",
+      "baselineSha256": "f9a0cf2eeaccef3df67d0efef938dd01d4c0a8d0fc4e8a7a19df1c4e0eccf181",
+      "candidateSha256": "18ebce37b98a7f1a526f4b562acdc1576a6964f1b192a254328b968071bfb9a5"
+    },
+    {
+      "file": "app/explore/explore-feed.tsx",
+      "baselineSha256": "e2f63843482dfc51a7ac5e57d163649cc46989365297eb1d18c378da39c607f4",
+      "candidateSha256": "9cd6dba7d0f7d0668fba84e1dfdb30d50278395799a4980cd0cc3b5bde522d26"
+    },
+    {
+      "file": "app/explore/nail-inspiration.tsx",
+      "baselineSha256": "83aead1fb3b048aa764f19716cfdaa9bbc757a9166244da2a14245c5ed7f34f7",
+      "candidateSha256": "a10df1f9a633b247b6e0642fe14cfc86b56bab16a1f20dc46dccd0fbd3694176"
+    },
+    {
+      "file": "app/explore/explore-editorial-sections.tsx",
+      "baselineSha256": "a6a8c93bf694735ac4c56eea9861a5c82a57300dd37d652041df0eb6eef7448b",
+      "candidateSha256": "c8bd5f11a59f5e3f70023f85a8c51ac5709d1b6102d0bb6d536c9677f5168621"
+    },
+    {
+      "file": "app/explore/explore-map.tsx",
+      "baselineSha256": "4d5ec522a52ccb933cc710b2f2ee0712ec17358fba5e3f25f6f21bc320cfb443",
+      "candidateSha256": "32d0e2314c2194dbd95186bb3d0096fccaf84898fdfffbc054f26571226f84ba"
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "baselineSha256": "c2a546193e8fa0bb6c9b1430d126562f10da96274e69a8c190600e4fa3336842",
+      "candidateSha256": "14b364b1d5a423820b1f86d668aa636719b426ed227d6e1fbce0ad211fabe3dd"
+    },
+    {
+      "file": "components/saved-salon-list.tsx",
+      "baselineSha256": "c060775773b278d14de871088c13a6229b0b920e4e733d98323fc76c9da70093",
+      "candidateSha256": "86a81c0630438da4662dd0900892286243b15c27241a78e47d09e5b0368bd157"
+    },
+    {
+      "file": "app/(app)/explore/looks/[lookId]/page.tsx",
+      "baselineSha256": "b1eb9e7fc47d6f76e0303ea454da79f4e402468759db2fea9a552e16d518f7d2",
+      "candidateSha256": "9a0bb52324e39bcbd8746071cbc56ceda37beeaf410a191b32bee03e8e433227"
+    },
+    {
+      "file": "app/salon-profile/salon-website-home.tsx",
+      "baselineSha256": "056b89634fc3f249b50ff22a49f41d0bdd796640e867710b8a67991045fa32eb",
+      "candidateSha256": "da207a6d4f74296254544266caa87b62744c3fe0ebab8280b472684ed0deddbc"
+    },
+    {
+      "file": "app/salon-profile/salon-website-header.tsx",
+      "baselineSha256": "d0063775e209dbd1f2a545c57e51a24b5e8b07aabc768081a8dabbc57499519b",
+      "candidateSha256": "acad4a3ab52e2ea509274dfa2924837f9e1ef0e12a1982fb730a15c4cf533a8e"
+    },
+    {
+      "file": "app/salon-profile/salon-profile-view.tsx",
+      "baselineSha256": "de79604b63926a873893c67f27f7ed1a17c51e92c1191fa08578420967f4ae72",
+      "candidateSha256": "4596d57ccb233831f8ea29a7ec96a21df0c9b68692a8586d8dc74ff4ab394f1e"
+    },
+    {
+      "file": "app/(app)/more/[section]/page.tsx",
+      "baselineSha256": "1ac4e4cc282228970223977b550a887d49be39757acbdb84115d84620a0953dc",
+      "candidateSha256": "296fd97d2d62ef98df306c3c32782f8d0b1c8a1d1dcd273b53fc916e77b507f5"
+    },
+    {
+      "file": "app/(app)/my-bookings/page.tsx",
+      "baselineSha256": "a4f036245f13ac4cdc6ccbeb83204e590dd46bcacb3eb0f15ecb6311068c29af",
+      "candidateSha256": "319746804e490374144cbdcc46a1693bfba15b4ac6509f661a57dff37df11e12"
+    },
+    {
+      "file": "app/my-place/place-panels.tsx",
+      "baselineSha256": "b02c94ea3c9af8980419d9e2fc4bf6754a480dd344212a2195d25c17e4b4210b",
+      "candidateSha256": "fb73d409f9fed994f8662db0d4355caab5a695272913633d5e6fa4982b252d09"
+    },
+    {
+      "file": "app/my-place/my-place-client.tsx",
+      "baselineSha256": "878f1353a16705fac904f3ae14cf60576bba7b4bd9f4a1dbdc9507fb8efa8424",
+      "candidateSha256": "9af1c34d30c69f70af6f9ff793f409c80ae1611fbc1b0029312cc5d04aa0ab98"
+    },
+    {
+      "file": "app/(app)/notifications/visits/[visitId]/page.tsx",
+      "baselineSha256": "ebc581a3de6a4230390a0cfc961fc5d1244ddca6850782458f8a285bff8678df",
+      "candidateSha256": "f09ee5d122e885d20925129829f86551151e4537f23eee8fc00a34d554f1430a"
+    },
+    {
+      "file": "app/(app)/payroll/tax-company/settings/page.tsx",
+      "baselineSha256": "37e5e8cfde6677aa9acd55dbdb1cfd3ddac246f63a16cdf9c1eda1decffe830a",
+      "candidateSha256": "d16b3e7a49677c9e716e50ed1f903e1beb717e4044738c8ebdeef18e77c1942a"
+    },
+    {
+      "file": "app/pos/portable/check-in/portable-check-in-client.tsx",
+      "baselineSha256": "f2c18c5eb53bb8735345027b8c165eeef0db92326a44bbd05ff0c7293580af94",
+      "candidateSha256": "4829d63c5a76a2b53b8267f4db451359b3f71c82c220f1512d03f17cade53399"
+    },
+    {
+      "file": "app/reports/operational-report-dashboard.tsx",
+      "baselineSha256": "45baa9000f723b7ded05c6c3f173e06e13e3df48c01bdfb8fa0588843e73801d",
+      "candidateSha256": "f1ec295f53e6dbfd71f13866a5cb84247b6a7e0d636e111bc36d13935eeacc4f"
+    },
+    {
+      "file": "app/(app)/pos-tickets/[ticketId]/page.tsx",
+      "baselineSha256": "e1e0dc53ef34dac79405ba8c58caa53d3c099372fb9920915e6f622087262c71",
+      "candidateSha256": "ef14d84a9bf2ccce7ecf9674f071e339f29d5b595d8414f25676ed54832c84a9"
+    },
+    {
+      "file": "app/pos/customer-display/customer-idle-screen.tsx",
+      "baselineSha256": "e97931f1e4ca3da47bf77a600c01d92d15d79443a787d8be868e18cf469745d7",
+      "candidateSha256": "bb878bf25fc7ccf4df67a0ccd6c629372c7c8d35815df7861d50033322501908"
+    },
+    {
+      "file": "app/pos/customer-display/checkin-receipt-panel.tsx",
+      "baselineSha256": "2a99d7cb377f37ed53ff75fe45eb92689a71f16983690cc37235fe83d9369daa",
+      "candidateSha256": "b88bf4de654b3112204976bec07a71e3c73dae54d4c4711d506550eeba94deb9"
+    },
+    {
+      "file": "app/pos/customer-display/customer-display-client.tsx",
+      "baselineSha256": "ba9c5a5ba6b50d2bab95405d35ec0a19b347a4295425cff0140a5bd878c2f0d1",
+      "candidateSha256": "389e991791aeb74fb460b53a28b9bb0cd51b754e0cb0f1f2c39fddf4be04bcde"
+    },
+    {
+      "file": "app/pos/pos-desk-client.tsx",
+      "baselineSha256": "013c165ff017688c27cf724f181174a6c4f1ef87137482d1cfb7bd16ec6cc7b9",
+      "candidateSha256": "9be2a1df677a59b100ff2aa70e9dbf79a909dad64d5bf6fad83702dc16cd2df2"
+    },
+    {
+      "file": "app/pos/portable/book/booking-editor.tsx",
+      "baselineSha256": "801b7b9e7ab423ed6ca9740c72dc741ba7caea817a0bc491d30f0d4e5fef4d8c",
+      "candidateSha256": "e34316efa1b8138bd6d7c3a9889c750eaffe022fe60593570b7ac27508d68bd5"
+    },
+    {
+      "file": "app/pos/portable/portable-workspace-tabs.tsx",
+      "baselineSha256": "6f1e3c4746030c7884cbd3535a32891e3ef9a5f227be45f40dd2e1238a0b1fd0",
+      "candidateSha256": "9c121a9a8f48ddf4bb1aa2e49111c778e98f88217eeee62cf31e228bde617c80"
+    },
+    {
+      "file": "app/qr/personal-qr-client.tsx",
+      "baselineSha256": "060b2fa9a0d957d4ce614e9d0027df38c53deb599198df55219dc28d38b82a8b",
+      "candidateSha256": "f4eb5879f861be255f778d649cf9934e1f0f863c9766ec39c4aa8e041b529ad5"
+    },
+    {
+      "file": "app/(app)/salon-profile/client-transformations/page.tsx",
+      "baselineSha256": "a99131adcc8946343f6732ab87979ee558b6655fbbec7002d03a5a9c3dd4b156",
+      "candidateSha256": "9287df03f956491303c57947f46d119d5a5288262987b6c37ce4a14771af2459"
+    },
+    {
+      "file": "app/salon-settings/ownership-section.tsx",
+      "baselineSha256": "8f0fffc9593594d7c48cc576a02bcbd0a239833492138b1b302f763d8e01a480",
+      "candidateSha256": "9fca61454bc23c72216d1b1d0238b767aa44dff2698c65c26b07f2ae7a2c5bed"
+    },
+    {
+      "file": "app/salons/claim-suggestions.tsx",
+      "baselineSha256": "4bb20dc1b949f366fd9b4e353c1ab885c928e6f3f7aa145d0f09e0d58ea1c67c",
+      "candidateSha256": "ca2852ede0f9860dee42f7ca795d600f1d9f8cc3b5456950bc8112355c969bd3"
+    },
+    {
+      "file": "app/salons/salon-management-page.tsx",
+      "baselineSha256": "0ab2e9ff8e5c3c500e393160462ad00df8ddb07880a8ebb1033fbc3e49bb0d4a",
+      "candidateSha256": "b4acfb5e098005c6065c9171dcbe75fbb1d5574cb4d5f0f974e4d2dc9cf4e50d"
+    },
+    {
+      "file": "app/settings/connections-panel.tsx",
+      "baselineSha256": "1d10d388b917a2fbbde5414c30abcfec13628e1f4d2481c79ddd6589ea2e33d1",
+      "candidateSha256": "2f2bc78370e265fed91e4991e003c6307a7e33d00f463f2111074878ff6d2c42"
+    },
+    {
+      "file": "app/settings/salon-list-panel.tsx",
+      "baselineSha256": "36c00e05de1bf7a872b34388d06862fd0a03c94c0671fe2609f3f7560e054413",
+      "candidateSha256": "30763acc9041dc2c0fec607b7ede6a548923bfe23a694ec7829c6be2afb271d9"
+    },
+    {
+      "file": "app/settings/ownership-lifecycle-panels.tsx",
+      "baselineSha256": "980dafdf6c0c3661b20307c6699b5aabeae5894e44cfd3c8a10fb5715900e4fa",
+      "candidateSha256": "db4a1b8a20202ccc77f5f0dea6894ec7a9ed3e8a3d5c589a9839a12575bb4c5b"
+    },
+    {
+      "file": "app/(app)/staff/connections/page.tsx",
+      "baselineSha256": "1a145522935db0e8cf1814d4d2f94340dc2a0c5192f3b5fb81bcfeac8c599625",
+      "candidateSha256": "019dced4a137bdb9387f8e5624a2e6968e39c6502db966f0de4504a6460042aa"
+    },
+    {
+      "file": "app/staff/today/today-dashboard-view.tsx",
+      "baselineSha256": "117b5738d622687920fedeecbbc44bb8f4e8e601b9bd551e9a0f06d48cb55c55",
+      "candidateSha256": "e47d8a63d60218a6c50c5c0194bcfbff5e8dec30203c7bdf90523161f3537b28"
+    },
+    {
+      "file": "app/(app)/staff/workday/page.tsx",
+      "baselineSha256": "0a95ba745013eefcfecb0251e95141af0e6cd57fc651d2f3943b603ce4a7a609",
+      "candidateSha256": "1ff3478e9b6a4c330f73559fc44a76a06bec3b5e91c4015f08189c541b4e55dd"
+    },
+    {
+      "file": "app/support/support-ui.tsx",
+      "baselineSha256": "88bc440983b4226c35df9cb2d8e41111d04c99ec040def220a5e54c6bdc058dd",
+      "candidateSha256": "ab279e19b1f6694661562788328be300bbae8938e352f704cf12454626fccb5e"
+    },
+    {
+      "file": "app/(app)/tax-company/page.tsx",
+      "baselineSha256": "7a4edf982b3747a87efc88bd1152cf99461c3873b9a50aac2fda5f95e2a1e485",
+      "candidateSha256": "4bce2644326585cfbed1fd44c455d1a98e9063a57b1ae81b3f24d06d4da24a9a"
+    },
+    {
+      "file": "app/(app)/tax-company/[salonId]/page.tsx",
+      "baselineSha256": "340baf817081752c7f1ea7dfe606f6cfc9497906d2351340192dee7a5f332c6e",
+      "candidateSha256": "3a559c8747dfc927fa65c506645a8c08e4e6fe1f55c9b4ba6569ac8d64acede0"
+    },
+    {
+      "file": "app/signup/phone/signup-phone-form.tsx",
+      "baselineSha256": "76f518fdf9bffa1fd0164c689860a3ac5a86ecc1c567b13161451ec555e8ec5a",
+      "candidateSha256": "c823a5b13bcd7cbb2259add986618fa74346968268b303c389f4a1c08f6d15f1"
+    },
+    {
+      "file": "app/check-in/[entry]/phone-checkin.tsx",
+      "baselineSha256": "ae5671432a7185ba79ef4f9544f5d37a0df81b492721971514e8fc3007aeea85",
+      "candidateSha256": "b0c0a570d157c86ffe208306e66f01c9bf344edf90f9f1060e12ebbf10bcaacc"
+    },
+    {
+      "file": "components/post-identity.tsx",
+      "baselineSha256": "ae7b6c49176ffe1e5f4ddb2921937e79e2025ef59550abed2abdfe9ad0122ce7",
+      "candidateSha256": "51edf2e7f9234499f5b8e2b9f0a166a65945bb692ef00a15ac76a03c97fb428e"
+    },
+    {
+      "file": "app/navigation-shell.tsx",
+      "baselineSha256": "21d358e0ee9f4bb195729b96ea66fcaa830decc74aead82b9fbec904abe18ce2",
+      "candidateSha256": "414e43976a157e645532680a2e326fdcd4df9c58045bab4cae969582fdec915f"
+    },
+    {
+      "file": "app/workspace-hub-ui.tsx",
+      "baselineSha256": "5924de478e7ff65d76ad30a3342a398f03b9d181b096c34fe2aab96ffa42aca0",
+      "candidateSha256": "7ca530f6800795dd7a4ccf7cad0db150f0134fb7b8adc22048a9477b6d971fbb"
+    },
+    {
+      "file": "app/my-place/place-ui.tsx",
+      "baselineSha256": "85a0da476cd5ed373b71c15f1f01d84e225d732bef2f693c52aa74dfd64e4bb6",
+      "candidateSha256": "a05a07fd67c987ca57f3147e9c38adbb6cb5cdac991051130f63955e1ec26de3"
+    },
+    {
+      "file": "app/(app)/admin/businesses/[businessId]/page.tsx",
+      "baselineSha256": "9eb06a2fcb3b33fbbf69caa5ec48f20ece584296b687db1a88c3ca664302b43c",
+      "candidateSha256": "88b3d63d8651bc3307c632f0545f086dc10e717202b210be06a51fd69a43c4ec"
+    },
+    {
+      "file": "app/post-comments/post-comment-thread.tsx",
+      "baselineSha256": "53cbd10f9fc161e37c2933316d69330ace097225eb37196dff7904f9fb552d66",
+      "candidateSha256": "7a786a4900f7542c6c86c68efd0d42ff2678996ad6d852ded4657767467e72d2"
+    },
+    {
+      "file": "app/(app)/pos/portable/layout.tsx",
+      "baselineSha256": "7a310da69123027d0bdc5c53df2b9ce95abad9c71259c4f9e4277ffa6e3ecaae",
+      "candidateSha256": "e19d6f922457ff0b74d69b5cf62dd5a79059f30120e7f42697c0491e25c5727e"
+    },
+    {
+      "file": "app/(app)/admin/locations/[locationId]/page.tsx",
+      "baselineSha256": "09b9f187cf8e26a4ed1a998f3e48fcd7b8875d3ee2aa3247b59387e8a15088e5",
+      "candidateSha256": "4b0e677f51334d968a52433a124110fbf0709a7fa063f476443459f5a82920de"
+    },
+    {
+      "file": "app/(app)/admin/_components/admin-ui.tsx",
+      "baselineSha256": "2584309edb56a5e7b983e31a83e1b602bacd89a1edd877b61e4b6b400f218098",
+      "candidateSha256": "029c5c49964f4d1402b217f1c562484d10df40fb4e6452aa1746bf7ac7f8ae3b"
+    },
+    {
+      "file": "app/salon-profile/salon-website-header.module.css",
+      "baselineSha256": "daa96c32c9232f99b63fe54a2c2fffa01514abdea8efcdc9d88603a3e88f31b5",
+      "candidateSha256": "7a26eb82bccff9124f42de7692026b44079c518a7a46700ad918b7d6124c516a"
+    }
+  ],
+  "featureFiles": [
+    {
+      "file": "components/salon-member-badge.tsx",
+      "sha256": "127738d591c4e610f841ccbdbec5f9be35796b56a1f3ef1045991dfcfff09e19"
+    },
+    {
+      "file": "components/salon-member-badge.module.css",
+      "sha256": "62ec0c2e7b727ef055d36abbe501b111578771c34c02abf261ae9f6f39ae2c99"
+    },
+    {
+      "file": "lib/salon-member-store.ts",
+      "sha256": "d97b370677e4b3c2bccfb46111f24249a88295a56caa49c611417b9e6e37bdf6"
+    },
+    {
+      "file": "app/api/membership/salon-badges/route.ts",
+      "sha256": "70d85197bc2a8f7f1357e3a367c1b16c279fc38220f52e05182f90a31ccf5bf2"
+    },
+    {
+      "file": "supabase/migrations/202611040002_membership_badge_scopes.sql",
+      "sha256": "ba02245b184398261abe50a559d0f6ecc7ed8bd93bb617a1e50ca214244ee8fe"
+    }
+  ],
+  "types": {
+    "baselineDiagnostics": 0,
+    "candidateDiagnostics": 0,
+    "newErrors": [],
+    "featureErrors": [],
+    "files": 72
+  },
+  "lint": {
+    "baselineErrors": 1,
+    "candidateErrors": 1,
+    "newErrors": []
+  },
+  "checks": [
+    {
+      "name": "Membership + badge SQL/HTTP + source adapter tests",
+      "result": "passed",
+      "count": 30
+    },
+    {
+      "name": "105-ID batching, deduplication, expiration, revocation and identity reset/late response",
+      "result": "passed"
+    },
+    {
+      "name": "Reviewed shared components and role-aware navigation: 1440/390, long names and print",
+      "result": "passed",
+      "artifacts": [
+        "artifacts/member-everywhere/browser/shared-identities-1440.png",
+        "artifacts/member-everywhere/browser/shared-identities-390.png"
+      ]
+    },
+    {
+      "name": "Membership desktop Settings/Manage regression",
+      "result": "passed"
+    },
+    {
+      "name": "Full release build, hosted acceptance and physical iPhone/native bundle compatibility",
+      "result": "pending"
+    }
+  ]
+}

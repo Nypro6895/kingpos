@@ -1,3 +1,5 @@
+
+import { SalonIdentityContext } from "@/components/salon-member-badge";
 import { PortableOfflineShell } from "@/app/pos/portable/portable-offline-shell";
 import Image from "next/image";
 import { Suspense } from "react";
@@ -122,7 +124,7 @@ export default async function PortablePosLayout({
       data-portable-shell
       data-pos-persistent-workspace
     >
-      <WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+      <SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
         <PortableWorkspaceTabs
           canConfirmBookings={session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookCreate)}
           localPanels
@@ -138,7 +140,7 @@ export default async function PortablePosLayout({
         <PortableOfflineShell />
         <PortableShellRefresh />
         <PortableTouchKeyboard />
-      </PortableWorkspaceStateProvider></WorkspaceLanguageProvider>
+      </PortableWorkspaceStateProvider></WorkspaceLanguageProvider></SalonIdentityContext>
     </main>
   );
 }

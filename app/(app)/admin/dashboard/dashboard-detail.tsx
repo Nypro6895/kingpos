@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import Link from "next/link";
 import { ReportCaseView } from "../reports/report-case-view";
@@ -41,7 +43,7 @@ export function DashboardDetailPanel({ data, item, onComplete }: { data: Dashboa
     const files = row.attachments ?? [];
     return <div className="dashboard-detail-grid">
       <Panel title={`${isClaim ? "Ownership claim" : "Verification"} · ${item.reference}`}>
-        <Facts><Fact label="Business"><Link className="dashboard-link" href={`/admin/locations/${row.salon_id}`}>{row.salon_name}</Link></Fact><Fact label="Applicant">{userLink(row.applicant_user_id, isClaim ? data.request.applicant_name || "Reylumi user" : "View applicant")}</Fact>
+        <Facts><Fact label="Business"><Link className="dashboard-link" href={`/admin/locations/${row.salon_id}`}><SalonName name={row.salon_name} salonId={row.salon_id}/></Link></Fact><Fact label="Applicant">{userLink(row.applicant_user_id, isClaim ? data.request.applicant_name || "Reylumi user" : "View applicant")}</Fact>
           {isClaim && data.request.applicant_email && <Fact label="Email">{data.request.applicant_email}</Fact>}
           <Fact label="Submitted">{date(isClaim ? row.created_at : data.request.submitted_at || row.created_at)}</Fact><Fact label="Status">{row.status.replaceAll("_", " ")}</Fact><Fact label="Address">{row.address}</Fact>
           {isClaim && <Fact label="Phone check">{data.request.phone_verified_at ? "Confirmed" : "Not confirmed"}</Fact>}

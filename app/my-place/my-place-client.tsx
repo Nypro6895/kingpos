@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -203,7 +205,7 @@ export function MyPlaceClient({
           <Avatar workspace={workspace} />
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h3 className="min-w-0 break-words text-sm font-medium text-zinc-950"><WorkspaceText text={workspace.label} /></h3>
+              <h3 className="min-w-0 break-words text-sm font-medium text-zinc-950">{workspace.type==="salon"?<SalonName name={workspace.label} salonId={workspace.salonId}/>:<WorkspaceText text={workspace.label}/>}</h3>
               {currentWorkspace?.id === workspace.id ? <CurrentBadge /> : null}
             </div>
             <div className="flex min-w-0 flex-wrap items-center gap-x-3 text-xs text-zinc-500">
@@ -300,7 +302,7 @@ export function MyPlaceClient({
         {ownerInvitesError ? <Notice error><WorkspaceText text={ownerInvitesError} /> <button type="button" className="ml-2 underline" onClick={() => router.refresh()}><WorkspaceText text="Retry" /></button></Notice> : null}
         {ownerInvites.filter((invite) => !normalized || normalizeSearchText(invite.salonName).includes(normalized)).map((invite) => (
           <div key={invite.id} className="border-t border-[#f1ebe6] px-5 py-4">
-            <p className="text-sm font-semibold">{invite.salonName}</p>
+            <p className="text-sm font-semibold"><SalonName name={invite.salonName} reference={{kind:"invitation",value:invite.id}}/></p>
             <p className="mt-1 text-sm text-zinc-500"><WorkspaceText text={invite.mode === "transfer_ownership" ? "Ownership transfer · Needs acceptance" : "Co-owner invitation · Needs acceptance"} /></p>
             {invite.message ? <p className="mt-1 text-sm"><WorkspaceText text={invite.message} /></p> : null}
             <div className="mt-3 flex gap-2">

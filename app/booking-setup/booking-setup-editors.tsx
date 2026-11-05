@@ -1,4 +1,5 @@
 "use client";
+import { StaffBookingGuide } from "@/app/settings/booking-setup-guide";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -927,7 +928,7 @@ export function StaffAvailabilityEditor({
         const online = member.is_active && member.online_booking_enabled;
         return <article key={member.id} className="availability-compact-person" data-testid={`availability-staff-row-${member.id}`}>
           <button type="button" className="availability-person-toggle" aria-expanded={expanded} aria-controls={`compact-staff-${member.id}`} disabled={busy} onClick={() => expandStaff(member.id)}>
-            <SetupStaffAvatar staff={member}/><span className="availability-person-name"><strong>{name}</strong>{!expanded ? <><small>{compactWeeklyHours(memberWeek)}</small>{blocks.length ? <small><WorkspaceText text="Time off ·" /> <WorkspaceText text={formatDateRangeText(blocks[0], timezone)} />{blocks.length > 1 ? ` +${blocks.length - 1}` : ""}</small> : null}</> : null}</span><span className={online ? "availability-online" : "availability-offline"}>● <WorkspaceText text={online ? "Online" : "Offline"} /></span><span aria-hidden="true">{expanded ? "⌃" : "⌄"}</span>
+            <SetupStaffAvatar staff={member}/><span className="availability-person-name"><strong>{name}</strong>{!expanded ? <><small>{compactWeeklyHours(memberWeek)}</small>{blocks.length ? <small><WorkspaceText text="Time off ·" /> <WorkspaceText text={formatDateRangeText(blocks[0], timezone)} />{blocks.length > 1 ? ` +${blocks.length - 1}` : ""}</small> : null}</> : null}</span><span className={online ? "availability-online" : "availability-offline"}>● <WorkspaceText text={online ? readinessByStaffId[member.id]?.ready ? "Booking configured" : "Setup needed" : "Booking off"} /></span><span aria-hidden="true">{expanded ? "⌃" : "⌄"}</span>
           </button>
           {renderOnlineBooking ? <div hidden={!expanded}>{renderOnlineBooking(member)}</div> : null}
           {expanded ? <div id={`compact-staff-${member.id}`} className="availability-person-editor">
@@ -1070,9 +1071,9 @@ export function StaffAvailabilityEditor({
                     {(readiness?.workingRuleCount ?? 0) === 1 ? "" : "s"}
                   </p>
                   {setupIssueText ? (
-                    <p className="booking-availability-issue">
-                      <WorkspaceText text="Needs setup:" /> {setupIssueText}
-                    </p>
+                    <div className="booking-availability-issue">
+                      {expectedSalonId&&readiness?<StaffBookingGuide salonId={expectedSalonId} readiness={readiness}/>:<><WorkspaceText text="Needs setup:"/> {setupIssueText}</>}
+                    </div>
                   ) : null}
                 </div>
 

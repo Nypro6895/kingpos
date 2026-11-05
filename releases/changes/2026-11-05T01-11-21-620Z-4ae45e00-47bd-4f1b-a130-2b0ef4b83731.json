@@ -1,0 +1,45 @@
+{
+  "changeId": "ipad-pos-more-viewport-20261104",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Chromium viewport/rotation/scroll/dismissal/Continue regression",
+      "evidence": "artifacts/ipad-pos-more-20261104/chromium.json"
+    },
+    {
+      "result": "passed",
+      "name": "Safari iPad Pro 11 and 13 source-backed isolated fixture",
+      "evidence": "artifacts/ipad-pos-more-20261104/validation.txt"
+    },
+    {
+      "name": "ESLint changed TSX and diff whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Current production integration, assembled build, authenticated candidate and native bundle validation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ipad-pos-more-20261104\\artifacts\\ipad-pos-more-20261104\\frozen",
+    "commit": "22ca783"
+  },
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "tests/ipad-pos-more-viewport.mjs"
+  ],
+  "summary": "Fix iPad POS More popup clipping with bounded viewport placement and contained list scrolling; validated on both iPad Pro Safari Simulators",
+  "status": "needs-integration",
+  "kind": "change",
+  "id": "4ae45e00-47bd-4f1b-a130-2b0ef4b83731",
+  "recordedAt": "2026-11-05T01:11:21.620Z",
+  "worktree": "C:\\Reylumi-worktrees\\ipad-pos-more-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

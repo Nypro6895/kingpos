@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { ContentViewer } from "@/components/content-viewer";
 import { LumiAiWatermark } from "@/components/nail-illustration-credit";
 
@@ -95,7 +97,7 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
           <span className="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-xs font-bold text-brand-orange">
             {salon.logoImageUrl ? <Image src={salon.logoImageUrl} alt="" fill sizes="40px" className="object-cover" /> : salon.name.split(/\s+/).slice(0, 2).map(word => word[0]).join("")}
           </span>
-          <span className="min-w-0"><span className="block break-words text-sm font-semibold">{salon.name}</span><span className="block text-xs text-text-secondary">{[salon.city, salon.state].filter(Boolean).join(", ")}{salon.distanceMiles != null ? ` · ${salon.distanceMiles.toFixed(1)} mi` : ""}</span></span>
+          <span className="min-w-0"><span className="block break-words text-sm font-semibold"><SalonName name={salon.name} salonId={salon.id}/></span><span className="block text-xs text-text-secondary">{[salon.city, salon.state].filter(Boolean).join(", ")}{salon.distanceMiles != null ? ` · ${salon.distanceMiles.toFixed(1)} mi` : ""}</span></span>
         </Link>
         {actions}
       </div> : actions}
@@ -108,7 +110,7 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
         <LumiAiWatermark className="absolute bottom-3 right-3" />
       </div>
       <div className="grid gap-3 p-5"><h2 className="text-xl font-semibold">{look.title}</h2><p className="text-sm text-text-secondary">{tags.map(label).join(" · ")}</p>
-        {salon ? <p className="font-semibold">Discuss this look with {salon.name}</p> : null}{actions}
+        {salon ? <p className="font-semibold">Discuss this look with <SalonName name={salon.name} salonId={salon.id}/></p> : null}{actions}
         <p className="text-xs leading-5 text-text-secondary">AI-generated reference design. Confirm the design, service and price with your salon before booking.</p>
         <Link href={detailHref} prefetch={false} onClick={onOpen} className="text-sm font-semibold text-brand-teal">Open this look</Link>
       </div>

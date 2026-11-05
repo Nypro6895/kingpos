@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { COLLAPSED_COMMENTS, editorialCommentOptions, feedCommentCandidate, selectExploreCommentPresentation, type ExploreCommentPresentation } from "@/lib/explore-comment-presentation";
 import { useExploreCommentPresentation } from "./use-explore-comment-presentation";
 import { ExploreCommentPreview } from "./explore-comment-preview";
@@ -1052,7 +1054,7 @@ function FeedHeroIntro({
         />
       ) : (
         <div className="grid h-full min-h-[20.5rem] place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] px-6 text-center text-xl font-semibold text-brand-orange">
-          {salonName}
+          <SalonName name={salonName} salonId={item.salon?.id}/>
         </div>
       )}
       <div

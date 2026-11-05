@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -35,7 +37,7 @@ export function OwnershipSettingsPanel({
         ))}
       </div>
       <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Former owners" /></summary><div className="mt-3 grid gap-2">
-        {data.historyError?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={data.historyError} /></p>:data.history.length?data.history.map(owner=><p key={owner.id} className="text-sm"><WorkspaceText text={owner.email||owner.name||`Deleted account ${owner.accountId}`} /> <WorkspaceText text="left ownership of" /> {data.salonName} <WorkspaceText text="on" /> <WorkspaceText text={new Date(owner.date).toLocaleString("en-US")} />{owner.reason?` · ${owner.reason}`:""}.</p>):<p className="text-sm text-zinc-500"><WorkspaceText text="No former owners are recorded for" /> {data.salonName}.</p>}
+        {data.historyError?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={data.historyError} /></p>:data.history.length?data.history.map(owner=><p key={owner.id} className="text-sm"><WorkspaceText text={owner.email||owner.name||`Deleted account ${owner.accountId}`} /> <WorkspaceText text="left ownership of" /> <SalonName name={data.salonName} salonId={data.salonId}/> <WorkspaceText text="on" /> <WorkspaceText text={new Date(owner.date).toLocaleString("en-US")} />{owner.reason?` · ${owner.reason}`:""}.</p>):<p className="text-sm text-zinc-500"><WorkspaceText text="No former owners are recorded for" /> <SalonName name={data.salonName} salonId={data.salonId}/>.</p>}
       </div></SettingsDetails>
       {([['add_co_owner','Add co-owner'],['transfer_ownership','Transfer ownership']] as const).map(([mode,label])=><SettingsEditSection key={mode} title={__vt(label)} action={mode==='add_co_owner'?"Invite":"Start"}><div className="mt-3">
        <InlineForm save={form=>runDirectOwnership(data.salonId,form)} onSaved={onSaved} label={__vt("Send invitation")}>

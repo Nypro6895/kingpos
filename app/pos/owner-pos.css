@@ -251,7 +251,7 @@
  box-shadow:0 22px 60px rgba(35,25,22,.16);
  font-family:var(--font-app-sans);
 }
-.owner-more-popover [data-role-more-items]{flex:1 1 auto;scrollbar-width:thin}
+.owner-more-popover [data-role-more-items]{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin}
 @media(min-width:980px){
  .owner-top-nav .owner-nav-item svg,
  .owner-checkout[data-owner-reference] .owner-top-nav .owner-nav-item svg{width:20px;height:20px}

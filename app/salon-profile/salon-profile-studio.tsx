@@ -1,4 +1,5 @@
 "use client";
+import { discoverySetupAction } from "@/lib/salon-setup-navigation";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
@@ -828,7 +829,7 @@ export function SalonMediaUploader({
   );
 }
 
-function ReadinessPanel({ readiness }: { readiness: SalonProfileReadiness }) {
+function ReadinessPanel({ readiness, salonId }: { readiness: SalonProfileReadiness;salonId:string }) {
   return (
     <section className="grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-0 shadow-none">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -857,7 +858,7 @@ function ReadinessPanel({ readiness }: { readiness: SalonProfileReadiness }) {
             key={item.id}
           >
             <div>
-              <p className="text-sm font-medium text-zinc-950"><WorkspaceText text={item.label} /></p>
+              <p className="text-sm font-medium text-zinc-950">{!item.complete&&item.required?<a className="underline" href={discoverySetupAction(item.id,salonId).href}><WorkspaceText text={discoverySetupAction(item.id,salonId).label}/> →</a>:<WorkspaceText text={item.label}/>}</p>
               <p className="text-xs text-zinc-500">
                 <WorkspaceText text={item.required ? "Required" : "Optional"} />
               </p>
@@ -1409,7 +1410,7 @@ export function SalonProfileStudio({
             </div>
           </section>
 
-          <ReadinessPanel readiness={readiness} />
+          <ReadinessPanel readiness={readiness} salonId={setting.salon_id}/>
         </div>
 
         <section className="grid gap-3">

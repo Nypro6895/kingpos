@@ -1,0 +1,91 @@
+{
+  "scope": "Explicit finite inventory; source/SQL contracts only, not a complete recursive dependency closure or hosted acceptance",
+  "selectedEntry": "/developer-platform with independently verified, prebound synthetic Auth identity; no signup or whole app-shell assumption",
+  "securitySubset": "Canonical seven-table definitions and six self-read policies; projection-only reads, all security mutations denied",
+  "routes": [
+    {
+      "id": "signup", "route": "/signup → POST /api/auth/signup",
+      "sources": ["app/(app)/api/auth/signup/route.ts", "lib/abuse-server.ts", "lib/advertising-attribution.ts", "lib/post-auth-routing.ts", "lib/users/current-user.ts"],
+      "dependencies": ["GoTrue signUp/email confirmation", "abuse_preflight", "issue_abuse_signup_ticket", "record_abuse_bot_event", "advertising attribution", "public.users full projection and insert policy", "business-context bootstrap"],
+      "artifact": "Not supplied; canonical route unchanged", "localProof": "inventory source hashes; no signup executed", "unverified": "Abuse enforcement, Auth provisioning, mail, profile creation and post-signup navigation"
+    },
+    {
+      "id": "login", "route": "/login → POST /api/auth/login",
+      "sources": ["app/(app)/api/auth/login/route.ts", "lib/account-security.ts", "lib/abuse-server.ts", "lib/post-auth-routing.ts", "lib/supabase/server.ts"],
+      "dependencies": ["GoTrue password/AAL", "abuse_preflight", "record_account_login_session", "app_notifications → bookings FK and event-key index", "users.last_login_at/updated_at", "workspace routing"],
+      "artifact": "security-bundle: session status SELECT only; no recording RPC", "localProof": "security projection/RLS tests; recording RPC absent", "unverified": "Canonical password login, notification side effects and session-cookie issuance"
+    },
+    {
+      "id": "mfa", "route": "/login MFA → POST /api/auth/mfa/verify",
+      "sources": ["app/(app)/api/auth/mfa/verify/route.ts", "lib/supabase/server.ts", "lib/account-security.ts", "lib/system-sms.ts"],
+      "dependencies": ["Canonical pending-MFA cookies", "GoTrue challenge/verify and assurance", "system SMS configuration for phone", "record_account_login_session", "workspace routing"],
+      "artifact": "No canonical Auth mutation; QR app TOTP is a separate implemented resolver", "localProof": "Existing tests/qr-menu-mfa.test.mjs only for QR app", "unverified": "Canonical MFA enrollment, SMS, verified cookie transition and hosted session recording"
+    },
+    {
+      "id": "callback-session-logout", "route": "/api/auth/callback, /api/auth/session, /api/auth/logout",
+      "sources": ["app/(app)/api/auth/callback/route.ts", "app/(app)/api/auth/session/route.ts", "app/(app)/api/auth/logout/route.ts", "lib/supabase/server.ts", "lib/account-security.ts"],
+      "dependencies": ["GoTrue verified token/refresh/signOut", "users.status", "account_login_sessions status/revoke", "Auth tombstone lookup for missing profiles", "canonical cookie/session policy"],
+      "artifact": "Base users.status + security-bundle session status read; no revoke write", "localProof": "SQL status read/foreign subject denial", "unverified": "Real refresh/logout/callback cookies and provider revocation"
+    },
+    {
+      "id": "developer", "route": "/developer-platform and its register/profile/version/testing actions",
+      "sources": ["app/(market-platform)/developer-platform/page.tsx", "app/(market-platform)/developer-platform/actions.ts", "app/(market-platform)/developer-platform/account-panel.tsx", "lib/market-platform/server.ts", "lib/supabase/server.ts"],
+      "dependencies": ["Verified Auth client", "current_public_user_id", "users.status", "market_platform_* workspace/register/profile/version/review/sandbox RPC", "account_login_sessions status read when cookie present"],
+      "artifact": "Base12 Market migrations + optional14-file security read bundle", "localProof": "Existing Market RPC lifecycle tests + security status contract; route source inventory", "unverified": "Real Next→GoTrue→PostgREST browser actions and security links outside this shell"
+    },
+    {
+      "id": "profile", "route": "/account and personal profile/avatar/phone/deletion actions",
+      "sources": ["app/(app)/account/page.tsx", "app/account/actions.ts", "lib/users/current-user.ts", "lib/account-deletion.ts", "lib/customer-identity-claims.ts", "lib/customer-phone-verification.ts", "lib/owner-transfer.ts", "lib/platform-admin/auth.ts"],
+      "dependencies": ["users full USER_SELECT projection/defaults/self insert/update RLS", "get_current_platform_admin_context", "Storage avatar bucket/policies", "verified phone/customer claims", "deletion/tombstone/export/owner-transfer contracts", "app shell"],
+      "artifact": "Not supplied; base users intentionally minimal", "localProof": "Full USER_SELECT fails as an explicit missing-schema negative control", "unverified": "Profile read/write, avatar, phone, ownership transfer and deletion"
+    },
+    {
+      "id": "security-read", "route": "/settings/login-security overview",
+      "sources": ["app/(app)/settings/login-security/page.tsx", "lib/account-security.ts", "lib/users/current-user.ts", "lib/login-sms-alerts.ts"],
+      "dependencies": ["Six security overview table projections with self RLS", "KingUser full profile", "GoTrue factor list/assurance", "system SMS readiness", "app shell"],
+      "artifact": "security-bundle supplies SQL projections/self-read only", "localProof": "Actual canonical SELECT strings execute; foreign subject reads zero, digest/events denied", "unverified": "Whole Next security page, real factor/SMS state and shell"
+    },
+    {
+      "id": "security-writes", "route": "/settings/login-security session/trusted-device/contact/password actions",
+      "sources": ["app/settings/login-security/actions.ts", "lib/account-security.ts", "lib/supabase/server.ts"],
+      "dependencies": ["Security self insert/update policies", "account_login_activity insert", "GoTrue password reauthentication/updateUser/signOut", "current user and app shell"],
+      "artifact": "Intentionally denied in read-only subset; no fake success RPC", "localProof": "Own/foreign insert/update/delete denied by QA grants", "unverified": "All canonical security mutations and provider side effects"
+    },
+    {
+      "id": "security-enrollment", "route": "/settings/login-security TOTP/phone enrollment and removal",
+      "sources": ["app/settings/login-security/actions.ts", "lib/system-sms.ts", "lib/account-security.ts"],
+      "dependencies": ["GoTrue enroll/challenge/verify/unenroll", "system SMS readiness and provider", "activity insert", "canonical AAL/session cookies"],
+      "artifact": "Not supplied or executed; existing QR challenge does not enroll factors", "localProof": "No provisioned factors; route inventory only", "unverified": "Real enrollment/removal, SMS and account recovery protections"
+    },
+    {
+      "id": "security-recovery", "route": "/settings/login-security recovery contacts/codes/cases",
+      "sources": ["app/settings/login-security/actions.ts", "lib/account-security.ts"],
+      "dependencies": ["account_recovery_codes digest/revoke writes", "account_recovery_requests writes", "security preferences and activity", "full current-user/app shell"],
+      "artifact": "Only summary SELECT projections supplied; code_digest and all writes denied", "localProof": "Own summary/foreign rows isolation; no code generated", "unverified": "Code generation/rotation, contact verification and support workflow"
+    },
+    {
+      "id": "public-recovery", "route": "/account-recovery, /api/auth/forgot-password",
+      "sources": ["app/account-recovery/actions.ts", "app/(app)/api/auth/forgot-password/route.ts", "lib/abuse-server.ts"],
+      "dependencies": ["redeem_account_recovery_code", "users phone/email/created_at", "recovery request events/activity", "GoTrue resetPasswordForEmail", "abuse_preflight", "canonical support-admin helpers/workflow"],
+      "artifact": "No redemption or support RPC installed; no password reset sent", "localProof": "RPC absence and anon/QR data denial", "unverified": "Public recovery, mail, anti-abuse and reviewed support resolution"
+    },
+    {
+      "id": "owner-shell", "route": "/market inside (app) layout",
+      "sources": ["app/(app)/market/page.tsx", "app/(app)/layout.tsx", "lib/current-context.ts", "lib/membership-permissions.ts", "lib/market-experience-data.ts", "lib/market-installation-counts.ts"],
+      "dependencies": ["Full accounts/roles/locations/account_memberships projections", "salon_memberships", "staff", "salon_settings", "permissions/role_permissions", "ensure_personal_account_for_current_user", "salon_market_plugins", "campaign_wallets", "subscription/payment/tax/language/booking read contracts", "queue/advertising/switcher/client live resources"],
+      "artifact": "Base12 has minimal fixture authority only; no whole shell bootstrap", "localProof": "Current projection mismatch and absent dependencies recorded; Owner SQL contract remains separately tested", "unverified": "Signed-in Owner current-salon shell/navigation and composite Market reads"
+    },
+    {
+      "id": "owner-activate", "route": "Owner Market consent/install/update/remove/open and /api/market-platform/authorize",
+      "sources": ["lib/market-platform/owner.ts", "app/market/developer-app-actions.ts", "app/api/market-platform/authorize/route.ts", "lib/market-platform/server.ts"],
+      "dependencies": ["Canonical current Owner salon resolver", "market_platform_owner_workspace/install/uninstall/authorization RPC", "reviewed version/hash/consent", "state/PKCE/confidential backend exchange"],
+      "artifact": "Base12 Market RPCs and QR reference; no replacement Owner resolver", "localProof": "Existing tests/market-qa-bootstrap.test.mjs, market lifecycle/QR suites", "unverified": "Real Owner browser→Next→GoTrue/PostgREST→external HTTPS round trip"
+    },
+    {
+      "id": "published-data", "route": "Owner published-data controls and plugin four read APIs",
+      "sources": ["app/market/developer-app-actions.ts", "lib/market-platform/published-contract.ts", "lib/market-platform/published-server.ts"],
+      "dependencies": ["Market published-group revisions/authorization", "current Owner salon", "media assets/storage gateway", "verified plugin grant and current installation/version"],
+      "artifact": "Base12 SQL + reference API contracts; storage objects/gateway not provisioned", "localProof": "Existing published-data/QR tests, not hosted storage", "unverified": "Real image pipeline, storage policies and hosted revocation acceptance"
+    }
+  ]
+}

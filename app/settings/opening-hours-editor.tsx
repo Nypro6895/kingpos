@@ -95,7 +95,7 @@ export function OpeningHoursEditor({ data, onSaved }: {
       })}
     </div>
     <details className="opening-hours-help"><summary><WorkspaceText text="About opening hours" /></summary>
-      <p><WorkspaceText text="Opening hours tell customers when the salon is open. Booking hours and staff availability are managed separately in Booking rules & availability." /></p>
+      <p><WorkspaceText text="Opening hours show customers when the salon is open. Set each staff member’s booking hours in Hours & booking." /></p>
     </details>
   </InlineForm>;
 }

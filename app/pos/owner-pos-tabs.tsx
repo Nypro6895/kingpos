@@ -25,7 +25,7 @@ function OwnerMoreMenu() {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
-  const [placement, setPlacement] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
+  const [placement, setPlacement] = useState<{ top: number; left: number; width: number; height: number; maxHeight: number } | null>(null);
   const open = placement !== null;
   const openRef = useRef(false);
 
@@ -46,9 +46,12 @@ function OwnerMoreMenu() {
     const offsetTop = viewport?.offsetTop ?? 0;
     const panelWidth = Math.min(384, width - 24);
     const above = button.closest('.owner-device-nav') !== null && document.documentElement.dataset.ownerDevice === 'phone';
-    const maxHeight = above ? Math.max(48, Math.min(560, rect.top - offsetTop - 20)) : Math.min(560, height - 24);
-    const top = above ? Math.max(offsetTop + 8, rect.top - maxHeight - 8) : Math.max(offsetTop + 8, Math.min(rect.bottom + 8, offsetTop + height - 144));
-    setPlacement({ top, left: Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, maxHeight: Math.min(maxHeight, offsetTop + height - top - 12) });
+    // Reserve the full menu before clamping the anchor so a bottom rail
+    // cannot squeeze the scrollable list into the space below its trigger.
+    const panelHeight = Math.max(0, Math.min(560, height - 24));
+    const preferredTop = above ? rect.top - panelHeight - 8 : rect.bottom + 8;
+    const top = Math.max(offsetTop + 12, Math.min(preferredTop, offsetTop + height - panelHeight - 12));
+    setPlacement({ top, left: Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, height: panelHeight, maxHeight: panelHeight });
   }
 
   useEffect(() => {
@@ -80,6 +83,7 @@ function OwnerMoreMenu() {
     window.addEventListener("resize", reposition);
     window.addEventListener("scroll", onScroll, true);
     window.visualViewport?.addEventListener("resize", reposition);
+    window.visualViewport?.addEventListener("scroll", reposition);
     return () => {
       cancelAnimationFrame(focus);
       document.removeEventListener("pointerdown", dismiss);
@@ -88,6 +92,7 @@ function OwnerMoreMenu() {
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", onScroll, true);
       window.visualViewport?.removeEventListener("resize", reposition);
+      window.visualViewport?.removeEventListener("scroll", reposition);
       // Activity hides the POS tree but portals live outside its hidden DOM.
       closeMenu();
     };

@@ -365,7 +365,7 @@ function buildManageWorkspaceActions(input: {
       "salon_profile.view",
     )
   ) {
-    actions.push(workspaceAction("profile", "Profile", "/salon-profile"));
+    actions.push(workspaceAction("profile", "Salon profile", "/salon-profile"));
   }
 
   if (

@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText } from "@/components/workspace-language";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
@@ -20,7 +22,7 @@ async function VisitNotificationPage({
     <main className="mx-auto max-w-xl space-y-4 p-4">
       <section className="content-surface border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
         <h1 className="text-xl font-bold"><WorkspaceText text="Salon visit" /></h1>
-        <p className="mt-2 font-semibold">{data.salonName}</p>
+        <p className="mt-2 font-semibold"><SalonName name={data.salonName} reference={{kind:"visit",value:visitId}}/></p>
         <p className="mt-3 text-sm capitalize">
           <WorkspaceText text="Status:" /> <WorkspaceText text={String(data.status).replaceAll("_", " ")} />
         </p>

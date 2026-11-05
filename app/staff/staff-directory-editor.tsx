@@ -364,7 +364,7 @@ function StaffRow({ busy, onPendingChange, canManageStaff, dirty, editing, onTog
       </div></td>
       <td className={classNames("col-span-2 row-start-2 md:table-cell md:px-3 md:py-2", !alerts.length && "hidden")}><div className="flex flex-wrap gap-1">{alerts.map((alert) => <StatusBadgeLink key={alert.label} status={alert} />)}</div></td>
       <td className="col-start-2 row-start-1 md:px-3 md:py-2">{canManageStaff ? <div className="flex justify-end gap-1">
-        {profileHref ? <Link className={buttonClass} href={profileHref}><WorkspaceText text="Profile" /></Link> : null}
+        {profileHref ? <Link className={buttonClass} href={profileHref}><WorkspaceText text="Staff profile" /></Link> : null}
         <button aria-expanded={editing} aria-controls={`staff-edit-${row.id}`} className={buttonClass} disabled={busy || saving} onClick={onToggleEditing} type="button"><WorkspaceText text="Edit" /></button>
       </div> : null}</td>
     </tr>

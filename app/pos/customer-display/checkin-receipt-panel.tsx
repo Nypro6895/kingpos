@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import { QrCodeTile } from "@/components/qr-code-tile";
@@ -64,7 +66,7 @@ export function CheckinReceiptPanel({ token, visitId, onPrintingChange, compact 
   if (!receipt && !message) return null;
   return <section className="rounded-xl bg-white p-4 text-center text-zinc-950" aria-label={__vt("Check-in receipt")}>
     {compact && receipt ? <p className="text-2xl font-semibold"><WorkspaceText text="Your number" /> <strong>#{receipt.queueNumber}</strong></p> : null}
-    {receipt && <><div className={compact ? "sr-only" : undefined} ref={tile}><p>{receipt.salonName}</p><p><WorkspaceText text="Check-in ·" /> {receipt.businessDate}</p><h1 className="text-5xl font-bold">#{receipt.queueNumber}</h1><p>{receipt.customerName}</p><QrCodeTile ariaLabel="Scan check-in receipt to create ticket" valueToEncode={`reylumi:checkin:${receipt.visitId}`} fallbackMessage="Ask the front desk to select your check-in." className="mx-auto h-40 w-40 bg-white p-3" /><p><WorkspaceText text="Scan at the front desk to create your ticket." /></p><p><WorkspaceText text="By Reylumi" /></p></div><button type="button" disabled={busy} className="mt-3 rounded-lg border px-4 py-2" onClick={() => void print(true)}><WorkspaceText text={busy ? "Printing…" : "Print again"} /></button></>}
+    {receipt && <><div className={compact ? "sr-only" : undefined} ref={tile}><p><SalonName name={receipt.salonName} reference={{kind:"display",value:token}}/></p><p><WorkspaceText text="Check-in ·" /> {receipt.businessDate}</p><h1 className="text-5xl font-bold">#{receipt.queueNumber}</h1><p>{receipt.customerName}</p><QrCodeTile ariaLabel="Scan check-in receipt to create ticket" valueToEncode={`reylumi:checkin:${receipt.visitId}`} fallbackMessage="Ask the front desk to select your check-in." className="mx-auto h-40 w-40 bg-white p-3" /><p><WorkspaceText text="Scan at the front desk to create your ticket." /></p><p><WorkspaceText text="By Reylumi" /></p></div><button type="button" disabled={busy} className="mt-3 rounded-lg border px-4 py-2" onClick={() => void print(true)}><WorkspaceText text={busy ? "Printing…" : "Print again"} /></button></>}
     <p role="status" className="mt-2 text-sm"><WorkspaceText text={message} /></p>
   </section>;
 }

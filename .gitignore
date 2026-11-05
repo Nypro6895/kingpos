@@ -7,3 +7,9 @@
 /ios/Reylumi.xcodeproj/
 /ios/Reylumi.xcworkspace/
 /desktop/build/
+/.env*
+!/.env.example
+/.vercel/
+/supabase/.temp/
+/tsconfig.tsbuildinfo
+/public/experience-build-assets.json

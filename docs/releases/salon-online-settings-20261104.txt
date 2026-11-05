@@ -1,0 +1,11 @@
+Salon online settings — 2026-11-04 America/Chicago
+
+Five settings sections: salon information, services and prices, team, hours and booking, go online. Existing forms and data remain authoritative. Staff save feedback separates a successful write from booking configuration; actionable links retain salon/staff, open the matching nested editor, preserve drafts and refresh missing steps. Permissions still gate writes and guidance directs restricted users to their owner. Opening hours and staff booking hours remain separate records.
+
+Settings and Studio now share publication requirements: active salon, public name, phone, complete address, description and an active visible service. Logo, cover, tagline and looks are optional improvements; nothing automatically publishes. Actual public availability is read from the server. Booking configuration never promises an available appointment.
+
+Exact serving web baseline: dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp (4067 retained source files). The validated combined membership candidate d48c6e4 was integrated, followed by scoped Vietnamese, iPad menu, tagged Book/comment keyboard and public booking link changes. No new schema migration or paid activation was performed by this task. The earlier combined candidate's production migration receipt verifies 21 exact source hashes. Historical/unfinished journal records were retained.
+
+Windows uses the existing online shell at https://reylumi.com; these UI changes require the web release, not a replacement executable. iOS requires a rebuilt bundled interface. Native files/scripts match uploaded source d48c6e4 across 85 files before bundling. No physical-device acceptance is inferred.
+
+Validation evidence: artifacts/salon-online-settings/. Thirty browser/permission/save/route regressions, three readiness/role tests, eight translation/data-preservation checks, TypeScript, lint and a fresh assembled production build. Full old translation coverage scan still finds pre-existing untranslated strings in later shipped features and is not claimed complete. Authenticated UI access through the current browser connector failed with timeoutMs provider errors; fixture QA and public HTTP checks are recorded separately.

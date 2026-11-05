@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import Image from "next/image";
 import Link from "next/link";
@@ -64,7 +66,7 @@ export function SalonPostPreview({ item, viewer, onClose, location, service, pri
               {logo && failedLogo !== logo ? <Image src={logo} alt={`${item.salonName} logo`} width={40} height={40} unoptimized onError={() => setFailedLogo(logo)} />
                 : <ReylumiIcon name="home" className="size-5" />}
             </span>
-            <h2 id="inspiration-preview-title" className={styles.name}>{item.salonName}<SalonVerifiedBadge verified={item.trust.identityVerified} /></h2>
+            <h2 id="inspiration-preview-title" className={styles.name}><SalonName name={item.salonName} salonId={item.salonId}/><SalonVerifiedBadge verified={item.trust.identityVerified} /></h2>
           </Link>
           <ExploreSalonMenu salon={salon} target={realPost ? target : undefined} onHidden={onClose} />
         </header>

@@ -1,4 +1,7 @@
 "use client";
+import { BookingSetupGuide } from "./booking-setup-guide";
+import { discoverySetupAction } from "@/lib/salon-setup-navigation";
+import { useSearchParams } from "next/navigation";
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
@@ -89,7 +92,7 @@ export function SalonDetailsPanel({
           : data.publicProfileAvailable || !s.public_discovery_enabled ? <SalonPublicationStatus publicHref={data.publicProfileAvailable ? `/explore/salons/${encodeURIComponent(data.salonId)}` : null} />
           : <p role="status" className="text-sm text-amber-800"><WorkspaceText text="Public visibility is enabled, but the profile is unavailable. Check the salon status before sharing a link." /></p>}
 
-        {data.canManageSalon?<SettingsEditSection title={__vt("Visibility")} preview={<><SettingsReadRow label="Public discovery" value={__vt(s.public_discovery_enabled?"On":"Off")}/><SettingsReadRow label="Staff applications" value={__vt(s.allow_staff_applications?"On":"Off")}/></>}><InlineForm
+        {data.canManageSalon?<SettingsEditSection id="salon-visibility" title={__vt("Visibility")} preview={<><SettingsReadRow label="Public discovery" value={__vt(s.public_discovery_enabled?"On":"Off")}/><SettingsReadRow label="Staff applications" value={__vt(s.allow_staff_applications?"On":"Off")}/></>}><InlineForm
           save={(form) =>
             saveDirectSalonProfile(data.salonId, {
               business_name: s.business_name,
@@ -116,9 +119,9 @@ export function SalonDetailsPanel({
             checked={s.allow_staff_applications}
           />
           <p className="text-sm text-zinc-600"><WorkspaceText text="Publishing makes this profile public and allows it to appear in Explore. Booking is configured separately." /></p>
-          <SettingsDetails open={!data.readiness.canEnable}><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Required when enabling visibility from Settings" /></summary>
-            <ul className="mt-2 grid gap-2 text-sm">{data.readiness.items.map(item => <li key={item.id} className="flex flex-wrap justify-between gap-2"><WorkspaceText text={item.label} /><span className={item.complete ? "text-emerald-800" : "text-amber-800"}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span></li>)}</ul>
-          </SettingsDetails>
+          <div className="salon-setup-guide settings-page-persistent"><p><strong><WorkspaceText text="Before making your salon public"/></strong></p>
+            <ul className="mt-2 grid gap-2 text-sm">{data.readiness.items.map(item => <li key={item.id} className="flex flex-wrap justify-between gap-2">{item.complete?<WorkspaceText text={item.label}/>:<a href={discoverySetupAction(item.id,data.salonId).href}><WorkspaceText text={discoverySetupAction(item.id,data.salonId).label}/> →</a>}<span className={item.complete ? "text-emerald-800" : "text-amber-800"}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span></li>)}</ul>
+          </div>
         </InlineForm></SettingsEditSection>:null}
         <SettingsEditSection title={__vt("Website appearance & verification")} action="Manage" closeOnSave={false}><SalonProfilePreferencesPanel expectedSalonId={data.salonId}/></SettingsEditSection>
       </div>
@@ -126,7 +129,7 @@ export function SalonDetailsPanel({
   return (
     <div className="grid gap-4">
 
-      <SettingsEditSection title={s.business_name||__vt("Salon information")} heading={<SettingsIdentity name={s.business_name||__vt("Salon")} subtitle={[s.city,s.state].filter(Boolean).join(", ")}/>} preview={<div><SettingsReadRow label="Phone" value={s.phone}/><SettingsReadRow label="Email" value={s.email}/><SettingsReadRow label="Website" value={s.website}/><SettingsReadRow label="Address" value={[s.address_line1,s.address_line2,s.city,s.state,s.postal_code,s.country].filter(Boolean).join(", ")}/><SettingsReadRow label="Time zone" value={data.hours.timeZone}/></div>}>
+      <SettingsEditSection id="salon-information" title={s.business_name||__vt("Salon information")} heading={<SettingsIdentity name={s.business_name||__vt("Salon")} subtitle={[s.city,s.state].filter(Boolean).join(", ")}/>} preview={<div><SettingsReadRow label="Phone" value={s.phone}/><SettingsReadRow label="Email" value={s.email}/><SettingsReadRow label="Website" value={s.website}/><SettingsReadRow label="Address" value={[s.address_line1,s.address_line2,s.city,s.state,s.postal_code,s.country].filter(Boolean).join(", ")}/><SettingsReadRow label="Time zone" value={data.hours.timeZone}/></div>}>
       <InlineForm
         save={(form) =>
           saveDirectSalonProfile(data.salonId, {
@@ -192,65 +195,7 @@ export function SalonDetailsPanel({
           <p className="text-sm text-zinc-600"><WorkspaceText text="Save your address above before updating the map." /></p>
         </InlineForm>
       </div></SettingsDetails>}
-      <SettingsEditSection title={__vt("Opening hours")} preview={<div className="settings-hours-preview">{days.map((day,dayOfWeek)=>{const windows=data.hours.weeklyHours.filter(w=>w.dayOfWeek===dayOfWeek);return <SettingsReadRow key={day} label={day} value={windows.length?windows.map(w=>w.opensAtLocal.slice(0,5)+" – "+w.closesAtLocal.slice(0,5)).join(" · "):__vt("Closed")}/>;})}</div>}><OperatingHours data={data} onSaved={onSaved}/></SettingsEditSection>
 
-      <SettingsDetails>
-        <summary className="cursor-pointer text-sm font-semibold">
-          <WorkspaceText text="Holiday & special hours" />
-        </summary>
-        <div className="mt-3 grid gap-3">
-          {data.hours.specialHours.map((h) => (
-            <InlineForm
-              key={h.id}
-              label={__vt("Remove special hours")}
-              save={() =>
-                saveDirectSpecialHours(data.salonId, { deleteId: h.id })
-              }
-              onSaved={onSaved}
-            >
-              <p className="text-sm">
-                {h.localDate} ·{" "}
-                <WorkspaceText text={h.status === "closed"
-                  ? "Closed"
-                  : `${h.opensAtLocal}–${h.closesAtLocal}`} />
-                {h.reason ? ` · ${h.reason}` : ""}
-              </p>
-            </InlineForm>
-          ))}
-          <InlineForm
-            label={__vt("Add special hours")}
-            save={(form) =>
-              saveDirectSpecialHours(data.salonId, {
-                localDate: text(form, "date"),
-                status:
-                  text(form, "status") === "custom_hours"
-                    ? "custom_hours"
-                    : "closed",
-                opensAtLocal: text(form, "opens") || null,
-                closesAtLocal: text(form, "closes") || null,
-                reason: text(form, "reason") || null,
-              })
-            }
-            onSaved={onSaved}
-          >
-            <Field name="date" label={__vt("Date")} type="date" required />
-            <Select
-              name="status"
-              label={__vt("Schedule")}
-              value="closed"
-              options={[
-                ["closed", "Closed"],
-                ["custom_hours", "Custom hours"],
-              ]}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <Field name="opens" label={__vt("Opens (custom hours)")} type="time" />
-              <Field name="closes" label={__vt("Closes (custom hours)")} type="time" />
-            </div>
-            <Field name="reason" label={__vt("Reason (optional)")} />
-          </InlineForm>
-        </div>
-      </SettingsDetails>
     </div>
   );
 }
@@ -276,8 +221,10 @@ export function BookingSettingsPanel({
   const __vt = useWorkspaceTranslation();
 
   const s = data.settings;
+  const selectedStaffId = useSearchParams().get("staffId");
   return (
     <div className="grid gap-4">
+      <BookingSetupGuide salonId={data.salonId} setup={data.setup} settings={s}/>
 
 
       {data.canManage ? (
@@ -352,13 +299,15 @@ export function BookingSettingsPanel({
       {data.canManage && data.canManagePlugins ? <BookingDepositSettings key={data.salonId} salonId={data.salonId} /> : null}
       {data.canManage && data.canManagePlugins ? <BookingRulesSettings key={`rules-${data.salonId}`} salonId={data.salonId} /> : null}
       {data.canManage && data.canManagePlugins ? <BookSmsSettings key={`sms-${data.salonId}`} salonId={data.salonId} /> : null}
-      <SettingsDetails>
+      <SettingsDetails id="booking-hours">
         <summary className="cursor-pointer text-sm font-semibold">
           <WorkspaceText text="Staff availability & time off" />
         </summary>
         <div className="mt-3">
           <StaffAvailabilityEditor
             settingsMode
+            key={selectedStaffId || "all-staff"}
+            selectedStaffId={selectedStaffId}
             renderOnlineBooking={member => <StaffHoursBooking key={member.id} salonId={data.salonId} member={data.setup.staff.find(staff => staff.id === member.id)!} setup={data.setup} canManageOnline={data.canManageStaffOnlineBooking} onSaved={onSaved} />}
             availabilityRules={data.setup.availabilityRules}
             timeBlocks={data.setup.timeBlocks}
@@ -373,4 +322,67 @@ export function BookingSettingsPanel({
       </SettingsDetails>
     </div>
   );
+}
+
+export function SalonHoursPanel({data,onSaved}:{data:Extract<DirectData,{kind:"salon-profile"}>;onSaved:()=>Promise<void>}) {
+ const __vt=useWorkspaceTranslation();
+ return <div className="grid gap-4">      <SettingsEditSection title={__vt("Opening hours")} preview={<div className="settings-hours-preview">{days.map((day,dayOfWeek)=>{const windows=data.hours.weeklyHours.filter(w=>w.dayOfWeek===dayOfWeek);return <SettingsReadRow key={day} label={day} value={windows.length?windows.map(w=>w.opensAtLocal.slice(0,5)+" – "+w.closesAtLocal.slice(0,5)).join(" · "):__vt("Closed")}/>;})}</div>}><OperatingHours data={data} onSaved={onSaved}/></SettingsEditSection>
+
+      <SettingsDetails>
+        <summary className="cursor-pointer text-sm font-semibold">
+          <WorkspaceText text="Holiday & special hours" />
+        </summary>
+        <div className="mt-3 grid gap-3">
+          {data.hours.specialHours.map((h) => (
+            <InlineForm
+              key={h.id}
+              label={__vt("Remove special hours")}
+              save={() =>
+                saveDirectSpecialHours(data.salonId, { deleteId: h.id })
+              }
+              onSaved={onSaved}
+            >
+              <p className="text-sm">
+                {h.localDate} ·{" "}
+                <WorkspaceText text={h.status === "closed"
+                  ? "Closed"
+                  : `${h.opensAtLocal}–${h.closesAtLocal}`} />
+                {h.reason ? ` · ${h.reason}` : ""}
+              </p>
+            </InlineForm>
+          ))}
+          <InlineForm
+            label={__vt("Add special hours")}
+            save={(form) =>
+              saveDirectSpecialHours(data.salonId, {
+                localDate: text(form, "date"),
+                status:
+                  text(form, "status") === "custom_hours"
+                    ? "custom_hours"
+                    : "closed",
+                opensAtLocal: text(form, "opens") || null,
+                closesAtLocal: text(form, "closes") || null,
+                reason: text(form, "reason") || null,
+              })
+            }
+            onSaved={onSaved}
+          >
+            <Field name="date" label={__vt("Date")} type="date" required />
+            <Select
+              name="status"
+              label={__vt("Schedule")}
+              value="closed"
+              options={[
+                ["closed", "Closed"],
+                ["custom_hours", "Custom hours"],
+              ]}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Field name="opens" label={__vt("Opens (custom hours)")} type="time" />
+              <Field name="closes" label={__vt("Closes (custom hours)")} type="time" />
+            </div>
+            <Field name="reason" label={__vt("Reason (optional)")} />
+          </InlineForm>
+        </div>
+      </SettingsDetails></div>;
 }

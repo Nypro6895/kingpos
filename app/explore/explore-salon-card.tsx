@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useState } from "react";
 import Link from "next/link";
 import { ExploreViewportImage as Image } from "./explore-viewport-image";
@@ -23,14 +25,14 @@ export function ExploreSalonCard({ salon, compact = false, presentation = "card"
   if(social.state.hidden)return null;
   return <article className={`${styles.card} ${compact?styles.compact:""} ${presentation==="directory"?styles.directory:""}`} data-testid="explore-salon-card" data-salon-id={salon.id}>
     <Link prefetch={false} href={href} className={styles.photo} aria-label={`View ${salon.name}`}>
-      {image?<Image src={image} alt={suggested?`Suggested image for ${salon.name}; not actual salon work`:`${salon.name} salon photo`} fill sizes="(max-width:640px) 100vw, (max-width:1280px) 50vw, 33vw" className="object-cover" onError={()=>setFailedImage(imageKey)}/>:<span>{salon.name}</span>}
+      {image?<Image src={image} alt={suggested?`Suggested image for ${salon.name}; not actual salon work`:`${salon.name} salon photo`} fill sizes="(max-width:640px) 100vw, (max-width:1280px) 50vw, 33vw" className="object-cover" onError={()=>setFailedImage(imageKey)}/>:<span><SalonName name={salon.name} salonId={salon.id}/></span>}
       <NailIllustrationCredit imageUrl={image} className="absolute bottom-2 right-2"/>
     </Link>
     <div className={styles.body}>
       <div className={styles.header} data-salon-header>
         <Link prefetch={false} href={href} className={styles.avatar} aria-label={`${salon.name} profile`}>{salon.logoImageUrl?<Image src={salon.logoImageUrl} alt="" fill sizes="36px" className="object-cover"/>:salon.name.split(/\s+/).slice(0,2).map(word=>word[0]).join("")}</Link>
         <div className={styles.identity}>
-          <div className={styles.nameRow}><Link prefetch={false} href={href} title={salon.name} className={styles.name}>{salon.name}</Link><SalonVerifiedBadge verified={salon.identityVerified}/><ExploreSalonFollow salon={target}/></div>
+          <div className={styles.nameRow}><Link prefetch={false} href={href} title={salon.name} className={styles.name}><SalonName name={salon.name} salonId={salon.id}/></Link><SalonVerifiedBadge verified={salon.identityVerified}/><ExploreSalonFollow salon={target}/></div>
           <p className={styles.location}>{[salon.serviceCategories[0],salon.city,salon.state].filter(Boolean).join(" · ")}</p>
         </div>
         <ExploreSalonMenu salon={target}/>

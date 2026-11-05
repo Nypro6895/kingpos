@@ -1,6 +1,10 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
 
 import Link from "next/link";
+import { BookingRewardEstimate, findBookingReward } from "@/components/rewardlumi/booking-reward-pending";
+import { useRewardWallet } from "@/components/rewardlumi/use-reward-wallet";
+import type { PendingBookingReward } from "@/types/rewardlumi";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CustomerActivity, CustomerActivityData, CustomerBookingActivity, CustomerActivityReceipt } from "@/lib/customer-activity";
 import type { CustomerBookingDetail } from "@/lib/customer-bookings";
@@ -41,7 +45,7 @@ function amount(item: CustomerActivity) {
   if (item.type === "visit" || ["cancelled", "no_show"].includes(item.status)) return "";
   return `${item.type === "booking" ? "Est. " : ""}${new Intl.NumberFormat("en-US", { style:"currency",currency:item.currency }).format(item.total)}`;
 }
-function JourneyRow({ item, onOpen, now }: { item: CustomerActivity; onOpen: (item: CustomerActivity) => void; now: number | null }) {
+function JourneyRow({ item, onOpen, now, reward }: { item: CustomerActivity; onOpen: (item: CustomerActivity) => void; now: number | null; reward?: PendingBookingReward }) {
   const checkin = now !== null && canCheckInForAppointment(item, now);
   const label = checkin && item.status === "past_appointment" ? "Ready to check in" : status(item);
   const visit = item.type === "purchase" ? item.verifiedVisit : null;
@@ -51,7 +55,7 @@ function JourneyRow({ item, onOpen, now }: { item: CustomerActivity; onOpen: (it
   return <article aria-label={`${kind(item)} at ${item.salon.name}`}><div className={styles.row}>
     <button type="button" className={styles.rowOpen} onClick={() => onOpen(item)} aria-label={"Details: "+item.salon.name+", "+format(item,{month:"short",day:"numeric"})+", "+label} />
     <span className={styles.date}><span className={styles.dateBadge}><small>{format(item,{month:"short"})}</small><strong>{format(item,{day:"numeric"})}</strong></span><span className={styles.time}>{format(item,{hour:"numeric",minute:"2-digit"})}</span></span>
-    <span className={styles.body}><strong>{item.salon.name}</strong><span className={styles.kind}>{kind(item)}</span><span className={styles.services}>{item.services.map(service=>service.name).join(" · ") || item.title}</span></span>
+    <span className={styles.body}><strong><SalonName name={item.salon.name} salonId={item.salon.id}/></strong><span className={styles.kind}>{kind(item)}</span><span className={styles.services}>{item.services.map(service=>service.name).join(" · ") || item.title}</span><BookingRewardEstimate compact reward={reward}/></span>
     <span className={styles.end}><strong className={styles.amount}>{amount(item)}</strong><span className={styles.chevron} aria-hidden>›</span></span>
     <div className={styles.utility}><span className={styles.badge} data-tone={tone(item)}>{label}</span>{feedbackHref ? <Link prefetch={false} className={feedbackStyles.link} href={feedbackHref}>{visit?.experienceState ? "View experience" : "Share experience"}</Link> : null}</div>
   </div>{checkin?<section className={styles.appointmentCheckin} aria-label={`Check in for ${item.salon.name}`}><p>At the salon? Scan the salon QR, or show your QR to staff.</p><div className={styles.actions}><Link prefetch={false} href="/qr?scan=1" className={`${styles.button} ${styles.primary}`}>Check in</Link><Link prefetch={false} href="/qr" className={styles.button}>My QR</Link></div></section>:null}</article>;
@@ -80,6 +84,7 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
   const [filters,setFilters]=useState(false); const [menu,setMenu]=useState(false); const [profiles,setProfiles]=useState(false);
   const panelId=useId(),filterTitleId=useId();const [localRefreshError,setLocalRefreshError]=useState("");const refreshBusy=useRef(false);
   const [selected,setSelected]=useState<CustomerActivity|null>(null);const [deepId,setDeepId]=useState(initialSelectedBookingId);
+  const rewardWallet = useRewardWallet();
   const filterDialog=useRef<HTMLDialogElement>(null);
   const [now,setNow]=useState<number|null>(null);
   const groups=useMemo(()=>customerJourneyGroups(activity,now??undefined),[activity,now]);
@@ -116,7 +121,7 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
   function switchTab(next:CustomerJourneyTab){setTab(next);setQuery("");setType("all");setRecordStatus("all");setMonth("all");setPage(1);setSelected(null);setDeepId(undefined);}
   function reset(){setQuery("");setType("all");setRecordStatus("all");setMonth("all");setPage(1);}
   const open=(item:CustomerActivity)=>{setDeepId(undefined);setSelected(item);};
-  async function refresh(){if(!onRefresh||refreshBusy.current)return;refreshBusy.current=true;setLocalRefreshError("");try{await onRefresh();}catch{setLocalRefreshError("Could not refresh. Showing the last loaded records.");}finally{refreshBusy.current=false;}}
+  async function refresh(){if(!onRefresh||refreshBusy.current)return;refreshBusy.current=true;setLocalRefreshError("");try{await Promise.all([onRefresh(), rewardWallet.refresh()]);}catch{setLocalRefreshError("Could not refresh. Showing the last loaded records.");}finally{refreshBusy.current=false;}}
   return <main className={styles.page}><div className={styles.inner}>
     <div className={styles.heading}><h1>Appointments &amp; visits</h1><button className={styles.iconButton} type="button" aria-label="More options for appointments and visits" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}>•••</button></div>
     {menu?<div className={styles.menu}>{onRefresh?<button type="button" disabled={refreshing} onClick={()=>{setMenu(false);void refresh();}}>Refresh</button>:null}<button type="button" onClick={()=>{setProfiles(v=>!v);setMenu(false);}}>Manage my customer profiles</button><Link prefetch={false} className={styles.menuLink} href="/support?from=/my-bookings">Report a problem</Link></div>:null}
@@ -128,7 +133,7 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
     </>:null}
     {current.length?<div className={styles.toolbar}><input className={styles.search} aria-label="Search appointments and visits" type="search" value={query} placeholder="Salon, service or date" onChange={e=>{setQuery(e.target.value);setPage(1);}}/><button className={styles.iconButton} type="button" aria-label="Filter appointments and visits" aria-haspopup="dialog" onClick={()=>setFilters(true)}><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M4 7h16M7 12h10M10 17h4"/></svg>{type!=="all"||recordStatus!=="all"||month!=="all"?<span aria-hidden>•</span>:null}</button></div>:null}
     <section id={panelId} role="tabpanel" aria-label={tab==="upcoming"?"Upcoming appointments":"Salon history"}>
-      {!current.length?<div className={styles.empty}><h2>{tab==="upcoming"?"No upcoming appointments":"No salon history yet"}</h2><p>{tab==="upcoming"?"Your next appointment will appear here after you book.":"Past appointments, visits and receipts will appear here."}</p><Link prefetch={false} className={`${styles.button} ${styles.primary}`} href="/explore">Find a salon</Link></div>:!rows.length?<div className={styles.empty}><h2>No matching records</h2><p>Try another salon, date or service.</p><button className={styles.button} onClick={reset}>Clear filters</button></div>:<div className={styles.list}>{rows.map((item,index)=><div key={item.id}>{index===0||monthKey(rows[index-1])!==monthKey(item)?<h2 className={styles.month}>{monthKey(item)}</h2>:null}<JourneyRow item={item} onOpen={open} now={now}/></div>)}</div>}
+      {!current.length?<div className={styles.empty}><h2>{tab==="upcoming"?"No upcoming appointments":"No salon history yet"}</h2><p>{tab==="upcoming"?"Your next appointment will appear here after you book.":"Past appointments, visits and receipts will appear here."}</p><Link prefetch={false} className={`${styles.button} ${styles.primary}`} href="/explore">Find a salon</Link></div>:!rows.length?<div className={styles.empty}><h2>No matching records</h2><p>Try another salon, date or service.</p><button className={styles.button} onClick={reset}>Clear filters</button></div>:<div className={styles.list}>{rows.map((item,index)=><div key={item.id}>{index===0||monthKey(rows[index-1])!==monthKey(item)?<h2 className={styles.month}>{monthKey(item)}</h2>:null}<JourneyRow item={item} onOpen={open} now={now} reward={item.type === "booking" && !["cancelled", "no_show", "completed"].includes(item.status) && !rewardWallet.error ? findBookingReward(rewardWallet.cards, item.bookingId) : undefined}/></div>)}</div>}
       {pageCount>1?<div className={styles.pagination}><button type="button" disabled={currentPage===1} onClick={()=>setPage(currentPage-1)}>Previous</button><span>{currentPage} / {pageCount}</span><button type="button" disabled={currentPage===pageCount} onClick={()=>setPage(currentPage+1)}>Next</button></div>:null}
       {tab==="upcoming"&&current.length?<p className={`${styles.muted} mt-4`}>Times shown in the salon’s time zone.</p>:null}
     </section>

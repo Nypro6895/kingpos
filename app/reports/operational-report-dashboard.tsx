@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import styles from "./reports.module.css";
 import { ReportDetails, ReportIcon } from "./report-ui";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
@@ -663,7 +665,7 @@ export function OperationalReportDashboard({
 }) {
   return (
     <section className={styles.overview}>
-      <h1 className="sr-only"><WorkspaceText text="Reports for" /> {salonName}</h1>
+      <h1 className="sr-only"><WorkspaceText text="Reports for" /> <SalonName name={salonName} currentSalon/></h1>
 
       <EmptyState report={report} />
       <p className={styles.comparisonNote}>

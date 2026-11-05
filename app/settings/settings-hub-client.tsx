@@ -22,11 +22,11 @@ import { SettingContent } from "./setting-content";
 import {SettingsChildPages} from "./settings-child-pages";
 
 const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owner?:boolean}[]=[
- {kind:"salon-profile",label:"Salon information & opening hours",permission:"salon_settings.view"},
- {kind:"public-profile",label:"Public profile, website & publishing",permission:"salon_profile.view"},
- {kind:"services",label:"Services, prices & booking staff",permission:"services.view"},
- {kind:"booking",label:"Booking rules & availability",permission:"booking.view"},
- {kind:"staff-team",label:"Staff, invitations & public team",permission:"staff.view"},
+ {kind:"salon-profile",label:"Salon information",permission:"salon_settings.view"},
+ {kind:"services",label:"Services & prices",permission:"services.view"},
+ {kind:"staff-team",label:"Team",permission:"staff.view"},
+ {kind:"booking",label:"Hours & booking",permission:"booking.view"},
+ {kind:"public-profile",label:"Go online",permission:"salon_profile.view"},
  {kind:"payroll",label:"Pay cycle & staff payroll",permission:"payroll.view"},
  {kind:"pos-display",label:"POS, devices & customer display",permission:"tickets.view"},
  {kind:"shortcuts",label:"Today shortcuts"},
@@ -110,7 +110,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  }
  function categories(g:SettingGroup){
   const definitions=settingsCategories(g.id);
-  return definitions.length?definitions.map(c=>({...c,items:g.items.filter(i=>c.keys.some(k=>i.id===k||i.id===`${g.id}-${k}`))})).filter(c=>c.items.length)
+  return definitions.length?definitions.map(c=>({...c,items:c.keys.flatMap(k=>g.items.filter(i=>i.id===k||i.id===`${g.id}-${k}`))})).filter(c=>c.items.length)
    :[{title:g.id.startsWith("staff-")?"My work":g.label,items:g.items}];
  }
  const matching=(g:SettingGroup,i:SettingItem)=>{
@@ -119,10 +119,26 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  };
  const selectedMeta=activeItem?getSettingCopy(activeGroup.id,activeItem.id):null;
  const meta=context(activeGroup);
+ const setupItems=activeGroup.items.filter(i=>["salon-profile","services","staff-team","booking","public-profile"].some(k=>i.id===`${activeGroup.id}-${k}`));
+ const setupPosition=setupItems.findIndex(i=>i.id===activeItem?.id);
  const singleItemGroup=["create","help","legal"].includes(activeGroup.id);
  const goBack=()=>detail&&!singleItemGroup?navigate(activeGroup.id):navigate("personal","","home");
  function selectGroup(g:SettingGroup){if(["create","help","legal"].includes(g.id))navigate(g.id,g.items[0].id);else navigate(g.id);}
- return <div className="settings-hub compact-settings" data-detail={detail} data-mobile-step={search?"home":location.step}>
+ return <div onClick={event=>{
+   if(event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
+   const anchor=(event.target as Element).closest<HTMLAnchorElement>('a[href]');
+   if(!anchor||anchor.target||anchor.hasAttribute('download'))return;
+   const url=new URL(anchor.href,window.location.href);
+   if(url.origin!==window.location.origin||url.pathname!=="/settings")return;
+   const section=url.searchParams.get("section");
+   if(!section||!all.some(i=>i.id===section))return;
+   event.preventDefault();
+   const unsaved=Array.from(document.querySelectorAll<HTMLElement>('[data-settings-dirty="true"]')).some(el=>el.getClientRects().length>0);
+   if(unsaved&&!window.confirm(__vt("You have unsaved changes. Leave this section?")))return;
+   window.history.pushState(null,"",url.pathname+url.search+url.hash);
+   window.dispatchEvent(new PopStateEvent("popstate"));
+   requestAnimationFrame(()=>window.dispatchEvent(new HashChangeEvent("hashchange")));
+  }} className="settings-hub compact-settings" data-detail={detail} data-mobile-step={search?"home":location.step}>
   <header className="settings-page-header"><h1><WorkspaceText text="All Settings"/></h1><div className="settings-search"><label><SettingsIcon name="search"/><span className="sr-only"><WorkspaceText text="Find a setting or salon"/></span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={__vt("Find a setting or salon…")}/></label><button type="button" aria-label={__vt("Refresh salon list")} disabled={busy} onClick={()=>void reload()}>↻</button></div></header>
   {error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error}/></p>:null}
   <div className="settings-workbench">
@@ -143,10 +159,11 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
      <p className="settings-context-description">{detail?<><WorkspaceText text={activeGroup.label}/>{meta.address?` · ${meta.address}`:""}</>:meta.address||activeGroup.description||<WorkspaceText text="Choose a setting to get started"/>}</p>
      {detail?<p className="settings-context-description"><WorkspaceText text={selectedMeta!.description}/></p>:null}
     </header>
+    {!detail&&activeGroup.id.startsWith("salon-")?<p className="salon-setup-intro"><WorkspaceText text="Start with salon information, then add services, your team and booking hours. Review Go online when you are ready to welcome customers. You can return here to change any setting."/></p>:null}
     {!detail?<nav className="settings-category-grid" aria-label={__vt("Settings sections")}>
      {categories(activeGroup).map(c=><section key={c.title} className="settings-category"><h3><WorkspaceText text={c.title}/></h3><div className="settings-category-rows">{c.items.map(i=>{
       const copy=getSettingCopy(activeGroup.id,i.id);
-      return <button type="button" key={i.id} className={copy.danger?"settings-danger-row":undefined} onClick={()=>reveal(i.id)}><SettingsIcon name={copy.icon}/><span className="settings-row-label"><strong><WorkspaceText text={copy.label}/></strong></span><span className="settings-row-chevron" aria-hidden="true">›</span></button>;
+      return <button type="button" key={i.id} className={copy.danger?"settings-danger-row":undefined} onClick={()=>reveal(i.id)}><SettingsIcon name={copy.icon}/><span className="settings-row-label"><strong><WorkspaceText text={copy.label}/></strong><small><WorkspaceText text={copy.description}/></small></span><span className="settings-row-chevron" aria-hidden="true">›</span></button>;
      })}</div></section>)}
     </nav>:null}
     <div className="settings-inline-sections" hidden={!detail}>
@@ -156,6 +173,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
      }))}
     </div>
 
+    {detail&&activeGroup.id.startsWith("salon-")&&setupPosition>=0?<nav className="salon-setup-next" aria-label={__vt("Set up your salon")}>{setupPosition>0?<a href={`/settings?section=${encodeURIComponent(setupItems[setupPosition-1].id)}`}><WorkspaceText text="Previous"/>: <WorkspaceText text={getSettingCopy(activeGroup.id,setupItems[setupPosition-1].id).label}/></a>:null}{setupPosition<setupItems.length-1?<a href={`/settings?section=${encodeURIComponent(setupItems[setupPosition+1].id)}`}><WorkspaceText text="Next"/>: <WorkspaceText text={getSettingCopy(activeGroup.id,setupItems[setupPosition+1].id).label}/> →</a>:null}</nav>:null}
    </main>
    {search?<div className="settings-results" aria-label={__vt("Matching settings")}><h2><WorkspaceText text="Search results"/></h2>{groups.flatMap(g=>g.items.filter(i=>matching(g,i)).map(i=>{
     const copy=getSettingCopy(g.id,i.id);

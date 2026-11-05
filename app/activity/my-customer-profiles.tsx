@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useState } from "react";
 import { getMyCustomerMergeGroups, mergeMyCustomerProfiles, type MyCustomerGroup } from "./customer-merge-actions";
 
@@ -24,7 +26,7 @@ export function MyCustomerProfiles() {
       catch (e) { setMessage(e instanceof Error ? e.message : "Please retry."); }
       finally { setBusy(false); }
     }}>
-      <strong>{group.salonName}</strong>
+      <strong><SalonName name={group.salonName} salonId={group.salonId}/></strong>
       <label>Keep <select name="target" disabled={busy} className="max-w-full border p-2">{group.customers.map(c => <option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}</select></label>
       {group.customers.map(c => <label key={c.id} className="flex gap-2"><input type="checkbox" disabled={busy} name="source" value={c.id} />{c.name} · {c.phone}</label>)}
       <label className="flex gap-2"><input required disabled={busy} type="checkbox" />These profiles are all mine.</label>

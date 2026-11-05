@@ -17,6 +17,7 @@ export type MembershipConfig = {
   future_features: string; early_access: boolean;
   service?: ServiceBenefits;
   enrollment_open?: boolean;
+  salon_member_badge?: boolean;
   allowances: Record<ResourceKey, Allowance>;
 };
 export type MembershipPlan = { key: TierKey; revision: number; config: MembershipConfig; published_version: string | null; published_config: MembershipConfig | null; selling: boolean; updated_at: string };

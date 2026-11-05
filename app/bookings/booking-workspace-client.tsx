@@ -1,12 +1,15 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { ActionFeedback } from "@/components/action-feedback";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { getPublicAppOrigin } from "@/lib/public-app-url";
+import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import { countBookedAppointments } from "@/lib/booking-count";
 import { bookingPhoneDisplay } from "@/lib/booking-phone-display";
 import { bookingHintCalendarDates, bookingHintStaff, generateBookingSlotHints } from "@/lib/booking-slot-hints";
 import { defaultBookingStart } from "@/lib/booking-time-policy";
 import { portableBookingTime as localDateTimeToUtcIso } from "@/lib/portable-booking-time";
-import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { TimeZoneSelect } from "@/components/time-zone-select";
 import { ContextualSupport } from "@/components/contextual-support";
@@ -2517,7 +2520,7 @@ function OnlineBookingControlCard({
 
   async function copyPublicUrl() {
     try {
-      await navigator.clipboard.writeText(new URL(publicBookingHref, window.location.origin).href);
+      await navigator.clipboard.writeText(new URL(publicBookingHref, getPublicAppOrigin()).href);
       setCopyMessage("Link copied.");
     } catch {
       setCopyMessage("Could not copy. Open the booking page and copy its address.");
@@ -2567,7 +2570,7 @@ function OnlineBookingControlCard({
       ) : null}
       <InlineActionMessage result={result} />
       <p className="booking-share-url">
-        {publicBookingHref}
+        {new URL(publicBookingHref, getPublicAppOrigin()).href}
       </p>
       <div className="flex flex-wrap gap-2">
         <button
@@ -2579,7 +2582,7 @@ function OnlineBookingControlCard({
         </button>
         <a
           className={classNames(styles.secondaryButton, "px-4")}
-          href={publicBookingHref}
+          href={new URL(publicBookingHref, getPublicAppOrigin()).href}
           rel="noreferrer"
           target="_blank"
         >
@@ -6281,7 +6284,7 @@ function BookingReadinessPanel({
         </div>
         <a
           className="inline-flex min-h-10 w-fit items-center rounded-md border border-amber-300 bg-white px-3 text-sm font-semibold text-amber-950"
-          href={publicBookingHref}
+          href={new URL(publicBookingHref, getPublicAppOrigin()).href}
         >
           <WorkspaceText text="Review booking page" />
         </a>
@@ -6397,12 +6400,13 @@ function SettingsPanel({
   );
   const selectedAvailabilityStaffId = searchParams.get("staffId");
 
-  function copyPublicUrl() {
-    const url =
-      typeof window === "undefined"
-        ? publicBookingHref
-        : `${window.location.origin}${publicBookingHref}`;
-    void navigator.clipboard?.writeText(url);
+  async function copyPublicUrl() {
+    try {
+      await navigator.clipboard.writeText(new URL(publicBookingHref, getPublicAppOrigin()).href);
+      setResult({ ok: true, message: "Link copied." });
+    } catch {
+      setResult({ ok: false, message: "Could not copy. Open the booking page and copy its address." });
+    }
   }
 
   return (
@@ -6413,7 +6417,7 @@ function SettingsPanel({
         <div>
           <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Public booking link" /></h3>
           <p className="mt-2 break-all rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700">
-            {publicBookingHref}
+            {new URL(publicBookingHref, getPublicAppOrigin()).href}
           </p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {readiness.map((item) => (
@@ -6446,7 +6450,7 @@ function SettingsPanel({
           </button>
           <a
             className="grid min-h-10 place-items-center rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white"
-            href={publicBookingHref}
+            href={new URL(publicBookingHref, getPublicAppOrigin()).href}
             rel="noreferrer"
             target="_blank"
           >
@@ -6739,7 +6743,7 @@ function BookingPagePanel({
         <div className="flex flex-col gap-3 border-b border-[#f0e6df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className={styles.eyebrow}><WorkspaceText text="Customer preview" /></p>
-            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]"><a href="/salon-profile" className="hover:underline">{salonName}</a></h2>
+            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]"><a href="/salon-profile" className="hover:underline"><SalonName name={salonName} currentSalon/></a></h2>
           </div>
           <div className="flex rounded-xl border border-[#ffd6c4] bg-white p-1">
             {(["desktop", "mobile"] as const).map((mode) => (

@@ -127,7 +127,7 @@ export function Sheet({
   onClose,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   busy: boolean;
   dirty: boolean;

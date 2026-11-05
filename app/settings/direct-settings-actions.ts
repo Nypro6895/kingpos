@@ -203,7 +203,9 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
     } as const;
   }
   const { context, supabase, salon } = await salonContext();
-  const common = { salonId: salon.id, salonName: salon.name, salonStatus: salon.status, canManagePlugins: isOwnerMembership(context.currentMembership) && isSalonManageContext(context) && salon.status === "active" };
+  const canViewBooking = await hasPermission("booking.view",context);
+  const canViewSalonInformation = await hasPermission("salon_settings.view",context);
+  const common = { canViewBooking, canViewSalonInformation, salonId: salon.id, salonName: salon.name, salonStatus: salon.status, canManagePlugins: isOwnerMembership(context.currentMembership) && isSalonManageContext(context) && salon.status === "active" };
   switch (kind) {
     case "public-profile": {
       const setting=await getCurrentSalonProfileIdentitySettings(context);
@@ -263,14 +265,18 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
     }
     case "staff-team": {
       const canManage=await hasPermission("staff.manage",context);
-      const [directory, requests] = await Promise.all([
+      const [directory, requests, setup, canManageStaffOnlineBooking] = await Promise.all([
         getCurrentSalonStaffDirectory(),
         canManage?getSalonStaffConnectionRequests():Promise.resolve({requests:[]}),
+        getCurrentSalonBookingSetup(context),
+        hasPermission("salon_settings.manage",context),
       ]);
       return {
         kind,
         ...common,
         staff: directory.staff,
+        setup,
+        canManageStaffOnlineBooking,
         requests: requests.requests,
         canManage,
         canManagePublicTeam:await hasPermission("salon_settings.manage",context),
@@ -462,11 +468,13 @@ export async function saveDirectStaff(
  return withSettingsTarget(salonId, async () => {
   try {
     await salonContext(salonId);
-    if ("staff_id" in input)
+      let staffId: string;
+      if ("staff_id" in input) {
       await updateStaffDirectoryBatch({ changes: [input] });
-    else await createStaff(input);
+        staffId = input.staff_id;
+      } else staffId = (await createStaff(input)).id;
     revalidatePath("/", "layout");
-    return { ok: true as const };
+      return { ok: true as const, staffId };
   } catch (error) {
     return {
       ok: false as const,

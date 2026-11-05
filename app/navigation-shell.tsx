@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import "./salon-manage-spacing.css";
 import { useIPhoneGlassNav } from "@/components/use-iphone-glass-nav";
@@ -715,9 +717,9 @@ function CustomerWorkspaceRow({
         workspace={workspace}
       />
       <span className="min-w-0">
-        <span className="block truncate text-sm font-bold"><WorkspaceText text={label} /></span>
+        <span className="block truncate text-sm font-bold"><WorkspaceMemberName workspace={workspace} name={label}/></span>
         <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
-          <WorkspaceText text={isPending ? "Opening..." : subtitle} />
+          {isPending ? <WorkspaceText text="Opening..."/> : <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>}
         </span>
       </span>
       {isSelected ? (
@@ -1453,7 +1455,7 @@ function CustomerDesktopWorkspaceSwitcher({
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-bold text-text-primary">
-            {currentLabel}
+            <WorkspaceMemberName workspace={currentWorkspace} name={currentLabel}/>
           </span>
           {accountEmail ? (
             <span className="mt-0.5 block truncate text-[11px] font-normal text-text-secondary">
@@ -1516,10 +1518,10 @@ function CustomerDesktopWorkspaceSwitcher({
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold">
-                      <WorkspaceText text={label} />
+                      <WorkspaceMemberName workspace={workspace} name={label}/>
                     </span>
                     <span className="mt-0.5 block truncate text-xs font-normal text-text-secondary">
-                      <WorkspaceText text={isPending ? "Opening..." : subtitle} />
+                      {isPending ? <WorkspaceText text="Opening..."/> : <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>}
                     </span>
                   </span>
                   {isSelected ? (
@@ -2009,7 +2011,7 @@ function CustomerMobileHeader({
             />
             <span className="min-w-0">
               <span className="block truncate text-xs font-bold text-text-primary min-[430px]:text-sm">
-                <WorkspaceText text={label} />
+                <WorkspaceMemberName workspace={currentWorkspace} name={label}/>
               </span>
               {currentWorkspace?.type === "salon" && (
                 <span className="mt-0.5 block truncate text-[10px] font-normal leading-tight text-text-secondary min-[430px]:text-xs">
@@ -2084,14 +2086,14 @@ function WorkspaceOptionButton({
           workspace={workspace}
         />
         <span className="min-w-0">
-          <span className="block truncate font-semibold"><WorkspaceText text={label} /></span>
+          <span className="block truncate font-semibold"><WorkspaceMemberName workspace={workspace} name={label}/></span>
           <span
             className={[
               "block truncate text-xs",
               isCurrent ? "text-zinc-200" : "text-zinc-500",
             ].join(" ")}
           >
-            <WorkspaceText text={subtitle} />
+            <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>
           </span>
         </span>
       </NavigationSubmitButton>
@@ -2212,7 +2214,7 @@ function WorkspaceSwitcher({
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
-            {currentLabel}
+            <WorkspaceMemberName workspace={currentWorkspace} name={currentLabel}/>
           </span>
           <span className="block truncate text-xs text-zinc-500">
             {customerWorkspaceSubtitle(currentWorkspace)}
@@ -2915,3 +2917,6 @@ export function NavigationShell({
 }
 
 
+
+
+function WorkspaceMemberName({workspace,name,subtitle=false}:{workspace:CurrentWorkspaceOption|null;name:string;subtitle?:boolean}) { const salon=workspace?.type==="salon" && (subtitle?workspace.salonMode==="staff":workspace.salonMode!=="staff"); return salon ? <SalonName name={name} salonId={workspace.salonId}/> : <WorkspaceText text={name}/>; }

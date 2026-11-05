@@ -1,4 +1,5 @@
 "use client";
+import { discoverySetupAction } from "@/lib/salon-setup-navigation";
 
 import { WorkspaceText } from "@/components/workspace-language";
 import { SalonPublicationStatus } from "@/components/salon-publication-status";
@@ -15,7 +16,7 @@ export function PublicationPanel({ publicHref, readiness, setting, action }: {
   return <div className="grid gap-5">
     <SalonPublicationStatus publicHref={publicHref} />
     <p className="text-sm text-zinc-600"><WorkspaceText text="Publishing makes this profile public and allows it to appear in Explore. Booking is configured separately." /></p>
-    <p className="text-sm font-semibold"><WorkspaceText text="Required when publishing from this profile" /></p>
+    <p className="text-sm font-semibold"><WorkspaceText text="Complete these details to make your salon public" /></p>
     <div>
       <p className="text-sm text-zinc-600">{readiness.completionPercent}<WorkspaceText text="% complete" /></p>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${readiness.completionPercent}%` }} /></div>
@@ -23,7 +24,7 @@ export function PublicationPanel({ publicHref, readiness, setting, action }: {
     <div className="grid gap-2 sm:grid-cols-2">
       {readiness.items.map(item => <div className="border-zinc-200 bg-white p-3 rounded-none border-0 shadow-none" key={item.id}>
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text={item.label} /></p>
+          <p className="text-sm font-semibold text-zinc-950">{!item.complete&&item.required?<a className="underline" href={discoverySetupAction(item.id,setting.salon_id).href}><WorkspaceText text={discoverySetupAction(item.id,setting.salon_id).label}/> →</a>:<WorkspaceText text={item.label}/>}</p>
           <span className={`rounded-md px-2 py-1 text-xs font-semibold ${item.complete ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span>
         </div>
         <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text={item.required ? "Required" : "Optional"} /></p>

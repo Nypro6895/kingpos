@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -73,7 +75,7 @@ export function SignupPhoneForm({ initialPhone, initiallyVerified, nextPath }: {
       <div className="grid max-h-[40dvh] gap-2 overflow-y-auto">
         {profiles.map(row => <label key={row.id} className="flex min-h-14 items-center gap-3 rounded-xl border border-border-subtle p-3">
           <input type="checkbox" disabled={busy || row.linked} checked={row.linked || selected.includes(row.id)} onChange={event => setSelected(ids => event.target.checked ? [...ids, row.id] : ids.filter(id => id !== row.id))} />
-          <span className="min-w-0 text-sm"><strong className="block break-words">{row.name}</strong><span className="break-words text-text-secondary">{row.salonName}{row.linked ? " · Connected" : ""}</span></span>
+          <span className="min-w-0 text-sm"><strong className="block break-words">{row.name}</strong><span className="break-words text-text-secondary"><SalonName name={row.salonName} />{row.linked ? " · Connected" : ""}</span></span>
         </label>)}
       </div>
       <button className={button} type="button" disabled={busy || !selected.length} onClick={() => run(() => finish(selected))}>{busy ? "Connecting…" : "Connect selected history"}</button>

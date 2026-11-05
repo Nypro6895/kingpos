@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
@@ -270,7 +272,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                   </p>
                   {matches.map((match) => (
                     <div key={match.salon_id} className="text-sm">
-                      <p className="font-medium">{match.name}</p>
+                      <p className="font-medium"><SalonName name={match.name} salonId={match.salon_id}/></p>
                       <p className="text-zinc-600">
                         {match.address}
                         {match.phone ? ` · ${match.phone}` : ""}
@@ -341,7 +343,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-semibold"><a href={`/settings?section=${encodeURIComponent(`salon-${salon.id}-salon-profile`)}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salon.name}</a></h3>
+                    <h3 className="font-semibold"><a href={`/settings?section=${encodeURIComponent(`salon-${salon.id}-salon-profile`)}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange"><SalonName name={salon.name} salonId={salon.salon_id}/></a></h3>
                     <p className="mt-1 text-sm text-zinc-500">
                       {[
                         salon.address_line1,

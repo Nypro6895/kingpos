@@ -1,8 +1,11 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import {BlockUserButton} from "@/components/block-user-button";
 import { commentIdentityKey } from "@/lib/explore-comment-identity";
 import { InlineCommentComposer } from "./inline-comment-composer";
 import { CommentAvatar } from "./comment-avatar";
+import { useCommentComposerVisibility } from "@/components/use-comment-composer-visibility";
 import Link from "next/link";
 import { commentDisplayName } from "@/lib/comment-identity";
 
@@ -378,6 +381,7 @@ function PostCommentThreadContent({
   const [asSalonReply, setAsSalonReply] = useState(false);
   const [status, setStatus] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  useCommentComposerVisibility(textareaRef, body);
   const highlightedCommentIdRef = useRef<string | null>(null);
   const onCountChangeRef = useRef(onCountChange);
   const refreshTimerRef = useRef<number | null>(null);
@@ -1012,7 +1016,7 @@ function CommentItem({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-zinc-950">
-              {comment.authorDisplayName}
+              {comment.isSalonReply && !comment.optimistic ? <SalonName name={comment.authorDisplayName} salonId={comment.actingSalonId ?? comment.salonId}/> : comment.authorDisplayName}
               {comment.isSalonReply ? (
                 <span className="ml-2 rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">
                   <WorkspaceText text="Salon" />

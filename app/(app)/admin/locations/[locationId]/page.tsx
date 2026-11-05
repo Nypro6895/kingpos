@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import { callPlatformAdminRpc } from "@/lib/platform-admin/rpc";
 import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
@@ -68,7 +70,7 @@ async function AdminLocationDetailPage({
       <AdminPageHeader
         actions={<SecondaryLink href="/admin/locations">Back to businesses</SecondaryLink>}
         eyebrow="Business"
-        title={detail.location.name}
+        title={<SalonName name={detail.location.name} salonId={detail.location.id}/>}
       >
         Business identity, address, status and internal notes.
       </AdminPageHeader>

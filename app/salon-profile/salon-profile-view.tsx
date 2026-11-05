@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { VisitReplyControls } from "@/app/activity/visit-reply-controls";
 import { salonProfileAnchor } from "@/lib/salon-profile-anchor";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
@@ -1786,7 +1788,7 @@ function ComposerModal({
             size="md"
           />
           <div>
-            <p className="font-semibold text-zinc-950">{data.profile.name}</p>
+            <p className="font-semibold text-zinc-950"><SalonName name={data.profile.name} salonId={data.profile.salonId}/></p>
             <p className="text-sm text-zinc-500"><WorkspaceText text="Posting to Salon Profile" /></p>
           </div>
         </div>
@@ -4247,7 +4249,7 @@ export function SalonProfileView({
             <WorkspaceText text="About" />
           </p>
           <h3 className="mt-3 text-2xl font-semibold text-zinc-950">
-            {profile.name}
+            <SalonName name={profile.name} salonId={profile.salonId}/>
           </h3>
           <p className="mt-4 max-w-prose text-sm leading-7 text-zinc-600">
             {(salonAboutParagraphs(profile).length ? salonAboutParagraphs(profile) : ["This salon is still shaping its public story."]).map((text, index) => <span key={index} className="block whitespace-pre-line [&+span]:mt-4"><WorkspaceText text={text} /></span>)}
@@ -4423,7 +4425,7 @@ export function SalonProfileView({
               </div>
             </div>
             <div className="min-w-0 px-2 py-1">
-              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 break-words text-xl font-semibold leading-6">{profile.name}</h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/></div>
+              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 break-words text-xl font-semibold leading-6"><SalonName name={profile.name} salonId={profile.salonId}/></h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/></div>
               <SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>
               <button type="button" className="min-h-11 text-xs font-semibold text-brand-teal underline underline-offset-4" onClick={() => changeTab("experiences")}><WorkspaceText text="Read customer experiences" /></button>
               <p className="truncate text-[11px] leading-5 text-zinc-500"><WorkspaceText text={salonPopularPrice(data.reputationSummary)??"Salon"} />{profile.city?` · ${profile.city}${profile.state?`, ${profile.state}`:""}`:""}</p>

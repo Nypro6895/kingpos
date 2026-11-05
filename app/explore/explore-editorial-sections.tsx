@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import { editorialCommentOptions, feedCommentCandidate, lookCommentCandidate, type ExploreCommentPresentation } from "@/lib/explore-comment-presentation";
 import { useExploreCommentPresentation } from "./use-explore-comment-presentation";
 
@@ -103,7 +105,7 @@ export function ExploreBookingEditorial({salons,contactSalons,category,location}
     <div className={styles.booking}>
       {photo?<div className={`${styles.photo} ${styles.bookingPhoto}`}><Image src={photo} alt={isDefaultNailImage(photo)?"AI service illustration by ReyLUMI":`${primary?.name ?? category} salon`} fill sizes="(min-width:768px) 35vw, 100vw" className="object-cover" onError={()=>setFailed(true)}/><NailIllustrationCredit imageUrl={photo} className={styles.credit}/></div>:null}
       <div className={styles.services}>
-        {options.length?options.map(salon=><div className={styles.service} key={salon.id}><div><h3>{salon.bookableServiceName || salon.featuredServiceName || salon.serviceNames?.[0] || "Explore services"}</h3><p>{salon.name}</p></div>{salon.bookingEnabled && salon.bookingHref?<ExploreBookButton href={salon.bookingHref} name={salon.name} contactHref={salon.hasPublicProfile?`/explore/salons/${salon.id}`:null} phoneHref={salon.phone?`tel:${salon.phone}`:null}/>:<Link prefetch={false} className={styles.link} href={salon.hasPublicProfile?`/explore/salons/${salon.id}`:salon.phone?`tel:${salon.phone}`:exploreEditorialHref(category,location)}>View services <span aria-hidden>→</span></Link>}</div>):guides.map(guide=><Link prefetch={false} className={styles.service} href={guide.href} key={guide.id}><div><h3>{guide.title}</h3></div><span className={styles.link}>Explore <span aria-hidden>→</span></span></Link>)}
+        {options.length?options.map(salon=><div className={styles.service} key={salon.id}><div><h3>{salon.bookableServiceName || salon.featuredServiceName || salon.serviceNames?.[0] || "Explore services"}</h3><p><SalonName name={salon.name} salonId={salon.id}/></p></div>{salon.bookingEnabled && salon.bookingHref?<ExploreBookButton href={salon.bookingHref} name={salon.name} contactHref={salon.hasPublicProfile?`/explore/salons/${salon.id}`:null} phoneHref={salon.phone?`tel:${salon.phone}`:null}/>:<Link prefetch={false} className={styles.link} href={salon.hasPublicProfile?`/explore/salons/${salon.id}`:salon.phone?`tel:${salon.phone}`:exploreEditorialHref(category,location)}>View services <span aria-hidden>→</span></Link>}</div>):guides.map(guide=><Link prefetch={false} className={styles.service} href={guide.href} key={guide.id}><div><h3>{guide.title}</h3></div><span className={styles.link}>Explore <span aria-hidden>→</span></span></Link>)}
         <Link prefetch={false} href={exploreEditorialHref(category,location,"","salons")} className={styles.bookingAction}>Find a salon</Link>
       </div>
     </div>

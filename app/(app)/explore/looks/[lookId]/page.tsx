@@ -1,3 +1,5 @@
+
+import { SalonName } from "@/components/salon-member-badge";
 import { withExperiencePage } from "@/components/experience-page";
 import {ExploreReferenceLove} from "@/components/explore-account-actions";
 import { ShowcaseBookIntent } from "@/app/explore/showcase-book-intent";
@@ -126,7 +128,7 @@ function RelatedLookCard({ item }: { item: ExploreShowcaseRelatedLook }) {
       <span className="grid gap-1.5 p-3">
         <span className="flex items-center justify-between gap-2">
           <span className="truncate text-sm font-bold text-text-primary">
-            {item.salonName}
+            <SalonName name={item.salonName} href={item.href}/>
           </span>
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-text-secondary">
             Preview
@@ -232,7 +234,7 @@ async function ShowcaseLookPage({
               <ShowcaseAvatar name={look.salonName} />
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-base font-bold text-text-primary">
-                  <span className="truncate">{look.salonName}</span>
+                  <span className="truncate"><SalonName name={look.salonName} href={look.bookingHref}/></span>
                 </p>
                 <p className="mt-0.5 text-xs font-semibold text-text-secondary">
                   Preview · Milwaukee, WI ·{" "}

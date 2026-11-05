@@ -4,13 +4,18 @@ import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
 export const PAYROLL_DATA_PLUGIN = "payroll-data-download";
 
+export class MarketOwnerContextError extends Error {
+  constructor(message:string, readonly reason:"denied"|"signin"="denied") { super(message); }
+}
+
 export async function marketPluginContext() {
   const context = await getCurrentBusinessContext();
-  if (!context.user || !context.currentSalon || !isSalonManageContext(context) || !isOwnerMembership(context.currentMembership) || context.currentSalon.status !== "active") {
-    throw new Error("Choose an active salon in your Owner workspace to manage this feature.");
+  if (!context.user) throw new MarketOwnerContextError("Please sign in again.","signin");
+  if (!context.currentSalon || !isSalonManageContext(context) || !isOwnerMembership(context.currentMembership) || context.currentSalon.status !== "active") {
+    throw new MarketOwnerContextError("Choose an active salon in your Owner workspace to manage this feature.");
   }
-  const client = await createAuthenticatedSupabaseServerClient();
-  if (!client) throw new Error("Please sign in again.");
+  const client = await createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true });
+  if (!client) throw new MarketOwnerContextError("Please sign in again.","signin");
   return { client, salonId: context.currentSalon.id, userId: context.user.id };
 }
 

@@ -1,0 +1,45 @@
+{
+  "summary": "Public booking copy/open controls use public web origin and report clipboard failures",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [],
+  "status": "needs-integration",
+  "source": {
+    "snapshot": "artifacts/booking-public-link/snapshot",
+    "commit": "a200dc342c6b38a57c7076ec274e27b3d3d1f9cd"
+  },
+  "changeId": "booking-public-link-20261104",
+  "files": [
+    "app/bookings/booking-workspace-client.tsx",
+    "tests/booking-public-link-copy.test.mjs"
+  ],
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Copy regression",
+      "evidence": "4 tests passed",
+      "result": "passed"
+    },
+    {
+      "name": "Public origin",
+      "evidence": "2 tests passed",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled baseline and guest live salon",
+      "evidence": "See artifacts/booking-public-link/HANDOFF.txt",
+      "result": "pending"
+    },
+    {
+      "name": "ESLint",
+      "evidence": "Pre-existing set-state-in-effect reproduced on canonical source",
+      "result": "failed"
+    }
+  ],
+  "id": "a1e40bf0-87d0-4b70-949c-8941efc110db",
+  "recordedAt": "2026-11-05T01:21:55.940Z",
+  "worktree": "C:\\Reylumi-worktrees\\booking-public-link-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,4 +1,6 @@
 "use client";
+import { salonSetupHref } from "@/lib/salon-setup-navigation";
+import { StaffHoursBooking } from "./staff-hours-booking";
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
 
 import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
@@ -40,6 +42,7 @@ export function TeamSettingsPanel({
   const __vt = useWorkspaceTranslation();
 
   const [addRevision, setAddRevision] = useState(0);
+  const [savedStaffId, setSavedStaffId] = useState("");
   function editor(staff?: StaffDirectoryMember) {
     return (
       <InlineForm
@@ -49,7 +52,7 @@ export function TeamSettingsPanel({
           await onSaved();
           if (!staff) setAddRevision(value=>value+1);
         }}
-        save={(form) => {
+        save={async (form) => {
           const common = {
             display_name: text(form, "display_name"),
             first_name: text(form, "first_name") || null,
@@ -64,17 +67,15 @@ export function TeamSettingsPanel({
             postal_code: staff?.postal_code,
             is_active: checked(form, "is_active"),
             pos_enabled: checked(form, "pos_enabled"),
+            online_booking_enabled: staff?.online_booking_enabled ?? checked(form, "online_booking_enabled"),
           };
-          return saveDirectStaff(
+          const result = await saveDirectStaff(
             data.salonId,
             staff
               ? {
                   ...common,
                   staff_id: staff.id,
-                  online_booking_enabled: checked(
-                    form,
-                    "online_booking_enabled",
-                  ),
+                  online_booking_enabled: staff.online_booking_enabled,
                   salon_profile_content_posting_enabled: checked(
                     form,
                     "salon_profile_content_posting_enabled",
@@ -82,6 +83,8 @@ export function TeamSettingsPanel({
                 }
               : common,
           );
+          if(result.ok)setSavedStaffId(result.staffId);
+          return result;
         }}
       >
         <SettingsFieldGroup title="Staff identity & contact">
@@ -117,13 +120,11 @@ export function TeamSettingsPanel({
           label={__vt("Allow POS access")}
           checked={staff?.pos_enabled ?? true}
         />
+        {!staff?<Check name="online_booking_enabled" label={__vt("Allow online booking")} checked/>:null}
+        <p className="text-sm text-zinc-600"><WorkspaceText text="After saving, choose this staff member’s services and booking hours so customers can make appointments."/></p>
         {staff && (
           <>
-            <Check
-              name="online_booking_enabled"
-              label={__vt("Allow online booking")}
-              checked={staff.online_booking_enabled}
-            />
+            
             <Check
               name="salon_profile_content_posting_enabled"
               label={__vt("Allow salon content posts")}
@@ -137,6 +138,7 @@ export function TeamSettingsPanel({
   }
   return (
     <div className="grid gap-4">
+      {savedStaffId?<aside className="salon-setup-guide settings-page-persistent" role="status"><p><WorkspaceText text="Staff saved. Review their services and booking hours to finish online booking setup."/></p><a href={salonSetupHref(data.salonId,"staff-team",`staff-${savedStaffId}`)}><WorkspaceText text="Continue setting up this staff member"/> →</a></aside>:null}
       {data.canManage && (
         <>
           <SettingsEditSection title="Add staff" key={addRevision}>{editor()}</SettingsEditSection>
@@ -168,12 +170,13 @@ export function TeamSettingsPanel({
         <p className="text-sm text-zinc-500"><WorkspaceText text="No staff yet." /></p>
       )}
       {data.staff.map((staff) => (
-        <SettingsEditSection key={staff.id} title={staff.staff_profile_display_name||staff.display_name} action={data.canManage?"Manage":"View"} closeOnSave={false} heading={<SettingsIdentity name={staff.staff_profile_display_name||staff.display_name} imageUrl={staff.staff_profile_avatar_url} subtitle={[__vt(staff.job_title||"Staff"),__vt(staff.is_active?"Active":"Inactive")].join(" · ")}/>}>
+        <SettingsEditSection id={`staff-${staff.id}`} key={staff.id} title={staff.staff_profile_display_name||staff.display_name} action={data.canManage?"Manage":"View"} closeOnSave={false} heading={<SettingsIdentity name={staff.staff_profile_display_name||staff.display_name} imageUrl={staff.staff_profile_avatar_url} subtitle={[__vt(staff.job_title||"Staff"),__vt(staff.is_active?"Active":"Inactive")].join(" · ")}/>}>
           <div className="mt-3 grid gap-3">
             <p className="text-sm text-zinc-600"><WorkspaceText text={staff.connected_user?`${staff.connected_user.email||staff.connected_user.display_name||staff.connected_user.id} is linked to this staff profile`:staffHasPersonalAccount(staff)?"An app account is linked to this staff profile":`No app account is linked${staff.email?` · Contact: ${staff.email}`:""}`} /></p>
             {data.canManage ? (
               <>
                 {editor(staff)}
+                  {data.setup.staff.find(member=>member.id===staff.id)?<StaffHoursBooking key={`booking-${staff.id}-${staff.online_booking_enabled}`} salonId={data.salonId} member={data.setup.staff.find(member=>member.id===staff.id)!} setup={data.setup} canManageOnline={data.canManageStaffOnlineBooking} onSaved={onSaved}/>:null}
                 <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public staff profile · photo, bio & specialties" /></summary><div className="mt-3"><StaffPublicProfileEditor expectedSalonId={data.salonId} staffId={staff.id} displayName={staff.staff_profile_display_name||staff.display_name} avatarUrl={staff.staff_profile_avatar_url} bio={staff.public_bio} jobTitle={staff.job_title} specialties={staff.specialties} canEditSalonRole showPasscodeControls={false} onSaved={onSaved}/></div></SettingsDetails>
                 {data.canManagePublicTeam?<SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public team order" /></summary><div className="mt-3"><InlineForm onSaved={onSaved} label={__vt("Save public team order")} save={form=>saveSettingsPublicTeam(data.salonId,[{staffId:staff.id,profileDisplayOrder:number(form,"profile_display_order"),onlineBookingEnabled:staff.online_booking_enabled,salonProfileContentPostingEnabled:staff.salon_profile_content_posting_enabled}])}><Field name="profile_display_order" label={__vt("Display order (lower comes first)")} type="number" min={0} value={staff.profile_display_order}/><p className="text-xs text-zinc-500"><WorkspaceText text={staff.public_profile_visible?"Visible on the salon website":"Hidden on the salon website"} /></p></InlineForm></div></SettingsDetails>:null}
                 <DeleteUnusedButton kind="staff" id={staff.id} name={staff.display_name} expectedSalonId={data.salonId} onDeleted={onSaved}/>

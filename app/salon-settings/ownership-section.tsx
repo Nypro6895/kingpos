@@ -1,4 +1,6 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
 import { useTransientOverlay } from "@/components/overlay-dismissal";
@@ -157,7 +159,7 @@ export function SalonOwnershipSection({
               <WorkspaceText text="Owner invitation" />
             </h3>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
-              <WorkspaceText text="Send an invitation for" /> {salon.name}<WorkspaceText text=". The recipient can accept or ignore it in My Place." />
+              <WorkspaceText text="Send an invitation for" /> <SalonName name={salon.name} salonId={salon.id}/><WorkspaceText text=". The recipient can accept or ignore it in My Place." />
             </p>
           </div>
 
