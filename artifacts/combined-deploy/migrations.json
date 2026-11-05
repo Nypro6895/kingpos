@@ -1,0 +1,17 @@
+[
+  {
+    "name": "20261104100000_forum_supplies_campaigns.sql",
+    "version": "20261104100000",
+    "hash": "9fd5566d0f0a09be69f980563ccec92d08264bd93a426b1dfc15c6d3dd14f8ec"
+  },
+  {
+    "name": "20261105021000_reward_late_identity_reconciliation.sql",
+    "version": "20261105021000",
+    "hash": "c2ead170534b915b867583f30789661076f6083b8b403c19c3d0deeb60b378d2"
+  },
+  {
+    "name": "20261105022000_overdue_booking_resolution.sql",
+    "version": "20261105022000",
+    "hash": "df3601bc52e46d4328f83ae118c37c95ed86ac7efa18acc24f41735e20dd5ba0"
+  }
+]

@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "forum-tabs-supplies-20261104",
+  "status": "needs-integration",
+  "summary": "Combined queue: fixed Latest/Following/Chat/menu, immediate post-end Campaign ad, six/seven-post feed cadence, 3 link-free supplies Campaign seeds and random section discovery cards",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/forum/continuation-feed.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "components/explore-advertising.tsx",
+    "lib/explore-advertising-rules.ts",
+    "tests/forum-campaign.test.mjs",
+    "tests/forum-ui.browser.cjs",
+    "app/(app)/forum/discovery-card.tsx",
+    "docs/forum/tabs-supplies-20261104.md",
+    "supabase/migrations/20261104100000_forum_supplies_campaigns.sql",
+    "tests/forum-supplies-seed.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\forum-continuous-feed-20261103\\artifacts\\forum-tabs-ads\\frozen-source",
+    "commit": "a0b5e59b78485bce57613df52c55fc6c09928d4d"
+  },
+  "dependencies": [
+    "forum-continuous-feed-20261103"
+  ],
+  "releaseIntent": {
+    "mode": "next-combined-release",
+    "separateDeployment": false
+  },
+  "validation": [
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/forum-tabs-ads/typecheck.txt"
+    },
+    {
+      "name": "4 Campaign/SQL checks",
+      "result": "passed",
+      "evidence": "artifacts/forum-tabs-ads/verification.txt"
+    },
+    {
+      "name": "Actual Forum browser fixture fixed tabs/menu/continuation and responsive widths",
+      "result": "passed",
+      "evidence": "artifacts/forum-tabs-ads/browser.txt"
+    },
+    {
+      "name": "Combined build, production migration/activation, native and live device acceptance",
+      "result": "pending",
+      "evidence": "docs/forum/tabs-supplies-20261104.md"
+    }
+  ],
+  "id": "b5eb62f8-af9b-479f-8c4b-bee636e54d69",
+  "recordedAt": "2026-11-05T03:34:42.843Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-continuous-feed-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

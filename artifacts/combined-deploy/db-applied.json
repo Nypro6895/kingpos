@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-05T04:25:37.959Z",
+  "observedVia": "Supabase SQL UI",
+  "migrationCount": 3,
+  "exactSourceHashes": 3,
+  "identityTrigger": true,
+  "diagnosticsPreserved": true,
+  "pendingWalletPreserved": true,
+  "externalMarketEnabled": false
+}

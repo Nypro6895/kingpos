@@ -1,0 +1,8 @@
+{
+  "observedVia": "Supabase SQL Editor native UI",
+  "at": "2026-11-05T04:23:17.400Z",
+  "pendingApplied": true,
+  "pendingVersion": "20261104231700",
+  "newMigrations": 0,
+  "reconcileFingerprint": "7d8022c6391b9b97eecc2d86ed2c4ccb"
+}

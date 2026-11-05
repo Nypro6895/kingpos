@@ -1,0 +1,88 @@
+{
+  "changeId": "membership-salon-badge-everywhere-20261104",
+  "status": "needs-integration",
+  "summary": "Completed compact web-wide salon membership identity: frozen scoped adapters for 72 current shared files and 100 direct name sites plus workspace/comment headings; access-scoped private/device/reference projections; one deduplicated refresh store. Canonical sources preserved. No deployment.",
+  "channels": [
+    "web"
+  ],
+  "kind": "change",
+  "dependencies": [
+    "membership-salon-badge-20261104",
+    "membership-admin-desktop-20261103"
+  ],
+  "validation": [
+    {
+      "name": "SQL, HTTP and adapter integration regressions",
+      "evidence": "30 tests; authority and privacy, portable lock/signature, references, expiry/cancellation and atomic source-drift refusal",
+      "result": "passed"
+    },
+    {
+      "name": "Current-source TypeScript",
+      "evidence": "72 shared-file overlay plus feature modules; baseline 0 diagnostics, candidate 0",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint delta and new feature modules",
+      "evidence": "No new errors; one unchanged booking-workspace effect diagnostic retained from baseline",
+      "result": "passed"
+    },
+    {
+      "name": "Actual shared-component local browser fixtures",
+      "evidence": "1440/390 Profile, Explore card, post/personal attribution, saved list, owner/staff workspace identities; long-name flex fixed; print text preserved",
+      "result": "passed"
+    },
+    {
+      "name": "Shared refresh store browser",
+      "evidence": "105 unique IDs / two lookups; repeated ID deduplication; expiry/revocation and identity reset late-response handling",
+      "result": "passed"
+    },
+    {
+      "name": "Membership Settings/Manage browser regression",
+      "result": "passed"
+    },
+    {
+      "name": "Current shared files preserved",
+      "evidence": "72 before/after baseline hashes in docs/membership/everywhere-verification.json",
+      "result": "passed"
+    },
+    {
+      "name": "Combined release build, hosted and native acceptance",
+      "evidence": "Apply scoped adapters to exact captured production baseline; no production migration/deploy; no physical iPhone/native acceptance",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "app/api/membership/salon-badges/route.ts",
+    "components/salon-member-badge.module.css",
+    "components/salon-member-badge.tsx",
+    "docs/membership/everywhere-implementation.md",
+    "docs/membership/everywhere-verification.json",
+    "docs/membership/implementation.md",
+    "docs/membership/salon-member-badge.md",
+    "docs/membership/salon-name-adapters.json",
+    "docs/membership/tsconfig.verify.json",
+    "lib/salon-member-store.ts",
+    "scripts/apply-membership-name-adapters.mjs",
+    "scripts/audit-salon-name-surfaces.mjs",
+    "scripts/freeze-membership-name-verification.mjs",
+    "scripts/prepare-membership-name-adapters.mjs",
+    "scripts/verify-member-badge.mjs",
+    "scripts/verify-membership-name-browser.mjs",
+    "scripts/verify-membership-name-lint.mjs",
+    "scripts/verify-membership-name-types.mjs",
+    "supabase/migrations/202611040002_membership_badge_scopes.sql",
+    "tests/membership-badge-http.test.mjs",
+    "tests/membership-badge-scopes.integration.test.mjs",
+    "tests/membership-name-adapters.test.mjs"
+  ],
+  "source": {
+    "commit": "ab0a9d6bfb6f6d9097703cdb3041bf3774892182",
+    "snapshot": "C:/Reylumi-worktrees/membership-admin-20261103",
+    "overlay": "docs/membership/salon-name-adapters.json"
+  },
+  "id": "93580a6d-90b9-4e91-8844-99d2bfd43232",
+  "recordedAt": "2026-11-04T07:14:25.797Z",
+  "worktree": "C:\\Reylumi-worktrees\\membership-admin-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

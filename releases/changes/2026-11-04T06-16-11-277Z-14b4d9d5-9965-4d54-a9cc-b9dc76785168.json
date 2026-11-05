@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "changeId": "booking-reward-pending-20261103",
+  "status": "needs-integration",
+  "summary": "Eligible bookings immediately expose persistent server-derived pending estimates in confirmation, appointment list/details and Reward wallet. First-booking bonus offered once; cancellation/no-show/settlement remove estimates; canonical earning and redemption unchanged. Locally validated for next combined release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261103150000_booking_reward_pending.sql",
+    "types/rewardlumi.ts",
+    "lib/reward-wallet.ts",
+    "components/rewardlumi/booking-reward-pending.tsx",
+    "components/rewardlumi/booking-reward-pending.module.css",
+    "components/rewardlumi/use-reward-wallet.ts",
+    "components/rewardlumi/reward-workspaces.tsx",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/activity/customer-journey.tsx",
+    "app/activity/history-details-drawer.tsx",
+    "tests/booking-reward-pending.integration.test.mjs",
+    "tests/rewardlumi-full-schema.integration.test.mjs",
+    "tests/booking-reward-pending-ui.mjs",
+    "tests/helpers/booking-reward-pending-ui.tsx",
+    "tests/booking-reward-pending-actual-app.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/booking-reward-pending/frozen-source",
+    "commit": "94395b3f1bc4c9abcc808d7c4cee561a88ad702c"
+  },
+  "dependencies": [
+    "reward-experience-redesign-20261102"
+  ],
+  "validation": [
+    {
+      "name": "Full production webpack build, full TypeScript and offline asset generation",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/build-final.log"
+    },
+    {
+      "name": "New isolated full-schema booking reward lifecycle: 7 scenarios plus parent, no skipped tests",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/sql-final.log"
+    },
+    {
+      "name": "Existing Reward financial regression: all 12 scenarios passed; fixture setup brought up to current version/readiness contract",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/sql-v4.log"
+    },
+    {
+      "name": "Reward wallet/public-context/recency unit and SQL runtime tests: 8 passed",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/unit-final.log"
+    },
+    {
+      "name": "Native reward transport/wallet contracts: 12 passed",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/native-contract.log"
+    },
+    {
+      "name": "Component browser: 6 checks, 320/390/768 layouts and mutation refresh",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/ui/checks.json"
+    },
+    {
+      "name": "Actual authenticated production Next API, appointments, wallet, independent detail estimate, cancellation: 5 checks",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/actual-app/result.json"
+    },
+    {
+      "name": "Scoped ESLint: zero errors; three existing booking-client warnings",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/lint-final.log"
+    },
+    {
+      "name": "Frozen source: 15 files match worktree, snapshot and committed bytes",
+      "result": "passed",
+      "evidence": "artifacts/booking-reward-pending/snapshot-verification.json"
+    },
+    {
+      "name": "Combined production-baseline integration, migration application, native bundle/binary and physical iPhone acceptance",
+      "result": "pending",
+      "evidence": "artifacts/booking-reward-pending/HANDOFF.md"
+    }
+  ],
+  "id": "14b4d9d5-9965-4d54-a9cc-b9dc76785168",
+  "recordedAt": "2026-11-04T06:16:11.277Z",
+  "worktree": "C:\\Reylumi-worktrees\\booking-reward-pending-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

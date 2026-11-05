@@ -1,0 +1,72 @@
+{
+  "verified": true,
+  "at": "2026-11-05T04:57:40.200Z",
+  "sourceCommit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+  "sourceSha256": "f7cb4ec72adadd4c659d5e8e7910166988ff178d7db62a04b9a98f586fd13fa7",
+  "sourceFiles": 3562,
+  "nativeSourceFilesVerified": 74,
+  "version": "1.0.0",
+  "build": "95",
+  "workflowRun": 41969146840,
+  "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/41969146840",
+  "artifactId": 13389462826,
+  "artifactSha256": "3ec492ce296c6d91e0a840b1ed06cf36eda6ce534388ce7ce18a9cfa49ec6761",
+  "simulatorTests": 246,
+  "hostInvocations": 14,
+  "testsStartedAndPassedExactlyOnce": true,
+  "bundleBuildId": "8bfe0d483b681e4419ca9cb76a9aee5123b7a8773e7cfd56a9c81b2ce5cd604f",
+  "bundleManifestSha256": "d79f189b2c3762cd46b547f02d08d2a54f180b74c8a10aed8ba6f95cd0a65dd8",
+  "generatedMappingsMatchLiveWeb": true,
+  "publicConfigurationMatchesVerifiedBaseline": true,
+  "upload": "accepted",
+  "processing": {
+    "build": "95",
+    "buildId": "c0423dc3-d810-46e1-8dc6-d81b28e5c011",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-11-05T04:55:32.529Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "testflightAvailable": true,
+  "limits": [
+    "No independent IPA inspection, authenticated hosted account acceptance or physical iPhone acceptance.",
+    "TestFlight availability is distinct from App Store publication and device installation."
+  ],
+  "availability": {
+    "checkedAt": "2026-11-05T04:57:51.733Z",
+    "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+    "appId": "6821394475",
+    "marketingVersion": "1.0.0",
+    "baselineMarketingVersion": "1.0.0",
+    "build": "95",
+    "buildId": "c0423dc3-d810-46e1-8dc6-d81b28e5c011",
+    "baselineBuild": "94",
+    "baselineBuildId": "b7beb589-c9ad-4c51-8bb1-1abe7d4afa8c",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2027-02-02T20:54:16-08:00",
+    "internalBuildState": "IN_BETA_TESTING",
+    "availableToExistingInternalGroup": true,
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      }
+    ],
+    "status": "available-to-existing-internal-group",
+    "limitations": [
+      "This confirms Apple group access, not installation or automatic update on a particular phone.",
+      "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+      "External TestFlight and App Store publication are separate."
+    ]
+  },
+  "availabilityWorkflowRun": 41970981687,
+  "availabilityArtifactSha256": "35c6f1db4cfe26de4c0e6e732155a4551d7441ffe16f7939a782f6d8d720eef3"
+}

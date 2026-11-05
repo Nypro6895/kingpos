@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "width": 390,
+  "views": [
+    "current",
+    "past",
+    "calendar",
+    "qr"
+  ],
+  "errors": []
+}

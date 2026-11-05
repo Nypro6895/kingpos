@@ -1,0 +1,39 @@
+{
+  "status": "needs-integration",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Scoped ESLint and TSX syntax"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/ticket-toolbar-compact-20261103/layout-results.json",
+      "name": "Rendered actual toolbar in Edge at 320,375,390,430,768,1280px"
+    },
+    {
+      "result": "pending",
+      "name": "Authenticated iPhone and current production baseline integration"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "source": {
+    "snapshot": "artifacts/ticket-toolbar-compact-20261103/frozen"
+  },
+  "kind": "change",
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/(app)/pos-tickets/page.tsx"
+  ],
+  "summary": "Remove staff filter; combine calendar date button and ticket search into one row",
+  "changeId": "ticket-toolbar-compact-20261103",
+  "dependencies": [],
+  "id": "65fbfbb8-4878-462d-a6d6-8fd8c381a791",
+  "recordedAt": "2026-11-03T23:43:02.075Z",
+  "worktree": "C:\\Reylumi-worktrees\\ticket-toolbar-compact-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

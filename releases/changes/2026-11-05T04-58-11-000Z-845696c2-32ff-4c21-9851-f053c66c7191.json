@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "membership-salon-badge-20261104",
+  "status": "ready",
+  "summary": "Verified combined release revision: membership-salon-badge-20261104. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/membership/desktop-settings.tsx",
+    "app/(legal)/membership/website.tsx",
+    "app/explore/explore-salon-card.tsx",
+    "app/salon-profile/salon-website-header.tsx",
+    "components/post-identity.tsx",
+    "components/salon-member-badge.tsx",
+    "components/saved-salon-list.tsx",
+    "docs/membership/member-badge-shared-baseline.json",
+    "docs/membership/salon-member-badge.md",
+    "docs/membership/tsconfig.verify.json",
+    "lib/membership-model.ts",
+    "scripts/verify-member-badge.mjs",
+    "scripts/verify-membership-browser.mjs",
+    "supabase/migrations/202611040001_membership_salon_badge.sql",
+    "tests/membership-salon-badge.integration.test.mjs",
+    "types/reylumi-membership.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\membership-salon-badge-20261104",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "845696c2-32ff-4c21-9851-f053c66c7191",
+  "recordedAt": "2026-11-05T04:58:11.000Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/admin/membership/desktop-settings.tsx": "0e301fc26cfe1a40a918e7ca162465f2d61e2db226e74f7e6a63e075854ba2cd",
+    "app/(legal)/membership/website.tsx": "4d7e9d250aec7e5f805c60f3257dacbf90845a3bf702963ebc928a60ab01035b",
+    "app/explore/explore-salon-card.tsx": "22a6a43829c353215ab1990069772b4a6631c3d8a7953d1ba93d325efbcc47f7",
+    "app/salon-profile/salon-website-header.tsx": "39f7057297fb3b1905758df848e51bb9602f0152c0db3ac2c0a3cb086467f0dc",
+    "components/post-identity.tsx": "51edf2e7f9234499f5b8e2b9f0a166a65945bb692ef00a15ac76a03c97fb428e",
+    "components/salon-member-badge.tsx": "ee9e3472ecacbbfd0a914381f4ee64aef4c99d368fc67afe1443e6ca8389c63e",
+    "components/saved-salon-list.tsx": "86a81c0630438da4662dd0900892286243b15c27241a78e47d09e5b0368bd157",
+    "docs/membership/member-badge-shared-baseline.json": "fb34a3e54a35b190401812d71c6ea89b4319455de24aa3c6d046ca8efdf453e5",
+    "docs/membership/salon-member-badge.md": "6cced573f24d88cea0c70abbd52431c2ac907bc0d782cc2a11c1e4cb30e42982",
+    "docs/membership/tsconfig.verify.json": "6628a05ee0733fd65dc65ac2b6eae1b849f16498dafacf57e0aaedd431ff4e06",
+    "lib/membership-model.ts": "7f488774369ca71629097e1d89e757973c7f107735c997db9dbd809ebd2be94b",
+    "scripts/verify-member-badge.mjs": "51a1b3993acfeb42f0025b4f7d9e848647a7d5f00679fb6137b85b65c43386b2",
+    "scripts/verify-membership-browser.mjs": "6a756e70686100ca3af34e4f7adee5c02757711b68fb8ce2e79f26e20c29f1b3",
+    "supabase/migrations/202611040001_membership_salon_badge.sql": "771b7a4006a20997edb5ae2e97f327048a05e73c9404354cff45a88032ef61a7",
+    "tests/membership-salon-badge.integration.test.mjs": "9f322d3bfba68e58a5c05939bc2913e70c91676941e3d809bdaed4b99ee283f8",
+    "types/reylumi-membership.ts": "aee15521a2fcbde3eddd99b9a3a85c6978a3e63437ad4c093c825e91309ec496"
+  }
+}

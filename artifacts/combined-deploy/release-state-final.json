@@ -1,0 +1,17 @@
+{
+  "webBaseline": "dpl_BP31s5XZ811TEbazasAqhFPsWK5p",
+  "liveDeployment": "dpl_ALqNQmC8UcaAKXi5ENHs15AGo3Bo",
+  "liveSource": "2f003610f0ec9bb828dac532c866461f29b888f2",
+  "nativeRetrySource": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+  "nativeBaseline": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+  "nativeBaselineBuild": "94",
+  "nativeProductDeltaMatchesWeb": true,
+  "B2": "No merge, rename or restructuring. Keep Profile aggregate and Library personal.",
+  "notifications": "Account-wide behavior preserved",
+  "testTimes": "Midnight test data preserved",
+  "nativePending": false,
+  "nativeVersion": "1.0.0",
+  "nativeBuild": "95",
+  "testflightAvailable": true,
+  "releaseEvent": "37daa40f-4c79-491b-953e-e05f30a3f39f"
+}

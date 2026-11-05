@@ -1,0 +1,106 @@
+[
+  {
+    "changeId": "ticket-toolbar-compact-20261103",
+    "eventId": "43752330-8042-4aab-a62f-209e57f87b62",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-10-228Z-43752330-8042-4aab-a62f-209e57f87b62.json",
+    "channels": [
+      "web"
+    ]
+  },
+  {
+    "changeId": "today-forum-preview-20261103",
+    "eventId": "e1d376d0-c8e3-46d3-a754-2db27e413b74",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-10-510Z-e1d376d0-c8e3-46d3-a754-2db27e413b74.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "settings-save-clearance-20261103",
+    "eventId": "9f7e1cc2-e633-47c6-a97e-b5c78f4d9478",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-10-765Z-9f7e1cc2-e633-47c6-a97e-b5c78f4d9478.json",
+    "channels": [
+      "web"
+    ]
+  },
+  {
+    "changeId": "membership-salon-badge-20261104",
+    "eventId": "845696c2-32ff-4c21-9851-f053c66c7191",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-11-000Z-845696c2-32ff-4c21-9851-f053c66c7191.json",
+    "channels": [
+      "web"
+    ]
+  },
+  {
+    "changeId": "booking-reward-pending-20261103",
+    "eventId": "c2e67a11-87c4-4d47-bd3d-988d59fa104d",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-11-217Z-c2e67a11-87c4-4d47-bd3d-988d59fa104d.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "membership-salon-badge-everywhere-20261104",
+    "eventId": "67930980-91db-4221-982d-10a7f1dc43e5",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-11-470Z-67930980-91db-4221-982d-10a7f1dc43e5.json",
+    "channels": [
+      "web"
+    ]
+  },
+  {
+    "changeId": "ipad-page-audit-fixes-20261104",
+    "eventId": "0190b847-ea3c-4d92-ae97-b749ee2a898d",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-11-692Z-0190b847-ea3c-4d92-ae97-b749ee2a898d.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "testflight90-review-20261104",
+    "eventId": "ee72d334-8577-458d-b6cd-44897193329f",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-11-939Z-ee72d334-8577-458d-b6cd-44897193329f.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "ipad-today-read-resilience-20261104",
+    "eventId": "df7f2103-514e-46e1-81bf-ee1edc619ebf",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-12-168Z-df7f2103-514e-46e1-81bf-ee1edc619ebf.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "forum-tabs-supplies-20261104",
+    "eventId": "1b100f44-7be0-4f31-bce5-b461e8fe8a16",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-12-402Z-1b100f44-7be0-4f31-bce5-b461e8fe8a16.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "salon-online-ux-optimization-20261104",
+    "eventId": "0aacfbfa-ec0a-4875-bdb2-9bceea0c2e77",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-12-617Z-0aacfbfa-ec0a-4875-bdb2-9bceea0c2e77.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  },
+  {
+    "changeId": "combined-deploy-20261105",
+    "eventId": "42bbda8d-b446-45d3-b142-3477b8afed23",
+    "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\changes\\2026-11-05T04-58-35-784Z-42bbda8d-b446-45d3-b142-3477b8afed23.json",
+    "channels": [
+      "web",
+      "ios"
+    ]
+  }
+]

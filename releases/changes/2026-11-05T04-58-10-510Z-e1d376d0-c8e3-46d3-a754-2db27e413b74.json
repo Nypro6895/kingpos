@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "today-forum-preview-20261103",
+  "status": "ready",
+  "summary": "Verified combined release revision: today-forum-preview-20261103. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/today/today-dashboard-view.tsx",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/vietnamese-dictionary.ts",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "types/forum.ts",
+    "app/api/forum/latest/route.ts",
+    "app/staff/today/today-forum-preview.tsx",
+    "docs/forum/today-preview-20261103.md",
+    "supabase/migrations/20261104011000_today_forum_preview.sql",
+    "tests/today-forum-native.test.mjs",
+    "tests/today-forum-preview.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\today-forum-preview-20261103",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "e1d376d0-c8e3-46d3-a754-2db27e413b74",
+  "recordedAt": "2026-11-05T04:58:10.510Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/staff/today/today-dashboard-view.tsx": "e01878b5a8d9651c10aac516fa4fabe3222cc16a8ecb7d84eee6c43b7028d70c",
+    "lib/app-local-shell-http-client.ts": "56149d182d48a27fc53a282342f03f981ac6b32e99238fa59a157acee60047a6",
+    "lib/app-local-shell-metadata.ts": "230fb82378fc3cb838f2468578d28b4834c6602ac3cb4d987cd7ff2486b38f09",
+    "lib/app-local-shell-server.ts": "772e3fd529a6258900fa57f8cb4e266ee2b9eaba67864735eb6ac00a19a92e74",
+    "lib/vietnamese-dictionary.ts": "37b8ecf680041ec95eea76e9aa82c18e45c8ae86f65d86707e40fac8c9551268",
+    "tests/app-local-shell-auxiliary.test.mjs": "c798d7f45dd98c756e04560672d6fe79cb093142561dbc27af9163860bc31327",
+    "types/forum.ts": "d7a01c120a157fc9a414075321e229ccea0d2efaec192fc7a902a6c5a3fa0fa0",
+    "app/api/forum/latest/route.ts": "e389408d6ccdc8680e86efde8f2dba196cb7cb7218d5be615ca0bc0a79b256e0",
+    "app/staff/today/today-forum-preview.tsx": "64106a9e750f96c426451b1dad7776ad02bce4f4ed4e70a4d745fb1882342804",
+    "docs/forum/today-preview-20261103.md": "0fda17d69bf1ecf40c9d9790a8263178aa7e39afe0be3ac92b28a5eb2c3ad788",
+    "supabase/migrations/20261104011000_today_forum_preview.sql": "ddc78b9baa11e5f47dbdfd8a565d4870469ef9302ea03631d832713d5a6536b9",
+    "tests/today-forum-native.test.mjs": "2c4285268badc5fc2d7870850cf519d4212ab2894d31adc6aa02b641ef2f1f2c",
+    "tests/today-forum-preview.test.mjs": "82c9f7d091fef3d54af2a9b9bcf26bb291187ed0d093a99192581f4a6a035c39"
+  }
+}

@@ -1,0 +1,31 @@
+Isolated fixture: 50 migrations
+Isolated fixture: 100 migrations
+Isolated fixture: 150 migrations
+Isolated fixture: 200 migrations
+Isolated fixture: 250 migrations
+Isolated fixture: 300 migrations
+Isolated fixture: 350 migrations
+Isolated fixture: 400 migrations
+▶ booking pending rewards use saved appointments without issuing spendable points
+  ✔ booking immediately creates a persistent visible estimate, with no membership or available credits (1876.4837ms)
+  ✔ multiple bookings receive one first-booking bonus; cancel and no-show remove their estimates (1744.3227ms)
+  ✔ identity and salon boundaries: other customers and anonymous callers cannot see private estimates (1023.2421ms)
+  ✔ linked customer identity is supported; repricing updates estimate and cancelled lines do not earn (1210.7994ms)
+  ✔ already consumed first-booking key is never offered again, even after reversal (1611.9136ms)
+  ✔ paid completion replaces pending with canonical credits; retry and void never duplicate or restore estimates (2148.0618ms)
+  ✔ past unvisited appointments and paused programs do not promise points (1388.2608ms)
+✔ booking pending rewards use saved appointments without issuing spendable points (105759.7ms)
+✔ appointment buckets partition the total; midnight and explicit terminal states are preserved (0.7907ms)
+✔ overdue resolution SQL retains management, concurrency, future-date and terminal-state guards (1226.8574ms)
+✔ late customer identity earns three qualifying receipts once, with no owner exclusion or cross-account leakage (897.2556ms)
+✔ closing stays neutral on the salon current business date; ended dates count missing collected as short (5.5555ms)
+✔ POS Submit disables empty, zero, missing-staff and missing-service carts and guards forced callbacks (531.1163ms)
+✔ bottom navigation preserves Library, Beauty rewards and all Staff Today sub-tabs (9.3864ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105829.735

@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-05T04:36:30.042Z",
+  "observedVia": "Supabase SQL Editor, bounded read only",
+  "scope": "Matching salon aggregate, not identified reported customer",
+  "salonName": "King Nails Spa LLC",
+  "rewardsEnabled": true,
+  "closedReceipts": 58,
+  "linkedClosedReceipts": 6,
+  "completedVisits": 1,
+  "ruleSnapshots": 9,
+  "awardReceipts": 0,
+  "members": 2
+}

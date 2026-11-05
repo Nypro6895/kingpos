@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "ipad-page-audit-fixes-20261104",
+  "status": "needs-integration",
+  "summary": "Open Beauty Library at Library and identify salon creation, customer creation and customer edit forms",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/beauty/library/page.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/(app)/customers/new/page.tsx",
+    "app/salons/salon-management-page.tsx",
+    "tests/beauty-library-entry.test.mjs",
+    "app/(app)/customers/[customerId]/edit/page.tsx"
+  ],
+  "source": {
+    "commit": "0eb90ec",
+    "snapshot": "C:\\Reylumi-worktrees\\ipad-pos-more-20261104\\artifacts\\ipad-page-audit-fixes-20261104\\frozen"
+  },
+  "fileHashes": {
+    "app/(app)/beauty/library/page.tsx": "441bb2e498b87d8504c693baa0fc13aca1f68598221c60597d4414e1503a669c",
+    "app/beauty/beauty-profile-client.tsx": "6c2b1d0a1dca092610caba2072e5b7e1ff5759dfb1f07546bbd24ca365a778d1",
+    "app/(app)/customers/new/page.tsx": "87450ba5b14168f71f29e9838f3935cf23a97932b2db66e9395cd0e5cb877eaf",
+    "app/salons/salon-management-page.tsx": "7acfaf4f1a371a3f2138d4051b806090be1be806a067347ad6fc4b8f1ed44623",
+    "tests/beauty-library-entry.test.mjs": "91aa2d43c3061b3b7f5be8dca52546af0eb49fc2903ea16fd237f7bda7c7db22",
+    "app/(app)/customers/[customerId]/edit/page.tsx": "3aa4a19a39c29f873c23e10cfbb6b20762b4f4ac072833dfee81e89e172bd95d"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Scoped ESLint and whitespace; existing customer CRLF preserved",
+      "result": "passed"
+    },
+    {
+      "name": "Beauty Library, home and timeline publish race regression: 6 tests",
+      "result": "passed",
+      "evidence": "artifacts/ipad-page-audit-fixes-20261104/validation.txt"
+    },
+    {
+      "name": "Salon creation routing verifier",
+      "result": "passed"
+    },
+    {
+      "name": "Actual Library component fixture in Safari on both iPad Pro Simulators, both orientations",
+      "result": "passed"
+    },
+    {
+      "name": "Additional beauty-public-unification suite fixture compile: navigation mock lacks usePathname/useRouter exports",
+      "result": "failed"
+    },
+    {
+      "name": "Fresh production baseline integration, assembled full build, authenticated candidate, physical iPad QA",
+      "result": "pending"
+    }
+  ],
+  "id": "249db144-a169-4ac7-90c3-836562b7c322",
+  "recordedAt": "2026-11-05T02:28:09.449Z",
+  "worktree": "C:\\Reylumi-worktrees\\ipad-pos-more-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

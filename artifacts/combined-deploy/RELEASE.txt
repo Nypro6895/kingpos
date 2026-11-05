@@ -1,0 +1,25 @@
+REYLUMI COMBINED RELEASE — 2026-11-04 America/Chicago
+
+Web published: https://reylumi.com
+Deployment dpl_ALqNQmC8UcaAKXi5ENHs15AGo3Bo
+Exact serving baseline dpl_BP31s5XZ811TEbazasAqhFPsWK5p, source eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8.
+Assembled source 2f003610f0ec9bb828dac532c866461f29b888f2; 4,311 deployed files hash verified, 97 files differ from baseline. All shipped product modules and release history retained.
+
+Integrated/preserved recent work: compact ticket calendar/search; Today Forum preview and Forum tabs/Supplies; Settings save clearance; shared membership badges and scoped name adapters; booking pending reward estimates; iPad page entry/forms and optional Today read resilience; TestFlight90 A/B/C fixes; precise salon setup guidance and existing booking switch semantics. Earlier shipped revisions were preserved rather than replaced. Profile and Library stay separate by owner decision: future Profile aggregation and Library personal content, no restructuring in this release. Account-wide notifications and midnight test times unchanged.
+
+Production SQL: three migrations, three exact source hashes verified. Late customer linking reconciles through existing reward authority; combined wallet retains pending booking estimates and scoped explanations. Overdue handling preserves booking permission/concurrency controls. Supplies seeds do not overwrite existing campaigns. Existing campaign and remapped booking-reward migration histories preserved; no duplicate pending migration applied. External Market remains disabled.
+
+Validation: local and Vercel production builds/TypeScript pass; 14/14 PostgreSQL full-schema reward + targeted review tests; final ticket/identity/status/security subset 8/8; four 390px component previews; 10 candidate HTTP and 8 live HTTP checks. Live checks are public/unauthenticated responses, not signed-in salon acceptance. Synthetic previews do not prove physical WKWebView behavior.
+
+Full npm test before final fixture updates: 1,218 tests, 1,144 pass, 60 fail, 14 skip. Untouched serving-source baseline: 1,169 tests, 1,094 pass, 62 fail, 13 skip. Two newly failing expectations required the retired Staff filter; both replaced with checks of date/search preservation and unchanged ticket permissions and passed. No remaining new failure names compared with baseline. Full lint: 23 errors including 22 existing baseline errors and one new Forum effect error; the new error was fixed. Final scoped lint zero errors, one unused parameter warning. Full-suite/lint are not claimed green.
+
+Windows uses existing online shell and receives the web change; no new Windows executable. iOS bundled UI requires new binary, CI run https://github.com/Nypro6895/kingpos/actions/runs/41967682640 . Native processing/availability receipt is recorded separately when verified. No App Store publication or physical iPhone/iPad acceptance claimed.
+
+Older unfinished/blocked records, designs, separate Nails Page Pilot and excluded developer-Market work are retained in queue-reconciliation.json, not silently marked published. Exact reported A3 customer account remains unverified; no permission grants or manual loyalty award bypass were used.
+
+FIRST NATIVE RUN: 245/246 passed; chart assertion waited for innerText in intentionally collapsed Statistics. The test now opens the real disclosure before all existing assertions. Retry source e1f0a95bbc49f2c301f5852136f2d565eac15dc6, run41969146840. Product app source unchanged from verified live2f00361.
+
+FINAL iOS: TestFlight 1.0.0 (95), upload accepted, Apple VALID, IN_BETA_TESTING, existing internal group association confirmed. Native246 tests across14 hosts, signed/unsigned archives and source hashes verified. Source e1f0a95bbc49f2c301f5852136f2d565eac15dc6.
+Native workflow https://github.com/Nypro6895/kingpos/actions/runs/41969146840
+Availability workflow https://github.com/Nypro6895/kingpos/actions/runs/41970981687
+Final release event 37daa40f-4c79-491b-953e-e05f30a3f39f

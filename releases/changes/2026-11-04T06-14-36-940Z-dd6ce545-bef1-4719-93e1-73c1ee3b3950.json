@@ -1,0 +1,60 @@
+{
+  "summary": "Implemented three-plan blue-check configuration, marketing benefit, authoritative public affiliation RPC, batched shared marker and initial public adapters. Universal name coverage and private-workspace projection remain integration work; no deploy.",
+  "validation": [
+    {
+      "name": "SQL integration",
+      "result": "passed",
+      "evidence": "21 tests pass; immutable terms, permission/privacy, eligibility and expiry cases"
+    },
+    {
+      "name": "Local browser",
+      "result": "passed",
+      "evidence": "105 names in two batches, nonmember/personal exclusion, revocation and exact expiry; admin three toggles and desktop/phone workflows"
+    },
+    {
+      "result": "passed",
+      "name": "Scoped TypeScript and ESLint"
+    },
+    {
+      "name": "Universal name coverage, full release build and hosted acceptance",
+      "result": "pending",
+      "evidence": "See docs/membership/salon-member-badge.md; remaining booking/map/workspace/Admin/POS adapters and private projection; no production migration or deployment"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "changeId": "membership-salon-badge-20261104",
+  "kind": "change",
+  "status": "needs-integration",
+  "source": {
+    "commit": "e918d245606b07970593fab2e2829fbda93a61c9",
+    "snapshot": "C:/Reylumi-worktrees/membership-admin-20261103"
+  },
+  "files": [
+    "app/(app)/admin/membership/desktop-settings.tsx",
+    "app/(legal)/membership/website.tsx",
+    "app/explore/explore-salon-card.tsx",
+    "app/salon-profile/salon-website-header.tsx",
+    "components/post-identity.tsx",
+    "components/salon-member-badge.tsx",
+    "components/saved-salon-list.tsx",
+    "docs/membership/member-badge-shared-baseline.json",
+    "docs/membership/salon-member-badge.md",
+    "docs/membership/tsconfig.verify.json",
+    "lib/membership-model.ts",
+    "scripts/verify-member-badge.mjs",
+    "scripts/verify-membership-browser.mjs",
+    "supabase/migrations/202611040001_membership_salon_badge.sql",
+    "tests/membership-salon-badge.integration.test.mjs",
+    "types/reylumi-membership.ts"
+  ],
+  "dependencies": [
+    "membership-admin-desktop-20261103"
+  ],
+  "id": "dd6ce545-bef1-4719-93e1-73c1ee3b3950",
+  "recordedAt": "2026-11-04T06:14:36.940Z",
+  "worktree": "C:\\Reylumi-worktrees\\membership-admin-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

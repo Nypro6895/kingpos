@@ -1,0 +1,16 @@
+✔ installed ticket DTO keeps date and search and ignores retired staff filter without roster reads (77.1418ms)
+✔ retired staff filter never reads a wider roster and ticket permission remains required (36.0048ms)
+✔ appointment buckets partition the total; midnight and explicit terminal states are preserved (0.5517ms)
+✔ overdue resolution SQL retains management, concurrency, future-date and terminal-state guards (1149.5958ms)
+✔ late customer identity earns three qualifying receipts once, with no owner exclusion or cross-account leakage (885.9438ms)
+✔ closing stays neutral on the salon current business date; ended dates count missing collected as short (4.8322ms)
+✔ POS Submit disables empty, zero, missing-staff and missing-service carts and guards forced callbacks (507.0353ms)
+✔ bottom navigation preserves Library, Beauty rewards and all Staff Today sub-tabs (7.7843ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2717.3015

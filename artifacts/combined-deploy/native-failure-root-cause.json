@@ -1,0 +1,14 @@
+{
+  "run": 41967682640,
+  "sourceCommit": "2f003610f0ec9bb828dac532c866461f29b888f2",
+  "testsStarted": 246,
+  "passed": 245,
+  "failed": [
+    "OwnerTodayDiagnosticsTests/testInstalledOwnerTodayStatisticsPieAndHourlySelection"
+  ],
+  "rootCause": "Test used innerText while compact Today Statistics disclosure was intentionally closed by C1. It never opened the summary before waiting for chart labels.",
+  "fix": "Assert disclosure initially closed, click its actual summary, then retain all original chart and no-extra-read assertions.",
+  "retryCommit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+  "appProductSourceChanged": false,
+  "uploadSkipped": true
+}

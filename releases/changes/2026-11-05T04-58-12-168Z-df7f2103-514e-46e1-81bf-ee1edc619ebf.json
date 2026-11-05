@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "ipad-today-read-resilience-20261104",
+  "status": "ready",
+  "summary": "Verified combined release revision: ipad-today-read-resilience-20261104. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/daily-pos-report.ts",
+    "lib/today-statistics-server.ts",
+    "lib/today-dashboard.ts",
+    "tests/today-financial-concurrency.test.mjs",
+    "tests/today-statistics-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\ipad-today-read-resilience-20261104",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "df7f2103-514e-46e1-81bf-ee1edc619ebf",
+  "recordedAt": "2026-11-05T04:58:12.168Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/daily-pos-report.ts": "eafc989ba0a2ab8dc565a9d911e60a1506414318954be589d607b603383420b9",
+    "lib/today-statistics-server.ts": "a13879747751f8f6fccb8768fdcbe527dda0a92cf96be7773d719d278aff92db",
+    "lib/today-dashboard.ts": "26e13ff6027bdbe4bab91c23b46015173bdce6d5d0b8a40a9c2035a70eb29d80",
+    "tests/today-financial-concurrency.test.mjs": "e17b6d5422fc006b5da5aec856b42b8eb7eaf7847274260b15490552e3444a9a",
+    "tests/today-statistics-runtime.test.mjs": "ed6c5154a26e0b1a2dd99915409091c640811e269186d4ea4317e5e763ae04bf"
+  }
+}

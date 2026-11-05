@@ -1,0 +1,13 @@
+{
+  "preservedCurrent": [
+    "membership badge v2 and existing adapters",
+    "pending reward wallet and booking UI already shipped",
+    "shell forum transport already shipped",
+    "settings legal footer and clearance already shipped"
+  ],
+  "merged": [
+    "ticket calendar/search retains closed-status scope",
+    "TestFlight changes retain member salon labels and pending rewards imports"
+  ],
+  "B2": "Owner decision: keep Profile aggregate and Library personal as separate flows; no restructuring"
+}

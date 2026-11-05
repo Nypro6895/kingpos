@@ -1,0 +1,78 @@
+{
+  "at": "2026-11-05T04:31:11.541Z",
+  "base": "kingpos-2gt9kqmr6-kingpos.vercel.app",
+  "scope": "Read-only public routes and unauthenticated access controls; no signed-in salon acceptance claimed",
+  "results": [
+    {
+      "name": "help",
+      "path": "/help",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "login",
+      "path": "/login",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "settings",
+      "path": "/settings",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "public-profile",
+      "path": "/explore/salons/00000000-0000-4000-8000-000000000000",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "booking-context",
+      "path": "/api/public-booking/context?salonId=invalid",
+      "status": 400,
+      "expected": 400,
+      "exit": 0
+    },
+    {
+      "name": "native-context",
+      "path": "/api/app-local/context",
+      "status": 400,
+      "expected": 400,
+      "exit": 0
+    },
+    {
+      "name": "membership",
+      "path": "/membership",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "qr",
+      "path": "/qr",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "rewards",
+      "path": "/rewards?from=beauty",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    },
+    {
+      "name": "bookings",
+      "path": "/bookings",
+      "status": 200,
+      "expected": 200,
+      "exit": 0
+    }
+  ],
+  "verified": true
+}

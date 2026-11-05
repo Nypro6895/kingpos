@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "ipad-page-audit-fixes-20261104",
+  "status": "ready",
+  "summary": "Verified combined release revision: ipad-page-audit-fixes-20261104. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/beauty/library/page.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/(app)/customers/new/page.tsx",
+    "app/salons/salon-management-page.tsx",
+    "tests/beauty-library-entry.test.mjs",
+    "app/(app)/customers/[customerId]/edit/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\ipad-page-audit-fixes-20261104",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "0190b847-ea3c-4d92-ae97-b749ee2a898d",
+  "recordedAt": "2026-11-05T04:58:11.692Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/beauty/library/page.tsx": "441bb2e498b87d8504c693baa0fc13aca1f68598221c60597d4414e1503a669c",
+    "app/beauty/beauty-profile-client.tsx": "6c2b1d0a1dca092610caba2072e5b7e1ff5759dfb1f07546bbd24ca365a778d1",
+    "app/(app)/customers/new/page.tsx": "87450ba5b14168f71f29e9838f3935cf23a97932b2db66e9395cd0e5cb877eaf",
+    "app/salons/salon-management-page.tsx": "7acfaf4f1a371a3f2138d4051b806090be1be806a067347ad6fc4b8f1ed44623",
+    "tests/beauty-library-entry.test.mjs": "91aa2d43c3061b3b7f5be8dca52546af0eb49fc2903ea16fd237f7bda7c7db22",
+    "app/(app)/customers/[customerId]/edit/page.tsx": "3aa4a19a39c29f873c23e10cfbb6b20762b4f4ac072833dfee81e89e172bd95d"
+  }
+}

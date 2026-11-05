@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "ipad-today-read-resilience-20261104",
+  "status": "needs-integration",
+  "summary": "Keep authoritative Today data when optional history or another statistics source is slow; bound preparation and each complete source separately",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/daily-pos-report.ts",
+    "lib/today-statistics-server.ts",
+    "lib/today-dashboard.ts",
+    "tests/today-financial-concurrency.test.mjs",
+    "tests/today-statistics-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ipad-pos-more-20261104\\artifacts\\ipad-today-read-resilience-20261104\\frozen",
+    "commit": "638091e"
+  },
+  "fileHashes": {
+    "lib/daily-pos-report.ts": "eafc989ba0a2ab8dc565a9d911e60a1506414318954be589d607b603383420b9",
+    "lib/today-statistics-server.ts": "a13879747751f8f6fccb8768fdcbe527dda0a92cf96be7773d719d278aff92db",
+    "lib/today-dashboard.ts": "60d03400e9e4ed47192c3a8c829abad5ebc6dbcc4e0895ac35645f22bc5f3ac0",
+    "tests/today-financial-concurrency.test.mjs": "e17b6d5422fc006b5da5aec856b42b8eb7eaf7847274260b15490552e3444a9a",
+    "tests/today-statistics-runtime.test.mjs": "0e0b73daedb33e1d6baf20ac25a86479fea76bbd8cdd6aab10b75f3713e7cf7d"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "ESLint all five changed files and diff whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "30 regressions: delayed history, source deadlines, pagination, financial facts, permission boundaries, native Today reads and recovery, salon clock",
+      "result": "passed"
+    },
+    {
+      "name": "Full TypeScript: missing pdf-lib and @pdf-lib/fontkit declarations in unchanged Check Writer module",
+      "result": "failed",
+      "evidence": "artifacts/ipad-today-read-resilience-20261104/typecheck.txt"
+    },
+    {
+      "name": "Portable extended suite: signed save fixture assertion and two missing mock exports; Portable inputs unchanged from c56d6c6",
+      "result": "failed"
+    },
+    {
+      "name": "Production baseline integration/build and authenticated Safari iPad live acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "3b68c483-ddbf-4c60-8f65-8e7a22b239a7",
+  "recordedAt": "2026-11-05T02:57:48.913Z",
+  "worktree": "C:\\Reylumi-worktrees\\ipad-pos-more-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

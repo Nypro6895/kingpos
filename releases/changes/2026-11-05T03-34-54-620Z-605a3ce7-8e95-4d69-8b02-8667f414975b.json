@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "salon-online-ux-optimization-20261104",
+  "status": "ready",
+  "summary": "Precise missing-step links, truthful five-step salon checklist, relevant staff save guidance and one online-booking switch.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/booking-setup-guide.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-child-pages.tsx",
+    "app/settings/settings-controls.css",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "docs/releases/salon-online-ux-optimization-20261104.txt",
+    "lib/booking-status.ts",
+    "lib/salon-setup-navigation.ts",
+    "lib/vietnamese-settings-copy.json",
+    "tests/salon-online-ux-optimization.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-online-settings-20261104\\artifacts\\salon-online-ux-optimization\\frozen-patch",
+    "commit": "1e3f18156d1b0124af6e75dfa73538ee5b25ddcf",
+    "sha256": "fe0f3056f8a69237cfadeac4ecf6f3ffd394401a5a8c3004e161fce8515aa4b6"
+  },
+  "dependencies": [
+    "salon-online-settings-20261104"
+  ],
+  "validation": [
+    {
+      "name": "36 regression cases",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-ux-optimization/regression.log"
+    },
+    {
+      "name": "8 contextual translation and data-preservation cases",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-ux-optimization/translation.log"
+    },
+    {
+      "name": "Real profile/team/booking/availability editors at 320/430/1280 pixels",
+      "result": "passed",
+      "evidence": "tests/salon-online-ux-optimization.test.mjs"
+    },
+    {
+      "name": "Production build including TypeScript, scoped ESLint and diff whitespace",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-ux-optimization/production-build-result.json"
+    }
+  ],
+  "limitations": [
+    "Implementation-only revision; not deployed. Requires latest web baseline integration and iOS bundled-interface rebuild.",
+    "Server/network boundaries mocked in runtime tests. No authenticated hosted or physical-device acceptance, and no novice participant study."
+  ],
+  "id": "605a3ce7-8e95-4d69-8b02-8667f414975b",
+  "recordedAt": "2026-11-05T03:34:54.620Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/booking-setup-guide.tsx": "6400c26e2ea251ee533ab4e1a0f0c1bffa6e1d28b1c70a5b999a4f79aae81410",
+    "app/settings/direct-settings-panel.tsx": "668470411cfe34447a5af55e26b1878d89b554a521e6840d184b57f4810c9631",
+    "app/settings/salon-settings-panels.tsx": "b6fb2b185b298b456cbaf6b0d66b362ff1f7d54116ee1003b232131eecab0532",
+    "app/settings/settings-child-pages.tsx": "141718c3fe8b249f5c35db3c0fd260d4c0e221ab81a77a93ee28d8c7d7cd8aa3",
+    "app/settings/settings-controls.css": "1aeab78a9b8fb7f83fed00e3b2c38d8be74946436fb75cdf0c4a4b3e850bbafd",
+    "app/settings/settings-hub-client.tsx": "80a9be3a7bc09449c23f1efd94dec87ad247d9926c7f031faeef4c2ec5061a0f",
+    "app/settings/staff-hours-booking.tsx": "390b03ed7a5d447fce561f56198cfd20e28d1b8d4ed66f935afce96a0c16fd71",
+    "app/settings/team-payroll-panels.tsx": "5bf63359f42e70870c0b218b57ac1512656b87f020aa1ca1b166c2412d6c92ee",
+    "docs/releases/salon-online-ux-optimization-20261104.txt": "4c35fab0fbcf8535061da6f03daea41349de87421994121601b4103d9ca4b3f9",
+    "lib/booking-status.ts": "6b8b8f1766b67bd20ab8d842b5a0d6db6efda5035da4306355dee1183dcee234",
+    "lib/salon-setup-navigation.ts": "51af1d4645bde01b1486a53fe15142f81ab8342054a26154375c10803867b1c3",
+    "lib/vietnamese-settings-copy.json": "3cb4beb7b1881a372d8da3e3f8a1e01e6ee336a195142ce3ecaaac14a66c436a",
+    "tests/salon-online-ux-optimization.test.mjs": "4701d68d4a227f925ba110448a349ae7383b36f94c760ec7c39226c37458e3ef"
+  }
+}

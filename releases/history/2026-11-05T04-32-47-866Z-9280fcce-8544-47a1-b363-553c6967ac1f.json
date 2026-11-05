@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Combined recent review/tablet/forum/salon-setup web release verified. Native build in progress, not yet claimed available.",
+  "changes": [
+    "363cecda-8421-4fea-9901-16d857c09e49"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_ALqNQmC8UcaAKXi5ENHs15AGo3Bo",
+      "baselineDeploymentId": "dpl_BP31s5XZ811TEbazasAqhFPsWK5p",
+      "sourceSha256": "9f64da6b84422ef1b2bd13ee6fd54adcba8c3a8661099b9123ef48c53296f83f",
+      "overlaySha256": "ee33f69d5d6e48c9c7ca6e2afcb4e935d66eaf4a28a80e7f495af569c3391557",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json; artifacts/combined-deploy/live-http.json; artifacts/combined-deploy/db-applied.json"
+    }
+  },
+  "id": "9280fcce-8544-47a1-b363-553c6967ac1f",
+  "recordedAt": "2026-11-05T04:32:47.866Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105"
+}

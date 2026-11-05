@@ -1,0 +1,178 @@
+{
+  "kind": "change",
+  "changeId": "testflight90-review-20261104",
+  "status": "needs-integration",
+  "summary": "TestFlight90 review: scoped source fixes and local native bundle validated; B2 awaits decision, A3 exact live records need authorized visits/reward reads. No deployment/upload. Final reviewed revision also capitalizes linked receipt/request labels.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/more/page.tsx",
+    "app/(app)/rewards/page.tsx",
+    "app/(app)/salon-profile/page.tsx",
+    "app/activity/customer-journey.tsx",
+    "app/activity/history-details-drawer.tsx",
+    "app/beauty/beauty-library.tsx",
+    "app/beauty/beauty-reward-summary.tsx",
+    "app/bookings/actions.ts",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/bookings/booking-workspace.css",
+    "app/explore/beauty/beauty-post-read-view.tsx",
+    "app/explore/beauty/beauty-profile-read-view.tsx",
+    "app/globals.css",
+    "app/navigation-shell.tsx",
+    "app/notifications/notification-center-client.tsx",
+    "app/pos-tickets/ticket-history-disclosure.module.css",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/qr/personal-qr-client.tsx",
+    "app/reports/closing-balance-summary.tsx",
+    "app/reports/daily-accounting-overview.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/role-navigation.ts",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/saved-post/save-post-button.tsx",
+    "app/staff/appointments/staff-schedule-view.tsx",
+    "app/staff/my-work/staff-daily-overview.module.css",
+    "app/staff/my-work/staff-pay-analysis.module.css",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/my-work/staff-tickets.module.css",
+    "app/staff/scan/scan.module.css",
+    "app/staff/today/quick-access-editor.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-statistics.tsx",
+    "components/app-local-more.tsx",
+    "components/booking-ui/booking-theme.module.css",
+    "components/booking-ui/schedule-picker.module.css",
+    "components/booking-ui/schedule-picker.tsx",
+    "components/rewardlumi/reward-workspaces.tsx",
+    "components/rewardlumi/use-reward-wallet.ts",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/app-local-business-server.ts",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-registry.tsx",
+    "lib/app-local-personal-resources-server.ts",
+    "lib/app-local-public-registry.tsx",
+    "lib/app-local-reward-wallet.tsx",
+    "lib/booking-history.ts",
+    "lib/booking-no-show.ts",
+    "lib/today-dashboard.ts",
+    "lib/today-metric-assessment.ts",
+    "lib/today-statistics.ts",
+    "tests/beauty-public-unification.test.mjs",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/helpers/owner-pos-draft-submit-harness.mjs",
+    "tests/market-read-coalescing.test.mjs",
+    "tests/owner-workspace-ui.test.mjs",
+    "tests/today-statistics-runtime.test.mjs",
+    "types/rewardlumi.ts",
+    "types/salon-profile.ts",
+    "components/status-chip.tsx",
+    "lib/appointment-state.ts",
+    "lib/closing-display.ts",
+    "supabase/migrations/20261105021000_reward_late_identity_reconciliation.sql",
+    "supabase/migrations/20261105022000_overdue_booking_resolution.sql",
+    "tests/testflight90-review.test.mjs",
+    "tests/testflight90-review-ui.mjs",
+    "artifacts/testflight90-review/report.json",
+    "artifacts/testflight90-review/report.html",
+    "artifacts/testflight90-review/current-390.png",
+    "artifacts/testflight90-review/past-390.png",
+    "artifacts/testflight90-review/calendar-390.png",
+    "artifacts/testflight90-review/qr-390.png",
+    "artifacts/testflight90-review/visual-check.json",
+    "artifacts/testflight90-review/visual-check.txt",
+    "artifacts/testflight90-review/test-comparison.json",
+    "artifacts/testflight90-review/focused-tests.txt",
+    "artifacts/testflight90-review/new-tests.txt",
+    "artifacts/testflight90-review/native-transport-tests.txt",
+    "artifacts/testflight90-review/build-final.txt",
+    "artifacts/testflight90-review/typecheck.txt",
+    "artifacts/testflight90-review/native-bundle-check.txt",
+    "artifacts/testflight90-review/native-bundle-build.txt",
+    "artifacts/testflight90-review/lint-summary.json",
+    "artifacts/testflight90-review/live-reward-read-summary.json",
+    "releases/changes/2026-11-05T02-12-43-628Z-6d38fe28-c754-4fcb-bcde-9396930b44b3.json",
+    "artifacts/testflight90-review/final-label-context-tests.txt",
+    "artifacts/testflight90-review/final-label-lint.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\testflight90-followup-20261104\\artifacts\\testflight90-review\\frozen-source-v2",
+    "commit": "57f0a730e6aec9e95de14d9faf75c1ce0c78ec35"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Web production build + TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/build-final.txt"
+    },
+    {
+      "name": "Focused runtime/SQL/regression checks",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/focused-tests.txt: 49 pass / 0 fail; native-transport-tests.txt: 13 pass / 0 fail"
+    },
+    {
+      "name": "Full test baseline comparison",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/test-comparison.json: identical 40 failures, 0 new"
+    },
+    {
+      "name": "Entire repository tests",
+      "result": "failed",
+      "evidence": "1202 tests: 1149 pass, 40 baseline failures, 13 skipped; artifacts/testflight90-review/tests-final.txt"
+    },
+    {
+      "name": "Entire repository lint",
+      "result": "failed",
+      "evidence": "22 errors / 164 warnings; scoped changed files retain one pre-existing Owner POS effect error, verified on baseline. artifacts/testflight90-review/lint-summary.json"
+    },
+    {
+      "name": "Native bundle + Safari16 adapter checks",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/native-bundle-build.txt and native-bundle-check.txt: 0 missing / 0 unsupported, not activated or uploaded"
+    },
+    {
+      "name": "Synthetic browser component visual checks",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/visual-check.json: current/past reconciliation, calendar markers, receipt metadata at 390px"
+    },
+    {
+      "name": "Frozen source file integrity",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/frozen-hashes-v2.json; prior frozen-source kept immutable"
+    },
+    {
+      "name": "A3 exact reported customer visits",
+      "result": "pending",
+      "evidence": "artifacts/testflight90-review/live-reward-read-summary.json: visits/reward tables deny read 403/42501; no writes or permission changes"
+    },
+    {
+      "name": "B2 information architecture",
+      "result": "pending",
+      "evidence": "Two options sent; no structural change without user choice"
+    },
+    {
+      "name": "Production integration, migrations, iOS archive/upload and physical iPhone acceptance",
+      "result": "pending",
+      "evidence": "Implementation-only request. No deployment or native distribution performed."
+    },
+    {
+      "name": "Final shared-label and context checks",
+      "result": "passed",
+      "evidence": "artifacts/testflight90-review/final-label-context-tests.txt: 21 pass / 0 fail; final-label-lint.txt: passed; build-final.txt refreshed against this source"
+    }
+  ],
+  "id": "4f985105-147d-4582-8a0e-3ba5ef0e4d91",
+  "recordedAt": "2026-11-05T02:57:26.881Z",
+  "worktree": "C:\\Reylumi-worktrees\\testflight90-followup-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

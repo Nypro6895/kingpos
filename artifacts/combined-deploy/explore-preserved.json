@@ -1,0 +1,75 @@
+{
+  "verified": true,
+  "rows": [
+    {
+      "file": "app/api/explore/search/route.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "app/api/explore/feed/route.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "app/api/explore/area/route.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-search.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-search-rpc.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-search-client.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-feed-client.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-visitor.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-feed-discovery.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-social-feed.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-social-feed-ranking.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-query-intent.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "lib/explore-query-routing.ts",
+      "present": true,
+      "preserved": true
+    },
+    {
+      "file": "app/explore/explore-discovery-feed.tsx",
+      "present": true,
+      "preserved": true
+    }
+  ]
+}

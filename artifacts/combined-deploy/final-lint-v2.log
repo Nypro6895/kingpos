@@ -1,0 +1,6 @@
+
+C:\Reylumi-worktrees\combined-deploy-20261105\app\pos-tickets\owner-live-tickets.tsx
+  55:3  warning  'staff' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+

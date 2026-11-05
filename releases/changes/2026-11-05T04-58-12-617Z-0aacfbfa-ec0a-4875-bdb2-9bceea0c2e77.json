@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "salon-online-ux-optimization-20261104",
+  "status": "ready",
+  "summary": "Verified combined release revision: salon-online-ux-optimization-20261104. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/booking-setup-guide.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-child-pages.tsx",
+    "app/settings/settings-controls.css",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "docs/releases/salon-online-ux-optimization-20261104.txt",
+    "lib/booking-status.ts",
+    "lib/salon-setup-navigation.ts",
+    "lib/vietnamese-settings-copy.json",
+    "tests/salon-online-ux-optimization.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\salon-online-ux-optimization-20261104",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [
+    "605a3ce7-8e95-4d69-8b02-8667f414975b"
+  ],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "0aacfbfa-ec0a-4875-bdb2-9bceea0c2e77",
+  "recordedAt": "2026-11-05T04:58:12.617Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/settings/booking-setup-guide.tsx": "6400c26e2ea251ee533ab4e1a0f0c1bffa6e1d28b1c70a5b999a4f79aae81410",
+    "app/settings/direct-settings-panel.tsx": "668470411cfe34447a5af55e26b1878d89b554a521e6840d184b57f4810c9631",
+    "app/settings/salon-settings-panels.tsx": "b6fb2b185b298b456cbaf6b0d66b362ff1f7d54116ee1003b232131eecab0532",
+    "app/settings/settings-child-pages.tsx": "141718c3fe8b249f5c35db3c0fd260d4c0e221ab81a77a93ee28d8c7d7cd8aa3",
+    "app/settings/settings-controls.css": "1aeab78a9b8fb7f83fed00e3b2c38d8be74946436fb75cdf0c4a4b3e850bbafd",
+    "app/settings/settings-hub-client.tsx": "80a9be3a7bc09449c23f1efd94dec87ad247d9926c7f031faeef4c2ec5061a0f",
+    "app/settings/staff-hours-booking.tsx": "390b03ed7a5d447fce561f56198cfd20e28d1b8d4ed66f935afce96a0c16fd71",
+    "app/settings/team-payroll-panels.tsx": "5bf63359f42e70870c0b218b57ac1512656b87f020aa1ca1b166c2412d6c92ee",
+    "docs/releases/salon-online-ux-optimization-20261104.txt": "4c35fab0fbcf8535061da6f03daea41349de87421994121601b4103d9ca4b3f9",
+    "lib/booking-status.ts": "df7107113186c712df7bc59f902ebb88d80e2cf4b99074d73709ce4e7d4c74fa",
+    "lib/salon-setup-navigation.ts": "51af1d4645bde01b1486a53fe15142f81ab8342054a26154375c10803867b1c3",
+    "lib/vietnamese-settings-copy.json": "3cb4beb7b1881a372d8da3e3f8a1e01e6ee336a195142ce3ecaaac14a66c436a",
+    "tests/salon-online-ux-optimization.test.mjs": "4701d68d4a227f925ba110448a349ae7383b36f94c760ec7c39226c37458e3ef"
+  }
+}

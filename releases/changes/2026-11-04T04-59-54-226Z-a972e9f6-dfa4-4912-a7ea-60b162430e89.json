@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "today-forum-preview-20261103",
+  "status": "needs-integration",
+  "summary": "Queued for combined deployment: Owner Today compact two newest forum posts with title/excerpt and direct topic links; independent bounded loading and scoped native read",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/today/today-dashboard-view.tsx",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/vietnamese-dictionary.ts",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "types/forum.ts",
+    "app/api/forum/latest/route.ts",
+    "app/staff/today/today-forum-preview.tsx",
+    "docs/forum/today-preview-20261103.md",
+    "supabase/migrations/20261104011000_today_forum_preview.sql",
+    "tests/today-forum-native.test.mjs",
+    "tests/today-forum-preview.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\forum-continuous-feed-20261103\\artifacts\\today-forum\\frozen-source",
+    "commit": "c4b8ed5966f325349c2e92db394440f3c4c52b62"
+  },
+  "dependencies": [
+    "forum-continuous-feed-20261103"
+  ],
+  "releaseIntent": {
+    "mode": "next-combined-release",
+    "separateDeployment": false
+  },
+  "validation": [
+    {
+      "name": "13 database/native transport/existing shell regression tests",
+      "result": "passed",
+      "evidence": "artifacts/today-forum/regression.txt"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/today-forum/typecheck-complete.txt"
+    },
+    {
+      "name": "Combined production build, SQL application, rebuilt iOS registry/bundle and live/device acceptance",
+      "result": "pending",
+      "evidence": "docs/forum/today-preview-20261103.md"
+    }
+  ],
+  "id": "a972e9f6-dfa4-4912-a7ea-60b162430e89",
+  "recordedAt": "2026-11-04T04:59:54.226Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-continuous-feed-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

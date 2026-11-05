@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "booking-reward-pending-20261103",
+  "status": "ready",
+  "summary": "Verified combined release revision: booking-reward-pending-20261103. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261104231700_booking_reward_pending.sql",
+    "types/rewardlumi.ts",
+    "lib/reward-wallet.ts",
+    "components/rewardlumi/booking-reward-pending.tsx",
+    "components/rewardlumi/booking-reward-pending.module.css",
+    "components/rewardlumi/use-reward-wallet.ts",
+    "components/rewardlumi/reward-workspaces.tsx",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/activity/customer-journey.tsx",
+    "app/activity/history-details-drawer.tsx",
+    "tests/booking-reward-pending.integration.test.mjs",
+    "tests/rewardlumi-full-schema.integration.test.mjs",
+    "tests/booking-reward-pending-ui.mjs",
+    "tests/helpers/booking-reward-pending-ui.tsx",
+    "tests/booking-reward-pending-actual-app.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\booking-reward-pending-20261103",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "c2e67a11-87c4-4d47-bd3d-988d59fa104d",
+  "recordedAt": "2026-11-05T04:58:11.217Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "supabase/migrations/20261104231700_booking_reward_pending.sql": "0ab191236e1ab842efa234c85830baaba3a3b23aa25cb20d24c562cc46b1bf92",
+    "types/rewardlumi.ts": "40bce64e83209f52003cf780a280cd921a911caed7f00d1e25fd5f3b503f8dde",
+    "lib/reward-wallet.ts": "baebc6a8a5cf8253f30a942fdccaffd0ad99e4327db5d3df97e833d9d48733d3",
+    "components/rewardlumi/booking-reward-pending.tsx": "61ef8e5d67848df2d265d7006a33de6f69cfbb2c5c80d9da68f528a00e8e9ed9",
+    "components/rewardlumi/booking-reward-pending.module.css": "aa4a5ed0345e67178c07a89c8a9601125e7deb4a203246d214d78fd9983e03ac",
+    "components/rewardlumi/use-reward-wallet.ts": "e20496715c1372481b4fddc3c342f9ec1dfdb91c9dcd62e36a3a8061fac603ac",
+    "components/rewardlumi/reward-workspaces.tsx": "c65b51a9e5ebb31fea006d9d39dc5c7761c8d1cee442682be3bec59f9cbe1fe9",
+    "app/book/[salonId]/public-booking-client.tsx": "3d3db2453da8cab1ff1568c8cb699932c5b1d9831ab13076b92aaab86abd4aea",
+    "app/activity/customer-journey.tsx": "e51f66b6882a0bf27b95e7738455974aa061ced492e3094f4ec0288be910b4af",
+    "app/activity/history-details-drawer.tsx": "642fba02a1470d2018b8c3effcfcd03e7e86f04fa5333bbae99369a447b565cf",
+    "tests/booking-reward-pending.integration.test.mjs": "0ecdb5a43e98aee244d21d404a76e7f69cf0905b12b055734aa9c6edb11d07cd",
+    "tests/rewardlumi-full-schema.integration.test.mjs": "3644607384102d64a4d18efdeb3849d5dab5466fdbd7c7c3415cefd2497c2cdc",
+    "tests/booking-reward-pending-ui.mjs": "2a8072ea5dcfdf5f270e0178d69bd98bb21a2844f13656988b37124bd4e9350e",
+    "tests/helpers/booking-reward-pending-ui.tsx": "a10af12c4a7652ce4dc9808d357ea38bb72dec9f9a0c092795ee7f2e93601057",
+    "tests/booking-reward-pending-actual-app.mjs": "9daf8111752e0f23f35fc18de64d741ee27dcbdd262c9454dea2341578409829"
+  }
+}

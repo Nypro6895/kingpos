@@ -1,0 +1,73 @@
+{
+  "kind": "change",
+  "changeId": "forum-tabs-supplies-20261104",
+  "status": "ready",
+  "summary": "Verified combined release revision: forum-tabs-supplies-20261104. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/forum/continuation-feed.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "components/explore-advertising.tsx",
+    "lib/explore-advertising-rules.ts",
+    "tests/forum-campaign.test.mjs",
+    "tests/forum-ui.browser.cjs",
+    "app/(app)/forum/discovery-card.tsx",
+    "docs/forum/tabs-supplies-20261104.md",
+    "supabase/migrations/20261104100000_forum_supplies_campaigns.sql",
+    "tests/forum-supplies-seed.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\forum-tabs-supplies-20261104",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "1b100f44-7be0-4f31-bce5-b461e8fe8a16",
+  "recordedAt": "2026-11-05T04:58:12.402Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/forum/continuation-feed.tsx": "574bf8e806e2e6026aa35168b842688402a3d75068dea5740232148ea2afca5f",
+    "app/(app)/forum/forum.module.css": "ad515eca514e3eb01ac82cad351c4c6420b66bd1ac5ede10d7586a2583af03c7",
+    "app/(app)/forum/forum.tsx": "e4ac3c3bc951233dfce239d2c2a00ab2c059c6b3fdbbbdf763e6f1f42922ea47",
+    "components/explore-advertising.tsx": "ab30a8132b2aac7d005f3e8dde96777b64bb033893e71d5bfc881653d161379b",
+    "lib/explore-advertising-rules.ts": "9e30cfc35c496411f2b4ec29077d819b2319885197ba92f13669b5bbfa5dc8f2",
+    "tests/forum-campaign.test.mjs": "360a0ca562d6245c2435626867ed36d3a646223fb9459134333bf455b1044142",
+    "tests/forum-ui.browser.cjs": "85bcf141f2d0e903d17680f2fcd36dc19114941e7e1de82fa6e0974567661870",
+    "app/(app)/forum/discovery-card.tsx": "034bc32bdf90339610f723d7a3164d038d59d6a42d29421753442182487b30bb",
+    "docs/forum/tabs-supplies-20261104.md": "6ccdb1c6a87d346241367f12b6ce52759085326e3ce860f88c849970f2bf927b",
+    "supabase/migrations/20261104100000_forum_supplies_campaigns.sql": "9fd5566d0f0a09be69f980563ccec92d08264bd93a426b1dfc15c6d3dd14f8ec",
+    "tests/forum-supplies-seed.test.mjs": "e55a8f82aaed65d46a7744970ce4b2e39ed1393864ae53af91b8ff856dd29be1"
+  }
+}

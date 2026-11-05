@@ -1,0 +1,964 @@
+[
+  {
+    "event": "65fbfbb8-4878-462d-a6d6-8fd8c381a791",
+    "changeId": "ticket-toolbar-compact-20261103",
+    "commit": "589d776",
+    "files": [
+      {
+        "file": "app/pos-tickets/ticket-filters.tsx",
+        "sha256": "5e593f9b159df877dd3fc62d8d5d5fc8807ad9c85668f195701661e3f6229f38",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/pos-tickets/ticket-filters.module.css",
+        "sha256": "f4cf986aad1630118ef2053ed18ae8424f793265b2cfd10ad6b4046fb1a00b74",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/pos-tickets/owner-live-tickets.tsx",
+        "sha256": "c56c9a457cac9e53eff87eb6148c5c6fe6494a01bd0cff6f0014012cd3fa7962",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/pos-tickets/page.tsx",
+        "sha256": "4306864567c5af7c929c4cfa69f9266a5b7e2681878be0132b32a98fa8dec154",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "a972e9f6-dfa4-4912-a7ea-60b162430e89",
+    "changeId": "today-forum-preview-20261103",
+    "commit": "c4b8ed5966f325349c2e92db394440f3c4c52b62",
+    "files": [
+      {
+        "file": "app/staff/today/today-dashboard-view.tsx",
+        "sha256": "7a44cc18dee94647f6c45eec20c766327efcee62b8a224a9ae8453a8338ca208",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-shell-http-client.ts",
+        "sha256": "97b5bd11cd032a7c47434643c68b318e85c9b16a2f808059a16fccd302350926",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-shell-metadata.ts",
+        "sha256": "3a463fed3182411acb8634a413af91d54e7da7cbe0f3ff1745d1108241909ca6",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-shell-server.ts",
+        "sha256": "71ccc5db03a4c94581cbfab22b5f08ac351d8dee31cafc2238256bff3ead0f7f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/vietnamese-dictionary.ts",
+        "sha256": "bec6a793bc3157d372a762c36933bdf1b1e5ef10eb8ff36026a383f5812f7ab8",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/app-local-shell-auxiliary.test.mjs",
+        "sha256": "8e03d7219a2dfa1da8a251b5dc61a51bb7d12fad39cdd1b591e77d1070fdabff",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "types/forum.ts",
+        "sha256": "d7a01c120a157fc9a414075321e229ccea0d2efaec192fc7a902a6c5a3fa0fa0",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/api/forum/latest/route.ts",
+        "sha256": "b6c7b7cb1e427b1c8b35a5270265ef77f9788cfe0b25defdebf7734b3a8117e8",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/today/today-forum-preview.tsx",
+        "sha256": "ed1fc0c7cc84a163fa90b2e7b76757d58a5c007ff8f963ba75086b61ddb2046f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/forum/today-preview-20261103.md",
+        "sha256": "287084d19286382ba783a8cf7be015c86a4b612d3fd07d5b5ae6b0dcf958d894",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "supabase/migrations/20261104011000_today_forum_preview.sql",
+        "sha256": "963ac3761dc1e99cb51f446b5dd00b89c8df1529141d4f0f977e78ceb445cbff",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/today-forum-native.test.mjs",
+        "sha256": "924c7ba2de87d8805c13e60b421873de1e147322781be81ebafee3f681411259",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/today-forum-preview.test.mjs",
+        "sha256": "485700c1c80929453964112b1d61b33bc386fa434097a59897562676aecad1e6",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "b52411c8-2b73-42b8-8726-54a750d41a25",
+    "changeId": "settings-save-clearance-20261103",
+    "commit": "3542a4010b6fea66e862a63a62c34bb2963955e1",
+    "files": [
+      {
+        "file": "app/settings/settings-save-clearance.css",
+        "sha256": "38f7a6beb93580eed8d5ede0fd0b3bbf81d1e1dc229c24df57a29fb9da4f5c9e",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/settings/page.tsx",
+        "sha256": "8d320aeb4f2b86d35f35c7f692f494cbe7dfc0b317220dc5e10af312085544c6",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "dd6ce545-bef1-4719-93e1-73c1ee3b3950",
+    "changeId": "membership-salon-badge-20261104",
+    "commit": "e918d245606b07970593fab2e2829fbda93a61c9",
+    "files": [
+      {
+        "file": "app/(app)/admin/membership/desktop-settings.tsx",
+        "sha256": "0e301fc26cfe1a40a918e7ca162465f2d61e2db226e74f7e6a63e075854ba2cd",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(legal)/membership/website.tsx",
+        "sha256": "4d7e9d250aec7e5f805c60f3257dacbf90845a3bf702963ebc928a60ab01035b",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/explore/explore-salon-card.tsx",
+        "sha256": "d19b93ac63cf34e600355f724ed0eb4dec1ebdf3bc194c87e5f171aa0460dd70",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/salon-profile/salon-website-header.tsx",
+        "sha256": "ce38c428d617241049ea5070bf58be5bf72aa600eac67c0ca4203d43922ebb13",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/post-identity.tsx",
+        "sha256": "8e92458060e45e822c316b3791f9e87dfd447aff9230b9a4cc13df5a062c268a",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/salon-member-badge.tsx",
+        "sha256": "663cbee523301a25a8cb8ab961b51ead567d82d6bbc256a134485005cd0d5bb3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/saved-salon-list.tsx",
+        "sha256": "3baa817d6e3c731f89a284c0e7bd8232dd2be427ded3901159121c21e17793e4",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/member-badge-shared-baseline.json",
+        "sha256": "fb34a3e54a35b190401812d71c6ea89b4319455de24aa3c6d046ca8efdf453e5",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/salon-member-badge.md",
+        "sha256": "b75dcef4b9d4018d9b120c29794c00a1c4aebb5d9b7ea22f332256607ccc08e3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/tsconfig.verify.json",
+        "sha256": "f88dfc8f00919959d421a3a49b391563b0c8b3ca32876c64ca2a17e77872e42f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/membership-model.ts",
+        "sha256": "7f488774369ca71629097e1d89e757973c7f107735c997db9dbd809ebd2be94b",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/verify-member-badge.mjs",
+        "sha256": "064e3a5bf1546ece150927c3390e8cd2c9d834d39a1e05c3c1e18890cfdd4f48",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/verify-membership-browser.mjs",
+        "sha256": "6a756e70686100ca3af34e4f7adee5c02757711b68fb8ce2e79f26e20c29f1b3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "supabase/migrations/202611040001_membership_salon_badge.sql",
+        "sha256": "771b7a4006a20997edb5ae2e97f327048a05e73c9404354cff45a88032ef61a7",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/membership-salon-badge.integration.test.mjs",
+        "sha256": "9f322d3bfba68e58a5c05939bc2913e70c91676941e3d809bdaed4b99ee283f8",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "types/reylumi-membership.ts",
+        "sha256": "aee15521a2fcbde3eddd99b9a3a85c6978a3e63437ad4c093c825e91309ec496",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "14b4d9d5-9965-4d54-a9cc-b9dc76785168",
+    "changeId": "booking-reward-pending-20261103",
+    "commit": "94395b3f1bc4c9abcc808d7c4cee561a88ad702c",
+    "files": [
+      {
+        "file": "supabase/migrations/20261103150000_booking_reward_pending.sql",
+        "sha256": "0ab191236e1ab842efa234c85830baaba3a3b23aa25cb20d24c562cc46b1bf92",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "types/rewardlumi.ts",
+        "sha256": "b5471958b0fca1e56e76a5841cadafa0481212f826ea3c29f12e4dd91a17a9df",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/reward-wallet.ts",
+        "sha256": "baebc6a8a5cf8253f30a942fdccaffd0ad99e4327db5d3df97e833d9d48733d3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/rewardlumi/booking-reward-pending.tsx",
+        "sha256": "61ef8e5d67848df2d265d7006a33de6f69cfbb2c5c80d9da68f528a00e8e9ed9",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/rewardlumi/booking-reward-pending.module.css",
+        "sha256": "aa4a5ed0345e67178c07a89c8a9601125e7deb4a203246d214d78fd9983e03ac",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/rewardlumi/use-reward-wallet.ts",
+        "sha256": "22396e73125f32e62ab78b0b11168461d86ac8045744fe91118cd96240367dbf",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/rewardlumi/reward-workspaces.tsx",
+        "sha256": "cc1a249c8554e20d2acc5f2da64dc3e5f0bcb39930cce3875d4562411d353501",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/book/[salonId]/public-booking-client.tsx",
+        "sha256": "3279ba71a8911d03bbd3f1b7365fbc96384d414bae870dd5068dc354729c9dae",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/activity/customer-journey.tsx",
+        "sha256": "e45d16fb06882d8fb6d0f9b613f2cc7475b31274f4c2c7cfbd1a964b99096731",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/activity/history-details-drawer.tsx",
+        "sha256": "9dbe7d6aa86e1deb104c1fa6d288194582adc4926b7e91607d8adf8ae062278a",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/booking-reward-pending.integration.test.mjs",
+        "sha256": "d77865cfd86eb4979e9808ea0277441fd5b4c18832a7ef671a2a436853f682e2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/rewardlumi-full-schema.integration.test.mjs",
+        "sha256": "3644607384102d64a4d18efdeb3849d5dab5466fdbd7c7c3415cefd2497c2cdc",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/booking-reward-pending-ui.mjs",
+        "sha256": "925fb85d13920bdacff65660dfb0f0f8e47f9aa7237fb138f64b90745fd30b3f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/helpers/booking-reward-pending-ui.tsx",
+        "sha256": "603766fb6f82e7db7cd43792a5ca6839df6bba82d6284d65fa3a12da23dee031",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/booking-reward-pending-actual-app.mjs",
+        "sha256": "c198e45d70dee9e090c9ab688140955296ad28689778a32d60504c1943703389",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "93580a6d-90b9-4e91-8844-99d2bfd43232",
+    "changeId": "membership-salon-badge-everywhere-20261104",
+    "commit": "ab0a9d6bfb6f6d9097703cdb3041bf3774892182",
+    "files": [
+      {
+        "file": "app/api/membership/salon-badges/route.ts",
+        "sha256": "70d85197bc2a8f7f1357e3a367c1b16c279fc38220f52e05182f90a31ccf5bf2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/salon-member-badge.module.css",
+        "sha256": "62ec0c2e7b727ef055d36abbe501b111578771c34c02abf261ae9f6f39ae2c99",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/salon-member-badge.tsx",
+        "sha256": "ee9e3472ecacbbfd0a914381f4ee64aef4c99d368fc67afe1443e6ca8389c63e",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/everywhere-implementation.md",
+        "sha256": "8dd7dc0f8b6b5d91f9d6d984266b90a0be2a5f4cc6db352c4db223ac3259d2b3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/everywhere-verification.json",
+        "sha256": "ef8fc523f969fa7382f80579d6007e0979d124886f73e67d45da1af9be2b2aa2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/implementation.md",
+        "sha256": "c85f2264a0ec9aeb39283c7ddb78681dc3401bd4908655e0c1d50a71c26999e0",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/salon-member-badge.md",
+        "sha256": "6cced573f24d88cea0c70abbd52431c2ac907bc0d782cc2a11c1e4cb30e42982",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/salon-name-adapters.json",
+        "sha256": "de9e66096ed805ecdbbcd3cbbb5313ef99a2bb268a433e60c00e991c8b28b707",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/membership/tsconfig.verify.json",
+        "sha256": "6628a05ee0733fd65dc65ac2b6eae1b849f16498dafacf57e0aaedd431ff4e06",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/salon-member-store.ts",
+        "sha256": "d97b370677e4b3c2bccfb46111f24249a88295a56caa49c611417b9e6e37bdf6",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/apply-membership-name-adapters.mjs",
+        "sha256": "74c15f61583a3ab027af94f7a035514b5468e323f3d4d4cd2e92548f56e6dd57",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/audit-salon-name-surfaces.mjs",
+        "sha256": "ff6d112d60724510005e0c6aed353a6a66e584be9d9dda1b16fe22fe58ae800a",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/freeze-membership-name-verification.mjs",
+        "sha256": "7b278b67849f0c4b3a5c7384cf9da25a9f60bf44b2a925265bfcf7f649bf4130",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/prepare-membership-name-adapters.mjs",
+        "sha256": "938cddf85a7d3fa66024296a287efc87259c5dfea376a1e88949468d4a5b3be5",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/verify-member-badge.mjs",
+        "sha256": "51a1b3993acfeb42f0025b4f7d9e848647a7d5f00679fb6137b85b65c43386b2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/verify-membership-name-browser.mjs",
+        "sha256": "9caf2f0d60524827c6318f9cb9df2f51417c72ccc10f856a016045f9000b086e",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/verify-membership-name-lint.mjs",
+        "sha256": "f8228ccf9a780ff0fc9e082b4825e3d3c90ebe1a3b6b0a5402e1849d9e28dabe",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "scripts/verify-membership-name-types.mjs",
+        "sha256": "d3d3409cee5fb66e38bc52493ef14dfd02245eb28ac06e51f635ffed3d35973e",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "supabase/migrations/202611040002_membership_badge_scopes.sql",
+        "sha256": "ba02245b184398261abe50a559d0f6ecc7ed8bd93bb617a1e50ca214244ee8fe",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/membership-badge-http.test.mjs",
+        "sha256": "e89480025085126a810a1c94b51690ab08d897a276e933aec8cf4cffe56dd15f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/membership-badge-scopes.integration.test.mjs",
+        "sha256": "92f4218e9ed0c33d77c10f7b9984a7ebdf15ff89123ef46def0d37c9a1efecb3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/membership-name-adapters.test.mjs",
+        "sha256": "5e085046416463c531ca2b7022c7eb3e795870a8ef109a13ffdcb44fa138655a",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "249db144-a169-4ac7-90c3-836562b7c322",
+    "changeId": "ipad-page-audit-fixes-20261104",
+    "commit": "0eb90ec",
+    "files": [
+      {
+        "file": "app/(app)/beauty/library/page.tsx",
+        "sha256": "441bb2e498b87d8504c693baa0fc13aca1f68598221c60597d4414e1503a669c",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/beauty/beauty-profile-client.tsx",
+        "sha256": "6c2b1d0a1dca092610caba2072e5b7e1ff5759dfb1f07546bbd24ca365a778d1",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/customers/new/page.tsx",
+        "sha256": "87450ba5b14168f71f29e9838f3935cf23a97932b2db66e9395cd0e5cb877eaf",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/salons/salon-management-page.tsx",
+        "sha256": "7acfaf4f1a371a3f2138d4051b806090be1be806a067347ad6fc4b8f1ed44623",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/beauty-library-entry.test.mjs",
+        "sha256": "91aa2d43c3061b3b7f5be8dca52546af0eb49fc2903ea16fd237f7bda7c7db22",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/customers/[customerId]/edit/page.tsx",
+        "sha256": "3aa4a19a39c29f873c23e10cfbb6b20762b4f4ac072833dfee81e89e172bd95d",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "4f985105-147d-4582-8a0e-3ba5ef0e4d91",
+    "changeId": "testflight90-review-20261104",
+    "commit": "57f0a730e6aec9e95de14d9faf75c1ce0c78ec35",
+    "files": [
+      {
+        "file": "app/(app)/more/page.tsx",
+        "sha256": "3bd0cc9a1f5c62bbeb3a60108c620e62e373f3c92e2ea90a6d3eb3066216dfe7",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/rewards/page.tsx",
+        "sha256": "93e78e8b05aec64b8ce6ed4ef21dcd1819617f5d98129709be9ba40782ac2f33",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/salon-profile/page.tsx",
+        "sha256": "adcde7ec87981b0b5c0a51214e6e9e41fb379c4f5a7c34ec874d83821eeba752",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/activity/customer-journey.tsx",
+        "sha256": "b2f29676eb35a30f625a1f1dcfff214cd0e435615d052619678af63a947e04a3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/activity/history-details-drawer.tsx",
+        "sha256": "b7464871cf4b278bf3d3e8a58cdca5d550af0cdea42e283ed054737c004a8dee",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/beauty/beauty-library.tsx",
+        "sha256": "965f6f08ec7f5fcad0bbfaeab22d75af5f255ee8c41e442ce34a468c76793bd6",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/beauty/beauty-reward-summary.tsx",
+        "sha256": "242dadc610a346c91b57d1ceaa77cee63c3dc72722d7c3c924028f5ef7b5a866",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/bookings/actions.ts",
+        "sha256": "436295aca9aa8dfead5378d1dc4d8fbdccc43226a5cd927a60c39e8d0a98f6bc",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/bookings/booking-workspace-client.tsx",
+        "sha256": "8e72815fed3315dd8569de03fa65a3f6ea1fcec4cd667ac6cdcbbe72f3bddb04",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/bookings/booking-workspace.css",
+        "sha256": "049f58eeba00995ea5caa9b5a06d805e974f2ae3563398a29ab5f2be2eaa63f1",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/explore/beauty/beauty-post-read-view.tsx",
+        "sha256": "1175374d705776d0bb19b34dd02f30bae7503790277c0e29877607b312080352",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/explore/beauty/beauty-profile-read-view.tsx",
+        "sha256": "219b0144e24ce9d96147b42e34cedcbd897afe61fb40f581e518c4d77eb351c2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/globals.css",
+        "sha256": "ed23015ab76e1a44467faee2e8a8bf4c716e60832dc9362d714d70c4dd97c510",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/navigation-shell.tsx",
+        "sha256": "47ce925f55bcfd536b860f1648153915aa2964f42a7a14723f7f4af37553cff9",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/notifications/notification-center-client.tsx",
+        "sha256": "6333d16412deea5beecd531b7eca13968c6df9666155f4568d5625657cbfde87",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/pos-tickets/ticket-history-disclosure.module.css",
+        "sha256": "f8a2a4cd95c5b8c22a1d974943d602af5d9cfe16be0afb096c71f0fd2b09bd66",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/pos/owner-pos-client.tsx",
+        "sha256": "920826f33e5a68c107fa0844668d058fbbe67bfc9983246ab249db8099b07292",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/pos/owner-pos-tabs.tsx",
+        "sha256": "0f8dab654a528c8edf921ae8f048aff1995009cd7257f82fdcf974c664664839",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/pos/owner-pos.css",
+        "sha256": "9e9e24b3d02d99c1875e1e25d3614ece8e9d1c76882601b506a51819c0b87fac",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/qr/personal-qr-client.tsx",
+        "sha256": "3745ddfab980e2aceaa6cbdf57de07fc6dfb4ee7142d46121d952cfb8607d1d2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/reports/closing-balance-summary.tsx",
+        "sha256": "97ccea76e6c175a9092513db5b389b8690eba123b9eb1db8af0aee643d10fb91",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/reports/daily-accounting-overview.tsx",
+        "sha256": "eb00534fbbf711010dfdeee6581b616d5e4105819223650d7a74da22f983a47f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/reports/daily-closing-form.tsx",
+        "sha256": "56808723d353b33537bc11660e0744f8d698917e8c2ffc82f3ca67a7e8542c51",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/role-navigation.ts",
+        "sha256": "ef2fc1aec30238fd68bafb3955620622b1744337a5fc2d2195739a9fae02c4af",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/salon-profile/salon-profile-view.tsx",
+        "sha256": "ec538c7f8a1ccbdc0557094465bba790152cbb3f7e7727b871b82f062adcd0aa",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/saved-post/save-post-button.tsx",
+        "sha256": "043f3e49d65b205c0b04395999c0d18d2626b36e64e076e7904ad04d3d4ee013",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/appointments/staff-schedule-view.tsx",
+        "sha256": "37dfdeba11998ee6b60ef1cf1806b14f526dcee575e3e27d1c2c286749e5d801",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/my-work/staff-daily-overview.module.css",
+        "sha256": "71109bb24fce5d3acb25f40ee46cc43691e8f8cfa498fb8bc987b0e30ae7e34a",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/my-work/staff-pay-analysis.module.css",
+        "sha256": "1152117c6d4ce4090936174f972cf89397719ada6c2d8e27d8519c7a58d4b856",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/my-work/staff-pay-analysis.tsx",
+        "sha256": "29064dbb571185f4d80a28dd838f01d534f03be280b96810342fd33262d7a3f6",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/my-work/staff-tickets.module.css",
+        "sha256": "15eb34b13d8e710236c81e738d5ea7cb0a9459f82aba2d8c7b0ff02e2dc2b690",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/scan/scan.module.css",
+        "sha256": "511d813962763278167740eec036ffb8f6a19a69d534b3723db3a032cd5add55",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/today/quick-access-editor.tsx",
+        "sha256": "d012749df18890c9fa61aca9b78d62b3ece3960849c6ab97f80cc0be50e6890c",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/today/today-dashboard-view.tsx",
+        "sha256": "15936a82c7c25e64bc7a387cba137b7ebd3727220392a95027a9cc955382bedd",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/staff/today/today-statistics.tsx",
+        "sha256": "4a3c59cdd44f97b4ab3fc41bf142f028a69df92a1a05c8ab3cddf7a58a50a1bb",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/app-local-more.tsx",
+        "sha256": "285c023d2be24daf766d31c20e8153ca2e2c78ecafe05e86b650f69a9b25c69d",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/booking-ui/booking-theme.module.css",
+        "sha256": "1478210aa07896a1628a4186deccec927213ece01060cd31ecfea5c0ab751b53",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/booking-ui/schedule-picker.module.css",
+        "sha256": "b595039722c4b1db199051a72bc69d83794e327d3ff19c38c603f52ca0bd5bf8",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/booking-ui/schedule-picker.tsx",
+        "sha256": "7c7b861fdb986ced4c510ac539fcdb6d0a4e4e1e3bd85171c54b4b73743508fb",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/rewardlumi/reward-workspaces.tsx",
+        "sha256": "03f51fed987b54bac4b5cf778b7f7f7555e1b8aef23ea8e02c5a38bc7b2f2042",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/rewardlumi/use-reward-wallet.ts",
+        "sha256": "ed2838a2be73bfea3d596c1c271c8fde989cedfe75f8ddd7d91771156361fd24",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-business-server.ts",
+        "sha256": "266a3d6d79bcada7712201424e2c95967f35fa9e0e5834e0bd836da3fea5a43b",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-command-policy.json",
+        "sha256": "2a848355b98f61f48440a26a6b0415b342b98388021c3047232cbf582f2419dd",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-commands-server.generated.ts",
+        "sha256": "4c329a15db4e2603a4de2a22eb9de51ae2cf34699a359eb452416033a57fdd68",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-page-registry.tsx",
+        "sha256": "55266a197ec27100a11d64e10f240c9c247080e8919f3b9eb49cdf9dd8cf2648",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-personal-metadata.ts",
+        "sha256": "d4065d46e79cd13fef58bbce92c68143777506c117d8213430827144cc151ea0",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-personal-registry.tsx",
+        "sha256": "ea3cd64235054f46348341c236f92b39994044df2ee2237c8b5bc845b2c71ea4",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-personal-resources-server.ts",
+        "sha256": "1c8f4cc530fff13ff0359df72383b32234c55154a5cf33bd4372e035b8e912e7",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-public-registry.tsx",
+        "sha256": "1aa08177ad96218ba2b5efb4f16c8796c49500efc5e476bb259d63b54b697023",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/app-local-reward-wallet.tsx",
+        "sha256": "78f9e746713ecf237165d80a363e497c6bfc108e813d81f6cde946cf2549eadf",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/booking-history.ts",
+        "sha256": "7c786a749de17451d6b9af445b2ce56c87919b32d09edd0bf55d0c9a8e07dadf",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/booking-no-show.ts",
+        "sha256": "57df738561f316e309f9b5fc7dbe167e837d2c4b4d3ad0c18cc546f8ce902ae8",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/today-dashboard.ts",
+        "sha256": "b6667bd1d26ca2aca9d23f09f6a88d9cf7ebbf663ad935ab6fee593e93d9fef3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/today-metric-assessment.ts",
+        "sha256": "a6b723b4dea74e7dcf9522635a1d578f4c81e6ddc1a65c9ad8be3716148450f6",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/today-statistics.ts",
+        "sha256": "fc119b24ab6bfbbacf525ee7cc6adbba92514f8181c626c790a2dd33d338c3da",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/beauty-public-unification.test.mjs",
+        "sha256": "b375896b19306f574d221ec65b8aae8d0ae1e837e6eecc76c63dfa02f5de14e7",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/customer-journey-ui.test.mjs",
+        "sha256": "1bf57fe024598a008a8bec0401150358dc5fb66387c25df26f550707ff8f46ef",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/helpers/owner-pos-draft-submit-harness.mjs",
+        "sha256": "57af8f0101b1486454836a813970e64a2ba060da00be078757d3daaf6a29685e",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/market-read-coalescing.test.mjs",
+        "sha256": "f74a9c63fc15023570564d551650304c8a7c82623b8fdfcc67c2d632a018df10",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/owner-workspace-ui.test.mjs",
+        "sha256": "2bc268602b8f99685d6ea6555ff49dc10039337ee0ce21059de639975be6df10",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/today-statistics-runtime.test.mjs",
+        "sha256": "1ffdfcd747adb79b80c8fb3b894e71d8f6d0fb19add22370a2dd40504207d9d9",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "types/rewardlumi.ts",
+        "sha256": "4d7ade7f7ca28b59ed96cc1dca1bafc211db6caf32424df7c9e55fd58e8a8789",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "types/salon-profile.ts",
+        "sha256": "fdf0cbef88a02562a08ed9788abe213eb2e30ea424c5ec52d98e701b04461e2e",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/status-chip.tsx",
+        "sha256": "aaf9a0548d9dfce756eb85453f1f1394e5201c97de31c703c49a8887a0402131",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/appointment-state.ts",
+        "sha256": "06facac4060cdaa56c37e831fa054eda3fd7bf1f0f91ff9a9d4dd7ac29591499",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/closing-display.ts",
+        "sha256": "11d8b19d497a1c8dc7fabd882afabb200d40860bbd4c9d5c4179018ac8cfd319",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "supabase/migrations/20261105021000_reward_late_identity_reconciliation.sql",
+        "sha256": "ab730be5c2bb8a63755614aba294b94304c4ce5b1de734d923582a8329c572af",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "supabase/migrations/20261105022000_overdue_booking_resolution.sql",
+        "sha256": "9e980ebf8daf943165b5690340cca532bc4fa98b562ee9ba177b5ddf0718d1c2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/testflight90-review.test.mjs",
+        "sha256": "aae98c383c684f797c705f8f8fb608bda11260e5971388142f8fefd6a8f09b74",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/testflight90-review-ui.mjs",
+        "sha256": "4cd277214d63d81ba4b9d06efd02c06fa02376c6371d76c48b45f80e7ccc8747",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "3b68c483-ddbf-4c60-8f65-8e7a22b239a7",
+    "changeId": "ipad-today-read-resilience-20261104",
+    "commit": "638091e",
+    "files": [
+      {
+        "file": "lib/daily-pos-report.ts",
+        "sha256": "eafc989ba0a2ab8dc565a9d911e60a1506414318954be589d607b603383420b9",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/today-statistics-server.ts",
+        "sha256": "a13879747751f8f6fccb8768fdcbe527dda0a92cf96be7773d719d278aff92db",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/today-dashboard.ts",
+        "sha256": "60d03400e9e4ed47192c3a8c829abad5ebc6dbcc4e0895ac35645f22bc5f3ac0",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/today-financial-concurrency.test.mjs",
+        "sha256": "e17b6d5422fc006b5da5aec856b42b8eb7eaf7847274260b15490552e3444a9a",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/today-statistics-runtime.test.mjs",
+        "sha256": "0e0b73daedb33e1d6baf20ac25a86479fea76bbd8cdd6aab10b75f3713e7cf7d",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "b5eb62f8-af9b-479f-8c4b-bee636e54d69",
+    "changeId": "forum-tabs-supplies-20261104",
+    "commit": "a0b5e59b78485bce57613df52c55fc6c09928d4d",
+    "files": [
+      {
+        "file": "app/(app)/forum/continuation-feed.tsx",
+        "sha256": "574bf8e806e2e6026aa35168b842688402a3d75068dea5740232148ea2afca5f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/forum/forum.module.css",
+        "sha256": "dd6de66f2a01d56a6ddff5d709ebd0ae9d48b64ac682cd30c126296f58c7b864",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/forum/forum.tsx",
+        "sha256": "e4ac3c3bc951233dfce239d2c2a00ab2c059c6b3fdbbbdf763e6f1f42922ea47",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "components/explore-advertising.tsx",
+        "sha256": "ab30a8132b2aac7d005f3e8dde96777b64bb033893e71d5bfc881653d161379b",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/explore-advertising-rules.ts",
+        "sha256": "6a0042c1101b937c8dcc8906bf47ed310c70b1d280cb5743df74eb03f482e602",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/forum-campaign.test.mjs",
+        "sha256": "689061ee7aed1a1e158c5bf6f3514394b5458123e90d88b28657451af7d53fb0",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/forum-ui.browser.cjs",
+        "sha256": "f2c09aa5c2cfcea4afe18b6c6d760316839ddf10afc973d3beaf7d2160235f78",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/(app)/forum/discovery-card.tsx",
+        "sha256": "35068c7347a3808604a811a15e26f089d35bfb529369833bf142d87e7197c486",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/forum/tabs-supplies-20261104.md",
+        "sha256": "a9a47539109da824bc1f9029c55aec5563546711b6c17c8a1a0a2d013d187db2",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "supabase/migrations/20261104100000_forum_supplies_campaigns.sql",
+        "sha256": "9fd5566d0f0a09be69f980563ccec92d08264bd93a426b1dfc15c6d3dd14f8ec",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/forum-supplies-seed.test.mjs",
+        "sha256": "c64d513a835fcd0217a7725c9adaf30fb3f4c3e7d8295741ed11c56d1e5e03e1",
+        "matchesCommittedText": true
+      }
+    ]
+  },
+  {
+    "event": "605a3ce7-8e95-4d69-8b02-8667f414975b",
+    "changeId": "salon-online-ux-optimization-20261104",
+    "commit": "1e3f18156d1b0124af6e75dfa73538ee5b25ddcf",
+    "files": [
+      {
+        "file": "app/settings/booking-setup-guide.tsx",
+        "sha256": "6400c26e2ea251ee533ab4e1a0f0c1bffa6e1d28b1c70a5b999a4f79aae81410",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/direct-settings-panel.tsx",
+        "sha256": "668470411cfe34447a5af55e26b1878d89b554a521e6840d184b57f4810c9631",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/salon-settings-panels.tsx",
+        "sha256": "b6fb2b185b298b456cbaf6b0d66b362ff1f7d54116ee1003b232131eecab0532",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/settings-child-pages.tsx",
+        "sha256": "141718c3fe8b249f5c35db3c0fd260d4c0e221ab81a77a93ee28d8c7d7cd8aa3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/settings-controls.css",
+        "sha256": "1aeab78a9b8fb7f83fed00e3b2c38d8be74946436fb75cdf0c4a4b3e850bbafd",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/settings-hub-client.tsx",
+        "sha256": "80a9be3a7bc09449c23f1efd94dec87ad247d9926c7f031faeef4c2ec5061a0f",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/staff-hours-booking.tsx",
+        "sha256": "390b03ed7a5d447fce561f56198cfd20e28d1b8d4ed66f935afce96a0c16fd71",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "app/settings/team-payroll-panels.tsx",
+        "sha256": "5bf63359f42e70870c0b218b57ac1512656b87f020aa1ca1b166c2412d6c92ee",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "docs/releases/salon-online-ux-optimization-20261104.txt",
+        "sha256": "4c35fab0fbcf8535061da6f03daea41349de87421994121601b4103d9ca4b3f9",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/booking-status.ts",
+        "sha256": "6b8b8f1766b67bd20ab8d842b5a0d6db6efda5035da4306355dee1183dcee234",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/salon-setup-navigation.ts",
+        "sha256": "51af1d4645bde01b1486a53fe15142f81ab8342054a26154375c10803867b1c3",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "lib/vietnamese-settings-copy.json",
+        "sha256": "3cb4beb7b1881a372d8da3e3f8a1e01e6ee336a195142ce3ecaaac14a66c436a",
+        "matchesCommittedText": true
+      },
+      {
+        "file": "tests/salon-online-ux-optimization.test.mjs",
+        "sha256": "4701d68d4a227f925ba110448a349ae7383b36f94c760ec7c39226c37458e3ef",
+        "matchesCommittedText": true
+      }
+    ]
+  }
+]

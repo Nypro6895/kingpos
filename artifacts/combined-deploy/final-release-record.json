@@ -1,0 +1,41 @@
+{
+  "kind": "release",
+  "summary": "Recent KingPOS/Reylumi changes integrated on exact serving source, verified live web and Apple TestFlight. Separate Profile and Library preserved; unfinished/separate projects remain disclosed.",
+  "changes": [
+    "43752330-8042-4aab-a62f-209e57f87b62",
+    "e1d376d0-c8e3-46d3-a754-2db27e413b74",
+    "9f7e1cc2-e633-47c6-a97e-b5c78f4d9478",
+    "845696c2-32ff-4c21-9851-f053c66c7191",
+    "c2e67a11-87c4-4d47-bd3d-988d59fa104d",
+    "67930980-91db-4221-982d-10a7f1dc43e5",
+    "0190b847-ea3c-4d92-ae97-b749ee2a898d",
+    "ee72d334-8577-458d-b6cd-44897193329f",
+    "df7f2103-514e-46e1-81bf-ee1edc619ebf",
+    "1b100f44-7be0-4f31-bce5-b461e8fe8a16",
+    "0aacfbfa-ec0a-4875-bdb2-9bceea0c2e77",
+    "42bbda8d-b446-45d3-b142-3477b8afed23"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_ALqNQmC8UcaAKXi5ENHs15AGo3Bo",
+      "baselineDeploymentId": "dpl_BP31s5XZ811TEbazasAqhFPsWK5p",
+      "sourceSha256": "9f64da6b84422ef1b2bd13ee6fd54adcba8c3a8661099b9123ef48c53296f83f",
+      "overlaySha256": "ee33f69d5d6e48c9c7ca6e2afcb4e935d66eaf4a28a80e7f495af569c3391557",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json; artifacts/combined-deploy/live-http.json; artifacts/combined-deploy/db-applied.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "95",
+      "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  },
+  "id": "37daa40f-4c79-491b-953e-e05f30a3f39f",
+  "recordedAt": "2026-11-05T04:58:44.209Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "filePath": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\releases\\history\\2026-11-05T04-58-44-209Z-37daa40f-4c79-491b-953e-e05f30a3f39f.json"
+}

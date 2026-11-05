@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-05T04:32:02.613Z",
+  "verified": true,
+  "rows": [
+    {
+      "path": "/help",
+      "status": 200,
+      "finalPath": "/help",
+      "errorBody": false,
+      "bytes": 64203
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "finalPath": "/login",
+      "errorBody": false,
+      "bytes": 96018
+    },
+    {
+      "path": "/membership",
+      "status": 200,
+      "finalPath": "/membership",
+      "errorBody": false,
+      "bytes": 71160
+    },
+    {
+      "path": "/qr",
+      "status": 200,
+      "finalPath": "/qr",
+      "errorBody": false,
+      "bytes": 74178
+    },
+    {
+      "path": "/rewards?from=beauty",
+      "status": 200,
+      "finalPath": "/rewards",
+      "errorBody": false,
+      "bytes": 74264
+    },
+    {
+      "path": "/bookings",
+      "status": 200,
+      "finalPath": "/bookings",
+      "errorBody": false,
+      "bytes": 77404
+    },
+    {
+      "path": "/explore",
+      "status": 200,
+      "finalPath": "/explore",
+      "errorBody": false,
+      "bytes": 204816
+    },
+    {
+      "path": "/download/windows",
+      "status": 200,
+      "finalPath": "/download/windows",
+      "errorBody": false,
+      "bytes": 105860756
+    }
+  ]
+}

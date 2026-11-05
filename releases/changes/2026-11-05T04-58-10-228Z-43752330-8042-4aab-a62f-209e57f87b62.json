@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "ticket-toolbar-compact-20261103",
+  "status": "ready",
+  "summary": "Verified combined release revision: ticket-toolbar-compact-20261103. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/(app)/pos-tickets/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\ticket-toolbar-compact-20261103",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "43752330-8042-4aab-a62f-209e57f87b62",
+  "recordedAt": "2026-11-05T04:58:10.228Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "5376139bf4611cdd3140115e0477ebc9b318e5a9b4f33a8781d7c9a94857a89b",
+    "app/pos-tickets/ticket-filters.module.css": "d7901427eff10ac1833af8051d3428bd69486b99c2f6f6536f202bb717c0a8ae",
+    "app/pos-tickets/owner-live-tickets.tsx": "388fed43c6f36b52eecce577e309d7068740fe82678de0b47a9a36680ba43580",
+    "app/(app)/pos-tickets/page.tsx": "a251b1233ec9b9ed0a67ea9bfe35bbd5f48ca2c6854188bf19cb0c06770354c4"
+  }
+}

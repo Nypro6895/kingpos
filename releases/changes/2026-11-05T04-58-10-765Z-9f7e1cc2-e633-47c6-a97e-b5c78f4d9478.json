@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "settings-save-clearance-20261103",
+  "status": "ready",
+  "summary": "Verified combined release revision: settings-save-clearance-20261103. Latest shipped behavior preserved; Profile/Library remain separate by owner decision.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/settings/settings-save-clearance.css",
+    "app/(app)/settings/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-deploy-20261105\\artifacts\\combined-deploy\\ready-revisions\\settings-save-clearance-20261103",
+    "commit": "e1f0a95bbc49f2c301f5852136f2d565eac15dc6",
+    "webCommit": "2f003610f0ec9bb828dac532c866461f29b888f2"
+  },
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact serving-source integration, production build/TypeScript and4311 deployed hashes",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/live-source-verified.json"
+    },
+    {
+      "name": "Original frozen revisions match committed text; compatible overlap resolved",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/selected-source-hashes.json; artifacts/combined-deploy/resolution-notes.json"
+    },
+    {
+      "name": "Changed-area runtime checks and baseline failure comparison",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/test-comparison-final.json; artifacts/combined-deploy/final-ticket-reward.log"
+    },
+    {
+      "name": "Source-bound iOS rebuild,246 tests, archive/upload and Apple existing-group availability",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Full repository tests and lint retain pre-existing failures; they are not claimed green.",
+    "No authenticated hosted salon or physical iPhone/iPad acceptance.",
+    "Exact reported A3 account remains unidentified; aggregate salon evidence is recorded separately."
+  ],
+  "id": "9f7e1cc2-e633-47c6-a97e-b5c78f4d9478",
+  "recordedAt": "2026-11-05T04:58:10.765Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/settings/settings-save-clearance.css": "9413f41aa9cc4ddc1756486e309b0a1b5b2497402b0e719d26e77582df452413",
+    "app/(app)/settings/page.tsx": "aea6cd431a19a1a57b7f83c28e0147850c67edc98b45a99ed04033277f0025ce"
+  }
+}

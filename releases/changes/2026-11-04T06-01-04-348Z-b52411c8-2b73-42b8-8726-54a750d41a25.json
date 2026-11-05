@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "summary": "Settings mobile Save/Cancel menu clearance; all 22 destination types source-audited",
+  "dependencies": [],
+  "validation": [
+    {
+      "evidence": "artifacts/settings-save-clearance-20261103/browser-results.json",
+      "name": "108 modeled browser layouts",
+      "result": "passed"
+    },
+    {
+      "name": "15 existing Settings regression checks",
+      "result": "passed"
+    },
+    {
+      "name": "Authenticated routes and physical iPhone",
+      "result": "pending"
+    }
+  ],
+  "changeId": "settings-save-clearance-20261103",
+  "source": {
+    "commit": "3542a4010b6fea66e862a63a62c34bb2963955e1",
+    "snapshot": "artifacts/settings-save-clearance-20261103/frozen"
+  },
+  "files": [
+    "app/settings/settings-save-clearance.css",
+    "app/(app)/settings/page.tsx"
+  ],
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "id": "b52411c8-2b73-42b8-8726-54a750d41a25",
+  "recordedAt": "2026-11-04T06:01:04.348Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-save-clearance-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
