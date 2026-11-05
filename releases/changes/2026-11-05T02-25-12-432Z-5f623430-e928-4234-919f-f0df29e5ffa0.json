@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "booking-public-link-20261104",
+  "status": "ready",
+  "summary": "Frozen public booking link repair also confirmed in the rebuilt iOS bundle; web and native source verified.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/bookings/booking-workspace-client.tsx",
+    "tests/booking-public-link-copy.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-online-settings-20261104\\artifacts\\salon-online-settings\\frozen-source",
+    "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+    "sha256": "58ebf2300b2d86c124e66292705c6396f9146e2bf8996d6ee0e2fc626571a908"
+  },
+  "supersedesEvents": [
+    "a1e4509d-ba27-460f-9740-ca4af33184b3"
+  ],
+  "validation": [
+    {
+      "name": "Frozen source assembly, production build and scoped regression checks",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings"
+    },
+    {
+      "name": "Source-bound native rebuild, 246 native tests, archive, upload and TestFlight availability",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings/native-final-verified.json"
+    }
+  ],
+  "limitations": [
+    "Physical iPhone acceptance and authenticated hosted account acceptance were not performed."
+  ],
+  "id": "5f623430-e928-4234-919f-f0df29e5ffa0",
+  "recordedAt": "2026-11-05T02:25:12.432Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/bookings/booking-workspace-client.tsx": "7db29b7d5ae1b2e2d98eac34dba75ced8a197435946071df2d932980f4270100",
+    "tests/booking-public-link-copy.test.mjs": "a8ce3937381a1fd16bb3fc03c57dd2000b0c77402f3ca690929afabcee312895"
+  }
+}

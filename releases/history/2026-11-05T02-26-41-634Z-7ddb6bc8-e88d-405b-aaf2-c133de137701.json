@@ -1,0 +1,67 @@
+{
+  "kind": "release",
+  "summary": "Salon setup released on web/Windows and TestFlight 1.0.0 (94): ordered settings, actionable missing-step guidance, consistent publication requirements and contextual English/Vietnamese copy.",
+  "changes": [
+    "50788800-eb8e-43e8-a9c1-53a7ff5649b7",
+    "7db568fd-e59d-4b2d-888e-67fe50cbfb18",
+    "7bb662a9-0ecd-40f2-850d-4497ebd585a9",
+    "ff269365-d4f8-42f3-924b-139780deea74",
+    "5f623430-e928-4234-919f-f0df29e5ffa0",
+    "fed52834-2484-4383-bb82-3627fa46448c"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BP31s5XZ811TEbazasAqhFPsWK5p",
+      "baselineDeploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+      "sourceSha256": "9537ce566f478546d89092e041f78cb028520d4924076dff4ce9b9a568d0b947",
+      "overlaySha256": "7d37d064d16be85dbad99ff74408d4dc1871949ce28c03ffbabdfd70f20bc491",
+      "evidence": "artifacts/salon-online-settings/live-source-verified.json; artifacts/salon-online-settings/live-http.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "94",
+      "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+      "evidence": "artifacts/salon-online-settings/native-final-verified.json; artifacts/salon-online-settings/availability-receipts/testflight-availability.json"
+    }
+  },
+  "windows": {
+    "status": "published-via-existing-online-shell",
+    "origin": "https://reylumi.com",
+    "newExecutableRequired": false,
+    "requiresReload": true
+  },
+  "validation": {
+    "flowTests": 41,
+    "nativeTests": 246,
+    "nativeHostInvocations": 14,
+    "productionBuild": true,
+    "webSourceFiles": 4302,
+    "nativeSourceFiles": 3538
+  },
+  "acceptance": {
+    "authenticatedHostedAccount": false,
+    "physicalIPhone": false,
+    "appStorePublished": false
+  },
+  "limitations": [
+    "Browser connector returned timeoutMs provider errors; hosted authenticated account acceptance was not performed.",
+    "No physical iPhone acceptance or App Store publication is claimed.",
+    "Unfinished/historical journal records remain unchanged."
+  ],
+  "frozenSourceCommit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+  "nativeWorkflow": "https://github.com/Nypro6895/kingpos/actions/runs/41952071281",
+  "availabilityWorkflow": "https://github.com/Nypro6895/kingpos/actions/runs/41954878930",
+  "packagingExclusions": [
+    {
+      "file": ".gitignore",
+      "reason": "Vercel CLI omits its ignore file from uploaded source. Retained in Git and the frozen source; it is not a runtime input."
+    }
+  ],
+  "id": "7ddb6bc8-e88d-405b-aaf2-c133de137701",
+  "recordedAt": "2026-11-05T02:26:41.634Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104"
+}

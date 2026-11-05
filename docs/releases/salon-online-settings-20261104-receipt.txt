@@ -1,0 +1,20 @@
+PHAT HANH THIET LAP SALON ONLINE — 2026-11-04 America/Chicago
+
+Web: https://reylumi.com — published and verified.
+Windows: updated through the existing online shell; reopen/reload the app. No new executable was needed.
+iOS: TestFlight 1.0.0 (94), Apple VALID, IN_BETA_TESTING, associated with existing Reylumi Internal group. App Store publication and installation on a particular phone are separate.
+
+Settings order: Salon information → Services & prices → Team → Hours & booking → Go online. Existing forms/data are reused. Missing setup offers direct actions with the selected salon/staff retained. Saved data and online configuration are reported separately. Drafts survive navigation and failed refreshes do not replay writes. Restricted users are directed to the owner.
+
+Settings and Studio use common publication requirements. Logo, cover, tagline and looks are optional; public visibility still requires an explicit save. Opening hours and staff booking hours remain separate. A configured staff member is not presented as a guarantee of available time slots; booking preview is offered.
+
+Validation: 41 flow/readiness/translation checks, production build, TypeScript, lint (one pre-existing hook dependency warning), 246 unique native cases across 14 isolated hosts, signed archive/export, upload, Apple processing and existing-group availability. Web source: 4302 uploaded files verified. Native source: 3538 committed Git blobs verified; generated mappings match web.
+
+Web deployment: dpl_BP31s5XZ811TEbazasAqhFPsWK5p
+Baseline: dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp
+Source commit: eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8
+Native run: https://github.com/Nypro6895/kingpos/actions/runs/41952071281
+Availability: https://github.com/Nypro6895/kingpos/actions/runs/41954878930
+Release event: 7ddb6bc8-e88d-405b-aaf2-c133de137701
+
+Limits: no physical iPhone or authenticated hosted salon acceptance was performed (browser provider error). No App Store publication, tester invitation, paid activation or new production migration was performed in this task. Pre-existing untranslated strings outside this change remain documented in the audit evidence.
