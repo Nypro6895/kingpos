@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "post-tag-book-comment-20261104",
+  "status": "ready",
+  "summary": "Integrated revision on the current production baseline; assembled source validated with salon setup release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/post-comments/post-comment-thread.tsx",
+    "components/explore-account-actions.tsx",
+    "components/use-comment-composer-visibility.ts",
+    "lib/comment-composer-visibility.ts",
+    "lib/public-booking-routes.ts",
+    "tests/public-booking-routes.test.mjs",
+    "tests/tagged-post-book-button.test.mjs",
+    "tests/comment-composer-keyboard-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-online-settings-20261104\\artifacts\\salon-online-settings\\frozen-source",
+    "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+    "sha256": "58ebf2300b2d86c124e66292705c6396f9146e2bf8996d6ee0e2fc626571a908"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Frozen source assembly, production build and scoped regression checks",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings"
+    }
+  ],
+  "limitations": [
+    {
+      "name": "Physical iPhone acceptance and authenticated browser acceptance",
+      "result": "pending",
+      "evidence": "Browser provider failed; no physical acceptance inferred."
+    }
+  ],
+  "readinessScope": "Frozen implementation source passed its local assembly checks. Publication/Apple availability and optional physical/authenticated acceptance are separate receipt states; limitations are not claimed passed.",
+  "id": "ff269365-d4f8-42f3-924b-139780deea74",
+  "recordedAt": "2026-11-05T02:04:03.574Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/post-comments/post-comment-thread.tsx": "cf21023d27ccb934fcc0408f5b4644842de0ca892d261baae96a6128ff3b7301",
+    "components/explore-account-actions.tsx": "adc5954b65c6a5ddee4696ff0a939e7db1ee73fbc38a3f9e7316cbc84cc9b5b7",
+    "components/use-comment-composer-visibility.ts": "08131b120fa68b7901d808a1acf22696c95f322f14c8c80001c88ab68f7a412c",
+    "lib/comment-composer-visibility.ts": "44f1eedca6e8da6b1c294841a29d987deb9d072e96944a9af9fefbfbe2b05fa5",
+    "lib/public-booking-routes.ts": "61948d4b9504fd3330e9e7b584c0cac38ae6c70b3bdb23e06d7eff4dc0181695",
+    "tests/public-booking-routes.test.mjs": "4354ac18bd95322e042c32b6f8ad0a7d338372805119ff25b8d153b2075f5a96",
+    "tests/tagged-post-book-button.test.mjs": "f335ac0b21665504179a93bfa1603da983e609cd0bcb03767280842837f9c0f6",
+    "tests/comment-composer-keyboard-browser.mjs": "c3b9720b1c5fd742b092c48222ae79b04adf93abcbada801c46bcf14dacdee44"
+  }
+}

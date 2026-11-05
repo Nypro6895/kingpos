@@ -1,0 +1,50 @@
+{
+  "kind": "release",
+  "summary": "Salon setup guidance published on web and the existing online Windows shell. Native source is frozen; simulator/archive/upload verification is still in progress.",
+  "changes": [
+    "50788800-eb8e-43e8-a9c1-53a7ff5649b7",
+    "7db568fd-e59d-4b2d-888e-67fe50cbfb18",
+    "7bb662a9-0ecd-40f2-850d-4497ebd585a9",
+    "ff269365-d4f8-42f3-924b-139780deea74",
+    "a1e4509d-ba27-460f-9740-ca4af33184b3",
+    "fed52834-2484-4383-bb82-3627fa46448c"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BP31s5XZ811TEbazasAqhFPsWK5p",
+      "baselineDeploymentId": "dpl_AxfeLKBrbaUcgTMNTZu2otekuLFp",
+      "sourceSha256": "9537ce566f478546d89092e041f78cb028520d4924076dff4ce9b9a568d0b947",
+      "overlaySha256": "7d37d064d16be85dbad99ff74408d4dc1871949ce28c03ffbabdfd70f20bc491",
+      "evidence": "artifacts/salon-online-settings/live-source-verified.json; artifacts/salon-online-settings/live-http.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+      "phase": "simulator-tests-and-archive",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/41952071281"
+    }
+  },
+  "windows": {
+    "status": "published-via-web",
+    "origin": "https://reylumi.com",
+    "requiresReload": true,
+    "newExecutableRequired": false
+  },
+  "limitations": [
+    "Authenticated browser connector failed with timeoutMs provider errors.",
+    "Physical iPhone acceptance and App Store publication are not claimed.",
+    "Historical unfinished/unreconciled queue records remain unchanged."
+  ],
+  "packagingExclusions": [
+    {
+      "file": ".gitignore",
+      "reason": "Vercel CLI omits its ignore file from uploaded source. Retained in Git and the frozen source; it is not a runtime input."
+    }
+  ],
+  "id": "dc6cb4de-e37c-4d36-a255-c4a3991805fd",
+  "recordedAt": "2026-11-05T02:09:49.860Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104"
+}

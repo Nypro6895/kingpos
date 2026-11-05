@@ -1,0 +1,111 @@
+{
+  "kind": "change",
+  "changeId": "salon-online-settings-20261104",
+  "status": "ready",
+  "summary": "Ordered salon settings, actionable staff/publication guidance, common publication requirements and plain English/Vietnamese copy.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/booking-setup-guide.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-navigation.ts",
+    "app/settings/settings-controls.css",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/settings/opening-hours-editor.tsx",
+    "app/booking-setup/booking-setup-editors.tsx",
+    "app/salon-profile/publication-panel.tsx",
+    "app/salon-profile/salon-profile-studio.tsx",
+    "lib/salon-setup-navigation.ts",
+    "lib/salon-publication-readiness.ts",
+    "lib/salon-profile.ts",
+    "lib/salon-settings.ts",
+    "lib/vietnamese-settings-copy.json",
+    "tests/salon-online-settings-runtime.test.mjs",
+    "tests/salon-online-readiness.test.mjs",
+    "tests/settings-hub-ui.test.mjs",
+    "tests/settings-compact-runtime.test.mjs",
+    "tests/staff-hours-booking-runtime.test.mjs",
+    "docs/releases/salon-online-settings-20261104.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-online-settings-20261104\\artifacts\\salon-online-settings\\frozen-source",
+    "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+    "sha256": "58ebf2300b2d86c124e66292705c6396f9146e2bf8996d6ee0e2fc626571a908"
+  },
+  "dependencies": [
+    "combined-membership-release-20261104",
+    "vietnamese-context-20261104",
+    "ipad-pos-more-viewport-20261104",
+    "post-tag-book-comment-20261104",
+    "booking-public-link-20261104"
+  ],
+  "validation": [
+    {
+      "name": "30 settings/save/permission/route/browser regressions",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings/final-regression.log"
+    },
+    {
+      "name": "3 publication parity/link/role tests",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings/readiness-tests.log"
+    },
+    {
+      "name": "8 contextual translation and data-preservation checks",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings/translation-tests.log"
+    },
+    {
+      "name": "TypeScript, ESLint and fresh production build",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings/production-build-result.json"
+    }
+  ],
+  "limitations": [
+    {
+      "name": "Native rebuild/upload and physical acceptance",
+      "result": "pending",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/41952071281"
+    }
+  ],
+  "readinessScope": "Frozen implementation source passed its local assembly checks. Publication/Apple availability and optional physical/authenticated acceptance are separate receipt states; limitations are not claimed passed.",
+  "id": "fed52834-2484-4383-bb82-3627fa46448c",
+  "recordedAt": "2026-11-05T02:04:03.967Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/booking-setup-guide.tsx": "f37293cc370b82a7b82d44aacb8b8abab661dd7b2a40c5dc1c0c5560fbd7b5db",
+    "app/settings/direct-settings-actions.ts": "d477f91e7637a1b9ca00854e51148721d3187c47f4a5859d3c85eb7c9f066863",
+    "app/settings/direct-settings-panel.tsx": "67c2dd8ed9a49d27cef17c682ec49938c35dd9c6a0ab350bc26dd496b0f5a7f6",
+    "app/settings/direct-settings-ui.tsx": "fb6836dd3f9fe1f78bb579864d3cae79787022c7f41843cc58a031d3e8f1a902",
+    "app/settings/salon-settings-panels.tsx": "d35da91049eb218c237c0f2db8f225ff3300126bda58f00cb122947229e7504b",
+    "app/settings/settings-hub-client.tsx": "08f569fca9adf10876be83f1f0b26fe3cfa2068cf13e39ac13b2766fd007dbba",
+    "app/settings/settings-navigation.ts": "e8587dcf98198f355f0cf48bb96a697675efcabef24eb2d90115b61fa5cb4aa4",
+    "app/settings/settings-controls.css": "30665f4073ca47e6f09ce365d051d552023bd8389be24b74ef73a64ee80e6cfe",
+    "app/settings/staff-hours-booking.tsx": "ca1e19dcccf2bbb88ed65bf74fe47c3139f73f62ca3b26280ccce6d44b5287e3",
+    "app/settings/team-payroll-panels.tsx": "5202a3dd203b6eba155959ef9d755da2ae75b7da37a9b0423fd83e856db65149",
+    "app/settings/opening-hours-editor.tsx": "c91980003ae22aadd6b7f6506295e4b58b6da3ab26d95be15ee99e27493e7d71",
+    "app/booking-setup/booking-setup-editors.tsx": "0c8b3718d58df89ac3cec6f43218623297b2139026476fea01ad34899f9d3cc1",
+    "app/salon-profile/publication-panel.tsx": "379924a5efc751db8ab59eae291c26f1727cf837b42f218081e6220eb6c55a98",
+    "app/salon-profile/salon-profile-studio.tsx": "26ad5cf26cc818f091e998e8e526e1beca8d6a22e067bfadbfdfd969f85c5e41",
+    "lib/salon-setup-navigation.ts": "9d597dccddd423f2f5246fcd50b8c6451e45fb3d2d21a82b14c1e71604d303e7",
+    "lib/salon-publication-readiness.ts": "7dc2912fc04eb725408314a4916d66b879e6de1a095bb856b65982f4db8671f3",
+    "lib/salon-profile.ts": "c1bdc92d959eb6e3b2216627e1f1f413bb3e104d15ee22166df3662f0bb1a334",
+    "lib/salon-settings.ts": "acca5f17f22f575073740f5a9de8b2caf70605e878599ec7af6877fabe8ff5b3",
+    "lib/vietnamese-settings-copy.json": "6dd685e0cb7ed7f46daceb02271b826a0fc96967cf9d48823cd1a80ba6390dc1",
+    "tests/salon-online-settings-runtime.test.mjs": "f8f4b51239364830119b3b75a31380caa2fe4d5b9ae19ff30873ad0db7722cb2",
+    "tests/salon-online-readiness.test.mjs": "d360dbb5a38c914735aa7b25608459327cefb527aef69ce7094955f9d72357ef",
+    "tests/settings-hub-ui.test.mjs": "8c97835a09ce9ca852b54240de6ec04258f348fc36c98889a54aedd5f8fb502c",
+    "tests/settings-compact-runtime.test.mjs": "a07ab39fc21220212ee922633ce0a88ba541828b85ed0978054d2df89fe9a73e",
+    "tests/staff-hours-booking-runtime.test.mjs": "70fe2e80d1c8b679a10275e7402f0065f2c3860d5ed2938916a02c273e23fd32",
+    "docs/releases/salon-online-settings-20261104.txt": "cc93b9e59f7189abac191a07d27ed983c537b1b2d348dd0be651b56a32df5899"
+  }
+}

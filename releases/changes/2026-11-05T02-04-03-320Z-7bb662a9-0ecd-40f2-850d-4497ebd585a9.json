@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "ipad-pos-more-viewport-20261104",
+  "status": "ready",
+  "summary": "Integrated revision on the current production baseline; assembled source validated with salon setup release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "tests/ipad-pos-more-viewport.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-online-settings-20261104\\artifacts\\salon-online-settings\\frozen-source",
+    "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+    "sha256": "58ebf2300b2d86c124e66292705c6396f9146e2bf8996d6ee0e2fc626571a908"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Frozen source assembly, production build and scoped regression checks",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings"
+    }
+  ],
+  "limitations": [
+    {
+      "name": "Physical iPhone acceptance and authenticated browser acceptance",
+      "result": "pending",
+      "evidence": "Browser provider failed; no physical acceptance inferred."
+    }
+  ],
+  "readinessScope": "Frozen implementation source passed its local assembly checks. Publication/Apple availability and optional physical/authenticated acceptance are separate receipt states; limitations are not claimed passed.",
+  "id": "7bb662a9-0ecd-40f2-850d-4497ebd585a9",
+  "recordedAt": "2026-11-05T02:04:03.320Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-tabs.tsx": "9fdf624e50f27d743a69ebf88467da8781691d4bf1d9c123e2eb5c0d856777b8",
+    "app/pos/owner-pos.css": "7a52afa58c75f51e15a4767900f182d9838fbea6267125c4a9a8c5bb6186fb0a",
+    "tests/ipad-pos-more-viewport.mjs": "33a6eb168aef26a2770234f7a855e41a6c51c02935acaa191ee264828d4bce1f"
+  }
+}

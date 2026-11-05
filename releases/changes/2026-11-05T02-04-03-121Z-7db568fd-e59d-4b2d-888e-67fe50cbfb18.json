@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "vietnamese-context-20261104",
+  "status": "ready",
+  "summary": "Integrated revision on the current production baseline; assembled source validated with salon setup release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "app/staff/staff-directory-editor.tsx",
+    "lib/current-context.ts",
+    "lib/vietnamese-booking-deposit-market.json",
+    "lib/vietnamese-campaign-copy.json",
+    "lib/vietnamese-context-copy.json",
+    "lib/vietnamese-developer-market.json",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-help-copy.json",
+    "lib/vietnamese-payroll-mobile.json",
+    "lib/vietnamese-salon-setup.json",
+    "lib/vietnamese-workspace-copy.json",
+    "scripts/revise-vietnamese-context.mjs",
+    "tests/vietnamese-context.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-online-settings-20261104\\artifacts\\salon-online-settings\\frozen-source",
+    "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8",
+    "sha256": "58ebf2300b2d86c124e66292705c6396f9146e2bf8996d6ee0e2fc626571a908"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Frozen source assembly, production build and scoped regression checks",
+      "result": "passed",
+      "evidence": "artifacts/salon-online-settings"
+    }
+  ],
+  "limitations": [
+    {
+      "name": "Physical iPhone acceptance and authenticated browser acceptance",
+      "result": "pending",
+      "evidence": "Browser provider failed; no physical acceptance inferred."
+    }
+  ],
+  "readinessScope": "Frozen implementation source passed its local assembly checks. Publication/Apple availability and optional physical/authenticated acceptance are separate receipt states; limitations are not claimed passed.",
+  "id": "7db568fd-e59d-4b2d-888e-67fe50cbfb18",
+  "recordedAt": "2026-11-05T02:04:03.121Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-online-settings-20261104",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "0f0c0ca1df9550becff420335deda92e1663961bcc3e858f905d28042b010b31",
+    "app/staff/staff-directory-editor.tsx": "b27422fa94773d1293fc49e4821e07e23d85d1a38ec3fe80ca96698890b3e973",
+    "lib/current-context.ts": "7b2a1279a31ede8dab178b4d8a499d98df3fccbaa0ecc1cbbc0d679274faf20c",
+    "lib/vietnamese-booking-deposit-market.json": "4f1600c2bf1b3507242aa4ee413b2424f9b131710a21b704780ac4bd71ab1967",
+    "lib/vietnamese-campaign-copy.json": "b1b3a04f569e7a3f4ecfa9e6fa8384d15d64527cf45b241b9dcd7dcc61795c19",
+    "lib/vietnamese-context-copy.json": "5f62b9f8895619d0b24a02945346baab48ef22e5ea9d899667529eeb99704cf8",
+    "lib/vietnamese-developer-market.json": "3db4ed1300bf44595d260c8831bd2b1f99d424244783cb936d8bad555ad06d65",
+    "lib/vietnamese-dictionary.ts": "37b8ecf680041ec95eea76e9aa82c18e45c8ae86f65d86707e40fac8c9551268",
+    "lib/vietnamese-help-copy.json": "f418289c47643838c6fc540eac3dbc62081935ffec8ee7a187d044f95b042d6d",
+    "lib/vietnamese-payroll-mobile.json": "7105115b3bc0364d1725991822cb1eadf5943a47efc052e97b8139ecae3203dd",
+    "lib/vietnamese-salon-setup.json": "172e6de8100cacff92b753786560e311e7242cba5afddbb11fcefcc93de9d9fd",
+    "lib/vietnamese-workspace-copy.json": "ac131fa0f51689b39ba3cf4e3b6bdd4f39f147db786db1f19231149672355f60",
+    "scripts/revise-vietnamese-context.mjs": "c433cdf0f9220449af5a416448bf2aa9467cb2984c122949a8262e6ea96780f0",
+    "tests/vietnamese-context.test.mjs": "5edf98208c04f32eaea040526c46ac2ae959e5c023bba9714334b3232459a8d3"
+  }
+}
