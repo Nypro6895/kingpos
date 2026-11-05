@@ -42,6 +42,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
     } catch { if (generation === epoch.current) setError("Reconnect to update status and prices."); }
     finally { loading.current = false; }
   }, [viewerId]);
+  useEffect(() => {let active=true;if(entry && !initialCatalog)void loadPersonalQrCatalog(viewerId,entry).then(result=>{if(!active)return;if(result.catalog)setCatalog(result.catalog);else setError(result.error ?? "Check-in could not be loaded.");});return()=>{active=false;};},[entry,initialCatalog,viewerId]);
   useEffect(() => {
     const connection = () => { setOnline(navigator.onLine); setNow(Date.now()); if (navigator.onLine && document.visibilityState === "visible") void refresh(); };
     const reset = () => { epoch.current++; setData(null); setCatalog(null); setVisitId(null); setCamera(false); setError(""); };
@@ -117,7 +118,7 @@ export function PersonalQrClient({ viewerId, initial, initialError, entry, initi
 }
 
 function VisitRow({ visit, onOpen }: { visit: PersonalQrVisit; onOpen: () => void }) {
-  return <button type="button" className={styles.visitRow} onClick={onOpen}><span><strong><SalonName name={visit.salonName} salonId={visit.salonId}/></strong><span className={styles.muted}>#{visit.queueNumber ?? "—"}</span></span><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></button>;
+  return <button type="button" className={styles.visitRow} onClick={onOpen}><span><strong><SalonName name={visit.salonName} salonId={visit.salonId}/></strong><span className={styles.muted}>{visit.receipt?.ticketNumber ? `#${visit.receipt.ticketNumber} · ` : ""}{visit.checkedInAt && new Date(visit.checkedInAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}{visit.receipt && ` · ${money(historyTicketTotals(visit.receipt).total)}`}</span></span><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></button>;
 }
 function PersonalVisit({ visit, online }: { visit: PersonalQrVisit; online: boolean }) {
   const [expanded, setExpanded] = useState(false);
@@ -126,7 +127,7 @@ function PersonalVisit({ visit, online }: { visit: PersonalQrVisit; online: bool
   const lines = visit.receipt ? visit.receipt.services.map(line => ({ id: line.id, serviceName: line.name, staffName: line.staffName ?? "", amount: line.lineTotal })) : visit.lines;
   return <section className={styles.card} aria-label="Visit status and prices">
     <div className={styles.heading}><h2><SalonName name={visit.salonName} salonId={visit.salonId}/></h2><span className={`${styles.badge} ${visit.ready ? styles.readyBadge : ""}`}><WorkspaceText text={personalVisitLabel(visit.status, Boolean(visit.ready))} /></span></div>
-    <p>#{visit.queueNumber ?? "—"}</p>
+    {visit.receipt?.ticketNumber ? <p>#{visit.receipt.ticketNumber}</p> : visit.queueNumber != null ? <p><WorkspaceText text="Check-in" /> #{visit.queueNumber}</p> : null}
     {visit.ready && <div role="status" className={styles.ready}><strong><WorkspaceText text="Your staff is ready" /></strong><p>{visit.ready.staffName ?? ""}{visit.ready.chair && <> · <WorkspaceText text="Chair" /> {visit.ready.chair}</>}</p></div>}
     {!!visit.workingStaff.length && !finished && <p className={styles.muted}>{visit.workingStaff.join(" · ")} · <WorkspaceText text="Working" /></p>}
     {!finished && <><VisitRewards key={visit.visitId} scope="personal" visitId={visit.visitId} /><VisitGiftCards key={`gift:${visit.visitId}`} visitId={visit.visitId} /></>}

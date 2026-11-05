@@ -1,3 +1,4 @@
+import { loadPersonalQr } from "@/app/qr/actions";
 import "server-only";
 import {getAccountSavedPosts} from "./account-social";
 import { getMyReviewsData } from "./customer-reviews";
@@ -27,7 +28,11 @@ export async function readAppLocalPersonalResource(name:string,args:Record<strin
   if(Object.entries(args).some(([key,value])=>!allowed.includes(key)||typeof value!=="string"||value.length>512))fail(400,"Invalid page filters.");
   const context=await authority(options.scope);if(options.signal?.aborted)throw options.signal.reason;
   let data:unknown;
-  if(name==="customer.reviews"){
+  if(name==="page.personal-qr"){
+    const result=await loadPersonalQr(context.user!.id);
+    if(!result.data)fail(503,result.error ?? "My QR could not be loaded.");
+    data=result.data;
+  }else if(name==="customer.reviews"){
     const reviews=await getMyReviewsData({page:Number(args.page??1),experienceId:typeof args.experience==="string"?args.experience:undefined});
     if(reviews.error)fail(503,reviews.error);
     data=reviews;

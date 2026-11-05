@@ -190,7 +190,7 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       href: "/more/saved-post",
       icon: "heart",
       id: "personal-saved-post",
-      label: "Saved Post",
+      label: "Saved posts",
       navigationIcon: "star",
     },
     {
@@ -236,27 +236,11 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "grid",
     },
     {
-      description: "Staff payroll, period totals, and paystub access.",
-      href: "/staff/my-work?tab=payroll",
-      icon: "cash",
-      id: "staff-payroll",
-      label: "Payroll",
-      navigationIcon: "cash",
-    },
-    {
-      description: "Personal performance and work statistics.",
-      href: "/staff/my-work?tab=analysis",
-      icon: "list",
-      id: "staff-statistics",
-      label: "Statistics",
-      navigationIcon: "list",
-    },
-    {
       description: "Posts saved by this account.",
       href: "/more/saved-post",
       icon: "heart",
       id: "staff-saved-post",
-      label: "Saved Post",
+      label: "Saved posts",
       navigationIcon: "star",
     },
     {

@@ -1173,3 +1173,5 @@
 @media (max-width: 640px) {
   .booking-publish-section, .booking-setup-section, .booking-preview-section { padding: 14px 16px; }
 }
+
+.owner-schedule-tabs:has(.owner-schedule-menu[open]) > button[aria-current=page] {color:var(--booking-muted);border-bottom-color:transparent}

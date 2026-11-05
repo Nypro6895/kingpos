@@ -20,16 +20,21 @@ export function SettingsChildPages({children,label="Settings",resetKey="",showTi
   while(current&&!seen.has(current)){seen.add(current);const page=pages.current.get(current);if(!page)break;next.unshift(page);current=page.parent;}
   setTrail(next);
  },[]);
+ const hashTarget=useCallback(()=>{
+  // A path opens deferred parents first; registering their children completes the route.
+  let path:string[];try{path=decodeURIComponent(window.location.hash.slice(1)).split("/");}catch{return null;}
+  return [...path].reverse().find(id=>pages.current.has(id))||null;
+ },[]);
  const register=useCallback((page:Page)=>{
   pages.current.set(page.id,page);
-  queueMicrotask(()=>{if(!trailRef.current.length&&window.history.state?.reylumiSettingsChild?.root!==rootId&&window.location.hash.slice(1)===page.id&&pages.current.has(page.id))activate(page.id);});
+  queueMicrotask(()=>{if(window.history.state?.reylumiSettingsChild?.root!==rootId&&trailRef.current.at(-1)?.id!==page.id&&hashTarget()===page.id&&pages.current.has(page.id))activate(page.id);});
   return()=>{pages.current.delete(page.id);queueMicrotask(()=>{if(!pages.current.has(page.id)&&trailRef.current.at(-1)?.id===page.id)activate(page.parent&&pages.current.has(page.parent)?page.parent:null);});};
- },[rootId,activate]);
+ },[rootId,activate,hashTarget]);
  const heading=useRef<HTMLHeadingElement>(null);
  useEffect(()=>{
-  const restore=()=>{const entry=window.history.state?.reylumiSettingsChild,hash=window.location.hash.slice(1);activate(entry?.root===rootId?(pages.current.has(entry.id)?entry.id:null):pages.current.has(hash)?hash:null);};
+  const restore=()=>{const entry=window.history.state?.reylumiSettingsChild;activate(entry?.root===rootId?(pages.current.has(entry.id)?entry.id:null):hashTarget());};
   restore();window.addEventListener("popstate",restore);window.addEventListener("hashchange",restore);return()=>{window.removeEventListener("popstate",restore);window.removeEventListener("hashchange",restore);};
- },[rootId,resetKey,activate]);
+ },[rootId,resetKey,activate,hashTarget]);
  useLayoutEffect(()=>{if(active)heading.current?.focus({preventScroll:true});},[active]);
  function open(id:string){
   if(!pages.current.has(id))return;
@@ -41,7 +46,7 @@ export function SettingsChildPages({children,label="Settings",resetKey="",showTi
   setTrail(current=>current.slice(0,-1));
   const entry=window.history.state?.reylumiSettingsChild;
   if(entry?.root===rootId&&entry.id===currentId)window.history.back();
-  else if(window.location.hash.slice(1)===currentId)window.history.replaceState(window.history.state,"",window.location.pathname+window.location.search);
+  else if(hashTarget()===currentId){const parent=trailRef.current.at(-2)?.id;window.history.replaceState(window.history.state,"",window.location.pathname+window.location.search+(parent?"#"+encodeURIComponent(parent):""));}
  }
  const navigation:Navigation={active,open,back,
   register,
@@ -49,6 +54,7 @@ export function SettingsChildPages({children,label="Settings",resetKey="",showTi
    const current=trailRef.current,index=current.findIndex(page=>page.id===id);if(index<0)return;
    setTrail(current.slice(0,index));const entry=window.history.state?.reylumiSettingsChild;
    if(entry?.root===rootId&&entry.id===current.at(-1)?.id)window.history.go(-(current.length-index));
+   else if(hashTarget()===current.at(-1)?.id){const parent=current[index-1]?.id;window.history.replaceState(window.history.state,"",window.location.pathname+window.location.search+(parent?"#"+encodeURIComponent(parent):""));}
   },
   inPath:id=>trail.some(page=>page.id===id)
  };

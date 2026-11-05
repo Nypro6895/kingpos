@@ -26,14 +26,11 @@ function fixture({ rosterPermission=true, ticketPermission=true }={}) {
   vm.runInNewContext(code,{exports,require:name=>stubs[name]??{},URLSearchParams,Date,Intl,Error,Number,Object});
   return {read:exports.readAppLocalOwnerResource,calls};
 }
-test('installed owner tickets DTO preserves exact staff, day, search and permitted alternate staff',async()=>{
-  const f=fixture();const result=await f.read('owner.tickets',{query:'date=2026-11-01&staff=kim&q=Nail-Fill'},{scope:'scope'});
-  assert.equal(result.data.props.selectedStaffId,'kim');assert.equal(result.data.props.selectedDate,'2026-11-01');assert.equal(result.data.props.searchQuery,'Nail-Fill');
-  assert.equal(new URLSearchParams(result.data.props.returnTo.split('?')[1]).get('staff'),'kim');assert.equal(result.data.props.filterStaff.length,2);
-  const all=await f.read('owner.tickets',{query:'date=2026-11-01'},{scope:'scope'});assert.equal(all.data.props.selectedStaffId,'');
+test('installed ticket DTO keeps date and search and ignores retired staff filter without roster reads',async()=>{
+ const f=fixture();const result=await f.read('owner.tickets',{query:'date=2026-11-01&staff=kim&q=Nail-Fill'},{scope:'scope'});
+ assert.equal(result.data.props.selectedDate,'2026-11-01');assert.equal(result.data.props.searchQuery,'Nail-Fill');assert.equal(result.data.props.selectedStaffId,undefined);assert.equal(result.data.props.filterStaff,undefined);assert.equal(f.calls.length,0);assert.equal(new URLSearchParams(result.data.props.returnTo.split('?')[1]).has('staff'),false);
 });
-test('staff filtering does not widen roster permissions or bypass ticket permission',async()=>{
-  const f=fixture({rosterPermission:false});const result=await f.read('owner.tickets',{query:'staff=kim'},{scope:'scope'});
-  assert.equal(result.data.props.filterStaff.length,1);assert.equal(f.calls.length,0);
-  const denied=fixture({ticketPermission:false});assert.equal((await denied.read('owner.tickets',{}, {scope:'scope'})).data.view,'denied');assert.equal(denied.calls.length,0);
+test('retired staff filter never reads a wider roster and ticket permission remains required',async()=>{
+ const f=fixture({rosterPermission:false});await f.read('owner.tickets',{query:'staff=kim'},{scope:'scope'});assert.equal(f.calls.length,0);
+ const denied=fixture({ticketPermission:false});assert.equal((await denied.read('owner.tickets',{}, {scope:'scope'})).data.view,'denied');assert.equal(denied.calls.length,0);
 });

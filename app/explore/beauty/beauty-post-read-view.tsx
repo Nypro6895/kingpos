@@ -10,6 +10,7 @@ import { ReylumiIcon } from "@/components/reylumi-icons";
 import type { ExploreFeedItem, ExploreFeedMedia } from "@/types/explore";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type {PostCommentViewer} from "@/types/post-comments";
 function mediaAspectRatio(media: ExploreFeedMedia | undefined) {
   if (media?.aspectRatio && media.aspectRatio > 0) {
@@ -176,13 +177,14 @@ function PostMedia({ item }: { item: ExploreFeedItem }) {
 }
 
 export function BeautyPostReadView({item,commentViewer,profileId,postId}:{item:NonNullable<Awaited<ReturnType<typeof getPublicExploreBeautyPost>>>;commentViewer:PostCommentViewer;profileId:string;postId:string}){
+  const fromLibrary = useSearchParams().get("from") === "library";
   const booking = item.booking?.eligible ? item.booking : null;
   const price = item.serviceName ? bookingPriceLabel(item) : null;
   const duration = item.serviceName ? bookingDurationLabel(item) : null;
   const verifiedLabel = verificationLabel(item);
   return <main className="min-h-screen bg-surface-muted px-3 py-4 sm:px-6">
     <article className="mx-auto grid w-full max-w-3xl gap-4" id={"post-" + item.id}>
-      <div className="flex items-center justify-between gap-3 text-sm"><Link href={"/explore/beauty/" + profileId} className="min-w-0 truncate py-2 font-semibold text-text-secondary">Back to {item.author.name}</Link><span className="shrink-0 text-xs text-text-muted">{formatDate(item.publishedAt)}</span></div>
+      <div className="flex items-center justify-between gap-3 text-sm"><Link href={fromLibrary ? "/beauty/library" : "/explore/beauty/" + profileId} className="min-w-0 truncate py-2 font-semibold text-text-secondary">{fromLibrary ? "Back to Library" : `Back to ${item.author.name}`}</Link><span className="shrink-0 text-xs text-text-muted">{formatDate(item.publishedAt)}</span></div>
       <section className="min-w-0 overflow-hidden rounded-2xl border border-divider-subtle bg-surface">
         <header className="flex min-w-0 items-center gap-3 px-3 py-3 sm:px-4">
           <Link href={"/explore/beauty/" + profileId} aria-label={"Open " + item.author.name} className="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-sm font-semibold text-brand-orange">

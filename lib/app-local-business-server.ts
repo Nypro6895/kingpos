@@ -113,7 +113,7 @@ async function loadManagedSalonProfile(context: CurrentBusinessContext): Promise
     canBook: Boolean(publicData) && viewData.profile.operatingStatus.kind !== "permanently_closed", canCreateContent: data.canCreateContent,
     canEditProfile: data.canManageIdentity, canFollow: false, canManageContent: data.canManageContent, canFeatureOwnContent: isOwnerMembership(context.currentMembership),
     canModerateComments: data.canManageContent, canPublish: data.canManageIdentity, canReplyAsSalon: data.canManageContent, canViewDraftContent: data.canManageContent,
-    currentUserId: context.user?.id ?? null, isAuthenticated: Boolean(context.user), isOwnSalon: isSalonManageContext(context),
+    currentUserId: context.user?.id ?? null, isAuthenticated: Boolean(context.user), isOwnSalon: isSalonManageContext(context), isStaffSalon: context.salonMode === "staff",
   };
   return { capabilities, data: viewData, manageData: {
     ownedLookIds: data.looks.filter(look => (look.created_by_user_id ?? look.author_user_id) === context.user?.id).map(look => look.id),

@@ -3275,7 +3275,7 @@ export function SalonProfileView({
   const router = useRouter();
   const pathname = usePathname();
   const { profile } = data;
-  const isWebsiteView = !manageData || capabilities.isOwnSalon;
+  const isWebsiteView = !manageData || capabilities.isOwnSalon || capabilities.isStaffSalon === true;
   const [editedPreferences, setEditedPreferences] = useState<SalonProfilePreferences | null>(null);
   const preferences = editedPreferences ?? data.preferences ?? DEFAULT_PROFILE_PREFERENCES;
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
@@ -4390,7 +4390,7 @@ export function SalonProfileView({
             <span><WorkspaceText text="Contact salon" /></span>
             {profile.phone ? <a href={`tel:${profile.phone}`} className="font-semibold underline">{profile.phone}</a> : null}
           </aside>
-        ) : !capabilities.isOwnSalon ? (
+        ) : !capabilities.isOwnSalon && !capabilities.isStaffSalon ? (
           <div className="flex justify-end text-xs text-zinc-500"><a href={`/claim/${profile.salonId}`} className="underline"><WorkspaceText text="Manage this salon? Request access" /></a></div>
         ) : null}
         {isWebsiteView ? <SalonWebsiteHeader

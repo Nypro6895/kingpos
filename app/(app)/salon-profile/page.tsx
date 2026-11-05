@@ -122,7 +122,7 @@ async function SalonProfilePage({
     canViewDraftContent: data.canManageContent,
     currentUserId: context.user?.id ?? null,
     isAuthenticated: Boolean(context.user),
-    isOwnSalon: isSalonManageContext(context),
+    isOwnSalon: isSalonManageContext(context), isStaffSalon: context.salonMode === "staff",
   };
 
   return (

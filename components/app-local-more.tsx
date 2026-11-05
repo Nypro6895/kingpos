@@ -177,11 +177,9 @@ function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
           id: "work",
           items: pickMoreItems(ROLE_MORE_ITEMS.staff, [
             "staff-my-place",
-            "staff-payroll",
-            "staff-statistics",
             "staff-support",
           ]),
-          summary: "Switch workplaces and review your pay or performance.",
+          summary: "Switch workplaces or get help.",
           title: "Work",
         },
         {

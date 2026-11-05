@@ -1,4 +1,5 @@
 import { getContextBusinessTimezone, getContextBusinessDate } from "@/lib/salon-business-clock";
+import { withDashboardDeadline } from "./dashboard-deadline";
 import { zonedDateTimeToUtcIso } from "@/lib/bookings";
 import {
   recentComparisonDates,
@@ -1064,12 +1065,14 @@ export async function getDailyPosTodayFinancialData(input: {
     readContext: input.readContext,
     timeZone: input.timeZone,
   });
-  const comparisonRead = buildSalesComparison({
+  // Optional history must settle before Today's 1.8-second financial deadline.
+  // A slow comparison cannot discard the selected day's authoritative amounts.
+  const comparisonRead = withDashboardDeadline(buildSalesComparison({
     auth,
     reportDate: input.reportDate,
     selectedTotal: () => coreRead.then(core=>core.totals.expectedTotal),
     timeZone: input.timeZone,
-  }).catch((error) => {
+  }), 1500).catch((error) => {
     console.error("Today sales comparison unavailable", {
       salonId: auth.salon.id,
       error,

@@ -1,3 +1,4 @@
+import { appointmentSummary } from "@/lib/appointment-state";
 import {withDashboardDeadline} from "@/lib/dashboard-deadline";
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
@@ -240,6 +241,8 @@ export type TodayPerformance = {
     cancelled?: number;
     other?: number;
     statisticsUpcoming?: number;
+    overdue?: number;
+    arrived?: number;
   };
   emptyLabel: string | null;
   salesTrend: TodayPerformancePoint[];
@@ -922,53 +925,12 @@ function buildTeam(input: {
   );
 }
 
-function summarizeBookings(
-  bookings: TodayBookingRow[],
-  nowIso: string,
-  isCurrentDate: boolean,
-) {
-  let active = 0;
-  let completed = 0;
-  let inService = 0;
-  let pending = 0;
-  let upcoming = 0;
-
-  for (const booking of bookings) {
-    const status = normalizeBookingStatus(booking.status);
-
-    if (status === "completed") {
-      completed += 1;
-    }
-
-    if (status === "in_service") {
-      inService += 1;
-    }
-
-    if (status === "pending" || booking.confirmation_status === "requested") {
-      pending += 1;
-    }
-
-    if (isActiveBookingStatus(status)) {
-      active += 1;
-    }
-
-    if (!isCurrentDate && status !== "cancelled" && status !== "no_show") {
-      upcoming += 1;
-    } else if (
-      isCurrentDate &&
-      isActiveBookingStatus(status) &&
-      status !== "checked_in" &&
-      status !== "in_service" &&
-      booking.start_at >= nowIso
-    ) {
-      upcoming += 1;
-    }
-  }
-
-  const cancelled = bookings.filter(b => ["cancelled", "no_show"].includes(normalizeBookingStatus(b.status))).length;
-  const statisticsUpcoming = isCurrentDate ? upcoming : bookings.filter(b => ["pending", "confirmed"].includes(normalizeBookingStatus(b.status))).length;
-  const other = Math.max(0, bookings.length - completed - inService - statisticsUpcoming - cancelled);
-  return { active, completed, inService, pending, upcoming, statisticsUpcoming, cancelled, other, total: bookings.length };
+function summarizeBookings(bookings: TodayBookingRow[], nowIso: string, _isCurrentDate: boolean) {
+  void _isCurrentDate;
+  const states = appointmentSummary(bookings, Date.parse(nowIso));
+  const active = bookings.filter(booking => isActiveBookingStatus(normalizeBookingStatus(booking.status))).length;
+  const pending = bookings.filter(booking => normalizeBookingStatus(booking.status) === "pending" || booking.confirmation_status === "requested").length;
+  return {active, pending, ...states, statisticsUpcoming: states.upcoming, other: 0, total: bookings.length};
 }
 
 function buildHourlyMetricPoints(input: {
@@ -1176,14 +1138,14 @@ function buildCustomerMetric(input: {
 }) {
   if (input.canViewBookings && input.bookingSummary) {
     const appointmentCount =
-      input.bookingSummary.active + input.bookingSummary.completed;
+      input.bookingSummary.total;
 
     return {
       chart: input.bookingChart,
       detail:
         appointmentCount > 0
           ? input.isCurrentDate
-            ? `${input.bookingSummary.completed} completed / ${input.bookingSummary.upcoming} upcoming`
+            ? `${input.bookingSummary.completed} completed / ${input.bookingSummary.upcoming} upcoming / ${input.bookingSummary.overdue} needs action`
             : `${input.bookingSummary.completed} completed / ${input.bookingSummary.upcoming} scheduled`
           : "No appointments on this day",
       href: `/bookings?${new URLSearchParams({
@@ -1665,7 +1627,7 @@ export async function getTodayDashboard(
       : Promise.resolve({ data: null, error: null }),
     Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
     readExtras ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context)) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
-    !core && (readBookings || readFinancials) ? withDashboardDeadline(loadTodayStatistics(context, clock.date, clock.timezone, { visits: readBookings, tickets: readFinancials }), 1800).then(data => ({ data })).catch(() => ({ data: buildDayStatistics({ date: clock.date, timeZone: clock.timezone, now: new Date().toISOString(), visits: null, tickets: null, errors: [readFinancials ? "Service statistics could not be loaded." : "Check-ins could not be loaded."] }) })) : Promise.resolve({ data: null }),
+    !core && (readBookings || readFinancials) ? loadTodayStatistics(context, clock.date, clock.timezone, { visits: readBookings, tickets: readFinancials }).then(data => ({ data })).catch(() => ({ data: buildDayStatistics({ date: clock.date, timeZone: clock.timezone, now: new Date().toISOString(), visits: null, tickets: null, errors: [readFinancials ? "Service statistics could not be loaded." : "Check-ins could not be loaded."] }) })) : Promise.resolve({ data: null }),
   ]);
   if (readHours) {
     businessHoursResult = await businessHoursRead;

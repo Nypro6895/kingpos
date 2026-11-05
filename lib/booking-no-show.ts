@@ -9,7 +9,7 @@ export type NoShowHistoryItem = {
 };
 
 export function bookingStatusLabel(status: string, kind?: NoShowKind) {
-  if (status !== "no_show") return status.replaceAll("_", " ");
+  if (status !== "no_show") { const label = status.replaceAll("_", " "); return label.charAt(0).toUpperCase()+label.slice(1); }
   if (kind === "excused") return "No-show · With reason";
   if (kind === "unexcused") return "No-show";
   return "No-show · Unclassified";

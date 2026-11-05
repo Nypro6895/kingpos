@@ -156,6 +156,7 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
           {booking.cancellation_reason ? <p>Cancellation: {booking.cancellation_reason}</p> : null}
         </div>
       </details> : null}
+      {receipt && <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-orange" href={`/activity/receipts/${receipt.ticketId}`}>View receipt</Link>}
       {booking && receipt ? <details className="border-b border-border-subtle py-2 text-xs"><summary className="cursor-pointer py-2">Original booking · Est. {money(booking.lines?.reduce((sum,line) => sum+Number(line.line_total),0) ?? 0)}</summary><ul>{booking.lines?.map(line => <li className="flex justify-between py-1" key={line.id}><span>{line.service_name_snapshot}</span><span>{money(line.line_total)}</span></li>)}</ul></details> : null}
       <div className="grid gap-2 pt-3">
         {booking ? <HistoryLinkControl bookingId={booking.id} evidence={booking.historyEvidence} timezone={timezone} onChanged={()=>{setRetry(value=>value+1);onChanged?.();}}/> : null}

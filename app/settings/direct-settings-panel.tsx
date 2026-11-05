@@ -1,5 +1,5 @@
 "use client";
-import { BookingSetupGuide } from "./booking-setup-guide";
+import { BookingSetupGuide, type SetupPublication } from "./booking-setup-guide";
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
@@ -110,7 +110,11 @@ function Content({
   data,
   reload,
   view,
+  publication,
+  canManageSalonStatus,
 }: {
+  canManageSalonStatus?: boolean;
+  publication?: SetupPublication;
   view?: "hours" | "overview";
   data: DirectData;
   reload: () => Promise<void>;
@@ -119,7 +123,7 @@ function Content({
     case "salon-profile":
       return view === "hours" ? <SalonHoursPanel data={data} onSaved={reload}/> : <SalonDetailsPanel data={data} onSaved={reload}/>;
     case "public-profile":
-      return <>{data.canViewBooking?<DirectSettingsPanel kind="booking" salonId={data.salonId} view="overview"/>:null}<SalonDetailsPanel data={data} onSaved={reload}/></>;
+      return <>{data.canViewBooking?<DirectSettingsPanel kind="booking" salonId={data.salonId} view="overview" publication={data.canManageSalon?{readiness:data.readiness,enabled:data.setting.public_discovery_enabled,available:data.publicProfileAvailable,canManageStatus:canManageSalonStatus}:undefined}/>:null}<SalonDetailsPanel data={data} onSaved={reload}/></>;
     case "shortcuts":
       return <ShortcutsSettingsPanel salonId={data.salonId} configuration={data.configuration} onSaved={reload}/>;
     case "services":
@@ -133,7 +137,7 @@ function Content({
         />
       );
     case "booking":
-      return view === "overview" ? <BookingSetupGuide salonId={data.salonId} setup={data.setup} settings={data.settings}/> : <>{data.canViewSalonInformation?<DirectSettingsPanel kind="salon-profile" salonId={data.salonId} view="hours"/>:null}<BookingSettingsPanel data={data} onSaved={reload}/></>;
+      return view === "overview" ? <BookingSetupGuide salonId={data.salonId} setup={data.setup} settings={data.settings} publication={publication}/> : <>{data.canViewSalonInformation?<DirectSettingsPanel kind="salon-profile" salonId={data.salonId} view="hours"/>:null}<BookingSettingsPanel data={data} onSaved={reload}/></>;
     case "staff-team":
       return <TeamSettingsPanel data={data} onSaved={reload} />;
     case "payroll":
@@ -213,9 +217,9 @@ function Content({
       );
   }
 }
-type DirectPanelProps = { view?: "hours" | "overview"; kind: DirectSettingsKind; salonId?: string; onChanged?:()=>void|Promise<void> };
+type DirectPanelProps = { canManageSalonStatus?: boolean; publication?: SetupPublication; view?: "hours" | "overview"; kind: DirectSettingsKind; salonId?: string; onChanged?:()=>void|Promise<void> };
 
-function NativeDirectSettingsPanel({kind,salonId,onChanged,view}: DirectPanelProps & {salonId:string}) {
+function NativeDirectSettingsPanel({kind,salonId,onChanged,view,publication,canManageSalonStatus}: DirectPanelProps & {salonId:string}) {
   const scope = getAppLocalCommandScope();
   // Reuse the existing bounded, scoped memory cache. This resource remains
   // retention:none: no settings form is persisted to native/disk storage.
@@ -226,7 +230,7 @@ function NativeDirectSettingsPanel({kind,salonId,onChanged,view}: DirectPanelPro
   const data = scope && state.available && !state.accessDenied ? state.data : undefined;
   return <div className="settings-style"><div className="settings-direct-panel grid gap-4">
     {error && <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800"><p><WorkspaceText text={error}/></p><button type="button" className={`${buttonClass} mt-2`} onClick={() => void state.refresh()}><WorkspaceText text="Retry"/></button></div>}
-    {data && data.kind === kind && "salonId" in data && data.salonId === salonId ? <Content data={data} reload={reload} view={view}/> : !error && <SettingsLoading/>}
+    {data && data.kind === kind && "salonId" in data && data.salonId === salonId ? <Content data={data} reload={reload} view={view} publication={publication} canManageSalonStatus={canManageSalonStatus}/> : !error && <SettingsLoading/>}
   </div></div>;
 }
 
@@ -235,7 +239,7 @@ export function DirectSettingsPanel(props: DirectPanelProps) {
   return <LegacyDirectSettingsPanel {...props}/>;
 }
 
-function LegacyDirectSettingsPanel({ kind, salonId, onChanged, view }: DirectPanelProps) {
+function LegacyDirectSettingsPanel({ kind, salonId, onChanged, view, publication, canManageSalonStatus }: DirectPanelProps) {
   const gate = useExperienceScope(), scope = gate?.context.scope;
   const [data, setData] = useState<DirectData | null>(null),
     [error, setError] = useState(""),
@@ -296,7 +300,7 @@ function LegacyDirectSettingsPanel({ kind, salonId, onChanged, view }: DirectPan
       )}
       {data && data.kind === kind && (!salonId || ("salonId" in data && data.salonId === salonId)) ? (
         <>
-          <Content data={data} reload={reload} view={view} />
+          <Content data={data} reload={reload} view={view} publication={publication} canManageSalonStatus={canManageSalonStatus} />
         </>
       ) : (
         !error && (

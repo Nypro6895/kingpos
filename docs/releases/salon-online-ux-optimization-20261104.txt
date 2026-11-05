@@ -1,0 +1,49 @@
+Salon setup UX optimization — 2026-11-04 America/Chicago
+
+Refines the previously shipped salon-online-settings flow in existing Settings.
+No new onboarding page or duplicate editor. This revision is implementation-only;
+publication and a replacement iOS bundle are separate release states.
+
+Behavior
+- Go online shows five explicit steps, completion states and Continue setup.
+  The next action uses current missing requirements. Completion requires a
+  server-confirmed public profile plus booking configuration, not merely a flag.
+  At least one active, online-bookable staff member must be configured; other
+  active staff who opted out of online appointments are not treated as blockers.
+- Missing staff services/hours use reason-specific links. A salon-level booking
+  blocker links to Online booking, rather than the staff's hours or services.
+- Address and description links open the exact nested editor through deferred
+  parents. Back and successful save clear/restore the path without reopening it.
+- Staff identity edits do not generate an unrelated booking-setup notice. Only
+  a newly created active staff member opting into online appointments receives
+  the continuation notice. Existing per-staff readiness remains available.
+- One Accept online appointments switch enables the three existing booking
+  requirements. Turning it off hides online booking without disabling internal
+  booking. Unrelated saves preserve all eight existing access combinations.
+- Authoritative staff refreshes update inline booking controls while preserving
+  unsaved service selections. Saved writes remain distinct from refresh failure.
+- English/Vietnamese copy uses customer-facing actions. Existing access controls
+  remain authoritative; restricted actions ask the owner to complete them.
+
+Validation
+36 regression cases passed; 8 contextual translation/data-preservation cases
+passed; production Next build (including TypeScript) passed; scoped ESLint and
+git diff whitespace checks passed. New runtime coverage uses real profile,
+team, booking and availability editors with mocked server/network boundaries.
+It verifies actual deep-link targets, relevant save notices, access payloads,
+checklist continuation and layout at 320, 430 and 1280 pixels.
+Evidence: artifacts/salon-online-ux-optimization/.
+
+Limits
+No novice participant study, authenticated hosted acceptance, real salon write,
+physical iPhone acceptance, deployment or new TestFlight build in this revision.
+Configuration readiness does not guarantee a future appointment slot; preview
+booking remains an explicit final check. Old translation coverage gaps outside
+this change are not declared resolved. No migration or production data change.
+
+Distribution assessment
+Windows uses the existing online shell, so the scoped web publication supplies
+its updated interface. iOS contains bundled JS and therefore needs a native
+rebuild/upload after this patch is integrated with the latest release source.
+Baseline for this patch is the prior salon setup source/receipt on this branch;
+the live baseline must be recaptured before any future promotion.

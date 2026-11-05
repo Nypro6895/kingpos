@@ -51,7 +51,8 @@
       "updateBookingSettingsAction",
       "updateQuickSetupAssignmentAction",
       "updateQuickSetupServiceOnlineAction",
-      "updateQuickSetupStaffOnlineAction"
+      "updateQuickSetupStaffOnlineAction",
+      "readBookingMonthCounts"
     ],
     "app/booking-setup/actions.ts": [
       "cancelStaffTimeBlockAction",
@@ -502,7 +503,9 @@
       "setVisitExperienceStatusAction"
     ],
     "app/qr/actions.ts": [
-      "loadPersonalQr"
+      "loadPersonalQr",
+      "loadPersonalQrCatalog",
+      "checkinPersonalQr"
     ],
     "app/settings/staff-hours-booking-actions.ts": [
       "saveStaffHoursBooking"

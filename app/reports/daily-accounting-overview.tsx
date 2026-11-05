@@ -1,4 +1,5 @@
 "use client";
+import { closingDisplayDifference } from "@/lib/closing-display";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -25,14 +26,15 @@ export function DailyAccountingOverview({overview,report,query,updatedAt,onClosi
  useEffect(()=>{let frame:number|undefined;try{const saved=JSON.parse(sessionStorage.getItem(scopeKey)??"null");if(saved)frame=requestAnimationFrame(()=>{setLimit(saved.limit??30);window.scrollTo(0,saved.y??0);});}catch{}return()=>{if(frame!==undefined)cancelAnimationFrame(frame);};},[scopeKey]);
  function remember(){try{sessionStorage.setItem(scopeKey,JSON.stringify({y:window.scrollY,limit}));}catch{}}
  const collected=Math.round((Number(report.closingInputs.cashAmount)+Number(report.closingInputs.creditCardAmount)+Number(report.closingInputs.otherAmount))*100)/100;
- const diff=Math.round((collected-report.totals.expectedTotal)*100);
- const status=diff===0?t("Balanced"):diff<0?t("Short"):t("Over");
+ const diff=Math.round((closingDisplayDifference(report.lock.isPastDate, report.totals.expectedTotal,collected) ?? 0)*100);
+ const pendingClose = !report.lock.isPastDate;
+ const status=pendingClose?t("Pending close"):diff===0?t("Balanced"):diff<0?t("Short"):t("Over");
  const [profit,setProfit]=useState<{date:string;value:number|null}|null>(null);const [profitError,setProfitError]=useState(false);const [profitBusy,setProfitBusy]=useState(false);
  async function loadProfit(){if(profit?.date===date||profitBusy)return;setProfitBusy(true);setProfitError(false);try{const res=await fetch(`/api/reports/day-profit?${new URLSearchParams({date})}`,{cache:"no-store"});if(!res.ok)throw Error();const result=await res.json();if(result.date!==date)throw Error();setProfit({date,value:result.shopNetIncome});}catch{setProfitError(true);}finally{setProfitBusy(false);}}
  return <section className={styles.overview} aria-label={t("Daily report")}>
   <Link href={ticketListHref} prefetch={false} onClick={remember} className={styles.row}><span><WorkspaceText text="Expected"/><small className={styles.note}> · POS</small></span><strong>{money(report.totals.expectedTotal)}<span className={styles.arrow}>›</span></strong></Link>
   <a href={closingHref} onClick={e=>{e.preventDefault();onClosing();}} className={styles.row}><span><WorkspaceText text="Collected"/><small className={styles.note}> · Cash + Card + Other</small></span><strong>{money(collected)}<span className={styles.arrow}>›</span></strong></a>
-  <a href={closingHref} onClick={e=>{e.preventDefault();onClosing();}} className={`${styles.row} ${diff===0?styles.balanced:styles.balance}`}><span><WorkspaceText text="Balance"/></span><strong>{status}{diff!==0?` ${money(Math.abs(diff)/100)}`:""}<span className={styles.arrow}>›</span></strong></a>
+  <a href={closingHref} onClick={e=>{e.preventDefault();onClosing();}} className={`${styles.row} ${pendingClose?"":diff===0?styles.balanced:styles.balance}`}><span><WorkspaceText text="Balance"/></span><strong>{status}{!pendingClose&&diff!==0?` ${money(Math.abs(diff)/100)}`:""}<span className={styles.arrow}>›</span></strong></a>
   <details className={styles.profit} onToggle={e=>{if(e.currentTarget.open)void loadProfit();}}><summary><WorkspaceText text="Shop net income"/> · Payroll {profit?.date===date&&profit.value!==null?money(profit.value):""}</summary><p>{profitBusy?t("Loading…"):profitError?t("Could not load. Please try again."):profit?.date===date?(profit.value===null?t("Not available"):money(profit.value)):""} · <Link href={`/payroll?${new URLSearchParams({preset:"custom",start:date,end:date})}`} prefetch={false}>Payroll ›</Link></p></details>
   <div className={styles.heading}><h2><WorkspaceText text="Staff"/> & <WorkspaceText text="Turns"/></h2>{selected&&<Link href={reportHref("")} scroll={false}><WorkspaceText text="Clear filter"/> ×</Link>}</div>
   <table className={styles.table}><thead><tr><th><WorkspaceText text="Staff"/> / Check-in</th><th><WorkspaceText text="Turns"/></th><th><WorkspaceText text="POS amount"/></th></tr></thead><tbody>{overview.staff.map(s=><tr key={s.id} className={selected===s.id?styles.selected:undefined}><td><Link href={reportHref(s.id===selected?"":s.id)} scroll={false} prefetch={false}><strong>{s.sequence!==null?`${s.sequence}. `:""}{s.name}</strong><small>{s.checkedInAt?new Intl.DateTimeFormat("en-US",{hour:"numeric",minute:"2-digit",timeZone:overview.timeZone}).format(new Date(s.checkedInAt)):"—"}</small></Link></td><td>{s.turns}</td><td><Link href={reportHref(s.id===selected?"":s.id)} scroll={false} prefetch={false}>{money(s.posAmount)}<span className={styles.arrow}>›</span></Link></td></tr>)}</tbody><tfoot><tr><td><WorkspaceText text="Total"/></td><td>{overview.staff.reduce((n,s)=>n+s.turns,0)}</td><td>{money(overview.staff.reduce((n,s)=>n+s.posAmount,0))}</td></tr></tfoot></table>

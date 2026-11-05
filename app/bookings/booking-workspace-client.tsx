@@ -1,6 +1,9 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
 
+import { readBookingMonthCounts } from "./actions";
+import { StatusChip, statusLabel } from "@/components/status-chip";
+import { appointmentState } from "@/lib/appointment-state";
 import { ActionFeedback } from "@/components/action-feedback";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { getPublicAppOrigin } from "@/lib/public-app-url";
@@ -18,8 +21,6 @@ import { SettingsIcon as SharedSettingsIcon } from "@/components/settings-icon";
 import "./booking-workspace.css";
 import proposalStyles from "./appointment-progress.module.css";
 import { SchedulePicker } from "@/components/booking-ui/schedule-picker";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
-import { useOverlayPortalHost } from "@/components/overlay-dismissal";
 import { HistoryLinkControl } from "@/app/activity/history-link-control";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
@@ -79,6 +80,7 @@ import type { SaveServiceConfigsResult } from "@/types/service";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
+  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -2624,14 +2626,14 @@ function statusTone(status: string) {
 
 function StatusBadge({ status, kind }: { status: string; kind?: import("@/lib/booking-no-show").NoShowKind }) {
   return (
-    <span
+    <StatusChip status={status}
       className={classNames(
         styles.statusBadge,
         statusTone(status),
       )}
     >
-      <WorkspaceText text={status === "no_show" ? bookingStatusLabel(status, kind) : STATUS_LABELS[status] ?? status} />
-    </span>
+      <WorkspaceText text={status === "no_show" ? bookingStatusLabel(status, kind) : status === "overdue" ? "Overdue / needs action" : STATUS_LABELS[status] ?? status} />
+    </StatusChip>
   );
 }
 
@@ -2983,7 +2985,7 @@ function AppointmentCard({
                     {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>}
           </p>
         </div>
-        <StatusBadge status={booking.normalizedStatus} kind={booking.no_show_kind} />
+        <StatusBadge status={appointmentState(booking.normalizedStatus, booking.start_at)} kind={booking.no_show_kind} />
       </div>
       <div className="grid gap-1 text-sm text-zinc-600">
         <p className="line-clamp-2">
@@ -5042,7 +5044,7 @@ function DetailDrawer({
         <Message result={result} />
         <section className="grid gap-3">
           <div className="flex flex-wrap gap-2">
-            <StatusBadge status={booking.normalizedStatus} kind={booking.no_show_kind} />
+            <StatusBadge status={appointmentState(booking.normalizedStatus, booking.start_at)} kind={booking.no_show_kind} />
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
               <WorkspaceText text={sourceLabel(booking.source)} />
             </span>
@@ -5194,7 +5196,7 @@ function DetailDrawer({
               <p>
                 <span className="block text-zinc-500"><WorkspaceText text="Status" /></span>
                 <span className="font-semibold capitalize text-zinc-950">
-                  <WorkspaceText text={booking.posTicket.status} />
+                  <WorkspaceText text={statusLabel(booking.posTicket.status)} />
                 </span>
               </p>
               <p>
@@ -6000,7 +6002,7 @@ function RequestsPanel({
                   {request.customerName}
                 </p>
                 <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
-                  <WorkspaceText text={request.status} />
+                  <WorkspaceText text={statusLabel(request.status)} />
                 </span>
               </div>
               <p className="mt-1 text-sm text-zinc-600">
@@ -7201,6 +7203,14 @@ function OwnerAgendaRow({booking,timezone,canManage,onOpen}: {booking:BookingWor
   const [pending,startTransition]=useTransition();
   const [result,setResult]=useState<BookingActionResult|null>(null);
   const [confirmed,setConfirmed]=useState(false);
+  const [resolved,setResolved]=useState<string|null>(null);
+  const [noShowReason,setNoShowReason]=useState('');
+  const rowRouter=useRouter();
+  const rowNow=useBookingClock();
+  const overdue=!resolved && appointmentState(booking.normalizedStatus,booking.start_at,rowNow)==="overdue";
+  function resolve(command: "complete"|"mark_no_show") {
+    startTransition(async()=>{try{const response=await runBookingStatusAction({bookingId:booking.id,expectedUpdatedAt:booking.updated_at,command,reason:noShowReason});setResult(response);if(response.ok){setResolved(command==="complete"?"completed":"no_show");rowRouter.refresh();}}catch{setResult({ok:false,message:"Could not update. Please try again."});}});
+  }
   return <details className="owner-agenda-item" name="owner-appointment" data-busy={pending}>
     <summary className="owner-agenda-row">
       <time dateTime={booking.start_at}><WorkspaceText text={formatTime(booking.start_at,timezone)} /></time>
@@ -7208,7 +7218,7 @@ function OwnerAgendaRow({booking,timezone,canManage,onOpen}: {booking:BookingWor
         <span><WorkspaceText text={booking.serviceNames.join(" / ") || "No services"} /> · {booking.durationMinutes} <WorkspaceText text="min ·" /> {formatMoney(booking.subtotal)}</span>
         <small><WorkspaceText text={booking.assignedStaffNames.join(", ") || "Unassigned"} /></small>
       </span>
-      <StatusBadge status={confirmed ? "confirmed" : booking.normalizedStatus} kind={booking.no_show_kind}/><span className="owner-agenda-chevron"><DownChevronIcon/></span>
+      <StatusBadge status={resolved ?? appointmentState(confirmed ? "confirmed" : booking.normalizedStatus, booking.start_at,rowNow)} kind={booking.no_show_kind}/><span className="owner-agenda-chevron"><DownChevronIcon/></span>
     </summary>
     <div className="owner-agenda-expanded">
       <dl>
@@ -7222,6 +7232,7 @@ function OwnerAgendaRow({booking,timezone,canManage,onOpen}: {booking:BookingWor
       </dl>
       <CustomerInspirationSection booking={booking}/>
       <Message result={result}/>
+      {canManage && overdue && <div className="owner-overdue-actions"><p><WorkspaceText text="Overdue / needs action" /></p><button type="button" disabled={pending} className={styles.primaryButton} onClick={()=>resolve("complete")}><WorkspaceText text="Mark Completed" /></button><label><WorkspaceText text="No-show note (optional)" /><input value={noShowReason} onChange={event=>setNoShowReason(event.target.value)} /></label><button type="button" disabled={pending} className={styles.secondaryButton} onClick={()=>resolve("mark_no_show")}><WorkspaceText text="Mark No-show" /></button></div>}
       <div className="owner-agenda-actions">
         {canManage && !confirmed && booking.normalizedStatus === "pending" ? <button className={styles.primaryButton} disabled={pending} type="button" onClick={()=>startTransition(async()=>{
           try {const response=await runBookingStatusAction({bookingId:booking.id,expectedUpdatedAt:booking.updated_at,command:"confirm",reason:""});setResult(response);if(response.ok){setConfirmed(true);}}
@@ -7278,6 +7289,7 @@ export function BookingWorkspaceClient({
     return ()=>{document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',escape);};
   },[]);
   const today=todayInTimeZone(timezone), tomorrow=addDays(today,1);
+  const loadMonthCounts = useCallback((month: string) => readBookingMonthCounts(month), []);
   function goDay(date:string) {
     setTimeline(false);
     router.push(buildUrl(pathname,searchParams,{date,range:null,view:"day",tab:"calendar",bookingId:null}),{scroll:false});
@@ -7348,7 +7360,7 @@ export function BookingWorkspaceClient({
           <button type="button" aria-current={filters.tab==='calendar' && filters.date===today && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(today)}><CalendarIcon/><span><WorkspaceText text="Today" /></span></button>
           <button type="button" aria-current={filters.tab==='calendar' && filters.date===tomorrow && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(tomorrow)}><ChevronIcon direction="right"/><span><WorkspaceText text="Next day" /></span></button>
           <details data-dismissible-popover className="owner-schedule-menu"><summary><CalendarIcon/><span><WorkspaceText text="Calendar" /></span></summary><div className="owner-schedule-popover">
-            <SchedulePicker key={filters.date} date={filters.date} range={filters.dateRange} status={filters.status ?? ""} onChange={value => {
+            <SchedulePicker today={today} loadCounts={loadMonthCounts} key={filters.date} date={filters.date} range={filters.dateRange} status={filters.status ?? ""} onChange={value => {
               setTimeline(false);
               router.push(buildUrl(pathname, searchParams, { date:value.date, range:value.range === "day" ? null : value.range, status:value.status || null, view:"list", tab:"calendar", bookingId:null }), {scroll:false});
               navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);

@@ -27,6 +27,7 @@ async function NewCustomerPage({ searchParams }: NewCustomerPageProps) {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
+      <h1 className="mb-6 text-xl font-semibold"><WorkspaceText text="New Customer" /></h1>
       <CustomerForm action={createCustomer} error={error} mode="create" />
 
       <Link

@@ -207,8 +207,8 @@ export function parseCampaign(form: FormData): Campaign {
   return campaign;
 }
 
-export function forumCampaignAt(campaigns: Campaign[], postIndex: number) {
+export function forumCampaignAt(campaigns: Campaign[], postIndex: number, afterPost = false) {
   if (!Number.isInteger(postIndex) || postIndex < 1) return null;
-  const eligible=campaigns.filter(c=>c.kind==="placement" && c.placements?.includes("forum") && postIndex % (c.forumEvery ?? 6) === 0);
+  const eligible=campaigns.filter(c=>c.kind==="placement" && c.placements?.includes("forum") && (afterPost || ((c.forumEvery ?? 6) === 6 ? postIndex % 13 === 6 || postIndex % 13 === 0 : postIndex % (c.forumEvery ?? 6) === 0)));
   return eligible[Math.max(0,Math.floor(postIndex/(eligible[0]?.forumEvery ?? 6))-1)%Math.max(eligible.length,1)] ?? null;
 }

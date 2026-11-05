@@ -31,7 +31,7 @@ function PersonalPage(props:AppLocalPageProps){
 export function getAppLocalPersonalPage(path:string):AppLocalPage|null{
   if(path.startsWith("/")&&!path.startsWith("//")&&!/[\\\u0000-\u001f]/.test(path)&&path.length<=4096){
     const url=new URL(path,"https://reylumi.com");
-    if(url.pathname==="/rewards")return url.search||url.hash&&!rewardWalletSalonAnchor(url.hash)?null:{id:"personal.rewards",title:"My Rewards",requiresContext:true,Component:PersonalPage,features:["original-wallet","existing-scoped-post-transport","exact-salon-anchor"]};
+    if(url.pathname==="/rewards")return ([...url.searchParams].some(([key,value])=>key!=="from"||value!=="beauty"))||url.hash&&!rewardWalletSalonAnchor(url.hash)?null:{id:"personal.rewards",title:"My Rewards",requiresContext:true,Component:PersonalPage,features:["original-wallet","existing-scoped-post-transport","exact-salon-anchor"]};
   }
   const pathname=path.split("?")[0];if(pathname!=="/beauty"&&pathname!=="/beauty/library"&&pathname!=="/notifications")return null;
   return{id:pathname.startsWith("/beauty")?"personal.beauty":"personal.notifications",title:pathname.startsWith("/beauty")?"Beauty":"Notifications",requiresContext:true,Component:PersonalPage,features:["complete-original-view","scoped-retained-data","existing-guarded-actions"]};

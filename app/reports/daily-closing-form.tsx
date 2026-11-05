@@ -246,7 +246,7 @@ export function DailyClosingForm({
 
         <section className={styles.reconciliation}>
           <h2><WorkspaceText text="Reconciliation" /></h2>
-          <ClosingBalanceSummary values={values} expectedService={expectedTotal} expectedTip={expectedTip} />
+          <ClosingBalanceSummary isPastDate={lock.isPastDate} values={values} expectedService={expectedTotal} expectedTip={expectedTip} />
           {canEdit&&<DailyReconciliationHistory salonId={salonId} businessDate={reportDate} refreshKey={editor.status} timeZone={timeZone}/>}
         </section>
         {!canEdit&&<p className={styles.message}><WorkspaceText text="Only the Owner can edit Daily Report amounts."/></p>}

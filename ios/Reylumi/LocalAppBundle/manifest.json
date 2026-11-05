@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "9a8d9bbc9e02895bf5b6a14e3af29c0ae3c2dc9863e95a56af80eb4fd325b543",
+  "buildId": "8bfe0d483b681e4419ca9cb76a9aee5123b7a8773e7cfd56a9c81b2ce5cd604f",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,15 +17,69 @@
     },
     {
       "path": "app.css",
-      "bytes": 768373,
-      "sha256": "a55a8e906d44283e8ac900f4fe5002c18259cda84c6bfa3c6a31c6d8c0dbf280",
+      "bytes": 789175,
+      "sha256": "149d637950da34fc08e9cd975dd77e4f0d12d7a6c79bdf5820b965ead65e9bee",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 5271420,
-      "sha256": "565dc681e837cc62585a7b5ac33533fab6061b4b65c4ea1f0d9fefa4cd553593",
+      "bytes": 5552062,
+      "sha256": "00668d3877901ff1bea655618452bbee04254422b9c669706021520afdceebc2",
       "mime": "text/javascript"
+    },
+    {
+      "path": "brand/forum-logo.webp",
+      "bytes": 6786,
+      "sha256": "bfd9a6468bb347be7b6c2884aca44b410bcf6c586db028902521cee03d2a16fe",
+      "mime": "image/webp"
+    },
+    {
+      "path": "brand/forum/anna.svg",
+      "bytes": 494,
+      "sha256": "5768a7075033892ab8fad244ab92c74a2295eb97fa91825f2fbf7d7abc472b30",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/huy.svg",
+      "bytes": 494,
+      "sha256": "5768a7075033892ab8fad244ab92c74a2295eb97fa91825f2fbf7d7abc472b30",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/linh.svg",
+      "bytes": 494,
+      "sha256": "e6c700c6cce0cffce6baa70e62573425a1135bf9389c471a0a8ff24b1796c7b3",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/mai.svg",
+      "bytes": 494,
+      "sha256": "bae88ddb7e6655b1b4983e77679da0f3485213a5d02d23aedb41864113217d48",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/minh.svg",
+      "bytes": 494,
+      "sha256": "44e7c2b5b797c98f8ea231364757444ff456424c98e35726af8fec5677a847bd",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/nam.svg",
+      "bytes": 494,
+      "sha256": "4367854265e562b704152efd5facb11dfda0544e6232cd883500625ecf552077",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/thao.svg",
+      "bytes": 494,
+      "sha256": "a7277d358edfee6b0555e2003f4969e13cdc06398e7978ce1423c67b914fd2d0",
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "brand/forum/vy.svg",
+      "bytes": 494,
+      "sha256": "a7b474d92251a0b3903425a5af5bd7fed4869d0168de4a0a6fc20468261d12df",
+      "mime": "image/svg+xml"
     },
     {
       "path": "brand/reylumi-admin-favicon.svg",
@@ -2328,6 +2382,11 @@
       "access": "scoped"
     },
     {
+      "path": "/qr",
+      "adapter": "/qr",
+      "access": "scoped"
+    },
+    {
       "path": "/beauty",
       "adapter": "/beauty",
       "access": "scoped"
@@ -3029,6 +3088,13 @@
       "cacheable": false
     },
     {
+      "name": "page.personal-qr",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "customer.reviews",
       "path": "/api/app-local/read",
       "argumentKeys": [
@@ -3507,6 +3573,22 @@
       "cacheable": true
     },
     {
+      "name": "http.shell.forum-latest",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.shell.membership-badges",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "http.shell.session",
       "path": "/api/app-local/read",
       "argumentKeys": [],
@@ -3943,6 +4025,13 @@
     },
     {
       "name": "action.c8d2ed912253a2a9ca0a0122",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a33c9768178900dbcabd0580",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -4461,6 +4550,13 @@
     },
     {
       "name": "action.2e29abd92df58ad9b2be813b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0fe1d51b794e6a127d9faab9",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5538,14 +5634,21 @@
       ]
     },
     {
-      "name": "action.43868b737ff7fd87908af008",
+      "name": "action.2cbdc609b7907c66b94a83c1",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
       ]
     },
     {
-      "name": "action.e9bf91eb64c76739dbe11c91",
+      "name": "action.2c966e30cfb3a4a706a4bfa0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.43868b737ff7fd87908af008",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5860,7 +5963,7 @@
       ]
     },
     {
-      "name": "action.92acccabed6bdbf2212e62df",
+      "name": "action.16defd2dd216687f3b42beff",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -5874,7 +5977,35 @@
       ]
     },
     {
+      "name": "action.311ccbe0561c4cc6b151c54c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3f299028beda31c74a4bfbd9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.1e0add9927de2b0400796c32",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a1390de74e42dc7d8ddb5126",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dbc5382c479772dacee7b3dd",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -6096,10 +6227,10 @@
     ]
   },
   "coverage": {
-    "total": 147,
-    "bundled": 87,
-    "ordinaryEligible": 87,
-    "registeredPatterns": 99,
+    "total": 148,
+    "bundled": 88,
+    "ordinaryEligible": 88,
+    "registeredPatterns": 100,
     "missing": [],
     "online": [
       {
@@ -6109,6 +6240,10 @@
       {
         "path": "/account-recovery",
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/activity/receipts/:ticketId/experience",
+        "reason": "The existing one-shot visit feedback form is classified online-only and requires a fresh owned receipt plus the original server write authority. Keep its canonical HTTPS page rather than treating it as a retained local receipt renderer."
       },
       {
         "path": "/admin",
@@ -6301,10 +6436,6 @@
       {
         "path": "/ownership/invite/:token",
         "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
-      },
-      {
-        "path": "/qr",
-        "reason": "Existing signed-in personal QR wallet and entry/visit capabilities use their original permission-aware HTTPS page; no unreviewed local QR renderer or offline financial/customer capability is introduced."
       },
       {
         "path": "/reset-password",

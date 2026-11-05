@@ -354,7 +354,7 @@ function SavePostButtonInner({
     savePermission === "blocked"
       ? "Sign in to save post"
       : saved
-        ? "Remove from Saved Post"
+        ? "Remove from saved posts"
         : "Save post";
 
   return (

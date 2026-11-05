@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useExperienceScope } from "@/components/experience-scope";
 import { rewardTransport } from "@/lib/rewardlumi-client";
 import { rewardWalletCards, validateRewardWallet } from "@/lib/reward-wallet";
-import type { RewardTransport, RewardView } from "@/types/rewardlumi";
+import type { RewardTransport, RewardView, RewardUncreditedVisit } from "@/types/rewardlumi";
 
-type Snapshot = { key: string; cards: RewardView[] | null; error: string; loading: boolean; invalidated?: boolean };
+type Snapshot = { uncreditedVisits?: RewardUncreditedVisit[]; key: string; cards: RewardView[] | null; error: string; loading: boolean; invalidated?: boolean };
 const empty: Snapshot = { key: "", cards: null, error: "", loading: true };
 
 /** Private reads only. Refresh on return/reconnect, with no background polling. */
@@ -28,7 +28,7 @@ export function useRewardWallet({ viewerId, transport, enabled = true }: { viewe
       validateRewardWallet(reply.cards);
       if (!mounted.current || generation !== epoch.current || id !== request.current) return;
       lastRead.current = Date.now();
-      setSnapshot({ key, cards: rewardWalletCards(reply.cards), error: "", loading: false });
+      setSnapshot({ key, cards: rewardWalletCards(reply.cards), uncreditedVisits: reply.uncreditedVisits?.filter(item=>item && typeof item.salonId==="string" && typeof item.salonName==="string" && typeof item.reason==="string" && Number.isSafeInteger(item.visits) && item.visits>0), error: "", loading: false });
     } catch {
       if (mounted.current && generation === epoch.current && id === request.current) {
         setSnapshot(previous => ({ key, cards: previous.key === key ? previous.cards : null, error: "Your rewards could not be updated. Please try again.", loading: false }));
@@ -57,5 +57,5 @@ export function useRewardWallet({ viewerId, transport, enabled = true }: { viewe
     };
   }, [read, key]);
   const current = allowed && snapshot.key === key ? snapshot : empty;
-  return { cards: allowed ? current.cards : null, error: allowed ? current.error : "", loading: allowed && current.loading, invalidated: Boolean(current.invalidated), refresh: () => read(true), allowed };
+  return { uncreditedVisits: allowed ? current.uncreditedVisits ?? [] : [], cards: allowed ? current.cards : null, error: allowed ? current.error : "", loading: allowed && current.loading, invalidated: Boolean(current.invalidated), refresh: () => read(true), allowed };
 }

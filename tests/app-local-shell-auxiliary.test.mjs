@@ -22,7 +22,7 @@ const mocks = {
   './bounded-get': 'export const runReadWithDeadline=p=>p;',
   '@/lib/workspace-selection': 'export const selectWorkspaceContext=async()=>{throw Error("No command in read");};',
 };
-for (const p of ['@/app/(app)/api/auth/session/route','@/app/(app)/api/auth/logout/route','@/app/api/public-booking/context/route','@/app/api/explore/advertising/route','@/app/api/campaigns/delivery/route']) mocks[p]='export const GET=async()=>{throw Error("Unexpected HTTP forward");};export const POST=GET;';
+for (const p of ['@/app/api/forum/latest/route','@/app/(app)/api/auth/session/route','@/app/(app)/api/auth/logout/route','@/app/api/public-booking/context/route','@/app/api/explore/advertising/route','@/app/api/campaigns/delivery/route']) mocks[p]='export const GET=async()=>{throw Error("Unexpected HTTP forward");};export const POST=GET;';
 const built=await build({stdin:{contents:'export {readAppLocalShellResource} from "./lib/app-local-shell-server";',resolveDir:process.cwd(),loader:'ts'},bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'boundaries',setup(b){b.onResolve({filter:/.*/},({path})=>Object.hasOwn(mocks,path)?{path,namespace:'fixture'}:undefined);b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({contents:mocks[path],loader:'js'}));}}]});
 const api=await import('data:text/javascript;base64,'+Buffer.from(built.outputFiles[0].text).toString('base64'));
 function fixture(){return globalThis.__aux={headers:{},admissions:0,config:0,summary:0,notice:0,context:{scope:'scope-a',user:{id:'viewer'},workspaceType:'salon',salonMode:'staff',currentStaffSalon:{id:'salon'},currentWorkspace:{id:'staff:salon'}}};}

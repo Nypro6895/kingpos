@@ -12,7 +12,7 @@ import { useRewardWalletAnchor } from "./use-reward-wallet-anchor";
 import styles from "./reward-wallet.module.css";
 export { RewardOwnerSetup as RewardOwner } from "./reward-owner-setup";
 
-export function RewardWallet({ viewerId, transport, anchorPath }: { viewerId?: string; transport?: RewardTransport; anchorPath?: string }) {
+export function RewardWallet({ viewerId, transport, anchorPath, backHref = "/more" }: { viewerId?: string; transport?: RewardTransport; anchorPath?: string; backHref?: "/beauty" | "/more" }) {
   const root = useRef<HTMLElement>(null);
   const scope = useExperienceScope();
   const wallet = useRewardWallet({ viewerId, transport });
@@ -20,10 +20,12 @@ export function RewardWallet({ viewerId, transport, anchorPath }: { viewerId?: s
     identity: (scope?.context.scope ?? "personal") + ":" + (viewerId ?? scope?.context.viewerId ?? "session"),
     enabled: wallet.allowed && !wallet.invalidated, path: anchorPath });
   return <main ref={root} className={styles.page} data-reward-wallet>
+    <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-orange" href={backHref}>← {backHref === "/beauty" ? "Back to Beauty" : "Back to More"}</Link>
     <header className={styles.header}><div><span className={styles.eyebrow}>A little extra, just for you</span><h1>My Rewards</h1><p>Your points stay with the salon where you earned them.</p></div><Link className={styles.discover} href="/explore">Explore salons <span aria-hidden="true">↗</span></Link></header>
     {wallet.error && <div role="alert" className={styles.error}><p>{wallet.error}{wallet.cards ? " Showing your last update." : ""}</p>{!wallet.invalidated && <button type="button" disabled={wallet.loading} onClick={() => void wallet.refresh()}>Try again</button>}</div>}
     {wallet.loading && !wallet.cards && <div className={styles.loading} role="status">Loading your salon rewards…</div>}
-    {wallet.cards?.length === 0 && <section className={styles.empty}><span className={styles.emptyMark} aria-hidden="true">✦</span><h2>Your next visit can bring a little extra.</h2><p>Find a salon with rewards. Use your linked account when you visit to earn on qualifying activity.</p><Link href="/explore" className={styles.primary}>Discover salon rewards <span aria-hidden="true">→</span></Link><p className={styles.note}>Each salon has its own rewards and terms.</p></section>}
+    {wallet.cards?.length === 0 && !wallet.uncreditedVisits.length && <section className={styles.empty}><span className={styles.emptyMark} aria-hidden="true">✦</span><h2>Your next visit can bring a little extra.</h2><p>Find a salon with rewards. Use your linked account when you visit to earn on qualifying activity.</p><Link href="/explore" className={styles.primary}>Discover salon rewards <span aria-hidden="true">→</span></Link><p className={styles.note}>Each salon has its own rewards and terms.</p></section>}
+    {wallet.uncreditedVisits.map(item=><section key={item.salonId} className={styles.empty}><h2>{item.salonName}</h2><p>{item.visits} {item.visits===1?"visit":"visits"} linked to your account.</p><p>{item.reason}</p><Link href="/activity">Review visits</Link></section>)}
     <div className={styles.list}>{wallet.cards?.map(card => <SalonRewards key={card.salonId} card={card}/>)}</div>
     {Boolean(wallet.cards?.length) && <p className={styles.bottomNote}>Points are kept separately at each salon. Pending or held points are not included in your available balance.</p>}
   </main>;

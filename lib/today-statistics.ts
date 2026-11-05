@@ -60,7 +60,7 @@ export function buildDayStatistics(input: {
     const totals = calculateTicketTotals({ discountType: ticket.discount_type, discountValue: Number(ticket.discount_value), taxRate: Number(ticket.tax_rate), tipType: ticket.tip_type, tipValue: Number(ticket.tip_value), items: items.map(item => {
       const cents = item.turn_parts?.length ? item.turn_parts.reduce((sum, part) => sum + Math.round(Number(part.amount) * 100), 0) : Math.round(Number(item.line_total) * 100);
       serviceCents += cents;
-      const label = item.service_category_snapshot?.trim() || item.service?.category?.trim() || item.service_name_snapshot?.trim() || item.service?.name?.trim() || "Other services";
+      const label = item.service_name_snapshot?.trim() || item.service?.name?.trim() || "Other services";
       const row = mix.get(label) ?? { count: 0, cents: 0 };
       row.count += Number(item.quantity); row.cents += cents; mix.set(label, row);
       return { line_total: cents / 100 };
@@ -77,12 +77,7 @@ export function buildDayStatistics(input: {
 /** Shape-preserving cubic interpolation: smooth curves without invented negative values. */
 export function smoothLine(points: { x: number; y: number }[]) {
   if (!points.length) return "";
-  let path = `M${points[0].x},${points[0].y}`;
-  for (let i = 1; i < points.length; i++) {
-    const a = points[i-1], b = points[i], middle = (a.x + b.x) / 2;
-    path += ` C${middle},${a.y} ${middle},${b.y} ${b.x},${b.y}`;
-  }
-  return path;
+  return points.map((point, i) => `${i ? "L" : "M"}${point.x},${point.y}`).join(" ");
 }
 
 /** Keep independently fetched operations and money series isolated. */

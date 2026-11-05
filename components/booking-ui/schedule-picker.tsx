@@ -1,13 +1,15 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./schedule-picker.module.css";
 
 export type ScheduleSelection = { date: string; range: "day" | "next7" | "all"; status: string };
-export function SchedulePicker({ date, range, status, onChange }: ScheduleSelection & { onChange: (value: ScheduleSelection) => void }) {
+export function SchedulePicker({ date, range, status, onChange, today, loadCounts }: ScheduleSelection & { today?: string; loadCounts?: (month: string) => Promise<{counts?: Record<string,number>;error?:string}>; onChange: (value: ScheduleSelection) => void }) {
   const __vt = useWorkspaceTranslation();
 
   const [month, setMonth] = useState(date.slice(0, 7));
+  const [markers,setMarkers] = useState<{month:string;counts:Record<string,number>;error?:string}|null>(null);
+  useEffect(()=>{let active=true;if(loadCounts)void loadCounts(month).then(result=>{if(active)setMarkers({month,counts:result.counts??{},error:result.error});}).catch(()=>{if(active)setMarkers({month,counts:{},error:"Booking markers could not be loaded."});});return()=>{active=false;};},[month,loadCounts]);
   const [year, number] = month.split("-").map(Number);
   const first = new Date(Date.UTC(year, number - 1, 1));
   const count = new Date(Date.UTC(year, number, 0)).getUTCDate();
@@ -19,9 +21,10 @@ export function SchedulePicker({ date, range, status, onChange }: ScheduleSelect
       {Array.from({ length: first.getUTCDay() }, (_, i) => <span key={`blank${i}`} />)}
       {Array.from({ length: count }, (_, i) => {
         const value = `${month}-${String(i + 1).padStart(2, "0")}`;
-        return <button type="button" key={value} aria-label={__vt(value)} aria-pressed={date === value} onClick={() => onChange({ date: value, range: "day", status })}>{i + 1}</button>;
+        return <button type="button" key={value} aria-label={__vt(value)} aria-current={today === value ? "date" : undefined} aria-pressed={date === value} onClick={() => onChange({ date: value, range: "day", status })}>{i + 1}{markers?.month===month && markers.counts[value]>0 && <small className={styles.marker} aria-label={`${markers.counts[value]} bookings`}>{markers.counts[value]}</small>}</button>;
       })}
     </div>
+    {markers?.month===month && markers.error && <p role="status">{markers.error}</p>}
     <div className={styles.filters} aria-label={__vt("Date range")}>
       <button type="button" aria-pressed={range === "next7"} onClick={() => onChange({ date, range: "next7", status })}>1w</button>
       <button type="button" aria-label={__vt("All appointments in this month")} aria-pressed={range === "all"} onClick={() => onChange({ date: `${month}-01`, range: "all", status })}><WorkspaceText text="All" /></button>

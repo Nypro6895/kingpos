@@ -45,10 +45,10 @@ function textOf(tree) {
  * state/ref containers are synchronous here; effects, DOM and remote adapters
  * are inert. It does not claim browser/React scheduling or device acceptance.
  */
-export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch = 'queue', existingOperation = false } = {}) {
+export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch = 'queue', existingOperation = false, cartOverrides = {} } = {}) {
   const source = Object.fromEntries([ownerPath, draftsPath].map(path => [path, readFileSync(resolve(sourceRoot, path), 'utf8')]));
   const slots = { owner: hookSlots(source[ownerPath], 'OwnerPosWorkspace'), drafts: hookSlots(source[draftsPath], 'PortableDraftControls') };
-  const cartA = { id: 'fixture-cart-A', amount: '10', staffId: null, serviceId: null, customer: null, lines: [], tip: '', discount: '' };
+  const cartA = { id: 'fixture-cart-A', amount: '10', staffId: 'fixture-staff', serviceId: 'fixture-service', customer: null, lines: [], tip: '', discount: '', ...cartOverrides };
   const cartB = { ...cartA, id: 'fixture-cart-B', amount: '25' };
   const savedB = { id: 'fixture-saved-B', at: 1, label: 'Draft B', value: cartB };
   const scope = 'owner:fixture', cartKey = `kingpos:owner-cart:v1:${scope}`, savedKey = `kingpos:parked-tickets:v1:${scope}`;
@@ -114,7 +114,7 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
     return module.exports;
   }
   const owner = load(ownerPath, true), drafts = load(draftsPath);
-  const props = { scope, salonId: 'fixture-salon', salonName: 'Fixture salon', initial: { staff: [], services: [], defaults: { staffCheckInEnabled: false }, today: '2026-11-03' }, preferences };
+  const props = { scope, salonId: 'fixture-salon', salonName: 'Fixture salon', initial: { staff: [{id:"fixture-staff",display_name:"Staff",today_status:"working"}], services: [{id:"fixture-service",name:"Manicure"}], defaults: { staffCheckInEnabled: false }, today: '2026-11-03' }, preferences };
   function renderOwner() { beginRender('owner'); return owner.OwnerPosWorkspace(props); }
   function draftProps() { return elements(renderOwner()).find(node => typeof node.props?.restore === 'function' && node.props.scope === scope).props; }
   function renderDrafts() { const props = draftProps(); beginRender('drafts'); return drafts.PortableDraftControls(props); }

@@ -185,7 +185,7 @@ export function NotificationCenterClient({
           <button
             type="button"
             disabled={loading || marking}
-            className="min-h-9 text-xs font-semibold text-blue-700"
+            className="min-h-9 text-xs font-semibold text-brand-orange"
             onClick={() => {
               setMarking(true);
               void markAllCenterViewed()

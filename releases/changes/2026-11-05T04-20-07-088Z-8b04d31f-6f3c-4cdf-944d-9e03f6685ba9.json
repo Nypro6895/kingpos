@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "combined-deploy-20261105",
+  "status": "working",
+  "summary": "Owner-authorized combined web/native release from exact serving deployment; preserve separate Profile and Library.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "eee6dcdd96cb25d6f0e3c4ddcc86a7c5f1944ac8"
+  },
+  "dependencies": [
+    "ticket-toolbar-compact-20261103",
+    "today-forum-preview-20261103",
+    "settings-save-clearance-20261103",
+    "membership-salon-badge-20261104",
+    "booking-reward-pending-20261103",
+    "membership-salon-badge-everywhere-20261104",
+    "ipad-page-audit-fixes-20261104",
+    "testflight90-review-20261104",
+    "ipad-today-read-resilience-20261104",
+    "forum-tabs-supplies-20261104",
+    "salon-online-ux-optimization-20261104"
+  ],
+  "validation": [
+    {
+      "name": "Exact Vercel source baseline 4302 files",
+      "result": "passed",
+      "evidence": "artifacts/combined-deploy/baseline-verified.json"
+    }
+  ],
+  "id": "8b04d31f-6f3c-4cdf-944d-9e03f6685ba9",
+  "recordedAt": "2026-11-05T04:20:07.088Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-deploy-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

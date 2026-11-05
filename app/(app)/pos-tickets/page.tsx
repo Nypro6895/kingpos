@@ -12,7 +12,7 @@ import {
   getCurrentSalonPosTicketOptions,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
-import { getCurrentSalonStaff, STAFF_PERMISSIONS } from "@/lib/staff";
+
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import { getTodayDate } from "@/lib/staff-workdays";
@@ -178,7 +178,7 @@ function getTicketFilterHref({
 async function PosTicketsPage({
   searchParams,
 }: PosTicketsPageProps) {
-  const [{ date, error, q, staff: selectedStaffId }, context] = await Promise.all([
+  const [{ date, error, q }, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/pos-tickets"),
   ]);
@@ -222,10 +222,6 @@ async function PosTicketsPage({
     ? await getCurrentSalonPosTicketOptions(context)
     : { services: [], staff: [] };
 
-  const filterStaff = await hasPermission(STAFF_PERMISSIONS.view, context)
-    ? (await getCurrentSalonStaff()).staff
-    : ticketOptions.staff;
-
   return (
     <main className="mx-auto w-full max-w-7xl py-4 text-zinc-950 sm:px-6">
 
@@ -237,7 +233,7 @@ async function PosTicketsPage({
 
       {/* Server response time bounds client reconciliation of this snapshot. */}
       {/* eslint-disable-next-line react-hooks/purity */}
-      <OwnerLiveTickets selectedDate={selectedDate} snapshotAt={Date.now()} filterStaff={filterStaff} selectedStaffId={selectedStaffId ?? ""} key={selectedDate+searchQuery+(selectedStaffId ?? "")} salonId={context.currentSalon.id} initialTickets={tickets} bounds={getUtcBoundsForLocalDate(selectedDate,timeZone)} searchQuery={searchQuery}
+      <OwnerLiveTickets selectedDate={selectedDate} snapshotAt={Date.now()} key={selectedDate+searchQuery} salonId={context.currentSalon.id} initialTickets={tickets} bounds={getUtcBoundsForLocalDate(selectedDate,timeZone)} searchQuery={searchQuery}
         canApplyFinancialCorrection={canApplyFinancialCorrection}
         canEdit={canEditDailyTickets}
         isBusinessDateLocked={isSelectedDateLocked}
@@ -252,3 +248,5 @@ async function PosTicketsPage({
 }
 
 export default withExperiencePage(PosTicketsPage);
+
+

@@ -12,7 +12,7 @@ export function ForumLoadMore({ enabled, load, children }: { enabled: boolean; l
 }
 
 // Each page is bounded and keyset-paginated. Never read replies for feed cards.
-export function ContinuationFeed({ topicId, renderTopic }: { topicId: string; renderTopic: (topic: ForumTopic) => ReactNode }) {
+export function ContinuationFeed({ topicId, renderTopic, renderDiscovery }: { topicId: string; renderTopic: (topic: ForumTopic) => ReactNode; renderDiscovery?: (index: number) => ReactNode }) {
   const [rows, setRows] = useState<ForumTopic[]>([]);
   const [more, setMore] = useState(true);
   const [error, setError] = useState("");
@@ -42,9 +42,9 @@ export function ContinuationFeed({ topicId, renderTopic }: { topicId: string; re
     const observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) void load(); }, { rootMargin: "600px 0px" });
     observer.observe(sentinel.current); return () => observer.disconnect();
   }, [load, more, error, loading, rows.length]);
-  return <section className={s.continuation} aria-label="Bài viết tiếp theo"><div className={s.feedDivider}>Bài viết tiếp theo</div>
-    {rows.map((topic, index) => <Fragment key={topic.id}>{renderTopic(topic)}<ForumCampaignSlot postIndex={index + 1} /></Fragment>)}
+  return <><ForumCampaignSlot postIndex={1} afterPost/><section className={s.continuation} aria-label="Bài viết tiếp theo"><div className={s.feedDivider}>Bài viết tiếp theo</div>
+    {rows.map((topic, index) => <Fragment key={topic.id}>{renderTopic(topic)}<ForumCampaignSlot postIndex={index + 1} />{renderDiscovery?.(index+1)}</Fragment>)}
     {more && <div ref={sentinel} className={s.sentinel}><button type="button" disabled={loading} onClick={() => void load()}>{loading ? "Đang tải bài viết…" : error ? "Thử tải lại" : "Xem thêm bài viết"}</button></div>}
     {error && <p role="alert">{error}</p>}
-  </section>;
+  </section></>;
 }

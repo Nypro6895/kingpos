@@ -688,3 +688,5 @@
     width: 30px;
   }
 }
+
+.bookingSurface button:focus:not(:focus-visible){outline:none;box-shadow:none}.bookingSurface button:focus-visible{outline:2px solid var(--brand-orange,#f26f3d);outline-offset:2px}

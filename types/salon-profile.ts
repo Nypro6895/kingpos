@@ -421,6 +421,7 @@ export type SalonProfileViewerCapabilities = {
   currentUserId: string | null;
   isAuthenticated: boolean;
   isOwnSalon: boolean;
+  isStaffSalon?: boolean;
 };
 
 export type PublicSalonProfileBookingRequest = {

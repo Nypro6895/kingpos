@@ -174,6 +174,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   };
   const submit=async()=>{
     if(!cart||busyRef.current)return;
+    if(submitHint){setError(submitHint);return;}
     const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;
     const lines=line?[...cart.lines,line]:cart.lines;
     if(lines.some(l=>!parsePosAmountInput(l.amountInput).isValid||!Number.isFinite(l.total)||l.total<=0)){setError('Enter a valid amount for each service.');return;}
@@ -202,6 +203,11 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const total=Math.max(0,serviceSubtotal-Number(cart?.discount||0)-rewardDiscount)+(serviceSubtotal>0?Number(cart?.tip||0):0);
   const giftReduction=giftSession?.status==='open'&&giftSession.total===Math.round(total*100)?giftSession.amount/100:0;
   const giftPurchase=giftSession?.status==='open'?giftSession.purchase/100:0;
+  const pendingLines = [...(cart?.lines ?? []), ...(cart?.amount ? [{staffId:cart.staffId,serviceId:cart.serviceId,serviceLabel:cart.customServiceName ?? '',total:amountPreview(cart.amount)}] : [])];
+  const submitHint = !giftPurchase && total <= 0 ? 'Add a service amount greater than zero.'
+    : pendingLines.some(line => !line.staffId) ? 'Choose a staff member for each service.'
+    : pendingLines.some(line => !line.serviceId && (!line.serviceLabel.trim() || line.serviceLabel === 'Service')) ? 'Choose a service or enter a custom service name.'
+    : pendingLines.some(line => !Number.isFinite(line.total) || line.total <= 0) ? 'Enter a valid amount for each service.' : '';
   const benefitSummary=giftReduction>0||giftPurchase>0?<div data-owner-gift-summary style={{display:"block",width:"100%",minWidth:0}}>{giftPurchase>0&&<div style={{display:'flex',justifyContent:'space-between',gap:8,padding:'8px 0'}}><span>Gift card purchase</span><strong>+{money(giftPurchase)}</strong></div>}{giftReduction>0&&<div style={{display:'flex',justifyContent:'space-between',gap:8,padding:'8px 0'}}><span>Gift card</span><strong>−{money(giftReduction)}</strong></div>}<div className="owner-total"><span>Amount due</span><strong>{money(Math.max(0,total-giftReduction)+giftPurchase)}</strong></div></div>:null;
   const benefitReceipt={requestId:cart?.id,rewardQuote:rewardView?.request?.status==='confirmed'?rewardView.request.quote:null,customerId:cart?.customer?.id??null,customerName:cart?.customer?.name??null,discountType:'fixed_amount',discountValue:Number(cart?.discount||0),tipAmount:Number(cart?.tip||0),lines:[...(cart?.lines??[]).map(l=>({staffId:l.staffId,serviceId:l.serviceId,serviceLabel:l.serviceLabel,total:l.total,amountInput:l.amountInput,amountParts:l.amountParts})),...(cart?.amount&&amountPreview(cart.amount)>0?[{staffId:cart.staffId,serviceId:cart.serviceId,serviceLabel:reference.services.find(s=>s.id===cart.serviceId)?.name??'Service',total:amountPreview(cart.amount),amountInput:cart.amount,amountParts:parsePosAmountInput(cart.amount).parts}]:[])]};
   const staff = reference.staff.filter(s=>!ticketDefaults.staffCheckInEnabled||s.today_status==='working')
@@ -288,10 +294,12 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     {cart?<>
       <div className="owner-tools">
         <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={add}>+ Add</button>
+        <details data-dismissible-popover className="owner-tools-menu"><summary><WorkspaceText text="Ticket options" /></summary><div>
         <button className="owner-ios-control owner-customer-shortcut" disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button>
         <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} disabled={busy} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>!busyRef.current&&persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
         {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??<><span className="owner-desktop-label"><WorkspaceText text="Customer" /></span><span className="owner-ios-label"><WorkspaceText text="Customers" /></span></>}</button>:null}
         <button className="owner-customer-shortcut" onClick={()=>setPanel('benefits')}>{rewardView?.request?.status==='confirmed'?'✓ Reward confirmed':rewardView?.request&&rewardView.request.status!=='cancelled'?'Reward requested':rewardView?.available?`${rewardView.available} pts · Rewards / Gift card`:'Rewards / Gift card'}</button>
+        </div></details>
         <div className="owner-toolbar-sync"><PortableSyncIndicator scope={scope}/></div>
       </div>
       <div className="owner-workbench">
@@ -319,7 +327,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
           </div>
           <div className="owner-keypad">{['1','2','3','4','5','6','7','8','9','⌫','0','/'].map(n=><button key={n} data-key={n==='⌫'?'backspace':n} aria-label={__vt(n==='⌫'?'Backspace':n)} disabled={busy||(n==='/'&&inputTarget!=='amount')} onClick={()=>pressKey(n)}>{n==='⌫'?<OwnerPosIcon name="backspace"/>:n}</button>)}</div>
           <div className="owner-keypad-edit"><button disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button><button disabled={busy} onClick={()=>{replaceAmount.current=true;if(inputTarget==='amount')setAmount('');else update({[inputTarget]:''});}}><WorkspaceText text="Clear" /></button><button onClick={()=>setPanel('ticket')}><WorkspaceText text="Edit line" /></button></div>
-          <div className="owner-submit"><button className="owner-custom-service owner-ios-control" aria-label={__vt('Custom service')} aria-haspopup="dialog" disabled={busy} onClick={openCustomService}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></svg><WorkspaceText text="Services" /></button><button disabled={busy} aria-busy={busy} onClick={()=>void submit()}><ActionFeedback pending={busy} pendingLabel="Saving…"><WorkspaceText text="Submit" /></ActionFeedback></button></div>
+          <div className="owner-submit"><button className="owner-custom-service owner-ios-control" aria-label={__vt('Custom service')} aria-haspopup="dialog" disabled={busy} onClick={openCustomService}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></svg><WorkspaceText text="Custom service" /></button><button disabled={busy || Boolean(submitHint)} aria-describedby={submitHint ? "owner-submit-hint" : undefined} aria-busy={busy} onClick={()=>void submit()}><ActionFeedback pending={busy} pendingLabel="Saving…"><WorkspaceText text="Submit" /></ActionFeedback></button></div>{submitHint && <p id="owner-submit-hint" role="status" className="owner-submit-hint"><WorkspaceText text={submitHint}/></p>}
 
         </section>
       </div>

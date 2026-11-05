@@ -259,9 +259,9 @@ export function ExploreAdSlot({
     </aside>
   );
 }
-export function ForumCampaignSlot({ postIndex }: { postIndex: number }) {
+export function ForumCampaignSlot({ postIndex, afterPost = false }: { postIndex: number; afterPost?: boolean }) {
   const { campaigns }=useContext(Context);
-  const campaign=forumCampaignAt(campaigns,postIndex);
+  const campaign=forumCampaignAt(campaigns,postIndex,afterPost);
   return campaign ? <ExploreAdSlot position="forum" campaignId={campaign.id}/> : null;
 }
 

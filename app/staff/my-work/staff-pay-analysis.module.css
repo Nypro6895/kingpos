@@ -80,3 +80,5 @@
 .split { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding-inline: 14px; }
 .split > div + div { padding-left: 10px; }
 .split dd { font-size: clamp(16px, 4.4vw, 22px); overflow-wrap: anywhere; }
+
+.bar{position:relative;min-width:20px}.bar>span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%) rotate(-40deg);transform-origin:center;font-size:10px;white-space:nowrap;color:var(--text-secondary,#71717a)}.bars{padding-top:38px;overflow-x:auto}

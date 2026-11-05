@@ -281,7 +281,7 @@ export function QuickAccessPanel({
             <UtilityIcon name="quick" />
           </span>
           <h2 className="truncate text-base font-semibold text-zinc-950">
-            <WorkspaceText text="Quick Accesses" />
+            <WorkspaceText text="Quick access" />
           </h2>
         </div>
         {configuration.canCustomize && !editing ? (

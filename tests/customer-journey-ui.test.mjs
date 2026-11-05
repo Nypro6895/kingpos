@@ -39,13 +39,13 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
  const server=createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html)});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH??'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
  try{const page=await browser.newPage({viewport:{width:428,height:926}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.install({time:new Date('2026-10-29T20:00:00Z')});await page.goto('http://127.0.0.1:'+server.address().port);
-  await page.getByRole('heading',{name:'Appointments & visits'}).waitFor();
+  await page.getByRole('heading',{name:'Bookings'}).waitFor();
   assert.equal(await page.getByRole('link',{name:'View my QR',exact:true}).getAttribute('href'),'/qr?visit=00000000-0000-4000-8000-000000000090');
   assert.ok((await page.getByLabel('At salon').textContent()).includes('1:55 PM'),'arrival is server arrival, not2:30 appointment');
   await page.screenshot({path:path.join(out,'upcoming.png'),fullPage:true});
   assert.equal(await page.evaluate(()=>window.reads.length+window.writes.length),0);
   await page.getByRole('tab',{name:'History',exact:true}).click();assert.equal(await page.getByLabel('Salon history').getByRole('button').count(),4);
-  assert.equal(await page.getByText('Past appointment',{exact:true}).count(),1);assert.equal(await page.getByText('Visited',{exact:true}).count(),1);
+  assert.equal(await page.getByText('Overdue / needs action',{exact:true}).count(),1);assert.equal(await page.getByText('Visited',{exact:true}).count(),1);
   assert.equal(await page.getByText('$108.00',{exact:true}).count(),1);
   await page.getByRole('button',{name:'Filter appointments and visits'}).click();await page.getByRole('dialog',{name:'Filter history'}).waitFor();
   await page.getByLabel('Status',{exact:true}).selectOption('cancelled');await page.getByRole('button',{name:'Apply filters'}).click();assert.equal(await page.getByLabel('Salon history').getByRole('button').count(),1);

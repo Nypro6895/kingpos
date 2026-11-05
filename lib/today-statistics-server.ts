@@ -1,4 +1,5 @@
 import "server-only";
+import { withDashboardDeadline } from "./dashboard-deadline";
 import type { CurrentBusinessContext } from "./current-context";
 import { hasPermission } from "./permissions";
 import { createAuthenticatedSupabaseServerClient } from "./supabase/server";
@@ -8,9 +9,12 @@ import { buildDayStatistics, type StatisticsTicket } from "./today-statistics";
 export async function loadTodayStatistics(context: CurrentBusinessContext, date: string, timeZone: string, reads = { visits: true, tickets: true }) {
   const salonId = context.currentSalon?.id;
   if (!salonId || !context.user) throw new Error("Salon access is required.");
-  const [canViewVisits, ...financialPermissions] = await Promise.all(["booking.view", "reports.view", "tickets.view", "tickets.manage", "payroll.view", "payroll.manage"].map(p => hasPermission(p, context)));
+  const [permissions, supabase] = await withDashboardDeadline(Promise.all([
+    Promise.all(["booking.view", "reports.view", "tickets.view", "tickets.manage", "payroll.view", "payroll.manage"].map(p => hasPermission(p, context))),
+    createAuthenticatedSupabaseServerClient(),
+  ]), 1800);
+  const [canViewVisits, ...financialPermissions] = permissions;
   const canViewFinancials = financialPermissions.some(Boolean);
-  const supabase = await createAuthenticatedSupabaseServerClient();
   if (!supabase) throw new Error("Statistics could not be loaded.");
   const nextDate = new Date(Date.parse(`${date}T12:00:00Z`) + 86400000).toISOString().slice(0,10);
   const from = zonedDateTimeToUtcIso({ date, time: "00:00", timeZone });
@@ -43,6 +47,16 @@ export async function loadTodayStatistics(context: CurrentBusinessContext, date:
     if (error || !data || ["counterSales", "counterSalesCount", "redeemed", "redeemedCount"].some(key => !Number.isSafeInteger(data[key]) || data[key] < 0)) throw new Error("Gift card statistics could not be loaded.");
     return data as { counterSales: number; counterSalesCount: number; redeemed: number; redeemedCount: number };
   }
-  const [visitRows, ticketRows, giftRows] = await Promise.all([visits().catch(e => { errors.push(e.message); return null; }), tickets().catch(e => { errors.push(e.message); return null; }), giftFlow().catch(e => { errors.push(e.message); return null; })]);
+  // Bound each complete source independently. Never expose an incomplete page
+  // as a total, or erase known ticket data because gift cashflow was slower.
+  const settle = <T>(read: Promise<T>, message: string) => withDashboardDeadline(read, 1800).catch(() => {
+    errors.push(message);
+    return null;
+  });
+  const [visitRows, ticketRows, giftRows] = await Promise.all([
+    settle(visits(), "Check-ins could not be loaded."),
+    settle(tickets(), "Service statistics could not be loaded."),
+    settle(giftFlow(), "Gift card statistics could not be loaded."),
+  ]);
   return buildDayStatistics({ date, timeZone, now, visits: visitRows, tickets: ticketRows, giftFlow: giftRows, errors });
 }

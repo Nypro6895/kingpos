@@ -13,7 +13,7 @@
 .heading { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
 .heading::after { content: '⌄'; margin-left: auto; }
 .ticket[open] .heading::after { content: '⌃'; }
-.badge { color: #a64726; background: #fff2eb; border-radius: 12px; padding: 2px 8px; font-size: 11px; }
+.badge { color: #71717a; background: #f4f4f5; border-radius: 12px; padding: 2px 8px; font-size: 11px; }
 .preview { font-size: 12px; color: #63717c; margin: 4px 0; overflow-wrap: anywhere; }
 .detail { padding-bottom: 14px; }
 .services { width: 100%; border-collapse: collapse; table-layout: fixed; }

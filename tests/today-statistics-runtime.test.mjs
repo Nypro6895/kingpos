@@ -37,22 +37,23 @@ test("salon day and repeated DST hour use salon timezone, never browser timezone
  assert.equal(localHour("2026-11-01T07:30:00Z","America/Chicago").hour,1);
  const result=buildDayStatistics({...base,visits:[{id:"first",checked_in_at:"2026-11-01T06:30:00Z",status:"completed"},{id:"second",checked_in_at:"2026-11-01T07:30:00Z",status:"completed"}],tickets:[]});assert.equal(result.hours[1].checkIns,2);
 });
-test("historical day includes all 24 buckets and service categories prefer immutable snapshots",()=>{
- const result=buildDayStatistics({...base,now:"2026-11-02T22:00:00Z",visits:[],tickets:[ticket({ticket_items:[{quantity:1,line_total:10,service_category_snapshot:"Old category",service:{name:"Renamed",category:"New category"}}]})]});assert.equal(result.hours.length,24);assert.equal(result.services[0].label,"Old category");
+test("historical day includes all 24 buckets and service mix uses service names without mixing categories",()=>{
+ const result=buildDayStatistics({...base,now:"2026-11-02T22:00:00Z",visits:[],tickets:[ticket({ticket_items:[{quantity:1,line_total:10,service_name_snapshot:"Original service",service_category_snapshot:"Old category",service:{name:"Renamed",category:"New category"}}]})]});assert.equal(result.hours.length,24);assert.equal(result.services[0].label,"Original service");
 });
 test("single-point and empty line charts are defined without invented continuation",()=>{
  assert.equal(smoothLine([]),"");assert.equal(smoothLine([{x:4,y:8}]),"M4,8");assert(!smoothLine([{x:0,y:100},{x:30,y:0},{x:60,y:100}]).includes("NaN"));
 });
 
-function loadServer(permissions, { failVisits = false, rowCount = 1, failGifts = false } = {}) {
+function loadServer(permissions, { failVisits = false, rowCount = 1, failGifts = false, slowSource, slowFrom = 0, slowPreparation = false } = {}) {
  const queries=[];
- const supabase={async rpc(name,args){queries.push({table:"rpc",name,args,calls:[]});return {data:{counterSales:2500,counterSalesCount:1,redeemed:1000,redeemedCount:2},error:failGifts?{message:"unavailable"}:null}},from(table){const calls=[];const query=new Proxy({}, {get(_,key){
-  if(key==='then')return resolve=>{queries.push({table,calls});const range=calls.find(c=>c[0]==='range');const offset=range?.[1]??0;
+ const deadlineModule={exports:{}};vm.runInNewContext(ts.transpileModule(readFileSync('lib/dashboard-deadline.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:deadlineModule,exports:deadlineModule.exports,Promise,Error,setTimeout,clearTimeout});
+ const supabase={async rpc(name,args){queries.push({table:"rpc",name,args,calls:[]});if(slowSource==='rpc')return new Promise(()=>{});return {data:{counterSales:2500,counterSalesCount:1,redeemed:1000,redeemedCount:2},error:failGifts?{message:"unavailable"}:null}},from(table){const calls=[];const query=new Proxy({}, {get(_,key){
+  if(key==='then')return resolve=>{queries.push({table,calls});const range=calls.find(c=>c[0]==='range');const offset=range?.[1]??0;if(table===slowSource&&offset>=slowFrom)return new Promise(()=>{});
    const data=Array.from({length:Math.max(0,Math.min(500,rowCount-offset))},(_,i)=>table==='customer_visits'?{id:`v${offset+i}`,checked_in_at:'2026-10-31T16:00:00Z',status:'completed'}:ticket({id:`t${offset+i}`,closed_at:'2026-10-31T17:00:00Z'}));
    return resolve({data,error:table==='customer_visits'&&failVisits?{message:'unavailable'}:null});};
   return (...args)=>{calls.push([key,...args]);return query;};
  }});return query;}};
- const require=id=>id==='server-only'?{}:id==='./permissions'?{hasPermission:async p=>permissions.includes(p)}:id==='./supabase/server'?{createAuthenticatedSupabaseServerClient:async()=>supabase}:id==='./bookings'?{zonedDateTimeToUtcIso:({date})=>`${date}T05:00:00Z`}:id==='./today-statistics'?{buildDayStatistics}:(()=>{throw Error(id)})();
+ const require=id=>id==='server-only'?{}:id==='./dashboard-deadline'?deadlineModule.exports:id==='./permissions'?{hasPermission:async p=>permissions.includes(p)}:id==='./supabase/server'?{createAuthenticatedSupabaseServerClient:async()=>slowPreparation?new Promise(()=>{}):supabase}:id==='./bookings'?{zonedDateTimeToUtcIso:({date})=>`${date}T05:00:00Z`}:id==='./today-statistics'?{buildDayStatistics}:(()=>{throw Error(id)})();
  const source=ts.transpileModule(readFileSync('lib/today-statistics-server.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const module={exports:{}};vm.runInNewContext(source,{module,exports:module.exports,require,Date,Promise,Error});return{load:module.exports.loadTodayStatistics,queries};
 }
@@ -83,3 +84,11 @@ test("existing gift cashflow stays separate from services and uses cent units",a
  const server=loadServer(['reports.view']);const result=await server.load(context,'2026-10-31','America/Chicago');assert.equal(result.giftCardsSold.amount,25);assert.equal(result.giftCardsSold.count,1);assert.equal(result.giftCardsRedeemed.amount,10);assert.equal(result.services[0].sales,50);const rpc=server.queries.find(q=>q.table==='rpc');assert.equal(rpc.name,'gift_card_day_cashflow');assert.equal(rpc.args.p_salon,'salon-a');assert.equal(rpc.args.p_date,'2026-10-31');
  const failed=loadServer(['reports.view'],{failGifts:true});const missing=await failed.load(context,'2026-10-31','America/Chicago');assert.equal(missing.giftCardsSold,null);assert.equal(missing.closedTickets,1);assert(missing.errors.includes('Gift card statistics could not be loaded.'));
 });
+
+test('slow gift cashflow keeps complete visits and ticket statistics',async()=>{const server=loadServer(['booking.view','reports.view'],{slowSource:'rpc'});const result=await server.load(context,'2026-10-31','America/Chicago');assert.equal(result.checkIns,1);assert.equal(result.closedTickets,1);assert.equal(result.services[0].sales,50);assert.equal(result.giftCardsSold,null);assert(result.errors.includes('Gift card statistics could not be loaded.'));});
+
+test('timeout on a later visits page hides the incomplete total and preserves complete tickets',async()=>{const server=loadServer(['booking.view','tickets.view'],{rowCount:501,slowSource:'customer_visits',slowFrom:500});const result=await server.load(context,'2026-10-31','America/Chicago');assert.equal(result.checkIns,null);assert.equal(result.closedTickets,501);assert(result.errors.includes('Check-ins could not be loaded.'));assert.equal(server.queries.filter(q=>q.table==='customer_visits').length,2);});
+
+test('slow ticket source stays unavailable while complete visits and gift cashflow remain visible',async()=>{const server=loadServer(['booking.view','reports.view'],{slowSource:'pos_tickets'});const result=await server.load(context,'2026-10-31','America/Chicago');assert.equal(result.checkIns,1);assert.equal(result.closedTickets,null);assert.equal(result.services,null);assert.equal(result.giftCardsSold.amount,25);assert(result.errors.includes('Service statistics could not be loaded.'));});
+
+test('statistics preparation is bounded and never starts a query without its context',async()=>{const server=loadServer(['reports.view'],{slowPreparation:true});await assert.rejects(server.load(context,'2026-10-31','America/Chicago'),/retry/);assert.equal(server.queries.length,0);});

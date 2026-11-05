@@ -1,6 +1,7 @@
 "use client";
 import { BookingSetupGuide } from "./booking-setup-guide";
 import { discoverySetupAction } from "@/lib/salon-setup-navigation";
+import { getSalonOnlineBookingStatus, onlineBookingAccessForSave } from "@/lib/booking-status";
 import { useSearchParams } from "next/navigation";
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
@@ -160,7 +161,7 @@ export function SalonDetailsPanel({
           <Field name="email" label={__vt("Email")} type="email" value={s.email} />
         </div>
         <Field name="website" label={__vt("Website")} type="url" value={s.website} />
-        <SettingsChildPage title={<WorkspaceText text="Description"/>} ><label className="grid gap-1 text-sm">
+        <SettingsChildPage id="salon-description" title={<WorkspaceText text="Description"/>} ><label className="grid gap-1 text-sm">
           <WorkspaceText text="Description" />
           <textarea
             name="business_description"
@@ -170,7 +171,7 @@ export function SalonDetailsPanel({
           />
         </label></SettingsChildPage>
         </SettingsFieldGroup>
-        <SettingsChildPage title={<WorkspaceText text="Address"/>} ><SettingsFieldGroup title="Salon address">
+        <SettingsChildPage id="salon-address" title={<WorkspaceText text="Address"/>} ><SettingsFieldGroup title="Salon address">
         <Field name="address_line1" label={__vt("Address")} value={s.address_line1} />
         <Field
           name="address_line2"
@@ -228,14 +229,13 @@ export function BookingSettingsPanel({
 
 
       {data.canManage ? (
+        <SettingsChildPage id="booking-access" title={<WorkspaceText text="Online booking"/>}>
         <InlineForm
           className="settings-booking-form"
           label={__vt("Save booking rules")}
           save={(form) =>
             saveDirectBooking(data.salonId, {
-              bookingEnabled: checked(form, "booking_enabled"),
-              onlineBookingVisible: checked(form, "online_booking_visible"),
-              guestBookingEnabled: checked(form, "guest_booking_enabled"),
+              ...onlineBookingAccessForSave(s, checked(form, "accept_online_bookings")),
               sameDayBookingEnabled: checked(form, "same_day_booking_enabled"),
               autoAssignEnabled: checked(form, "auto_assign_enabled"),
               anyProfessionalEnabled: checked(form, "any_professional_enabled"),
@@ -277,7 +277,9 @@ export function BookingSettingsPanel({
           onSaved={onSaved}
         >
           <div className="settings-booking-columns"><div className="settings-booking-access"><h3><WorkspaceText text="Booking access" /></h3>
-          {bookingChecks.slice(0,4).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
+          <Check name="accept_online_bookings" label={__vt("Accept online appointments")} checked={getSalonOnlineBookingStatus(s).onlineBookingOpen}/>
+          <p className="text-sm text-zinc-600"><WorkspaceText text="Customers can choose a service, a staff member and an available time, then book without an app account. Turn this on and save when you are ready."/></p>
+          <Check name="same_day_booking_enabled" label={__vt("Allow same-day booking")} checked={s.same_day_booking_enabled}/>
           <SettingsDetails><summary><WorkspaceText text="Staff assignment" /></summary>{bookingChecks.slice(4,7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}</SettingsDetails>
           <SettingsDetails><summary><WorkspaceText text="Confirmations & reminders" /></summary>{bookingChecks.slice(7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
           <Select name="confirmation_mode" label={__vt("Confirmation")} value={s.confirmation_mode} options={[["request_confirmation","Salon approval required"],["instant_booking","Instant booking"]]}/></SettingsDetails>
@@ -291,6 +293,7 @@ export function BookingSettingsPanel({
             <Select name="ticket_creation_mode" label={__vt("Create POS ticket")} value={s.ticket_creation_mode} options={[["manual","Manually"],["on_check_in","On check-in"],["on_service_start","On service start"]]}/>
           </div></div></div>
         </InlineForm>
+        </SettingsChildPage>
       ) : (
         <p className="text-sm text-zinc-500">
           <WorkspaceText text="Booking rules are read-only for your role." />

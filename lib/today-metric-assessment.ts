@@ -81,8 +81,6 @@ export function sameTimeSalesComparison(input: {
     status: flat ? "flat" : "available",
     direction: flat ? "flat" : delta > 0 ? "up" : "down",
     percent: Math.round(Math.abs((delta / average) * 100)),
-    label: flat
-      ? `Near ${period} (${money.format(average)}, within $100)`
-      : `${money.format(Math.abs(delta))} ${delta > 0 ? "above" : "below"} ${period} (${money.format(average)})`,
+    label: `${delta > 0 ? "+" : delta < 0 ? "−" : ""}${money.format(Math.abs(delta))} vs ${period} (${money.format(average)})`,
   };
 }

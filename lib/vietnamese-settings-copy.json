@@ -144,5 +144,20 @@
   "Add ZIP code": "Thêm mã ZIP",
   "Add a salon description": "Thêm giới thiệu về salon",
   "Review salon status": "Kiểm tra trạng thái salon",
-  "Opening hours show customers when the salon is open. Set each staff member’s booking hours in Hours & booking.": "Giờ mở cửa cho khách biết khi nào salon hoạt động. Thiết lập giờ nhận khách của từng thợ trong Giờ mở cửa & đặt lịch."
+  "Opening hours show customers when the salon is open. Set each staff member’s booking hours in Hours & booking.": "Giờ mở cửa cho khách biết khi nào salon hoạt động. Thiết lập giờ nhận khách của từng thợ trong Giờ mở cửa & đặt lịch.",
+  "Your salon setup": "Thiết lập salon của bạn",
+  "Completed steps": "Số bước đã xong",
+  "Needs attention": "Cần hoàn tất",
+  "Continue setup": "Làm tiếp",
+  "Review setup": "Xem các bước thiết lập",
+  "Step": "Bước",
+  "Accept online appointments": "Nhận lịch hẹn online",
+  "Customers can choose a service, a staff member and an available time, then book without an app account. Turn this on and save when you are ready.": "Khách có thể chọn dịch vụ, thợ và giờ còn trống để đặt lịch mà không cần tài khoản app. Khi sẵn sàng nhận lịch, hãy bật mục này rồi lưu.",
+  "If online booking is on, save this person first, then choose their services and booking hours.": "Nếu muốn thợ này nhận lịch online, hãy lưu trước, sau đó chọn dịch vụ và giờ nhận khách.",
+  "Staff saved. Choose their services and booking hours to start accepting online appointments.": "Đã lưu thợ. Chọn dịch vụ và giờ nhận khách để bắt đầu nhận lịch online.",
+  "Choose someone to accept online appointments": "Chọn thợ nhận lịch hẹn online",
+  "Ask the salon owner to add an online service.": "Nhờ chủ salon thêm dịch vụ cho khách đặt lịch online.",
+  "Ask the salon owner to choose who accepts online appointments.": "Nhờ chủ salon chọn thợ nhận lịch hẹn online.",
+  "Ask the salon owner to open online booking.": "Nhờ chủ salon bật nhận lịch hẹn online.",
+  "Your profile is public and booking is configured. Preview booking before sharing your link.": "Trang salon đã công khai và đã thiết lập nhận lịch. Hãy thử xem trang đặt lịch trước khi chia sẻ đường dẫn."
 }

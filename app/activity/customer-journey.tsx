@@ -5,6 +5,8 @@ import Link from "next/link";
 import { BookingRewardEstimate, findBookingReward } from "@/components/rewardlumi/booking-reward-pending";
 import { useRewardWallet } from "@/components/rewardlumi/use-reward-wallet";
 import type { PendingBookingReward } from "@/types/rewardlumi";
+import { StatusChip } from "@/components/status-chip";
+import { historyTicketTotals } from "@/lib/booking-history";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CustomerActivity, CustomerActivityData, CustomerBookingActivity, CustomerActivityReceipt } from "@/lib/customer-activity";
 import type { CustomerBookingDetail } from "@/lib/customer-bookings";
@@ -34,7 +36,7 @@ function status(item: CustomerActivity) {
   if (item.visitState==="in_service")return "In service";
   if (item.visitState==="completed")return "Visit recorded";
   if (item.status === "upcoming") {const label=item.type === "booking" && item.bookingStatus ? bookingStatusLabel(item.bookingStatus, item.noShowKind) : "Upcoming";return label.charAt(0).toUpperCase()+label.slice(1);}
-  return ({ checked_in: "Checked in · Waiting", in_service: "In service", cancelled: "Cancelled", past_appointment: "Past appointment", completed: "Visited" } as Record<string,string>)[item.status] ?? item.status;
+  return ({ checked_in: "Checked in · Waiting", in_service: "In service", cancelled: "Cancelled", past_appointment: "Overdue / needs action", completed: "Visited" } as Record<string,string>)[item.status] ?? item.status;
 }
 function tone(item: CustomerActivity) { return item.status === "completed" || item.status === "checked_in" || item.status === "in_service" || item.status === "upcoming" && (item.type !== "booking" || item.bookingStatus !== "pending") ? "teal" : item.status === "no_show" || item.type === "booking" && item.bookingStatus === "pending" ? "amber" : "neutral"; }
 function kind(item: CustomerActivity) {
@@ -43,6 +45,7 @@ function kind(item: CustomerActivity) {
 }
 function amount(item: CustomerActivity) {
   if (item.type === "visit" || ["cancelled", "no_show"].includes(item.status)) return "";
+  if (item.type === "booking" && item.historyEvidence?.ticket) return new Intl.NumberFormat("en-US", {style:"currency",currency:item.currency}).format(historyTicketTotals(item.historyEvidence.ticket).total);
   return `${item.type === "booking" ? "Est. " : ""}${new Intl.NumberFormat("en-US", { style:"currency",currency:item.currency }).format(item.total)}`;
 }
 function JourneyRow({ item, onOpen, now, reward }: { item: CustomerActivity; onOpen: (item: CustomerActivity) => void; now: number | null; reward?: PendingBookingReward }) {
@@ -57,7 +60,7 @@ function JourneyRow({ item, onOpen, now, reward }: { item: CustomerActivity; onO
     <span className={styles.date}><span className={styles.dateBadge}><small>{format(item,{month:"short"})}</small><strong>{format(item,{day:"numeric"})}</strong></span><span className={styles.time}>{format(item,{hour:"numeric",minute:"2-digit"})}</span></span>
     <span className={styles.body}><strong><SalonName name={item.salon.name} salonId={item.salon.id}/></strong><span className={styles.kind}>{kind(item)}</span><span className={styles.services}>{item.services.map(service=>service.name).join(" · ") || item.title}</span><BookingRewardEstimate compact reward={reward}/></span>
     <span className={styles.end}><strong className={styles.amount}>{amount(item)}</strong><span className={styles.chevron} aria-hidden>›</span></span>
-    <div className={styles.utility}><span className={styles.badge} data-tone={tone(item)}>{label}</span>{feedbackHref ? <Link prefetch={false} className={feedbackStyles.link} href={feedbackHref}>{visit?.experienceState ? "View experience" : "Share experience"}</Link> : null}</div>
+    <div className={styles.utility}><StatusChip className={styles.badge} status={item.status} tone={tone(item)} label={label}/>{feedbackHref ? <Link prefetch={false} className={feedbackStyles.link} href={feedbackHref}>{visit?.experienceState ? "View experience" : "Share experience"}</Link> : null}</div>
   </div>{checkin?<section className={styles.appointmentCheckin} aria-label={`Check in for ${item.salon.name}`}><p>At the salon? Scan the salon QR, or show your QR to staff.</p><div className={styles.actions}><Link prefetch={false} href="/qr?scan=1" className={`${styles.button} ${styles.primary}`}>Check in</Link><Link prefetch={false} href="/qr" className={styles.button}>My QR</Link></div></section>:null}</article>;
 }
 
@@ -123,7 +126,7 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
   const open=(item:CustomerActivity)=>{setDeepId(undefined);setSelected(item);};
   async function refresh(){if(!onRefresh||refreshBusy.current)return;refreshBusy.current=true;setLocalRefreshError("");try{await Promise.all([onRefresh(), rewardWallet.refresh()]);}catch{setLocalRefreshError("Could not refresh. Showing the last loaded records.");}finally{refreshBusy.current=false;}}
   return <main className={styles.page}><div className={styles.inner}>
-    <div className={styles.heading}><h1>Appointments &amp; visits</h1><button className={styles.iconButton} type="button" aria-label="More options for appointments and visits" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}>•••</button></div>
+    <div className={styles.heading}><h1>Bookings</h1><button className={styles.iconButton} type="button" aria-label="More options for appointments and visits" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}>•••</button></div>
     {menu?<div className={styles.menu}>{onRefresh?<button type="button" disabled={refreshing} onClick={()=>{setMenu(false);void refresh();}}>Refresh</button>:null}<button type="button" onClick={()=>{setProfiles(v=>!v);setMenu(false);}}>Manage my customer profiles</button><Link prefetch={false} className={styles.menuLink} href="/support?from=/my-bookings">Report a problem</Link></div>:null}
     {profiles?<MyCustomerProfiles/>:null}
     {message?<p role="status" className={styles.muted}>{message}</p>:null}{error||localRefreshError?<p role="alert">{error||localRefreshError}</p>:null}{refreshing?<p role="status" className={styles.muted}>Updating records…</p>:null}
@@ -146,5 +149,5 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
 }
 
 export function CustomerJourneyLoading({failed,onRetry}:{failed?:string;onRetry?:()=>void}) {
-  return <main className={styles.page}><div className={styles.inner}><div className={styles.heading}><h1>Appointments &amp; visits</h1></div>{failed?<div className={styles.empty} role="alert"><h2>Appointments couldn’t be loaded</h2><p>{failed}</p>{onRetry?<button type="button" className={`${styles.button} ${styles.primary}`} onClick={onRetry}>Try again</button>:null}</div>:<div className={styles.loading} role="status" aria-label="Loading appointments and visits">{[0,1,2].map(n=><div className={styles.skeleton} key={n}/>)}</div>}</div></main>;
+  return <main className={styles.page}><div className={styles.inner}><div className={styles.heading}><h1>Bookings</h1></div>{failed?<div className={styles.empty} role="alert"><h2>Appointments couldn’t be loaded</h2><p>{failed}</p>{onRetry?<button type="button" className={`${styles.button} ${styles.primary}`} onClick={onRetry}>Try again</button>:null}</div>:<div className={styles.loading} role="status" aria-label="Loading appointments and visits">{[0,1,2].map(n=><div className={styles.skeleton} key={n}/>)}</div>}</div></main>;
 }

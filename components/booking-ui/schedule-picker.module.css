@@ -9,3 +9,5 @@
 .filters button { padding:0 9px; font-size:12px; }
 .filters span { font-size:11px; color:var(--text-secondary); margin-left:auto; }
 .picker button:focus-visible { outline:2px solid #f66e38; outline-offset:1px; }
+
+.days button{position:relative;display:grid;justify-items:center;padding:3px}.days button[aria-current=date]{outline:1px solid var(--booking-orange,#f66e38);outline-offset:-2px;font-weight:700}.marker{font-size:9px;line-height:1;border-radius:8px;background:var(--brand-teal,#008f8a);color:white;padding:2px 4px}

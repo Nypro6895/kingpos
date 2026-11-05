@@ -83,7 +83,7 @@ export function TeamSettingsPanel({
                 }
               : common,
           );
-          if(result.ok)setSavedStaffId(result.staffId);
+          if(result.ok)setSavedStaffId(!staff && common.is_active && common.online_booking_enabled ? result.staffId : "");
           return result;
         }}
       >
@@ -121,7 +121,7 @@ export function TeamSettingsPanel({
           checked={staff?.pos_enabled ?? true}
         />
         {!staff?<Check name="online_booking_enabled" label={__vt("Allow online booking")} checked/>:null}
-        <p className="text-sm text-zinc-600"><WorkspaceText text="After saving, choose this staff member’s services and booking hours so customers can make appointments."/></p>
+        {!staff?<p className="text-sm text-zinc-600"><WorkspaceText text="If online booking is on, save this person first, then choose their services and booking hours."/></p>:null}
         {staff && (
           <>
             
@@ -138,7 +138,7 @@ export function TeamSettingsPanel({
   }
   return (
     <div className="grid gap-4">
-      {savedStaffId?<aside className="salon-setup-guide settings-page-persistent" role="status"><p><WorkspaceText text="Staff saved. Review their services and booking hours to finish online booking setup."/></p><a href={salonSetupHref(data.salonId,"staff-team",`staff-${savedStaffId}`)}><WorkspaceText text="Continue setting up this staff member"/> →</a></aside>:null}
+      {savedStaffId && !data.staff.some(s=>s.id===savedStaffId && (!s.is_active || !s.online_booking_enabled || data.setup.readinessByStaffId[s.id]?.ready))?<aside className="salon-setup-guide settings-page-persistent" role="status"><p><WorkspaceText text="Staff saved. Choose their services and booking hours to start accepting online appointments."/></p><a href={salonSetupHref(data.salonId,"staff-team",`staff-${savedStaffId}`)}><WorkspaceText text="Continue setting up this staff member"/> →</a></aside>:null}
       {data.canManage && (
         <>
           <SettingsEditSection title="Add staff" key={addRevision}>{editor()}</SettingsEditSection>

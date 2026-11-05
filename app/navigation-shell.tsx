@@ -163,9 +163,12 @@ function isRoleMoreActive(
   pathname: string,
   searchParams: SearchParamsReader,
 ) {
+  if (pathname === "/rewards" && searchParams.get("from") === "beauty") return false;
   if (isCustomerMoreRoute(pathname)) {
     return true;
   }
+
+  if (roleKind === "staff" && pathname.startsWith("/staff/my-work")) return false;
 
   if (roleKind === "owner") {
     if (pathname === "/staff/today") {
@@ -505,6 +508,8 @@ function isLinkActive(
   pathname: string,
   searchParams: SearchParamsReader,
 ) {
+  if (searchParams.get("from") === "library" && pathname.includes("/posts/")) return link.id === "beauty-library";
+  if (pathname === "/rewards" && searchParams.get("from") === "beauty") return link.id === "beauty";
   const [linkPath, linkQuery = ""] = link.href.split("?");
 
   if (linkPath === "/beauty") {
@@ -524,7 +529,7 @@ function isLinkActive(
 
   if (!linkQuery) {
     if (link.id === "staff-day" || link.id === "staff-today") {
-      return searchParams.get("tab") === null;
+      return true;
     }
 
     return true;
@@ -1771,7 +1776,7 @@ function NotificationDropdown({
                 <button
                   disabled={marking}
                   onClick={()=>{setMarking(true);void markAllCenterViewed().catch(e=>setError(e.message)).finally(()=>setMarking(false));}}
-                  className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                   type="button"
                 >
                   <WorkspaceText text="Mark all viewed" />

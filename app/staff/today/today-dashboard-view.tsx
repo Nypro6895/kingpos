@@ -248,29 +248,7 @@ function MiniMetricChart({ chart }: { chart: TodayMetricChart | null }) {
 
             return [x, y];
           });
-    const path =
-      coordinates.length <= 2
-        ? coordinates
-            .map(
-              ([x, y], index) =>
-                `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`,
-            )
-            .join(" ")
-        : `${coordinates
-            .map(([x, y], index) => {
-              if (index === 0) {
-                return `M${x.toFixed(1)} ${y.toFixed(1)}`;
-              }
-
-              const [previousX, previousY] = coordinates[index - 1];
-              const midX = (previousX + x) / 2;
-              const midY = (previousY + y) / 2;
-
-              return `Q${previousX.toFixed(1)} ${previousY.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
-            })
-            .join(
-              " ",
-            )} T${coordinates[coordinates.length - 1][0].toFixed(1)} ${coordinates[coordinates.length - 1][1].toFixed(1)}`;
+    const path = coordinates.map(([x,y],index) => `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
 
     return (
       <WorkspaceElement as="svg"
@@ -1311,8 +1289,11 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
           {isOwner && dashboard.salonId && <OwnerAttentionPanel key={dashboard.salonId} salonId={dashboard.salonId} />}
         </section>
 
+        <details className="today-extra"><summary><WorkspaceText text="Team & staff details" /></summary>
         {(progressive ? sectionPending(dashboard, "staff") : dashboard.pendingSections?.details) ? <PendingPanel title="Team" /> : <TeamPanel dashboard={teamDashboard} />}
+        </details><details className="today-extra"><summary><WorkspaceText text="Statistics & trends" /></summary>
         {(progressive ? financePending : dashboard.pendingSections?.details) ? <PendingPanel title="Statistics" /> : <TodayStatistics dashboard={dashboard} />}
+        </details>
 
         {(progressive ? sectionPending(dashboard, "extras") : dashboard.pendingSections?.details) ? <PendingPanel title="Quick access" /> : <QuickAccessPanel
           configuration={dashboard.quickAccesses}

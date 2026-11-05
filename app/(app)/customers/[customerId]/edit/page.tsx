@@ -39,6 +39,7 @@ async function EditCustomerPage({
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
+      <h1 className="mb-6 text-xl font-semibold"><WorkspaceText text="Edit" /> · {customer.name}</h1>
       <CustomerForm
         action={updateCustomer}
         customer={customer}

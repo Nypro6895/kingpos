@@ -13,7 +13,7 @@ const mock = {
   'react-dom': 'export const createPortal = content => content;',
   'next/link': 'export default function Link({href,children,prefetch,...props}) { const url = typeof href === "string" ? href : href.pathname + "?" + new URLSearchParams(href.query); return <a href={url} {...props}>{children}</a> }',
   'next/image': 'export default function Image({fill,priority,sizes,...props}) {return <img {...props} style={fill ? {position:"absolute",width:"100%",height:"100%",inset:0,objectFit:"cover"} : undefined}/>}',
-  'next/navigation': 'export function notFound(){throw Error("NOT_FOUND")} export function redirect(href){throw Error("REDIRECT:"+href)}',
+  'next/navigation': 'export const useSearchParams=()=>new URLSearchParams(globalThis.__beautyAudit.search??""); export function notFound(){throw Error("NOT_FOUND")} export function redirect(href){throw Error("REDIRECT:"+href)}',
   '@/components/experience-page': 'export const withExperiencePage = page => page;',
   '@/lib/beauty-relationship': 'export const getBeautyProfileRoutePage = async input => {globalThis.__beautyAudit.profileInput = input; return globalThis.__beautyAudit.page}; export const getPublicBeautyProfile = async () => globalThis.__beautyAudit.profileAccess ?? {ok:true,profile:globalThis.__beautyAudit.page?.profile};',
   '@/lib/explore-personal': 'export const getPublicExploreBeautyPost = async () => globalThis.__beautyAudit.item;',

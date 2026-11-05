@@ -587,7 +587,7 @@ function DayCanvas({
             ))
           ) : (
             <div className="staff-appointments-empty p-4 text-sm">
-              <WorkspaceText text="No assigned appointments for this day." />
+              <span aria-hidden="true" className="block text-2xl">▦</span><WorkspaceText text="No assigned appointments for this day." /><p className="mt-2 text-text-secondary"><WorkspaceText text="Choose another date or ask your salon owner to assign an appointment." /></p>
             </div>
           )}
         </div>
@@ -728,7 +728,7 @@ function ListView({
   if (data.appointments.length === 0) {
     return (
       <div className="staff-appointments-empty p-6 text-sm">
-        <WorkspaceText text="No assigned appointments in this range." />
+        <span aria-hidden="true" className="block text-2xl">▦</span><WorkspaceText text="No assigned appointments in this range." /><p className="mt-2 text-text-secondary"><WorkspaceText text="Try another date range or check your schedule with the salon owner." /></p>
       </div>
     );
   }

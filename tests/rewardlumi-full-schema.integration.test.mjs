@@ -13,17 +13,18 @@ test('Rewardlumi actual schema: salon scope, conversion, two-screen consent, set
  const rpc=(who,name,args)=>f.rpc(who,name,args),p=(who,op,args={})=>rpc(who,'reward_personal',{p_op:op,p_args:args}),pos=(op,args={})=>rpc(owner,'reward_pos',{p_salon:salon,p_op:op,p_args:args});
  const denied=(who,name,args)=>assert.ok(f.http(3000,'/rpc/'+name,'POST',args,who?.token).status>=400,name+' must reject');
  let cust=uuid(),visit=uuid(),staff=uuid(),service=uuid(),post=uuid(),profile=uuid(),booking=uuid();
+ f.sql(`update salon_settings set public_discovery_enabled=true,public_discovery_published_at=now() where salon_id='${salon}';update locations set city='Chicago',state='IL',latitude=41.88,longitude=-87.63 where id='${salon}';insert into services(id,salon_id,name,base_price) values('${service}','${salon}','Manicure',60);`);
  await t.test('owner defaults editable, malformed rules and cross-role writes rejected',()=>{
   denied(other,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:rule}});
-  assert.equal(rpc(owner,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:rule}}).program.enabled,true);
-  denied(owner,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:{...rule,spendCents:0}}});
+  assert.equal(rpc(owner,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:rule,expectedVersion:0}}).program.enabled,true);
+  denied(owner,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:{...rule,spendCents:0},expectedVersion:1}});
   denied(customer,'reward_balance',{p_salon:salon,p_user:customer.profileId});
   for(const table of ['reward_ledger','reward_requests','reward_conversions'])assert.ok(f.http(3000,'/'+table,'GET',undefined,customer.token).status>=400);
  });
  f.sql(`insert into customers(id,location_id,name,customer_user_id) values('${cust}','${salon}','Sophia Lee','${customer.profileId}');
  insert into customer_visits(id,salon_id,customer_id,origin_metadata) values('${visit}','${salon}','${cust}','{"token":"reward-display"}');
  insert into staff(id,salon_id,display_name) values('${staff}','${salon}','Fixture staff');
- insert into services(id,salon_id,name,base_price) values('${service}','${salon}','Manicure',60);
+
  insert into pos_live_drafts(salon_id,token,customer) values('${salon}','reward-display','{"id":"${cust}","name":"Sophia Lee"}');`);
  const receipt={customerId:cust,customerVisitId:visit,discountType:'fixed_amount',discountValue:0,tipAmount:0,liveDraftToken:'reward-display',lines:[{id:uuid(),staffId:staff,serviceId:service,serviceLabel:'Manicure',total:60,amountInput:'60',amountParts:[60]}]};
  await t.test('visit ownership and display binding; welcome once',()=>{
@@ -164,7 +165,7 @@ test('Rewardlumi actual schema: salon scope, conversion, two-screen consent, set
  await t.test('pausing earning preserves redemption; nearby is local-only and private admin is denied',()=>{
   const next=uuid();f.sql(`insert into customer_visits(id,salon_id,customer_id) values('${next}','${salon}','${cust}');insert into reward_ledger(salon_id,user_id,delta,reason,event_key) values('${salon}','${customer.profileId}',100,'Fixture seed','paused-seed');update locations set latitude=42.9,longitude=-87.9 where id='${salon}'`);
   const near=rpc(null,'reward_nearby',{p_lat:42.9,p_lon:-87.9});assert.ok(near.some(s=>s.id===salon));assert.deepEqual(rpc(null,'reward_nearby',{p_lat:10,p_lon:10}),[]);
-  rpc(owner,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:{...rule,enabled:false}}});
+  rpc(owner,'reward_owner',{p_salon:salon,p_op:'save',p_args:{program:{...rule,enabled:false},expectedVersion:1}});
   assert.equal(p(customer,'request',{visitId:next,offerId:'five-off'}).view.request.status,'requested');
   denied(customer,'reward_admin',{p_op:'load'});
  });

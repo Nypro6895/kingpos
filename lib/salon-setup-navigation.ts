@@ -12,7 +12,7 @@ export function staffSetupAction(code: string, salonId: string, staffId: string)
     case "no_working_hours": return { label: "Add booking hours for this staff member", href: salonSetupHref(salonId, "booking", "booking-hours", staffId) };
     case "staff_inactive": return { label: "Make this staff member active", href: salonSetupHref(salonId, "staff-team", `staff-${staffId}`) };
     case "online_booking_disabled": return { label: "Allow online bookings for this staff member", href: salonSetupHref(salonId, "booking", "booking-hours", staffId) };
-    case "booking_disabled": return { label: "Open online booking for the salon", href: salonSetupHref(salonId, "booking") };
+    case "booking_disabled": return { label: "Open online booking for the salon", href: salonSetupHref(salonId, "booking", "booking-access") };
     default: return null;
   }
 }
@@ -24,5 +24,8 @@ export function discoverySetupAction(id: string, salonId: string) {
     state:"Add state", "postal-code":"Add ZIP code", description:"Add a salon description",
     "active-service":"Add a service",
   };
-  return {label:labels[id]||"Review your public salon profile",href:salonSetupHref(salonId,id==="active-service"?"services":id==="salon-status"?"close-salon":"salon-profile",id==="salon-status"||id==="active-service"?"":"salon-information")};
+  const child = id === "description" ? "salon-information/salon-description"
+    : ["address", "city", "state", "postal-code"].includes(id) ? "salon-information/salon-address"
+    : "salon-information";
+  return {label:labels[id]||"Review your public salon profile",href:salonSetupHref(salonId,id==="active-service"?"services":id==="salon-status"?"close-salon":"salon-profile",id==="salon-status"||id==="active-service"?"":child)};
 }

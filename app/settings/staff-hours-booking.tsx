@@ -23,6 +23,16 @@ export function StaffHoursBooking({salonId, member, setup, canManageOnline, onSa
   const [message,setMessage]=useState("");
   const [error,setError]=useState(false);
   const dirty=JSON.stringify([...selected].sort())!==JSON.stringify([...baseline].sort());
+  const incoming=JSON.stringify([...initial].sort());
+  const [seenEnabled,setSeenEnabled]=useState(member.online_booking_enabled);
+  const [seenIncoming,setSeenIncoming]=useState(incoming);
+  if(!busy&&seenEnabled!==member.online_booking_enabled){setSeenEnabled(member.online_booking_enabled);setEnabled(member.online_booking_enabled);}
+  if(!dirty&&!busy&&seenIncoming!==incoming){
+    setSeenIncoming(incoming);
+    const values=JSON.parse(incoming) as string[];
+    setSelected(previous=>JSON.stringify([...previous].sort())===incoming?previous:values);
+    setBaseline(previous=>JSON.stringify([...previous].sort())===incoming?previous:values);
+  }
   useEffect(()=>{if(!dirty)return;const warn=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};window.addEventListener("beforeunload",warn);return()=>window.removeEventListener("beforeunload",warn);},[dirty]);
   async function save(kind:"toggle"|"services",next=enabled) {
     if(lock.current)return;

@@ -1,5 +1,5 @@
 .toolbar { display:flex; flex-wrap:nowrap; align-items:center; gap:8px; min-width:0; padding:8px 16px; border-bottom:1px solid #e4e4e7; margin-bottom:12px; }
-.dateButton { display:flex; align-items:center; justify-content:center; flex:0 0 44px; height:44px; padding:0; border:1px solid #d4d4d8; border-radius:10px; background:white; color:#208080; cursor:pointer; }
+.dateButton { display:flex; align-items:center; justify-content:center; flex:0 0 auto; gap:6px; white-space:nowrap; font-size:14px; height:44px; padding:0 10px; border:1px solid #d4d4d8; border-radius:10px; background:white; color:#208080; cursor:pointer; }
 .dateButton:disabled { opacity:.5; }
 .search { display:flex; align-items:center; gap:8px; flex:1; min-width:0; height:44px; padding:0 12px; border:1px solid #d4d4d8; border-radius:10px; background:white; }
 .search svg { flex-shrink:0; color:#71717a; }
@@ -20,10 +20,4 @@
 .close { display:block; width:100%; margin-top:8px; }
 @media (min-width:640px) { .toolbar { padding-inline:0; } }
 
-.header { display:flex; align-items:center; gap:8px; min-width:0; padding:0 16px 8px; }
-.title { margin:0; flex-shrink:0; font-size:16px; font-weight:600; }
-.headerDate { min-width:0; }
-.header .dateButton { width:auto; height:auto; min-height:44px; border:0; border-radius:6px; padding:0; font-size:13px; white-space:nowrap; color:#71717a; }
-.headerActions { display:flex; align-items:center; gap:4px; margin-left:auto; flex-shrink:0; }
-@media(min-width:640px) { .header { padding-inline:0; } }
-@media(max-width:359px) { .header { flex-wrap:wrap; } .headerDate { order:3; width:100%; } }
+

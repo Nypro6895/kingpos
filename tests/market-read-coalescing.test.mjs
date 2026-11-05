@@ -37,6 +37,7 @@ function App(){const[active,set]=useState(true);window.activeMarket=set;return <
     await page.evaluate(()=>{h.hold=false;window.finishRead();});await page.getByText('Refreshed',{exact:true}).waitFor();
     await page.evaluate(()=>window.activeMarket(false));await page.waitForTimeout(50);await page.evaluate(()=>window.activeMarket(true));await page.waitForTimeout(100);
     assert.equal(await page.evaluate(()=>h.reads.length),1,'A fresh Activity reveal must not reread');assert.deepEqual(errors,[]);
+    fs.mkdirSync('artifacts/iphone-quality-audit-20261103/market-logo-allocation',{recursive:true});
     fs.writeFileSync('artifacts/iphone-quality-audit-20261103/market-logo-allocation/read-hook-audit.json',JSON.stringify({passed:true,source:'Actual MarketExperienceClient/useExperienceResource/useLiveExperienceRefresh/cache/scheduler; network replaced by synthetic promise; salon broker disabled',freshEntryReads:0,freshLifecycleReads:0,invalidationAndExplicitRefreshReads:1,freshRevealExtraReads:0,requests:await page.evaluate(()=>h.reads),errors,conclusion:'No redundant client hook read demonstrated for these lifecycle/event cases. Does not measure hosted router.refresh server work or real network latency.'},null,2));
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });

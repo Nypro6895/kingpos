@@ -74,6 +74,7 @@ type BeautyProfileClientProps = {
   appointment?: ReactNode;
   favorites?: ReactNode;
   home?: boolean;
+  initialSection?: "overview" | "posts" | "library";
   commentViewer: PostCommentViewer;
   initialTimeline: BeautyTimelinePage;
   profile: BeautyProfileSummary;
@@ -887,12 +888,13 @@ export function BeautyProfileClient({
   appointment,
   favorites,
   home = false,
+  initialSection = "overview",
   commentViewer,
   initialTimeline,
   profile: initialProfile,
   visitCandidates,
 }: BeautyProfileClientProps) {
-  const [section, setSection] = useState<"overview" | "posts" | "library">("overview");
+  const [section, setSection] = useState<"overview" | "posts" | "library">(initialSection);
   const [overviewContinuation, setOverviewContinuation] = useState(false);
   const [savedStates, setSavedStates] = useState<Record<string, { saved: boolean; count?: number }>>({});
   const [savedLoadError, setSavedLoadError] = useState(false);
