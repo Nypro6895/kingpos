@@ -1,0 +1,125 @@
+{
+  "checkedAt": "2026-11-06T07:37:55.239Z",
+  "scope": "Read-only hosted schema and anonymous table isolation; zero financial rows selected",
+  "passed": true,
+  "checks": [
+    {
+      "table": "check_writer_settings",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_settings",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_subscriptions",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_subscriptions",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_checks",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_checks",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_batches",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_batches",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_events",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_events",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_outputs",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_outputs",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_creation_requests",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_creation_requests",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "table": "check_writer_unlock_limits",
+      "role": "service",
+      "status": 200,
+      "errorCode": null,
+      "passed": true
+    },
+    {
+      "table": "check_writer_unlock_limits",
+      "role": "anonymous",
+      "status": 401,
+      "errorCode": "42501",
+      "passed": true
+    },
+    {
+      "name": "Catalog exact approved price and requested activation state",
+      "passed": true,
+      "priceCents": 490,
+      "fulfillmentReady": true
+    }
+  ]
+}

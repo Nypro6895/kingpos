@@ -1,0 +1,25 @@
+✔ all Today entry phases use the salon clock even when an old date URL is supplied (80.3296ms)
+✔ service mix uses split work amounts, quantities and active lines; tips/tax/gift payments never inflate sales (13.8669ms)
+✔ closed time controls sales hour and date, excluding open/voided, duplicates, future and other-day tickets (0.4329ms)
+✔ check-ins count visits once, include completed historical visits, exclude cancelled and wrong local date (0.5548ms)
+✔ missing or forbidden reads remain unavailable; successful empty reads are genuine zeros (0.3108ms)
+✔ salon day and repeated DST hour use salon timezone, never browser timezone (0.4641ms)
+✔ historical day includes all 24 buckets and service mix uses service names without mixing categories (0.3042ms)
+✔ single-point and empty line charts are defined without invented continuation (0.2074ms)
+✔ statistics reads are salon-scoped, permission-gated and fully paginated beyond 500 rows (105.4756ms)
+✔ one failed data source stays unavailable without erasing the other successful series (9.1489ms)
+✔ independent progressive replies preserve the other series regardless of arrival order (0.6113ms)
+✔ progressive statistics failures stay source-specific and clear on recovery (0.4529ms)
+✔ existing gift cashflow stays separate from services and uses cent units (21.1743ms)
+✔ slow gift cashflow keeps complete visits and ticket statistics (1811.0673ms)
+✔ timeout on a later visits page hides the incomplete total and preserves complete tickets (1841.6874ms)
+✔ slow ticket source stays unavailable while complete visits and gift cashflow remain visible (1824.9016ms)
+✔ statistics preparation is bounded and never starts a query without its context (1818.1677ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7730.6438

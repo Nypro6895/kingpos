@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "gift-card-premium-presets-20261106",
+  "status": "ready",
+  "summary": "Premium Emerald Signature, Ivory Peony and Noir Couture gift card presets with original compressed artwork, editable type and self-contained saved designs; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/gift-card/card-design.tsx",
+    "components/gift-card/customer-gift-cards.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/image-cropper.tsx",
+    "components/gift-card/gift-presets.ts",
+    "types/gift-card.ts",
+    "tests/gift-card-designer-ui.mjs",
+    "tests/gift-card-presets.test.mjs",
+    "public/gift-cards/presets/emerald-v2.jpg",
+    "public/gift-cards/presets/ivory-v2.jpg",
+    "public/gift-cards/presets/noir-v2.jpg",
+    "docs/gift-card-premium-presets-20261106.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "1427a478-9851-40cd-8b5e-7c02cba92dae",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "38398f8b-4984-47aa-aa1e-09791ceeb7ff",
+  "recordedAt": "2026-11-06T07:42:13.192Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "components/gift-card/card-design.tsx": "5a2b2403eeb30b16c49b477bfbdf4c80de05698b491857ed31c632dda7622e3f",
+    "components/gift-card/customer-gift-cards.tsx": "d7b9291502159b7946294516f1e3dade86f5e6f0293b27e3b535b7aca98ed3ec",
+    "components/gift-card/gift-card.css": "4d97e95b18af45802c321f82fab2ca5770e1ef833f858143ce79bb3ce253e94c",
+    "components/gift-card/image-cropper.tsx": "962cc8c5ce1ca8bc71530b1ad832be365dc09ecf367bc143572959f07380cab3",
+    "components/gift-card/gift-presets.ts": "d0f39fc9f86ff3b85f0a957d968110ebef74881982ee42293d6c04fa6503c215",
+    "types/gift-card.ts": "1d0e22a743069832102d38bcb31569aa1b442c5885ed0619db395e23f70cb956",
+    "tests/gift-card-designer-ui.mjs": "12800941634813a004ea89357dc0057ef2e6bd391b2c15e269f32f230ba9de7f",
+    "tests/gift-card-presets.test.mjs": "a10a98b49f065afbccfa99b1d1af8c5956a571a24f7e7bc9e87397e3495887ad",
+    "public/gift-cards/presets/emerald-v2.jpg": "f5f24bb369bc7bfb554f5e1d877ae2832e30c3c0ae334631e01b1c36fb20d716",
+    "public/gift-cards/presets/ivory-v2.jpg": "ffafb7ece6af01bad6e0baf5502304d9e38a9231139119572d6ca5e3ef696801",
+    "public/gift-cards/presets/noir-v2.jpg": "def805d0b7056168fab42c0c9d77d79a131ebf42ffd747a79a66a3a5d8fe65b2",
+    "docs/gift-card-premium-presets-20261106.md": "3460fadc1c66cf38eeead02a879c9ea6c2ca73606834caff2b9ce2abb18bdb07"
+  }
+}

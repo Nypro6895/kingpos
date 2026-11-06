@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "beauty-cards-ui-20261106",
+  "status": "ready",
+  "summary": "Completed UI-only Beauty greeting and peach/mint cards approved in chat; frozen patch tested locally, awaiting current-baseline release integration; integrated, archived, uploaded and verified in TestFlight 1.0.0 (97)",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/beauty/beauty-home.tsx",
+    "app/beauty/beauty-home.css",
+    "app/beauty/beauty-reward-summary.tsx",
+    "app/beauty/beauty-reward-summary.module.css",
+    "app/beauty/beauty-appointment.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\native-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "c5e348e2-6f10-4024-b5ea-6b61c7533c16",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact committed source and signed/exported bundle provenance verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-verified.json"
+    },
+    {
+      "name": "247 simulator tests in 14 hosts passed exactly once; unsigned/signed archive and export passed",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-verified.json"
+    },
+    {
+      "name": "Upload accepted; Apple VALID; availability in existing internal TestFlight group verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-final-verified.json"
+    }
+  ],
+  "id": "949a49f2-9e54-45cb-bdf9-d0bf4e8cb046",
+  "recordedAt": "2026-11-06T07:53:42.544Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/beauty/beauty-home.tsx": "ab82667d01b7d5c8cd7f024a6dba1831cda1ccd85a5014218edfbaedced93519",
+    "app/beauty/beauty-home.css": "f381fff5cf585e8dfc73647475e1f67f018feab64048f19b052b99df8cf97611",
+    "app/beauty/beauty-reward-summary.tsx": "a3523b14c419519ae664f3123929057863cdf8e4bc6234cbb749b609db3d444a",
+    "app/beauty/beauty-reward-summary.module.css": "2d4675d8633124c969d3d60afb0c984439f7c8afa4a297d81fe0673e0323902d",
+    "app/beauty/beauty-appointment.tsx": "d54ab61d3363a800565f89303660842896aa9c30870039b85ba61e4c951c1304"
+  }
+}

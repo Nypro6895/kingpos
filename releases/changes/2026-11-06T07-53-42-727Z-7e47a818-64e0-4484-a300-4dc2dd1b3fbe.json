@@ -1,0 +1,71 @@
+{
+  "kind": "change",
+  "changeId": "all-completed-release-20261106",
+  "status": "ready",
+  "summary": "Combined source-bound iOS update: native hosted task navigation and updated bundled Beauty/loading/UI; TestFlight only, no App Store",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "app/activity/customer-activity-client.tsx",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-resource.ts",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/loading-refresh-lifecycle.test.mjs",
+    "docs/loading-refresh-audit-20261106.txt",
+    "app/beauty/beauty-home.tsx",
+    "app/beauty/beauty-home.css",
+    "app/beauty/beauty-reward-summary.tsx",
+    "app/beauty/beauty-reward-summary.module.css",
+    "app/beauty/beauty-appointment.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\native-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "validation": [
+    {
+      "name": "Exact committed source and signed/exported bundle provenance verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-verified.json"
+    },
+    {
+      "name": "247 simulator tests in 14 hosts passed exactly once; unsigned/signed archive and export passed",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-verified.json"
+    },
+    {
+      "name": "Upload accepted; Apple VALID; availability in existing internal TestFlight group verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-final-verified.json"
+    }
+  ],
+  "id": "7e47a818-64e0-4484-a300-4dc2dd1b3fbe",
+  "recordedAt": "2026-11-06T07:53:42.727Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/NavigationPolicy.swift": "ab4d3bb509ca42cf2cfcbb2c5121d0ae4ecce37ea13fc4fee5b67282a963616e",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "c9016d29a664e2eb35109831b8083838b2ad493335eddd6a6dec4b6661390abb",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "d3fba0d29671c510adf60991f72e83fd5eb69780c570a8a85c3cf8d769d9a8e6",
+    "app/activity/customer-activity-client.tsx": "9c18e184bb10d31ace6cf7108ab1cc89afe76651e864eb5173ea7ca63490cfa4",
+    "app/activity/customer-journey.module.css": "f41bf5ef4eb5a21f57b31b0cf456941b1103ec5c9d9e1bb254425b6b756b4cc7",
+    "app/activity/customer-journey.tsx": "121aadf257eaeff41c53d07c598d582308210b74c2895901c4698a5fc6db36cd",
+    "lib/app-local-page-registry.tsx": "2bf84503a9f786937a1b0ae5b0a8c281272e52571b612cac589192bc5883861e",
+    "lib/app-local-resource.ts": "4e72eaabd0b6bf4565dbbec87f2df97d701e90e21028b8316a545972bd38b825",
+    "tests/customer-journey-ui.test.mjs": "b3f4612752c4659cf49131285f6df7dc19caa68552a6e5ab8c4758f7055a83c6",
+    "tests/loading-refresh-lifecycle.test.mjs": "e54c241a62bfcc3a011c6b0402929663cd17e0c826c0c6b8d3c86161703a7764",
+    "docs/loading-refresh-audit-20261106.txt": "12bf312d02a71dab22c659069abd3be8551825ed7c83ccf10d275e47beadded8",
+    "app/beauty/beauty-home.tsx": "ab82667d01b7d5c8cd7f024a6dba1831cda1ccd85a5014218edfbaedced93519",
+    "app/beauty/beauty-home.css": "f381fff5cf585e8dfc73647475e1f67f018feab64048f19b052b99df8cf97611",
+    "app/beauty/beauty-reward-summary.tsx": "a3523b14c419519ae664f3123929057863cdf8e4bc6234cbb749b609db3d444a",
+    "app/beauty/beauty-reward-summary.module.css": "2d4675d8633124c969d3d60afb0c984439f7c8afa4a297d81fe0673e0323902d",
+    "app/beauty/beauty-appointment.tsx": "d54ab61d3363a800565f89303660842896aa9c30870039b85ba61e4c951c1304"
+  }
+}

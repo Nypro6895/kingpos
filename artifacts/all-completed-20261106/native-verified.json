@@ -1,0 +1,35 @@
+{
+  "verified": true,
+  "at": "2026-11-06T07:51:56.124Z",
+  "sourceCommit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "sourceSha256": "935953fd5de4dfb9f13d9c8059479bae63d59ea8f8dfcd36b1b03e6c53750e3e",
+  "sourceFiles": 3625,
+  "nativeSourceFilesVerified": 74,
+  "version": "1.0.0",
+  "build": "97",
+  "workflowRun": 42181451347,
+  "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/42181451347",
+  "artifactId": 13486686149,
+  "artifactSha256": "be16307eb39acae0dae9f0e918c2e1dfab364a7675a7ebcf3615042c37156374",
+  "simulatorTests": 247,
+  "hostInvocations": 14,
+  "testsStartedAndPassedExactlyOnce": true,
+  "bundleBuildId": "71468861847b983c5924e7e9346115bd720d118ccab741ef4263b6a1caeb49fb",
+  "bundleManifestSha256": "f8916507701db0726d1f1767232e7cb2e73f1a39d4279ae606e4621cec0306c0",
+  "generatedMappingsMatchLiveWeb": true,
+  "publicConfigurationMatchesVerifiedBaseline": true,
+  "upload": "accepted",
+  "processing": {
+    "build": "97",
+    "buildId": "1179a353-5a88-4bb7-b111-66aa66b7af97",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-11-06T07:50:34.677Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "testflightAvailable": false,
+  "limits": [
+    "Receipt/source/bundle hashes checked; no independent IPA inspection or physical iPhone acceptance.",
+    "TestFlight group availability requires a separate read-only check."
+  ]
+}

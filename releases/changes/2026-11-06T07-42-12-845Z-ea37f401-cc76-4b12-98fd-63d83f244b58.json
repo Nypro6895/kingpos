@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "gift-card-designer-20261106",
+  "status": "ready",
+  "summary": "Compact Cards-only statistics; persistent owner Design tab, compressed image crop/move/zoom/rotate editor and three signature presets; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/gift-card/card-design.tsx",
+    "components/gift-card/image-cropper.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/manage-gift-cards.tsx",
+    "lib/experience-route-policies.ts",
+    "tests/fixtures/gift-card-designer.tsx",
+    "tests/gift-card-designer-ui.mjs",
+    "tests/gift-card-designer-policy.test.mjs",
+    "docs/gift-card-designer-20261106.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "149961b3-0294-4e02-aab0-3d72ccfcca15",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "ea37f401-cc76-4b12-98fd-63d83f244b58",
+  "recordedAt": "2026-11-06T07:42:12.845Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "components/gift-card/card-design.tsx": "5a2b2403eeb30b16c49b477bfbdf4c80de05698b491857ed31c632dda7622e3f",
+    "components/gift-card/image-cropper.tsx": "962cc8c5ce1ca8bc71530b1ad832be365dc09ecf367bc143572959f07380cab3",
+    "components/gift-card/gift-card.css": "4d97e95b18af45802c321f82fab2ca5770e1ef833f858143ce79bb3ce253e94c",
+    "components/gift-card/manage-gift-cards.tsx": "1123b241ba29acbb34c2696a2e77ad061fae3128f8820a6ae4380a725289508c",
+    "lib/experience-route-policies.ts": "60bed6f48d240a401104c3874a6d1500bcf7f1d7a2441112d17a8ccc4bb09bd7",
+    "tests/fixtures/gift-card-designer.tsx": "4e05263da51c209cd530685839ae48e0b8dbed34dcbf3db2ce7f210b2da8a641",
+    "tests/gift-card-designer-ui.mjs": "12800941634813a004ea89357dc0057ef2e6bd391b2c15e269f32f230ba9de7f",
+    "tests/gift-card-designer-policy.test.mjs": "d9cff87f3f0d0edba24ed067db82c8e79b74d6cd32cd1d6eeef09e721f3bab5f",
+    "docs/gift-card-designer-20261106.md": "5fe0d5f688bca4c112f6d9fe74f7ad1681a2bbe2f6babaa46e75c8830d091f23"
+  }
+}

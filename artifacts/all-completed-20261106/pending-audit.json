@@ -1,0 +1,2270 @@
+{
+  "at": "2026-11-06T07:37:35.525Z",
+  "baseline": "dpl_HzMkmRaFPcHaNLCQHGEuQEiibXeu",
+  "worktrees": 253,
+  "inventoryErrors": 0,
+  "rows": [
+    {
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/nails-page-pilot-source.zip",
+        "sha256": "d76220e25eae43cbbc804dc74e3ea62697788db1cb4fa72eeeeae77bee76ed43",
+        "commit": "a0fd0bc4d076aab6203e113bcd7ca07158c80d24"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "cfea80f58a26f1bfb15c3654cf863e282db05e15",
+        "snapshot": "artifacts/nails-page-pilot-v2-source.zip",
+        "sha256": "ee30e3cb0b42ca07848cabf786e325b89494f212f86e4cf834d21742765c7839"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "493d89003780ccc257f28cb25b2d2d18c17d6412",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-pilot-graph-runtime-frozen",
+        "archive": "artifacts/nails-pilot-graph-runtime-source.zip",
+        "sha256": "a1d97bd99d71f139431f6d0f3aedadbda01e6dfdc67f43c2084075928963bc10"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "5e731400d42b40fa18a5d550c3e46761d610ce78",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-post-now-frozen-5e73140"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-preview-logos-20261017\\completed-source",
+        "preimplementationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-preview-logos-20261017\\preimplementation-source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Documentation QA or preview-only source; no runtime overlay"
+    },
+    {
+      "changeId": "ios-workspace-cookie-deletion-20261020",
+      "eventId": "f1a21743-b245-433f-bc2f-03a61fa05495",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-fix-frozen\\cee9482db037f573696edca17ab91dbfb3d67860",
+        "commit": "cee9482db037f573696edca17ab91dbfb3d67860",
+        "baselineCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+        "overlaySha256": "a040ab2b0843f854721484bd0f82b37477b9c9ff41963facadc4c610ec60e6f3",
+        "testSourceManifest": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-candidate-r2-passed\\source-inputs.json"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "auth-session-missing-rejection-20261020",
+      "eventId": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\auth-rejection-cf992a1-source",
+        "commit": "cf992a1e209fe6a9a0e3995cc2a9d917ea4296fd",
+        "snapshotSha256": "070d3c7a59b8dc71baa7f44ccee9285a395e1e88e29d9b47e0bb0f575ac401ed"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "ios-background-cookie-authority-20261020",
+      "eventId": "bca89a39-186f-412a-81bd-b76075e4d5da",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/bg-cookie-d5ecb7a-source",
+        "commit": "d5ecb7a51e7ccd313e1e79c73d2adf823608955b",
+        "snapshotSha256": "518dac93252a4ba772762b025eb043837899da04adb604b2f3909d1e2bdab2ee"
+      },
+      "runtimeFiles": 2,
+      "identical": 1,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "help-context-dismiss-20261020",
+      "eventId": "4cff2fad-08e3-42d0-9b22-623957e87395",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "8ed23dd8623a3713e344ea6d6d26c07a02dc5393",
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/help-context-dismiss-20261020/frozen-8ed23dd-raw-selected",
+        "snapshotKind": "selected-raw-git-patch",
+        "baseCommit": "d73afd529b6b5b3c0ba3437efcb6e225d5f1269c"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "macqa-help-background-integration-20261020",
+      "eventId": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "commit": "ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\frozen-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359",
+        "snapshotKind": "raw-native-ios-subtree; full product source retained in exact Git commit",
+        "snapshotSha256": "03caf8901156099e91d53e015fbf9c978b247467ab2f97664413f70ee7303bd3",
+        "nativeInputCount": 414,
+        "archive": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\macqa-integration\\reylumi-ios-ddbecc0412c36ccf0db8b3e2b9b0dea9212cc359-raw.tar",
+        "archiveSha256": "21ea78a85852a8601eb3ff484d4c9df2b43587add00876a9e518953957c6b087",
+        "baselineNativeCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+        "bundleBuildId": "1d85f270d246910f38f72a2fb7efb8417782336c8a3c73a0c2212329d258fe47"
+      },
+      "runtimeFiles": 7,
+      "identical": 1,
+      "different": 3,
+      "missing": 3,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "ios-private-business-cache-admission-20261020",
+      "eventId": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/business-cache-7a88853-source",
+        "commit": "7a888538014cc9ae5c816cef164f28429c625abe"
+      },
+      "runtimeFiles": 4,
+      "identical": 0,
+      "different": 4,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "online-authority-refresh-20261021",
+      "eventId": "62f208d8-136e-439b-bba2-23a9ec001f43",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh-final-source\\frozen-e8177a596060693fc2a23044247713c941fae035",
+        "commit": "e8177a596060693fc2a23044247713c941fae035"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "refresh-session-availability-tests-20261021",
+      "eventId": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-session\\test-source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Documentation QA or preview-only source; no runtime overlay"
+    },
+    {
+      "changeId": "pc-ios-today-session-reliability-20261021",
+      "eventId": "16970911-3725-403f-a83f-915be4271914",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\frozen-patch",
+        "commit": "4ee944727133257a6a2f1f84c01c9186bb0fb520",
+        "sourceSha256": "1135afeedf044a9ffacb10c9e17771ea0275455b8362d029cda317d84f2d6ea1"
+      },
+      "runtimeFiles": 5,
+      "identical": 3,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "payroll-hide-review-notices-20261021",
+      "eventId": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\frozen",
+        "baselineCommit": "d75cf764215adbd97b34a473929b480e9edf6528",
+        "branch": "codex/payroll-hide-review-notices-20261021"
+      },
+      "runtimeFiles": 5,
+      "identical": 0,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "daily-closing-conflict-notice-20261021",
+      "eventId": "a88bc104-8a6e-4cab-b465-99463332dec3",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "b1083c57dd4aca6c69a0d3f416d3db2aff3274ce",
+        "baseCommit": "d75cf764215adbd97b34a473929b480e9edf6528",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-4\\snapshot"
+      },
+      "runtimeFiles": 2,
+      "identical": 1,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "pc-ios-causal-contracts-20261021",
+      "eventId": "b2617811-8752-4582-bc3a-244b701326d9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\continuation-final-source-2026-10-21T15-10-17-035Z",
+        "commit": "6ed6fa65ce559a6b65ed04f106f6e7ef8f3ad681",
+        "manifestSha256": "4e03f07be5acde85252c626a7dc0c8d3a8f0b56aaf39510fa0c2743b5bfcfdc3"
+      },
+      "runtimeFiles": 5,
+      "identical": 0,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "campaign-pc-common-integration-20261021",
+      "eventId": "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-candidate",
+        "commit": "fd8e92b8bf53639ce0b08b0760cd05744164366b",
+        "baseCommit": "35dfdc1d493ccf59cbfa3c588eb497d13a44af78",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate-source-manifest.json",
+        "sha256": "f4110f0444ef8025a9e6b03e751ba4a4531e859516c5f35f4ff9a6bc65cf2897"
+      },
+      "runtimeFiles": 108,
+      "identical": 30,
+      "different": 78,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "flat-section-canvas-20261021",
+      "eventId": "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-3\\frozen-payroll-final",
+        "baselineCommit": "2638cb272d3a13d872f9ea0bebbf2f0fba85ed2d",
+        "sourceSha256": "f58b99a61c40b3363cc17e7df53a28a1d06d01133d2fc16dc448cf7dc90cf736"
+      },
+      "runtimeFiles": 9,
+      "identical": 3,
+      "different": 6,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "combined-ui-payroll-daily-local-20261021",
+      "eventId": "279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-3\\frozen-payroll-final",
+        "baselineCommit": "2638cb272d3a13d872f9ea0bebbf2f0fba85ed2d",
+        "sourceSha256": "f58b99a61c40b3363cc17e7df53a28a1d06d01133d2fc16dc448cf7dc90cf736"
+      },
+      "runtimeFiles": 96,
+      "identical": 29,
+      "different": 67,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "pc-campaign-common-candidate-20261021",
+      "eventId": "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-candidate-r2",
+        "commit": "fc3c0e55d6f068a04633825876a0b52889efacf6",
+        "baseCommit": "35dfdc1d493ccf59cbfa3c588eb497d13a44af78",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate-source-manifest-r2.json",
+        "sha256": "0f8b0eaae2c214aee87cd5938d2814b9ceb032637d04b06875dedb939510e034"
+      },
+      "runtimeFiles": 117,
+      "identical": 33,
+      "different": 84,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "pc-ios-explicit-guest-continuation-20261021",
+      "eventId": "23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\guest-continuation\\frozen\\2026-10-21T16-23-54-954Z\\source",
+        "commit": "4d6c100c4545034230808ff794dbaf66321d51bd",
+        "manifestSha256": "f9399e550db86e6978f1883aaf8975f1af1aacca6311bcccab4c2e7bba112620"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "campaign-causal-settlement-reporting-20261021",
+      "eventId": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\source",
+        "commit": "c4e7db5ddbd9767526d62a4e1b6d33397dbca655",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\manifest.json",
+        "sha256": "513d3ef8ab9d961894776e8bc8cd77be60c30b0e68730b1cc56fa686b4066886"
+      },
+      "runtimeFiles": 15,
+      "identical": 1,
+      "different": 14,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "windows-portable-startup-offline-admission-20261021",
+      "eventId": "a397b292-7798-4ba5-b16a-71673c11da76",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-patch",
+        "commit": "a63f6f9b1a88cb76db846913cff2c82bfcae32c9",
+        "baselineCommit": "016178247ba97e15b210e1090cce4bb4f2c8972d"
+      },
+      "runtimeFiles": 3,
+      "identical": 1,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "campaign-pending-claim-demand-20261021",
+      "eventId": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\source",
+        "commit": "5f3834866617331292ed5f34ee11919d76a571c1",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-pending-claim\\manifest.json",
+        "sha256": "c27d6bb1c0ff5a29928a11077fa25a2e29908fa2b84543c92a524cac0f83586b"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "unified-windows-portable-integration-20261021",
+      "eventId": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\source",
+        "commit": "0276a9e3aa6fc2def4d1bd9689bd364867fcc56e",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r3\\manifest.json",
+        "sha256": "d4ef182786752c17fac406f56445c2f9397ed6933d1b0a6ff830200b76718d25"
+      },
+      "runtimeFiles": 3,
+      "identical": 1,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "windows-portable-owner-startup-20261021",
+      "eventId": "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\frozen-owner-combined",
+        "commit": "55c34d8762d711de501fdc8332d788344e049d02",
+        "baselineCommit": "a7c1eac15401972fadf95159b58b69ab9990682b"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "unified-owner-guest-integration-20261021",
+      "eventId": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\source",
+        "commit": "f22db9c688db2ec8ebb54420725a35eea5d70cac",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-unified-r4\\manifest.json",
+        "sha256": "9091be884574d7e8bf4cd5404bec90eed4a4cdf5b835066c74f04b8b037968dc"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "campaign-credit-lifecycle-r5-20261021",
+      "eventId": "df7e32b3-7171-47d3-86c6-2335990a478f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\source",
+        "commit": "a61cce68abdb2eb1b8a2ecff26bc8f3b267cdacf",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\manifest.json",
+        "sha256": "4658809997a5db9c9a3c0cddf8d87034eecb9d6d7af85419efbafa3021536c71"
+      },
+      "runtimeFiles": 7,
+      "identical": 3,
+      "different": 4,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "reylumi-final-r5-integration-20261021",
+      "eventId": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "090d276ab4b0f94361f7622f7f5f29932737bd6f",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\source",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r5\\functional-source-manifest.json",
+        "sha256": "2440ecf64f7e093d09862b3df6333b91c71f8e13d9cbbfe4f49b942b5641a83d"
+      },
+      "runtimeFiles": 7,
+      "identical": 5,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "ios-production-path-qa-20261021",
+      "eventId": "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+      "status": "working",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Users/giuse/kingpos/artifacts/pc-ios-reliability-20261021/session-restart/option-A-production-path-20261021",
+        "commit": "cf458316d827a4d765f1f0c27f1c13f101d8ca5c"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "ios-my-work-critical-path-20261021",
+      "eventId": "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\common-source-transition\\private-native\\c701-20261021T2109-frozen\\Project",
+        "commit": "c7016e00d12b39a9cdbeb4bb67fdb380870acdf9",
+        "sourceSha256": "ec29dc50e86999f5fd488929252b645a41e09bbf3a0e01218a5ecbddf9229f9c"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "claude-project-review-setup-20261021",
+      "eventId": "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-release-snapshots\\claude-project-review-pc-ready-20261021-172940",
+        "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "staff-my-work-verified-read-identity-20261021",
+      "eventId": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "5b7654a6a782032d9411502921e2faa637876803",
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\frozen-implementation-20261021T223721238421Z\\source"
+      },
+      "runtimeFiles": 4,
+      "identical": 0,
+      "different": 4,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+      "eventId": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\role-read-reuse\\frozen-implementation-20261021T224009609534Z\\source",
+        "commit": "54b692557288c7eb2fd1839618a4f8499f799d52"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "claude-pc-mac-simulator-review-20261021",
+      "eventId": "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-release-snapshots\\claude-pc-mac-simulator-ready-20261021-174403",
+        "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "reylumi-final-r6-integration-20261021",
+      "eventId": "e32efba9-d661-4558-8f11-9e605b2383f1",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r6-verified\\functional-source-manifest.json",
+        "sha256": "795cce961cb3bf394eb3e1a94112295f86f65f71c562cecf3facc61e3ca0506d"
+      },
+      "runtimeFiles": 9,
+      "identical": 0,
+      "different": 9,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "local-first-services-pilot-r6",
+      "eventId": "15938439-7e97-493e-b874-fe42810e2ce4",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-local-first-services-r6\\source",
+        "commit": "dbad6b0e661c4ba59939207bfb407549ecbde4c1",
+        "manifestSha256": "308c241f131cefcddb08774d1513104371efbaae0ff1a30516c382d4e018f75e"
+      },
+      "runtimeFiles": 10,
+      "identical": 0,
+      "different": 10,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "r6-confirmed-auth-rejection-20261021",
+      "eventId": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\delivery-20261021T233505722271Z\\source",
+        "commit": "8776d0b52d7e5526a0814cec794cfde9f2ee7eb4",
+        "baseCommit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8",
+        "overlayManifestSha256": "2130580861a0d6b3a9e181660e58597ca2deb37cf2c4f014415fa86b1f49f5f6",
+        "functionalSourceManifestSha256": "ba76b34725d651691dbedeb4134c320f7c87bbdd2a8255e01fdd48fa3bd2bf43"
+      },
+      "runtimeFiles": 4,
+      "identical": 1,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "local-first-services-native-delta-r6",
+      "eventId": "5b41dd44-3397-4098-9235-ee3e693ee515",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-native-delta-r6\\source",
+        "commit": "00f3c909ed13c26bc3ec62d30d0e5fee839192d1",
+        "manifestSha256": "544d9fd1bfb7ad19610518abe4ee11406d8f097c37cec906575de41acf65cd7d"
+      },
+      "runtimeFiles": 13,
+      "identical": 2,
+      "different": 11,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "reylumi-final-r7-auth-integration-20261021",
+      "eventId": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "9b07ab1c58fcd2c4552bb8e96142e3ace086f473",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r7-auth",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r7-auth\\functional-source-manifest.json",
+        "sha256": "4c028cf2fa2cb2f122934978a28cef9342ef0c6b3bd1a3154e182b8c6dc904f2"
+      },
+      "runtimeFiles": 4,
+      "identical": 1,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+      "eventId": "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "93ce18d0fcdd0b0ce56aec4573d1d52fb375489f",
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r8-pilot-off",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r8-pilot-off\\functional-source-manifest.json",
+        "sha256": "afe95a22091741283cfd7adc1e7b9a33257a0de68762b3174a1a8e979f5f05e2"
+      },
+      "runtimeFiles": 17,
+      "identical": 8,
+      "different": 9,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "services-cache-invariants-r6",
+      "eventId": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\source",
+        "commit": "2d0b2619c7f83cea9001c6239631d06541e3a1ee",
+        "manifestSha256": "104700ab0d006c490716571ee50a0ba8dfd0f0b1caad9340263fc282c64abd1f"
+      },
+      "runtimeFiles": 7,
+      "identical": 5,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "ios-auth-observability-qa-20261021",
+      "eventId": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\source",
+        "commit": "e00c62ea2b8fd428a5055cfd18a9d538d32db3dc",
+        "manifest": {
+          "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\delta-manifest.json",
+          "sha256": "1725b1593f119fff4fbcff5ed2c5851c44196b3c1fc563fb31bcdd718c8aeed0"
+        },
+        "functionalSourceManifest": {
+          "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\functional-source-manifest.json",
+          "sha256": "c39bbb50d0998e596c9d4642f2b2d915b2f0e59fb7afcdc42083fdb554e10216"
+        }
+      },
+      "runtimeFiles": 18,
+      "identical": 1,
+      "different": 17,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "services-cache-realm-guards-r6",
+      "eventId": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\source",
+        "commit": "2033e78995dba9d318d2c2339052197b4b970aaf",
+        "manifestSha256": "a231c161e7bc7b264c68b3c8318bc502a48a300695443082bb3c0447f9d50ff4"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "reylumi-final-r9-observability-integration-20261022",
+      "eventId": "04ee32a6-3687-4b77-affc-8058500c0f23",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\source",
+        "commit": "3ba5757ec22bb0b2a1ac0f8c9e30e03e8be03d0e",
+        "tree": "02115e4ea2f30bab3cf171f52a572a20d4128305",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r9-observability\\functional-source-manifest.json"
+      },
+      "runtimeFiles": 18,
+      "identical": 1,
+      "different": 17,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+      "eventId": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\source",
+        "commit": "7faa1e7d8088c1dd6b300fc0e9700b8050e23c48",
+        "tree": "ad1f7fe3bdc7da8a869242d9b426e02b1f11e992",
+        "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\frozen-final-r10-services\\functional-source-manifest.json"
+      },
+      "runtimeFiles": 8,
+      "identical": 5,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "r10-native-bundle-provenance-20261022",
+      "eventId": "13608576-db78-4312-9445-5d173e04315e",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\frozen-source-lf",
+        "commit": "57bd13bed0f37f99c2057d4d968e532208e65938",
+        "baselineCommit": "7e284b8749d79a990abedf8dade33c6909949903"
+      },
+      "runtimeFiles": 3,
+      "identical": 1,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "ios-hosted-login-actual-trace-20261022",
+      "eventId": "93859166-e3ea-4656-92df-3b78c7a2a327",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Users/giuse/Documents/Codex/2026-10-21/task-6/final-candidate-r10-services",
+        "commit": "7e284b8749d79a990abedf8dade33c6909949903"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "auth-request-finite-deadline-20261022",
+      "eventId": "4072b660-7b05-4d67-81bf-43561df0cd04",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-r10-login-deadline-20261022",
+        "commit": "e9260e9e51fd5730d8a94b0110102067660a0793"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "r10-native-reset-pending-20261022",
+      "eventId": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos-r10-native-reset-pending-20261022",
+        "commit": "2cd09be63bc50fd02dcdbb20fba6d17b1071ee63"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "market-authenticated-browser-qa-20261023",
+      "eventId": "014d1e2b-713b-4368-925c-6fe55451770d",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-browser-timeout-investigation-20261023",
+      "eventId": "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c",
+        "snapshot": "artifacts/market-private/browser-qa/2026-10-23T07-50-59-527Z/harness-source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-first-slice-acceptance-closure-20261023",
+      "eventId": "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c",
+        "snapshot": "artifacts/market-private/acceptance-fullstack/2026-10-23T08-28-29-754Z-8d8bf297/closure-source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "ios-readiness-bundle-xcresult-20261023",
+      "eventId": "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\.migration-20261023\\ios-readiness-fixed-source",
+        "commit": "064f3774d457621eae476767a22c19c8b1eaecb3"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "main-app-qa-20261024-task4",
+      "eventId": "d71a3e3d-4761-459e-baee-29f19edd8729",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-23\\task-4\\frozen-overlay",
+        "commit": "80150117fcdfb7e7281382490b1974651c7ece5e"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Documentation QA or preview-only source; no runtime overlay"
+    },
+    {
+      "changeId": "campaign-run-again-investigation-20261025",
+      "eventId": "49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\campaign-run-again-investigation-20261025\\source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Documentation QA or preview-only source; no runtime overlay"
+    },
+    {
+      "changeId": "claude-simulator-20261025",
+      "eventId": "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "inventory": "artifacts/claude-simulator-20261025/source-inventory-final.json",
+        "snapshot": "artifacts/claude-simulator-20261025/source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "campaign-product-audit-20261025",
+      "eventId": "740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\campaign-product-audit-20261025\\source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Documentation QA or preview-only source; no runtime overlay"
+    },
+    {
+      "changeId": "combined-drako-integration-20261026",
+      "eventId": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Users/giuse/Documents/Codex/2026-10-25/task-2/candidate-drako-20261026",
+        "baselineDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+        "baselineSourceSha256": "dc9a63ddb0a53c24dcb9f99790e917bd81573ab4783e9f0e9c0a2fb611a0c86e",
+        "baselineCommit": "6e230018c44eab3a518725d1bf221c7157c471aa"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "windows-production-guard-command-20261026",
+      "eventId": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\release-drako-20261026\\guard-frozen"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "iphone-real-performance-fixes-20261027",
+      "eventId": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-performance-fixes-20261027\\ready-source",
+        "baseCommit": "262dc463935bcc2454502f035fb199c07c66a84c"
+      },
+      "runtimeFiles": 18,
+      "identical": 0,
+      "different": 18,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "iphone-first-load-dal-rpc-20261027",
+      "eventId": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-dal-rpc-20261027\\ready-source",
+        "commit": "392212aac573d4516743eeaf889efb8bf0a4a86f"
+      },
+      "runtimeFiles": 21,
+      "identical": 6,
+      "different": 15,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "check-writer-secure-addon-20261027",
+      "eventId": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/source",
+        "commit": "e7214828ea2807287c744b9085c585c352f43e4d"
+      },
+      "runtimeFiles": 27,
+      "identical": 5,
+      "different": 22,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "iphone-batched-handoff-release-20261028",
+      "eventId": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": null,
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "market-real-developer-platform-20261028",
+      "eventId": "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-real\\frozen-source",
+        "baselineCommit": "d4d0cc5e5f64d5c781e56a5b6709827b993f831c",
+        "manifestSha256": "af2a01376df414744f1c545ca2339eb70fb97ab13df171856eeab976598b20d9"
+      },
+      "runtimeFiles": 13,
+      "identical": 2,
+      "different": 11,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-owner-integration-20261028",
+      "eventId": "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-owner-integration\\frozen-source",
+        "archive": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-owner-integration\\frozen-source.zip",
+        "archiveSha256": "5eda93fd917dd0485ccc98bf154d80b5ae2c86b5bc8b8c170c0ff8c14a388bc5",
+        "baselineCommit": "9d2a93ea69e227300a61ed4978b4f3e1bda5ab0b",
+        "manifestSha256": "ec960c663ed73df3c2ec4ab204442c3574a05f8a906d11565fa3ed15da05f33d"
+      },
+      "runtimeFiles": 29,
+      "identical": 4,
+      "different": 25,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-developer-journey-20261028",
+      "eventId": "8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-developer-journey\\frozen-source"
+      },
+      "runtimeFiles": 6,
+      "identical": 0,
+      "different": 6,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-developer-journey-qa-20261028",
+      "eventId": "6030270a-ae7a-43d7-a554-fae70218a27b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-developer-journey-qa\\frozen-source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "iphone-route-bootstrap-module-loading-20261028",
+      "eventId": "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+      "status": "working",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": null,
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 0,
+      "missing": 1,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "iphone-bounded-comment-count-read-batch-20261028",
+      "eventId": "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+      "status": "working",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": null,
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 0,
+      "missing": 2,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "market-self-hosted-design-20261028",
+      "eventId": "39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\market-real-20261028\\artifacts\\market-self-hosted-design\\frozen-source"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "check-writer-audit-price-20261028",
+      "eventId": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/audit-20261028/source"
+      },
+      "runtimeFiles": 20,
+      "identical": 10,
+      "different": 10,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "check-writer-wait-combined-deploy-20261028",
+      "eventId": "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/deploy-note-snapshot"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-published-data-qr-20261028",
+      "eventId": "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-published-data/frozen-source",
+        "manifest": "artifacts/market-published-data/frozen-source-manifest.json"
+      },
+      "runtimeFiles": 17,
+      "identical": 3,
+      "different": 14,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-published-qa-20261028",
+      "eventId": "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "fileHashes": {
+          "artifacts/market-published-qa/run.mjs": "3dc7f08ea3de0864feb9cd647b85d41008ba99c9b722533552d0df075e9d3e8f",
+          "artifacts/market-published-qa/results.json": "bf02bad06babc2c0a9186c60d7bb73527bf6349f87245e016f25695ff9a60da0",
+          "artifacts/market-published-qa/report.md": "ecf2a0ac6f86a1cb6f0798ebeb6e9c17895ae9590e65e73e98ea0c23e98e5ba6"
+        },
+        "productCommit": "c3309e3ead4e07a82bd55446502191fd604628e2",
+        "snapshot": "artifacts\\market-published-qa\\frozen-report",
+        "note": "Final frozen report adds strict benchmark matrix; earlier completion report hash preceded this documentation addition. Preserve earlier immutable event as history."
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qa-controller-repair-20261028",
+      "eventId": "98110f68-e929-4630-83de-e4bceca6c10e",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-published-qa/frozen-closeout",
+        "manifest": "artifacts/market-published-qa/closeout-manifest.json",
+        "fileHashes": {
+          "artifacts/market-published-qa/observe-expiry.mjs": "bfaa41478cc6c0fe37b9ef3949df1915436c861aa8c3027087c4ff15af46b8ac",
+          "artifacts/market-published-qa/run.mjs": "b424be051827d5ecd9788d7cef91b0f35821e0addb92a7426fd11efe7201e352",
+          "tests/market-qa-controller.test.mjs": "fb2aac85b89d058c9772a7bac27d82bb90920348a630f57f51ec0931d47e0e35",
+          "artifacts/market-published-qa/final-receipt-summary.md": "94f4f40cbe9c6eea548068bc4b8e62eec29b3891d83e6a31095ba54c42813198",
+          "artifacts/market-published-qa/controller.mjs": "c6e784c429c15eb2cac61435d6ddeadf6d34c211ee0ef344dd9a5f406c73b910",
+          "artifacts/market-published-qa/expiry-receipt.json": "0b7ccea08d56fab232bdb531d44bffa9fc6435b12ee44748d1a37ed805f9bb2d",
+          "artifacts/market-published-qa/controller-dry-run-final.log": "bbf4ce99c97d40271b0a29698723f1b5f6ff7879362f58c6cffe23948192c7a4",
+          "artifacts/market-published-qa/official-benchmark.md": "93e50cf70ef9b5eb58cfca08e462f76d8da5b5d1e0bd791f799067293838f737",
+          "artifacts/market-published-qa/results.json": "bf02bad06babc2c0a9186c60d7bb73527bf6349f87245e016f25695ff9a60da0",
+          "artifacts/market-published-qa/report.md": "ecf2a0ac6f86a1cb6f0798ebeb6e9c17895ae9590e65e73e98ea0c23e98e5ba6",
+          "artifacts/market-published-qa/controller-child.mjs": "6d717ea779d21625da4ecfdea9c0faec17385de937556ed0d33f1541a41156c8",
+          "artifacts/market-published-qa/launcher-dry-run-report.md": "45294294ec0eb21c780ea2151f1bac30b62746df21b8ebbb1957c6647638c610"
+        }
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qr-replacement-qa-20261028",
+      "eventId": "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-published-qa/replacement-1/frozen-source",
+        "manifest": "artifacts/market-published-qa/replacement-1/frozen-source-manifest.json",
+        "archive": "artifacts/market-published-qa/replacement-1/source-final.zip",
+        "archiveSha256": "27a5a0b1ba4f4f730a02a6a29703d038bca318c757bcf0a9ca4c37ae72d33261",
+        "evidenceArchive": "artifacts/market-published-qa/replacement-1/evidence-final.zip",
+        "evidenceArchiveSha256": "08d805c36d250d70c7c108517e18f95afc3797a51eee93dfe322360ee32dc4ff"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-developer-read-recovery-20261028",
+      "eventId": "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-published-qa/replacement-1/frozen-source",
+        "manifest": "artifacts/market-published-qa/replacement-1/frozen-source-manifest.json",
+        "archive": "artifacts/market-published-qa/replacement-1/source-final.zip",
+        "archiveSha256": "27a5a0b1ba4f4f730a02a6a29703d038bca318c757bcf0a9ca4c37ae72d33261",
+        "evidenceArchive": "artifacts/market-published-qa/replacement-1/evidence-final.zip",
+        "evidenceArchiveSha256": "08d805c36d250d70c7c108517e18f95afc3797a51eee93dfe322360ee32dc4ff"
+      },
+      "runtimeFiles": 4,
+      "identical": 2,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-p0-reproduction-plan-20261028",
+      "eventId": "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "archiveSha256": "8d63bc333a8935c3a8202fcbd73649a584e2a272aee63cb8cc545c1f8fc62382",
+        "productRevision": "df400285d3f2aa0b99fd030b0b08935f793c1d97",
+        "archive": "artifacts/market-p0-reproduction-plan/plan-evidence.zip",
+        "snapshot": "artifacts/market-p0-reproduction-plan/frozen",
+        "manifest": "artifacts/market-p0-reproduction-plan/manifest.json"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-p0-zero-key-real-20261028",
+      "eventId": "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts\\market-p0-reproduction-plan\\frozen-zero-key",
+        "archive": "artifacts/market-p0-reproduction-plan/zero-key-evidence.zip",
+        "archiveSha256": "7def38e5c219cc310af9f72f7eecceecaa1299a521073ebeba201ce45f991002",
+        "productRevision": "df400285d3f2aa0b99fd030b0b08935f793c1d97"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-https-transport-preflight-20261028",
+      "eventId": "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts\\market-https-transport-preflight\\frozen",
+        "archive": "artifacts/market-https-transport-preflight/evidence.zip",
+        "archiveSha256": "8718ee33e8c521eb79734edcf9beef58f3a6fb5bfd61e6d58146a1320f204c99"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-https-transport-clarification-20261028",
+      "eventId": "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts\\market-https-transport-preflight\\frozen-clarification",
+        "archive": "artifacts/market-https-transport-preflight/clarification.zip",
+        "archiveSha256": "cfa25ee2e2d2c520d14daeff68120dbb66ebeec51b3eded45f2b3b3aa42ce3c6"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qa-hosting-options-20261028",
+      "eventId": "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "archive": "artifacts/market-qa-hosting-options/evidence.zip",
+        "archiveSha256": "1899cac4e7c473bea33e4603bf54b3d4b76948318d9246add97f26dfbbaa59ff",
+        "snapshot": "artifacts\\market-qa-hosting-options\\frozen"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-consent-version-reset-20261028",
+      "eventId": "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts\\market-consent-version-reset\\frozen",
+        "archive": "artifacts/market-consent-version-reset/source-evidence.zip",
+        "archiveSha256": "30c747bdabffc75308b92a3c1b4039cd0e370059401f6a8e78fc4b5a9eb141fb"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "eventId": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/readiness-20261028/source"
+      },
+      "runtimeFiles": 4,
+      "identical": 1,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-account-owner-polish-20261028",
+      "eventId": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "archive": "artifacts/market-account-owner-polish/source-evidence.zip",
+        "archiveSha256": "f34dac697c80dc4fdefe8073bc19ea49049082def138cc4eabfc12c8c17f9390",
+        "snapshot": "artifacts\\market-account-owner-polish\\frozen"
+      },
+      "runtimeFiles": 8,
+      "identical": 1,
+      "different": 7,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "check-writer-next-combined-release-20261029",
+      "eventId": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:/Projects/Reylumi Plugins/Check Writer/owner-direction-20261029"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-publishers-20261029",
+      "eventId": "8440f0d3-3379-4671-ba85-9c29f97a7654",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\market-publishers-20261029\\artifacts\\market-publisher-backend-20261029\\source",
+        "baseCommit": "2126963",
+        "previousFeatureCommit": "3913401",
+        "archive": "artifacts/market-publisher-backend-20261029/source.zip",
+        "archiveSha256": "93aa5c169ed5e6f9bb20e8ca571b21697458ba1f3c1e53a634e55f91854b3510"
+      },
+      "runtimeFiles": 22,
+      "identical": 0,
+      "different": 22,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-navigation-update-diagnostics-20261029",
+      "eventId": "aa1bae2f-2795-4902-b686-0810dcefb5e8",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-milestone-20261029/frozen",
+        "commit": "2126963e18ad9a48fd72bedba9b9c43aed5ad122"
+      },
+      "runtimeFiles": 12,
+      "identical": 5,
+      "different": 7,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-release-preflight-20261029",
+      "eventId": "b3d98000-f142-404b-ae55-00461eca1174",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-release-preflight-20261029/frozen",
+        "commit": "768f0ecc1fa05f853869a4f1952643e1e6854718"
+      },
+      "runtimeFiles": 6,
+      "identical": 0,
+      "different": 6,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-lifecycle-confirmation-20261029",
+      "eventId": "575397a0-f257-4f00-96dd-18a9757ccf95",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-lifecycle-confirmation-20261029/frozen",
+        "commit": "eec3e84947bd44f0ac01664ffa2a81a26126a14c"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-mutation-contracts-20261029",
+      "eventId": "f52bf254-0889-4672-94b4-936ec73bf86c",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-mutation-contracts-20261029/frozen",
+        "commit": "f34fe4c78273186451940f0a5d5d9d62241a5a20"
+      },
+      "runtimeFiles": 10,
+      "identical": 2,
+      "different": 8,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-commerce-read-models-20261029",
+      "eventId": "391def0c-5b2d-45bf-9f93-32b51f5460a3",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-commerce-read-models-20261029/frozen",
+        "commit": "2f494acf12b4f03757f40f39bc5108589b9756ba"
+      },
+      "runtimeFiles": 6,
+      "identical": 1,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qr-durable-20261029",
+      "eventId": "96ce9eb7-e8aa-4214-8c1d-111561e50189",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-qr-durable-20261029/frozen",
+        "commit": "6592d45bca21e27e4831427634b58e20632797ba"
+      },
+      "runtimeFiles": 4,
+      "identical": 0,
+      "different": 4,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-refund-reconciliation-20261029",
+      "eventId": "fe1ec11f-13be-4f1f-8365-a3118886eefe",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-refund-reconciliation-20261029/frozen",
+        "commit": "4f88df3d26380403251bc6606cd863251fdaabb6"
+      },
+      "runtimeFiles": 8,
+      "identical": 1,
+      "different": 7,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qr-serverless-20261029",
+      "eventId": "299dab3a-8cc2-404e-bfab-6886071d8a88",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-qr-serverless-20261029/frozen",
+        "commit": "17e69205b32fae396b9fc7408289332976e72ab3"
+      },
+      "runtimeFiles": 4,
+      "identical": 0,
+      "different": 4,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qr-mfa-20261030",
+      "eventId": "ac31b334-2041-4d84-b61d-5f8a24e3d68f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-qr-mfa-20261030/frozen",
+        "commit": "b618e10536623cec60e63b729e9fecd4f20b71d1"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-account-bootstrap-20261030",
+      "eventId": "1484c573-84bb-4bd1-94bf-2ee635e52a77",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-account-bootstrap-20261030/frozen",
+        "commit": "1f6812ff158b212578d53eaedfe0a121e34e6a0d"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-profile-context-20261030",
+      "eventId": "61386e4a-6bca-43c6-9422-e5fd908ec8ec",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-profile-context-20261030/frozen",
+        "commit": "3c6f142d34ed24e91205d1231d980526b2e9f341"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-staging-final-20261030",
+      "eventId": "0683af47-de0e-48e4-8eb6-e1bcdbe4adca",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-staging-final-20261030/frozen",
+        "commit": "df4607209aa49c6b41961bdf78e3352115aac495"
+      },
+      "runtimeFiles": 1,
+      "identical": 0,
+      "different": 1,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-qa-origin-prep-20261030",
+      "eventId": "0b037403-3371-4a62-bbac-cae7248fbbef",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-qa-origin-prep-20261030/frozen",
+        "commit": "96fb039f94c69fb7db8a19034243daa11d3230d8"
+      },
+      "runtimeFiles": 1,
+      "identical": 1,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Frozen runtime bytes already match captured production baseline; no overlay required"
+    },
+    {
+      "changeId": "market-owner-review-final-20261030",
+      "eventId": "b2599c95-0948-4ae6-96d4-803ba975e3bf",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-owner-review-final-20261030/frozen",
+        "commit": "28222df9c81b890a84b7ef56fd48a6786625294c"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "personal-qr-universal-links-provisioning-20261030",
+      "eventId": "512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+      "status": "blocked",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "commit": "61fed55b84b52413476f2a2aba861177f94682ad",
+        "snapshot": "C:/Reylumi-worktrees/personal-qr-camera-20261029/artifacts/personal-qr-camera-20261029/source"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "personal-camera-qr-next-combined-20261029",
+      "eventId": "fe67808b-ad4b-4f2a-b260-a76d3d36ab79",
+      "status": "blocked",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "commit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "market-qa-resource-gate-20261030",
+      "eventId": "88e91bf8-4105-4e05-8727-721fd791085d",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/market-qa-resource-gate-20261030/frozen",
+        "commit": "3c1043a"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "beauty-shortcut-home-20261029",
+      "eventId": "750d4a2a-e76f-4603-871a-78df3eebe8b0",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "2bb2570d1fb70258f49412493bff0e5c1c39cad7",
+        "snapshot": "artifacts/beauty-shortcut-home/source-navigation-v2"
+      },
+      "runtimeFiles": 19,
+      "identical": 7,
+      "different": 12,
+      "missing": 0,
+      "disposition": "Older separate handoff retained in pending; no unreviewed overwrite of current source"
+    },
+    {
+      "changeId": "reylumi-membership-design-20261102",
+      "eventId": "2b288e4d-bac1-4e79-a6f8-045b2bf7116a",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:/Reylumi-worktrees/membership-preview-20261102/docs/membership-preview"
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Documentation QA or preview-only source; no runtime overlay"
+    },
+    {
+      "changeId": "combined-recent-chats-native-20261103",
+      "eventId": "b3fc13a1-e234-41bc-8fda-ae7bfdac2895",
+      "status": "working",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": null,
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 0,
+      "missing": 3,
+      "disposition": "Unfinished or explicitly blocked; not selected"
+    },
+    {
+      "changeId": "market-v1-completion-20261103",
+      "eventId": "0b8ef9f4-17d7-4db9-9c35-7e677dea0026",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "baselineCommit": "0124584",
+        "snapshot": "C:\\Reylumi-worktrees\\market-v1-completion-20261103\\artifacts\\market-v1-completion-20261103\\source",
+        "manifestSha256": "7f0d0e315fd13383583ed426d1b3b3c2fb308e815eff46ab89606abff5678dac"
+      },
+      "runtimeFiles": 7,
+      "identical": 2,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "market-professional-20261103",
+      "eventId": "5f013663-4c50-4741-9ed4-2c3ef1340e9f",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "0eae687bfadf2efe31fa7e9a51829d6bfb41ccc8",
+        "snapshot": "artifacts/market-professional-20261103/SOURCE-REVIEW.zip"
+      },
+      "runtimeFiles": 43,
+      "identical": 0,
+      "different": 0,
+      "missing": 43,
+      "disposition": "Separate project or retained independent Market/Check Writer gates; no activation"
+    },
+    {
+      "changeId": "android-ipad-store-20261105",
+      "eventId": "d4ebec78-ddb3-4890-b0c7-c0d838b9a9a7",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\android-ipad-store-20261105\\artifacts\\mobile-store-handoff\\source-v2",
+        "fileHashes": {
+          ".github/workflows/reylumi-android-check.yml": "81e51b51f7871fe90d8728658a996d0f323c441dd6b89141c41bafed9e870507",
+          ".github/workflows/reylumi-ipad-check.yml": "d76c766e915ae407f5e7c366ed3909b475ede926a0fc87d767b72713bf6fbb02",
+          "android/.gitignore": "76bbf877c87000883b47bd677e72fd554ef3077bd394c2051a61850a06a937de",
+          "android/README.md": "079850d66baee648b80cec4e9ea12ed5ee06a4edd2b65da2761faf92ef8f9652",
+          "android/app/build.gradle": "e703bbd670d99462b375730ced58b355557a2b0730269546bfcff4e8c00b894d",
+          "android/app/src/main/AndroidManifest.xml": "7844f8e77db3be32688717d4a2322a0948f0ff9b33723cdf094f91f626377fa7",
+          "android/app/src/main/java/com/reylumi/android/MainActivity.java": "466adcb24a3ce90c1daac71933f48b8f56ad83d8864918ab40e84b543edc3a11",
+          "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java": "1d6fdc137b35bdab42bb6127f5a3dae1f91978655fcd3b33a132efa6245e729b",
+          "android/app/src/main/res/drawable-nodpi/reylumi_brand.png": "9053aa25c99045b16929ad8b49e02e42d8bbc5941ebd0ce9a79a84db79de3db4",
+          "android/app/src/main/res/mipmap-anydpi/ic_launcher.xml": "b03adf8699e2b5e7751e479ba2307546be67d93572e883d65582732e8b482a65",
+          "android/app/src/main/res/values-vi/strings.xml": "aa7dc187b123c2bb197680f728e06d41aef977cbdc6efbbc9ec63a6b37c03106",
+          "android/app/src/main/res/values/strings.xml": "261e77b1393863dfa9720df91ebb69cc65c143fcb2b5eac89e6be277109b519c",
+          "android/app/src/main/res/values/styles.xml": "4e0b60b9e130ff0c1b76ea373d9a492832983b13861fdc76a8e440d80ce2dafe",
+          "android/app/src/main/res/xml/data_extraction_rules.xml": "b0e88f2e1ffb1c8de5783db430a938f0bb86987ded7aca3b5cf77590247ae09d",
+          "android/app/src/test/java/com/reylumi/android/NavigationPolicyTest.java": "571c5f0b1e0ddb26530b3afeaec77a6fe33446e907cb6adbebb33731de1f7727",
+          "android/build.gradle": "96a33edb21d173da2c36f5312f50cdfb9f71d9f5078c081c81f2d029547f6cb9",
+          "android/gradle.properties": "4d4c82226865844bdc85391d907a383da4a35d3a3f5348985d5ec3997ab932fe",
+          "android/gradle/wrapper/gradle-wrapper.jar": "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f",
+          "android/gradle/wrapper/gradle-wrapper.properties": "f55ea33a3d46631639251549d10df4302261d5bc2dcd16484e10bda4dfdbd5e3",
+          "android/gradlew": "734b3879d3501dce471cf0522d3bcbafe76873d9fc5129345b67fb43bd15e933",
+          "android/gradlew.bat": "57931b17dd228e5c24dac90e815d0bf82477e831a4618dfab4136f5446b42a9f",
+          "android/settings.gradle": "753c31d854f9932386c4a3413d9801d07ff3fed360d5082da2fcc5f2374ae78c",
+          "artifacts/.gitignore": "1d2c3471402972234b5d20379e5165cdb5092cd1172c06a4bd62c81ba8283ce0",
+          "docs/android-ipad-store-preparation-20261105.md": "80b5ffa5b77a329df10846302d3bb7c13368338a1490f7c2b0930a9f390b0d3a",
+          "android/.gitattributes": "535f7e37c97547e7d1ad90a330646affd6adc1f32f0cc4bb1040b83aba210799"
+        }
+      },
+      "runtimeFiles": 0,
+      "identical": 0,
+      "different": 0,
+      "missing": 0,
+      "disposition": "Preparation source integrated; no Android/iPad store release, signing changes or new distribution"
+    },
+    {
+      "changeId": "hosted-back-controls-20261106",
+      "eventId": "c3f8cc9a-6421-444a-bb8a-6691a0c7a981",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "source": {
+        "commit": "4a42e7de6a919f777d3a49030bfa1639f354929c",
+        "snapshot": "C:\\Reylumi-worktrees\\hosted-back-controls-20261106"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "loading-refresh-audit-20261106",
+      "eventId": "a1de4ca5-d84b-4471-8198-68405e8ec8bd",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\loading-refresh-audit-20261106\\artifacts\\loading-refresh-audit-20261106\\frozen-source",
+        "commit": "41121657689af4176276af54c66fd97f3ac8b3c5"
+      },
+      "runtimeFiles": 5,
+      "identical": 0,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "beauty-cards-ui-20261106",
+      "eventId": "c5e348e2-6f10-4024-b5ea-6b61c7533c16",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "source": {
+        "commit": "d33616c68e2f50bf3e7c9c931852a5c275111352",
+        "snapshot": "C:\\Reylumi-worktrees\\beauty-cards-ui-20261106\\artifacts\\beauty-cards-ui-20261106\\frozen"
+      },
+      "runtimeFiles": 5,
+      "identical": 0,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "profile-header-compact-20261106",
+      "eventId": "25977e0e-f798-473d-b636-5aa7ea18d7f9",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "artifacts/profile-header-compact-20261106/snapshot"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "salon-profile-compact-20261106",
+      "eventId": "04255e15-13a7-456a-afea-45f6fbcfb8a4",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\salon-profile-compact-20261106\\artifacts\\salon-profile-compact\\snapshot"
+      },
+      "runtimeFiles": 4,
+      "identical": 0,
+      "different": 4,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "more-single-settings-20261106",
+      "eventId": "d7f91d45-19aa-4ce4-a84b-eca38e782b3c",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\more-single-settings-20261106\\snapshot",
+        "patch": "C:\\Reylumi\\kingpos\\artifacts\\more-single-settings-20261106\\task-only.patch"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "help-complete-20261106",
+      "eventId": "7fbb150a-2b7c-4c65-b53c-49f3eec96216",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:/Reylumi-worktrees/help-complete-20261106/artifacts/help-complete-20261106/frozen"
+      },
+      "runtimeFiles": 9,
+      "identical": 0,
+      "different": 9,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "more-responsive-20261106",
+      "eventId": "c6b6868b-e4d8-4578-850e-b1e7e3ce5740",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\more-responsive-20261106\\snapshot",
+        "patch": "C:\\Reylumi\\kingpos\\artifacts\\more-responsive-20261106\\task-only.patch",
+        "hashes": "C:\\Reylumi\\kingpos\\artifacts\\more-responsive-20261106\\source-hashes.json"
+      },
+      "runtimeFiles": 6,
+      "identical": 0,
+      "different": 6,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "gift-card-designer-20261106",
+      "eventId": "149961b3-0294-4e02-aab0-3d72ccfcca15",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\gift-card-designer-20261106\\artifacts\\gift-card-designer\\source",
+        "commit": "7c060230dd963ba796b56c9c7c851760db7cf0a1"
+      },
+      "runtimeFiles": 5,
+      "identical": 0,
+      "different": 5,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "forum-quick-compose-20261106",
+      "eventId": "58363b41-03d6-4e54-919c-e5911660a6af",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:/Reylumi-worktrees/forum-quick-compose-20261106/artifacts/quick-compose-frozen",
+        "commit": "2812b29025d62d2c53e8c2ec581dd9c33e724158"
+      },
+      "runtimeFiles": 3,
+      "identical": 0,
+      "different": 3,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    },
+    {
+      "changeId": "campaign-unused-credits-20261106",
+      "eventId": "23467bf6-1029-429c-a8f3-8dcdb4d8b59a",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "commit": "163d32e",
+        "snapshot": "C:/Reylumi-worktrees/campaign-unused-credits-20261106/artifacts/campaign-unused-credits/frozen"
+      },
+      "runtimeFiles": 2,
+      "identical": 0,
+      "different": 2,
+      "missing": 0,
+      "disposition": "Held: matching production migration cannot be applied/verified through available authenticated tools"
+    },
+    {
+      "changeId": "gift-card-premium-presets-20261106",
+      "eventId": "1427a478-9851-40cd-8b5e-7c02cba92dae",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\gift-card-designer-20261106\\artifacts\\gift-card-designer\\premium-source",
+        "commit": "daec10912d89dae5445dc2e2e043a85af46e8154"
+      },
+      "runtimeFiles": 9,
+      "identical": 0,
+      "different": 9,
+      "missing": 0,
+      "disposition": "Selected frozen source, integrated and validated"
+    }
+  ]
+}

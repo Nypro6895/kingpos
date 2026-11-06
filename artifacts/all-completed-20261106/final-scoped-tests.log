@@ -1,0 +1,25 @@
+PASS owner designer retains draft; wallet, transfers, tokens, API policies stay separate.
+✔ tests\gift-card-designer-policy.test.mjs (80.4154ms)
+PASS premium assets, payload size, editable type normalization, existing-card fallback and font allowlist.
+✔ tests\gift-card-presets.test.mjs (119.8711ms)
+✔ reviewed Help is available without a preview flag; unknown slugs remain notFound (311.8829ms)
+✔ quick starts, destinations and source evidence stay valid (54.1171ms)
+✔ each illustration has existing responsive images and honest provenance (35.9848ms)
+✔ Vietnamese copy covers walkthroughs, captions and accessible alt text (62.2638ms)
+✔ search accepts English, Vietnamese and missing diacritics with role filtering (22.9047ms)
+✔ Help defaults to English and keeps the approved owner walkthrough complete (72.1154ms)
+✔ Windows Portable is shared and searchable in both languages (58.5355ms)
+✔ every guide belongs to one topic, with valid related destinations (0.9892ms)
+﹣ actual Next Help routes: search, filters, languages, navigation and responsive articles (0.1774ms) # SKIP
+✔ named reads: fresh returns stay idle; requests coalesce; failures settle and preserve the last read (892.6594ms)
+✔ Quick feedback shows identity, state and verification without filler or date (5.6716ms)
+✔ Written feedback, reply and moderation remain available (1.3593ms)
+✔ New and previously opened tabs anchor at tab bar instead of zero (6.5767ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 1201.2022

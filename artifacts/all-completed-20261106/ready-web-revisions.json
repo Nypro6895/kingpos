@@ -1,0 +1,52 @@
+[
+  {
+    "changeId": "loading-refresh-audit-20261106",
+    "originalEventId": "a1de4ca5-d84b-4471-8198-68405e8ec8bd",
+    "id": "851745bc-0aa1-4467-8597-157469d1cc94"
+  },
+  {
+    "changeId": "beauty-cards-ui-20261106",
+    "originalEventId": "c5e348e2-6f10-4024-b5ea-6b61c7533c16",
+    "id": "7cdb8fe6-a3ac-4cf0-96a4-0877c2a544c3"
+  },
+  {
+    "changeId": "profile-header-compact-20261106",
+    "originalEventId": "25977e0e-f798-473d-b636-5aa7ea18d7f9",
+    "id": "d9f45239-3534-49a7-af09-a38ab3f091d0"
+  },
+  {
+    "changeId": "salon-profile-compact-20261106",
+    "originalEventId": "04255e15-13a7-456a-afea-45f6fbcfb8a4",
+    "id": "7b13f7d8-a102-47d1-a13c-202fe170d2c9"
+  },
+  {
+    "changeId": "more-single-settings-20261106",
+    "originalEventId": "d7f91d45-19aa-4ce4-a84b-eca38e782b3c",
+    "id": "01d5462a-ef54-43fe-9547-b30d300fb409"
+  },
+  {
+    "changeId": "help-complete-20261106",
+    "originalEventId": "7fbb150a-2b7c-4c65-b53c-49f3eec96216",
+    "id": "08fc1187-9418-42be-b352-ae68132fd2e0"
+  },
+  {
+    "changeId": "more-responsive-20261106",
+    "originalEventId": "c6b6868b-e4d8-4578-850e-b1e7e3ce5740",
+    "id": "6288a2c4-8f3a-43e5-b84e-12f3da1aa79a"
+  },
+  {
+    "changeId": "gift-card-designer-20261106",
+    "originalEventId": "149961b3-0294-4e02-aab0-3d72ccfcca15",
+    "id": "ea37f401-cc76-4b12-98fd-63d83f244b58"
+  },
+  {
+    "changeId": "forum-quick-compose-20261106",
+    "originalEventId": "58363b41-03d6-4e54-919c-e5911660a6af",
+    "id": "13a79d9a-b0b8-40ce-a17f-fc65aabde097"
+  },
+  {
+    "changeId": "gift-card-premium-presets-20261106",
+    "originalEventId": "1427a478-9851-40cd-8b5e-7c02cba92dae",
+    "id": "38398f8b-4984-47aa-aa1e-09791ceeb7ff"
+  }
+]

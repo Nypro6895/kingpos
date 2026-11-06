@@ -1,0 +1,30 @@
+{
+  "kind": "release",
+  "summary": "Combined iOS 1.0.0 (97) available in existing internal TestFlight group; 247 simulator tests, exact source/bundle and Apple processing verified. No App Store submission/publication or physical-device acceptance.",
+  "changes": [
+    "c588d6b8-0c12-4b54-adc7-04770181ca53",
+    "6d4d7608-6a1b-4cd3-bb3e-761d3ce811cc",
+    "949a49f2-9e54-45cb-bdf9-d0bf4e8cb046",
+    "7e47a818-64e0-4484-a300-4dc2dd1b3fbe"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "97",
+      "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+      "evidence": "artifacts/all-completed-20261106/native-final-verified.json"
+    }
+  },
+  "baseline": {
+    "version": "1.0.0",
+    "build": "96",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d"
+  },
+  "webDeploymentId": "dpl_4NjSvYQbEc8fV1EmTPN1hJPjtfyr",
+  "appStore": "Not submitted or published",
+  "id": "fa2f005f-5361-45a2-b6af-388fd5c9361d",
+  "recordedAt": "2026-11-06T07:53:42.909Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106"
+}

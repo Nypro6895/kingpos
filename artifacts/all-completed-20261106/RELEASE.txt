@@ -1,0 +1,48 @@
+REYLUMI — PHÁT HÀNH TỔNG HỢP 06/11/2026
+
+Web: Đã phát hành và xác minh https://reylumi.com
+Deployment: dpl_4NjSvYQbEc8fV1EmTPN1hJPjtfyr
+Baseline: dpl_HzMkmRaFPcHaNLCQHGEuQEiibXeu
+Source commit: acb17696eabeb49fc03a680b2610d4b6d1dc92bc
+Source SHA256: e6da7e6e6358b0d928dd712aaee04437b042fa5938525d340d218506feb20aa3
+Overlay SHA256: 424ee7ecec30e544262d4155b65aa924264450dcc571f8b2ea8a58abccf83301
+Web receipt: 59b44d31-1e0f-4825-b1d9-3932f4692d95
+
+Các nhóm web mới:
+- loading-refresh-audit-20261106 | ready 851745bc-0aa1-4467-8597-157469d1cc94 | source event a1de4ca5-d84b-4471-8198-68405e8ec8bd
+- beauty-cards-ui-20261106 | ready 7cdb8fe6-a3ac-4cf0-96a4-0877c2a544c3 | source event c5e348e2-6f10-4024-b5ea-6b61c7533c16
+- profile-header-compact-20261106 | ready d9f45239-3534-49a7-af09-a38ab3f091d0 | source event 25977e0e-f798-473d-b636-5aa7ea18d7f9
+- salon-profile-compact-20261106 | ready 7b13f7d8-a102-47d1-a13c-202fe170d2c9 | source event 04255e15-13a7-456a-afea-45f6fbcfb8a4
+- more-single-settings-20261106 | ready 01d5462a-ef54-43fe-9547-b30d300fb409 | source event d7f91d45-19aa-4ce4-a84b-eca38e782b3c
+- help-complete-20261106 | ready 08fc1187-9418-42be-b352-ae68132fd2e0 | source event 7fbb150a-2b7c-4c65-b53c-49f3eec96216
+- more-responsive-20261106 | ready 6288a2c4-8f3a-43e5-b84e-12f3da1aa79a | source event c6b6868b-e4d8-4578-850e-b1e7e3ce5740
+- gift-card-designer-20261106 | ready ea37f401-cc76-4b12-98fd-63d83f244b58 | source event 149961b3-0294-4e02-aab0-3d72ccfcca15
+- forum-quick-compose-20261106 | ready 13a79d9a-b0b8-40ce-a17f-fc65aabde097 | source event 58363b41-03d6-4e54-919c-e5911660a6af
+- gift-card-premium-presets-20261106 | ready 38398f8b-4984-47aa-aa1e-09791ceeb7ff | source event 1427a478-9851-40cd-8b5e-7c02cba92dae
+
+Giữ nguyên các tính năng đã có từ baseline, gồm POS headerless, privacy liên hệ khách, startup/reopen, Reward, Membership và Check Writer.
+Check Writer được đọc lại trực tiếp: fulfillment ready, giá được phê duyệt 490 cents, các bảng riêng/RLS và chặn anonymous đạt; không mua gói hay tạo check thật.
+
+Kiểm chứng:
+- Fresh local + Vercel production builds và TypeScript đạt; ESLint 0 lỗi, 1 warning dependency effect có sẵn của Forum.
+- Tải lại source archive Vercel: khớp 3984/3984 file, không thêm/thiếu.
+- 16 kiểm tra HTTP public/guest live đạt. Không suy ra acceptance tài khoản salon từ các request public.
+- More: 18 tổ hợp role/viewport + 4 kích thước POS; đủ route hiện hành, giữ draft, focus/dismissal và Settings.
+- Help: fixture song ngữ và server Next thực với tìm kiếm, filter, ngôn ngữ, responsive và các bài hướng dẫn.
+- Gift designer: preset, crop, lưu/lỗi/retry và 5 viewport.
+- Salon header: 75 cấu hình layout/width/content + Follow/hours/share/claim. Giữ SalonName/member badge và tool quản lý.
+- Today: 17/17 regression; Campaign đang ship: 85/85 regression.
+
+iOS: 1.0.0 (97) — Apple VALID; TestFlight verified=true; tests=247; commit=acb17696eabeb49fc03a680b2610d4b6d1dc92bc
+Workflow: https://github.com/Nypro6895/kingpos/actions/runs/42181451347
+Native baseline đã upload: 1.0.0 (96), commit 2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d.
+App Store: KHÔNG submit, KHÔNG phát hành.
+Android/iPad: nguồn preparation đã tích hợp, không mở kênh phân phối/store mới.
+
+Còn chờ:
+- Campaign hoàn credit chưa dùng: thiếu SQL access production (browser SQL Editor không điều khiển được; CLI chưa đăng nhập). Chưa áp migration, worker giữ đúng bản baseline. Patch riêng đạt 7/7 test; cần preflight ledger/function/ACL, migration nguyên tử, rồi publish worker cùng lượt.
+- External Market: còn hosting/provider/domain/device/policy acceptance; chưa mở commerce công khai. Các record cũ và task chưa hoàn thành giữ riêng trong pending-audit.json, không đè snapshot cũ lên source đang live.
+- Các event đến sau selection freeze: maps-explore-profile-20261106 (needs-integration), salon-address-directions-autocomplete-20261106 (working).
+- Chưa kiểm chứng iPhone vật lý hay các luồng salon đăng nhập cần dữ liệu thật.
+
+Ghi chú kiểm thử: fixture profile cũ giả định sparse profile không có ảnh; production hiện có ảnh mặc định nên acceptance được thu hẹp đúng header/identity. Fixture tên salon cực dài phát hiện footer cũ tràn ngang; footer đó giữ nguyên từ baseline, không nằm trong thay đổi header này. Không coi fixture đó là hosted/device proof.

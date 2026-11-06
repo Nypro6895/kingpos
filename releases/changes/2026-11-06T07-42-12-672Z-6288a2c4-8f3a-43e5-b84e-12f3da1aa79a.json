@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "more-responsive-20261106",
+  "status": "ready",
+  "summary": "Completed presentation-only responsive grouped More on phone, iPad and desktop; pinned All Settings; original navigation and business behavior preserved.; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "components/role-more-content.tsx",
+    "components/role-more-content.css",
+    "app/role-more-groups.ts",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/(app)/more/page.tsx",
+    "tests/more-responsive-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "c6b6868b-e4d8-4578-850e-b1e7e3ce5740",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "6288a2c4-8f3a-43e5-b84e-12f3da1aa79a",
+  "recordedAt": "2026-11-06T07:42:12.672Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "288214ef22358cc66c97db79295b7a910cf709914a6a727e41854eb7b23b135c",
+    "components/role-more-content.tsx": "d638334aba1fde5344b1855fec5f336e80e2d1ad0aeb2447d94de6a77b0cee18",
+    "components/role-more-content.css": "183965381bcc567e955526eba01237f8514b07e8061c6eebf8778f7ad2eeef47",
+    "app/role-more-groups.ts": "c4f9416a67388f54a86231821639d2e0601ab9ebe065ba63c6d511540ec10c6a",
+    "app/pos/owner-pos-tabs.tsx": "d10a3793e55f9af4d986c0c4c50510c08d705e7e4f835311a0e01c2dc9b1136a",
+    "app/(app)/more/page.tsx": "1156914e5597c37f1f44790b094b330f8671a45b3d6c3e5e0019169bdcbbfdc0",
+    "tests/more-responsive-ui.test.mjs": "b4fbc73294f40fb8978c950e25045efde02c1491e29c9bbbf58f5c1375ff2125"
+  }
+}

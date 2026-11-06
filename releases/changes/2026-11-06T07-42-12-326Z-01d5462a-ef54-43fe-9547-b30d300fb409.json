@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "more-single-settings-20261106",
+  "status": "ready",
+  "summary": "More menus use one All Settings entry; remove separate Salon Settings shortcut across owner shared menu and More directory. Preserve operational tools.; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "components/role-more-content.tsx",
+    "app/(app)/more/page.tsx",
+    "tests/pos-more-settings-browser.mjs",
+    "tests/owner-workspace-ui.test.mjs",
+    "tests/plugin-navigation-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "d7f91d45-19aa-4ce4-a84b-eca38e782b3c",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "01d5462a-ef54-43fe-9547-b30d300fb409",
+  "recordedAt": "2026-11-06T07:42:12.326Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "9a4de1400b240f9d2dc180ed45c3e4f651be6be7c9128d187c55e2774ea240f9",
+    "components/role-more-content.tsx": "d638334aba1fde5344b1855fec5f336e80e2d1ad0aeb2447d94de6a77b0cee18",
+    "app/(app)/more/page.tsx": "1156914e5597c37f1f44790b094b330f8671a45b3d6c3e5e0019169bdcbbfdc0",
+    "tests/pos-more-settings-browser.mjs": "210cba8d980721dff645029497dd4a58f5e2e0ab417012e1362386a3b55fe070",
+    "tests/owner-workspace-ui.test.mjs": "121125991dffcae9d08f708a414b2586bb23aa1a7b1ad12d0113d0df775894b9",
+    "tests/plugin-navigation-ui.test.mjs": "7e3526f318d93ddee9cc714e448d2f1c2a4d926400d736ae022d821748d00ab9"
+  }
+}

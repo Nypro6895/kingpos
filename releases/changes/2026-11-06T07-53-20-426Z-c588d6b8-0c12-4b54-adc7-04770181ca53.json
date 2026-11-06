@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "hosted-back-controls-20261106",
+  "status": "ready",
+  "summary": "Remove unwanted native Back to app bar from authentication and public support; full source route inventory and transition regression tests; integrated, archived, uploaded and verified in TestFlight 1.0.0 (97)",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\native-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "c3f8cc9a-6421-444a-bb8a-6691a0c7a981",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Exact committed source and signed/exported bundle provenance verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-verified.json"
+    },
+    {
+      "name": "247 simulator tests in 14 hosts passed exactly once; unsigned/signed archive and export passed",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-verified.json"
+    },
+    {
+      "name": "Upload accepted; Apple VALID; availability in existing internal TestFlight group verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/native-final-verified.json"
+    }
+  ],
+  "id": "c588d6b8-0c12-4b54-adc7-04770181ca53",
+  "recordedAt": "2026-11-06T07:53:20.426Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "ios/Reylumi/NavigationPolicy.swift": "ab4d3bb509ca42cf2cfcbb2c5121d0ae4ecce37ea13fc4fee5b67282a963616e",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "c9016d29a664e2eb35109831b8083838b2ad493335eddd6a6dec4b6661390abb",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "d3fba0d29671c510adf60991f72e83fd5eb69780c570a8a85c3cf8d769d9a8e6"
+  }
+}

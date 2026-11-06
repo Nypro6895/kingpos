@@ -1,0 +1,15 @@
+✔ completed period returns unused credits: keep=false, used=0 (1613.1362ms)
+✔ completed period returns unused credits: keep=false, used=1 (1055.2834ms)
+✔ completed period returns unused credits: keep=true, used=0 (952.013ms)
+✔ completed period returns unused credits: keep=true, used=1 (963.6676ms)
+✔ an active or owner-paused funded period is not completed by settlement (936.4147ms)
+✔ queue settles before buying; settlement failure=false (1.5762ms)
+✔ queue settles before buying; settlement failure=true (0.291ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5648.4941

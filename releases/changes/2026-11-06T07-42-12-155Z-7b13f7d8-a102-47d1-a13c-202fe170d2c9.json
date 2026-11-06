@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "salon-profile-compact-20261106",
+  "status": "ready",
+  "summary": "Compact experiences, anchor profile tabs and move rewards into Overview; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-home.tsx",
+    "app/(app)/explore/salons/[salonId]/page.tsx",
+    "components/rewardlumi/reward-salon-panel.module.css",
+    "tests/salon-profile-compact.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "04255e15-13a7-456a-afea-45f6fbcfb8a4",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "7b13f7d8-a102-47d1-a13c-202fe170d2c9",
+  "recordedAt": "2026-11-06T07:42:12.155Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/salon-profile/salon-profile-view.tsx": "dba261be24b2ac748c1aa339170a534d67d5db45d63f524650030c017d18a3eb",
+    "app/salon-profile/salon-website-home.tsx": "1503c7076e24a02fc834ef4d6b4c2cf2e97d7030c24743bcc8e2e1faaa345f66",
+    "app/(app)/explore/salons/[salonId]/page.tsx": "724f0db77f65bc80f7251ad80680445ae70e4bad66c541f7861fc9740a91f724",
+    "components/rewardlumi/reward-salon-panel.module.css": "00a9515d184d4db68a168491d137f907a8646a769a91f93d36c77408b9c6a2b4",
+    "tests/salon-profile-compact.test.mjs": "ad790ec6d9bd9e3aeacc74dd6a6c08239abf73d70cad83ccdd02b08acef2bd71"
+  }
+}

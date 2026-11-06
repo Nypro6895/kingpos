@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "loading-refresh-audit-20261106",
+  "status": "ready",
+  "summary": "Fix reproduced false loading on cached named reads, settle missing booking details, coalesce automatic Bookings revalidation, and keep list geometry stable. Validated patch; integrate into current release baseline before publication.; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/activity/customer-activity-client.tsx",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-resource.ts",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/loading-refresh-lifecycle.test.mjs",
+    "docs/loading-refresh-audit-20261106.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "a1de4ca5-d84b-4471-8198-68405e8ec8bd",
+  "supersedesEvents": [
+    "a1de4ca5-d84b-4471-8198-68405e8ec8bd"
+  ],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "851745bc-0aa1-4467-8597-157469d1cc94",
+  "recordedAt": "2026-11-06T07:41:49.510Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/activity/customer-activity-client.tsx": "9c18e184bb10d31ace6cf7108ab1cc89afe76651e864eb5173ea7ca63490cfa4",
+    "app/activity/customer-journey.module.css": "f41bf5ef4eb5a21f57b31b0cf456941b1103ec5c9d9e1bb254425b6b756b4cc7",
+    "app/activity/customer-journey.tsx": "121aadf257eaeff41c53d07c598d582308210b74c2895901c4698a5fc6db36cd",
+    "lib/app-local-page-registry.tsx": "2bf84503a9f786937a1b0ae5b0a8c281272e52571b612cac589192bc5883861e",
+    "lib/app-local-resource.ts": "4e72eaabd0b6bf4565dbbec87f2df97d701e90e21028b8316a545972bd38b825",
+    "tests/customer-journey-ui.test.mjs": "b3f4612752c4659cf49131285f6df7dc19caa68552a6e5ab8c4758f7055a83c6",
+    "tests/loading-refresh-lifecycle.test.mjs": "e54c241a62bfcc3a011c6b0402929663cd17e0c826c0c6b8d3c86161703a7764",
+    "docs/loading-refresh-audit-20261106.txt": "12bf312d02a71dab22c659069abd3be8551825ed7c83ccf10d275e47beadded8"
+  }
+}

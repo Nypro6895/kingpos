@@ -1,0 +1,17 @@
+{
+  "kind": "change",
+  "changeId": "all-completed-release-20261106",
+  "status": "working",
+  "summary": "Integrate completed queued Reylumi changes against verified live source; web and TestFlight only; no App Store",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "validation": [],
+  "id": "c18707de-47cd-4bd5-a0be-b810230e68bd",
+  "recordedAt": "2026-11-06T07:20:56.682Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

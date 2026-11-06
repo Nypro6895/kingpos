@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "help-complete-20261106",
+  "status": "ready",
+  "summary": "Help home and all articles redesigned in brand orange/teal; 36 concise bilingual guides grouped into 7 topics, including 22 missing guides and current Payroll terminology; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/help/help-catalog.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help.module.css",
+    "app/help/help-expanded-copy.json",
+    "lib/help-guides.ts",
+    "lib/help-search.ts",
+    "lib/help-language.ts",
+    "lib/help-expanded.json",
+    "tests/help-draft.test.mjs",
+    "tests/help-bilingual-ui.test.mjs",
+    "tests/help-experience.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "7fbb150a-2b7c-4c65-b53c-49f3eec96216",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "08fc1187-9418-42be-b352-ae68132fd2e0",
+  "recordedAt": "2026-11-06T07:42:12.497Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/help/help-catalog.tsx": "e55d434300aafb758249a71be290c533ec705d7e826d6abdaba09fa351d292ba",
+    "app/help/help-content.tsx": "1f142ca919f7c306998d88d71e626b70d92a6f7c844419135cd511b3acdc9e50",
+    "app/help/help-language.tsx": "c5fbc45d29dfd49d9b10c2f3c6271d133c15f728837fb3b89d4fef025cc53fe4",
+    "app/help/help.module.css": "1eedd605336bb3eb4ee4303c450b1533ebe7b9efc7dd8aef723c19a09f6e43ad",
+    "app/help/help-expanded-copy.json": "a875a9e3158f5555101b7f6d276032ba0af40ab200b4ffd39cc6e2a0401c60d7",
+    "lib/help-guides.ts": "2adfe92a3dd2571e323a84d3f20f7273a33e22464adff04309ad30a711a3c3a7",
+    "lib/help-search.ts": "384ea52094c98f66d380b04ba6ebfc243eff1a639b5e72fb1825b5156ffa14a4",
+    "lib/help-language.ts": "40a111781b0ed2f507f072659662d6b975cc4dad90a120ac93e0e3c03a226a01",
+    "lib/help-expanded.json": "15c2a52c83fadad8c7d91df7d4bad31bc4061d8e69ce9c71ead85cc12d4b3cab",
+    "tests/help-draft.test.mjs": "bcbccd7d7d7fa260246614fe68b878d3af0f4f0bccd4b07b55ed69740bac3b6a",
+    "tests/help-bilingual-ui.test.mjs": "f7e8a47222b68862356b1b26bee0bb3a5542e3b80dfaf147e173dbbc08c5d007",
+    "tests/help-experience.test.mjs": "2cba4b4f780c0919497ad20267ec1c730670c8b3161b2993ddfb2e6a96cf1b5c"
+  }
+}

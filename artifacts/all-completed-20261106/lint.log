@@ -1,0 +1,6 @@
+
+C:\Reylumi-worktrees\all-completed-release-20261106\app\(app)\forum\forum.tsx
+  242:5  warning  React Hook useEffect has a missing dependency: 'detail'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
+

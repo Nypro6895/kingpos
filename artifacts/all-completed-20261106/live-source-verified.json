@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-06T07:54:49.825Z",
+  "deploymentId": "dpl_4NjSvYQbEc8fV1EmTPN1hJPjtfyr",
+  "alias": "dpl_4NjSvYQbEc8fV1EmTPN1hJPjtfyr",
+  "sourceCommit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "files": 3984,
+  "archiveSha256": "8be1bb943465148479b68dd4ac507811d38d9babc6a8aacbaf7014f2e3ad506e",
+  "sourceSha256": "e6da7e6e6358b0d928dd712aaee04437b042fa5938525d340d218506feb20aa3",
+  "overlaySha256": "424ee7ecec30e544262d4155b65aa924264450dcc571f8b2ea8a58abccf83301",
+  "mismatch": [],
+  "extra": [],
+  "verified": true
+}

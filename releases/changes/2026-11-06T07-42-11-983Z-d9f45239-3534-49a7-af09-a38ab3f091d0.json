@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "profile-header-compact-20261106",
+  "status": "ready",
+  "summary": "Compact identity across salon profile layouts; Follow beside name, locality/reputation/hours stacked closely; manage access in overflow; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/salon-profile/salon-website-header.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "25977e0e-f798-473d-b636-5aa7ea18d7f9",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "d9f45239-3534-49a7-af09-a38ab3f091d0",
+  "recordedAt": "2026-11-06T07:42:11.983Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/salon-profile/salon-profile-view.tsx": "dba261be24b2ac748c1aa339170a534d67d5db45d63f524650030c017d18a3eb",
+    "app/salon-profile/salon-website-header.tsx": "635938880808c43bf3b7d9a4be5b63be122959431815efcb376f9a0ff95344db",
+    "app/salon-profile/salon-website-header.module.css": "1fd6419f8292828727d0230bac08a799c938bb94cfc14df880562c98a2dc44a0"
+  }
+}

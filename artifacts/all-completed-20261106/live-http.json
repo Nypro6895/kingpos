@@ -1,0 +1,137 @@
+{
+  "at": "2026-11-06T07:40:14.114Z",
+  "base": "https://reylumi.com",
+  "deploymentId": "dpl_4NjSvYQbEc8fV1EmTPN1hJPjtfyr",
+  "scope": "Read-only public routes and unsigned access gates; no authenticated salon or physical-device acceptance",
+  "verified": true,
+  "results": [
+    {
+      "route": "/explore",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 228911,
+      "passed": true
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 98298,
+      "passed": true
+    },
+    {
+      "route": "/help?lang=vi",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 100899,
+      "passed": true
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 96067,
+      "passed": true
+    },
+    {
+      "route": "/settings",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 81633,
+      "passed": true
+    },
+    {
+      "route": "/more",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 74803,
+      "passed": true
+    },
+    {
+      "route": "/beauty",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 74281,
+      "passed": true
+    },
+    {
+      "route": "/gift-cards",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 72867,
+      "passed": true
+    },
+    {
+      "route": "/forum",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 74280,
+      "passed": true
+    },
+    {
+      "route": "/explore/salons/00000000-0000-4000-8000-000000000000",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 79189,
+      "passed": true
+    },
+    {
+      "route": "/api/public-booking/context?salonId=invalid",
+      "status": 400,
+      "expected": 400,
+      "finalHost": "reylumi.com",
+      "bytes": 28,
+      "passed": true
+    },
+    {
+      "route": "/api/app-local/context",
+      "status": 400,
+      "expected": 400,
+      "finalHost": "reylumi.com",
+      "bytes": 37,
+      "passed": true
+    },
+    {
+      "route": "/membership",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 71330,
+      "passed": true
+    },
+    {
+      "route": "/qr",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 74259,
+      "passed": true
+    },
+    {
+      "route": "/rewards?from=beauty",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 74345,
+      "passed": true
+    },
+    {
+      "route": "/bookings",
+      "status": 200,
+      "expected": 200,
+      "finalHost": "reylumi.com",
+      "bytes": 77483,
+      "passed": true
+    }
+  ]
+}

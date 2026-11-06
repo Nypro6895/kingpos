@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "forum-quick-compose-20261106",
+  "status": "ready",
+  "summary": "Forum menu first, compose last, random section quick compose rows preserving draft text; integrated into verified production release acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/forum/forum.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/quick-compose.tsx",
+    "tests/forum-quick-compose.browser.cjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\all-completed-release-20261106\\artifacts\\all-completed-20261106\\integrated-ready-source",
+    "commit": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc"
+  },
+  "integratedFromEvent": "58363b41-03d6-4e54-919c-e5911660a6af",
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Assembled local and Vercel production build/TypeScript plus scoped runtime/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/build-final.log"
+    },
+    {
+      "name": "Frozen source archive and public live HTTP verified",
+      "result": "passed",
+      "evidence": "artifacts/all-completed-20261106/live-source-verified.json"
+    }
+  ],
+  "id": "13a79d9a-b0b8-40ce-a17f-fc65aabde097",
+  "recordedAt": "2026-11-06T07:42:13.019Z",
+  "worktree": "C:\\Reylumi-worktrees\\all-completed-release-20261106",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/forum/forum.tsx": "675d00a1e74a64d61e92a2c3017b981113ab5a17a4b99e4a34bb1a6d46f3497b",
+    "app/(app)/forum/forum.module.css": "dd58a093c38cf2c1ffac30c084a32544204e4fd73c3fa85e85c1193b0daa39a9",
+    "app/(app)/forum/quick-compose.tsx": "8e20b52151c909a32eb7a84c67d19ca154555358dfd77168ee509aa918bdd80a",
+    "tests/forum-quick-compose.browser.cjs": "20dc25de6ead69076822357a31cb3ad28184bf53f2782990f6423610b29ef830"
+  }
+}
