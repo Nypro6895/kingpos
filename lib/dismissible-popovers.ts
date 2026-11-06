@@ -7,6 +7,7 @@ export function installPopoverDismissal(root: Document) {
   function outside(event: Event) {
     const target = event.target;
     if (!(target instanceof Node)) return;
+    if (event.type === "focusin" && (!(target instanceof Element) || !target.matches(":focus-visible"))) return;
     root.querySelectorAll<HTMLDetailsElement>(selector).forEach((details) => {
       if (!details.contains(target)) close(details);
     });
@@ -23,12 +24,12 @@ export function installPopoverDismissal(root: Document) {
     if (!(target instanceof Element)) return;
     if (target.closest("a[href], [data-dismiss-popover]")) target.closest<HTMLDetailsElement>(selector)?.removeAttribute("open");
   }
-  root.addEventListener("pointerdown", outside, true);
+  root.addEventListener("click", outside);
   root.addEventListener("focusin", outside, true);
   root.addEventListener("keydown", escape);
   root.addEventListener("click", selection);
   return () => {
-    root.removeEventListener("pointerdown", outside, true);
+    root.removeEventListener("click", outside);
     root.removeEventListener("focusin", outside, true);
     root.removeEventListener("keydown", escape);
     root.removeEventListener("click", selection);

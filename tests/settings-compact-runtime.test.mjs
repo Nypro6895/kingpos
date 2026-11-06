@@ -33,7 +33,7 @@ async function fixture(){
  const real=<div className="compact-settings settings-hub"><div className="settings-inline-editor"><SalonDetailsPanel data={realData} onSaved={async()=>{}}/><SalonHoursPanel data={realData} onSaved={async()=>{}}/></div></div>;
  const standalone=<CompactSettingsWorkspace name="King Nails" items={[{id:'business-information',label:'Business info',group:'Profile'},{id:'operating-hours',label:'Opening hours',group:'Profile'}]}><form className="salon-main-form" onSubmit={e=>{e.preventDefault();window.payload=Object.fromEntries(new FormData(e.currentTarget))}}><CompactSettingsPane id="business-information"><label>Name<input required name="business_name" defaultValue="King Nails"/></label></CompactSettingsPane><CompactSettingsPane id="operating-hours"><label>Time zone<input name="timezone" defaultValue="America/Chicago"/></label></CompactSettingsPane><CompactSaveBar><button>Save settings</button></CompactSaveBar></form></CompactSettingsWorkspace>;
  const action=<div className="compact-settings"><InlineForm save={async()=>{window.actionCount=(window.actionCount||0)+1;return {ok:true}}} onSaved={()=>{}} label="Revoke invitation"><input type="hidden" name="invite_id" value="invite"/><p>Pending invitation</p></InlineForm></div>;
- const initial=new URLSearchParams(location.search).get('section')||'';createRoot(document.getElementById('root')).render(location.pathname.startsWith('/real-')?real:location.pathname==='/salon-settings'?standalone:location.pathname==='/action'?action:<SettingsHubClient user={{email:'me@example.com'}} createdAtLabel="Today" index={window.index} initialSection={initial}/>);`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'fixture',setup(b){
+ const initial=new URLSearchParams(location.search).get('section')||'';const root=createRoot(document.getElementById('root'));window.renderSettings=section=>root.render(<SettingsHubClient user={{email:'me@example.com'}} createdAtLabel="Today" index={window.index} initialSection={section}/>);root.render(location.pathname.startsWith('/real-')?real:location.pathname==='/salon-settings'?standalone:location.pathname==='/action'?action:<SettingsHubClient user={{email:'me@example.com'}} createdAtLabel="Today" index={window.index} initialSection={initial}/>);`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'fixture',setup(b){
  b.onResolve({filter:/workspace-language$/},()=>({path:'language',namespace:'stub'}));
  b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'stub'}));
  b.onResolve({filter:/^next\/navigation$/},()=>({path:'navigation',namespace:'stub'}));
@@ -72,5 +72,21 @@ test('compact Settings: nested navigation, lazy editors, salon drafts, failed sa
  for(const width of [320,428,1280]){await page.setViewportSize({width,height:926});await page.goto(f.url+'/real-salon');assert.equal(await page.getByText('Nail salon',{exact:true}).count(),0);await page.getByRole('region',{name:'King Nails',exact:true}).getByRole('button',{name:'Edit',exact:true}).click();await page.locator('input[name=business_name]').fill('Updated King Nails');await page.getByRole('button',{name:'Save changes',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor();const result=await page.evaluate(()=>window.actualWrites[0]);assert.equal(result.id,'one');assert.equal(result.payload.business_name,'Updated King Nails');assert.equal(result.payload.city,'Chicago');assert.equal(result.payload.address_line2,'Suite 2');assert.equal(result.payload.business_description,'Nail salon');
  await page.getByRole('region',{name:'Opening hours',exact:true}).getByRole('button',{name:'Edit',exact:true}).click();await page.locator('.opening-hours-day summary').filter({hasText:'Monday'}).click();await page.getByRole('button',{name:'Remove Monday time range 1'}).click();await page.getByRole('button',{name:'Save opening hours'}).click();assert.equal(await page.evaluate(()=>window.actualWrites.find(w=>w.kind==='hours').payload.weeklyHours.length),0);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`real salon overflow ${width}`);await page.screenshot({path:`artifacts/settings-compact-complete-20261102/screenshots/salon-form-${width}.png`,fullPage:true});}
  await page.goto(f.url+'/real-public');await page.locator('summary').filter({hasText:/^Change cover$/}).click();await page.getByRole('button',{name:'Upload cover'}).click();await page.locator('form').filter({has:page.locator('input[name=tagline]')}).getByRole('button',{name:'Save changes',exact:true}).click();assert.equal(await page.evaluate(()=>window.actualWrites.find(w=>w.kind==='identity').payload.cover_path),'cover/new');await page.close();
+ }finally{await browser.close();await f.close();}
+});
+
+test('retained Settings accepts a new hub or account route and keeps visited drafts',{timeout:60000},async()=>{
+ const f=await fixture(),browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ try{
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await page.goto(f.url+'/settings?section=salon-one-services');
+  await page.locator('#salon-one-services input').fill('Preserved service draft');
+  await page.evaluate(()=>window.renderSettings(''));
+  await page.getByRole('navigation',{name:'Settings accounts and salons'}).waitFor({state:'visible'});
+  await page.evaluate(()=>window.renderSettings('notifications'));
+  await page.getByText('Notification editor',{exact:true}).waitFor({state:'visible'});
+  await page.evaluate(()=>window.renderSettings('salon-one-services'));
+  assert.equal(await page.locator('#salon-one-services input').inputValue(),'Preserved service draft');
+  assert.equal(await page.evaluate(()=>window.writes.length),0);
  }finally{await browser.close();await f.close();}
 });

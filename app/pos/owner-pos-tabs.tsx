@@ -128,7 +128,7 @@ export function OwnerPosTabs({ active }: { active: OwnerTab }) {
   const translate = useWorkspaceTranslation();
   const pathname = usePathname();
   const mobile = <OwnerNotebookMenu key={`device:${pathname ?? active}`} active={active} more={<OwnerMoreMenu key={pathname ?? active} />} />;
-  return <><Link className="owner-back-today" href="/staff/today">← <WorkspaceText text="Today" /></Link>{mobile}<nav className="owner-top-nav owner-notebook-desktop" aria-label={translate("Owner POS")}>
+  return <>{mobile}<nav className="owner-top-nav owner-notebook-desktop" aria-label={translate("Owner POS")}>
     <OwnerMoreMenu key={pathname ?? active} />
     {shortcuts.map(item => <Link className="owner-nav-item" data-owner-tab={item.id} href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}
   </nav></>;

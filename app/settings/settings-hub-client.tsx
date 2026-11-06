@@ -66,6 +66,13 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  };
  const [location,setLocation]=useState(()=>resolveSection(initialSection));
  const [visited,setVisited]=useState<string[]>(()=>location.item?[location.item]:[]);
+ const [routeIntent,setRouteIntent] = useState(initialSection);
+ if(routeIntent!==initialSection){
+   setRouteIntent(initialSection);
+   const next=resolveSection(initialSection);
+   setLocation(next);setQuery(initialQuery);
+   if(next.item&&!visited.includes(next.item))setVisited([...visited,next.item]);
+ }
  const activeGroup=groups.find(g=>g.id===location.group)||groups[0];
  const activeItem=activeGroup.items.find(i=>i.id===location.item);
  const detail=!!activeItem&&location.step==="detail";
@@ -139,7 +146,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
    window.dispatchEvent(new PopStateEvent("popstate"));
    requestAnimationFrame(()=>window.dispatchEvent(new HashChangeEvent("hashchange")));
   }} className="settings-hub compact-settings" data-detail={detail} data-mobile-step={search?"home":location.step}>
-  <header className="settings-page-header"><h1><WorkspaceText text="All Settings"/></h1><div className="settings-search"><label><SettingsIcon name="search"/><span className="sr-only"><WorkspaceText text="Find a setting or salon"/></span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={__vt("Find a setting or salon…")}/></label><button type="button" aria-label={__vt("Refresh salon list")} disabled={busy} onClick={()=>void reload()}>↻</button></div></header>
+  <header className="settings-page-header"><h1><WorkspaceText text="All Settings"/></h1><div className="settings-search"><label><SettingsIcon name="search"/><span className="sr-only"><WorkspaceText text="Find a setting or salon"/></span><input type="search" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={query} onChange={e=>setQuery(e.target.value)} placeholder={__vt("Find a setting or salon…")}/></label><button type="button" aria-label={__vt("Refresh salon list")} disabled={busy} onClick={()=>void reload()}>↻</button></div></header>
   {error?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={error}/></p>:null}
   <div className="settings-workbench">
    <nav aria-label={__vt("Settings accounts and salons")} className="settings-accounts" hidden={!!search}>

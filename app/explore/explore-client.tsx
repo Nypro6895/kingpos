@@ -4051,7 +4051,7 @@ export function ExploreClient({
               </section>
 
               <section className="mx-auto grid w-full min-w-0 max-w-none grid-cols-1 gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
-                {searchMode && !activeSearchFailure ? (
+                {searchMode && !activeSearchFailure && !isSearching ? (
                   <SearchRefinementBar
                     category={committedSearch.category || "All"}
                     location={committedSearch.location}

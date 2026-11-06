@@ -118,7 +118,9 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         view.insertSubview(webView, belowSubview: launchPanel)
         NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), webView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor), webView.leadingAnchor.constraint(equalTo: view.leadingAnchor), webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            // WebKit owns keyboard occlusion through visualViewport. Resizing
+            // its native frame as well applies a second keyboard adjustment.
+            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), webView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor), webView.leadingAnchor.constraint(equalTo: view.leadingAnchor), webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         transport.onEvent = { [weak self] name, detail in self?.emit(name, detail) }
         foregroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
@@ -279,7 +281,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                 replyHandler(result, nil)
             } catch {
                 let cancelled = error is CancellationError || (error as NSError).code == NSURLErrorCancelled
-                let message = cancelled ? (kind == "command" ? "The result could not be confirmed. Check the latest record before making another change." : "This request was superseded. Please try again.") : error.localizedDescription
+                let message = cancelled ? (kind == "command" ? "The result could not be confirmed. Check the latest record before making another change." : "The page changed before loading finished. Open it again.") : error.localizedDescription
                 // Failed read/context association remains native-only. Do not
                 // wrap/reclassify errors to add diagnostic IDs to this bridge.
                 let reason = (error as NSError).userInfo["reason"] as? String

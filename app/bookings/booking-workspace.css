@@ -1047,8 +1047,13 @@
 .owner-schedule-tabs { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); max-width: 540px; gap: 4px; }
 .owner-schedule-tabs > button, .owner-schedule-menu > summary { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 66px; width: 100%; padding: 8px 4px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--booking-muted); font-size: 13px; list-style: none; cursor: pointer; }
 .owner-schedule-tabs svg { width: 22px; height: 22px; }
-.owner-schedule-tabs [aria-current=page], .owner-schedule-menu[open] > summary { color: var(--booking-orange); border-bottom-color: currentColor; }
+.owner-schedule-tabs > button[aria-current=page], .owner-schedule-menu[open] > summary { color: var(--booking-orange); border-bottom-color: currentColor; }
 .owner-schedule-menu { position: relative; }
+.owner-schedule-menu[open] { z-index: 60; }
+.owner-schedule-header:has(.owner-schedule-menu[open]) { position: relative; z-index: 60; }
+.owner-schedule-tabs > details:has([aria-current=page]) > summary { color: var(--booking-orange); border-bottom-color: currentColor; }
+.owner-settings-menu .booking-tab { border: 0; border-radius: 8px; width: 100%; text-align: left; }
+.owner-schedule-tabs:has(details[open]) > button[aria-current=page] { color: var(--booking-muted); border-bottom-color: transparent; }
 .owner-schedule-menu > summary::-webkit-details-marker, .owner-agenda-row::-webkit-details-marker { display: none; }
 .owner-schedule-popover { position: absolute; top: 100%; right: 0; width: min(420px,calc(100vw - 32px)); z-index: 35; background: white; padding: 16px; box-shadow: 0 6px 24px #0002; border: 1px solid var(--booking-border); max-height: 70dvh; overflow: auto; display: grid; gap: 14px; }
 [data-booking-surface="owner"] .owner-schedule-popover .booking-toolbar-date { display: flex; flex-wrap: wrap; width: 100%; }

@@ -6,7 +6,7 @@ import { GiftPosControl, type GiftCheckout } from "@/components/gift-card/pos-gi
 import type { RewardReply, RewardView } from "@/types/rewardlumi";
 import { giftApi } from "@/components/gift-card/gift-api";
 import type { GiftSession } from "@/types/gift-card";
-export function OwnerCartBenefits({ cartId, receipt, onView, onCheckout, onGift, onDelivery }: { cartId: string; receipt: Record<string, unknown>; onView: (v: RewardView | null) => void; onCheckout: (fn: GiftCheckout) => void; onGift?: (session: GiftSession | null) => void; onDelivery?: (session: GiftSession) => void }) {
+export function OwnerCartBenefits({ cartId, receipt, onView, onCheckout, onGift, onDelivery, section }: { cartId: string; receipt: Record<string, unknown>; onView: (v: RewardView | null) => void; onCheckout: (fn: GiftCheckout) => void; onGift?: (session: GiftSession | null) => void; onDelivery?: (session: GiftSession) => void; section?: 'reward' | 'gift' }) {
   const api = useMemo(() => rewardTransport("pos"), []);
   const active = useRef(true);
   useEffect(() => { active.current = true; return () => { active.current = false; onGift?.(null); }; }, [onGift]);
@@ -25,5 +25,7 @@ export function OwnerCartBenefits({ cartId, receipt, onView, onCheckout, onGift,
   // A quote is an output of this panel, not an input to the next quote request.
   // Feeding it back resets the view whenever the parent receives that quote.
   const quoteReceipt = { ...receipt, rewardQuote: undefined };
-  return <div data-owner-benefits><VisitRewards scope="pos" receipt={quoteReceipt} transport={transport} onChange={changed} />{token && <><GiftPosControl token={token} receipt={{ ...receipt, _rewardRevision: revision }} transport={giftTransport} onCheckout={onCheckout} onDelivery={onDelivery} /><a href={`/pos/customer-display?token=${encodeURIComponent(token)}`} target="_blank" rel="noopener noreferrer">Open customer screen</a></>}</div>;
+  // Keep both controllers mounted when the presentation tab changes: quotes,
+  // gift sessions and registered checkout callbacks retain their lifecycle.
+  return <div data-owner-benefits><div hidden={section === 'gift'}><VisitRewards scope="pos" receipt={quoteReceipt} transport={transport} onChange={changed} /></div><div hidden={section === 'reward'}>{token && <><GiftPosControl token={token} receipt={{ ...receipt, _rewardRevision: revision }} transport={giftTransport} onCheckout={onCheckout} onDelivery={onDelivery} /><a href={`/pos/customer-display?token=${encodeURIComponent(token)}`} target="_blank" rel="noopener noreferrer">Open customer screen</a></>}</div></div>;
 }

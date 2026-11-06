@@ -32,13 +32,13 @@
 .name{flex:1;min-width:0}
 .name>div{align-items:flex-start;gap:8px}
 .name h2{flex:1;padding-top:3px}
-.tools{flex-shrink:0;margin-left:auto;position:relative}
+.tools{flex-shrink:0;margin-left:auto;position:relative;z-index:60}
 .tools:empty{display:none}
 .meta{display:grid;gap:0;padding-top:8px}
 .trust{min-width:0}
 .navigation{margin-top:6px;gap:4px}
-.tabs{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;gap:4px;justify-content:flex-start}
-.tabs>button{flex:0 0 auto;white-space:nowrap;min-width:44px;padding:10px 8px;overflow-wrap:normal}
+.tabs{flex-wrap:wrap;overflow:visible;gap:4px;justify-content:flex-start}
+.tabs>button{flex:1 1 auto;white-space:normal;min-width:44px;padding:10px 8px;overflow-wrap:anywhere}
 .more{align-self:flex-start}
 @media(max-width:599px){
   .header{padding-top:8px}

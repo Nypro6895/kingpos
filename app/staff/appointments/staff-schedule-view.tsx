@@ -253,7 +253,7 @@ function AppointmentExpanded({appointment}: {appointment: StaffAppointmentLine})
   const eligible = active && !appointment.ticketId && ["pending", "confirmed"].includes(appointment.status) && appointment.lineStatus === "scheduled" && appointment.noShowEligible;
   return <div className="staff-schedule-expanded">
     <dl className="staff-schedule-contact">
-      <div><dt><WorkspaceText text="Phone" /></dt><dd>{appointment.customerPhone ? <a href={`tel:${appointment.customerPhone.replace(/[^+\d]/g, "")}`}>{appointment.customerPhone}</a> : "No phone provided"}</dd></div>
+      {appointment.customerContactVisible ? <div><dt><WorkspaceText text="Phone" /></dt><dd>{appointment.customerPhone ? <a href={`tel:${appointment.customerPhone.replace(/[^+\d]/g, "")}`}>{appointment.customerPhone}</a> : "No phone provided"}</dd></div> : null}
       {appointment.publicNotes ? <div><dt><WorkspaceText text="Customer note" /></dt><dd>{appointment.publicNotes}</dd></div> : null}
       {appointment.serviceNote ? <div><dt><WorkspaceText text="Service note" /></dt><dd>{appointment.serviceNote}</dd></div> : null}
       {appointment.noShowCount > 0 ? <div><dt><WorkspaceText text="No-show history" /></dt><dd>{appointment.noShowCount} <WorkspaceText text="previous" /> <WorkspaceText text={appointment.noShowCount === 1 ? "no-show" : "no-shows"} /> <WorkspaceText text="without a reason" /></dd></div> : null}

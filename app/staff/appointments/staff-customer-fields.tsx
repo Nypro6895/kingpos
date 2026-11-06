@@ -5,7 +5,7 @@ import { useEffect, useId, useState } from "react";
 
 type Customer = { id: string; name: string; phone: string | null };
 
-export function StaffCustomerFields({ salonId, disabled }: { salonId: string; disabled: boolean }) {
+export function StaffCustomerFields({ salonId, disabled, contactVisible }: { salonId: string; disabled: boolean; contactVisible: boolean }) {
   const __vt = useWorkspaceTranslation();
 
   const listId = useId();
@@ -16,6 +16,7 @@ export function StaffCustomerFields({ salonId, disabled }: { salonId: string; di
   const [status, setStatus] = useState("");
   useEffect(() => {
     if (!focused || query.trim().length < 2) return;
+    if (!contactVisible && (focused !== "phone" || !/^[+0-9() .-]+$/.test(query) || query.replace(/\D/g, "").length < 10 || query.replace(/\D/g, "").length > 15)) return;
     const controller = new AbortController();
     let current = true;
     const timer = setTimeout(async () => {
@@ -33,9 +34,9 @@ export function StaffCustomerFields({ salonId, disabled }: { salonId: string; di
       }
     }, 250);
     return () => { current = false; clearTimeout(timer); controller.abort(); };
-  }, [salonId, query, focused]);
+  }, [salonId, query, focused, contactVisible]);
   function choose(customer: Customer) {
-    setName(customer.name); setPhone(customer.phone ?? ""); setSelectedId(customer.id);
+    setName(customer.name); if (contactVisible) setPhone(customer.phone ?? ""); setSelectedId(customer.id);
     setQuery(""); setResults([]); setStatus(""); setActive(-1);
   }
   return <div className="staff-customer-fields" onBlur={event => {
@@ -44,6 +45,7 @@ export function StaffCustomerFields({ salonId, disabled }: { salonId: string; di
     <input type="hidden" name="customerId" value={selectedId}/>
     {(["name", "phone"] as const).map(field => <label key={field}>{field === "name" ? "Customer name" : <WorkspaceText text="Phone" />}
       <input name={field} type={field === "phone" ? "tel" : "text"} required maxLength={field === "name" ? 150 : 40}
+        placeholder={!contactVisible && field === "phone" ? __vt("Enter the full phone number to find a customer") : undefined}
         value={field === "name" ? name : phone} disabled={disabled} autoComplete="off"
         role="combobox" aria-autocomplete="list" aria-expanded={focused === field && results.length > 0}
         aria-controls={listId} aria-activedescendant={focused === field && active >= 0 ? `${listId}-${active}` : undefined}
@@ -59,7 +61,7 @@ export function StaffCustomerFields({ salonId, disabled }: { salonId: string; di
     {results.length > 0 ? <div id={listId} role="listbox" aria-label={__vt("Salon customers")} className="staff-customer-suggestions">
       {results.map((customer, index) => <button key={customer.id} id={`${listId}-${index}`} type="button" role="option" aria-selected={active === index}
         onMouseDown={event => event.preventDefault()} onClick={() => choose(customer)} disabled={disabled}>
-        <span>{customer.name}</span><small><WorkspaceText text={customer.phone || "No phone on file"} /></small>
+        <span>{customer.name}</span>{contactVisible ? <small><WorkspaceText text={customer.phone || "No phone on file"} /></small> : null}
       </button>)}
     </div> : null}
     {status ? <p role="status"><WorkspaceText text={status} /></p> : null}

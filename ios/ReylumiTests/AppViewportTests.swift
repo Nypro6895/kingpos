@@ -26,8 +26,8 @@ final class AppViewportTests: XCTestCase {
         XCTAssertTrue(controller.view.constraints.contains { constraint in
             (constraint.firstItem as? WKWebView) === webView
                 && constraint.firstAttribute == .bottom
-                && (constraint.secondItem as? UILayoutGuide) === controller.view.keyboardLayoutGuide
-                && constraint.secondAttribute == .top
+                && (constraint.secondItem as? UILayoutGuide) === controller.view.safeAreaLayoutGuide
+                && constraint.secondAttribute == .bottom
         })
         XCTAssertEqual(webView.configuration.userContentController.userScripts.count, 2)
         for script in webView.configuration.userContentController.userScripts {

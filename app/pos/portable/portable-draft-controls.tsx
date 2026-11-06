@@ -8,7 +8,8 @@ import { ActionFeedback } from "@/components/action-feedback";
 import { portableDeviceStorage } from "@/lib/portable-device-storage";
 
 type Saved<T> = { id: string; at: number; label: string; value: T };
-export function PortableDraftControls<T>({ scope, active, disabled = false, activity, value, label, reset, restore, leading, onSavedChange, idleMinutes = 3, warningSeconds = 60 }: {
+export function PortableDraftControls<T>({ scope, active, disabled = false, compact = false, activity, value, label, reset, restore, leading, onSavedChange, idleMinutes = 3, warningSeconds = 60 }: {
+  compact?: boolean;
   idleMinutes?: number; warningSeconds?: number;
   leading?: ReactNode; scope: string; active: boolean; disabled?: boolean; activity: string; value: T; label: string;
   reset: () => Promise<unknown>; restore: (value: T) => boolean; onSavedChange?: (values: T[]) => void;
@@ -92,14 +93,15 @@ export function PortableDraftControls<T>({ scope, active, disabled = false, acti
       {leading}
       <button type="button" data-pos-saved-launcher aria-label={__vt(`Saved tickets (${saved.length})`)} aria-expanded={open} disabled={parking || disabled} onClick={() => setOpen(!open)} className="flex min-h-20 min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 text-left transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-teal-700">
         <svg aria-hidden="true" className="h-5 w-5 shrink-0 text-teal-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6"/></svg>
-        <span className="min-w-0"><span className="block text-sm font-semibold"><WorkspaceText text="Saved tickets" /></span><span className="mt-1 block text-xs text-zinc-500"><WorkspaceText text={saved.length ? `${saved.length} saved` : "None saved"} /></span></span>
+        <span className="min-w-0"><span className="block text-sm font-semibold"><WorkspaceText text={compact ? "Saved" : "Saved tickets"} />{compact && saved.length > 0 ? ` (${saved.length})` : null}</span>{!compact && <span className="mt-1 block text-xs text-zinc-500"><WorkspaceText text={saved.length ? `${saved.length} saved` : "None saved"} /></span>}</span>
       </button>
-      {active && <button type="button" disabled={parking || disabled} aria-busy={parking} onClick={() => void park()} className={button + " col-span-2 !min-h-10 !rounded-lg !shadow-none text-teal-800"}><ActionFeedback pending={parking} pendingLabel="Saving…"><WorkspaceText text="Save for later" /></ActionFeedback></button>}
+      {active && !compact && <button type="button" disabled={parking || disabled} aria-busy={parking} onClick={() => void park()} className={button + " col-span-2 !min-h-10 !rounded-lg !shadow-none text-teal-800"}><ActionFeedback pending={parking} pendingLabel="Saving…"><WorkspaceText text="Save for later" /></ActionFeedback></button>}
     </div>
     {error && !pending && <p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></p>}
     {open && createPortal(<div className="fixed inset-0 z-[85] bg-black/20" onClick={() => setOpen(false)}>
       <section role="dialog" aria-modal="true" aria-label={__vt("Saved tickets")} className="fixed bottom-4 left-4 top-[88px] flex w-[min(560px,calc(100vw-32px))] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl" onClick={event => event.stopPropagation()}>
         <header className="flex items-center justify-between border-b px-5 py-3"><h2 className="font-semibold"><WorkspaceText text="Saved tickets" /></h2><button type="button" className={button} onClick={() => setOpen(false)}><WorkspaceText text="Close" /></button></header>
+        {compact && active && <button type="button" disabled={parking || disabled} aria-busy={parking} onClick={() => void park()} className={button}><ActionFeedback pending={parking} pendingLabel="Saving…"><WorkspaceText text="Save for later" /></ActionFeedback></button>}
         <ul className="min-h-0 flex-1 divide-y overflow-auto px-4">{saved.length === 0 ? <li className="py-6 text-center text-sm text-zinc-500"><WorkspaceText text="No saved tickets" /></li> : saved.map(row => <li key={row.id} className="flex items-center gap-3 py-2">
           <button type="button" disabled={parking || disabled} className="flex min-h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-teal-50 active:bg-teal-100 focus-visible:outline-2 focus-visible:outline-teal-600" onClick={() => {
             setOpen(false); setError("");

@@ -32,6 +32,7 @@ import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-edito
 import { saveSettingsPublicTeam } from "./settings-extra-actions";
 import { DeleteUnusedButton } from "./delete-unused-button";
 import { resetDirectStaffPasscode } from "./direct-pos-actions";
+import { saveStaffCustomerContacts } from "./staff-customer-contact-actions";
 export function TeamSettingsPanel({
   data,
   onSaved,
@@ -139,6 +140,16 @@ export function TeamSettingsPanel({
   return (
     <div className="grid gap-4">
       {savedStaffId && !data.staff.some(s=>s.id===savedStaffId && (!s.is_active || !s.online_booking_enabled || data.setup.readinessByStaffId[s.id]?.ready))?<aside className="salon-setup-guide settings-page-persistent" role="status"><p><WorkspaceText text="Staff saved. Choose their services and booking hours to start accepting online appointments."/></p><a href={salonSetupHref(data.salonId,"staff-team",`staff-${savedStaffId}`)}><WorkspaceText text="Continue setting up this staff member"/> →</a></aside>:null}
+      {data.canManageCustomerContacts && <InlineForm
+        label={__vt("Save customer contact settings")}
+        disabled={data.customerContactsVisible === null}
+        save={form => saveStaffCustomerContacts(data.salonId, checked(form, "customer_contacts_visible"))}
+        onSaved={onSaved}
+      >
+        <Check name="customer_contacts_visible" label={__vt("Staff can view customer contact details")} checked={data.customerContactsVisible === true} />
+        <p className="text-xs text-zinc-500"><WorkspaceText text="Show customer phone numbers, email addresses and contact links to staff. When off, schedules and pay remain available; customer lookup requires a full phone number." /></p>
+        {data.customerContactsVisible === null && <p role="alert" className="text-sm text-red-700"><WorkspaceText text="Customer contact settings could not load. Please reload." /></p>}
+      </InlineForm>}
       {data.canManage && (
         <>
           <SettingsEditSection title="Add staff" key={addRevision}>{editor()}</SettingsEditSection>

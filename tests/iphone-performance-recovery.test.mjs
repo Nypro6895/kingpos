@@ -40,6 +40,8 @@ test('failed Today financial transport settles loading, retains known money, and
   const good={...base,summary:{...base.summary,sales:{value:'$1,755',detail:'30 closed tickets'}},loadErrors:[]};
   const recovered=mergeTodayDashboardSection(failed,good,'financials');
   assert.equal(recovered.summary.sales.value,'$1,755');assert.equal(recovered.loadErrors.length,0);
+  const older={...good,generatedAt:'2026-10-27T23:00:00Z'};
+  assert.equal(mergeTodayDashboardSection(recovered,older,'financials').generatedAt,recovered.generatedAt,'an older cache timestamp cannot move the dashboard clock backwards');
   const staleFailure=failTodayDashboardSection(recovered,'financials');assert.equal(staleFailure.summary.sales.value,'$1,755','a failed refresh never replaces verified money with zero');
   const wrongScope={...good,permissions:{...good.permissions,canViewReports:false}};
   assert.equal(mergeTodayDashboardSection(failed,wrongScope,'financials'),failed,'changed authority cannot merge retained financial data');

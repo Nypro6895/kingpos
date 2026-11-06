@@ -1459,7 +1459,7 @@ function Field({
   label,
   name,
   required,
-  type = "text",
+  type,
 }: {
   defaultValue?: string | number | null;
   label: string;
@@ -1475,7 +1475,8 @@ function Field({
         defaultValue={defaultValue ?? ""}
         name={name}
         required={required}
-        type={type}
+        type={type ?? (name === "phone" ? "tel" : name === "email" ? "email" : "text")}
+        inputMode={name === "phone" ? "tel" : type === "number" ? "decimal" : undefined}
       />
     </label>
   );
@@ -3617,7 +3618,8 @@ export function SalonProfileView({
       return;
     }
 
-    function onPointerDown(event: Event) {
+    function onOutsideClick(event: Event) {
+      if (event.type === "focusin" && (!(event.target instanceof Element) || !event.target.matches(":focus-visible"))) return;
       const target = event.target;
 
       if (!(target instanceof Node)) {
@@ -3643,13 +3645,13 @@ export function SalonProfileView({
       ownerMenuButtonRef.current?.focus();
     }
 
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("focusin", onPointerDown, true);
+    document.addEventListener("click", onOutsideClick, true);
+    document.addEventListener("focusin", onOutsideClick, true);
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("focusin", onPointerDown, true);
+      document.removeEventListener("click", onOutsideClick, true);
+      document.removeEventListener("focusin", onOutsideClick, true);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [ownerMenuOpen]);
@@ -4449,11 +4451,11 @@ export function SalonProfileView({
           <a href={`/gift-cards?salon=${profile.salonId}`} className="mx-3 mb-2 inline-flex min-h-9 items-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800">Gift cards</a>
           {canShowFollow || canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:relative sm:-mt-11 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span><WorkspaceText text={isFollowing ? "Following" : "Follow salon"} /></button> : null}{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover"><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}</div> : null}
           <div className="relative flex min-w-0 items-center border-t border-zinc-100 px-2 sm:px-4">
-            <div aria-label={__vt("Salon profile sections")} className="flex min-w-0 flex-1" onKeyDown={onTabKeyDown} role="tablist">
-              {mainTabs.map((tab) => <button aria-controls={`salon-profile-${tab.id}`} aria-selected={effectiveTab === tab.id} className={`min-h-11 min-w-0 flex-1 border-b-2 px-1 text-xs font-semibold sm:text-sm ${effectiveTab === tab.id ? "border-brand-orange text-brand-orange" : "border-transparent text-zinc-500 hover:text-zinc-950"}`} id={`salon-profile-tab-${tab.id}`} key={tab.id} onClick={() => changeTab(tab.id)} role="tab" tabIndex={effectiveTab === tab.id ? 0 : -1} type="button"><WorkspaceText text={tab.label} />{tab.id === "gallery" && sortedLooks.length ? <span className="ml-1 text-[10px] text-zinc-400">{sortedLooks.length}</span> : null}</button>)}
+            <div aria-label={__vt("Salon profile sections")} className="flex min-w-0 flex-1 flex-wrap" onKeyDown={onTabKeyDown} role="tablist">
+              {visibleTabs.map((tab) => <button aria-controls={`salon-profile-${tab.id}`} aria-selected={effectiveTab === tab.id} className={`min-h-11 min-w-[5.5rem] flex-1 border-b-2 px-1 text-xs font-semibold sm:text-sm ${effectiveTab === tab.id ? "border-brand-orange text-brand-orange" : "border-transparent text-zinc-500 hover:text-zinc-950"}`} id={`salon-profile-tab-${tab.id}`} key={tab.id} onClick={() => changeTab(tab.id)} role="tab" tabIndex={effectiveTab === tab.id ? 0 : -1} type="button"><WorkspaceText text={tab.label} />{tab.id === "gallery" && sortedLooks.length ? <span className="ml-1 text-[10px] text-zinc-400">{sortedLooks.length}</span> : null}</button>)}
             </div>
             <details data-dismissible-popover className="relative shrink-0"><summary aria-label={__vt("More profile sections and actions")} className="grid size-11 cursor-pointer list-none place-items-center rounded-xl text-lg text-zinc-600 hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">•••</summary><div className="absolute right-0 top-12 z-40 grid w-48 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-              {visibleTabs.filter((tab) => !mainTabs.includes(tab)).map((tab) => <button id={`salon-profile-tab-${tab.id}`} key={tab.id} className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={(event) => { changeTab(tab.id); event.currentTarget.closest("details")?.removeAttribute("open"); }}><WorkspaceText text={tab.label} /></button>)}
+
               {preferences.allow_sharing ? <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); void shareSalon(); }}><WorkspaceText text="Share profile" /></button> : null}
               <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); setSalonReportOpen(true); }}><WorkspaceText text="Report salon" /></button>
             </div></details>

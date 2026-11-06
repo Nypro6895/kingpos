@@ -12,6 +12,14 @@ function moduleAt(path, globals) {
   return exports;
 }
 
+test("native read cancellation gives a useful message without replaying across the cancelled boundary",async()=>{
+ let calls=0;
+ const cancelled=Object.assign(new Error("This request was superseded. Please try again."),{name:"AbortError",reason:"cancelled"});
+ const api=moduleAt("lib/post-comments-client.ts",{URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async()=>{calls++;throw cancelled;}});
+ await assert.rejects(api.fetchPostCommentsPage({target:{sourceType:"beauty_post",sourceId:"post"},offset:0,pageSize:10}),/Comments could not be loaded/);
+ assert.equal(calls,1);
+});
+
 test("comment reader uses an independent uncached request with same-origin credentials", async () => {
   let request;
   const page = { items: [], totalCount: 0, hasMore: false, nextOffset: null, error: null };

@@ -265,11 +265,12 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
     }
     case "staff-team": {
       const canManage=await hasPermission("staff.manage",context);
-      const [directory, requests, setup, canManageStaffOnlineBooking] = await Promise.all([
+      const [directory, requests, setup, canManageStaffOnlineBooking, contacts] = await Promise.all([
         getCurrentSalonStaffDirectory(),
         canManage?getSalonStaffConnectionRequests():Promise.resolve({requests:[]}),
         getCurrentSalonBookingSetup(context),
         hasPermission("salon_settings.manage",context),
+        supabase.rpc("salon_staff_customer_contacts", {p_salon: salon.id}),
       ]);
       return {
         kind,
@@ -277,6 +278,8 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
         staff: directory.staff,
         setup,
         canManageStaffOnlineBooking,
+        customerContactsVisible: contacts.error ? null : contacts.data?.visible === true,
+        canManageCustomerContacts: isOwnerMembership(context.currentMembership),
         requests: requests.requests,
         canManage,
         canManagePublicTeam:await hasPermission("salon_settings.manage",context),

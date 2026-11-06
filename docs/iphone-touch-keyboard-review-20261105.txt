@@ -1,0 +1,252 @@
+REYLUMI — REVIEW CHẠM, BÀN PHÍM VÀ SETTINGS, 2026-11-05
+
+Phạm vi: 20 mục trong review mới (không có mục 12).
+Nguồn: nhánh fix/touch-keyboard-review-20261105, từ cb6062a.
+Thư mục: C:\Reylumi-worktrees\touch-keyboard-review-20261105
+
+Trạng thái: 18 mục đã sửa trong mã; mục 13 và 14 sửa một phần và còn
+điểm cần xác nhận thực tế. Các sửa WKWebView/chạm cần nghiệm thu iPhone.
+Đợt này chưa deploy hoặc upload TestFlight. Swift/AppViewport.js thay đổi
+nên cần một bản native mới; kiểm tra Safari 16 không thay cho chạy Xcode
+hay thử trên iPhone thật.
+
+Giữ Profile và Library thành hai luồng riêng theo quyết định đã có.
+Không đổi thông báo theo tài khoản, dữ liệu lúc nửa đêm, công thức tài chính,
+quyền truy cập, cơ chế xác thực hoặc lựa chọn lịch hẹn chưa gán thợ.
+
+1. Menu thả xuống kích hoạt nút bên dưới — Đã sửa mã; chờ iPhone xác nhận.
+Nguyên nhân trong mã: đóng menu ở pointerdown/focusin trước khi click hoàn
+tất; focus do chạm cũng bị coi là chuyển focus bằng bàn phím. Menu còn nằm
+trong lớp xếp chồng có thể thấp hơn nội dung phía dưới.
+Sửa: đóng ngoài ở click, chỉ dùng focus-visible để đóng do focus; nâng lớp
+menu của trang tiệm và Book. Giữ Escape và thao tác ngoài menu.
+File: lib/dismissible-popovers.ts; app/navigation-shell.tsx;
+app/salon-profile/salon-profile-view.tsx;
+app/salon-profile/salon-website-header.module.css;
+app/bookings/booking-workspace-client.tsx; app/bookings/booking-workspace.css.
+Kiểm tra: chạm Profile settings/Edit profile/Availability tại đúng vị trí
+chồng nút; chỉ mở chức năng đã chọn. Test có mô phỏng focus rời menu trước
+activation và xác nhận nút lịch hẹn dưới menu không bị gọi.
+
+2. Tab dưới nổi trên bàn phím — Đã sửa mã và kiểm tra mô phỏng.
+Nguyên nhân: nav fixed không biết trạng thái bàn phím. Native vừa thu nhỏ
+WKWebView bằng keyboardLayoutGuide vừa để WebKit tự điều chỉnh viewport.
+Sửa: theo dõi cả visualViewport và thay đổi kích thước của app cũ; ẩn nav
+trong lúc bàn phím mở, kể cả khoảng blur trước khi bàn phím đóng xong.
+Native mới giữ frame theo safe area, dùng visualViewport cho bàn phím.
+File: lib/mobile-viewport.ts; app/navigation-shell.tsx;
+components/iphone-glass-nav.css; ios/Reylumi/ReylumiLocalAppViewController.swift;
+ios/Reylumi/ReylumiViewController.swift.
+Kiểm tra: comment, search, Search area, Add expense và Profile; mở/đóng bàn
+phím nhiều lần, portrait/landscape, rồi chuyển Personal/Staff/Owner.
+
+3. Save profile nằm dưới nav/bàn phím — Đã sửa mã và kiểm tra hình học.
+Nguyên nhân: CSS chừa nav chỉ áp dụng dưới .customer-desktop-content, trong
+khi nội dung native có thể render qua portal ngoài phần tử này. bottom:0
+cũng không bảo đảm nằm trên visual viewport khi bàn phím mở.
+Sửa: chừa khoảng khi trang có nav; khi bàn phím mở đặt hàng nút ở mép dưới
+visual viewport. Trang không có nav giữ mép dưới thông thường.
+File: app/account/account-profile-editor.tsx;
+app/account/account-profile-editor.module.css; lib/mobile-viewport.ts.
+Kiểm tra: Edit Profile & contact, cuộn cuối form, focus Phone rồi Save;
+cả Cancel và Save phải nhìn thấy, không mất bản nháp. Test bao gồm trường
+hợp visualViewport thu nhỏ nhưng innerHeight không đổi.
+
+4. Header/post layout lệch sau khi đóng bàn phím — Đã sửa mã; chờ iPhone.
+Nguyên nhân phát hiện: hai nơi cùng sở hữu điều chỉnh bàn phím ở native và
+WebKit; AppViewport ép kích thước/overflow của mọi dialog bằng !important;
+hook dialog không trả lại hình học ban đầu khi ngừng hoạt động.
+Sửa: bỏ native resize kép, bỏ các override kích thước cưỡng bức; cập nhật
+và khôi phục hình học dialog theo visualViewport.
+File: hai controller Swift ở mục 2; ios/Reylumi/AppViewport.js;
+components/use-dialog-viewport.ts; ios/ReylumiTests/AppViewportTests.swift.
+Kiểm tra: comment dưới ảnh → đóng bàn phím → mở/đóng bài; logo/tên tiệm
+phải trở lại safe area, nút X và ảnh giữ layout. Mô phỏng đã kiểm tra header
+trở lại top=0; chưa coi đó là nghiệm thu WKWebView trên máy thật.
+
+5. New appointment — Đã sửa mã và kiểm tra vòng đời modal.
+Nguyên nhân: Next chỉ setStep, không kiểm tra dữ liệu; X có vùng chạm 40px;
+nav không có quy tắc cho modal và layer chưa theo visual viewport.
+Sửa: báo thiếu khách, dịch vụ, ngày/giờ khi sang bước; nút bước cũng dùng
+cùng kiểm tra; X 44px có nhãn; ẩn nav khi modal mở; khớp viewport.
+Giữ lựa chọn Any professional / unassigned, kiểm tra cuối cùng vẫn ở server.
+File: app/bookings/booking-workspace-client.tsx; components/use-dialog-viewport.ts;
+lib/mobile-viewport.ts; components/iphone-glass-nav.css.
+Kiểm tra: Next rỗng phải có alert; chọn khách rồi đi các bước; X một lần;
+Escape/backdrop/back và quay lại trang không để sót modal hay khóa cuộn.
+
+6. More > All và danh sách bị cắt — Đã sửa mã, kiểm tra activation/route.
+Nguyên nhân: panel thiếu ràng buộc flex/chiều cao nhất quán; thao tác đóng
+menu chạy ngay trong activation của link; không có chỉ dẫn cuộn.
+Sửa: flex column có giới hạn viewport, thân menu cuộn; đóng sau activation;
+thêm chỉ dẫn cuộn. All vẫn đi tới trang /more đầy đủ bằng điều hướng SPA.
+File: app/navigation-shell.tsx; components/role-more-content.tsx;
+lib/dismissible-popovers.ts.
+Kiểm tra: All phải mở More, cuộn thấy các mục sau Services, giữ footer
+Settings truy cập được ở 320/390px và landscape.
+
+7. View all settings mở sai chỗ — Đã sửa mã, kiểm tra route trên trang giữ lại.
+Nguyên nhân: href vốn đã là /settings; lỗi chạm ở mục 1 có thể chọn nội dung
+phía dưới. Ngoài ra SettingsHub chỉ đọc initialSection khi khởi tạo, nên
+trang giữ lại có thể tiếp tục hiện editor tiệm của lần vào trước.
+Sửa: nhận ý định section mới khi quay lại hub; giữ các editor đã ghé và
+bản nháp, không ép remount toàn bộ Settings.
+File: app/settings/settings-hub-client.tsx và các file menu ở mục 1/6.
+Kiểm tra: vào cài đặt một tiệm, rời trang, More > View all settings; phải
+về hub. Test đổi sang Notifications rồi quay lại vẫn giữ bản nháp Services.
+Thời gian mở trên iPhone thật vẫn cần đo lại, không tuyên bố đã đạt mức giây cụ thể.
+
+8. Today báo lỗi lặp và dữ liệu cũ — Đã tìm nguyên nhân production và sửa mã.
+Bằng chứng: 206 bản ghi lỗi tài chính trong cửa sổ log 12 giờ đều mang lỗi
+deadline "Couldn't load — retry."; có cả đường web và app-local. Nguồn đặt
+deadline 1.800ms lên toàn bộ pipeline Report/Performance, nên Retry tiếp
+tục bị cắt. Comparison còn tiêu ngân sách 1.500ms trong khi chờ tổng ngày.
+Sửa: ngân sách riêng 10s cho hai pipeline tài chính; history khởi chạy song
+song, thời gian chờ thêm của nó tính sau khi tổng ngày sẵn sàng. Các mục phụ
+giữ ngân sách ngắn. Retry invalidates đúng section; không seed section lỗi
+thành dữ liệu mới; không để timestamp cũ kéo lùi dashboard. Bỏ banner lỗi
+trùng khi đã có retry từng section; không đưa tên nội bộ như reports ra UI.
+File: lib/today-dashboard.ts; lib/daily-pos-report.ts;
+lib/today-dashboard-sections.ts; app/staff/today/today-progressive-client.tsx;
+app/staff/today/today-dashboard-view.tsx.
+Kiểm tra: cold/warm Today, request tài chính 2,5s phải thành công, request
+treo phải kết thúc có giới hạn; Retry tải mới; lỗi vẫn giữ số tiền đã biết,
+không thay thành 0 hay bịa số. Cần xác nhận live sau khi phát hành.
+Bằng chứng đã loại ID cá nhân: artifacts/touch-keyboard/production-diagnosis.json.
+
+9. Cài đặt tài khoản khó tìm — Đã sửa mã.
+Nguyên nhân: More tập trung công cụ vai trò, thiếu đường trực tiếp tới nhóm Personal.
+Sửa: thêm Account & security trong More, tới nhóm Personal của hub hiện có;
+đổi nhãn footer trang More để nói rõ có cài đặt tài khoản và bảo mật.
+File: components/role-more-content.tsx; components/app-local-more.tsx;
+app/(app)/more/page.tsx.
+Kiểm tra: từ cả ba vai trò vào Notifications/Login & security/Blocked users/
+Delete account qua More; các bước xác nhận và quyền cũ vẫn được giữ.
+
+10. Settings lồng Settings, hai gạch chân — Đã sửa mã.
+Nguyên nhân: selector aria-current áp dụng cả link bên trong dropdown như
+tab chính; nhãn mục con trùng nhãn menu.
+Sửa: giới hạn selector tab chính, phản ánh menu đang mở; đổi mục con thành
+Booking rules. Không đổi route hay quyền của từng phần.
+File: app/bookings/booking-workspace-client.tsx; app/bookings/booking-workspace.css.
+Kiểm tra: Today → mở Settings → Availability/Booking rules; chỉ ngữ cảnh
+chính phù hợp sáng, mục con không làm Today gạch chân đồng thời.
+
+11. Tab trang tiệm tràn, phụ thuộc dấu ... — Đã sửa mã.
+Nguyên nhân: nowrap/overflow-x:auto và phần tab bổ sung chỉ nằm trong More.
+Sửa: rail wrap, hiện các section trong tablist; More giữ hành động Share/Report.
+File: app/salon-profile/salon-website-header.tsx;
+app/salon-profile/salon-website-header.module.css;
+app/salon-profile/salon-profile-view.tsx.
+Kiểm tra: trang tiệm dưới Staff/Owner, các layout, 320/390px; mọi section
+được phép phải nhìn thấy, không tràn ngang, thao tác bàn phím vẫn chọn tab.
+
+13. Search — Đã sửa UI; chưa xác nhận giảm độ trễ 5–6s trên máy thật.
+Nguyên nhân: thiếu autocapitalize/autocorrect/spellcheck và nút clear;
+chip của response đã commit vẫn render khi request mới đang chạy.
+Sửa: tắt viết hoa/tự sửa/spelling; thêm ×; không hiện refinement của kết
+quả cũ trong lúc tải query mới. Chỉ báo tải vẫn bám request thực tế, không
+tắt giả trước khi response xong.
+File: app/explore/explore-search-input.tsx; app/explore/explore-client.tsx;
+app/settings/settings-hub-client.tsx.
+Kiểm tra: gõ gel, clear, nhập tiếp nhanh, Enter và chọn gợi ý; không áp
+chip cũ vào query mới. Cần đo request thực tế để kết luận độ trễ đã hết.
+
+14. Phone đỏ sớm, loại bàn phím — Sửa loại bàn phím; chưa tái hiện lỗi đỏ sớm.
+Nguyên nhân tìm được: field dùng chung mặc định text cho Phone/Email,
+Amount thiếu inputMode decimal. Không thấy nhánh validate Phone khi focus
+trong AccountProfileEditor; không tự thêm/bỏ luật xác thực khi chưa có bằng chứng.
+Sửa: Phone tel, Email email ở editor tiệm; Amount decimal ở expense.
+File: app/account/account-profile-editor.tsx;
+app/salon-profile/salon-profile-view.tsx;
+app/payroll/shop-money-workspace.tsx; app/reports/quick-expense.tsx.
+Kiểm tra: chạm Phone trống trước khi sửa/lưu; chụp trạng thái nếu còn đỏ;
+kiểm tra bàn phím Phone/Email/Amount trên iOS thật. Không đổi chuẩn hóa số
+điện thoại, xác minh email/OTP hay các quy tắc khi Save.
+
+15. Language và Timezone — Đã sửa mã.
+Nguyên nhân: Language đi qua input generic; nhãn device timezone quá dài.
+Sửa: chọn English/Tiếng Việt, giữ giá trị locale khác nếu đã có; Timezone
+dùng nhãn ngắn. Mã lưu và timezone hiện có không bị đổi tự động.
+File: app/account/account-profile-editor.tsx; dùng TimeZoneSelect hiện có.
+Kiểm tra: mở editor, chọn ngôn ngữ, Cancel/Save; timezone phải đọc đủ ở 390px.
+
+16. Search area/Add expense bị bàn phím che — Đã sửa mã và kiểm tra hình học.
+Nguyên nhân: dialog giữa màn hình không theo visual viewport.
+Sửa: sheet trên mobile; fit chiều cao/mép dưới khi bàn phím mở; khôi phục
+hình học khi đóng; giữ cuộn và đưa field đang nhập vào vùng nhìn thấy.
+File: components/use-dialog-viewport.ts;
+app/explore/explore-search-toolbar.tsx; app/reports/quick-expense.tsx.
+Kiểm tra: bàn phím mở ở field cuối, Apply/Save và X/Cancel đều chạm được;
+đóng rồi mở lại không giữ offset/height cũ. Test có visualViewport riêng.
+
+17. Nút phá hủy sát hành động thường — Đã sửa mã.
+Nguyên nhân: Block user là nút đỏ ngay trong hàng Reply; toolbar ảnh gap nhỏ.
+Sửa: Block qua nút tùy chọn ... rồi bước xác nhận hiện có; tách khoảng
+Change photo/Remove photo. Không bỏ xác nhận hoặc đổi quyền block.
+File: components/block-user-button.tsx; app/account/account-profile-editor.tsx.
+Kiểm tra: Reply không nằm sát nút đỏ trực tiếp; Cancel block không ghi dữ
+liệu; Change/Remove ảnh tách rõ và bản nháp chỉ lưu qua luồng cũ.
+
+18. Hiện nguyên văn request superseded — Đã sửa mã và test hủy request.
+Nguyên nhân: AbortError từ native read được chuyển nguyên message tới UI
+load comments; native cũng dùng thuật ngữ superseded trong thông báo.
+Sửa: chuyển hủy read thành câu tải bình luận thất bại dễ hiểu. Không tự
+replay qua ranh giới tài khoản/route; vẫn giữ cảnh báo kết quả chưa xác nhận
+cho command, không biến ghi dữ liệu chưa chắc chắn thành thành công.
+File: lib/post-comments-client.ts;
+ios/Reylumi/ReylumiLocalAppViewController.swift.
+Kiểm tra: đổi/đóng bài khi đang tải; draft còn, không lộ superseded, Retry
+được; test xác nhận read bị hủy không bị tự gửi lại.
+
+19. Add expense — Đã sửa mã.
+Nguyên nhân: action dùng grid chật, thiếu X; nav không biết có modal; form
+expense dùng 0.00 làm defaultValue thay vì chỉ là gợi ý.
+Sửa: Save không wrap, hàng nút flex; X 44px; nav ẩn khi modal mở; amount
+của expense mới rỗng, amount bản ghi đang sửa vẫn giữ đúng số đang có.
+File: app/reports/quick-expense.tsx; app/payroll/shop-money-workspace.tsx;
+lib/mobile-viewport.ts; components/iphone-glass-nav.css.
+Kiểm tra: mở mới → Amount rỗng; Save với amount hợp lệ; mở edit expense
+cũ đúng số; X/Cancel không ghi; nền/nav và bàn phím không che action.
+
+20. Profile & contact hiển thị giá trị giả — Đã sửa mã.
+Nguyên nhân: legal-name fallback là câu hướng dẫn, empty formatter là '-';
+Language hiển thị trực tiếp mã lưu.
+Sửa: tên pháp lý thiếu hiện Chưa cung cấp với kiểu trung tính; Phone trống
+không dùng dấu '-'; Language hiện tên English/Tiếng Việt.
+File: app/account/account-profile-editor.tsx; lib/vietnamese-settings-copy.json.
+Kiểm tra: tài khoản thiếu legal name/phone và có language=en; mở/Cancel
+editor không tự ghi placeholder vào dữ liệu.
+
+21. Owner đang chọn bị xám — Đã sửa mã.
+Nguyên nhân: hàng đang chọn mang disabled; CSS chung của app làm mọi button
+disabled mờ 50%. Một biến thể switcher còn dùng nền đen thay vì màu chọn chung.
+Sửa: current dùng aria-disabled và chặn action, không gắn disabled chỉ vì
+đang chọn; pending thực sự vẫn disabled. Đồng bộ nền chọn với Personal.
+File: app/navigation-shell.tsx.
+Kiểm tra: mở mọi biến thể switcher ở mobile/desktop; Owner/Staff/Personal
+đang chọn đều rõ, chạm hàng hiện tại không chuyển vai trò hoặc reload.
+
+KIỂM TRA
+- npm run build: qua. Đã kiểm tra production build và tạo offline assets.
+- Safari 16 bundle verify-only: qua; 347 actions, 967 modules, 0 unsupported;
+  không thay package đã ký hoặc upload native.
+- Test toàn bộ: 1.223 test; 1.151 pass, 58 fail, 14 skip.
+- Chạy lại baseline cb6062a: 1.218 test; 1.146 pass, 58 fail, 14 skip.
+- Đối chiếu tên lỗi: không phát sinh test fail mới; 5 test mới đều pass.
+- Lint toàn repo: cả baseline và bản sửa cùng 22 errors, 163 warnings;
+  không phát sinh lỗi lint mới. Không tuyên bố toàn repo xanh.
+- Kiểm tra riêng các luồng touch/viewport/retained Settings/financial/comment
+  30/30 qua trên nguồn cuối; native Swift/Xcode và iPhone thật chưa chạy trong
+  phiên Windows.
+- Bằng chứng local: artifacts/touch-keyboard/comparison.json,
+  focused-exact-source.log, transport-financial.log, touch-runtime.log,
+  build-exact-source.log, native-exact-source.log, tests-final.log, lint-final.log.
+
+CÒN CẦN NGHIỆM THU
+- Bản native mới: keyboard đóng/mở nhiều lần, notch/safe-area, orientation,
+  một chạm menu/X và điều khiển VoiceOver trên iPhone thật.
+- Mục 13: đo độ trễ tìm kiếm thực; mục 14: xác nhận hoặc lấy lại đúng trường
+  Phone có viền đỏ trước khi nhập. Hai triệu chứng này chưa được tuyên bố hết.
+- Sau phát hành: kiểm tra Today không còn bị cắt ở 1,8s và Retry lấy được
+  dữ liệu thật. Không dùng kết quả local làm bằng chứng live.

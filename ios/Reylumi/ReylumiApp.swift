@@ -27,6 +27,7 @@ struct ReylumiApp: App {
                 Color.white.ignoresSafeArea().accessibilityIdentifier("reylumi.xctest-idle")
             } else {
                 ReylumiView(marketReturnSequence: marketReturnSequence, checkinPath: checkinPath, checkinSequence: checkinSequence)
+                    .ignoresSafeArea(.container, edges: .bottom)
                     .ignoresSafeArea(.keyboard)
                     .background(Color.white.ignoresSafeArea())
                     .preferredColorScheme(.light)

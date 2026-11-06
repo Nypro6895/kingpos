@@ -1,6 +1,8 @@
 /* Keep filters on decorative layers: filtering the nav itself would make its
    fixed More/Notifications panels position relative to the bar on WebKit. */
 @media (max-width: 1023px) {
+  html[data-keyboard-open="true"] .workspace-mobile-nav { display: none !important; }
+  html[data-modal-open="true"] .workspace-mobile-nav { visibility: hidden; pointer-events: none; }
   .workspace-mobile-nav[data-iphone-glass="true"] {
     --glass-light-x: 50%;
     left: max(8px, env(safe-area-inset-left));

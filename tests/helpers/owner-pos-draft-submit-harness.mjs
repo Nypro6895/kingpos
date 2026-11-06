@@ -121,7 +121,7 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
   function click(button, { force = false } = {}) { if (!button) throw Error('Expected production button was not rendered'); if (button.props.disabled && !force) return false; button.props.onClick(); return true; }
   function control(label, tree = renderDrafts()) { return elements(tree).find(node => node.type === 'button' && textOf(node) === label); }
   function launcher() { return elements(renderDrafts()).find(node => node.props?.['data-pos-saved-launcher'] !== undefined); }
-  function openSaved(options) { return click(launcher(), options); }
+  function openSaved(options) { if(launcher().props.disabled&&!options?.force)return false; if(elements(renderDrafts()).some(n=>n.props?.['aria-label']==='Saved tickets'))return true; return click(launcher(), options); }
   function selectSaved(options) { return click(elements(renderDrafts()).find(node => node.type === 'button' && textOf(node).startsWith('Draft B')), options); }
   function confirmTakeover(options) {
     const dialog = elements(renderDrafts()).find(node => node.props?.['aria-label'] === 'Open saved ticket');
@@ -144,11 +144,11 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
       if (!openSaved(options) || !selectSaved(options)) return false;
       return elements(renderDrafts()).some(node => node.props?.['aria-label'] === 'Open saved ticket') ? confirmTakeover(options) : true;
     },
-    park(options) { return click(control('Save for later'), options); },
+    park(options) { if (!control('Save for later')) openSaved({force:true}); return click(control('Save for later'), options); },
     restoreDirect(value = cartB) { return draftProps().restore(value); },
     controls() {
       const tree = renderDrafts(), dialog = elements(tree).find(node => node.props?.['aria-label'] === 'Open saved ticket');
-      return { savedDisabled: Boolean(launcher().props.disabled), parkDisabled: Boolean(control('Save for later', tree)?.props.disabled), takeoverDisabled: Boolean(control('Reset', dialog)?.props.disabled) };
+      return { savedDisabled: Boolean(launcher().props.disabled), parkDisabled: Boolean(control('Save for later', tree)?.props.disabled ?? draftProps().disabled), takeoverDisabled: Boolean(control('Reset', dialog)?.props.disabled) };
     },
     async flush() { for (let index = 0; index < 30; index++) await Promise.resolve(); },
     releaseSuccess(index = attempts.length - 1) { const attempt = attempts[index]; if (!attempt) throw Error('No pending fixture attempt'); attempt.release(attempt.kind === 'gift' ? { ticketId: 'fixture-ticket-A' } : undefined); },

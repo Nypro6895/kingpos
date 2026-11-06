@@ -1196,7 +1196,7 @@ function LoadErrorsBanner({
       <ul className="mt-2 space-y-1">
         {errors.map((error) => (
           <li key={`${error.area}:${error.message}`}>
-            <WorkspaceText text={error.area} />: <WorkspaceText text={error.message} />
+            <WorkspaceText text="Some information is temporarily unavailable. Please try again." />
           </li>
         ))}
       </ul>
@@ -1239,7 +1239,7 @@ function PendingPanel({ title }: { title: string }) {
   </section>;
 }
 
-export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: TodayDashboard; isOwner: boolean; retry?: () => void }) {
+export function TodayDashboardView({ dashboard, isOwner, retry, sectionRecovery = false }: { dashboard: TodayDashboard; isOwner: boolean; retry?: () => void; sectionRecovery?: boolean }) {
   if (dashboard.noAccess) {
     return <RestrictedDashboard dashboard={dashboard} />;
   }
@@ -1276,7 +1276,7 @@ export function TodayDashboardView({ dashboard, isOwner, retry }: { dashboard: T
           </div>
         </header>
 
-        <LoadErrorsBanner errors={dashboard.loadErrors} />
+        {!sectionRecovery ? <LoadErrorsBanner errors={dashboard.loadErrors} /> : null}
         <SummaryGrid dashboard={dashboard} />
         {isOwner ? <RewardOwnerPrompt /> : null}
         {retry ? <div role="status" className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm">

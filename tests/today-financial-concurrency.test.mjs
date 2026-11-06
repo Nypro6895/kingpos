@@ -10,3 +10,11 @@ test('pending opening hours do not delay financial reads and resolve before retu
 test('slow optional history cannot discard settled selected-day financials',async()=>{const f=fixture(false,true);const pending=f.api.getDailyPosTodayFinancialData({reportDate:'2020-01-03',timeZone:'UTC'});await new Promise(setImmediate);f.resolveCore(frame);const result=await pending;assert.equal(result.salesComparison,null);assert.deepEqual(result.activityPoints,frame.activityPoints);assert.deepEqual(result.staffRows,frame.staffRows);assert.equal(result.staffAttributionSource,'earnings');});
 
 test('optional comparison timeout never turns a pending selected-day read into successful empty money',async()=>{const f=fixture(false,true);let settled=false;const pending=f.api.getDailyPosTodayFinancialData({reportDate:'2020-01-03',timeZone:'UTC'}).finally(()=>{settled=true});await new Promise(resolve=>setTimeout(resolve,1600));assert.equal(settled,false);f.rejectCore(Error('current day unavailable'));await assert.rejects(pending,/current day unavailable/);});
+
+test('history keeps its result when authoritative day loading takes longer than the old widget budget',async()=>{
+ const f=fixture();const pending=f.api.getDailyPosTodayFinancialData({reportDate:'2020-01-03',timeZone:'UTC'});
+ await new Promise(resolve=>setTimeout(resolve,1900));f.resolveCore(frame);
+ const result=await pending;
+ assert.deepEqual(result.salesComparison,{totals:[10,20],selectedTotal:75,historyDays:2,sameTime:false});
+ assert.deepEqual(result.staffRows,frame.staffRows);
+});

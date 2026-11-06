@@ -17,7 +17,7 @@ function fixture() {
     window:{__reylumiAppLocalContext:host}, Object, Number,
     getAppLocalHost:()=>({isNative:true}), current:ref('/today'),
     acceptedHostEpoch:ref(1), nativeResetPending:ref(null),
-    roleReturn:ref(null), contextEpoch:ref(0), request:ref(null),
+    roleReturn:ref(null), explicitLogout:ref(false), contextEpoch:ref(0), request:ref(null),
     workspaceResolution:ref(null), workspaceRecovery:ref(null), workspaceGesture:ref(null),
     pageRecovery:ref(null), handoffPath:ref(null), recoveryAttempts:ref(new Set()),
     admitted:ref({staff:{value:{context:{viewerId:'old-user'}}}}),

@@ -180,6 +180,8 @@ function App() {
   const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
   const [openingSignIn, setOpeningSignIn] = useState(false), [signInError, setSignInError] = useState(false);
   const [guestContinuation, setGuestContinuation] = useState(0);
+  const [signInReturnPath, setSignInReturnPath] = useState<string | null>(null);
+  const explicitLogout = useRef(false);
   const openSignIn = async () => {
     if (openingSignIn) return;
     setOpeningSignIn(true); setSignInError(false);
@@ -262,6 +264,7 @@ function App() {
       if (row.value?.scope === value.context.scope) seedAppLocalResource(value.context.scope, row.name, row.args, row.value);
     }
     admitted.current = { ...admitted.current, [family]: next }; setAdmissions(admitted.current);
+    if (value.context.authenticated) { explicitLogout.current = false; setSignInReturnPath(null); }
     if (!value.offline) staleScopes.current.delete(value.context.scope);
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
     handoffPath.current = null; setSwitchingWorkspace(false);
@@ -388,9 +391,24 @@ function App() {
   const continueAsGuest = useCallback(() => {
     // Acknowledge the expiry presentation at either Guest control. The next
     // public page still obtains its own ordinary context admission.
+    setSignInReturnPath(null);
     setGuestContinuation(previous => previous + 1);
     navigate("/explore");
   }, [navigate]);
+  // A cold process has no prior authenticated React state. A confirmed expiry
+  // must still enter the hosted login flow, rather than require a button on an
+  // empty private page. Explore owns its own ordinary guest admission behind it.
+  useLayoutEffect(() => {
+    if (error !== "sign-in" || isPublic(path) || ["portable", "display"].includes(authorityFamily(path))) return;
+    const returnPath = !explicitLogout.current && path.split("?")[0] !== "/"
+      && getAppLocalPage(path)?.requiresContext !== false ? path : null;
+    clearAppLocalRoleResources(); resetAppLocalResources(); setAppLocalCommandScope(undefined);
+    // Authority withdrawal and the route switch must commit before paint.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]);
+    setSignInReturnPath(returnPath);
+    navigate("/explore", true);
+  }, [error, path, navigate]);
   useEffect(()=>installAppLocalLinkNavigation({navigate,isLocalRoute:href=>isPublic(href)||ownerPaths.has(href.split("?")[0])||Boolean(getAppLocalPage(href)),openOnline:path=>getAppLocalHost().openOnline(path),getScope:getAppLocalCommandScope,helpImagePaths:APP_LOCAL_REFERENCE_ASSETS}),[navigate]);
   useEffect(() => {
     const saved = admitted.current[authorityFamily(path)];
@@ -444,6 +462,7 @@ function App() {
     };
     const reset = (event: Event, roleHandoff = false) => {
       const detail = (event as CustomEvent<{ reason?: string; status?: number; scope?: string; scopeEpoch?: number; generation?: string }>).detail;
+      if (detail?.reason === "logout") explicitLogout.current = true;
       // A fresh authority result rotates native delivery metadata. Do not abort
       // the very context read producing it, or clear an already accepted reply.
       if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
@@ -675,10 +694,10 @@ function App() {
   const owner = ownerContext?.grant?.kind === "owner" || Boolean(ownerContext && !ownerContext.offline && ownerContext.access?.ownerWorkspace);
   const windows=new Map<string,string>();for(const href of [...visited,path])if(!isPublic(href)&&getAppLocalPage(href))windows.set(pageKey(href),href);
   const ownerVisited=ownerPaths.has(path.split("?")[0])||visited.some(href=>ownerPaths.has(href.split("?")[0]));
-  return <AppLocalNavigationProvider value={{ path, navigate, refresh: refreshNavigation }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation}>
+  return <AppLocalNavigationProvider value={{ path, navigate, refresh: refreshNavigation }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation} signInReturnPath={signInReturnPath}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
+      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error && (error !== "sign-in" || ["portable", "display"].includes(authorityFamily(path))) ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" key={"owner:" + privateAdmissionKey(ownerAdmission)} hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!isPublic(path) && !context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}

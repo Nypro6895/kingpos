@@ -182,8 +182,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         view.insertSubview(progress, belowSubview: launchPanel)
         NSLayoutConstraint.activate([
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            // Resize the page when the keyboard opens so dialogs and actions stay reachable.
-            webView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            // WebKit's visualViewport owns keyboard occlusion, without a second native resize.
+            webView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             progress.topAnchor.constraint(equalTo: webView.topAnchor),

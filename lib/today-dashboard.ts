@@ -65,7 +65,12 @@ import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
 function measureTodayRead<T>(stage: ReadStage, read: () => Promise<T>): Promise<T> {
   const timing = getReadRequestTiming();
-  const bounded = () => withDashboardDeadline(read(), stage === "clock" ? 8000 : 1800);
+  // Financial stages are complete, permission-checked report pipelines, not a
+  // single optional widget read. Their dependent SELECTs routinely outlive the
+  // 1.8s decorative-section budget; cutting them there made every retry fail.
+  // Clock (8s) + financial stage (10s) remain below native's 20s resource limit.
+  const deadline = stage === "clock" ? 8000 : stage === "financial_report" || stage === "financial_compare" ? 10000 : 1800;
+  const bounded = () => withDashboardDeadline(read(), deadline);
   return timing ? timing.measure(stage, bounded) : bounded();
 }
 

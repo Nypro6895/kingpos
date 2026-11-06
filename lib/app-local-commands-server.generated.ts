@@ -347,6 +347,7 @@ import {checkinPersonalQr as action343} from "@/app/qr/actions";
 import {saveStaffHoursBooking as action344} from "@/app/settings/staff-hours-booking-actions";
 import {marketTrialAction as action345} from "@/app/market/trial-actions";
 import {reconcileMarketReturnAction as action346} from "@/app/market/payment-return-actions";
+import {saveStaffCustomerContacts as action347} from "@/app/settings/staff-customer-contact-actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.0dde0f1e1c260096f8675486": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.05073222e31d780f4868f2db": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -695,5 +696,6 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.1e0add9927de2b0400796c32": (values: unknown[]) => (action344 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.a1390de74e42dc7d8ddb5126": (values: unknown[]) => (action345 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.dbc5382c479772dacee7b3dd": (values: unknown[]) => (action346 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.83321d06bbef69d6d3e41786": (values: unknown[]) => (action347 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}

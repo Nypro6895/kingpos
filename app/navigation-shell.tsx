@@ -54,6 +54,7 @@ import {
   type ReactNode,
 } from "react";
 import { routes } from "@/lib/routes";
+import { installMobileViewport } from "@/lib/mobile-viewport";
 import { markAllCenterViewed, NOTIFICATIONS_REFRESH, useNotificationSummary } from "@/lib/notification-client";
 
 type NavigationSalon = {
@@ -710,8 +711,9 @@ function CustomerWorkspaceRow({
           ? "bg-brand-orange-soft text-text-primary"
           : "text-text-primary hover:bg-surface-muted",
       ].join(" ")}
-      disabled={isSelected || Boolean(pendingKey)}
-      onClick={() => onRunAction(workspace, action)}
+      aria-disabled={isSelected || undefined}
+      disabled={Boolean(pendingKey)}
+      onClick={() => { if (!isSelected) onRunAction(workspace, action); }}
       type="button"
     >
       <WorkspaceAvatar
@@ -1078,7 +1080,7 @@ function useDismissibleDetails() {
       }
     }
 
-    function onPointerDown(event: PointerEvent) {
+    function onOutsideClick(event: MouseEvent) {
       const detailsElement = detailsRef.current;
       const target = event.target;
 
@@ -1102,11 +1104,11 @@ function useDismissibleDetails() {
       closeDetails(detailsElement, true);
     }
 
-    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("click", onOutsideClick);
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("click", onOutsideClick);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
@@ -1133,7 +1135,7 @@ function RoleMorePanel({
   function closeMoreMenu() {
     const detailsElement = panelRef.current?.closest("details");
     if (detailsElement) {
-      detailsElement.open = false;
+      queueMicrotask(() => { if (detailsElement.isConnected) detailsElement.open = false; });
     }
   }
 
@@ -1141,7 +1143,7 @@ function RoleMorePanel({
     <div
       ref={panelRef}
       className={[
-        "z-[75] overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated text-text-primary shadow-[0_22px_60px_rgba(35,25,22,0.16)]",
+        "z-[75] flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated text-text-primary shadow-[0_22px_60px_rgba(35,25,22,0.16)]",
         isMobile
           ? "workspace-mobile-panel fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))]"
           : isRail
@@ -1373,7 +1375,7 @@ function CustomerDesktopWorkspaceSwitcher({
       }
     }
 
-    function onPointerDown(event: PointerEvent) {
+    function onOutsideClick(event: MouseEvent) {
       const target = event.target;
 
       if (!(target instanceof Node)) {
@@ -1391,11 +1393,11 @@ function CustomerDesktopWorkspaceSwitcher({
     }
 
     document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("click", onOutsideClick);
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("click", onOutsideClick);
     };
   }, [closeMenu, isOpen]);
 
@@ -1509,9 +1511,10 @@ function CustomerDesktopWorkspaceSwitcher({
                       ? "bg-brand-orange-soft text-text-primary"
                       : "hover:bg-surface-muted",
                   ].join(" ")}
-                  disabled={isSelected || Boolean(pendingKey)}
+                  aria-disabled={isSelected || undefined}
+                  disabled={Boolean(pendingKey)}
                   key={workspace.id}
-                  onClick={() => runWorkspaceSwitch(workspace, action)}
+                  onClick={() => { if (!isSelected) runWorkspaceSwitch(workspace, action); }}
                   type="button"
                 >
                   <WorkspaceAvatar
@@ -2072,10 +2075,11 @@ function WorkspaceOptionButton({
         className={[
           "grid min-h-14 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-default",
           isCurrent
-            ? "bg-zinc-950 text-white"
+            ? "bg-brand-orange-soft text-text-primary"
             : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950",
         ].join(" ")}
-        disabled={isCurrent}
+        aria-disabled={isCurrent || undefined}
+        onClick={event => { if (isCurrent) event.preventDefault(); }}
         type="submit"
       >
         <WorkspaceAvatar
@@ -2084,7 +2088,7 @@ function WorkspaceOptionButton({
           className={[
             "grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold",
             isCurrent
-              ? "bg-white/15 text-white"
+              ? "bg-white text-brand-orange"
               : "bg-brand-orange-soft text-brand-orange",
           ].join(" ")}
           label={__vt(label)}
@@ -2095,7 +2099,7 @@ function WorkspaceOptionButton({
           <span
             className={[
               "block truncate text-xs",
-              isCurrent ? "text-zinc-200" : "text-zinc-500",
+              isCurrent ? "text-text-secondary" : "text-zinc-500",
             ].join(" ")}
           >
             <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>
@@ -2643,6 +2647,7 @@ function MobileBottomNav({
   searchParams: SearchParamsReader;
 }) {
   const __vt = useWorkspaceTranslation();
+  useEffect(() => installMobileViewport(document), []);
   const glassNavRef = useIPhoneGlassNav(!/^\/pos(?:\/|$)/.test(pathname));
 
   return (
@@ -2768,6 +2773,15 @@ export function NavigationShell({
   }
 
   const isOwnerPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report|settings|more)(\/|$)/.test(pathname);
+  // Operational POS pages own their navigation and viewport. Settings retains
+  // the shared shell; checkout/tab changes must not add a second header.
+  const isOperationalPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname);
+  if (isOperationalPosRoute) return <>
+    {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
+    <CustomerShellContextProvider isCustomerShell notificationSummary={notificationSummary}>
+      <div data-owner-pos-shell="true" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>{children}</div>
+    </CustomerShellContextProvider>
+  </>;
   const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
   const routeNavigation = routeNavigationForWorkspaceKind({
     routeWorkspaceKind,

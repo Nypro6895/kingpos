@@ -515,6 +515,9 @@
     ],
     "app/market/payment-return-actions.ts": [
       "reconcileMarketReturnAction"
+    ],
+    "app/settings/staff-customer-contact-actions.ts": [
+      "saveStaffCustomerContacts"
     ]
   }
 }

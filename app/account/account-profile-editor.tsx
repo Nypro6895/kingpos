@@ -128,7 +128,7 @@ function displayName(input: {
 }
 
 function displayValue(value: string | null | undefined) {
-  return value?.trim() || "-";
+  return value?.trim() || "Not provided";
 }
 
 function maskPhoneForOtp(phone: string) {
@@ -256,11 +256,11 @@ function ProfileField({ label, onEdit, value }: ProfileFieldProps) {
             onClick={onEdit}
             type="button"
           >
-            <span className="break-words">{display}</span>
+            <span className={value?.trim() ? "break-words" : "break-words font-normal text-zinc-500"}>{value?.trim() ? display : <WorkspaceText text="Not provided"/>}</span>
           </button>
         ) : (
           <span className="flex min-h-6 items-center break-words text-sm font-semibold text-zinc-950">
-            {display}
+            {value?.trim() ? display : <WorkspaceText text="Not provided"/>}
           </span>
         )}
       </dd>
@@ -287,8 +287,10 @@ function EditableField({
       >
         <WorkspaceText text={label} />
       </label>
-      {name === "timezone" ? <TimeZoneSelect id={fieldId} name={name} className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm" value={value} onChange={event => onChange(name, event.currentTarget.value)} /> : <input
+      {name === "language" ? <select id={fieldId} name={name} value={value} onChange={event => onChange(name, event.currentTarget.value)} className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm"><option value="en">English</option><option value="vi">Tiếng Việt</option>{!["en","vi"].includes(value) ? <option value={value}>{value}</option> : null}</select> : name === "timezone" ? <TimeZoneSelect compactLabel id={fieldId} name={name} className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm" value={value} onChange={event => onChange(name, event.currentTarget.value)} /> : <input
         autoComplete={autoComplete}
+        type={name === "phone" ? "tel" : "text"}
+        inputMode={name === "phone" ? "tel" : undefined}
         className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
         id={fieldId}
         name={name}
@@ -953,7 +955,7 @@ export function AccountProfileEditor({
               {compact ? <span aria-hidden="true">⋯</span> : <WorkspaceText text="Edit" />}
             </button>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
               <input
                 accept={ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES.join(",")}
                 className="sr-only"
@@ -1020,7 +1022,7 @@ export function AccountProfileEditor({
               />
               <ReadonlyField label={__vt("Created")} value={createdAtLabel} /></> : null}
             </div> : null}
-            <div className={`${avatarOnly ? "" : styles.actions} sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}>
+            <div className={`${styles.actions} sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}>
               <div className="flex items-center justify-end gap-2">
                 <button
                   className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
@@ -1054,11 +1056,11 @@ export function AccountProfileEditor({
               onEdit={beginEdit}
               value={values.phone}
             />
-            <ProfileField label={__vt("Legal name")} onEdit={beginEdit} value={[values.first_name,values.last_name].filter(Boolean).join(" ")||__vt("First · last · middle")}/>
+            <ProfileField label={__vt("Legal name")} onEdit={beginEdit} value={[values.first_name,values.last_name].filter(Boolean).join(" ")}/>
             <ProfileField
               label={__vt("Language")}
               onEdit={beginEdit}
-              value={values.language}
+              value={values.language === "en" ? "English" : values.language === "vi" ? "Tiếng Việt" : values.language}
             />
             <ProfileField
               label={__vt("Timezone")}

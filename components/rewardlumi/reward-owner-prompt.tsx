@@ -106,7 +106,7 @@ function RewardOwnerPromptReady({ setup }: { setup: boolean }) {
   const invitation = preview ? rewardInvitation(preview, "all", eligibility) : null;
   return <section ref={anchor} className={styles.invite} aria-label="Grow with rewards">
     <div className={styles.inviteContent}>
-      {preview && <div className={styles.thumbnail}><RewardPromoArtwork key={preview.id} salon={preview} /></div>}
+      {preview && <div className={styles.thumbnail}><RewardPromoArtwork key={preview.id} salon={preview} compact /></div>}
       <div className={styles.inviteCopy}>
         <p className={styles.eyebrow}>Rewards for your salon</p>
         <h2>Give customers a reason to come back</h2>

@@ -21,7 +21,7 @@ import type { AppLocalContext } from "@/lib/app-local-host";
 import type { AppLocalShellNavigation, AppLocalShellConfiguration, AppLocalShellSummary, AppLocalShellNotice, AppLocalShellAuxiliary } from "@/lib/app-local-shell-metadata";
 
 /** One shell around the retained page registry, never a shell per hidden page. */
-export function AppLocalShell({ context, presentationContext, children, path, checkContext, onContinueAsGuest, guestContinuation = 0 }: { context: AppLocalContext | null; presentationContext?: AppLocalContext | null; children: ReactNode; path?: string; checkContext?: () => Promise<void>; onContinueAsGuest?: () => void; guestContinuation?: number }) {
+export function AppLocalShell({ context, presentationContext, children, path, checkContext, onContinueAsGuest, guestContinuation = 0, signInReturnPath }: { context: AppLocalContext | null; presentationContext?: AppLocalContext | null; children: ReactNode; path?: string; checkContext?: () => Promise<void>; onContinueAsGuest?: () => void; guestContinuation?: number; signInReturnPath?: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const route = (path ?? pathname).split("?")[0];
@@ -64,7 +64,7 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
   return <WorkspaceLanguageProvider scope={scope ?? ""} enabled={config?.language.enabled ?? false} portableEnabled={config?.language.portableEnabled ?? false} expiresAt={config?.language.expiresAt ?? null}>
     <CampaignPluginProvider scope={scope ?? ""} installed={config?.campaign.installed ?? false}>
       <OverlayDismissal />
-      <AppLocalSessionExpiryPrompt key={guestContinuation} authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} checkContext={checkContext} onContinueAsGuest={onContinueAsGuest} />
+      <AppLocalSessionExpiryPrompt key={guestContinuation} authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} checkContext={checkContext} onContinueAsGuest={onContinueAsGuest} signInReturnPath={signInReturnPath} />
       {!publicInitial && menu ? <OwnerQueueRuntime scope={menu.ownerQueueScope} /> : null}
       {!publicInitial && menu && pendingSummary ? <WorkspaceSummarySeed scope={pendingSummary.notificationScope} summary={pendingSummary.summary} /> : null}
       {noticeData?.scope === scope ? <AbuseNoticeView mode={noticeData?.mode ?? null} /> : null}

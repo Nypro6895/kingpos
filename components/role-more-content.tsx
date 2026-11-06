@@ -47,6 +47,8 @@ export function RoleMoreContent({ roleKind, activeItemIds, onNavigate, listClass
         <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-orange-soft text-brand-orange"><Icon name="gear" /></span>
         <span><WorkspaceText text="View all settings" /></span>
       </Link>
+      <Link className="flex min-h-11 items-center px-3 text-sm font-bold" href="/settings?section=personal" onClick={onNavigate}><WorkspaceText text="Account & security" /></Link>
+      <p className="px-3 pt-1 text-xs text-text-secondary lg:hidden"><WorkspaceText text="Scroll for more tools" /> ↓</p>
       {workspace === "pos" ? <Link className="flex min-h-11 items-center rounded-xl px-3 text-sm font-bold" href="/" onClick={onNavigate}><WorkspaceText text="Exit POS" /></Link> : null}
     </div>
   </>;

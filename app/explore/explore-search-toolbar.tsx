@@ -1,4 +1,5 @@
 "use client";
+import {useDialogViewport} from "@/components/use-dialog-viewport";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -126,6 +127,7 @@ function ExploreAreaDialog({ location, scopePolicy, locating, onApply, onCurrent
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useNativeDialogNavigation(dialog);
+  useDialogViewport(dialog,true,"sheet");
   const [draftLocation, setDraftLocation] = useState(location);
   const [expand, setExpand] = useState(scopePolicy === "expandable");
   useEffect(() => {
@@ -139,7 +141,7 @@ function ExploreAreaDialog({ location, scopePolicy, locating, onApply, onCurrent
     <dialog ref={dialog} aria-labelledby="explore-area-title" data-testid="explore-area-dialog"
       onCancel={event => { event.preventDefault(); onClose(); }}
       onClick={event => { if (event.target === event.currentTarget) onClose(); }}
-      className="fixed inset-0 m-auto w-[calc(100%_-_2rem)] max-w-sm overflow-visible rounded-3xl bg-white p-5 text-text-primary shadow-xl backdrop:bg-black/35">
+      className="fixed inset-x-0 bottom-0 top-auto m-0 mx-auto max-h-[85dvh] w-full max-w-sm overflow-y-auto rounded-t-3xl sm:inset-0 sm:m-auto sm:rounded-3xl bg-white p-5 text-text-primary shadow-xl backdrop:bg-black/35">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 id="explore-area-title" className="text-lg font-semibold">Search area</h2>
         <button type="button" onClick={onClose} aria-label="Close search area" className="grid size-11 place-items-center rounded-full text-xl hover:bg-surface-muted">×</button>

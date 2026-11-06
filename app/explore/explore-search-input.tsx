@@ -151,10 +151,10 @@ function SearchInputSession(props: Props) {
     }
   }
   return <div className="relative min-w-0">
-    <input ref={inputRef} id={props.id} name={props.name} value={value} type="search" enterKeyHint="search" autoComplete="off" maxLength={160}
+    <input ref={inputRef} id={props.id} name={props.name} value={value} type="search" enterKeyHint="search" autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} maxLength={160}
       role="combobox" aria-autocomplete="list" aria-expanded={shown} aria-controls={listId}
       aria-activedescendant={shown && active >= 0 && options[active] ? `${listId}-${active}` : undefined}
-      className={props.className} placeholder={props.placeholder}
+      className={`${props.className} pr-12`} placeholder={props.placeholder}
       onChange={event => {
         const next = event.target.value;
         setValue(next); setActive(-1); setFocused(true);
@@ -167,6 +167,7 @@ function SearchInputSession(props: Props) {
         composingRef.current = false; setComposing(false);
         if (!props.livePaused && props.onLiveSearch) liveSearch.schedule(event.currentTarget.value, props.onLiveSearch);
       }} />
+    {value ? <button type="button" aria-label="Clear search" className="absolute right-1 top-0 grid size-11 place-items-center text-lg" onClick={() => { liveSearch.cancel(); cancelMetadata(); setValue(""); setActive(-1); props.onDraftChange?.(); props.onLiveSearch?.(""); inputRef.current?.focus(); }}>×</button> : null}
     {shown ? <div id={listId} role="listbox" aria-label="Search suggestions"
       className="absolute left-0 right-0 top-full z-[70] mt-2 max-h-80 overflow-y-auto rounded-2xl border border-border-subtle bg-white p-1 shadow-xl">
       {options.map((option, index) => <button key={option.id} id={`${listId}-${index}`} type="button" role="option"

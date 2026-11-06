@@ -34,6 +34,9 @@ export async function fetchPostCommentsPage(input: {
     return page as PostCommentPage;
   } catch (error) {
     if (controller.signal.aborted) throw new Error("The request took too long. Please try again.");
+    // An obsolete native read is transport bookkeeping, not customer-facing
+    // copy. Do not replay it across an account/route boundary or lose a draft.
+    if (error && typeof error === "object" && "name" in error && error.name === "AbortError") throw new Error("Comments could not be loaded. Please try again.");
     if (error instanceof TypeError) throw new Error("Comments could not be loaded. Please try again.");
     throw error;
   } finally {

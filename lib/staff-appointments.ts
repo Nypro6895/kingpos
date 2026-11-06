@@ -54,6 +54,7 @@ export type StaffAppointmentLine = {
   confirmationStatus: BookingConfirmationStatus;
   customerName: string;
   customerPhone: string | null;
+  customerContactVisible: boolean;
   price: number;
   noShowCount: number;
   noShowEligible: boolean;
@@ -113,10 +114,6 @@ export type StaffAppointmentsData = {
 type BookingLineRow = {
   booking: {
     confirmation_status: BookingConfirmationStatus;
-    customer: {
-      name: string;
-      phone: string | null;
-    } | null;
     id: string;
     pos_ticket_id: string | null;
     public_notes: string | null;
@@ -202,7 +199,7 @@ function appointmentLocalDate(appointment: StaffAppointmentLine, timeZone: strin
 function mapAppointmentLines(
   lines: BookingLineRow[],
   inspirationMap: Map<string, BookingInspirationView>,
-  contacts: Record<string, {customerName: string; customerPhone: string | null; noShowCount: number; noShowReason: string | null}>,
+  contacts: Record<string, {customerName: string; customerPhone: string | null; customerContactVisible: boolean; noShowCount: number; noShowReason: string | null}>,
 ) {
   return lines
     .filter((line) => line.booking)
@@ -210,8 +207,9 @@ function mapAppointmentLines(
       bookingId: line.booking?.id ?? "",
       completedAt: line.completed_at,
       confirmationStatus: line.booking?.confirmation_status ?? "confirmed",
-      customerName: contacts[line.booking?.id ?? ""]?.customerName ?? line.booking?.customer?.name ?? "Customer",
-      customerPhone: contacts[line.booking?.id ?? ""]?.customerPhone ?? line.booking?.customer?.phone ?? null,
+      customerName: contacts[line.booking?.id ?? ""]?.customerName ?? "Customer",
+      customerPhone: contacts[line.booking?.id ?? ""]?.customerPhone ?? null,
+      customerContactVisible: contacts[line.booking?.id ?? ""]?.customerContactVisible === true,
       price: Number(line.line_total),
       noShowEligible: Date.parse(line.scheduled_start_at) <= Date.now(),
       noShowCount: contacts[line.booking?.id ?? ""]?.noShowCount ?? 0,
@@ -472,7 +470,7 @@ export async function getCurrentStaffAppointments(
     supabase
       .from("booking_lines")
       .select(
-        "id, booking_id, service_name_snapshot, line_total, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, no_show_kind, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
+        "id, booking_id, service_name_snapshot, line_total, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, no_show_kind, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot)",
       )
       .eq("salon_id", context.currentStaffSalon.id)
       .eq("assigned_staff_id", staff.id)
@@ -484,7 +482,7 @@ export async function getCurrentStaffAppointments(
       ? supabase
           .from("booking_lines")
           .select(
-            "id, booking_id, service_name_snapshot, line_total, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, no_show_kind, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
+            "id, booking_id, service_name_snapshot, line_total, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, no_show_kind, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot)",
           )
           .eq("salon_id", context.currentStaffSalon.id)
           .eq("assigned_staff_id", staff.id)
@@ -565,7 +563,7 @@ export async function getCurrentStaffAppointments(
       : { data: [] as BookingInspiration[], error: null },
   ]);
   if (contactsResult.error) throw new Error(contactsResult.error.message);
-  const contacts = contactsResult.data as Record<string, {customerName: string; customerPhone: string | null; noShowCount: number; noShowReason: string | null}>;
+  const contacts = contactsResult.data as Record<string, {customerName: string; customerPhone: string | null; customerContactVisible: boolean; noShowCount: number; noShowReason: string | null}>;
 
   if (inspirationsByBookingId.error) {
     throw new Error(inspirationsByBookingId.error.message);

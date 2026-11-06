@@ -1065,14 +1065,14 @@ export async function getDailyPosTodayFinancialData(input: {
     readContext: input.readContext,
     timeZone: input.timeZone,
   });
-  // Optional history must settle before Today's 1.8-second financial deadline.
-  // A slow comparison cannot discard the selected day's authoritative amounts.
-  const comparisonRead = withDashboardDeadline(buildSalesComparison({
+  // Start history alongside the selected day, but do not spend its optional
+  // wait budget while it is waiting for that same authoritative day's total.
+  const comparisonRead = buildSalesComparison({
     auth,
     reportDate: input.reportDate,
     selectedTotal: () => coreRead.then(core=>core.totals.expectedTotal),
     timeZone: input.timeZone,
-  }), 1500).catch((error) => {
+  }).catch((error) => {
     console.error("Today sales comparison unavailable", {
       salonId: auth.salon.id,
       error,
@@ -1080,7 +1080,8 @@ export async function getDailyPosTodayFinancialData(input: {
     return null;
   });
 
-  const [core,salesComparison] = await Promise.all([coreRead,comparisonRead]);
+  const core = await coreRead;
+  const salesComparison = await withDashboardDeadline(comparisonRead, 1500).catch(() => null);
 
   return {
     activityPoints: core.activityPoints,

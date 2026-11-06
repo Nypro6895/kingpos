@@ -17,6 +17,7 @@ test('real booking ModalFrame follows retained Activity lifetime and restores bo
   const result=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`
     import React,{Activity,useState,useEffect,useRef}from'react';import{createRoot}from'react-dom/client';import{createPortal}from'react-dom';
     import{useCloseOnNavigation,useOverlayPortalHost}from'./components/overlay-dismissal';
+    import{useDialogViewport}from'./components/use-dialog-viewport';
     const useWorkspaceTranslation=()=>x=>x;const classNames=(...xs)=>xs.filter(Boolean).join(' ');
     ${functions}
     function App(){const[active,setActive]=useState('base');window.active=active;window.showBase=()=>setActive('base');return <>

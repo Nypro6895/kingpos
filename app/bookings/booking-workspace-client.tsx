@@ -1,4 +1,5 @@
 "use client";
+import { useDialogViewport } from "@/components/use-dialog-viewport";
 import { SalonName } from "@/components/salon-member-badge";
 
 import { readBookingMonthCounts } from "./actions";
@@ -2689,7 +2690,9 @@ function ModalFrame({
 
   // Navigation resets local owner state; the explicit close action may update a URL or ask about a draft.
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const layerRef = useRef<HTMLDivElement | null>(null);
   const portalHost = useBookingModalPortalHost();
+  useDialogViewport(layerRef, Boolean(portalHost));
 
   useEffect(() => {
     if (!portalHost) return;
@@ -2740,6 +2743,7 @@ function ModalFrame({
 
   return createPortal(
     <div
+      ref={layerRef}
       aria-label={__vt(label)}
       aria-modal="true"
       className="booking-modal-layer"
@@ -2926,7 +2930,7 @@ function WorkspaceTabs({
     { count: appointmentCount, label: "Appointments", value: "calendar" },
     { label: "Booking page", setupNeeded: setupIncomplete, value: "booking-page" },
     { label: "Availability", value: "availability" },
-    { label: "Settings", value: "settings" },
+    { label: "Booking rules", value: "settings" },
   ] as const;
 
   return (
@@ -3502,8 +3506,8 @@ function AppointmentRowEditDialog({
           </p>
         </div>
         <button
-          aria-label={__vt("Close new appointment")}
-          className="grid size-10 place-items-center rounded-md border border-zinc-300 text-lg font-semibold"
+          aria-label={__vt("Close appointment details")}
+          className="grid size-11 shrink-0 place-items-center rounded-full border border-zinc-300 text-lg font-semibold"
           onClick={onClose}
           type="button"
         >
@@ -5033,7 +5037,8 @@ function DetailDrawer({
           </p>
         </div>
         <button
-          className="grid size-10 place-items-center rounded-md border border-zinc-300 text-lg font-semibold"
+          aria-label={__vt("Close appointment form")}
+          className="grid size-11 shrink-0 place-items-center rounded-full border border-zinc-300 text-lg font-semibold"
           onClick={onClose}
           type="button"
         >
@@ -5549,6 +5554,16 @@ function AppointmentDrawer({
   );
   const draftSubtotal = totalDraftPrice(options, lines);
   const steps = ["Customer", "Services", "Professional", "Date & time", "Details", "Review"];
+  const [stepError, setStepError] = useState("");
+  function goStep(target: number) {
+    if (target > step) {
+      const missing = !customerId && !customerName.trim() ? "Enter a customer name or select a customer."
+        : target > 1 && (!lines.length || lines.some(line => !line.serviceId)) ? "Choose at least one service."
+        : target > 3 && !startLocal ? "Choose an appointment date and time." : "";
+      if (missing) { setStepError(missing); return; }
+    }
+    setStepError(""); setStep(target);
+  }
 
   function addLine() {
     setLines((current) => [
@@ -5603,13 +5618,15 @@ function AppointmentDrawer({
 
         </div>
         <button
-          className="grid size-10 place-items-center rounded-md border border-zinc-300 text-lg font-semibold"
+          aria-label={__vt("Close appointment form")}
+          className="grid size-11 shrink-0 place-items-center rounded-full border border-zinc-300 text-lg font-semibold"
           onClick={onClose}
           type="button"
         >
           x
         </button>
       </div>
+      {stepError ? <p role="alert" className="shrink-0 border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-800"><WorkspaceText text={stepError}/></p> : null}
       <div className={proposalStyles.progress}>
         <nav className={proposalStyles.steps} aria-label={__vt("New appointment")}>
           {steps.map((label, index) => (
@@ -5618,7 +5635,7 @@ function AppointmentDrawer({
               aria-label={__vt(label)}
               aria-current={step === index ? "step" : undefined}
               key={label}
-              onClick={() => setStep(index)}
+              onClick={() => goStep(index)}
               type="button"
             >
               <span className={proposalStyles.number}>{index + 1}</span>
@@ -5948,7 +5965,7 @@ function AppointmentDrawer({
           {step < steps.length - 1 ? (
             <button
               className="min-h-10 rounded-md bg-[#f26f3d] px-4 text-sm font-semibold text-white"
-              onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}
+              onClick={() => goStep(Math.min(steps.length - 1, step + 1))}
               type="button"
             >
               <WorkspaceText text="Next" />
@@ -7283,10 +7300,10 @@ export function BookingWorkspaceClient({
   const [timeline, setTimeline] = useState(false);
   const navigation = useRef<HTMLDivElement>(null);
   useEffect(()=>{
-    function dismiss(event: PointerEvent) {navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>{if(!item.contains(event.target as Node))item.open=false;});}
+    function dismiss(event: MouseEvent) {navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>{if(!item.contains(event.target as Node))item.open=false;});}
     function escape(event: globalThis.KeyboardEvent) {if(event.key==='Escape')navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);}
-    document.addEventListener('pointerdown',dismiss);document.addEventListener('keydown',escape);
-    return ()=>{document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',escape);};
+    document.addEventListener('click',dismiss);document.addEventListener('keydown',escape);
+    return ()=>{document.removeEventListener('click',dismiss);document.removeEventListener('keydown',escape);};
   },[]);
   const today=todayInTimeZone(timezone), tomorrow=addDays(today,1);
   const loadMonthCounts = useCallback((month: string) => readBookingMonthCounts(month), []);

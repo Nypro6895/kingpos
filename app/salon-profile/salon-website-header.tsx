@@ -1,5 +1,6 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
+import { MoreOptionsIcon } from "@/components/more-options-icon";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 /* eslint-disable @next/next/no-img-element -- Salon logo public URL. */
@@ -58,11 +59,11 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
     </div> : null}
     <div className={styles.navigation}>
       <div role="tablist" aria-label={__vt("Salon profile sections")} className={styles.tabs} onKeyDown={onTabKeyDown}>
-        {tabs.map(tab => <button type="button" key={tab.id} id={`salon-profile-tab-${tab.id}`} role="tab" aria-controls={`salon-profile-${tab.id}`} aria-selected={selectedTab === tab.id} tabIndex={selectedTab === tab.id ? 0 : -1} onClick={() => onTab(tab.id)}>{tab.id === "discover" ? <WorkspaceText text="Overview" /> : tab.label}</button>)}
+        {[...tabs, ...extraTabs].map(tab => <button type="button" key={tab.id} id={`salon-profile-tab-${tab.id}`} role="tab" aria-controls={`salon-profile-${tab.id}`} aria-selected={selectedTab === tab.id} tabIndex={selectedTab === tab.id ? 0 : -1} onClick={() => onTab(tab.id)}>{tab.id === "discover" ? <WorkspaceText text="Overview" /> : tab.label}</button>)}
       </div>
       {extraTabs.length || canShare || onReport ? <details className={styles.more} data-dismissible-popover>
-        <summary aria-label={__vt("More profile sections and actions")}>•••</summary>
-        <div>{extraTabs.map(tab => <button key={tab.id} id={`salon-profile-tab-${tab.id}`} type="button" onClick={event => { onTab(tab.id); event.currentTarget.closest("details")?.removeAttribute("open"); }}><WorkspaceText text={tab.label} /></button>)}
+        <summary aria-label={__vt("More profile sections and actions")}><MoreOptionsIcon /></summary>
+        <div>
           {canShare ? <button type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onShare(); }}><WorkspaceText text="Share profile" /></button> : null}
           {onReport ? <button type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onReport(); }}><WorkspaceText text="Report salon" /></button> : null}
         </div>

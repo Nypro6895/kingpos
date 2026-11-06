@@ -54,7 +54,7 @@ function WebSectionReader({ scope, salonId, date, currentDate, section, accept, 
   useEffect(() => { if (resource.data) accept(section, resource.data.data); }, [accept, section, resource.data]);
   useEffect(() => { if (!resource.available) deny(); }, [deny, resource.available]);
   useEffect(() => { if (resource.error && !resource.refreshing && resource.available) fail(section); }, [fail, section, resource.error, resource.refreshing, resource.available]);
-  return <ReadFailure section={section} error={resource.error || Boolean(resource.data?.data.loadErrors.length)} retry={resource.refresh} refreshing={resource.refreshing} />;
+  return <ReadFailure section={section} error={resource.error || Boolean(resource.data && hasTodayDashboardSectionError(resource.data.data, section))} retry={refresh} refreshing={resource.refreshing} />;
 }
 
 function NativeSectionReader({ scope, salonId, date, section, initialReadPending, accept, fail, deny }: ReaderProps) {
@@ -64,7 +64,7 @@ function NativeSectionReader({ scope, salonId, date, section, initialReadPending
   useEffect(() => { if (state.data) accept(section, state.data.dashboard); }, [accept, section, state.data]);
   useEffect(() => { if (!state.available || state.accessDenied) deny(); }, [deny, state.available, state.accessDenied]);
   useEffect(() => { if (state.error && !state.refreshing && state.available && !state.accessDenied) fail(section); }, [fail, section, state.error, state.refreshing, state.available, state.accessDenied]);
-  return <ReadFailure section={section} error={state.error || Boolean(state.data && hasTodayDashboardSectionError(state.data.dashboard,section))} retry={state.refresh} refreshing={state.refreshing} />;
+  return <ReadFailure section={section} error={state.error || Boolean(state.data && hasTodayDashboardSectionError(state.data.dashboard,section))} retry={refresh} refreshing={state.refreshing} />;
 }
 
 function TodaySections({ initialDashboard, scope, salonId, isOwner, native = false, nativeInitialPending, recovery,historyQuery }: { initialDashboard: TodayDashboard; scope: string; salonId: string; isOwner: boolean; native?: boolean; nativeInitialPending?: boolean; recovery?: Recovery;historyQuery?:string }) {
@@ -96,7 +96,8 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
       if (!olderThanShell) setClockChanged(true);
       return;
     }
-    if (!olderThanShell) setClockChanged(false);
+    if (olderThanShell) return;
+    setClockChanged(false);
     setDashboard(previous => mergeTodayDashboardSection(previous, next, section));
   }, [permissionsIdentity, initialDashboard.timezone, initialDashboard.date, initialDashboard.dayView.currentDate, initialDashboard.dayView.isCurrentDate, initialDashboard.generatedAt, deny]);
   useEffect(() => {
@@ -116,7 +117,7 @@ function TodaySections({ initialDashboard, scope, salonId, isOwner, native = fal
   return <FinancialHistoryProvider salonId={salonId} scope={scope} surface="today" start={dashboard.date} end={dashboard.date} refreshKey={dashboard.generatedAt} query={historyQuery}>
     {getTodayDashboardSections(initialDashboard).map(section => <Reader key={section} scope={scope} salonId={salonId} date={dashboard.date} currentDate={dashboard.dayView.currentDate} section={section} initialReadPending={nativeInitialPending} accept={accept} fail={fail} deny={deny} />)}
     {clockChanged && <p role="status" data-today-clock-refresh className="px-4 py-3 text-sm">The business day or time zone has changed. <a href="/staff/today" className="underline">Open Today</a> to refresh.</p>}
-    <TodayDashboardView dashboard={dashboard} isOwner={isOwner} />
+    <TodayDashboardView dashboard={dashboard} isOwner={isOwner} sectionRecovery />
   </FinancialHistoryProvider>;
 }
 
@@ -141,6 +142,7 @@ function NativeTodayFrame({scope,salonId,requestedDate,completeFirst,historyQuer
     // reads. Seed the ordinary section cells before their automatic effects;
     // retries, mutation invalidation and fresh authority checks stay unchanged.
     for (const phase of getTodayDashboardSections(state.data.dashboard)) {
+      if (hasTodayDashboardSectionError(state.data.dashboard, phase)) continue;
       seedAppLocalResource(scope, "page.owner-today", {date:state.data.dashboard.date,phase}, {
         schemaVersion:1,status:200,scope,etag:`"full-${state.updatedAt}-${phase}"`,
         updatedAt:state.updatedAt,data:state.data,offline:state.offline,

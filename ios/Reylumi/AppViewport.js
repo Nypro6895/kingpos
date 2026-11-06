@@ -31,9 +31,9 @@
     :is([role="dialog"], dialog) {
       box-sizing: border-box;
       min-width: 0 !important;
-      max-width: calc(100dvw - 1rem) !important;
-      max-height: calc(100dvh - 1rem) !important;
-      overflow: auto !important;
+      max-width: 100dvw;
+      max-height: var(--visible-viewport-height, 100dvh);
+      overflow: auto;
       overscroll-behavior: contain;
     }
   `;

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StaffCustomerFields } from "./staff-customer-fields";
 
-type Catalog = {enabled: boolean; staffId: string; timezone: string; services: {id: string; name: string; price: number; minutes: number}[]; staff: {id: string; name: string}[]; assignments: {staffId: string; serviceId: string}[]};
+type Catalog = {enabled: boolean; customerContactVisible: boolean; staffId: string; timezone: string; services: {id: string; name: string; price: number; minutes: number}[]; staff: {id: string; name: string}[]; assignments: {staffId: string; serviceId: string}[]};
 const endpoint = "/api/staff/create-appointment";
 async function readResponse(response: Response) {
   const data = await response.json();
@@ -65,7 +65,7 @@ function StaffCreateForm({salonId, date}: {salonId: string; date: string}) {
         } catch(error) {setError(error instanceof Error?error.message:"Unable to create appointment.");}
         finally {inFlight.current=false;setBusy(false);}
       }}>
-        <StaffCustomerFields salonId={salonId} disabled={busy}/>
+        <StaffCustomerFields salonId={salonId} disabled={busy} contactVisible={catalog?.customerContactVisible === true}/>
         {catalogError ? <p role="alert"><WorkspaceText text={catalogError} /> <button type="button" onClick={()=>void loadCatalog()}><WorkspaceText text="Retry" /></button></p> : !catalog ? <p role="status"><WorkspaceText text="Loading services and professionals… You can enter customer details now." /></p> : null}
         <label><WorkspaceText text="Professional" /><select value={staffId} disabled={busy || !catalog} onChange={event=>{setStaffId(event.target.value);setServiceIds([]);}}>{!catalog ? <option><WorkspaceText text="Loading…" /></option> : null}{catalog?.staff.map(staff=><option key={staff.id} value={staff.id}>{staff.name}<WorkspaceText text={staff.id===catalog.staffId?" (you)":""} /></option>)}</select></label>
         <fieldset disabled={busy || !catalog}><legend><WorkspaceText text="Services" /></legend>{catalog?.services.filter(service=>catalog.assignments.some(a=>a.staffId===staffId&&a.serviceId===service.id)).map(service=><label className="staff-create-service" key={service.id}><input type="checkbox" checked={serviceIds.includes(service.id)} onChange={event=>setServiceIds(current=>event.target.checked?[...current,service.id]:current.filter(id=>id!==service.id))}/><span>{service.name}</span></label>)}{catalog && !catalog.assignments.some(a=>a.staffId===staffId)?<p><WorkspaceText text="No assigned services for this professional." /></p>:null}</fieldset>

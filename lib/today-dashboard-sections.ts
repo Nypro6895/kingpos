@@ -91,7 +91,7 @@ export function mergeTodayDashboardSection(
   const pending = (base.pendingSections?.sections ?? []).filter((item) => item !== section);
   const next: TodayDashboard = {
     ...base,
-    generatedAt: patch.generatedAt,
+    generatedAt: !failed && Date.parse(patch.generatedAt) > Date.parse(base.generatedAt) ? patch.generatedAt : base.generatedAt,
     summary: { ...base.summary },
     rightNow: { ...base.rightNow },
     performance: { ...base.performance },

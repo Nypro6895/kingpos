@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getAppLocalHost } from "@/lib/app-local-host";
 import { WorkspaceText } from "./workspace-language";
@@ -7,17 +7,28 @@ import { nextExperienceTraceOperation, recordExperienceTrace } from "@/lib/exper
 
 /** The installed application signs in on the original HTTPS origin, where its
  * cookie, CAPTCHA and MFA controls already run. No auth form runs on its scheme. */
-export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = true, checkContext, onContinueAsGuest }: { authenticated: boolean | null; scope?: string; enabled?: boolean; checkContext?: () => Promise<void>; onContinueAsGuest?: () => void }) {
+export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = true, checkContext, onContinueAsGuest, signInReturnPath }: { authenticated: boolean | null; scope?: string; enabled?: boolean; checkContext?: () => Promise<void>; onContinueAsGuest?: () => void; signInReturnPath?: string | null }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const openingRef = useRef(false);
   const sessionEpoch = useRef(0);
+  const autoOpenedPath = useRef<string | null>(null);
   const [session, setSession] = useState({ authenticated, scope, enabled, hadSession: enabled && authenticated === true, expired: false });
   const [opening, setOpening] = useState(false), [error, setError] = useState("");
   if (session.authenticated !== authenticated || session.scope !== scope || session.enabled !== enabled) {
     setSession({ authenticated, scope, enabled, hadSession: enabled && (session.hadSession || authenticated === true), expired: !enabled || authenticated === true ? false : authenticated === false && session.hadSession ? true : session.expired });
     if (authenticated === true) { setOpening(false); setError(""); }
   }
-  const expired = enabled && session.expired;
+  const expired = enabled && (session.expired || Boolean(signInReturnPath && authenticated !== true));
+  const openSignIn = useCallback(() => {
+    if (openingRef.current) return;
+    openingRef.current = true;
+    const epoch = sessionEpoch.current;
+    setOpening(true); setError("");
+    void getAppLocalHost().openOnline(`/login?${new URLSearchParams({ next: signInReturnPath ?? location.pathname + location.search })}`).catch(() => {
+      if (epoch !== sessionEpoch.current) return;
+      openingRef.current = false; setOpening(false); setError("Sign-in could not be opened. Please try again.");
+    });
+  }, [signInReturnPath]);
   const continueAsGuest = () => {
     sessionEpoch.current++;
     openingRef.current = false;
@@ -29,6 +40,14 @@ export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = tr
     else window.dispatchEvent(new CustomEvent("reylumi:app-local-navigate", { detail: { path: "/explore" } }));
   };
   useEffect(() => { if (authenticated === true) openingRef.current = false; }, [authenticated, scope]);
+  useEffect(() => {
+    // One presentation per confirmed expiry, including a cold start with no
+    // previous React session. Transport outages never set signInReturnPath.
+    if (!signInReturnPath || authenticated === true) { autoOpenedPath.current = null; return; }
+    if (!expired || autoOpenedPath.current === signInReturnPath) return;
+    autoOpenedPath.current = signInReturnPath;
+    openSignIn();
+  }, [expired, signInReturnPath, authenticated, openSignIn]);
   useEffect(() => {
     const logout = (event: Event) => {
       if ((event as CustomEvent<{ reason?: string }>).detail?.reason !== "logout") return;
@@ -79,13 +98,7 @@ export function AppLocalSessionExpiryPrompt({ authenticated, scope, enabled = tr
     <h2 id="app-local-session-expired-title" className="text-xl font-bold"><WorkspaceText text="Session expired" /></h2>
     <p className="mt-3"><WorkspaceText text="Your session has expired. Please log in to continue." /></p>
     {error ? <p role="alert" className="mt-3"><WorkspaceText text={error} /></p> : null}
-    <button type="button" disabled={opening} className="mt-5 min-h-11 rounded-full bg-brand-orange px-5 py-3 font-semibold text-white" onClick={() => {
-      if (openingRef.current) return;
-      openingRef.current = true;
-      const epoch = sessionEpoch.current;
-      setOpening(true); setError("");
-      void getAppLocalHost().openOnline(`/login?${new URLSearchParams({ next: location.pathname + location.search })}`).catch(() => { if (epoch !== sessionEpoch.current) return; openingRef.current = false; setOpening(false); setError("Sign-in could not be opened. Please try again."); });
-    }}><WorkspaceText text={opening ? "Opening sign-in…" : "Sign in"} /></button>
+    <button type="button" disabled={opening} className="mt-5 min-h-11 rounded-full bg-brand-orange px-5 py-3 font-semibold text-white" onClick={openSignIn}><WorkspaceText text={opening ? "Opening sign-in…" : "Sign in"} /></button>
     <button type="button" className="mt-3 min-h-11 rounded-full border border-zinc-300 px-5 py-3 font-semibold" onClick={continueAsGuest}><WorkspaceText text="Continue as guest" /></button>
   </dialog>, document.body);
 }
