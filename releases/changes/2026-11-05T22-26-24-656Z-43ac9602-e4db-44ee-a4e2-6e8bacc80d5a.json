@@ -1,0 +1,59 @@
+{
+  "status": "needs-integration",
+  "validation": [
+    {
+      "name": "Focused runtime tests",
+      "result": "passed",
+      "evidence": "12/12, including short accessory-bar focus/blur/restore, modal, slot hints and retained Settings"
+    },
+    {
+      "name": "Scoped ESLint and git diff check",
+      "result": "passed",
+      "evidence": "All six changed TS/TSX files; no whitespace errors"
+    },
+    {
+      "name": "Browser layout",
+      "result": "passed",
+      "evidence": "artifacts/confirmed-iphone/layout-result.json; 320px and 390px screenshots"
+    },
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "npm run build completed; 288 static pages; offline assets 540"
+    },
+    {
+      "name": "Native build and post-release physical iPhone acceptance",
+      "result": "pending",
+      "evidence": "Depends on touch-keyboard-review-20261105; shipped build audit is not acceptance of this candidate"
+    }
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Frozen v2 confirmed iPhone UI fixes, including 44px input accessory bars, queued for combined release. No deployment; requires preceding touch/keyboard source and native/device acceptance.",
+  "dependencies": [
+    "touch-keyboard-review-20261105"
+  ],
+  "files": [
+    "app/salon-profile/salon-website-header.tsx",
+    "components/contextual-support.tsx",
+    "components/more-options-icon.tsx",
+    "components/rewardlumi/reward-owner-prompt.tsx",
+    "components/rewardlumi/reward-promo-artwork.tsx",
+    "lib/mobile-viewport.ts",
+    "tests/touch-keyboard-runtime.test.mjs",
+    "docs/confirmed-iphone-queue-20261105.txt"
+  ],
+  "changeId": "confirmed-iphone-queue-20261105",
+  "source": {
+    "commit": "9371c9b925f98117ca4e69fd8242bbdeadac11e8",
+    "snapshot": "C:\\Reylumi-worktrees\\confirmed-iphone-queue-20261105\\artifacts\\confirmed-iphone\\frozen-v2"
+  },
+  "kind": "change",
+  "id": "43ac9602-e4db-44ee-a4e2-6e8bacc80d5a",
+  "recordedAt": "2026-11-05T22:26:24.656Z",
+  "worktree": "C:\\Reylumi-worktrees\\confirmed-iphone-queue-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

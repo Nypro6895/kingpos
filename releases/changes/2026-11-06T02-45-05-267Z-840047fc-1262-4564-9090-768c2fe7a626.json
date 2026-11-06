@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "ios-reopen-auth-20261105",
+  "status": "ready",
+  "summary": "Integrated and validated frozen ios-reopen-auth-20261105 on current web baseline and uploaded native source; physical iPhone acceptance remains separate",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "tests/app-local-session-reset-recovery.test.mjs",
+    "tests/ios-reopen-auth.test.mjs",
+    "docs/ios-reopen-auth-20261105.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105\\artifacts\\reopen-release\\web-stage-v2",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+    "nativeBundleBuildId": "7cdc6f5d0a9796afdeadc424ace15848af2dde6470579b0acac7ca6271e128e0"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Focused runtime, browser and database regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Native 246 tests, unsigned/signed archive and export",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source, generated mappings and bundle provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Apple upload accepted and processing VALID",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "acceptanceLimits": [
+    "No physical iPhone or authenticated hosted salon acceptance claimed"
+  ],
+  "id": "840047fc-1262-4564-9090-768c2fe7a626",
+  "recordedAt": "2026-11-06T02:45:05.267Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "bbe5c59575213155b58218b2e5d3fea86e29c04808be30cc9236f3c07befeabe",
+    "components/app-local-shell.tsx": "36faa08217d77a5da42b9aa838d73de97807bb81ee2868c6b518d6b2ea1d6577",
+    "components/app-local-session-expiry-prompt.tsx": "9b0c2b8fefd2f755e8056f35d3b868895c49d1a517aa754c568399dbca5a291a",
+    "tests/app-local-session-reset-recovery.test.mjs": "0bd221157f15969db452477f0bfadaaa183ca054029770d223d986cda87102b3",
+    "tests/ios-reopen-auth.test.mjs": "b545dc233a88c3407d4e4e8a8c93fd65825b19d7f0d37f86d1485fa68e617041",
+    "docs/ios-reopen-auth-20261105.txt": "fab9eb693b1ad8dbbcbe59ce194fd3cdeb0f6598de47161b726172c22543f55d"
+  }
+}

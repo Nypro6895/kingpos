@@ -1,0 +1,31 @@
+{
+  "changeId": "ios-bottom-safe-area-20261105",
+  "summary": "Remove SwiftUI bottom inset duplicated by UIKit keyboard safe area; native rebuild and iPhone acceptance required",
+  "status": "needs-integration",
+  "validation": [
+    {
+      "name": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "evidence": "artifacts/ios-bottom-safe-area/HANDOFF.md",
+      "name": "Xcode simulator and physical iPhone portrait landscape keyboard acceptance",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "commit": "3e1ec5e1fe5c57131270f738a16eee665187b4c8"
+  },
+  "files": [
+    "ios/Reylumi/ReylumiApp.swift"
+  ],
+  "kind": "change",
+  "channels": [
+    "ios"
+  ],
+  "id": "8b1a64a2-eb2f-4aea-a6f9-e1ebf4db4e53",
+  "recordedAt": "2026-11-05T21:14:01.957Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-bottom-safe-area-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

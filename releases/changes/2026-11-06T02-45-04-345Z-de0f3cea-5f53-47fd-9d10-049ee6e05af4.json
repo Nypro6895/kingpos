@@ -1,0 +1,132 @@
+{
+  "kind": "change",
+  "changeId": "touch-keyboard-review-20261105",
+  "status": "ready",
+  "summary": "Integrated and validated frozen touch-keyboard-review-20261105 on current web baseline and uploaded native source; physical iPhone acceptance remains separate",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/more/page.tsx",
+    "app/account/account-profile-editor.module.css",
+    "app/account/account-profile-editor.tsx",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/bookings/booking-workspace.css",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-search-input.tsx",
+    "app/explore/explore-search-toolbar.tsx",
+    "app/navigation-shell.tsx",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/reports/quick-expense.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "components/app-local-more.tsx",
+    "components/block-user-button.tsx",
+    "components/iphone-glass-nav.css",
+    "components/role-more-content.tsx",
+    "components/use-dialog-viewport.ts",
+    "docs/iphone-touch-keyboard-review-20261105.txt",
+    "ios/Reylumi/AppViewport.js",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "lib/daily-pos-report.ts",
+    "lib/dismissible-popovers.ts",
+    "lib/mobile-viewport.ts",
+    "lib/post-comments-client.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "lib/vietnamese-settings-copy.json",
+    "tests/booking-modal-activity.test.mjs",
+    "tests/iphone-performance-recovery.test.mjs",
+    "tests/post-comments-read.test.mjs",
+    "tests/settings-compact-runtime.test.mjs",
+    "tests/today-financial-concurrency.test.mjs",
+    "tests/today-read-budget.test.mjs",
+    "tests/touch-keyboard-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105\\artifacts\\reopen-release\\web-stage-v2",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+    "nativeBundleBuildId": "7cdc6f5d0a9796afdeadc424ace15848af2dde6470579b0acac7ca6271e128e0"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Focused runtime, browser and database regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Native 246 tests, unsigned/signed archive and export",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source, generated mappings and bundle provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Apple upload accepted and processing VALID",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "acceptanceLimits": [
+    "No physical iPhone or authenticated hosted salon acceptance claimed"
+  ],
+  "id": "de0f3cea-5f53-47fd-9d10-049ee6e05af4",
+  "recordedAt": "2026-11-06T02:45:04.345Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/more/page.tsx": "475ee5c5a64b8dc94cfe3f6e18cbfb09950149ab23e8d68d6db9ad9b3564b8fb",
+    "app/account/account-profile-editor.module.css": "42acbc1883e75575576a7f6e964a6124aca14305fd63229698882e25e1355442",
+    "app/account/account-profile-editor.tsx": "2a68971bcc4eade72a5abc0ccf591e2c1d323efaa7e5bb83443cce78265e7665",
+    "app/bookings/booking-workspace-client.tsx": "72779a2cadada3687bf6efbdf9da90612cbd07ff4ae99f07ba4d169a39cd113d",
+    "app/bookings/booking-workspace.css": "6ce203e8850e927f56d438dd600e867eae9352540fee9093badc2466161f0058",
+    "app/explore/explore-client.tsx": "088f49fbd03885e52b2c2321768098e728de25333643066ac15e6266c48eb07c",
+    "app/explore/explore-search-input.tsx": "61107fc97294824a6cea11e85fdba4ec2f8cfe9b9fdf5c3dad2daac4ed26a743",
+    "app/explore/explore-search-toolbar.tsx": "4deca0fc1cca3190ab81e9e68ea529f293f4460638e791a78db807f73e6b3af7",
+    "app/navigation-shell.tsx": "3df3f9b8d183068052cb4ab952778c51781ea313894276599498f726a897a866",
+    "app/payroll/shop-money-workspace.tsx": "377cc9acf757c5be5fc61701af36e84c22e90ba40f4933802ac1db21e8f5658d",
+    "app/reports/quick-expense.tsx": "6605af34520c3e45cc2a6b2627b7198e7d34ade82b672954cdf4084cfaed9ba7",
+    "app/salon-profile/salon-profile-view.tsx": "a3d3936e673e3ce6552dce93fcc219efecb5c08ef6d78c5538a7b985928209cc",
+    "app/salon-profile/salon-website-header.module.css": "378cfb51dfdcabffc6f022cc940929980be3a57cecde2490ac073bf23314f3d8",
+    "app/salon-profile/salon-website-header.tsx": "cfb91ca320b4b0bd84626c560e45e074c89887b4b629dff6df268db683e38bc5",
+    "app/settings/settings-hub-client.tsx": "f6560a5c8e8969edd4d9c3ff825aab8995923982553e549d146ec51dbeec1f11",
+    "app/staff/today/today-dashboard-view.tsx": "dcb3402982a6a00c2d0a42320a72813693c71fc457631c430cd6c9a7def8f605",
+    "app/staff/today/today-progressive-client.tsx": "09a75a9f4e1f152df214112f8d8a974d2543471bb920404193a63e0a8b46245a",
+    "components/app-local-more.tsx": "08179689456f144bb53f53dda9a2bc3f71034e30f518553f9322ed99ad74839e",
+    "components/block-user-button.tsx": "9ca1f4fb62edd82ab7b85e5a55c22f16b3db891241f751ff4e66c19a9ac0c8f2",
+    "components/iphone-glass-nav.css": "85ef015af61fef102ceb36f08bdafe8ca23670af0759fa4111a127b5b750355a",
+    "components/role-more-content.tsx": "9ecdbae801c3a32a716557a4358a42209f093e4c4c15992b0b214b378c08a4e4",
+    "components/use-dialog-viewport.ts": "ee97af89528216783b66c17d24076fa6167290d51d3f6870934307b1fd5a0a85",
+    "docs/iphone-touch-keyboard-review-20261105.txt": "40850dede9164d2a7080db5e0e179b229f5f19583efaf3ea92653d54746d8d06",
+    "ios/Reylumi/AppViewport.js": "664784d98338d016a54da7fce5f0f9949915f64ccea28fe9f426e5275b2bec47",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "231c04e74130c67f905ede3009d483c631bbe195b417807dd5883a5c9d5b3589",
+    "ios/Reylumi/ReylumiViewController.swift": "defe16d6bcbed83a8852e94dbf2bb9c5c7c3c39ad2639da6e76d0d91889810da",
+    "ios/ReylumiTests/AppViewportTests.swift": "6cf97e9cc7c1277e71bb045c404f9daa64190a07f51bf483bedb3ded8d25f652",
+    "lib/daily-pos-report.ts": "ede7cb49873ad5c05c4ea9c5ef342747c2e7f455198602f0fb19aefaa6a61e16",
+    "lib/dismissible-popovers.ts": "17b960094449e488d14e4146f0f124f4cc427f03bc78d9831188898733623f80",
+    "lib/mobile-viewport.ts": "4edabbd4aef760af2e738398635c04bcde3b845cfe845c9c69193fd621f8f6c8",
+    "lib/post-comments-client.ts": "1b31ddb09bfebe2063e70a4380c072dd69c2f0cc1950bccbbcee210342ff090b",
+    "lib/today-dashboard-sections.ts": "c465e14f09e2e438d895b5fa9a1802791aad9a784028862b8a6b417879e3b348",
+    "lib/today-dashboard.ts": "86cf9c94a3f0d3932e904fb4096cfefb80c91d4f6905443855b4b42a71204126",
+    "lib/vietnamese-settings-copy.json": "1cbe032a48f34d0743ef3c96ec02a6f0abb9d1214bc40807619c17a649c4d537",
+    "tests/booking-modal-activity.test.mjs": "2fe36221a0c56456057a664bea748a8dd956770422edc8d8d7c656be091b8a93",
+    "tests/iphone-performance-recovery.test.mjs": "8a0d6b324ed484c6fa98f7e51cbdd89b563efd1d351093acd67cdd11db03bc05",
+    "tests/post-comments-read.test.mjs": "8465d7aefd154671910021c6600f91df6f67c0ee667e4eed611d69908cc045d4",
+    "tests/settings-compact-runtime.test.mjs": "00bdf4a59a951cfbc91642d4ebe72dc87ad9a36202c250eec36a67c837ebbe8a",
+    "tests/today-financial-concurrency.test.mjs": "d0527c24e5c40c8ea4ec2702bc0d24a7970a23ab807821f221df224a74764feb",
+    "tests/today-read-budget.test.mjs": "bd363b674119ceba6bf0a09923c6d94de96b37fcec9b06d1a467743697f7ae1f",
+    "tests/touch-keyboard-runtime.test.mjs": "dbcfb523842a6c87c1ea1d3d8641ae365e5e7d565f116320a471554bb7a38925"
+  }
+}

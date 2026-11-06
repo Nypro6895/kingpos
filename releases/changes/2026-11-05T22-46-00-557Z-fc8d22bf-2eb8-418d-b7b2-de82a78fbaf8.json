@@ -1,0 +1,45 @@
+{
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "tests/app-local-session-reset-recovery.test.mjs",
+    "tests/ios-reopen-auth.test.mjs",
+    "docs/ios-reopen-auth-20261105.txt"
+  ],
+  "summary": "Confirmed expired private pages open hosted login once with original return path over Explore; neutral root and explicit logout continue as guest",
+  "dependencies": [],
+  "status": "needs-integration",
+  "kind": "change",
+  "changeId": "ios-reopen-auth-20261105",
+  "channels": [
+    "ios"
+  ],
+  "validation": [
+    {
+      "name": "31 runtime regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Targeted ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Safari16 installed bundle compile 966 modules 347 actions",
+      "result": "passed"
+    },
+    {
+      "name": "Native build and physical iPhone hosted login return",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-auth-20261105\\artifacts\\ios-reopen-auth\\frozen",
+    "commit": "d0f685351acaa28e79cb87c4a61bbb04af337372"
+  },
+  "id": "fc8d22bf-2eb8-418d-b7b2-de82a78fbaf8",
+  "recordedAt": "2026-11-05T22:46:00.557Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-auth-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

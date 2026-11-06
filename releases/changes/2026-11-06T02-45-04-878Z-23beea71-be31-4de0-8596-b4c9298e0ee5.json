@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "confirmed-iphone-queue-20261105",
+  "status": "ready",
+  "summary": "Integrated and validated frozen confirmed-iphone-queue-20261105 on current web baseline and uploaded native source; physical iPhone acceptance remains separate",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/salon-profile/salon-website-header.tsx",
+    "components/contextual-support.tsx",
+    "components/more-options-icon.tsx",
+    "components/rewardlumi/reward-owner-prompt.tsx",
+    "components/rewardlumi/reward-promo-artwork.tsx",
+    "lib/mobile-viewport.ts",
+    "tests/touch-keyboard-runtime.test.mjs",
+    "docs/confirmed-iphone-queue-20261105.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105\\artifacts\\reopen-release\\web-stage-v2",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+    "nativeBundleBuildId": "7cdc6f5d0a9796afdeadc424ace15848af2dde6470579b0acac7ca6271e128e0"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Focused runtime, browser and database regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Native 246 tests, unsigned/signed archive and export",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source, generated mappings and bundle provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Apple upload accepted and processing VALID",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [
+    "touch-keyboard-review-20261105"
+  ],
+  "acceptanceLimits": [
+    "No physical iPhone or authenticated hosted salon acceptance claimed"
+  ],
+  "id": "23beea71-be31-4de0-8596-b4c9298e0ee5",
+  "recordedAt": "2026-11-06T02:45:04.878Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/salon-profile/salon-website-header.tsx": "cfb91ca320b4b0bd84626c560e45e074c89887b4b629dff6df268db683e38bc5",
+    "components/contextual-support.tsx": "f15e058345644a0e4712cc90214d7ee42767d84b7dca97a5df10afd11b444b15",
+    "components/more-options-icon.tsx": "7e3a7f8962095016644ae40452e786fefd5187eae9e8b6824c916ac7131b5026",
+    "components/rewardlumi/reward-owner-prompt.tsx": "7199c360dabbfdd69016e4049212b8607e62bd79d4d727fcca1ff2a7566e1863",
+    "components/rewardlumi/reward-promo-artwork.tsx": "c41b82b95c33881f67d31a2db3dfa320337347e0741ea3bbe4e88329dcaf085a",
+    "lib/mobile-viewport.ts": "4edabbd4aef760af2e738398635c04bcde3b845cfe845c9c69193fd621f8f6c8",
+    "tests/touch-keyboard-runtime.test.mjs": "dbcfb523842a6c87c1ea1d3d8641ae365e5e7d565f116320a471554bb7a38925",
+    "docs/confirmed-iphone-queue-20261105.txt": "18bb7d91c753933c38daa3f493ab888318a02112551f1693f8494800136ed5b0"
+  }
+}

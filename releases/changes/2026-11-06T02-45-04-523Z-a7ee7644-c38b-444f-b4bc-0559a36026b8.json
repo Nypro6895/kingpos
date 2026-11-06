@@ -1,0 +1,84 @@
+{
+  "kind": "change",
+  "changeId": "staff-customer-contact-privacy-20261105",
+  "status": "ready",
+  "summary": "Integrated and validated frozen staff-customer-contact-privacy-20261105 on current web baseline and uploaded native source; physical iPhone acceptance remains separate",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/staff/appointments/page.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/team-payroll-panels.tsx",
+    "app/staff/appointments/staff-create-appointment.tsx",
+    "app/staff/appointments/staff-customer-fields.tsx",
+    "lib/staff-appointments.ts",
+    "lib/vietnamese-dictionary.ts",
+    "tests/staff-create-appointment-ui.test.mjs",
+    "app/settings/staff-customer-contact-actions.ts",
+    "supabase/migrations/20261105210000_staff_customer_contact_visibility.sql",
+    "tests/staff-customer-contact-privacy.integration.test.mjs",
+    "tests/staff-customer-contact-ui.test.mjs",
+    "app/staff/appointments/staff-schedule-view.tsx",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "tests/staff-daily-snapshot.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105\\artifacts\\reopen-release\\web-stage-v2",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+    "nativeBundleBuildId": "7cdc6f5d0a9796afdeadc424ace15848af2dde6470579b0acac7ca6271e128e0"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Focused runtime, browser and database regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Native 246 tests, unsigned/signed archive and export",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source, generated mappings and bundle provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Apple upload accepted and processing VALID",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "acceptanceLimits": [
+    "No physical iPhone or authenticated hosted salon acceptance claimed"
+  ],
+  "id": "a7ee7644-c38b-444f-b4bc-0559a36026b8",
+  "recordedAt": "2026-11-06T02:45:04.523Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/staff/appointments/page.tsx": "6fe06358bb5ceb9607034585bb0c77f13f4b1e8a04d2130a58fa93a6c9725b20",
+    "app/settings/direct-settings-actions.ts": "005cf4c95814e16d451bfb3646c0e743cef298174a36e5edaec2ade15b700704",
+    "app/settings/team-payroll-panels.tsx": "e5c1c11e61e5ad2daf5f35922d0d523639a2f991fac5d18d0273dde06cdfb4e5",
+    "app/staff/appointments/staff-create-appointment.tsx": "2fc338e60d1c043dcdb790bebdd460404e75f64eb4a7190a9e1e929d6f731548",
+    "app/staff/appointments/staff-customer-fields.tsx": "06b4d1e433af51545340e466bd3772e752daedfcf884b5d50579bd7cfa2133fb",
+    "lib/staff-appointments.ts": "f036935b805cfcd3c8a9bc636756c8651bd2d9dd11b8e4d003dc8102790271dc",
+    "lib/vietnamese-dictionary.ts": "349452485192e9d2e1deb95fbbe3d4ba48d4db7f92d50ec5570f5cb885f45070",
+    "tests/staff-create-appointment-ui.test.mjs": "5d83196e232fd7fb90a907f421b8e9477c97fa3673445d698e44e8ca1e241eeb",
+    "app/settings/staff-customer-contact-actions.ts": "1f5d320f76f970ba1e27ef54777fbe4db478894aa54689c6ad5200c35ed72055",
+    "supabase/migrations/20261105210000_staff_customer_contact_visibility.sql": "d8c07ddefb9889ae229e967ff92cb30125dd9a17809287cc9366bdb6976a3ba4",
+    "tests/staff-customer-contact-privacy.integration.test.mjs": "c24adf52d5dc8b0b9bf033497c83024c832f6356e7234221a29c3427604a08d2",
+    "tests/staff-customer-contact-ui.test.mjs": "6ab9f9f052646778ab903ff46983291d835f7a8ad16bd1ff5d560774c60d048d",
+    "app/staff/appointments/staff-schedule-view.tsx": "9a39ad9517a1df78ee480be0c0a9edd5f55633ff79a20bc3c287914a6383d10f",
+    "lib/app-local-command-policy.json": "32579e1c4a45c94edb9190236d95ed5bd61c8f67a4ef1c3a365d6726ded87297",
+    "lib/app-local-commands-server.generated.ts": "21926f439f4364818252af6eb349c1b91d76cefd892b95665e199ea7d18d627f",
+    "lib/app-local-command-trace-names.generated.json": "f5ac06de10f663209ea6f3634fbedd9c550d28a2db3276fef84a3f02ae3e2154",
+    "tests/staff-daily-snapshot.test.mjs": "4ebc8d04ff7722a184b528da7756db7cf277dde35511faccbc321d6d2775cf82"
+  }
+}

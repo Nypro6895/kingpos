@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Combined web release verified live: keyboard/menu, confirmed iPhone UI, Staff contact controls and compact POS. iOS reopen repair awaits current native workflow.",
+  "changes": [
+    "c5661dd9-1ad6-46a2-b59c-29e65e255ab5"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HzMkmRaFPcHaNLCQHGEuQEiibXeu",
+      "baselineDeploymentId": "dpl_ALqNQmC8UcaAKXi5ENHs15AGo3Bo",
+      "sourceSha256": "db5685deab4e8bc299e03e1329baf3f13f7c05b2d020d39daed021840a321531",
+      "overlaySha256": "e3c60c49bcddf952af08b8870aa7e8b05e4f5e9aca1bffb28ae48e3d352a8206",
+      "evidence": "artifacts/reopen-release/live-source-verified.json; artifacts/reopen-release/candidate-http.json; artifacts/reopen-release/db-verified.json"
+    }
+  },
+  "id": "e2f9b1e1-aacf-4b8a-84ab-163d72c61186",
+  "recordedAt": "2026-11-06T02:29:50.491Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105"
+}

@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "pos-interface-compact-20261105",
+  "status": "needs-integration",
+  "summary": "Owner POS compact UI approved in chat: no shared header, direct service/staff field editing, one toolbar, grouped Offers and expanded keypad. Financial callbacks unchanged. Source/fixture validated; no deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "components/rewardlumi/owner-cart-benefits.tsx",
+    "tests/helpers/owner-pos-draft-submit-harness.mjs",
+    "tests/owner-pos-compact-interface.browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\pos-interface-compact-20261105\\artifacts\\pos-interface-compact-20261105\\frozen",
+    "commit": "cb6062a"
+  },
+  "validation": [
+    {
+      "name": "TypeScript full source (tsc --noEmit --incremental false)",
+      "result": "passed",
+      "evidence": "artifacts/pos-interface-compact-20261105/typescript.txt"
+    },
+    {
+      "name": "7 Chromium phone/tablet/desktop cases, direct edits, custom/cancel, saved/reload, long receipts and blank reset",
+      "result": "passed",
+      "evidence": "artifacts/pos-interface-compact-20261105/browser.json"
+    },
+    {
+      "name": "13 draft-submit queue/reward/gift race and replay checks",
+      "result": "passed",
+      "evidence": "artifacts/pos-interface-compact-20261105/draft-submit.txt"
+    },
+    {
+      "name": "22 protected callbacks/expressions identical to baseline",
+      "result": "passed",
+      "evidence": "artifacts/pos-interface-compact-20261105/protected-behavior.json"
+    },
+    {
+      "name": "Safari16 app-local bundle compilation; no asset replacement",
+      "result": "passed",
+      "evidence": "artifacts/pos-interface-compact-20261105/native-bundle.txt"
+    },
+    {
+      "name": "Scoped lint with pre-existing set-state-in-effect rule disabled",
+      "result": "passed",
+      "evidence": "artifacts/pos-interface-compact-20261105/lint.txt"
+    },
+    {
+      "name": "Exact serving baseline integration, production build, physical iPhone and provider acceptance",
+      "result": "pending",
+      "evidence": "artifacts/pos-interface-compact-20261105/REPORT.md"
+    }
+  ],
+  "dependencies": [],
+  "id": "17d79746-d0e5-4c41-96bc-bd90a01a3db6",
+  "recordedAt": "2026-11-05T22:39:33.347Z",
+  "worktree": "C:\\Reylumi-worktrees\\pos-interface-compact-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

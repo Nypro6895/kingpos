@@ -1,0 +1,35 @@
+{
+  "kind": "release",
+  "summary": "Combined six recent fixes published and verified on reylumi.com and TestFlight 1.0.0 build 96. Expired private routes open hosted login with return path; guest root uses Explore. Physical iPhone acceptance remains pending pairing.",
+  "changes": [
+    "de0f3cea-5f53-47fd-9d10-049ee6e05af4",
+    "a7ee7644-c38b-444f-b4bc-0559a36026b8",
+    "b720cfeb-c71e-4d17-be7c-2fdb27e865ce",
+    "23beea71-be31-4de0-8596-b4c9298e0ee5",
+    "18c626ff-4e1c-4789-93f4-248e2fd28fac",
+    "840047fc-1262-4564-9090-768c2fe7a626",
+    "6e29a83c-dc39-4dbd-8cdb-3f0b973f6198"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HzMkmRaFPcHaNLCQHGEuQEiibXeu",
+      "baselineDeploymentId": "dpl_ALqNQmC8UcaAKXi5ENHs15AGo3Bo",
+      "sourceSha256": "db5685deab4e8bc299e03e1329baf3f13f7c05b2d020d39daed021840a321531",
+      "overlaySha256": "e3c60c49bcddf952af08b8870aa7e8b05e4f5e9aca1bffb28ae48e3d352a8206",
+      "evidence": "artifacts/reopen-release/live-source-verified.json; artifacts/reopen-release/db-verified.json; artifacts/reopen-release/live-guest-root.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "96",
+      "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+      "evidence": "artifacts/reopen-release/native-final-verified.json"
+    }
+  },
+  "id": "789fd075-f20b-4ed9-99a7-c1db69d925dd",
+  "recordedAt": "2026-11-06T02:45:39.336Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105"
+}

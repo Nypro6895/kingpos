@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "ios-bottom-safe-area-20261105",
+  "status": "ready",
+  "summary": "Integrated and validated frozen ios-bottom-safe-area-20261105 on current web baseline and uploaded native source; physical iPhone acceptance remains separate",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiApp.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105\\artifacts\\reopen-release\\web-stage-v2",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+    "nativeBundleBuildId": "7cdc6f5d0a9796afdeadc424ace15848af2dde6470579b0acac7ca6271e128e0"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Focused runtime, browser and database regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Native 246 tests, unsigned/signed archive and export",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source, generated mappings and bundle provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Apple upload accepted and processing VALID",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "acceptanceLimits": [
+    "No physical iPhone or authenticated hosted salon acceptance claimed"
+  ],
+  "id": "b720cfeb-c71e-4d17-be7c-2fdb27e865ce",
+  "recordedAt": "2026-11-06T02:45:04.689Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiApp.swift": "55a1d6c600fa99270b76ca03658d74c69af1fca8e9b5a409526d3d3ccb1709da"
+  }
+}

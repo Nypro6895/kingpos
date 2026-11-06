@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "staff-customer-contact-privacy-20261105",
+  "status": "needs-integration",
+  "summary": "Owner-only Settings > Staff customer contact visibility; exact full-phone lookup when hidden; retain names, schedule/inspiration, notes, My Work/payroll values; no Staff restriction notices",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/staff/appointments/page.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/team-payroll-panels.tsx",
+    "app/staff/appointments/staff-create-appointment.tsx",
+    "app/staff/appointments/staff-customer-fields.tsx",
+    "lib/staff-appointments.ts",
+    "lib/vietnamese-dictionary.ts",
+    "tests/staff-create-appointment-ui.test.mjs",
+    "app/settings/staff-customer-contact-actions.ts",
+    "supabase/migrations/20261105210000_staff_customer_contact_visibility.sql",
+    "tests/staff-customer-contact-privacy.integration.test.mjs",
+    "tests/staff-customer-contact-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/staff-customer-contact-20261105/artifacts/staff-customer-contact/frozen",
+    "commit": "31aec5181b1fdfa8ac51a0c063aac36131933254"
+  },
+  "validation": [
+    {
+      "name": "Production build (230 pages)",
+      "result": "passed",
+      "evidence": "artifacts/staff-customer-contact/build.log"
+    },
+    {
+      "name": "TypeScript final source",
+      "result": "passed",
+      "evidence": "artifacts/staff-customer-contact/typecheck-final.log"
+    },
+    {
+      "name": "Scoped PostgreSQL, Staff Daily, payroll, Scan and mobile/desktop browser regressions: 26 passed, no skips",
+      "result": "passed",
+      "evidence": "artifacts/staff-customer-contact/scoped-checks.log"
+    },
+    {
+      "name": "Existing creation browser flow: 1 passed, no skips",
+      "result": "passed",
+      "evidence": "artifacts/staff-customer-contact/existing-creation-browser.log"
+    },
+    {
+      "name": "Scoped ESLint: no errors, 1 pre-existing unused disable warning",
+      "result": "passed",
+      "evidence": "artifacts/staff-customer-contact/lint.log"
+    },
+    {
+      "name": "Baseline schedule source contract has pre-existing localized-label assertion failure; reproduced before patch",
+      "result": "failed",
+      "evidence": "artifacts/staff-customer-contact/baseline-known-failure.json"
+    },
+    {
+      "name": "Production migration, hosted Staff/Owner acceptance, physical iPhone",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "c0a333b7-c877-4a4f-aa44-9460d64ccde7",
+  "recordedAt": "2026-11-05T21:04:52.698Z",
+  "worktree": "C:\\Reylumi-worktrees\\staff-customer-contact-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

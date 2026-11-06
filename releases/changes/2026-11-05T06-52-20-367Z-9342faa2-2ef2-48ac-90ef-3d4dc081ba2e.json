@@ -1,0 +1,109 @@
+{
+  "kind": "change",
+  "changeId": "touch-keyboard-review-20261105",
+  "status": "needs-integration",
+  "summary": "Frozen touch/menu, keyboard viewport, Settings and Today recovery repairs. Build and 30 focused tests pass; full test/lint match baseline. Native Xcode/device acceptance, search latency and early Phone red-border confirmation remain pending. Not published.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/more/page.tsx",
+    "app/account/account-profile-editor.module.css",
+    "app/account/account-profile-editor.tsx",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/bookings/booking-workspace.css",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-search-input.tsx",
+    "app/explore/explore-search-toolbar.tsx",
+    "app/navigation-shell.tsx",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/reports/quick-expense.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "components/app-local-more.tsx",
+    "components/block-user-button.tsx",
+    "components/iphone-glass-nav.css",
+    "components/role-more-content.tsx",
+    "components/use-dialog-viewport.ts",
+    "docs/iphone-touch-keyboard-review-20261105.txt",
+    "ios/Reylumi/AppViewport.js",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "lib/daily-pos-report.ts",
+    "lib/dismissible-popovers.ts",
+    "lib/mobile-viewport.ts",
+    "lib/post-comments-client.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "lib/vietnamese-settings-copy.json",
+    "tests/booking-modal-activity.test.mjs",
+    "tests/iphone-performance-recovery.test.mjs",
+    "tests/post-comments-read.test.mjs",
+    "tests/settings-compact-runtime.test.mjs",
+    "tests/today-financial-concurrency.test.mjs",
+    "tests/today-read-budget.test.mjs",
+    "tests/touch-keyboard-runtime.test.mjs"
+  ],
+  "source": {
+    "commit": "d95681b4512d360b72d5d085ba84f2c63feb8c80",
+    "snapshot": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\frozen-review"
+  },
+  "validation": [
+    {
+      "name": "production-build-exact-source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\build-exact-source.log"
+    },
+    {
+      "name": "focused-runtime-30-of-30",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\focused-exact-source.log"
+    },
+    {
+      "name": "no-new-full-suite-or-lint-failures-versus-cb6062a",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\comparison.json"
+    },
+    {
+      "name": "full-suite-1151-pass-58-baseline-fail-14-skip",
+      "result": "failed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\tests-final.log"
+    },
+    {
+      "name": "full-lint-22-baseline-errors-163-warnings",
+      "result": "failed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\lint-final.log"
+    },
+    {
+      "name": "safari16-native-bundle-verify-only",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\native-exact-source.log"
+    },
+    {
+      "name": "native-xcode-and-physical-iphone",
+      "result": "pending",
+      "evidence": "Windows session: not run; new native package required"
+    },
+    {
+      "name": "search-latency-and-phone-early-red-border",
+      "result": "pending",
+      "evidence": "See docs/iphone-touch-keyboard-review-20261105.txt items 13 and 14"
+    },
+    {
+      "name": "production-today-deadline-diagnosis",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105\\artifacts\\touch-keyboard\\production-diagnosis.json"
+    }
+  ],
+  "id": "9342faa2-2ef2-48ac-90ef-3d4dc081ba2e",
+  "recordedAt": "2026-11-05T06:52:20.367Z",
+  "worktree": "C:\\Reylumi-worktrees\\touch-keyboard-review-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

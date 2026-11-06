@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "pos-interface-compact-20261105",
+  "status": "ready",
+  "summary": "Integrated and validated frozen pos-interface-compact-20261105 on current web baseline and uploaded native source; physical iPhone acceptance remains separate",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "components/rewardlumi/owner-cart-benefits.tsx",
+    "tests/helpers/owner-pos-draft-submit-harness.mjs",
+    "tests/owner-pos-compact-interface.browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105\\artifacts\\reopen-release\\web-stage-v2",
+    "commit": "2defa6574c8dbbd9f96017b7ac0be4a0ccca3b2d",
+    "nativeBundleBuildId": "7cdc6f5d0a9796afdeadc424ace15848af2dde6470579b0acac7ca6271e128e0"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed"
+    },
+    {
+      "name": "Focused runtime, browser and database regressions",
+      "result": "passed"
+    },
+    {
+      "name": "Native 246 tests, unsigned/signed archive and export",
+      "result": "passed"
+    },
+    {
+      "name": "Exact source, generated mappings and bundle provenance",
+      "result": "passed"
+    },
+    {
+      "name": "Apple upload accepted and processing VALID",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "acceptanceLimits": [
+    "No physical iPhone or authenticated hosted salon acceptance claimed"
+  ],
+  "id": "18c626ff-4e1c-4789-93f4-248e2fd28fac",
+  "recordedAt": "2026-11-06T02:45:05.085Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-reopen-combined-release-20261105",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "3df3f9b8d183068052cb4ab952778c51781ea313894276599498f726a897a866",
+    "app/pos/owner-pos-client.tsx": "848de4fe623c1cb5d992aa9f6ad5ecfb6541dba08289f8fc216a858c225d99ef",
+    "app/pos/owner-pos-tabs.tsx": "9fdf624e50f27d743a69ebf88467da8781691d4bf1d9c123e2eb5c0d856777b8",
+    "app/pos/owner-pos.css": "20ce32042ab35a71f66a1b30a57d82c717aaebf3b5074f43f632812f61ca00a8",
+    "app/pos/portable/portable-draft-controls.tsx": "eb09ed3a8df5150ad796aff60388d6be9498300842acea6a42d60a99d520e6e1",
+    "components/rewardlumi/owner-cart-benefits.tsx": "79d9c2df3581dcd691ceeadc6a72753bf69257366746cd92ed19ba78dceee851",
+    "tests/helpers/owner-pos-draft-submit-harness.mjs": "89e4d7f96d8c02856a6f5f07b1be429a1ec481ea6ee6e742e6d3dc2677ebc792",
+    "tests/owner-pos-compact-interface.browser.mjs": "f99d88761d57845ee38faa93973cda96c7b933b32b6d39c75159dbf4de33ae8c"
+  }
+}
