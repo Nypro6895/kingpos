@@ -61,6 +61,8 @@ export function getExperienceRoutePolicy(href: string, kind: "page" | "handler" 
   if (/^\/pos(?:\/|$)/.test(path)) return { ...none("pos", true), resetOnHide: false };
   if (PAYMENT_PATH.test(path)) return none("sensitive", true);
   if (/^\/book(?:\/|$)/.test(path)) return none("booking");
+  // Keep the owner design draft mounted across the native photo picker. Authorization still revalidates on reveal.
+  if (path === "/gift-cards/manage") return { ...none("gift-card-management", true), rememberUi: true, resetOnHide: false };
   if (ACTIVE_PATH.test(path)) return none("form", true);
   if (/^\/(?:terms|privacy|legal|community|business-terms|help)$/.test(path)) return browse("legal", false, 60 * 60_000, 24 * 60 * 60_000);
   if (path === "/contact-support") return none("support-form");

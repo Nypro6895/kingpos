@@ -16,6 +16,7 @@ import { searchTextMatches } from "@/lib/search-normalization";
 import { useExperienceScope } from "@/components/experience-scope";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { loadCustomerHistoryRead } from "@/lib/customer-history-client";
+import { canAutomaticallyRefreshRead, subscribeReadRefresh } from "@/lib/read-refresh-scheduler";
 import { HistoryDetailsDrawer } from "./history-details-drawer";
 import { MyCustomerProfiles } from "./my-customer-profiles";
 import styles from "./customer-journey.module.css";
@@ -72,7 +73,7 @@ function SelectedBookingDetails({ bookingId, onClose, onChanged, onResolved }: {
   const [loaded,setLoaded] = useState<{scope:string;data:{booking:CustomerBookingDetail|null;receipt:CustomerActivityReceipt|null}}|null>(null);
   const result=loaded && loaded.scope===scope?loaded.data:null;
   const [error,setError] = useState(""); const [retry,setRetry] = useState(0);
-  useEffect(()=>{let active=true;if(!scope || !uuid.test(bookingId))return;loadCustomerHistoryRead(scope,{bookingId}).then(value=>{if(!active)return;if(value.error)setError(value.error);else{setLoaded({scope,data:value});const b=value.booking;if(b)onResolved?.(value.receipt||["cancelled","no_show"].includes(b.status)?"history":["checked_in","in_service"].includes(b.status)||Date.parse(b.start_at)>Date.now()?"upcoming":"history");}}).catch(()=>{if(active)setError("Appointment details could not be loaded.");});return()=>{active=false;};},[scope,bookingId,retry,onResolved]);
+  useEffect(()=>{let active=true;if(!scope || !uuid.test(bookingId))return;loadCustomerHistoryRead(scope,{bookingId}).then(value=>{if(!active)return;if(value.error)setError(value.error);else if(!value.booking)setError("This appointment is no longer available.");else{setLoaded({scope,data:value});const b=value.booking;if(b)onResolved?.(value.receipt||["cancelled","no_show"].includes(b.status)?"history":["checked_in","in_service"].includes(b.status)||Date.parse(b.start_at)>Date.now()?"upcoming":"history");}}).catch(()=>{if(active)setError("Appointment details could not be loaded.");});return()=>{active=false;};},[scope,bookingId,retry,onResolved]);
   if (!uuid.test(bookingId)) return <div role="alert"><p>This appointment link is invalid.</p><button className={styles.button} onClick={onClose}>Close</button></div>;
   if (!result?.booking) return <div role={error?"alert":"status"} className={styles.empty}><p>{error || "Loading appointment details…"}</p>{error?<button className={styles.button} onClick={()=>{setError("");setRetry(n=>n+1);}}>Try again</button>:null}<button className={styles.button} onClick={onClose}>Close</button></div>;
   const b=result.booking;
@@ -80,8 +81,8 @@ function SelectedBookingDetails({ bookingId, onClose, onChanged, onResolved }: {
   return <HistoryDetailsDrawer activity={item} initialDetails={result} onClose={onClose} onChanged={onChanged}/>;
 }
 
-export type CustomerJourneyProps = { activity:CustomerActivityData; initialTab?:CustomerJourneyTab; initialStatus?:string; initialSelectedBookingId?:string; message?:string; error?:string; onRefresh?:()=>Promise<void>; refreshing?:boolean };
-export function CustomerJourney({activity,initialTab="upcoming",initialStatus="all",initialSelectedBookingId,message,error,onRefresh,refreshing}:CustomerJourneyProps) {
+export type CustomerJourneyProps = { activity:CustomerActivityData; initialTab?:CustomerJourneyTab; initialStatus?:string; initialSelectedBookingId?:string; message?:string; error?:string; onRefresh?:()=>Promise<void>; onRevalidate?:()=>Promise<void>; refreshing?:boolean };
+export function CustomerJourney({activity,initialTab="upcoming",initialStatus="all",initialSelectedBookingId,message,error,onRefresh,onRevalidate,refreshing}:CustomerJourneyProps) {
   const [tab,setTab]=useState<CustomerJourneyTab>(()=>{const record=initialSelectedBookingId?[...activity.upcoming,...activity.history].find(item=>item.type!=="visit"&&item.bookingId===initialSelectedBookingId):undefined;return record?(record.status==="upcoming"||isActiveCustomerVisit(record)?"upcoming":"history"):initialTab;});
   const [query,setQuery]=useState(""); const [type,setType]=useState("all"); const [recordStatus,setRecordStatus]=useState(initialStatus); const [month,setMonth]=useState("all"); const [page,setPage]=useState(1);
   const [filters,setFilters]=useState(false); const [menu,setMenu]=useState(false); const [profiles,setProfiles]=useState(false);
@@ -90,6 +91,8 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
   const rewardWallet = useRewardWallet();
   const filterDialog=useRef<HTMLDialogElement>(null);
   const [now,setNow]=useState<number|null>(null);
+  const automaticRead=useRef(onRevalidate??onRefresh),lastAutomaticRead=useRef(0);
+  useEffect(()=>{automaticRead.current=onRevalidate??onRefresh;},[onRevalidate,onRefresh]);
   const groups=useMemo(()=>customerJourneyGroups(activity,now??undefined),[activity,now]);
   // Check exact opening/expiry boundaries and resume after backgrounding.
   // A bounded read while eligible also catches a staff-side check-in.
@@ -101,19 +104,19 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
       if(disposed)return;
       const time=Date.now();setNow(time);
       const eligible=records.some(item=>canCheckInForAppointment(item,time));
-      if(revalidate&&eligible&&document.visibilityState!=="hidden"&&onRefresh&&!refreshBusy.current){
+      if(revalidate&&eligible&&canAutomaticallyRefreshRead()&&automaticRead.current&&!refreshBusy.current&&time-lastAutomaticRead.current>=30_000){
+        lastAutomaticRead.current=time;
         refreshBusy.current=true;
-        void onRefresh().catch(()=>{}).finally(()=>{refreshBusy.current=false;});
+        void automaticRead.current().catch(()=>{}).finally(()=>{refreshBusy.current=false;});
       }
       const boundaries=records.flatMap(item=>item.type==="booking"?[Date.parse(item.startAt)-15*60_000,Date.parse(item.startAt)+60*60_000+1]:[]).filter(value=>value>time);
       const delay=Math.min(30_000,...boundaries.map(value=>value-time));
       clearTimeout(timer);timer=setTimeout(()=>tick(true),delay);
     };
-    const resume=()=>{if(document.visibilityState!=="hidden")tick(true);};
     timer=setTimeout(()=>tick(),0);
-    window.addEventListener("focus",resume);document.addEventListener("visibilitychange",resume);
-    return()=>{disposed=true;clearTimeout(timer);window.removeEventListener("focus",resume);document.removeEventListener("visibilitychange",resume);};
-  },[activity,onRefresh]);
+    const unsubscribe=subscribeReadRefresh(()=>tick(true));
+    return()=>{disposed=true;clearTimeout(timer);unsubscribe();};
+  },[activity]);
   const closeFilters=()=>{filterDialog.current?.close();setFilters(false);}; useCloseOnNavigation(closeFilters);
   useEffect(()=>{if(!filters)return;const element=filterDialog.current,previous=document.body.style.overflow;document.body.style.overflow="hidden";if(!element?.open)element?.showModal();return()=>{element?.close();document.body.style.overflow=previous;};},[filters]);
   const current=tab==="upcoming"?groups.upcoming:groups.history;
@@ -126,10 +129,10 @@ export function CustomerJourney({activity,initialTab="upcoming",initialStatus="a
   const open=(item:CustomerActivity)=>{setDeepId(undefined);setSelected(item);};
   async function refresh(){if(!onRefresh||refreshBusy.current)return;refreshBusy.current=true;setLocalRefreshError("");try{await Promise.all([onRefresh(), rewardWallet.refresh()]);}catch{setLocalRefreshError("Could not refresh. Showing the last loaded records.");}finally{refreshBusy.current=false;}}
   return <main className={styles.page}><div className={styles.inner}>
-    <div className={styles.heading}><h1>Bookings</h1><button className={styles.iconButton} type="button" aria-label="More options for appointments and visits" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}>•••</button></div>
+    <div className={styles.heading}><h1>Bookings</h1>{refreshing?<span role="status" className={styles.refreshStatus}>Updating records…</span>:null}<button className={styles.iconButton} type="button" aria-label="More options for appointments and visits" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}>•••</button></div>
     {menu?<div className={styles.menu}>{onRefresh?<button type="button" disabled={refreshing} onClick={()=>{setMenu(false);void refresh();}}>Refresh</button>:null}<button type="button" onClick={()=>{setProfiles(v=>!v);setMenu(false);}}>Manage my customer profiles</button><Link prefetch={false} className={styles.menuLink} href="/support?from=/my-bookings">Report a problem</Link></div>:null}
     {profiles?<MyCustomerProfiles/>:null}
-    {message?<p role="status" className={styles.muted}>{message}</p>:null}{error||localRefreshError?<p role="alert">{error||localRefreshError}</p>:null}{refreshing?<p role="status" className={styles.muted}>Updating records…</p>:null}
+    {message?<p role="status" className={styles.muted}>{message}</p>:null}{error||localRefreshError?<p role="alert">{error||localRefreshError}</p>:null}
     <div className={styles.tabs} role="tablist" aria-label="Appointments and visits"><button type="button" role="tab" aria-selected={tab==="upcoming"} aria-controls={panelId} onClick={()=>switchTab("upcoming")}>Upcoming</button><button type="button" role="tab" aria-selected={tab==="history"} aria-controls={panelId} onClick={()=>switchTab("history")}>History</button></div>
     {tab==="upcoming"?<>
       {groups.active.length?<section aria-label="At salon"><h2 className={styles.month}>At salon</h2>{groups.active.map(item=><article className={styles.active} key={item.id}><span className={styles.badge} data-tone="teal">{status(item)}</span><h3>{item.salon.name}</h3>{customerVisitArrivedAt(item)?<p className={styles.muted}>Arrived · {new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZone:item.timezone??"America/Chicago"}).format(new Date(customerVisitArrivedAt(item)!))}</p>:null}<p className={styles.muted}>{item.services.map(s=>s.name).join(" · ")}</p><div className={styles.actions}><Link prefetch={false} className={styles.button} href={customerVisitQrHref(item)}>View my QR</Link><Link prefetch={false} className={styles.button} href={customerVisitQrHref(item)}>Visit details</Link></div></article>)}</section>:null}

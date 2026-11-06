@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "profile-header-compact-20261106",
+  "status": "needs-integration",
+  "summary": "Compact identity across salon profile layouts; Follow beside name, locality/reputation/hours stacked closely; manage access in overflow",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/salon-profile/salon-website-header.module.css"
+  ],
+  "source": {
+    "snapshot": "artifacts/profile-header-compact-20261106/snapshot"
+  },
+  "validation": [
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Browser fixture 75 width/layout/content combinations plus Follow alignment and claim menu link",
+      "result": "passed",
+      "evidence": "artifacts/profile-header-compact-20261106/browser-review.test.mjs"
+    },
+    {
+      "name": "Production integration and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "25977e0e-f798-473d-b636-5aa7ea18d7f9",
+  "recordedAt": "2026-11-06T06:26:18.051Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

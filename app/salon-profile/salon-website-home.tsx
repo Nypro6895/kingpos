@@ -68,6 +68,7 @@ type WebsiteProps = {
   preferences: SalonProfilePreferences;
   posts: ProfileFeedItem[];
   composer?: ReactNode;
+  rewards?: ReactNode;
   canBook: boolean;
   renderPostActions?: (post: ProfileFeedItem) => ReactNode;
   renderPostEngagement?: (post: ProfileFeedItem) => ReactNode;
@@ -84,7 +85,7 @@ type WebsiteProps = {
   onBook: (context: BookContext) => void;
 };
 
-export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, onPost, onGallery, onServices, onTeam, onBook, onStaff, onReviews, renderPostActions, renderPostEngagement, libraryPhotos, onLibraryPhoto, renderLibraryActions, renderLibraryEngagement }: WebsiteProps) {
+export function SalonWebsiteHome({ data, preferences, posts, composer, rewards, canBook, onPost, onGallery, onServices, onTeam, onBook, onStaff, onReviews, renderPostActions, renderPostEngagement, libraryPhotos, onLibraryPhoto, renderLibraryActions, renderLibraryEngagement }: WebsiteProps) {
   const __vt = useWorkspaceTranslation();
 
   const [failedImages, setFailedImages] = useState<string[]>([]);
@@ -166,6 +167,10 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
     const afterServices = mobileRows.indexOf("services");
     mobileRows.splice(preferences.layout === "portfolio" ? mobileRows.length : afterServices >= 0 ? afterServices + 1 : showFeature ? (composer ? 2 : 1) : (composer ? 1 : 0), 0, "hours");
   }
+  if (rewards) {
+    const after = (rows: string[], area: string) => { const i = rows.findIndex(row => row.split(" ").includes("services")); rows.splice(i >= 0 ? i + 1 : Math.min(rows.length, (composer ? 1 : 0) + (showFeature ? 1 : 0)), 0, area); };
+    after(desktopRows, full("rewards")); after(mobileRows, "rewards");
+  }
   if (feedPhotos.length) { desktopRows.push(full("photoFeed")); mobileRows.push("photoFeed"); }
   desktopRows.push(full("footer")); mobileRows.push("footer");
   const gridStyle = { "--website-desktop-areas": desktopRows.map(row => `"${row}"`).join(" "), "--website-mobile-areas": mobileRows.map(row => `"${row}"`).join(" ") } as CSSProperties;
@@ -190,6 +195,7 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, canBook, 
       </button> : <div className={styles.heroImage}><WebsiteImage src={heroUrl} alt={heroSource.illustrative ? "Illustrative image" : `${data.profile.name} salon`} onLoad={event => rejectSmallHero(heroUrl, event.currentTarget)} onError={() => imageFailed(heroUrl)}/></div>}{heroSource.illustrative ? <small className={styles.defaultCredit}>Illustrative image · lumiAi</small> : null}</div> : <div className={styles.heroDecoration} aria-hidden="true"><span>{data.profile.name.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join("")}</span></div>}
     </section> : null}
     {showServices ? <section className={styles.services}>{heading("Services", onServices, "View all services")}<WebsiteServices services={servicePreview} posts={visiblePosts} canBook={canBook} onBook={onBook} salonId={data.profile.salonId} showPhotos={preferences.layout !== "portfolio"}/></section> : null}
+    {rewards ? <div style={{gridArea: "rewards", minWidth: 0}}>{rewards}</div> : null}
     {showVisit ? <section className={styles.hours} data-wide={wideVisit}>{heading(visitTitle)}
       {data.profile.addressLine1 ? <div className={styles.visitItem}><span aria-hidden="true">↗</span><div><p>{address}</p><a href={directions} target="_blank" rel="noreferrer"><WorkspaceText text="Get directions ↗" /></a></div></div> : null}
       {data.profile.phone ? <div className={styles.visitItem}><span aria-hidden="true">☎</span><div><p>{data.profile.phone}</p><a href={`tel:${data.profile.phone}`}><WorkspaceText text="Call salon" /></a></div></div> : null}

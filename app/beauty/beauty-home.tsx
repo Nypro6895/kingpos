@@ -20,14 +20,8 @@ export function BeautyHome({ profile, posts, viewerId, appointment, favorites, o
   const photos = posts.flatMap(post => post.media).filter(media => media.url).slice(0, 3);
   return <div className="beauty-home" data-beauty-home>
     <header className="beauty-home-greeting">
-      <p className="beauty-home-hello">Hello,</p>
       <div className="beauty-home-name-row">
-        <div className="beauty-home-person">
-          <Link href="/beauty/library" aria-label="Open your Beauty profile" className="beauty-home-avatar">
-            {profile.avatarUrl ? <Image src={profile.avatarUrl} alt="" width={48} height={48}/> : <span>{profile.initials}</span>}
-          </Link>
-          <h1>{profile.displayName}</h1>
-        </div>
+        <h1 className="beauty-home-welcome"><span>Hello, </span><strong>{profile.displayName}</strong></h1>
         {viewerId ? <BeautyQuickQr viewerId={viewerId} profile={profile}/> : <Link className="beauty-home-qr-trigger" href="/qr"><BeautyHomeIcon name="qr"/>My QR</Link>}
       </div>
     </header>

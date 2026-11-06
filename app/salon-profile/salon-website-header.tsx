@@ -9,7 +9,7 @@ import type { PublicSalonProfile } from "@/types/salon-profile";
 import styles from "./salon-website-header.module.css";
 
 type WebsiteTab = { id: string; label: string };
-export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedTab, introVisible = true, onTab, onTabKeyDown, tools, trust, verified, canBook, onBook, canFollow, following, followPending, onFollow, onHours, canShare, onShare, onReport }: {
+export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedTab, introVisible = true, onTab, onTabKeyDown, tools, trust, verified, priceHint, canBook, onBook, canFollow, following, followPending, onFollow, onHours, canShare, onShare, onReport, claimHref }: {
   profile: PublicSalonProfile;
   layout: "booking" | "portfolio" | "balanced";
   tabs: WebsiteTab[];
@@ -21,6 +21,7 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
   tools?: ReactNode;
   trust?: ReactNode;
   verified?: ReactNode;
+  priceHint?: string | null;
   canBook: boolean;
   onBook: () => void;
   canFollow: boolean;
@@ -31,6 +32,7 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
   canShare: boolean;
   onShare: () => void;
   onReport?: () => void;
+  claimHref?: string;
 }) {
   const __vt = useWorkspaceTranslation();
 
@@ -44,15 +46,17 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
         <div className={styles.logo}>{profile.logoImageUrl && failedLogo !== profile.logoImageUrl
           ? <img src={profile.logoImageUrl} alt={`${profile.name} logo`} onError={() => setFailedLogo(profile.logoImageUrl)}/>
           : <span aria-hidden="true">{initials}</span>}</div>
-        <div className={styles.name}><div><h2><SalonName name={profile.name} salonId={profile.salonId}/></h2>{verified}{tools ? <div className={styles.tools}>{tools}</div> : null}</div>{locality ? <p>{locality}</p> : null}</div>
+        <div className={styles.name}><div><h2><SalonName name={profile.name} salonId={profile.salonId}/></h2>{verified}{canFollow ? <button type="button" className={styles.follow} aria-pressed={following} disabled={followPending} onClick={onFollow}><WorkspaceText text={following ? "✓ Following" : "+ Follow salon"} /></button> : null}</div>{locality ? <p>{locality}</p> : null}</div>
       </div>
+      {tools ? <div className={styles.tools}>{tools}</div> : null}
       <div className={styles.actions}>
-        {canFollow ? <button type="button" className={styles.follow} aria-pressed={following} disabled={followPending} onClick={onFollow}><WorkspaceText text={following ? "✓ Following" : "+ Follow salon"} /></button> : null}
+
         {canBook ? <button type="button" className={styles.book} onClick={onBook}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
       </div>
     </div>
-    {trust || (status && status.kind !== "hours_unset") ? <div className={styles.meta}>
+    {trust || priceHint || (status && status.kind !== "hours_unset") ? <div className={styles.meta}>
       {trust ? <div className={styles.trust}>{trust}</div> : null}
+      {priceHint ? <span className={styles.priceHint}>{priceHint}</span> : null}
       {status && status.kind !== "hours_unset" ? <button type="button" className={styles.status} data-open={status.isOpen} aria-label={__vt("View salon operating hours")} aria-haspopup="dialog" onClick={onHours}>
         <span aria-hidden="true" className={styles.dot}/><strong><WorkspaceText text={status.label} /></strong>{status.detail ? <><span aria-hidden="true">·</span><span><WorkspaceText text={status.detail} /></span></> : null}
       </button> : null}
@@ -61,9 +65,10 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
       <div role="tablist" aria-label={__vt("Salon profile sections")} className={styles.tabs} onKeyDown={onTabKeyDown}>
         {[...tabs, ...extraTabs].map(tab => <button type="button" key={tab.id} id={`salon-profile-tab-${tab.id}`} role="tab" aria-controls={`salon-profile-${tab.id}`} aria-selected={selectedTab === tab.id} tabIndex={selectedTab === tab.id ? 0 : -1} onClick={() => onTab(tab.id)}>{tab.id === "discover" ? <WorkspaceText text="Overview" /> : tab.label}</button>)}
       </div>
-      {extraTabs.length || canShare || onReport ? <details className={styles.more} data-dismissible-popover>
+      {extraTabs.length || canShare || onReport || claimHref ? <details className={styles.more} data-dismissible-popover>
         <summary aria-label={__vt("More profile sections and actions")}><MoreOptionsIcon /></summary>
         <div>
+          {claimHref ? <a href={claimHref}><WorkspaceText text="Manage this salon? Request access" /></a> : null}
           {canShare ? <button type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onShare(); }}><WorkspaceText text="Share profile" /></button> : null}
           {onReport ? <button type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onReport(); }}><WorkspaceText text="Report salon" /></button> : null}
         </div>

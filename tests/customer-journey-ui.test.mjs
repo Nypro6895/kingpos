@@ -14,16 +14,16 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
  import React from 'react';import{createRoot}from'react-dom/client';
  import{CustomerJourney,CustomerJourneyLoading}from'./app/activity/customer-journey';
  import{journeyFixture,journeyId}from'./tests/helpers/customer-journey-fixture.mjs';
- window.data=journeyFixture();window.reads=[];window.writes=[];window.refreshes=0;window.scope='scope-A';window.routes=[];
+ window.data=journeyFixture();window.originalData=window.data;window.reads=[];window.writes=[];window.refreshes=0;window.revalidates=0;window.scope='scope-A';window.routes=[];
  window.details=(input)=>{const row=[...window.data.upcoming,...window.data.history].find(x=>x.type==="booking"&&x.bookingId===input.bookingId)||window.data.upcoming[0];const receipt=input.ticketId?{...window.data.history.find(x=>x.type==='purchase'),id:input.ticketId,closedAt:'2026-10-28T20:00:00Z',openedAt:'2026-10-28T19:00:00Z',services:[{id:'l1',name:'Gel Manicure',quantity:1,lineTotal:40,staffName:'Alex'},{id:'l2',name:'Classic Pedicure',quantity:1,lineTotal:50,staffName:'Alex'}],totals:{subtotal:90,discount_amount:0,tax_amount:0,tip_amount:18,total:108},payments:[{label:'Card',amount:108}],salon:{...row.salon,phone:'+15555550100'}}:null;return {booking:input.bookingId?{id:input.bookingId,status:row.bookingStatus||'confirmed',salon_id:journeyId(1),salon_timezone_snapshot:'America/Chicago',start_at:row.startAt,end_at:row.endAt,lines:row.services.map((s,i)=>({id:'line'+i,service_name_snapshot:s.name,line_total:s.lineTotal,quantity:1,duration_minutes:45,currentServiceBookable:true,assignedStaff:{displayName:'Alex'}})),salon:{name:row.salon.name,displayName:row.salon.name,city:'Milwaukee',state:'WI',phone:'+15555550100',publicDiscoveryEnabled:true},historyEvidence:row.historyEvidence}:null,receipt,error:null};};
- const app=createRoot(document.getElementById('root'));let revision=0;window.show=(options={})=>{app.render(options.failed?<CustomerJourneyLoading failed="Temporary connection issue" onRetry={()=>window.show()}/>:<CustomerJourney key={++revision} activity={window.data} {...options} onRefresh={async()=>{window.refreshes++}}/>)};window.update=()=>app.render(<CustomerJourney key={revision} activity={window.data} onRefresh={async()=>{window.refreshes++}}/>);window.show();
+ const app=createRoot(document.getElementById('root'));let revision=0;window.show=(options={})=>{app.render(options.failed?<CustomerJourneyLoading failed="Temporary connection issue" onRetry={()=>window.show()}/>:<CustomerJourney key={++revision} activity={window.data} {...options} onRefresh={async()=>{window.refreshes++}} onRevalidate={async()=>{window.revalidates++}}/>)};window.update=()=>app.render(<CustomerJourney key={revision} activity={window.data} onRefresh={async()=>{window.refreshes++}} onRevalidate={async()=>{window.revalidates++}}/>);window.show();
  `},plugins:[{name:'isolated-read-write-boundaries',setup(b){
   const stubs={
    'experience-scope':`export function useExperienceScope(){return{context:{authenticated:true,scope:window.scope}}}`,
    'workspace-language':`export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>text=>text;`,
    'overlay-dismissal':`export function useCloseOnNavigation(){};export function useNativeDialogNavigation(){};export function useTransientOverlay(){}`,
    'use-persistent-read-view':`export function usePersistentReadView(){}`,
-   'customer-history-client':`export async function loadCustomerHistoryRead(scope,input){window.reads.push({scope,input});return window.details(input)}`,
+   'customer-history-client':`export async function loadCustomerHistoryRead(scope,input){window.reads.push({scope,input});return window.historyMissing?{booking:null,receipt:null,error:null}:window.details(input)}`,
    'next/link':`export default function Link({href,children,prefetch,...props}){return <a href={href} {...props}>{children}</a>}`,
    'next/navigation':`export function useRouter(){return{refresh:()=>window.routes.push('refresh'),replace:href=>window.routes.push(href)}}`,
   };
@@ -55,6 +55,10 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
   await page.getByRole('tab',{name:'Upcoming',exact:true}).click();await page.getByRole('button',{name:/Details:.*Confirmed/}).click();await page.getByRole('button',{name:'Reschedule',exact:true}).waitFor();await page.getByRole('button',{name:'Cancel appointment',exact:true}).click();await page.getByRole('heading',{name:'Cancel this appointment?',exact:true}).waitFor();assert.equal(await page.evaluate(()=>window.writes.length),0,'opening cancellation is read only');
   const dialogs=page.getByRole('dialog');assert.equal(await dialogs.count(),2,'nested confirmation preserves outer drawer');await page.getByRole('button',{name:'Keep appointment',exact:true}).click();await page.getByRole('button',{name:'Close history details'}).click();
   await page.evaluate(()=>window.show({initialSelectedBookingId:'00000000-0000-4000-8000-000000009999'}));await page.getByRole('button',{name:'Close history details'}).waitFor();const deepReadCount=await page.evaluate(()=>window.reads.filter(x=>x.input.bookingId?.endsWith('009999')).length);assert.equal(deepReadCount,1,'outside-window legacy deep link is authorized once, then seeded into drawer');await page.getByRole('button',{name:'Close history details'}).click();
+  await page.evaluate(()=>{window.historyMissing=true;window.show({initialSelectedBookingId:'00000000-0000-4000-8000-000000009998'})});
+  await page.getByText('This appointment is no longer available.',{exact:true}).waitFor();
+  assert.equal(await page.getByText('Loading appointment details…',{exact:true}).count(),0,'missing authorized record settles instead of loading forever');
+  await page.getByRole('button',{name:'Close',exact:true}).click();await page.evaluate(()=>{window.historyMissing=false});
   await page.evaluate(()=>{window.booking={...window.data.upcoming[0],startAt:'2026-10-29T20:15:01Z',endAt:'2026-10-29T21:00:01Z',occurredAt:'2026-10-29T20:15:01Z'};window.data={...window.data,history:[],upcoming:[window.booking]};window.show()});
   await page.getByRole('button',{name:/Details:.*Confirmed/}).waitFor();
   assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0,'outside window');
@@ -63,6 +67,13 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
   assert.equal(await page.getByRole('link',{name:'My QR',exact:true}).getAttribute('href'),'/qr');
   assert.equal(await page.getByRole('article').filter({has:page.getByRole('link',{name:'Check in',exact:true})}).count(),1,'inside appointment, with sibling links outside detail button');
   await page.screenshot({path:path.join(out,'appointment-checkin.png'),fullPage:true});
+  const automaticBefore=await page.evaluate(()=>window.revalidates),manualBefore=await page.evaluate(()=>window.refreshes);
+  await page.clock.fastForward(30_000);
+  assert.equal(await page.evaluate(()=>window.revalidates),automaticBefore+1,'eligible timer uses freshness-aware read');
+  await page.evaluate(()=>{for(let i=0;i<10;i++){window.dispatchEvent(new Event('focus'));window.dispatchEvent(new Event('reylumi:foreground'));}});
+  await page.clock.fastForward(101);
+  assert.equal(await page.evaluate(()=>window.revalidates),automaticBefore+1,'focus/native event burst cannot restart automatic read');
+  assert.equal(await page.evaluate(()=>window.refreshes),manualBefore,'automatic lifecycle never forces manual refresh');
   for(const width of [360,390,428,768,1280]){await page.setViewportSize({width,height:926});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'eligible row overflow '+width);}
   await page.evaluate(()=>{window.data={...window.data,upcoming:[],history:[{...window.booking,status:'past_appointment'}]};window.show()});
   await page.getByRole('link',{name:'Check in',exact:true}).waitFor();
@@ -73,6 +84,19 @@ test('real journey UI: tabs, filters, one detail read, legacy links, QR entry, s
   await page.evaluate(()=>{window.data={...window.data,upcoming:[{...window.booking,status:'checked_in',bookingStatus:'checked_in',visitState:'waiting',historyEvidence:{checkedInAt:'2026-10-29T20:15:01Z',visitId:'00000000-0000-4000-8000-000000000090'}}]};window.update()});
   await page.getByLabel('At salon',{exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0,'arrival hides check-in');
   await page.evaluate(()=>{window.data={...window.data,history:[],upcoming:[]};window.show()});await page.getByRole('heading',{name:'No upcoming appointments'}).waitFor();assert.equal(await page.getByRole('link',{name:'Check in',exact:true}).count(),0);assert.equal(await page.getByRole('link',{name:'My QR',exact:true}).count(),0);await page.screenshot({path:path.join(out,'empty-no-checkin.png'),fullPage:true});
+  for(const width of [320,390,1280]){
+    await page.setViewportSize({width,height:926});await page.evaluate(()=>window.show());
+    const before=await page.getByRole('tab',{name:'History',exact:true}).boundingBox();
+    await page.evaluate(()=>window.show({refreshing:true}));await page.getByText('Updating records…',{exact:true}).waitFor();
+    const during=await page.getByRole('tab',{name:'History',exact:true}).boundingBox();
+    assert.equal(during.y,before.y,'refresh status must not shift list '+width);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'refresh status overflow '+width);
+  }
+  await page.setViewportSize({width:390,height:926});
+  await page.evaluate(()=>{window.data=window.originalData;window.show({refreshing:true,initialTab:'history'})});
+  await page.getByText('Updating records…',{exact:true}).waitFor();
+  await page.screenshot({path:path.join(out,'refresh-stable-390.png'),fullPage:true});
+  await page.evaluate(()=>{window.data={...window.data,history:[],upcoming:[]}});
   await page.evaluate(()=>window.show({failed:true}));await page.getByRole('button',{name:'Try again'}).click();await page.getByRole('heading',{name:'No upcoming appointments'}).waitFor();
   for(const width of [360,390,428,768,1280]){await page.setViewportSize({width,height:926});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'no horizontal overflow '+width);}
   assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({passed:true,realComponents:true,network:'Server action and identity boundaries isolated; no live account or DB writes',widths:[360,390,428,768,1280],checks:['tabs','receipt amount once','active arrival time','status filter','Escape restores scroll','one details read','no refresh on read-only close','nested cancellation opens without write','deep link one read','check-in scanner href','Personal QR href','opens automatically at -15m','expires automatically after +60m','past appointment remains reachable during check-in','arrival suppresses check-in on prop update','empty has no check-in','retry','responsive overflow'],limits:'Browser/component proof; not native or production E2E'},null,2));

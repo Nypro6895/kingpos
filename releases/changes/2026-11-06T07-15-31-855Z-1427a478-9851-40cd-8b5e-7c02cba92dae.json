@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "gift-card-premium-presets-20261106",
+  "status": "needs-integration",
+  "summary": "Premium Emerald Signature, Ivory Peony and Noir Couture gift card presets with original compressed artwork, editable type and self-contained saved designs",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/gift-card/card-design.tsx",
+    "components/gift-card/customer-gift-cards.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/image-cropper.tsx",
+    "components/gift-card/gift-presets.ts",
+    "types/gift-card.ts",
+    "tests/gift-card-designer-ui.mjs",
+    "tests/gift-card-presets.test.mjs",
+    "public/gift-cards/presets/emerald-v2.jpg",
+    "public/gift-cards/presets/ivory-v2.jpg",
+    "public/gift-cards/presets/noir-v2.jpg",
+    "docs/gift-card-premium-presets-20261106.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-card-designer-20261106\\artifacts\\gift-card-designer\\premium-source",
+    "commit": "daec10912d89dae5445dc2e2e043a85af46e8154"
+  },
+  "dependencies": [
+    "gift-card-designer-20261106"
+  ],
+  "validation": [
+    {
+      "name": "Scoped ESLint and strict TypeScript including saved image component",
+      "result": "passed",
+      "evidence": "docs/gift-card-premium-presets-20261106.md"
+    },
+    {
+      "name": "Preset dimensions/payload/fonts/legacy compatibility tests",
+      "result": "passed",
+      "evidence": "tests/gift-card-presets.test.mjs"
+    },
+    {
+      "name": "Five viewport actual-component browser checks, asset failure/retry and preset saves",
+      "result": "passed",
+      "evidence": "artifacts/gift-card-designer/results.json"
+    },
+    {
+      "name": "Visual review of composed phone cards and three-card collection",
+      "result": "passed",
+      "evidence": "artifacts/gift-card-designer/premium-collection.png"
+    },
+    {
+      "name": "Production assembly build and authenticated hosted/physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "1427a478-9851-40cd-8b5e-7c02cba92dae",
+  "recordedAt": "2026-11-06T07:15:31.855Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-card-designer-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

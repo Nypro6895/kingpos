@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "help-complete-20261106",
+  "status": "needs-integration",
+  "summary": "Help home and all articles redesigned in brand orange/teal; 36 concise bilingual guides grouped into 7 topics, including 22 missing guides and current Payroll terminology",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/help/help-catalog.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help.module.css",
+    "app/help/help-expanded-copy.json",
+    "lib/help-guides.ts",
+    "lib/help-search.ts",
+    "lib/help-language.ts",
+    "lib/help-expanded.json",
+    "tests/help-draft.test.mjs",
+    "tests/help-bilingual-ui.test.mjs",
+    "tests/help-experience.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/help-complete-20261106/artifacts/help-complete-20261106/frozen"
+  },
+  "fileHashes": {
+    "app/help/help-catalog.tsx": "e55d434300aafb758249a71be290c533ec705d7e826d6abdaba09fa351d292ba",
+    "app/help/help-content.tsx": "23c36755bbc29da8b470de38844547dcb8b263b940cb8095229ba9e412bdf49c",
+    "app/help/help-language.tsx": "e13a3e49242ee073aca37857f9ccc6473f7a582d9f56e746f1b179068d89f6a2",
+    "app/help/help.module.css": "3f9bf17e9ea5ecdedb820255dcedaf93b997e8c8f2d2c49259563b81a68a21fc",
+    "app/help/help-expanded-copy.json": "a875a9e3158f5555101b7f6d276032ba0af40ab200b4ffd39cc6e2a0401c60d7",
+    "lib/help-guides.ts": "8e8eda587c9da2a04dc2f4662509f34dd7c9052a2f5700e2782604a8eeee386a",
+    "lib/help-search.ts": "384ea52094c98f66d380b04ba6ebfc243eff1a639b5e72fb1825b5156ffa14a4",
+    "lib/help-language.ts": "e4099450934142acc0ddff53547e9a9edae331b057be91c697bd108b7f6b079a",
+    "lib/help-expanded.json": "15c2a52c83fadad8c7d91df7d4bad31bc4061d8e69ce9c71ead85cc12d4b3cab",
+    "tests/help-draft.test.mjs": "0f220d816364baba7220c69632ebdda5cdeb73012fd3dd95dbcb0dea700a385d",
+    "tests/help-bilingual-ui.test.mjs": "5de6d7ed7176704bba87d031adf7377495192edcc57247627e03d4e36431d387",
+    "tests/help-experience.test.mjs": "2cba4b4f780c0919497ad20267ec1c730670c8b3161b2993ddfb2e6a96cf1b5c"
+  },
+  "dependencies": [
+    "help-session-english-compact-20261025",
+    "windows-portable-shared-help-20261026"
+  ],
+  "validation": [
+    {
+      "name": "Production build, TypeScript and derived offline assets",
+      "result": "passed",
+      "evidence": "artifacts/help-complete-20261106/build-verified.log"
+    },
+    {
+      "name": "Bilingual content and UI regression: 8 tests",
+      "result": "passed",
+      "evidence": "artifacts/help-complete-20261106/content-ui-final.log"
+    },
+    {
+      "name": "Actual production-server browser suite: 2 tests, 230 viewport/language measurements, zero page errors",
+      "result": "passed",
+      "evidence": "artifacts/help-complete-20261106/browser-results.json"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/help-complete-20261106/lint.log"
+    },
+    {
+      "name": "Scoped patch replay matches all 12 frozen hashes",
+      "result": "passed",
+      "evidence": "artifacts/help-complete-20261106/patch-validation.json"
+    }
+  ],
+  "integrationNotes": "Apply only scoped.patch against exact current production baseline. Preserve localized server metadata and role-aware public Help navigation. No deployment or native upload performed; authenticated and physical iPhone acceptance remain for release.",
+  "id": "7fbb150a-2b7c-4c65-b53c-49f3eec96216",
+  "recordedAt": "2026-11-06T06:43:20.448Z",
+  "worktree": "C:\\Reylumi-worktrees\\help-complete-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

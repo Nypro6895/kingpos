@@ -1,0 +1,35 @@
+/* Shared menu presentation. Only the middle section scrolls when space is limited. */
+.role-more-panel{position:fixed;z-index:75;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border-subtle);border-radius:18px;background:var(--surface-elevated);color:var(--text-primary);box-shadow:0 22px 60px rgb(35 25 22 / .16)}
+.role-more-header{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:10px 12px;border-bottom:1px solid var(--border-subtle)}
+.role-more-header h2{flex:1;margin:0;font-size:18px;font-weight:750}
+.role-more-all,.role-more-close{display:grid;place-items:center;min-height:44px;min-width:44px;border-radius:12px;font-size:14px;font-weight:650;color:var(--brand-orange)}
+.role-more-all{padding:0 12px;background:var(--brand-orange-soft)}
+.role-more-close{border:0;background:transparent;font-size:26px;color:var(--text-secondary);cursor:pointer}
+.role-more-groups{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:12px;min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;padding:12px;scrollbar-width:thin}
+.role-more-group{min-width:0}
+.role-more-group h3{margin:0 0 7px;font-size:12px;line-height:1.4;font-weight:650;color:var(--text-secondary)}
+.role-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.role-more-item{display:flex;align-items:center;gap:8px;min-height:48px;min-width:0;border:1px solid var(--border-subtle);border-radius:12px;padding:9px 10px;text-align:left;font-size:14px;line-height:1.35;font-weight:650;color:var(--text-primary);overflow-wrap:anywhere}
+.role-more-item svg{width:20px;height:20px;flex:none;color:var(--brand-orange)}
+.role-more-item[aria-current=page],.role-more-item:hover{background:var(--brand-orange-soft);color:var(--brand-orange)}
+.role-more-footer{flex-shrink:0;padding:10px 12px;border-top:1px solid var(--border-subtle)}
+.role-more-settings{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:50px;padding:10px 12px;border-radius:12px;background:var(--brand-orange-soft);color:var(--brand-orange);font-size:14px;line-height:1.4;font-weight:750}
+.role-more-settings svg{width:20px;height:20px}
+.role-more-chevron::after{content:"›"}
+.role-more-header a:focus-visible,.role-more-header button:focus-visible,.role-more-item:focus-visible,.role-more-settings:focus-visible{outline:2px solid var(--brand-orange);outline-offset:2px}
+@media(max-width:767px){
+ .role-more-panel{top:calc(8px + env(safe-area-inset-top));bottom:calc(5.25rem + env(safe-area-inset-bottom));left:8px;right:8px}
+}
+@media(min-width:768px) and (max-width:1199px){
+ .role-more-panel{top:calc(12px + env(safe-area-inset-top));bottom:calc(12px + env(safe-area-inset-bottom));right:12px;width:min(30rem,calc(100vw - 24px))}
+}
+@media(min-width:1200px){
+ .role-more-panel{top:4.75rem;left:17rem;width:min(50rem,calc(100vw - 18rem));max-height:calc(100dvh - 5.75rem)}
+ .role-more-panel[data-more-variant=rail]{left:5.25rem}
+ .role-more-panel .role-more-groups,.owner-more-popover .role-more-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+}
+@media(max-width:359px){
+ .role-more-groups{padding:12px 8px;gap:12px}
+ .role-more-item{padding:8px;gap:6px}
+ .role-more-grid{gap:6px}
+}

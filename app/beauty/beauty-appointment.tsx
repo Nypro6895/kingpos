@@ -7,10 +7,10 @@ export async function BeautyAppointment({ compact = false }: { compact?: boolean
   if (!result.ok) return <p className="text-sm text-text-secondary">Appointment could not be loaded. <Link href="/my-bookings" className="text-brand-teal">Open bookings</Link></p>;
   const booking = result.data[0];
   if (compact) return <Link className="beauty-home-booking" href={booking ? `/my-bookings/${booking.id}` : "/my-bookings"}>
-    <span className="beauty-home-booking-icon"><BeautyHomeIcon name="calendar"/></span>
+    <p className="beauty-home-booking-label">Next appointment</p>
+    {booking ? <span className="beauty-home-booking-date" aria-hidden="true"><span>{new Intl.DateTimeFormat("en-US", { month: "short", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}</span><strong>{new Intl.DateTimeFormat("en-US", { day: "numeric", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}</strong></span> : <span className="beauty-home-booking-icon"><BeautyHomeIcon name="calendar"/></span>}
     <div className="beauty-home-booking-copy">
-      <p>Next appointment</p>
-      {booking ? <><h3>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}</h3><p>{booking.lines?.filter(line => line.line_type === "service").map(line => line.service_name_snapshot).join(" · ")}</p><p>{booking.salon?.displayName ?? "Salon appointment"}</p></> : <><h3>No upcoming appointments</h3><p>View your bookings</p></>}
+      {booking ? <><h3><span className="beauty-home-booking-date-accessible">{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}, </span>{new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}</h3><p>{booking.salon?.displayName ?? "Salon appointment"}</p><p>{booking.lines?.filter(line => line.line_type === "service").map(line => line.service_name_snapshot).join(" · ")}</p></> : <><h3>No upcoming appointments</h3><p>View your bookings</p></>}
     </div><span className="beauty-home-booking-arrow"><BeautyHomeIcon name="arrow"/></span>
   </Link>;
   return <section className="relative border-border-subtle bg-surface p-4 rounded-none border-0 shadow-none" aria-label="Your next appointment">

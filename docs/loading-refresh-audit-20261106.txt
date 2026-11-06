@@ -1,0 +1,24 @@
+LOADING / REFRESH AUDIT — 2026-11-06
+Source: isolated worktree loading-refresh-audit-20261106, baseline 41d9912.
+Implementation only. No deployment, native upload, data/schema change, or live writes.
+
+USER EVIDENCE
+Photo: loaded History with Updating records status.
+Video: 3.24 seconds; frame sampling confirms repeated status insertion/removal and vertical list movement on the desktop view. No request trace or authenticated runtime log was supplied. This proves visual flicker, not a specific server/network loop.
+
+REPRODUCED AND FIXED
+1. Shared named-resource loader announced refreshing before consulting its read cache. A fresh seed followed by mount/focus performed zero host reads, yet rendered false -> true -> false. Move the announcement into the cache fetcher so only actual reads announce work. Applies to native/local ReadView consumers, including Bookings, Today, Staff, Market, Settings, and other named views.
+2. SelectedBookingDetails treated a successful authorized response with booking:null as still loading. Now it settles with an unavailable message, retry, and Close. A browser regression test failed waiting for the terminal state before the fix and passed afterward.
+3. Bookings eligibility timer and focus handler used the manual force-refresh path. Use freshness-aware revalidation on web and local adapters, a shared focus/online/native-foreground scheduler, and a 30-second automatic-attempt gate. Keep manual/mutation refresh forced. Store automatic callbacks in a ref so callback-only rerenders do not restart the eligibility clock.
+4. Updating records was a conditional paragraph above the tabs. Place the existing status inside the heading so refresh does not move tabs or the list. Browser geometry is identical during refresh at 320, 390, and 1280px.
+
+VERIFICATION
+49/49 targeted tests passed: real Bookings UI; check-in boundaries/statuses and receipt totals; named-resource cache hits, coalescing and failure settlement; customer-history identity/scope checks; native Today retained/denied/remote-hint behavior; read-priority scheduling; Market payment/trial state.
+Scoped ESLint and git diff --check passed.
+Safari16 local-app bundler --verify-only: passed, 348 pinned actions, 969 modules, zero unsupported actions, no assets activated.
+Full production web build passed (288 static pages, offline asset manifest 540 assets / 11,320,845 bytes). TypeScript passed independently and in the build. The 390px browser screenshot was visually inspected.
+
+LIMITS / RELEASE HANDOFF
+The exact runtime trigger for the supplied device/desktop sessions is not established from a short recording. The two concrete loading-state defects and automatic-refresh behavior above were reproduced in isolated browser fixtures using real components and read/cache code, with transport/identity boundaries stubbed. No live account, physical iPhone, or native binary acceptance is claimed.
+Existing hosted read deadlines and the 45-second native callback guard remain unchanged. Long backend/bridge reads require a scoped runtime trace to distinguish queue wait, context validation, transport time, and lost callback; do not infer the cause from a loading label.
+The local-app bundle imports these changed TSX/modules. A future release must rebuild the installed native bundle and assess native upload against the actually uploaded baseline. Merge the frozen task-only source into the exact then-current production source, preserve unrelated queued work, and rerun release-policy checks. Web checks do not establish native/device acceptance.

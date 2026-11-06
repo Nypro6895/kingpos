@@ -1,0 +1,10 @@
+<resources>
+    <string name="back">Quay lại</string>
+    <string name="share">Chia sẻ</string>
+    <string name="connection_error">Không tải được Reylumi. Vui lòng kiểm tra kết nối rồi thử lại.</string>
+    <string name="retry">Thử lại</string>
+    <string name="download_browser">Vui lòng mở Reylumi bằng trình duyệt để tải tệp này.</string>
+    <string name="no_handler">Không có ứng dụng phù hợp để mở liên kết này</string>
+    <string name="unavailable">Tính năng này chưa có trong bản Android thử nghiệm</string>
+    <string name="share_title">Chia sẻ Reylumi</string>
+</resources>

@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import ts from 'typescript';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const source=fs.readFileSync('app/salon-profile/salon-profile-view.tsx','utf8');
+const chunk=source.slice(source.indexOf('function experienceStateLabel('),source.indexOf('function LookDetailDialog('));
+const js=ts.transpileModule(chunk,{compilerOptions:{jsx:ts.JsxEmit.React}}).outputText;
+const Card=new Function('React','WorkspaceText','BlockUserButton','ReviewReplyForm','timeAgo',js+';return ExperienceCard;')(React,({text})=>text,()=>React.createElement('button',null,'Block'),()=>React.createElement('form',null,'Reply'),()=> '17 min ago');
+const base={id:'one',authorDisplayName:'Nene',authorUserId:'me',feedbackState:'good',verificationStatus:'verified',source:'visit',body:null,title:null};
+const render=(experience,extra={})=>renderToStaticMarkup(React.createElement(Card,{experience,canReplyAsSalon:false,viewerId:'me',onPosted(){},...extra}));
+test('Quick feedback shows identity, state and verification without filler or date',()=>{const html=render(base);for(const text of ['Nene','Good experience','Verified Visit'])assert.ok(html.includes(text));assert.ok(!html.includes('17 min ago'));assert.ok(!html.includes('Quick feedback'));});
+test('Written feedback, reply and moderation remain available',()=>{const html=render({...base,body:'love',replyBody:'Thank you',editedAt:'today'});for(const text of ['love','Thank you','Edited','17 min ago'])assert.ok(html.includes(text));assert.ok(render({...base,authorUserId:'other'}).includes('Block'));assert.ok(render({...base,source:'legacy_review'},{canReplyAsSalon:true}).includes('Reply'));});
+test('New and previously opened tabs anchor at tab bar instead of zero',()=>{const fn=source.slice(source.indexOf('  function changeTab('),source.indexOf('  function renderPostActions('));let selected;let scrolled;const window={scrollY:850,requestAnimationFrame:f=>f(),scrollTo:o=>scrolled=o};const document={getElementById:()=>({closest:()=>({getBoundingClientRect:()=>({top:-150})})})};new Function('window','document','selectedTab','tabScrollPositions','setSelectedTab',ts.transpileModule(fn,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText+';changeTab("experiences");')(window,document,'discover',{current:{experiences:0}},v=>selected=v);assert.equal(selected,'experiences');assert.equal(scrolled.top,604);});

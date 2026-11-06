@@ -329,14 +329,6 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       label: "Customers",
       navigationIcon: "people",
     },
-    {
-      description: "Profile, discovery, ownership, and setup for the current salon.",
-      href: "/salon-settings",
-      icon: "gear",
-      id: "owner-setting",
-      label: "Salon Settings",
-      navigationIcon: "gear",
-    },
   ],
 };
 
@@ -360,7 +352,7 @@ export const OWNER_MORE_GROUPS = [
   { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
   { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
   { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-forum", "owner-campaigns", "owner-rewards", "owner-gift-cards", "owner-market"] },
-  { id: "settings-support", title: "Settings & support", summary: "Salon setup, workspaces, and help.", ids: ["owner-setting", "owner-my-place", "owner-support", "owner-help"] },
+  { id: "settings-support", title: "Workspace & support", summary: "Switch workspaces and get help.", ids: [ "owner-my-place", "owner-support", "owner-help"] },
 ];
 const ownerPriority = OWNER_MORE_GROUPS.flatMap(group => group.ids);
 ROLE_MORE_ITEMS.owner.sort((a,b) => {

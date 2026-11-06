@@ -44,11 +44,11 @@ import type { AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData
 
 export type AppLocalPageProps = { path: string; context: AppLocalContext | null; navigate: (href: string) => void; host?: AppLocalHost };
 export type AppLocalPage = { id: string; title: string; requiresContext: boolean; Component: ComponentType<AppLocalPageProps>; features: readonly string[] };
-type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean;verifiedAt?:number}) => ReactNode; publicView?: (scope?: string) => ReactNode };
+type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean;verifiedAt?:number;revalidate:()=>Promise<void>}) => ReactNode; publicView?: (scope?: string) => ReactNode };
 function ReadView<T>({ context, name, args = {}, title, children, publicView }: ReadViewProps<T>) {
   const scope = context?.context.scope;
   const state = useAppLocalResource<T>(scope, name, args, { enabled: Boolean(scope) });
-  if (state.data !== undefined && context) return children(state.data, state.refresh,{error:state.error,refreshing:state.refreshing,verifiedAt:state.verifiedAt});
+  if (state.data !== undefined && context) return children(state.data, state.refresh,{error:state.error,refreshing:state.refreshing,verifiedAt:state.verifiedAt,revalidate:state.ensureFresh});
   if (publicView) return publicView(scope);
   if (name === "customer.activity") return <CustomerJourneyLoading failed={state.error} onRetry={()=>void state.refresh()}/>;
   if (name === "page.settings") return <main className="settings-hub settings-route-loading"><h1>{title}</h1>{state.error?<div role="alert"><p>{state.error}</p><button type="button" onClick={()=>void state.refresh()}>Try again</button></div>:<SettingsLoading/>}</main>;
@@ -93,11 +93,11 @@ function PersonalQrPage(props: AppLocalPageProps) {
   return <ReadView<PersonalQrWorkspace> {...props} name="page.personal-qr" title="My QR">{data => <PersonalQrClient key={props.context!.context.scope+props.path} viewerId={props.context!.context.viewerId!} initial={data} initialVisitId={url.searchParams.get("visit") ?? undefined} entry={url.searchParams.get("entry") ?? undefined} initialScan={url.searchParams.get("scan") === "1"} customerName={props.context!.display.name}/>}</ReadView>;
 }
 function MorePage(props: AppLocalPageProps) { return <ReadView<AppLocalMoreData> {...props} name="page.more" title="More">{data => <AppLocalMore {...data} />}</ReadView>; }
-function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Bookings">{(data,refresh,feedback) => <CustomerActivityView activity={data.result} initialTab="history" onRefresh={refresh} error={feedback.error} refreshing={feedback.refreshing}/>}</ReadView>; }
+function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Bookings">{(data,refresh,feedback) => <CustomerActivityView activity={data.result} initialTab="history" onRefresh={refresh} onRevalidate={feedback.revalidate} error={feedback.error} refreshing={feedback.refreshing}/>}</ReadView>; }
 function BookingsPage(props: AppLocalPageProps) {
   const url = urlFor(props.path), tab = customerJourneyTab(url.searchParams.get("tab"));
   const details = url.pathname.startsWith("/my-bookings/") ? url.pathname.slice("/my-bookings/".length) : url.searchParams.get("details")??undefined;
-  return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Bookings">{(data,refresh,feedback) => <CustomerActivityView key={`${tab}:${details??""}:${url.searchParams.get("tab")??""}`} activity={data.result} initialTab={tab} initialStatus={url.searchParams.get("tab")==="cancelled"?"cancelled":"all"} initialSelectedBookingId={details} onRefresh={refresh} refreshing={feedback.refreshing} error={feedback.error??url.searchParams.get("error")??undefined} message={url.searchParams.get("message")??undefined}/>}</ReadView>;
+  return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Bookings">{(data,refresh,feedback) => <CustomerActivityView key={`${tab}:${details??""}:${url.searchParams.get("tab")??""}`} activity={data.result} initialTab={tab} initialStatus={url.searchParams.get("tab")==="cancelled"?"cancelled":"all"} initialSelectedBookingId={details} onRefresh={refresh} onRevalidate={feedback.revalidate} refreshing={feedback.refreshing} error={feedback.error??url.searchParams.get("error")??undefined} message={url.searchParams.get("message")??undefined}/>}</ReadView>;
 }
 function ReceiptPage(props: AppLocalPageProps) { return <ReadView<AppLocalReceiptData> {...props} name="page.customer-receipt" args={{ ticketId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Receipt">{data => <AppLocalCustomerReceipt {...data} />}</ReadView>; }
 function SavedPage(props: AppLocalPageProps) { return <ReadView<AppLocalSavedPostsData> {...props} name="customer.saved-posts" args={queryFor(props.path, ["filter", "page", "q"])} title="Saved posts">{data => <AppLocalSavedPosts data={data} />}</ReadView>; }

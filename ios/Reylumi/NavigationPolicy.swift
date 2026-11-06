@@ -35,12 +35,14 @@ struct NavigationPolicy {
         let path = url.path.lowercased()
         if path == "/qr", let entry = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "entry" })?.value,
            UUID(uuidString: entry) != nil { return true }
-        return ["/login", "/signup", "/account-recovery", "/forgot-password",
-                "/reset-password", "/security-check", "/accept-invite",
+        // Authentication and public support pages already link back to Explore
+        // and to each other. Native task chrome must not follow those journeys.
+        // Keep an exit for challenges and standalone token/payment tasks only.
+        return ["/security-check", "/accept-invite",
                 "/ownership/invite", "/staff/invite", "/claim", "/deletion-status",
                 "/booking-payment", "/booking/manage", "/check-in", "/visit",
                 "/market/booking-deposit/payment", "/market/payment-return",
-                "/support/guest", "/contact-support"].contains {
+                "/support/guest"].contains {
             path == $0 || path.hasPrefix($0 + "/")
         }
     }

@@ -1,4 +1,4 @@
-export type CardElement = { id: string; kind: "logo" | "name" | "text"; text: string; x: number; y: number; size: number };
+export type CardElement = { id: string; kind: "logo" | "name" | "text"; text: string; x: number; y: number; size: number; font?: "serif" | "sans" };
 export type GiftDesign = { background: string; color: string; image: string; logo: string; elements: CardElement[] };
 export const defaultGiftDesign = (name = "Your salon", logo = ""): GiftDesign => ({ background: "#fff0e8", color: "#262626", image: "", logo,
   elements: [{ id: "logo", kind: "logo", text: "", x: 50, y: 30, size: 48 }, { id: "name", kind: "name", text: name, x: 50, y: 65, size: 24 }] });
@@ -12,5 +12,5 @@ export function normalizeGiftDesign(value: unknown): GiftDesign {
   const v = value as GiftDesign; const base = defaultGiftDesign();
   const image = (s: unknown) => typeof s === "string" && s.length <= 2000000 && (/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s) || /^https:\/\//.test(s)) ? s : "";
   return { background: /^#[0-9a-f]{6}$/i.test(v?.background) ? v.background : base.background, color: /^#[0-9a-f]{6}$/i.test(v?.color) ? v.color : base.color,
-    image: image(v?.image), logo: image(v?.logo), elements: Array.isArray(v?.elements) ? v.elements.slice(0, 12).map((e, i) => ({ id: String(i), kind: ["logo", "name"].includes(e.kind) ? e.kind : "text", text: String(e.text ?? "").slice(0, 120), x: Math.max(8, Math.min(92, Number(e.x) || 50)), y: Math.max(10, Math.min(90, Number(e.y) || 50)), size: Math.max(12, Math.min(72, Number(e.size) || 24)) })) : base.elements };
+    image: image(v?.image), logo: image(v?.logo), elements: Array.isArray(v?.elements) ? v.elements.slice(0, 12).map((e, i) => ({ ...(e.font === "serif" || e.font === "sans" ? { font: e.font } : {}), id: String(i), kind: ["logo", "name"].includes(e.kind) ? e.kind : "text", text: String(e.text ?? "").slice(0, 120), x: Math.max(8, Math.min(92, Number(e.x) || 50)), y: Math.max(10, Math.min(90, Number(e.y) || 50)), size: Math.max(12, Math.min(72, Number(e.size) || 24)) })) : base.elements };
 }

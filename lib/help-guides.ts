@@ -1,4 +1,5 @@
 import { WINDOWS_PORTABLE_HELP } from "./windows-portable-help";
+import expanded from "./help-expanded.json";
 
 export type HelpRole = "customer" | "owner" | "staff";
 export type HelpImage = {src: string; width: number; height: number};
@@ -7,13 +8,13 @@ export type HelpSection = {id: string; title: string; illustrationId?: string; s
 export type HelpGuide = {slug: string; title: string; summary: string; roles: HelpRole[]; entry: {href: string; label: string}; prerequisite: string; steps: {title: string; body: string}[]; sections: HelpSection[]; notes: string[]; evidence: {sourceFiles: string[]; sourceReviewed: boolean; productionFlowVerified: boolean; screenshots: HelpScreenshot[]}};
 
 export const HELP_VERSION = {
-  "version": "2026-10-17.1",
-  "reviewedAt": "2026-10-17",
-  "sourceRevision": "dpl_GSM2JMJnitw6i9LGCUiX1H5Xr9Pm",
+  "version": "2026-11-06.1",
+  "reviewedAt": "2026-11-06",
+  "sourceRevision": "help-complete-20261106",
   "publicationStatus": "ready",
   "screenshotsStatus": "illustrated"
 } as const;
-export const HELP_GUIDES: readonly HelpGuide[] = [
+const EXISTING_HELP_GUIDES: readonly HelpGuide[] = [
   WINDOWS_PORTABLE_HELP,
   {
     "slug": "overview",
@@ -168,7 +169,7 @@ export const HELP_GUIDES: readonly HelpGuide[] = [
         "steps": [
           "Service lines contribute to service sales. Tips are recorded separately. Cash and Credit Card describe how the customer paid the total; they are not extra sales on top of the ticket.",
           "The assigned staff and their configured pay rules determine calculated commission or wages. Review Payroll → Staff Income for the breakdown, rather than treating all customer cash as staff pay.",
-          "Keep actual staff payments separate from the calculation. Mark Paid records the saved statement status; it does not transfer cash or money from a bank."
+          "Keep actual staff payments separate from the live calculation. Review Recorded payments and adjustment evidence; recalculation does not change the original payment or transfer money."
         ],
         "check": "You can explain service sales, tips, customer payment methods and staff income as separate amounts.",
         "example": "For a $50 service total and $10 tip, the customer pays $60. At a 60% service commission, the service commission is $30 before other pay rules. Tip treatment follows the configured payroll rules.",
@@ -1581,4 +1582,15 @@ export const HELP_QUICK_STARTS: readonly {id: HelpRole; title: string; summary: 
     ]
   }
 ];
+export const HELP_GROUPS = expanded.groups;
+const improvements: Record<string, {title: string; summary: string; steps: {title: string; body: string}[]}> = expanded.overrides;
+export const HELP_GUIDES: readonly HelpGuide[] = [
+  ...EXISTING_HELP_GUIDES.map(guide => ({...guide, ...improvements[guide.slug]})),
+  ...expanded.guides as HelpGuide[],
+];
+export function helpGroupFor(slug: string) { return HELP_GROUPS.find(group => group.slugs.includes(slug)); }
+export function relatedHelpGuides(guide: HelpGuide) {
+  const slugs = helpGroupFor(guide.slug)?.slugs ?? [];
+  return slugs.filter(slug => slug !== guide.slug).map(findHelpGuide).filter((item): item is HelpGuide => !!item);
+}
 export function findHelpGuide(slug: string): HelpGuide | undefined { return HELP_GUIDES.find(guide => guide.slug === slug); }

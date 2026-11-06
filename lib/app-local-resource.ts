@@ -268,7 +268,6 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
   const cancellationGet = JSON.stringify(args).length <= 256 && scope.length <= 128
     && new URLSearchParams({ name, args: JSON.stringify(stable(args)), scope }).toString().length <= 1000;
   recordExperienceTrace("cache.refresh", { source: "app-local", fresh: Boolean(retained?.fresh), trigger: options.force === false ? "unknown" : "manual", ...traceResource(name, args) });
-  emit(cell, { refreshing: true, error: undefined });
   let deniedRead: unknown;
   cell.pending = (async () => {
     // Oversize/evicted data can remain in a mounted view. Supply that snapshot
@@ -279,6 +278,10 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     let transportValidatedAt: number | undefined;
     let acceptedReadTrace: ReturnType<typeof appLocalReadTraceFields> = {}, acceptedReadStatus: number | undefined;
     const snapshot = await appLocalResourceCache.load<AppLocalRead<T>>(cell.context, async ({ signal, etag, cached }) => {
+      // A warm cache hit or failure cooldown is not a network refresh. Announce
+      // loading only when the cache actually starts a read, avoiding status
+      // flashes each time a retained page receives focus/visibility events.
+      emit(cell, { refreshing: true, error: undefined });
       const category = readResourceCategory(cell.context.key), began = Date.now();
       const operation = nextExperienceTraceOperation();
       recordExperienceTrace("cache.read.start", { source: "app-local", operation, ...traceResource(name, args) });

@@ -1,13 +1,14 @@
-import { HELP_GUIDES, type HelpGuide, type HelpRole } from "@/lib/help-guides";
+import { HELP_GUIDES, helpGroupFor, type HelpGuide, type HelpRole } from "@/lib/help-guides";
 import helpCopy from "@/app/help/help-copy.json";
 import windowsCopy from "@/app/help/windows-portable-copy.json";
+import expandedCopy from "@/app/help/help-expanded-copy.json";
 
 export function normalizeHelpQuery(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().trim();
 }
-const dictionary: Readonly<Record<string, string>> = { ...helpCopy, ...windowsCopy };
+const dictionary: Readonly<Record<string, string>> = { ...helpCopy, ...windowsCopy, ...expandedCopy };
 const searchText = (guide: HelpGuide) => {
-  const text = [guide.title, guide.summary, guide.prerequisite, guide.entry.label,
+  const text = [guide.title, guide.summary, guide.prerequisite, guide.entry.label, helpGroupFor(guide.slug)?.title ?? "",
     ...guide.steps.flatMap(step => [step.title, step.body]), ...guide.notes,
     ...guide.sections.flatMap(section => [section.title, ...section.steps, section.check, section.example, ...section.issues]),
     ...guide.evidence.screenshots.flatMap(screen => [screen.caption, screen.alt])];

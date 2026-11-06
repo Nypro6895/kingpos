@@ -52,7 +52,6 @@ async function PublicSalonProfilePage({
 
   return (
     <main>
-      <RewardSalonPanel salonId={salonId} canBook={data.profile.activeServiceCount > 0 && data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed"} />
       <SalonProfileView
         capabilities={{
           canBook: data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed",
@@ -68,6 +67,7 @@ async function PublicSalonProfilePage({
           isAuthenticated: Boolean(context.user),
           isOwnSalon: false,
         }}
+        rewards={<RewardSalonPanel salonId={salonId} canBook={data.profile.activeServiceCount > 0 && data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed"} />}
         data={data}
       />
     </main>

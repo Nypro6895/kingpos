@@ -18,12 +18,20 @@ final class NavigationPolicyTests: XCTestCase {
         for path in ["/explore", "/explore/salons/id#customer-experiences", "/explore/beauty/id/posts/post#comments", "/beauty", "/activity", "/qr", "/book/id", "/my-bookings", "/staff/scan", "/staff/scan/", "/staff/my-work", "/staff/workday", "/staff/appointments", "/staff/today", "/pos", "/pos/portable", "/reports", "/payroll", "/customers", "/services", "/salon-settings", "/settings", "/market", "/help", "/support", "/more"] {
             XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com" + path)!), path)
         }
-        for path in ["/login?next=%2Fexplore", "/signup", "/security-check", "/reset-password", "/staff/invite/token", "/booking/manage/token", "/booking-payment/token", "/check-in/token", "/visit/token", "/market/payment-return", "/support/guest/token"] {
+        for path in ["/security-check", "/staff/invite/token", "/booking/manage/token", "/booking-payment/token", "/check-in/token", "/visit/token", "/market/payment-return", "/support/guest/token"] {
             XCTAssertTrue(policy.needsHostedTaskControls(URL(string: "https://reylumi.com" + path)!), path)
         }
         XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://external.invalid/login")!))
         XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/admin")!))
     }
+    func testAuthenticationAndPublicSupportNeverAcquireTaskChrome() {
+        for path in ["/login", "/signup", "/forgot-password", "/reset-password", "/account-recovery", "/contact-support"] {
+            for suffix in ["", "/", "?next=%2Fstaff%2Ftoday", "?next=%2Fbooking-payment%2Ftoken#form", "/step"] {
+                XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com" + path + suffix)!), path + suffix)
+            }
+        }
+    }
+
     func testWorkspacesRemainAvailable() {
         for path in ["/explore", "/beauty", "/my-bookings", "/bookings", "/staff/my-work", "/pos", "/settings", "/reports", "/payroll", "/support"] {
             let url = URL(string: "https://reylumi.com" + path)!

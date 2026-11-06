@@ -25,7 +25,7 @@ function OwnerMoreMenu() {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
-  const [placement, setPlacement] = useState<{ top: number; left: number; width: number; height: number; maxHeight: number } | null>(null);
+  const [placement, setPlacement] = useState<{ top: number; left: number; width: number; height?: number; maxHeight: number } | null>(null);
   const open = placement !== null;
   const openRef = useRef(false);
 
@@ -44,14 +44,12 @@ function OwnerMoreMenu() {
     const height = viewport?.height ?? window.innerHeight;
     const offsetLeft = viewport?.offsetLeft ?? 0;
     const offsetTop = viewport?.offsetTop ?? 0;
-    const panelWidth = Math.min(384, width - 24);
-    const above = button.closest('.owner-device-nav') !== null && document.documentElement.dataset.ownerDevice === 'phone';
-    // Reserve the full menu before clamping the anchor so a bottom rail
-    // cannot squeeze the scrollable list into the space below its trigger.
-    const panelHeight = Math.max(0, Math.min(560, height - 24));
-    const preferredTop = above ? rect.top - panelHeight - 8 : rect.bottom + 8;
-    const top = Math.max(offsetTop + 12, Math.min(preferredTop, offsetTop + height - panelHeight - 12));
-    setPlacement({ top, left: Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, height: panelHeight, maxHeight: panelHeight });
+    const compact = width < 768;
+    const tablet = width >= 768 && width < 1200;
+    const panelWidth = Math.min(tablet ? 480 : compact ? width - 16 : 800, width - 24);
+    const top = compact || tablet ? offsetTop + 12 : Math.max(offsetTop + 8, Math.min(rect.bottom + 8, offsetTop + height - 300));
+    const availableHeight = Math.max(120, offsetTop + height - top - 12);
+    setPlacement({ top, left: compact || tablet ? offsetLeft + width - panelWidth - 12 : Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, height: compact || tablet ? availableHeight : undefined, maxHeight: availableHeight });
   }
 
   useEffect(() => {
@@ -103,12 +101,13 @@ function OwnerMoreMenu() {
       <OwnerPosIcon name="more" /><span><WorkspaceText text="More" /></span>
     </button>
     {placement ? createPortal(
-      <div id={id} ref={panel} className="owner-more-popover" style={placement} role="region" aria-label={translate("More")} data-owner-more-popover>
-        <div className="owner-device-more-links">
-          <Link href="/pos/report" data-owner-tab="report" onClick={closeMenu}><WorkspaceText text="Report" /></Link>
-          <Link href="/pos/settings" data-owner-tab="settings" onClick={closeMenu}><WorkspaceText text="Settings" /></Link>
-        </div>
-        <RoleMoreContent workspace="pos" roleKind="owner" activeItemIds={["owner-pos"]} onNavigate={closeMenu} />
+      <div id={id} ref={panel} className="owner-more-popover" style={{
+        ...placement,
+        top: `calc(${placement.top}px + env(safe-area-inset-top))`,
+        height: placement.height === undefined ? undefined : `calc(${placement.height}px - env(safe-area-inset-top) - env(safe-area-inset-bottom))`,
+        maxHeight: `calc(${placement.maxHeight}px - env(safe-area-inset-top) - env(safe-area-inset-bottom))`,
+      }} role="region" aria-label={translate("More")} data-owner-more-popover>
+        <RoleMoreContent workspace="pos" roleKind="owner" activeItemIds={["owner-pos"]} onNavigate={closeMenu} onClose={() => { closeMenu(); trigger.current?.focus({ preventScroll: true }); }} />
       </div>, document.body,
     ) : null}
   </>;

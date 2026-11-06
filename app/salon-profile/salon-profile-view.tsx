@@ -140,6 +140,7 @@ function ProfilePostCommentThread(props: Parameters<typeof PostCommentThread>[0]
 }
 
 type SalonProfileViewProps = {
+  rewards?: ReactNode;
   capabilities?: SalonProfileViewerCapabilities;
   data: PublicSalonProfileData;
   error?: string;
@@ -2516,6 +2517,7 @@ function ExperienceCard({
   onPosted: () => void;
   viewerId: string | null;
 }) {
+  const quick = !experience.title?.trim() && !experience.body?.trim() && !experience.replyBody && !(canReplyAsSalon && experience.source === "legacy_review");
   const canReplyToExperience =
     canReplyAsSalon && experience.source === "legacy_review";
   const meta = [
@@ -2526,19 +2528,20 @@ function ExperienceCard({
     .join(" / ");
 
   return (
-      <article id={`experience-${experience.id}`} className="min-w-0 scroll-mt-28 border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold text-zinc-950">
-            {experience.authorDisplayName}
+      <article id={`experience-${experience.id}`} className="min-w-0 scroll-mt-28 border-zinc-200/80 bg-white px-4 py-3 rounded-none border-0 shadow-none">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-semibold text-zinc-950">
+            <span className="break-words">{experience.authorDisplayName}</span>
+            {quick ? <span className="font-normal text-zinc-600"><WorkspaceText text={experienceStateLabel(experience)} /></span> : null}
           </p>
           {viewerId && experience.authorUserId && viewerId !== experience.authorUserId ? <BlockUserButton userId={experience.authorUserId} /> : null}
-          {meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
-            {experience.editedAt ? <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Edited" /></p> : null}
+          {!quick && meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
+            {!quick && experience.editedAt ? <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Edited" /></p> : null}
         </div>
         <span
           className={[
-            "rounded-full px-3 py-1 text-xs font-semibold",
+            "shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold",
             experience.verificationStatus === "verified"
               ? "bg-emerald-50 text-emerald-800"
               : "bg-zinc-100 text-zinc-600",
@@ -2549,9 +2552,9 @@ function ExperienceCard({
             : "Experience"} />
         </span>
       </div>
-      <p className="mt-4 text-sm font-semibold text-zinc-950">
+      {!quick ? <p className="mt-3 text-sm font-semibold text-zinc-950">
         <WorkspaceText text={experienceStateLabel(experience)} />
-      </p>
+      </p> : null}
       {experience.title ? (
         <h3 className="mt-2 font-semibold text-zinc-950"><WorkspaceText text={experience.title} /></h3>
       ) : null}
@@ -2559,11 +2562,7 @@ function ExperienceCard({
           <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
           {experience.body}
         </p>
-      ) : (
-        <p className="mt-3 text-sm leading-6 text-zinc-500">
-          <WorkspaceText text="Quick feedback, no details added." />
-        </p>
-      )}
+      ) : null}
       {experience.replyBody ? (
         <div className="mt-4 bg-zinc-50 p-4 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
@@ -3265,6 +3264,7 @@ function PublicationDrawer({ onClose, publicHref, readiness, setting }: {
 export function SalonProfileView({
   capabilities = EMPTY_CAPABILITIES,
   data: initialData,
+  rewards,
   error,
   manageData,
   notice,
@@ -3734,7 +3734,7 @@ export function SalonProfileView({
     window.requestAnimationFrame(() => {
       window.scrollTo({
         behavior: "auto",
-        top: tabScrollPositions.current[tab],
+        top: Math.max(0, (document.getElementById(`salon-profile-tab-${tab}`)?.closest('[role="tablist"]')?.getBoundingClientRect().top ?? 0) + window.scrollY - 96),
       });
     });
   }
@@ -3943,7 +3943,7 @@ export function SalonProfileView({
         return item?.type === "feed" ? renderPostActions(item.item) : item?.type === "beauty" ? <PostActions
           target={beautyPostCommentTarget(item.post, profile.salonId)} viewerId={capabilities.currentUserId}
           onChanged={refresh} onOpen={() => openGalleryItem(item)}/> : null;
-      }} data={data} preferences={preferences} posts={feedItems} canBook={capabilities.canBook} onPost={openTimelinePost} onGallery={() => changeTab("gallery")} onServices={() => changeTab("services")} onTeam={() => changeTab("team")} onBook={openBooking} onStaff={setDetailStaff} onReviews={() => changeTab("experiences")} renderPostActions={renderPostActions} composer={capabilities.isOwnSalon && capabilities.canCreateContent ? <div className="grid gap-2"><ComposerCard logoUrl={profile.logoImageUrl} name={profile.name} onOpen={setComposerType}/>{capabilities.canManageContent ? <button type="button" className="justify-self-end text-xs font-medium text-zinc-500 hover:text-brand-orange" onClick={() => setContentManagerOpen(true)}><WorkspaceText text="Manage posts" /></button> : null}</div> : null}/>;
+      }} rewards={rewards} data={data} preferences={preferences} posts={feedItems} canBook={capabilities.canBook} onPost={openTimelinePost} onGallery={() => changeTab("gallery")} onServices={() => changeTab("services")} onTeam={() => changeTab("team")} onBook={openBooking} onStaff={setDetailStaff} onReviews={() => changeTab("experiences")} renderPostActions={renderPostActions} composer={capabilities.isOwnSalon && capabilities.canCreateContent ? <div className="grid gap-2"><ComposerCard logoUrl={profile.logoImageUrl} name={profile.name} onOpen={setComposerType}/>{capabilities.canManageContent ? <button type="button" className="justify-self-end text-xs font-medium text-zinc-500 hover:text-brand-orange" onClick={() => setContentManagerOpen(true)}><WorkspaceText text="Manage posts" /></button> : null}</div> : null}/>;
     }
     return (
       <div className="mx-auto grid w-full max-w-4xl gap-3">
@@ -4179,12 +4179,12 @@ export function SalonProfileView({
           <div className="grid gap-4 scroll-mt-24" id="customer-experiences">
           <h3 className="text-lg font-semibold"><WorkspaceText text="Customer experiences" /></h3>
             <p className="text-xs leading-5 text-zinc-600"><WorkspaceText text="Experiences include shared reviews. Opinions in LUMI Truth count eligible independent customers, so the totals may differ." /></p>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
             {(["all", "verified", "good", "issues"] as const).map((filter) => (
               <button
                 aria-pressed={experienceFilter === filter}
                 className={[
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
+                  "min-h-11 rounded-xl border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
                   experienceFilter === filter
                     ? "border-zinc-950 bg-zinc-950 text-white"
                     : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
@@ -4392,17 +4392,16 @@ export function SalonProfileView({
             <span><WorkspaceText text="Contact salon" /></span>
             {profile.phone ? <a href={`tel:${profile.phone}`} className="font-semibold underline">{profile.phone}</a> : null}
           </aside>
-        ) : !capabilities.isOwnSalon && !capabilities.isStaffSalon ? (
-          <div className="flex justify-end text-xs text-zinc-500"><a href={`/claim/${profile.salonId}`} className="underline"><WorkspaceText text="Manage this salon? Request access" /></a></div>
         ) : null}
         {isWebsiteView ? <SalonWebsiteHeader
-          profile={profile} layout={preferences.layout} tabs={mainTabs} extraTabs={visibleTabs.filter(tab => !mainTabs.includes(tab))} selectedTab={effectiveTab} introVisible={preferences.show_featured !== false}
+          profile={profile} priceHint={salonPopularPrice(data.reputationSummary)} layout={preferences.layout} tabs={mainTabs} extraTabs={visibleTabs.filter(tab => !mainTabs.includes(tab))} selectedTab={effectiveTab} introVisible={preferences.show_featured !== false}
           onTab={id => changeTab(id as TabId)} onTabKeyDown={onTabKeyDown}
           verified={<SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>}
           trust={<SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} className="text-zinc-600"/>}
           canBook={canShowBook} onBook={() => openBooking({title:"Book appointment"})}
           canFollow={canShowFollow} following={isFollowing} followPending={isPending} onFollow={toggleFollow}
           onHours={() => setHoursInfoOpen(true)} canShare={preferences.allow_sharing} onShare={() => { void shareSalon(); }}
+          claimHref={!capabilities.isOwnSalon && !capabilities.isStaffSalon ? `/claim/${profile.salonId}` : undefined}
           onReport={() => setSalonReportOpen(true)}
           tools={capabilities.canEditProfile ? <div className="relative">
               {capabilities.canEditProfile ? <button aria-label={__vt("Profile settings")} title={__vt("Profile settings")} aria-expanded={ownerMenuOpen} aria-haspopup="menu" ref={ownerMenuButtonRef} className="grid size-11 place-items-center rounded-xl text-zinc-700 transition-colors hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" onClick={() => setOwnerMenuOpen((current) => !current)} type="button"><SettingsIcon className="size-6 shrink-0" /></button> : null}
@@ -4427,10 +4426,10 @@ export function SalonProfileView({
               </div>
             </div>
             <div className="min-w-0 px-2 py-1">
-              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 break-words text-xl font-semibold leading-6"><SalonName name={profile.name} salonId={profile.salonId}/></h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/></div>
-              <SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>
-              <button type="button" className="min-h-11 text-xs font-semibold text-brand-teal underline underline-offset-4" onClick={() => changeTab("experiences")}><WorkspaceText text="Read customer experiences" /></button>
+              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 flex-1 break-words text-xl font-semibold leading-6"><SalonName name={profile.name} salonId={profile.salonId}/></h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 shrink-0 rounded-lg px-1 text-[11px] font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span><WorkspaceText text={isFollowing ? "Following" : "Follow salon"} /></button> : null}</div>
+
               <p className="truncate text-[11px] leading-5 text-zinc-500"><WorkspaceText text={salonPopularPrice(data.reputationSummary)??"Salon"} />{profile.city?` · ${profile.city}${profile.state?`, ${profile.state}`:""}`:""}</p>
+              <SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>
 
 
             </div>
@@ -4443,19 +4442,19 @@ export function SalonProfileView({
                 {manageData && capabilities.canPublish ? <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setPublicationOpen(true); }}><WorkspaceText text="Publication settings" /></button> : null}
               </div> : null}
             </div>
-              <button type="button" aria-label={__vt("View salon operating hours")} aria-haspopup="dialog" className="col-span-3 mt-1 flex min-h-6 flex-wrap items-center gap-x-2 gap-y-0.5 text-left text-xs leading-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => setHoursInfoOpen(true)}>
+              <button type="button" aria-label={__vt("View salon operating hours")} aria-haspopup="dialog" className="col-start-2 col-span-2 -mt-1 flex min-h-6 flex-wrap items-center gap-x-2 gap-y-0.5 text-left text-xs leading-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => setHoursInfoOpen(true)}>
                 <span className={profile.operatingStatus.isOpen ? "font-semibold text-emerald-700" : profile.operatingStatus.kind === "hours_unset" ? "font-semibold text-zinc-500" : "font-semibold text-red-600"}><WorkspaceText text={profile.operatingStatus.label} /></span>
                 {profile.operatingStatus.detail ? <span className="text-zinc-500"><span aria-hidden="true" className="mr-2">·</span><WorkspaceText text={profile.operatingStatus.detail} /></span> : null}
               </button>
           </div>
           <a href={`/gift-cards?salon=${profile.salonId}`} className="mx-3 mb-2 inline-flex min-h-9 items-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800">Gift cards</a>
-          {canShowFollow || canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:relative sm:-mt-11 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span><WorkspaceText text={isFollowing ? "Following" : "Follow salon"} /></button> : null}{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover"><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}</div> : null}
+          {canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover"><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}</div> : null}
           <div className="relative flex min-w-0 items-center border-t border-zinc-100 px-2 sm:px-4">
             <div aria-label={__vt("Salon profile sections")} className="flex min-w-0 flex-1 flex-wrap" onKeyDown={onTabKeyDown} role="tablist">
               {visibleTabs.map((tab) => <button aria-controls={`salon-profile-${tab.id}`} aria-selected={effectiveTab === tab.id} className={`min-h-11 min-w-[5.5rem] flex-1 border-b-2 px-1 text-xs font-semibold sm:text-sm ${effectiveTab === tab.id ? "border-brand-orange text-brand-orange" : "border-transparent text-zinc-500 hover:text-zinc-950"}`} id={`salon-profile-tab-${tab.id}`} key={tab.id} onClick={() => changeTab(tab.id)} role="tab" tabIndex={effectiveTab === tab.id ? 0 : -1} type="button"><WorkspaceText text={tab.label} />{tab.id === "gallery" && sortedLooks.length ? <span className="ml-1 text-[10px] text-zinc-400">{sortedLooks.length}</span> : null}</button>)}
             </div>
             <details data-dismissible-popover className="relative shrink-0"><summary aria-label={__vt("More profile sections and actions")} className="grid size-11 cursor-pointer list-none place-items-center rounded-xl text-lg text-zinc-600 hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">•••</summary><div className="absolute right-0 top-12 z-40 grid w-48 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-
+              {!capabilities.isOwnSalon && !capabilities.isStaffSalon ? <a href={`/claim/${profile.salonId}`} className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-zinc-50"><WorkspaceText text="Manage this salon? Request access" /></a> : null}
               {preferences.allow_sharing ? <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); void shareSalon(); }}><WorkspaceText text="Share profile" /></button> : null}
               <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); setSalonReportOpen(true); }}><WorkspaceText text="Report salon" /></button>
             </div></details>

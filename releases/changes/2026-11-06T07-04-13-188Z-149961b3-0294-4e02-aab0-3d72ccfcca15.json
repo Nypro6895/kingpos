@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "gift-card-designer-20261106",
+  "status": "needs-integration",
+  "summary": "Compact Cards-only statistics; persistent owner Design tab, compressed image crop/move/zoom/rotate editor and three signature presets",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/gift-card/card-design.tsx",
+    "components/gift-card/image-cropper.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/manage-gift-cards.tsx",
+    "lib/experience-route-policies.ts",
+    "tests/fixtures/gift-card-designer.tsx",
+    "tests/gift-card-designer-ui.mjs",
+    "tests/gift-card-designer-policy.test.mjs",
+    "docs/gift-card-designer-20261106.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-card-designer-20261106\\artifacts\\gift-card-designer\\source",
+    "commit": "7c060230dd963ba796b56c9c7c851760db7cf0a1"
+  },
+  "validation": [
+    {
+      "name": "Scoped ESLint + strict TypeScript + diff check",
+      "result": "passed",
+      "evidence": "docs/gift-card-designer-20261106.md"
+    },
+    {
+      "name": "Actual component browser fixture: five viewports and upload/crop/save failure paths",
+      "result": "passed",
+      "evidence": "artifacts/gift-card-designer/results.json"
+    },
+    {
+      "name": "Owner draft retention policy and sensitive route regression checks",
+      "result": "passed",
+      "evidence": "tests/gift-card-designer-policy.test.mjs"
+    },
+    {
+      "name": "Whole-repo TypeScript: existing pdf-lib/fontkit dependencies unavailable",
+      "result": "failed",
+      "evidence": "docs/gift-card-designer-20261106.md"
+    },
+    {
+      "name": "Assembled production build, authenticated hosted write and physical iPhone picker acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "149961b3-0294-4e02-aab0-3d72ccfcca15",
+  "recordedAt": "2026-11-06T07:04:13.188Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-card-designer-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

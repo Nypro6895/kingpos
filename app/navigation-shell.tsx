@@ -1128,8 +1128,6 @@ function RoleMorePanel({
   variant: "desktop" | "mobile" | "rail" | "sidebar";
 }) {
   const activeItemIds = ROLE_MORE_ITEMS[roleKind].filter(item => isLinkActive(moreItemAsNavigationLink(item), pathname, searchParams)).map(item => item.id);
-  const isMobile = variant === "mobile";
-  const isRail = variant === "rail";
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   function closeMoreMenu() {
@@ -1142,20 +1140,20 @@ function RoleMorePanel({
   return (
     <div
       ref={panelRef}
-      className={[
-        "z-[75] flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated text-text-primary shadow-[0_22px_60px_rgba(35,25,22,0.16)]",
-        isMobile
-          ? "workspace-mobile-panel fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))]"
-          : isRail
-            ? "absolute left-[calc(100%+0.75rem)] top-0 w-80"
-          : "absolute left-0 top-[calc(100%+0.5rem)] w-full",
-      ].join(" ")}
+      className="role-more-panel"
+      data-more-variant={variant}
+      role="region"
+      aria-label="More"
     >
       <RoleMoreContent
         roleKind={roleKind}
         activeItemIds={activeItemIds}
         onNavigate={closeMoreMenu}
-        listClassName={isMobile ? "max-h-[min(24rem,55vh)]" : "max-h-[min(28rem,64vh)]"}
+        onClose={() => {
+          const detailsElement = panelRef.current?.closest("details");
+          closeMoreMenu();
+          detailsElement?.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
+        }}
       />
     </div>
   );

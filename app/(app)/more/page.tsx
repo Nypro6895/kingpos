@@ -5,15 +5,13 @@ import { WorkspaceText } from "@/components/workspace-language";
 import { SettingsIconShape } from "@/components/settings-icon";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
-  PERSONAL_MORE_GROUPS,
-  ROLE_MORE_ITEMS,
-  OWNER_MORE_GROUPS,
   roleNavigationKindForContext,
   type RoleMoreIcon,
   type RoleMoreItem,
   type RoleNavigationKind,
 } from "@/app/role-navigation";
 import Link from "next/link";
+import { roleMoreGroups } from "@/app/role-more-groups";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -121,59 +119,12 @@ function MoreIcon({ name }: { name: MoreIconName }) {
   return <svg {...common}>{paths[name]}</svg>;
 }
 
-function pickMoreItems(
-  items: readonly MoreItem[],
-  ids: readonly string[],
-): MoreItem[] {
-  const itemsById = new Map(items.map((item) => [item.id, item]));
-
-  return ids
-    .map((id) => itemsById.get(id))
-    .filter((item): item is MoreItem => Boolean(item));
-}
-
 function formatItemCount(count: number) {
   return `${count} ${count === 1 ? "item" : "items"}`;
 }
 
-function personalMoreItems(): MoreContent {
-  return { sections: PERSONAL_MORE_GROUPS.map(group => ({
-    id: group.id, title: group.title, summary: group.summary,
-    items: pickMoreItems(ROLE_MORE_ITEMS.personal, group.ids),
-  })) };
-}
-
 function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
-  if (roleKind === "owner") {
-    return { sections: OWNER_MORE_GROUPS.map(group => ({ id: group.id, title: group.title, summary: group.summary, items: pickMoreItems(ROLE_MORE_ITEMS.owner, group.ids) })) };
-  }
-
-  if (roleKind === "staff") {
-    return {
-      sections: [
-        {
-          id: "work",
-          items: pickMoreItems(ROLE_MORE_ITEMS.staff, [
-            "staff-my-place",
-            "staff-support",
-          ]),
-          summary: "Switch workplaces or get help.",
-          title: "Work",
-        },
-        {
-          id: "saved-following",
-          items: pickMoreItems(ROLE_MORE_ITEMS.staff, [
-            "staff-saved-post",
-            "staff-following",
-          ]),
-          summary: "Keep track of saved posts and followed shops or Beauty profiles.",
-          title: "Saved & following",
-        },
-      ],
-    };
-  }
-
-  return personalMoreItems();
+  return { sections: roleMoreGroups(roleKind) };
 }
 
 function MoreItemLink({ item }: { item: MoreItem }) {
@@ -258,7 +209,7 @@ async function MorePage() {
           className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border-subtle bg-surface px-4 text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           href="/settings"
         >
-          <WorkspaceText text="All settings, account & security" />
+          <WorkspaceText text="All Settings" />
         </Link>
       </div>
     </main>
