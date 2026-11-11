@@ -1,0 +1,84 @@
+{
+  "kind": "change",
+  "changeId": "checkin-approved-web-20261111",
+  "status": "ready",
+  "summary": "Approved customer check-in UI integrated and validated on exact live source; shared Windows/browser UI, preserved downstream design except number emphasis",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/gift-cards/route.ts",
+    "app/pos/customer-display/checkin-receipt-panel.tsx",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "components/gift-card/customer-gift-dialog.tsx",
+    "components/gift-card/gift-approved-dialog.css",
+    "components/gift-card/gift-artwork.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/gift-modal-layer.tsx",
+    "components/gift-card/pos-gift-card.tsx",
+    "lib/checkin-presentation.ts",
+    "lib/gift-display-appearance.ts",
+    "lib/pos-display-default-assets.ts",
+    "public/gift-cards/shared-default.webp",
+    "public/pos/checkin-rewards-default.webp",
+    "public/pos/checkin-shared-default.webp",
+    "public/pos/checkin-welcome-hero.webp",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/customer-idle-settings-ui.test.mjs",
+    "tests/gift-display-appearance.test.mjs",
+    "types/gift-card.ts"
+  ],
+  "source": {
+    "commit": "4da0e136a55c72bd899da7786fce284910b88a3c",
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-release-20261111\\artifacts\\checkin-release\\snapshot"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Actual browser UI + settings + owner/issued gift design checks",
+      "result": "passed",
+      "evidence": "artifacts/checkin-release/settings-tests.txt; artifacts/checkin-release/final-ui-tests.txt"
+    },
+    {
+      "name": "Production build, TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/checkin-release/build.txt"
+    },
+    {
+      "name": "Scoped lint",
+      "result": "passed",
+      "evidence": "artifacts/checkin-release/lint.txt"
+    }
+  ],
+  "id": "06c240dd-c998-455d-9ec2-241615b7c11b",
+  "recordedAt": "2026-11-11T22:52:16.902Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/gift-cards/route.ts": "015ae7cfc127c20c20a21bd3f5a265d5baa2f0c2c8ca2a42a2656bf6a886da74",
+    "app/pos/customer-display/checkin-receipt-panel.tsx": "f5d8467926765f5b288dc6e75f2f896483721cf96210d1d8def77c2cad603344",
+    "app/pos/customer-display/customer-display-client.tsx": "cb06dd3ccd169294e5603543a80553154c13cc84f34957557341da9f7bfc902e",
+    "app/pos/customer-display/customer-idle-screen.css": "2cd5055e942314e7f7b05d956406df86146eab9191f953d2dd2dbb6fc70c5604",
+    "app/pos/customer-display/customer-idle-screen.tsx": "40780871f20190d62b5be2dd3155ca640a4191e6804dae6ccf9b08107f863218",
+    "components/gift-card/customer-gift-dialog.tsx": "4642f01420b9e6b3de808cff7de0e745f1759ccbe6bb156ceb12326bad6e2d13",
+    "components/gift-card/gift-approved-dialog.css": "d11b5fe9464ab084488666c5f04f94e3fce5127570d1be2e19f2cbb8140d5ee3",
+    "components/gift-card/gift-artwork.tsx": "91dc3188774373be81e794a2eec913e4cf04e088064e17dad3c7d5b1eb68700d",
+    "components/gift-card/gift-card.css": "429a122fdce629eb4ee0cca9bfddaded0d1a7fb6842ebb7297a60c3d2f1273e0",
+    "components/gift-card/gift-modal-layer.tsx": "5b3ddd178fa036367dc5a116febdefc6f10b9216fa8e2ee1b0e8a9084e4ae528",
+    "components/gift-card/pos-gift-card.tsx": "3adbb2bdbab1b592aa2e94f6a8bd8eaf373b3a1551e5c08ae5e38229d0658d39",
+    "lib/checkin-presentation.ts": "c41d84f912e91bd8a9b5486468dbd4d16f131e26505b0d6647238e010d1b040c",
+    "lib/gift-display-appearance.ts": "9192d4dbee711afd6a21891c9399ada70767faaf0a2b31e5d4d541a4a8771d77",
+    "lib/pos-display-default-assets.ts": "8844e3ab71eed5de134077535d50632dc46ff738da3a015778a9e18e753d8fe8",
+    "public/gift-cards/shared-default.webp": "ce90e3c778fbfbde4d1b95198c7cd1626947739ea97b138edcbd970d284fd926",
+    "public/pos/checkin-rewards-default.webp": "2429010a390865e12507e573b3efcc542a72add986cc2af43b1a9e7b5b741b22",
+    "public/pos/checkin-shared-default.webp": "120bfa1186bc1971c7d98d14ceaef3f6a4ac1c6007e8009dd998aef414d89366",
+    "public/pos/checkin-welcome-hero.webp": "744427bcc195888a40481e1010525fb90768ea1baa858f3ecc1fdcdd3fb73223",
+    "tests/checkin-design-ui.test.mjs": "2b7305475779453113bf7beca3924574079f93554ffc9b3d3aba06b9e7454478",
+    "tests/customer-idle-settings-ui.test.mjs": "878a6ad253ca6b16409850ebe91cda0408393901781f1d74338ef22c15a806a6",
+    "tests/gift-display-appearance.test.mjs": "3c23798465ebc72e0a9ba0451be6a279fc5e3cfab7c8f24b29cd4fa5f00e2eb5",
+    "types/gift-card.ts": "48115b361c4cf2e94d95f968074c0b8250fcde52f454acb0489d1802fae46a3c"
+  }
+}
