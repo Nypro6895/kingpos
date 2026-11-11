@@ -1,0 +1,30 @@
+{
+  "source": {
+    "commit": "fcfdef81b405b2d43a5a11d660b9bb988978034a"
+  },
+  "channels": [
+    "web"
+  ],
+  "summary": "Preserve existing downstream design; emphasize check-in receipt number only per owner correction",
+  "changeId": "checkin-number-emphasis-20261111",
+  "status": "needs-integration",
+  "kind": "change",
+  "files": [
+    "app/pos/customer-display/checkin-receipt-panel.tsx"
+  ],
+  "dependencies": [
+    "checkin-rewards-artwork-20261111"
+  ],
+  "validation": [
+    {
+      "name": "Actual component screenshot inspected, synthetic print only, no backend writes; scoped ESLint passed",
+      "result": "passed",
+      "evidence": "artifacts/checkin-number/implemented.png"
+    }
+  ],
+  "id": "ecadd275-9cfe-49db-bd6c-0ec869e23b0a",
+  "recordedAt": "2026-11-11T21:07:01.790Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-approved-final-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

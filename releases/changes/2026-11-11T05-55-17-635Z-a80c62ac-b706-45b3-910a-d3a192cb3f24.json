@@ -1,0 +1,49 @@
+{
+  "files": [
+    "lib/pos-display-default-assets.ts",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "public/pos/checkin-rewards-default.webp",
+    "tests/checkin-design-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-approved-final-20261111\\artifacts\\checkin-rewards-artwork\\snapshot",
+    "commit": "9d0d25e1ae6ca2323423a273c29565dc1f0582a7"
+  },
+  "kind": "change",
+  "summary": "Owner-approved Reylumi rewards phone artwork installed as shared check-in default; full image preserved, owner photos/settings retained",
+  "dependencies": [
+    "checkin-approved-final-20261111"
+  ],
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "changeId": "checkin-rewards-artwork-20261111",
+  "validation": [
+    {
+      "evidence": "artifacts/checkin-rewards-artwork/tests.txt",
+      "result": "passed",
+      "name": "Actual-component browser suite and saved gift design tests (3/3)"
+    },
+    {
+      "evidence": "artifacts/checkin-rewards-artwork/typecheck.txt",
+      "result": "passed",
+      "name": "TypeScript and scoped ESLint"
+    },
+    {
+      "evidence": "artifacts/checkin-rewards-artwork/RECEIPT.txt",
+      "result": "passed",
+      "name": "Split/full screenshots inspected and local server source asset hash matched"
+    },
+    {
+      "result": "pending",
+      "name": "Production deployment and physical-device acceptance"
+    }
+  ],
+  "id": "a80c62ac-b706-45b3-910a-d3a192cb3f24",
+  "recordedAt": "2026-11-11T05:55:17.635Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-approved-final-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

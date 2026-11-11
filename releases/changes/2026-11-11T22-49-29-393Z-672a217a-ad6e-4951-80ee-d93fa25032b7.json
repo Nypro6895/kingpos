@@ -1,0 +1,42 @@
+{
+  "channels": [
+    "web"
+  ],
+  "summary": "Integrate approved check-in, gift popup, default rewards artwork and number emphasis onto exact current production source",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-release-20261111\\artifacts\\checkin-release\\web-stage"
+  },
+  "dependencies": [],
+  "files": [
+    "app/api/gift-cards/route.ts",
+    "app/pos/customer-display/checkin-receipt-panel.tsx",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "components/gift-card/customer-gift-dialog.tsx",
+    "components/gift-card/gift-approved-dialog.css",
+    "components/gift-card/gift-artwork.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/gift-modal-layer.tsx",
+    "components/gift-card/pos-gift-card.tsx",
+    "lib/checkin-presentation.ts",
+    "lib/gift-display-appearance.ts",
+    "lib/pos-display-default-assets.ts",
+    "public/gift-cards/shared-default.webp",
+    "public/pos/checkin-rewards-default.webp",
+    "public/pos/checkin-shared-default.webp",
+    "public/pos/checkin-welcome-hero.webp",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/customer-idle-settings-ui.test.mjs",
+    "tests/gift-display-appearance.test.mjs",
+    "types/gift-card.ts"
+  ],
+  "status": "working",
+  "changeId": "checkin-approved-web-20261111",
+  "kind": "change",
+  "id": "672a217a-ad6e-4951-80ee-d93fa25032b7",
+  "recordedAt": "2026-11-11T22:49:29.393Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

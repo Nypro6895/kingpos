@@ -537,7 +537,7 @@ function PhoneKeypad({
         }
         type="button"
       >
-        C
+        <span className="customer-key-clear-short">C</span><span className="customer-key-clear-long"><WorkspaceText text="Clear" /></span>
       </button>
       <button
         aria-label={__vt("Digit 0")}
@@ -627,10 +627,10 @@ function PhoneEntryPanel({
     >
       <div>
         <h2 className="text-3xl font-semibold leading-tight text-zinc-950">
-          <WorkspaceText text="Enter your phone number" />
+          <WorkspaceText text="Welcome in" />
         </h2>
         <p className="mt-2 text-sm font-medium leading-6 text-zinc-500">
-          <WorkspaceText text="We&apos;ll find your profile and keep your visit connected." />
+          <WorkspaceText text="Enter your phone number to check in." />
         </p>
       </div>
 
@@ -654,7 +654,7 @@ function PhoneEntryPanel({
           />
           <button
             aria-label={__vt("Confirm phone number")}
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-teal-700 text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
+            className="customer-phone-inline-confirm grid h-12 w-12 shrink-0 place-items-center rounded-full bg-teal-700 text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
             disabled={disabled || digitsOnly(phoneInput).length < 4}
             onClick={onSubmitPhone}
             type="button"
@@ -672,6 +672,8 @@ function PhoneEntryPanel({
         />
       </div>
 
+      <button className="customer-phone-continue" type="button" disabled={disabled || isCustomerPending || digitsOnly(phoneInput).length < 4} onClick={onSubmitPhone}><WorkspaceText text="Continue" /> <span aria-hidden="true">→</span></button>
+      <p className="customer-phone-privacy"><WorkspaceText text="Your number helps us find your profile." /></p>
       {showTipShortcut ? (
         <button
           className="mt-4 min-h-14 rounded-2xl bg-zinc-950 px-4 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-950/20"
@@ -2693,19 +2695,20 @@ export function CustomerDisplayClient({
 
   return (
     <SalonIdentityContext reference={{kind:"display",value:token}}><div className={rootClass} ref={rootRef}>
-      <GiftCustomerControl token={token} />
+      {displayMode !== "attract" && !(displayMode === "phone" && !hasCheckoutHandoff) && <div className="customer-gift-toolbar"><GiftCustomerControl key={token} token={token} /></div>}
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
       ) : null}
       <div className="customer-display-auto-scale h-full w-full">
         {(liveDraftCustomer?.id || checkInState?.visit.id) && displayMode !== "completed" && displayMode !== "attract" && <VisitRewards key={liveDraftCustomer?.id ?? checkInState?.visit.id} scope="display" token={token} visitId={checkInState?.visit.id} />}
-        {displayMode === "attract" ? (
-          <CustomerIdleScreen token={token} images={attractImages} salonName={settings.salonName ?? "Welcome"} backgroundImageUrl={settings.customerBackgroundImageUrl ?? undefined}
+        {displayMode === "attract" || (displayMode === "phone" && !hasCheckoutHandoff) ? (
+          <CustomerIdleScreen showSalonName={settings.customerShowSalonName} salonLogoUrl={settings.salonLogoUrl} activeEntry={displayMode === "phone"} giftControl={<GiftCustomerControl key={token} token={token} />} token={token} images={attractImages} salonName={settings.salonName ?? "Welcome"} backgroundImageUrl={settings.customerBackgroundImageUrl ?? undefined}
             title={settings.customerLeftAdText} body={settings.customerRightAdText} onBegin={beginFromAttract} fullscreenControl={<FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />}>
             <PhoneEntryPanel customerResults={customerResults} customerStatus={customerStatus}
               disabled={!token || liveDraftStatus !== "draft"} isCustomerPending={isCustomerPending} isSearching={isSearching}
               onConfirmCustomer={confirmCustomer} onPhoneInput={handlePhoneInput} onSkipToTip={continueToTipAsGuest}
               onSubmitPhone={() => void submitPhoneLookup(phoneInput)} phoneInput={phoneInput} showTipShortcut={false} />
+            {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800"><WorkspaceText text={error}/></p>}
           </CustomerIdleScreen>
         ) : displayMode === "completed" ? (
           <CompletedScreen
@@ -2836,4 +2839,3 @@ export function CustomerDisplayClient({
     </div></SalonIdentityContext>
   );
 }
-

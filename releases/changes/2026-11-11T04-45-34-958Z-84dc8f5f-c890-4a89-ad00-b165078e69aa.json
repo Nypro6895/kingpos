@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "checkin-design-20261110",
+  "status": "needs-integration",
+  "summary": "Approved kiosk check-in and Gift Card redesign complete; local browser checks, lint, TypeScript and production build passed; not deployed",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/gift-card.css",
+    "public/pos/checkin-welcome-hero.webp",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/customer-idle-settings-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "c21345a95600bad43b68cfe447417709cb7233e3",
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-design-20261110\\artifacts\\checkin-design-20261110\\snapshot"
+  },
+  "validation": [
+    {
+      "name": "ESLint changed TSX",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript --noEmit",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/typecheck.txt"
+    },
+    {
+      "name": "Production build and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/build.txt"
+    },
+    {
+      "name": "Actual component browser suites and Gift public links",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/browser-result.json"
+    },
+    {
+      "name": "Next.js local route HTTP 200, no browser errors",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/next-local-result.json"
+    },
+    {
+      "name": "Current production integration and paired physical-device acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "84dc8f5f-c890-4a89-ad00-b165078e69aa",
+  "recordedAt": "2026-11-11T04:45:34.958Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-design-20261110",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

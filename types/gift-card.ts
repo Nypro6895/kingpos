@@ -14,3 +14,10 @@ export function normalizeGiftDesign(value: unknown): GiftDesign {
   return { background: /^#[0-9a-f]{6}$/i.test(v?.background) ? v.background : base.background, color: /^#[0-9a-f]{6}$/i.test(v?.color) ? v.color : base.color,
     image: image(v?.image), logo: image(v?.logo), elements: Array.isArray(v?.elements) ? v.elements.slice(0, 12).map((e, i) => ({ ...(e.font === "serif" || e.font === "sans" ? { font: e.font } : {}), id: String(i), kind: ["logo", "name"].includes(e.kind) ? e.kind : "text", text: String(e.text ?? "").slice(0, 120), x: Math.max(8, Math.min(92, Number(e.x) || 50)), y: Math.max(10, Math.min(90, Number(e.y) || 50)), size: Math.max(12, Math.min(72, Number(e.size) || 24)) })) : base.elements };
 }
+
+/** A saved design may deliberately contain only a background or no text. */
+export function hasSavedGiftDesign(value: unknown): value is GiftDesign {
+  if(!value || typeof value!=="object")return false;
+  const design=value as Partial<GiftDesign>;
+  return Array.isArray(design.elements) || typeof design.image==="string" && design.image.length>0 || typeof design.background==="string" && /^#[0-9a-f]{6}$/i.test(design.background);
+}

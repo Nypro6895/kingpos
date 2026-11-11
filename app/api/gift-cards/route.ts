@@ -1,3 +1,4 @@
+import { getGiftDisplayAppearance } from "@/lib/gift-display-appearance";
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { createAuthenticatedSupabaseServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
@@ -43,6 +44,8 @@ export async function POST(request: NextRequest) {
       if (!salon) { const context = await getCurrentBusinessContext(); salon = context.currentSalon?.id; }
       if (!salon) throw new Error("Select an active salon POS.");
       result = await db.rpc("gift_card_pos", { p_salon: salon, p_op: op, p_args: args, p_key: key || null, p_signature: signature || null });
+    } else if (scope === "display" && op === "appearance") {
+      return Response.json(await getGiftDisplayAppearance(db, token), { headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
     } else if (scope === "display") result = await db.rpc("gift_card_display", { p_token: token, p_op: op, p_args: args });
     else if (scope === "wallet") {
       if (!auth) throw new Error("Sign in to use your wallet.");
