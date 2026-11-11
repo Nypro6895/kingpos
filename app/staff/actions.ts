@@ -257,6 +257,10 @@ function getInviteDeliveryNotice(
     return `${message} Email delivery failed: ${delivery.reason}`;
   }
 
+  if (delivery.status === "unknown") {
+    return `${message} Email delivery is unconfirmed. Check delivery before resending.`;
+  }
+
   return `${message} Email not sent: ${delivery.reason}`;
 }
 

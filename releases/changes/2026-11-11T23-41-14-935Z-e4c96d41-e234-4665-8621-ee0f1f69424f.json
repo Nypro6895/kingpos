@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "hostinger-smtp-20261110",
+  "status": "ready",
+  "summary": "Encrypted Hostinger SMTP integrated onto exact live source; durable receipts and shared delivery tested, production build passed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/smtp-mail.ts",
+    "lib/email.ts",
+    "lib/support-email.ts",
+    "lib/booking-notifications.ts",
+    "lib/staff-salon-connections.ts",
+    "app/staff/actions.ts",
+    "types/staff-salon-connection.ts",
+    "app/(app)/admin/_components/action-form.tsx",
+    "app/(app)/admin/settings/support-email/actions.ts",
+    "app/(app)/admin/market/system-workspace.tsx",
+    "app/(app)/admin/settings/support-email/email-connection-form.tsx",
+    "supabase/migrations/20261110213000_smtp_delivery_receipts.sql",
+    "package.json",
+    "package-lock.json",
+    ".env.example",
+    "tests/hostinger-smtp-runtime.test.mjs"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Full 404-migration schema and real isolated Auth recovery; no real email",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/full-stack-final.txt"
+    },
+    {
+      "name": "Focused security and SMTP runtime integration",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/final-focused-tests.txt"
+    },
+    {
+      "name": "Related login, deletion, staff, booking regressions",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/regression-tests-third.txt"
+    },
+    {
+      "name": "Actual browser components, mobile and desktop; recovery/password contracts",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/browser-final.txt"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/lint.txt"
+    },
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/stage-build.txt"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\recovery-completion-20261111\\artifacts\\recovery-release\\snapshot"
+  },
+  "id": "e4c96d41-e234-4665-8621-ee0f1f69424f",
+  "recordedAt": "2026-11-11T23:41:14.935Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/smtp-mail.ts": "afd7c32ffbcc4f3daedd4c8f7bfa2ea4e5ac6392b5ae8d7a3db2463672c7ca9b",
+    "lib/email.ts": "97c0364fef9191dd75c3bb6c82d80f1b232c383f57df2a42f5fbacc740bdde8b",
+    "lib/support-email.ts": "6942d635f81e56914122eebad8ebf0e0bfb58bf41219b53eb424414794424294",
+    "lib/booking-notifications.ts": "2b7c5065df2c86e5253e9c730c164456c0804633d0bffd38e00ab941bdf8f301",
+    "lib/staff-salon-connections.ts": "a69781a6002e82befdc51ce8c4083f9fbfa377a09508ea865c9617f816161cb0",
+    "app/staff/actions.ts": "bf69fd2ed969626a7253412f6c8f325017118241654d0d1f64cdda2d913c59c7",
+    "types/staff-salon-connection.ts": "1e6ebf1d88dea27ec363fce54cd6727ecd0cef1e859820bb414cbbbdbba0e6d3",
+    "app/(app)/admin/_components/action-form.tsx": "2843e01038d1df604c16507e6b6e2b7d620db56abb0f9ea9abad3fc7864b21b8",
+    "app/(app)/admin/settings/support-email/actions.ts": "6f66fc9021c7c2a290853fd54305e3f0e232cc6927691d6d6a329a25f443e5f8",
+    "app/(app)/admin/market/system-workspace.tsx": "18998edd1bc2393577ba77ea7ec969df27b7dfc72ae69f51f1ce31a09d56b41a",
+    "app/(app)/admin/settings/support-email/email-connection-form.tsx": "a68fbb65df30d6d078a303dc6b59f7fc1105c432bfa2ff55e75c2a8239169c3e",
+    "supabase/migrations/20261110213000_smtp_delivery_receipts.sql": "1af7725569a7ab367a6384109cb00f893576b7c38e35b821f001afaec067d432",
+    "package.json": "e6b32449ae956572847302361281968c85528ec5516f75de81d8357310de1266",
+    "package-lock.json": "7cbb1938785c123818865106f1f6a86ed695cf47b2f7ff713d218718c06bd5cd",
+    ".env.example": "abff210526bc7273d656af2db363dfa25606ddc98d37bf0ea322c828d4e7e0ef",
+    "tests/hostinger-smtp-runtime.test.mjs": "82e04fa1919d446343de69ed8a06e99c29cc64485e064c76ac5716aa990986cc"
+  }
+}

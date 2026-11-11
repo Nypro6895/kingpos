@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -200,6 +201,7 @@ function RecoveryCaseCard({
               <WorkspaceText text={recoveryCase.details || "No details provided."} />
             </p>
             <p className="mt-2 text-sm text-zinc-600">
+              {recoveryCase.adminCaseId&&recoveryCase.user&&<Link className="mb-3 block font-semibold underline" href={`/admin/users?user=${recoveryCase.user.id}&tab=security`}>Open linked recovery in Users — verify contact, secure access and track completion</Link>}
               <WorkspaceText text="Contact:" /> {recoveryCase.contactEmail ?? "-"} /{" "}
               {recoveryCase.contactPhone ?? "-"}
             </p>

@@ -1,3 +1,4 @@
+import {after} from "next/server";
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { callPlatformAdminRpc } from "./rpc";
@@ -83,5 +84,9 @@ export async function runUserIdentity(form:FormData):Promise<UserOperationResult
   } catch { outcome="unknown"; }
   const finished=await service.rpc("admin_user_identity_finish",{p_request_id:requestId,p_status:outcome,p_auth_user_id:authId});
   if(finished.error) return {ok:false,message:"The provider operation ran, but its local outcome could not be saved. Refresh and review before retrying.",requestStatus:"unknown"};
+  if(outcome==="accepted"&&["email_change","reset_mfa"].includes(operation)) {
+    const recipients=[...new Set([job.email,...(operation==="email_change"?[email]:[])].filter((value):value is string=>Boolean(value)))];
+    after(async()=>{try{const connection=await getSupportEmailConfig();for(let i=0;i<recipients.length;i++)await sendSupportEmail(connection,{id:`security-notice-${requestId}-${i}`,to:recipients[i],name:"there",subject:"Reylumi account security update",body:"An authorized support recovery operation changed account sign-in security. If you did not request this change, contact support@reylumi.com immediately. This notice does not contain a sign-in link or reveal the new recovery address."});}catch{/* Identity audit remains authoritative; email transport keeps uncertain receipts for review. */}});
+  }
   return {ok:outcome==="accepted",message,userId:finished.data?.user_id??undefined,requestStatus:outcome};
 }

@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import {bookSmsConfig} from '@/lib/booksms';
+import { getNotificationEmailConfig, sendSupportEmail } from "@/lib/support-email";
+import { sendSmtp } from "@/lib/smtp-mail";
 
 type Message = { id: string; channel: "email" | "sms"; recipient: string; message: string; salon_id: string; event_key: string };
 export type BookingMessageResult = { state: "accepted" | "failed" | "unknown" | "unconfigured"; detail?: string; provider_id?: string };
@@ -9,7 +11,7 @@ const env = (...names: string[]) => names.map(name => process.env[name]?.trim())
 export async function bookingMessageReadiness() {
 
   return {
-    email: Boolean(env("RESEND_API_KEY") && env("BOOKING_EMAIL_FROM", "RESEND_FROM_EMAIL", "STAFF_INVITE_EMAIL_FROM")),
+    email: Boolean(await getNotificationEmailConfig() || (env("RESEND_API_KEY") && env("BOOKING_EMAIL_FROM", "RESEND_FROM_EMAIL", "STAFF_INVITE_EMAIL_FROM"))),
     sms: true, // Database entitlement gates each salon; plugin credentials are checked before sending.
   };
 }
@@ -19,6 +21,13 @@ export async function sendBookingMessage(message: Message): Promise<BookingMessa
   try {
     let response: Response;
     if (message.channel === "email") {
+      const shared = await getNotificationEmailConfig();
+      if (shared) {
+        const result = shared.provider === "smtp" && shared.smtp
+          ? await sendSmtp(shared.smtp, { from: shared.from, to: message.recipient, replyTo: shared.replyTo || shared.from, subject: "Appointment update", text: message.message, messageId: `<booking-${message.id}@${shared.from.split("@")[1]}>` })
+          : await sendSupportEmail(shared, { id: `booking-${message.id}`, to: message.recipient, name: "there", subject: "Appointment update", body: message.message });
+        return { state: result.status === "sent" ? "accepted" : result.status, provider_id: result.providerId, detail: result.reason };
+      }
       response = await fetch("https://api.resend.com/emails", {
         method: "POST", signal: AbortSignal.timeout(15000),
         headers: { Authorization: `Bearer ${env("RESEND_API_KEY")}`, "Content-Type": "application/json", "Idempotency-Key": `booking-${message.id}` },

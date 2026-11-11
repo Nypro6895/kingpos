@@ -13,7 +13,7 @@ import {AdminActionForm} from '../_components/action-form';
 import {loadMarketBillingAdminState} from './billing-data';
 import {saveMarketBillingCatalog,saveMarketBillingSettings} from './billing-actions';
 import {saveMarketPluginOperations} from './plugin-operations-actions';
-import {saveSupportEmailSettingsAction} from '../settings/support-email/actions';
+import {EmailConnectionForm} from '../settings/support-email/email-connection-form';
 import {TwilioSettingsForm} from '../settings/twilio/settings-form';
 import {Orders,Ledger} from './billing-workspace';
 import {SystemRow} from './system-row';
@@ -77,7 +77,7 @@ export async function MarketSystemWorkspace({section='system',pluginId}:{section
  <div className="system-actions"><Link className="system-primary" href="/admin/market/tax">Manage tax & reports</Link></div>
  </SystemRow>
  <SystemRow id="messaging" name="System SMS & verification" value="Twilio" scope={twilio?.tokenConfigured?'Configured':'Connection required'}>{twilio?<div className="system-legacy"><TwilioSettingsForm settings={twilio}/></div>:<Failure/>}</SystemRow>
- <SystemRow id="email" name="Support email" value={email?.from??'Resend'} scope={email?.enabled&&email.keyConfigured?'Configured':'Disabled'}>{email?<AdminActionForm action={saveSupportEmailSettingsAction} className="system-form"><Field label="Sender"><input type="email" name="from" defaultValue={email.from} required/></Field><Field label="Resend API key"><input type="password" name="api_key" autoComplete="new-password" placeholder={email.keyConfigured?'Configured — leave blank to keep':'Resend API key'}/></Field><Field label="Direct support replies"><input type="checkbox" name="enabled" defaultChecked={email.enabled&&email.keyConfigured}/></Field><p className="system-note">Domain verification is required. Replies arrive in the support mailbox.</p><div className="system-actions"><button className="system-primary" name="intent" value="save">Save email</button><button name="intent" value="test">Check connection</button></div></AdminActionForm>:<Failure/>}</SystemRow>
+ <SystemRow id="email" name="Email connection" value={email?.from??"Not connected"} scope={email?.enabled&&email.keyConfigured?"Configured":"Disabled"}>{email?<EmailConnectionForm email={email}/>:<Failure/>}</SystemRow>
  </>}{section==='plugins'&&<>
  {!pluginId&&<div className="plugin-directory"><div className="plugin-directory-head"><span>Plugin</span><span>Price</span><span>Status</span><span/></div>
  {billing?.catalog.map(item=><Link key={item.plugin_id} className="plugin-directory-row" href={`/admin/plugins/${encodeURIComponent(item.plugin_id)}`}><span className="plugin-directory-name">{item.name}</span><span className="plugin-directory-price">{cardMoney(item.price_cents)} / month</span><span className="plugin-directory-status">{!item.published?'Hidden':CARD_PLUGINS.some(id=>id===item.plugin_id)&&item.fulfillment_ready?'Published':'Preview'}</span><span aria-hidden="true">→</span></Link>)}

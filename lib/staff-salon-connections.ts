@@ -228,7 +228,7 @@ async function sendStaffInviteEmail(input: {
   const salonName = input.auth.salon.name ?? "the salon";
   const staffName = input.staffName || "Staff";
 
-  if (!isEmailProviderConfigured()) {
+  if (!await isEmailProviderConfigured()) {
     return {
       reason:
         "Custom staff invite email provider is not connected. Copy the invite link from this page.",

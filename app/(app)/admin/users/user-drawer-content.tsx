@@ -23,9 +23,12 @@ export function UserDrawerContent({data,tab,onResult,caseId,setCaseId}:{data:Use
  const identityBlocked=data.identity_jobs.some(j=>j.status==='pending'||j.status==='unknown');
  const authEditable=accessEditable&&data.identityReady&&!identityBlocked;
  const invitationCancelled=!!data.authentication?.banned_until&&Date.parse(data.authentication.banned_until)>renderTime;
- const verifiedCases=data.cases.filter(c=>!['resolved','closed'].includes(c.status)&&c.context.identity_verified&&c.context.contact_verified&&!!c.context.verification_evidence);
+ const ownershipCases=data.cases.filter(c=>!['resolved','closed'].includes(c.status)&&c.context.identity_verified&&c.context.contact_verified&&!!c.context.verification_evidence);
+ const verifiedCases=data.cases.filter(c=>['lost_access','account_takeover'].includes(c.category)&&!['resolved','closed'].includes(c.status)&&c.context.identity_verified&&c.context.recovery_state?.contact_verified&&!!c.context.verification_evidence);
+ const selectionCases=command==='transfer'?ownershipCases:verifiedCases;
+ const takeover=data.cases.some(c=>c.category==='account_takeover'&&!['resolved','closed'].includes(c.status));
  const result=(r:UserOperationResult)=>{if(r.ok){setCommand(null);setMembership(null);setNotify(false);}onResult(r);};
- const caseSelect=<label>Verified recovery case<select name="case_id" required defaultValue={verifiedCases[0]?.id??""}><option value="">Select verified case</option>{verifiedCases.map(c=><option key={c.id} value={c.id}>{c.reference} · {c.category.replaceAll('_',' ')}</option>)}</select></label>;
+ const caseSelect=<label>Verified recovery case<select name="case_id" required={command!=="password_reset"||takeover} defaultValue={command==="password_reset"&&!takeover?"":selectionCases[0]?.id??""}><option value="">{command==="password_reset"&&!takeover?"Normal reset to the existing email":"Select verified case"}</option>{selectionCases.map(c=><option key={c.id} value={c.id}>{c.reference} · {c.category.replaceAll('_',' ')}</option>)}</select></label>;
  const memberships=(data.access_stores??[]).flatMap(store=>store.sources.map(source=>({scope:source.scope,entityId:source.entity_id,name:source.scope==='business'&&source.store_count>1?`Shared ownership · ${source.store_count} businesses`:store.name,role:source.role,status:source.status}))).filter((m,index,all)=>all.findIndex(other=>other.scope===m.scope&&other.entityId===m.entityId)===index);
  if(caseId) return <UserCaseEditor key={`${caseId}-${data.cases.find(c=>c.id===caseId)?.updated_at??''}`} data={data} existing={data.cases.find(c=>c.id===caseId)??null} onClose={()=>setCaseId(null)} onResult={r=>{if(r.ok&&r.caseId)setCaseId(r.caseId);onResult(r);}}/>;
  return <>
@@ -79,7 +82,7 @@ export function UserDrawerContent({data,tab,onResult,caseId,setCaseId}:{data:Use
    </UserOperationForm>:<p>{data.platform_membership?.role_name??'Standard user'} · {data.platform_membership?.status??'No platform access'}</p>}
   </Section>}
  </>}
- {tab==='security'&&<>
+ {tab==='security'&&<>{can(P.recoveryManage)&&can(P.inboxManage)&&can(P.usersReadSensitive)&&<details><summary>Link an existing support conversation to this user</summary><UserOperationForm operation="recovery_link_support" userId={u.id} onResult={result} label="Link support request"><label>Support thread ID<input name="thread_id" required placeholder="UUID from the admin Inbox request URL"/></label><UserReason label="Why this request relates to this account"/></UserOperationForm></details>}
   <Section title="Authentication"><div className={styles.authFacts}><span>{data.authentication?data.authentication.email_confirmed_at?'✓ Email verified':'Email unverified':'Authentication restricted / unavailable'}</span>{data.authentication&&<span>{data.authentication.factors.some(f=>f.status==='verified')?'✓ MFA enabled':'MFA not enrolled'}</span>}</div>
    {can(P.usersAuthManage)&&<div className={styles.actions}>{[['password_reset',data.identity_jobs.some(j=>j.operation==='password_reset'&&j.status==='accepted')?'Resend reset link':'Send password reset'],['email_change','Change email'],['verify_email','Verify email'],['reset_mfa','Reset MFA']].map(([op,label])=><button key={op} disabled={!authEditable||(['email_change','verify_email','reset_mfa'].includes(op)&&(!verifiedCases.length||!can(P.recoveryManage)))} className={styles.button} onClick={()=>setCommand(command===op?null:op)}>{label}</button>)}</div>}
   {data.identity_jobs.slice(0,3).map(j=><div key={j.id} className={styles.notice}>{j.operation.replaceAll('_',' ')} · {j.status==='accepted'?'Provider accepted':j.status} · {userDate(j.created_at)}{can(P.teamManage)&&['pending','unknown'].includes(j.status)&&<button className={styles.ghost} onClick={()=>setCommand(`review:${j.id}`)}>Review outcome</button>}</div>)}
@@ -88,7 +91,7 @@ export function UserDrawerContent({data,tab,onResult,caseId,setCaseId}:{data:Use
    {identityBlocked&&<p className={styles.error}>An identity operation needs outcome review before another action.</p>}
    {can(P.usersAuthManage)&&!verifiedCases.length&&<small className={styles.notice}>Email and MFA changes require a verified recovery case.</small>}
    {['password_reset','email_change','verify_email','reset_mfa'].includes(command??'')&&<UserOperationForm key={command} operation={command!} userId={u.id} onResult={result} onCancel={()=>setCommand(null)} label={{password_reset:'Send reset link',email_change:'Apply verified email',verify_email:'Confirm email',reset_mfa:'Reset MFA'}[command!]??'Confirm'} confirm={command==='password_reset'?undefined:'Apply this authentication change using the verified recovery case?'}>
-    {(command!=='password_reset'||data.cases.some(c=>c.category==='account_takeover'&&!['resolved','closed'].includes(c.status)))&&caseSelect}
+    {(command!=='password_reset'||takeover||verifiedCases.length>0)&&caseSelect}
     {command==='email_change'&&<label>Verified recovery email<input name="email" type="email" required maxLength={254}/></label>}
     <UserReason/>{command==='password_reset'&&<small className={styles.notice}>Sends a reset link to {u.email}. No password is displayed or emailed.</small>}
    </UserOperationForm>}
@@ -146,12 +149,22 @@ function UserCaseEditor({data,existing,onResult,onClose}:{data:UserWorkspace;exi
     {existing?.context.attachments?.map(a=><a key={a.path} className={styles.full} href={`/admin/users/evidence?user=${data.user.id}&case=${existing.id}&path=${encodeURIComponent(a.path)}`} target="_blank" rel="noopener noreferrer">{a.name} ↗</a>)}
     <label className={styles.full}>Verification evidence<textarea name="verification_evidence" defaultValue={existing?.context.verification_evidence??''} maxLength={3000} rows={2} placeholder="How was the owner and recovery contact independently verified?"/></label>
    </div>
-   <div className={styles.checks}>{[['identity_verified','Identity confirmed'],['contact_verified','Recovery contact verified'],['ownership_verified','Business ownership confirmed']].map(([v,l])=><label key={v} className={styles.check}><input type="checkbox" name={v} defaultChecked={Boolean(existing?.context[v as keyof typeof existing.context])}/>{l}</label>)}</div>
+   <div className={styles.checks}>{[['identity_verified','Identity confirmed'],['ownership_verified','Business ownership confirmed']].map(([v,l])=><label key={v} className={styles.check}><input type="checkbox" name={v} defaultChecked={Boolean(existing?.context[v as keyof typeof existing.context])}/>{l}</label>)}</div>
    {!data.ownAccount&&!['pending_deletion','deleted'].includes(data.user.status)&&<div className={styles.checks}>{can(P.usersSuspend)&&data.user.status!=='suspended'&&<label className={styles.check}><input type="checkbox" name="suspend"/>Suspend account</label>}{can(P.recoveryManage)&&<label className={styles.check}><input type="checkbox" name="revoke"/>Revoke all sessions</label>}</div>}
    {existing&&<div className={styles.fields}><label>Status<select name="status" defaultValue={existing.status}>{['new','under_review','action_required',...(can(P.reportsResolve)?['resolved','closed']:[])].map(s=><option key={s}>{s}</option>)}</select></label><label>Resolution<textarea name="resolution" maxLength={1000} rows={2} defaultValue={existing.resolution??''}/></label></div>}
-   <UserReason/><p className={styles.notice}>Verify ownership before changing email or MFA.</p>
+   <input type="hidden" name="contact_verified" value={existing?.context.contact_verified?"on":""}/><UserReason/><p className={styles.notice}>Verify ownership before changing email or MFA. Recovery email control is confirmed by the customer opening a verification link, separately from your identity review.</p>
   </UserOperationForm>}
   </details>
+  {existing&&['lost_access','account_takeover'].includes(existing.category)&&<section className={styles.section}>
+   <h4>Recovery progress</h4>
+   <p className={styles.notice}>Keep this case open until the customer has changed their password, signed in again and re-enrolled MFA when required. Approval alone does not restore access. If the account is suspended or inactive, review and restore its access before the customer resets their password. Contact verification expires after 24 hours; send a new link when needed.</p>
+   <ul>{Object.entries({identity_verified:'Owner verified by support',contact_verified:'Contact email verified by link',secured:'Sessions and trusted devices revoked',reset_link_sent:'Password reset email accepted by mail server',password_changed:'Customer changed password',access_restored:'Customer signed in again; required MFA is ready'}).map(([key,label])=><li key={key}>{existing.context.recovery_state?.[key as keyof NonNullable<typeof existing.context.recovery_state>]?'✓':'○'} {label}</li>)}</ul>
+   {writable&&!['resolved','closed'].includes(existing.status)&&<>
+    <UserOperationForm operation="recovery_verify_contact" userId={data.user.id} onResult={onResult} label="Send verification link"><input type="hidden" name="case_id" value={existing.id}/><UserReason label="Reason for verifying this contact"/></UserOperationForm>
+    <UserOperationForm operation="recovery_secure" userId={data.user.id} onResult={onResult} label="Secure account" confirm="Revoke this account's sessions and trusted devices? Existing access tokens may remain valid until expiry."><input type="hidden" name="case_id" value={existing.id}/><UserReason/></UserOperationForm>
+    <UserOperationForm operation="recovery_deny" userId={data.user.id} onResult={onResult} label="Deny recovery" confirm="Deny this recovery request and close its case with the recorded reason?"><input type="hidden" name="case_id" value={existing.id}/><UserReason label="Why ownership could not be verified"/></UserOperationForm>
+   </>}
+  </section>}
   {existing&&<small className={styles.notice}>Created {userDate(existing.created_at)} · Updated {userDate(existing.updated_at)}</small>}
  </section>;
 }

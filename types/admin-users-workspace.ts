@@ -8,7 +8,7 @@ export type UserRecoveryCase = {
   status: string; priority: string; assigned_membership_id: string | null; resolution: string | null;
   created_at: string; updated_at: string;
   context: { recovery_contact?: string; identity_verified?: boolean; contact_verified?: boolean; ownership_verified?: boolean;
-    verification_evidence?: string; attachments?: Array<{path:string;name:string}> };
+    recovery_request_id?: string; recovery_state?: {identity_verified:boolean;contact_verified:boolean;secured:boolean;reset_link_sent:boolean;password_changed:boolean;access_restored:boolean;mfa_reenrollment_required:boolean}; verification_evidence?: string; attachments?: Array<{path:string;name:string}> };
 };
 export type UserWorkspace = PlatformAdminUserDetail & {
   access_stores?:UserAccessStore[]|null;

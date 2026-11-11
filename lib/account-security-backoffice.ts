@@ -28,6 +28,7 @@ type SupabaseErrorLike = {
 };
 
 type RecoveryRequestSupportRow = {
+  admin_case_id: string | null;
   assigned_to_user_id: string | null;
   contact_email: string | null;
   contact_phone: string | null;
@@ -99,6 +100,7 @@ type RecoverySupportEventRow = {
 };
 
 export type RecoveryBackOfficeCase = {
+  adminCaseId: string | null;
   activity: Array<{
     activityType: string;
     createdAt: string;
@@ -355,7 +357,7 @@ export async function loadRecoveryBackOfficeOverview(requestId?: string): Promis
   }
 
   let requestsQuery = supabase.from("account_recovery_requests").select(
-    "id, user_id, request_type, status, priority, risk_level, assigned_to_user_id, reviewed_by_user_id, reviewed_at, resolved_by_user_id, resolved_at, resolution_summary, contact_email, contact_phone, details, created_at, updated_at",
+    "id, admin_case_id, user_id, request_type, status, priority, risk_level, assigned_to_user_id, reviewed_by_user_id, reviewed_at, resolved_by_user_id, resolved_at, resolution_summary, contact_email, contact_phone, details, created_at, updated_at",
   ).order("created_at", { ascending: false });
   if (requestId) requestsQuery = requestsQuery.eq("id", requestId);
   const requestsResult = await safeList<RecoveryRequestSupportRow>({
@@ -483,6 +485,7 @@ export async function loadRecoveryBackOfficeOverview(requestId?: string): Promis
       id: item.id,
       locationLabel: rowText(item.location_label, "Unknown location"),
     })),
+    adminCaseId: request.admin_case_id,
     assignedToUserId: request.assigned_to_user_id,
     contactEmail: request.contact_email,
     contactPhone: request.contact_phone,

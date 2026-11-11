@@ -388,6 +388,7 @@ function isShelllessPath(pathname: string) {
   return (
     pathname === "/forgot-password" ||
     pathname === "/account-recovery" ||
+    pathname.startsWith("/account-recovery/") ||
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname === "/login" ||

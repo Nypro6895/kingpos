@@ -1,4 +1,5 @@
 "use server";
+import {supportEmailAccessUrl} from "@/lib/support-email-access";
 
 import { revalidatePath } from "next/cache";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
@@ -43,7 +44,7 @@ export async function sendSupportReplyAction(form: FormData): Promise<AdminActio
       refresh(threadId);
       return { ok: reply.status === "sent", rotateRequest: reply.status === "failed", message: reply.status === "sent" ? "This reply has already been accepted by the email service." : reply.status === "failed" ? "The previous attempt failed. Review the connection and try again." : "This reply is awaiting delivery confirmation. Check the delivery history before sending again." };
     }
-    const outcome = await sendSupportEmail(config, reply);
+    const outcome = await sendSupportEmail(config, {...reply,body:reply.body+"\n\nReference: "+threadId+"\nOpen this support conversation (private link, valid for 24 hours):\n"+supportEmailAccessUrl(threadId)});
     const { error } = await supportServiceClient().rpc("finish_support_reply", { p_message_id: reply.id, p_actor_id: actor.userId, p_status: outcome.status, p_provider_id: outcome.providerId ?? null, p_failure_reason: outcome.reason ?? null });
     if (error) {
       console.error("Support reply outcome could not be saved", { code: error.code, messageId: reply.id });

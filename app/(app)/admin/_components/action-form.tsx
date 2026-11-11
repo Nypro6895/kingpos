@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 
 export type AdminActionResult = { ok: boolean; message: string; href?: string; rotateRequest?: boolean };
 
-export function AdminActionForm({ action, children, className, confirmMessage, successMessage = "Changes saved.", resetOnSuccess = false }: {
+export function AdminActionForm({ action, children, className, confirmMessage, successMessage = "Changes saved.", resetOnSuccess = false, refreshOnSuccess = true }: {
   action: (form: FormData) => Promise<AdminActionResult | void>;
-  children: ReactNode; className?: string; confirmMessage?: string; successMessage?: string; resetOnSuccess?: boolean;
+  children: ReactNode; className?: string; confirmMessage?: string; successMessage?: string; resetOnSuccess?: boolean; refreshOnSuccess?: boolean;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -28,7 +28,7 @@ export function AdminActionForm({ action, children, className, confirmMessage, s
         if (outcome.ok) {
           if (resetOnSuccess) formRef.current?.reset();
           if (outcome.href) router.push(outcome.href);
-          router.refresh();
+          if (refreshOnSuccess) router.refresh();
         }
       } catch {
         setNotice({ ok: false, message: "This action could not be completed. Retry or contact a platform owner." });

@@ -137,6 +137,6 @@ export async function startIsolatedSupabase(labelPrefix = 'booking-access', imag
     spawn('rest', 'public.ecr.aws/supabase/postgrest:v14.5', { PGRST_DB_URI: `postgres://authenticator:${password}@127.0.0.1:5432/postgres`,
       PGRST_DB_SCHEMAS: 'public', PGRST_DB_ANON_ROLE: 'anon', PGRST_JWT_SECRET: jwtSecret, PGRST_SERVER_HOST: '127.0.0.1', PGRST_SERVER_PORT: '3000', PGRST_LOG_LEVEL: 'error' });
     await ready(() => http(3000, '/').status === 200, 'Fixture PostgREST unavailable');
-    return { sql, json, http, request, rest, rpc, person, save, close, evidence, redact };
+    return { sql, json, http, request, rest, rpc, person, save, close, evidence, redact, serviceToken: jwt('service_role') };
   } catch (error) { evidence.error = redact(error.message); evidence.bootstrapLogs = {}; for (const kind of created) { try { evidence.bootstrapLogs[kind] = redact(command(['logs', '--tail', '15', names[kind]])).slice(-4000); } catch (logError) { evidence.bootstrapLogs[kind] = redact(logError.message); } } close(); throw error; }
 }

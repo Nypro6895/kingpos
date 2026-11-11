@@ -865,7 +865,7 @@ export function LoginSecurityQuickEditor({
 
           <QuickActionRow
             actionLabel="Request"
-            description={__vt("Open a recovery case for lost access, a lost device, or account takeover.")}
+            description={__vt("Prepare recovery while signed in, or request help if you lost an email, phone or another device. If signed out everywhere, use the help shown after a failed login.")}
             disabled={isBusy}
             label={__vt("Account recovery")}
             onAction={() => setDialog("recovery-request")}

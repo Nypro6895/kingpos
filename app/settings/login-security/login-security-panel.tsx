@@ -1029,7 +1029,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
       </Section>
 
       <Section
-        description={__vt("Create a recovery case for lost access, a lost device, or a suspected account takeover.")}
+        description={__vt("Use this while still signed in on this device to request help with lost email, phone, another device or account takeover. If signed out everywhere, use help after a failed login.")}
         id="account-recovery"
         label={__vt("Account recovery")}
         right={<StatusBadge tone="neutral"><WorkspaceText text={`${overview.recoveryRequests.length} recent`} /></StatusBadge>}

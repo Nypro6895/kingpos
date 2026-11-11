@@ -8,6 +8,7 @@ import { assertUuid, readFormString, readReason, readRequiredFormString } from "
 import { createPlatformAdminNote } from "@/lib/platform-admin/notes";
 import { createPlatformAdminMembership, updatePlatformAdminMembership } from "@/lib/platform-admin/team";
 import type { UserOperationResult } from "@/types/admin-users-workspace";
+import { sendRecoveryContactVerification } from "@/lib/recovery-completion";
 import { validateEvidenceFile, parseUserSelection } from "@/lib/admin-users-rules";
 
 function refresh(id?:string) {for(const path of ["/admin/users","/admin","/admin/reports","/admin/team","/admin/businesses","/admin/locations",...(id?[`/admin/users/${id}`]:[])]) revalidatePath(path);}
@@ -18,11 +19,20 @@ export async function userWorkspaceAction(form:FormData):Promise<UserOperationRe
     if(["create","invite","resend_invite","cancel_invite","password_reset","email_change","verify_email","reset_mfa"].includes(operation)) {
       const result=await runUserIdentity(form);refresh(result.userId??readFormString(form,"user_id")??undefined);return result;
     }
+    if(operation==="recovery_verify_contact") { await requirePlatformAdmin(P.recoveryManage);await requirePlatformAdmin(P.usersReadSensitive);await requirePlatformAdmin(P.usersAuthManage); const result=await sendRecoveryContactVerification(form);refresh(result.userId);return result; }
     const id=assertUuid(readRequiredFormString(form,"user_id","User"));
     const reason=operation==="note"?"Internal note added from user administration":readReason(form);
     const args={p_user_id:id,p_reason:reason};
     let message="Changes saved.";let caseId:string|undefined;
-    if(operation==="profile") {
+    if(operation==="recovery_secure"||operation==="recovery_deny") {
+      await requirePlatformAdmin(P.recoveryManage);await requirePlatformAdmin(P.usersReadSensitive);
+      const caseId=assertUuid(readRequiredFormString(form,"case_id","Recovery case"));
+      await callPlatformAdminRpc(operation==="recovery_secure"?"admin_secure_recovery":"admin_deny_recovery",{p_case:caseId,p_reason:reason});
+      refresh(id);return {ok:true,userId:id,caseId,message:operation==="recovery_secure"?"Authentication sessions and trusted devices revoked. Existing access tokens may remain valid until expiry.":"Recovery denied and recorded with its reason."};
+    } else if(operation==="recovery_link_support") {
+      await requirePlatformAdmin(P.recoveryManage);await requirePlatformAdmin(P.usersReadSensitive);await requirePlatformAdmin(P.inboxManage);await requirePlatformAdmin(P.reportsUpdate);
+      const caseId=await callPlatformAdminRpc<string>("admin_link_support_recovery",{p_user:id,p_thread:assertUuid(readRequiredFormString(form,"thread_id","Support thread")),p_reason:reason});refresh(id);return {ok:true,userId:id,caseId,message:"The existing support conversation is linked to this user's recovery. Ownership still requires verification."};
+    } else if(operation==="profile") {
       await requirePlatformAdmin(P.usersUpdate);
       const profile:Record<string,string|null>={};
       for(const field of ["display_name","first_name","last_name","language","timezone"]) profile[field]=readFormString(form,field);

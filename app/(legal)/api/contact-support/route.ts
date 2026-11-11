@@ -1,3 +1,4 @@
+import {acknowledgeSupportRequest} from "@/lib/support-email-access";
 import {guestSupportToken} from "@/lib/guest-support";
 import { NextResponse } from "next/server";
 import { supportNetworkHash, supportServiceClient } from "@/lib/support-server";
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
   try {
     const contact = validateSupportContact(input);
     if (input.website) return NextResponse.json({ ok: true, reference: contact.requestId.slice(0, 8).toUpperCase() });
+    if(input.topic==="account_recovery") { contact.message="[Account recovery]\n"+contact.message; if(contact.message.length>5000) return NextResponse.json({error:"Keep the recovery message under 4,980 characters."},{status:400}); }
     const network = request.headers.get("x-vercel-forwarded-for") || request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     const { data, error } = await supportServiceClient().rpc("submit_support_contact", {
       p_request_id: contact.requestId, p_name: contact.name, p_email: contact.email, p_message: contact.message, p_network_hash: supportNetworkHash(network),
@@ -36,7 +38,8 @@ export async function POST(request: Request) {
       console.error("Support contact submission failed", { code: error.code });
       return NextResponse.json({ error: "Your message could not be saved. Please try again later." }, { status: 503 });
     }
-    const response=NextResponse.json({ ok: true, reference: data.reference, conversationUrl: `/support/guest/${contact.requestId}` }, { headers: { "Cache-Control": "no-store" } });
+    const acknowledgement=await acknowledgeSupportRequest({requestId:contact.requestId,email:contact.email,name:contact.name,reference:data.reference});
+    const response=NextResponse.json({ ok: true, acknowledgement, reference: data.reference, conversationUrl: `/support/guest/${contact.requestId}` }, { headers: { "Cache-Control": "no-store" } });
     response.cookies.set(`support-case-${contact.requestId}`,guestSupportToken(contact.requestId),{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:60*60*24*30});
     return response;
   } catch (error) {

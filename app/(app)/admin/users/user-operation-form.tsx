@@ -16,7 +16,7 @@ export function UserOperationForm({children,operation,userId,confirm,label="Save
   startTransition(async()=>{let result:UserOperationResult;
    try{result=await action(form);}catch{result={ok:false,message:"The result could not be confirmed. Refresh before retrying."};}
    busy.current=false;
-   if(result.ok){setRequestId(crypto.randomUUID());if(reset)ref.current?.reset();}
+   if(result.ok||result.requestStatus==="failed"){setRequestId(crypto.randomUUID());if(result.ok&&reset)ref.current?.reset();}
    onResult(result);
   });
  }

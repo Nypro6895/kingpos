@@ -2,8 +2,9 @@ import "server-only";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { SUPPORT_EMAIL, escapeSupportHtml, supportEmail } from "@/lib/support-rules";
 import { supportServiceClient } from "@/lib/support-server";
+import { sendSmtp, type SmtpSettings } from "@/lib/smtp-mail";
 
-export type SupportEmailConfig = { apiKey: string; from: string; enabled: boolean; domainVerified: boolean };
+export type SupportEmailConfig = { apiKey: string; from: string; enabled: boolean; domainVerified: boolean; provider?: "resend" | "smtp"; smtp?: SmtpSettings; replyTo?: string; useForNotifications?: boolean };
 export type SupportEmailOutcome = { status: "sent" | "failed" | "unknown"; providerId?: string; reason?: string };
 
 function encryptionKey() {
@@ -33,9 +34,15 @@ export async function getSupportEmailConfig(): Promise<SupportEmailConfig> {
   return { apiKey: process.env.RESEND_API_KEY?.trim() ?? "", from: process.env.SUPPORT_EMAIL_FROM?.trim() || SUPPORT_EMAIL, enabled: true, domainVerified: false };
 }
 
-export function supportEmailReady(config: SupportEmailConfig) { return Boolean(config.enabled && config.apiKey && config.from); }
+export function supportEmailReady(config: SupportEmailConfig) { return Boolean(config.enabled && config.from && (config.provider === "smtp" ? config.smtp?.host && config.smtp.username && config.smtp.password && [465,587].includes(config.smtp.port) : config.apiKey)); }
+export async function getNotificationEmailConfig() {
+  try {
+    const config = await getSupportEmailConfig();
+    return config.useForNotifications && supportEmailReady(config) ? config : null;
+  } catch { return null; }
+}
 export function publicSupportEmailConfig(config: SupportEmailConfig) {
-  return { from: config.from, enabled: config.enabled, keyConfigured: Boolean(config.apiKey), domainVerified: config.domainVerified };
+  return { from: config.from, enabled: config.enabled, keyConfigured: config.provider === "smtp" ? Boolean(config.smtp?.password) : Boolean(config.apiKey), domainVerified: config.domainVerified, provider: config.provider ?? "resend", smtpHost: config.smtp?.host ?? "smtp.hostinger.com", smtpPort: config.smtp?.port ?? 465, smtpUsername: config.smtp?.username ?? "", replyTo: config.replyTo ?? SUPPORT_EMAIL, useForNotifications: config.useForNotifications ?? false };
 }
 
 export async function verifySupportEmailDomain(config: SupportEmailConfig) {
@@ -50,6 +57,16 @@ export async function verifySupportEmailDomain(config: SupportEmailConfig) {
 export async function sendSupportEmail(config: SupportEmailConfig, reply: { id: string; to: string; subject: string; body: string; name: string }): Promise<SupportEmailOutcome> {
   if (!supportEmailReady(config)) return { status: "failed", reason: "Support email is not connected." };
   const text = `Hello ${reply.name},\n\n${reply.body}\n\nReylumi Support\n${config.from}`;
+  if (config.provider === "smtp" && config.smtp) {
+    const key = `support:${reply.id}`;
+    const client = supportServiceClient();
+    const claim = await client.rpc("claim_smtp_delivery", { p_key: key });
+    if (claim.error || !claim.data) return { status: "failed", reason: "SMTP delivery tracking is unavailable. No email was sent." };
+    if (!claim.data.should_send) return { status: claim.data.status === "sent" ? "sent" : "unknown", reason: claim.data.status === "sent" ? undefined : "This email has an unconfirmed delivery claim. Check mail server logs before retrying." };
+    const outcome = await sendSmtp(config.smtp, { from: `Reylumi Support <${supportEmail(config.from)}>`, to: supportEmail(reply.to), replyTo: supportEmail(config.replyTo || config.from), subject: reply.subject, text, html: `<div style="font-family:Arial,sans-serif;line-height:1.6;white-space:pre-wrap">${escapeSupportHtml(text)}</div>`, messageId: `<support-${reply.id}@${supportEmail(config.from).split("@")[1]}>` });
+    const saved = await client.rpc("finish_smtp_delivery", { p_key: key, p_status: outcome.status, p_provider_id: outcome.providerId ?? null });
+    return saved.error ? { status: "unknown", reason: "The email operation ran, but its delivery outcome could not be saved. Check mail server logs before retrying." } : outcome;
+  }
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST", signal: AbortSignal.timeout(20000),
