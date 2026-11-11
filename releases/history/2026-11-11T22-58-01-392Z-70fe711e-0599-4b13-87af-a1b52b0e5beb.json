@@ -1,0 +1,26 @@
+{
+  "kind": "release",
+  "summary": "Publish approved shared check-in/gift UI, branded rewards default and old-design check-in number emphasis to web; Windows/browser share hosted UI, no native/schema changes",
+  "changes": [
+    "b0a92f24-1694-4984-a9cd-2c6b5d576855",
+    "7819adf4-3158-4b3b-bc15-7670b601034c",
+    "881d6506-5e2d-4392-babe-f132f771e4ef",
+    "80417466-11d4-4dbb-8f83-016112391e00",
+    "f03c9956-f152-45d6-8e26-6e7b78b98bf6",
+    "06c240dd-c998-455d-9ec2-241615b7c11b"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_v6PbmwAoHe3r7A7WgDLMWXuqYF3o",
+      "baselineDeploymentId": "dpl_4NjSvYQbEc8fV1EmTPN1hJPjtfyr",
+      "sourceSha256": "95fd32157dd2ee1be8ab44dfc1c6ae38eddd6e73d0337857ea33f210b18ef2a5",
+      "overlaySha256": "512319d6159ecdaaf81a3ec40a0845c792ebbe90bcd6690e55cbae027672d2e9",
+      "evidence": "artifacts/checkin-release/RELEASE.txt"
+    }
+  },
+  "id": "70fe711e-0599-4b13-87af-a1b52b0e5beb",
+  "recordedAt": "2026-11-11T22:58:01.392Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-release-20261111"
+}
