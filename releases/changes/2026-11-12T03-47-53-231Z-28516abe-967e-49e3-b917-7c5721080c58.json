@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "pos-gift-shared-design-20261110",
+  "status": "ready",
+  "summary": "Owner now explicitly authorizes publication of the held POS/Gift shared layout; reconcile the task-only patch with the verified live post-97 source. Preserve current approved customer renderer/artwork and fix legacy-host optional archive loading so saved tickets remain visible.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/pos-desk-client.tsx",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/gift-card.css",
+    "app/api/gift-cards/route.ts",
+    "tests/pos-gift-shared-ui.test.mjs",
+    "tests/pos-compact-checkout-ui.test.mjs",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "tests/portable-desktop.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\pos-gift-windows\\snapshot",
+    "commit": "274a3ab4300956a458c564ad6beab44ff85e7264"
+  },
+  "validation": [
+    {
+      "name": "Exact assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/build-final.txt"
+    },
+    {
+      "name": "Gift shared UI, receipt layout and financial regression",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/windows-ui-final.txt"
+    },
+    {
+      "name": "Actual Windows Electron encrypted storage, restart and old-host archive compatibility",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/windows-storage-compat-final.txt"
+    },
+    {
+      "name": "Full isolated Gift schema financial lifecycle: 10 passed, no failures or skips",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/gift-schema-final.txt"
+    },
+    {
+      "name": "Packaged Windows native source/config and real updater checksum/handoff",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/windows-verified.json"
+    }
+  ],
+  "id": "28516abe-967e-49e3-b917-7c5721080c58",
+  "recordedAt": "2026-11-12T03:47:53.231Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/pos-desk-client.tsx": "e03e1d86a5bc548c736f5700b14aef829faa3153d0414dd4691bd7a22bf2af89",
+    "components/gift-card/pos-gift-card.tsx": "b9ea58dd481577085c5970d2968c33526b25ff323b1b7f14fb39e74cf93dec56",
+    "components/gift-card/gift-card.css": "f4339ca530226748ea021f6727ece1d1ddafee7c77690f6fb20a26e2e4d9cb56",
+    "app/api/gift-cards/route.ts": "dd4a8d38f62bf514af52b37365e5a5125475a07ad0c19da02ae736f5d6b1c638",
+    "tests/pos-gift-shared-ui.test.mjs": "da0dae3815859479db65cf18d60b5b28d54c9787ffad8deee73b6fdf38f0162e",
+    "tests/pos-compact-checkout-ui.test.mjs": "67d21db868a6445c81397adaa98a3f3cd4ba0bff66243a9074961ccf7abc9a8b",
+    "app/pos/portable/portable-draft-controls.tsx": "d5c080c9e62923f613abfab519d01a56631a337e45f7447574e603e32bf3890d",
+    "tests/portable-desktop.test.mjs": "3df256a54f58b491200bfc990765c94e509307cdf0670408242d8cb93fab5d83"
+  }
+}

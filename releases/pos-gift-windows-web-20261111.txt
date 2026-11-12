@@ -1,0 +1,28 @@
+POS/GIFT + WINDOWS PORTABLE — WEB RELEASE
+2026-11-12T03:55:22.857Z
+
+Owner explicitly authorized the previously held POS/Gift layout and Windows distribution in this chat.
+Web: https://reylumi.com
+Baseline: dpl_F6zsN97Knc12QrTXu7P2x3vknCDS
+Live: dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU
+Runtime source: 274a3ab4300956a458c564ad6beab44ff85e7264
+Source SHA256: 7b9bdcfdb8fd6a330ba6f31795863938ab3f3a305c0ef53191f71e5d4b6c6242
+Overlay SHA256: c00568e5b83e5b6b731c7930214050ccdde8713ca649e64800d804538ad74e60
+Archive SHA256: 68d6b73aa995fb774ef65f0a42983836120f26131238afce9bfcf38778c6e858
+4257 uploaded source files verified; zero missing/mismatched/extra. Four desktop-only build inputs are excluded by the existing Vercel rule and verified separately in the installer. Seven public pages verified.
+
+Windows: 0.7.5
+Download: https://reylumi.com/download/windows
+Feed: https://reylumi.com/api/pos/windows-update/latest.yml
+Published asset: https://github.com/Nypro6895/kingpos/releases/tag/desktop-v0.7.5
+Bytes: 111708525
+SHA256: 01c9b3e7dbd9ce52fb67a8bf381deadfba1f2115a21eebdac5410713848ea0c2
+SHA512: 1phqcyr1Qy0K2k3o11jRdnNZSlbSwMZo4Zodxrmr5t6F4Elk7k6vFU4cJBnVk74F/BhFE5FHn2n1hZXxKdBm4Q==
+Full deployed download, HEAD, range request, exact feed metadata, GitHub asset digest and installer-embedded ASAR verified. Existing Online app identity, encrypted profile, pairing, native vault and user-initiated update installation preserved. The only native host delta is the closed-ticket-edit archive namespace. Older hosts continue loading ordinary saved tickets when that optional namespace is unavailable.
+Actual Windows predecessor is the published 0.7.4 installer, verified from the website and GitHub asset; the earlier chat statement that Windows had no published installer was incomplete.
+
+Checks: production build/TypeScript, Gift shared entry/dialog and compact receipt browser checks, 10 full-schema isolated financial cases, 7 desktop unit tests, actual Electron encrypted persistence/logout/restart/abrupt-exit/boundary and old-host compatibility. Real updater discovery/download/checksum/cache/corruption/handoff checks passed; installer process launch intercepted to preserve the owner's installed app. No actual customer transactions or messages. No installed production-app upgrade acceptance claim.
+
+Native iPhone publication remains pending CI 43150371568 on the same runtime commit; do not infer TestFlight from this web/Windows receipt.
+Ready events: 28516abe-967e-49e3-b917-7c5721080c58, 038defd5-954a-4be8-80f3-7afa9d908d5f
+Rollback: first verify current alias still belongs to this release; previous deployment has its immutable Windows 0.7.4 environment. No data/schema reversal. Never delete device profiles or pending tickets.

@@ -1,0 +1,40 @@
+{
+  "kind": "release",
+  "summary": "Approved POS/Gift layout and Windows Portable 0.7.5 officially published and source/checksum verified; matching iPhone build is Apple VALID and available to the unchanged existing internal TestFlight group. Legacy-host saved-ticket compatibility fixed; no production data/schema changes.",
+  "changes": [
+    "28516abe-967e-49e3-b917-7c5721080c58",
+    "038defd5-954a-4be8-80f3-7afa9d908d5f"
+  ],
+  "windows": {
+    "status": "published",
+    "verified": true,
+    "version": "0.7.5",
+    "bytes": 111708525,
+    "sha256": "01c9b3e7dbd9ce52fb67a8bf381deadfba1f2115a21eebdac5410713848ea0c2",
+    "sha512": "1phqcyr1Qy0K2k3o11jRdnNZSlbSwMZo4Zodxrmr5t6F4Elk7k6vFU4cJBnVk74F/BhFE5FHn2n1hZXxKdBm4Q==",
+    "downloadUrl": "https://reylumi.com/download/windows",
+    "evidence": "releases/pos-gift-windows-20261111.txt"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+      "baselineDeploymentId": "dpl_F6zsN97Knc12QrTXu7P2x3vknCDS",
+      "sourceSha256": "7b9bdcfdb8fd6a330ba6f31795863938ab3f3a305c0ef53191f71e5d4b6c6242",
+      "overlaySha256": "c00568e5b83e5b6b731c7930214050ccdde8713ca649e64800d804538ad74e60",
+      "evidence": "releases/pos-gift-windows-20261111.txt"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "99",
+      "commit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+      "evidence": "releases/pos-gift-windows-20261111.txt"
+    }
+  },
+  "id": "cfe6a8eb-55ea-49dd-9b75-fcfdca7d4076",
+  "recordedAt": "2026-11-12T04:10:34.449Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111"
+}

@@ -1,0 +1,38 @@
+POS/GIFT + WINDOWS PORTABLE — COMPLETE RELEASE
+2026-11-12T04:10:34.155Z
+
+Owner explicitly authorized release of the formerly held POS/Gift layout and Windows Portable.
+Runtime commit: 274a3ab4300956a458c564ad6beab44ff85e7264
+
+WEB: https://reylumi.com
+Live deployment: dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU
+Previous baseline: dpl_F6zsN97Knc12QrTXu7P2x3vknCDS
+Source SHA256: 7b9bdcfdb8fd6a330ba6f31795863938ab3f3a305c0ef53191f71e5d4b6c6242
+Overlay SHA256: c00568e5b83e5b6b731c7930214050ccdde8713ca649e64800d804538ad74e60
+Archive SHA256: 68d6b73aa995fb774ef65f0a42983836120f26131238afce9bfcf38778c6e858
+4257 provider source files verified, zero missing/mismatched/extra; all unrelated shipped source preserved. Four desktop-only packaging inputs are excluded by the existing Vercel desktop/ rule and verified separately in the Windows installer. Seven public pages returned HTTP200 with the exact deployment ID.
+
+POS/GIFT: one Gift entry below Discount/Tip; shared current artwork/layout styling on staff/customer screens; staff wallet and confirmation controls preserved. Current customer renderer retained. Existing sale, discount, tip and staff allocation rules unchanged; 10 full isolated schema financial cases passed. Hosted saved-ticket loading tolerates older native hosts that reject the optional closed-edit archive namespace; no saved-ticket data was lost.
+
+WINDOWS: 0.7.5
+Official download: https://reylumi.com/download/windows
+Update feed: https://reylumi.com/api/pos/windows-update/latest.yml
+Predecessor: published 0.7.4, verified directly from the website and matching GitHub asset digest.
+Bytes: 111708525
+SHA256: 01c9b3e7dbd9ce52fb67a8bf381deadfba1f2115a21eebdac5410713848ea0c2
+SHA512: 1phqcyr1Qy0K2k3o11jRdnNZSlbSwMZo4Zodxrmr5t6F4Elk7k6vFU4cJBnVk74F/BhFE5FHn2n1hZXxKdBm4Q==
+Embedded ASAR SHA256: 6c3610ca4410f1a97ae563f6f6ee0d397bc0ee6325c041190227e01064fcbda0
+Complete live download, feed, HEAD, range206 and installer-embedded source verified. Existing Online channel, app identity, encrypted profile, pairing, native vault and user-initiated update safeguards preserved; only the exact closed-ticket-edit storage namespace is added. Packaged storage boundary checks passed. Actual Electron tests passed encrypted persistence/logout/restart/abrupt-exit/scope guards; old-host recovery passed. Real updater discovery/download/SHA512/cache/corruption/handoff passed. Installer launch intercepted in QA; no production installed-app upgrade acceptance claimed.
+
+IPHONE: 1.0.0 (99)
+Native baseline: 1.0.0 (98), source 4db7477d5b446bdf3cd113f61335df46a9123fb4
+CI: https://github.com/Nypro6895/kingpos/actions/runs/43150371568
+Native source SHA256: b00840cdbaab0250624c6e2ca16462fa843f0d670d50dc2e49bc896d70ec1778
+Artifact SHA256: 2679f6154cf3e66542fbdec9ae759b2b3ea74ed5749e978c51da1766c276f3a0
+248 simulator cases passed exactly once on 14 hosts; zero failures/skips. Archive, signed export and upload accepted. Apple VALID/IN_BETA_TESTING; read-only audit confirms access through unchanged existing internal group afe80011-9371-4a4c-afda-025b624f3275. Source and bundle/archive hashes checked; generated command mappings match deployed web.
+
+No production schema migration, customer-data deletion, real payment, email/SMS, customer post/upload, new sensitive device permission, tester invitation or distribution identity change. No App Store/Play Store or physical iPhone acceptance claimed.
+Ready events: 28516abe-967e-49e3-b917-7c5721080c58, 038defd5-954a-4be8-80f3-7afa9d908d5f
+The earlier POS/Gift hold is resolved by the explicit owner instruction in this chat. Older independent/pre-97 holds remain separately documented in artifacts/after97/scope-audit.json.
+
+Rollback: verify this release still owns the alias before changing it. Prior web deployment retains immutable Windows0.7.4 environment; previous native TestFlight is98. Preserve current/parked/queued tickets and device profiles; no destructive reversal.

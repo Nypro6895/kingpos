@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "windows-portable-release-20261111",
+  "status": "ready",
+  "summary": "Build and publish the existing Windows Online distribution with exact installer checksum/version, preserving native data, pairing and user-initiated update safeguards. Version 0.7.5 adds only the closed-ticket-edit namespace; actual old-host compatibility and encrypted data recovery are tested.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/package.json",
+    "desktop/package-lock.json",
+    "desktop/policy.cjs",
+    "desktop/tests/online-updater.electron.cjs",
+    "desktop/RELEASE-NOTES-0.7.5.md",
+    "tests/portable-desktop.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\pos-gift-windows\\snapshot",
+    "commit": "274a3ab4300956a458c564ad6beab44ff85e7264"
+  },
+  "validation": [
+    {
+      "name": "Exact assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/build-final.txt"
+    },
+    {
+      "name": "Gift shared UI, receipt layout and financial regression",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/windows-ui-final.txt"
+    },
+    {
+      "name": "Actual Windows Electron encrypted storage, restart and old-host archive compatibility",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/windows-storage-compat-final.txt"
+    },
+    {
+      "name": "Full isolated Gift schema financial lifecycle: 10 passed, no failures or skips",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/gift-schema-final.txt"
+    },
+    {
+      "name": "Packaged Windows native source/config and real updater checksum/handoff",
+      "result": "passed",
+      "evidence": "artifacts/pos-gift-windows/windows-verified.json"
+    }
+  ],
+  "id": "038defd5-954a-4be8-80f3-7afa9d908d5f",
+  "recordedAt": "2026-11-12T03:47:53.466Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "desktop/package.json": "94e9d7fdaaec523f55296b664ef0a61cc3a8f17bb26d0e7f8c7138c69b31d630",
+    "desktop/package-lock.json": "4809768b7b50274d19fc859e7e30574614ece8afe01a53eeecf4e1a2fc33738e",
+    "desktop/policy.cjs": "4a859c1f6548026bd7a104a346b1c621e73be31d810e9f23074998d618e783e2",
+    "desktop/tests/online-updater.electron.cjs": "d33b44b20347dd59fd3dfe5734a2394cdd1fc89a7c134aa0807be60803b70e40",
+    "desktop/RELEASE-NOTES-0.7.5.md": "0f7e835b8e3d844ccd74be9065023c5c352d55b16cd8d7f7a057fae7c72a58b0",
+    "tests/portable-desktop.test.mjs": "3df256a54f58b491200bfc990765c94e509307cdf0670408242d8cb93fab5d83"
+  }
+}
