@@ -1,4 +1,4 @@
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import ts from 'typescript';import{webcrypto}from'node:crypto';
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import ts from 'typescript';import{webcrypto,createHash}from'node:crypto';
 const salon='00000000-0000-4000-8000-000000000010',other='00000000-0000-4000-8000-000000000011',scope='v3:'+ 'a'.repeat(64),action='action.da68162edbd218f7afb9421d';
 function load(file,mocks,globals={}){const exports={};const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function('exports','require',...Object.keys(globals),code)(exports,name=>{assert.ok(name in mocks,name);return mocks[name]},...Object.values(globals));return exports;}
 const policy=load('lib/app-local-upload-policy.ts',{});
@@ -21,3 +21,7 @@ test('scoped native creative preparation and final authority checks reject remov
  const exports={};new Function('exports','require',code)(exports,name=>mocks[name]);
  const fields={id:salon,title:'Fixture',caption:'Fixture caption',market_salon_id:salon};assert.equal(exports.fieldsFixture(action,fields).market_salon_id,salon);assert.equal(await exports.authorizeFixture(action,fields,scope),'user:owner');await assert.rejects(exports.authorizeFixture(action,{...fields,market_salon_id:other},scope),/Owner access/);await assert.rejects(exports.authorizeFixture(action,fields,'v3:'+'b'.repeat(64)),/workspace changed/);granted=false;await assert.rejects(exports.authorizeFixture(action,fields,scope),/Owner access/);assert.throws(()=>exports.fieldsFixture(action,{...fields,market_salon_id:'https://evil.test'}),/choose the attachment/);
 });
+test('Owner-only held-ticket actions stay outside paired Portable admission; paired POS retains its dedicated handlers',()=>{
+ const ids=JSON.parse(fs.readFileSync('lib/app-local-portable-actions.generated.json')).ids;const generated=fs.readFileSync('lib/app-local-commands-server.generated.ts','utf8');for(const name of ['holdPosDraft','updatePosHeldTicket','getPosHeldTicketState']){const id='action.'+createHash('sha256').update('app/service-relay/actions.ts#'+name).digest('hex').slice(0,24);assert.ok(!ids.includes(id),name);assert.ok(generated.includes(JSON.stringify(id)),name+' remains available through ordinary authenticated Owner scope');}
+});
+
