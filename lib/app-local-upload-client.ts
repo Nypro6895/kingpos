@@ -3,7 +3,7 @@ import { getAppLocalHost } from "./app-local-host";
 import { APP_LOCAL_FILE_ACTIONS, APP_LOCAL_UPLOAD_BUCKET, appLocalUploadFileKeys, appLocalUploadAllowsType, isAppLocalFileAction, type AppLocalPreparedUpload, type AppLocalUploadFileDescriptor, type AppLocalUploadResult } from "./app-local-upload-policy";
 
 type Handled = { handled: false } | ({ handled: true } & AppLocalUploadResult);
-const pending=new WeakMap<FormData,{action:string;scope:string;operation:Promise<Handled>}>();
+const pending=new WeakMap<FormData,{action:string;scope:string;target?:string;operation:Promise<Handled>}>();
 const uncertain="The result could not be confirmed. Check the current record before trying again.";
 function uploadURL(value: AppLocalPreparedUpload,href=value.uploadUrl,index=0) {
   const configured=new URL(process.env.NEXT_PUBLIC_SUPABASE_URL??""),url=new URL(href);
@@ -68,10 +68,16 @@ async function send(action: keyof typeof APP_LOCAL_FILE_ACTIONS,form: FormData,s
  * their existing transport. No File bytes enter a command, cache or outbox. */
 export async function handlesAppLocalFileCommand(name:string,originalValues:unknown[],scope:string):Promise<Handled> {
   if(!isAppLocalFileAction(name))return {handled:false};
-  if(originalValues.length!==1||!(originalValues[0] instanceof FormData)||!/^v3:[a-f0-9]{64}$/.test(scope))throw new Error("Please open the form again.");
-  const form=originalValues[0],existing=pending.get(form);
+  const scoped="salonArgument" in APP_LOCAL_FILE_ACTIONS[name];
+  const target=scoped?originalValues[0]:undefined;
+  const originalForm=originalValues[scoped?1:0];
+  if(scoped&&(typeof target!=="string"||!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(target)))throw new Error("Choose a salon you own before continuing.");
+  if(originalValues.length!==(scoped?2:1)||!(originalForm instanceof FormData)||!/^v3:[a-f0-9]{64}$/.test(scope))throw new Error("Please open the form again.");
+  const form=scoped?new FormData():originalForm;
+  if(scoped){for(const[key,value]of originalForm)form.append(key,value);form.set("market_salon_id",target as string);}
+  const existing=pending.get(originalForm);
   if(APP_LOCAL_FILE_ACTIONS[name].kind.startsWith("pos-")&&!appLocalUploadFileKeys(name).some(key=>{const file=form.get(key);return file instanceof File&&file.size>0;}))return {handled:false};
-  if(existing){if(existing.action!==name||existing.scope!==scope)throw new Error("Your account changed. Please open the form again.");return existing.operation;}
-  const operation=send(name,form,scope);pending.set(form,{action:name,scope,operation});
-  try{return await operation;}finally{if(pending.get(form)?.operation===operation)pending.delete(form);}
+  if(existing){if(existing.action!==name||existing.scope!==scope||existing.target!==target)throw new Error("Your account changed. Please open the form again.");return existing.operation;}
+  const operation=send(name,form,scope);pending.set(originalForm,{action:name,scope,target:target as string|undefined,operation});
+  try{return await operation;}finally{if(pending.get(originalForm)?.operation===operation)pending.delete(originalForm);}
 }

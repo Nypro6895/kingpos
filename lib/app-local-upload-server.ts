@@ -1,4 +1,5 @@
 import "server-only";
+import {withMarketTarget} from "./market-target-context";
 import { createHash, randomUUID } from "node:crypto";
 import { getRequestBusinessContext } from "./request-business-context";
 import { getExperienceContext } from "./experience-context";
@@ -45,6 +46,7 @@ function fields(action: AppLocalFileAction, input: unknown): Record<string,strin
   for(const key of rule.kind==="support"?["caseId"]:rule.kind==="creative"?["id"]:rule.kind.startsWith("pos-")?[]:["payroll_run_id","staff_id"]) if(!uuid(result[key])) return invalid();
   if(result.guestThreadId&&!uuid(result.guestThreadId)||rule.kind==="tax"&&!uuid(result.tax_salon_id))return invalid();
   if(result.return_to&&(!result.return_to.startsWith("/payroll")||result.return_to.startsWith("//")||/[\\\u0000-\u001f]/.test(result.return_to)))return invalid();
+  if("salonArgument" in rule&&!uuid(result.market_salon_id))return invalid();
   if(rule.kind==="creative"&&(!result.title?.trim()||result.title.trim().length>120||!result.caption?.trim()||result.caption.trim().length>2200))return invalid();
   if(rule.kind==="pos-group"&&result.group!=="display")return invalid();
   if(rule.kind.startsWith("pos-")&&result.expected){let expected:unknown;try{expected=JSON.parse(result.expected);}catch{return invalid();}if(!expected||typeof expected!=="object"||Array.isArray(expected)||!safeExpected(expected))return invalid();}
@@ -72,8 +74,9 @@ async function authorize(action: AppLocalFileAction, target: Record<string,strin
   if(!/^v3:[a-f0-9]{64}$/.test(scope)||getExperienceContext(business).scope!==scope)throw new AppLocalUploadError(409,"Your workspace changed. Please open the form again.");
   const rule=APP_LOCAL_FILE_ACTIONS[action];
   if(rule.kind==="creative"){
-    const owner=await requireCampaignOwner();
-    if(!business.user||owner.userId!==business.user.id||owner.salonId!==business.currentSalon?.id)throw new AppLocalUploadError(403,"Switch to your owner workspace to manage campaigns.");
+    const scoped="salonArgument" in rule;
+    const owner=await (scoped?withMarketTarget(target.market_salon_id,()=>requireCampaignOwner()):requireCampaignOwner());
+    if(!business.user||owner.userId!==business.user.id||owner.salonId!==(scoped?target.market_salon_id:business.currentSalon?.id))throw new AppLocalUploadError(403,"Switch to your owner workspace to manage campaigns.");
     return "user:"+owner.userId;
   }
   if(rule.kind==="support") {
@@ -182,7 +185,7 @@ async function finalized(row: Session): Promise<AppLocalUploadResult> {
     actionStarted=true;let result:AppLocalUploadResult;
     try {
       const kind=APP_LOCAL_FILE_ACTIONS[row.action_name].kind;
-      const value=kind==="support"?await uploadSupportEvidence(form):kind==="tax"?await uploadTaxPaystub(form):kind==="creative"?await createCampaignCreativeAction(form):kind==="pos-group"?await savePosSettingsGroup(form):kind==="pos-settings"?await updatePosSettingsAction(form):await uploadPayrollPaystubAction(form);
+      const value=kind==="support"?await uploadSupportEvidence(form):kind==="tax"?await uploadTaxPaystub(form):kind==="creative"?await ("salonArgument" in APP_LOCAL_FILE_ACTIONS[row.action_name]?withMarketTarget(row.target.market_salon_id,()=>createCampaignCreativeAction(form)):createCampaignCreativeAction(form)):kind==="pos-group"?await savePosSettingsGroup(form):kind==="pos-settings"?await updatePosSettingsAction(form):await uploadPayrollPaystubAction(form);
       result=value===undefined?{}:{value};
     }catch(error){const redirect=originalRedirect(error);if(!redirect)throw error;result={redirect};}
     await finish(row,"succeeded",result);

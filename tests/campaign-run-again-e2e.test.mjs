@@ -1,3 +1,4 @@
+import {browserServerBoundary} from './helpers/browser-server-boundary.mjs';
 import {scopedCampaignUiBoundary} from './helpers/scoped-campaign-ui-boundary.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -90,11 +91,11 @@ async function actionModule(){
 async function browserBundle(){
  const actionNames=['createOwnerCampaignAction','runAgainOwnerCampaignAction','loadOwnerCampaignsAction','changeOwnerCampaignAction','fundSavedCampaignAction','saveCampaignLimitAction','loadCampaignPostsAction'];
  const actionBridge=actionNames.map(name=>`export async function ${name}(...args){return call('${name}',args)}`).join(';')+`;export async function campaignWalletAction(){return call('wallet',[])}`;
- const result=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from'react';import{createRoot}from'react-dom/client';import{CampaignWorkspace}from'@/app/campaigns/campaign-workspace';fetch('/fixture-data').then(r=>r.json()).then(props=>createRoot(document.getElementById('root')).render(<CampaignWorkspace {...props}/>));`},bundle:true,write:false,outfile:'fixture.js',format:'iife',jsx:'automatic',plugins:[scopedCampaignUiBoundary(),{name:'browser-boundaries',setup(b){
-  b.onResolve({filter:/^(next\/(link|image|navigation)|@\/components\/(workspace-language|workspace-navigation-icon)|@\/app\/campaigns\/actions|\.\/(actions|credit-actions|credit-panel|create-campaign|campaign-results|campaign-preview))$/},args=>({path:args.path,namespace:'fixture'}));
+ const result=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from'react';import{createRoot}from'react-dom/client';import{CampaignWorkspace}from'@/app/campaigns/campaign-workspace';fetch('/fixture-data').then(r=>r.json()).then(props=>createRoot(document.getElementById('root')).render(<CampaignWorkspace {...props}/>));`},bundle:true,write:false,outfile:'fixture.js',format:'iife',jsx:'automatic',plugins:[browserServerBoundary(),scopedCampaignUiBoundary(),{name:'browser-boundaries',setup(b){
+  b.onResolve({filter:/^(next\/(link|image|navigation)|@\/components\/(workspace-language|workspace-navigation-icon)|@\/app\/campaigns\/(actions|credit-actions|creative-actions)|\.\/(actions|credit-actions|credit-panel|create-campaign|campaign-results|campaign-preview))$/},args=>({path:args.path,namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},args=>{
    let contents;
-   if(args.path==='next/navigation')contents="export function useRouter(){return{refresh(){}}};export function usePathname(){return '/campaigns'}";
+   if(args.path==='next/navigation')contents="export function useSearchParams(){return new URLSearchParams()} export function useRouter(){return{refresh(){}}};export function usePathname(){return '/campaigns'}";
    else if(args.path==='next/link'||args.path==='next/image')contents="import React from'react';export default function Component({unoptimized,prefetch,...props}){return React.createElement('a',props,props.children)}";
    else if(args.path.endsWith('workspace-language'))contents="import React from'react';export function WorkspaceText({text}){return text};export function useWorkspaceTranslation(){return text=>text}";
    else if(args.path.endsWith('workspace-navigation-icon'))contents='export function WorkspaceNavigationIcon(){return null}';

@@ -37,7 +37,10 @@
       "submitServiceRelay",
       "issueServiceRelayPass",
       "saveServiceRelayAtDesk",
-      "notifyPersonalReady"
+      "notifyPersonalReady",
+      "holdPosDraft",
+      "updatePosHeldTicket",
+      "getPosHeldTicketState"
     ],
     "app/bookings/actions.ts": [
       "createBookingPosTicketAction",
@@ -521,6 +524,59 @@
     ],
     "app/settings/staff-customer-contact-actions.ts": [
       "saveStaffCustomerContacts"
+    ],
+    "app/market/scoped-market-actions.ts": [
+      "setServiceRelayPlugin",
+      "checkinReceiptPaymentAction",
+      "setCampaignPluginAction",
+      "setPayrollDataPlugin",
+      "cancelMarketBankOrder",
+      "createMarketBankOrder",
+      "refreshMarketBankBilling",
+      "bookingDepositBillingAction",
+      "connectBookingStripeAction",
+      "loadBookingDepositAction",
+      "saveBookingDepositAction",
+      "installBookingDepositAction",
+      "saveBookingPolicy",
+      "bookingPolicyPaymentAction",
+      "saveBookSms",
+      "startCardCheckout",
+      "refreshCardPurchase",
+      "manageCardSubscription",
+      "taxCompanyPaymentAction",
+      "marketTrialAction",
+      "setVietnamesePlugin",
+      "vietnamesePaymentAction",
+      "beginBookingDepositCheckoutAction",
+      "loadCampaignResultsAction",
+      "changeOwnerCampaignAction",
+      "loadOwnerCampaignsAction",
+      "fundSavedCampaignAction",
+      "saveCampaignLimitAction",
+      "loadCampaignPostsAction",
+      "campaignWalletAction",
+      "createCampaignCreativeAction",
+      "buyCampaignCreditsAction",
+      "saveCampaignTopupAction",
+      "campaignCardSetupAction",
+      "campaignPaymentControlAction",
+      "loadCampaignCardAction",
+      "loadCampaignLedgerAction",
+      "saveCampaignRemindersAction",
+      "updateTaxSettings",
+      "downloadPayrollData",
+      "createOwnerCampaignAction",
+      "runAgainOwnerCampaignAction",
+      "loadOwnerCampaignAction",
+      "loadCampaignReportAction"
+    ],
+    "app/staff/scan/actions.ts": [
+      "connectStaffScan"
+    ],
+    "app/tax/flow-actions.ts": [
+      "createTaxInvitation",
+      "revokeTaxInvitation"
     ]
   }
 }

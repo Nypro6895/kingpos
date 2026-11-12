@@ -15,7 +15,7 @@ window.reset=(active=false)=>{window.active=active;window.calls=[];root.render(<
 ` }, bundle: true, write: false, outdir: "fixture", jsx: "automatic", plugins: [{ name: "inert-actions", setup(b) {
   b.onResolve({ filter: /^(next\/link|@\/components\/workspace-language)$|\.\/plugin-(?:settings|market-status)-actions$/ }, args => ({ path: args.path, namespace: "stub" }));
   b.onLoad({ filter: /.*/, namespace: "stub" }, args => ({ loader: "tsx", resolveDir: process.cwd(), contents:
-    args.path === "next/link" ? `export default function Link({prefetch,...props}){return <a {...props}/>}` : args.path.endsWith("workspace-language") ? `export const useWorkspaceTranslation=()=>value=>value;` : args.path.endsWith("plugin-settings-actions") ? `
+    args.path === "next/link" ? `export default function Link({prefetch,...props}){return <a {...props}/>}` : args.path.endsWith("workspace-language") ? `export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>value=>value;` : args.path.endsWith("plugin-settings-actions") ? `
     const policy=()=>({active:window.active,subscribed:window.active,content:'Please arrive early.',published:false});
     const sms=()=>({active:window.active,installed:window.active,enabled:false,confirmation:true,reminders:false,accountSid:'saved',messagingServiceSid:'saved',from:'',tokenConfigured:!window.missingSender});
     export async function loadBookingRulesSettingsAction(){return {state:policy()}}
@@ -52,7 +52,7 @@ test("feature labels stay concise; activation appears only after an attempted us
     const dialog = page.getByRole("dialog", { name: name === "Campaigns" ? "Advertising" : name, exact: true });
     await dialog.waitFor();
     assert.equal(await region.locator('[role="switch"]').getAttribute("aria-checked"), "false");
-    assert.equal(await dialog.getByRole("link", { name: "Open Market" }).getAttribute("href"), `/market?q=${encodeURIComponent(name)}`);
+    assert.equal(await dialog.getByRole("link", { name: "Open Market" }).getAttribute("href"), `/market?q=${new URLSearchParams({q:name}).get("q")===name?new URLSearchParams({q:name}).toString().slice(2):""}&salon=salon-a`);
     await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
     assert.equal(await page.getByRole("dialog").count(), 0);
     assert.equal(await page.getByRole("link", { name: "Open Market" }).count(), 0);
@@ -63,7 +63,7 @@ test("feature labels stay concise; activation appears only after an attempted us
   const download = page.getByRole("region", { name: "Download payroll data" });
   assert.equal(await download.getByRole("status").count(), 0);
   await download.getByRole("button", { name: "Download", exact: true }).click();
-  assert.equal(await page.getByRole("dialog").getByRole("link").getAttribute("href"), "/market?q=Payroll%20Data%20Download");
+  assert.equal(await page.getByRole("dialog").getByRole("link").getAttribute("href"), "/market?q=Payroll+Data+Download&salon=salon-a");
   assert.deepEqual(await page.evaluate(() => window.calls), []);
   mkdirSync(output, { recursive: true });
   await page.screenshot({ path: `${output}/inactive-desktop.png`, fullPage: true });
@@ -87,9 +87,9 @@ test("activated rules and SMS save only operational settings; other plugins keep
   await sms.getByRole("button", { name: "Save", exact: true }).click();
   await sms.getByRole("status").filter({ hasText: "Saved." }).waitFor();
   assert.deepEqual(await page.evaluate(() => window.calls), [{ type: "rules", salon: "salon-a", content: "Please arrive 10 minutes early.", published: true }, { type: "sms", salon: "salon-a", options: { enabled: true, confirmation: true, reminders: true } }]);
-  assert.equal(await page.getByRole("region", { name: "Campaigns", exact: true }).getByRole("link", { name: "Open", exact: true }).getAttribute("href"), "/campaigns");
-  assert.equal(await page.getByRole("region", { name: "Payroll Data Download", exact: true }).getByRole("link", { name: "Download", exact: true }).getAttribute("href"), "/payroll?tab=download");
-  assert.equal(await page.getByRole("region", { name: "Tax Company", exact: true }).getByRole("link", { name: "Open", exact: true }).getAttribute("href"), "/payroll/tax-company/settings");
+  assert.equal(await page.getByRole("region", { name: "Campaigns", exact: true }).getByRole("link", { name: "Open", exact: true }).getAttribute("href"), "/campaigns?salon=salon-a");
+  assert.equal(await page.getByRole("region", { name: "Payroll Data Download", exact: true }).getByRole("link", { name: "Download", exact: true }).getAttribute("href"), "/payroll?tab=download&salon=salon-a");
+  assert.equal(await page.getByRole("region", { name: "Tax Company", exact: true }).getByRole("link", { name: "Open", exact: true }).getAttribute("href"), "/payroll/tax-company/settings?salon=salon-a");
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

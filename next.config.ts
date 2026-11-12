@@ -97,6 +97,8 @@ const nextConfig: NextConfig = {
     "/api/security/challenge": ["./app/fonts/GeistMono.ttf", "./app/fonts/Geist-OFL.txt"],
   },
   images: {
+    // Local QA Storage is loopback-only; render directly in the isolated browser.
+    unoptimized: process.env.NODE_ENV !== "production" && process.env.REYLUMI_QA_MODE === "local",
     remotePatterns: supabaseImagePatterns(),
   },
   reactCompiler: true,

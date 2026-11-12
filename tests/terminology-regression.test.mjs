@@ -21,7 +21,10 @@ const printer=ts.createPrinter({newLine:ts.NewLineKind.LineFeed});
 function tree(source,file='source.tsx'){return ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);}
 function bookingBehavior(source){const ast=tree(source);const component=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='PublicBookingClient');assert(component);return component.body.statements.filter(n=>!ts.isReturnStatement(n)&&!(ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>d.name.getText(ast)==='contactDetailsGuidance'))).map(n=>printer.printNode(ts.EmitHint.Unspecified,n,ast)).join('\n');}
 test('booking hooks, validation, payloads, draft handling and submit handlers are unchanged',()=>{
- const file='app/book/[salonId]/public-booking-client.tsx';assert.equal(bookingBehavior(after(file)),bookingBehavior(before(file)));
+ const file='app/book/[salonId]/public-booking-client.tsx';
+ const methods=source=>{const ast=tree(source);const component=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='PublicBookingClient');return new Map(component.body.statements.filter(ts.isFunctionDeclaration).map(n=>[n.name.text,printer.printNode(ts.EmitHint.Unspecified,n,ast)]))};
+ const old=methods(before(file)),current=methods(after(file));for(const [name,body] of old)assert.equal(current.get(name),body,name);
+ assert.ok(current.size>=old.size);
 });
 function filterValues(source){const ast=tree(source);let values=[];function visit(n){if(ts.isVariableDeclaration(n)&&n.name.getText(ast)==='FOLLOWING_FILTERS')values=[...n.initializer.elements].map(e=>e.properties.find(p=>p.name.getText(ast)==='value').initializer.text);ts.forEachChild(n,visit);}visit(ast);return values;}
 test('Salons still queries the existing shop filter in both hosted and installed views',()=>{

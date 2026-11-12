@@ -59,7 +59,7 @@ test('history table, compact review and same-day merge fit desktop/mobile', {
  assert.equal(page.url(),originalUrl);await drawer.getByRole('button',{name:'Close history details'}).click();
  await visible.getByRole('button',{name:'Details',exact:true}).nth(1).click();await page.getByRole('dialog',{name:'Visit & receipt'}).getByRole('link',{name:'Share experience',exact:true}).waitFor();
  assert.match(await page.getByRole('dialog',{name:'Visit & receipt'}).textContent(),/55\.00/);assert.match(await page.getByRole('dialog',{name:'Visit & receipt'}).textContent(),/Cash/);
- await page.screenshot({path:'artifacts/history-qa/'+width+'-receipt-page.getByRole('dialog',{name:'Visit & receipt'}).png'});
+ await page.screenshot({path:'artifacts/history-qa/'+width+'-receipt-drawer.png'});
  assert.match(await page.getByRole('dialog',{name:'Visit & receipt'}).getByRole('link',{name:'Share experience',exact:true}).getAttribute('href'),/experience/);
  
 await page.getByRole('dialog',{name:'Visit & receipt'}).getByRole('button',{name:'Close history details'}).click();await page.getByRole('dialog',{name:'Visit & receipt'}).waitFor({state:'hidden'});assert.deepEqual(errors,[]);await page.close();
