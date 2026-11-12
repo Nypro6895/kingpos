@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "after97-installed-root-parity-20261111",
+  "status": "ready",
+  "summary": "Mount the shared numeric editor in the actual installed entry; admit delayed salon language configuration, reuse authorized shell context, preserve explicit choice and English fallback for old/new native clients, and keep language status reads free of refresh cascades. Installed Portable register now receives its dedicated paired Save/state/Submit handlers; authenticated Owner handlers remain excluded from paired scope.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "components/salon-language-preferences.tsx",
+    "lib/salon-language-server.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "tests/salon-language-choices-ui.test.mjs",
+    "tests/app-local-diagnostic-export.test.mjs",
+    "components/app-local-portable-workspace.tsx",
+    "lib/app-local-portable-actions.generated.json",
+    "tests/after97-installed-portable.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\complete-snapshot",
+    "commit": "4db7477d5b446bdf3cd113f61335df46a9123fb4"
+  },
+  "validation": [
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-complete.txt"
+    },
+    {
+      "name": "26 final language, auxiliary, paired device and schema regression tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-regression.txt"
+    },
+    {
+      "name": "Actual generated installed root numeric and Help bundle tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/installed-complete-final.txt"
+    },
+    {
+      "name": "Exact 4257 deployed source files and seven public routes verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-release/live-source-verified.json"
+    }
+  ],
+  "id": "64f3bfb8-c8ae-43aa-bdd5-2c11aaf725fd",
+  "recordedAt": "2026-11-12T02:41:46.327Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "afedb8b517f873db04c46b2c9467253bff8c3409d86e4f2efc328646d12014a3",
+    "components/app-local-shell.tsx": "b2659ef96b901cea2f34331dce21ca0d1754a942ae1dde1301cdcabc201c7af7",
+    "components/salon-language-preferences.tsx": "8fbae3a548a38227234c0acbc97d7091ddbd05e30dcdaf3831b44075aa584838",
+    "lib/salon-language-server.ts": "6b0f320aff7307c259b8b4fa2718c2d9c4b49c2b5d54e2edb9e831f423bac4d0",
+    "lib/app-local-shell-server.ts": "6f35abb82ab36aa5dad925333e0e206d17332ad842398e90928876105aa6557f",
+    "lib/app-local-shell-metadata.ts": "ac8b7d83294d714381633ec09cf86d5a987343d311cbbe940784de378fa8b2ab",
+    "lib/app-local-command-policy.json": "d233c3ce85413f14d442b9d0a11aea61bc65dfacbd77664abc9ec11c27657fbb",
+    "lib/app-local-commands-server.generated.ts": "b6ab352722960b8bb72972306ac93a347a20e4e3a3576588d9036ac98365b982",
+    "lib/app-local-resource-invalidation.ts": "6b36a8a53380424fc48bf370061fb2200028491f72213394c35a0f518de6c7fb",
+    "scripts/build-app-local-bundle.mjs": "11a59f04b427e2a5978e548b15f65979697cb91c4fe15bab1595481e35f6e45e",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "4e7675de0755878e6e23bfe195c5bb455a7be81e00d03cb4eafc9d4ecd8cf379",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift": "7db7932bcdcce05854f864cd24ce2098ded5edf92a9c08e27c0d95b56de493af",
+    "tests/app-local-shell-auxiliary.test.mjs": "f7bfc46efd3a5013982e6ddb89a27da7b38e14a3febf695114807da2c2b4046a",
+    "tests/salon-language-choices-ui.test.mjs": "61bfe360379a68c559919928c05a7d1ea2f1f698e4529d5e5aa64ea47cca047a",
+    "tests/app-local-diagnostic-export.test.mjs": "efdc25137893aa2a873cd405d093f0f2a9a7ecfef097882a462f9f4904242384",
+    "components/app-local-portable-workspace.tsx": "3381257f477a9922f5305a969e80e143ab828dcddb48eee0401fd02baea8c97b",
+    "lib/app-local-portable-actions.generated.json": "0343ed7b9bef42afbab6223107f1b3040d485021e65a3715f78b30515538e7dc",
+    "tests/after97-installed-portable.test.mjs": "6f55243b2b1d00af011b7ad7709243d471088c0364c643ea7bef6949cc9181a6"
+  }
+}

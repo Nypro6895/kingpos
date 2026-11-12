@@ -1,0 +1,85 @@
+{
+  "kind": "change",
+  "changeId": "salon-language-choice-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Second-pass fixes: stale rendered choice, revoked/expired modal, personal-route dismissal, fail-closed session handling and active owner/staff mode entitlements Original handoff 699410cc-72f0-4546-9504-5f5c9dcd7db3. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied. Final installed-root parity and dedicated paired-ticket admission integrated; snapshot reconciled to final source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/layout.tsx",
+    "lib/workspace-language-server.ts",
+    "components/workspace-language.tsx",
+    "app/account/account-profile-editor.tsx",
+    "app/account/actions.ts",
+    "app/settings/settings-hub-client.tsx",
+    "app/notifications/notification-center-client.tsx",
+    "app/market/vietnamese-plugin-panel.tsx",
+    "lib/salon-language.ts",
+    "lib/salon-language-server.ts",
+    "app/settings/language-actions.ts",
+    "components/salon-language-preferences.tsx",
+    "supabase/migrations/20261110180000_salon_language_choices.sql",
+    "tests/salon-language-choices.integration.test.mjs",
+    "tests/salon-language-choices-ui.test.mjs",
+    "components/salon-language-context.ts",
+    "tests/vietnamese-workspace-runtime.test.mjs",
+    "tests/vietnamese-market-runtime.test.mjs",
+    "docs/salon-language-choice-20261110.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\complete-snapshot",
+    "commit": "4db7477d5b446bdf3cd113f61335df46a9123fb4"
+  },
+  "dependencies": [],
+  "supersedesEvents": [
+    "46d92013-997a-44fe-8b8a-33f2b16bc3f9"
+  ],
+  "validation": [
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-complete.txt"
+    },
+    {
+      "name": "26 final language, auxiliary, paired device and schema regression tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-regression.txt"
+    },
+    {
+      "name": "Actual generated installed root numeric and Help bundle tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/installed-complete-final.txt"
+    },
+    {
+      "name": "Exact 4257 deployed source files and seven public routes verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-release/live-source-verified.json"
+    }
+  ],
+  "id": "5ec49c16-6fa1-4113-981c-98144019c2fe",
+  "recordedAt": "2026-11-12T02:40:50.547Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/layout.tsx": "f50d3f8bd480fef1d144e74a692fe10c4c75d45c97ffbc496742ae4d49e56985",
+    "lib/workspace-language-server.ts": "3c7c3acac4a68be911c13d8fc1120596d229b120375290647b4cbf36278e61d4",
+    "components/workspace-language.tsx": "9caf0225321ab76b45a4921a7337e5ca8dbc2ed6d92fdcd4b7e6df8117ba69c2",
+    "app/account/account-profile-editor.tsx": "0a356b3235191f1af3751877dea87aaf6cbd7374083665ed92233c30d2a49a44",
+    "app/account/actions.ts": "e1561221eebf1a017613065732b159ef9a151e6b9318d8744dadc01b6d68161f",
+    "app/settings/settings-hub-client.tsx": "ef8b6356ea42594dd14f5098061327f768c49168f826eabe20316b7c0ea11ac9",
+    "app/notifications/notification-center-client.tsx": "4f5425e625ae773007e04e57aac2426e138012b01c9187652aa4bd8ba8925dc1",
+    "app/market/vietnamese-plugin-panel.tsx": "2c304746dd8c44019657ae65b7ab688bd508b7d468edddf70f2a632f853144f1",
+    "lib/salon-language.ts": "4cb277d5f9d1815ff802e1b612e510799caa28fd32303318e3d634988dc0b722",
+    "lib/salon-language-server.ts": "6b0f320aff7307c259b8b4fa2718c2d9c4b49c2b5d54e2edb9e831f423bac4d0",
+    "app/settings/language-actions.ts": "81c1c38e48d1dc6610793b816fea02f9ec28f69c4cb4e82488d5b7473c863027",
+    "components/salon-language-preferences.tsx": "8fbae3a548a38227234c0acbc97d7091ddbd05e30dcdaf3831b44075aa584838",
+    "supabase/migrations/20261110180000_salon_language_choices.sql": "121a5aa71feacf07cace77643efb6569dc55a6f40589ed0f6b42e70d1df9d077",
+    "tests/salon-language-choices.integration.test.mjs": "06b8ff669565dcd89be47a24262523c3a59b63c6970161264a4d3d08ce0f7576",
+    "tests/salon-language-choices-ui.test.mjs": "61bfe360379a68c559919928c05a7d1ea2f1f698e4529d5e5aa64ea47cca047a",
+    "components/salon-language-context.ts": "388b0b74abac83de25acfea0600d023cf0e6ea37dceaecbf0e9bcb9b3d498284",
+    "tests/vietnamese-workspace-runtime.test.mjs": "4b8b623ca79c9c8fab1e5d312fcb58aa0ce8cdcd447c2b18c71c190324818845",
+    "tests/vietnamese-market-runtime.test.mjs": "37a0cee6ca634957695d7251e4bbcdafad43452de2544b0d12bb575576130c9a",
+    "docs/salon-language-choice-20261110.md": "17093d4da514570a1ae19f7f209c923eb8b35503d8634ee977e212c9b27ed522"
+  }
+}

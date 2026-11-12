@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "after97-owner-portable-command-boundary-20261111",
+  "status": "ready",
+  "summary": "Keep authenticated Owner held-ticket commands outside paired Portable admission, whose dedicated device handlers retain their own identity and token checks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-portable-actions.generated.json",
+    "tests/after97-native-adapters.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\complete-snapshot",
+    "commit": "4db7477d5b446bdf3cd113f61335df46a9123fb4"
+  },
+  "validation": [
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-complete.txt"
+    },
+    {
+      "name": "26 final language, auxiliary, paired device and schema regression tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-regression.txt"
+    },
+    {
+      "name": "Actual generated installed root numeric and Help bundle tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/installed-complete-final.txt"
+    },
+    {
+      "name": "Exact 4257 deployed source files and seven public routes verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-release/live-source-verified.json"
+    }
+  ],
+  "id": "42bf90a3-921d-42f3-b1c1-99f3210d7c62",
+  "recordedAt": "2026-11-12T02:41:46.567Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-portable-actions.generated.json": "0343ed7b9bef42afbab6223107f1b3040d485021e65a3715f78b30515538e7dc",
+    "tests/after97-native-adapters.test.mjs": "69df8b1ced1c7d13edd3443da2e152f7569c8354172d2ede90d1c0b955dd5e2c"
+  }
+}

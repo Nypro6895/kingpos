@@ -1,0 +1,34 @@
+REYLUMI — COMPLETE POST-97 RELEASE
+2026-11-12T02:55:52.177Z
+
+WEB: https://reylumi.com
+Live deployment: dpl_F6zsN97Knc12QrTXu7P2x3vknCDS
+Original baseline: dpl_7pwRdKHxYEnhNbvw2Ja3H93BAfqr
+Intermediate baseline: dpl_CjmrxP1J6jZkCfVE3UZCC4Aj279w
+Runtime commit: 4db7477d5b446bdf3cd113f61335df46a9123fb4
+Source SHA256: 34c7c3aa39779da07e072190c2ba50c6b3c1b19564555198493808a6c7cf8aa9
+Overlay SHA256: 284c071a87b80bb587ea1ef7fb9ea7c9c4340d9f03526c2e1e849f94c952eb61
+Archive SHA256: 53d468ea8aa6ea16a04e2e3320677aadde466214391f1802d3c08ffd284266b1
+4257 exact source files; no missing/mismatched/extra. Seven public routes verified HTTP 200 and correct deployment.
+
+IPHONE: 1.0.0 (98)
+Uploaded accepted; Apple VALID; IN_BETA_TESTING; available to existing internal group afe80011-9371-4a4c-afda-025b624f3275. No group/tester changes or invitations.
+Native baseline: 1.0.0 (97), acb17696eabeb49fc03a680b2610d4b6d1dc92bc
+CI: https://github.com/Nypro6895/kingpos/actions/runs/43142269486
+248 simulator cases passed exactly once, zero failures/skips, 14 hosts. Unsigned and signed archives/export passed. Source, bundled assets, generated command mappings, archive hashes and artifact digest verified.
+Native source SHA256: 4acf69787715972078d012a01224a0674819e0eb5bd51a677c7a387d1a2ec1e8
+Native artifact SHA256: 1b9f0413f0fdce5adefc0d1222ecf1a39afff565add85b9a2bddf63e16746d4e
+
+DATABASE: 17 compatible data-preserving migrations applied and exact source verified; existing authorization/RLS retained. Sources: migration-verified.json and upload-schema-verified.json.
+
+SCOPE: 272 worktrees inventoried, 158 original pending rows classified, 46 relevant post-97 handoffs: 45 integrated, one unapproved POS/Gift design held. Older backlog dispositions retained in scope-audit.json; no unknown/unclassified row. Original event/source IDs: selected-discovery.json. Final frozen ready events: complete-ready-events-final.json (50).
+Publication journal: 2d462c6b-f9da-463b-a5c6-41f470e210a9
+
+VALIDATION: production build and TypeScript; 77 regression suites with 286 passing tests and zero failures; two conditional checks separately passed on real isolated full schema/Auth/PostgREST and installed Help bundle. Final 26 targeted regression tests, installed root numeric/Help tests, 33 numeric checks and native simulator coverage also passed. No real payments, email/SMS, customer posts/uploads or destructive QA.
+
+ANDROID: QA debug APK CI 43138720652 passed unit tests, lint (0 errors) and packaging. Android sources unchanged since verified ca96947eb7c4c71deeef5e361d2eb54c41bc5315. APK: artifacts/after97/android-preview/outputs/apk/debug/app-debug.apk
+APK SHA256: 3812ef92c50a4c3b682e0534a96fc43580a4eecf8c2e4b531bd79e7a80b5fd0f
+
+HELD / LIMITS: pos-gift-shared-design-20261110 remains explicitly unapproved and excluded. Legal preparations/drafts preserved internally; no new public contracts or App Store declarations submitted. Android QA APK is not Play Store. Existing internal TestFlight is not App Store or external TestFlight. No physical iPhone/iPad/Android acceptance or independent IPA inspection. Separate iPad workflow unavailable (404); universal native source and layout/browser tests integrated.
+
+ROLLBACK: before any re-promotion, verify the alias still belongs to this release; preserve unrelated external releases. Previous immediate web baseline is dpl_CjmrxP1J6jZkCfVE3UZCC4Aj279w; original baseline above. Keep compatible migrations/data; do not destructively reverse schema. Existing TestFlight build97 remains the prior native reference.
