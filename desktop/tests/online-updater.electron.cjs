@@ -18,10 +18,13 @@ app.getVersion = () => '0.7.2';
 let server;
 async function main() {
   await app.whenReady();
-  const installer = path.join(root, 'desktop/dist-updater-0.7.3/KingPOS Portable-Setup-0.7.3.exe');
+  const version=process.env.KINGPOS_DESKTOP_TEST_VERSION||'0.7.3';
+  const buildDir=process.env.KINGPOS_DESKTOP_TEST_BUILD_DIR||path.join(root,'desktop/dist-updater-0.7.3');
+  const evidenceDir=process.env.KINGPOS_DESKTOP_TEST_EVIDENCE_DIR||path.join(root,'artifacts/portable-updater-20261026');fs.mkdirSync(evidenceDir,{recursive:true});
+  const installer = path.join(buildDir, `KingPOS Portable-Setup-${version}.exe`);
   const bytes = fs.readFileSync(installer);
   const sha512 = createHash('sha512').update(bytes).digest('base64');
-  const config = path.join(root, 'desktop/dist-updater-0.7.3/win-unpacked/resources/app-update.yml');
+  const config = path.join(buildDir, 'win-unpacked/resources/app-update.yml');
   assert.equal(yaml.load(fs.readFileSync(config, 'utf8')).url, 'https://reylumi.com/api/pos/windows-update/');
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, 'app/api/pos/windows-update/latest.yml/route.ts'), 'utf8'), {
@@ -29,7 +32,7 @@ async function main() {
   }).outputText;
   const environment = { WINDOWS_POS_DOWNLOAD_SHA512: sha512, WINDOWS_POS_DOWNLOAD_SIZE: String(bytes.length) };
   vm.runInNewContext(code, { exports, Response, process: { env: environment },
-    require: () => ({ getWindowsPosRelease: async () => ({ version: '0.7.3', edition: 'release', href: '/download/windows' }) }) });
+    require: () => ({ getWindowsPosRelease: async () => ({ version, edition: 'release', href: '/download/windows' }) }) });
   let corrupt = false, downloads = 0;
   server = createServer(async (request, response) => {
     if (request.url.startsWith('/latest.yml')) {
@@ -70,8 +73,8 @@ async function main() {
   await assert.rejects(bad.downloadUpdate(), /checksum/i);
   assert.equal(bad.installerPath, null);
   console.log('PASS corrupt installer is rejected and cannot be installed');
-  fs.writeFileSync(path.join(root, 'artifacts/portable-updater-20261026/native-update-result.json'), JSON.stringify({ passed: true,
-    version: '0.7.3', bytes: bytes.length, sha512, sha256: createHash('sha256').update(bytes).digest('hex'),
+  fs.writeFileSync(path.join(evidenceDir,'native-update-result.json'), JSON.stringify({ passed: true,
+    version, bytes: bytes.length, sha512, sha256: createHash('sha256').update(bytes).digest('hex'),
     discoveryOnly: true, cacheReused: true, checksumRejected: true, installerHandoffVerified: true, processLaunchIntercepted: true }, null, 2));
 }
 main().then(() => finish(0), error => { console.error(error); finish(1); });

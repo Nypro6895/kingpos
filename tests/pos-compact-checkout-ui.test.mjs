@@ -34,7 +34,7 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
       build.onResolve({ filter: /^next\/navigation$/ }, () => ({ path: 'navigation', namespace: 'fixture' }));
       build.onResolve({ filter: /supabase\/browser$/ }, () => ({ path: 'supabase', namespace: 'fixture' }));
       build.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ contents: path === 'navigation'
-        ? 'const router={refresh(){},push(){},replace(){}}; export const useRouter=()=>router; export const usePathname=()=>"/pos/portable";'
+        ? 'const router={refresh(){},push(){},replace(){}}; export const useRouter=()=>router; export const useSearchParams=()=>new URLSearchParams();export const usePathname=()=>"/pos/portable";'
         : 'export const createSupabaseBrowserClient=()=>null;' }));
       build.onResolve({ filter: /\/actions$/ }, ({ path, importer }) => ({
         path: resolve(path.startsWith('@/') ? path.slice(2) : join(dirname(importer), path)) + '.ts', namespace: 'actions',
@@ -68,7 +68,7 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
     // this device, while the price keypad stays in place in both modes.
     for (const enabled of [false,true]) {
       await page.evaluate(value=>window.setSupplementalKeyboard(value),enabled);
-      await page.getByRole('button',{name:'Custom services',exact:true}).click();
+      await page.locator('[data-pos-custom-service]').click();
       const service=page.getByRole('dialog',{name:'Custom service',exact:true});
       assert.equal(await service.getByLabel('Service keyboard').count(),enabled?1:0);
       assert.equal(await service.getByLabel('Service name',{exact:true}).getAttribute('inputmode'),enabled?'none':'text');

@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, join, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { _electron as electron } from 'playwright-core';
+import { _electron as electron, chromium } from 'playwright-core';
 import { spawnSync } from 'node:child_process';
 
 test('Windows app: native encrypted tickets, logout, restart, abrupt exit and storage boundary', { skip: !process.env.ESBUILD_MODULE_PATH, timeout: 120000 }, async () => {
@@ -34,6 +34,10 @@ test('Windows app: native encrypted tickets, logout, restart, abrupt exit and st
     else{res.setHeader('Content-Type','text/html');res.end('<div id="root"></div><script src="/bundle.js"></script>');}
   });
   await new Promise(done=>server.listen(0,'127.0.0.1',done));
+  // Older installed hosts reject the new optional closed-edit namespace.
+  // Ordinary saved tickets must remain visible and recoverable.
+  const legacyBrowser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
+  try{const legacy=await legacyBrowser.newPage();await legacy.addInitScript(()=>{const values=new Map([['kingpos:parked-tickets:v1:salon:key',JSON.stringify([{id:'legacy-saved',at:1,label:'Ticket 125',value:{amount:125}}])]]);window.qaArchiveDenied=0;window.kingposDesktop={version:4,storage:{get(key){if(key.startsWith('kingpos:closed-ticket-edits:')){window.qaArchiveDenied++;throw Error('Old host: namespace unavailable');}return values.get(key)??null;},set(key,value){values.set(key,value);},remove(key){values.delete(key);}},operations:{checkpoint:async()=>0,list:async()=>[],save:async()=>{}}};});await legacy.goto('http://127.0.0.1:'+server.address().port);await legacy.getByRole('button',{name:'Saved tickets (1)',exact:true}).click();await legacy.getByRole('button',{name:/^Ticket 125/}).click();await legacy.getByText('Ready 125',{exact:true}).waitFor();assert.ok(await legacy.evaluate(()=>window.qaArchiveDenied>0));console.log('PASS older native host: optional archive denial preserves saved-ticket recovery');}finally{await legacyBrowser.close();}
   const profile=mkdtempSync(join(tmpdir(),'kingpos-desktop-'));
   let app;
   const env={...process.env,KINGPOS_DESKTOP_TEST_PROFILE:profile,KINGPOS_DESKTOP_TEST_ORIGIN:`http://127.0.0.1:${server.address().port}`};

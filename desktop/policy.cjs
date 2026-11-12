@@ -20,7 +20,7 @@ function allowedPage(value, origin) {
   } catch { return false; }
 }
 function validateKey(value) {
-  if (typeof value !== 'string' || value.length > 1024 || !/^kingpos:(portable-draft:v1:|parked-tickets:v1:|report-inputs:|offline-staff:)/.test(value)) throw Error('Invalid storage key');
+  if (typeof value !== 'string' || value.length > 1024 || !/^kingpos:(portable-draft:v1:|parked-tickets:v1:|closed-ticket-edits:v1:|report-inputs:|offline-staff:)/.test(value)) throw Error('Invalid storage key');
   return value;
 }
 module.exports = { validConfig, allowedPage, validateKey };

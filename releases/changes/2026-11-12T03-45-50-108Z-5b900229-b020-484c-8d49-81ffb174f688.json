@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "windows-portable-release-20261111",
+  "status": "working",
+  "summary": "Build and publish the existing Windows Online distribution with exact installer checksum/version, preserving native data, pairing and user-initiated update safeguards. Version 0.7.5 adds only the closed-ticket-edit namespace; actual old-host compatibility and encrypted data recovery are tested.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/package.json",
+    "desktop/package-lock.json",
+    "desktop/policy.cjs",
+    "desktop/tests/online-updater.electron.cjs",
+    "desktop/RELEASE-NOTES-0.7.5.md",
+    "tests/portable-desktop.test.mjs"
+  ],
+  "source": {
+    "commit": "79043c7"
+  },
+  "id": "5b900229-b020-484c-8d49-81ffb174f688",
+  "recordedAt": "2026-11-12T03:45:50.108Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

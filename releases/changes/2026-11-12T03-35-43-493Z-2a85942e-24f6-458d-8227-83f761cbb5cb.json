@@ -1,0 +1,21 @@
+{
+  "kind": "change",
+  "changeId": "windows-portable-release-20261111",
+  "status": "working",
+  "summary": "Build and publish the existing Windows Online distribution with exact installer checksum/version, preserving native data, pairing and user-initiated update safeguards.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/package.json",
+    "desktop/package-lock.json"
+  ],
+  "source": {
+    "commit": "79043c7"
+  },
+  "id": "2a85942e-24f6-458d-8227-83f761cbb5cb",
+  "recordedAt": "2026-11-12T03:35:43.493Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

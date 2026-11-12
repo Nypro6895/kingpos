@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
       }
       if (!salon) { const context = await getCurrentBusinessContext(); salon = context.currentSalon?.id; }
       if (!salon) throw new Error("Select an active salon POS.");
-      result = await db.rpc("gift_card_pos", { p_salon: salon, p_op: op, p_args: args, p_key: key || null, p_signature: signature || null });
+      if (op === "appearance") result = await db.rpc("gift_card_catalog", {p_salon: salon});
+      else result = await db.rpc("gift_card_pos", { p_salon: salon, p_op: op, p_args: args, p_key: key || null, p_signature: signature || null });
     } else if (scope === "display" && op === "appearance") {
       return Response.json(await getGiftDisplayAppearance(db, token), { headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
     } else if (scope === "display") result = await db.rpc("gift_card_display", { p_token: token, p_op: op, p_args: args });

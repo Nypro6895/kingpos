@@ -109,6 +109,12 @@ export function PortableDraftControls<T>({
           ) ?? "[]",
         );
         if (Array.isArray(archive)) setClosedEdits(archive);
+      } catch {
+        // Older native hosts do not expose the closed-edit archive namespace.
+        // Its absence must not hide ordinary saved tickets.
+        setClosedEdits([]);
+      }
+      try {
         const rows = JSON.parse(portableDeviceStorage.getItem(key) ?? "[]");
         if (Array.isArray(rows)) {
           savedRows.current = rows;

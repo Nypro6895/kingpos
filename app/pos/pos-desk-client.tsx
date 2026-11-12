@@ -5166,22 +5166,7 @@ export function PosDeskClient({
               session={giftDelivery}
               onClose={() => setGiftDelivery(null)}
             />
-            <GiftPosControl
-              token={liveDraftToken}
-              onCheckout={registerGiftCheckout}
-              onSession={setGiftSession}
-              onDelivery={setGiftDelivery}
-              receipt={{
-                ...rewardReceipt,
-                sourceBookingId: draft.sourceBookingId,
-                sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt,
-                customerName: draft.customerName || selectedCustomer?.name,
-                customerLookup: draft.customerLookup || selectedCustomer?.phone,
-                tipAmount: baseTotals.tip_value,
-                note: draft.note,
-                _rewardRevision: rewardView?.request?.revision ?? 0,
-              }}
-            />
+
             {giftSession?.status === "open" &&
               (giftSession.purchase > 0 || giftSession.amount > 0) && (
                 <div
@@ -6105,15 +6090,24 @@ export function PosDeskClient({
                 </div>
               </div>
             </div>
-            <button
-              className="mt-3 min-h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50/80 px-3 py-2 text-left text-sm font-medium text-zinc-500 shadow-inner"
-              data-pos-gift-card-placeholder
-              disabled
-              onFocus={() => setKeypadMode("gift_card")}
-              type="button"
-            >
-              <WorkspaceText text="Gift card" />
-            </button>
+            <div className="mt-3" data-pos-gift-card-slot>
+            <GiftPosControl
+              token={liveDraftToken}
+              onCheckout={registerGiftCheckout}
+              onSession={setGiftSession}
+              onDelivery={setGiftDelivery}
+              receipt={{
+                ...rewardReceipt,
+                sourceBookingId: draft.sourceBookingId,
+                sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt,
+                customerName: draft.customerName || selectedCustomer?.name,
+                customerLookup: draft.customerLookup || selectedCustomer?.phone,
+                tipAmount: baseTotals.tip_value,
+                note: draft.note,
+                _rewardRevision: rewardView?.request?.revision ?? 0,
+              }}
+            />
+            </div>
           </div>
           <div
             className="shrink-0 border-t border-zinc-100 pt-2"
